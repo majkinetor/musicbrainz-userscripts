@@ -33,7 +33,7 @@ function stKeyIs(e, h) {
 }
 
 var ST_PAL_CSS = ''
-  + '#st-pal-ov{align-items:flex-start;padding-top:12vh;background:rgba(15,12,28,.25)}'
+  + '#st-pal-ov{align-items:flex-start;padding-top:12vh;background:none}'
   + '#st-pal{width:min(640px,94vw);max-height:min(70vh,560px);font:13px/1.4 var(--mbu-font);outline:none}'
   + '#st-pal-q{box-sizing:border-box;width:100%;margin:0;padding:12px 14px;border:0;border-bottom:1px solid var(--mbu-border);border-radius:0;background:var(--mbu-bg);color:var(--mbu-text);font:15px/1.3 var(--mbu-font);outline:none;box-shadow:none}'
   + '#st-pal-list{flex:1 1 auto;overflow:auto;margin:0;padding:4px 0;list-style:none}'
