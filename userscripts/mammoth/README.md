@@ -27,7 +27,7 @@ The panel starts minimized to an icon: hover to peek, click to pin, **⤢** rest
 
 ## Mammoth babies
 
-A 🦣 pin in a field recalls the values saved for it, shared across releases. The built-in ones cover catalogue number, label, artist, status, language, script, country, type and the task fields.
+A 🦣 pin in a field recalls the values saved for it, shared across releases. The built-in ones cover catalogue number, label, artist, language, script, country, type and the task fields.
 
 <img src="./screenshots/babies.png" width=600 />
 

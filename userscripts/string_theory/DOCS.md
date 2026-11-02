@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-02 10:27 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-02 10:32 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -70,6 +70,7 @@ The release group's edit page gets Release information's layout.
 
 - The **Artist** field is the same artist cell, with the same buttons, and an unlinked name is [matched](#artist-matching) on load.
 - **Primary type** and **Secondary types** are bars of buttons, in the release editor's Release tab too. Click a primary type to choose it and again to clear it; click secondary types to turn each on or off.
+- **Status** in the release editor is a bar too. Right-click a status to make it the default for new releases; a dot marks it. Right-click it again to clear it.
 - **External links** sit in a right column with the dead-link checker, and the release group's cover under them.
 - The help bubbles are gone, and a changed artist credit adds Apollo's line to the edit note.
 
@@ -2078,7 +2079,7 @@ The panel starts minimized to an icon: hover to peek, click to pin, **⤢** rest
 
 ### Mammoth babies
 
-A 🦣 pin in a field recalls the values saved for it, shared across releases. The built-in ones cover catalogue number, label, artist, status, language, script, country, type and the task fields.
+A 🦣 pin in a field recalls the values saved for it, shared across releases. The built-in ones cover catalogue number, label, artist, language, script, country, type and the task fields.
 
 <img src="../mammoth/screenshots/babies.png" width=600 />
 
