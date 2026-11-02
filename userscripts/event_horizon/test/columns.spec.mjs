@@ -30,11 +30,11 @@ async function drag(page, key, rows) {
 test('a column turns off in place and stays off after a redraw', { tag: '@sandbox' }, async ({ page, inject }) => {
   await open(page, inject);
   const mark = await page.$eval('#s-dg table.ed-t', t => { t.dataset.same = '1'; return true; });
-  check(mark && await heads(page) === 'title,artist,date,rating,releases', 'the usual columns');
+  check(mark && await heads(page) === 'title,artist,date,rating,releases,links', 'the usual columns');
   check(await span(page) === 7, 'a group heading spans them all');
   await page.locator('#pop-cols-dg [data-colk="rating"] input').click();
-  await until(() => heads(page), h => h === 'title,artist,date,releases');
-  check(await rowCells(page) === 'title,artist,date,releases', 'the rows follow the heading');
+  await until(() => heads(page), h => h === 'title,artist,date,releases,links');
+  check(await rowCells(page) === 'title,artist,date,releases,links', 'the rows follow the heading');
   check(await span(page) === 6, 'the group heading narrows');
   check(await page.locator('#pop-cols-dg').isVisible(), 'the menu stays open');
   check(await page.$eval('#s-dg table.ed-t', t => t.dataset.same === '1'), 'the table was not redrawn');
@@ -42,21 +42,21 @@ test('a column turns off in place and stays off after a redraw', { tag: '@sandbo
   check(await page.locator('#pop-cols-dg [data-colk="title"] input').isDisabled(), 'the title stays');
   await page.locator('#s-dg [data-dgsort="date"]').click();
   await until(() => page.locator('#s-dg [data-dgsort="date"].on').count(), n => n === 1);
-  check(await heads(page) === 'title,artist,date,releases', 'a redraw keeps the choice');
+  check(await heads(page) === 'title,artist,date,releases,links', 'a redraw keeps the choice');
 });
 
 test('dragging a row moves the column, and Esc takes it back', { tag: '@sandbox' }, async ({ page, inject }) => {
   await open(page, inject);
   const drop = await drag(page, 'date', -2);
-  await until(() => heads(page), h => h === 'date,title,artist,rating,releases');    // the table follows during the drag
+  await until(() => heads(page), h => h === 'date,title,artist,rating,releases,links');    // the table follows during the drag
   check(await page.$eval('[data-colk="artist"]', r => r.style.transform.includes('translateY')), 'the others slide aside');
   await drop();
-  check(await page.$$eval('#pop-cols-dg .col-row', x => x.map(r => r.dataset.colk).join() + x.map(r => r.style.transform).join('')) === 'date,title,artist,rating,releases', 'the menu settles in the new order');
-  check(await rowCells(page) === 'date,title,artist,rating,releases', 'the rows are in the new order');
+  check(await page.$$eval('#pop-cols-dg .col-row', x => x.map(r => r.dataset.colk).join() + x.map(r => r.style.transform).join('')) === 'date,title,artist,rating,releases,links', 'the menu settles in the new order');
+  check(await rowCells(page) === 'date,title,artist,rating,releases,links', 'the rows are in the new order');
   const undo = await drag(page, 'rating', 1);
-  await until(() => heads(page), h => h === 'date,title,artist,releases,rating');
+  await until(() => heads(page), h => h === 'date,title,artist,releases,rating,links');
   await page.keyboard.press('Escape');
-  await until(() => heads(page), h => h === 'date,title,artist,rating,releases');
+  await until(() => heads(page), h => h === 'date,title,artist,rating,releases,links');
   check(await page.locator('#pop-cols-dg').isVisible(), 'Esc stops the drag, not the menu');
   await page.mouse.up();
   await undo().catch(() => {});
@@ -66,11 +66,11 @@ test('the arrow keys move a column, and the reset brings the usual table back', 
   await open(page, inject);
   await page.locator('#pop-cols-dg [data-colk="releases"] .col-h').focus();
   await page.keyboard.press('ArrowUp');
-  await until(() => heads(page), h => h === 'title,artist,date,releases,rating');
+  await until(() => heads(page), h => h === 'title,artist,date,releases,rating,links');
   check(await page.$eval('#pop-cols-dg [data-colk="releases"] .col-h', h => h === document.activeElement), 'the handle keeps the focus');
   await page.locator('#pop-cols-dg [data-colk="artist"] input').click();
   await page.locator('[data-colreset="dg"]').click();
-  await until(() => heads(page), h => h === 'title,artist,date,rating,releases');
+  await until(() => heads(page), h => h === 'title,artist,date,rating,releases,links');
   check(await page.locator('#pop-cols-dg').isVisible(), 'the menu stays open');
   check(await page.locator('[data-pop="cols-dg"] i').isHidden(), 'nothing left to count');
 });
@@ -87,7 +87,7 @@ test('the releases table offers more columns, and Comment takes the note from be
   await page.locator('[data-pop="cols-ed"]').click();
   for (const k of ['status', 'packaging', 'lang', 'comment']) await page.locator(`#pop-cols-ed [data-colk="${k}"] input`).click();
   const hs = await page.$$eval('#s-ed table.ed-t thead th[data-c]:not([hidden])', x => x.map(h => h.dataset.c).join());
-  check(hs.endsWith('status,packaging,lang,comment'), `the new columns show (${hs})`);
+  check(hs.endsWith('status,packaging,lang,comment,links'), `the new columns show (${hs})`);
   check(await page.$eval('#s-ed table.ed-t', t => t.classList.contains('cmt')), 'the note moves to its column');
   check(await page.$eval('#s-ed table.ed-t col[data-c="comment"]', c => !c.hidden), 'the column highlight follows');
 });
@@ -103,7 +103,7 @@ test('the Columns menu works on a list of releases that stays MusicBrainz\'s pag
   await until(shown, h => h.endsWith('status'));
   await page.locator('#pop-cols-ed [data-colk="status"] .col-h').focus();
   await page.keyboard.press('ArrowUp');
-  await until(shown, h => h.endsWith('status,barcode'));
+  await until(shown, h => h.endsWith('status,barcode,links'));
   check(await page.locator('#pop-cols-ed').isVisible(), 'the menu stays open');
 });
 
@@ -113,8 +113,9 @@ test('a column resizes by its edge, fits its content and goes back to fitting it
   const width = k => page.$eval(`#s-dg table.ed-t thead th[data-c="${k}"]`, h => h.getBoundingClientRect().width);
   const table = () => page.$eval('#s-dg table.ed-t', t => t.getBoundingClientRect().width);
   const edge = page.locator('[data-colrs="dg\tdate"]');
-  check(await page.locator('[data-colrs="dg\treleases"]').isHidden(), 'the last column has no edge to drag');
-  const [t0, d0, r0] = [await table(), await width('date'), await width('rating')];
+  check(await page.locator('[data-colrs="dg\tlinks"]').isHidden(), 'the last column has no edge to drag');
+  const after = async () => await width('rating') + await width('releases') + await width('links');
+  const [t0, d0, r0, a0] = [await table(), await width('date'), await width('rating'), await after()];
   await edge.scrollIntoViewIfNeeded();
   const b = await edge.boundingBox(), x = b.x + b.width / 2, y = b.y + b.height / 2;
   await page.mouse.move(x, y);
@@ -122,7 +123,8 @@ test('a column resizes by its edge, fits its content and goes back to fitting it
   for (let i = 1; i <= 6; i++) await page.mouse.move(x + 5 * i, y);
   await until(() => width('date'), w => Math.abs(w - d0 - 30) < 3);
   await page.mouse.up();
-  check(Math.abs(await width('rating') - r0 + 30) < 3, 'the next column gives the room');
+  check(Math.abs(await after() - a0 + 30) < 4, 'the columns after it give the room');
+  check(await width('rating') >= Math.min(r0, 60), 'no column is crushed');
   check(Math.abs(await table() - t0) < 2, 'the table keeps its width');
   await page.locator('#s-dg [data-dgsort="date"]').click();
   await until(() => page.locator('#s-dg [data-dgsort="date"].on').count(), n => n === 1);

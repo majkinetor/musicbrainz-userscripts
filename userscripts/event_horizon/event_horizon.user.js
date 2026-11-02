@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.0515.03
+// @version      2026.11.02.0640.01
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2750,7 +2750,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .nm-add{display:flex;gap:6px;padding:4px}.nm-add input{flex:1;min-width:0;height:30px;box-sizing:border-box;padding:0 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13px}.nm-add input:focus{outline:0;border-color:var(--accent)}
 .nm-none{padding:6px 10px;font-size:13px;color:var(--muted)}
 .ed-t th[data-c]{position:relative}.col-rs{position:absolute;top:0;right:0;bottom:0;width:9px;cursor:col-resize;touch-action:none;z-index:2}.col-rs::after{content:'';position:absolute;right:2px;top:22%;bottom:22%;width:2px;border-radius:1px;background:var(--accent);opacity:0}.ed-t thead:hover .col-rs::after{opacity:.3}.col-rs:hover::after,.col-rs.on::after{opacity:1!important}
-.ed-t.fix{table-layout:fixed}.ed-t.fix td,.ed-t.fix th{overflow-wrap:anywhere}.ed-t.fix th{overflow:hidden;text-overflow:ellipsis}.ed-t.col-meas td,.ed-t.col-meas th{white-space:nowrap}
+.ed-t.fix{table-layout:fixed}.ed-t.fix td,.ed-t.fix th{overflow-wrap:anywhere}.ed-t.fix th{overflow:hidden;text-overflow:ellipsis}.ed-t.col-meas td,.ed-t.col-meas th{white-space:nowrap}.ed-t.col-least{width:1px}.ed-t.col-least .ed-x{display:none}
 body.col-sizing,body.col-sizing *{cursor:col-resize!important;user-select:none}
 body.col-dragging,body.col-dragging *{cursor:grabbing!important;user-select:none}
 @media (prefers-reduced-motion:reduce){.col-row{transition:none}}
@@ -3660,8 +3660,8 @@ const ED_COLS = [['title', 'Release', e => e.title || ''], ['artist', 'Artist', 
     ['status', 'Status', e => e.status || '\uffff'], ['packaging', 'Packaging', e => e.packaging || '\uffff'], ['lang', 'Language / script', e => (e.lang || []).join(' ') || '\uffff'], ['comment', 'Comment', e => e.disambig || '\uffff']];
 // the columns a table's Columns menu offers: the first stays on, and the ones in off start hidden
 const COLS = {
-    ed: { keys: ED_COLS.map(c => c[0]), names: Object.fromEntries(ED_COLS.map(c => [c[0], c[1]])), off: ['status', 'packaging', 'lang', 'comment'] },
-    dg: { keys: ['title', 'artist', 'date', 'rating', 'releases'], names: { title: 'Title', artist: 'Artist', date: 'First released', rating: 'Rating', releases: 'Releases' }, off: [] },
+    ed: { keys: [...ED_COLS.map(c => c[0]), 'links'], names: { ...Object.fromEntries(ED_COLS.map(c => [c[0], c[1]])), links: 'Links' }, off: ['status', 'packaging', 'lang', 'comment'] },
+    dg: { keys: ['title', 'artist', 'date', 'rating', 'releases', 'links'], names: { title: 'Title', artist: 'Artist', date: 'First released', rating: 'Rating', releases: 'Releases', links: 'Links' }, off: [] },
 };
 // a section's columns as they stand; a column the saved choice doesn't know is one added later: it takes its usual place, on or off as usual
 function colState(sc) {
@@ -3670,13 +3670,14 @@ function colState(sc) {
     return { order, off: new Set(keys.slice(1).filter(k => known.includes(k) ? (saved.off || []).includes(k) : off.includes(k))) };
 }
 const colKeep = (sc, order, off) => { S.colPick = { ...S.colPick, [sc]: { order, off: [...off] } }; };
-const colWs = sc => (S.colW || {})[sc];
+// widths saved before Links became a column keep it under _l
+const colWs = sc => { const w = (S.colW || {})[sc]; return w && w._l && !w.links ? { ...w, links: w._l } : w; };
 const colWSet = (sc, w) => { const { [sc]: _, ...rest } = S.colW || {}; S.colW = w ? { ...rest, [sc]: w } : rest; };
 const COL_TITLE = 160;    // the least the title is left with, so a narrow window scrolls before it folds away
-const colMin = (sc, st) => { const w = colWs(sc); return w ? st.order.filter(k => !st.off.has(k) && k !== COLS[sc].keys[0]).reduce((a, k) => a + (w[k] || 0), (w._t || 0) + (w._l || 0) + COL_TITLE) : 0; };
+const colMin = (sc, st) => { const w = colWs(sc); return w ? st.order.filter(k => !st.off.has(k) && k !== COLS[sc].keys[0]).reduce((a, k) => a + (w[k] || 0), (w._t || 0) + COL_TITLE) : 0; };
 const colW1 = (sc, k) => { const w = colWs(sc); return w && w[k] && k !== COLS[sc].keys[0] ? ` style="width:${w[k]}px"` : ''; };
 const colTbl = (sc, st, cls = '') => `class="ed-t${cls}${colWs(sc) ? ' fix' : ''}"${colWs(sc) ? ` style="min-width:${colMin(sc, st)}px"` : ''}`;
-const colGroup = (sc, st, sk) => `<colgroup><col data-w="_t"${colW1(sc, '_t')}>${st.order.map(k => `<col${k === sk ? ' class="sc"' : ''}${colAttr(st, k)}${colW1(sc, k)}>`).join('')}<col data-w="_l"${colW1(sc, '_l')}></colgroup>`;
+const colGroup = (sc, st, sk) => `<colgroup><col data-w="_t"${colW1(sc, '_t')}>${st.order.map(k => `<col${k === sk ? ' class="sc"' : ''}${colAttr(st, k)}${colW1(sc, k)}>`).join('')}</colgroup>`;
 const colGrip = (sc, st, k) => `<span class="col-rs" data-colrs="${sc}\t${k}"${k === st.order.filter(x => !st.off.has(x)).pop() ? ' hidden' : ''} data-tip="Drag to resize&#10;Double-click: ${k === COLS[sc].keys[0] ? 'auto fit every column' : 'fit to its content'}"></span>`;
 const colAttr = (st, k) => ` data-c="${k}"${st.off.has(k) ? ' hidden' : ''}`;
 const colTd = (st, k, html, cls) => `<td${cls ? ` class="${cls}"` : ''}${colAttr(st, k)}>${html}</td>`;
@@ -3707,8 +3708,8 @@ function colApply(sc) {
     const cg = t.querySelector(':scope > colgroup');
     if (cg) place(cg, cg.children[1]);
     for (const tr of t.querySelectorAll(':scope > thead > tr, :scope > tbody > tr:not(.gh):not(.ed-x)')) place(tr, tr.children[1]);
-    for (const c of t.querySelectorAll(':scope > tbody > tr.gh > th')) c.colSpan = n + 2;
-    for (const c of t.querySelectorAll(':scope > tbody > tr.ed-x > td:last-child')) c.colSpan = n + 1;
+    for (const c of t.querySelectorAll(':scope > tbody > tr.gh > th')) c.colSpan = n + 1;
+    for (const c of t.querySelectorAll(':scope > tbody > tr.ed-x > td:last-child')) c.colSpan = n;
     t.classList.toggle('cmt', !st.off.has('comment') && COLS[sc].keys.includes('comment'));
     colSize(sc);
 }
@@ -3734,7 +3735,7 @@ function edTable(es, curId, flat, part) {
     const sk = (S.edSort || '').replace(/^-/, ''), desc = (S.edSort || '').startsWith('-'), col = ED_COLS.find(c => c[0] === sk);
     if (col) es = [...es].sort((a, b) => (desc ? -1 : 1) * col[2](a).localeCompare(col[2](b), undefined, { sensitivity: 'base', numeric: true }) || (a.date || '9').localeCompare(b.date || '9'));
     const st = colState('ed');
-    const th = k => { const n = COLS.ed.names[k]; return `<th${k === 'tracks' ? ' class="num"' : ''}${colAttr(st, k)} aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-edsort="${k}" data-tip="${sk === k && desc ? 'Back to the list\'s own order' : 'Sort by ' + n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button>${fFun('ed', ED_FUN[k], n.toLowerCase())}${colGrip('ed', st, k)}</th>`; };
+    const th = k => { const n = COLS.ed.names[k]; if (k === 'links') return `<th${colAttr(st, k)}>${n}${colGrip('ed', st, k)}</th>`; return `<th${k === 'tracks' ? ' class="num"' : ''}${colAttr(st, k)} aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-edsort="${k}" data-tip="${sk === k && desc ? 'Back to the list\'s own order' : 'Sort by ' + n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button>${fFun('ed', ED_FUN[k], n.toLowerCase())}${colGrip('ed', st, k)}</th>`; };
     const ST = ['Official', 'Promotion', 'Bootleg', 'Pseudo-Release', 'Withdrawn', 'Expunged', 'Cancelled'];
     const groups = [...new Set(es.map(e => e.status || ''))].sort((a, b) => (ST.indexOf(a) + 1 || 99) - (ST.indexOf(b) + 1 || 99));
     const row = e => {
@@ -3755,11 +3756,11 @@ function edTable(es, curId, flat, part) {
                 packaging: [esc(e.packaging)],
                 lang: [esc((e.lang || []).join(' / '))],
                 comment: [esc(e.disambig)],
+                links: [sortP(e.links).map(p => plA(p, 18, 'ti')).join(''), 'lk'],
             })}
-            <td class="lk">${sortP(e.links).map(p => plA(p, 18, 'ti')).join('')}</td>
-        </tr>${edOpen.has(e.id) ? `<tr class="ed-x"><td></td><td colspan="${colsOf(st) + 1}">${edTracksHtml(e)}</td></tr>` : ''}`;
+        </tr>${edOpen.has(e.id) ? `<tr class="ed-x"><td></td><td colspan="${colsOf(st)}">${edTracksHtml(e)}</td></tr>` : ''}`;
     };
-    return `<div class="ed-tw"><table ${colTbl('ed', st, st.off.has('comment') ? '' : ' cmt')}>${colGroup('ed', st, sk)}<thead><tr><th></th>${st.order.map(th).join('')}<th>Links</th></tr></thead>${flat ? `<tbody>${es.map(row).join('')}</tbody>` : groups.map(g => { const l = es.filter(e => (e.status || '') === g), [shut, h] = grpHead('ed:' + (g || '-'), g || 'No status', l.length); return `<tbody><tr class="gh"><th colspan="${colsOf(st) + 2}">${h}</th></tr>${shut ? '' : l.map(row).join('')}</tbody>`; }).join('')}</table></div>`;
+    return `<div class="ed-tw"><table ${colTbl('ed', st, st.off.has('comment') ? '' : ' cmt')}>${colGroup('ed', st, sk)}<thead><tr><th></th>${st.order.map(th).join('')}</tr></thead>${flat ? `<tbody>${es.map(row).join('')}</tbody>` : groups.map(g => { const l = es.filter(e => (e.status || '') === g), [shut, h] = grpHead('ed:' + (g || '-'), g || 'No status', l.length); return `<tbody><tr class="gh"><th colspan="${colsOf(st) + 1}">${h}</th></tr>${shut ? '' : l.map(row).join('')}</tbody>`; }).join('')}</table></div>`;
 }
 const EDV = [['grid', 'Grid', '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'], ['row', 'Row', '<path d="M4 6h16M4 12h16M4 18h16"/>'], ['format', 'By format', '<path d="M4 5h6M4 12h6M4 19h6M14 5h6M14 9h6M14 15h6M14 19h6"/>'], ['table', 'Table', '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/>']];
 const viewBs = (views, cur, attr, label) => `<span class="ed-views" role="group" aria-label="${label}">${EDV.filter(([v]) => views.includes(v)).map(([v, n, d]) => `<button type="button" data-${attr}="${v}" aria-pressed="${cur === v}" aria-label="${n}" data-tip="${n}">${SVG(d)}</button>`).join('')}</span>`;
@@ -7318,10 +7319,10 @@ function discoHtml(d) {
     const bySort = l => l.sort((a, b) => (desc ? -1 : 1) * kv(a).localeCompare(kv(b), undefined, { sensitivity: 'base', numeric: true }) || (a['first-release-date'] || '9').localeCompare(b['first-release-date'] || '9'));
     const gs = [...m].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0])).map(([k, l]) => [k, bySort(l)]);
     const st = colState('dg');
-    const th = (k, c) => { const n = COLS.dg.names[k]; return `<th${c ? ` class="${c}"` : ''}${colAttr(st, k)} aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-dgsort="${k}" data-tip="Sort by ${n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button>${fFun('dg', DG_FUN[k], n.toLowerCase())}${colGrip('dg', st, k)}</th>`; };
-    const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover></a></td>${colTds(st, { title: [`<a href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}`], artist: [acHtml(g['artist-credit'] || [])], date: [g['first-release-date'] ? fdate(g['first-release-date']) : '—', 'mono'], rating: [rateStars('release_group', g.id, g.rating, true)], releases: [rc(g) != null ? rc(g) : '—', 'num'] })}<td class="lk">${sortP(urlsOf(g.relations || [])).map(p => plA(p, 18, 'ti')).join('')}</td></tr>`;
+    const th = (k, c) => { const n = COLS.dg.names[k]; if (k === 'links') return `<th${colAttr(st, k)}>${n}${colGrip('dg', st, k)}</th>`; return `<th${c ? ` class="${c}"` : ''}${colAttr(st, k)} aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-dgsort="${k}" data-tip="Sort by ${n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button>${fFun('dg', DG_FUN[k], n.toLowerCase())}${colGrip('dg', st, k)}</th>`; };
+    const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover></a></td>${colTds(st, { title: [`<a href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}`], artist: [acHtml(g['artist-credit'] || [])], date: [g['first-release-date'] ? fdate(g['first-release-date']) : '—', 'mono'], rating: [rateStars('release_group', g.id, g.rating, true)], releases: [rc(g) != null ? rc(g) : '—', 'num'], links: [sortP(urlsOf(g.relations || [])).map(p => plA(p, 18, 'ti')).join(''), 'lk'] })}</tr>`;
     const head = (k, l) => `<h3 class="disco-h">${grpHead('dg:' + k, k, l.length)[1]}</h3>`;
-    const body = (S.dgView === 'table' ? `<div class="ed-tw"><table ${colTbl('dg', st)}>${colGroup('dg', st)}<thead><tr><th></th>${st.order.map(k => th(k, k === 'releases' ? 'num' : '')).join('')}<th>Links</th></tr></thead>${gs.map(([k, l]) => { const [shut, h] = grpHead('dg:' + k, k, l.length); return `<tbody><tr class="gh"><th colspan="${colsOf(st) + 2}">${h}</th></tr>${shut ? '' : l.map(trow).join('')}</tbody>`; }).join('')}</table></div>`
+    const body = (S.dgView === 'table' ? `<div class="ed-tw"><table ${colTbl('dg', st)}>${colGroup('dg', st)}<thead><tr><th></th>${st.order.map(k => th(k, k === 'releases' ? 'num' : '')).join('')}</tr></thead>${gs.map(([k, l]) => { const [shut, h] = grpHead('dg:' + k, k, l.length); return `<tbody><tr class="gh"><th colspan="${colsOf(st) + 1}">${h}</th></tr>${shut ? '' : l.map(trow).join('')}</tbody>`; }).join('')}</table></div>`
         : gs.map(([k, l]) => head(k, l) + (S.grpFold.includes('dg:' + k) ? '' : `<div class="${S.dgView === 'row' ? 'ed-row disco' : 'disco'}">${l.map(tile).join('')}</div>`)).join(''));
     // past the first 100, the rest page in by Load more or Auto, as the other ws/2 lists
     const paged = x.q && total0(x) > allRgs.length;
@@ -7457,21 +7458,37 @@ function pdPaint(app) {
 // The Columns menu. While a row is dragged the others slide aside by transform, and the table follows at every new slot; the rows change places in the DOM, and the choice is saved, on the drop.
 function colWire(root) {
     const cells = t => [...t.tHead.rows[0].cells];
-    const measured = t => Object.fromEntries(cells(t).map((c, i) => [c.dataset.c || (i ? '_l' : '_t'), Math.round(c.getBoundingClientRect().width)]));
+    const measured = t => Object.fromEntries(cells(t).map(c => [c.dataset.c || '_t', Math.round(c.getBoundingClientRect().width)]));
+    // the narrowest each column can be without breaking a word: the table laid out by its content, squeezed to nothing
+    const least = t => {
+        const cs = [...t.querySelector(':scope > colgroup').children], ws = cs.map(c => c.style.width), fix = t.classList.contains('fix'), mw = t.style.minWidth;
+        for (const c of cs) c.style.width = '';
+        t.classList.remove('fix'); t.classList.add('col-least'); t.style.minWidth = '0';
+        const m = measured(t);
+        t.classList.remove('col-least'); t.classList.toggle('fix', fix); t.style.minWidth = mw;
+        cs.forEach((c, i) => { c.style.width = ws[i]; });
+        return m;
+    };
     root.addEventListener('pointerdown', ev => {
         const g = ev.target.closest && ev.target.closest('.col-rs');
         if (!g || ev.button) return;
         ev.preventDefault();
         const [sc, k] = g.dataset.colrs.split('\t'), th = g.parentNode, t = th.closest('table'), title = COLS[sc].keys[0], was = colWs(sc);
-        let nx = th.nextElementSibling; while (nx.hidden) nx = nx.nextElementSibling;
-        const n = nx.dataset.c, x0 = ev.clientX, w0 = th.getBoundingClientRect().width, n0 = nx.getBoundingClientRect().width;
-        const low = -(w0 - (k === title ? COL_TITLE : 48)), high = n0 - (n === title ? COL_TITLE : 48);
+        const x0 = ev.clientX, shown = cells(t).filter(c => c.dataset.c && !c.hidden).map(c => c.dataset.c), at = shown.indexOf(k), w0 = measured(t), lo = least(t);
+        lo[title] = Math.max(lo[title], Math.min(COL_TITLE, w0[title]));
+        // the room is taken from the nearest column on the far side, then the next: the edge stays under the pointer, and no column goes below its content
+        const spare = c => Math.max(0, w0[c] - lo[c]), left = shown.slice(0, at + 1).reverse(), right = shown.slice(at + 1);
+        const room = l => l.reduce((a, c) => a + spare(c), 0);
         let w = null, raf = 0, x = x0;
         const paint = () => {
             raf = 0;
-            const dx = Math.max(low, Math.min(high, x - x0));
-            if (!w) { if (!dx) return; w = { ...measured(t), ...was }; delete w[title]; }
-            w = { ...w }; if (k !== title) w[k] = Math.round(w0 + dx); if (n !== title) w[n] = Math.round(n0 - dx);
+            const dx = Math.max(-room(left), Math.min(room(right), x - x0));
+            if (!w && !dx) return;
+            w = { ...was, ...w0 };
+            let more = Math.abs(dx);
+            for (const c of dx > 0 ? right : left) { const d = Math.min(more, spare(c)); w[c] = w0[c] - d; more -= d; }
+            const gain = (dx > 0 ? left : right)[0]; w[gain] = w0[gain] + Math.abs(dx);
+            delete w[title]; delete w._l;
             colWSet(sc, w); colSize(sc);
         };
         const stop = keep => {
