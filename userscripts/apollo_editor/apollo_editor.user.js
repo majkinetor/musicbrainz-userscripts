@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.02.160000
+// @version      2026.11.02.170000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15555,7 +15555,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     body.tc-ri-on form.tc-ent-plain #loujine-menu{display:none!important}   /* Autofill does what its Add external link did */
     body:not(.tc-ri-on) #tc-af-btn,body:not(.tc-ri-on) #tc-af-box{display:none}
     body.tc-ri-on #information > div.half-width legend.tc-af-lg{display:flex;align-items:center;gap:8px}
-    #tc-af-btn{height:18px;line-height:16px;padding:0 8px;margin:-3px 0;flex:none;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-text);font:12px var(--mbu-font);letter-spacing:0;text-transform:none;cursor:pointer;box-shadow:none}
+    #tc-af-btn{height:18px;line-height:16px;padding:0 8px;margin:-3px 0;flex:none;border:0;border-radius:var(--mbu-radius);background:transparent;color:var(--mbu-text-dim);font:12px var(--mbu-font);letter-spacing:0;text-transform:none;cursor:pointer;box-shadow:none}
+    #tc-af-btn:hover{background:var(--mbu-bg);color:var(--mbu-text)}
     #tc-af-box{flex:1;min-width:0;display:flex;justify-content:flex-end;contain:inline-size;letter-spacing:0;text-transform:none}   /* takes what the heading leaves, never widens the column */
     #tc-af-box .tc-af-in{width:100%;height:18px;margin:-3px 0;padding:0 6px;font:12px var(--mbu-font);box-sizing:border-box}
     #tc-af-box .tc-af-st{font:12px var(--mbu-font);color:var(--mbu-text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
