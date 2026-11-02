@@ -13,13 +13,47 @@ const addLoujine = page => page.evaluate(() => {
   half.insertAdjacentHTML('afterend', '<div id="side-col" style="float:right"></div>');
   document.getElementById('side-col').insertAdjacentHTML('afterend', '<div id="loujine-menu" style="background-color:white;padding:8px;border:5px dotted rgb(115,109,171)"><h2>loujine GM tools</h2><a href="#">documentation</a><h3>Add external link</h3><input id="linkParser"></div>');
 });
-// the card is at the end of the column that was shorter without it
+// the card is at the end of the column that was shorter without the cards
 const shorterColumn = page => page.evaluate(() => {
   const c = document.getElementById('tc-af-card'), half = document.querySelector('#information > .half-width'), col = document.getElementById('tc-ri-rightcol');
   const note = half.querySelector(':scope > fieldset.editnote');
-  const left = (note ? note.getBoundingClientRect().top : half.getBoundingClientRect().bottom) - (c.parentElement === half ? c.offsetHeight : 0);
-  const right = col.getBoundingClientRect().bottom - (c.parentElement === col ? c.offsetHeight : 0);
-  return { in: c.parentElement === half ? 'left' : c.parentElement === col ? 'right' : c.parentElement.id, want: left < right ? 'left' : 'right', card: c.classList.contains('tc-ent-card') };
+  const map = document.getElementById('largemap'), mapPos = map && map.style.position;   // Autofill is placed first, before the map
+  c.style.position = 'absolute'; if (map) map.style.position = 'absolute';
+  const left = note ? note.getBoundingClientRect().top : half.getBoundingClientRect().bottom;
+  const right = col.getBoundingClientRect().bottom;
+  c.style.position = ''; if (map) map.style.position = mapPos;
+  return { in: c.parentElement === half ? 'left' : c.parentElement === col ? 'right' : c.parentElement.id, want: left < right ? 'left' : 'right', card: c.classList.contains('tc-ent-card'), gap: left - right };
+});
+
+// #895: near a tie the card's margins flipped the answer on each move, and each move asked again
+test('Autofill stays put when the two columns are almost equally tall', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  await page.setViewportSize({ width: 1500, height: 900 });
+  await page.goto(AR);
+  await requireLogin(page); await idle(page);
+  await inject('apollo_editor');
+  await until(() => page.evaluate(() => !!document.querySelector('#tc-ri-rightcol #tc-af-card, #information > .half-width > #tc-af-card')), v => v);
+  await until(() => shorterColumn(page), v => v.in === v.want);
+  await page.evaluate(() => {
+    const s = document.createElement('div'); s.id = 'tc-test-spacer';
+    (document.querySelector('#information > .half-width')).prepend(s);
+    window.__moves = 0;
+    new MutationObserver(ms => { window.__moves += ms.filter(m => [...m.addedNodes].some(n => n.id === 'tc-af-card')).length; }).observe(document.querySelector('#information'), { childList: true, subtree: true });
+  });
+  // the links render late: find the tie once the columns have stopped growing
+  let last = NaN;
+  const base = await until(async () => { const v = await shorterColumn(page), still = v.gap === last; last = v.gap; await page.waitForTimeout(1000); return { ...v, still }; }, v => v.still);
+  const tie = Math.abs(base.gap);   // this artist has many links: the left column is the shorter one
+  for (let d = -30; d <= 30; d += 6) {
+    const moves = await page.evaluate(async h => {
+      document.getElementById('tc-test-spacer').style.height = h + 'px';
+      document.getElementById('tc-test-spacer').appendChild(document.createElement('i'));   // the page changing, as a new link does
+      await new Promise(r => setTimeout(r, 300));
+      const before = window.__moves;
+      await new Promise(r => setTimeout(r, 900));
+      return window.__moves - before;
+    }, Math.max(0, tie + d));
+    check(moves === 0, `the card settles with the spacer at ${tie + d}px (${moves} moves)`);
+  }
 });
 
 test('the artist edit page gets the links column, the name highlight and loujine\'s box as a card', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, inject }, testInfo) => {
