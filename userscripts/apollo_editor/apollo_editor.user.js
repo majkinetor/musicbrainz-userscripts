@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.2.140001
+// @version      2026.11.2.150000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15353,7 +15353,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   // Primary and secondary type as segmented bars; the selects stay the form's fields, the bars only set them.
   // Called again it repaints: Knockout sets the release editor's selects without a change event, and disables them under an existing release group
-  // defKey: right-clicking a button makes it the default, stored under that key and applied to a new release
+  // defKey: right-clicking a button makes it the default (toggles it among several on a multi bar), stored under that key as comma-joined values and applied to a new release
   // fit: a wide row of its own, Pseudo-Release (status 4, by value: its label is translated) cut to its first word
   function rgTypeBar(sel, multi, defKey, fit) {
     if (!sel) return;
@@ -15362,9 +15362,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const old = sel.parentNode.querySelector(':scope > .tc-rg-seg'); if (old) old.remove();   // Knockout replaced the select
     const bar = document.createElement('div'); bar.className = 'tc-rg-seg mbu-ui' + (multi ? ' multi' : '') + (fit ? ' fit' : '');
     const opt = b => [...sel.options].find(x => x.value === b.dataset.v);
+    const defs = () => defKey ? String(gmLoad(defKey) || '').split(',').filter(Boolean) : [];
     const paint = () => {
       mbuCls(bar, 'off', sel.disabled);
-      bar.querySelectorAll('button').forEach(b => { const o = opt(b); mbuCls(b, 'on', !!(o && o.selected)); mbuCls(b, 'def', !!defKey && b.dataset.v === gmLoad(defKey)); if (b.disabled !== sel.disabled) b.disabled = sel.disabled; });
+      bar.querySelectorAll('button').forEach(b => { const o = opt(b); mbuCls(b, 'on', !!(o && o.selected)); mbuCls(b, 'def', defs().includes(b.dataset.v)); if (b.disabled !== sel.disabled) b.disabled = sel.disabled; });
     };
     [...sel.options].forEach(o => {
       if (!o.value.trim()) return;   // the blank (&nbsp;) "none" option: clicking the chosen type again clears it
@@ -15380,14 +15381,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       };
       if (defKey) b.oncontextmenu = e => {
         e.preventDefault();
-        try { GM_setValue(defKey, gmLoad(defKey) === o.value ? '' : o.value); } catch (err) { /* no storage */ }
+        const had = defs().includes(o.value);
+        gmSave(defKey, multi ? defs().filter(v => v !== o.value).concat(had ? [] : [o.value]).join(',') : had ? '' : o.value);
         paint();
       };
       bar.appendChild(b);
     });
     if (defKey && /\/release\/add/.test(location.pathname) && !sel.value.trim()) {
-      const d = [...sel.options].find(x => x.value === gmLoad(defKey));
-      if (d) { d.selected = true; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+      const d = [...sel.options].filter(x => defs().includes(x.value));
+      if (d.length) { d.forEach(x => { x.selected = true; }); sel.dispatchEvent(new Event('change', { bubbles: true })); }
     }
     sel.addEventListener('change', paint);
     sel.tabIndex = -1;
@@ -15727,8 +15729,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     wireLinkClicks();
     wireReleaseInfoBatch();
     autoSelectReleaseGroup();   // #716
-    rgTypeBar(document.getElementById('primary-type'), false);
-    rgTypeBar(document.getElementById('secondary-types'), true);
+    rgTypeBar(document.getElementById('primary-type'), false, 'apolloDefaultPrimaryType');
+    rgTypeBar(document.getElementById('secondary-types'), true, 'apolloDefaultSecondaryTypes');
     rgTypeBar(document.getElementById('status'), false, 'apolloDefaultStatus', true);
     // #652 (majkinetor): "no bubbles anywhere" — the #143 selection popover is retired; the badges say what was picked
     if (riWant()) {

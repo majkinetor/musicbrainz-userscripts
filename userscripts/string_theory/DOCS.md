@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-02 09:57 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-02 10:57 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -70,7 +70,7 @@ The release group's edit page gets Release information's layout.
 
 - The **Artist** field is the same artist cell, with the same buttons, and an unlinked name is [matched](#artist-matching) on load.
 - **Primary type** and **Secondary types** are bars of buttons, in the release editor's Release tab too. Click a primary type to choose it and again to clear it; click secondary types to turn each on or off.
-- **Status** in the release editor is a bar too. Right-click a status to make it the default for new releases; a dot marks it. Right-click it again to clear it.
+- **Status** in the release editor is a bar too. Right-click a status, primary type or secondary type to make it the default for new releases; a dot marks it. Right-click it again to clear it. Several secondary types can be defaults at once.
 - **External links** sit in a right column with the dead-link checker, and the release group's cover under them.
 - The help bubbles are gone, and a changed artist credit adds Apollo's line to the edit note.
 
