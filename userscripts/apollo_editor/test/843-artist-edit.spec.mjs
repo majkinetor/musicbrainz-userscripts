@@ -13,36 +13,42 @@ const addLoujine = page => page.evaluate(() => {
   half.insertAdjacentHTML('afterend', '<div id="side-col" style="float:right"></div>');
   document.getElementById('side-col').insertAdjacentHTML('afterend', '<div id="loujine-menu" style="background-color:white;padding:8px;border:5px dotted rgb(115,109,171)"><h2>loujine GM tools</h2><a href="#">documentation</a><h3>Add external link</h3><input id="linkParser"></div>');
 });
-// the card is at the end of the column that was shorter without the cards
+// the map is at the end of the column that was shorter without it
 const shorterColumn = page => page.evaluate(() => {
-  const c = document.getElementById('tc-af-card'), half = document.querySelector('#information > .half-width'), col = document.getElementById('tc-ri-rightcol');
-  const note = half.querySelector(':scope > fieldset.editnote');
-  const map = document.getElementById('largemap'), mapPos = map && map.style.position;   // Autofill is placed first, before the map
-  c.style.position = 'absolute'; if (map) map.style.position = 'absolute';
+  const c = document.getElementById('largemap'), half = document.querySelector('#information > .half-width'), col = document.getElementById('tc-ri-rightcol');
+  const note = half.querySelector(':scope > fieldset.editnote'), pos = c.style.position;
+  c.style.position = 'absolute';
   const left = note ? note.getBoundingClientRect().top : half.getBoundingClientRect().bottom;
   const right = col.getBoundingClientRect().bottom;
-  c.style.position = ''; if (map) map.style.position = mapPos;
-  return { in: c.parentElement === half ? 'left' : c.parentElement === col ? 'right' : c.parentElement.id, want: left < right ? 'left' : 'right', card: c.classList.contains('tc-ent-card'), gap: left - right };
+  c.style.position = pos;
+  return { in: c.parentElement === half ? 'left' : c.parentElement === col ? 'right' : c.parentElement.id, want: left < right ? 'left' : 'right', gap: left - right };
 });
+const autofillOpens = async page => {
+  await page.locator('#tc-af-btn').click();
+  check(await page.locator('#tc-af-box input').isVisible(), 'the Autofill button unfolds the paste box');
+  check(await page.evaluate(() => document.activeElement === document.querySelector('#tc-af-box input')), 'the paste box has the focus');
+  await page.keyboard.press('Escape');
+  check(!await page.locator('#tc-af-box input').isVisible(), 'Escape folds it again');
+};
 
 // #895: near a tie the card's margins flipped the answer on each move, and each move asked again
-test('Autofill stays put when the two columns are almost equally tall', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('the map stays put when the two columns are almost equally tall', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   await page.setViewportSize({ width: 1500, height: 900 });
-  await page.goto(AR);
+  await page.goto(PLACE);
   await requireLogin(page); await idle(page);
   await inject('apollo_editor');
-  await until(() => page.evaluate(() => !!document.querySelector('#tc-ri-rightcol #tc-af-card, #information > .half-width > #tc-af-card')), v => v);
+  await until(() => page.evaluate(() => document.getElementById('largemap')?.classList.contains('tc-ent-card')), v => v);
   await until(() => shorterColumn(page), v => v.in === v.want);
-  await page.evaluate(() => {
-    const s = document.createElement('div'); s.id = 'tc-test-spacer';
-    (document.querySelector('#information > .half-width')).prepend(s);
-    window.__moves = 0;
-    new MutationObserver(ms => { window.__moves += ms.filter(m => [...m.addedNodes].some(n => n.id === 'tc-af-card')).length; }).observe(document.querySelector('#information'), { childList: true, subtree: true });
-  });
   // the links render late: find the tie once the columns have stopped growing
   let last = NaN;
   const base = await until(async () => { const v = await shorterColumn(page), still = v.gap === last; last = v.gap; await page.waitForTimeout(1000); return { ...v, still }; }, v => v.still);
-  const tie = Math.abs(base.gap);   // this artist has many links: the left column is the shorter one
+  await page.evaluate(leftShort => {
+    const s = document.createElement('div'); s.id = 'tc-test-spacer';
+    (leftShort ? document.querySelector('#information > .half-width') : document.getElementById('tc-ri-rightcol')).prepend(s);
+    window.__moves = 0;
+    new MutationObserver(ms => { window.__moves += ms.filter(m => [...m.addedNodes].some(n => n.id === 'largemap')).length; }).observe(document.querySelector('#information'), { childList: true, subtree: true });
+  }, base.gap < 0);
+  const tie = Math.abs(base.gap);
   for (let d = -30; d <= 30; d += 6) {
     const moves = await page.evaluate(async h => {
       document.getElementById('tc-test-spacer').style.height = h + 'px';
@@ -52,7 +58,7 @@ test('Autofill stays put when the two columns are almost equally tall', { tag: [
       await new Promise(r => setTimeout(r, 900));
       return window.__moves - before;
     }, Math.max(0, tie + d));
-    check(moves === 0, `the card settles with the spacer at ${tie + d}px (${moves} moves)`);
+    check(moves === 0, `the map settles with the spacer at ${tie + d}px (${moves} moves)`);
   }
 });
 
@@ -63,16 +69,15 @@ test('the artist edit page gets the links column, the name highlight and loujine
   await inject('apollo_editor');
   const s = await until(() => page.evaluate(() => ({
     col: !!document.querySelector('#tc-ri-rightcol #external-links-editor'),
-    card: !!document.querySelector('#tc-af-card.tc-ent-card') && getComputedStyle(document.getElementById('loujine-menu')).display === 'none',
+    card: !!document.querySelector('legend #tc-af-btn') && getComputedStyle(document.getElementById('loujine-menu')).display === 'none',
     doc: getComputedStyle(document.querySelector('#information > div.documentation')).display,
     bar: !!document.getElementById('tc-nav-bar'),
   })), v => v.col && v.card);
   check(s.col, 'the external links sit in the right column');
-  check(s.card, 'loujine\'s box is a card');
+  check(s.card, 'Autofill is in the details heading, loujine\'s box hidden');
   check(s.doc === 'none', `the help column is hidden (${s.doc})`);
   check(s.bar, 'Apollo\'s header bar is there');
-  const c = await until(() => shorterColumn(page), v => v.in === v.want);
-  check(c.in === c.want, `Autofill ends the shorter column (${c.in}, want ${c.want})`);
+  await autofillOpens(page);
   // links with a platform we draw get our SVG icon in place of MusicBrainz's favicon
   const fav = await until(() => page.evaluate(() => [...document.querySelectorAll('#external-links-editor tr.external-link-item')].filter(tr => tr.querySelector('a[href]')).map(tr => [new URL(tr.querySelector('a[href]').href).hostname, tr.querySelector('.favicon')?.dataset.tcIcon || '', !!tr.querySelector('.favicon > svg')])), v => v.some(r => /discogs/.test(r[0]) && r[2]));
   const dc = fav.find(r => /discogs/.test(r[0]));
@@ -107,14 +112,13 @@ test('the label and place edit pages get the links column and the cards', { tag:
     await inject('apollo_editor');
     const s = await until(() => page.evaluate(() => ({
       col: !!document.querySelector('#tc-ri-rightcol #external-links-editor'),
-      card: !!document.querySelector('#tc-af-card.tc-ent-card') && getComputedStyle(document.getElementById('loujine-menu')).display === 'none',
+      card: !!document.querySelector('legend #tc-af-btn') && getComputedStyle(document.getElementById('loujine-menu')).display === 'none',
       map: document.getElementById('largemap') ? document.getElementById('largemap').classList.contains('tc-ent-card') && document.getElementById('largemap').offsetHeight > 100 : null,
     })), v => v.col && v.card && v.map !== false);
     check(s.col, `${kind}: the external links sit in the right column`);
-    check(s.card, `${kind}: Autofill is a card, loujine's box hidden`);
+    check(s.card, `${kind}: Autofill is in the details heading, loujine's box hidden`);
     if (kind === 'place') check(s.map === true, `place: the map is a visible card (${s.map})`);
-    const c = await until(() => shorterColumn(page), v => v.in === v.want);
-    check(c.in === c.want, `${kind}: Autofill ends the shorter column (${c.in}, want ${c.want})`);
+    if (kind === 'place') { const c = await until(() => shorterColumn(page), v => v.in === v.want); check(c.in === c.want, `place: the map ends the shorter column (${c.in}, want ${c.want})`); }
     await attachShot(testInfo, page, kind + '-edit');
   }
 });

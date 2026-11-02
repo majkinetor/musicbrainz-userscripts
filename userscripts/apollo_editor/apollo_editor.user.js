@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.02.140000
+// @version      2026.11.02.150000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15295,43 +15295,55 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       Log.cat('Links').info('autofill from', qid + ':', done.join(', ') || 'nothing');
     } catch (x) { say('Autofill failed: ' + x.message, true); Log.cat('Links').warn('autofill failed —', x.message); }
   }
-  function afCard() {
-    let c = document.getElementById('tc-af-card'); if (c) return c;
-    c = document.createElement('div'); c.id = 'tc-af-card'; c.className = 'mbu-ui';
-    c.innerHTML = '<div class="tc-af-h">Autofill</div><input type="text" class="tc-af-in" placeholder="Paste a Wikidata, Wikipedia, VIAF or ISNI link"><div class="tc-af-st"></div>';
-    const inp = c.querySelector('input'), st = c.querySelector('.tc-af-st');
+  // A button in the details heading that unfolds to the paste box. Nothing else is shown, so it needs no card (#895)
+  function afBox() {
+    let b = document.getElementById('tc-af-box'); if (b) return b;
+    b = document.createElement('div'); b.id = 'tc-af-box'; b.className = 'mbu-ui'; b.hidden = true;
+    b.innerHTML = '<input type="text" class="tc-af-in" placeholder="Paste a Wikidata, Wikipedia, VIAF or ISNI link"><div class="tc-af-st"></div>';
+    const inp = b.querySelector('input'), st = b.querySelector('.tc-af-st');
     let last = '';
     const go = () => { const v = inp.value.trim(); if (!v || v === last) return; last = v; autofill(v, st); };
     inp.addEventListener('paste', () => setTimeout(go, 0));
-    inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); last = ''; go(); } });
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); last = ''; go(); } else if (e.key === 'Escape') b.hidden = true; });
     inp.addEventListener('change', go);
-    return c;
+    return b;
   }
-  // Cards: Autofill and a place's map. Each goes at the end of whichever column is shorter
-  // (a masonry layout), so neither column is left with a long empty stretch
+  function afBtn() {
+    let b = document.getElementById('tc-af-btn'); if (b) return b;
+    b = document.createElement('button'); b.id = 'tc-af-btn'; b.type = 'button'; b.className = 'mbu-ui'; b.textContent = 'Autofill';
+    b.addEventListener('click', () => { const box = afBox(); box.hidden = !box.hidden; if (!box.hidden) box.querySelector('input').focus(); });
+    return b;
+  }
+  function afPlace() {
+    const name = afEl('name'), fs = name && name.closest('fieldset'), lg = fs && fs.querySelector(':scope > legend');
+    if (!lg || !/^(artist|label|place)$/.test(ENT_KIND)) return;
+    const btn = afBtn(), box = afBox();
+    lg.classList.add('tc-af-lg');
+    if (btn.parentElement !== lg) lg.appendChild(btn);
+    if (box.previousElementSibling !== lg) lg.after(box);
+  }
+  // A place's map is a card at the end of whichever column is shorter, so neither is left with a long empty stretch
   function entCards(on) {
     const form = rgForm(), half = form && form.querySelector(':scope > .half-width'), col = form && form.querySelector(':scope > #tc-ri-rightcol');
-    if (on && half && col && /^(artist|label|place)$/.test(ENT_KIND) && !document.getElementById('tc-af-card')) col.appendChild(afCard());   // placed below with the others
-    const cards = [document.getElementById('tc-af-card'), document.getElementById('largemap')].filter(Boolean);
-    cards.forEach(c => {
-      if (!c._tcHome) c._tcHome = { parent: c.parentElement, next: c.nextElementSibling };
-      if (on && half && col) { c.classList.add('tc-ent-card'); return; }
+    if (on && half && col) afPlace();
+    const c = document.getElementById('largemap'); if (!c) return;
+    if (!c._tcHome) c._tcHome = { parent: c.parentElement, next: c.nextElementSibling };
+    if (!on || !half || !col) {
       c.classList.remove('tc-ent-card');
       if (c.parentElement !== c._tcHome.parent) c._tcHome.parent.insertBefore(c, c._tcHome.next && c._tcHome.next.isConnected ? c._tcHome.next : null);
-    });
-    if (!on || !half || !col) return;
-    // Measured with the cards out of the flow, so a card's own height and margins can't change the answer
-    // and swing it between the columns (#895). Not display:none, which would blur a focused Autofill box.
-    const flow = cards.map(c => c.style.position);
-    cards.forEach(c => { c.style.position = 'absolute'; });
-    cards.forEach((c, i) => {
-      const note = half.querySelector(':scope > fieldset.editnote');   // the left column's cards go above its edit note
-      const left = note ? note.getBoundingClientRect().top : half.getBoundingClientRect().bottom;
-      const right = col.getBoundingClientRect().bottom;
-      if (left < right) { if (c.parentElement !== half) half.insertBefore(c, note); } else if (c.parentElement !== col) col.appendChild(c);
-      c.style.position = flow[i];   // back in the flow, for the next card to measure against
-      if (c.id === 'largemap' && !c._tcRo) { c._tcRo = new ResizeObserver(() => W.dispatchEvent(new Event('resize'))); c._tcRo.observe(c); }   // Leaflet sizes the map again when its card changes size
-    });
+      return;
+    }
+    c.classList.add('tc-ent-card');
+    // Measured with the card out of the flow, so its own height and margins can't change the answer
+    // and swing it between the columns (#895)
+    const flow = c.style.position;
+    c.style.position = 'absolute';
+    const note = half.querySelector(':scope > fieldset.editnote');   // the left column's card goes above its edit note
+    const left = note ? note.getBoundingClientRect().top : half.getBoundingClientRect().bottom;
+    const right = col.getBoundingClientRect().bottom;
+    if (left < right) { if (c.parentElement !== half) half.insertBefore(c, note); } else if (c.parentElement !== col) col.appendChild(c);
+    c.style.position = flow;
+    if (!c._tcRo) { c._tcRo = new ResizeObserver(() => W.dispatchEvent(new Event('resize'))); c._tcRo.observe(c); }   // Leaflet sizes the map again when its card changes size
   }
 
   const rgKey = () => JSON.stringify(((_rgAC && _rgAC.names) || []).map(n => [(n.artist && u(n.artist.gid)) || '', n.name, n.joinPhrase]));
@@ -15541,13 +15553,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     body.tc-ri-on .tc-ent-card{display:block;margin:14px 0!important;padding:10px 12px!important;border:1px solid var(--mbu-border)!important;border-radius:var(--mbu-radius);background:var(--mbu-bg)!important;color:var(--mbu-text);box-sizing:border-box;width:auto!important}
     body.tc-ri-on #largemap.tc-ent-card{padding:0!important;height:300px!important;overflow:hidden}
     body.tc-ri-on form.tc-ent-plain #loujine-menu{display:none!important}   /* Autofill does what its Add external link did */
-    body:not(.tc-ri-on) #tc-af-card{display:none}
-    #tc-af-card .tc-af-h{font:600 12px var(--mbu-font);color:var(--mbu-text);margin:0 0 6px}
-    #tc-af-card{contain:inline-size}   /* the card takes the column's width, never widens it */
-    #tc-af-card .tc-af-in{width:100%;box-sizing:border-box}
-    #tc-af-card .tc-af-st{margin:6px 0 0;font:12px var(--mbu-font);color:var(--mbu-text-dim);min-height:1em}
-    #tc-af-card .tc-af-st.bad{color:var(--mbu-err)}
-    #tc-af-card .tc-af-st:empty{display:none}
+    body:not(.tc-ri-on) #tc-af-btn,body:not(.tc-ri-on) #tc-af-box{display:none}
+    body.tc-ri-on #information > div.half-width legend.tc-af-lg{display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
+    #tc-af-btn{height:30px;padding:0 12px;margin:-16px 0 3px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-text);font:12px var(--mbu-font);letter-spacing:0;text-transform:none;cursor:pointer;box-shadow:none}
+    #tc-af-box{margin:0 0 8px;contain:inline-size}   /* takes the column's width, never widens it */
+    #tc-af-box .tc-af-in{width:100%;box-sizing:border-box}
+    #tc-af-box .tc-af-st{margin:6px 0 0;font:12px var(--mbu-font);color:var(--mbu-text-dim)}
+    #tc-af-box .tc-af-st.bad{color:var(--mbu-err)}
+    #tc-af-box .tc-af-st:empty{display:none}
     .tc-ent-hl{margin:2px 0 0 170px;font:13px var(--mbu-font);color:var(--mbu-text);white-space:pre-wrap;word-break:break-word}
     .tc-ent-hl[hidden]{display:none}
     /* #843: the artist form: its fields end on one line, the links column starts level with Artist details, the dates fit their hints */
