@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.120100
+// @version      2026.11.02.141432
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2638,7 +2638,7 @@ h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25
 .facts>div{min-width:0}
 .facts .v{margin-top:4px;font-size:14px;font-weight:600;display:flex;flex-direction:column;gap:6px}
 .facts .sub{font-size:13px;font-weight:500;color:var(--muted)}
-.facts .wide{grid-column:1/-1;min-width:0}
+.facts .wide,.facts>div:has(.tgi-row){grid-column:1/-1;min-width:0}
 .facts .wide .v,.facts .wide>div{min-width:0;max-width:100%}
 .ev{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
 .ev .d+span:not(.iso)::before{content:'· ';color:var(--muted)}
@@ -3558,7 +3558,11 @@ function heroFacts(app) {
     const st = u.querySelector('.meta'), tg = u.querySelector('.gtags');
     if (st) add('Rating', st);
     if (tg && ME) { tg.dataset.tgin = ''; if (tgIn && tgIn.path === tgPath()) tg.innerHTML = tgInHtml(); else tg.insertAdjacentHTML('beforeend', `<button type="button" class="eh-edit" data-tgin="open" aria-label="Edit the tags" data-tip="Edit the tags">${MBU_EDIT_ICON}</button>`); tgInWire(); }
-    if (tg) add('Tags', tg, true);
+    if (tg) {
+        // few tags stay a fact beside the others; ones that don't fit on one line take the whole row (and so does the edit box, by CSS)
+        const c = add('Tags', tg, true), fit = () => { c.classList.remove('wide'); tg.style.width = 'max-content'; const over = tg.offsetWidth > c.clientWidth; tg.style.width = ''; c.classList.toggle('wide', over); };
+        fit(); new ResizeObserver(fit).observe(f);
+    }
     u.remove();
 }
 function under(r, more = '') {
