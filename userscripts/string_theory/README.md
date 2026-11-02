@@ -35,6 +35,7 @@ String Theory adds dock and setting management for all included scripts:
 
 - **One icon for all the launchers**: on MusicBrainz, String Theory's icon sits in the corner, and the round buttons of Mission Control, Fusion, Falcon and the rest fold behind it. Click it to unfold them; they stay unfolded until you click it again. Folded, the dock shows only actionable items (the script needs background fetch on for this).
 - **[Command palette](#command-palette)**: Ctrl+K lists every command, filtered as you type.
+- **[What's new](#whats-new)**: String Theory's icon turns golden when there is news.
 - **Settings**: open them by right-clicking String Theory's icon. Right-click any dock icon for its own settings. Every icon is shown in About. Website and Issues links sit beside the tabs.
 - **Update**: in the About tab, toggle individual scripts, see their versions and check for updates.
 
@@ -50,6 +51,12 @@ In String Theory's settings, on the **General** tab, **Mode** picks one of:
 - **Time**: dark between the hours you enter in **Dark from** and **to**
 
 **Light theme** and **Dark theme** pick which theme each one uses. To add or tweak a theme, see [themes](themes/README.md).
+
+## What's new
+
+String Theory checks the project's [announcements](https://github.com/majkinetor/musicbrainz-userscripts/discussions/categories/announcements) once a day. While some are unread, its icon is golden and clicking it opens **What's new** instead of the dock. The command palette has the same entry at any time.
+
+The window lists the latest 20 posts, each with its script's name and icon. A post shows **stable** when its change is released and **latest** when it isn't yet. Opening a post marks it read; **Mark all read** does them all. The first check flags only the last 14 days.
 
 ## Command palette
 

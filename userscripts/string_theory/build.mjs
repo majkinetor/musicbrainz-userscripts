@@ -216,6 +216,7 @@ const factoryWith = name => {
 const UI_FACTORY = factoryWith('mbuCfgHeader'), TOKENS_FACTORY = factoryWith('MBU_TOKENS');
 const SETTINGS = readFileSync(resolve(HERE, 'settings.js'), 'utf8').replace(/\r\n/g, '\n');
 const PALETTE = readFileSync(resolve(HERE, 'palette.js'), 'utf8').replace(/\r\n/g, '\n');   // #890
+const NEWS = readFileSync(resolve(HERE, 'news.js'), 'utf8').replace(/\r\n/g, '\n');   // #896
 const toggles = `${themeRuntime}
 var __stDefOff = ${JSON.stringify(DEFAULT_OFF)};
 function __stList(k) { try { var v = GM_getValue(k, []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -244,6 +245,7 @@ var __stStarters = {};   // #851: per member folder, how String Theory's setting
   function stTokens() { return stTokensBlock || (stTokensBlock = ${TOKENS_FACTORY}(typeof GM_info !== 'undefined' ? GM_info : undefined)); }
   ${SETTINGS.replace(/\n/g, '\n  ').trimEnd()}
   ${PALETTE.replace(/\n/g, '\n  ').trimEnd()}
+  ${NEWS.replace(/\n/g, '\n  ').trimEnd()}
   stPalListen();
   var open = function () { try { stSettings(); } catch (e) { try { console.error('[String Theory] settings failed:', e); } catch (x) {} } };
   try { if (typeof GM_registerMenuCommand === 'function') GM_registerMenuCommand('⚙ Settings', open, { id: 'st-settings', autoClose: true, title: 'Launchers, the scripts on and off, versions and updates' }); } catch (e) {}
@@ -252,6 +254,7 @@ var __stStarters = {};   // #851: per member folder, how String Theory's setting
   document.addEventListener('mbu-st-palette', palette);
   // String Theory's icon shows even on a page none of its scripts puts a launcher on
   if (ST_ON_MB) {
+    try { stNewsStart(); } catch (e) {}
     var first = function () { try { mbRestackCorner('br'); } catch (e) {} };
     if (document.readyState !== 'loading') first(); else document.addEventListener('DOMContentLoaded', first, { once: true });
   }

@@ -68,6 +68,10 @@ function stPalCommands() {
   // Settings
   add({ id: 'set:st', cat: 'Settings', label: 'String Theory', run: function () { stSettings('g'); } });
   if (ST_ON_MB) {
+    var newsN = stNewsUnread(stNewsRead()).length;
+    add({ id: 'st:news', cat: 'String Theory', label: "What's new", hint: newsN ? newsN + ' new' : '', run: stNewsOpen });
+  }
+  if (ST_ON_MB) {
     add({ id: 'set:dock', cat: 'Settings', label: 'Dock', run: function () { stSettings('l'); } });
     add({ id: 'set:about', cat: 'Settings', label: 'About and updates', run: function () { stSettings('a'); } });
   }
