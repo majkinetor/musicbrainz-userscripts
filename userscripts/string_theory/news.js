@@ -27,6 +27,20 @@ var ST_NEWS_CSS = ''
   + '#st-news-view .b img{max-width:100%;height:auto}#st-news-view .b{overflow-wrap:anywhere}'
   + '#st-news-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px;border-top:1px solid var(--mbu-border);color:var(--mbu-text-weak);font-size:12px}'
   + '@media (max-width:640px){#st-news-body{flex-direction:column}#st-news-list{flex:0 0 38%;border-right:0;border-bottom:1px solid var(--mbu-border)}}';
+// the golden icon: a light circling behind it and sprinkles drifting the other way
+var ST_NEWS_ON = ':root[data-st-news] #mbu-dock';
+var ST_NEWS_GOLD = ST_NEWS_ON + '{opacity:1}' + ST_NEWS_ON + ' svg path{stroke:#e0a800!important}'
+  + ST_NEWS_ON + '::before,' + ST_NEWS_ON + '::after{content:"";position:absolute;z-index:-1;border-radius:50%;pointer-events:none}'
+  + ST_NEWS_ON + '::before{inset:-2px;background:conic-gradient(transparent 0 30%,rgba(255,200,40,.25) 55%,#ffc828 88%,#fff6c8 98%,transparent);filter:blur(2px);animation:st-news-spin 2.4s linear infinite}'
+  + ST_NEWS_ON + '::after{inset:-8px;background:'
+  + 'radial-gradient(circle at 50% 3%,#f0a800 0 1.5px,#ffc82880 2.2px,transparent 3.5px),'
+  + 'radial-gradient(circle at 95% 38%,#f0a800 0 1px,#ffc82880 1.7px,transparent 3px),'
+  + 'radial-gradient(circle at 80% 88%,#f0a800 0 1.5px,#ffc82880 2.2px,transparent 3.5px),'
+  + 'radial-gradient(circle at 18% 84%,#f0a800 0 1px,#ffc82880 1.7px,transparent 3px),'
+  + 'radial-gradient(circle at 5% 34%,#f0a800 0 1.5px,#ffc82880 2.2px,transparent 3.5px);'
+  + 'animation:st-news-spin 9s linear infinite reverse,st-news-twinkle 1.6s ease-in-out infinite}'
+  + '@keyframes st-news-spin{to{transform:rotate(360deg)}}@keyframes st-news-twinkle{50%{opacity:.25}}'
+  + '@media (prefers-reduced-motion:reduce){' + ST_NEWS_ON + '::before,' + ST_NEWS_ON + '::after{animation:none}}';
 
 function stNewsRead() {
   var v = null;
@@ -259,7 +273,7 @@ function stNewsOpen() {
 }
 function stNewsStart() {
   var css = document.createElement('style'); css.id = 'st-news-gold';
-  css.textContent = ':root[data-st-news] #mbu-dock svg path{stroke:#e0a800!important}';
+  css.textContent = ST_NEWS_GOLD;
   (document.head || document.documentElement).appendChild(css);
   // ahead of the dock's own click: while golden, the icon opens the news
   document.addEventListener('click', function (e) {
