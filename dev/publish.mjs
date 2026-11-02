@@ -152,8 +152,11 @@ function changelogSection(group, tag, updatedMembers, general) {
   // linking to that script's own changelog
   if (group.bundle && updatedMembers && updatedMembers.length) {
     for (const m of updatedMembers) {
-      const g = m.group, items = g ? [...g.features, ...g.fixes] : [];
-      s += `\n### [${m.name}](../${m.dir}/README.md)\n\n` + (items.length ? `${items.map(i => `1. ${i.title} ([#${i.number}](${issueUrl(i.number)}))`).join('\n')}\n` : `1. Small improvements\n`);
+      const g = m.group, features = g ? g.features : [], fixes = g ? g.fixes : [];
+      s += `\n### [${m.name}](../${m.dir}/README.md)\n`;
+      if (features.length) s += `\n#### Features\n\n${list(features)}\n`;
+      if (fixes.length) s += `\n#### Fixes\n\n${list(fixes)}\n`;
+      if (!features.length && !fixes.length) s += `\n1. Small improvements\n`;
     }
   } else if (!group.features.length && !group.fixes.length)
     s += group.bundle ? `\n- Rebuilt with the latest of every bundled script\n` : `\n- Small improvements\n`;   // changed, but no tracked issues
