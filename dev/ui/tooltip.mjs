@@ -538,7 +538,8 @@ function mbuTipStart() {
         mbuTipHide(true);
         if (interactive) e.stopPropagation();   // a card is a popover: Esc closes it and nothing else
     }, true);
-    window.addEventListener('scroll', function (e) { if (_mbuTip.cur && !inTip(e.target)) mbuTipHide(true); }, true);
+    // only a scroll that moves the element: a panel repainting elsewhere leaves the tip where it is
+    window.addEventListener('scroll', function (e) { if (_mbuTip.cur && !inTip(e.target) && e.target.contains(_mbuTip.cur)) mbuTipHide(true); }, true);
     window.addEventListener('blur', function () { if (_mbuTip.cur) mbuTipHide(true); });
     document.addEventListener('focusin', function (e) {
         var el = e.target, vis = false;

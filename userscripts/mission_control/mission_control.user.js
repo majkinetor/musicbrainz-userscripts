@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.01.214224
+// @version      2026.11.02.120000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -1389,7 +1389,7 @@ function stepState(p) {
     const doing = st === 'busy' ? (r.note || 'starting') : (executing && r.working) || falcon;
     if (doing) {
         const s = Math.max(0, Math.round((Date.now() - (r.at || Date.now())) / 1000));
-        return Date.now() - (r.at || Date.now()) >= STALL_MS ? ['stalled', 'no word for ' + s + ' s · ' + doing, '!'] : ['busy', doing + (s >= 2 ? ' · ' + s + ' s' : ''), ''];
+        return Date.now() - (r.at || Date.now()) >= STALL_MS ? ['stalled', 'no word for ' + s + ' s · ' + doing, '!', doing] : ['busy', doing + (s >= 2 ? ' · ' + s + ' s' : ''), '', doing];
     }
     if (r.applied && !r.applied.ok) return ['err', r.applied.note || 'failed', '!'];
     if (st === 'ready') return ['wait', modeOf(p) === 'ask' ? 'waits for ' + (FETCH_LABEL[p.id] || 'Fetch') : 'not probed', ''];
@@ -1397,13 +1397,25 @@ function stepState(p) {
     if (p.info) return ['ok', infoCount(p.id) + ' credit' + (infoCount(p.id) === 1 ? '' : 's') + ' found', '✓'];
     return ['ok', r.summary && !(r.findings || []).some(x => PICKABLE[x.state]) ? r.summary : 'nothing new', '✓'];
 }
+// a step's last words of its current or latest run, for its tooltip; a new run starts them over
+const STEP_SAID = {}, STEP_SAID_MAX = 4;
+function stepSaid(id, doing) {
+    const s = STEP_SAID[id] || (STEP_SAID[id] = { on: false, list: [] });
+    if (doing && !s.on) s.list = [];
+    s.on = !!doing;
+    if (doing && s.list[s.list.length - 1] !== doing) s.list = s.list.concat(doing).slice(-STEP_SAID_MAX);
+    return s.list;
+}
 function paintSteps() {
     if (!ui) return;
     PROVIDERS.forEach(p => {
         const n = ui.querySelector('.mc-step[data-step="' + p.id + '"]'); if (!n) return;
-        const [cls, words, mark] = stepState(p);
+        const [cls, words, mark, doing] = stepState(p);
         n.className = 'mc-step ' + cls;
-        n.dataset.tip = p.provider + ' — ' + (cls === 'busy' || cls === 'stalled' ? words : stateText(p)) + (cls === 'off' ? (PAGE_OFF.has(p.id) ? ' (off for this page)' : '') + '\nClick: switch it on' : '\nClick: off for this page\nRight-click: off for good');
+        const said = stepSaid(p.id, doing);
+        // while it runs, the current word is the title and is not repeated in the list
+        const past = doing ? said.slice(0, -1) : said;
+        n.dataset.tip = p.provider + ' — ' + (cls === 'busy' || cls === 'stalled' ? words : stateText(p)) + (past.length ? '\n' + past.map(w => '- ' + w).join('\n') : '') + (cls === 'off' ? (PAGE_OFF.has(p.id) ? ' (off for this page)' : '') + '\nClick: switch it on' : '\nClick: off for this page\nRight-click: off for good');
         n.querySelector('i').textContent = words;
         const sup = n.querySelector('sup'); sup.hidden = !mark; sup.textContent = mark;
         // the provider's card shows the same state: a stripe on its edge, a tint and a word in its header (#680)
@@ -7136,7 +7148,8 @@ function mbuTipStart() {
         mbuTipHide(true);
         if (interactive) e.stopPropagation();   // a card is a popover: Esc closes it and nothing else
     }, true);
-    window.addEventListener('scroll', function (e) { if (_mbuTip.cur && !inTip(e.target)) mbuTipHide(true); }, true);
+    // only a scroll that moves the element: a panel repainting elsewhere leaves the tip where it is
+    window.addEventListener('scroll', function (e) { if (_mbuTip.cur && !inTip(e.target) && e.target.contains(_mbuTip.cur)) mbuTipHide(true); }, true);
     window.addEventListener('blur', function () { if (_mbuTip.cur) mbuTipHide(true); });
     document.addEventListener('focusin', function (e) {
         var el = e.target, vis = false;
