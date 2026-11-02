@@ -149,9 +149,9 @@ var ST_CSS = ''
   + '#st-cfg .st-tabs button:hover{color:inherit}'
   + '#st-cfg .st-tabs button[aria-selected=true]{color:inherit;background:var(--mbu-bg);border-color:var(--mbu-border)}'
   + '#st-cfg h3{margin:0 0 4px;padding:0;border:0;background:none;font:600 11px/1.4 var(--mbu-font);text-transform:uppercase;letter-spacing:.06em;color:var(--mbu-text-weak)}'
-  + '#st-cfg .st-row{display:flex;align-items:center;gap:8px;min-height:30px;margin:0;font-weight:400}'
+  + '#st-cfg .st-row{display:flex;align-items:center;gap:8px;min-height:28px;margin:0;font-weight:400}'
   + '#st-cfg .st-row>label:first-child{flex:0 0 64px}'
-  + '#st-cfg #st-p-g .st-row>.st-lbl:first-child{flex:0 0 96px;white-space:nowrap}#st-cfg #st-p-g .st-lbl{white-space:nowrap}#st-cfg #st-p-g select{flex:0 1 150px;width:150px;min-width:0;height:30px}#st-cfg .st-time{box-sizing:border-box;width:72px;height:30px;padding:0 8px;text-align:center;font:inherit;color:inherit;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:15px}'
+  + '#st-cfg #st-p-g .st-row>.st-lbl:first-child{flex:0 0 96px;white-space:nowrap}#st-cfg #st-p-g .st-lbl{white-space:nowrap}#st-cfg #st-p-g select{flex:0 1 150px;width:150px;min-width:0;height:26px}#st-cfg .st-time{box-sizing:border-box;width:60px;height:26px;padding:0 6px;text-align:center;font:inherit;color:inherit;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:15px}'
   + '#st-cfg label.st-row{cursor:pointer}#st-cfg label.st-row input{margin:0}'
   + '#st-cfg .st-ver{margin-left:auto;color:var(--mbu-text-weak);font-size:11px;white-space:nowrap}'
   + '#st-cfg .st-note{flex:1 1 auto;color:var(--mbu-text-dim);font-size:12px}'
@@ -170,19 +170,19 @@ var ST_CSS = ''
   + '#st-cfg .st-step button{font:inherit;font-size:15px;line-height:1;border:0!important;margin:0!important;padding:0!important;border-radius:0!important;background:none!important;color:inherit;box-sizing:border-box;flex:0 0 28px;width:28px!important;min-width:28px!important;height:22px!important;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}'
   + '#st-cfg .st-step button:hover:not(:disabled){background:var(--mbu-bg-hover)!important}#st-cfg .st-step button:disabled{opacity:.4;cursor:default}'
   + '#st-cfg .st-step output{min-width:50px;text-align:center;font-variant-numeric:tabular-nums}'
-  + '#st-cfg .st-strip{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px;margin:4px 0 2px;border:1px dashed var(--mbu-border);border-radius:var(--mbu-radius);touch-action:none;min-height:24px}'
-  + '#st-cfg .st-di{display:grid;place-items:center;flex:0 0 auto;width:34px;height:34px;border-radius:50%;cursor:grab;user-select:none}'
+  + '#st-cfg .st-strip{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:4px 6px;margin:2px 0;border:1px dashed var(--mbu-border);border-radius:var(--mbu-radius);touch-action:none;min-height:24px}'
+  + '#st-cfg .st-di{display:grid;place-items:center;flex:0 0 auto;width:28px;height:28px;border-radius:50%;cursor:grab;user-select:none}'
   + '#st-cfg .st-di>img,#st-cfg .st-di>svg{width:100%;height:100%;display:block;pointer-events:none}'
   + '#st-cfg .st-di.st-drag{outline:2px solid var(--mbu-accent);outline-offset:2px;cursor:grabbing}'
   + '#st-cfg .st-cap{color:var(--mbu-text-dim);font-size:12px}'
   + '#st-cfg .st-links{display:flex;gap:14px;margin-left:auto;white-space:nowrap}'
   + '#st-cfg .st-scripts{display:grid;grid-template-columns:1fr 1fr;column-gap:16px}#st-cfg .st-scripts .st-row{min-height:24px;gap:6px;white-space:nowrap}'
   + '#st-cfg .st-si{flex:0 0 18px;width:18px;height:18px;display:grid;place-items:center}#st-cfg .st-si>img,#st-cfg .st-si>svg{width:100%;height:100%;display:block}'
-  + '#st-cfg h3.st-h{margin:14px 0 2px}#st-cfg h3.st-h:first-child{margin-top:0}'
+  + '#st-cfg h3.st-h{margin:10px 0 4px;padding:0 0 3px;border-bottom:1px solid var(--mbu-border);font:700 14px/1.3 var(--mbu-font);text-transform:none;letter-spacing:0;color:var(--mbu-text)!important}#st-cfg h3.st-h:first-child{margin-top:2px}'
   + '#st-cfg .st-key{min-width:96px;font-variant-numeric:tabular-nums}#st-cfg .st-key[data-rec]{border-color:var(--mbu-accent);color:var(--mbu-accent-text)}'
   + '#st-cfg [hidden]{display:none!important}'
   // one size for the window: the tabs share a cell, and the one not shown keeps its room, as do Time's and Sun's extras
-  + '#st-cfg .st-panes,#st-cfg .st-th-x{display:grid}#st-cfg .st-panes>.st-sec,#st-cfg .st-th-x>*{grid-area:1/1;margin:0}#st-cfg .st-th-x{align-items:center;min-height:30px}'
+  + '#st-cfg .st-panes,#st-cfg .st-th-x{display:grid}#st-cfg .st-panes>.st-sec,#st-cfg .st-th-x>*{grid-area:1/1;margin:0}#st-cfg .st-th-x{display:inline-grid;align-items:center}#st-cfg .st-tx{display:inline-flex;align-items:center;gap:6px}'
   + '#st-cfg .st-panes>.st-sec[hidden]{display:block!important;visibility:hidden}'
   + '#st-cfg-ov{background:none;pointer-events:none}#st-cfg-ov>#st-cfg{pointer-events:auto}';
 // a launcher opens its script's settings on right-click: pass the click on to the live one
@@ -238,30 +238,30 @@ function stSettings(tab) {
       + '<button type="button" role="tab" id="st-tab-a" aria-controls="st-p-a" aria-selected="false">About</button></div>' + links + '</div><div class="st-panes">'
       + '<section class="st-sec" id="st-p-g" role="tabpanel" aria-labelledby="st-tab-g">'
       + '<h3 class="st-h">Theme</h3>'
-      + '<div class="st-row">' + seg('st-th-mode', 'Mode', [['light', 'Light'], ['dark', 'Dark'], ['auto', 'System'], ['sun', 'Sun'], ['time', 'Time']]) + '</div>'
+      + '<div class="st-row">' + seg('st-th-mode', 'Mode', [['light', 'Light'], ['dark', 'Dark'], ['auto', 'System'], ['sun', 'Sun'], ['time', 'Time']])
+      + '<span class="st-th-x"><span class="st-tx" id="st-th-time"><label class="st-lbl" for="st-th-from">Dark</label><input type="text" id="st-th-from" class="st-time" inputmode="numeric" maxlength="5" placeholder="HH:MM" aria-label="Dark from, 24-hour time"><label for="st-th-to">to</label><input type="text" id="st-th-to" class="st-time" inputmode="numeric" maxlength="5" placeholder="HH:MM" aria-label="Dark to, 24-hour time"></span>'
+      + '<span class="st-cap" id="st-th-sun">Asks for your location once</span></span></div>'
       + '<div class="st-row">' + ['light', 'dark'].map(function (v) {
         return '<label class="st-lbl" for="st-th-' + v + '">' + (v === 'dark' ? 'Dark theme' : 'Light theme') + '</label><select id="st-th-' + v + '">'
           + __stTheme.names(v).map(function (n) { return '<option>' + stEsc(n) + '</option>'; }).join('') + '</select>';
       }).join('') + '</div>'
-      + '<div class="st-th-x"><div class="st-row" id="st-th-time"><label class="st-lbl" for="st-th-from">Dark from</label><input type="text" id="st-th-from" class="st-time" inputmode="numeric" maxlength="5" placeholder="HH:MM" aria-label="24-hour time"><label for="st-th-to">to</label><input type="text" id="st-th-to" class="st-time" inputmode="numeric" maxlength="5" placeholder="HH:MM" aria-label="24-hour time"></div>'
-      + '<div class="st-cap" id="st-th-sun">Sun asks for your location once; if you refuse, it follows your system.</div></div>'
       + '<h3 class="st-h" id="st-dock">Dock</h3>'
       + '<div class="st-row">' + seg('st-side', 'Side', [['left', 'Left'], ['right', 'Right']]) + seg('st-flow', 'Orientation', [['column', 'Column'], ['row', 'Row']])
       + '<span class="st-lbl">Size</span><span class="st-step"><button type="button" id="st-size-dn" aria-label="Smaller">−</button>'
       + '<output id="st-size"></output><button type="button" id="st-size-up" aria-label="Bigger">+</button></span></div>'
       + '<div class="st-row">' + seg('st-hover', 'Hover', [['none', 'None'], ['shelf', 'Shelf']]) + '</div>'
       + '<div class="st-strip" id="st-order"></div>'
-      + '<div class="st-cap">Drag an icon to reorder; the first sits nearest the corner. Right-click one for its settings.</div>'
+      + '<div class="st-cap">Drag to reorder, the first nearest the corner; right-click for its settings.</div>'
       + '<h3 class="st-h">Command palette</h3>'
       + '<div class="st-row">' + seg('st-pal-on', 'Palette', [['on', 'On'], ['off', 'Off']])
       + '<span class="st-lbl" id="st-pal-key-l">Hotkey</span><button type="button" class="st-b st-key" id="st-pal-key" aria-labelledby="st-pal-key-l"></button></div>'
-      + '<div class="st-cap">The hotkey opens a list of commands: settings, themes, pages, launchers. Click the hotkey, then press the new one.</div>'
+      + '<div class="st-cap">Click the hotkey, then press the new one.</div>'
       + '</section>';
   }
   var off = __stReadOff(), known = mbuShared('dockKnown') || {};
   h += '<section class="st-sec" id="st-p-a"' + (ST_ON_MB ? ' role="tabpanel" aria-labelledby="st-tab-a" hidden' : '') + '>'
     + (ST_ON_MB ? '' : '<div class="st-row">' + links + '</div>')
-    + '<div class="st-upd" id="st-upd" hidden></div>'
+    + '<div class="st-upd" id="st-upd"></div>'
     + '<div class="st-scripts" data-tip="Right-click a script for its settings">' + stMembers.map(function (m) {
       var icon = m[3] ? '<img alt="" src="' + stEsc(m[3]) + '">' : known[m[1]] || '';
       return '<label class="st-row" data-name="' + stEsc(m[1]) + '"><input type="checkbox" data-st-m="' + stEsc(m[0]) + '"' + (off.indexOf(m[0]) < 0 ? ' checked' : '') + '>'
@@ -470,22 +470,24 @@ function stSettings(tab) {
     var check = ++updateCheck, box = q('#st-upd');
     var refs = ['main', 'stable'];
     if (ST_BRANCH) refs.push(ST_BRANCH);
-    box.hidden = false;
-    box.textContent = 'Checking for updates…';
-    var got = {}, left = refs.length;
-    refs.forEach(function (ref) {
-      stRemoteVersion(ref, function (v) {
-        got[ref] = v;
-        if (--left || check !== updateCheck) return;
+    // a row per channel from the start, so the box keeps its size when the answers come
+    var got = {}, left = refs.length, draw = function (checking) {
         box.innerHTML = refs.map(function (r) {
           var v2 = got[r], name = r === 'main' ? 'Latest' : r === 'stable' ? 'Stable' : r;
-          var state = !v2 ? 'couldn’t be read'
+          var state = checking ? 'checking…' : !v2 ? 'couldn’t be read'
             : stCmpVer(v2, ST_VERSION) === 0 ? 'the one you have'
             : stCmpVer(v2, ST_VERSION) > 0 ? '<span class="st-newer">newer</span>' : 'older';
           return '<div><b>' + stEsc(name) + '</b><span>' + (v2 ? 'v' + stEsc(v2) : '') + '</span><span>' + state
             + '</span><span class="mbu-sp" style="flex:1"></span>'
             + (v2 && stCmpVer(v2, ST_VERSION) !== 0 ? '<a href="' + stEsc(stInstallUrl(r)) + '" target="_blank" rel="noopener">Install</a>' : '') + '</div>';
         }).join('');
+    };
+    draw(true);
+    refs.forEach(function (ref) {
+      stRemoteVersion(ref, function (v) {
+        got[ref] = v;
+        if (--left || check !== updateCheck) return;
+        draw(false);
       });
     });
   }
