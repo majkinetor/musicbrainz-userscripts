@@ -36,7 +36,7 @@ test.describe('palette', () => {
     const first = await page.$$eval('#st-pal-list li', ls => ls.slice(0, 2).map(l => l.textContent));
     check(first[0] === 'Pinned' && /^Settings: Dock/.test(first[1]), `the pin comes first (${first})`);
     await page.keyboard.type('zzqx');
-    check((await rows(page))[0] === 'Search: Artist “zzqx”', 'what matches nothing is a search');
+    check((await rows(page))[0] === 'Search Artist: zzqx', 'what matches nothing is a search');
     await page.keyboard.press('Control+a');
     await page.keyboard.type('settings string');
     await page.keyboard.press('Enter');
