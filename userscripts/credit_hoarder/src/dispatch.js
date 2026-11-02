@@ -757,12 +757,10 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         for (const [recGid, entries] of workOnlyByGid) {
             // entries may be empty when createWorksMode='when-missing' adds all recordings (no work-only roles)
             const recEntity  = entries[0]?.recEntity  ?? recordingByGid.get(recGid);
-            // `||` (not `??`): some sources (e.g. Qobuz) parse credits without a track
-        // title, leaving an empty string — fall through to the MB recording's name so
-        // the created work is never nameless (#232).
-        const trackTitle = entries[0]?.role.track.title || recEntity?.name || recGid;
             const trackPos   = entries[0]?.role.track.position ?? '';
             if (!recEntity) continue;
+            // MB's recording name, never the source's title: that one can be in another language (#903)
+            const trackTitle = recEntity.name;
 
             // Check for pre-existing works using MB's own relatedWorks field on the track wrapper
             // (mirrors MB's batch-create-works logic: `if (relatedWorks.size !== 0) continue`)
