@@ -22,6 +22,7 @@ pnpm lint
   - `checks.yml`, on every push and pull request, runs the syntax check, the linters, the design-token check and the `@unit` specs, then the `@critical` specs on test.musicbrainz.org. A pull request must also carry the builds of its sources (`node dev/regen.mjs --check`).
   - `build.yml`, on every push to `main`, rebuilds what the hook builds (`node dev/regen.mjs`) and commits it as `github-actions[bot]` when a commit came without the hook: the web editor, another machine, `--no-verify`, a merge. Where the hook ran, it finds nothing to commit. The hook stays: it builds in the same commit (so a pinned install link works at once, on a feature branch too), and it stops a script that doesn't parse or lint.
   - `suite.yml` runs the whole suite nightly.
+  - `issue-label.yml`, on every opened issue, adds the `area | …` label of each script its title names and takes a leading `<Script>: ` off the title ([`dev/issue-label`](dev/issue-label/README.md)).
 - **Tests** are in [`dev/test`](dev/test/README.md): one Playwright runner for every script, on test.musicbrainz.org, with a guard that refuses any write to production.
 
 ## Releasing
@@ -69,6 +70,7 @@ Nothing here ships. A script belongs in its subsystem's folder, next to that fol
 | `templates/`                                                | starting points: a script's README in the [compact style](STANDARDS.md#script-readmes)                   |
 | `publish.mjs`                                               | the release (run by `release.yml`)                                                                       |
 | `regen.mjs`                                                 | rebuilds everything the pre-commit hook builds; `--check` fails if that changes anything                 |
+| [`issue-label/`](dev/issue-label/README.md)                 | labels a new issue by the scripts its title names (the `issue-label` workflow)                           |
 | `gh-inbox.mjs`                                              | every issue comment newer than the bot's last reply                                                      |
 | `align-md-tables.mjs`                                       | pads Markdown tables so their columns line up                                                            |
 | `install-hook.mjs`                                          | points `core.hooksPath` at `.githooks/`                                                                  |

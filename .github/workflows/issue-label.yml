@@ -1,0 +1,22 @@
+# Labels a new issue by the scripts its title names (#890): dev/issue-label adds each one's
+# `area | <script>` label (String Theory's: general) and takes a leading "<Script>: " off the title.
+name: issue-label
+permissions:
+  issues: write
+  contents: read
+on:
+  issues:
+    types: [opened]
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: dev/issue-label
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node dev/issue-label/issue-label.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

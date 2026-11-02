@@ -179,10 +179,16 @@ function stPalCommands() {
     stCopy(stVersionsText(), function (ok) { toast(ok ? '✓ Versions copied as Markdown' : '⚠ Couldn’t copy the versions'); });
   } });
   add({ id: 'st:docs', cat: 'String Theory', label: 'Documentation', run: function () { window.open('https://github.com/' + ST_REPO + '/blob/main/userscripts/string_theory/DOCS.md', '_blank', 'noopener'); } });
-  // GitHub fills a new issue's body from the address: the versions go under room for the report
-  add({ id: 'st:newissue', cat: 'String Theory', label: 'New issue', hint: 'with the versions', run: function () {
-    window.open('https://github.com/' + ST_REPO + '/issues/new?body=' + encodeURIComponent('\n\n---\n\n' + stVersionsText()), '_blank', 'noopener');
-  } });
+  // New issue: GitHub fills the title and body from the address. The title starts with the script's name, which the
+  // repo's issue-label workflow turns into its area label (and takes off the title); the versions go under room for the report.
+  var newIssue = function (id, name) {
+    add({ id: id, cat: 'New issue', label: name, run: function () {
+      window.open('https://github.com/' + ST_REPO + '/issues/new?title=' + encodeURIComponent(name + ': ')
+        + '&body=' + encodeURIComponent('\n\n---\n\n' + stVersionsText()), '_blank', 'noopener');
+    } });
+  };
+  newIssue('st:newissue', 'String Theory');
+  stMembers.forEach(function (sm) { newIssue('newissue:' + sm[0], sm[1]); });
   add({ id: 'st:issue', cat: 'String Theory', label: 'Issues', run: function () { window.open('https://github.com/' + ST_REPO + '/issues', '_blank', 'noopener'); } });
   add({ id: 'st:reload', cat: 'String Theory', label: 'Reload the page', run: function () { location.reload(); } });
   return out;
