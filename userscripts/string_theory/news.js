@@ -27,18 +27,13 @@ var ST_NEWS_CSS = ''
   + '#st-news-view .b img{max-width:100%;height:auto}#st-news-view .b{overflow-wrap:anywhere}'
   + '#st-news-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px;border-top:1px solid var(--mbu-border);color:var(--mbu-text-weak);font-size:12px}'
   + '@media (max-width:640px){#st-news-body{flex-direction:column}#st-news-list{flex:0 0 38%;border-right:0;border-bottom:1px solid var(--mbu-border)}}';
-// the golden icon: a soft halo breathing behind it and a glowing light gliding around it
+// the golden icon: rings of light widen from it and fade
 var ST_NEWS_ON = ':root[data-st-news] #mbu-dock';
 var ST_NEWS_GOLD = ST_NEWS_ON + '{opacity:1}' + ST_NEWS_ON + ' svg path{stroke:#e0a800!important}'
-  + ST_NEWS_ON + ' svg{animation:st-news-shine 2.8s ease-in-out infinite}'
-  + ST_NEWS_ON + '::before,' + ST_NEWS_ON + '::after{content:"";position:absolute;z-index:-1;border-radius:50%;pointer-events:none}'
-  + ST_NEWS_ON + '::before{inset:-10px;background:radial-gradient(circle,#ffc828 0 35%,#ffc82866 58%,transparent 72%);filter:blur(4px);animation:st-news-breathe 2.8s ease-in-out infinite}'
-  + ST_NEWS_ON + '::after{inset:-6px;background:radial-gradient(circle at 50% 8%,#fff 0 3px,#ffd860 6px,#ffc82899 10px,transparent 16px),'
-  + 'conic-gradient(transparent 0 60%,#ffc82833 75%,#ffc828cc 97%,transparent);filter:blur(1.5px);animation:st-news-glide 3s linear infinite}'
-  + '@keyframes st-news-glide{to{transform:rotate(360deg)}}'
-  + '@keyframes st-news-breathe{0%,100%{opacity:.45;transform:scale(.9)}50%{opacity:1;transform:scale(1.08)}}'
-  + '@keyframes st-news-shine{0%,100%{filter:drop-shadow(0 0 1px #ffc828)}50%{filter:drop-shadow(0 0 5px #ffc828)}}'
-  + '@media (prefers-reduced-motion:reduce){' + ST_NEWS_ON + ' svg,' + ST_NEWS_ON + '::before,' + ST_NEWS_ON + '::after{animation:none}}';
+  + ST_NEWS_ON + '::before,' + ST_NEWS_ON + '::after{content:"";position:absolute;inset:0;box-sizing:border-box;z-index:-1;border:2px solid #ffb300;border-radius:50%;pointer-events:none;animation:st-news-ripple 2.4s ease-out infinite backwards}'
+  + ST_NEWS_ON + '::after{animation-delay:1.2s}'
+  + '@keyframes st-news-ripple{0%{opacity:.9;transform:scale(.8)}100%{opacity:0;transform:scale(1.7)}}'
+  + '@media (prefers-reduced-motion:reduce){' + ST_NEWS_ON + '::before,' + ST_NEWS_ON + '::after{animation:none}}';
 
 function stNewsRead() {
   var v = null;
