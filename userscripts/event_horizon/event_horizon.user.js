@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.210000
+// @version      2026.11.02.213000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -9135,7 +9135,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #relationship-editor-form.eh-fold legend{margin:0!important;padding:0!important}:root[data-eh-rel] #relationship-editor-form.eh-fold{padding:10px 16px!important}:root[data-eh-rel] #relationship-editor-form.eh-fold fieldset{margin:0!important;padding:0!important}:root[data-eh-rel] #relationship-editor-form legend{font-size:17px!important;font-weight:700}` + relHdCss();
 // EH's own header rules, scoped to the header, so it is the same as on the other pages
 // and to the bar pinned over the releases and details pages, which carries its title and action row
-const relHdCss = () => CSS.split('\n').filter(l => /^(\.kicker|\.label\{|h1\{|\.disamb|\.by\{|\.arthd|\.rg-l|#eh-pin)/.test(l)).join('\n')
+const relHdCss = () => CSS.split('\n').filter(l => /^(\.kicker|\.label\{|h1\{|\.disamb|\.by\{|\.arthd|\.rg-l|#eh-pin)/.test(l) || l.startsWith('.eh-collections')).join('\n')
     .replace(/(^|\})([^{}]+)\{/gm, (m, b, sel) => b + sel.split(',').map(x => /^#eh-pin\b/.test(x.trim()) ? x.trim() : ':is(#eh-relhd,#eh-pin) ' + x.trim()).join(',') + '{');
 // the header: the same as the cover-art page's; title and artist read off MusicBrainz's own header at once, then the full kicker from the release
 function relHeader(id, tab = 'edit-relationships', name = 'Relationships') {
