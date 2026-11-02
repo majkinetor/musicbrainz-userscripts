@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-02 17:45 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-02 17:51 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -2502,7 +2502,7 @@ Beatport and Discogs give the album's catalog number, shown after the platform's
 
 - Click it for the list: each catalog number with its label and the platforms that give it. ✓ marks one from a link like this release (with the release's barcode, or one it already has, and the same track count and medium); ⚠ one from another barcode, another format, or platforms that give no barcode.
 - The platform's label name is matched to the release's loosely (*Artoffact* is *Artoffact Records*), and the same number written differently (*AOF146*) is one.
-- Click one to use it: a link added from the panel fills it in, in the same edit; its chip removes it. A right-click copies it.
+- Click one to use it: a link added from the panel fills it in, in the same edit; its chip removes it. Right-click one, or the chip, to add it in the background on its own, with no links; a link that goes on the release group, like a Discogs master, adds it that way too. Ctrl+click copies it.
 - A label with a catalog number of its own keeps it.
 
 [Mission Control](../mission_control/README.md#release-and-entity-links) offers the same catalog numbers.

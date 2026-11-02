@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.02.150000
+// @version      2026.11.02.160000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -600,9 +600,13 @@ async function runInjectHelper(entityType) {
         const key  = entityType === 'release-group' ? `pc:pending:rg:${mbid}` : `pc:pending:${mbid}`;
         // #780: a barcode on its own (right-click in the found-barcodes list): no links, whatever is queued
         const bcOnly = entityType === 'release' && /pc-barcode/.test(location.hash);
+        // a catalog number on its own: the same, queued in pc:pending-catno
+        const catOnly = entityType === 'release' && /pc-catno/.test(location.hash);
         let urls = [];
         if (bcOnly) {
             if (!localStorage.getItem(`pc:bg-barcode:${mbid}`)) return;
+        } else if (catOnly) {
+            if (!localStorage.getItem(`pc:pending-catno:${mbid}`)) return;
         } else {
             const raw  = localStorage.getItem(key);
             // No pending payload means the user navigated to /edit themselves,
@@ -648,7 +652,7 @@ async function runInjectHelper(entityType) {
         awake = wantAwake ? pcKeepAwake() : null;
         pcOpenExternalLinks();
         await pcWait(200);
-        const result = (bcOnly ? await pcInjectBarcodeOnly(mbid) : await injectInto(urls, key)) || { injected: 0 };
+        const result = (bcOnly ? await pcInjectBarcodeOnly(mbid) : catOnly ? await pcInjectCatnosOnly(mbid) : await injectInto(urls, key)) || { injected: 0 };
         pcMark('inject finished', `${result.injected} confirmed`);
         // #464: right-click "add in background" — auto-submit once the URLs are in,
         // and mark this tab so the redirect back to the clean /release/<mbid> page
@@ -670,8 +674,8 @@ async function runInjectHelper(entityType) {
         if (autoCommit && !result.injected) {
             try { console.warn('[Platform Check] background add: nothing landed — NOT submitting. The tab is left open and the links stay queued; press ↻ or the + again to retry.'); } catch (e) {}
             hush();
-            showInjectBanner(bcOnly
-                ? `Platform Check: the barcode could not be added${result.why ? ' (' + result.why + ')' : ''} — not submitting; this tab is left open on purpose.`
+            showInjectBanner(bcOnly || catOnly
+                ? `Platform Check: the ${bcOnly ? 'barcode' : 'catalog number'} could not be added${result.why ? ' (' + result.why + ')' : ''} — not submitting; this tab is left open on purpose.`
                 : 'Platform Check: no link could be added — not submitting. The links are still queued, so you can retry; this tab is left open on purpose.', [], { fail: true });
         } else if (autoCommit) {
             // #465 (chaban-mb): the release editor is the multi-step wizard, not the
@@ -1095,6 +1099,13 @@ async function pcInjectBarcodeOnly(relMbid) {
     setEditNote(pcEditNote([], {}, q.code, q.from || null));
     return { injected: 1 };
 }
+// The catalog numbers queued on their own, with no links: the same as the barcode above.
+async function pcInjectCatnosOnly(relMbid) {
+    const done = await pcFillCatnos(relMbid);
+    if (!done.length) return { injected: 0, why: "no label row took it: see this tab's console" };
+    setEditNote(pcEditNote([], {}, null, null, { catnos: done.map(c => ({ catno: c.catno, label: c.name })) }));
+    return { injected: done.length };
+}
 // #740: the catalog numbers used on the release page (pc:pending-catno:<mbid>, [{ mbid, name, catno }]), each
 // typed into the empty Cat. No. field of its label's row in the release editor (the row whose Label field reads
 // the label's name). Returns those that took. Self-contained: it runs on the editor page, before any module const.
@@ -1123,7 +1134,13 @@ async function pcFillCatnos(relMbid) {
         await sleep(1200);
         if (cat.value === c.catno) done.push(c);
     }
-    try { localStorage.removeItem(key); localStorage.removeItem(`pc:picked-catno:${relMbid}`); } catch (e) {}
+    // one that did not go in stays picked, for the next add
+    try {
+        localStorage.removeItem(key);
+        const pk = `pc:picked-catno:${relMbid}`, picked = JSON.parse(localStorage.getItem(pk) || '{}') || {};
+        for (const c of done) delete picked[c.mbid];
+        if (Object.keys(picked).length) localStorage.setItem(pk, JSON.stringify(picked)); else localStorage.removeItem(pk);
+    } catch (e) {}
     if (done.length) pcMark('catalog numbers filled', done.map(c => c.catno).join(', '));
     return done;
 }
@@ -9366,7 +9383,7 @@ function pcShowPastedBarcode(code) {
     if (!chip) return;
     chip.style.display = code ? '' : 'none';
     chip.textContent = code ? `${code} ×` : '';
-    chip.dataset.tip = code ? `Pasted barcode ${code}\nThe platforms are checked against it, and a link you add adds it to the release too.\nClick: remove it` : '';
+    chip.dataset.tip = code ? `Pasted barcode ${code}\nThe platforms are checked against it, and a link you add adds it to the release too.\nRight-click: add it to the release in the background, on its own\nClick: remove it` : '';
     pcShowFoundBarcodes();   // #674: the found ones give way to the pasted one
 }
 
@@ -9504,7 +9521,7 @@ function pcAddBarcodeBg(c, onMb) {
         appendLog('System', `Barcode ${c.code}: not added (${warn.join('; ')})`, 'warn');
         return;
     }
-    const from = 'reported by ' + c.platforms.map(p => PROVIDER_NAME[p]).join(', ');
+    const from = c.platforms.length ? 'reported by ' + c.platforms.map(p => PROVIDER_NAME[p]).join(', ') : 'given by hand';
     try { localStorage.setItem(`pc:bg-barcode:${mbid}`, JSON.stringify({ code: c.code, from })); }
     catch (e) { mbuToast(`✗ Couldn't queue barcode ${c.code}`, { kind: 'error' }); return; }
     appendLog('System', `Barcode ${c.code}: adding it in the background, ${from}`, 'ok');
@@ -9573,7 +9590,7 @@ function pcShowFoundCatnos() {
         const v = Object.values(picked);
         chip.style.display = v.length ? '' : 'none';
         chip.textContent = v.length ? `${v.map(x => x.catno).join(', ')} ×` : '';
-        chip.dataset.tip = v.length ? `Catalog number ${v.map(x => `${x.catno} for ${x.name}`).join(', ')}\nA link you add adds it to the release too.\nClick: remove it` : '';
+        chip.dataset.tip = v.length ? `Catalog number ${v.map(x => `${x.catno} for ${x.name}`).join(', ')}\nA link you add adds it to the release too.\nRight-click: add it in the background, on its own\nClick: remove it` : '';
     }
     if (!btn) return;
     const list = pcFoundCatnos().filter(e => !picked[e.label.mbid]);
@@ -9593,6 +9610,21 @@ function pcQueuePickedCatnos() {
     } catch (e) {}
     if (v.length) appendLog('System', `Inject: catalog number ${v.map(x => `${x.catno} (${x.name})`).join(', ')} goes in with the links`, 'ok');
 }
+// Catalog numbers straight onto the release, with no links, as pcAddBarcodeBg does for a barcode.
+function pcAddCatnosBg(v) {
+    try { localStorage.setItem(`pc:pending-catno:${mbid}`, JSON.stringify(v)); }
+    catch (e) { mbuToast("✗ Couldn't queue the catalog number", { kind: 'error' }); return false; }
+    const names = v.map(x => `${x.catno} (${x.name})`).join(', ');
+    appendLog('System', `Catalog number ${names}: adding it in the background`, 'ok');
+    mbuToast(`Adding catalog number ${v.map(x => x.catno).join(', ')} in the background`);
+    openReleaseEditTab(mbid, { background: true, hash: '#pc-autocommit-pc-catno' });
+    return true;
+}
+// A link for the release group has no edit on the release to go in with, so the catalog numbers used get their own.
+function pcCatnosWithoutLink() {
+    const v = Object.entries(pcPickedCatnos()).map(([k, x]) => ({ mbid: k, name: x.name, catno: x.catno }));
+    return v.length ? pcAddCatnosBg(v) : false;
+}
 function pcOpenFoundCatnos(btn) {
     const old = document.getElementById('pc-cat-pop');
     if (old) { old._pcClose(); return; }
@@ -9602,7 +9634,7 @@ function pcOpenFoundCatnos(btn) {
     const pop = document.createElement('div');
     pop.id = 'pc-cat-pop'; pop.className = 'pc-bc-pop';
     pop.innerHTML = mbuHtml(`<div class="pc-bc-h">Catalog numbers on the platforms</div>` + list.map((c, i) => `
-      <div class="pc-bc-opt" data-i="${i}" data-tip="Add ${pcEsc(c.catno)} to ${pcEsc(c.label.name)} with the links you add\nRight-click: copy it">
+      <div class="pc-bc-opt" data-i="${i}" data-tip="Add ${pcEsc(c.catno)} to ${pcEsc(c.label.name)} with the links you add\nRight-click: add it to the release in the background, on its own\nCtrl+click: copy it">
         <span class="pc-bc-code">${pcEsc(c.catno)}</span><span class="pc-bc-use">use</span>
         <span class="pc-bc-who">for ${pcEsc(c.label.name)} · ${c.platforms.map(p => `<span class="pc-bc-plat" data-tip="${PROVIDER_NAME[p]}">${stIcon(p, 12)}</span>`).join('')} ${c.platforms.map(p => PROVIDER_NAME[p]).join(', ')}</span>
         ${c.sure ? '<span class="pc-bc-fmt pc-bc-same">✓ from links like this release</span>'
@@ -9610,7 +9642,7 @@ function pcOpenFoundCatnos(btn) {
           : c.format === 'other' ? `<span class="pc-bc-fmt pc-bc-other">⚠ ${c.kinds.join(' and ')}: this release is ${mbKind}</span>`
           : c.barcodes.every(b => !b) ? '<span class="pc-bc-fmt pc-bc-other">⚠ from platforms that give no barcode</span>'
           : '<span class="pc-bc-fmt pc-bc-other">⚠ from another barcode than this release\'s</span>'}
-      </div>`).join('') + `<div class="pc-bc-hint">Right-click to copy</div>`);
+      </div>`).join('') + `<div class="pc-bc-hint">Right-click to add it on its own, in the background · Ctrl+click to copy</div>`);
     // EH mounts the dock outside its isolated body; keep the picker in the same stacking context.
     (document.documentElement.hasAttribute('data-mbu-dock') ? document.documentElement : document.body).appendChild(pop);
     const r = btn.getBoundingClientRect();
@@ -9621,8 +9653,12 @@ function pcOpenFoundCatnos(btn) {
     pop._pcClose = off;
     pop.addEventListener('click', e => {
         const opt = e.target.closest('.pc-bc-opt'); if (!opt) return;
-        off();
         const c = list[+opt.dataset.i];
+        if (e.ctrlKey || e.metaKey) {
+            navigator.clipboard.writeText(c.catno).then(() => mbuToast(`Copied ${c.catno}`), () => mbuToast(`✗ Couldn't copy ${c.catno}`, { kind: 'error' }));
+            return;
+        }
+        off();
         pcSetPickedCatnos({ ...pcPickedCatnos(), [c.label.mbid]: { name: c.label.name, catno: c.catno } });
         appendLog('System', `Catalog number ${c.catno} used for ${c.label.name} (from ${c.platforms.map(p => PROVIDER_NAME[p]).join(', ')})`, 'ok');
         mbuToast(`✓ Catalog number ${c.catno}: added to ${c.label.name} with the links you add`, { kind: 'ok' });
@@ -9631,7 +9667,13 @@ function pcOpenFoundCatnos(btn) {
         const opt = e.target.closest('.pc-bc-opt'); if (!opt) return;
         e.preventDefault();
         const c = list[+opt.dataset.i];
-        navigator.clipboard.writeText(c.catno).then(() => mbuToast(`Copied ${c.catno}`), () => mbuToast(`✗ Couldn't copy ${c.catno}`, { kind: 'error' }));
+        off();
+        const warn = opt.querySelector('.pc-bc-other')?.textContent.replace(/^⚠\s*/, '');
+        if (warn && !confirm(`Add catalog number ${c.catno} to ${c.label.name} anyway?\n\n${warn}`)) {
+            appendLog('System', `Catalog number ${c.catno}: not added (${warn})`, 'warn');
+            return;
+        }
+        pcAddCatnosBg([{ mbid: c.label.mbid, name: c.label.name, catno: c.catno }]);
     });
 }
 // A pasted text that is a barcode: EAN-8, UPC-A, EAN-13 or GTIN-14, spaces and dashes allowed
@@ -9690,6 +9732,12 @@ function pcSyncOffers() {
 new MutationObserver(pcSyncOffers).observe(document.getElementById('pc-offers'), { subtree: true, attributes: true, attributeFilter: ['style'] });
 pcSyncOffers();
 document.getElementById('mb-picked-cat').addEventListener('click', () => { pcSetPickedCatnos({}); mbuToast('Catalog number removed'); });
+document.getElementById('mb-picked-cat').addEventListener('contextmenu', e => { e.preventDefault(); pcCatnosWithoutLink(); });
+document.getElementById('mb-pasted-bc').addEventListener('contextmenu', e => {
+    e.preventDefault();
+    const code = pcPastedBarcode(); if (!code) return;
+    pcAddBarcodeBg({ code, platforms: [] }, null);
+});
 document.getElementById('mb-pasted-bc').addEventListener('click', () => {
     const code = pcPastedBarcode();
     pcSetPastedBarcode(null);
@@ -9779,13 +9827,16 @@ function formatBlocks(platform) {
 //     autoCommit branch does the submit+close, we just wait for its postMessage here.
 //     Only release edits support this (release-group has no plain landing @match to
 //     detect the redirect on), so callers must pass a release mbid.
-function openReleaseEditTab(mbid_, { background = false, hash = '#pc-autocommit' } = {}) {
-    const url = `${MB_ORIGIN}/release/${mbid_}/edit`;
-    // #811: an add is what this page's log is kept for (a background add reloads the page), named after the release
+// #811: an add is what this page's log is kept for (a background add reloads the page), named after the release
+function pcKeepAddLog(relMbid) {
     PC_LOG.keep();
     const h1 = PC_FOLLOW ? null : document.querySelector('h1 bdi') || document.querySelector('h1');
-    const name = h1 ? h1.textContent.trim() : PC_FOLLOW ? mbDataGet(mbid_)?.album || '' : '';
+    const name = h1 ? h1.textContent.trim() : PC_FOLLOW ? mbDataGet(relMbid)?.album || '' : '';
     if (name) PC_LOG.name(name);
+}
+function openReleaseEditTab(mbid_, { background = false, hash = '#pc-autocommit' } = {}) {
+    const url = `${MB_ORIGIN}/release/${mbid_}/edit`;
+    pcKeepAddLog(mbid_);
     if (background) {
         if (typeof GM_openInTab !== 'function' || !PC_CHANNEL) {
             appendLog('System', `Background add needs GM_openInTab — opening in a normal tab instead`, 'warn');
@@ -9820,6 +9871,7 @@ function openReleaseEditTab(mbid_, { background = false, hash = '#pc-autocommit'
 // conditional.
 function openRgEditTab(rgMbid, { background = false, sameTabAllowed = false } = {}) {
     const url = `${MB_ORIGIN}/release-group/${rgMbid}/edit`;
+    pcKeepAddLog(mbid);
     if (background) {
         if (typeof GM_openInTab !== 'function' || !PC_CHANNEL) {
             appendLog('System', `Background master add needs GM_openInTab — opening in a normal tab instead`, 'warn');
@@ -9910,7 +9962,8 @@ function addMasterUrl(masterUrl, background = false) {
     // #559: same opener as the + button's release-group bucket, so there is one
     // place that knows how to reach the release-group editor. It is always the
     // only tab being opened, so a foreground add may take this one.
-    openRgEditTab(rgMbid, { background, sameTabAllowed: true });
+    // the catalog numbers' tab reports to this page, so it stays
+    openRgEditTab(rgMbid, { background, sameTabAllowed: !pcCatnosWithoutLink() });
 }
 
 // force (#641, middle click on +): barcode/format confidence doesn't withhold anything.
@@ -10018,7 +10071,7 @@ async function runInjectBtn(e, background, force) {
         // "background add doesn't cover the release-group master URL" tab it used
         // to leave open and focused.
         appendLog('System', `Inject (${background ? 'background' : 'click'}): queued ${rgCount} release-group URL(s) — opening release-group editor`, 'ok');
-        openRgEditTab(rgMbid, { background, sameTabAllowed: releaseCount === 0 });
+        openRgEditTab(rgMbid, { background, sameTabAllowed: releaseCount === 0 && !pcCatnosWithoutLink() });
     }
 }
 // its data-tip, with the finished scan's summary of what it would add above the keys
@@ -10461,7 +10514,7 @@ document.addEventListener('mc:apply', e => {
 });
 pcMcHello();   // MC may have asked before PC loaded
 if (mbuTestHooks()) window.__pcTest702 = { seed: () => PC_SEED, seedData: () => PC_SEED_DATA, pcMcSeedProbe };
-if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcMcMasterFinding, pcScan, pcMcReleaseLinkTypes, cacheGet, cacheSet, mbDataGet, mbFormat: () => MB_FORMAT, pcMcBarcodeFindings, pcMcLabelFindings, pcResolveLabel, pcPageLabels, pcMcCatnoFindings, pcFoundCatnos, pcNoteFoundCatnos, pcCatnosBeatport, pcPickedCatnos, pcQueuePickedCatnos, updateRow, scanDone: () => PC_SCAN.last, pcLabelNorm, setCons: c => { _pcMcCons = c; }, pcNoteFoundBarcode, pcSetPastedBarcode, setOwnBarcode: b => { MB_OWN_BARCODE = b; }, setMbBarcode: b => { MB_BARCODE = b; }, clearFound: () => PC_FOUND_BC.clear() };
+if (mbuTestHooks()) window.__pcTest680 = { addMasterUrl, pcMcFinding, pcMcMasterFinding, pcScan, pcMcReleaseLinkTypes, cacheGet, cacheSet, mbDataGet, mbFormat: () => MB_FORMAT, pcMcBarcodeFindings, pcMcLabelFindings, pcResolveLabel, pcPageLabels, pcMcCatnoFindings, pcFoundCatnos, pcNoteFoundCatnos, pcCatnosBeatport, pcPickedCatnos, pcQueuePickedCatnos, updateRow, scanDone: () => PC_SCAN.last, pcLabelNorm, setCons: c => { _pcMcCons = c; }, pcNoteFoundBarcode, pcSetPastedBarcode, setOwnBarcode: b => { MB_OWN_BARCODE = b; }, setMbBarcode: b => { MB_BARCODE = b; }, clearFound: () => PC_FOUND_BC.clear() };
 
 // #847: Event Horizon shows another release without loading its page: the panel follows it
 function pcFollow(r) {

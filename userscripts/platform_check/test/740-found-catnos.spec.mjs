@@ -128,3 +128,29 @@ test('#740: the MusicBrainz row shows the release\'s catalog number', { tag: ['@
   check(/Catalog number LMOT 1017 \(M\.O\.T\. Records\)/.test(row[2]), 'and in its tooltip');
   await page.locator('#mb-pc-panel').screenshot({ path: 'test-results/pc-740-mb-row.png' });
 });
+
+test('Catalog numbers without links: right-click, its chip, and with a Discogs master', { tag: ['@sandbox'] }, async ({ page, context, inject }) => {
+  answerGm(context, ({ url }) => /musicbrainz\.org|wikidata/.test(url) ? null : { status: 404, body: '' });
+  await page.goto(`${SANDBOX}/release/${RELEASE}`, { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#content table.medium');
+  await page.evaluate(r => { localStorage.removeItem('pc:picked-catno:' + r); localStorage.removeItem('pc:pending-catno:' + r); }, RELEASE);
+  await inject('platform_check', { waitFor: '__pcTest680' });
+  await page.evaluate(() => {
+    window.__opened = []; window.GM_openInTab = u => { window.__opened.push(u); return null; };
+    window.__pcTest680.pcNoteFoundCatnos('beatport', [{ label: 'Artoffact', catno: 'AOF 146' }]);
+  });
+  const state = () => page.evaluate(r => ({ q: localStorage.getItem('pc:pending-catno:' + r) || '', opened: window.__opened }), RELEASE);
+  page.on('dialog', d => d.accept());
+  await page.click('#mb-found-cat');
+  await page.click('#pc-cat-pop .pc-bc-opt', { button: 'right' });
+  const one = await until(state, x => x.opened.length);
+  check(/AOF 146/.test(one.q) && one.opened[0].endsWith(`/release/${RELEASE}/edit#pc-autocommit-pc-catno`), `right-click adds it alone, in the background (${JSON.stringify(one)})`);
+  await page.click('#mb-found-cat');
+  await page.click('#pc-cat-pop .pc-bc-opt');
+  await page.click('#mb-picked-cat', { button: 'right' });
+  check((await until(state, x => x.opened.length > 1)).opened[1].endsWith('#pc-autocommit-pc-catno'), 'so does a right-click on its chip');
+  await page.evaluate(() => { window.__pcTest680.addMasterUrl('https://www.discogs.com/master/740', true); });
+  const m = await until(state, x => x.opened.length > 3);
+  check(m.opened[2].endsWith('#pc-autocommit-pc-catno') && /release-group\/.*#pc-autocommit$/.test(m.opened[3]), `a master adds it through the release (${m.opened})`);
+  await page.evaluate(r => { localStorage.removeItem('pc:picked-catno:' + r); localStorage.removeItem('pc:pending-catno:' + r); }, RELEASE);
+});
