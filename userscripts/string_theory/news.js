@@ -235,8 +235,7 @@ function stNewsOpen() {
   };
   ov.querySelector('#st-news-all').onclick = function () { items.forEach(function (i) { if (v.seen.indexOf(i.id) < 0) v.seen.push(i.id); }); persist(); draw(); };
   var state = ov.querySelector('#st-news-state'), checking = false;
-  ov.querySelector('#st-news-refresh').onclick = function (e) {
-    e.preventDefault();
+  var refresh = function () {
     if (checking) return;
     checking = true; state.textContent = 'checking…';
     stNewsCheck(true, function (ok) {
@@ -249,11 +248,13 @@ function stNewsOpen() {
       if (n < 0) show(0); else { at = n; draw(); }
     });
   };
+  ov.querySelector('#st-news-refresh').onclick = function (e) { e.preventDefault(); refresh(); };
   ov.addEventListener('mousedown', function (e) { if (e.target === ov) close(); });
   // open on the newest unread post
   var first = stNewsUnread(v)[0], idx = first ? items.indexOf(first) : 0;
   show(idx < 0 ? 0 : idx);
   ov.querySelector('#st-news').focus();
+  if (Date.now() - v.at > 3e5) refresh();   // on opening, but not on every opening: GitHub allows 60 anonymous calls an hour
 }
 function stNewsStart() {
   var css = document.createElement('style'); css.id = 'st-news-gold';
