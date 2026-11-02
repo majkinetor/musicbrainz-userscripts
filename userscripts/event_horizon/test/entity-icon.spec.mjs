@@ -28,4 +28,9 @@ test('the entity icon copies the MBID and sends to Picard', { tag: ['@sandbox', 
   await icon.click({ button: 'right' });
   // no Picard in the test run: the answer says the request went and failed
   check(/Picard/.test(await until(() => page.locator('#toast').innerText(), t => /Picard/.test(t))), 'and the toast reports on Picard');
+  await page.evaluate(() => document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: 'event_horizon', cancelable: true })));
+  await page.locator('.mbu-cfg-log').click();
+  const logged = await until(() => page.locator('.mbu-logpop').innerText(), t => /reachable|Sent to|answered/.test(t));
+  check(logged.includes(`Send to Picard: http://127.0.0.1:8000/openalbum?id=${rel}`), 'the Activity log has the send, got ' + logged);
+  check(/Picard is not reachable|Sent to Picard|Picard answered/.test(logged), 'and its outcome');
 });

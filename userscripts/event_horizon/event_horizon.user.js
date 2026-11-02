@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.181000
+// @version      2026.11.02.190000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3548,8 +3548,13 @@ function facts(r) {
 }
 // what Picard's browser integration opens for an entity; it loads nothing else
 const PICARD_OPEN = { release: 'openalbum', recording: 'opennat' };
-const picardSend = q => GM_xmlhttpRequest({ method: 'GET', url: `http://127.0.0.1:8000/${q}`, timeout: 5000,
-    onload: x => toast(x.status < 400 ? 'Sent to Picard' : `Picard answered ${x.status}`), onerror: () => toast('Picard is not reachable on port 8000'), ontimeout: () => toast('Picard is not reachable on port 8000') });
+const picardSend = q => {
+    const url = `http://127.0.0.1:8000/${q}`, say = (lvl, m) => { toast(m); LOG[lvl](m); };
+    LOG.info(`Send to Picard: ${url}`);
+    GM_xmlhttpRequest({ method: 'GET', url, timeout: 5000,
+        onload: x => x.status < 400 ? say('info', 'Sent to Picard') : say('warn', `Picard answered ${x.status}`),
+        onerror: () => say('warn', 'Picard is not reachable on port 8000'), ontimeout: () => say('warn', 'Picard is not reachable on port 8000') });
+};
 function heroFacts(app) {
     const h = app.querySelector('section.hero'), f = h && h.querySelector('.facts'); if (!f) return;
     const mb = [...f.children].find(c => { const l = c.querySelector('.label'); return l && l.textContent.trim() === 'MBID'; }) || null;
