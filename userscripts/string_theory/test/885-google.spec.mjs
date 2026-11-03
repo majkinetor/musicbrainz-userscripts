@@ -96,6 +96,14 @@ test('expired Google access never prompts or sends a request; disconnect preserv
   expect(a.gm.get('saved')).toBe('keep');
   a.disconnect(); expect(a.gm.get('string_theory.sync.google.auth')).toBeUndefined(); expect(a.gm.get('string_theory.sync.auth').refreshToken.token).toBe('dropbox-token');
 });
+test('metadata-only Drive version changes do not block deleting unchanged backup content', { tag: '@unit' }, async () => {
+  const server = googleCloud(), a = runtime(server, { saved: 'snapshot' });
+  await a.backups('save'); const selected = (await a.drive().listBackups())[0];
+  const file = server.files.get(selected.id);
+  file.version = '9'; // Drive version includes changes beyond content revisions.
+  await a.backups('delete', selected);
+  expect(file.trashed).toBe(true);
+});
 test('Google cancellation and denied scopes keep working credentials; successful reconnect survives staged imports', { tag: '@unit' }, async () => {
   const server = googleCloud(); let config;
   const googleApi = { initTokenClient: options => { config = options; return { requestAccessToken: () => {} }; }, hasGrantedAllScopes: r => r.scope === 'https://www.googleapis.com/auth/drive.file' };

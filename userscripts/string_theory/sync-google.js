@@ -187,7 +187,9 @@ function stSyncGoogle(auth) {
     deleteBackup: async function (selected) {
       var file = await request('files/' + encodeURIComponent(selected.id) + '?fields=' + fields);
       entry(file);
-      if (file.version !== selected.version || file.headRevisionId !== selected.rev) throw new Error('Backup changed. Refresh the list.');
+      // Drive's general version includes invisible metadata updates. Only a different
+      // content revision makes this selection stale; reading a backup must not block deletion.
+      if (file.headRevisionId !== selected.rev) throw new Error('Backup changed. Refresh the list.');
       // Drive deletion is recoverable. Never permanently delete a file or touch sync revisions.
       return request('files/' + encodeURIComponent(file.id) + '?fields=id', { method: 'PATCH', json: { trashed: true } });
     },
