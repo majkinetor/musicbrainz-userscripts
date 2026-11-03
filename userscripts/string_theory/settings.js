@@ -418,6 +418,7 @@ function stSettings(tab) {
       q('#' + b.getAttribute('aria-controls')).hidden = b !== t;
     });
     q('#st-tab-menu').value = t.id.slice(-1);
+    try { localStorage.setItem('st-cfg-tab', t.id.slice(-1)); } catch (_) {}
     if (enteringAbout) checkUpdates();
   };
   var live = stLive, openFor = function (name) { stOpenFor(name, toFront); };
@@ -605,7 +606,10 @@ function stSettings(tab) {
     });
   }
   if (!ST_ON_MB) checkUpdates();
-  else if (tab && tab !== 'g' && q('#st-tab-' + tab)) q('#st-tab-' + tab).click();
+  else {
+    if (!tab) try { tab = localStorage.getItem('st-cfg-tab'); } catch (_) {}
+    if (tab && tab !== 'g' && q('#st-tab-' + tab)) q('#st-tab-' + tab).click();
+  }
   Array.prototype.forEach.call(panel.querySelectorAll('[data-st-m]'), function (box) {
     box.onchange = function () {
       stFlip(box.getAttribute('data-st-m'));
