@@ -376,7 +376,7 @@ function stSyncDownload(doc, name) {
   var a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
 }
 function stSyncMarkup() {
-  return '<div class="st-row st-sync-between"><select id="st-sync-provider" aria-label="Provider"><option value="dropbox">Dropbox</option><option value="google">Google Drive</option></select><button class="st-b st-sync-link" type="button" id="st-sync-connect">Connect</button></div>'
+  return '<div class="st-row st-sync-between"><select id="st-sync-provider" aria-label="Provider"><option value="dropbox">Dropbox</option><option value="google">Google Drive</option></select><button class="st-b st-sync-link" type="button" id="st-sync-connect">Connect</button><button class="st-b st-sync-link" type="button" id="st-sync-disconnect" hidden>Disconnect</button></div>'
     + '<p class="st-cap" id="st-sync-status" role="status"></p>'
     + '<section class="st-sync-group"><div class="st-row st-sync-between"><h3>Sync</h3><span class="st-cap" id="st-sync-last"></span></div>'
     + '<div class="st-row"><button class="st-b st-sync-primary" type="button" id="st-sync-now" data-tip="Merge this device with Dropbox">Sync now</button><button class="st-b" type="button" id="st-sync-push" data-tip="Replace Dropbox’s portable data with this device’s">Push</button><button class="st-b" type="button" id="st-sync-pull" data-tip="Replace this device’s portable data with Dropbox’s\nKeeps device settings; applies on the next page load">Pull</button><button class="st-b" type="button" id="st-sync-reload" hidden>Reload</button></div>'
@@ -387,8 +387,7 @@ function stSyncMarkup() {
     + '<div class="st-row st-sync-backup-row"><span>This device</span><button class="st-b" type="button" id="st-sync-export">Export</button><button class="st-b" type="button" id="st-sync-import">Import</button><input id="st-sync-file" type="file" accept=".json,application/json" hidden></div><div class="st-row"><button class="st-b" type="button" id="st-sync-recovery" hidden>Export recovery copy</button><span id="st-sync-backup-status" role="status"></span></div>'
     + '<div id="st-sync-remote" hidden><div class="st-row"><span class="st-lbl" id="st-sync-backup-provider">Dropbox backups</span><button class="st-b" type="button" id="st-sync-backup-refresh">Refresh</button><button class="st-b" type="button" id="st-sync-backup-close">Hide</button></div><div id="st-sync-backups" aria-label="Dropbox backups" hidden></div><p class="st-cap">Apply merges a backup into your settings on reload. Delete removes only that saved backup.</p></div>'
     + '</section><details id="st-sync-included"><summary>What’s included</summary><p class="st-cap">Settings, saved data and credentials travel between devices. Caches, logs, recent activity, temporary work and device layout stay here.</p><p class="st-cap">Downloaded changes apply on the next page load.</p>'
-    + '<p class="st-cap" id="st-sync-google-note" hidden>Google access lasts about one hour. Reconnect when it expires. The app is currently limited to registered test users.</p></details>'
-    + '<div class="st-row st-sync-footer"><button class="st-b st-sync-link" type="button" id="st-sync-disconnect" hidden>Disconnect</button></div>';
+    + '<p class="st-cap" id="st-sync-google-note" hidden>Google access lasts about one hour. Reconnect when it expires. The app is currently limited to registered test users.</p></details>';
 }
 function stSyncPaint() {
   var panel = document.getElementById('st-p-s'); if (!panel) return;

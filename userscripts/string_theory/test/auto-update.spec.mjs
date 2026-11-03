@@ -16,7 +16,7 @@ test('About checks on each entry and keeps the newest response', { tag: '@sandbo
   await expect.poll(() => page.evaluate(() => [...window.__menu.keys()].some(k => /Settings/.test(k)))).toBe(true);
   await page.evaluate(() => [...window.__menu.entries()].find(([k]) => /Settings/.test(k))[1]());
   await page.locator('#st-tab-a').click();
-  const channels = await page.locator('#st-upd > div').count(); // branch builds also check their own channel
+  const channels = await page.locator('#st-upd > [data-channel]').count(); // Installed describes the local build, without a network request.
   expect(channels).toBeGreaterThanOrEqual(2);
   await expect.poll(() => page.evaluate(() => window.__updates.length)).toBe(channels);
   await expect(page.locator('#st-check')).toHaveCount(0);

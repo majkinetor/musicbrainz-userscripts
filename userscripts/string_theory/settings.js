@@ -221,6 +221,10 @@ var ST_CSS = ''
   + '#st-cfg .st-nav{row-gap:4px}#st-cfg .st-links{margin-left:0}#st-cfg .st-ver{white-space:normal}'
   + '#st-cfg .st-cap,#st-cfg .st-note,#st-cfg .st-upd span,#st-cfg .st-lbl,#st-cfg #st-p-g .st-lbl{white-space:normal;overflow-wrap:anywhere}#st-cfg .st-upd>div{flex-wrap:wrap}'
   + '#st-cfg .st-di{width:36px;height:36px}#st-cfg .st-strip{gap:10px}#st-cfg .mbu-cfg-h{flex-wrap:wrap;row-gap:4px;cursor:default}}';
+ST_CSS += '#st-cfg h3.st-about-h{font:600 13px/1.4 var(--mbu-font);text-transform:none;letter-spacing:0;color:var(--mbu-text);margin:0 0 12px}#st-cfg #st-p-s .st-row:has(>#st-sync-recovery[hidden]):has(>#st-sync-backup-status:empty){display:none}';
+ST_CSS +='#st-cfg{width:min(760px,94vw);container-type:inline-size}#st-cfg .st-panes{display:block}#st-cfg .st-panes>.st-sec[hidden]{display:none!important}#st-cfg .st-title{flex-wrap:nowrap!important;white-space:nowrap;gap:12px}#st-cfg .st-title .mbu-cfg-name{flex-shrink:0}#st-cfg .st-title .mbu-cfg-sp,#st-cfg .st-title .mbu-cfg-ver{display:none}#st-cfg .st-title .st-tabs{margin-left:auto;flex-shrink:0}#st-cfg .st-title .st-tabs button{border:0;border-bottom:2px solid transparent;background:none;border-radius:0;margin:0;padding:5px 0;color:var(--mbu-text-dim)}#st-cfg .st-title .st-tabs{gap:18px}#st-cfg .st-title .st-tabs button[aria-selected=true]{border-bottom-color:var(--mbu-accent);color:var(--mbu-accent-text)}#st-cfg .st-title #st-tab-menu{margin-left:auto;width:100px;flex-shrink:0}#st-cfg .st-title .mbu-ov-x{margin-left:0}'
+  + '#st-cfg .st-footer{display:flex;flex-wrap:wrap;align-items:center;gap:18px;margin-top:20px;padding-top:12px;border-top:1px solid var(--mbu-border)}#st-cfg .st-footer .st-links{margin-left:0}#st-cfg .st-footer #st-cfg-news{margin-right:0}#st-cfg .st-footer .mbu-help{margin-left:auto}#st-cfg .st-group{margin:0;padding:12px 0 18px}#st-cfg .st-group+.st-group{border-top:1px solid var(--mbu-border);padding-top:18px}#st-cfg .st-group>h3.st-h{border:0;margin:0 0 12px;padding:0;font-size:13px}#st-cfg .st-lbl{font:inherit!important;letter-spacing:0;text-transform:none;color:var(--mbu-text)!important}#st-cfg .st-field-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:8px 28px}#st-cfg .st-field{display:grid;grid-template-columns:100px minmax(0,180px);align-items:center;gap:10px;min-width:0}#st-cfg .st-field select{width:100%;max-width:180px}#st-cfg .st-field .st-seg{justify-self:start}#st-cfg .st-mode-label{display:none}#st-cfg .st-seg{border:0;gap:14px;border-radius:0;margin:0;overflow:visible}#st-cfg .st-seg button{border:0!important;border-bottom:2px solid transparent!important;border-radius:0;padding:4px 0;background:none;color:var(--mbu-text-dim)}#st-cfg .st-seg button[aria-checked=true]{background:none;border-bottom-color:var(--mbu-accent)!important;color:var(--mbu-accent-text)}#st-cfg .st-step{border:0;border-radius:0}#st-cfg .st-key{justify-self:start;border:0;border-bottom:1px solid var(--mbu-border);border-radius:0;background:none}#st-cfg .st-strip{border:0;padding:0;margin:12px 0 6px;gap:10px}#st-cfg .st-th-x{display:block}#st-cfg .st-th-x:has(.st-tx[hidden]):has(.st-cap[hidden]){display:none}'
+  + '#st-cfg select.mbu-select:not(#mbu-0):not(#mbu-1){border:0;border-bottom:1px solid var(--mbu-border);border-radius:0;background-color:transparent!important;box-shadow:none;font-weight:400;padding-left:2px}#st-cfg #st-p-s .st-sync-between{justify-content:flex-start;gap:20px}#st-cfg #st-p-s .st-sync-backup-row>span:first-child{flex:0 0 100px}#st-cfg #st-p-s .st-sync-footer{display:none}#st-cfg #st-p-s .st-sync-group{margin-top:18px;padding-top:16px}#st-cfg .st-upd{background:none;padding:0;margin:0 0 20px}#st-cfg .st-upd>div{display:grid;grid-template-columns:70px minmax(0,max-content) minmax(0,max-content) auto;gap:12px;margin:10px 0}#st-cfg .st-upd b{min-width:0}#st-cfg .st-upd span{white-space:normal}#st-cfg .st-scripts{grid-template-columns:minmax(0,1fr);gap:4px 28px}#st-cfg .st-scripts .st-row{white-space:normal}#st-cfg .st-ver{font-size:11px}#st-cfg .st-title [hidden]{display:none!important}@container(min-width:620px){#st-cfg .st-field-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@container(min-width:520px){#st-cfg .st-scripts{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:640px){#st-cfg .st-title{gap:8px}#st-cfg .st-title .mbu-cfg-name{font-size:14px}#st-cfg .st-title .st-tabs{gap:12px}#st-cfg .st-title .st-tabs button{font-size:12px;min-height:30px}#st-cfg #st-p-g .st-field select{width:100%;height:30px}#st-cfg .st-field .st-lbl{margin:0}#st-cfg .st-upd>div{grid-template-columns:62px minmax(0,1fr) auto}#st-cfg .st-upd .st-channel-state{display:none}#st-cfg .st-seg button{padding:6px 0;min-height:30px}}';
 // a launcher opens its script's settings on right-click: pass the click on to the live one
 function stLive(name) {
   var els = Array.prototype.filter.call(document.querySelectorAll('[data-mb-corner="br"][data-mb-corner-label]'), function (el) {
@@ -303,8 +307,8 @@ function stSettings(tab) {
   var off = __stReadOff(), known = mbuShared('dockKnown') || {};
   h += '<section class="st-sec" id="st-p-a"' + (ST_ON_MB ? ' role="tabpanel" aria-labelledby="st-tab-a" hidden' : '') + '>'
     + (ST_ON_MB ? '' : '<div class="st-row">' + links + '</div>')
-    + '<div class="st-upd" id="st-upd"></div>'
-    + '<div class="st-scripts" data-tip="Right-click a script for its settings">' + stMembers.map(function (m) {
+    + '<h3 class="st-about-h">Updates</h3><div class="st-upd" id="st-upd"></div>'
+    + '<h3 class="st-about-h">Scripts</h3><div class="st-scripts" data-tip="Right-click a script for its settings">' + stMembers.map(function (m) {
       var icon = m[3] ? '<img alt="" src="' + stEsc(m[3]) + '">' : known[m[1]] || '';
       return '<label class="st-row" data-name="' + stEsc(m[1]) + '"><input type="checkbox" data-st-m="' + stEsc(m[0]) + '"' + (off.indexOf(m[0]) < 0 ? ' checked' : '') + '>'
         + '<span class="st-si">' + stFitIcon(icon) + '</span>' + stEsc(m[1]) + '<span class="st-ver">v' + stEsc(m[2]) + '</span></label>';
@@ -320,7 +324,7 @@ function stSettings(tab) {
   (document.body || html).appendChild(ov);
   stCfgOv = ov;
   var panel = ov.querySelector('#st-cfg'), q = function (s) { return panel.querySelector(s); };
-  var close = function () { ov.remove(); document.removeEventListener('keydown', onKey, true); document.removeEventListener('mousedown', onOut, true); };
+  var close = function () { if (tabObserver) tabObserver.disconnect(); ov.remove(); document.removeEventListener('keydown', onKey, true); document.removeEventListener('mousedown', onOut, true); };
   var newsLink = ov.querySelector('#st-cfg-news');
   if (newsLink) newsLink.addEventListener('click', function (e) { e.preventDefault(); close(); stNewsOpen(); });
   // #851: a script's settings opened from here sit above this window, which stays open; the one used last
@@ -343,6 +347,40 @@ function stSettings(tab) {
     close();
   };
   document.addEventListener('mousedown', onOut, true);
+  var tabObserver = null;
+  if (ST_ON_MB) {
+    var title = q('.mbu-cfg-h'), tabs = q('.st-tabs'), footer = document.createElement('div');
+    title.classList.add('st-title'); footer.className = 'st-footer';
+    var news = q('#st-cfg-news'), help = title.querySelector('.mbu-help'), linksNode = q('.st-links');
+    if (news) footer.appendChild(news); if (linksNode) footer.appendChild(linksNode); if (help) footer.appendChild(help);
+    panel.appendChild(footer); title.appendChild(tabs); q('.st-nav').remove();
+    var menu = document.createElement('select'); menu.id = 'st-tab-menu'; menu.setAttribute('aria-label', 'Settings tab'); menu.hidden = true;
+    menu.innerHTML = '<option value="g">General</option><option value="s">Sync</option><option value="a">About</option>';
+    title.appendChild(menu); menu.onchange = function () { q('#st-tab-' + menu.value).click(); };
+    var x = document.createElement('button'); x.type = 'button'; x.className = 'mbu-ov-x'; x.setAttribute('aria-label', 'Close settings'); x.textContent = '×'; x.onclick = close; title.appendChild(x);
+    var fitTabs = function () {
+      tabs.hidden = false; menu.hidden = true;
+      var width = 0, children = Array.prototype.filter.call(title.children, function (n) { return n !== menu && getComputedStyle(n).display !== 'none'; });
+      children.forEach(function (n) { width += n.getBoundingClientRect().width; });
+      width += Math.max(0, children.length - 1) * parseFloat(getComputedStyle(title).columnGap || 0);
+      tabs.hidden = width + 16 > title.clientWidth; menu.hidden = !tabs.hidden;
+    };
+    tabObserver = new ResizeObserver(fitTabs); tabObserver.observe(panel);
+    var general = q('#st-p-g');
+    var pairRow = function (row) {
+      var nodes = Array.prototype.slice.call(row.children); row.classList.add('st-field-grid'); row.classList.remove('st-row');
+      for (var i = 0; i + 1 < nodes.length; i += 2) { var f = document.createElement('div'); f.className = 'st-field'; f.appendChild(nodes[i]); f.appendChild(nodes[i + 1]); row.appendChild(f); }
+    };
+    q('#st-th-mode-l').classList.add('st-mode-label');
+    pairRow(q('#st-th-light').parentElement); pairRow(q('#st-side').parentElement); pairRow(q('#st-hover').parentElement); pairRow(q('#st-pal-on').parentElement);
+    var dockGrid = q('#st-side').closest('.st-field-grid'), hoverGrid = q('#st-hover').closest('.st-field-grid');
+    while (hoverGrid.firstChild) dockGrid.appendChild(hoverGrid.firstChild); hoverGrid.remove();
+    var sections = [], active = null; Array.prototype.slice.call(general.children).forEach(function (n) {
+      if (n.tagName === 'H3') { active = document.createElement('section'); active.className = 'st-group'; sections.push(active); }
+      if (active) active.appendChild(n);
+    }); sections.forEach(function (n) { general.appendChild(n); });
+    fitTabs();
+  }
   if (ST_ON_MB) q('.st-tabs').onclick = function (e) {
     var t = e.target.closest('[role=tab]');
     if (!t) return;
@@ -351,6 +389,7 @@ function stSettings(tab) {
       b.setAttribute('aria-selected', String(b === t));
       q('#' + b.getAttribute('aria-controls')).hidden = b !== t;
     });
+    q('#st-tab-menu').value = t.id.slice(-1);
     if (enteringAbout) checkUpdates();
   };
   var live = stLive, openFor = function (name) { stOpenFor(name, toFront); };
@@ -388,8 +427,8 @@ function stSettings(tab) {
       Array.prototype.forEach.call(q('#st-th-mode').children, function (b) { b.setAttribute('aria-checked', String(b.dataset.v === th.mode)); });
       q('#st-th-dark').value = th.dark; q('#st-th-light').value = th.light;
       q('#st-th-from').value = th.from; q('#st-th-to').value = th.to;
-      q('#st-th-time').style.visibility = th.mode === 'time' ? '' : 'hidden';
-      q('#st-th-sun').style.visibility = th.mode === 'sun' ? '' : 'hidden';
+      q('#st-th-time').hidden = th.mode !== 'time';
+      q('#st-th-sun').hidden = th.mode !== 'sun';
     };
     q('#st-th-mode').onclick = function (e) {
       var b = e.target.closest('button');
@@ -514,7 +553,7 @@ function stSettings(tab) {
   function checkUpdates() {
     var check = ++updateCheck, box = q('#st-upd');
     var refs = ['main', 'stable'];
-    if (ST_BRANCH) refs.push(ST_BRANCH);
+    // The installed build is shown below the available channels.
     // a row per channel from the start, so the box keeps its size when the answers come
     var got = {}, left = refs.length, draw = function (checking) {
         box.innerHTML = refs.map(function (r) {
@@ -522,10 +561,10 @@ function stSettings(tab) {
           var state = checking ? 'checking…' : !v2 ? 'couldn’t be read'
             : stCmpVer(v2, ST_VERSION) === 0 ? 'the one you have'
             : stCmpVer(v2, ST_VERSION) > 0 ? '<span class="st-newer">newer</span>' : 'older';
-          return '<div><b>' + stEsc(name) + '</b><span>' + (v2 ? 'v' + stEsc(v2) : '') + '</span><span>' + state
-            + '</span><span class="mbu-sp" style="flex:1"></span>'
+          return '<div data-channel="' + stEsc(r) + '"><b>' + stEsc(name) + '</b><span>' + (v2 ? 'v' + stEsc(v2) : '') + '</span><span class="st-channel-state">' + state
+            + '</span>'
             + (v2 && stCmpVer(v2, ST_VERSION) !== 0 ? '<a href="' + stEsc(stInstallUrl(r)) + '" target="_blank" rel="noopener">Install</a>' : '') + '</div>';
-        }).join('');
+        }).join('') + '<div><b>Installed</b><span>v' + stEsc(ST_VERSION) + '</span><span class="st-channel-state">' + stEsc(stChannel()) + '</span><span></span></div>';
     };
     draw(true);
     refs.forEach(function (ref) {

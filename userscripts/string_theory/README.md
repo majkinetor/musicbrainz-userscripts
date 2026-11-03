@@ -37,7 +37,7 @@ String Theory adds dock and setting management for all included scripts:
 - **[Command palette](#command-palette)**: Ctrl+K lists every command, filtered as you type.
 - **[What's new](#whats-new)**: String Theory's icon turns golden when there is news.
 - **[Sync and backup](#sync-and-backup)**: sync devices with Dropbox or Google Drive, save remote backups or export a file.
-- **Settings**: open them by right-clicking String Theory's icon. Right-click any dock icon for its own settings. Every icon is shown in About. Website and Issues links sit beside the tabs.
+- **Settings**: open them by right-clicking String Theory's icon. Right-click any dock icon for its own settings. Every icon is shown in About. Tabs sit in the title bar and become a menu when space is tight; Website and Issues links sit in the footer.
 - **Update**: in the About tab, toggle individual scripts, see their versions and check for updates.
 
 ## Theme
@@ -110,6 +110,8 @@ Downloaded changes apply on the next page load; **Reload** applies them immediat
 ## Settings
 
 The **General** tab holds the theme, the dock and the command palette; **Sync** holds providers and backups; **About** holds the scripts and updates.
+
+General uses two columns for related controls when space allows. About lists scripts in two columns on wider windows, with Latest and Stable above the installed version.
 
 | Setting             | Default             | What it does                                                                                                                    |
 | ------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
