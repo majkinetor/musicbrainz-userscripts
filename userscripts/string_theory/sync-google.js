@@ -1,72 +1,11 @@
-// Google Identity Services owns the popup flow; no client secret or refresh token ships.
+// Google Drive: redirect code flow with a refresh token, as Violentmonkey does.
 var ST_GOOGLE_KEY = '762250056217-8uip1j2fusc9npm4fievee31btjqf02o.apps.googleusercontent.com';
+// An installed-app secret is public by design (Violentmonkey ships its own); PKCE still guards the code.
+var ST_GOOGLE_SECRET = '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';
+var ST_GOOGLE_REDIRECT = 'https://musicbrainz.org/?st-google=callback';
 var ST_GOOGLE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
-var stGoogleLoading = null, stGoogleReady = false, stGoogleError = '';
-function stGoogleApi() {
-  var page = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
-  return page.google && page.google.accounts && page.google.accounts.oauth2;
-}
-function stGooglePageObject(value) {
-  return typeof cloneInto === 'function' && typeof unsafeWindow !== 'undefined' ? cloneInto(value, unsafeWindow, { cloneFunctions: true }) : value;
-}
-function stGoogleLoad() {
-  if (stGoogleApi()) { stGoogleReady = true; return Promise.resolve(); }
-  if (stGoogleLoading) return stGoogleLoading;
-  stGoogleError = '';
-  stGoogleLoading = new Promise(function (resolve, reject) {
-    var script = document.createElement('script'), timer;
-    script.src = 'https://accounts.google.com/gsi/client'; script.async = true;
-    function finish(error) {
-      clearTimeout(timer); script.onload = script.onerror = null;
-      if (error) { script.remove(); stGoogleError = 'Google sign-in could not load. Try again.'; reject(new Error(stGoogleError)); }
-      else { stGoogleReady = true; resolve(); }
-    }
-    script.onload = function () { finish(!stGoogleApi()); };
-    script.onerror = function () { finish(true); };
-    timer = setTimeout(function () { finish(true); }, 30000);
-    (document.head || document.documentElement).appendChild(script);
-  }).finally(function () { stGoogleLoading = null; stSyncPaint(); });
-  return stGoogleLoading;
-}
-function stGoogleConnect() {
-  // Called synchronously by the Connect button, after GIS has loaded, to retain user activation.
-  if (stSyncBusy) return;
-  if (!stGoogleReady || !stGoogleApi()) return stGoogleLoad();
-  var api = stGoogleApi(), pending = crypto.randomUUID(), client;
-  GM_setValue('string_theory.sync.google.oauth', pending);
-  stSyncBusy = true; stSyncPaint();
-  function finish(error) {
-    if (GM_getValue('string_theory.sync.google.oauth') === pending) GM_deleteValue('string_theory.sync.google.oauth');
-    stSyncBusy = false;
-    if (error) stUI().mbuToast(error.message || 'Google Drive authorization failed', { kind: 'error' });
-    stSyncSchedule(); stSyncPaint();
-  }
-  try {
-    client = api.initTokenClient(stGooglePageObject({ client_id: ST_GOOGLE_KEY, scope: ST_GOOGLE_SCOPE, include_granted_scopes: false,
-      callback: function (result) {
-        Promise.resolve().then(async function () {
-          if (GM_getValue('string_theory.sync.google.oauth') !== pending) throw new Error('A newer Google Drive connection was started');
-          if (!result || result.error || !/^Bearer$/i.test(result.token_type || '') || !result.access_token || !Number.isFinite(Number(result.expires_in)) || Number(result.expires_in) <= 0
-            || !api.hasGrantedAllScopes(result, ST_GOOGLE_SCOPE)) throw new Error('Google Drive permission was not granted');
-          var auth = { accessToken: { token: result.access_token, expiresAt: Date.now() + Math.min(86400, Number(result.expires_in)) * 1000 } };
-          var account = await stSyncGoogle(auth).account();
-          if (GM_getValue('string_theory.sync.google.oauth') !== pending) throw new Error('A newer Google Drive connection was started');
-          if (stSyncState(null, 'google').account && stSyncState(null, 'google').account !== account.id) GM_deleteValue(stSyncKey('base', 'google'));
-          stSyncKeepNewAuth('google');
-          GM_setValue(stSyncKey('auth', 'google'), auth);
-          stSyncState({ account: account.id, name: account.name, error: '', notice: '', at: 0, next: 0, failures: 0 }, 'google');
-          stUI().mbuToast('Connected to Google Drive');
-        }).then(function () { finish(); }, function (e) { finish(new Error(stSyncError(e, 'google'))); });
-      },
-      error_callback: function () { finish(new Error('Google sign-in was closed or blocked. Connect again.')); },
-    }));
-    client.requestAccessToken(stGooglePageObject({ prompt: '' }));
-  } catch (e) { finish(new Error('Google sign-in could not start. Connect again.')); }
-}
-function stSyncGoogle(auth) {
-  auth = auth || stSyncAuth('google');
-  var authorizer = new stSyncProviders.GoogleAuthorizer({ clientId: ST_GOOGLE_KEY }, auth);
-  authorizer.refreshToken = async function () { throw new Error('Google Drive session expired. Reconnect Google Drive.'); };
+function stSyncGoogle(authorizer) {
+  authorizer = authorizer || stSyncAuthorizer(true, 'google');
   var drive = new stSyncProviders.GoogleDrive({ authProvider: 'google', user: '' }, { authorizer: authorizer, fetch: stSyncFetch });
   var API = 'https://www.googleapis.com/drive/v3/', fields = 'id,name,mimeType,size,version,headRevisionId,modifiedTime,createdTime,appProperties,description,parents,trashed';
   function request(path, options) { return drive.request(path.indexOf('https:') === 0 ? path : API + path, Object.assign({ responseType: 'json' }, options)); }
@@ -107,8 +46,9 @@ function stSyncGoogle(auth) {
     var meta = { name: 'string-theory-' + kind + '-' + new Date().toISOString().replace(/:/g, '-') + '-' + crypto.randomUUID() + '.json', mimeType: 'application/json',
       parents: [await folder()], appProperties: { stSuite: 'string-theory', stKind: kind }, description: JSON.stringify({ parents: parents || [] }) };
     // Resumable upload also covers snapshots between 5 and 10 MB. Only Google receives the token.
+    var token = await stSyncProviders.ensureAccessToken(authorizer);
     var response = await stSyncFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=' + encodeURIComponent(fields), {
-      method: 'POST', headers: { Authorization: 'Bearer ' + authorizer.getAccessToken(), 'Content-Type': 'application/json', 'X-Upload-Content-Type': 'application/json' }, body: JSON.stringify(meta),
+      method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', 'X-Upload-Content-Type': 'application/json' }, body: JSON.stringify(meta),
     });
     if (!response.ok) throw Object.assign(new Error('Google Drive upload failed'), { response: response });
     var destination = new URL(response.headers.get('Location'));

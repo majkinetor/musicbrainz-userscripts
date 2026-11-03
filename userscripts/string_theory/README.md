@@ -17,7 +17,7 @@
 - **[Theme](#theme)**: light or dark, for MusicBrainz and every script.
 - **[What's new](#whats-new)**: String Theory's icon turns golden when there is news.
 - **[Command palette](#command-palette)**: Ctrl+K lists every command, filtered as you type.
-- **[Sync and backup](#sync-and-backup)**: sync devices with Dropbox, save Dropbox or Google Drive backups, or export a file.
+- **[Sync and backup](#sync-and-backup)**: sync devices with Dropbox or Google Drive, save backups there, or export a file.
 - **[Other recommended userscripts](#other-recommended-userscripts)**: scripts that go well with the bundle.
 
 ## What's included
@@ -93,7 +93,7 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 
 Open String Theory's settings → **Sync**, choose **Provider**, and connect. Use the same provider and account on each device. Switching providers keeps their connections and sync history separate.
 
-Sync actions and automatic sync are available for Dropbox only. Google Drive supports manual backups and imports; reconnect when its session expires.
+**Dropbox** and **Google Drive** open their sign-in in a new tab, return to MusicBrainz and finish the connection automatically. Both support the sync actions and automatic sync, and stay connected until you disconnect or revoke access.
 
 | Action   | What it does                                                                 |
 | -------- | ---------------------------------------------------------------------------- |
