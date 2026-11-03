@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.131000
+// @version      2026.11.04.004000
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2663,7 +2663,7 @@
       .gt-cfg-btn{float:right;margin-left:8px;font-size:15px;line-height:1.4;color:var(--mbu-text-weak);background:none;border:none;cursor:pointer;padding:2px 7px;border-radius:5px}
       .gt-cfg-btn:hover{background:var(--mbu-info-bg);color:var(--mbu-text-dim)}
       /* #372 top toolbar (moved off the "Release relationships" heading to the top of the tab) */
-      .gt-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-sizing:border-box;min-height:40px;margin:6px 0 14px;padding:4px 12px;background:var(--mbu-bg-raised);border:1px solid var(--mbu-border);border-radius:10px}
+      .gt-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-sizing:border-box;min-height:40px;margin:6px 0 14px;padding:4px 12px;background:var(--mbu-bg-raised);border:1px solid var(--mbu-border);border-radius:10px}@media (max-width:700px){.gt-toolbar{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-top:16px}.gt-toolbar::-webkit-scrollbar{display:none}.gt-toolbar>*{flex:none;white-space:nowrap}#tracklist.tbl{display:block;width:100%!important}#tracklist.tbl>:is(thead,tbody){display:block}#tracklist.tbl>:is(thead,tbody)>tr{display:flex;flex-wrap:wrap;align-items:flex-start}#tracklist.tbl>:is(thead,tbody)>tr>.pos{flex:0 0 40px;box-sizing:border-box}#tracklist.tbl>:is(thead,tbody)>tr>:nth-child(2){flex:1 1 0;min-width:0;box-sizing:border-box}#tracklist.tbl>:is(thead,tbody)>tr>:nth-child(n+3){flex:1 1 100%;box-sizing:border-box;padding-left:40px}#tracklist.tbl>thead>tr>th.works{padding-top:0}.release-relationship-editor{overflow-x:clip}.release-relationship-editor tr:has(>th.link-phrase){display:flex;flex-wrap:wrap}.release-relationship-editor tr>th.link-phrase{flex:1 1 100%;width:auto!important;text-align:left!important}.release-relationship-editor tr:has(>th.link-phrase)>td.relationship-list{flex:1 1 100%;min-width:0;padding-left:12px;box-sizing:border-box}}
       .gt-toolbar>*,.gt-toolbar .gt-vert>*{margin-top:0!important;margin-bottom:0!important}
       .gt-bar-ic{display:inline-flex;flex:0 0 auto}.gt-bar-ic img{width:30px;height:30px;display:block}
       .gt-bar-sep{flex:0 0 auto;width:1px;height:24px;background:var(--mbu-border)}
