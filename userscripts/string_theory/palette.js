@@ -308,7 +308,7 @@ function stPalette() {
   (document.body || html).appendChild(ov);
   stPalOv = ov;
   var input = ov.querySelector('#st-pal-q'), list = ov.querySelector('#st-pal-list');
-  var focusBack = document.activeElement, shown = [], active = -1, previewed = null, done = false;
+  var focusBack = document.activeElement, shown = [], active = -1, previewed = null, done = false, keyed = false;
 
   var unpreview = function () { if (previewed) { previewed = null; try { __stTheme.preview(null); } catch (e) { /* no themes */ } } };
   var close = function () {
@@ -400,13 +400,14 @@ function stPalette() {
   var onKey = function (e) {
     if (!ov.contains(e.target) && e.target !== document.body && e.target !== document.documentElement) return;
     var k = e.key, nav = true;
+    if (/^(Arrow(Up|Down)|Page(Up|Down)|Home|End)$/.test(k)) keyed = true;
     if (k === 'Escape') close();
     else if (k === 'ArrowDown') select(active + 1);
     else if (k === 'ArrowUp') select(active - 1);
     else if (k === 'PageDown') select(active + page());
     else if (k === 'PageUp') select(active - page());
     else if ((k === 'Home' || k === 'End') && e.ctrlKey) select(k === 'Home' ? 0 : shown.length - 1);
-    else if (k === 'Enter') run(shown[active]);
+    else if (k === 'Enter') run(shown[keyed && active >= 0 ? active : 0]);   // the first row, unless the keys chose another; the pointer's row runs on a click
     else if (e.altKey && e.code === 'KeyP') pin(shown[active]);
     else if (stKeyIs(e, stPalRead().key)) close();
     else nav = false;
@@ -414,7 +415,7 @@ function stPalette() {
     e.stopPropagation();   // typing stays in the box: the page's own hotkeys don't see it
   };
   window.addEventListener('keydown', onKey, true);
-  input.addEventListener('input', function () { render(false); });
+  input.addEventListener('input', function () { keyed = false; render(false); });
   list.addEventListener('mousedown', function (e) { e.preventDefault(); });   // the box keeps the focus
   list.addEventListener('click', function (e) {
     var li = e.target.closest('.st-pal-i');
