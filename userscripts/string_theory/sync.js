@@ -418,7 +418,8 @@ function stSyncPaint() {
   q('import').disabled = stSyncBusy;
   stBackupPaint(panel, connected);
   q('reload').hidden = !stSyncStorage.pending();
-  q('status').textContent = stSyncBusy ? 'Working…' : (provider === 'google' && auth.accessToken && !connected ? 'Google Drive session expired. Reconnect to continue.' : provider === 'google' && stGoogleError ? stGoogleError : state.error) || (stSyncAuthPending ? 'Waiting for Dropbox authorization…' : state.notice || (connected ? 'Connected' + (state.name ? ': ' + state.name : '') : 'Not connected'));
+  q('status').textContent = stSyncBusy ? 'Working…' : (provider === 'google' && auth.accessToken && !connected ? 'Google Drive session expired. Reconnect to continue.' : provider === 'google' && stGoogleError ? stGoogleError : state.error) || (stSyncAuthPending ? 'Waiting for Dropbox authorization…' : state.notice || (connected ? '' : 'Not connected'));
+  q('status').hidden = !q('status').textContent;
   var last = state.at && new Date(state.at), today = new Date();
   q('last').textContent = last ? 'Last sync: ' + new Intl.DateTimeFormat(undefined, last.toDateString() === today.toDateString() ? { hour: '2-digit', minute: '2-digit' } : { dateStyle: 'short', timeStyle: 'short' }).format(last) : '';
   q('last').dataset.tip = last ? new Intl.DateTimeFormat(undefined, { dateStyle: 'full', timeStyle: 'long' }).format(last) : '';

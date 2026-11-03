@@ -142,7 +142,8 @@ test.describe('automatic Dropbox authorization', () => {
     await popup.goto(callback.href);
     await popup.evaluate(() => { window.close = () => { window.__requestedClose = true; }; });
     await inject('string_theory', { target: popup, transform });
-    await expect(page.locator('#st-sync-status')).toContainText('Connected: Fixture');
+    await expect(page.locator('#st-sync-connect')).toHaveText('Reconnect');
+  await expect(page.locator('#st-sync-status')).toBeHidden();
     await expect.poll(() => popup.evaluate(() => !!window.__requestedClose)).toBe(true);
     expect(new URL(popup.url()).searchParams.has('code')).toBe(false);
     expect(await popup.locator('#eh-launch,#mc-launch,#st-cfg').count()).toBe(0);

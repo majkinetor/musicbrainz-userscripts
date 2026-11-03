@@ -31,7 +31,8 @@ test('Google provider connects for backups only and retains Dropbox when disconn
   await open(); await page.locator('#st-sync-provider').selectOption('google');
   await expect(page.locator('#st-sync-connect')).toHaveText('Connect');
   await page.locator('#st-sync-connect').click();
-  await expect(page.locator('#st-sync-status')).toContainText('Connected: Google fixture');
+  await expect(page.locator('#st-sync-connect')).toHaveText('Reconnect');
+  await expect(page.locator('#st-sync-status')).toBeHidden();
   expect(await page.evaluate(() => window.__googleRequest)).toEqual({ clientId: '762250056217-8uip1j2fusc9npm4fievee31btjqf02o.apps.googleusercontent.com', scope: 'https://www.googleapis.com/auth/drive.file', include: false });
   await expect(page.locator('#st-sync-google-message')).toContainText('Sync is disabled');
   await expect(page.locator('#st-sync-controls')).toBeHidden();
