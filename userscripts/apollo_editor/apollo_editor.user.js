@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.03.140000
+// @version      2026.11.03.235000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -14917,6 +14917,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   const ANNO_MAX_ICON = '<svg class="tc-mk-ico tc-mk-sq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>';
   // Join lines: two lines pulled together toward one (a downward merge between a top and bottom rule).
   const ANNO_JOIN_ICON = '<svg class="tc-mk-ico tc-mk-sq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16"/><path d="M4 19h16"/><path d="M8 9l4 4 4-4"/></svg>';
+  const ANNO_PREV_ICON = '<svg class="tc-mk-ico tc-mk-sq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const ANNO_CLEAR_ICON = '<svg class="tc-mk-ico tc-mk-sq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+  const ANNO_HIST_ICON = '<svg class="tc-mk-ico tc-mk-sq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>';
   const ANNO_MIN_ICON = '<svg class="tc-mk-ico tc-mk-sq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>';
   const ANNO_MB_LOGO = '<img class="tc-mk-ico tc-mk-mb" alt="MB" src="https://images.dwncdn.net/images/t_app-icon-s/p/c5c33b93-7347-46e3-a512-3decccb33d78/1678792153/2170_4-166444-imgingest-4209519771082272608.png">';
   const ANNO_HELP_HTML =
@@ -14949,15 +14952,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const wrap = document.createElement('div'); wrap.id = 'tc-anno-wrap';
     const bar = document.createElement('div'); bar.id = 'tc-anno-bar';
     bar.innerHTML =
-      '<button type="button" id="tc-anno-preview-btn" data-tip="A live preview, side by side\nThe editor on the left, the annotation on the right">👁 Preview</button>' +
-      '<button type="button" id="tc-anno-clear" data-tip="Clear the annotation">✕ Clear</button>' +
+      '<button type="button" id="tc-anno-preview-btn" class="tc-anno-icon" data-tip="Preview\nA live preview, side by side: the editor on the left, the annotation on the right" aria-label="Preview">' + ANNO_PREV_ICON + '</button>' +
+      '<button type="button" id="tc-anno-clear" class="tc-anno-icon" data-tip="Clear the annotation" aria-label="Clear">' + ANNO_CLEAR_ICON + '</button>' +
       '<span class="tc-anno-sp tc-anno-sp1"></span>' +
       '<button type="button" id="tc-anno-join" class="tc-anno-icon" data-tip="Join lines\nThe selected lines become one, without their line breaks, so the text flows again. With nothing selected, the paragraph at the cursor." aria-label="Join lines">' + ANNO_JOIN_ICON + '</button>' +
       '<button type="button" id="tc-anno-md" class="tc-anno-icon" data-tip="">' + ANNO_MD_LOGO + '</button>' +
       '<button type="button" id="tc-anno-help" class="tc-anno-icon" data-tip="Annotation syntax help" aria-label="Syntax help">?</button>' +
       '<span class="tc-anno-sp tc-anno-sp2"></span>' +
       '<button type="button" id="tc-anno-max" class="tc-anno-icon" data-tip="Maximize the editor\nEsc: restore it" aria-label="Maximize">' + ANNO_MAX_ICON + '</button>' +
-      (mbid ? '<button type="button" id="tc-anno-history-btn" data-tip="This annotation\'s earlier versions\nShow any one of them">🕘 History</button>' : '');
+      (mbid ? '<button type="button" id="tc-anno-history-btn" class="tc-anno-icon" data-tip="History\nThis annotation\'s earlier versions: show any one of them" aria-label="History">' + ANNO_HIST_ICON + '</button>' : '');
     const body = document.createElement('div'); body.id = 'tc-anno-body';
     const editPane = document.createElement('div'); editPane.id = 'tc-anno-edit';
     const md = document.createElement('textarea'); md.id = 'tc-anno-mdinput'; md.spellcheck = false;   // the Markdown editing surface
