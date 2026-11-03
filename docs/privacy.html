@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privacy policy — String Theory</title>
+<style>
+:root{color-scheme:light dark;font:16px/1.65 system-ui,sans-serif}body{max-width:760px;margin:40px auto;padding:0 24px;color:light-dark(#242529,#e4e4e8);background:light-dark(#fafafa,#19191d)}a{color:light-dark(#5a35b5,#ba9aff)}nav,.draft,footer{font-size:.9rem}nav{display:flex;gap:24px}.draft{border-block:1px solid #8886;padding:12px 0;margin:28px 0;color:light-dark(#745018,#e8c181)}h1{line-height:1.2;margin-bottom:10px}h2{font-size:1.2rem;margin:30px 0 8px}p{margin:10px 0}footer{border-top:1px solid #8886;margin-top:36px;padding-top:16px}
+</style>
+<nav><a href="https://milic.info/musicbrainz-userscripts/">String Theory</a><a href="terms.html">Terms of use</a></nav>
+<p class="draft">Effective 3 November 2026</p>
+<h1>Privacy policy</h1>
+<p>String Theory is an open-source userscript maintained by Miodrag Milic. It runs in your browser and bundles tools for viewing and editing MusicBrainz. This policy describes the official String Theory software and its optional cloud backup and sync features.</p>
+<h2>Data on your device</h2>
+<p>String Theory and its bundled tools store settings, saved content, working data, caches and logs in your browser or userscript manager. Depending on the features you use, saved content can include starred entities, filters, edit-note templates and credentials or access tokens for services you connect.</p>
+<p>The optional Sun theme mode asks your browser for location permission to calculate sunrise and sunset. Its saved coordinates stay on your device and are excluded from String Theory exports, cloud backups and sync.</p>
+<h2>Optional cloud storage</h2>
+<p>Cloud storage is optional. When you connect Dropbox or Google Drive and use the corresponding features, String Theory sends data directly from your browser to that provider. String Theory does not operate a server that receives your backup contents or cloud access tokens.</p>
+<p>Exports, cloud backups and Dropbox sync include normal settings, saved content and saved credentials, including supported connection tokens. They exclude caches, logs, recent activity, temporary work, local paths, device layout and location coordinates. String Theory does not add its own encryption to the backup files. Treat both downloaded files and cloud copies as sensitive.</p>
+<h2>Google Drive access</h2>
+<p>Google Drive is used for manual backup and restore. String Theory requests the <code>drive.file</code> permission to create and manage its files. This permission does not give String Theory general access to every file in your Drive.</p>
+<p>String Theory creates a String Theory folder and dated backup files. It reads file contents and metadata to list and restore those backups, and moves a selected backup to Trash when you delete it. It also reads your Drive account identifier and display name to keep accounts separate. Your Google access token and account information are stored in userscript-manager storage on your device; included connection data can also be present in backups as described above.</p>
+<p>Google user data is used only to provide the cloud storage features you request. It is not sold, used for advertising, used to train general-purpose AI models, or sent to the maintainer for analysis. String Theory's use and transfer of information received from Google APIs will adhere to the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including its Limited Use requirements.</p>
+<h2>Dropbox access</h2>
+<p>Dropbox is used for sync and manual backup and restore. Access is limited to String Theory's app folder. String Theory reads account information to distinguish accounts and reads, writes, lists and deletes its sync and backup files as needed for the actions you choose. Automatic Dropbox sync runs only when enabled.</p>
+<h2>Other services and reports</h2>
+<p>Bundled tools contact MusicBrainz and other music, artwork and metadata services for their features. Requests can include the searches, identifiers, URLs or edits needed for the operation. These services receive normal connection information such as your IP address and apply their own privacy policies. Google sign-in loads Google's sign-in library in your browser.</p>
+<p>String Theory checks GitHub for updates and project announcements. If you choose to submit an issue or share a log, review its contents before posting: GitHub issues are public. Do not include credentials or backup files.</p>
+<h2>Retention and your controls</h2>
+<p>Local data remains until you remove it through the relevant tool or userscript-manager storage controls. Exporting a backup does not remove the original data.</p>
+<p>Disconnect removes the selected provider's connection credentials from this installation and stops automatic sync. It does not delete cloud files, revoke the provider's authorization grant, or erase credentials from older backups or other devices. You can revoke access through <a href="https://myaccount.google.com/connections">Google Account connections</a> or <a href="https://www.dropbox.com/account/connected_apps">Dropbox connected apps</a>.</p>
+<p>You can delete cloud backups from String Theory or through your provider. Google Drive deletions go to Trash; empty Trash for permanent removal. Providers may retain deleted data according to their own policies. Remove downloaded copies yourself. Revoking a stored credential at its issuing service prevents further use of that credential.</p>
+<h2>Contact and changes</h2>
+<p>For privacy questions, contact Miodrag Milic at <a href="mailto:miodrag.milic@gmail.com">miodrag.milic@gmail.com</a>. Do not send passwords, tokens or complete backups.</p>
+<p>Policy updates will be published on this page with a revised date. If a change introduces a new use of Google user data, String Theory will request any consent required before using that data in the new way.</p>
+<footer><a href="https://github.com/majkinetor/musicbrainz-userscripts">Source code</a> · <a href="terms.html">Terms of use</a></footer>
+</html>
