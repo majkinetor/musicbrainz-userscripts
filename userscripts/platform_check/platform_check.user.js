@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.03.230819
+// @version      2026.11.03.233521
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -3432,8 +3432,13 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   .mbu-dock-win.pc-win.pc-away { opacity: 0; visibility: hidden; pointer-events: none; }
   .mbu-dock-win.pc-win.pc-covered { opacity: 0; visibility: hidden; pointer-events: none; }
   .mbu-dock-win.pc-win.pc-fading { opacity: 0; transition: opacity .4s; }
-  #pc-head { position: relative; }
-  #pc-pos-menu { position: absolute; top: 100%; right: 0; z-index: 5; display: flex; flex-direction: column; min-width: 170px; padding: 4px; background: var(--mbu-bg, #fff); border: 1px solid var(--mbu-border); border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.3); cursor: default; }
+  #pc-head { position: relative; gap: 4px; }
+  /* A narrow window (a phone) shortens the title, so the Position button keeps its place at the right */
+  #pc-head > div:first-child { min-width: 0; }
+  #pc-head h3 { overflow: hidden; text-overflow: ellipsis; }
+  #mb-pin-btn { flex: none; }
+  #pc-foot > div { flex-wrap: wrap; }
+  #pc-pos-menu { position: absolute; top: 100%; right: 0; z-index: 5; display: flex; flex-direction: column; min-width: min(170px, 100%); max-width: 100%; box-sizing: border-box; padding: 4px; background: var(--mbu-bg, #fff); border: 1px solid var(--mbu-border); border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.3); cursor: default; }
   #pc-pos-menu[hidden] { display: none; }
   #pc-pos-menu button { display: flex; align-items: center; gap: 6px; min-height: 30px; padding: 4px 10px 4px 6px; background: none; border: 0; border-radius: 4px; color: var(--mbu-text); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
   #pc-pos-menu button:hover { background: var(--mbu-bg-sunken); }
@@ -3706,13 +3711,13 @@ Open while the mouse is on the dock icon, in place of its tooltip">Dock hover</b
   </div>`).join('')}
   <div id="pc-compact-strip" class="pc-compact-strip"></div>
 </div>
-<div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid var(--mbu-border);">
+<div id="pc-foot" style="display: flex; flex-wrap: wrap; row-gap: 4px; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid var(--mbu-border);">
   <div style="display: flex; align-items: center; gap: 6px;">
     <span id="mb-inject-btn"      class="pc-icon-btn" data-tip="Add the found URLs\nClick: open the release editor with them queued\nRight-click: add them silently in the background\nMiddle-click / Alt+click: add them all, the ones the strict barcode and format settings withhold too; with Ctrl, in the background" style="${iconBtn}">+</span>
     <span id="mb-openall-btn"     class="pc-icon-btn" data-tip="Open the found pages not on MusicBrainz yet\nThe ones not circled, each in a new tab" style="${iconBtn}">↗</span>
     <span id="mb-links-btn"       class="pc-icon-btn" data-tip="Artists &amp; labels\nThe artist and label pages the matched platforms name, for the release's artists and labels on MusicBrainz" style="${iconBtn} font-size: 11px; white-space: nowrap;">Artists &amp; labels</span>
   </div>
-  <div style="display: flex; align-items: center; gap: 6px;">
+  <div style="display: flex; align-items: center; gap: 6px; margin-left: auto;">
     <span id="mb-log-open-btn"    class="pc-icon-btn" data-tip="The diagnostic log" style="${iconBtn} font-size: 11px;">log</span>
     <span id="mb-token-setup-btn" class="pc-icon-btn" data-tip="Settings" style="${iconBtn}">${MBU_CFG_ICON}</span>
   </div>
