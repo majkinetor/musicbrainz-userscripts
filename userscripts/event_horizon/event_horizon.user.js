@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.03.104000
+// @version      2026.11.03.104001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3522,6 +3522,8 @@ const entA = (type, id, name) => id ? `<a href="${MB}/${type}/${id}">${esc(name)
 const artistA = c => entA('artist', c.id, c.name);
 const acHtml = ac => ac.map(a => entA('artist', a.artist.id, a.name) + esc(a.joinphrase || '')).join('');
 const copyB = (v, cls = 'mono', text = v) => `<button class="cp ${cls}" type="button" data-copy="${esc(v)}" aria-label="Copy ${esc(text)}">${esc(text)}</button>`;
+// an ISNI shown in fours as MusicBrainz writes it (0000 0000 8110 9606), copied as the bare 16 characters
+const isniB = i => copyB(i, 'mono', String(i).replace(/(.{4})(?=.)/g, '$1 '));
 // credits grouped by role, in the order MB lists them
 function byRole(cr) { const m = new Map(); for (const c of cr) { const l = m.get(c.role) || []; if (!l.some(x => x.name === c.name)) l.push(c); m.set(c.role, l); } return [...m]; }
 const relUrl = id => '/release/' + id;
@@ -6037,7 +6039,7 @@ function lbHero(d) {
         ['Label code', g.code && copyB('LC-' + String(g.code).padStart(5, '0')), '', 'code'],
         [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide', 'aliases'],
         ['IPI', g.ipis.length && g.ipis.map(i => copyB(i)).join(' '), '', 'ipi'],
-        ['ISNI', g.isnis.length && g.isnis.map(i => copyB(i)).join(' '), '', 'isni'],
+        ['ISNI', g.isnis.length && g.isnis.map(isniB).join(' '), '', 'isni'],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide', 'mbid'],
         ['', g.links.length && rlQuiet(g), 'wide', 'links'],
     ];
@@ -6106,7 +6108,7 @@ function arHero(d) {
         ['Gender', g.gender && esc(g.gender), '', 'gender'],
         [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide', 'aliases'],
         ['IPI', g.ipis.length && g.ipis.map(i => copyB(i)).join(' '), '', 'ipi'],
-        ['ISNI', g.isnis.length && g.isnis.map(i => copyB(i)).join(' '), '', 'isni'],
+        ['ISNI', g.isnis.length && g.isnis.map(isniB).join(' '), '', 'isni'],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide', 'mbid'],
         ['', g.links.length && rlQuiet(g), 'wide', 'links'],
     ];
