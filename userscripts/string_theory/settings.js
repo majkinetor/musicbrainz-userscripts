@@ -185,6 +185,7 @@ var ST_CSS = ''
   + '#st-cfg .st-upd{margin:4px 0 12px;padding:6px 10px;border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken);font-size:12px}'
   + '#st-cfg .st-upd>div{display:flex;align-items:center;gap:8px;min-height:24px}#st-cfg .st-upd b{flex:0 0 auto;min-width:64px;font-weight:600;white-space:nowrap}#st-cfg .st-upd span{white-space:nowrap}'
   + '#st-cfg .st-upd .st-newer{color:var(--mbu-ok);font-weight:600}'
+  + '#st-cfg .st-au{gap:18px;margin:0 0 16px}#st-cfg .st-au label{gap:6px;margin:0}#st-cfg #st-au-min{width:56px;height:26px;box-sizing:border-box}'
   + '#st-cfg .st-lbl{flex:0 0 auto;color:var(--mbu-text-weak)!important;font:600 11px/1.4 var(--mbu-font, system-ui, sans-serif);text-transform:uppercase;letter-spacing:.06em}'
   + '#st-cfg .st-seg{display:inline-flex;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden;margin-right:10px}'
   + '#st-cfg .st-seg button{font:inherit;font-size:12px;border:0;margin:0;border-radius:0;background:none;color:inherit;padding:2px 10px;min-height:22px;line-height:18px;cursor:pointer}'
@@ -314,6 +315,8 @@ function stSettings(tab) {
   h += '<section class="st-sec" id="st-p-a"' + (ST_ON_MB ? ' role="tabpanel" aria-labelledby="st-tab-a" hidden' : '') + '>'
     + (ST_ON_MB ? '' : '<div class="st-row">' + links + '</div>')
     + '<h3 class="st-about-h">Updates</h3><div class="st-upd" id="st-upd"></div>'
+    + '<div class="st-row st-au"><label class="st-row"><input type="checkbox" id="st-au-on"> Auto update</label>'
+    + '<label class="st-row" id="st-au-ev">check every <input type="number" id="st-au-min" min="10" step="10"> minutes</label></div>'
     + '<h3 class="st-about-h">Scripts</h3><div class="st-scripts" data-tip="Right-click a script for its settings">' + stMembers.map(function (m) {
       var icon = m[3] ? '<img alt="" src="' + stEsc(m[3]) + '">' : known[m[1]] || '';
       return '<label class="st-row" data-name="' + stEsc(m[1]) + '"><input type="checkbox" data-st-m="' + stEsc(m[0]) + '"' + (off.indexOf(m[0]) < 0 ? ' checked' : '') + '>'
@@ -610,6 +613,14 @@ function stSettings(tab) {
       q('#st-apply').textContent = 'Reload the page to apply.';
     };
   });
+  (function () {
+    var a = stAuRead(), on = q('#st-au-on'), min = q('#st-au-min');
+    on.checked = a.on; min.value = a.every;
+    var dim = function () { q('#st-au-ev').style.opacity = on.checked ? '' : '.5'; min.disabled = !on.checked; };
+    dim();
+    on.onchange = function () { stAuSave({ on: on.checked, at: 0 }); dim(); };
+    min.onchange = function () { var n = Math.max(10, Math.round(+min.value) || 60); min.value = n; stAuSave({ every: n }); };
+  })();
   q('#st-reload').onclick = function () { location.reload(); };
   q('#st-copy-md').onclick = function () {
     stCopy(stVersionsText(), function (ok) { try { U.mbuToast(ok ? '✓ Versions copied as Markdown' : '⚠ Couldn’t copy the versions'); } catch (e) { /* no toast */ } });

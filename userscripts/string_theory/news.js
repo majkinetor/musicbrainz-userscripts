@@ -296,3 +296,62 @@ function stNewsStart() {
   stNewsSignal(); stNewsCheck(false);
   var late = 0, t = setInterval(function () { stNewsSignal(); if (++late > 10) clearInterval(t); }, 1000);   // the button comes late
 }
+
+// Auto update: every so many minutes, read @version on the channel String Theory came from; when it is
+// newer, open its install link, so the manager offers the update. The next load after an update turns
+// the icon golden and puts a tip above it.
+var ST_AU_KEY = 'stAutoUpdate';
+function stAuRead() {
+  var v = null; try { v = GM_getValue(ST_AU_KEY, null); } catch (e) { /* no storage */ }
+  v = v && typeof v === 'object' ? v : {};
+  return { on: !!v.on, every: Math.max(10, +v.every || 60), at: +v.at || 0, offered: v.offered || '', seen: v.seen || '' };
+}
+function stAuSave(patch) { try { GM_setValue(ST_AU_KEY, Object.assign(stAuRead(), patch)); } catch (e) { /* not kept */ } }
+// the branch to follow: Latest is main, a branch build its branch; a pinned or unknown install has none
+function stAuRef() {
+  var ch = stChannel(), m;
+  return ch === 'Latest' ? 'main' : ch === 'Stable' ? 'stable' : (m = /^branch (.+)$/.exec(ch)) ? m[1] : null;
+}
+function stAuCheck() {
+  var a = stAuRead(), ref = stAuRef();
+  if (!a.on || !ref || Date.now() - a.at < a.every * 6e4) return;
+  stAuSave({ at: Date.now() });   // another tab need not check too
+  stRemoteVersion(ref, function (v) {
+    if (!v || stCmpVer(v, ST_VERSION) <= 0 || v === stAuRead().offered) return;
+    stAuSave({ offered: v });   // offered once; a declined update waits for the next version
+    try { if (typeof GM_openInTab === 'function') GM_openInTab(stInstallUrl(ref), { active: true }); else window.open(stInstallUrl(ref), '_blank'); } catch (e) { /* blocked */ }
+  });
+}
+function stAuTip(from) {
+  var root = document.documentElement, tip = null;
+  root.setAttribute('data-st-upd', '');
+  var css = document.createElement('style'); css.id = 'st-upd-gold';
+  css.textContent = ST_NEWS_GOLD.split(':root[data-st-news]').join(':root[data-st-upd]')
+    + '#st-upd-tip{position:fixed;z-index:2147483000;max-width:260px;padding:6px 10px;border-radius:6px;background:#e0a800;color:#1a1400;font:600 12px/1.35 system-ui,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer}'
+    + '#st-upd-tip::after{content:"";position:absolute;top:100%;left:var(--x,50%);margin-left:-6px;border:6px solid transparent;border-top-color:#e0a800}';
+  (document.head || root).appendChild(css);
+  var done = function () { root.removeAttribute('data-st-upd'); if (tip) tip.remove(); css.remove(); clearInterval(t); };
+  var place = function () {
+    var b = document.getElementById('mbu-dock'); if (!b || !b.offsetWidth) return;
+    if (!tip) {
+      tip = document.createElement('div'); tip.id = 'st-upd-tip'; tip.setAttribute('role', 'status');
+      tip.textContent = 'String Theory updated to v' + ST_VERSION + (from ? ' (from v' + from + ')' : '');
+      tip.onclick = done;
+      (document.body || root).appendChild(tip);
+    }
+    var r = b.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+    var x = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2));
+    tip.style.left = x + 'px'; tip.style.top = Math.max(8, r.top - h - 10) + 'px';
+    tip.style.setProperty('--x', (r.left + r.width / 2 - x) + 'px');
+  };
+  var t = setInterval(place, 500); place();   // the button comes late and the dock can move
+  document.addEventListener('click', function (e) { if (e.target && e.target.closest && e.target.closest('#mbu-dock')) done(); }, true);
+  setTimeout(done, 30000);
+}
+function stAuStart() {
+  var a = stAuRead();
+  if (a.seen && a.seen !== ST_VERSION && stCmpVer(ST_VERSION, a.seen) > 0) stAuTip(a.seen);
+  if (a.seen !== ST_VERSION) stAuSave({ seen: ST_VERSION });
+  stAuCheck();
+  setInterval(stAuCheck, 6e4);
+}

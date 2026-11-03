@@ -268,6 +268,7 @@ var __stStarters = {};   // #851: per member folder, how String Theory's setting
     stSyncListenAuth();
     try { stSyncSchedule(); } catch (e) {}
     try { stNewsStart(); } catch (e) {}
+    try { stAuStart(); } catch (e) {}
     var first = function () { try { mbRestackCorner('br'); } catch (e) {} };
     if (document.readyState !== 'loading') first(); else document.addEventListener('DOMContentLoaded', first, { once: true });
   }
