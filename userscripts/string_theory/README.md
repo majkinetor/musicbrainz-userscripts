@@ -58,9 +58,9 @@ In String Theory's settings, on the **General** tab, **Mode** picks one of:
 
 ## What's new
 
-String Theory checks the project's [announcements](https://github.com/majkinetor/musicbrainz-userscripts/discussions/categories/announcements) once a day. While some are unread, its icon is golden, with rings of light widening from it, and clicking it opens **What's new** instead of the dock. The command palette and the link at the top of String Theory's settings open it at any time. The button beside *Mark all read* makes it full screen, and short names such as RG are underlined: hover one to see what it means. Opening it checks for news too, at most every 5 minutes, and *Refresh* in the footer checks right away.
+String Theory checks the project's [announcements](https://github.com/majkinetor/musicbrainz-userscripts/discussions/categories/announcements) once a day. While some are unread, its icon is golden, and clicking it opens **What's new** instead of the dock.
 
-The window lists the latest 20 posts, each with its script's name and icon. A post shows **stable** when its change is released and **latest** when it isn't yet. Opening a post marks it read; **Mark all read** does them all. The first check flags only the last 14 days.
+The window lists the latest 20 posts, each with its script's name and icon. A post shows **stable** when its change is released and **latest** when it isn't yet. 
 
 ## Command palette
 
@@ -92,8 +92,6 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 
 Open String Theory's settings → **Sync**, choose **Provider**, and connect. Use the same provider and account on each device. Switching providers keeps their connections and sync history separate.
 
-**Dropbox** returns to MusicBrainz and finishes the connection automatically. **Google Drive** opens Google's sign-in popup. Its session expires after about one hour; **Reconnect** renews access for backups. The Google app is currently limited to registered test users.
-
 Sync actions and automatic sync are available for Dropbox only. Google Drive supports manual backups and imports; reconnect when its session expires.
 
 | Action   | What it does                                                                 |
@@ -102,23 +100,19 @@ Sync actions and automatic sync are available for Dropbox only. Google Drive sup
 | Push     | Replaces the provider's portable data with this device's                     |
 | Pull     | Replaces this device's portable data from the provider on the next page load |
 
-Under **Sync options**, **Automatic sync** runs **Sync now** while MusicBrainz is open. Independent changes are combined; when both devices change the same value, **On conflict** chooses which one wins. Star additions and removals are merged separately.
+Independent changes are combined; when both devices change the same value, **On conflict** chooses which one wins. Star additions and removals are merged separately.
 
-With no remote data yet, **Sync now** and **Push** create it; **Pull** leaves local data unchanged. On the first sync with existing data, stars from both sides are combined and conflicting settings use **On conflict**. An absent star only counts as a removal after a previous sync. **Push** keeps the provider's saved data for other MusicBrainz servers.
+On the first sync with existing data, stars from both sides are combined and conflicting settings use **On conflict**. An absent star only counts as a removal after a previous sync.
 
 Credentials, stars, saved notes, remembered field values, named filters and normal preferences are included. Caches, logs, recent activity, temporary work, local paths and device layout stay local, including page width, columns, window state and location coordinates.
 
-Downloaded changes apply on the next page load; **Reload** applies them immediately. Under **Backups**, the provider row saves and browses remote backups. **This device** holds local files: **Export** downloads a backup; **Import** merges one into your settings. Backups and remote sync data contain credentials.
+**Save backup** saves a separate, dated snapshot at the selected provider. **Browse** lists them, newest first, with dates and sizes. Select a backup, then use **Apply** or **Delete** in its header. **Apply** merges it into your settings, keeping a recovery copy and applying on reload, just like **Import**. Backup values win shared settings; stars are combined.
 
-**Save backup** saves a separate, dated snapshot at the selected provider. **Browse** lists them, newest first, with dates and sizes. Select a backup, then use **Apply** or **Delete** in its header. **Apply** merges it into your settings, keeping a recovery copy and applying on reload, just like **Import**. Backup values win shared settings; stars are combined. **Delete** immediately removes the selected snapshot; Google Drive moves it to Trash. Reopening **Browse** reloads the list; Escape or **< Back** returns to Sync. Remote backups stay separate from Sync, Push and Pull.
-
-**Disconnect** stops automatic sync and removes this device's selected connection; remote data remains. Google Drive saves files in a **String Theory** folder, including sync history. Keep its sync files so changes from other devices can be merged.
+**Disconnect** stops automatic sync and removes this device's selected connection; remote data remains. Google Drive saves files in a **String Theory** folder, including sync history. 
 
 ## Settings
 
-Right-click String Theory's icon to open its settings, or any dock icon for that script's own. The **General** tab holds the theme, the dock and the command palette; **Sync** holds providers and backups; **About** holds the scripts and updates.
-
-About shows each script's installed, latest and stable version.
+Right-click String Theory's icon to open its settings, or any dock icon for that script's own. About shows each script's installed, latest and stable version.
 
 | Setting          | Default           | What it does                                                                         |
 | ---------------- | ----------------- | ------------------------------------------------------------------------------------ |
@@ -137,10 +131,9 @@ About shows each script's installed, latest and stable version.
 | Copy as Markdown |                   | Copies versions, scripts and environment, to paste into an issue                     |
 
 - **Right-click a script's icon** in the settings, in the launcher order or in About, to open that script's settings, on any page and even when the script is off. String Theory's settings stay open behind them.
-- **A script that is off** doesn't run, so its standalone copy can run instead.
-- Every script follows the launcher settings, standalone ones too. [Scribe](../scribe/README.md) follows only the side.
+- **A script that is off** doesn't run.
+- Every script follows the launcher settings, standalone ones too.
 - About checks for updates each time you open it.
-- The browser console (F12) lists String Theory's version and each bundled script's.
 
 ## Other recommended userscripts
 
