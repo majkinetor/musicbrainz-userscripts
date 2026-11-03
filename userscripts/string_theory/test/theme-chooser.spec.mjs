@@ -41,4 +41,14 @@ test.describe('theme chooser', () => {
     check(saved.mode === 'dark' && saved.dark === name, `Enter keeps it (${JSON.stringify(saved)})`);
     await page.screenshot({ path: 'test-results/theme-chooser.png' });
   });
+  test('the settings header opens it', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+    await page.goto(`${SANDBOX}/search/edits`, { waitUntil: 'load', timeout: 60000 });
+    await inject('string_theory');
+    await page.click('#mbu-dock', { button: 'right' });
+    await page.waitForSelector('#st-cfg #st-tc-open', { timeout: 10000 });
+    await page.screenshot({ path: 'test-results/theme-chooser-settings.png' });
+    await page.click('#st-tc-open');
+    await page.waitForSelector('#st-tc', { timeout: 5000 });
+    check(!(await page.$('#st-cfg')), 'settings step aside for the chooser');
+  });
 });

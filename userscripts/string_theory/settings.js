@@ -368,6 +368,12 @@ function stSettings(tab) {
     var menu = document.createElement('select'); menu.id = 'st-tab-menu'; menu.setAttribute('aria-label', 'Settings tab'); menu.hidden = true;
     menu.innerHTML = '<option value="g">General</option><option value="s">Sync</option><option value="a">About</option>';
     title.insertBefore(menu, help); menu.onchange = function () { q('#st-tab-' + menu.value).click(); };
+    // a quiet way to the theme chooser beside the help, drawn like it; the window steps aside so the page shows each theme
+    var themes = document.createElement('button'); themes.type = 'button'; themes.className = 'mbu-help'; themes.id = 'st-tc-open';
+    themes.setAttribute('aria-label', 'Theme chooser'); themes.dataset.tip = 'Theme chooser\nStep through every theme on this page';
+    themes.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"/></svg>';
+    themes.onclick = function () { close(); setTimeout(stThemeChooser, 0); };
+    title.insertBefore(themes, help);
     var x = title.querySelector('.mbu-cfg-x'); x.setAttribute('aria-label', 'Close settings');
     x.onclick = close;
     var fitTabs = function () {
