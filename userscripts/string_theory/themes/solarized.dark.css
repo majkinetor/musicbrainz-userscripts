@@ -372,6 +372,11 @@ input[type=text].modified {
 	background: var(--background-accent);
 	color: var(--text);
 }
+/* guess case's preview (hovering Aa), instead of MB's bright yellow */
+input[type=text].preview {
+	background: var(--attention) !important;
+	color: var(--text);
+}
 /* Buttons and selects get real colours, never a filter: a filter also inverts whatever a
    script puts on them, and every colour in it has to be written as its opposite.
    :where() keeps these at no specificity, so any script's own rule wins. */
