@@ -412,6 +412,12 @@ div.multiselect > div.menu, div.multiselect > div.items a {
 div.multiselect > div.menu > a {
 	color: inherit;
 }
+/* external links editor: new/changed/removed links sit on MB light highlight */
+#external-links-editor .rel-add, #external-links-editor .rel-add a,
+#external-links-editor .rel-edit, #external-links-editor .rel-edit a,
+#external-links-editor .rel-remove, #external-links-editor .rel-remove a {
+	color: #1a1a1a !important;
+}
 /* external links editor tooltips */
 .rel-edit .tooltip-content, .rel-add .tooltip-content, .rel-remove .tooltip-content {
 	color: var(--text);
