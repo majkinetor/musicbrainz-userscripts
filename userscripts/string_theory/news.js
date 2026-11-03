@@ -323,30 +323,37 @@ function stAuCheck() {
   });
 }
 function stAuTip(from) {
-  var root = document.documentElement, tip = null;
+  var root = document.documentElement, tip = null, gone = false;
   root.setAttribute('data-st-upd', '');
   var css = document.createElement('style'); css.id = 'st-upd-gold';
+  // left of the dock, never over it; placed once, so it doesn't follow the dock around; fixed lines, so it doesn't reflow
   css.textContent = ST_NEWS_GOLD.split(':root[data-st-news]').join(':root[data-st-upd]')
-    + '#st-upd-tip{position:fixed;z-index:2147483000;max-width:260px;padding:6px 10px;border-radius:6px;background:#e0a800;color:#1a1400;font:600 12px/1.35 system-ui,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer}'
-    + '#st-upd-tip::after{content:"";position:absolute;top:100%;left:var(--x,50%);margin-left:-6px;border:6px solid transparent;border-top-color:#e0a800}';
+    + '#st-upd-tip{position:fixed;z-index:2147483000;padding:6px 10px;border-radius:6px;background:#e0a800;color:#1a1400;font:600 12px/1.35 system-ui,sans-serif;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer;transition:opacity .6s}'
+    + '#st-upd-tip small{display:block;font-weight:400;opacity:.8}'
+    + '#st-upd-tip::after{content:"";position:absolute;left:100%;top:50%;margin-top:-6px;border:6px solid transparent;border-left-color:#e0a800}'
+    + '#st-upd-tip.st-out{opacity:0}';
   (document.head || root).appendChild(css);
-  var done = function () { root.removeAttribute('data-st-upd'); if (tip) tip.remove(); css.remove(); clearInterval(t); };
+  var done = function () {
+    if (gone) return; gone = true; clearInterval(t);
+    if (tip) tip.classList.add('st-out');
+    setTimeout(function () { root.removeAttribute('data-st-upd'); if (tip) tip.remove(); css.remove(); }, 600);
+  };
   var place = function () {
     var b = document.getElementById('mbu-dock'); if (!b || !b.offsetWidth) return;
-    if (!tip) {
-      tip = document.createElement('div'); tip.id = 'st-upd-tip'; tip.setAttribute('role', 'status');
-      tip.textContent = 'String Theory updated to v' + ST_VERSION + (from ? ' (from v' + from + ')' : '');
-      tip.onclick = done;
-      (document.body || root).appendChild(tip);
-    }
+    clearInterval(t);
+    tip = document.createElement('div'); tip.id = 'st-upd-tip'; tip.setAttribute('role', 'status');
+    tip.textContent = 'String Theory updated to v' + ST_VERSION;
+    if (from) { var f = document.createElement('small'); f.textContent = 'from v' + from; tip.appendChild(f); }
+    tip.onclick = done;
+    (document.body || root).appendChild(tip);
     var r = b.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
-    var x = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2));
-    tip.style.left = x + 'px'; tip.style.top = Math.max(8, r.top - h - 10) + 'px';
-    tip.style.setProperty('--x', (r.left + r.width / 2 - x) + 'px');
+    tip.style.left = Math.max(8, r.left - w - 22) + 'px';
+    tip.style.top = Math.max(8, Math.min(innerHeight - h - 8, r.top + r.height / 2 - h / 2)) + 'px';
+    setTimeout(done, 5000);
   };
-  var t = setInterval(place, 500); place();   // the button comes late and the dock can move
+  var t = setInterval(place, 500); place();   // the button comes late
   document.addEventListener('click', function (e) { if (e.target && e.target.closest && e.target.closest('#mbu-dock')) done(); }, true);
-  setTimeout(done, 30000);
+  setTimeout(done, 30000);   // no dock on this page
 }
 function stAuStart() {
   var a = stAuRead();
