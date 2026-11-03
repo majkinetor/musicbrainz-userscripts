@@ -26,7 +26,12 @@ var ST_NEWS_CSS = ''
   + '#st-news-view .c{padding:0 6px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius)}'
   + '#st-news-view .b img{max-width:100%;height:auto}#st-news-view .b{overflow-wrap:anywhere}'
   + '#st-news-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px;border-top:1px solid var(--mbu-border);color:var(--mbu-text-weak);font-size:12px}'
-  + '@media (max-width:640px){#st-news-body{flex-direction:column}#st-news-list{flex:0 0 38%;border-right:0;border-bottom:1px solid var(--mbu-border)}}';
+  + '#st-news-back{display:none;min-height:30px;margin:0 0 8px -10px;padding:0 10px;border:0;border-radius:var(--mbu-radius);background:none;color:var(--mbu-accent-text);font:inherit;cursor:pointer}#st-news-back:hover{background:var(--mbu-bg-hover)}'
+  // a phone: the whole screen, and the list or one post at a time
+  + '@media (max-width:640px){#st-news{position:fixed;inset:0;width:auto!important;max-width:none!important;height:auto!important;max-height:none!important;margin:0;border-radius:0}'
+  + '#st-news-full{display:none!important}#st-news .mbu-ov-title{flex:1 1 auto;font-size:18px}#st-news-all{white-space:nowrap}'
+  + '#st-news-list{flex:1 1 auto;border-right:0}#st-news.reading #st-news-list,#st-news:not(.reading) #st-news-view{display:none}#st-news-back{display:inline-flex;align-items:center}'
+  + '#st-news-view h3{flex-wrap:wrap}#st-news-view h3 .n{flex-basis:calc(100% - 28px)}#st-news-foot{flex-wrap:wrap}}';
 // the golden icon: rings of light widen from it and fade
 var ST_NEWS_ON = ':root[data-st-news] #mbu-dock';
 var ST_NEWS_GOLD = ST_NEWS_ON + '{opacity:1}' + ST_NEWS_ON + ' svg path{stroke:#e0a800!important}'
@@ -194,7 +199,7 @@ function stNewsOpen() {
     + '<span><a href="' + ST_NEWS_ALL + '" target="_blank" rel="noopener">All announcements</a> · <a href="' + ST_NEWS_LOG + '" target="_blank" rel="noopener">Changelog</a></span></div></div>';
   (document.body || document.documentElement).appendChild(ov);
   stNewsOv = ov;
-  var list = ov.querySelector('#st-news-list'), view = ov.querySelector('#st-news-view');
+  var list = ov.querySelector('#st-news-list'), view = ov.querySelector('#st-news-view'), panel = ov.querySelector('#st-news');
   var persist = function () { var now = stNewsRead(); now.seen = v.seen; stNewsSave(now); stNewsSignal(); };
   var draw = function () {
     var un = stNewsUnread(v).map(function (i) { return i.id; });
@@ -208,7 +213,8 @@ function stNewsOpen() {
     if (!i) { view.textContent = 'Nothing yet.'; return; }
     if (v.seen.indexOf(i.id) < 0) { v.seen.push(i.id); persist(); }
     draw();
-    view.innerHTML = '<h3>' + stNewsIcon(i) + '<span class="n">' + stEsc(i.title) + '</span>'
+    panel.classList.add('reading');
+    view.innerHTML = '<button type="button" id="st-news-back">‹ All posts</button><h3>' + stNewsIcon(i) + '<span class="n">' + stEsc(i.title) + '</span>'
       + (i.issue ? '<a href="https://github.com/' + ST_REPO + '/issues/' + i.issue + '" target="_blank" rel="noopener">Issue #' + i.issue + '</a>' : '')
       + '<a href="' + stEsc(i.url) + '" target="_blank" rel="noopener">Discuss</a></h3><div class="m"><span>' + stEsc(i.script) + '</span><span>' + stEsc(stNewsDate(i.at)) + '</span>'
       + (i.channel ? '<span class="c">' + i.channel + '</span>' : '') + '</div><div class="b">' + stNewsClean(i.html) + '</div>';
@@ -225,9 +231,10 @@ function stNewsOpen() {
     }
   };
   document.addEventListener('keydown', key, true);
+  view.addEventListener('click', function (e) { if (e.target.closest('#st-news-back')) { panel.classList.remove('reading'); list.scrollTop = 0; var li = list.children[at]; if (li) li.scrollIntoView({ block: 'nearest' }); } });
   list.onclick = function (e) { var li = e.target.closest('li'); if (li) show(+li.dataset.n); };
   ov.querySelector('#st-news-x').onclick = close;
-  var fullBtn = ov.querySelector('#st-news-full'), panel = ov.querySelector('#st-news');
+  var fullBtn = ov.querySelector('#st-news-full');
   var setFull = function (on) {
     panel.classList.toggle('full', on);
     fullBtn.textContent = on ? '❐' : '⛶';

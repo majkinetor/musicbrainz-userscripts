@@ -39,4 +39,22 @@ test.describe('what\'s new', () => {
     await page.click('#st-news-refresh');
     await until(() => page.textContent('#st-news-state'), t => /checked today|check failed/.test(t), { timeout: 20000 });
   });
+  test('a phone: full screen, the list or one post', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.goto(`${SANDBOX}/search/edits`, { waitUntil: 'load', timeout: 60000 });
+    await inject('string_theory');
+    await page.waitForSelector('#mbu-dock', { timeout: 15000 });
+    await until(() => page.evaluate(() => document.documentElement.hasAttribute('data-st-news')), v => v, { timeout: 5000 });
+    await page.click('#mbu-dock');
+    await page.waitForSelector('#st-news-view h3', { timeout: 5000 });
+    const box = await page.$eval('#st-news', e => { const r = e.getBoundingClientRect(); return [r.width, r.height]; });
+    check(box[0] === 390 && box[1] === 800, `full screen (${box})`);
+    check(!(await page.isVisible('#st-news-list')) && await page.isVisible('#st-news-view'), 'opens on the post alone');
+    if (process.env.SHOT) await page.screenshot({ path: process.env.SHOT + '-post.png' });
+    await page.click('#st-news-back');
+    check(await page.isVisible('#st-news-list') && !(await page.isVisible('#st-news-view')), 'back shows the list alone');
+    if (process.env.SHOT) await page.screenshot({ path: process.env.SHOT + '-list.png' });
+    await page.click('#st-news-list li[data-n="1"]');
+    check((await page.textContent('#st-news-view h3 .n')) === 'One' && !(await page.isVisible('#st-news-list')), 'a tap opens that post');
+  });
 });
