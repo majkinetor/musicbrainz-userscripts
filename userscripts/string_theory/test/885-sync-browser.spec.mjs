@@ -61,12 +61,14 @@ test.describe('remote backup manager', () => {
     await open();
     await page.locator('#st-sync-remote-import').click();
     await expect(page.locator('#st-sync-backups')).toHaveText('No remote backups yet.');
+    await page.locator('#st-sync-backup-close').click();
     await page.locator('#st-sync-remote-backup').click();
     await expect(page.locator('#st-sync-backup-status')).toHaveText('Backup saved to Dropbox.');
     expect(server.files.size).toBe(1);
     const snapshot = JSON.parse([...server.files.values()][0].text);
     expect(snapshot.data.gm['pc:cache:fixture']).toBeUndefined();
     expect(snapshot.data.gm.view.value.width).toBeUndefined();
+    await page.locator('#st-sync-remote-import').click();
     await page.locator('#st-sync-backup-refresh').click();
     await expect(page.locator('#st-sync-now')).toBeEnabled();
     await expect(page.locator('#st-sync-backups [data-backup-action=apply]')).toHaveCount(1);
@@ -91,6 +93,45 @@ test.describe('remote backup manager', () => {
     expect(server.files.size).toBe(0); expect(await page.evaluate(() => GM_getValue('saved'))).toBe('snapshot value');
     expect(server.calls.some(c => c.args.path === '/string-theory.json')).toBe(false);
   });
+  test('backup selection applies the chosen snapshot and Escape restores the settings', { tag: '@sandbox' }, async ({ page, context, inject }) => {
+    const server = backupCloud();
+    await answerGm(context, async opts => {
+      if (!/\.dropboxapi\.com\//.test(opts.url)) return null;
+      const reply = await server.request(opts); return { status: reply.status, body: reply.text };
+    });
+    await page.goto(SANDBOX + '/search/edits');
+    const prepare = () => {
+      const xhr = window.GM_xmlhttpRequest;
+      window.GM_xmlhttpRequest = opts => xhr({ ...opts, data: opts.data instanceof ArrayBuffer ? new TextDecoder().decode(opts.data) : opts.data });
+    };
+    await page.evaluate(prepare); await inject('string_theory');
+    await page.evaluate(() => document.dispatchEvent(new Event('mbu-st-settings')));
+    await page.locator('#st-tab-s').click();
+    await page.locator('#st-sync-remote-backup').click();
+    await expect.poll(() => server.files.size).toBe(1);
+    await expect(page.locator('#st-sync-remote-backup')).toBeEnabled();
+    await page.evaluate(() => GM_setValue('saved', 'newer snapshot'));
+    await page.locator('#st-sync-remote-backup').click();
+    await expect.poll(() => server.files.size).toBe(2);
+    await expect(page.locator('#st-sync-remote-import')).toBeEnabled();
+    await page.locator('#st-sync-remote-import').click();
+    const choices = page.locator('#st-sync-backups [data-backup-select]');
+    await expect(choices).toHaveCount(2);
+    await choices.nth(1).click();
+    await expect(choices.nth(1)).toHaveAttribute('aria-pressed', 'true');
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#st-sync-remote')).toBeHidden();
+    await expect(page.locator('#st-sync-remote-import')).toBeFocused();
+    await expect(page.locator('#st-cfg')).toBeVisible();
+    await page.locator('#st-sync-remote-import').click();
+    await expect(choices.nth(1)).toHaveAttribute('aria-pressed', 'true');
+    await page.locator('#st-sync-backups [data-backup-action=apply]').click();
+    await expect(page.locator('#st-sync-remote')).toBeHidden();
+    await expect(page.locator('#st-sync-reload')).toBeVisible();
+    await page.reload(); await page.evaluate(prepare); await inject('string_theory');
+    expect(await page.evaluate(() => GM_getValue('saved'))).toBe('snapshot value');
+  });
+
 });
 
 test.describe('automatic Dropbox authorization', () => {

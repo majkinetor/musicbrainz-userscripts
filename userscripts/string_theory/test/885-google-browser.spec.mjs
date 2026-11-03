@@ -54,6 +54,7 @@ test('Google provider connects for backups only and retains Dropbox when disconn
   const remove = page.locator('#st-sync-backups [data-backup-action=delete]');
   await remove.click(); await expect(remove).toHaveText('Confirm delete'); await remove.click();
   await expect(page.locator('#st-sync-backups')).toHaveText('No remote backups yet.');
+  await page.locator('#st-sync-backup-close').click();
   expect([...server.files.values()].filter(f => f.trashed)).toHaveLength(1);
   const before = server.calls.length;
   await page.evaluate(() => { const a = GM_getValue('string_theory.sync.google.auth'); a.accessToken.expiresAt = 1; GM_setValue('string_theory.sync.google.auth', a); });

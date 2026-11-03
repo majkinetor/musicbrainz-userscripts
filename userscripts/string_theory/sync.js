@@ -3,7 +3,8 @@ var ST_DROPBOX_KEY = 'g73mzw3yp0xqgtd';
 var ST_DROPBOX_REDIRECT = 'https://musicbrainz.org/?st-dropbox=callback';
 var ST_SYNC_PATH = '/string-theory.json';
 var ST_BACKUP_FOLDER = '/backups';
-var stSyncBusy = false, stSyncTimer = null;
+var stSyncBusy = false, stSyncTimer = null, stSyncActivity = '';
+var stBackupSelected = null;
 var stBackupEntries = null, stBackupNotice = '', stBackupDelete = null, stBackupAccount = null;
 function stSyncFetch(url, options) {
   options = options || {};
@@ -150,7 +151,7 @@ async function stBackupRun(mode, entry) {
   var provider = stSyncProvider(), name = stSyncName(provider);
   if (!stSyncConnected(provider)) throw new Error('Connect ' + name + ' first');
   if (entry && (entry.provider || 'dropbox') !== provider) throw new Error('Provider changed. Refresh the backup list.');
-  stSyncBusy = true; stBackupNotice = ''; stBackupDelete = null; stSyncPaint();
+  stSyncBusy = true; stSyncActivity = 'backup'; stBackupNotice = ''; stBackupDelete = null; stSyncPaint();
   try {
     var drive = stSyncDrive(provider);
     if (mode === 'save') {
@@ -161,7 +162,7 @@ async function stBackupRun(mode, entry) {
       stBackupEntries = await drive.listBackups();
     } else if (mode === 'apply') {
       var incoming = (await drive.readBackup(entry)).data;
-      stSyncImport(incoming);
+      stSyncImport(incoming); stBackupBrowse(document.getElementById('st-p-s'), false);
       stBackupNotice = 'Imported. Reload to apply the changes.';
     } else if (mode === 'delete') {
       await drive.deleteBackup(entry);
@@ -172,34 +173,47 @@ async function stBackupRun(mode, entry) {
   } catch (e) {
     stBackupNotice = stSyncError(e);
     throw e;
-  } finally { stSyncBusy = false; stSyncPaint(); }
+  } finally { stSyncBusy = false; stSyncActivity = ''; stSyncPaint(); }
 }
 function stSyncImport(incoming) {
   // Partial imports preserve data absent from the file; incoming values win shared fields.
   stSyncStorage.stage(stSyncStorage.merge(undefined, stSyncStorage.effective(), incoming, 'remote'));
 }
+function stBackupBrowse(panel, open) {
+  if (!panel) return;
+  var remote = panel.querySelector('#st-sync-remote'); remote.hidden = !open;
+  Array.prototype.forEach.call(panel.children, function (child) { if (child !== remote) child.inert = open; });
+  if (!open) stBackupDelete = null;
+}
 function stBackupPaint(panel, connected) {
-  var list = panel.querySelector('#st-sync-backups');
-  if (!list) return;
+  var list = panel.querySelector('#st-sync-backups'); if (!list) return;
   list.hidden = stBackupEntries === null;
   panel.querySelector('#st-sync-backup-status').textContent = stBackupNotice;
   list.replaceChildren();
   if (stBackupEntries === null) return;
-  if (!stBackupEntries.length) { list.textContent = 'No remote backups yet.'; return; }
+  if (!stBackupEntries.length) { list.textContent = 'No remote backups yet.'; stBackupSelected = null; return; }
+  var selected = stBackupEntries.findIndex(function (entry) { return entry.id === stBackupSelected; });
+  if (selected < 0) selected = 0;
+  stBackupSelected = stBackupEntries[selected].id;
+  var choices = document.createElement('div'); choices.className = 'st-backup-choices'; choices.setAttribute('role', 'group'); choices.setAttribute('aria-label', 'Saved backups');
   stBackupEntries.forEach(function (entry, i) {
-    var row = document.createElement('div'); row.className = 'st-row';
-    var label = document.createElement('span'); label.className = 'st-note';
-    var date = new Date(entry.server_modified);
-    label.textContent = (isNaN(date.getTime()) ? entry.name : date.toLocaleString()) + ' · ' + Math.max(1, Math.ceil(entry.size / 1024)) + ' KB';
-    row.appendChild(label);
-    [['apply', 'Apply'], ['delete', stBackupDelete === entry.id ? 'Confirm delete' : 'Delete']].concat(stBackupDelete === entry.id ? [['cancel', 'Cancel']] : []).forEach(function (pair) {
-      var button = document.createElement('button'); button.type = 'button'; button.className = 'st-b'; button.textContent = pair[1];
-      button.dataset.backupAction = pair[0]; button.dataset.backupIndex = String(i);
-      button.disabled = stSyncBusy || !connected;
-      row.appendChild(button);
-    });
-    list.appendChild(row);
+    var row = document.createElement('button'); row.type = 'button'; row.className = 'st-backup-choice';
+    row.dataset.backupSelect = String(i); row.setAttribute('aria-pressed', String(i === selected)); row.disabled = stSyncBusy || !connected;
+    var date = new Date(entry.server_modified), label = document.createElement('span'), size = document.createElement('small');
+    label.textContent = isNaN(date.getTime()) ? entry.name : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+    size.textContent = Math.max(1, Math.ceil(entry.size / 1024)) + ' KB';
+    row.append(label, size); choices.appendChild(row);
   });
+  list.appendChild(choices);
+  var actions = document.createElement('div'); actions.className = 'st-backup-actions';
+  var entry = stBackupEntries[selected];
+  [['apply', 'Apply'], ['delete', stBackupDelete === entry.id ? 'Confirm delete' : 'Delete']].concat(stBackupDelete === entry.id ? [['cancel', 'Cancel']] : []).forEach(function (pair) {
+    var button = document.createElement('button'); button.type = 'button'; button.className = 'st-b'; button.textContent = pair[1];
+    button.dataset.backupAction = pair[0]; button.dataset.backupIndex = String(selected); button.disabled = stSyncBusy || !connected;
+    if (pair[0] === 'apply') button.dataset.tip = 'Merge this backup into your settings&#10;Applies on the next page load'.replace('&#10;', '\n');
+    actions.appendChild(button);
+  });
+  list.appendChild(actions);
 }
 function stSyncError(e, provider) {
   var name = stSyncName(provider);
@@ -309,7 +323,7 @@ async function stSyncRun(manual, mode) {
       stSyncPaint(); return;
     }
     if (!manual && (!settings.automatic || Date.now() < (state.next || 0))) return;
-    stSyncBusy = true; stSyncPaint();
+    stSyncBusy = true; stSyncActivity = 'sync'; stSyncPaint();
     try {
       var drive = stSyncDrive(provider);
       for (var attempt = 0; attempt < 4; attempt++) {
@@ -343,7 +357,7 @@ async function stSyncRun(manual, mode) {
       var failures = (stSyncState(null, provider).failures || 0) + 1;
       stSyncState({ error: stSyncError(e, provider), failures: failures, next: Date.now() + Math.min(60, Math.pow(2, Math.min(6, failures))) * 60e3 }, provider);
       if (manual) stUI().mbuToast(stSyncError(e, provider), { kind: 'error' });
-    } finally { stSyncBusy = false; stSyncPaint(); }
+    } finally { stSyncBusy = false; stSyncActivity = ''; stSyncPaint(); }
   }
   // Web Locks serializes tabs on this origin. Revision-checked writes also protect other origins
   // and other devices, which cannot share that lock.
@@ -380,15 +394,14 @@ function stSyncMarkup() {
   return '<div class="st-row st-sync-between"><select id="st-sync-provider" aria-label="Provider"><option value="dropbox">Dropbox</option><option value="google">Google Drive</option></select><button class="st-b st-sync-link" type="button" id="st-sync-connect">Connect</button><button class="st-b st-sync-link" type="button" id="st-sync-disconnect" hidden>Disconnect</button></div>'
     + '<p class="st-cap" id="st-sync-status" role="status"></p>'
     + '<p class="st-cap st-sync-group" id="st-sync-google-message" hidden>Google Drive supports backups and imports only. Sync is disabled because Google access expires after about one hour.</p>'
-    + '<section class="st-sync-group st-sync-columns" id="st-sync-controls"><div><div class="st-row st-sync-between"><h3>Sync</h3><span class="st-cap" id="st-sync-last"></span></div>'
+    + '<section class="st-sync-group st-sync-columns" id="st-sync-controls"><div><div class="st-row st-sync-between"><h3>Sync<span class="st-sync-spinner" id="st-sync-progress" role="status" aria-label="In progress" hidden></span></h3><span class="st-cap" id="st-sync-last"></span></div>'
     + '<div class="st-row"><button class="st-b st-sync-primary" type="button" id="st-sync-now" data-tip="Merge this device with Dropbox">Sync now</button><button class="st-b" type="button" id="st-sync-push" data-tip="Replace Dropbox’s portable data with this device’s">Push</button><button class="st-b" type="button" id="st-sync-pull" data-tip="Replace this device’s portable data with Dropbox’s\nKeeps device settings; applies on the next page load">Pull</button></div>'
     + '</div><div class="st-sync-options"><h3>Sync options</h3>'
-    + '<div class="st-row"><label><input id="st-sync-auto" type="checkbox"> Automatic sync</label><label for="st-sync-minutes">Every</label><select id="st-sync-minutes"><option value="5">5 minutes</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="60">1 hour</option><option value="360">6 hours</option><option value="1440">1 day</option></select></div>'
-    + '<div class="st-row"><label for="st-sync-conflict">On conflict</label><select id="st-sync-conflict"><option value="remote">Use remote value</option><option value="local">Use local value</option></select></div><p class="st-cap">Automatic sync runs while MusicBrainz is open.</p></div></section>'
-    + '<section class="st-sync-group"><h3>Backups</h3><div class="st-row st-sync-backup-row"><span id="st-sync-backup-name">Dropbox</span><button class="st-b" type="button" id="st-sync-remote-backup">Save backup</button><button class="st-b" type="button" id="st-sync-remote-import">Browse</button></div>'
-    + '<div class="st-row st-sync-backup-row"><span>This device</span><button class="st-b" type="button" id="st-sync-export">Export</button><button class="st-b" type="button" id="st-sync-import">Import</button><input id="st-sync-file" type="file" accept=".json,application/json" hidden></div><div class="st-row"><button class="st-b" type="button" id="st-sync-reload" hidden>Reload</button><span id="st-sync-backup-status" role="status"></span></div>'
-    + '<div id="st-sync-remote" hidden><div class="st-row"><span class="st-lbl" id="st-sync-backup-provider">Dropbox backups</span><button class="st-b" type="button" id="st-sync-backup-refresh">Refresh</button><button class="st-b" type="button" id="st-sync-backup-close">Hide</button></div><div id="st-sync-backups" aria-label="Dropbox backups" hidden></div><p class="st-cap">Apply merges a backup into your settings on reload. Delete removes only that saved backup.</p></div>'
-    + '</section>';
+    + '<div class="st-row"><label data-tip="Automatic sync&#10;Runs while MusicBrainz is open"><input id="st-sync-auto" type="checkbox"> Automatic sync</label><label for="st-sync-minutes">every</label><select id="st-sync-minutes"><option value="5">5 minutes</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="60">1 hour</option><option value="360">6 hours</option><option value="1440">1 day</option></select></div>'
+    + '<div class="st-row"><label for="st-sync-conflict">On conflict</label><select id="st-sync-conflict"><option value="remote">Use remote value</option><option value="local">Use local value</option></select></div></div></section>'
+    + '<section class="st-sync-group"><h3>Backups<span class="st-sync-spinner" id="st-sync-backup-progress" role="status" aria-label="In progress" hidden></span></h3><div class="st-backup-columns"><div class="st-row st-sync-backup-row"><span id="st-sync-backup-name">Dropbox</span><button class="st-b" type="button" id="st-sync-remote-backup">Save backup</button><button class="st-b" type="button" id="st-sync-remote-import">Browse</button></div>'
+    + '<div class="st-row st-sync-backup-row"><span>This device</span><button class="st-b" type="button" id="st-sync-export">Export</button><button class="st-b" type="button" id="st-sync-import">Import</button><input id="st-sync-file" type="file" accept=".json,application/json" hidden></div></div><div class="st-row"><button class="st-b" type="button" id="st-sync-reload" hidden>Reload</button><span id="st-sync-backup-status" role="status"></span></div>'
+    + '</section><div id="st-sync-remote" role="region" aria-labelledby="st-sync-backup-provider" hidden><div class="st-backup-head"><h3 id="st-sync-backup-provider">Backups</h3><span class="st-sync-spinner" id="st-sync-browse-progress" role="status" aria-label="In progress" hidden></span><button class="st-b st-sync-link" type="button" id="st-sync-backup-refresh">Refresh</button><button class="mbu-ov-x" type="button" id="st-sync-backup-close" aria-label="Close backups">×</button></div><div id="st-sync-backups" aria-label="Saved backups" hidden></div></div>';
 }
 function stSyncPaint() {
   var panel = document.getElementById('st-p-s'); if (!panel) return;
@@ -405,7 +418,7 @@ function stSyncPaint() {
   q('pull').dataset.tip = 'Replace this device’s portable data with ' + name + '’s\nKeeps device settings; applies on the next page load';
   if (stBackupAccount !== backupAccount || !connected) {
     stBackupAccount = backupAccount; stBackupEntries = null; stBackupDelete = null; stBackupNotice = '';
-    q('remote').hidden = true;
+    stBackupSelected = null; stBackupBrowse(panel, false);
   }
   q('connect').textContent = connected || auth.accessToken ? 'Reconnect' : 'Connect';
   if (provider === 'google' && !stGoogleReady) q('connect').textContent = stGoogleLoading ? 'Loading Google sign-in…' : 'Load Google sign-in';
@@ -418,8 +431,11 @@ function stSyncPaint() {
   q('import').disabled = stSyncBusy;
   stBackupPaint(panel, connected);
   q('reload').hidden = !stSyncStorage.pending();
-  q('status').textContent = stSyncBusy ? 'Working…' : (provider === 'google' && auth.accessToken && !connected ? 'Google Drive session expired. Reconnect to continue.' : provider === 'google' && stGoogleError ? stGoogleError : state.error) || (stSyncAuthPending ? 'Waiting for Dropbox authorization…' : state.notice || (connected ? '' : 'Not connected'));
+  q('status').textContent = stSyncBusy ? '' : (provider === 'google' && auth.accessToken && !connected ? 'Google Drive session expired. Reconnect to continue.' : provider === 'google' && stGoogleError ? stGoogleError : state.error) || (stSyncAuthPending ? 'Waiting for Dropbox authorization…' : state.notice || (connected ? '' : 'Not connected'));
   q('status').hidden = !q('status').textContent;
+  q('progress').hidden = !stSyncBusy || stSyncActivity !== 'sync';
+  q('backup-progress').hidden = !stSyncBusy || stSyncActivity !== 'backup';
+  q('browse-progress').hidden = !stSyncBusy || stSyncActivity !== 'backup';
   var last = state.at && new Date(state.at), today = new Date();
   q('last').textContent = last ? 'Last sync: ' + new Intl.DateTimeFormat(undefined, last.toDateString() === today.toDateString() ? { hour: '2-digit', minute: '2-digit' } : { dateStyle: 'short', timeStyle: 'short' }).format(last) : '';
   q('last').dataset.tip = last ? new Intl.DateTimeFormat(undefined, { dateStyle: 'full', timeStyle: 'long' }).format(last) : '';
@@ -440,10 +456,16 @@ function stSyncBind(panel) {
   q('push').onclick = action(function () { return stSyncRun(true, 'push'); });
   q('pull').onclick = action(function () { return stSyncRun(true, 'pull'); });
   q('remote-backup').onclick = action(function () { return stBackupRun('save'); });
-  q('remote-import').onclick = action(function () { q('remote').hidden = false; return stBackupRun('list'); });
+  q('remote-import').onclick = action(function () { stBackupBrowse(panel, true); q('backup-close').focus(); return stBackupRun('list'); });
   q('backup-refresh').onclick = action(function () { return stBackupRun('list'); });
-  q('backup-close').onclick = function () { q('remote').hidden = true; stBackupDelete = null; };
+  q('backup-close').onclick = function () { stBackupBrowse(panel, false); q('remote-import').focus(); };
   q('backups').onclick = function (event) {
+    var choice = event.target.closest('button[data-backup-select]');
+    if (choice && !stSyncBusy) {
+      var index = choice.dataset.backupSelect;
+      stBackupSelected = stBackupEntries[Number(index)].id; stBackupDelete = null; stSyncPaint();
+      q('backups').querySelector('[data-backup-select="' + index + '"]').focus(); return;
+    }
     var button = event.target.closest('button[data-backup-action]'); if (!button || stSyncBusy) return;
     var entry = stBackupEntries && stBackupEntries[Number(button.dataset.backupIndex)]; if (!entry) return;
     var mode = button.dataset.backupAction;

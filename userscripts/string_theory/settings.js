@@ -232,6 +232,7 @@ ST_CSS += '#st-cfg .st-footer .st-links{margin-left:auto}';
 ST_CSS += '#st-cfg .st-section-lead{display:flex;align-items:center;gap:16px;margin:0 0 4px}#st-cfg .st-section-lead>h3.st-h,#st-cfg .st-palette-enabled>h3.st-h{flex:0 0 auto;border:0;margin:0;padding:0;font:600 13px/1.4 var(--mbu-font)}#st-cfg .st-section-lead>.st-row{flex:0 1 auto;min-width:0;margin:0;flex-wrap:wrap}#st-cfg .st-inline-side,#st-cfg .st-palette-enabled{display:flex;align-items:center;gap:12px;min-height:28px}#st-cfg .st-inline-side .st-lbl{margin:0}#st-cfg .st-section-lead .st-seg{flex-wrap:wrap}#st-cfg .st-palette-enabled>h3.st-h{font-size:12px}#st-cfg .st-group:has(.st-palette-enabled)>.st-field-grid{margin-top:0}';
 ST_CSS += '#st-cfg .st-section-lead{align-items:flex-start}#st-cfg .st-section-lead>h3.st-h{margin-top:5px}';
 ST_CSS += '#st-cfg{background:var(--mbu-bg)!important}';
+ST_CSS += '#st-cfg #st-p-s{position:relative}#st-cfg .st-backup-columns{display:grid;grid-template-columns:minmax(0,1fr);gap:4px 28px}#st-cfg .st-sync-spinner{display:inline-block;box-sizing:border-box;width:12px;height:12px;margin-left:8px;vertical-align:middle;border:1.5px solid var(--mbu-text-weak);border-right-color:transparent;border-radius:50%;animation:st-sync-spin .8s linear infinite}#st-cfg #st-sync-remote{position:absolute;inset:0;z-index:2;background:var(--mbu-bg);padding:0;display:flex;flex-direction:column;min-height:0}#st-cfg .st-backup-head{display:flex;align-items:center;gap:10px;padding:0 0 8px;border-bottom:1px solid var(--mbu-border)}#st-cfg .st-backup-head h3{margin:0}#st-cfg #st-sync-backup-refresh{margin-left:auto}#st-cfg #st-sync-backups{display:flex;flex:1;flex-direction:column;min-height:0;max-height:none;overflow:hidden;padding-top:6px}#st-cfg .st-backup-choices{flex:1;min-height:0;overflow:auto}#st-cfg .st-backup-choice{display:flex;align-items:center;gap:12px;justify-content:space-between;width:100%;border:0;border-radius:0;background:none;color:var(--mbu-text);font:inherit;text-align:left;padding:7px 8px;cursor:pointer}#st-cfg .st-backup-choice small{color:var(--mbu-text-weak);font-size:11px}#st-cfg .st-backup-choice[aria-pressed=true]{background:var(--mbu-accent-soft);color:var(--mbu-accent-text)}#st-cfg .st-backup-actions{display:flex;gap:8px;flex-wrap:wrap;padding-top:8px;margin-top:4px;border-top:1px solid var(--mbu-border)}@container(min-width:620px){#st-cfg .st-backup-columns{grid-template-columns:repeat(2,minmax(0,1fr))}}@keyframes st-sync-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){#st-cfg .st-sync-spinner{animation:none}}';
 // a launcher opens its script's settings on right-click: pass the click on to the live one
 function stLive(name) {
   var els = Array.prototype.filter.call(document.querySelectorAll('[data-mb-corner="br"][data-mb-corner-label]'), function (el) {
@@ -339,6 +340,8 @@ function stSettings(tab) {
   };
   var onKey = function (e) {
     if (e.key !== 'Escape') return;
+    var backups = q('#st-sync-remote');
+    if (backups && !backups.hidden && !q('#st-p-s').hidden) { e.preventDefault(); e.stopPropagation(); q('#st-sync-backup-close').click(); return; }
     if (!front) { toFront(true); return; }   // the script's window closes first, this one on the next Escape
     e.stopPropagation(); close();
   };

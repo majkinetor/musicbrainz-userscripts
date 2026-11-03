@@ -40,6 +40,8 @@ The settings title bar uses `mbuCfgHeader`, retaining its icon, name, version an
 
 ## External storage
 
+The backup browser is an absolute subview of the Sync pane, so listing and loading do not contribute to the window's grid height. Other Sync controls are inert while it is open. Selection is stored by file ID in memory; one action bar targets that entry's listed revision. Escape or close restores Browse focus; successful Apply returns to the main pane with Reload available. Busy state uses a spinner in the relevant section heading instead of a status paragraph.
+
 Google Drive is currently backup-only in settings: sync controls are replaced by a limitation message, and the scheduler and non-manual runs decline Google even when automatic sync was previously enabled. The Google journal adapter remains available internally for compatibility, but the UI exposes only backup/import operations for that provider.
 
 [`sync.js`](sync.js) implements Dropbox connection, scheduling and its revision-checked snapshot file, `/string-theory.json`, inside the registered app folder. The app key is public; the flow uses S256 PKCE and offline access, without a client secret. Register **`https://musicbrainz.org/?st-dropbox=callback`** as an exact redirect URI in Dropbox's [App Console](https://www.dropbox.com/developers/apps). The app needs `account_info.read`, `files.metadata.read`, `files.content.read` and `files.content.write`; its console also controls the development/production status and user limit.
