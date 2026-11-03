@@ -834,3 +834,8 @@ html:root[data-eh-theme] .detail .grp h4 .tag {
 	color: var(--link);
 	background: color-mix(in srgb, var(--link) 12%, transparent);
 }
+
+/* Event Horizon's stars: the average in the coral link colour, the stars it doesn't reach faint, so four of five reads at a glance
+   (the oxblood accent and the muted grey were too close in weight on the warm hero) */
+html:root[data-eh-theme] .stars:not(.mine):not(:hover) .st.on { color: var(--link); }
+html:root[data-eh-theme] .stars:not(:hover) .st:not(.on) { color: color-mix(in srgb, var(--muted) 22%, transparent); }

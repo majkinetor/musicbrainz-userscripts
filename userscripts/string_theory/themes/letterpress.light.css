@@ -864,3 +864,6 @@ html:root[data-eh-theme] .tl .tr:hover,
 html:root[data-eh-theme] .tl.striped .tr.alt:hover {
 	background: color-mix(in srgb, var(--accent) 4%, var(--surface));
 }
+
+/* Event Horizon's stars: the stars the average doesn't reach faint, so four of five reads at a glance */
+html:root[data-eh-theme] .stars:not(:hover) .st:not(.on) { color: color-mix(in srgb, var(--muted) 28%, transparent); }
