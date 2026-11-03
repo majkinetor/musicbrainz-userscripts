@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.03.120000
+// @version      2026.11.03.140000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2438,6 +2438,7 @@ button{font:inherit;color:inherit}
    on their left as on their right, the scrollbar's gutter (100vw - 100%) included; 100%, not 100vw, is what the page is centred in */
 :root[data-mbu-dock]:not([data-mbu-flow=row]):not([data-mbu-side=left]) .wrap{padding-right:max(16px,calc((min(var(--eh-wn,1600px),100%) - 100%) / 2 + 52px))}
 :root[data-mbu-dock]:not([data-mbu-flow=row])[data-mbu-side=left] .wrap{padding-left:max(16px,calc((min(var(--eh-wn,1600px),100%) - 100%) / 2 + 52px))}
+@media (max-width:700px){#app .kicker{max-width:100%}#s-tl>.secthead>.tools{flex:1 1 100%;contain:inline-size;flex-wrap:nowrap;gap:4px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;max-width:100%;min-width:0;touch-action:pan-x pan-y}#s-tl>.secthead>.tools::-webkit-scrollbar{display:none}#s-tl>.secthead>.tools>*{flex:none}}
 @media (max-width:700px){:root[data-mbu-dock] .wrap{padding-left:max(16px,env(safe-area-inset-left,0px))!important;padding-right:max(16px,env(safe-area-inset-right,0px))!important}}
 .label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 h1,h2{text-wrap:balance}
@@ -2656,7 +2657,7 @@ h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25
 .ev .d+span:not(.iso)::before{content:'· ';color:var(--muted)}
 .lab{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px}
 .lab .cat{font-size:13px;font-weight:500;margin:0}
-button.tx{all:unset;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);padding:4px 2px;border-bottom:2px solid transparent}
+button.tx{all:unset;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);padding:4px 2px;border-bottom:2px solid transparent}.tx>.txi{display:none}@media (max-width:700px){.tx:has(>.txi){display:inline-flex;align-items:center;justify-content:center;min-width:30px;min-height:30px}.tx>.txi{display:block}.tx:has(>.txi)>.txl{display:none}}
 button.tx:hover{color:var(--text)}
 button.tx.plcfg{font-size:17px;line-height:1;margin-left:4px}
 button.tx[aria-pressed=true]{color:var(--text);border-bottom-color:var(--accent)}
@@ -3450,6 +3451,14 @@ const plA = (p, size, cls, st = '') => `<a class="${cls}"${greyLift(p.key) + st 
 const popRows = ps => ps.map(p => `<a class="row" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${esc(p.name)}</span><span class="r">${regions(p).map(r => `<span class="iso">${esc(r.toUpperCase())}</span>`).join('') || (p.urls.length > 1 ? `<span class="iso">×${p.urls.length}</span>` : '')}</span></a>`).join('');
 const LAYERS = (size, sw = 1.5) => `<svg viewBox="0 0 16 16" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 2 6 3-6 3-6-3z"/><path d="m2 8 6 3 6-3"/><path d="m2 11 6 3 6-3"/></svg>`;
 const CI_TAG = MBU_ENT_ICONS['label'];
+// the tracklist's SHOW toggles on a phone
+const TX_ICON = Object.fromEntries(Object.entries({
+    ar: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+    mk: '<path d="M5 21V4h12l-2.5 4 2.5 4H5"/>',
+    isrc: '<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/>',
+    links: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+    len: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+}).map(([k, d]) => [k, `<svg class="txi" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`]));
 const SVG = d => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 // MusicBrainz search, sent as MB's own search form; a bare magnifier that, clicked, swaps the header's actions for its field until a search, × or Escape
 const SRCH_T = ['artist', 'event', 'recording', 'release', 'release_group', 'series', 'work', 'area', 'instrument', 'label', 'place', 'annotation', 'tag', 'cdstub', 'editor', 'doc'];
@@ -4016,7 +4025,7 @@ function tracklist(r) {
         rows += `<button class="disc" type="button" data-disc="${mi}" aria-expanded="${!shut}" data-tip="${shut ? 'Open' : 'Fold'} this disc&#10;Right-click: ${shut ? 'open' : 'fold'} every disc">${CHEV}<span class="fi">${fmtSvg(fmtKind(m.format), 18)}</span>${esc(fmtName(m.format))}${multi ? ' ' + m.position : ''}${m.title ? ' · ' + esc(m.title) : ''}<span class="count">${m.tracks.length}</span><span class="tot">${total(ts)}</span></button>`;
         if (!shut) rows += ts.map(row).join('');
     });
-    const toggles = `<button class="tx" type="button" data-arcol="${esc(r.id)}" data-va="${va}" aria-pressed="${va}" data-tip="Each track's artist in a column\n${vaAuto ? 'On by itself' : 'Off by itself'} for this release">Artist</button>` + [['mk', 'Markers'], ['isrc', 'ISRCs'], ['links', 'Platforms'], ['len', 'Lengths']].map(([k, n]) => `<button class="tx" type="button" data-col="${k}" aria-pressed="${S.cols[k] !== false}">${n}</button>`).join('');
+    const toggles = `<button class="tx" type="button" data-arcol="${esc(r.id)}" data-va="${va}" aria-pressed="${va}" data-tip="Each track's artist in a column\n${vaAuto ? 'On by itself' : 'Off by itself'} for this release" aria-label="Artist">${TX_ICON.ar}<span class="txl">Artist</span></button>` + [['mk', 'Markers', 'Markers on tracks'], ['isrc', 'ISRCs', "Each track's ISRCs"], ['links', 'Platforms', 'Platform icons on tracks'], ['len', 'Lengths', 'Track lengths']].map(([k, n, tip]) => `<button class="tx" type="button" data-col="${k}" aria-pressed="${S.cols[k] !== false}" aria-label="${n}" data-tip="${tip}">${TX_ICON[k]}<span class="txl">${n}</span></button>`).join('');
     rowKeys = tracks.map(t => t.key);
     const plB = `<button class="tx plcfg" type="button" data-plcfg="1" aria-label="Tracklist settings" data-tip="Tracklist settings\nTrack colors and platform icons">${MBU_CFG_ICON}</button>`;
     const tools = `<span class="label" style="margin-right:2px">Show</span>${toggles}${plB}`;
@@ -8656,7 +8665,9 @@ function actsFit(acts) {
     if (!acts || !acts.isConnected || acts.closest('#eh-pin.on')) return;
     for (const ph of [...acts.querySelectorAll('[data-fithome]')]) { const a = acts.querySelector('a.ab[data-fitidx="' + ph.dataset.fithome + '"]'); if (a) a.removeAttribute('data-fitidx'); ph.replaceWith(...(a ? [a] : [])); }
     const made = acts.querySelector(':scope>.eh-more[data-fitmade]'); if (made && !made.querySelector('.abm>*')) made.remove();
-    const kick = acts.parentElement, over = () => acts.getBoundingClientRect().right > Math.min(document.documentElement.clientWidth, kick.getBoundingClientRect().right) + 1;
+    const kick = acts.parentElement, wrap = acts.closest('#app') || document.documentElement, edge = () => { const r = wrap.getBoundingClientRect(); return Math.min(r.right - parseFloat(getComputedStyle(wrap).paddingRight || 0), innerWidth, screen.width || 1e9); };
+    // the column's edge, not the viewport's: Firefox for Android widens the viewport to whatever overflows, so a viewport width grows with the row
+    const over = () => acts.getBoundingClientRect().right > Math.min(edge(), kick.getBoundingClientRect().right) + 1;
     if (!acts.offsetWidth || !over()) return;
     let more = acts.querySelector(':scope>.eh-more');
     for (let i = 0; over(); i++) {
@@ -8666,7 +8677,7 @@ function actsFit(acts) {
         more.querySelector('.abm').prepend(a);
     }
 }
-{ let t = 0; addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => document.querySelectorAll('#app .kicker .acts').forEach(actsFit), 150); }); }
+{ let t = 0; const refit = () => { clearTimeout(t); t = setTimeout(() => document.querySelectorAll('#app .kicker .acts').forEach(actsFit), 150); }; addEventListener('resize', refit); addEventListener('load', refit); document.fonts?.ready.then(refit); }
 PIN_NARROW.addEventListener('change', () => { const bar = document.getElementById('eh-pin'), acts = bar && bar.querySelector('.acts'); if (acts) pinFold(acts, bar.classList.contains('on')); });
 // lights the section at the top of the window
 // and gives a stuck section header its background, MusicBrainz's releases page's too, which has no rail
