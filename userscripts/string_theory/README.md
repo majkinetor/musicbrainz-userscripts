@@ -83,7 +83,7 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 
 - **Your last input comes back** selected when you open the palette again: type to replace it.
 - **Theme commands show as you move over them** with the arrows; **Enter** keeps one, **Esc** goes back to yours.
-- **Theme chooser** opens a slim bar at the bottom of the page instead: **◀ ▶** (or the arrow keys) show each light and dark theme on the whole page, **Keep** (**Enter**) saves it, **✕** (**Esc**) goes back to yours.
+- **Theme chooser** opens a slim bar at the bottom of the page instead: **◀ ▶** (or the arrow keys) show each light and dark theme on the whole page, **All** switches to **Light** or **Dark** only, **Keep** (**Enter**) saves it, **✕** (**Esc**) goes back to yours.
 - **Pin** a command with **Alt+P** or its ☆: pinned commands come first, then the ones you used last.
 - **Search**: `search work blue` or `work blue` is *Search Work: blue*; `search` alone lists the types.
 - **New issue** puts the script's name in the title and the versions in the report; *with log* adds that script's log of this page, or one of its last 10 kept logs.

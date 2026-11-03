@@ -452,7 +452,7 @@ function stPalListen() {
 
 // ── Theme chooser ───────────────────────────────────────────────────────────
 // A slim bar at the bottom of the page that steps through every theme with ◀ ▶ (or the arrow keys),
-// showing each on the whole page; nothing covers the view. Keep (Enter) saves it, ✕ (Esc) goes back.
+// showing each on the whole page; nothing covers the view. All / Light / Dark limits them to one variant. Keep (Enter) saves it, ✕ (Esc) goes back.
 var ST_TC_CSS = ''
   + '#st-tc{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:2147483600;display:flex;align-items:center;gap:6px;padding:6px 8px;'
   + 'background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);font:13px/1.4 var(--mbu-font);max-width:calc(100vw - 32px);box-sizing:border-box}'
@@ -470,15 +470,26 @@ function stThemeChooser() {
     css.textContent = T.MBU_TOKENS + U.MBU_UI_CSS + ST_TC_CSS;
     (document.head || html).appendChild(css);
   }
-  var th = __stTheme.read(), cur = __stTheme.variant(), all = [];
-  [cur, cur === 'dark' ? 'light' : 'dark'].forEach(function (v) { __stTheme.names(v).forEach(function (n) { all.push([v, n]); }); });
-  var i = Math.max(0, all.findIndex(function (t) { return t[0] === cur && t[1] === th[cur]; }));
+  var th = __stTheme.read(), cur = __stTheme.variant(), all = [], only = 'all', i = 0;
+  // only: 'all', 'light' or 'dark', which themes the arrows step through
+  var list = function () {
+    var was = all[i];
+    all = [];
+    [cur, cur === 'dark' ? 'light' : 'dark'].forEach(function (v) {
+      if (only === 'all' || only === v) __stTheme.names(v).forEach(function (n) { all.push([v, n]); });
+    });
+    var at = function (v, n) { return all.findIndex(function (t) { return t[0] === v && t[1] === n; }); };
+    i = was ? at(was[0], was[1]) : at(cur, th[cur]);
+    if (i < 0) i = Math.max(0, at(all[0][0], th[all[0][0]]));
+  };
+  list();
   var bar = document.createElement('div');
   bar.id = 'st-tc';
   bar.className = 'mbu-ui';
   bar.setAttribute('role', 'toolbar');
   bar.setAttribute('aria-label', 'Theme chooser');
-  bar.innerHTML = '<button type="button" id="st-tc-p" aria-label="Previous theme">◀</button>'
+  bar.innerHTML = '<button type="button" id="st-tc-f" aria-label="Themes to step through">All</button>'
+    + '<button type="button" id="st-tc-p" aria-label="Previous theme">◀</button>'
     + '<span class="st-tc-n" aria-live="polite"></span><span class="st-tc-i"></span>'
     + '<button type="button" id="st-tc-nx" aria-label="Next theme">▶</button>'
     + '<button type="button" id="st-tc-k">Keep</button>'
@@ -491,6 +502,8 @@ function stThemeChooser() {
     bar.querySelector('.st-tc-n').innerHTML = stEsc(t[1]) + ' <span class="st-tc-v">' + t[0] + '</span>';
     bar.querySelector('.st-tc-i').textContent = (i + 1) + '/' + all.length;
   };
+  var ONLY = { all: ['light', 'Light'], light: ['dark', 'Dark'], dark: ['all', 'All'] };
+  var filter = function () { var n = ONLY[only]; only = n[0]; bar.querySelector('#st-tc-f').textContent = n[1]; list(); show(); };
   var step = function (d) { i = (i + d + all.length) % all.length; show(); };
   var close = function (keep) {
     window.removeEventListener('keydown', onKey, true);
@@ -513,6 +526,7 @@ function stThemeChooser() {
     e.preventDefault(); e.stopPropagation();
   };
   window.addEventListener('keydown', onKey, true);
+  bar.querySelector('#st-tc-f').onclick = filter;
   bar.querySelector('#st-tc-p').onclick = function () { step(-1); };
   bar.querySelector('#st-tc-nx').onclick = function () { step(1); };
   bar.querySelector('#st-tc-k').onclick = function () { close(true); };
