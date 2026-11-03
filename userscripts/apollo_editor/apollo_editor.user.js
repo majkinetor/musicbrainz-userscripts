@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.03.101501
+// @version      2026.11.03.093108
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15665,6 +15665,24 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       body.tc-ri-on form.tc-ent-form input[id$=".comment"]{width:100%!important}
       body.tc-ri-on form.tc-ent-form textarea{width:100%!important;max-width:100%;box-sizing:border-box}
       body.tc-ri-on form.tc-ent-form .tc-rg-artlbl{width:auto;text-align:left}
+      /* links: one per row, the URL across the screen, its types under it */
+      body.tc-ri-on form.tc-ent-form #external-links-editor > tbody{grid-template-columns:minmax(0,1fr)!important;padding-left:39px}
+      body.tc-ri-on form.tc-ent-form #external-links-editor tr.relationship-item:has(.date-period){grid-column:auto}
+      body.tc-ri-on form.tc-ent-form #external-links-editor tr.external-link-item{margin-left:-39px}
+      body.tc-ri-on form.tc-ent-form #external-links-editor tr.external-link-item td.link-actions > button.remove-item{opacity:.5}
+      body.tc-ri-on form.tc-ent-form #external-links-editor tr.external-link-item:has(input[type=url]:placeholder-shown){margin-left:-39px;padding-left:0}
+      body.tc-ri-on form.tc-ent-form .row > .form-row-select-list{flex:1 1 100%;margin-left:0!important;width:auto!important}
+      body.tc-ri-on form.tc-ent-form .form-row-select-list .select-list-row{display:flex;align-items:center;gap:4px}
+      body.tc-ri-on form.tc-ent-form .form-row-select-list select{flex:1 1 0;min-width:0;width:auto!important}
+      /* relationships: the phrase above its targets */
+      body.tc-ri-on form.tc-ent-form table.rel-editor-table,body.tc-ri-on form.tc-ent-form table.rel-editor-table > tbody{display:block;width:auto!important}
+      body.tc-ri-on form.tc-ent-form table.rel-editor-table > tbody > tr{display:block;margin-top:6px}
+      body.tc-ri-on form.tc-ent-form table.rel-editor-table th{display:flex;justify-content:flex-start!important;width:auto!important;text-align:left!important;padding:0!important}
+      body.tc-ri-on form.tc-ent-form table.rel-editor-table th label{width:auto!important;text-align:left!important}
+      body.tc-ri-on form.tc-ent-form table.rel-editor-table td{display:block;width:auto!important;padding:2px 0 0 14px!important}
+      /* Enter edit and Cancel stay on screen */
+      body.tc-ri-on:has(form.tc-ent-form) #tc-nav-bar{position:fixed!important;top:0;left:0;right:0;z-index:50;padding:5px 8px 6px!important;margin:0!important}
+      body.tc-ri-on:has(form.tc-ent-form):has(#tc-nav-bar) #content{padding-top:46px}
     }`;
     document.head.appendChild(s);
   }
