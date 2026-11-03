@@ -93,7 +93,7 @@ A merge always goes to a vote, even an auto-editor's, as a [destructive edit](ht
 
 ## Other entities
 
-Artists, releases, release groups, works, labels, places, events, series, instruments and areas are merged in Fusion's **Merge entities** window: ⧉ in the recording window's header, or Fusion's corner icon on any page once something is collected.
+Artists, releases, release groups, works, labels, places, events, series, instruments and areas are merged in Fusion's **Merge entities** window. Switch to it with the type picker in either window's title (*Merge Recordings ▾*), or click the count badge on Fusion's corner icon, which shows how many entities wait to merge. Each row shows what MusicBrainz's own merge page does: for a release its artist, format, tracks, country and date, label, catalog number and barcode; for other types their type, area, dates, ISWCs and the like.
 
 - Collect entities with [Event Horizon](../event_horizon/README.md)'s **Add to Fusion pool** button, or paste a MusicBrainz link or MBID into the window.
 - Each type has its own pool and groups, under its tab. **Group all** puts the pool in one group; → adds an entity to the current group (the one whose header you clicked last).

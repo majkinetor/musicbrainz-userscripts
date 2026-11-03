@@ -17,7 +17,7 @@ for (const type of ['artist', 'release']) {
     }
     await until(() => page.locator('#fs-launch').count(), n => n === 1);
     await page.click('#fs-launch');
-    await page.click(`#fs-em-overlay [data-tab="${type}"]`);
+    await page.selectOption("#fs-em-overlay .fs-typepick", type);
     check(await page.locator('#fs-em-pool .fs-em-row').count() === 2, 'both are in the pool');
     await page.click('#fs-em-overlay [data-act="newgroup"]');
     check(await page.locator('#fs-em-groups .fs-em-row').count() === 2, 'one group of two');
