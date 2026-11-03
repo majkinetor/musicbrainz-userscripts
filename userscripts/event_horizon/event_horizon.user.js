@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.03.200000
+// @version      2026.11.03.210000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2579,6 +2579,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .art .thumbs img,.art .thumbs a,.art .thumbs button{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);font-weight:700;font-size:14px}
 .art .thumbs img{color:transparent;font-size:0}
 .facts-col{flex:1 1 340px;min-width:0;display:flex;flex-direction:column;gap:10px;padding-top:2px}
+.eh-pctip{display:flex;align-items:center;gap:6px;margin-top:4px}.eh-pcic{flex:none}
 .kicker{display:flex;align-items:center;gap:10px;min-width:0;font-size:18px}
 .kicker>span:not(.acts){white-space:nowrap}
 .kicker .ab .abt{display:var(--eh-menu-titles,none)}
@@ -3618,6 +3619,9 @@ function facts(r) {
     return `<div class="facts"><button class="tx plcfg hdcfg" type="button" data-plcfg="hd" aria-label="Header settings" data-tip="Header settings\nWhich facts the header shows, and the other covers">${MBU_CFG_ICON}</button>${ks.map(k => `<div${k === 'links' || k === 'aliases' && r.aliases.length ? ' class="wide"' : ''}>${k === 'links' ? '' : `<div class="label">${F[k][0]}</div>`}<div class="v">${F[k][1]}</div></div>`).join('')}</div>`;
 }
 // what Picard's browser integration opens for an entity; it loads nothing else
+// Picard's logo, its two halves and the pick, for the MBID tip
+const PICARD_IC = '<svg class="eh-pcic" viewBox="0 0 127 144" width="15" height="17" aria-hidden="true"><path d="m127 35-61-35v144l61-35z" fill="#eb743b"/><path d="m61 144v-144l-61 35v74z" fill="#771b85"/><path transform="translate(-4.35 -2.82)" d="m41.81 42.9-18 8.66-9.72 52.44 17.17-4.35 14.45 10.24 9.75-52.41zm-3.56 18.5a5.57 5.57 0 1 1 6.49-4.46 5.57 5.57 0 0 1 -6.49 4.46z" fill="#b66bc2"/></svg>';
+mbuTipOn('.kmk[data-picard]', el => mbuTipCard({ title: 'Copy the MBID', body: `<div>${esc(el.dataset.copy)}</div><div class="eh-pctip">${mbuTipKey('Right-click')}${PICARD_IC}<span>Send to Picard</span></div>` }), { card: true });
 const PICARD_OPEN = { release: 'openalbum', recording: 'opennat' };
 const picardSend = q => {
     const url = `http://127.0.0.1:8000/${q}`, say = (lvl, m) => { toast(m); LOG[lvl](m); };
@@ -3634,7 +3638,7 @@ function heroFacts(app) {
     if (mb) mb.remove();
     if (k && id) {
         const pc = PICARD_OPEN[pm[1]];
-        k.outerHTML = `<button type="button" class="kmk" data-copy="${id}" data-copylabel="the MBID"${pc ? ` data-picard="${pc}?id=${id}"` : ''} data-tip="Copy the MBID&#10;${id}${pc ? '&#10;Right-click: send to Picard' : ''}" aria-label="Copy the MBID">${k.outerHTML}</button>`;
+        k.outerHTML = `<button type="button" class="kmk" data-copy="${id}" data-copylabel="the MBID"${pc ? ` data-picard="${pc}?id=${id}"` : ''} ${pc ? '' : ` data-tip="Copy the MBID&#10;${id}"`} aria-label="Copy the MBID">${k.outerHTML}</button>`;
     }
     const u = h.querySelector('.art .under'); if (!u) return;
     // the rating is one more fact, before the aliases and the full-width rows; the tags go last, before the links
@@ -8133,13 +8137,14 @@ async function collectionChange(key, id) {
     finally { x.busy = false; collectionPaint(key); }
 }
 function collectionButton(app) {
+    const k0 = app && app.querySelector('.kicker > span:not([class])'); if (k0 && !k0.dataset.tip) k0.dataset.tip = k0.textContent;
     if (!ME || !app) return;
     const m = location.pathname.match(/^\/(release-group|release|artist|label|recording|work|area|instrument|place|series|event)\/([0-9a-f-]{36})(?:\/|$)/i);
     const label = app.querySelector('.kicker > span:not([class])');
     if (!m || !label || label.closest('.eh-collections')) return;
     const key = m[1] + '/' + m[2], w = document.createElement('span'); w.className = 'eh-collections';
     label.replaceWith(w);
-    w.innerHTML = '<button type="button" data-pop="collections" aria-expanded="false" aria-label="Collections">' + label.innerHTML + '</button><span class="pop" id="pop-collections" data-key="' + key + '" hidden></span>';
+    w.innerHTML = '<button type="button" data-pop="collections" aria-expanded="false" aria-label="Collections" data-tip="' + esc(label.textContent + '\nClick: add to or remove from your collections') + '">' + label.innerHTML + '</button><span class="pop" id="pop-collections" data-key="' + key + '" hidden></span>';
     collectionLoad(key);
 }
 
