@@ -456,7 +456,8 @@ function stPalListen() {
 var ST_TC_CSS = ''
   + '#st-tc{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:2147483600;display:flex;align-items:center;gap:6px;padding:6px 8px;'
   + 'background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);font:13px/1.4 var(--mbu-font);max-width:calc(100vw - 32px);box-sizing:border-box}'
-  + '#st-tc button{margin:0;height:30px}'
+  + '#st-tc button{margin:0;height:30px;border:0!important;background:none!important;box-shadow:none!important;color:inherit;cursor:pointer}'
+  + '#st-tc button:hover,#st-tc button:focus-visible{color:var(--mbu-accent-text,var(--mbu-accent))}'
   + '#st-tc .st-tc-n{min-width:170px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
   + '#st-tc .st-tc-v{color:var(--mbu-text-weak)}'
   + '#st-tc .st-tc-i{color:var(--mbu-text-weak);font-size:12px;min-width:36px;text-align:center}';
