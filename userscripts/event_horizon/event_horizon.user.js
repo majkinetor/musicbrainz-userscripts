@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.03.070117
+// @version      2026.11.03.081000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -9116,7 +9116,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-details] #page .eh-details table.details th{width:1%;white-space:nowrap;padding-right:12px;color:var(--text);font-weight:700;text-align:right}
 :root[data-eh-details] #page .eh-details td>a[href*="/ws/2/"],:root[data-eh-details] #page .eh-details td>a[href^="http"]:not([href^="/"]){font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:-.01em}
 :root[data-eh-details] #page .eh-details code{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text)}
-@media(max-width:600px){:root[data-eh-details] .eh-details{padding:16px}:root[data-eh-details] #page .eh-details table.details th{white-space:normal;width:90px}:root[data-eh-details] #eh-relhd>.rhtx{flex-basis:100%}:root[data-eh-details] #eh-relhd .acts{margin-left:0}}
+@media(max-width:600px){:root[data-eh-details] .eh-details{padding:16px}:root[data-eh-details] #page .eh-details table.details :is(tbody,tr,th,td){display:block;width:auto}:root[data-eh-details] #page .eh-details table.details tr+tr{margin-top:10px}:root[data-eh-details] #page .eh-details table.details th{white-space:normal;text-align:left;padding:0;font-size:12.5px;font-weight:600;color:var(--muted)}:root[data-eh-details] #eh-relhd>.rhtx{flex-basis:100%}:root[data-eh-details] #eh-relhd .acts{margin-left:0}}
 #eh-relhd>.u-av{flex:none;position:relative;width:96px;height:96px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:var(--chip);color:var(--chip-text);font-size:40px;font-weight:800}#eh-relhd>.u-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 #eh-relhd .u-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}#eh-relhd .u-tab{display:inline-flex;align-items:center;min-height:30px;padding:4px 12px;border-radius:9px;border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important;font-weight:600;font-size:13px}#eh-relhd .u-tab:hover{border-color:var(--accent)}#eh-relhd .u-tab.on{background:var(--accent);border-color:var(--accent);color:#fff!important}
 :root[data-eh-rel] #page table.tbl{border-collapse:separate;border-spacing:0;width:100%;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface)}
