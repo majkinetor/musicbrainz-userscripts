@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.03.104002
+// @version      2026.11.03.104003
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3599,6 +3599,12 @@ function heroFacts(app) {
     if (tg) {
         // few tags stay a fact beside the others; ones that don't fit on one line take the whole row (and so does the edit box, by CSS)
         const c = add('Tags', tg, true), fit = () => { c.classList.remove('wide'); tg.style.width = 'max-content'; const over = tg.offsetWidth > c.clientWidth; tg.style.width = ''; c.classList.toggle('wide', over); };
+        fit(); new ResizeObserver(fit).observe(f);
+    }
+    // so do aliases that don't fit their cell on one line
+    const al = f.querySelector(':scope>div:not(.wide):has(>.v>.als)');
+    if (al) {
+        const as = al.querySelector('.als'), fit = () => { al.classList.remove('wide'); as.style.width = 'max-content'; const over = as.offsetWidth > al.clientWidth; as.style.width = ''; al.classList.toggle('wide', over); };
         fit(); new ResizeObserver(fit).observe(f);
     }
     u.remove();
