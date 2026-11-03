@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.03.104003
+// @version      2026.11.03.120000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2331,7 +2331,7 @@ const CSS = `
 .hm-pid{display:flex;gap:12px;align-items:center;padding-right:40px}.hm-pl{position:absolute;top:12px;right:12px;width:32px;height:32px;display:grid;place-items:center;border-radius:9px;background:var(--chip);color:var(--chip-text)!important}.hm-pl:hover{outline:1px solid var(--accent)}.hm-pl svg{width:18px;height:18px}button.hm-av{border:0;padding:0;cursor:pointer;filter:none!important}.hm-gv{display:flex;gap:6px;margin-top:4px}.hm-gv input{border:1px solid var(--border);border-radius:8px;background:var(--surface)!important;color:var(--text)!important;font:inherit;font-size:13px;padding:5px 8px;width:240px}.hm-gv button{border:0;border-radius:8px;background:var(--accent);color:#fff;font:inherit;font-size:13px;font-weight:700;padding:5px 12px;cursor:pointer;filter:none!important}
 .hm-pid b{font-size:16px}.hm-pid small{display:block;color:var(--muted)}
 .hm-av{flex:none;overflow:hidden;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#ba478f,#eb743b);color:#fff;display:grid;place-items:center;font-size:22px;font-weight:800}
-.hm-sts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+.hm-sts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:14px 0}@media(max-width:700px){.hm-sts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .hm-st{background:var(--chip);border-radius:10px;padding:8px 10px;color:var(--text)!important;text-decoration:none!important}.hm-st:hover{outline:1px solid var(--accent)}
 .hm-st b{display:block;font-size:18px}.hm-st small{color:var(--muted)}
 .hm-bars div{display:grid;grid-template-columns:100px 1fr 56px;gap:8px;align-items:center;font-size:12px;padding:2px 0}
@@ -2557,7 +2557,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .kicker .ab{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 8px;border-radius:8px;border:1px solid transparent;font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--chip-text)}
 .kicker .ab:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
 .kicker .abx{position:relative;display:inline-flex}.kicker .abm{display:none;position:absolute;top:100%;left:0;z-index:30;flex-direction:column;gap:2px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px var(--shadow)}.kicker .abx:is(:hover,:focus-within)>.abm{display:flex}.kicker .abm .ab{white-space:nowrap}
-.kicker .eh-more{margin:0}.kicker .eh-more>summary{list-style:none;cursor:pointer}.kicker .eh-more>summary::-webkit-details-marker{display:none}.kicker .eh-more:not([open])>.abm{display:none}.kicker .eh-more[open]>.abm{display:flex}.kicker .eh-more>.abm{left:auto;right:0}.kicker .eh-more .abm .ab{justify-content:flex-start}
+.kicker .eh-more{margin:0}.kicker .eh-more>summary{list-style:none;cursor:pointer}.kicker .eh-more>summary::-webkit-details-marker{display:none}.kicker .eh-more:not([open])>.abm{display:none}.kicker .eh-more[open]>.abm{display:flex}.kicker .eh-more>.abm{left:auto;right:0}.kicker .eh-more .abm .ab{justify-content:flex-start}.kicker .eh-more .abm .ab .abt{display:inline}
 .art .cvact{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:8px;background:rgba(0,0,0,.66);color:#fff!important;font-size:13px;font-weight:600;text-decoration:none!important;opacity:0;transition:opacity .15s;white-space:nowrap}.art .picw:hover>.cvact,.art .cvact:focus-visible{opacity:1}.art .cvact:hover{background:var(--accent)}
 .kicker .srch{display:inline-flex;align-items:center;margin:0}
 .kicker .acts:has(>.srch.open)>:not(.srch),.kicker .srch.open>.ab,.kicker .srch:not(.open) .sf{display:none}
@@ -8635,12 +8635,13 @@ function pinBar(app) {
         LOG.debug('pinned header ' + (pin ? 'shown' : 'hidden'));
     });
     pinIo.observe(kick);   // the bar comes in as soon as the action row leaves the screen
+    actsFit(acts);
 }
 // on a phone the pinned bar has no room for the action row, so its links go into More (and back once the bar hides)
 const PIN_NARROW = matchMedia('(max-width:700px)');
 function pinFold(acts, pin) {
     const fold = pin && PIN_NARROW.matches, moved = [...acts.querySelectorAll('a.ab[data-pinfold]')];
-    if (!fold) { for (const a of moved) { a.removeAttribute('data-pinfold'); acts.querySelector('[data-pinhome="' + a.dataset.pinidx + '"]')?.replaceWith(a); } acts.querySelector('.eh-more[data-pinmade]')?.remove(); return; }
+    if (!fold) { for (const a of moved) { a.removeAttribute('data-pinfold'); acts.querySelector('[data-pinhome="' + a.dataset.pinidx + '"]')?.replaceWith(a); } acts.querySelector('.eh-more[data-pinmade]')?.remove(); actsFit(acts); return; }
     if (moved.length) return;
     const links = [...acts.querySelectorAll(':scope>a.ab:has(>span)')]; if (!links.length) return;
     let more = acts.querySelector(':scope>.eh-more');
@@ -8649,6 +8650,23 @@ function pinFold(acts, pin) {
     links.forEach((a, i) => { const ph = document.createElement('span'); ph.hidden = true; ph.dataset.pinhome = i; a.before(ph); a.dataset.pinidx = i; a.dataset.pinfold = ''; });
     menu.prepend(...links);
 }
+// a narrow screen: the action row's links that don't fit go into More, the last first, so search, the star and home stay in view (majkinetor)
+// (a row wider than a phone made Firefox widen the whole page and zoom out, leaving an empty column on the right)
+function actsFit(acts) {
+    if (!acts || !acts.isConnected || acts.closest('#eh-pin.on')) return;
+    for (const ph of [...acts.querySelectorAll('[data-fithome]')]) { const a = acts.querySelector('a.ab[data-fitidx="' + ph.dataset.fithome + '"]'); if (a) a.removeAttribute('data-fitidx'); ph.replaceWith(...(a ? [a] : [])); }
+    const made = acts.querySelector(':scope>.eh-more[data-fitmade]'); if (made && !made.querySelector('.abm>*')) made.remove();
+    const kick = acts.parentElement, over = () => acts.getBoundingClientRect().right > Math.min(document.documentElement.clientWidth, kick.getBoundingClientRect().right) + 1;
+    if (!acts.offsetWidth || !over()) return;
+    let more = acts.querySelector(':scope>.eh-more');
+    for (let i = 0; over(); i++) {
+        const links = [...acts.querySelectorAll(':scope>a.ab:has(>span)')]; if (!links.length) break;
+        if (!more) { more = document.createElement('details'); more.className = 'abx eh-more'; more.dataset.fitmade = ''; more.innerHTML = `<summary class="ab" aria-label="More">${SVG('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>')}</summary><span class="abm"></span>`; links[links.length - 1].after(more); continue; }
+        const a = links[links.length - 1], ph = document.createElement('span'); ph.hidden = true; ph.dataset.fithome = i; a.before(ph); a.dataset.fitidx = i;
+        more.querySelector('.abm').prepend(a);
+    }
+}
+{ let t = 0; addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => document.querySelectorAll('#app .kicker .acts').forEach(actsFit), 150); }); }
 PIN_NARROW.addEventListener('change', () => { const bar = document.getElementById('eh-pin'), acts = bar && bar.querySelector('.acts'); if (acts) pinFold(acts, bar.classList.contains('on')); });
 // lights the section at the top of the window
 // and gives a stuck section header its background, MusicBrainz's releases page's too, which has no rail
