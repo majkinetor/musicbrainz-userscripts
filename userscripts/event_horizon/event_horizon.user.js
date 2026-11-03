@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.203439
+// @version      2026.11.03.064408
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2978,7 +2978,7 @@ body.col-dragging,body.col-dragging *{cursor:grabbing!important;user-select:none
 .artgrid img,.artgrid .art-miss{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block;background:var(--chip);color:transparent}
 .artgrid .art-miss{display:grid;place-items:center;color:var(--muted)}.art-miss svg{opacity:.55}
 .artgrid figure{margin:0;display:flex;flex-direction:column;gap:6px}
-.disco{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}.disco a{display:flex;flex-direction:column;gap:5px;color:inherit;text-decoration:none}.disco img,.disco .dn{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);color:var(--muted)}.disco .dt{font-weight:600;line-height:1.3;min-width:0;overflow-wrap:anywhere}.disco .dy{font-size:13px;color:var(--soft)}.disco-h{margin:18px 0 10px;font-size:14px;color:var(--soft)}.gf{display:inline-flex;align-items:center;gap:8px;background:none;border:0;padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;cursor:pointer}.gf .cv{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;border:1px solid var(--border)}.gf:hover{color:var(--text)}.gf:hover .cv{border-color:var(--accent)}.disco-h:first-of-type{margin-top:0}.sec.pend .secthead{cursor:default;justify-content:flex-start}.sec.pend .fold{display:flex;align-items:center;gap:inherit;opacity:.6}.ld{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:ldspin .8s linear infinite}@keyframes ldspin{to{transform:rotate(360deg)}}.als{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0}.als span:not(:last-of-type)::after{content:'·';margin:0 8px;color:var(--soft)}.als .chip{margin-left:10px;cursor:pointer}.disco.ed-row{grid-template-columns:none;grid-auto-columns:140px}.ed-t a.tt .dn{width:100%;height:100%;display:grid;place-items:center}.disco .dn svg,.ed-t a.tt .dn svg{opacity:.45}.art .apic{object-fit:cover;object-position:top}.art .ipic{object-fit:cover}.ed-t td ul{list-style:none;margin:0;padding:0}.ed-t tr.tsub td{padding-top:18px;font-weight:600;color:var(--soft)}.art .lpic{object-fit:contain;background:#fff;padding:12px;box-sizing:border-box}.art .mpic{object-fit:contain;background:var(--chip);padding:16px;box-sizing:border-box}.art .imgflag{position:absolute;left:12px;top:12px;width:40px;height:auto;border-radius:2px;box-shadow:0 1px 4px var(--shadow);pointer-events:none}
+.disco{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}.disco a{display:flex;flex-direction:column;gap:5px;color:inherit;text-decoration:none}.disco img,.disco .dn{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);color:var(--muted)}.disco .dt{font-weight:600;line-height:1.3;min-width:0;overflow-wrap:anywhere}.disco .dy{font-size:13px;color:var(--soft)}.disco-h{margin:18px 0 10px;font-size:14px;color:var(--soft)}.gf{display:inline-flex;align-items:center;gap:8px;background:none;border:0;padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;cursor:pointer}.gf .cv{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;border:1px solid var(--border)}.gf:hover{color:var(--text)}.gf:hover .cv{border-color:var(--accent)}.disco-h:first-of-type{margin-top:0}.sec.pend .secthead{cursor:default;justify-content:flex-start}.sec.pend .fold{display:flex;align-items:center;gap:inherit;opacity:.6}.ld{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:ldspin .8s linear infinite}@keyframes ldspin{to{transform:rotate(360deg)}}.als{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0}.als span:not(:last-of-type)::after{content:'·';margin:0 8px;color:var(--soft)}.als .chip{margin-left:10px;cursor:pointer}.disco.ed-row{grid-template-columns:none;grid-auto-columns:140px}.ed-t a.tt .dn{width:100%;height:100%;display:grid;place-items:center}.disco .dn svg,.ed-t a.tt .dn svg{opacity:.45}.art .apic{object-fit:cover;object-position:top}.art .ipic{object-fit:cover}.ed-t td ul{list-style:none;margin:0;padding:0}.ed-t tr.tsub td{padding-top:18px;font-weight:600;color:var(--soft)}.art .lpic{object-fit:contain;background:#fff;padding:12px;box-sizing:border-box}.art .mpic{object-fit:contain;background:var(--chip);padding:16px;box-sizing:border-box}.art .imgflag{position:absolute;left:12px;top:12px;width:40px;height:auto;border-radius:2px;box-shadow:0 1px 4px var(--shadow);pointer-events:none}.flagi{height:.8em;width:auto;margin-right:5px;vertical-align:0;border-radius:2px;box-shadow:0 0 0 1px var(--border)}
 .artgrid figcaption{font-size:13px;color:var(--soft);text-align:center}
 
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--toast-bg);color:var(--toast-text);padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;z-index:40;box-shadow:0 10px 30px var(--shadow)}
@@ -6005,7 +6005,7 @@ async function loadArtist(id, step = () => {}) {
     const rcount = rcPage(0).then(x => Promise.all([x, ...Array.from({ length: Math.max(0, Math.min(4, Math.ceil(((x.count || 0) - 100) / 100))) }, (_, i) => rcPage(100 * (i + 1)).catch(() => null))]))
         .then(xs => new Map(xs.flatMap(x => (x && x['release-groups']) || []).map(g => [g.id, g.count])), noSec(`release-group?query=arid:${id}`));
     const wiki = wikiOf('artist', id);
-    const gP = wsk(`artist/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`).then(a => { step('artist'); return artist(a); });
+    const gP = wsk(`artist/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`).then(a => { step('artist'); const g = artist(a); areaFill(g, [g.beginArea, g.endArea, g.area]); return g; });
     const img = gP.then(g => artistImage(id, g.rels)).then(x => { step('image'); return x; });
     return { kind: 'artist', g: null, gP, disc, rcount, img, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
 }
@@ -6022,7 +6022,7 @@ function label(l) {
 async function loadLabel(id, step = () => {}) {
     const eds = wsk(`release?label=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, noSec(`release?label=${id}&inc=media+labels+artist-credits+url-rels&limit=100`));
     const wiki = wikiOf('label', id);
-    const gP = wsk(`label/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`).then(l => { step('label'); return label(l); });
+    const gP = wsk(`label/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`).then(l => { step('label'); const g = label(l); areaFill(g, [g.area]); return g; });
     const img = gP.then(g => artistImage(id, g.rels)).then(x => { step('logo'); return x; });
     return { kind: 'label', g: null, gP, img, wiki, editions: [], edCount: 0, eds, covers: Promise.resolve([]) };
 }
@@ -6032,7 +6032,7 @@ function lbHero(d) {
     const F = [
         ['Founded', g.begin && fdate(g.begin), '', 'begin'],
         ['Defunct', g.end ? fdate(g.end) : g.ended ? 'yes' : '', '', 'end'],
-        ['Area', g.area && areaA(g.area), '', 'area'],
+        ['Area', g.area && areaFull(g.area), '', 'area'],
         ['Label code', g.code && copyB('LC-' + String(g.code).padStart(5, '0')), '', 'code'],
         [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide', 'aliases'],
         ['IPI', g.ipis.length && g.ipis.map(i => copyB(i)).join(' '), '', 'ipi'],
@@ -6052,13 +6052,70 @@ Which facts the header shows, and where the picture comes from">${MBU_CFG_ICON}<
     </section>`;
 }
 const areaA = x => x ? entA('area', x.id, x.name) : '';
+// An artist's or label's area the way MusicBrainz's sidebar writes it: the area, what it's part of up to its country,
+// and the country's flag (Douala, Littoral, [flag] Cameroon). ws/2 gives only the area itself, so each step up is
+// one area lookup, made in the background, kept 30 days (areas hardly change) and shared by every artist and label.
+// The page the tab loaded reads the steps off MusicBrainz's own sidebar instead, without a request.
+const AREA_UP = (() => { try { return GM_getValue('areaUp', null) || {}; } catch (e) { return {}; } })(), AREA_TTL = 30 * 864e5;
+const areaNode = a => ({ id: a.id, name: a.name, iso: (a['iso-3166-1-codes'] || [])[0] || '' });
+const areaSave = () => { const ks = Object.keys(AREA_UP); if (ks.length > 3000) ks.sort((a, b) => AREA_UP[a].t - AREA_UP[b].t).slice(0, ks.length - 3000).forEach(k => delete AREA_UP[k]); try { GM_setValue('areaUp', AREA_UP); } catch (e) { /* no storage */ } };
+let areaSeeded = false;
+function areaSeed() {
+    areaSeeded = true;
+    if (!mbBody) return;
+    const idOf = a => (a.getAttribute('href').match(/\/area\/([0-9a-f-]{36})/) || [])[1], isoOf = a => ((a.closest('.flag') || {}).className || '').match(/\bflag-([A-Z]{2})\b/);
+    for (const dd of mbBody.querySelectorAll('#sidebar dd')) {
+        const as = [...dd.querySelectorAll('a[href*="/area/"]')].filter(idOf);
+        as.forEach((a, i) => {
+            const n = as[i + 1], iso = isoOf(a);
+            if (n || iso) AREA_UP[idOf(a)] = { iso: iso ? iso[1] : '', up: n ? { id: idOf(n), name: n.textContent.trim(), iso: (isoOf(n) || [])[1] || '' } : null, t: Date.now() };
+        });
+    }
+}
+// the chain as far as it's known; null while a step is still to be asked
+function areaKnown(a) {
+    if (!areaSeeded) areaSeed();
+    const out = [areaNode(a)];
+    for (let i = 0; i < 8; i++) {
+        const x = out[out.length - 1], e = AREA_UP[x.id];
+        if (x.iso) return out;
+        if (!e || Date.now() - e.t > AREA_TTL) return null;
+        if (e.iso) { x.iso = e.iso; return out; }
+        if (!e.up || out.some(y => y.id === e.up.id)) return out;
+        out.push({ ...e.up });
+    }
+    return out;
+}
+async function areaClimb(a) {
+    for (let i = 0; i < 8 && !areaKnown(a); i++) {
+        // the first step not yet known
+        let x = areaNode(a);
+        for (let j = 0; j < 8; j++) { const e = AREA_UP[x.id]; if (!e || Date.now() - e.t > AREA_TTL || e.iso || !e.up) break; x = e.up; }
+        const r = JSON.parse(await wsText(`area/${x.id}?inc=area-rels`, true));
+        const up = (r.relations || []).find(v => v['target-type'] === 'area' && v.type === 'part of' && v.direction === 'backward' && v.area && !v.ended) || (r.relations || []).find(v => v['target-type'] === 'area' && v.type === 'part of' && v.direction === 'backward' && v.area);
+        AREA_UP[x.id] = { iso: (r['iso-3166-1-codes'] || [])[0] || '', up: up ? areaNode(up.area) : null, t: Date.now() };
+        areaSave();
+    }
+    return areaKnown(a);
+}
+// asks for the steps the header lacks, and redraws it once they're in
+function areaFill(g, xs) {
+    const need = xs.filter(x => x && !areaKnown(x));
+    if (!need.length) return;
+    Promise.all(need.map(x => areaClimb(x).catch(e => LOG.warn('Area ' + x.id + ': ' + e.message)))).then(() => {
+        if (!data || data.g !== g || (document.activeElement && document.activeElement.matches('#app input, #app textarea'))) return;
+        const y = scrollY; render(); scrollTo(0, y);
+    });
+}
+const flagI = iso => iso && !/^X[^K]$/.test(iso) ? `<img class="flagi" src="https://flagcdn.com/w40/${esc(iso.toLowerCase())}.png" alt="" loading="lazy">` : '';
+const areaFull = x => x ? (areaKnown(x) || [areaNode(x)]).map(y => flagI(y.iso) + entA('area', y.id, y.name)).join(', ') : '';
 function arHero(d) {
     const g = d.g, person = g.type === 'Person' || g.type === 'Character', on = k => S.extras.includes(k);
-    const when = (date, area) => [date && fdate(date), area && areaA(area)].filter(Boolean).join(' · ');
+    const when = (date, area) => [date && fdate(date), area && areaFull(area)].filter(Boolean).join(' · ');
     const F = [
         [person ? 'Born' : 'Formed', when(g.begin, g.beginArea), '', 'begin'],
         [person ? 'Died' : 'Dissolved', when(g.end, g.endArea) || (g.ended ? 'yes' : ''), '', 'end'],
-        ['Area', g.area && areaA(g.area), '', 'area'],
+        ['Area', g.area && areaFull(g.area), '', 'area'],
         ['Gender', g.gender && esc(g.gender), '', 'gender'],
         [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide', 'aliases'],
         ['IPI', g.ipis.length && g.ipis.map(i => copyB(i)).join(' '), '', 'ipi'],
