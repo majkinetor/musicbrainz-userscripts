@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.03.160000
+// @version      2026.11.03.170000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2422,7 +2422,8 @@ body{position:relative;isolation:isolate;overflow-x:clip}
 body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;pointer-events:none}
 #eh-aura{display:none;position:absolute;left:-210px;top:-210px;width:calc(100% + 420px);max-width:none;height:1040px;z-index:-1;pointer-events:none;opacity:.4;transform:scale(1.15);-webkit-mask-image:linear-gradient(#000 41%,transparent 80%);mask-image:linear-gradient(#000 41%,transparent 80%)}
 :root[data-eh-bg=aura][data-eh-aura] #eh-aura{display:block}
-@media (max-width:700px){#eh-aura{left:0;width:var(--eh-aura-w,100%);transform:none}}   /* past the edges it widened a phone's page by 270px */
+@media (max-width:700px){#eh-aura{left:0;width:var(--eh-aura-w,100%);transform:none}}
+@media (max-width:700px){html main#app.wrap{padding-top:12px}:is(#app,#eh-pin) .kicker{gap:4px}:is(#app,#eh-pin) .kicker .acts{gap:0}:is(#app,#eh-pin) .kicker .ab{padding:0 5px}:is(#app,#eh-pin) .kicker :is(.srch,.acts>*+.ab[data-star]){margin-left:0}:is(#app,#eh-pin) .kicker .abm{max-width:calc(100vw - 16px)}:is(#app,#eh-pin) .kicker .abm .ab{white-space:normal}#app .detail .grp h4{flex-wrap:wrap;row-gap:4px}#app .hm-hi{display:none}#app .hm-srch{gap:8px}#app .hm-srch>input[name=query]{flex:1 1 calc(100% - 40px)}#app .hm-srch>select{flex:1 1 0;min-width:0}#app #s-tl>.secthead>.tools>.label{display:none}}   /* past the edges it widened a phone's page by 270px */
 :root[data-eh-bg=aura][data-eh-theme=dark] #eh-aura{opacity:.28}
 :root:is([data-eh-bg=glow],[data-eh-bg=aura]:not([data-eh-aura])) body{background:radial-gradient(900px 520px at 100% 0,color-mix(in srgb,var(--accent2) 18%,transparent),transparent 70%) no-repeat,radial-gradient(800px 480px at 72% 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%) no-repeat,var(--eh-page)}
 :root[data-eh-bg=band] body::before{content:"";height:400px;background:linear-gradient(100deg,color-mix(in srgb,var(--accent) 11%,var(--eh-page)),color-mix(in srgb,var(--accent2) 11%,var(--eh-page)));border-bottom:1px solid color-mix(in srgb,var(--accent) 14%,var(--eh-page))}
@@ -3502,6 +3503,13 @@ function actionRow(actions, type, id, active = '') {
     { const r = main.findIndex(a => a[0] === 'relationships'); if (r >= 0) main.splice(2, 0, ...main.splice(r, 1)); }
     return main.map(link).join('') + (less.length ? `<details class="abx eh-more"><summary class="ab" aria-label="More">${SVG('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>')}</summary><span class="abm">${less.map(link).join('')}</span></details>` : '');
 }
+document.addEventListener('toggle', e => {
+    const m = e.target; if (!m.classList?.contains('eh-more')) return;
+    const menu = m.querySelector(':scope>.abm'); if (!menu) return;
+    menu.style.right = '';
+    if (!m.open) return;
+    const r = menu.getBoundingClientRect(); if (r.left < 8) menu.style.right = (r.left - 8) + 'px';
+}, true);
 document.addEventListener('click', e => { document.querySelectorAll('.eh-more[open]').forEach(m => { if (!m.contains(e.target) || e.target.closest('a')) m.open = false; }); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.eh-more[open]').forEach(m => { m.open = false; m.querySelector('summary').focus(); }); });
 
