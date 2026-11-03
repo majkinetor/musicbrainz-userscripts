@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.03.190000
+// @version      2026.11.03.200000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5985,8 +5985,9 @@ function picHtml(g, cls, none) {
     return `<div class="picw"><img class="cover ${cls}${more ? ' rot' : ''}" src="${esc(x.src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer"${more ? ` data-rot data-tip="${i + 1} of ${xs.length}: click for ${esc(xs[(i + 1) % xs.length].from)}"` : ''}>${x.badge ? `<img class="imgflag" src="${esc(x.badge)}" alt="" referrerpolicy="no-referrer">` : ''}<a class="imgsrc" href="${esc(x.url)}" target="_blank" rel="noopener" data-tip="From ${esc(x.from)}">${stIcon(x.key, 18)}</a></div>`;
 }
 const artistImage = (mbid, rels) => ARTIMG.findAll(mbid, rels.filter(x => x['target-type'] === 'url').map(x => x.url.resource));
-// an artist or label left without a picture asks its linked sites again, over the cached miss; nothing linked, nothing to ask
-const imgRetryBtn = g => g.imgs && !g.imgs.length && g.rels.some(x => x['target-type'] === 'url') ? `<button type="button" class="imgretry" data-imgretry${g.imgBusy ? ' disabled' : ''}>${g.imgBusy ? 'Looking…' : 'Retry image'}</button>` : '';
+// an artist or label left without a picture asks its linked sites again, over the cached miss; no site an image provider reads, nothing to ask
+const imgAskable = g => g.rels.some(x => x['target-type'] === 'url' && ARTIMG.providers.some(p => !S.imgOff.includes(p.key) && [].concat(p.re).some(re => re.test(x.url.resource))));
+const imgRetryBtn = g => g.imgs && !g.imgs.length && imgAskable(g) ? `<button type="button" class="imgretry" data-imgretry${g.imgBusy ? ' disabled' : ''}>${g.imgBusy ? 'Looking…' : 'Retry image'}</button>` : '';
 async function imgRetry() {
     const d = data, g = d.g, draw = () => { if (data === d) { const y = scrollY; render(); scrollTo(0, y); } };
     g.imgBusy = true; draw();
