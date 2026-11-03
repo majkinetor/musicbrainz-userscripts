@@ -115,7 +115,7 @@ for (const p of parts) for (const [k, v] of p.meta) {
 for (const g of ['GM_getValue', 'GM_setValue', 'GM_deleteValue', 'GM_listValues', 'GM_xmlhttpRequest', 'GM_openInTab', 'GM_addValueChangeListener', 'GM_registerMenuCommand', 'GM_unregisterMenuCommand', 'GM_setClipboard']) {
   if (!seen.has(`grant\t${g}`)) { seen.add(`grant\t${g}`); out.push(['grant', g]); }
 }
-for (const host of ['api.dropbox.com', 'api.dropboxapi.com', 'content.dropboxapi.com']) {
+for (const host of ['api.dropbox.com', 'api.dropboxapi.com', 'content.dropboxapi.com', 'www.googleapis.com']) {
   if (!seen.has(`connect\t${host}`)) { seen.add(`connect\t${host}`); out.push(['connect', host]); }
 }
 const metaBlock = ['// ==UserScript==', ...out.map(([k, v]) => `// @${k.padEnd(12)} ${v}`.trimEnd()), '// ==/UserScript=='].join('\n');
@@ -222,7 +222,7 @@ const SETTINGS = readFileSync(resolve(HERE, 'settings.js'), 'utf8').replace(/\r\
 const PALETTE = readFileSync(resolve(HERE, 'palette.js'), 'utf8').replace(/\r\n/g, '\n');   // #890
 const NEWS = readFileSync(resolve(HERE, 'news.js'), 'utf8').replace(/\r\n/g, '\n');   // #896
 const SYNC_DATA = ['sync-data.js', 'sync-policy.js', 'sync-storage.js'].map(f => readFileSync(resolve(HERE, f), 'utf8').replace(/\r\n/g, '\n')).join('\n');
-const SYNC = ['providers.js', 'sync.js'].map(f => readFileSync(resolve(HERE, f), 'utf8').replace(/\r\n/g, '\n')).join('\n');
+const SYNC = ['providers.js', 'sync.js', 'sync-google.js'].map(f => readFileSync(resolve(HERE, f), 'utf8').replace(/\r\n/g, '\n')).join('\n');
 const toggles = `var __stSyncCallbackOnly = location.origin === 'https://musicbrainz.org' && location.pathname === '/' && /[?&]st-dropbox=callback(?:&|$)/.test(location.search);
 ${SYNC_DATA}
 stSyncStorageInit();

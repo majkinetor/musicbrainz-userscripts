@@ -36,7 +36,7 @@ String Theory adds dock and setting management for all included scripts:
 - **One icon for all the launchers**: on MusicBrainz, String Theory's icon sits in the corner, and the round buttons of Mission Control, Fusion, Falcon and the rest fold behind it. Click it to unfold them; they stay unfolded until you click it again. Folded, the dock shows only actionable items (the script needs background fetch on for this).
 - **[Command palette](#command-palette)**: Ctrl+K lists every command, filtered as you type.
 - **[What's new](#whats-new)**: String Theory's icon turns golden when there is news.
-- **[Sync and backup](#sync-and-backup)**: sync devices with Dropbox, save remote backups or export a file.
+- **[Sync and backup](#sync-and-backup)**: sync devices with Dropbox or Google Drive, save remote backups or export a file.
 - **Settings**: open them by right-clicking String Theory's icon. Right-click any dock icon for its own settings. Every icon is shown in About. Website and Issues links sit beside the tabs.
 - **Update**: in the About tab, toggle individual scripts, see their versions and check for updates.
 
@@ -85,29 +85,31 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 
 ## Sync and backup
 
-Open String Theory's settings → **Sync** → **Connect Dropbox** and authorize the app. The new tab returns to MusicBrainz and finishes the connection automatically. Connect each device to the same Dropbox account.
+Open String Theory's settings → **Sync**, choose **Provider**, and connect. Use the same provider and account on each device. Switching providers keeps their connections and sync history separate.
 
-| Action | What it does                                                               |
-| ------ | -------------------------------------------------------------------------- |
-| Sync   | Merges this device with Dropbox                                            |
-| Push   | Replaces Dropbox's portable data with this device's                        |
-| Pull   | Replaces this device's portable data with Dropbox's, on the next page load |
+**Dropbox** returns to MusicBrainz and finishes the connection automatically. **Google Drive** opens Google's sign-in popup. When its session expires, **Reconnect Google Drive** continues syncing; automatic sync never opens sign-in popups. The Google app is currently limited to registered test users.
+
+| Action | What it does                                                                 |
+| ------ | ---------------------------------------------------------------------------- |
+| Sync   | Merges this device with the provider                                         |
+| Push   | Replaces the provider's portable data with this device's                     |
+| Pull   | Replaces this device's portable data from the provider on the next page load |
 
 **Automatic sync** runs **Sync** while MusicBrainz is open. Independent changes are combined; when both devices change the same value, **Conflicting changes** chooses which one wins. Star additions and removals are merged separately.
 
-With no Dropbox backup yet, **Sync** and **Push** create one; **Pull** leaves local data unchanged. On the first sync with an existing backup, stars from both sides are combined and conflicting settings use **Conflicting changes**. An absent star only counts as a removal after a previous sync. **Push** keeps Dropbox's saved data for other MusicBrainz servers.
+With no remote data yet, **Sync** and **Push** create it; **Pull** leaves local data unchanged. On the first sync with existing data, stars from both sides are combined and conflicting settings use **Conflicting changes**. An absent star only counts as a removal after a previous sync. **Push** keeps the provider's saved data for other MusicBrainz servers.
 
 Credentials, stars, saved notes, remembered field values, named filters and normal preferences are included. Caches, logs, recent activity, temporary work, local paths and device layout stay local, including page width, columns, window state and location coordinates.
 
-Downloaded changes apply on the next page load; **Reload** applies them immediately. **Export** downloads a backup; **Import** merges one into your settings. **Export recovery copy** downloads the state kept before the last import or downloaded changes. Backups and the Dropbox file contain credentials.
+Downloaded changes apply on the next page load; **Reload** applies them immediately. **Export** downloads a backup; **Import** merges one into your settings. **Export recovery copy** downloads the state kept before the last import or downloaded changes. Backups and remote sync data contain credentials.
 
-**Remote backup** saves a separate, dated snapshot in Dropbox. **Remote import** lists those backups, newest first, with their date and size. **Apply** merges a backup into your settings, keeping a recovery copy and applying on reload, just like **Import**. Backup values win shared settings; stars are combined. **Delete** asks for a second click before removing that snapshot. **Refresh** updates the list. Remote backups stay separate from Sync, Push and Pull.
+**Remote backup** saves a separate, dated snapshot at the selected provider. **Remote import** lists those backups, newest first, with their date and size. **Apply** merges a backup into your settings, keeping a recovery copy and applying on reload, just like **Import**. Backup values win shared settings; stars are combined. **Delete** asks for a second click before removing that snapshot; Google Drive moves it to Trash. **Refresh** updates the list. Remote backups stay separate from Sync, Push and Pull.
 
-**Disconnect** stops automatic sync and removes this device's Dropbox connection; the Dropbox file remains.
+**Disconnect** stops automatic sync and removes this device's selected connection; remote data remains. Google Drive saves files in a **String Theory** folder, including sync history. Keep its sync files so changes from other devices can be merged.
 
 ## Settings
 
-The **General** tab holds the theme, the dock and the command palette; **Sync** holds Dropbox and backups; **About** holds the scripts and updates.
+The **General** tab holds the theme, the dock and the command palette; **Sync** holds providers and backups; **About** holds the scripts and updates.
 
 | Setting             | Default             | What it does                                                                                                                    |
 | ------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
@@ -118,7 +120,8 @@ The **General** tab holds the theme, the dock and the command palette; **Sync** 
 | Launcher order      | Each script's own   | Drag the icons to reorder the launchers; the first sits nearest the corner                                                      |
 | Palette             | On                  | The command palette's hotkey works                                                                                              |
 | Hotkey              | Ctrl+K              | The key that opens the command palette: click it, then press the new one                                                        |
-| Automatic sync      | Off                 | Syncs with Dropbox while MusicBrainz is open                                                                                    |
+| Provider            | Dropbox             | Where sync and remote backups are stored                                                                                        |
+| Automatic sync      | Off                 | Syncs with the selected provider while MusicBrainz is open                                                                      |
 | Every               | 30 minutes          | Time between automatic syncs, from 5 minutes to 1 day                                                                           |
 | Conflicting changes | Use Dropbox’s value | Which value wins when both devices change the same setting                                                                      |
 | Scripts             | All on              | Turns each bundled script on or off, from the next page load                                                                    |
