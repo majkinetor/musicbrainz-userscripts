@@ -50,7 +50,7 @@ export const TOKENS = {
 
     // ── lines ────────────────────────────────────────────────────────────────
     'border': 'var(--border, #cfc6e6)',   // the default 1px edge
-    'border-soft': '#e2dcef',     // a quieter edge (large panels)
+    'border-soft': ['#e2dcef', 'color-mix(in srgb, var(--mbu-border) 60%, var(--mbu-bg))'],     // a quieter edge (large panels); mixed off the seeds so a dark theme doesn't keep a whitish edge
     'border-strong': ['#9a8ccb', 'color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text))'],
     'divider': ['#eee', 'color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text))'],
 
