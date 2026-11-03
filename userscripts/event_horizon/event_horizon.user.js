@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.03.200000
+// @version      2026.11.03.210000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2513,6 +2513,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
    Read here at the root: the themes blank them inside #app. */
 :root{--eh-page:var(--background,var(--bg));--eh-band:var(--background-accent,color-mix(in srgb,var(--bg) 90%,#fff));--eh-bar:var(--background-accent,var(--surface))}
 #app>section.sec>.secthead.stuck{background:var(--eh-band)}
+@media (max-width:700px){#app>section.sec>.secthead.stuck{clip-path:inset(0 0 var(--eh-hclip,0px) 0)}}
 .secthead .tools{cursor:auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .secthead .aside{font-size:14px;color:var(--soft)}
 .fold{display:inline-flex;align-items:center;gap:10px;border:0;background:none;padding:0;cursor:pointer;text-align:left}
@@ -8721,7 +8722,14 @@ function railSpy() {
     for (const x of document.querySelectorAll('#app>section.sec:not([hidden]),.eh-release-views>section.sec:not([hidden])')) {
         const top = x.getBoundingClientRect().top, head = x.querySelector(':scope>.secthead');
         if (top < innerHeight / 3) cur = x.id.slice(2);
-        if (head) head.classList.toggle('stuck', !!head.querySelector(':scope>.fold[aria-expanded="true"]') && top - 6 < pinTop);
+        if (!head) continue;
+        const fold = head.querySelector(':scope>.fold[aria-expanded="true"]'), stuck = !!fold && top - 6 < pinTop;
+        head.classList.toggle('stuck', stuck);
+        // pinned on a phone, a header whose tools wrapped under the title keeps only the title line in view (majkinetor)
+        if (stuck) {
+            const tl = head.querySelector(':scope>.tools'), hb = head.getBoundingClientRect().bottom, fb = fold.getBoundingClientRect().bottom;
+            head.style.setProperty('--eh-hclip', tl && tl.getBoundingClientRect().top >= fb ? Math.max(0, hb - fb - 6) + 'px' : '0px');
+        }
     }
     if (rail) rail.querySelectorAll('[data-sec]').forEach(r => r.classList.toggle('on', r.dataset.sec === cur));
 }
