@@ -328,7 +328,8 @@ function stAuTip(from) {
   var css = document.createElement('style'); css.id = 'st-upd-gold';
   // left of the dock, never over it; placed once, so it doesn't follow the dock around; fixed lines, so it doesn't reflow
   css.textContent = ST_NEWS_GOLD.split(':root[data-st-news]').join(':root[data-st-upd]')
-    + '#st-upd-tip{position:fixed;z-index:2147483000;padding:6px 10px;border-radius:6px;background:#e0a800;color:#1a1400;font:600 12px/1.35 system-ui,sans-serif;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer;transition:opacity .6s}'
+    + '#st-upd-tip{position:fixed;z-index:2147483000;padding:6px 10px;border-radius:6px;background:#e0a800;color:#1a1400;font:600 12px/1.35 system-ui,sans-serif;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer;transition:opacity 1.5s}'
+    + '#mbu-dock,#mbu-dock svg path{transition:opacity 1.5s,stroke 1.5s!important}'
     + '#st-upd-tip small{display:block;font-weight:400;opacity:.8}'
     + '#st-upd-tip::after{content:"";position:absolute;left:100%;top:50%;margin-top:-6px;border:6px solid transparent;border-left-color:#e0a800}'
     + '#st-upd-tip.st-out{opacity:0}';
@@ -336,7 +337,8 @@ function stAuTip(from) {
   var done = function () {
     if (gone) return; gone = true; clearInterval(t);
     if (tip) tip.classList.add('st-out');
-    setTimeout(function () { root.removeAttribute('data-st-upd'); if (tip) tip.remove(); css.remove(); }, 600);
+    root.removeAttribute('data-st-upd');   // the icon's gold fades back with the tip
+    setTimeout(function () { if (tip) tip.remove(); css.remove(); }, 1600);
   };
   var place = function () {
     var b = document.getElementById('mbu-dock'); if (!b || !b.offsetWidth) return;
