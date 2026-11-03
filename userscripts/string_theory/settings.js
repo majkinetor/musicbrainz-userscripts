@@ -229,6 +229,8 @@ ST_CSS += '#st-cfg{font-size:12px;padding:12px 14px}#st-cfg .st-title{gap:8px;ma
 ST_CSS += '#st-cfg .st-sync-columns{display:grid;grid-template-columns:minmax(0,1fr);gap:12px 28px}#st-cfg #st-p-s .st-sync-options>h3{margin:4px 0 8px}@container(min-width:620px){#st-cfg .st-sync-columns{grid-template-columns:repeat(2,minmax(0,1fr))}}';
 ST_CSS += '#st-cfg .st-title .mbu-ov-x{padding:0;margin:0;align-self:center;width:26px;height:26px}#st-cfg .st-title .mbu-ov-x svg{width:18px;height:18px;display:block}#st-cfg .st-title .mbu-help{align-self:center}';
 ST_CSS += '#st-cfg .st-footer .st-links{margin-left:auto}';
+ST_CSS += '#st-cfg .st-section-lead{display:flex;align-items:center;gap:16px;margin:0 0 4px}#st-cfg .st-section-lead>h3.st-h,#st-cfg .st-palette-enabled>h3.st-h{flex:0 0 auto;border:0;margin:0;padding:0;font:600 13px/1.4 var(--mbu-font)}#st-cfg .st-section-lead>.st-row{flex:0 1 auto;min-width:0;margin:0;flex-wrap:wrap}#st-cfg .st-inline-side,#st-cfg .st-palette-enabled{display:flex;align-items:center;gap:12px;min-height:28px}#st-cfg .st-inline-side .st-lbl{margin:0}#st-cfg .st-section-lead .st-seg{flex-wrap:wrap}#st-cfg .st-palette-enabled>h3.st-h{font-size:12px}#st-cfg .st-group:has(.st-palette-enabled)>.st-field-grid{margin-top:0}';
+ST_CSS += '#st-cfg .st-section-lead{align-items:flex-start}#st-cfg .st-section-lead>h3.st-h{margin-top:5px}';
 // a launcher opens its script's settings on right-click: pass the click on to the live one
 function stLive(name) {
   var els = Array.prototype.filter.call(document.querySelectorAll('[data-mb-corner="br"][data-mb-corner-label]'), function (el) {
@@ -386,6 +388,17 @@ function stSettings(tab) {
       if (n.tagName === 'H3') { active = document.createElement('section'); active.className = 'st-group'; sections.push(active); }
       if (active) active.appendChild(n);
     }); sections.forEach(function (n) { general.appendChild(n); });
+    // Let the first control share its section's heading row, keeping Hotkey in the second field.
+    var inlineLead = function (section, control) {
+      var heading = section.querySelector('h3'), lead = document.createElement('div');
+      lead.className = 'st-section-lead'; section.insertBefore(lead, heading); lead.appendChild(heading); lead.appendChild(control);
+    };
+    inlineLead(sections[0], q('#st-th-mode').parentElement);
+    var sideField = q('#st-side').closest('.st-field'); sideField.classList.add('st-inline-side');
+    inlineLead(sections[1], sideField);
+    var paletteField = q('#st-pal-on').closest('.st-field'), paletteHeading = sections[2].querySelector('h3');
+    paletteHeading.textContent = 'Palette'; paletteField.classList.add('st-palette-enabled');
+    q('#st-pal-on-l').classList.add('st-mode-label'); paletteField.insertBefore(paletteHeading, paletteField.firstChild);
     fitTabs();
   }
   if (ST_ON_MB) q('.st-tabs').onclick = function (e) {
