@@ -51,6 +51,20 @@ test.describe('what\'s new', () => {
     check(box[0] === 390 && box[1] === 800, `full screen (${box})`);
     check(!(await page.isVisible('#st-news-list')) && await page.isVisible('#st-news-view'), 'opens on the post alone');
     if (process.env.SHOT) await page.screenshot({ path: process.env.SHOT + '-post.png' });
+    check(await page.isDisabled('#st-news-prev'), 'no previous on the newest');
+    await page.click('#st-news-next');
+    check((await page.textContent('#st-news-view h3 .n')) === 'One' && await page.isDisabled('#st-news-next'), 'Next goes to the older post');
+    await page.click('#st-news-prev');
+    check((await page.textContent('#st-news-view h3 .n')) === 'Two', 'Prev comes back');
+    const swipe = (from, to) => page.$eval('#st-news-view', (v, [a, b]) => {
+      const t = x => new Touch({ identifier: 1, target: v, clientX: x, clientY: 300 });
+      v.dispatchEvent(new TouchEvent('touchstart', { touches: [t(a)], changedTouches: [t(a)], bubbles: true }));
+      v.dispatchEvent(new TouchEvent('touchend', { touches: [], changedTouches: [t(b)], bubbles: true }));
+    }, [from, to]);
+    await swipe(300, 100);
+    check((await page.textContent('#st-news-view h3 .n')) === 'One', 'swiping left goes to the next post');
+    await swipe(100, 300);
+    check((await page.textContent('#st-news-view h3 .n')) === 'Two', 'swiping right goes back');
     await page.click('#st-news-back');
     check(await page.isVisible('#st-news-list') && !(await page.isVisible('#st-news-view')), 'back shows the list alone');
     if (process.env.SHOT) await page.screenshot({ path: process.env.SHOT + '-list.png' });
