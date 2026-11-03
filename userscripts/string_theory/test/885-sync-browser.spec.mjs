@@ -40,7 +40,7 @@ test.describe('remote backup manager', () => {
     'string_theory.sync.state': { account: 'fixture-account', name: 'Fixture' },
     saved: 'snapshot value', view: { width: 800, stars: [] }, 'pc:cache:fixture': 'excluded',
   } } });
-  test('save, list, apply on reload and confirmed deletion work through the settings', { tag: '@sandbox' }, async ({ page, context, inject }, info) => {
+  test('save, list, apply on reload and immediate deletion work through the settings', { tag: '@sandbox' }, async ({ page, context, inject }, info) => {
     const server = backupCloud();
     await answerGm(context, async opts => {
       if (!/\.dropboxapi\.com\//.test(opts.url)) return null;
@@ -69,13 +69,12 @@ test.describe('remote backup manager', () => {
     expect(snapshot.data.gm['pc:cache:fixture']).toBeUndefined();
     expect(snapshot.data.gm.view.value.width).toBeUndefined();
     await page.locator('#st-sync-remote-import').click();
-    await page.locator('#st-sync-backup-refresh').click();
     await expect(page.locator('#st-sync-now')).toBeEnabled();
-    await expect(page.locator('#st-sync-backups [data-backup-action=apply]')).toHaveCount(1);
+    await expect(page.locator('#st-sync-remote [data-backup-action=apply]')).toHaveCount(1);
     await page.screenshot({ path: 'dev/_885-remote-backups.png' });
     await info.attach('Remote backup list', { path: 'dev/_885-remote-backups.png', contentType: 'image/png' });
     await page.evaluate(() => GM_setValue('saved', 'local edit'));
-    await page.locator('#st-sync-backups [data-backup-action=apply]').click();
+    await page.locator('#st-sync-remote [data-backup-action=apply]').click();
     await expect(page.locator('#st-sync-reload')).toBeVisible();
     expect(await page.evaluate(() => GM_getValue('saved'))).toBe('local edit');
     expect(await page.evaluate(() => GM_getValue('string_theory.sync.recovery').data.gm.saved.value)).toBe('local edit');
@@ -84,11 +83,8 @@ test.describe('remote backup manager', () => {
     expect(await page.evaluate(() => GM_getValue('saved'))).toBe('snapshot value');
     expect(await page.evaluate(() => GM_getValue('view').width)).toBe(800);
     await open(); await page.locator('#st-sync-remote-import').click();
-    const remove = page.locator('#st-sync-backups [data-backup-action=delete]');
-    await remove.click(); await expect(remove).toHaveText('Confirm delete');
-    expect(server.files.size).toBe(1);
-    await page.locator('#st-sync-backups [data-backup-action=cancel]').click(); await expect(remove).toHaveText('Delete');
-    await remove.click(); await remove.click();
+    const remove = page.locator('#st-sync-remote [data-backup-action=delete]');
+    await remove.click();
     await expect(page.locator('#st-sync-backups')).toHaveText('No remote backups yet.');
     expect(server.files.size).toBe(0); expect(await page.evaluate(() => GM_getValue('saved'))).toBe('snapshot value');
     expect(server.calls.some(c => c.args.path === '/string-theory.json')).toBe(false);
@@ -125,7 +121,7 @@ test.describe('remote backup manager', () => {
     await expect(page.locator('#st-cfg')).toBeVisible();
     await page.locator('#st-sync-remote-import').click();
     await expect(choices.nth(1)).toHaveAttribute('aria-pressed', 'true');
-    await page.locator('#st-sync-backups [data-backup-action=apply]').click();
+    await page.locator('#st-sync-remote [data-backup-action=apply]').click();
     await expect(page.locator('#st-sync-remote')).toBeHidden();
     await expect(page.locator('#st-sync-reload')).toBeVisible();
     await page.reload(); await page.evaluate(prepare); await inject('string_theory');

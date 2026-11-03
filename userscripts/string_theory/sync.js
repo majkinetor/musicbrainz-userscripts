@@ -5,7 +5,7 @@ var ST_SYNC_PATH = '/string-theory.json';
 var ST_BACKUP_FOLDER = '/backups';
 var stSyncBusy = false, stSyncTimer = null, stSyncActivity = '';
 var stBackupSelected = null;
-var stBackupEntries = null, stBackupNotice = '', stBackupDelete = null, stBackupAccount = null;
+var stBackupEntries = null, stBackupNotice = '', stBackupAccount = null;
 function stSyncFetch(url, options) {
   options = options || {};
   var target = new URL(String(url));
@@ -151,7 +151,7 @@ async function stBackupRun(mode, entry) {
   var provider = stSyncProvider(), name = stSyncName(provider);
   if (!stSyncConnected(provider)) throw new Error('Connect ' + name + ' first');
   if (entry && (entry.provider || 'dropbox') !== provider) throw new Error('Provider changed. Refresh the backup list.');
-  stSyncBusy = true; stSyncActivity = 'backup'; stBackupNotice = ''; stBackupDelete = null; stSyncPaint();
+  stSyncBusy = true; stSyncActivity = 'backup'; stBackupNotice = ''; stSyncPaint();
   try {
     var drive = stSyncDrive(provider);
     if (mode === 'save') {
@@ -183,13 +183,13 @@ function stBackupBrowse(panel, open) {
   if (!panel) return;
   var remote = panel.querySelector('#st-sync-remote'); remote.hidden = !open;
   Array.prototype.forEach.call(panel.children, function (child) { if (child !== remote) child.inert = open; });
-  if (!open) stBackupDelete = null;
 }
 function stBackupPaint(panel, connected) {
   var list = panel.querySelector('#st-sync-backups'); if (!list) return;
   list.hidden = stBackupEntries === null;
   panel.querySelector('#st-sync-backup-status').textContent = stBackupNotice;
   list.replaceChildren();
+  var actions = panel.querySelector('#st-sync-backup-actions'); actions.replaceChildren();
   if (stBackupEntries === null) return;
   if (!stBackupEntries.length) { list.textContent = 'No remote backups yet.'; stBackupSelected = null; return; }
   var selected = stBackupEntries.findIndex(function (entry) { return entry.id === stBackupSelected; });
@@ -205,15 +205,13 @@ function stBackupPaint(panel, connected) {
     row.append(label, size); choices.appendChild(row);
   });
   list.appendChild(choices);
-  var actions = document.createElement('div'); actions.className = 'st-backup-actions';
   var entry = stBackupEntries[selected];
-  [['apply', 'Apply'], ['delete', stBackupDelete === entry.id ? 'Confirm delete' : 'Delete']].concat(stBackupDelete === entry.id ? [['cancel', 'Cancel']] : []).forEach(function (pair) {
+  [['apply', 'Apply'], ['delete', 'Delete']].forEach(function (pair) {
     var button = document.createElement('button'); button.type = 'button'; button.className = 'st-b'; button.textContent = pair[1];
     button.dataset.backupAction = pair[0]; button.dataset.backupIndex = String(selected); button.disabled = stSyncBusy || !connected;
     if (pair[0] === 'apply') button.dataset.tip = 'Merge this backup into your settings&#10;Applies on the next page load'.replace('&#10;', '\n');
     actions.appendChild(button);
   });
-  list.appendChild(actions);
 }
 function stSyncError(e, provider) {
   var name = stSyncName(provider);
@@ -401,7 +399,7 @@ function stSyncMarkup() {
     + '<div class="st-row"><label for="st-sync-conflict">On conflict</label><select id="st-sync-conflict"><option value="remote">Use remote value</option><option value="local">Use local value</option></select></div></div></section>'
     + '<section class="st-sync-group"><h3>Backups<span class="st-sync-spinner" id="st-sync-backup-progress" role="status" aria-label="In progress" hidden></span></h3><div class="st-backup-columns"><div class="st-row st-sync-backup-row"><span id="st-sync-backup-name">Dropbox</span><button class="st-b" type="button" id="st-sync-remote-backup">Save backup</button><button class="st-b" type="button" id="st-sync-remote-import">Browse</button></div>'
     + '<div class="st-row st-sync-backup-row"><span>This device</span><button class="st-b" type="button" id="st-sync-export">Export</button><button class="st-b" type="button" id="st-sync-import">Import</button><input id="st-sync-file" type="file" accept=".json,application/json" hidden></div></div><div class="st-row"><button class="st-b" type="button" id="st-sync-reload" hidden>Reload</button><span id="st-sync-backup-status" role="status"></span></div>'
-    + '</section><div id="st-sync-remote" role="region" aria-labelledby="st-sync-backup-provider" hidden><div class="st-backup-head"><h3 id="st-sync-backup-provider">Backups</h3><span class="st-sync-spinner" id="st-sync-browse-progress" role="status" aria-label="In progress" hidden></span><button class="st-b st-sync-link" type="button" id="st-sync-backup-refresh">Refresh</button><button class="mbu-ov-x" type="button" id="st-sync-backup-close" aria-label="Close backups">×</button></div><div id="st-sync-backups" aria-label="Saved backups" hidden></div></div>';
+    + '</section><div id="st-sync-remote" role="region" aria-labelledby="st-sync-backup-provider" hidden><div class="st-backup-head"><h3 id="st-sync-backup-provider">Backups</h3><span class="st-sync-spinner" id="st-sync-browse-progress" role="status" aria-label="In progress" hidden></span><div class="st-backup-actions" id="st-sync-backup-actions"></div><button class="st-b st-sync-link" type="button" id="st-sync-backup-close" aria-label="Back to Sync">&lt; Back</button></div><div id="st-sync-backups" aria-label="Saved backups" hidden></div></div>';
 }
 function stSyncPaint() {
   var panel = document.getElementById('st-p-s'); if (!panel) return;
@@ -417,7 +415,7 @@ function stSyncPaint() {
   q('push').dataset.tip = 'Replace ' + name + '’s portable data with this device’s';
   q('pull').dataset.tip = 'Replace this device’s portable data with ' + name + '’s\nKeeps device settings; applies on the next page load';
   if (stBackupAccount !== backupAccount || !connected) {
-    stBackupAccount = backupAccount; stBackupEntries = null; stBackupDelete = null; stBackupNotice = '';
+    stBackupAccount = backupAccount; stBackupEntries = null; stBackupNotice = '';
     stBackupSelected = null; stBackupBrowse(panel, false);
   }
   q('connect').textContent = connected || auth.accessToken ? 'Reconnect' : 'Connect';
@@ -427,7 +425,7 @@ function stSyncPaint() {
   q('now').disabled = stSyncBusy || !connected || provider === 'google'; q('connect').disabled = stSyncBusy || provider === 'google' && !!stGoogleLoading; q('disconnect').disabled = stSyncBusy;
   q('push').disabled = stSyncBusy || !connected || provider === 'google'; q('pull').disabled = stSyncBusy || !connected || provider === 'google';
   ['auto', 'minutes', 'conflict'].forEach(function (id) { q(id).disabled = provider === 'google'; });
-  ['remote-backup', 'remote-import', 'backup-refresh'].forEach(function (id) { q(id).disabled = stSyncBusy || !connected; });
+  ['remote-backup', 'remote-import'].forEach(function (id) { q(id).disabled = stSyncBusy || !connected; });
   q('import').disabled = stSyncBusy;
   stBackupPaint(panel, connected);
   q('reload').hidden = !stSyncStorage.pending();
@@ -457,20 +455,17 @@ function stSyncBind(panel) {
   q('pull').onclick = action(function () { return stSyncRun(true, 'pull'); });
   q('remote-backup').onclick = action(function () { return stBackupRun('save'); });
   q('remote-import').onclick = action(function () { stBackupBrowse(panel, true); q('backup-close').focus(); return stBackupRun('list'); });
-  q('backup-refresh').onclick = action(function () { return stBackupRun('list'); });
   q('backup-close').onclick = function () { stBackupBrowse(panel, false); q('remote-import').focus(); };
-  q('backups').onclick = function (event) {
+  q('remote').onclick = function (event) {
     var choice = event.target.closest('button[data-backup-select]');
     if (choice && !stSyncBusy) {
       var index = choice.dataset.backupSelect;
-      stBackupSelected = stBackupEntries[Number(index)].id; stBackupDelete = null; stSyncPaint();
+      stBackupSelected = stBackupEntries[Number(index)].id; stSyncPaint();
       q('backups').querySelector('[data-backup-select="' + index + '"]').focus(); return;
     }
     var button = event.target.closest('button[data-backup-action]'); if (!button || stSyncBusy) return;
     var entry = stBackupEntries && stBackupEntries[Number(button.dataset.backupIndex)]; if (!entry) return;
     var mode = button.dataset.backupAction;
-    if (mode === 'cancel') { stBackupDelete = null; stSyncPaint(); return; }
-    if (mode === 'delete' && stBackupDelete !== entry.id) { stBackupDelete = entry.id; stSyncPaint(); return; }
     action(function () { return stBackupRun(mode, entry); })();
   };
   q('reload').onclick = function () { location.reload(); };
