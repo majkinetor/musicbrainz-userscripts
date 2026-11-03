@@ -174,7 +174,8 @@ var ST_CSS = ''
   + '#st-cfg #st-sync-backups{max-height:220px;overflow:auto}#st-cfg #st-sync-backups .st-row{padding:5px 0;border-bottom:1px solid var(--mbu-border)}#st-cfg #st-sync-backup-status{color:var(--mbu-text-weak)}'
   + '#st-cfg #st-p-g .st-row>.st-lbl:first-child{flex:0 0 96px;white-space:nowrap}#st-cfg #st-p-g .st-lbl{white-space:nowrap}#st-cfg #st-p-g select{flex:0 1 150px;width:150px;min-width:0;height:26px}#st-cfg .st-time{box-sizing:border-box;width:60px;height:26px;padding:0 6px;text-align:center;font:inherit;color:inherit;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:15px}'
   + '#st-cfg label.st-row{cursor:pointer}#st-cfg label.st-row input{margin:0}'
-  + '#st-cfg-news{margin-right:10px;white-space:nowrap}'
+  + '#st-cfg-news{margin-right:10px;white-space:nowrap}#st-cfg-news>.st-nwi{display:none}'
+  + '@media (max-width:640px){#st-cfg-news{display:inline-flex;align-items:center;justify-content:center;min-width:32px;min-height:32px;margin-right:4px;color:#f5b400}#st-cfg-news>.st-nwi{display:block;filter:drop-shadow(0 0 3px #ffd54a) drop-shadow(0 0 7px rgba(255,200,40,.6))}#st-cfg-news>.st-nwt{display:none}}'
   + '#st-cfg .st-ver{margin-left:auto;color:var(--mbu-text-weak);font-size:11px;white-space:nowrap}'
   + '#st-cfg .st-note{flex:1 1 auto;color:var(--mbu-text-dim);font-size:12px}'
   + '#st-cfg .st-b{flex:0 0 auto;font:inherit;font-size:12px;padding:3px 10px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);cursor:pointer}'
@@ -259,7 +260,10 @@ function stSettings(tab) {
     (document.head || html).appendChild(css);
   }
   var h = U.mbuCfgHeader({ icon: '<img src="' + ST_ICON + '" alt="">', name: 'String Theory', version: ST_VERSION, script: 'string_theory' });
-  if (ST_ON_MB) h = h.replace('<span class="mbu-cfg-sp"></span>', '<span class="mbu-cfg-sp"></span><a href="#" id="st-cfg-news">What\'s new</a>');
+  if (ST_ON_MB) h = h.replace('<span class="mbu-cfg-sp"></span>', '<span class="mbu-cfg-sp"></span><a href="#" id="st-cfg-news" aria-label="What\'s new">'
+    + '<svg class="st-nwi" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+    + '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z" fill="currentColor" fill-opacity=".35"/></svg>'
+    + '<span class="st-nwt">What\'s new</span></a>');
   var links = '<span class="st-links">'
     + '<a href="https://milic.info/musicbrainz-userscripts" target="_blank" rel="noopener">Website</a>'
     + '<a href="https://github.com/' + ST_REPO + '/issues" target="_blank" rel="noopener">Issues</a></span>';
