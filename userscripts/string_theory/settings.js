@@ -300,8 +300,7 @@ function stSettings(tab) {
       + '<div class="st-cap">Drag to reorder, the first nearest the corner; right-click for its settings.</div>'
       + '<h3 class="st-h">Command palette</h3>'
       + '<div class="st-row">' + seg('st-pal-on', 'Palette', [['on', 'On'], ['off', 'Off']])
-      + '<span class="st-lbl" id="st-pal-key-l">Hotkey</span><button type="button" class="st-b st-key" id="st-pal-key" aria-labelledby="st-pal-key-l"></button></div>'
-      + '<div class="st-cap">Click the hotkey, then press the new one.</div>'
+      + '<span class="st-lbl" id="st-pal-key-l">Hotkey</span><button type="button" class="st-b st-key" id="st-pal-key" aria-labelledby="st-pal-key-l" data-tip="Change the command palette hotkey&#10;Click, then press the new shortcut"></button></div>'
       + '</section>';
     h += '<section class="st-sec" id="st-p-s" role="tabpanel" aria-labelledby="st-tab-s" hidden>' + stSyncMarkup() + '</section>';
   }
