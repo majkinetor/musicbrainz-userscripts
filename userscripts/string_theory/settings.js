@@ -176,8 +176,7 @@ var ST_CSS = ''
   + '#st-cfg #st-p-s details{margin-top:14px}#st-cfg #st-p-s summary{cursor:pointer;color:var(--mbu-text-dim)}#st-cfg #st-p-s .st-sync-backup-row>span:first-child{flex:1}#st-cfg #st-p-s .st-sync-link{border:0;background:none;color:var(--mbu-accent-text);padding-inline:0}#st-cfg #st-p-s .st-sync-primary{color:var(--mbu-accent-text);font-weight:600}#st-cfg #st-p-s .st-sync-footer{justify-content:flex-end}#st-cfg #st-sync-status{margin:6px 0}#st-cfg #st-sync-last{font-size:11px}'
   + '#st-cfg #st-p-g .st-row>.st-lbl:first-child{flex:0 0 96px;white-space:nowrap}#st-cfg #st-p-g .st-lbl{white-space:nowrap}#st-cfg #st-p-g select{flex:0 1 150px;width:150px;min-width:0;height:26px}#st-cfg .st-time{box-sizing:border-box;width:60px;height:26px;padding:0 6px;text-align:center;font:inherit;color:inherit;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:15px}'
   + '#st-cfg label.st-row{cursor:pointer}#st-cfg label.st-row input{margin:0}'
-  + '#st-cfg-news{margin-right:10px;white-space:nowrap}#st-cfg-news>.st-nwi{display:none}'
-  + '@media (max-width:640px){#st-cfg-news{display:inline-flex;align-items:center;justify-content:center;min-width:32px;min-height:32px;margin-right:4px;color:#f5b400}#st-cfg-news>.st-nwi{display:block;filter:drop-shadow(0 0 3px #ffd54a) drop-shadow(0 0 7px rgba(255,200,40,.6))}#st-cfg-news>.st-nwt{display:none}}'
+  + '#st-cfg-news{white-space:nowrap}'
   + '#st-cfg .st-ver{margin-left:auto;color:var(--mbu-text-weak);font-size:11px;white-space:nowrap}'
   + '#st-cfg .st-note{flex:1 1 auto;color:var(--mbu-text-dim);font-size:12px}'
   + '#st-cfg .st-b{flex:0 0 auto;font:inherit;font-size:12px;padding:3px 10px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);cursor:pointer}'
@@ -229,6 +228,7 @@ ST_CSS += '#st-cfg .st-th-x{margin-inline-start:18px}#st-cfg #st-th-time{font:40
 ST_CSS += '#st-cfg{font-size:12px;padding:12px 14px}#st-cfg .st-title{gap:8px;margin-bottom:8px}#st-cfg .st-title .mbu-cfg-ver{display:inline}#st-cfg .st-title .mbu-cfg-name{font-size:inherit}#st-cfg .st-title .mbu-help{margin-left:0}#st-cfg .st-title .st-tabs{gap:14px}#st-cfg .st-group{padding:8px 0 12px}#st-cfg .st-group+.st-group{padding-top:12px}#st-cfg .st-group>h3.st-h,#st-cfg h3.st-about-h{margin-bottom:8px}#st-cfg .st-field-grid{gap:4px 22px}#st-cfg .st-field{grid-template-columns:88px minmax(0,160px);gap:8px}#st-cfg .st-row{min-height:24px}#st-cfg .st-group>.st-row{margin:0}#st-cfg .st-strip{margin:8px 0 4px}#st-cfg .st-cap{font-size:11px}#st-cfg .st-footer{margin-top:12px;padding-top:8px;gap:14px}#st-cfg .st-upd{margin:0 0 12px;font-size:11px}#st-cfg .st-upd>div{grid-template-columns:58px minmax(0,max-content) minmax(0,max-content) auto;min-height:20px;margin:3px 0;gap:8px}#st-cfg .st-scripts{gap:0 22px}#st-cfg .st-scripts .st-row{min-height:22px}#st-cfg .st-ver{font-size:10px}#st-cfg #st-p-s .st-row{margin:4px 0;min-height:24px}#st-cfg #st-p-s .st-sync-group{margin-top:12px;padding-top:10px}#st-cfg #st-p-s details{margin-top:10px}#st-cfg #st-sync-status{margin:4px 0}#st-cfg #st-p-s .st-sync-backup-row>span:first-child{flex-basis:88px}#st-cfg #st-th-time{font:400 12px/18px var(--mbu-font)}#st-cfg .st-upd .st-channel-state{overflow-wrap:anywhere}@media(max-width:640px){#st-cfg .st-upd>div{grid-template-columns:58px minmax(0,1fr) auto}#st-cfg .st-row{margin:4px 0}#st-cfg .st-title{gap:6px}}';
 ST_CSS += '#st-cfg .st-sync-columns{display:grid;grid-template-columns:minmax(0,1fr);gap:12px 28px}#st-cfg #st-p-s .st-sync-options>h3{margin:4px 0 8px}@container(min-width:620px){#st-cfg .st-sync-columns{grid-template-columns:repeat(2,minmax(0,1fr))}}';
 ST_CSS += '#st-cfg .st-title .mbu-ov-x{padding:0;margin:0;align-self:center;width:26px;height:26px}#st-cfg .st-title .mbu-ov-x svg{width:18px;height:18px;display:block}#st-cfg .st-title .mbu-help{align-self:center}';
+ST_CSS += '#st-cfg .st-footer .st-links{margin-left:auto}';
 // a launcher opens its script's settings on right-click: pass the click on to the live one
 function stLive(name) {
   var els = Array.prototype.filter.call(document.querySelectorAll('[data-mb-corner="br"][data-mb-corner-label]'), function (el) {
@@ -270,10 +270,7 @@ function stSettings(tab) {
     (document.head || html).appendChild(css);
   }
   var h = U.mbuCfgHeader({ icon: '<img src="' + ST_ICON + '" alt="">', name: 'String Theory', version: ST_VERSION, script: 'string_theory' });
-  if (ST_ON_MB) h = h.replace('<span class="mbu-cfg-sp"></span>', '<span class="mbu-cfg-sp"></span><a href="#" id="st-cfg-news" aria-label="What\'s new">'
-    + '<svg class="st-nwi" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
-    + '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z" fill="currentColor" fill-opacity=".35"/></svg>'
-    + '<span class="st-nwt">What\'s new</span></a>');
+  if (ST_ON_MB) h = h.replace('<span class="mbu-cfg-sp"></span>', '<span class="mbu-cfg-sp"></span><a href="#" id="st-cfg-news">What\'s new</a>');
   var links = '<span class="st-links">'
     + '<a href="https://milic.info/musicbrainz-userscripts" target="_blank" rel="noopener">Website</a>'
     + '<a href="https://github.com/' + ST_REPO + '/issues" target="_blank" rel="noopener">Issues</a></span>';
