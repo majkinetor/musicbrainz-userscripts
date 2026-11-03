@@ -40,6 +40,8 @@ The settings title bar uses `mbuCfgHeader`, retaining its icon, name, version an
 
 ## External storage
 
+Google Drive is currently backup-only in settings: sync controls are replaced by a limitation message, and the scheduler and non-manual runs decline Google even when automatic sync was previously enabled. The Google journal adapter remains available internally for compatibility, but the UI exposes only backup/import operations for that provider.
+
 [`sync.js`](sync.js) implements Dropbox connection, scheduling and its revision-checked snapshot file, `/string-theory.json`, inside the registered app folder. The app key is public; the flow uses S256 PKCE and offline access, without a client secret. Register **`https://musicbrainz.org/?st-dropbox=callback`** as an exact redirect URI in Dropbox's [App Console](https://www.dropbox.com/developers/apps). The app needs `account_info.read`, `files.metadata.read`, `files.content.read` and `files.content.write`; its console also controls the development/production status and user limit.
 
 The initiating tab saves a short-lived verifier and state in `string_theory.sync.oauth`, excluded from all snapshots. The callback URL already matches the userscript; it starts no bundled member, applies no pending data and runs no automatic sync. It removes the code from the address bar, verifies state and expiry, exchanges the code with the same redirect URI, and stores credentials only after account lookup succeeds. A GM value-change listener delivers `.oauth.result` to the initiating tab; the callback then closes. A failed or superseded connection leaves working credentials intact.

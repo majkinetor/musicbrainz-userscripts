@@ -20,6 +20,13 @@ function runtime(server, seed = {}, googleApi) {
   return { ...api, gm, messages };
 }
 const value = x => ({ encoding: 'value', value: x });
+
+test('Google backup-only mode never performs automatic sync', { tag: '@unit' }, async () => {
+  const server = googleCloud(), a = runtime(server, { 'string_theory.sync.settings': { provider: 'google', automatic: true, minutes: 5 } });
+  await a.run(false);
+  expect(server.calls).toEqual([]);
+  expect(a.gm.get('string_theory.sync.google.base')).toBeUndefined();
+});
 test('Google sync creates once, uses a separate baseline and excludes bookkeeping', { tag: '@unit' }, async () => {
   const server = googleCloud(), a = runtime(server, { saved: 'keep', 'string_theory.sync.base': { dropbox: true }, 'pc:cache:fixture': 'omit' });
   await a.run(true);

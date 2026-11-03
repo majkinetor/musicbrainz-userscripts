@@ -36,7 +36,7 @@ String Theory adds dock and setting management for all included scripts:
 - **One icon for all the launchers**: on MusicBrainz, String Theory's icon sits in the corner, and the round buttons of Mission Control, Fusion, Falcon and the rest fold behind it. Click it to unfold them; they stay unfolded until you click it again. Folded, the dock shows only actionable items (the script needs background fetch on for this).
 - **[Command palette](#command-palette)**: Ctrl+K lists every command, filtered as you type.
 - **[What's new](#whats-new)**: String Theory's icon turns golden when there is news.
-- **[Sync and backup](#sync-and-backup)**: sync devices with Dropbox or Google Drive, save remote backups or export a file.
+- **[Sync and backup](#sync-and-backup)**: sync devices with Dropbox, save Dropbox or Google Drive backups, or export a file.
 - **Settings**: open them by right-clicking String Theory's icon. Right-click any dock icon for its own settings. Every icon is shown in About. Tabs sit in the title bar and become a menu when space is tight; Website and Issues links sit in the footer.
 - **Update**: in the About tab, toggle individual scripts, see their versions and check for updates.
 
@@ -87,7 +87,9 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 
 Open String Theory's settings → **Sync**, choose **Provider**, and connect. Use the same provider and account on each device. Switching providers keeps their connections and sync history separate.
 
-**Dropbox** returns to MusicBrainz and finishes the connection automatically. **Google Drive** opens Google's sign-in popup. After about one hour, when its session expires, **Reconnect** continues syncing; automatic sync never opens sign-in popups. The Google app is currently limited to registered test users.
+**Dropbox** returns to MusicBrainz and finishes the connection automatically. **Google Drive** opens Google's sign-in popup. Its session expires after about one hour; **Reconnect** renews access for backups. The Google app is currently limited to registered test users.
+
+Sync actions and automatic sync are available for Dropbox only. Google Drive supports manual backups and imports; reconnect when its session expires. Its Sync area shows this limitation instead of the controls. Dropbox's Sync options remain visible beside the actions, stacking below them on narrow screens.
 
 | Action   | What it does                                                                 |
 | -------- | ---------------------------------------------------------------------------- |
@@ -101,7 +103,7 @@ With no remote data yet, **Sync now** and **Push** create it; **Pull** leaves lo
 
 Credentials, stars, saved notes, remembered field values, named filters and normal preferences are included. Caches, logs, recent activity, temporary work, local paths and device layout stay local, including page width, columns, window state and location coordinates.
 
-Downloaded changes apply on the next page load; **Reload** applies them immediately. Under **Backups**, the provider row saves and browses remote backups. **This device** holds local files: **Export** downloads a backup; **Import** merges one into your settings. **Export recovery copy** downloads the state kept before the last import or downloaded changes. Backups and remote sync data contain credentials.
+Downloaded changes apply on the next page load; **Reload** applies them immediately. Under **Backups**, the provider row saves and browses remote backups. **This device** holds local files: **Export** downloads a backup; **Import** merges one into your settings. Backups and remote sync data contain credentials.
 
 **Save backup** saves a separate, dated snapshot at the selected provider. **Browse** lists those backups, newest first, with their date and size. **Apply** merges a backup into your settings, keeping a recovery copy and applying on reload, just like **Import**. Backup values win shared settings; stars are combined. **Delete** asks for a second click before removing that snapshot; Google Drive moves it to Trash. **Refresh** updates the list. Remote backups stay separate from Sync, Push and Pull.
 

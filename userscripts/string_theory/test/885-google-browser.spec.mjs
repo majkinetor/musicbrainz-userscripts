@@ -7,7 +7,7 @@ test.use({ gm: { name: 'String Theory', persist: true, values: {
   'string_theory.sync.auth': { refreshToken: { token: 'dropbox-retained' } },
 } } });
 
-test('Google provider connects, syncs, manages backups and retains Dropbox when disconnected', { tag: '@sandbox' }, async ({ page, context, inject }, info) => {
+test('Google provider connects for backups only and retains Dropbox when disconnected', { tag: '@sandbox' }, async ({ page, context, inject }, info) => {
   const server = googleCloud();
   await answerGm(context, async opts => {
     if (!opts.url.startsWith('https://www.googleapis.com/')) return null;
@@ -33,8 +33,9 @@ test('Google provider connects, syncs, manages backups and retains Dropbox when 
   await page.locator('#st-sync-connect').click();
   await expect(page.locator('#st-sync-status')).toContainText('Connected: Google fixture');
   expect(await page.evaluate(() => window.__googleRequest)).toEqual({ clientId: '762250056217-8uip1j2fusc9npm4fievee31btjqf02o.apps.googleusercontent.com', scope: 'https://www.googleapis.com/auth/drive.file', include: false });
-  await page.locator('#st-sync-now').click();
-  await expect(page.locator('#st-sync-last')).toContainText('Last sync:');
+  await expect(page.locator('#st-sync-google-message')).toContainText('Sync is disabled');
+  await expect(page.locator('#st-sync-controls')).toBeHidden();
+  for (const id of ['now', 'push', 'pull', 'auto']) await expect(page.locator('#st-sync-' + id)).toBeDisabled();
   await page.locator('#st-sync-remote-backup').click();
   await expect(page.locator('#st-sync-backup-status')).toHaveText('Backup saved to Google Drive.');
   await page.locator('#st-sync-remote-import').click();
@@ -55,9 +56,10 @@ test('Google provider connects, syncs, manages backups and retains Dropbox when 
   expect([...server.files.values()].filter(f => f.trashed)).toHaveLength(1);
   const before = server.calls.length;
   await page.evaluate(() => { const a = GM_getValue('string_theory.sync.google.auth'); a.accessToken.expiresAt = 1; GM_setValue('string_theory.sync.google.auth', a); });
-  await page.locator('#st-sync-now').click();
+  await page.locator('#st-sync-remote-backup').click();
   await expect(page.locator('#st-sync-status')).toContainText('Reconnect to continue');
   expect(server.calls).toHaveLength(before);
+  expect([...server.files.values()].filter(f => f.appProperties?.stKind === 'sync')).toHaveLength(0);
   await page.locator('#st-sync-disconnect').click();
   expect(await page.evaluate(() => GM_getValue('string_theory.sync.auth').refreshToken.token)).toBe('dropbox-retained');
   expect(await page.evaluate(() => GM_getValue('string_theory.sync.google.auth'))).toBeUndefined();
