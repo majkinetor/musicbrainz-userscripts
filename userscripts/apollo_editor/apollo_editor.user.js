@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.03.183723
+// @version      2026.11.03.175612
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -255,7 +255,10 @@
   // passwords? I noticed that in apollo credited as too" — password managers
   // heuristically flag plain text inputs with no autocomplete/ignore hint.
   // None of this tool's inputs are credentials, so opt them out.
-  const noPw = e => { e.autocomplete = 'off'; e.setAttribute('data-lpignore', 'true'); e.setAttribute('data-1p-ignore', 'true'); e.setAttribute('data-bwignore', 'true'); e.setAttribute('data-form-type', 'other'); return e; };
+  // LastPass still showed its icon in "Credited as" with every attribute above,
+  // as it did in Credit Hoarder: managers classify text inputs and skip type=search,
+  // so a plain text input becomes a search one (.mbu-nopw resets its look).
+  const noPw = e => { e.autocomplete = 'off'; e.setAttribute('data-lpignore', 'true'); e.setAttribute('data-1p-ignore', 'true'); e.setAttribute('data-bwignore', 'true'); e.setAttribute('data-form-type', 'other'); if (e.tagName === 'INPUT' && (!e.getAttribute('type') || e.type === 'text')) { e.type = 'search'; e.classList.add('mbu-nopw'); } return e; };
   const NOPW_ATTRS = 'autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other"';
 
   // #283 every Log.* call is captured into an in-page buffer and surfaced in a
@@ -6858,6 +6861,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-aslot{display:flex;align-items:center;gap:5px;height:28px;box-sizing:border-box}
     .tc-cred{flex:none;width:130px;text-align:right;box-sizing:border-box;font:11px Arial;color:var(--mbu-text);border:1px solid transparent;background:transparent!important;padding:1px 4px 1px 15px;transition:color .12s}
     .tc-cred::placeholder{color:var(--mbu-text-weak)}
+    input.mbu-nopw{-webkit-appearance:textfield;appearance:textfield}
+    input.mbu-nopw::-webkit-search-decoration,input.mbu-nopw::-webkit-search-cancel-button,input.mbu-nopw::-webkit-search-results-button,input.mbu-nopw::-webkit-search-results-decoration{display:none;-webkit-appearance:none}
     .tc-credwrap{position:relative;flex:none;display:inline-flex;align-items:center}
     .tc-cred-clr{position:absolute;left:2px;top:50%;transform:translateY(-50%);z-index:2;display:none;border:none;background:none;color:var(--mbu-text-weak);cursor:pointer;font-size:12px;line-height:1;padding:0}
     .tc-aslot.tc-has-cred:hover .tc-cred-clr{display:block}
