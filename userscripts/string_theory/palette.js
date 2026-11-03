@@ -81,6 +81,7 @@ function stPalCommands() {
 
   // Theme: highlighting one shows it, Enter keeps it
   if (ST_ON_MB) {
+    add({ id: 'theme:chooser', cat: 'Theme', label: 'Theme chooser', run: function () { setTimeout(stThemeChooser, 0); } });
     [['light', 'Light'], ['dark', 'Dark'], ['auto', 'System'], ['sun', 'Sun'], ['time', 'Time']].forEach(function (o) {
       add({ id: 'theme:' + o[0], cat: 'Theme', label: o[1], hint: __stTheme.read().mode === o[0] ? 'current' : '',
         preview: function () { if (o[0] !== 'sun' || __stTheme.read().lat != null) __stTheme.preview({ mode: o[0] }); },
@@ -447,4 +448,74 @@ function stPalListen() {
     e.stopPropagation();
     try { stPalette(); } catch (err) { try { console.error('[String Theory] command palette failed:', err); } catch (x) { /* no console */ } }
   }, true);
+}
+
+// ── Theme chooser ───────────────────────────────────────────────────────────
+// A slim bar at the bottom of the page that steps through every theme with ◀ ▶ (or the arrow keys),
+// showing each on the whole page; nothing covers the view. Keep (Enter) saves it, ✕ (Esc) goes back.
+var ST_TC_CSS = ''
+  + '#st-tc{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:2147483600;display:flex;align-items:center;gap:6px;padding:6px 8px;'
+  + 'background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);font:13px/1.4 var(--mbu-font);max-width:calc(100vw - 32px);box-sizing:border-box}'
+  + '#st-tc button{margin:0;height:30px}'
+  + '#st-tc .st-tc-n{min-width:170px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+  + '#st-tc .st-tc-v{color:var(--mbu-text-weak)}'
+  + '#st-tc .st-tc-i{color:var(--mbu-text-weak);font-size:12px;min-width:36px;text-align:center}';
+var stTcEl = null;
+function stThemeChooser() {
+  if (stTcEl && stTcEl.isConnected) return;
+  var U = stUI(), T = stTokens(), html = document.documentElement;
+  if (!document.getElementById('st-tc-css')) {
+    var css = document.createElement('style');
+    css.id = 'st-tc-css';
+    css.textContent = T.MBU_TOKENS + U.MBU_UI_CSS + ST_TC_CSS;
+    (document.head || html).appendChild(css);
+  }
+  var th = __stTheme.read(), cur = __stTheme.variant(), all = [];
+  [cur, cur === 'dark' ? 'light' : 'dark'].forEach(function (v) { __stTheme.names(v).forEach(function (n) { all.push([v, n]); }); });
+  var i = Math.max(0, all.findIndex(function (t) { return t[0] === cur && t[1] === th[cur]; }));
+  var bar = document.createElement('div');
+  bar.id = 'st-tc';
+  bar.className = 'mbu-ui';
+  bar.setAttribute('role', 'toolbar');
+  bar.setAttribute('aria-label', 'Theme chooser');
+  bar.innerHTML = '<button type="button" id="st-tc-p" aria-label="Previous theme">◀</button>'
+    + '<span class="st-tc-n" aria-live="polite"></span><span class="st-tc-i"></span>'
+    + '<button type="button" id="st-tc-nx" aria-label="Next theme">▶</button>'
+    + '<button type="button" id="st-tc-k">Keep</button>'
+    + '<button type="button" class="mbu-ov-x" id="st-tc-x" aria-label="Close">✕</button>';
+  (document.body || html).appendChild(bar);
+  stTcEl = bar;
+  var show = function () {
+    var t = all[i], p = { mode: t[0] }; p[t[0]] = t[1];
+    __stTheme.preview(p);
+    bar.querySelector('.st-tc-n').innerHTML = stEsc(t[1]) + ' <span class="st-tc-v">' + t[0] + '</span>';
+    bar.querySelector('.st-tc-i').textContent = (i + 1) + '/' + all.length;
+  };
+  var step = function (d) { i = (i + d + all.length) % all.length; show(); };
+  var close = function (keep) {
+    window.removeEventListener('keydown', onKey, true);
+    bar.remove();
+    if (!keep) { __stTheme.preview(null); return; }
+    var t = all[i], p = {}; p[t[0]] = t[1];
+    // the mode follows the kept theme only when it was fixed light or dark
+    if (th.mode === 'light' || th.mode === 'dark') p.mode = t[0];
+    __stTheme.set(p);
+    if (__stTheme.variant() !== t[0]) try { U.mbuToast('✓ ' + t[1] + ' is your ' + t[0] + ' theme; this page stays ' + __stTheme.variant()); } catch (e) { /* no toast */ }
+  };
+  var onKey = function (e) {
+    var a = document.activeElement;
+    if (a && a !== document.body && !bar.contains(a) && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable)) return;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') step(-1);
+    else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') step(1);
+    else if (e.key === 'Enter') close(true);
+    else if (e.key === 'Escape') close(false);
+    else return;
+    e.preventDefault(); e.stopPropagation();
+  };
+  window.addEventListener('keydown', onKey, true);
+  bar.querySelector('#st-tc-p').onclick = function () { step(-1); };
+  bar.querySelector('#st-tc-nx').onclick = function () { step(1); };
+  bar.querySelector('#st-tc-k').onclick = function () { close(true); };
+  bar.querySelector('#st-tc-x').onclick = function () { close(false); };
+  show();
 }
