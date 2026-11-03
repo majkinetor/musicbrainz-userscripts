@@ -29,12 +29,12 @@ test('Google provider connects, syncs, manages backups and retains Dropbox when 
   await page.goto(SANDBOX + '/search/edits'); await page.evaluate(prepare); await inject('string_theory');
   const open = async () => { await page.evaluate(() => document.dispatchEvent(new Event('mbu-st-settings'))); await page.locator('#st-tab-s').click(); };
   await open(); await page.locator('#st-sync-provider').selectOption('google');
-  await expect(page.locator('#st-sync-connect')).toHaveText('Connect Google Drive');
+  await expect(page.locator('#st-sync-connect')).toHaveText('Connect');
   await page.locator('#st-sync-connect').click();
   await expect(page.locator('#st-sync-status')).toContainText('Connected: Google fixture');
   expect(await page.evaluate(() => window.__googleRequest)).toEqual({ clientId: '762250056217-8uip1j2fusc9npm4fievee31btjqf02o.apps.googleusercontent.com', scope: 'https://www.googleapis.com/auth/drive.file', include: false });
   await page.locator('#st-sync-now').click();
-  await expect(page.locator('#st-sync-status')).toContainText('Last sync:');
+  await expect(page.locator('#st-sync-last')).toContainText('Last sync:');
   await page.locator('#st-sync-remote-backup').click();
   await expect(page.locator('#st-sync-backup-status')).toHaveText('Backup saved to Google Drive.');
   await page.locator('#st-sync-remote-import').click();
@@ -56,7 +56,7 @@ test('Google provider connects, syncs, manages backups and retains Dropbox when 
   const before = server.calls.length;
   await page.evaluate(() => { const a = GM_getValue('string_theory.sync.google.auth'); a.accessToken.expiresAt = 1; GM_setValue('string_theory.sync.google.auth', a); });
   await page.locator('#st-sync-now').click();
-  await expect(page.locator('#st-sync-status')).toContainText('Reconnect Google Drive');
+  await expect(page.locator('#st-sync-status')).toContainText('Reconnect to continue');
   expect(server.calls).toHaveLength(before);
   await page.locator('#st-sync-disconnect').click();
   expect(await page.evaluate(() => GM_getValue('string_theory.sync.auth').refreshToken.token)).toBe('dropbox-retained');

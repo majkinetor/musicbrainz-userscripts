@@ -87,23 +87,23 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 
 Open String Theory's settings → **Sync**, choose **Provider**, and connect. Use the same provider and account on each device. Switching providers keeps their connections and sync history separate.
 
-**Dropbox** returns to MusicBrainz and finishes the connection automatically. **Google Drive** opens Google's sign-in popup. When its session expires, **Reconnect Google Drive** continues syncing; automatic sync never opens sign-in popups. The Google app is currently limited to registered test users.
+**Dropbox** returns to MusicBrainz and finishes the connection automatically. **Google Drive** opens Google's sign-in popup. After about one hour, when its session expires, **Reconnect** continues syncing; automatic sync never opens sign-in popups. The Google app is currently limited to registered test users.
 
-| Action | What it does                                                                 |
-| ------ | ---------------------------------------------------------------------------- |
-| Sync   | Merges this device with the provider                                         |
-| Push   | Replaces the provider's portable data with this device's                     |
-| Pull   | Replaces this device's portable data from the provider on the next page load |
+| Action   | What it does                                                                 |
+| -------- | ---------------------------------------------------------------------------- |
+| Sync now | Merges this device with the provider                                         |
+| Push     | Replaces the provider's portable data with this device's                     |
+| Pull     | Replaces this device's portable data from the provider on the next page load |
 
-**Automatic sync** runs **Sync** while MusicBrainz is open. Independent changes are combined; when both devices change the same value, **Conflicting changes** chooses which one wins. Star additions and removals are merged separately.
+Under **Sync options**, **Automatic sync** runs **Sync now** while MusicBrainz is open. Independent changes are combined; when both devices change the same value, **On conflict** chooses which one wins. Star additions and removals are merged separately.
 
-With no remote data yet, **Sync** and **Push** create it; **Pull** leaves local data unchanged. On the first sync with existing data, stars from both sides are combined and conflicting settings use **Conflicting changes**. An absent star only counts as a removal after a previous sync. **Push** keeps the provider's saved data for other MusicBrainz servers.
+With no remote data yet, **Sync now** and **Push** create it; **Pull** leaves local data unchanged. On the first sync with existing data, stars from both sides are combined and conflicting settings use **On conflict**. An absent star only counts as a removal after a previous sync. **Push** keeps the provider's saved data for other MusicBrainz servers.
 
 Credentials, stars, saved notes, remembered field values, named filters and normal preferences are included. Caches, logs, recent activity, temporary work, local paths and device layout stay local, including page width, columns, window state and location coordinates.
 
-Downloaded changes apply on the next page load; **Reload** applies them immediately. **Export** downloads a backup; **Import** merges one into your settings. **Export recovery copy** downloads the state kept before the last import or downloaded changes. Backups and remote sync data contain credentials.
+Downloaded changes apply on the next page load; **Reload** applies them immediately. Under **Backups**, the provider row saves and browses remote backups. **This device** holds local files: **Export** downloads a backup; **Import** merges one into your settings. **Export recovery copy** downloads the state kept before the last import or downloaded changes. Backups and remote sync data contain credentials.
 
-**Remote backup** saves a separate, dated snapshot at the selected provider. **Remote import** lists those backups, newest first, with their date and size. **Apply** merges a backup into your settings, keeping a recovery copy and applying on reload, just like **Import**. Backup values win shared settings; stars are combined. **Delete** asks for a second click before removing that snapshot; Google Drive moves it to Trash. **Refresh** updates the list. Remote backups stay separate from Sync, Push and Pull.
+**Save backup** saves a separate, dated snapshot at the selected provider. **Browse** lists those backups, newest first, with their date and size. **Apply** merges a backup into your settings, keeping a recovery copy and applying on reload, just like **Import**. Backup values win shared settings; stars are combined. **Delete** asks for a second click before removing that snapshot; Google Drive moves it to Trash. **Refresh** updates the list. Remote backups stay separate from Sync, Push and Pull.
 
 **Disconnect** stops automatic sync and removes this device's selected connection; remote data remains. Google Drive saves files in a **String Theory** folder, including sync history. Keep its sync files so changes from other devices can be merged.
 

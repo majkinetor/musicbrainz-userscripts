@@ -376,16 +376,19 @@ function stSyncDownload(doc, name) {
   var a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
 }
 function stSyncMarkup() {
-  return '<p class="st-cap">Settings, saved data and credentials travel between devices. Caches, logs, recent activity, temporary work and device layout stay here.</p>'
-    + '<div class="st-row"><label for="st-sync-provider" class="st-lbl">Provider</label><select id="st-sync-provider"><option value="dropbox">Dropbox</option><option value="google">Google Drive</option></select><button class="st-b" type="button" id="st-sync-connect">Connect Dropbox</button><button class="st-b" type="button" id="st-sync-disconnect" hidden>Disconnect</button></div>'
+  return '<div class="st-row st-sync-between"><select id="st-sync-provider" aria-label="Provider"><option value="dropbox">Dropbox</option><option value="google">Google Drive</option></select><button class="st-b st-sync-link" type="button" id="st-sync-connect">Connect</button></div>'
+    + '<p class="st-cap" id="st-sync-status" role="status"></p>'
+    + '<section class="st-sync-group"><div class="st-row st-sync-between"><h3>Sync</h3><span class="st-cap" id="st-sync-last"></span></div>'
+    + '<div class="st-row"><button class="st-b st-sync-primary" type="button" id="st-sync-now" data-tip="Merge this device with Dropbox">Sync now</button><button class="st-b" type="button" id="st-sync-push" data-tip="Replace Dropbox’s portable data with this device’s">Push</button><button class="st-b" type="button" id="st-sync-pull" data-tip="Replace this device’s portable data with Dropbox’s\nKeeps device settings; applies on the next page load">Pull</button><button class="st-b" type="button" id="st-sync-reload" hidden>Reload</button></div>'
+    + '<details><summary>Sync options</summary>'
     + '<div class="st-row"><label><input id="st-sync-auto" type="checkbox"> Automatic sync</label><label for="st-sync-minutes">Every</label><select id="st-sync-minutes"><option value="5">5 minutes</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="60">1 hour</option><option value="360">6 hours</option><option value="1440">1 day</option></select></div>'
-    + '<div class="st-row"><label for="st-sync-conflict">Conflicting changes</label><select id="st-sync-conflict"><option value="remote">Use Dropbox’s value</option><option value="local">Use this device’s value</option></select></div>'
-    + '<div class="st-row"><button class="st-b" type="button" id="st-sync-now" data-tip="Merge this device with Dropbox">Sync</button><button class="st-b" type="button" id="st-sync-push" data-tip="Replace Dropbox’s portable data with this device’s">Push</button><button class="st-b" type="button" id="st-sync-pull" data-tip="Replace this device’s portable data with Dropbox’s\nKeeps device settings; applies on the next page load">Pull</button><button class="st-b" type="button" id="st-sync-reload" hidden>Reload</button><span id="st-sync-status" role="status"></span></div>'
-    + '<h3 class="st-h">Backup</h3><div class="st-row"><button class="st-b" type="button" id="st-sync-export">Export</button><button class="st-b" type="button" id="st-sync-import">Import</button><input id="st-sync-file" type="file" accept=".json,application/json" hidden><button class="st-b" type="button" id="st-sync-recovery" hidden>Export recovery copy</button></div>'
-    + '<div class="st-row"><button class="st-b" type="button" id="st-sync-remote-backup">Remote backup</button><button class="st-b" type="button" id="st-sync-remote-import">Remote import</button><span id="st-sync-backup-status" role="status"></span></div>'
+    + '<div class="st-row"><label for="st-sync-conflict">On conflict</label><select id="st-sync-conflict"><option value="remote">Use remote value</option><option value="local">Use local value</option></select></div><p class="st-cap">Automatic sync runs while MusicBrainz is open.</p></details></section>'
+    + '<section class="st-sync-group"><h3>Backups</h3><div class="st-row st-sync-backup-row"><span id="st-sync-backup-name">Dropbox</span><button class="st-b" type="button" id="st-sync-remote-backup">Save backup</button><button class="st-b" type="button" id="st-sync-remote-import">Browse</button></div>'
+    + '<div class="st-row st-sync-backup-row"><span>This device</span><button class="st-b" type="button" id="st-sync-export">Export</button><button class="st-b" type="button" id="st-sync-import">Import</button><input id="st-sync-file" type="file" accept=".json,application/json" hidden></div><div class="st-row"><button class="st-b" type="button" id="st-sync-recovery" hidden>Export recovery copy</button><span id="st-sync-backup-status" role="status"></span></div>'
     + '<div id="st-sync-remote" hidden><div class="st-row"><span class="st-lbl" id="st-sync-backup-provider">Dropbox backups</span><button class="st-b" type="button" id="st-sync-backup-refresh">Refresh</button><button class="st-b" type="button" id="st-sync-backup-close">Hide</button></div><div id="st-sync-backups" aria-label="Dropbox backups" hidden></div><p class="st-cap">Apply merges a backup into your settings on reload. Delete removes only that saved backup.</p></div>'
-    + '<p class="st-cap" id="st-sync-google-note" hidden>Google sessions expire. Reconnect to continue syncing. The app is currently limited to registered test users.</p>'
-    + '<p class="st-cap">Backups include credentials. Downloaded changes apply on the next page load. Automatic sync runs while MusicBrainz is open.</p>';
+    + '</section><details id="st-sync-included"><summary>What’s included</summary><p class="st-cap">Settings, saved data and credentials travel between devices. Caches, logs, recent activity, temporary work and device layout stay here.</p><p class="st-cap">Downloaded changes apply on the next page load.</p>'
+    + '<p class="st-cap" id="st-sync-google-note" hidden>Google access lasts about one hour. Reconnect when it expires. The app is currently limited to registered test users.</p></details>'
+    + '<div class="st-row st-sync-footer"><button class="st-b st-sync-link" type="button" id="st-sync-disconnect" hidden>Disconnect</button></div>';
 }
 function stSyncPaint() {
   var panel = document.getElementById('st-p-s'); if (!panel) return;
@@ -395,8 +398,8 @@ function stSyncPaint() {
   q('provider').value = provider; q('provider').disabled = stSyncBusy;
   q('google-note').hidden = provider !== 'google';
   q('backup-provider').textContent = name + ' backups';
+  q('backup-name').textContent = name;
   q('backups').setAttribute('aria-label', name + ' backups');
-  q('conflict').options[0].textContent = 'Use ' + name + '’s value';
   q('now').dataset.tip = 'Merge this device with ' + name;
   q('push').dataset.tip = 'Replace ' + name + '’s portable data with this device’s';
   q('pull').dataset.tip = 'Replace this device’s portable data with ' + name + '’s\nKeeps device settings; applies on the next page load';
@@ -404,7 +407,7 @@ function stSyncPaint() {
     stBackupAccount = backupAccount; stBackupEntries = null; stBackupDelete = null; stBackupNotice = '';
     q('remote').hidden = true;
   }
-  q('connect').textContent = (connected || auth.accessToken ? 'Reconnect ' : 'Connect ') + name;
+  q('connect').textContent = connected || auth.accessToken ? 'Reconnect' : 'Connect';
   if (provider === 'google' && !stGoogleReady) q('connect').textContent = stGoogleLoading ? 'Loading Google sign-in…' : 'Load Google sign-in';
   q('disconnect').hidden = !auth.refreshToken && !auth.accessToken;
   q('auto').checked = settings.automatic; q('minutes').value = String(settings.minutes); q('conflict').value = settings.conflict;
@@ -414,7 +417,10 @@ function stSyncPaint() {
   q('import').disabled = stSyncBusy;
   stBackupPaint(panel, connected);
   q('reload').hidden = !stSyncStorage.pending(); q('recovery').hidden = !GM_getValue('string_theory.sync.recovery');
-  q('status').textContent = stSyncBusy ? 'Working…' : (provider === 'google' && auth.accessToken && !connected ? 'Google Drive session expired. Reconnect Google Drive.' : provider === 'google' && stGoogleError ? stGoogleError : state.error) || (stSyncAuthPending ? 'Waiting for Dropbox authorization…' : state.notice || (state.at ? 'Last sync: ' + new Date(state.at).toLocaleString() : connected ? 'Connected' + (state.name ? ': ' + state.name : '') : 'Not connected'));
+  q('status').textContent = stSyncBusy ? 'Working…' : (provider === 'google' && auth.accessToken && !connected ? 'Google Drive session expired. Reconnect to continue.' : provider === 'google' && stGoogleError ? stGoogleError : state.error) || (stSyncAuthPending ? 'Waiting for Dropbox authorization…' : state.notice || (connected ? 'Connected' + (state.name ? ': ' + state.name : '') : 'Not connected'));
+  var last = state.at && new Date(state.at), today = new Date();
+  q('last').textContent = last ? 'Last sync: ' + new Intl.DateTimeFormat(undefined, last.toDateString() === today.toDateString() ? { hour: '2-digit', minute: '2-digit' } : { dateStyle: 'short', timeStyle: 'short' }).format(last) : '';
+  q('last').dataset.tip = last ? new Intl.DateTimeFormat(undefined, { dateStyle: 'full', timeStyle: 'long' }).format(last) : '';
 }
 function stSyncBind(panel) {
   var q = function (id) { return panel.querySelector('#st-sync-' + id); };
