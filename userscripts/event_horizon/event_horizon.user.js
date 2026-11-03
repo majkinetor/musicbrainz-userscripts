@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.03.064408
+// @version      2026.11.03.070117
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -6055,26 +6055,11 @@ const areaA = x => x ? entA('area', x.id, x.name) : '';
 // An artist's or label's area the way MusicBrainz's sidebar writes it: the area, what it's part of up to its country,
 // and the country's flag (Douala, Littoral, [flag] Cameroon). ws/2 gives only the area itself, so each step up is
 // one area lookup, made in the background, kept 30 days (areas hardly change) and shared by every artist and label.
-// The page the tab loaded reads the steps off MusicBrainz's own sidebar instead, without a request.
 const AREA_UP = (() => { try { return GM_getValue('areaUp', null) || {}; } catch (e) { return {}; } })(), AREA_TTL = 30 * 864e5;
 const areaNode = a => ({ id: a.id, name: a.name, iso: (a['iso-3166-1-codes'] || [])[0] || '' });
 const areaSave = () => { const ks = Object.keys(AREA_UP); if (ks.length > 3000) ks.sort((a, b) => AREA_UP[a].t - AREA_UP[b].t).slice(0, ks.length - 3000).forEach(k => delete AREA_UP[k]); try { GM_setValue('areaUp', AREA_UP); } catch (e) { /* no storage */ } };
-let areaSeeded = false;
-function areaSeed() {
-    areaSeeded = true;
-    if (!mbBody) return;
-    const idOf = a => (a.getAttribute('href').match(/\/area\/([0-9a-f-]{36})/) || [])[1], isoOf = a => ((a.closest('.flag') || {}).className || '').match(/\bflag-([A-Z]{2})\b/);
-    for (const dd of mbBody.querySelectorAll('#sidebar dd')) {
-        const as = [...dd.querySelectorAll('a[href*="/area/"]')].filter(idOf);
-        as.forEach((a, i) => {
-            const n = as[i + 1], iso = isoOf(a);
-            if (n || iso) AREA_UP[idOf(a)] = { iso: iso ? iso[1] : '', up: n ? { id: idOf(n), name: n.textContent.trim(), iso: (isoOf(n) || [])[1] || '' } : null, t: Date.now() };
-        });
-    }
-}
 // the chain as far as it's known; null while a step is still to be asked
 function areaKnown(a) {
-    if (!areaSeeded) areaSeed();
     const out = [areaNode(a)];
     for (let i = 0; i < 8; i++) {
         const x = out[out.length - 1], e = AREA_UP[x.id];
