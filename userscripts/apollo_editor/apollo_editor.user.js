@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.03.093108
+// @version      2026.11.03.121000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15317,10 +15317,31 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     inp.addEventListener('change', go);
     return b;
   }
+  // links already in the external links editor that Autofill can read, Wikidata first
+  function afOffers() {
+    const kinds = [['Wikidata', /wikidata\.org\/(wiki|entity)\/Q\d+/i], ['Wikipedia', /\.wikipedia\.org\/wiki\//i], ['VIAF', /viaf\.org\/viaf\/\d+/i], ['ISNI', /isni\.org\/isni\/\d/i]];
+    const urls = [...new Set([...document.querySelectorAll('#external-links-editor a[href], #external-links-editor input[type=url]')].map(x => x.href || x.value).filter(Boolean))];
+    const out = [];
+    kinds.forEach(([lbl, re]) => urls.filter(u => re.test(u)).forEach(u => {
+      const w = lbl === 'Wikipedia' && (u.match(/\/\/([a-z-]+)\./i) || [])[1];
+      out.push([w ? lbl + ' (' + w + ')' : lbl, u, lbl.toLowerCase()]);
+    }));
+    return out;
+  }
   function afBtn() {
     let b = document.getElementById('tc-af-btn'); if (b) return b;
     b = document.createElement('button'); b.id = 'tc-af-btn'; b.type = 'button'; b.className = 'mbu-ui'; b.textContent = 'Autofill';
-    b.addEventListener('click', () => { const box = afBox(), inp = box.querySelector('input'), st = box.querySelector('.tc-af-st'); inp.hidden = !inp.hidden; if (!inp.hidden) { st.textContent = ''; inp.focus(); } });
+    b.addEventListener('click', () => {
+      const box = afBox(), inp = box.querySelector('input'), st = box.querySelector('.tc-af-st');
+      if (!inp.hidden) { inp.hidden = true; st.textContent = ''; return; }
+      st.textContent = ''; inp.hidden = false; inp.focus();
+      // the entity's own links Autofill can read, as their site icons: a click fills from that link
+      afOffers().forEach(([lbl, u, key]) => {
+        const a = document.createElement('button'); a.type = 'button'; a.className = 'tc-af-of favicon ' + key + '-favicon'; a.dataset.tip = lbl + ': ' + u;
+        a.addEventListener('click', () => { inp.hidden = true; st.textContent = ''; autofill(u, st); });
+        st.appendChild(a);
+      });
+    });
     return b;
   }
   function afPlace() {
@@ -15618,6 +15639,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-af-box .tc-af-st{font:12px var(--mbu-font);color:var(--mbu-text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     #tc-af-box .tc-af-st.bad{color:var(--mbu-err)}
     #tc-af-box .tc-af-st:empty{display:none}
+    #tc-af-box .tc-af-of{flex:none;width:18px;height:18px;margin:-3px 0 -3px 4px;padding:0;border:0;border-radius:var(--mbu-radius);background-color:transparent;background-position:center;background-repeat:no-repeat;cursor:pointer;box-shadow:none;opacity:.8}
+    #tc-af-box .tc-af-of:hover{opacity:1;background-color:var(--mbu-bg)}
+    #tc-af-box .tc-af-st:has(.tc-af-of){display:flex;overflow:visible}
     .tc-ent-hl{margin:2px 0 0 170px;font:13px var(--mbu-font);color:var(--mbu-text);white-space:pre-wrap;word-break:break-word}
     .tc-ent-hl[hidden]{display:none}
     /* #843: the artist form: its fields end on one line, the links column starts level with Artist details, the dates fit their hints */
