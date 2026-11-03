@@ -43,6 +43,8 @@ Click a card header, group or row to open or fold it. Right-click it, or its con
 
 Select the star in an entity's header to keep it on the homepage; select it again to remove it. On the homepage, point at an entry and select its star to remove it. Show stars grouped by entity type, as a list, a grid or a table; click a table heading to sort it. The table shows when each star was added, when known. Stars and the chosen view travel with your userscript manager's settings. Use the header's export/import button to save stars to a file or add stars from one.
 
+With [Fusion](../fusion/README.md) running, the header also has **Add to Fusion pool**, which puts the entity in Fusion's pool to merge later.
+
 ## Collections
 
 Click the entity-type label above its title to open **Collections**. The menu shows your own and collaborative collections for that type, including private collections. Select an entry to add or remove the entity in the background. **Add to a new collection** opens MusicBrainz's collection form with the entity selected.

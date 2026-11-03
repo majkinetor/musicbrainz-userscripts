@@ -15,6 +15,7 @@ A merge assistant for MusicBrainz recordings: gather candidates, let Match group
 - **[Seeding](#seeding)** from a release, a release group, a recording, or an artist's whole catalogue.
 - **[Match](#match)** groups likely duplicates by ISRC, AcoustID, title, artist and length.
 - **[Merging](#merging)** submits the merges in the background, each with an itemised edit note.
+- **[Other entities](#other-entities)**: artists, releases, works and the other types collected and merged the same way.
 
 ## Pool and groups
 
@@ -89,6 +90,17 @@ A group's chips show the signals that hold for **every** member; one that holds 
 Each merge gets an edit note listing what matched ("Same ISRC …", "Length difference 5s (3:59 – 4:04)"). ✎ in a group's title replaces it with your own text; Fusion's attribution line is always appended.
 
 A merge always goes to a vote, even an auto-editor's, as a [destructive edit](https://musicbrainz.org/doc/Destructive_Edit). A refused merge is marked failed.
+
+## Other entities
+
+Artists, releases, release groups, works, labels, places, events, series, instruments and areas are merged in Fusion's **Merge entities** window: ⧉ in the recording window's header, or Fusion's corner icon on any page once something is collected.
+
+- Collect entities with [Event Horizon](../event_horizon/README.md)'s **Add to Fusion pool** button, or paste a MusicBrainz link or MBID into the window.
+- Each type has its own pool and groups, under its tab. **Group all** puts the pool in one group; → adds an entity to the current group (the one whose header you clicked last).
+- ★ picks the one that's kept. A group has its own edit note and, for releases, the merge strategy (append mediums or merge them).
+- **Merge →** submits one group, **Merge All →** every group in turn; **Clear merged** removes the merged ones.
+
+What you collect is kept in your userscript manager and shows in every open tab.
 
 ## Settings
 

@@ -10,6 +10,7 @@
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @grant        GM_addValueChangeListener
 // @grant        unsafeWindow
 // @connect      musicbrainz.org
 // @connect      beta.musicbrainz.org
@@ -5524,7 +5525,7 @@ function buildShell() {
     };
     overlay.innerHTML = '<div class="fs-cons" id="fs-cons">'
         + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge Recordings</div><span class="fs-busy" id="fs-busy" style="display:none" data-tip="Open the activity log"></span><span class="fs-bgtask" id="fs-bgtask" style="display:none" data-tip="Open the activity log"></span><span class="fs-netbanner" id="fs-netbanner" style="display:none"></span><div class="fs-scope" id="fs-scope" data-tip="Open the activity log">…</div><div class="fs-sp"></div>'
-        + '<button class="fs-cons-x" id="fs-max" type="button" data-tip="Maximize or restore">⛶</button><button class="fs-cons-x" id="fs-cfg" type="button" data-tip="Fusion\nOptions, the log, help">' + MBU_CFG_ICON + '</button><button class="fs-cons-x" id="fs-close" type="button" data-tip="Close">✕</button></div>'
+        + '<button class="fs-cons-x" id="fs-entities" type="button" data-tip="Merge other entities\nArtists, releases, works and the rest, each type with its own pool and groups.">⧉</button><button class="fs-cons-x" id="fs-max" type="button" data-tip="Maximize or restore">⛶</button><button class="fs-cons-x" id="fs-cfg" type="button" data-tip="Fusion\nOptions, the log, help">' + MBU_CFG_ICON + '</button><button class="fs-cons-x" id="fs-close" type="button" data-tip="Close">✕</button></div>'
         + '<div class="fs-ctrl"><select id="fs-rg-editions" style="display:none;"><option value="">+ Load recordings from RG edition ▾</option></select>'
         + '<input type="text" id="fs-add-input" placeholder="paste a recording, release, or release-group MBID|URL…" data-tip="Add recordings to the pool\nPaste: a recording’s, release’s or release group’s MBID, or its MusicBrainz URL, adds its recordings at once">'
         + '<div class="fs-sp"></div><div class="fs-legend">'
@@ -5547,6 +5548,7 @@ function buildShell() {
     overlay.addEventListener('mousedown', e => { if (e.target === overlay) closeFusion(); });
     document.addEventListener('keydown', _fsEscHandler);
     document.getElementById('fs-close').onclick = closeFusion;
+    document.getElementById('fs-entities').onclick = () => openEntities();
     document.getElementById('fs-cfg').onclick = () => openSettings(document.getElementById('fs-cfg'));
     // #529 (majkinetor): "remove Add button on MBID edit, it should be added on
     // paste" — pasting is the only realistic way to enter a 36-char MBID, so the
@@ -5719,20 +5721,241 @@ async function openFusion() {
 }
 
 function ensureLauncher() {
-    if (!detectScope()) { document.getElementById('fs-launch')?.remove(); return; }
+    if (!detectScope() && !emCount()) { document.getElementById('fs-launch')?.remove(); return; }
     if (document.getElementById('fs-launch')) return;
     fsStyle();
     const btn = el('button', 'fs-launch'); btn.id = 'fs-launch'; btn.type = 'button';
     const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; btn.appendChild(img);
     btn.dataset.tip = 'Fusion — merge recordings\nRight-click: settings';   // icon-only: the tooltip carries the name
     btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '30'; btn.dataset.mbCornerLabel = 'Fusion'; btn.dataset.mbCornerPaths = '^/(release|release-group|recording)/|^/artist/[^/]+/recordings';   // its @match
-    btn.onclick = () => openFusion();
+    btn.onclick = () => { if (detectScope()) openFusion(); else openEntities(); };
     btn.oncontextmenu = e => { e.preventDefault(); if (document.getElementById('fs-settings')) document.getElementById('fs-settings').remove(); else openSettings(btn); };   // #695: right-click on every corner launcher opens its settings
     document.body.appendChild(btn);
     mbRestackCorner('br');
 }
+/* ── Merge any entity type (#908) ────────────────────────────────────────────
+   A pool and any number of groups per mergeable type, kept in GM storage so
+   every tab and window sees the same board (GM_addValueChangeListener repaints
+   the others). Nothing here touches MB's own merge queue until a group is
+   merged: then its members go through /<type>/merge_queue and the merge form,
+   the recording board's path, one at a time under withMergeLock. Entities come
+   in from Event Horizon's "Add to Fusion pool" button (the mbu-fusion-add
+   event, a JSON-string detail) or by pasting a URL into the window. A group's
+   busy state lives in this tab only, so a closed tab never leaves one stuck. */
+const EM_KEY = 'fusion.merge';
+const EM_TYPES = [['artist', 'Artists'], ['release-group', 'Release groups'], ['release', 'Releases'], ['recording', 'Recordings'], ['work', 'Works'], ['label', 'Labels'], ['place', 'Places'], ['area', 'Areas'], ['instrument', 'Instruments'], ['series', 'Series'], ['event', 'Events']];
+const EM_TYPE_RE = /\/(artist|release-group|release|recording|work|label|place|area|instrument|series|event)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
+const EM_BUSY = new Set();
+function emLoad() { let s; try { s = JSON.parse(GM_getValue(EM_KEY, '') || '{}'); } catch (e) { s = {}; } if (!s || typeof s !== 'object') s = {}; s.types = s.types || {}; return s; }
+let EM = emLoad();
+let EM_TYPE = null;
+const emT = type => EM.types[type] || (EM.types[type] = { pool: [], groups: [], current: null });
+const emHas = (t, gid) => t.pool.some(x => x.gid === gid) || t.groups.some(g => g.state !== 'done' && g.members.some(x => x.gid === gid));
+const emCount = () => Object.values(EM.types).reduce((n, t) => n + t.pool.length + t.groups.reduce((m, g) => m + (g.state === 'done' ? 0 : g.members.length), 0), 0);
+// read the latest copy first, so a change made in another tab is never written over
+function emEdit(fn) { EM = emLoad(); const r = fn(); GM_setValue(EM_KEY, JSON.stringify(EM)); emRender(); ensureLauncher(); return r; }
+if (typeof GM_addValueChangeListener === 'function') GM_addValueChangeListener(EM_KEY, (k, o, n, remote) => { if (remote) { EM = emLoad(); emRender(); ensureLauncher(); } });
+function emAdd(ent) {
+    if (!ent || !EM_TYPES.some(x => x[0] === ent.type) || !/^[0-9a-f-]{36}$/i.test(ent.gid || '')) return 'bad';
+    return emEdit(() => {
+        const t = emT(ent.type);
+        if (emHas(t, ent.gid)) return 'dup';
+        t.pool.push({ gid: ent.gid, name: ent.name || ent.gid, dis: ent.dis || '' });
+        return 'ok';
+    });
+}
+document.addEventListener('mbu-fusion-add', e => {
+    if (e.defaultPrevented) return;
+    e.preventDefault();
+    let d = e.detail; try { if (typeof d === 'string') d = JSON.parse(d); } catch (x) { d = null; }
+    const r = emAdd(d), label = (EM_TYPES.find(x => x[0] === (d && d.type)) || [, 'entities'])[1].toLowerCase();
+    if (r === 'ok') { Log.info('Merge pool: added ' + d.type + ' ' + d.gid + ' (' + d.name + ')'); mbuToast('Added to Fusion’s ' + label + ' pool'); }
+    else if (r === 'dup') mbuToast('Already in Fusion’s ' + label);
+    else Log.warn('mbu-fusion-add: not a mergeable entity');
+});
+async function emAddByUrl(text) {
+    const m = (text || '').match(EM_TYPE_RE) || ((text || '').match(/^\s*([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\s*$/i) ? [null, EM_TYPE, text.trim()] : null);
+    if (!m) { mbuToast('Paste a MusicBrainz entity URL or MBID'); return; }
+    const type = m[1].toLowerCase(), gid = m[2].toLowerCase();
+    let name = gid, dis = '';
+    try { const j = await wsGet('/ws/2/' + type + '/' + gid + '?fmt=json'); name = j.title || j.name || gid; dis = j.disambiguation || ''; }
+    catch (e) { Log.warn('Merge pool: could not read ' + type + ' ' + gid + ': ' + e.message); mbuToast('Not found: ' + gid); return; }
+    EM_TYPE = type;
+    const r = emAdd({ type, gid, name, dis });
+    if (r === 'dup') mbuToast('Already here');
+}
+function emMerge(type, gid) {
+    const t = emT(type), g = t.groups.find(x => x.id === gid);
+    if (!g || EM_BUSY.has(g.id) || g.state === 'done' || g.members.length < 2) return Promise.resolve();
+    const target = g.members.some(x => x.gid === g.target) ? g.target : g.members[0].gid;
+    const strategy = g.strategy, note = (g.note || '').trim(), members = g.members.map(x => x.gid);
+    EM_BUSY.add(g.id); emRender();
+    Log.info('▶ Merge ' + type + ' group ' + g.id + ': ' + g.members.map(x => x.name + (x.gid === target ? ' (kept)' : '')).join(', '));
+    Log.keep();
+    const set = patch => emEdit(() => { const h = emT(type).groups.find(x => x.id === g.id); if (h) Object.assign(h, patch); });
+    return (async () => {
+        const ids = await ensureInternalIds(members);
+        const targetId = ids[members.indexOf(target)];
+        return withMergeLock(async () => {
+            const gr = await gmGet(location.origin + '/' + type + '/merge_queue?' + ids.map(id => 'add-to-merge=' + id).join('&'), { Accept: 'text/html' });
+            if (gr.status < 200 || gr.status >= 400) throw new Error('merge_queue GET failed: HTTP ' + gr.status);
+            const mergeUrl = gr.finalUrl || (location.origin + '/' + type + '/merge');
+            // keep what MB's form fills in (a release's medium order, say), then set the members, the target and the note
+            const form = [...new DOMParser().parseFromString(gr.responseText || '', 'text/html').querySelectorAll('form')].find(f => f.querySelector('[name="merge.target"]'));
+            if (!form) throw new Error('MB did not show its merge form — are you logged in?');
+            const body = new URLSearchParams();
+            for (const f of form.querySelectorAll('input[name],select[name],textarea[name]')) {
+                if (/^merge\.(merging\.\d+|target|edit_note|make_votable)$/.test(f.name)) continue;
+                if ((f.type === 'radio' || f.type === 'checkbox') && !f.checked) continue;
+                if (f.type === 'submit' || f.type === 'button') continue;
+                if (f.name === 'merge.merge_strategy' && strategy) continue;
+                // append: every release's mediums start at 1, and MB's page renumbers them in JS; do the same, in form order
+                const mp = f.name.match(/^merge\.medium_positions\.map\.(\d+)\.position$/);
+                if (mp && strategy !== '2') { body.append(f.name, String(+mp[1] + 1)); continue; }
+                body.append(f.name, f.tagName === 'SELECT' ? (f.value || (f.options[0] && f.options[0].value) || '') : f.value);
+            }
+            if (strategy) body.append('merge.merge_strategy', strategy);
+            ids.forEach((id, i) => body.append('merge.merging.' + i, String(id)));
+            body.append('merge.target', String(targetId));
+            body.append('merge.edit_note', note || 'Merged with Fusion.');
+            const pr = await gmPost(mergeUrl, body.toString(), { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'text/html', Referer: mergeUrl, Origin: location.origin });
+            if (pr.status >= 400) throw new Error('merge POST failed: HTTP ' + pr.status);
+            const landed = pr.finalUrl || '', lm = landed.match(EM_TYPE_RE);
+            Log.info('  POST landed at ' + landed);
+            if (!lm || lm[1].toLowerCase() !== type) {
+                // the form's own messages; the page's banners (unsupported browser, …) say nothing about the merge
+                const doc = new DOMParser().parseFromString(pr.responseText || '', 'text/html');
+                const err = [...doc.querySelectorAll('#page form .error, #page form .errors li, #page .error:not(.banner)')].map(x => x.textContent.trim()).filter(Boolean).join(' · ');
+                Log.warn('  merge page said: ' + (err || '(nothing)') + ' — fields sent: ' + [...body.keys()].join(', '));
+                throw new Error(err ? err.trim().slice(0, 300) : 'MB did not create the merge (landed on ' + (landed || 'an unknown page') + ')');
+            }
+            return landed;
+        });
+    })().then(url => { Log.ok('✓ Merged ' + type + ' group → ' + url); set({ state: 'done', error: null, mergedUrl: url }); },
+        e => { Log.error('✗ Merge failed for ' + type + ' group: ' + e.message); set({ state: 'error', error: e.message }); })
+        .finally(() => { EM_BUSY.delete(g.id); emRender(); });
+}
+function emStyle() {
+    if (document.getElementById('fs-em-style')) return;
+    const s = el('style'); s.id = 'fs-em-style';
+    s.textContent = '.fs-em-tabs{display:flex;flex-wrap:wrap;gap:4px;padding:8px 12px;border-bottom:1px solid var(--fs-border);background:var(--fs-panel)}'
+        + '.fs-em-tabs .fs-btn.fs-on{background:var(--fs-purple);color:var(--mbu-text-on-accent);border-color:var(--fs-purple)}'
+        + '.fs-em-tabs .fs-btn i{font-style:normal;opacity:.75;margin-left:4px}'
+        + '.fs-em-row{display:flex;align-items:center;gap:6px;padding:5px 8px;border-bottom:1px solid var(--fs-border)}'
+        + '.fs-em-row:last-child{border-bottom:0}.fs-em-row a{color:var(--fs-text);text-decoration:none;font-weight:600}.fs-em-row a:hover{text-decoration:underline}'
+        + '.fs-em-dis{color:var(--fs-muted);font-size:12px}.fs-em-grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
+        + '.fs-em-x,.fs-em-star{background:none;border:0;cursor:pointer;color:var(--fs-muted);font-size:14px;padding:2px 5px}.fs-em-x:hover{color:var(--fs-red)}'
+        + '.fs-em-star.fs-on{color:var(--fs-amber)}.fs-em-star:hover{color:var(--fs-amber)}'
+        + '.fs-em-g{border:1px solid var(--fs-border);border-radius:var(--mbu-radius);margin:0 0 10px;background:var(--fs-panel)}'
+        + '.fs-em-g.fs-active{border-color:var(--fs-purple)}.fs-em-g.fs-em-done{opacity:.7}'
+        + '.fs-em-gh{display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid var(--fs-border);cursor:pointer}'
+        + '.fs-em-gf{display:flex;align-items:center;gap:6px;padding:6px 8px;border-top:1px solid var(--fs-border)}'
+        + '.fs-em-gf input{flex:1;min-width:0;padding:4px 6px;border:1px solid var(--fs-border);border-radius:var(--mbu-radius);background:var(--fs-bg);color:var(--fs-text)}'
+        + '.fs-em-gf select{padding:3px;border:1px solid var(--fs-border);border-radius:var(--mbu-radius);background:var(--fs-bg);color:var(--fs-text)}'
+        + '.fs-em-err{color:var(--fs-red);font-size:12px;padding:4px 8px}.fs-em-ok{color:var(--fs-green);font-size:12px}'
+        + '.fs-em-empty{color:var(--fs-muted);padding:16px;text-align:center}'
+        + '.fs-em-add{background:none;border:0;cursor:pointer;color:var(--fs-purple);font-size:13px;padding:2px 5px}';
+    document.head.appendChild(s);
+}
+function emRender() {
+    const ov = document.getElementById('fs-em-overlay'); if (!ov) return;
+    const t = emT(EM_TYPE), label = EM_TYPES.find(x => x[0] === EM_TYPE)[1];
+    const cnt = type => { const u = EM.types[type]; return u ? u.pool.length + u.groups.filter(g => g.state !== 'done').length : 0; };
+    ov.querySelector('.fs-em-tabs').innerHTML = EM_TYPES.map(([k, l]) => '<button type="button" class="fs-btn' + (k === EM_TYPE ? ' fs-on' : '') + '" data-tab="' + k + '">' + l + (cnt(k) ? '<i>' + cnt(k) + '</i>' : '') + '</button>').join('');
+    const link = x => '<a href="/' + EM_TYPE + '/' + x.gid + '" target="_blank" rel="noopener">' + escapeHtml(x.name) + '</a>' + (x.dis ? ' <span class="fs-em-dis">(' + escapeHtml(x.dis) + ')</span>' : '');
+    const cur = t.groups.find(g => g.id === t.current && g.state !== 'done');
+    ov.querySelector('#fs-em-pool-cnt').textContent = t.pool.length;
+    ov.querySelector('#fs-em-pool').innerHTML = t.pool.length ? t.pool.map(x => '<div class="fs-em-row" data-gid="' + x.gid + '"><span class="fs-em-grow">' + link(x) + '</span>'
+        + '<button type="button" class="fs-em-add" data-act="to" data-tip="' + (cur ? 'Add to the current group' : 'Start a new group with it') + '">→</button>'
+        + '<button type="button" class="fs-em-x" data-act="unpool" data-tip="Remove from the pool">✕</button></div>').join('')
+        : '<div class="fs-em-empty">No ' + label.toLowerCase() + ' yet.<br>Add them with Event Horizon’s “Add to Fusion pool”, or paste a URL above.</div>';
+    const open = t.groups.filter(g => g.state !== 'done');
+    ov.querySelector('#fs-em-groups-cnt').textContent = open.length;
+    ov.querySelector('#fs-em-groups').innerHTML = t.groups.length ? t.groups.map((g, i) => {
+        const busy = EM_BUSY.has(g.id), done = g.state === 'done', target = g.members.some(x => x.gid === g.target) ? g.target : (g.members[0] || {}).gid;
+        return '<div class="fs-em-g' + (g.id === t.current && !done ? ' fs-active' : '') + (done ? ' fs-em-done' : '') + '" data-g="' + g.id + '">'
+            + '<div class="fs-em-gh" data-act="pick" data-tip="Make it the current group\nThe pool’s → adds to it.">Group ' + (i + 1) + ' <span class="fs-cnt">' + g.members.length + '</span><span class="fs-sp"></span>'
+            + (done ? '<span class="fs-em-ok">✓ merged' + (g.mergedUrl ? ' · <a href="' + escapeHtml(g.mergedUrl) + '" target="_blank" rel="noopener">view</a>' : '') + '</span>'
+                : '<button type="button" class="fs-btn fs-primary" data-act="merge"' + (busy || g.members.length < 2 ? ' disabled' : '') + '>' + (busy ? 'Merging…' : 'Merge →') + '</button>')
+            + '<button type="button" class="fs-em-x" data-act="dissolve" data-tip="' + (done ? 'Remove this group' : 'Dissolve the group\nIts members go back to the pool.') + '">✕</button></div>'
+            + g.members.map(x => '<div class="fs-em-row" data-gid="' + x.gid + '">'
+                + (done ? '' : '<button type="button" class="fs-em-star' + (x.gid === target ? ' fs-on' : '') + '" data-act="target" data-tip="' + (x.gid === target ? 'The one kept' : 'Keep this one') + '">★</button>')
+                + '<span class="fs-em-grow">' + link(x) + '</span>'
+                + (done ? '' : '<button type="button" class="fs-em-x" data-act="ungroup" data-tip="Back to the pool">✕</button>') + '</div>').join('')
+            + (g.error && !done ? '<div class="fs-em-err">' + escapeHtml(g.error) + '</div>' : '')
+            + (done ? '' : '<div class="fs-em-gf"><input type="text" data-note placeholder="Edit note (optional)" value="' + escapeHtml(g.note || '') + '">'
+                + (EM_TYPE === 'release' ? '<select data-strategy data-tip="How the releases’ mediums combine"><option value="1"' + (g.strategy !== '2' ? ' selected' : '') + '>Append mediums</option><option value="2"' + (g.strategy === '2' ? ' selected' : '') + '>Merge mediums</option></select>' : '') + '</div>')
+            + '</div>';
+    }).join('') : '<div class="fs-em-empty">No groups. Use → on a pool entry to start one.</div>';
+    const ready = open.filter(g => g.members.length > 1 && !EM_BUSY.has(g.id)).length;
+    const all = ov.querySelector('#fs-em-mergeall'); all.disabled = !ready; all.textContent = 'Merge All' + (ready ? ' (' + ready + ')' : '') + ' →';
+}
+function openEntities(type) {
+    closeFusion();
+    emStyle(); fsStyle();
+    EM = emLoad();
+    const here = (location.pathname.match(EM_TYPE_RE) || [])[1];
+    EM_TYPE = type || EM_TYPE || (here && here.toLowerCase()) || (EM_TYPES.find(([k]) => EM.types[k] && (EM.types[k].pool.length || EM.types[k].groups.length)) || EM_TYPES[0])[0];
+    document.getElementById('fs-em-overlay')?.remove();
+    const ov = el('div', 'fs-overlay'); ov.id = 'fs-em-overlay';
+    ov.innerHTML = '<div class="fs-cons"><div class="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge entities</div><div class="fs-sp"></div>'
+        + '<button class="fs-cons-x" id="fs-em-cfg" type="button" data-tip="Fusion\nOptions, the log, help">' + MBU_CFG_ICON + '</button><button class="fs-cons-x" id="fs-em-close" type="button" data-tip="Close">✕</button></div>'
+        + '<div class="fs-em-tabs"></div>'
+        + '<div class="fs-ctrl"><input type="text" id="fs-em-input" placeholder="paste an entity URL or MBID…" data-tip="Add to the pool\nPaste a MusicBrainz URL of any mergeable entity, or an MBID of the open tab’s type."><div class="fs-sp"></div></div>'
+        + '<div class="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-em-pool-cnt">0</span><span class="fs-sp"></span><button type="button" class="fs-btn" data-act="newgroup" data-tip="Put the whole pool in one new group">Group all</button></div><div class="fs-colbody" id="fs-em-pool"></div></div>'
+        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-em-groups-cnt">0</span><span class="fs-sp"></span><button type="button" class="fs-btn" data-act="clearmerged" data-tip="Remove the merged groups">Clear merged</button></div><div class="fs-colbody" id="fs-em-groups"></div></div></div>'
+        + '<div class="fs-ftr"><div class="fs-sp"></div><div class="fs-note">Merges submit directly in the background — no MB merge page involved</div><button type="button" id="fs-em-mergeall" class="fs-btn fs-primary">Merge All →</button></div></div>';
+    document.body.appendChild(ov);
+    const close = () => { ov.remove(); document.removeEventListener('keydown', esc); };
+    const esc = e => { if (e.key === 'Escape' && !document.getElementById('fs-settings')) close(); };
+    document.addEventListener('keydown', esc);
+    ov.addEventListener('mousedown', e => { if (e.target === ov) close(); });
+    ov.querySelector('#fs-em-close').onclick = close;
+    ov.querySelector('#fs-em-cfg').onclick = e => openSettings(e.currentTarget);
+    const input = ov.querySelector('#fs-em-input');
+    input.addEventListener('paste', () => setTimeout(() => { emAddByUrl(input.value); input.value = ''; }, 0));
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') { emAddByUrl(input.value); input.value = ''; } });
+    ov.querySelector('#fs-em-mergeall').onclick = async () => {
+        const ids = emT(EM_TYPE).groups.filter(g => g.state !== 'done' && g.members.length > 1).map(g => g.id), type = EM_TYPE;
+        for (const id of ids) await emMerge(type, id);
+    };
+    ov.addEventListener('change', e => {
+        const gEl = e.target.closest('[data-g]'); if (!gEl) return;
+        const key = e.target.hasAttribute('data-note') ? 'note' : e.target.hasAttribute('data-strategy') ? 'strategy' : null; if (!key) return;
+        emEdit(() => { const g = emT(EM_TYPE).groups.find(x => x.id === gEl.dataset.g); if (g) g[key] = e.target.value; });
+    });
+    ov.addEventListener('click', e => {
+        const tab = e.target.closest('[data-tab]'); if (tab) { EM_TYPE = tab.dataset.tab; emRender(); return; }
+        const b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
+        const act = b.dataset.act, gid = (b.closest('[data-gid]') || {}).dataset?.gid, gk = (b.closest('[data-g]') || {}).dataset?.g;
+        if (act === 'merge') { emMerge(EM_TYPE, gk); return; }
+        emEdit(() => {
+            const t = emT(EM_TYPE), g = t.groups.find(x => x.id === gk);
+            if (act === 'unpool') t.pool = t.pool.filter(x => x.gid !== gid);
+            else if (act === 'to') {
+                const ent = t.pool.find(x => x.gid === gid); if (!ent) return;
+                let to = t.groups.find(x => x.id === t.current && x.state !== 'done');
+                if (!to) { to = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), members: [], target: gid, note: '' }; t.groups.push(to); t.current = to.id; }
+                to.members.push(ent); t.pool = t.pool.filter(x => x.gid !== gid);
+            } else if (act === 'newgroup') {
+                if (!t.pool.length) return;
+                const ng = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), members: t.pool, target: t.pool[0].gid, note: '' };
+                t.groups.push(ng); t.current = ng.id; t.pool = [];
+            } else if (act === 'clearmerged') t.groups = t.groups.filter(x => x.state !== 'done');
+            else if (!g) return;
+            else if (act === 'pick') { if (g.state !== 'done' && !e.target.closest('a,button')) t.current = g.id; }
+            else if (act === 'target') { g.target = gid; }
+            else if (act === 'ungroup') { const ent = g.members.find(x => x.gid === gid); g.members = g.members.filter(x => x.gid !== gid); if (ent) t.pool.push(ent); g.state = g.state === 'error' ? null : g.state; if (!g.members.length) t.groups = t.groups.filter(x => x !== g); }
+            else if (act === 'dissolve') { if (g.state !== 'done') t.pool.push(...g.members); t.groups = t.groups.filter(x => x !== g); if (t.current === g.id) t.current = null; }
+        });
+    });
+    emRender();
+}
+// the launcher: the recording board on its pages, the entity board anywhere once it holds something
 function boot() {
     Log.info('Fusion v' + VERSION + ' — startup on ' + location.pathname);
+    document.documentElement.dataset.mbuFusion = '1';
+    document.dispatchEvent(new CustomEvent('mbu-fusion-ready'));
     ensureLauncher();
     // reopen the log window if it was left open (same as apollo_editor #283)
     setTimeout(() => { try { Log.reopen(); } catch (e) {} }, 800);   // #283 reopen the log if it was left open

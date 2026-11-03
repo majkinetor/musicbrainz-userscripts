@@ -8617,6 +8617,25 @@ function starButton(app) {
         save(); paint();
     });
 }
+// #908: Fusion keeps a merge pool per entity type; the button shows only while Fusion runs on the page
+const FUSE = '<circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/>';
+function fusionButton(app) {
+    const m = location.pathname.match(/^\/(release-group|release|artist|label|recording|work|area|instrument|place|series|event)\/([0-9a-f-]{36})(?:\/|$)/i);
+    const acts = app && app.querySelector('.kicker .acts'), r = data && (data.rel || data.g || data.t);
+    if (!m || !acts || !r || acts.querySelector('[data-fusion]') || !document.documentElement.dataset.mbuFusion) return;
+    const name = r.title || r.name || r.en; if (!name) return;
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'ab'; btn.dataset.fusion = '1';
+    btn.setAttribute('aria-label', 'Add to Fusion pool'); btn.dataset.tip = 'Add to Fusion pool\nCollect entities to merge, then group them in Fusion’s window.';
+    btn.innerHTML = SVG(FUSE);
+    const star = acts.querySelector('[data-star]'), search = acts.querySelector('.srch,[data-srch]');
+    if (star) star.after(btn); else if (search) search.before(btn); else acts.append(btn);
+    btn.addEventListener('click', () => {
+        const ev = new CustomEvent('mbu-fusion-add', { cancelable: true, detail: JSON.stringify({ type: m[1].toLowerCase(), gid: m[2].toLowerCase(), name, dis: r.dis || r.comment || '' }) });
+        document.dispatchEvent(ev);
+        if (!ev.defaultPrevented) toast('Fusion is not running');
+    });
+}
+document.addEventListener('mbu-fusion-ready', () => fusionButton(document.querySelector('.kicker') && document.querySelector('.kicker').closest('#app, main, body')));
 const hmChip = (href, name, ic) => `<a class="hm-chip" href="${href}">${SVG(ic)}<span>${name}</span></a>`;
 // the pages last opened here, newest first
 const visits = () => { try { return GM_getValue('visits', []) || []; } catch (e) { return []; } };
@@ -9164,6 +9183,7 @@ function secRail(app) {
     }
     rail.hidden = secs.length < 2 && !secs.some(x => x.hidden);
     starButton(app);
+    fusionButton(app);
     collectionButton(app);
     const acts = app.querySelector('.kicker .acts');
     if (acts && !rail.hidden && !acts.querySelector('[data-ehsec]')) {
