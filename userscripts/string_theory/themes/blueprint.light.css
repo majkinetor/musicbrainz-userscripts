@@ -873,3 +873,18 @@ html:root[data-eh-theme] .tl .tr:hover,
 html:root[data-eh-theme] .tl.striped .tr.alt:hover {
 	background: color-mix(in srgb, var(--link) 4%, var(--surface));
 }
+
+/* external links editor: new/changed/removed links get a theme tint, not MB's light highlight */
+#external-links-editor :is(.rel-add, .rel-edit, .rel-remove),
+#external-links-editor :is(.rel-add, .rel-edit, .rel-remove) :is(a, input, select) {
+	color: var(--text) !important;
+}
+#external-links-editor .rel-add, #external-links-editor .rel-add :is(input, select) {
+	background: color-mix(in srgb, #3fb96b 22%, var(--background, transparent)) !important;
+}
+#external-links-editor .rel-edit, #external-links-editor .rel-edit :is(input, select) {
+	background: color-mix(in srgb, #e0b040 22%, var(--background, transparent)) !important;
+}
+#external-links-editor .rel-remove, #external-links-editor .rel-remove :is(input, select) {
+	background: color-mix(in srgb, #e05a6a 22%, var(--background, transparent)) !important;
+}
