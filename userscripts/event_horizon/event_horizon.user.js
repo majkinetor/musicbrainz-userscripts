@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.03.150000
+// @version      2026.11.03.160000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2422,7 +2422,7 @@ body{position:relative;isolation:isolate;overflow-x:clip}
 body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;pointer-events:none}
 #eh-aura{display:none;position:absolute;left:-210px;top:-210px;width:calc(100% + 420px);max-width:none;height:1040px;z-index:-1;pointer-events:none;opacity:.4;transform:scale(1.15);-webkit-mask-image:linear-gradient(#000 41%,transparent 80%);mask-image:linear-gradient(#000 41%,transparent 80%)}
 :root[data-eh-bg=aura][data-eh-aura] #eh-aura{display:block}
-@media (max-width:700px){#eh-aura{left:0;width:100%;transform:none}}   /* past the edges it widened a phone's page by 270px */
+@media (max-width:700px){#eh-aura{left:0;width:var(--eh-aura-w,100%);transform:none}}   /* past the edges it widened a phone's page by 270px */
 :root[data-eh-bg=aura][data-eh-theme=dark] #eh-aura{opacity:.28}
 :root:is([data-eh-bg=glow],[data-eh-bg=aura]:not([data-eh-aura])) body{background:radial-gradient(900px 520px at 100% 0,color-mix(in srgb,var(--accent2) 18%,transparent),transparent 70%) no-repeat,radial-gradient(800px 480px at 72% 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%) no-repeat,var(--eh-page)}
 :root[data-eh-bg=band] body::before{content:"";height:400px;background:linear-gradient(100deg,color-mix(in srgb,var(--accent) 11%,var(--eh-page)),color-mix(in srgb,var(--accent2) 11%,var(--eh-page)));border-bottom:1px solid color-mix(in srgb,var(--accent) 14%,var(--eh-page))}
@@ -7552,7 +7552,29 @@ function bgApply() {
             cv.dataset.src = src; cv.dataset.width = String(width);
         }
         de.setAttribute('data-eh-aura', '');
+        auraWidth();
     });
+}
+// a phone: as wide as the widest of the page, the layout viewport and what the screen shows
+function auraWidth() {
+    const de = document.documentElement, vv = window.visualViewport;
+    const w = PIN_NARROW.matches ? Math.ceil(Math.max(de.scrollWidth, de.clientWidth, innerWidth, vv ? vv.width : 0)) : 0;
+    if (w) de.style.setProperty('--eh-aura-w', w + 'px'); else de.style.removeProperty('--eh-aura-w');
+}
+window.visualViewport?.addEventListener('resize', () => { if (document.getElementById('eh-aura')) auraWidth(); });
+// a phone: the page's widths, the text size and whatever sticks out past the right edge go in the log, to reproduce a layout
+let phoneSeen = '';
+function phoneDiag(when) {
+    if (!PIN_NARROW.matches) return;
+    const de = document.documentElement, vv = window.visualViewport, cw = de.clientWidth, px = n => Math.round(n);
+    const rect = el => { if (!el) return '-'; const r = el.getBoundingClientRect(); return px(r.left) + '..' + px(r.right) + ' (' + px(r.width) + ')'; };
+    const over = [...document.querySelectorAll('body *')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.right > cw + 1 && getComputedStyle(e).position !== 'fixed' && !e.closest('#eh-pin'); });
+    const top = over.filter(e => !over.includes(e.parentElement)).slice(0, 8).map(e => e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + (e.classList.length ? '.' + [...e.classList].slice(0, 3).join('.') : '') + ' ' + rect(e) + (e.textContent ? ' "' + e.textContent.trim().slice(0, 24) + '"' : ''));
+    const line = 'phone layout (' + when + '): window ' + innerWidth + ', page ' + cw + ' (scroll ' + de.scrollWidth + '), shown ' + (vv ? px(vv.width) + ' at ' + Math.round(vv.scale * 100) / 100 + '×' : '?') + ', screen ' + screen.width + ' @' + devicePixelRatio
+        + ', text ' + getComputedStyle(de).fontSize + ' / body ' + getComputedStyle(document.body).fontSize + ', app ' + rect(document.getElementById('app')) + ', aura ' + rect(document.getElementById('eh-aura'))
+        + ', past the right edge: ' + (top.length ? top.join('; ') : 'nothing');
+    if (line === phoneSeen) return;
+    phoneSeen = line; LOG.info(line);
 }
 let data = null;
 const imgKey = new WeakMap();
@@ -8642,6 +8664,7 @@ function pinBar(app) {
         railPlace();
         requestAnimationFrame(railSpy);
         LOG.debug('pinned header ' + (pin ? 'shown' : 'hidden'));
+        setTimeout(() => phoneDiag(pin ? 'pinned bar shown' : 'at the top'), 600);
     });
     pinIo.observe(kick);   // the bar comes in as soon as the action row leaves the screen
     actsFit(acts);
