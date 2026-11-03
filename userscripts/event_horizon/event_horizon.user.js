@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.002000
+// @version      2026.11.04.005000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2380,7 +2380,7 @@ const CSS = `
 .tgx-tb{display:inline-flex;gap:6px;white-space:nowrap}.u-hero.tgx-hero{grid-template-columns:auto minmax(0,1fr)}.tgx-l .comment{color:var(--muted)}
 .rt-l li>.stars,.tgx-c>.stars{flex:none;font-size:14px;letter-spacing:1px;line-height:1}.tg-bar .seg button[disabled]{opacity:.4;cursor:default}.u-hero .tg-tools{margin:12px 0 0}
 .tg-tools{display:flex;margin:0 0 14px}.secthead>.tg-tools{margin:0;flex:1;justify-content:flex-end}.secthead>.tg-tools>.tg-bar{justify-content:flex-end}.tg-tools>.tg-bar{flex:1}
-.secthead>.tg-new{position:relative;display:inline-flex;align-items:center;gap:6px;margin-left:10px;flex:none}.secthead>.tg-tools>.tg-bar{flex-wrap:nowrap}
+#s-tg>.tg-new{position:relative;display:flex;align-items:center;gap:6px;margin:0 0 14px;max-width:560px}#s-tg>.tg-new>.tg-tok{flex:1 1 auto;min-width:0;max-width:none}#s-tg>.tg-new>.tg-tok input{flex:1 0 110px;background:none!important;color:var(--text)!important}.secthead>.tg-tools>.tg-bar{flex-wrap:nowrap}
 .tg-tok{display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;height:32px;box-sizing:border-box;max-width:min(460px,34vw);overflow-x:auto;scrollbar-width:none;padding:2px 4px 2px 6px;border:1px solid var(--accent);border-radius:9px;background:var(--surface)}.tg-tok input{all:unset;width:110px;flex:none;font-size:13px;color:var(--text)}
 .tg-tk{flex:none;white-space:nowrap;display:inline-flex;align-items:center;gap:2px;font-size:13px;font-weight:600;background:var(--chip);border-radius:12px;padding:1px 2px 1px 9px}.tg-tk button{all:unset;cursor:pointer;color:var(--muted);padding:0 5px}.tg-tk button:hover{color:var(--text)}
 .tg-th{all:unset;cursor:pointer;font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit}.tg-th:hover{color:var(--accent)}
@@ -7078,7 +7078,7 @@ function tagsHtml(d) {
         + `<p class="u-sub">${sub}</p>${back ? `<nav class="u-tabs">${back}</nav>` : ''}</div></section>`;
     const [ty, eid] = d.ent ? d.ent.split(':') : [];
     const head = d.ent ? `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Tags · ' + (HM_KIND[ty] || [ty])[0], title: t && (t.en || t.name), disamb: t && t.ed, by: t && t.by, acts: entActs(ty, eid, 'tags') })}</section>` : hero;
-    return head + `<section class="sec" id="s-tg"><div class="secthead"><h2>Tags${t ? ` <span class="count">${fmtN(all.length)}</span>` : ''}</h2>${d.ent && ME ? `<span class="tg-new">${tgNew(d)}</span>` : ''}<div class="tools tg-tools">${tgTools(d)}</div></div><div id="tg-body">${tgBody(d)}</div></section>`;
+    return head + `<section class="sec" id="s-tg"><div class="secthead"><h2>Tags${t ? ` <span class="count">${fmtN(all.length)}</span>` : ''}</h2><div class="tools tg-tools">${tgTools(d)}</div></div>${d.ent && ME ? `<div class="tg-new">${tgNew(d)}</div>` : ''}<div id="tg-body">${tgBody(d)}</div></section>`;
 }
 const TG_PLUS = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
 function tgNew(d) {
