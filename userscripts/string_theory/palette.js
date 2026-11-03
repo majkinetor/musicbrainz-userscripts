@@ -431,6 +431,8 @@ function stPalette() {
   ov.addEventListener('mousedown', function (e) { if (e.target === ov) { e.preventDefault(); close(); } });
   input.value = stPalRead().last;
   render(!!input.value);   // the text left from last time previews nothing until it changes
+  active = -1;   // nothing chosen on open: the first arrow down picks the first row
+  Array.prototype.forEach.call(list.querySelectorAll('.st-pal-i'), function (el) { el.setAttribute('aria-selected', 'false'); });
   input.focus();
   input.select();
 }
