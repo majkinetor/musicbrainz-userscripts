@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.03.183723
+// @version      2026.11.03.200000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -9014,7 +9014,9 @@ const discKey = href => {
     return t ? 'toc/' + t[1] : null;
 };
 const keyOf = href => navTo(href) || artKey(href) || discKey(href) || histKey(href) || relKey(href) || formKey(href);
-const PAGE_ID = keyOf(location.href);
+// let: the seed confirmation page (another site seeding the release editor, a POST to /release/add or …/edit) shares
+// the editor's address, so it gets its key, "form/seed/-/confirm", only once its .confirm-seed form is in the page
+let PAGE_ID = keyOf(location.href);
 
 /* ── cover-art page ────────────────────────────────── */
 
@@ -9323,6 +9325,12 @@ function formHeader(key) {
     const [, type, id, form] = key.split('/');
     if (type === 'release' && !['details', 'releases'].includes(form)) return relHeader(id, form, FORMS[form]);
     if (type === 'user') return userFormHeader(id, form);
+    if (type === 'seed') {
+        const hd = hdSect(), h1 = document.querySelector('#content > h1, #page > h1');
+        hd.innerHTML = `<div class="rhtx"><div class="kicker label">${mkSvg(MK_RELEASE)}<span>Release editor</span></div>${heroH1(h1 ? h1.textContent : 'Confirm form submission')}</div>`;
+        if (h1) h1.hidden = true;
+        return hd;
+    }
     if (type === 'cdtoc') {
         // the release the disc ID goes on, once one is picked: MusicBrainz names it in the question above the medium
         const name = { attach: 'Attach disc ID', move: 'Move disc ID', remove: 'Remove disc ID' }[form];
@@ -10390,8 +10398,10 @@ async function show(key, o = {}) {
         const mb = box.querySelector('[data-mbpage]'); if (mb) mb.onclick = () => switchOn(false);
     }
 }
-// /account/… pages send a CSP that blocks inline <style>: every style element mirrors into a constructed sheet, which CSP doesn't check
-if (/^\/account\//.test(location.pathname) && document.adoptedStyleSheets) {
+// /account/… pages and the seed confirmation send a CSP that blocks inline <style>: every style element mirrors into a
+// constructed sheet, which CSP doesn't check
+function cspMirror() {
+    if (!document.adoptedStyleSheets || cspMirror.on) return; cspMirror.on = true;
     const sheets = new Map(), sync = () => {
         document.querySelectorAll('style').forEach(st => { let c = sheets.get(st); if (!c) { c = { sh: new CSSStyleSheet(), t: null }; sheets.set(st, c); } if (c.t !== st.textContent) { c.t = st.textContent; try { c.sh.replaceSync(c.t); } catch (e) {} } });
         for (const st of [...sheets.keys()]) if (!st.isConnected) sheets.delete(st);
@@ -10400,10 +10410,16 @@ if (/^\/account\//.test(location.pathname) && document.adoptedStyleSheets) {
         mine.forEach(x => { x.ehMirror = 1; });
     };
     new MutationObserver(sync).observe(document, { childList: true, subtree: true, characterData: true });
+    sync();
 }
+if (/^\/account\//.test(location.pathname)) cspMirror();
 // #851: String Theory's settings open these settings on any page, whether this script runs here or not
 document.addEventListener('mbu-open-settings', e => { if (e.detail === 'event_horizon' && !e.defaultPrevented) { e.preventDefault(); if (!document.getElementById('eh-mbu')) { const m = document.createElement('style'); m.id = 'eh-mbu'; m.textContent = MBU_TOKENS + MBU_UI_CSS + CFG_CSS; document.documentElement.append(m); } if (document.getElementById('eh-cfg')) closeCfg(); else openCfg(); } });
 if (SETTINGS_ONLY) { if (!document.getElementById('eh-mbu')) { const m = document.createElement('style'); m.id = 'eh-mbu'; m.textContent = MBU_TOKENS + MBU_UI_CSS + CFG_CSS; document.documentElement.append(m); } if (document.getElementById('eh-cfg')) closeCfg(); else openCfg(); return; }
+if (!PAGE_ID && !SETTINGS_ONLY && new RegExp('^/release/(?:add|' + MBID.source + '/edit)/?$', 'i').test(location.pathname)) {
+    const seed = () => { if (!document.querySelector('.confirm-seed')) return; PAGE_ID = 'form/seed/-/confirm'; cspMirror(); start(); };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', seed); else setTimeout(seed, 0);
+}
 if (PAGE_ID) {
     // hide MusicBrainz's page before it paints; the style goes once the viewer or the page itself is shown
     if (S.on) {
