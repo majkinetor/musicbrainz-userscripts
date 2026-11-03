@@ -365,9 +365,8 @@ function stSettings(tab) {
     var menu = document.createElement('select'); menu.id = 'st-tab-menu'; menu.setAttribute('aria-label', 'Settings tab'); menu.hidden = true;
     menu.innerHTML = '<option value="g">General</option><option value="s">Sync</option><option value="a">About</option>';
     title.insertBefore(menu, help); menu.onchange = function () { q('#st-tab-' + menu.value).click(); };
-    var x = document.createElement('button'); x.type = 'button'; x.className = 'mbu-ov-x'; x.setAttribute('aria-label', 'Close settings');
-    x.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg>';
-    x.onclick = close; title.appendChild(x);
+    var x = title.querySelector('.mbu-cfg-x'); x.setAttribute('aria-label', 'Close settings');
+    x.onclick = close;
     var fitTabs = function () {
       var version = title.querySelector('.mbu-cfg-ver'), name = title.querySelector('.mbu-cfg-name');
       tabs.hidden = false; menu.hidden = true; if (version) version.hidden = false; name.hidden = false;

@@ -124,6 +124,7 @@ const CSS = [
     // the version is deliberately quiet — it is reference information, not a heading
     '.mbu-cfg-ver{flex:0 0 auto;font:400 11px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap}',
     '.mbu-cfg-sp{flex:1 1 auto;min-width:8px}',
+    '.mbu-cfg-h>.mbu-cfg-x{margin-left:2px;padding:0}.mbu-cfg-x svg{width:18px;height:18px;display:block}',
     // Log is a plain text link, NOT a button — that is how every script had it
     // (background:none, border:1px solid transparent, the border appearing only
     // on hover). I made it a bordered control and majkinetor rightly called it
@@ -663,7 +664,33 @@ function mbuCfgHeader(o) {
             + ' data-tip="Open the activity log">Log</button>';
     }
     html += mbuHelpHtml(o.script);
+    // every settings window closes from its title bar; close:false leaves the button out
+    if (o.close !== false) {
+        html += '<button type="button" class="mbu-ov-x mbu-cfg-x" aria-label="Close" data-tip="Close">'
+            + '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>';
+        mbuCfgCloseWire();
+    }
     return html + '</div>';
+}
+// The title bar's close, for every script at once: it presses Escape on the window, which each
+// settings window already closes on; a script with its own close sets the button's onclick.
+// Captured, since some windows stop clicks inside them from bubbling.
+// If the window is still showing after that, it is hidden (or its overlay removed).
+function mbuCfgCloseWire() {
+    if (document.__mbuCfgX) return;
+    document.__mbuCfgX = true;
+    document.addEventListener('click', function (e) {
+        var x = e.target.closest && e.target.closest('.mbu-cfg-x');
+        if (!x || x.onclick) return;
+        var h = x.closest('.mbu-cfg-h');
+        var win = h.closest('[role=dialog],.mbu-ov-panel') || h.parentElement;
+        x.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', keyCode: 27, bubbles: true, cancelable: true }));
+        setTimeout(function () {
+            if (!h.isConnected || !h.getClientRects().length) return;
+            var ov = win.closest('.mbu-ov');
+            if (ov) ov.remove(); else win.style.display = 'none';
+        }, 60);
+    }, true);
 }
 
 // Settings controls: in root, every <select> becomes the pill drop-down and every number field the
