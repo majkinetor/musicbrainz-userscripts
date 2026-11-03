@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.02.203439
+// @version      2026.11.03
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -13968,6 +13968,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-rg-seg.off{opacity:.6}
     .tc-rg-seg.off > button{cursor:default;background:none}
     .tc-rg-seg.off > button.on{background:var(--mbu-accent-soft)}
+    .tc-rg-seg.fold,form.tc-ent-form .tc-rg-seg.fold{display:inline-flex;width:auto}
+    .tc-rg-seg.fold.multi > button{border:0;border-left:1px solid var(--mbu-border);border-top:1px solid var(--mbu-border);margin:-1px 0 0 -1px;box-shadow:none;padding:1px 8px;justify-content:center}
+    .tc-rg-seg.fold.fit > button{flex:0 0 auto;padding:1px 8px}
+    #release-editor #information div.half-width .tc-rg-seg.fold > button{margin:-1px 0 0 -1px}
+    .tc-rg-seg > button.tc-rg-more{padding:1px 7px;color:var(--mbu-text-dim);font-weight:400;background:none}
+    .tc-rg-seg > button.tc-rg-more:hover{color:var(--mbu-text);background:var(--mbu-bg-hover)}
+    .tc-rg-seg.tc-rg-extra{display:flex;width:fit-content;margin-top:4px;border-style:dashed}
     body.tc-ri-on #release-editor #information td:has(> #primary-type){position:relative}
     body.tc-ri-on #release-editor #information #primary-type{position:absolute!important;inset:0;width:100%!important;height:100%!important;opacity:0;pointer-events:none}   /* kept in place: Mammoth's pin sits on it, right of the bar */
     body.tc-ri-on #release-editor #information #secondary-types,body.tc-ri-on #release-editor #information #status{display:none!important}
@@ -15371,21 +15378,35 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     tr.appendChild(document.createElement('td')).className = 'release-artist';
     ace.before(tbl);
   }
+  // the common secondary types and statuses stay in view; the rest fold behind "+N". By MusicBrainz's ids (the labels are translated):
+  // secondary 1 Compilation, 7 Remix, 2 Soundtrack, 6 Live, 8 DJ-mix | 9 Mixtape/Street, 10 Demo, 3 Spokenword, 4 Interview, 5 Audiobook, 12 Field recording, 11 Audio drama
+  // status 1 Official, 2 Promotion, 3 Bootleg, 4 Pseudo-Release | 5 Withdrawn, 38 Expunged, 6 Cancelled
+  // a function, not a const: the bars can be drawn before this line runs
+  function rgFold(kind) {
+    return kind === 'status' ? { common: ['1', '2', '3', '4'], rare: ['5', '38', '6'] }
+      : { common: ['1', '7', '2', '6', '8'], rare: ['9', '10', '3', '4', '5', '12', '11'] };
+  }
   // Primary and secondary type as segmented bars; the selects stay the form's fields, the bars only set them.
   // Called again it repaints: Knockout sets the release editor's selects without a change event, and disables them under an existing release group
   // defKey: right-clicking a button makes it the default (toggles it among several on a multi bar), stored under that key as comma-joined values and applied to a new release
   // fit: a wide row of its own, Pseudo-Release (status 4, by value: its label is translated) cut to its first word
-  function rgTypeBar(sel, multi, defKey, fit) {
+  // fold: { common, rare } option values; only the common ones show, the rest sit behind a "+N" button that opens them in a row below.
+  //   A selected rare one joins the main row, so a closed bar stays one line; while open, nothing moves out from under the pointer
+  function rgTypeBar(sel, multi, defKey, fit, fold) {
     if (!sel) return;
     if (sel._tcBar) { sel._tcBar._paint(); return; }
     if (sel.options.length < 2) return;   // Knockout hasn't filled it yet
-    const old = sel.parentNode.querySelector(':scope > .tc-rg-seg'); if (old) old.remove();   // Knockout replaced the select
-    const bar = document.createElement('div'); bar.className = 'tc-rg-seg mbu-ui' + (multi ? ' multi' : '') + (fit ? ' fit' : '');
+    const old = sel.parentNode.querySelector(':scope > .tc-rg-seg');   // Knockout replaced the select
+    if (old) { const nx = old.nextElementSibling; if (nx && nx.classList.contains('tc-rg-extra')) nx.remove(); old.remove(); }
+    const bar = document.createElement('div'); bar.className = 'tc-rg-seg mbu-ui' + (multi ? ' multi' : '') + (fit ? ' fit' : '') + (fold ? ' fold' : '');
     const opt = b => [...sel.options].find(x => x.value === b.dataset.v);
     const defs = () => defKey ? String(gmLoad(defKey) || '').split(',').filter(Boolean) : [];
+    const btns = [];
+    let layout = () => {};
     const paint = () => {
       mbuCls(bar, 'off', sel.disabled);
-      bar.querySelectorAll('button').forEach(b => { const o = opt(b); mbuCls(b, 'on', !!(o && o.selected)); mbuCls(b, 'def', defs().includes(b.dataset.v)); if (b.disabled !== sel.disabled) b.disabled = sel.disabled; });
+      layout();
+      btns.forEach(b => { const o = opt(b); mbuCls(b, 'on', !!(o && o.selected)); mbuCls(b, 'def', defs().includes(b.dataset.v)); if (b.disabled !== sel.disabled) b.disabled = sel.disabled; });
     };
     [...sel.options].forEach(o => {
       if (!o.value.trim()) return;   // the blank (&nbsp;) "none" option: clicking the chosen type again clears it
@@ -15398,6 +15419,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         else x.selected = true;
         sel.dispatchEvent(new Event('change', { bubbles: true }));
         paint();
+        if (document.activeElement !== b && b.isConnected) b.focus();   // a rare one moved into the main row
       };
       if (defKey) b.oncontextmenu = e => {
         e.preventDefault();
@@ -15405,8 +15427,40 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         gmSave(defKey, multi ? defs().filter(v => v !== o.value).concat(had ? [] : [o.value]).join(',') : had ? '' : o.value);
         paint();
       };
-      bar.appendChild(b);
+      btns.push(b);
+      if (!fold) bar.appendChild(b);
     });
+    if (fold) {
+      const by = Object.fromEntries(btns.map(b => [b.dataset.v, b]));
+      const common = fold.common.filter(v => by[v]);
+      // the rare ones in fold's order; any value MusicBrainz adds later goes last, in the form's order
+      const rare = fold.rare.filter(v => by[v]).concat(btns.map(b => b.dataset.v).filter(v => !fold.common.includes(v) && !fold.rare.includes(v)));
+      const more = document.createElement('button'); more.type = 'button'; more.className = 'tc-rg-more';
+      let open = false, pinned = new Set(), extra = null, shown = '';
+      layout = () => {
+        const picked = rare.filter(v => { const o = opt(by[v]); return !!(o && o.selected); });
+        if (open) picked.forEach(v => pinned.add(v)); else pinned = new Set(picked);
+        const main = common.concat(rare.filter(v => pinned.has(v))), rest = rare.filter(v => !pinned.has(v));
+        const key = main.join() + '|' + (open ? 'open' : rest.length);
+        if (key === shown) return; shown = key;
+        bar.replaceChildren(...main.map(v => by[v]));
+        if (rest.length || open) {
+          more.textContent = open ? '\u25B4' : '+' + rest.length + ' \u25BE';
+          more.setAttribute('aria-expanded', String(open));
+          bar.appendChild(more);
+        }
+        if (open && rest.length) {
+          if (!extra) { extra = document.createElement('div'); extra.className = 'tc-rg-seg mbu-ui tc-rg-extra'; }
+          extra.replaceChildren(...rest.map(v => by[v]));
+          if (extra.previousElementSibling !== bar) bar.after(extra);
+        } else if (extra) { extra.replaceChildren(); extra.remove(); }
+      };
+      more.onclick = () => {
+        open = !open; paint();
+        const f = open && extra && extra.isConnected ? extra.querySelector('button') : more;
+        if (f) f.focus();
+      };
+    }
     if (defKey && /\/release\/add/.test(location.pathname) && !sel.value.trim()) {
       const d = [...sel.options].filter(x => defs().includes(x.value));
       if (d.length) { d.forEach(x => { x.selected = true; }); sel.dispatchEvent(new Event('change', { bubbles: true })); }
@@ -15465,7 +15519,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (!_rgAC) rgReadCredit();
       rgArtistRow(form);
       rgTypeBar(document.getElementById('id-edit-release-group.primary_type_id'), false);
-      rgTypeBar(document.getElementById('id-edit-release-group.secondary_type_ids'), true);
+      rgTypeBar(document.getElementById('id-edit-release-group.secondary_type_ids'), true, null, false, rgFold('secondary'));
     }
     relocateLinks(on);
     wireLinkClicks(); if (on) { tidyLinkTypeOptions(); annotateLinkEditHints(); }   // right-click a favicon or a type to edit it, as on Release information
@@ -15752,8 +15806,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     wireReleaseInfoBatch();
     autoSelectReleaseGroup();   // #716
     rgTypeBar(document.getElementById('primary-type'), false, 'apolloDefaultPrimaryType');
-    rgTypeBar(document.getElementById('secondary-types'), true, 'apolloDefaultSecondaryTypes');
-    rgTypeBar(document.getElementById('status'), false, 'apolloDefaultStatus', true);
+    rgTypeBar(document.getElementById('secondary-types'), true, 'apolloDefaultSecondaryTypes', false, rgFold('secondary'));
+    rgTypeBar(document.getElementById('status'), false, 'apolloDefaultStatus', true, rgFold('status'));
     // #652 (majkinetor): "no bubbles anywhere" — the #143 selection popover is retired; the badges say what was picked
     if (riWant()) {
       _apolloUsed = true;
