@@ -206,7 +206,18 @@ var ST_CSS = ''
   // one size for the window: the tabs share a cell, and the one not shown keeps its room, as do Time's and Sun's extras
   + '#st-cfg .st-panes,#st-cfg .st-th-x{display:grid}#st-cfg .st-panes>.st-sec,#st-cfg .st-th-x>*{grid-area:1/1;margin:0}#st-cfg .st-th-x{display:inline-grid;align-items:center}#st-cfg .st-tx{display:inline-flex;align-items:center;gap:6px}'
   + '#st-cfg .st-panes>.st-sec[hidden]{display:block!important;visibility:hidden}'
-  + '#st-cfg-ov{background:none;pointer-events:none}#st-cfg-ov>#st-cfg{pointer-events:auto}';
+  + '#st-cfg-ov{background:none;pointer-events:none}#st-cfg-ov>#st-cfg{pointer-events:auto}'
+  // a phone: the whole screen, one column, each label above its control (majkinetor)
+  + '@media (max-width:640px){#st-cfg{position:fixed!important;inset:0!important;width:auto!important;max-width:none!important;height:auto!important;max-height:none!important;margin:0!important;border-radius:0!important;transform:none!important;padding:12px 14px calc(16px + env(safe-area-inset-bottom,0px))!important;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain}'
+  + '#st-cfg *{min-width:0;max-width:100%}#st-cfg .st-row{flex-wrap:wrap;row-gap:4px;height:auto;margin:6px 0}'
+  + '#st-cfg .st-row>.st-lbl,#st-cfg #st-p-g .st-row>.st-lbl:first-child{flex:1 0 100%;white-space:normal;margin-top:4px}'
+  + '#st-cfg .st-seg{flex-wrap:wrap;margin-right:6px}#st-cfg .st-seg button{min-height:32px;padding:4px 12px}'
+  + '#st-cfg .st-step button{height:32px!important;width:36px!important;flex-basis:36px}'
+  + '#st-cfg #st-p-g select{flex:1 1 auto;width:auto;height:32px}'
+  + '#st-cfg .st-scripts{grid-template-columns:1fr}#st-cfg .st-scripts .st-row{white-space:normal}'
+  + '#st-cfg .st-nav{row-gap:4px}#st-cfg .st-links{margin-left:0}#st-cfg .st-ver{white-space:normal}'
+  + '#st-cfg .st-cap,#st-cfg .st-note,#st-cfg .st-upd span,#st-cfg .st-lbl,#st-cfg #st-p-g .st-lbl{white-space:normal;overflow-wrap:anywhere}#st-cfg .st-upd>div{flex-wrap:wrap}'
+  + '#st-cfg .st-di{width:36px;height:36px}#st-cfg .st-strip{gap:10px}#st-cfg .mbu-cfg-h{flex-wrap:wrap;row-gap:4px;cursor:default}}';
 // a launcher opens its script's settings on right-click: pass the click on to the live one
 function stLive(name) {
   var els = Array.prototype.filter.call(document.querySelectorAll('[data-mb-corner="br"][data-mb-corner-label]'), function (el) {
