@@ -16,6 +16,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 - **[Tracklist](#tracklist)**: each track's credits and its streaming links, with platforms deduplicated.
 - **[Releases and discography](#releases-and-discography)** as a grid or a table whose columns you choose, order and resize, grouped by type, with a filter, and with filters and columns saved by name.
 - **[Pending changes](#pending-changes)** marks what has edits open.
+- **[Keyboard shortcuts](#keyboard-shortcuts)**: single keys open an entity's edit, relationships, history and other pages, on MusicBrainz's page and in the viewer; **Ctrl+/** lists them and changes them.
 
 Also on board: artist, label, release, release group and area images, a configurable homepage, inline tag and alias editing, an Aliases page with an artist's credits, infinite scroll, advanced filtering and grouped edit history.
 
@@ -85,27 +86,46 @@ The arrow at the end of the filter box does the same for a filter: name it and s
 
 With *Show pending changes* on in settings, titles, tracks, credits and links with edits open are marked in grey, as on MusicBrainz. A person with two credits, one of them pending, has both marked.
 
+## Keyboard shortcuts
+
+On an entity's page, in the viewer or on MusicBrainz's own page, a key opens one of its pages. **Ctrl+/** lists the commands: type to find one, **Enter** runs it, and clicking a command's key and pressing another changes it (**Backspace** leaves it without one, **Default keys** puts them all back). Keys do nothing while you type in a field.
+
+| Key    | Opens                                          |
+| ------ | ---------------------------------------------- |
+| O      | the entity's page                              |
+| E      | Edit                                           |
+| R      | Edit relationships                             |
+| C      | Cover art (a release)                          |
+| H      | Editing history                                |
+| T      | Tags                                           |
+| D      | Details                                        |
+| A      | Aliases                                        |
+| V      | switches between Event Horizon and MusicBrainz |
+| ,      | the settings                                   |
+| Ctrl+/ | this list                                      |
+
 ## Settings
 
 Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes them all.
 
-| Setting                               | Default                                                             |                                                                                        |
-| ------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Release → Info                        | released, labels, barcode, length, links                            | the facts shown beside the cover                                                       |
-| Release → Under the cover             | Other covers, Rating, Genres                                        | what shows under the cover                                                             |
-| Tracklist → Tracks                    | Alternating colors                                                  | shade every other track                                                                |
-| Platforms → Show                      | off                                                                 | **Names** beside the icons; **Gray icons** until pointed at                            |
-| Platforms → Icon size                 | 22px                                                                | the size of a platform icon                                                            |
-| Platforms → Platforms                 | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music           | click to show or hide, drag to reorder; the rest go behind +N                          |
-| Artist → Artist images                | Discogs, Wikipedia, Deezer, Spotify, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown             |
-| Annotation → Show annotation on hover | on                                                                  | preview a folded annotation                                                            |
-| General → Page width                  | Wide                                                                | how wide the page grows on a big screen                                                |
-| General → Background                  | Cover aura                                                          | Flat, Cover aura, Glow or Header band                                                  |
-| General → Hexagons                    | off                                                                 | overlay hexagon outlines on any background                                             |
-| General → Hexagon opacity             | 20%                                                                 | strength of the outlines and their glow                                                |
-| General → Hexagon animation           | Static                                                              | Static, Breathe, Drift or Christmas lights along the outlines; respects reduced motion |
-| General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                                 |
-| General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last      |
+| Setting                               | Default                                                             |                                                                                             |
+| ------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Release → Info                        | released, labels, barcode, length, links                            | the facts shown beside the cover                                                            |
+| Release → Under the cover             | Other covers, Rating, Genres                                        | what shows under the cover                                                                  |
+| Tracklist → Tracks                    | Alternating colors                                                  | shade every other track                                                                     |
+| Platforms → Show                      | off                                                                 | **Names** beside the icons; **Gray icons** until pointed at                                 |
+| Platforms → Icon size                 | 22px                                                                | the size of a platform icon                                                                 |
+| Platforms → Platforms                 | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music           | click to show or hide, drag to reorder; the rest go behind +N                               |
+| Artist → Artist images                | Discogs, Wikipedia, Deezer, Spotify, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown                  |
+| Annotation → Show annotation on hover | on                                                                  | preview a folded annotation                                                                 |
+| General → Page width                  | Wide                                                                | how wide the page grows on a big screen                                                     |
+| General → Background                  | Cover aura                                                          | Flat, Cover aura, Glow or Header band                                                       |
+| General → Hexagons                    | off                                                                 | overlay hexagon outlines on any background                                                  |
+| General → Hexagon opacity             | 20%                                                                 | strength of the outlines and their glow                                                     |
+| General → Hexagon animation           | Static                                                              | Static, Breathe, Drift or Christmas lights along the outlines; respects reduced motion      |
+| General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                                      |
+| General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
+| General → Keyboard shortcuts          | on                                                                  | the keys below; [keyboard shortcuts](#keyboard-shortcuts); **Change keys** opens their list |
 
 ## Shortcuts
 
