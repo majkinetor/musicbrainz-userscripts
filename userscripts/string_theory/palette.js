@@ -271,10 +271,14 @@ function stPalMatch(c, q) {
     if (phrase === 0) score -= 2; else if (phrase > 0 && /[\s:·“(-]/.test(text.charAt(phrase - 1))) score -= 1;
     return { score: score, hits: hits };
   }
-  var flat = words.join(''), k = 0, first = -1, last = 0;
-  hits = [];
-  for (var n = 0; n < text.length && k < flat.length; n++) if (text.charAt(n) === flat.charAt(k)) { if (first < 0) first = n; last = n; hits.push([n, 1]); k++; }
-  return k === flat.length ? { score: 100 + (last - first) / 10, hits: hits } : null;
+  // letters in order across words, read as "Category: label" or as "label category" ("ehse" → Event Horizon Settings)
+  var flat = words.join(''), cut = c.cat.length + 2, lab = c.label.toLowerCase(), best = null;
+  [[text, function (n) { return n; }], [lab + ' ' + c.cat.toLowerCase(), function (n) { return n < lab.length ? cut + n : n - lab.length - 1; }]].forEach(function (t) {
+    var s = t[0], k = 0, first = -1, last = 0, hs = [];
+    for (var n = 0; n < s.length && k < flat.length; n++) if (s.charAt(n) === flat.charAt(k)) { if (first < 0) first = n; last = n; hs.push([t[1](n), 1]); k++; }
+    if (k === flat.length && (!best || 100 + (last - first) / 10 < best.score)) best = { score: 100 + (last - first) / 10, hits: hs };
+  });
+  return best;
 }
 function stPalMark(c, hits) {
   var text = c.cat + ': ' + c.label, marks = [];
