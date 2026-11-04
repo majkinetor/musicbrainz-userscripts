@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.04.233000
+// @version      2026.11.05.000500
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1307,7 +1307,8 @@
   // MusicBrainz's page, which Event Horizon replaces. o: id, label, icon (an image URL), order,
   // paths (as data-mb-corner-paths), click. Outside the dock it is never shown, unless the script clears its
   // data-mb-corner-dock (the Interface setting's Dock icon, #851): then it is a launcher of its own. Returns the button,
-  // with .status(text) to show a short state (a count) beside it.
+  // with .status(text) to show a short state (a count) beside it. o.busyIcon: an animated image shown in place of
+  // the icon while busy with nothing counted yet, instead of the "···" dots.
   function mbuDockItem(o) {
       var b = document.getElementById(o.id);
       if (!b) {
@@ -1319,10 +1320,12 @@
           b.onclick = o.click;
           document.documentElement.appendChild(b);   // outside the body, which Event Horizon swaps
       }
-      b.dataset.mbCornerLabel = o.label;
+      b.dataset.mbCornerLabel = o.label; b.mbuIcon = o.icon; b.mbuBusyIcon = o.busyIcon || '';
       // .status(t): the count beside it; .busy(on): while it works, a faint "···" where the count goes,
       // or the count so far, fading; .card(fn): a hover card, fn() → its HTML (mbuTipCard)
-      var show = function () { var t = b.mbuSt || (b.hasAttribute('data-mbu-busy') ? '···' : ''); if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus;
+      var show = function () { var busy = b.hasAttribute('data-mbu-busy'), t = b.mbuSt || (busy && !b.mbuBusyIcon ? '···' : '');
+          var im = b.querySelector('img'), src = busy && !b.mbuSt && b.mbuBusyIcon || b.mbuIcon; if (im && src && im.getAttribute('src') !== src) im.src = src;
+          if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus;
           var r = document.documentElement; if (r.hasAttribute('data-mbu-dock') && b.isConnected) mbRestackCorner('br'); };   // update the dock's loading state and any peek
       b.status = function (t) { b.mbuSt = t || ''; show(); };
       b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };
@@ -2763,6 +2766,10 @@
     #ii-btn.has-missing { background: #a0225e; animation: ii-pulse 1.6s ease-in-out infinite; }
     #ii-btn.has-missing:hover { background: #7d1a4a; }
     #ii-btn .ii-status { font-size: 10px; font-weight: 600; opacity: .9; }
+    #ii-btn .ii-status:empty { display: none; }
+    #ii-btn.ii-loading .ii-sweep { transform-origin: 64px 64px; animation: ii-sweep 1.6s linear infinite; }
+    @keyframes ii-sweep { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { #ii-btn.ii-loading .ii-sweep { animation-duration: 6s; } }
     #ii-btn .ii-btn-links { border-left: 1px solid rgba(255,255,255,.4); padding-left: 6px; }
     /* in Event Horizon a quiet tinted chip in the theme's colours, not a filled, pulsing button */
     html[data-mbu-dock] #ii-btn[data-ii-quiet] { --ii-c: var(--link, var(--accent)); color: var(--ii-c) !important; background: color-mix(in srgb, var(--ii-c) 12%, transparent); border: 1px solid color-mix(in srgb, var(--ii-c) 35%, transparent); box-shadow: none; outline: none; animation: none; }
@@ -9279,8 +9286,9 @@
   btn.innerHTML =
     // ISRC Scout's own radar/target logo (monochrome via currentColor so it reads
     // white on the purple/pink button), replacing the generic magnifying glass.
-    '<svg width="14" height="14" viewBox="0 0 128 128" fill="none" stroke="currentColor" aria-hidden="true"><path d="M64 64 L64 24 A40 40 0 0 1 99 84 Z" fill="currentColor" opacity=".35" stroke="none"/><g stroke-width="8"><circle cx="64" cy="64" r="40"/><circle cx="64" cy="64" r="26" stroke-width="6"/><circle cx="64" cy="64" r="13" stroke-width="6"/></g><line x1="64" y1="64" x2="64" y2="24" stroke-width="8" stroke-linecap="round"/><circle cx="86" cy="50" r="9" fill="currentColor" stroke="none"/></svg>' +
-    'ISRC <span class="ii-status" id="ii-btn-status">⏳</span>';
+    '<svg width="14" height="14" viewBox="0 0 128 128" fill="none" stroke="currentColor" aria-hidden="true"><g stroke-width="8"><circle cx="64" cy="64" r="40"/><circle cx="64" cy="64" r="26" stroke-width="6"/><circle cx="64" cy="64" r="13" stroke-width="6"/></g><g class="ii-sweep"><path d="M64 64 L64 24 A40 40 0 0 1 99 84 Z" fill="currentColor" opacity=".35" stroke="none"/><line x1="64" y1="64" x2="64" y2="24" stroke-width="8" stroke-linecap="round"/><circle cx="86" cy="50" r="9" fill="currentColor" stroke="none"/></g></svg>' +
+    'ISRC <span class="ii-status" id="ii-btn-status"></span>';
+  btn.classList.add('ii-loading');   // the logo's sweep turns until the release's count arrives
   btn.addEventListener('click', e => { if (hudDragged) { hudDragged = false; e.stopImmediatePropagation(); return; } openModal(e); });
 
   // HUD options in Event Horizon, on a right-click: transparent (a quiet tinted chip) and pinned (fixed, dragged anywhere)
@@ -9425,7 +9433,8 @@
   // In Event Horizon, which replaces this page, the badge's state and the editor are in String Theory's dock (#847)
   whenDomReady(() => {
     if (!IS_OVERVIEW) return;
-    const item = iiDockItem = mbuDockItem({ id: 'ii-dock', label: 'ISRC Scout', icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=', order: 62,
+    const item = iiDockItem = mbuDockItem({ id: 'ii-dock', label: 'ISRC Scout', icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=',
+      busyIcon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8Zz4KICAgIDxwYXRoIGQ9Ik02NCA2NCBMNjQgMjQgQTQwIDQwIDAgMCAxIDk5IDg0IFoiIGZpbGw9IiM2ZjQyYzEiIGZpbGwtb3BhY2l0eT0iLjIyIi8+CiAgICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDxjaXJjbGUgY3g9Ijg2IiBjeT0iNTAiIHI9IjciIGZpbGw9IiM0YjJlODMiLz4KICAgIDxhbmltYXRlVHJhbnNmb3JtIGF0dHJpYnV0ZU5hbWU9InRyYW5zZm9ybSIgdHlwZT0icm90YXRlIiBmcm9tPSIwIDY0IDY0IiB0bz0iMzYwIDY0IDY0IiBkdXI9IjEuNnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIi8+CiAgPC9nPgo8L3N2Zz4K', order: 62,
       scale: 1.15, paths: '^/release/[0-9a-fA-F-]{36}/?$', click: () => { isFollow(); openModal(); } });
     item.oncontextmenu = e => { e.preventDefault(); isFollow(); openSetupAlone(); };   // #695: right-click opens the settings
     if (iiIface() === 'dock') { delete item.dataset.mbCornerDock; mbRestackCorner('br'); }
@@ -9530,7 +9539,9 @@
     try { abortSxWork('Event Horizon moved to another release'); } catch (e) { /* nothing running */ }
     mbid = r; RELEASE = null; _relInFlight = null; _autoLinksDone = false; _bgIsrcsSeeded = false; _dzListCache = null; _suspectUndo = null; _allEpoch++;
     BG.generation = (BG.generation || 0) + 1; BG.started = false; BG.running = {};
-    fetchRelease().catch(e => Log.warn('Release load failed: ' + errText(e)));
+    const st = btnStatus(); if (st) st.textContent = '';
+    btn.classList.add('ii-loading');   // the new release's count is on its way
+    fetchRelease().catch(e => { Log.warn('Release load failed: ' + errText(e)); const s = btnStatus(); if (s) s.textContent = '?'; btn.classList.remove('ii-loading'); });
   }
   // once the page has its root: at document-start it can have none yet ("parameter 1 is not of type 'Node'"), which stopped the script
   whenDomReady(() => new MutationObserver(isFollow).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-release'] }));
@@ -9661,6 +9672,7 @@
     try { showTrackData(); } catch (e) { Log.warn('tracklist ISRCs and links: ' + errText(e)); }
     const statusEl = btnStatus();
     if (!statusEl || !RELEASE) return;
+    btn.classList.remove('ii-loading');
     let total = RELEASE.tracks.length, missing = 0;
     RELEASE.tracks.forEach(t => { if (!t.existing.length) missing++; });
     if (missing === 0) {
@@ -9789,6 +9801,7 @@
   if (IS_OVERVIEW) {
     fetchRelease().catch(e => {
       const s = btnStatus(); if (s) s.textContent = '?';
+      btn.classList.remove('ii-loading');
       btn.dataset.tip = '⚠ Could not load the release: ' + ((e && e.message) || 'error') + '\nOpen ISRC Scout to try again; the count updates once it loads.';
       Log.warn('page button: release load failed — showing "?" until a later load succeeds (#607)');
     });

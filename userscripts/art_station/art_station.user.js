@@ -6178,7 +6178,8 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
   // MusicBrainz's page, which Event Horizon replaces. o: id, label, icon (an image URL), order,
   // paths (as data-mb-corner-paths), click. Outside the dock it is never shown, unless the script clears its
   // data-mb-corner-dock (the Interface setting's Dock icon, #851): then it is a launcher of its own. Returns the button,
-  // with .status(text) to show a short state (a count) beside it.
+  // with .status(text) to show a short state (a count) beside it. o.busyIcon: an animated image shown in place of
+  // the icon while busy with nothing counted yet, instead of the "···" dots.
   function mbuDockItem(o) {
       var b = document.getElementById(o.id);
       if (!b) {
@@ -6190,10 +6191,12 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
           b.onclick = o.click;
           document.documentElement.appendChild(b);   // outside the body, which Event Horizon swaps
       }
-      b.dataset.mbCornerLabel = o.label;
+      b.dataset.mbCornerLabel = o.label; b.mbuIcon = o.icon; b.mbuBusyIcon = o.busyIcon || '';
       // .status(t): the count beside it; .busy(on): while it works, a faint "···" where the count goes,
       // or the count so far, fading; .card(fn): a hover card, fn() → its HTML (mbuTipCard)
-      var show = function () { var t = b.mbuSt || (b.hasAttribute('data-mbu-busy') ? '···' : ''); if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus;
+      var show = function () { var busy = b.hasAttribute('data-mbu-busy'), t = b.mbuSt || (busy && !b.mbuBusyIcon ? '···' : '');
+          var im = b.querySelector('img'), src = busy && !b.mbuSt && b.mbuBusyIcon || b.mbuIcon; if (im && src && im.getAttribute('src') !== src) im.src = src;
+          if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus;
           var r = document.documentElement; if (r.hasAttribute('data-mbu-dock') && b.isConnected) mbRestackCorner('br'); };   // update the dock's loading state and any peek
       b.status = function (t) { b.mbuSt = t || ''; show(); };
       b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };

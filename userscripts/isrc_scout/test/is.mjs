@@ -27,7 +27,7 @@ export async function openScout(page, inject, { release = ANY_RELEASE, replay = 
   }
   await page.waitForSelector('#ii-btn', { state: 'attached', timeout: 30000 });
   if (!open) return ws;
-  await page.waitForFunction(() => { const s = document.getElementById('ii-btn-status'); return s && s.textContent.trim() !== '⏳'; }, null, { timeout: 45000 }).catch(() => {});
+  await page.waitForFunction(() => { const s = document.getElementById('ii-btn-status'); return s && !document.getElementById('ii-btn').classList.contains('ii-loading'); }, null, { timeout: 45000 }).catch(() => {});
   await page.evaluate(() => document.getElementById('ii-btn').click());
   await page.waitForSelector('#ii-modal.open', { timeout: 15000 });
   await page.waitForFunction(() => document.querySelectorAll('#ii-tbody tr[data-idx]').length > 0, null, { timeout: 45000 });
