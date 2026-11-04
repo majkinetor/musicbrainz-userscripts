@@ -89,19 +89,23 @@ With *Show pending changes* on in settings, titles, tracks, credits and links wi
 
 Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes them all.
 
-| Setting                               | Default                                                             |                                                                                   |
-| ------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Release → Info                        | released, labels, barcode, length, links                            | the facts shown beside the cover                                                  |
-| Release → Under the cover             | Other covers, Rating, Genres                                        | what shows under the cover                                                        |
-| Tracklist → Tracks                    | Alternating colors                                                  | shade every other track                                                           |
-| Platforms → Show                      | off                                                                 | **Names** beside the icons; **Gray icons** until pointed at                       |
-| Platforms → Icon size                 | 22px                                                                | the size of a platform icon                                                       |
-| Platforms → Platforms                 | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music           | click to show or hide, drag to reorder; the rest go behind +N                     |
-| Artist → Artist images                | Discogs, Wikipedia, Deezer, Spotify, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown        |
-| Annotation → Show annotation on hover | on                                                                  | preview a folded annotation                                                       |
-| General → Page width                  | Wide                                                                | how wide the page grows on a big screen                                           |
-| General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                            |
-| General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last |
+| Setting                               | Default                                                             |                                                                                        |
+| ------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Release → Info                        | released, labels, barcode, length, links                            | the facts shown beside the cover                                                       |
+| Release → Under the cover             | Other covers, Rating, Genres                                        | what shows under the cover                                                             |
+| Tracklist → Tracks                    | Alternating colors                                                  | shade every other track                                                                |
+| Platforms → Show                      | off                                                                 | **Names** beside the icons; **Gray icons** until pointed at                            |
+| Platforms → Icon size                 | 22px                                                                | the size of a platform icon                                                            |
+| Platforms → Platforms                 | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music           | click to show or hide, drag to reorder; the rest go behind +N                          |
+| Artist → Artist images                | Discogs, Wikipedia, Deezer, Spotify, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown             |
+| Annotation → Show annotation on hover | on                                                                  | preview a folded annotation                                                            |
+| General → Page width                  | Wide                                                                | how wide the page grows on a big screen                                                |
+| General → Background                  | Cover aura                                                          | Flat, Cover aura, Glow or Header band                                                  |
+| General → Hexagons                    | off                                                                 | overlay hexagon outlines on any background                                             |
+| General → Hexagon opacity             | 20%                                                                 | strength of the outlines and their glow                                                |
+| General → Hexagon animation           | Static                                                              | Static, Breathe, Drift or Christmas lights along the outlines; respects reduced motion |
+| General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                                 |
+| General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last      |
 
 ## Shortcuts
 

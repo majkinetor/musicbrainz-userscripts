@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.013019
+// @version      2026.11.04.063659
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2454,17 +2454,24 @@ body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;poin
 :root[data-eh-bg=aura][data-eh-theme=dark] #eh-aura{opacity:.28}
 :root:is([data-eh-bg=glow],[data-eh-bg=aura]:not([data-eh-aura])) body{background:radial-gradient(900px 520px at 100% 0,color-mix(in srgb,var(--accent2) 18%,transparent),transparent 70%) no-repeat,radial-gradient(800px 480px at 72% 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%) no-repeat,var(--eh-page)}
 :root[data-eh-bg=band] body::before{content:"";height:400px;background:linear-gradient(100deg,color-mix(in srgb,var(--accent) 11%,var(--eh-page)),color-mix(in srgb,var(--accent2) 11%,var(--eh-page)));border-bottom:1px solid color-mix(in srgb,var(--accent) 14%,var(--eh-page))}
-:root[data-eh-bg=hex] body{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='48' viewBox='0 0 28 48'%3E%3Cpath d='M14 0l14 8v16L14 32 0 24V8zM14 32v16' fill='none' stroke='%23ba478f' stroke-opacity='.1'/%3E%3C/svg%3E") var(--eh-page)}
-:root[data-eh-theme=dark][data-eh-bg=hex] body{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='48' viewBox='0 0 28 48'%3E%3Cpath d='M14 0l14 8v16L14 32 0 24V8zM14 32v16' fill='none' stroke='%23f0b8dc' stroke-opacity='.22'/%3E%3C/svg%3E") var(--eh-page)}
-:root[data-eh-bg=hex] :is(.tl,.card,.u-bio,.u-facts,.u-vcol,.hm-pf,.hgrp,.eh-details){background:color-mix(in srgb,var(--surface) 62%,transparent)!important;backdrop-filter:blur(1px)}
-:root[data-eh-bg=hex] .tl .disc{background:color-mix(in srgb,var(--chip) 55%,transparent)!important}
-:root[data-eh-bg=hex] :is(.tl.striped .tr.alt,.tl .detail){background:color-mix(in srgb,var(--hover) 50%,transparent)!important}
-:root[data-eh-bg=hex] .tl .tr:hover{background:color-mix(in srgb,var(--accent) 14%,transparent)!important}
-:root[data-eh-bg=hex] body{background-attachment:fixed!important}
-:root[data-eh-bg=hex] body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='48' viewBox='0 0 28 48'%3E%3Cpath d='M14 0l14 8v16L14 32 0 24V8zM14 32v16' fill='none' stroke='%23ba478f' stroke-opacity='.45'/%3E%3C/svg%3E");-webkit-mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat;mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat;animation:eh-hexglow 46s linear infinite}
-:root[data-eh-theme=dark][data-eh-bg=hex] body::after{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='48' viewBox='0 0 28 48'%3E%3Cpath d='M14 0l14 8v16L14 32 0 24V8zM14 32v16' fill='none' stroke='%23ffd2ef' stroke-opacity='.6'/%3E%3C/svg%3E")}
-@keyframes eh-hexglow{0%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}25%{-webkit-mask-position:35% 60%,70% 15%,10% 55%;mask-position:35% 60%,70% 15%,10% 55%}50%{-webkit-mask-position:75% 35%,30% 85%,60% 10%;mask-position:75% 35%,30% 85%,60% 10%}75%{-webkit-mask-position:55% 90%,10% 30%,95% 45%;mask-position:55% 90%,10% 30%,95% 45%}100%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}}
-@media (prefers-reduced-motion:reduce){:root[data-eh-bg=hex] body::after{animation:none}}
+#eh-hex{position:fixed;inset:-48px;z-index:-1;pointer-events:none;opacity:var(--eh-hex-opacity,.2);color:var(--accent)}
+#eh-hex svg{display:block;width:100%;height:100%;overflow:visible}
+#eh-hex .hex-base{opacity:.5}
+#eh-hex .hex-light{display:none;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-dasharray:2 98;filter:drop-shadow(0 0 2px currentColor)}
+:root[data-eh-hex=breathe] #eh-hex svg{animation:eh-hex-breathe 40s ease-in-out infinite}
+:root[data-eh-hex=drift] #eh-hex svg{animation:eh-hex-drift 120s ease-in-out infinite}
+:root[data-eh-hex=christmas] #eh-hex .hex-light{display:block;animation:eh-hex-lights 90s linear infinite}
+#eh-hex .hex-light:nth-child(3n+1){color:var(--mbu-ok);animation-delay:-30s}
+#eh-hex .hex-light:nth-child(3n+2){color:var(--accent2);animation-delay:-60s}
+#eh-hex .hex-light:nth-child(3n){color:var(--accent)}
+@keyframes eh-hex-breathe{0%,100%{opacity:.65}50%{opacity:1}}
+@keyframes eh-hex-drift{0%,100%{transform:translate(0,0)}50%{transform:translate(14px,24px)}}
+@keyframes eh-hex-lights{to{stroke-dashoffset:-100}}
+@media (prefers-reduced-motion:reduce){#eh-hex svg,#eh-hex .hex-light{animation:none!important}}
+:root[data-eh-hex] :is(.tl,.card,.u-bio,.u-facts,.u-vcol,.hm-pf,.hgrp,.eh-details){background:color-mix(in srgb,var(--surface) 62%,transparent)!important;backdrop-filter:blur(1px)}
+:root[data-eh-hex] .tl .disc{background:color-mix(in srgb,var(--chip) 55%,transparent)!important}
+:root[data-eh-hex] :is(.tl.striped .tr.alt,.tl .detail){background:color-mix(in srgb,var(--hover) 50%,transparent)!important}
+:root[data-eh-hex] .tl .tr:hover{background:color-mix(in srgb,var(--accent) 14%,transparent)!important}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 img{max-width:100%}
@@ -3106,13 +3113,13 @@ body.col-dragging,body.col-dragging *{cursor:grabbing!important;user-select:none
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'hex', 'hexOpacity', 'hexMotion', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
     plOrder: [], // the settings' platform order, shown or not; prov follows it
     crTracks: true,
-    byName: false, plNames: false, plHover: false, plSize: 18, trackStripe: true, dis: 'brackets', width: 1600, bg: 'aura',
+    byName: false, plNames: false, plHover: false, plSize: 18, trackStripe: true, dis: 'brackets', width: 1600, bg: 'aura', hex: false, hexOpacity: 20, hexMotion: 'static',
     on: true, menuTitles: false,
     thumbs: true,
     factOff: { artist: [], label: [] }, // the artist's and label's header facts turned off
@@ -3147,6 +3154,8 @@ S.pending = false; // MusicBrainz's grey mark on what has edits open; takes one 
 const ehWidth = () => { const s = document.documentElement.style; s.setProperty('--eh-w', S.width ? S.width + 'px' : 'none'); s.setProperty('--eh-wn', S.width ? S.width + 'px' : '100vw'); };
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
 try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; } catch (e) {}
+// Preserve an existing hex background as an independent overlay over Flat.
+if (S.bg === 'hex') { S.bg = 'flat'; S.hex = true; S.hexMotion = 'drift'; }
 if (!S.starView) S.starView = S.starGroup === 'none' ? 'row' : 'group';
 const menuTitlesApply = () => document.documentElement.style.setProperty('--eh-menu-titles', S.menuTitles ? 'inline' : 'none');
 menuTitlesApply();
@@ -7579,8 +7588,22 @@ function artHtml(r) {
 }
 
 /* ── page ──────────────────────────────────────────── */
-// the background setting; aura takes the page's first cover or picture, after the render draws it
+// The SVG repeats the same lattice for the base and the travelling outline lights.
+function hexApply() {
+    const de = document.documentElement;
+    de.toggleAttribute('data-eh-hex', !!S.hex && ehOn);
+    if (!S.hex || !ehOn) { document.getElementById('eh-hex')?.remove(); return; }
+    de.setAttribute('data-eh-hex', S.hexMotion || 'static');
+    de.style.setProperty('--eh-hex-opacity', Math.max(0, Math.min(100, Number(S.hexOpacity) || 0)) / 100);
+    if (document.getElementById('eh-hex')) return;
+    const layer = document.createElement('div'); layer.id = 'eh-hex'; layer.setAttribute('aria-hidden', 'true');
+    const outline = 'M14 0l14 8v16L14 32 0 24V8z';
+    const lights = [[0, 0], [84, 48], [28, 144], [112, 192], [56, 240], [140, 96]].map(([x, y]) => `<path class="hex-light" transform="translate(${x} ${y})" d="${outline}" pathLength="100" stroke="currentColor"/>`).join('');
+    layer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><pattern id="eh-hex-base" width="28" height="48" patternUnits="userSpaceOnUse"><path d="${outline}M14 32v16" fill="none" stroke="currentColor"/></pattern><pattern id="eh-hex-lights" width="168" height="288" patternUnits="userSpaceOnUse">${lights}</pattern></defs><rect class="hex-base" width="100%" height="100%" fill="url(#eh-hex-base)"/><rect width="100%" height="100%" fill="url(#eh-hex-lights)"/></svg>`;
+    document.body.append(layer);
+}
 function bgApply() {
+    hexApply();
     const de = document.documentElement;
     de.setAttribute('data-eh-bg', S.bg || 'flat');
     requestAnimationFrame(() => {
@@ -9190,8 +9213,8 @@ new MutationObserver(() => {
 }).observe(document.documentElement, { attributeFilter: ['data-mbu-theme'] });
 const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-theme=dark\]\{[\s\S]*?\}/) || [''])[0].replace(/:root/g, ':root[data-eh-rel]')
     // the theme's band and bar colours, which the stuck section header and the pinned bar take
-    // the background setting, from the same sheet: every rule that reads it, and the hexagons' drift; a page without a cover gets the glow for aura
-    + '\n' + CSS.split('\n').filter(l => /^(:root[^{]*\[data-eh-bg=|body(::before)?\{(position|content)|@keyframes eh-hexglow|@media \(prefers-reduced-motion:reduce\)\{:root\[data-eh-bg)/.test(l))
+    // The background and hexagon overlay share the viewer's rules; aura falls back to glow.
+    + '\n' + CSS.split('\n').filter(l => /^(:root[^{]*\[data-eh-(bg=|hex)|#eh-hex|body(::before)?\{(position|content)|@keyframes eh-hex-|@media \(prefers-reduced-motion:reduce\)\{#eh-hex)/.test(l))
         .map(l => l.replace(/:root/g, ':root[data-eh-rel]').replace(/^body/, ':root[data-eh-rel] body')
             .replace(/(\bbody\{background(?:-attachment)?:[^}]*?)(!important)?\}/g, '$1!important}')).join('\n')
     + '\n' + (CSS.match(/^:root\{--eh-page:[^\n]*/m) || [''])[0].replace(/:root/g, ':root[data-eh-rel]') + `
@@ -9559,6 +9582,7 @@ function relSet(on) {
     ehOn = on;
     de.toggleAttribute('data-eh-details', on && PAGE_ID.endsWith('/details'));
     de.toggleAttribute('data-eh-releases', on && PAGE_ID.endsWith('/releases'));
+    hexApply();
     if (on) { de.setAttribute('data-eh-rel', ''); de.setAttribute('data-eh-theme', theme); de.setAttribute('data-eh-bg', S.bg || 'flat'); ehWidth(); }
     else { de.removeAttribute('data-eh-rel'); de.removeAttribute('data-eh-theme'); de.removeAttribute('data-eh-bg'); }
     for (const id of ['eh-rel-css', 'eh-font']) { const n = document.getElementById(id); if (n) n.disabled = !on; }
@@ -9996,6 +10020,7 @@ function setOn(on) {
         else { ehBody.remove(); mbBody.hidden = false; }
     }
     for (const c of ['br', 'bl', 'tr', 'tl']) if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCorner(c);
+    hexApply();
     artStationPlace(on); discApollo(on);
     if (first) show(PAGE_ID);
     if (on) document.documentElement.setAttribute('data-eh-theme', theme);
@@ -10122,7 +10147,10 @@ function cfgBody() {
         general: row('Menu titles', chip('menuTitles', 'menuTitles', S.menuTitles, 'Show', 'Show text beside header menu icons\nOn: icons and titles\nOff: icons only'))
             + row('Pending changes', chip('pending', 'pending', S.pending, 'Show', 'Mark what has edits open, as MusicBrainz does\nTakes one extra MusicBrainz request per page, sent last'))
             + row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen')
-            + row('Background', [['flat', 'Flat'], ['aura', 'Cover aura'], ['glow', 'Glow'], ['band', 'Header band'], ['hex', 'Hexagons']].map(([k, l]) => chip('bg', k, (S.bg || 'aura') === k, l)).join(''), 'Cover aura blurs the page\'s cover or picture behind its head; pages without one get the glow'),
+            + row('Background', [['flat', 'Flat'], ['aura', 'Cover aura'], ['glow', 'Glow'], ['band', 'Header band']].map(([k, l]) => chip('bg', k, (S.bg || 'aura') === k, l)).join(''), 'Cover aura blurs the page\'s cover or picture behind its head; pages without one get the glow')
+            + row('Hexagons', chip('hex', 'hex', S.hex, 'Show'), 'Overlay hexagon outlines on any background')
+            + row('Hexagon opacity', `<label><input type="range" min="0" max="100" step="1" value="${S.hexOpacity}" data-hex-opacity aria-label="Hexagon opacity"> <output>${S.hexOpacity}%</output></label>`)
+            + row('Hexagon animation', [['static', 'Static'], ['breathe', 'Breathe'], ['drift', 'Drift'], ['christmas', 'Christmas lights']].map(([k, l]) => chip('hexMotion', k, S.hexMotion === k, l)).join(''), 'Very slow, subtle motion; reduced-motion preferences keep the outlines still'),
     };
     return `<div class="pane">${panes.general}</div>`;
 }
@@ -10153,6 +10181,12 @@ function openPlCfg(btn, hd) {
 }
 // clicks and drags in a settings body; body() redraws it
 function cfgWire(panel, b, body) {
+    panel.addEventListener('input', ev => {
+        if (!ev.target.matches('[data-hex-opacity]')) return;
+        S.hexOpacity = +ev.target.value;
+        ev.target.nextElementSibling.value = S.hexOpacity + '%';
+        save(); hexApply();
+    });
     panel.addEventListener('change', ev => { if (!ev.target.matches('[data-anno-hover]')) return; S.annoHover = ev.target.checked; save(); if (ehOn) { const sy = scrollY; render(); scrollTo(0, sy); } });
     // drag a shown platform onto another to put it before that one
     let dragK = null;
@@ -10210,6 +10244,8 @@ function cfgWire(panel, b, body) {
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
             else if (g === 'bg') S.bg = k;
+            else if (g === 'hex') S.hex = !S.hex;
+            else if (g === 'hexMotion') S.hexMotion = k;
             else if (g === 'imgP') { S.imgOff = toggle(S.imgOff, k); imgResort(); }
         }
         save();
