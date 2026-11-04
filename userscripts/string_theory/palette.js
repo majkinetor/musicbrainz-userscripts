@@ -549,6 +549,10 @@ function stPalette() {
 }
 // the hotkey, in the top frame only; not while the settings window records a new one
 function stPalListen() {
+  if (__stTheme.chooser()) {
+    var resume = function () { try { stThemeChooser(); } catch (e) { /* no chooser */ } };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', resume, { once: true }); else resume();
+  }
   window.addEventListener('keydown', function (e) {
     if (stPalRecording || e.repeat || (stPalOv && stPalOv.isConnected)) return;
     var p = stPalRead();
@@ -562,8 +566,9 @@ function stPalListen() {
 // ── Theme chooser ───────────────────────────────────────────────────────────
 // A slim bar at the bottom of the page that steps through every theme with ◀ ▶ (or the arrow keys),
 // showing each on the whole page; nothing covers the view. All / Light / Dark limits them to one variant. Keep (Enter) saves it, ✕ (Esc) goes back.
+// It stays open across pages until closed (the runtime's chooser state), and above any popup: it sits in the top layer.
 var ST_TC_CSS = ''
-  + '#st-tc{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:2147483600;display:flex;align-items:center;gap:6px;padding:6px 8px;'
+  + '#st-tc{position:fixed;inset:auto auto 16px 50%;margin:0;overflow:visible;transform:translateX(-50%);z-index:2147483600;display:flex;align-items:center;gap:6px;padding:6px 8px;'
   + 'background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);font:13px/1.4 var(--mbu-font);max-width:calc(100vw - 32px);box-sizing:border-box}'
   + '#st-tc button{margin:0;height:30px;border:0!important;background:none!important;box-shadow:none!important;color:inherit;cursor:pointer}'
   + '#st-tc button:hover,#st-tc button:focus-visible{color:var(--mbu-accent-text,var(--mbu-accent))}'
@@ -571,11 +576,12 @@ var ST_TC_CSS = ''
   + '#st-tc .st-tc-v{color:var(--mbu-text-weak)}'
   + '#st-tc .st-tc-i{color:var(--mbu-text-weak);font-size:12px;min-width:36px;text-align:center}'
   // a phone: pinned to the bottom edge, the page's full width; the name takes what the buttons leave
-  + '@media (max-width:640px){#st-tc{left:0;right:0;bottom:0;transform:none;max-width:none;gap:2px;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));border-width:1px 0 0;border-radius:0}'
+  + '@media (max-width:640px){#st-tc{inset:auto 0 0 0;width:auto;transform:none;max-width:none;gap:2px;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));border-width:1px 0 0;border-radius:0}'
   + '#st-tc .st-tc-n{flex:1 1 auto;min-width:0}#st-tc button{padding-inline:6px}}';
 var stTcEl = null;
 function stThemeChooser() {
   if (stTcEl && stTcEl.isConnected) return;
+  var was = __stTheme.chooser();   // open on the last page: carry on where it was
   var U = stUI(), T = stTokens(), html = document.documentElement;
   if (!document.getElementById('st-tc-css')) {
     var css = document.createElement('style');
@@ -583,7 +589,7 @@ function stThemeChooser() {
     css.textContent = T.MBU_TOKENS + U.MBU_UI_CSS + ST_TC_CSS;
     (document.head || html).appendChild(css);
   }
-  var th = __stTheme.read(), cur = __stTheme.variant(), all = [], only = 'all', i = 0;
+  var th = __stTheme.read(), cur = __stTheme.variant(), all = [], only = was && /^(light|dark)$/.test(was.only) ? was.only : 'all', i = 0;
   // only: 'all', 'light' or 'dark', which themes the arrows step through
   var list = function () {
     var was = all[i];
@@ -596,22 +602,43 @@ function stThemeChooser() {
     if (i < 0) i = Math.max(0, at(all[0][0], th[all[0][0]]));
   };
   list();
+  if (was) { var at = all.findIndex(function (t) { return t[0] === was.v && t[1] === was.n; }); if (at >= 0) i = at; }
   var bar = document.createElement('div');
   bar.id = 'st-tc';
   bar.className = 'mbu-ui';
   bar.setAttribute('role', 'toolbar');
   bar.setAttribute('aria-label', 'Theme chooser');
-  bar.innerHTML = '<button type="button" id="st-tc-f" aria-label="Themes to step through">All</button>'
+  bar.innerHTML = '<button type="button" id="st-tc-f" aria-label="Themes to step through">' + { all: 'All', light: 'Light', dark: 'Dark' }[only] + '</button>'
     + '<button type="button" id="st-tc-p" aria-label="Previous theme">◀</button>'
     + '<span class="st-tc-n" aria-live="polite"></span><span class="st-tc-i"></span>'
     + '<button type="button" id="st-tc-nx" aria-label="Next theme">▶</button>'
     + '<button type="button" id="st-tc-k">Keep</button>'
     + '<button type="button" class="mbu-ov-x" id="st-tc-x" aria-label="Close">✕</button>';
-  (document.body || html).appendChild(bar);
+  // a manual popover is in the top layer, above any z-index; a popup opened later goes over it, so it climbs back on top
+  var top = typeof bar.showPopover === 'function';
+  if (top) bar.setAttribute('popover', 'manual');
+  var raise = function () {
+    if (!bar.isConnected) return;
+    if (!top) { if (bar !== html.lastElementChild) html.appendChild(bar); return; }
+    try { if (bar.matches(':popover-open')) bar.hidePopover(); bar.showPopover(); } catch (e) { /* not shown */ }
+  };
+  html.appendChild(bar);   // outside the body, which Event Horizon swaps
   stTcEl = bar;
+  raise();
+  // something new on the page or its body (a popup, Event Horizon's swapped body) puts the bar back on top
+  var watch = new MutationObserver(function (ms) {
+    if (ms.some(function (m) {
+      return (m.target === html || m.target === document.body) && Array.prototype.some.call(m.addedNodes, function (n) { return n !== bar && n.nodeType === 1; });
+    })) raise();
+  });
+  watch.observe(html, { childList: true, subtree: true });
+  document.addEventListener('toggle', function (e) { if (e.target !== bar && e.newState === 'open') raise(); }, true);
+  // a popup that closes on a click outside it leaves the bar's clicks alone
+  ['pointerdown', 'mousedown', 'click'].forEach(function (t) { bar.addEventListener(t, function (e) { e.stopPropagation(); }); });
   var show = function () {
     var t = all[i], p = { mode: t[0] }; p[t[0]] = t[1];
     __stTheme.preview(p);
+    __stTheme.chooserPut({ only: only, v: t[0], n: t[1] });
     bar.querySelector('.st-tc-n').innerHTML = stEsc(t[1]) + ' <span class="st-tc-v">' + t[0] + '</span>';
     bar.querySelector('.st-tc-i').textContent = (i + 1) + '/' + all.length;
   };
@@ -620,6 +647,8 @@ function stThemeChooser() {
   var step = function (d) { i = (i + d + all.length) % all.length; show(); };
   var close = function (keep) {
     window.removeEventListener('keydown', onKey, true);
+    watch.disconnect();
+    __stTheme.chooserPut(null);
     bar.remove();
     if (!keep) { __stTheme.preview(null); return; }
     var t = all[i], p = {}; p[t[0]] = t[1];
@@ -631,6 +660,9 @@ function stThemeChooser() {
   var onKey = function (e) {
     var a = document.activeElement;
     if (a && a !== document.body && !bar.contains(a) && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable)) return;
+    // Enter and Esc focused elsewhere (a link, a popup's button) are theirs: Esc closes the popup, not the chooser
+    var away = a && a !== document.body && a !== html && !bar.contains(a);
+    if (away && (e.key === 'Enter' || e.key === 'Escape')) return;
     if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') step(-1);
     else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') step(1);
     else if (e.key === 'Enter') close(true);

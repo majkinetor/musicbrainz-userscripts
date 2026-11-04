@@ -7,6 +7,11 @@ var __stTheme = (function () {
   var onMb = /(^|\.)musicbrainz\.org$/.test(location.hostname);
   var style = null, wasDark = false, over = null;   // over: a theme shown but not saved (the command palette's preview)
   var sys = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+  // The theme chooser stays open across pages until it is closed: { only, v, n } in this tab's sessionStorage,
+  // read here at document-start so the next page opens in the theme it shows, not the saved one first.
+  var TC = 'st-tc';
+  function tcRead() { try { var t = JSON.parse(sessionStorage.getItem(TC)); return t && t.v && t.n ? t : null; } catch (e) { return null; } }
+  function tcPut(t) { try { if (t) sessionStorage.setItem(TC, JSON.stringify(t)); else sessionStorage.removeItem(TC); } catch (e) {} }
 
   function read() {
     var v; try { v = GM_getValue(KEY, null); } catch (e) { v = null; }
@@ -61,6 +66,8 @@ var __stTheme = (function () {
     if (!style.isConnected) (document.head || document.documentElement).appendChild(style);
     document.documentElement.classList.toggle('st-dark', v === 'dark');   // wakes the shared theme watch
   }
+  var tc = onMb && tcRead();
+  if (tc) { over = read(); over.mode = tc.v; over[tc.v] = tc.n; }
   if (onMb) {
     apply();
     // last in the page, or MusicBrainz's stylesheet, loaded after it, wins every tie
@@ -80,6 +87,7 @@ var __stTheme = (function () {
   return {
     read: read, set: set, preview: preview, variant: function () { return variant(read()); }, isDay: isDay, isDarkAt: isDarkAt,
     names: function (v) { return Object.keys(THEMES[v]); },
+    chooser: tcRead, chooserPut: tcPut,
     // the location mode asks the browser where we are, once, and keeps it coarse
     setMode: function (mode, done) {
       var s = read();
