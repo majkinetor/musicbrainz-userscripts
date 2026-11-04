@@ -10,6 +10,10 @@ test('the home page shows search, Add, You and the tab icon', { tag: '@sandbox' 
   check(await page.locator('.hm-srch input[name=query]').count() === 1, 'the search box shows');
   check(await page.locator('.hm-add a[href$="/release/add"]').count() === 1, 'Add release links to the release editor');
   check(await page.locator('.hm-adv select[name=method]').count() === 1, 'advanced search carries the search method');
+  check(await page.locator('.hm-srch button[type=submit]').count() === 0, 'the search box has no Search button (Enter searches)');
+  if (await page.locator('.hm-adv[hidden]').count()) await page.locator('.hm-srch .hm-tg').click();
+  const fit = await page.evaluate(() => { const f = document.querySelector('.hm-srch').getBoundingClientRect(); return [...document.querySelectorAll('.hm-adv, .hm-adv *')].every(x => x.getBoundingClientRect().right <= f.right + 0.5); });
+  check(fit, 'the advanced panel stays inside the search box');
   if (await page.locator('.hm-pf').count()) check(await until(() => page.locator('.hm-st').count(), n => n === 4) === 4, 'the profile card fills in its edit totals');
   check(await page.evaluate(() => !!document.getElementById('eh-icon')), 'the tab shows Event Horizon\'s icon');
   await attachShot(testInfo, page, 'home');
