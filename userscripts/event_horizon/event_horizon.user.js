@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.011212
+// @version      2026.11.04.012157
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2330,8 +2330,8 @@ const CSS = `
 .hm-srch>input[name=query]{flex:1;min-width:0;border:0;outline:0;background:none!important;color:var(--text)!important;font:inherit;font-size:18px;padding:8px 0}
 .hm-srch select{border:0;background:var(--chip)!important;color:var(--chip-text)!important;filter:none!important;color-scheme:light dark;font:inherit;font-size:13px;border-radius:9px;padding:8px}
 .hm-srch button{filter:none!important;border:0;border-radius:9px;background:#ba478f;color:#fff;font:inherit;font-weight:700;padding:9px 18px;cursor:pointer}
-.hm-adv{flex:1 1 100%;min-width:0;display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;border-top:1px solid var(--border);margin:2px 10px 0 0;padding:10px 0 6px;font-size:13px}.hm-adv>label{white-space:nowrap}.hm-adv>.hm-seg{margin-right:8px}.hm-adv>select{max-width:100%;min-width:0}
-.hm-adv[hidden]{display:none}.hm-adv label{font-weight:700;color:var(--text)}.hm-adv select{justify-self:start}.hm-seg{display:inline-flex;justify-self:start;background:var(--chip);border-radius:9px;padding:3px;gap:2px}.hm-seg label{font-weight:400!important;cursor:pointer}.hm-seg input{position:absolute;opacity:0;pointer-events:none}.hm-seg span{display:block;padding:5px 12px;border-radius:7px;color:var(--chip-text)}.hm-seg input:checked+span{background:#ba478f;color:#fff;font-weight:700}.hm-seg input:focus-visible+span{outline:2px solid var(--accent);outline-offset:1px}.hm-adv select+label{margin-left:12px}
+.hm-adv{flex:1 1 100%;min-width:0;display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;border-top:1px solid var(--border);margin:2px 10px 0 0;padding:10px 0 6px;font-size:13px}.hm-adv>label{white-space:nowrap}.hm-adv>select{max-width:100%;min-width:0}
+.hm-adv[hidden]{display:none}.hm-adv label{font-weight:700;color:var(--text)}.hm-adv select{justify-self:start}.hm-seg{display:inline-flex;justify-self:start;background:var(--chip);border-radius:9px;padding:3px;gap:2px}.hm-seg label{font-weight:400!important;cursor:pointer}.hm-seg input{position:absolute;opacity:0;pointer-events:none}.hm-seg span{display:block;padding:5px 12px;border-radius:7px;color:var(--chip-text)}.hm-seg input:checked+span{background:#ba478f;color:#fff;font-weight:700}.hm-seg input:focus-visible+span{outline:2px solid var(--accent);outline-offset:1px}
 .hm-hint{flex-basis:100%;min-width:0;overflow-wrap:anywhere;color:var(--muted)}.hm-hint code{background:var(--chip);border-radius:5px;padding:1px 5px;color:var(--text)}
 .hm-qr{position:relative;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
 .hm-qr a{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:4px 11px;font-size:12px;color:var(--muted)!important;text-decoration:none!important;background:none;border:1px solid var(--border);cursor:pointer}
@@ -8356,20 +8356,19 @@ function hmWire(app) {
 }
 function hmImg(im) { const fallback = im.nextElementSibling; if (fallback) fallback.style.display = 'none'; im.onerror = () => { if (fallback) fallback.style.display = ''; im.remove(); }; }
 // the home page's hero: the logo, a heading, the search form (filled in on the search page) and the recent searches
-function srchHero(hi, sub, q = '', ty = 'artist', meth = 'indexed', lim = '50', add = '') {
+function srchHero(hi, sub, q = '', ty = 'artist', meth = 'indexed', add = '') {
     const kinds = SRCH_T.map(t => `<option value="${t}"${t === ty ? ' selected' : ''}>${srchName(t)}</option>`).join('');
     const ss = searches(), qs = ss.map(x => `<a href="${MB}/search?query=${encodeURIComponent(x.q)}&type=${x.t}&method=indexed">${x.t === 'artist' ? '' : `<b>${x.t.replace('_', ' ')}:</b> `}${esc(x.q)}</a>`).join('');
     return `<header class="hm-hero"><a class="hm-home" href="${MB}/" data-tip="Event Horizon's home" aria-label="Event Horizon's home">${LOGO.replace('<svg', '<svg class="hm-orb"')}<div class="hm-wm"><b>Event<br>Horizon</b><small>MUSICBRAINZ</small></div></a><div class="hm-hi">${hi}</div>${sub}
         <form class="hm-srch" action="${MB}/search" method="get">${SVG(LENS)}<input name="query" value="${esc(q)}" placeholder="${matchMedia('(max-width:700px)').matches ? 'Search' : 'Search MusicBrainz'}" required${q ? '' : ' autofocus'}><select name="type">${kinds}</select><button type="button" class="hm-tg${S.hmAdv ? ' on' : ''}" data-tip="Advanced search" aria-label="Advanced search">${SVG('<path d="M4 6h10M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>')}</button>
         <div class="hm-adv"${S.hmAdv ? '' : ' hidden'}><label>Search method</label><select name="method">${[['indexed', 'Indexed'], ['advanced', 'Indexed, with advanced query syntax'], ['direct', 'Direct database search']].map(([v, l]) => `<option value="${v}"${v === meth ? ' selected' : ''}>${l}</option>`).join('')}</select>
-        <label>Results per page</label><span class="hm-seg" role="radiogroup" aria-label="Results per page">${[25, 50, 100].map(n => `<label><input type="radio" name="limit" value="${n}"${String(n) === lim ? ' checked' : ''}><span>${n}</span></label>`).join('')}</span>
         <span class="hm-hint">Advanced syntax: <code>artist:"Hania Rani" AND date:2023</code> · <a href="${MB}/doc/Indexed_Search_Syntax" target="_blank">syntax help</a></span></div></form>
         ${qs ? `<div class="hm-qr">${qs}<button type="button" class="hm-qx" data-tip="Forget these searches">Clear</button></div>` : ''}${add}</header>`;
 }
 function homeHtml() {
     const u = ME && `${MB}/user/${encodeURIComponent(ME)}/`, h = new Date().getHours();
     const hi = (h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + (ME ? `, <em>${esc(ME)}</em>` : '');
-    const hero = srchHero(hi, '', '', 'artist', 'indexed', '50', `<nav class="hm-add"><span>Add</span>${HM_ADD.map(([p, n, ic], i) => `<a href="${MB}/${p}" style="--c:${HM_CLR[i]}" data-tip="Add ${n.toLowerCase()}" aria-label="Add ${n.toLowerCase()}">${SVG(ic)}</a>`).join('')}</nav>`);
+    const hero = srchHero(hi, '', '', 'artist', 'indexed', `<nav class="hm-add"><span>Add</span>${HM_ADD.map(([p, n, ic], i) => `<a href="${MB}/${p}" style="--c:${HM_CLR[i]}" data-tip="Add ${n.toLowerCase()}" aria-label="Add ${n.toLowerCase()}">${SVG(ic)}</a>`).join('')}</nav>`);
     const hmPh = t => { let h = 0; for (const c of t) h = (h * 31 + c.codePointAt(0)) >>> 0; return `--h1:${h % 360};--h2:${(h % 360 + 40 + (h >> 9) % 80) % 360}`; };
     const fr = hmFront(), cov = xs => `<div class="hm-covers">${xs.map(x => `<a class="hm-cv" href="${x.href}" data-tip="${esc(x.t + (x.by ? ' by ' + x.by : ''))}"><span class="hm-art" style="${hmPh(x.t)}"><span class="hm-ph"><i>${esc((x.t.match(/[\p{L}\p{N}]/u) || ['?'])[0].toUpperCase())}</i></span>${x.img ? `<img src="${esc(x.img)}" loading="lazy" alt="" onerror="this.remove()">` : ''}</span><b>${esc(x.t)}</b>${x.by ? `<small>${esc(x.by)}</small>` : ''}</a>`).join('')}</div>`;
     const nrel = fr.rel.length ? sect('hnew', 'Recently added releases', '', cov(fr.rel), '') : '';
@@ -8522,15 +8521,16 @@ async function srMore(d) {
 const srchName = t => t === 'doc' ? 'Documentation' : t === 'cdstub' ? 'CD stub' : (t[0].toUpperCase() + t.slice(1)).replace('_', ' ');
 function searchHtml(d) {
     const p = new URLSearchParams(d.qs), s = d.s;
-    const sub = d.err ? `<span class="u-err">${esc(d.err)}</span>` : !s ? 'Searching…' : esc(s.found || (s.rows.length ? '' : s.err || 'No results'));
-    const hero = srchHero(esc(d.q), `<p class="u-sub sr-sub">${sub}</p>`, d.q, d.t, p.get('method') || 'indexed', p.get('limit') || '25');
+    // the count goes on the Results heading; above the form only while searching, or when nothing came
+    const sub = d.err ? `<span class="u-err">${esc(d.err)}</span>` : !s ? 'Searching…' : s.rows.length ? '' : esc(s.found || s.err || 'No results');
+    const hero = srchHero(esc(d.q), sub ? `<p class="u-sub sr-sub">${sub}</p>` : '', d.q, d.t, p.get('method') || 'indexed');
     if (!s || !s.rows.length) return hero;
     // a column empty in every row goes; the score shows as a bar
     const txt = c => (c || '').replace(/<[^>]*>/g, '').trim(), on = s.head.map((_, i) => s.rows.some(r => txt(r.cells[i])));
     const table = `<div class="ed-tw"><table class="ed-t sr-t"><thead><tr><th class="sr-sc" data-tip="How well it matches">Score</th>${s.head.filter((_, i) => on[i]).map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${s.rows.map(r => `<tr><td class="sr-sc"><i style="--w:${r.score}%"></i><small>${r.score}</small></td>${r.cells.filter((_, i) => on[i]).map(c => `<td>${txt(c) ? c : '—'}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
     // MusicBrainz's next page comes in under these, by Load more or Auto, as every paged list's does
     const more = s.next ? lmFoot('sr', s.rows.length, s.total ? fmtN(s.total) : 0) : '';
-    return hero + sect('sr', `Results <span class="count">${fmtN(s.rows.length)}</span>`, '', table + more, `<div class="folded-note">${esc(s.found)}</div>`);
+    return hero + sect('sr', `Results <span class="count">${fmtN(s.rows.length)}${s.total > s.rows.length ? '/' + fmtN(s.total) : ''}</span>`, '', table + more, `<div class="folded-note">${esc(s.found)}</div>`);
 }
 /* ── section rail ──────────────────────────────────── */
 // The Sections button in the page's action row opens a list of the sections, the one in view lit: a name jumps
