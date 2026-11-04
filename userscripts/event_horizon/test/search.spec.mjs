@@ -24,6 +24,9 @@ test('a type letter before the words picks that type, and the type list shows th
   await page.keyboard.press('p');
   check(await page.locator('.hm-srch select[name=type]').inputValue() === 'place' && await page.locator('.hm-td').isHidden(), 'its letter picks Place and closes the list');
   check(await page.locator('.hm-srch .hm-ty').textContent() === 'Place', 'the button shows Place');
+  await page.locator('.hm-srch input[name=query]').fill('');
+  await page.locator('.hm-srch input[name=query]').pressSequentially('e ');
+  check(await page.locator('.hm-srch .hm-ty').textContent() === 'Editor' && await page.locator('.hm-srch input[name=query]').inputValue() === '', 'typing e and a space picks Editor at once and leaves the box empty');
   await page.locator('.hm-srch input[name=query]').fill('w yesterday');
   await page.locator('.hm-srch input[name=query]').press('Enter');
   check(await until(() => page.url(), h => /type=work/.test(h) && /query=yesterday(&|$)/.test(h)), 'w yesterday searches works for yesterday');

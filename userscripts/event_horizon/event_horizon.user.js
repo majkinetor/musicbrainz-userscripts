@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.200001
+// @version      2026.11.04.195500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2331,9 +2331,9 @@ const CSS = `
 .hm-qc{background:none!important;border:0;padding:6px;color:var(--muted)!important;cursor:pointer;filter:none!important;display:flex}.hm-qc:hover{color:var(--text)!important}.hm-qc svg{width:18px;height:18px}.hm-qd{position:absolute;z-index:20;top:calc(100% + 6px);left:0;right:0;background:var(--surface)!important;border:1px solid var(--border);border-radius:12px;padding:6px;box-shadow:0 6px 22px var(--shadow);max-height:60vh;overflow:auto}.hm-qd[hidden]{display:none}.hm-qd button{display:flex;gap:8px;width:100%;text-align:left;background:none!important;border:0;border-radius:8px;padding:8px 10px;font:inherit;font-size:15px;color:var(--text)!important;cursor:pointer;filter:none!important}.hm-qd button:hover,.hm-qd button.on{background:var(--chip)!important}.hm-qd b{color:var(--accent);font-weight:700}
 .hm-srch>input[name=query]{flex:1;min-width:0;border:0;outline:0;background:none!important;color:var(--text)!important;font:inherit;font-size:18px;padding:8px 0}
 .hm-srch .hm-ty{display:inline-flex;align-items:center;border:0;background:none!important;color:var(--muted)!important;filter:none!important;font:inherit;font-size:13px;border-radius:6px;padding:4px 6px;cursor:pointer;min-width:0}.hm-srch .hm-ty:is(:hover,:focus-visible,[aria-expanded=true]){background:var(--chip)!important;color:var(--chip-text)!important;outline:0}.hm-ty>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hm-ty svg{width:12px;height:12px;flex:none;color:var(--muted)}
-.hm-td{position:absolute;z-index:20;top:calc(100% + 4px);background:var(--surface)!important;border:1px solid var(--border);border-radius:10px;padding:4px;box-shadow:0 8px 24px var(--shadow);max-height:min(70vh,520px);overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.hm-td[hidden]{display:none}
-.hm-td button{display:flex;align-items:center;gap:16px;width:100%;text-align:left;white-space:nowrap;background:none!important;border:0;border-radius:6px;padding:3px 8px;font:inherit;font-size:13px;line-height:20px;color:var(--text)!important;cursor:pointer;filter:none!important}.hm-td button:is(:hover,:focus-visible){background:var(--chip)!important;outline:0}.hm-td button[aria-selected=true]{background:var(--chip)!important;color:var(--accent)!important;font-weight:700}
-.hm-td kbd{margin-left:auto;font:600 11px 'JetBrains Mono',monospace;color:var(--muted);background:none;border:1px solid var(--border);border-radius:4px;padding:0 4px;line-height:15px;box-shadow:none}
+.hm-td{position:absolute;z-index:20;top:calc(100% + 4px);background:var(--surface)!important;border:1px solid var(--border);border-radius:10px;padding:3px;box-shadow:0 8px 24px var(--shadow);max-height:min(70vh,520px);overflow:hidden auto;scrollbar-width:thin;scrollbar-gutter:stable;display:grid;grid-template-columns:auto 12px;column-gap:14px;scrollbar-color:var(--mbu-border) transparent}.hm-td[hidden]{display:none!important}
+.hm-srch .hm-td button{grid-column:1/-1;display:grid;grid-template-columns:subgrid;align-items:center;text-align:left;white-space:nowrap;background:none!important;border:0;border-radius:5px;padding:1px 8px;font:inherit;font-size:13px;font-weight:500;line-height:18px;color:var(--text)!important;cursor:pointer;filter:none!important}.hm-srch .hm-td button:is(:hover,:focus-visible){background:var(--chip)!important;outline:0}.hm-srch .hm-td button[aria-selected=true]{background:var(--chip)!important;color:var(--accent)!important}
+.hm-td kbd{grid-column:2;justify-self:center;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);background:none;border:0;padding:0;box-shadow:none}
 .hm-srch button{filter:none!important;border:0;border-radius:9px;background:#ba478f;color:#fff;font:inherit;font-weight:700;padding:9px 18px;cursor:pointer}
 .hm-adv{flex:1 1 100%;min-width:0;display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;border-top:1px solid var(--border);margin:2px 10px 0 0;padding:10px 0 6px;font-size:13px}.hm-adv>label{white-space:nowrap}.hm-adv>select{max-width:100%;min-width:0}
 .hm-adv[hidden]{display:none}.hm-adv label{font-weight:700;color:var(--text)}.hm-adv select{justify-self:start}.hm-seg{display:inline-flex;justify-self:start;background:var(--chip);border-radius:9px;padding:3px;gap:2px}.hm-seg label{font-weight:400!important;cursor:pointer}.hm-seg input{position:absolute;opacity:0;pointer-events:none}.hm-seg span{display:block;padding:5px 12px;border-radius:7px;color:var(--chip-text)}.hm-seg input:checked+span{background:#ba478f;color:#fff;font-weight:700}.hm-seg input:focus-visible+span{outline:2px solid var(--accent);outline-offset:1px}
@@ -8381,7 +8381,15 @@ function srchWire(app) {
             td.hidden = !on; tb.setAttribute('aria-expanded', on);
             if (on) { td.style.right = Math.max(0, f.clientWidth - tb.offsetLeft - tb.offsetWidth) + 'px'; (td.querySelector('[aria-selected=true]') || opts()[0]).focus(); }
         };
-        const pick = v => { f.type.value = v; tb.firstChild.textContent = srchName(v); opts().forEach(b => b.setAttribute('aria-selected', b.dataset.v === v)); tshow(false); tb.focus(); };
+        const set = v => { f.type.value = v; tb.firstChild.textContent = srchName(v); opts().forEach(b => b.setAttribute('aria-selected', b.dataset.v === v)); };
+        const pick = v => { set(v); tshow(false); tb.focus(); };
+        // a type's letter and a space at the start of the box picks that type at once and leaves the words: "e " is Editor
+        // (capture, so the recent-search list filters on the words alone)
+        f.addEventListener('input', e => {
+            if (e.target !== f.query) return;
+            const m = /^([a-z]) ([\s\S]*)$/.exec(f.query.value), k = m && Object.keys(SRCH_K).find(t => SRCH_K[t] === m[1]);
+            if (k) { f.query.value = m[2]; f.query.setSelectionRange(0, 0); set(k); }
+        }, true);
         tb.addEventListener('click', () => tshow(td.hidden));
         tb.addEventListener('keydown', e => { if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); tshow(true); } });
         td.addEventListener('click', e => { const b = e.target.closest('button'); if (b) pick(b.dataset.v); });
