@@ -43,6 +43,33 @@ test.describe('palette', () => {
     await page.waitForSelector('#st-cfg', { timeout: 5000 });
     check(await page.locator('#st-tab-g').getAttribute('aria-selected') === 'true', 'the settings open on General');
   });
+  test('pins move by dragging and with Alt+arrows', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+    await open(page, inject);
+    for (const q of ['settings dock', 'settings string', 'theme: dark']) {
+      await page.keyboard.press('Control+a');
+      await page.keyboard.type(q);
+      await page.keyboard.press('Alt+p');
+    }
+    await page.keyboard.press('Control+a');
+    await page.keyboard.press('Backspace');
+    const pinned = () => page.$eval('#st-pal-list .st-pal-i[data-pinned] .st-pal-l', ls => ls.map(l => l.textContent));
+    check((await pinned()).join() === 'Dock,String Theory,Dark', `pinned in order (${await pinned()})`);
+    const box = async i => (await page.$('#st-pal-list .st-pal-i[data-pinned]'))[i].boundingBox();
+    const from = await box(2), to = await box(0);
+    await page.mouse.move(from.x + 40, from.y + from.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(from.x + 40, from.y + from.height / 2 - 8, { steps: 3 });
+    await page.mouse.move(to.x + 40, to.y + 3, { steps: 6 });
+    await page.mouse.up();
+    check((await pinned()).join() === 'Dark,Dock,String Theory', `the drop moves it (${await pinned()})`);
+    check(await page.$('#st-pal') && await variant(page) === 'light', 'the drop runs nothing');
+    const kept = await page.evaluate(() => GM_getValue('string_theory.palette', {}).pins);
+    check(kept.length === 3 && /theme/.test(kept[0]), `the order is kept (${kept})`);
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Alt+ArrowDown');
+    check((await pinned()).join() === 'Dock,Dark,String Theory', `Alt+Down moves it (${await pinned()})`);
+    check(await page.$eval('#st-pal-list .st-pal-i[aria-selected=true] .st-pal-l', l => l.textContent) === 'Dark', 'and it stays selected');
+  });
   test('the last input comes back selected', { tag: ['@sandbox'] }, async ({ page, inject }) => {
     await open(page, inject);
     await page.keyboard.type('theme: dark');

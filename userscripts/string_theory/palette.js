@@ -48,6 +48,8 @@ var ST_PAL_CSS = ''
   + '#st-pal-list .st-pal-pin:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}'
   + '#st-pal-list .st-pal-i:hover .st-pal-pin,#st-pal-list .st-pal-i[aria-selected=true] .st-pal-pin,#st-pal-list .st-pal-pin[aria-pressed=true]{visibility:visible}'
   + '#st-pal-list .st-pal-pin[aria-pressed=true]{color:var(--mbu-accent-text)}'
+  + '#st-pal-list .st-pal-i.st-pal-drag{opacity:.55;background:var(--mbu-accent-soft)}'
+  + '#st-pal-list.st-pal-dragging,#st-pal-list.st-pal-dragging .st-pal-i{cursor:grabbing}'
   + '#st-pal-list .st-pal-none{padding:10px 14px;color:var(--mbu-text-dim)}'
   + '#st-pal-foot{display:flex;gap:14px;flex-wrap:wrap;padding:6px 14px;border-top:1px solid var(--mbu-border);color:var(--mbu-text-weak);font-size:11px}'
   + '#st-pal-foot kbd{font:inherit;font-weight:600;color:var(--mbu-text-dim)}';
@@ -313,11 +315,12 @@ function stPalette() {
   ov.innerHTML = '<div class="mbu-ov-panel mbu-ui" id="st-pal" role="dialog" aria-label="String Theory commands">'
     + '<input id="st-pal-q" type="text" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="st-pal-list" placeholder="Type a command, or a name to search">'
     + '<ul id="st-pal-list" role="listbox"></ul>'
-    + '<div id="st-pal-foot"><span><kbd>↑↓</kbd> move</span><span><kbd>Enter</kbd> run</span><span><kbd>Alt+P</kbd> pin</span><span><kbd>Esc</kbd> close</span></div></div>';
+    + '<div id="st-pal-foot"><span><kbd>↑↓</kbd> move</span><span><kbd>Enter</kbd> run</span><span><kbd>Alt+P</kbd> pin</span><span><kbd>Alt+↑↓</kbd> move a pin</span><span><kbd>Esc</kbd> close</span></div></div>';
   (document.body || html).appendChild(ov);
   stPalOv = ov;
   var input = ov.querySelector('#st-pal-q'), list = ov.querySelector('#st-pal-list');
   var focusBack = document.activeElement, shown = [], active = -1, previewed = null, done = false, keyed = false;
+  var pinCount = 0, drag = null, dragged = false;   // the pinned rows at the top (none while filtering), a drag of one
 
   var unpreview = function () { if (previewed) { previewed = null; try { __stTheme.preview(null); } catch (e) { /* no themes */ } } };
   var close = function () {
@@ -329,9 +332,9 @@ function stPalette() {
     window.removeEventListener('keydown', onKey, true);
     if (focusBack && focusBack.focus && focusBack.isConnected) try { focusBack.focus(); } catch (e) { /* gone */ }
   };
-  var row = function (c, hits) {
+  var row = function (c, hits, movable) {
     var pinned = stPalRead().pins.indexOf(c.id) >= 0;
-    return '<li class="st-pal-i" role="option" aria-selected="false" data-id="' + stEsc(c.id) + '">' + stPalMark(c, hits)
+    return '<li class="st-pal-i" role="option" aria-selected="false" data-id="' + stEsc(c.id) + '"' + (movable ? ' data-pinned=""' : '') + '>' + stPalMark(c, hits)
       + (c.hint ? '<span class="st-pal-h">' + stEsc(c.hint) + '</span>' : '')
       + (c.pinless ? '' : '<button type="button" class="st-pal-pin" tabindex="-1" aria-pressed="' + pinned + '" aria-label="' + (pinned ? 'Unpin' : 'Pin') + '" data-tip="' + (pinned ? 'Unpin' : 'Pin to the top') + '">' + (pinned ? '★' : '☆') + '</button>')
       + '</li>';
@@ -339,16 +342,18 @@ function stPalette() {
   var render = function (keep) {
     var q = input.value.trim(), p = stPalRead(), h = '', keepId = keep && shown[active] && shown[active].id;
     shown = [];
-    var group = function (title, items) {
+    pinCount = 0;
+    var group = function (title, items, movable) {
       if (!items.length) return;
       if (title) h += '<li class="st-pal-g" role="presentation">' + stEsc(title) + '</li>';
-      items.forEach(function (it) { shown.push(it.c); h += row(it.c, it.hits); });
+      items.forEach(function (it) { shown.push(it.c); h += row(it.c, it.hits, movable); });
     };
     if (!q) {
       var pins = p.pins.map(function (id) { return byId[id]; }).filter(Boolean);
       var recent = p.recent.map(function (id) { return byId[id]; }).filter(function (c) { return c && pins.indexOf(c) < 0; });
       var wrap = function (c) { return { c: c }; };
-      group('Pinned', pins.map(wrap));
+      group('Pinned', pins.map(wrap), true);
+      pinCount = pins.length;
       group('Recent', recent.map(wrap));
       group(pins.length || recent.length ? 'All' : '', cmds.filter(function (c) { return pins.indexOf(c) < 0 && recent.indexOf(c) < 0; }).map(wrap));
     } else {
@@ -404,6 +409,20 @@ function stPalette() {
     stPalSet({ pins: pins });
     render(true);
   };
+  // the pins shown, in their new order: they take the places the shown ones had, so pins of commands
+  // this page doesn't offer keep theirs
+  var reorder = function (ids) {
+    var n = 0, pins = stPalRead().pins.map(function (id) { return ids.indexOf(id) >= 0 ? ids[n++] : id; });
+    stPalSet({ pins: pins });
+    render(true);
+  };
+  var movePin = function (by) {
+    var to = active + by;
+    if (active < 0 || active >= pinCount || to < 0 || to >= pinCount) return;
+    var ids = shown.slice(0, pinCount).map(function (c) { return c.id; });
+    ids.splice(to, 0, ids.splice(active, 1)[0]);
+    reorder(ids);
+  };
   var page = function () { return Math.max(1, Math.floor(list.clientHeight / 30) - 1); };
   // on the window, in the capture phase: before the page's own keys and String Theory's settings window
   var onKey = function (e) {
@@ -411,6 +430,7 @@ function stPalette() {
     var k = e.key, nav = true;
     if (/^(Arrow(Up|Down)|Page(Up|Down)|Home|End)$/.test(k)) keyed = true;
     if (k === 'Escape') close();
+    else if (e.altKey && (k === 'ArrowUp' || k === 'ArrowDown')) movePin(k === 'ArrowUp' ? -1 : 1);
     else if (k === 'ArrowDown') select(active + 1);
     else if (k === 'ArrowUp') select(active - 1);
     else if (k === 'PageDown') select(active + page());
@@ -428,11 +448,48 @@ function stPalette() {
   list.addEventListener('mousedown', function (e) { e.preventDefault(); });   // the box keeps the focus
   list.addEventListener('click', function (e) {
     var li = e.target.closest('.st-pal-i');
-    if (!li) return;
+    if (!li || dragged) { dragged = false; return; }   // the click a drag ends with runs nothing
     var c = shown[Array.prototype.indexOf.call(list.querySelectorAll('.st-pal-i'), li)];
     if (e.target.closest('.st-pal-pin')) pin(c); else run(c);
   });
+  // a pinned row drags up and down among the pinned; the order is kept when it's dropped
+  list.addEventListener('pointerdown', function (e) {
+    var li = e.target.closest('.st-pal-i[data-pinned]');
+    if (!li || e.button !== 0 || e.target.closest('.st-pal-pin')) return;
+    drag = { li: li, id: e.pointerId, y: e.clientY, on: false };
+  });
+  list.addEventListener('pointermove', function (e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    if (!drag.on) {
+      if (Math.abs(e.clientY - drag.y) < 5) return;
+      drag.on = true;
+      try { drag.li.setPointerCapture(e.pointerId); } catch (x) { /* moves still reach the list */ }
+      drag.li.classList.add('st-pal-drag');
+      list.classList.add('st-pal-dragging');
+    }
+    var rows = Array.prototype.filter.call(list.querySelectorAll('.st-pal-i[data-pinned]'), function (el) { return el !== drag.li; });
+    var before = null;
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i].getBoundingClientRect();
+      if (e.clientY < r.top + r.height / 2) { before = rows[i]; break; }
+    }
+    if (before) { if (drag.li.nextSibling !== before) list.insertBefore(drag.li, before); }
+    else if (rows.length && rows[rows.length - 1].nextSibling !== drag.li) list.insertBefore(drag.li, rows[rows.length - 1].nextSibling);
+  });
+  var drop = function (e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    var was = drag;
+    drag = null;
+    if (!was.on) return;
+    list.classList.remove('st-pal-dragging');
+    dragged = e.type === 'pointerup';
+    setTimeout(function () { dragged = false; }, 0);
+    reorder(Array.prototype.map.call(list.querySelectorAll('.st-pal-i[data-pinned]'), function (el) { return el.getAttribute('data-id'); }));
+  };
+  list.addEventListener('pointerup', drop);
+  list.addEventListener('pointercancel', drop);
   list.addEventListener('mousemove', function (e) {
+    if (drag && drag.on) return;   // the rows move under the pointer: their places don't match the list yet
     var li = e.target.closest('.st-pal-i');
     if (!li) return;
     var i = Array.prototype.indexOf.call(list.querySelectorAll('.st-pal-i'), li);
