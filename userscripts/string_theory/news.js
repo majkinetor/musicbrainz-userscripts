@@ -34,9 +34,9 @@ var ST_NEWS_CSS = ''
   + '#st-news-back{display:inline-flex;align-items:center;min-height:30px;margin:0 0 8px -10px;padding:0 10px;border:0;border-radius:var(--mbu-radius);background:none;color:var(--mbu-accent-text);font:inherit;cursor:pointer}#st-news-back:hover{background:var(--mbu-bg-hover)}'
   // a phone: the whole screen, and the list or one post at a time
   + '@media (max-width:640px){#st-news{position:fixed;inset:0;width:auto!important;max-width:none!important;height:auto!important;max-height:none!important;margin:0;border-radius:0}'
-  + '#st-news-full{display:none!important}#st-news .mbu-ov-title{flex:1 1 auto;font-size:18px}#st-news-all{white-space:nowrap}'
+  + '#st-news-full{display:none!important}#st-news .mbu-ov-h{padding-top:4px;padding-bottom:4px;min-height:0}#st-news .mbu-ov-title{flex:1 1 auto;font-size:16px;white-space:nowrap}#st-news-all{white-space:nowrap;min-height:28px;font-size:12px}'
   + '#st-news-list{flex:1 1 auto;border-right:0}#st-news.reading #st-news-list,#st-news:not(.reading) #st-news-view{display:none}#st-news-nav{display:flex}'
-  + '#st-news-view h3{flex-wrap:wrap}#st-news-view h3 .n{flex-basis:calc(100% - 28px)}#st-news-foot{flex-wrap:wrap}}';
+  + '#st-news-view h3{flex-wrap:wrap}#st-news-view h3 .n{flex-basis:calc(100% - 28px)}#st-news-foot{padding:4px 12px;font-size:11px}#st-news-foot>span+span{display:none}#st-news-view{padding:8px 12px}#st-news-nav{margin-bottom:4px}}';
 // the golden icon: rings of light widen from it and fade
 var ST_NEWS_ON = ':root[data-st-news] #mbu-dock';
 var ST_NEWS_GOLD = ST_NEWS_ON + '{opacity:1}' + ST_NEWS_ON + ' svg path{stroke:#e0a800!important}'
