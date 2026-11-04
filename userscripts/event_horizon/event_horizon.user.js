@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.012731
+// @version      2026.11.04.013019
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8356,15 +8356,15 @@ function hmWire(app) {
     if (ME) profLoad(app);
 }
 function hmImg(im) { const fallback = im.nextElementSibling; if (fallback) fallback.style.display = 'none'; im.onerror = () => { if (fallback) fallback.style.display = ''; im.remove(); }; }
-// the home page's hero: the logo, a heading, the search form (filled in on the search page), its state under it, and the recent searches
+// the home page's hero: the logo, a heading, the search form (filled in on the search page), the recent searches, and the search's state under them
 function srchHero(hi, sub, q = '', ty = 'artist', meth = 'indexed', add = '') {
     const kinds = SRCH_T.map(t => `<option value="${t}"${t === ty ? ' selected' : ''}>${srchName(t)}</option>`).join('');
     const ss = searches(), qs = ss.map(x => `<a href="${MB}/search?query=${encodeURIComponent(x.q)}&type=${x.t}&method=indexed">${x.t === 'artist' ? '' : `<b>${x.t.replace('_', ' ')}:</b> `}${esc(x.q)}</a>`).join('');
     return `<header class="hm-hero"><a class="hm-home" href="${MB}/" data-tip="Event Horizon's home" aria-label="Event Horizon's home">${LOGO.replace('<svg', '<svg class="hm-orb"')}<div class="hm-wm"><b>Event<br>Horizon</b><small>MUSICBRAINZ</small></div></a><div class="hm-hi">${hi}</div>
         <form class="hm-srch" action="${MB}/search" method="get"><button type="submit" class="hm-go" data-tip="Search" aria-label="Search">${SVG(LENS)}</button><input name="query" value="${esc(q)}" placeholder="${matchMedia('(max-width:700px)').matches ? 'Search' : 'Search MusicBrainz'}" required${q ? '' : ' autofocus'}><select name="type">${kinds}</select><button type="button" class="hm-tg${S.hmAdv ? ' on' : ''}" data-tip="Advanced search" aria-label="Advanced search">${SVG('<path d="M4 6h10M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>')}</button>
         <div class="hm-adv"${S.hmAdv ? '' : ' hidden'}><label>Search method</label><select name="method">${[['indexed', 'Indexed'], ['advanced', 'Indexed, with advanced query syntax'], ['direct', 'Direct database search']].map(([v, l]) => `<option value="${v}"${v === meth ? ' selected' : ''}>${l}</option>`).join('')}</select>
-        <span class="hm-hint">Advanced syntax: <code>artist:"Hania Rani" AND date:2023</code> · <a href="${MB}/doc/Indexed_Search_Syntax" target="_blank">syntax help</a></span></div></form>${sub}
-        ${qs ? `<div class="hm-qr">${qs}<button type="button" class="hm-qx" data-tip="Forget these searches">Clear</button></div>` : ''}${add}</header>`;
+        <span class="hm-hint">Advanced syntax: <code>artist:"Hania Rani" AND date:2023</code> · <a href="${MB}/doc/Indexed_Search_Syntax" target="_blank">syntax help</a></span></div></form>
+        ${qs ? `<div class="hm-qr">${qs}<button type="button" class="hm-qx" data-tip="Forget these searches">Clear</button></div>` : ''}${sub}${add}</header>`;
 }
 function homeHtml() {
     const u = ME && `${MB}/user/${encodeURIComponent(ME)}/`, h = new Date().getHours();
