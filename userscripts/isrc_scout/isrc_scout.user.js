@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.04.120000
+// @version      2026.11.04.130000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -2755,6 +2755,11 @@
     #ii-btn.has-missing:hover { background: #7d1a4a; }
     #ii-btn .ii-status { font-size: 10px; font-weight: 600; opacity: .9; }
     #ii-btn .ii-btn-links { border-left: 1px solid rgba(255,255,255,.4); padding-left: 6px; }
+    /* in Event Horizon a quiet tinted chip in the theme's colours, not a filled, pulsing button */
+    html[data-mbu-dock] #app #ii-btn { --ii-c: var(--link, var(--accent)); color: var(--ii-c) !important; background: color-mix(in srgb, var(--ii-c) 12%, transparent); border: 1px solid color-mix(in srgb, var(--ii-c) 35%, transparent); box-shadow: none; outline: none; animation: none; }
+    html[data-mbu-dock] #app #ii-btn.has-missing { --ii-c: var(--mb-orange, var(--isrc)); }
+    html[data-mbu-dock] #app #ii-btn:hover { background: color-mix(in srgb, var(--ii-c) 22%, transparent); }
+    html[data-mbu-dock] #app #ii-btn .ii-btn-links { border-left-color: color-mix(in srgb, var(--ii-c) 35%, transparent); }
     @keyframes ii-pulse { 0%,100%{opacity:1} 50%{opacity:.72} }
 
     /* overlay + modal */
