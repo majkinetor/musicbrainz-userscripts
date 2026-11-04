@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.04.233002
+// @version      2026.11.04.234842
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -5168,19 +5168,25 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
               + at(row) + '{top:auto;bottom:calc(100% + 3px);right:50%;left:auto;transform:translateX(50%)}';
           root.appendChild(css);
       }
-      if (style) {
-          // the halo: the page's own background, a dark userstyle's included
-          var bg = function (el) { var c = el && getComputedStyle(el).backgroundColor, m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/.exec(c || ''); return m && !(m[4] !== undefined && +m[4] < 0.5) ? m : null; };
-          var m = bg(document.body) || bg(root);
-          root.style.setProperty('--mbu-count-halo', m ? 'rgb(' + m[1] + ',' + m[2] + ',' + m[3] + ')' : '#fff');
-          root.toggleAttribute('data-mbu-count-dark', !!m && (0.2126 * m[1] + 0.7152 * m[2] + 0.0722 * m[3]) / 255 < 0.5);
-      }
+      if (style) mbuDockHalo(root);
       Array.prototype.forEach.call(document.querySelectorAll('[data-mb-corner-status],[data-mbu-count-cells]'), mbuDockCells);
       if (!root.hasAttribute('data-mbu-count-obs') && window.MutationObserver) {
           root.setAttribute('data-mbu-count-obs', '');
           new MutationObserver(function (ms) { ms.forEach(function (r) { mbuDockCells(r.target); }); })
               .observe(root, { subtree: true, attributes: true, attributeFilter: ['data-mb-corner-status'] });
       }
+  }
+  // The count's halo: the page's own background, a dark userstyle's included. Read again by
+  // mbuTheme whenever the page may have changed theme, so switching themes doesn't leave the
+  // old background's halo around the digits; written only when it changes, since the root's
+  // style attribute is what wakes mbuTheme.
+  function mbuDockHalo(root) {
+      var bg = function (el) { var c = el && getComputedStyle(el).backgroundColor, m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/.exec(c || ''); return m && !(m[4] !== undefined && +m[4] < 0.5) ? m : null; };
+      var m = bg(document.body) || bg(root);
+      var halo = m ? 'rgb(' + m[1] + ', ' + m[2] + ', ' + m[3] + ')' : '#fff';
+      if (root.style.getPropertyValue('--mbu-count-halo') !== halo) root.style.setProperty('--mbu-count-halo', halo);
+      var dark = !!m && (0.2126 * m[1] + 0.7152 * m[2] + 0.0722 * m[3]) / 255 < 0.5;
+      if (root.hasAttribute('data-mbu-count-dark') !== dark) root.toggleAttribute('data-mbu-count-dark', dark);
   }
   function mbuDockCells(el) {
       var m = document.documentElement.hasAttribute('data-mbu-count') && /^(\d+)(?:,(\d+))?(?:\/(\d+))?$/.exec(el.getAttribute('data-mb-corner-status') || '');
@@ -6146,6 +6152,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
                   || mbuThemeOf(cs.getPropertyValue('--mbu-bg'))
                   || 'light');
           if (root.getAttribute('data-mbu-theme') !== t) root.setAttribute('data-mbu-theme', t);
+          if (root.hasAttribute('data-mbu-count') && typeof mbuDockHalo === 'function') mbuDockHalo(root);
 
           // Should we adopt the userstyle's OWN shades, or use our own palette?
           // Only if its --background actually agrees with the theme we detected.

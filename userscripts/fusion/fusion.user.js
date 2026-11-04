@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.04
+// @version      2026.11.04.234842
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -2404,19 +2404,25 @@ function mbuDockCount(root) {
             + at(row) + '{top:auto;bottom:calc(100% + 3px);right:50%;left:auto;transform:translateX(50%)}';
         root.appendChild(css);
     }
-    if (style) {
-        // the halo: the page's own background, a dark userstyle's included
-        var bg = function (el) { var c = el && getComputedStyle(el).backgroundColor, m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/.exec(c || ''); return m && !(m[4] !== undefined && +m[4] < 0.5) ? m : null; };
-        var m = bg(document.body) || bg(root);
-        root.style.setProperty('--mbu-count-halo', m ? 'rgb(' + m[1] + ',' + m[2] + ',' + m[3] + ')' : '#fff');
-        root.toggleAttribute('data-mbu-count-dark', !!m && (0.2126 * m[1] + 0.7152 * m[2] + 0.0722 * m[3]) / 255 < 0.5);
-    }
+    if (style) mbuDockHalo(root);
     Array.prototype.forEach.call(document.querySelectorAll('[data-mb-corner-status],[data-mbu-count-cells]'), mbuDockCells);
     if (!root.hasAttribute('data-mbu-count-obs') && window.MutationObserver) {
         root.setAttribute('data-mbu-count-obs', '');
         new MutationObserver(function (ms) { ms.forEach(function (r) { mbuDockCells(r.target); }); })
             .observe(root, { subtree: true, attributes: true, attributeFilter: ['data-mb-corner-status'] });
     }
+}
+// The count's halo: the page's own background, a dark userstyle's included. Read again by
+// mbuTheme whenever the page may have changed theme, so switching themes doesn't leave the
+// old background's halo around the digits; written only when it changes, since the root's
+// style attribute is what wakes mbuTheme.
+function mbuDockHalo(root) {
+    var bg = function (el) { var c = el && getComputedStyle(el).backgroundColor, m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/.exec(c || ''); return m && !(m[4] !== undefined && +m[4] < 0.5) ? m : null; };
+    var m = bg(document.body) || bg(root);
+    var halo = m ? 'rgb(' + m[1] + ', ' + m[2] + ', ' + m[3] + ')' : '#fff';
+    if (root.style.getPropertyValue('--mbu-count-halo') !== halo) root.style.setProperty('--mbu-count-halo', halo);
+    var dark = !!m && (0.2126 * m[1] + 0.7152 * m[2] + 0.0722 * m[3]) / 255 < 0.5;
+    if (root.hasAttribute('data-mbu-count-dark') !== dark) root.toggleAttribute('data-mbu-count-dark', dark);
 }
 function mbuDockCells(el) {
     var m = document.documentElement.hasAttribute('data-mbu-count') && /^(\d+)(?:,(\d+))?(?:\/(\d+))?$/.exec(el.getAttribute('data-mb-corner-status') || '');
@@ -3382,6 +3388,7 @@ function mbuTheme() {
                 || mbuThemeOf(cs.getPropertyValue('--mbu-bg'))
                 || 'light');
         if (root.getAttribute('data-mbu-theme') !== t) root.setAttribute('data-mbu-theme', t);
+        if (root.hasAttribute('data-mbu-count') && typeof mbuDockHalo === 'function') mbuDockHalo(root);
 
         // Should we adopt the userstyle's OWN shades, or use our own palette?
         // Only if its --background actually agrees with the theme we detected.

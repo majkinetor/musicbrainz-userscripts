@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.04.233920
+// @version      2026.11.04.234842
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1335,19 +1335,25 @@
               + at(row) + '{top:auto;bottom:calc(100% + 3px);right:50%;left:auto;transform:translateX(50%)}';
           root.appendChild(css);
       }
-      if (style) {
-          // the halo: the page's own background, a dark userstyle's included
-          var bg = function (el) { var c = el && getComputedStyle(el).backgroundColor, m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/.exec(c || ''); return m && !(m[4] !== undefined && +m[4] < 0.5) ? m : null; };
-          var m = bg(document.body) || bg(root);
-          root.style.setProperty('--mbu-count-halo', m ? 'rgb(' + m[1] + ',' + m[2] + ',' + m[3] + ')' : '#fff');
-          root.toggleAttribute('data-mbu-count-dark', !!m && (0.2126 * m[1] + 0.7152 * m[2] + 0.0722 * m[3]) / 255 < 0.5);
-      }
+      if (style) mbuDockHalo(root);
       Array.prototype.forEach.call(document.querySelectorAll('[data-mb-corner-status],[data-mbu-count-cells]'), mbuDockCells);
       if (!root.hasAttribute('data-mbu-count-obs') && window.MutationObserver) {
           root.setAttribute('data-mbu-count-obs', '');
           new MutationObserver(function (ms) { ms.forEach(function (r) { mbuDockCells(r.target); }); })
               .observe(root, { subtree: true, attributes: true, attributeFilter: ['data-mb-corner-status'] });
       }
+  }
+  // The count's halo: the page's own background, a dark userstyle's included. Read again by
+  // mbuTheme whenever the page may have changed theme, so switching themes doesn't leave the
+  // old background's halo around the digits; written only when it changes, since the root's
+  // style attribute is what wakes mbuTheme.
+  function mbuDockHalo(root) {
+      var bg = function (el) { var c = el && getComputedStyle(el).backgroundColor, m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/.exec(c || ''); return m && !(m[4] !== undefined && +m[4] < 0.5) ? m : null; };
+      var m = bg(document.body) || bg(root);
+      var halo = m ? 'rgb(' + m[1] + ', ' + m[2] + ', ' + m[3] + ')' : '#fff';
+      if (root.style.getPropertyValue('--mbu-count-halo') !== halo) root.style.setProperty('--mbu-count-halo', halo);
+      var dark = !!m && (0.2126 * m[1] + 0.7152 * m[2] + 0.0722 * m[3]) / 255 < 0.5;
+      if (root.hasAttribute('data-mbu-count-dark') !== dark) root.toggleAttribute('data-mbu-count-dark', dark);
   }
   function mbuDockCells(el) {
       var m = document.documentElement.hasAttribute('data-mbu-count') && /^(\d+)(?:,(\d+))?(?:\/(\d+))?$/.exec(el.getAttribute('data-mb-corner-status') || '');
@@ -2313,6 +2319,7 @@
                   || mbuThemeOf(cs.getPropertyValue('--mbu-bg'))
                   || 'light');
           if (root.getAttribute('data-mbu-theme') !== t) root.setAttribute('data-mbu-theme', t);
+          if (root.hasAttribute('data-mbu-count') && typeof mbuDockHalo === 'function') mbuDockHalo(root);
 
           // Should we adopt the userstyle's OWN shades, or use our own palette?
           // Only if its --background actually agrees with the theme we detected.
