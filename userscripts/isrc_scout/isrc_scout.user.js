@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.04.210000
+// @version      2026.11.04.220000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -378,7 +378,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  // Derive from the installed @version 2026.11.04.210000 the banner/CLIENT never drift out of
+  // Derive from the installed @version 2026.11.04.220000 the banner/CLIENT never drift out of
   // sync with the metadata again (the hardcoded constant kept lagging behind).
   const SCRIPT_VERSION = (() => {
     try { return (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '2026.6.27'; } catch (e) { return '2026.6.27'; }
@@ -2773,6 +2773,10 @@
     html[data-mbu-dock] #ii-btn[data-ii-pinned] .ii-status * { font-size: inherit !important; }
     html[data-mbu-dock] #ii-btn[data-ii-pinned] .ii-btn-links svg, html[data-mbu-dock] #ii-btn[data-ii-pinned] .ii-status svg { width: 1em; height: 1em; }
     html[data-mbu-dock] #ii-btn[data-ii-pinned] { box-sizing: border-box; justify-content: center; overflow: hidden; white-space: nowrap; line-height: 1; }
+    /* pinned, it floats like Platform Check's pinned window beside it: same shadow, corners and solid background */
+    html[data-mbu-dock] #ii-btn[data-ii-pinned] { border-radius: 10px; box-shadow: 0 6px 24px rgba(0,0,0,.35); }
+    html[data-mbu-dock] #ii-btn[data-ii-pinned][data-ii-quiet] { background: color-mix(in srgb, var(--ii-c) 12%, var(--mbu-bg)); box-shadow: 0 6px 24px rgba(0,0,0,.35); }
+    html[data-mbu-dock] #ii-btn[data-ii-pinned][data-ii-quiet]:hover { background: color-mix(in srgb, var(--ii-c) 22%, var(--mbu-bg)); }
     /* no tooltip while the pinned HUD is moved or resized */
     html.ii-hud-busy #mbu-tip { display: none !important; }
     #ii-hud-menu { position: fixed; z-index: 2147483600; min-width: 150px; padding: 4px 0; background: var(--mbu-surface, var(--surface, #fff)); color: var(--mbu-text, var(--text, #222)); border: 1px solid var(--mbu-border, var(--border, #ccc)); border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.25); font: 13px/1.3 system-ui, sans-serif; }
