@@ -43,6 +43,23 @@ test.describe('palette', () => {
     await page.waitForSelector('#st-cfg', { timeout: 5000 });
     check(await page.locator('#st-tab-g').getAttribute('aria-selected') === 'true', 'the settings open on General');
   });
+  test('Enter runs the command only, not the element focused behind', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+    await page.goto(`${SANDBOX}/search/edits`, { waitUntil: 'load', timeout: 60000 });
+    await inject('string_theory');
+    await page.evaluate(() => {
+      const b = document.createElement('button'); b.id = 'behind'; b.textContent = 'behind'; window.__hits = 0;
+      b.onclick = () => window.__hits++;
+      document.addEventListener('keyup', e => { if (e.key === 'Enter') window.__hits++; });
+      document.body.prepend(b); b.focus();
+    });
+    await page.keyboard.press('Control+k');
+    await page.waitForSelector('#st-pal-q', { timeout: 10000 });
+    await page.keyboard.type('theme: dark');
+    await page.keyboard.press('Enter');
+    await until(() => variant(page), v => v === 'dark', { timeout: 5000 });
+    check(await page.evaluate(() => document.activeElement.id) === 'behind', 'the focus goes back to the page');
+    check(await page.evaluate(() => window.__hits) === 0, 'the button behind saw no Enter');
+  });
   test('pins move by dragging and with Alt+arrows', { tag: ['@sandbox'] }, async ({ page, inject }) => {
     await open(page, inject);
     for (const q of ['settings dock', 'settings string', 'theme: dark']) {

@@ -298,6 +298,20 @@ function stPalMark(c, hits) {
   return '<span class="st-pal-c">' + html(0, cut) + '</span><span class="st-pal-l">' + html(cut, text.length) + '</span>';
 }
 
+// the keypress and keyup of the Enter that ran a command: nothing on the page sees them
+function stPalSwallowEnter() {
+  var eat = function (e) {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (e.type === 'keyup') off();
+  };
+  var off = function () { window.removeEventListener('keypress', eat, true); window.removeEventListener('keyup', eat, true); clearTimeout(t); };
+  var t = setTimeout(off, 1500);   // a keyup that never comes (focus left the window) frees it anyway
+  window.addEventListener('keypress', eat, true);
+  window.addEventListener('keyup', eat, true);
+}
+
 function stPalette() {
   if (stPalOv && stPalOv.isConnected) { stPalOv.querySelector('#st-pal-q').focus(); return; }
   var U = stUI(), T = stTokens(), html = document.documentElement;
@@ -436,7 +450,15 @@ function stPalette() {
     else if (k === 'PageDown') select(active + page());
     else if (k === 'PageUp') select(active - page());
     else if ((k === 'Home' || k === 'End') && e.ctrlKey) select(k === 'Home' ? 0 : shown.length - 1);
-    else if (k === 'Enter') run(shown[keyed && active >= 0 ? active : 0]);   // the first row, unless the keys chose another; the pointer's row runs on a click
+    else if (k === 'Enter') {
+      // the first row, unless the keys chose another; the pointer's row runs on a click. The focus goes
+      // back to the page on close, so the rest of this press (keypress, keyup) is swallowed: it would
+      // otherwise reach the element behind and run that too
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      stPalSwallowEnter();
+      run(shown[keyed && active >= 0 ? active : 0]);
+    }
     else if (e.altKey && e.code === 'KeyP') pin(shown[active]);
     else if (stKeyIs(e, stPalRead().key)) close();
     else nav = false;
