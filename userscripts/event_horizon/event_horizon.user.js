@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.010430
+// @version      2026.11.04.011212
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2335,7 +2335,7 @@ const CSS = `
 .hm-hint{flex-basis:100%;min-width:0;overflow-wrap:anywhere;color:var(--muted)}.hm-hint code{background:var(--chip);border-radius:5px;padding:1px 5px;color:var(--text)}
 .hm-qr{position:relative;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
 .hm-qr a{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:4px 11px;font-size:12px;color:var(--muted)!important;text-decoration:none!important;background:none;border:1px solid var(--border);cursor:pointer}
-.hm-qr a:hover,.hm-tg.on{background:var(--chip)!important;color:var(--text)!important}.hm-qr b{color:var(--accent);font-weight:700}.hm-tg svg{width:13px;height:13px}
+.hm-qr a:hover,.hm-tg.on{background:var(--chip)!important;color:var(--text)!important}.hm-qr b{color:var(--accent);font-weight:700}.hm-qr button.hm-qx{background:none!important;border:0;padding:4px 6px;font:inherit;font-size:12px;color:var(--muted)!important;opacity:.6;cursor:pointer;filter:none!important}.hm-qr button.hm-qx:hover{opacity:1;color:var(--text)!important;text-decoration:underline}.hm-tg svg{width:13px;height:13px}
 .hm-srch button.hm-tg{display:grid;place-items:center;width:38px;height:36px;padding:0;background:none;color:var(--muted)}
 .hm-srch button.hm-tg:hover,.hm-srch button.hm-tg.on{background:var(--chip);color:var(--accent)}
 .hm-add{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:18px}
@@ -8318,6 +8318,7 @@ function srchWire(app) {
         const q = f.query.value.trim(), t = f.type.value; if (!q) return;
         searchKeep(q, t);
     });
+    app.querySelector('.hm-qx')?.addEventListener('click', () => { try { GM_setValue('searches', []); } catch (e) { /* storage blocked */ } app.querySelector('.hm-qr')?.remove(); });
     const adv = app.querySelector('.hm-tg');
     adv.addEventListener('click', () => { S.hmAdv = !S.hmAdv; app.querySelector('.hm-adv').hidden = !S.hmAdv; adv.classList.toggle('on', S.hmAdv); save(); });
     return true;
@@ -8363,7 +8364,7 @@ function srchHero(hi, sub, q = '', ty = 'artist', meth = 'indexed', lim = '50', 
         <div class="hm-adv"${S.hmAdv ? '' : ' hidden'}><label>Search method</label><select name="method">${[['indexed', 'Indexed'], ['advanced', 'Indexed, with advanced query syntax'], ['direct', 'Direct database search']].map(([v, l]) => `<option value="${v}"${v === meth ? ' selected' : ''}>${l}</option>`).join('')}</select>
         <label>Results per page</label><span class="hm-seg" role="radiogroup" aria-label="Results per page">${[25, 50, 100].map(n => `<label><input type="radio" name="limit" value="${n}"${String(n) === lim ? ' checked' : ''}><span>${n}</span></label>`).join('')}</span>
         <span class="hm-hint">Advanced syntax: <code>artist:"Hania Rani" AND date:2023</code> · <a href="${MB}/doc/Indexed_Search_Syntax" target="_blank">syntax help</a></span></div></form>
-        ${qs ? `<div class="hm-qr">${qs}</div>` : ''}${add}</header>`;
+        ${qs ? `<div class="hm-qr">${qs}<button type="button" class="hm-qx" data-tip="Forget these searches">Clear</button></div>` : ''}${add}</header>`;
 }
 function homeHtml() {
     const u = ME && `${MB}/user/${encodeURIComponent(ME)}/`, h = new Date().getHours();
