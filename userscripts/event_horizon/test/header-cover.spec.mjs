@@ -5,7 +5,7 @@ test('header redraws share a cached cover load and retain missing-cover fallback
   const result = await page.evaluate(async src => {
     const calls = [], cvGone = new Set(), cvPending = new Map(), LOG = { debug() {} };
     const keptCover = async (id, img) => { calls.push([id, img.thumbnails[500]]); return { u: 'blob:kept-cover' }; };
-    const wire = new Function('cvGone', 'cvPending', 'LOG', 'keptCover', src + '; return cvWire;')(cvGone, cvPending, LOG, keptCover);
+    const wire = new Function('cvGone', 'cvPending', 'LOG', 'keptCover', 'collectionButton', src + '; return cvWire;')(cvGone, cvPending, LOG, keptCover, () => {});
     const html = '<img class="rhcv" data-cover="https://coverartarchive.org/release/example/front-250"><span class="rhic" hidden></span>';
     const a = document.createElement('div'), b = document.createElement('div'); a.innerHTML = html; b.innerHTML = html;
     wire(a); wire(b);
