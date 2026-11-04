@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-04 10:48 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-04 10:49 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -890,27 +890,11 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | Annotation → Show annotation on hover | on                                                                  | preview a folded annotation                                                                 |
 | General → Page width                  | Wide                                                                | how wide the page grows on a big screen                                                     |
 | General → Background                  | Cover aura                                                          | Flat, Cover aura, Glow or Header band                                                       |
-| General → Hexagons                    | off                                                                 | overlay hexagon outlines on any background                                                  |
-| General → Hexagon opacity             | 20%                                                                 | strength of the outlines and their glow                                                     |
-| General → Hexagon animation           | Static                                                              | choose an outline effect; see [Hexagon animations](#hexagon-animations)                     |
+| General → Hexagons                    | off                                                                 | show outlines on any background; the adjacent slider sets their opacity                     |
+| General → Hexagon animation           | Static                                                              | Static outlines or Drift’s slowly moving glow; respects reduced motion                      |
 | General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                                      |
 | General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
 | General → Keyboard shortcuts          | on                                                                  | the keys below; [keyboard shortcuts](#keyboard-shortcuts); **Change keys** opens their list |
-
-#### Hexagon animations
-
-All effects stay subtle, respect reduced motion and pause while the tab is hidden.
-
-| Hexagon animation | Effect                                                   |
-| ----------------- | -------------------------------------------------------- |
-| Static            | Still outlines                                           |
-| Breathe           | Slowly fading outlines                                   |
-| Drift             | Roaming pools of glow                                    |
-| Christmas lights  | Small coloured lights following the outlines             |
-| Soft comets       | Coloured heads with tapered trails                       |
-| Winter stars      | Pearl stars slowly brightening at corners                |
-| Ember clusters    | Small warm clusters glowing in waves                     |
-| Electric threads  | Rare threads of varied width with occasional soft sparks |
 
 ### Shortcuts
 
