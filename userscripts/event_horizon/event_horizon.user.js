@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.120001
+// @version      2026.11.04.123000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2327,6 +2327,7 @@ const CSS = `
 .hm-hi{position:relative;font-size:30px;font-weight:800;margin:6px 0 16px}.hm-hi em{font-style:normal;background:linear-gradient(90deg,#f07dbf,#f5a06b);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hm-srch{position:relative;max-width:820px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--surface)!important;border:1px solid var(--border);border-radius:14px;padding:6px 6px 6px 16px;color:var(--muted);box-shadow:0 6px 22px var(--shadow)}
 .hm-srch:focus-within{border-color:var(--accent)}
+.hm-qc{background:none!important;border:0;padding:6px;color:var(--muted)!important;cursor:pointer;filter:none!important;display:flex}.hm-qc:hover{color:var(--text)!important}.hm-qc svg{width:18px;height:18px}.hm-qd{position:absolute;z-index:20;top:calc(100% + 6px);left:0;right:0;background:var(--surface)!important;border:1px solid var(--border);border-radius:12px;padding:6px;box-shadow:0 6px 22px var(--shadow);max-height:60vh;overflow:auto}.hm-qd[hidden]{display:none}.hm-qd button{display:flex;gap:8px;width:100%;text-align:left;background:none!important;border:0;border-radius:8px;padding:8px 10px;font:inherit;font-size:15px;color:var(--text)!important;cursor:pointer;filter:none!important}.hm-qd button:hover,.hm-qd button.on{background:var(--chip)!important}.hm-qd b{color:var(--accent);font-weight:700}
 .hm-srch>input[name=query]{flex:1;min-width:0;border:0;outline:0;background:none!important;color:var(--text)!important;font:inherit;font-size:18px;padding:8px 0}
 .hm-srch select{border:0;background:var(--chip)!important;color:var(--chip-text)!important;filter:none!important;color-scheme:light dark;font:inherit;font-size:13px;border-radius:9px;padding:8px}
 .hm-srch button{filter:none!important;border:0;border-radius:9px;background:#ba478f;color:#fff;font:inherit;font-weight:700;padding:9px 18px;cursor:pointer}
@@ -3133,7 +3134,7 @@ const S = {
     hgrp: 'burst', // the history page's grouping
     tagView: 'bars', etagView: 'chips', tagSort: 'count', tagScope: 'a', tgxView: 'row', // the tags pages' view (an editor's, an entity's), order and kind
 };
-VIEW.push('menuTitles', 'annoHover', 'pending', 'colPick', 'colW', 'named', 'stars', 'starGroup', 'starView', 'starSort', 'recView', 'recSort', 'recMax', 'recOff');
+VIEW.push('menuTitles', 'annoHover', 'pending', 'colPick', 'colW', 'named', 'stars', 'starGroup', 'starView', 'starSort', 'recView', 'recSort', 'recMax', 'recOff', 'hmQs');
 S.stars = []; // starred entities travel with the manager's settings
 S.starGroup = 'type';
 S.starView = '';
@@ -8401,7 +8402,26 @@ function srchWire(app) {
     app.querySelector('.hm-qx')?.addEventListener('click', () => { try { GM_setValue('searches', []); } catch (e) { /* storage blocked */ } app.querySelector('.hm-qr')?.remove(); });
     app.querySelectorAll('[data-hm-qs]').forEach(r => r.addEventListener('change', () => { S.hmQs = r.value; save(); render(); }));
     // picking a recent search from the field's list brings its entity type back too
-    f.query.addEventListener('input', () => { const o = [...app.querySelectorAll('#hm-ql option')].find(x => x.value === f.query.value); if (o) f.type.value = o.dataset.t; });
+    const qd = app.querySelector('.hm-qd');
+    if (qd) {
+        const show = on => { qd.hidden = !on; f.query.setAttribute('aria-expanded', on); };
+        const match = () => { const v = f.query.value.trim().toLowerCase(); let n = 0; qd.querySelectorAll('button').forEach(b => { const hit = !v || b.dataset.q.toLowerCase().includes(v); b.hidden = !hit; n += hit; }); return n; };
+        f.query.addEventListener('focus', () => show(match() > 0));
+        f.query.addEventListener('input', () => show(match() > 0));
+        f.query.addEventListener('blur', () => setTimeout(() => show(false), 150));
+        f.query.addEventListener('keydown', e => {
+            const bs = [...qd.querySelectorAll('button:not([hidden])')], i = bs.findIndex(b => b.classList.contains('on'));
+            if (e.key === 'Escape') return show(false);
+            if (e.key === 'Enter' && i >= 0 && !qd.hidden) { e.preventDefault(); bs[i].click(); return; }
+            if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' || !bs.length) return;
+            e.preventDefault(); show(true); bs.forEach(b => b.classList.remove('on'));
+            bs[(i + (e.key === 'ArrowDown' ? 1 : -1) + bs.length + (i < 0 && e.key === 'ArrowUp' ? 1 : 0)) % bs.length].classList.add('on');
+        });
+        app.querySelector('.hm-qc').addEventListener('mousedown', e => e.preventDefault());
+        app.querySelector('.hm-qc').addEventListener('click', () => { const on = qd.hidden; if (on) { f.query.focus(); qd.querySelectorAll('button').forEach(b => { b.hidden = false; }); } show(on); });
+        qd.addEventListener('mousedown', e => e.preventDefault());
+        qd.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; f.query.value = b.dataset.q; f.type.value = b.dataset.t; show(false); f.requestSubmit(); });
+    }
     const adv = app.querySelector('.hm-tg');
     adv.addEventListener('click', () => { S.hmAdv = !S.hmAdv; app.querySelector('.hm-adv').hidden = !S.hmAdv; adv.classList.toggle('on', S.hmAdv); save(); });
     return true;
@@ -8443,9 +8463,9 @@ function srchHero(hi, sub, q = '', ty = 'artist', meth = 'indexed', add = '') {
     const kinds = SRCH_T.map(t => `<option value="${t}"${t === ty ? ' selected' : ''}>${srchName(t)}</option>`).join('');
     const ss = S.hmQs === 'off' ? [] : searches(), qs = S.hmQs !== 'below' ? '' : ss.map(x => `<a href="${MB}/search?query=${encodeURIComponent(x.q)}&type=${x.t}&method=indexed">${x.t === 'artist' ? '' : `<b>${x.t.replace('_', ' ')}:</b> `}${esc(x.q)}</a>`).join('');
     return `<header class="hm-hero"><a class="hm-home" href="${MB}/" data-tip="Event Horizon's home" aria-label="Event Horizon's home">${LOGO.replace('<svg', '<svg class="hm-orb"')}<div class="hm-wm"><b>Event<br>Horizon</b><small>MUSICBRAINZ</small></div></a><div class="hm-hi">${hi}</div>
-        <form class="hm-srch" action="${MB}/search" method="get"><button type="submit" class="hm-go" data-tip="Search" aria-label="Search">${SVG(LENS)}</button><input name="query" value="${esc(q)}" placeholder="${matchMedia('(max-width:700px)').matches ? 'Search' : 'Search MusicBrainz'}"${S.hmQs === 'combo' && ss.length ? ' list="hm-ql" autocomplete="off"' : ''} required${q ? '' : ' autofocus'}><select name="type">${kinds}</select><button type="button" class="hm-tg${S.hmAdv ? ' on' : ''}" data-tip="Advanced search" aria-label="Advanced search">${SVG('<path d="M4 6h10M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>')}</button>
+        <form class="hm-srch" action="${MB}/search" method="get"><button type="submit" class="hm-go" data-tip="Search" aria-label="Search">${SVG(LENS)}</button><input name="query" value="${esc(q)}" placeholder="${matchMedia('(max-width:700px)').matches ? 'Search' : 'Search MusicBrainz'}"${S.hmQs === 'combo' && ss.length ? ' autocomplete="off" role="combobox" aria-expanded="false" aria-controls="hm-ql"' : ''} required${q ? '' : ' autofocus'}>${S.hmQs === 'combo' && ss.length ? `<button type="button" class="hm-qc" data-tip="Recent searches" aria-label="Recent searches">${SVG('<path d="M6 9l6 6 6-6"/>')}</button>` : ''}<select name="type">${kinds}</select><button type="button" class="hm-tg${S.hmAdv ? ' on' : ''}" data-tip="Advanced search" aria-label="Advanced search">${SVG('<path d="M4 6h10M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>')}</button>
         <div class="hm-adv"${S.hmAdv ? '' : ' hidden'}><label>Search method</label><select name="method">${[['indexed', 'Indexed'], ['advanced', 'Indexed, with advanced query syntax'], ['direct', 'Direct database search']].map(([v, l]) => `<option value="${v}"${v === meth ? ' selected' : ''}>${l}</option>`).join('')}</select>
-        <span class="hm-hint">Advanced syntax: <code>artist:"Hania Rani" AND date:2023</code> · <a href="${MB}/doc/Indexed_Search_Syntax" target="_blank">syntax help</a></span><label>Recent searches</label><span class="hm-seg" role="radiogroup" aria-label="Recent searches">${[['off', 'Off'], ['below', 'Below search'], ['combo', 'In combobox']].map(([v, l]) => `<label><input type="radio" name="hm-qs" form="hm-noform" value="${v}" data-hm-qs${v === S.hmQs ? ' checked' : ''}><span>${l}</span></label>`).join('')}</span></div>${S.hmQs === 'combo' && ss.length ? `<datalist id="hm-ql">${ss.map(x => `<option value="${esc(x.q)}" data-t="${x.t}">${x.t.replace('_', ' ')}</option>`).join('')}</datalist>` : ''}</form>
+        <span class="hm-hint">Advanced syntax: <code>artist:"Hania Rani" AND date:2023</code> · <a href="${MB}/doc/Indexed_Search_Syntax" target="_blank">syntax help</a></span><label>Recent searches</label><span class="hm-seg" role="radiogroup" aria-label="Recent searches">${[['off', 'Off'], ['below', 'Below search'], ['combo', 'In combobox']].map(([v, l]) => `<label><input type="radio" name="hm-qs" form="hm-noform" value="${v}" data-hm-qs${v === S.hmQs ? ' checked' : ''}><span>${l}</span></label>`).join('')}</span></div>${S.hmQs === 'combo' && ss.length ? `<div class="hm-qd" id="hm-ql" role="listbox" hidden>${ss.map(x => `<button type="button" role="option" data-q="${esc(x.q)}" data-t="${x.t}">${x.t === 'artist' ? '' : `<b>${x.t.replace('_', ' ')}:</b>`}<span>${esc(x.q)}</span></button>`).join('')}</div>` : ''}</form>
         ${qs ? `<div class="hm-qr">${qs}<button type="button" class="hm-qx" data-tip="Forget these searches">Clear</button></div>` : ''}${sub}${add}</header>`;
 }
 function homeHtml() {
