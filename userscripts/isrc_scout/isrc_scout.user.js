@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.04.141000
+// @version      2026.11.04.150000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -2762,6 +2762,12 @@
     html[data-mbu-dock] #ii-btn[data-ii-quiet] .ii-btn-links { border-left-color: color-mix(in srgb, var(--ii-c) 35%, transparent); }
     html[data-mbu-dock] #ii-btn[data-ii-pinned] { position: fixed; z-index: 2147483000; margin: 0; cursor: grab; font-size: 14px; }
     html[data-mbu-dock] #ii-btn[data-ii-pinned].ii-dragging { cursor: grabbing; }
+    /* the pinned HUD's corner grip resizes it */
+    html[data-mbu-dock] #ii-btn[data-ii-pinned]::after { content: ''; position: absolute; right: 1px; bottom: 1px; width: 7px; height: 7px; background: linear-gradient(135deg, transparent 50%, currentColor 50%); opacity: .45; cursor: nwse-resize; }
+    html[data-mbu-dock] #ii-btn[data-ii-pinned].ii-resizing { cursor: nwse-resize; }
+    html[data-mbu-dock] #ii-btn[data-ii-pinned] svg { width: 1em; height: 1em; }
+    /* no tooltip while the pinned HUD is moved or resized */
+    html.ii-hud-busy #mbu-tip { display: none !important; }
     #ii-hud-menu { position: fixed; z-index: 2147483600; min-width: 150px; padding: 4px 0; background: var(--mbu-surface, var(--surface, #fff)); color: var(--mbu-text, var(--text, #222)); border: 1px solid var(--mbu-border, var(--border, #ccc)); border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.25); font: 13px/1.3 system-ui, sans-serif; }
     #ii-hud-menu label { display: flex; align-items: center; gap: 8px; padding: 6px 12px; cursor: pointer; white-space: nowrap; }
     #ii-hud-menu label:hover { background: var(--mbu-hover, var(--hover, rgba(127,127,127,.12))); }
@@ -9269,7 +9275,8 @@
       const p = store.get('hudPos', null) || { x: innerWidth - 260, y: 80 };
       btn.style.left = Math.max(0, Math.min(innerWidth - 40, p.x)) + 'px';
       btn.style.top = Math.max(0, Math.min(innerHeight - 24, p.y)) + 'px';
-    } else { btn.style.left = btn.style.top = ''; }
+      btn.style.fontSize = (store.get('hudSize', 14) || 14) + 'px';
+    } else { btn.style.left = btn.style.top = btn.style.fontSize = ''; }
   }
   btn.addEventListener('contextmenu', e => {
     if (!document.documentElement.hasAttribute('data-mbu-dock')) return;
@@ -9298,17 +9305,31 @@
   btn.addEventListener('pointerdown', e => {
     if (e.button !== 0 || !btn.hasAttribute('data-ii-pinned')) return;
     const r = btn.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top, x0 = e.clientX, y0 = e.clientY;
+    const resize = r.right - e.clientX <= 12 && r.bottom - e.clientY <= 12;
+    const fs0 = parseFloat(getComputedStyle(btn).fontSize) || 14;
     let moved = false;
+    document.documentElement.classList.add('ii-hud-busy');
+    document.getElementById('mbu-tip')?.classList.remove('mbu-tip-on');
     const move = ev => {
       if (!moved && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 4) return;
-      moved = true; btn.classList.add('ii-dragging');
+      moved = true; btn.classList.add(resize ? 'ii-resizing' : 'ii-dragging');
+      if (resize) {
+        // the button scales with its font: the drag's widening over the button's start width sets the size
+        const k = Math.max((ev.clientX - r.left) / r.width, (ev.clientY - r.top) / r.height);
+        btn.style.fontSize = Math.round(Math.max(10, Math.min(36, fs0 * k))) + 'px';
+        return;
+      }
       btn.style.left = Math.max(0, Math.min(innerWidth - btn.offsetWidth, ev.clientX - dx)) + 'px';
       btn.style.top = Math.max(0, Math.min(innerHeight - btn.offsetHeight, ev.clientY - dy)) + 'px';
     };
     const up = () => {
       removeEventListener('pointermove', move); removeEventListener('pointerup', up);
-      btn.classList.remove('ii-dragging');
-      if (moved) { hudDragged = true; store.set('hudPos', { x: parseInt(btn.style.left), y: parseInt(btn.style.top) }); }
+      btn.classList.remove('ii-dragging', 'ii-resizing');
+      document.documentElement.classList.remove('ii-hud-busy');
+      if (!moved) return;
+      hudDragged = true;
+      if (resize) store.set('hudSize', parseInt(btn.style.fontSize));
+      else store.set('hudPos', { x: parseInt(btn.style.left), y: parseInt(btn.style.top) });
     };
     addEventListener('pointermove', move); addEventListener('pointerup', up);
   });
