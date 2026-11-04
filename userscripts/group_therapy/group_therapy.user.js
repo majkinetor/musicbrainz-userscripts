@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.03.234742
+// @version      2026.11.04.233000
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -1279,20 +1279,25 @@
           .filter(function (el) { return !el.hidden && getComputedStyle(el).display !== 'none'; })
           .filter(function (el) { if (el.getAttribute('data-mbu-docked') !== 'peek') return true; peeks.push(el); return false; })
           .sort(byRank);
+      // launchers share one centre line across the flow: a 34px one beside the 40px dock button sat
+      // flush to the edge instead, off centre by half the difference, times the corner's size
+      var across = function (el) { return (row ? el.offsetHeight : el.offsetWidth) * (el.hasAttribute('data-mb-corner-scaled') ? size : 1); };
+      els.concat(peeks).forEach(fit);
+      var lane = 0;
+      els.concat(peeks).forEach(function (el) { if (small(el)) lane = Math.max(lane, across(el)); });
+      var inset = function (el) { return small(el) ? Math.round((lane - across(el)) / 2) : 0; };
       var pos = edge;
       els.forEach(function (el) {
-          fit(el);
-          el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge : pos)) + 'px';
-          el.style[right ? 'right' : 'left'] = (gapX + (row ? pos : edge)) + 'px';
+          el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge + inset(el) : pos)) + 'px';
+          el.style[right ? 'right' : 'left'] = (gapX + (row ? pos : edge + inset(el))) + 'px';
           el.style[right ? 'left' : 'right'] = 'auto';
           pos += (row ? el.offsetWidth : el.offsetHeight) * (el.hasAttribute('data-mb-corner-scaled') ? size : 1) + 8;
       });
       // the folded dock's peeking entries: in a line from its button, along the stack's flow
       var side = edge + 44 * size;
       peeks.sort(byRank).forEach(function (el) {
-          fit(el);
-          el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge : side)) + 'px';
-          el.style[right ? 'right' : 'left'] = (gapX + (row ? side : edge)) + 'px';
+          el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge + inset(el) : side)) + 'px';
+          el.style[right ? 'right' : 'left'] = (gapX + (row ? side : edge + inset(el))) + 'px';
           el.style[right ? 'left' : 'right'] = 'auto';
           side += 36 * size;
       });

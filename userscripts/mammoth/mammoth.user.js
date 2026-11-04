@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.03.234742
+// @version      2026.11.04.233000
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg==
@@ -921,20 +921,25 @@
           .filter(function (el) { return !el.hidden && getComputedStyle(el).display !== 'none'; })
           .filter(function (el) { if (el.getAttribute('data-mbu-docked') !== 'peek') return true; peeks.push(el); return false; })
           .sort(byRank);
+      // launchers share one centre line across the flow: a 34px one beside the 40px dock button sat
+      // flush to the edge instead, off centre by half the difference, times the corner's size
+      var across = function (el) { return (row ? el.offsetHeight : el.offsetWidth) * (el.hasAttribute('data-mb-corner-scaled') ? size : 1); };
+      els.concat(peeks).forEach(fit);
+      var lane = 0;
+      els.concat(peeks).forEach(function (el) { if (small(el)) lane = Math.max(lane, across(el)); });
+      var inset = function (el) { return small(el) ? Math.round((lane - across(el)) / 2) : 0; };
       var pos = edge;
       els.forEach(function (el) {
-          fit(el);
-          el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge : pos)) + 'px';
-          el.style[right ? 'right' : 'left'] = (gapX + (row ? pos : edge)) + 'px';
+          el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge + inset(el) : pos)) + 'px';
+          el.style[right ? 'right' : 'left'] = (gapX + (row ? pos : edge + inset(el))) + 'px';
           el.style[right ? 'left' : 'right'] = 'auto';
           pos += (row ? el.offsetWidth : el.offsetHeight) * (el.hasAttribute('data-mb-corner-scaled') ? size : 1) + 8;
       });
       // the folded dock's peeking entries: in a line from its button, along the stack's flow
       var side = edge + 44 * size;
       peeks.sort(byRank).forEach(function (el) {
-          fit(el);
-          el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge : side)) + 'px';
-          el.style[right ? 'right' : 'left'] = (gapX + (row ? side : edge)) + 'px';
+          el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge + inset(el) : side)) + 'px';
+          el.style[right ? 'right' : 'left'] = (gapX + (row ? side : edge + inset(el))) + 'px';
           el.style[right ? 'left' : 'right'] = 'auto';
           side += 36 * size;
       });

@@ -32,7 +32,7 @@ test('launchers in one corner stack by order, and a hidden one leaves no gap', {
   await page.evaluate(() => { document.getElementById('falcon').style.display = ''; window.mbuShared = k => (k === 'cornerFlow' ? 'row' : undefined); mbRestackCorner('br'); });
   const c = await at();
   check(c.apollo.right === '14px' && c.falcon.right === '62px' && c.fusion.right === '110px', `a row by order from the corner (${JSON.stringify(c)})`);
-  check(c.apollo.bottom === '14px' && c.fusion.bottom === '14px', 'all on the bottom edge');
+  check(c.apollo.bottom === '14px' && c.falcon.bottom === '19px' && c.fusion.bottom === '24px', `along the bottom edge, on one centre line (${JSON.stringify(c)})`);
   // the left side (#802): the same corner mirrored, the lowest order still nearest it
   await page.evaluate(() => { window.mbuShared = k => (k === 'cornerFlow' ? 'row' : k === 'cornerSide' ? 'left' : undefined); mbRestackCorner('br'); });
   const d = await at();
@@ -41,4 +41,9 @@ test('launchers in one corner stack by order, and a hidden one leaves no gap', {
   await page.evaluate(() => { window.mbuShared = k => (k === 'cornerSide' ? 'left' : undefined); mbRestackCorner('br'); });
   const e = await at();
   check(e.apollo.left === '14px' && e.fusion.left === '14px' && e.apollo.bottom === '14px' && e.fusion.bottom === '120px', `a column on the left edge (${JSON.stringify(e)})`);
+  // launchers of different widths share one centre line, scaled too: a 34px one beside a 40px one
+  // sat flush to the edge, off centre by half the difference
+  await page.evaluate(() => { document.getElementById('falcon').style.width = '30px'; window.mbuShared = k => (k === 'cornerSize' ? 1.5 : undefined); mbRestackCorner('br'); });
+  const f = await at();
+  check(f.apollo.right === '14px' && f.falcon.right === '22px' && f.fusion.right === '14px', `a narrower launcher is centred in the column (${JSON.stringify(f)})`);
 });

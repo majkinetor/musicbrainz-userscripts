@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.04.230001
+// @version      2026.11.04.233000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1376,20 +1376,25 @@
           .filter(function (el) { return !el.hidden && getComputedStyle(el).display !== 'none'; })
           .filter(function (el) { if (el.getAttribute('data-mbu-docked') !== 'peek') return true; peeks.push(el); return false; })
           .sort(byRank);
+      // launchers share one centre line across the flow: a 34px one beside the 40px dock button sat
+      // flush to the edge instead, off centre by half the difference, times the corner's size
+      var across = function (el) { return (row ? el.offsetHeight : el.offsetWidth) * (el.hasAttribute('data-mb-corner-scaled') ? size : 1); };
+      els.concat(peeks).forEach(fit);
+      var lane = 0;
+      els.concat(peeks).forEach(function (el) { if (small(el)) lane = Math.max(lane, across(el)); });
+      var inset = function (el) { return small(el) ? Math.round((lane - across(el)) / 2) : 0; };
       var pos = edge;
       els.forEach(function (el) {
-          fit(el);
-          el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge : pos)) + 'px';
-          el.style[right ? 'right' : 'left'] = (gapX + (row ? pos : edge)) + 'px';
+          el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge + inset(el) : pos)) + 'px';
+          el.style[right ? 'right' : 'left'] = (gapX + (row ? pos : edge + inset(el))) + 'px';
           el.style[right ? 'left' : 'right'] = 'auto';
           pos += (row ? el.offsetWidth : el.offsetHeight) * (el.hasAttribute('data-mb-corner-scaled') ? size : 1) + 8;
       });
       // the folded dock's peeking entries: in a line from its button, along the stack's flow
       var side = edge + 44 * size;
       peeks.sort(byRank).forEach(function (el) {
-          fit(el);
-          el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge : side)) + 'px';
-          el.style[right ? 'right' : 'left'] = (gapX + (row ? side : edge)) + 'px';
+          el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge + inset(el) : side)) + 'px';
+          el.style[right ? 'right' : 'left'] = (gapX + (row ? side : edge + inset(el))) + 'px';
           el.style[right ? 'left' : 'right'] = 'auto';
           side += 36 * size;
       });
