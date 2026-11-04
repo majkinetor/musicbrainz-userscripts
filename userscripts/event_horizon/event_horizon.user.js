@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.140002
+// @version      2026.11.04.160000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -10503,6 +10503,14 @@ const keyGo = sub => () => {
     if (a) a.click(); else location.assign(url);
     return true;
 };
+// the viewer's search box, else MusicBrainz's header one, else its search page
+function keySearch() {
+    const b = ehOn && document.querySelector('#app .srch button.ab[data-srch]');
+    if (b) { b.click(); const i = b.closest('.srch').querySelector('input[name=query]'); setTimeout(() => i && i.focus(), 0); return true; }
+    const i = document.querySelector('.header input[name=query], #header input[name=query], header input[name=query]');
+    if (i && i.offsetParent) { i.focus(); i.select(); return true; }
+    location.assign(MB + '/search'); return true;
+}
 const KEY_CMDS = [
     ['page', 'Overview', 'o', keyGo('')],
     ['edit', 'Edit', 'e', keyGo('edit')],
@@ -10513,7 +10521,11 @@ const KEY_CMDS = [
     ['details', 'Details', 'd', keyGo('details')],
     ['aliases', 'Aliases', 'a', keyGo('aliases')],
     ['view', 'Switch between Event Horizon and MusicBrainz', 'v', () => { if (!PAGE_ID) return false; switchOn(!ehOn); return true; }],
-    ['settings', 'Settings', ',', () => { mbuCss(); if (document.getElementById('eh-cfg')) closeCfg(); else openCfg(); return true; }],
+    ['search', 'Search', 's', keySearch],
+    ['profile', 'Your profile', 'p', () => { const a = document.querySelector('.header a[href*="/user/"], #header a[href*="/user/"], header a[href*="/user/"]'); if (!a) return false; const m = a.href.match(/\/user\/[^/?#]+/); location.assign(MB + m[0]); return true; }],
+    ['home', 'MusicBrainz home page', '.', () => { location.assign(MB + '/'); return true; }],
+    // with String Theory, its settings; alone, the script's own
+    ['settings', 'Settings', ',', () => { if (document.documentElement.hasAttribute('data-mbu-st') || document.querySelector('[data-mbu-st]')) { document.dispatchEvent(new CustomEvent('mbu-st-settings')); return true; } mbuCss(); if (document.getElementById('eh-cfg')) closeCfg(); else openCfg(); return true; }],
     ['palette', 'Shortcuts', 'ctrl+/', () => { keysOpen(); return true; }],
 ];
 const keyOfCmd = c => S.keys[c[0]] != null ? S.keys[c[0]] : c[2];
@@ -10523,15 +10535,15 @@ const keyCombo = ev => {
     const k = ev.key === ' ' ? 'space' : ev.key.length === 1 ? ev.key.toLowerCase() : ev.key.toLowerCase();
     return (ev.ctrlKey || ev.metaKey ? 'ctrl+' : '') + (ev.altKey ? 'alt+' : '') + (ev.shiftKey && ev.key.length > 1 ? 'shift+' : '') + (k === '?' && (ev.ctrlKey || ev.metaKey) ? '/' : k);
 };
-const keyShow = k => k ? k.split('+').map(p => `<kbd>${esc(p.length === 1 ? p.toUpperCase() : p[0].toUpperCase() + p.slice(1))}</kbd>`).join('+') : '<span class="eh-k-none">none</span>';
+const keyShow = k => k ? k.split('+').map(p => `<kbd>${esc(p.length === 1 ? p.toUpperCase() : p[0].toUpperCase() + p.slice(1))}</kbd>`).join('') : '<span class="eh-k-none">none</span>';
 const mbuCss = () => { if (!document.getElementById('eh-mbu')) { const m = document.createElement('style'); m.id = 'eh-mbu'; m.textContent = MBU_TOKENS + MBU_UI_CSS + CFG_CSS + KEYS_CSS; document.documentElement.append(m); } };
-const KEYS_CSS = '.eh-keys{width:min(460px,calc(100vw - 32px))}.eh-keys input[type=search]{width:100%;box-sizing:border-box;margin:0 0 8px;padding:6px 8px;font:inherit}.eh-keys ul{list-style:none;margin:0;padding:0;max-height:60vh;overflow:auto}.eh-keys li{display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:4px;cursor:pointer}.eh-keys li.sel{background:var(--mbu-hover,rgba(127,127,127,.15))}.eh-keys li>span{flex:1}.eh-keys li button{min-width:72px;padding:3px 8px;font:inherit;background:none;border:1px solid var(--mbu-border,rgba(127,127,127,.4));border-radius:4px;color:inherit;cursor:pointer}.eh-keys li button.rec{border-color:currentColor}.eh-keys kbd{font:inherit;font-size:.9em}.eh-k-none{opacity:.5}.eh-keys .eh-k-ft{display:flex;justify-content:space-between;gap:8px;margin-top:8px;font-size:.9em;opacity:.8}.eh-keys .eh-k-ft button{background:none;border:0;padding:0;color:inherit;text-decoration:underline;cursor:pointer;font:inherit}';
+const KEYS_CSS = '.eh-keys{width:min(640px,calc(100vw - 32px))}.eh-keys h3{margin:0 0 12px;padding-right:36px}.eh-keys input[type=search]{width:100%;box-sizing:border-box;margin:0 0 10px;padding:7px 10px;font:inherit;background:none;color:inherit;border:1px solid var(--mbu-border,rgba(127,127,127,.4));border-radius:6px}.eh-keys ul{list-style:none;margin:0;padding:0;max-height:60vh;overflow:auto;display:grid;grid-template-columns:1fr 1fr;column-gap:24px}.eh-keys li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 4px;border-bottom:1px solid var(--mbu-border,rgba(127,127,127,.3));cursor:pointer}.eh-keys li.sel{background:var(--mbu-hover,rgba(127,127,127,.15))}.eh-keys li button{display:inline-flex;gap:3px;padding:0;background:none;border:0;color:inherit;cursor:pointer;font:inherit}.eh-keys li button.rec{font-style:italic}.eh-keys kbd{font:inherit;font-size:.85em;min-width:1.2em;text-align:center;padding:1px 6px;border:1px solid var(--mbu-border,rgba(127,127,127,.4));border-radius:4px}.eh-keys li.sel kbd,.eh-keys li button:hover kbd{border-color:currentColor}.eh-k-none{opacity:.5}.eh-keys .eh-k-ft{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px;font-size:.9em}.eh-keys .eh-k-ft>span{opacity:.75}.eh-keys .eh-k-ft button{background:none;border:1px solid var(--mbu-border,rgba(127,127,127,.4));border-radius:6px;padding:5px 12px;color:inherit;cursor:pointer;font:inherit}@media(max-width:520px){.eh-keys ul{grid-template-columns:1fr}}';
 let keysRec = null;   // the command whose key is being set
 function keysOpen() {
     if (document.getElementById('eh-keys')) return;
     mbuCss();
     const ov = document.createElement('div'); ov.className = 'mbu-ov'; ov.id = 'eh-keys';
-    ov.innerHTML = `<div class="mbu-ov-panel eh-keys mbu-ui" role="dialog" aria-label="Keyboard shortcuts"><div class="mbu-ov-body"><button type="button" class="mbu-ov-x" aria-label="Close">×</button><h3>Keyboard shortcuts</h3><input type="search" placeholder="Find a command" aria-label="Find a command"><ul></ul><div class="eh-k-ft"><span>Enter runs · click a key to change it</span><button type="button" class="eh-k-reset">Default keys</button></div></div></div>`;
+    ov.innerHTML = `<div class="mbu-ov-panel eh-keys mbu-ui" role="dialog" aria-label="Keyboard shortcuts"><div class="mbu-ov-body"><button type="button" class="mbu-ov-x" aria-label="Close">×</button><h3>Keyboard shortcuts</h3><input type="search" placeholder="Find a command" aria-label="Find a command"><ul></ul><div class="eh-k-ft"><span>Arrows choose · Enter runs · click a key, press another to change it</span><button type="button" class="eh-k-reset">Default keys</button></div></div></div>`;
     document.documentElement.append(ov);
     const panel = ov.firstChild, inp = panel.querySelector('input'), ul = panel.querySelector('ul');
     let sel = 0;
@@ -10555,7 +10567,9 @@ function keysOpen() {
             save(); keysRec = null; draw(); inp.focus(); return;
         }
         const l = list();
-        if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') { ev.preventDefault(); sel = (sel + (ev.key === 'ArrowDown' ? 1 : -1) + l.length) % Math.max(1, l.length); draw(); }
+        const two = getComputedStyle(ul).gridTemplateColumns.split(' ').length > 1 ? 2 : 1;
+        const step = { ArrowDown: two, ArrowUp: -two, ArrowRight: 1, ArrowLeft: -1 }[ev.key];
+        if (step && !(/Left|Right/.test(ev.key) && (two === 1 || ev.target === inp && inp.value))) { ev.preventDefault(); sel = Math.min(l.length - 1, Math.max(0, sel + step)); draw(); }
         else if (ev.key === 'Enter') { ev.preventDefault(); run(l[sel]); }
         else if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); close(); }
     });
