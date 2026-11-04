@@ -15,6 +15,32 @@ function stCmpVer(a, b) {
 }
 var ST_REPO = 'majkinetor/musicbrainz-userscripts';
 function stInstallUrl(ref) { return 'https://github.com/' + ST_REPO + '/raw/refs/heads/' + ref + '/userscripts/string_theory/string_theory.user.js'; }
+// A branch's newest commit, asked of GitHub's API, so its commit-pinned link installs exactly that build:
+// a branch link is served from GitHub's cache, which can hand out the build before for a few minutes.
+function stHeadSha(ref, cb) {
+  var url = 'https://api.github.com/repos/' + ST_REPO + '/commits/' + ref;
+  var done = function (txt) { var m = txt && /^[0-9a-f]{40}$/.exec(String(txt).trim()); cb(m ? m[0] : null); };
+  try {
+    if (typeof GM_xmlhttpRequest === 'function') {
+      GM_xmlhttpRequest({ method: 'GET', url: url, headers: { Accept: 'application/vnd.github.sha' }, timeout: 15000,
+        onload: function (r) { done(r.status >= 200 && r.status < 300 ? r.responseText : null); },
+        onerror: function () { done(null); }, ontimeout: function () { done(null); } });
+    } else {
+      fetch(url, { headers: { Accept: 'application/vnd.github.sha' }, cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.text() : null; }).then(done, function () { done(null); });
+    }
+  } catch (e) { done(null); }
+}
+// Install the branch's newest commit, pinned. The tab opens at once, while the click still counts, and
+// is sent on when GitHub answers; if it can't, the branch link is the fallback.
+function stInstallPinned(ref) {
+  var w = window.open('about:blank', '_blank');
+  if (w) try { w.opener = null; } catch (_) {}
+  stHeadSha(ref, function (sha) {
+    var url = sha ? 'https://github.com/' + ST_REPO + '/raw/' + sha + '/userscripts/string_theory/string_theory.user.js' : stInstallUrl(ref);
+    if (w) w.location.href = url; else window.open(url, '_blank', 'noopener');
+  });
+}
 // only the first few KB: @version is on the metadata block's third line
 function stRemoteVersion(ref, cb) {
   var url = 'https://raw.githubusercontent.com/' + ST_REPO + '/refs/heads/' + ref + '/userscripts/string_theory/string_theory.user.js?t=' + Date.now();
@@ -223,7 +249,7 @@ var ST_CSS = ''
 ST_CSS += '#st-cfg h3.st-about-h{font:600 13px/1.4 var(--mbu-font);text-transform:none;letter-spacing:0;color:var(--mbu-text);margin:0 0 12px}#st-cfg #st-p-s .st-row:has(>#st-sync-reload[hidden]):has(>#st-sync-backup-status:empty){display:none}';
 ST_CSS +='#st-cfg{width:min(760px,94vw);container-type:inline-size}#st-cfg .st-panes{display:block}#st-cfg .st-panes>.st-sec[hidden]{display:none!important}#st-cfg .st-title{flex-wrap:nowrap!important;white-space:nowrap;gap:12px}#st-cfg .st-title .mbu-cfg-name{flex-shrink:0}#st-cfg .st-title .mbu-cfg-sp,#st-cfg .st-title .mbu-cfg-ver{display:none}#st-cfg .st-title .st-tabs{margin-left:auto;flex-shrink:0}#st-cfg .st-title .st-tabs button{border:0;border-bottom:2px solid transparent;background:none;border-radius:0;margin:0;padding:5px 0;color:var(--mbu-text-dim)}#st-cfg .st-title .st-tabs{gap:18px}#st-cfg .st-title .st-tabs button[aria-selected=true]{border-bottom-color:var(--mbu-accent);color:var(--mbu-accent-text)}#st-cfg .st-title #st-tab-menu{margin-left:auto;width:100px;flex-shrink:0}#st-cfg .st-title .mbu-ov-x{margin-left:0}'
   + '#st-cfg .st-footer{display:flex;flex-wrap:wrap;align-items:center;gap:18px;margin-top:20px;padding-top:12px;border-top:1px solid var(--mbu-border)}#st-cfg .st-footer .st-links{margin-left:0}#st-cfg .st-footer #st-cfg-news{margin-right:0}#st-cfg .st-footer .mbu-help{margin-left:auto}#st-cfg .st-group{margin:0;padding:12px 0 18px}#st-cfg .st-group+.st-group{border-top:1px solid var(--mbu-border);padding-top:18px}#st-cfg .st-group>h3.st-h{border:0;margin:0 0 12px;padding:0;font-size:13px}#st-cfg .st-lbl{font:inherit!important;letter-spacing:0;text-transform:none;color:var(--mbu-text)!important}#st-cfg .st-field-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:8px 28px}#st-cfg .st-field{display:grid;grid-template-columns:100px minmax(0,180px);align-items:center;gap:10px;min-width:0}#st-cfg .st-field select{width:100%;max-width:180px}#st-cfg .st-field .st-seg{justify-self:start}#st-cfg .st-mode-label{display:none}#st-cfg .st-seg{border:0;gap:14px;border-radius:0;margin:0;overflow:visible}#st-cfg .st-seg button{border:0!important;border-bottom:2px solid transparent!important;border-radius:0;padding:4px 0;background:none;color:var(--mbu-text-dim)}#st-cfg .st-seg button[aria-checked=true]{background:none;border-bottom-color:var(--mbu-accent)!important;color:var(--mbu-accent-text)}#st-cfg .st-step{border:0;border-radius:0}#st-cfg .st-key{justify-self:start;border:0;border-bottom:1px solid var(--mbu-border);border-radius:0;background:none}#st-cfg .st-strip{border:0;padding:0;margin:12px 0 6px;gap:10px}#st-cfg .st-th-x{display:block}#st-cfg .st-th-x:has(.st-tx[hidden]):has(.st-cap[hidden]){display:none}'
-  + '#st-cfg #st-p-s .st-sync-between{justify-content:flex-start;gap:20px}#st-cfg #st-p-s .st-sync-backup-row>span:first-child{flex:0 0 100px}#st-cfg #st-p-s .st-sync-footer{display:none}#st-cfg #st-p-s .st-sync-group{margin-top:18px;padding-top:16px}#st-cfg .st-upd{background:none;padding:0;margin:0 0 20px}#st-cfg .st-upd>div{display:grid;grid-template-columns:70px minmax(0,max-content) minmax(0,max-content) auto;gap:12px;margin:10px 0}#st-cfg .st-upd b{min-width:0}#st-cfg .st-upd span{white-space:normal}#st-cfg .st-scripts{grid-template-columns:minmax(0,1fr);gap:4px 28px}#st-cfg .st-scripts .st-row{white-space:normal}#st-cfg .st-ver{font-size:11px}#st-cfg .st-title [hidden]{display:none!important}@container(min-width:620px){#st-cfg .st-field-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@container(min-width:520px){#st-cfg .st-scripts{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:640px){#st-cfg .st-title{gap:8px}#st-cfg .st-title .mbu-cfg-name{font-size:14px}#st-cfg .st-title .st-tabs{gap:12px}#st-cfg .st-title .st-tabs button{font-size:12px;min-height:30px}#st-cfg #st-p-g .st-field select{width:100%;height:30px}#st-cfg .st-field .st-lbl{margin:0}#st-cfg .st-upd>div{grid-template-columns:62px minmax(0,1fr) auto}#st-cfg .st-upd .st-channel-state{display:none}#st-cfg .st-seg button{padding:6px 0;min-height:30px}}';
+  + '#st-cfg #st-p-s .st-sync-between{justify-content:flex-start;gap:20px}#st-cfg #st-p-s .st-sync-backup-row>span:first-child{flex:0 0 100px}#st-cfg #st-p-s .st-sync-footer{display:none}#st-cfg #st-p-s .st-sync-group{margin-top:18px;padding-top:16px}#st-cfg .st-upd{background:none;padding:0;margin:0 0 20px}#st-cfg .st-upd>div{display:grid;grid-template-columns:70px minmax(0,max-content) minmax(0,max-content) auto;gap:12px;margin:10px 0}#st-cfg .st-upd b{min-width:0}#st-cfg .st-upd-links{display:flex;gap:12px;white-space:nowrap}#st-cfg .st-upd span{white-space:normal}#st-cfg .st-scripts{grid-template-columns:minmax(0,1fr);gap:4px 28px}#st-cfg .st-scripts .st-row{white-space:normal}#st-cfg .st-ver{font-size:11px}#st-cfg .st-title [hidden]{display:none!important}@container(min-width:620px){#st-cfg .st-field-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@container(min-width:520px){#st-cfg .st-scripts{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:640px){#st-cfg .st-title{gap:8px}#st-cfg .st-title .mbu-cfg-name{font-size:14px}#st-cfg .st-title .st-tabs{gap:12px}#st-cfg .st-title .st-tabs button{font-size:12px;min-height:30px}#st-cfg #st-p-g .st-field select{width:100%;height:30px}#st-cfg .st-field .st-lbl{margin:0}#st-cfg .st-upd>div{grid-template-columns:62px minmax(0,1fr) auto}#st-cfg .st-upd .st-channel-state{display:none}#st-cfg .st-seg button{padding:6px 0;min-height:30px}}';
 ST_CSS += '#st-cfg .st-th-x{margin-inline-start:18px}#st-cfg #st-th-time{font:400 12px/18px var(--mbu-font);gap:8px;min-height:28px}#st-cfg #st-th-time .st-time{font:inherit;height:28px}#st-cfg .st-panes{display:grid}#st-cfg .st-panes>.st-sec{grid-area:1/1}#st-cfg .st-panes>.st-sec[hidden]{display:block!important;visibility:hidden}';
 ST_CSS += '#st-cfg{font-size:12px;padding:12px 14px}#st-cfg .st-title{gap:8px;margin-bottom:8px}#st-cfg .st-title .mbu-cfg-ver{display:inline}#st-cfg .st-title .mbu-cfg-name{font-size:inherit}#st-cfg .st-title .mbu-help{margin-left:0}#st-cfg .st-title .st-tabs{gap:14px}#st-cfg .st-group{padding:8px 0 12px}#st-cfg .st-group+.st-group{padding-top:12px}#st-cfg .st-group>h3.st-h,#st-cfg h3.st-about-h{margin-bottom:8px}#st-cfg .st-field-grid{gap:4px 22px}#st-cfg .st-field{grid-template-columns:88px minmax(0,160px);gap:8px}#st-cfg .st-row{min-height:24px}#st-cfg .st-group>.st-row{margin:0}#st-cfg .st-strip{margin:8px 0 4px}#st-cfg .st-cap{font-size:11px}#st-cfg .st-footer{margin-top:12px;padding-top:8px;gap:14px}#st-cfg .st-upd{margin:0 0 12px;font-size:11px}#st-cfg .st-upd>div{grid-template-columns:58px minmax(0,max-content) minmax(0,max-content) auto;min-height:20px;margin:3px 0;gap:8px}#st-cfg .st-scripts{gap:0 22px}#st-cfg .st-scripts .st-row{min-height:22px}#st-cfg .st-ver{font-size:10px}#st-cfg #st-p-s .st-row{margin:4px 0;min-height:24px}#st-cfg #st-p-s .st-sync-group{margin-top:12px;padding-top:10px}#st-cfg #st-p-s details{margin-top:10px}#st-cfg #st-sync-status{margin:4px 0}#st-cfg #st-p-s .st-sync-backup-row>span:first-child{flex-basis:88px}#st-cfg #st-th-time{font:400 12px/18px var(--mbu-font)}#st-cfg .st-upd .st-channel-state{overflow-wrap:anywhere}@media(max-width:640px){#st-cfg .st-upd>div{grid-template-columns:58px minmax(0,1fr) auto}#st-cfg .st-row{margin:4px 0}#st-cfg .st-title{gap:6px}}';
 ST_CSS += '#st-cfg .st-sync-columns{display:grid;grid-template-columns:minmax(0,1fr);gap:12px 28px}#st-cfg #st-p-s .st-sync-options>h3{margin:4px 0 8px}@container(min-width:620px){#st-cfg .st-sync-columns{grid-template-columns:repeat(2,minmax(0,1fr))}}';
@@ -611,10 +637,17 @@ function stSettings(tab) {
             : stCmpVer(v2, ST_VERSION) > 0 ? '<span class="st-newer">newer</span>' : 'older';
           return '<div data-channel="' + stEsc(r) + '"><b>' + stEsc(name) + '</b><span>' + (v2 ? 'v' + stEsc(v2) : '') + '</span><span class="st-channel-state">' + state
             + '</span>'
-            + (v2 && stCmpVer(v2, ST_VERSION) !== 0 ? '<a href="' + stEsc(stInstallUrl(r)) + '" target="_blank" rel="noopener">Install</a>' : '') + '</div>';
+            + (v2 && stCmpVer(v2, ST_VERSION) !== 0 ? '<span class="st-upd-links"><a href="' + stEsc(stInstallUrl(r)) + '" target="_blank" rel="noopener">Install</a>'
+              + (r === 'main' ? '<a href="#" data-st-pinned="' + stEsc(r) + '" data-tip="Install the newest commit by its own link&#10;Skips GitHub\u2019s cache, which can serve the build before for a few minutes">Pinned</a>' : '') + '</span>' : '') + '</div>';
         }).join('') + '<div><b>Installed</b><span>v' + stEsc(ST_VERSION) + '</span><span class="st-channel-state">' + stEsc(stChannel()) + '</span><span></span></div>';
     };
     draw(true);
+    box.onclick = function (e) {
+      var a = e.target.closest('[data-st-pinned]');
+      if (!a) return;
+      e.preventDefault();
+      stInstallPinned(a.getAttribute('data-st-pinned'));
+    };
     refs.forEach(function (ref) {
       stRemoteVersion(ref, function (v) {
         got[ref] = v;

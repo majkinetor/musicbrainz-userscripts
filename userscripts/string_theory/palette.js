@@ -81,6 +81,7 @@ function stPalCommands() {
     add({ id: 'st:install:' + r[0], cat: 'String Theory', label: 'Install ' + r[1].toLowerCase(), hint: stChannel() === r[1] ? 'current' : '',
       run: function () { window.open(stInstallUrl(r[0]), '_blank', 'noopener'); } });
   });
+  add({ id: 'st:install:pinned', cat: 'String Theory', label: 'Install latest pinned', run: function () { stInstallPinned('main'); } });
   stMembers.forEach(function (m) {
     add({ id: 'set:' + m[0], cat: 'Settings', label: m[1], run: function () { stOpenFor(m[1]); } });
   });
