@@ -17,7 +17,7 @@
 - **[Theme](#theme)**: light or dark, for MusicBrainz and every script.
 - **[What's new](#whats-new)**: String Theory's icon turns golden when there is news.
 - **[Command palette](#command-palette)**: Ctrl+K lists every command, filtered as you type.
-- **[Sync and backup](#sync-and-backup)**: sync devices with Dropbox or Google Drive, save backups there, or export a file.
+- **[Sync and backup](#sync-and-backup)**: sync devices with Dropbox, Google Drive or your own WebDAV server, save backups there, or export a file.
 - **[Other recommended userscripts](#other-recommended-userscripts)**: scripts that go well with the bundle.
 
 ## What's included
@@ -95,6 +95,8 @@ Open String Theory's settings → **Sync**, choose **Provider**, and connect. Us
 
 **Dropbox** and **Google Drive** open their sign-in in a new tab, return to MusicBrainz and finish the connection automatically. Both support the sync actions and automatic sync, and stay connected until you disconnect or revoke access.
 
+**WebDAV** works with Nextcloud, ownCloud, a NAS or any WebDAV server. Enter the folder's address, your user name and password, then **Connect**; a missing folder is created. The address must start with `https://`. On Nextcloud and ownCloud, use an app password: the folder address is shown under *Files* → *Settings* → *WebDAV*, with a folder name added at the end. **Reconnect** shows the form again to change them. The password is saved in the userscript manager and, like other credentials, included in sync and backups.
+
 | Action   | What it does                                                                 |
 | -------- | ---------------------------------------------------------------------------- |
 | Sync now | Merges this device with the provider                                         |
@@ -109,7 +111,7 @@ Credentials, stars, saved notes, remembered field values, named filters and norm
 
 **Save backup** saves a separate, dated snapshot at the selected provider. **Browse** lists them, newest first, with dates and sizes. Select a backup, then use **Apply** or **Delete** in its header. **Apply** merges it into your settings, keeping a recovery copy and applying on reload, just like **Import**. Backup values win shared settings; stars are combined.
 
-**Disconnect** stops automatic sync and removes this device's selected connection; remote data remains. Google Drive saves files in a **String Theory** folder, including sync history. 
+**Disconnect** stops automatic sync and removes this device's selected connection; remote data remains. Google Drive saves files in a **String Theory** folder, including sync history. WebDAV saves `string-theory.json` in the folder you entered and backups in its `backups` folder.
 
 ## Settings
 

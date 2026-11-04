@@ -1,4 +1,5 @@
-// External storage (#885). Provider IO is bundled; both providers use a redirect code flow with a refresh token.
+// External storage (#885). Provider IO is bundled; Dropbox and Google Drive use a redirect code flow with a refresh token,
+// WebDAV a user name and password (sync-webdav.js).
 var ST_DROPBOX_KEY = 'g73mzw3yp0xqgtd';
 var ST_DROPBOX_REDIRECT = 'https://musicbrainz.org/?st-dropbox=callback';
 var ST_SYNC_PATH = '/string-theory.json';
@@ -9,7 +10,9 @@ var stBackupEntries = null, stBackupNotice = '', stBackupAccount = null;
 function stSyncFetch(url, options) {
   options = options || {};
   var target = new URL(String(url));
-  if (target.protocol !== 'https:' || !/^(?:api\.dropbox\.com|api\.dropboxapi\.com|content\.dropboxapi\.com|www\.googleapis\.com|oauth2\.googleapis\.com)$/.test(target.hostname)) return Promise.reject(new Error('Unexpected sync destination'));
+  // WebDAV reaches only the folder the user connected, and never follows its credentials elsewhere.
+  var dav = options.webdav && stWebdavRoot(options.webdav);
+  if (dav ? target.href.indexOf(dav) !== 0 : target.protocol !== 'https:' || !/^(?:api\.dropbox\.com|api\.dropboxapi\.com|content\.dropboxapi\.com|www\.googleapis\.com|oauth2\.googleapis\.com)$/.test(target.hostname)) return Promise.reject(new Error('Unexpected sync destination'));
   var headers = new Headers(options.headers || {}), body = options.body;
   if (body instanceof URLSearchParams) { headers.set('Content-Type', 'application/x-www-form-urlencoded'); body = body.toString(); }
   return Promise.resolve(body instanceof Blob ? body.arrayBuffer() : body).then(function (data) {
@@ -20,7 +23,8 @@ function stSyncFetch(url, options) {
           if (!r.status) { reject(new Error('Storage connection failed')); return; }
           var h = new Headers();
           String(r.responseHeaders || '').split(/\r?\n/).forEach(function (line) { var i = line.indexOf(':'); if (i > 0) try { h.append(line.slice(0, i).trim(), line.slice(i + 1).trim()); } catch (e) {} });
-          resolve(new Response(r.response || r.responseText || '', { status: r.status, headers: h }));
+          // 204 and 304 carry no body; a Response refuses one.
+          resolve(new Response(/^(?:101|204|205|304)$/.test(r.status) ? null : r.response || r.responseText || '', { status: r.status, headers: h }));
         },
         onerror: function () { reject(new Error('Storage connection failed')); },
         ontimeout: function () { reject(new Error('Storage connection timed out')); },
@@ -31,15 +35,15 @@ function stSyncFetch(url, options) {
 }
 function stSyncSettings() {
   var v = GM_getValue('string_theory.sync.settings', {}) || {};
-  return { provider: v.provider === 'google' ? 'google' : 'dropbox', automatic: v.automatic === true, minutes: Math.max(5, Math.min(1440, Number(v.minutes) || 30)), conflict: v.conflict === 'local' ? 'local' : 'remote' };
+  return { provider: v.provider === 'google' || v.provider === 'webdav' ? v.provider : 'dropbox', automatic: v.automatic === true, minutes: Math.max(5, Math.min(1440, Number(v.minutes) || 30)), conflict: v.conflict === 'local' ? 'local' : 'remote' };
 }
 function stSyncSaveSettings(patch) {
   GM_setValue('string_theory.sync.settings', Object.assign(stSyncSettings(), patch));
   stSyncSchedule(); stSyncPaint();
 }
 function stSyncProvider() { return stSyncSettings().provider; }
-function stSyncName(provider) { return (provider || stSyncProvider()) === 'google' ? 'Google Drive' : 'Dropbox'; }
-function stSyncKey(part, provider) { return 'string_theory.sync.' + ((provider || stSyncProvider()) === 'google' ? 'google.' : '') + part; }
+function stSyncName(provider) { provider = provider || stSyncProvider(); return provider === 'google' ? 'Google Drive' : provider === 'webdav' ? 'WebDAV' : 'Dropbox'; }
+function stSyncKey(part, provider) { provider = provider || stSyncProvider(); return 'string_theory.sync.' + (provider === 'dropbox' ? '' : provider + '.') + part; }
 function stSyncAuth(provider) { return GM_getValue(stSyncKey('auth', provider), {}) || {}; }
 function stSyncKeepNewAuth(provider) {
   var stage = GM_getValue('string_theory.sync.stage'); if (!stage) return;
@@ -48,9 +52,9 @@ function stSyncKeepNewAuth(provider) {
 }
 function stSyncConnected(provider) {
   provider = provider || stSyncProvider(); var auth = stSyncAuth(provider);
-  return !!auth.refreshToken;
+  return provider === 'webdav' ? !!(auth.url && auth.user && auth.password) : !!auth.refreshToken;
 }
-function stSyncDrive(provider) { provider = provider || stSyncProvider(); return provider === 'google' ? stSyncGoogle(stSyncAuthorizer(true, provider)) : stSyncDropbox(stSyncAuthorizer(true, provider)); }
+function stSyncDrive(provider) { provider = provider || stSyncProvider(); return provider === 'webdav' ? stSyncWebdav(stSyncAuth(provider)) : provider === 'google' ? stSyncGoogle(stSyncAuthorizer(true, provider)) : stSyncDropbox(stSyncAuthorizer(true, provider)); }
 function stSyncState(patch, provider) {
   var s = GM_getValue(stSyncKey('state', provider), {}) || {};
   if (patch) { s = Object.assign(s, patch); GM_setValue(stSyncKey('state', provider), s); }
@@ -221,6 +225,12 @@ function stBackupPaint(panel, connected) {
 function stSyncError(e, provider) {
   var name = stSyncName(provider);
   var status = e && (e.status || e.response && e.response.status);
+  if ((provider || stSyncProvider()) === 'webdav') {
+    if (status === 401) return 'WebDAV sign-in failed. Check the user name and password.';
+    if (status === 403) return 'WebDAV denied access. Check the folder permissions.';
+    if (status === 404 || status === 409) return 'WebDAV folder not found. Check the URL.';
+    if (status === 507) return 'WebDAV storage is full.';
+  }
   if (status === 400 || status === 401 || e instanceof stSyncProviders.OAuth2Error) return name + ' authorization failed. Connect again.';
   if (status === 403) return name + ' denied access. Check the app permissions.';
   if (status === 429) return name + ' is busy. Try again later.';
@@ -345,7 +355,7 @@ async function stSyncRun(manual, mode) {
         try {
           if (mode !== 'pull' && (remote.filtered || stSyncData.stable(merged) !== stSyncData.stable(remote.data))) await drive.write(merged, remote.rev);
         } catch (e) {
-          if (e.response && e.response.status === 409 && /conflict/.test(e.cause && e.cause.error_summary || '') && attempt < 3) continue;
+          if ((e.conflict || e.response && e.response.status === 409 && /conflict/.test(e.cause && e.cause.error_summary || '')) && attempt < 3) continue;
           throw e;
         }
         // A user may have changed settings during the request; keep those edits for the next run.
@@ -395,7 +405,8 @@ function stSyncDownload(doc, name) {
   var a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
 }
 function stSyncMarkup() {
-  return '<div class="st-row st-sync-between"><select id="st-sync-provider" aria-label="Provider"><option value="dropbox">Dropbox</option><option value="google">Google Drive</option></select><span class="st-sync-acts"><button class="st-b st-sync-link" type="button" id="st-sync-connect">Connect</button><button class="st-b st-sync-link" type="button" id="st-sync-disconnect" hidden>Disconnect</button></span></div>'
+  return '<div class="st-row st-sync-between"><select id="st-sync-provider" aria-label="Provider"><option value="dropbox">Dropbox</option><option value="google">Google Drive</option><option value="webdav">WebDAV</option></select><span class="st-sync-acts"><button class="st-b st-sync-link" type="button" id="st-sync-connect">Connect</button><button class="st-b st-sync-link" type="button" id="st-sync-disconnect" hidden>Disconnect</button></span></div>'
+    + '<div class="st-row" id="st-sync-dav" hidden><input id="st-sync-dav-url" type="url" autocomplete="off" spellcheck="false" aria-label="WebDAV folder URL" placeholder="https://cloud.example.com/remote.php/dav/files/me/String Theory/"><input id="st-sync-dav-user" type="text" autocomplete="off" spellcheck="false" aria-label="User name" placeholder="User name"><input id="st-sync-dav-password" type="password" autocomplete="new-password" aria-label="Password" placeholder="Password or app password"></div>'
     + '<p class="st-cap" id="st-sync-status" role="status"></p>'
     + '<section class="st-sync-group st-sync-columns" id="st-sync-controls"><div><div class="st-row st-sync-between"><h3>Sync<span class="st-sync-spinner" id="st-sync-progress" role="status" aria-label="In progress" hidden></span></h3><span class="st-cap" id="st-sync-last"></span></div>'
     + '<div class="st-row"><button class="st-b st-sync-primary" type="button" id="st-sync-now" data-tip="Merge this device with Dropbox">Sync now</button><button class="st-b" type="button" id="st-sync-push" data-tip="Replace Dropbox’s portable data with this device’s">Push</button><button class="st-b" type="button" id="st-sync-pull" data-tip="Replace this device’s portable data with Dropbox’s\nKeeps device settings; applies on the next page load">Pull</button></div>'
@@ -422,8 +433,12 @@ function stSyncPaint() {
     stBackupAccount = backupAccount; stBackupEntries = null; stBackupNotice = '';
     stBackupSelected = null; stBackupBrowse(panel, false);
   }
-  q('connect').textContent = connected || auth.accessToken ? 'Reconnect' : 'Connect';
-  q('disconnect').hidden = !auth.refreshToken && !auth.accessToken;
+  var dav = provider === 'webdav' && (!connected || stWebdavEditing);
+  if (dav && q('dav').hidden) { q('dav-url').value = auth.url || ''; q('dav-user').value = auth.user || ''; q('dav-password').value = ''; }
+  q('dav').hidden = !dav;
+  ['dav-url', 'dav-user', 'dav-password'].forEach(function (id) { q(id).disabled = stSyncBusy; });
+  q('connect').textContent = (connected || auth.accessToken) && !dav ? 'Reconnect' : 'Connect';
+  q('disconnect').hidden = !auth.refreshToken && !auth.accessToken && !auth.url;
   q('auto').checked = settings.automatic; q('minutes').value = String(settings.minutes); q('conflict').value = settings.conflict;
   q('now').disabled = stSyncBusy || !connected; q('connect').disabled = stSyncBusy; q('disconnect').disabled = stSyncBusy;
   q('push').disabled = stSyncBusy || !connected; q('pull').disabled = stSyncBusy || !connected;
@@ -443,8 +458,14 @@ function stSyncPaint() {
 function stSyncBind(panel) {
   var q = function (id) { return panel.querySelector('#st-sync-' + id); };
   var action = function (fn) { return function () { Promise.resolve().then(fn).catch(function (e) { stUI().mbuToast(stSyncError(e), { kind: 'error' }); }).finally(stSyncPaint); }; };
-  q('provider').onchange = function () { stSyncSaveSettings({ provider: q('provider').value }); };
-  q('connect').onclick = action(stSyncConnect);
+  q('provider').onchange = function () { stWebdavEditing = false; stSyncSaveSettings({ provider: q('provider').value }); };
+  q('connect').onclick = action(function () {
+    if (stSyncProvider() !== 'webdav') return stSyncConnect();
+    // Reconnect first opens the form; Connect tests and saves what it holds.
+    if (q('dav').hidden) { stWebdavEditing = true; stSyncPaint(); q('dav-password').focus(); return; }
+    return stSyncConnectWebdav(q('dav-url').value, q('dav-user').value, q('dav-password').value).then(function () { q('dav-password').value = ''; });
+  });
+  q('dav').onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); q('connect').click(); } };
   q('disconnect').onclick = stSyncDisconnect;
   q('auto').onchange = function () { stSyncSaveSettings({ automatic: q('auto').checked }); };
   q('minutes').onchange = function () { stSyncSaveSettings({ minutes: +q('minutes').value }); };
