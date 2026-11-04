@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.203000
+// @version      2026.11.04.220000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -9289,7 +9289,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
         .map(l => l.replace(/:root/g, ':root[data-eh-rel]').replace(/^body/, ':root[data-eh-rel] body')
             .replace(/(\bbody\{background(?:-attachment)?:[^}]*?)(!important)?\}/g, '$1!important}')).join('\n')
     + '\n' + (CSS.match(/^:root\{--eh-page:[^\n]*/m) || [''])[0].replace(/:root/g, ':root[data-eh-rel]') + `
-:root[data-eh-rel] body{background:var(--bg)!important}
+:root[data-eh-rel] body{background-color:var(--eh-page)!important}
 :root[data-eh-rel] :is(#page,#content,#container){background:none!important}
 :root[data-eh-rel] body{color:var(--text);font-family:Manrope,system-ui,sans-serif;font-size:15px}:root[data-eh-rel] #page :is(table,td,th,p,label,input,select,textarea,button,td.works>h3):not(.discogs-bar *,.eh-release-views *,.srch *){font-size:inherit}:root[data-eh-rel] #page .discogs-bar :is(label,button,select,span,input){font-size:13px}
 :root[data-eh-rel] body>.header,:root[data-eh-rel] body>.banner,:root[data-eh-rel] #footer,:root[data-eh-rel] #content>.releaseheader>:not(.discogs-bar),:root[data-eh-rel] #content>.tabs{display:none!important}
