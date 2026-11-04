@@ -75,6 +75,10 @@ function stPalCommands() {
     add({ id: 'set:dock', cat: 'Settings', label: 'Dock', run: function () { stSettings('l'); } });
     add({ id: 'set:about', cat: 'Settings', label: 'About and updates', run: function () { stSettings('a'); } });
   }
+  [['main', 'Latest'], ['stable', 'Stable']].forEach(function (r) {
+    add({ id: 'st:install:' + r[0], cat: 'String Theory', label: 'Install ' + r[1].toLowerCase(), hint: stChannel() === r[1] ? 'current' : '',
+      run: function () { window.open(stInstallUrl(r[0]), '_blank', 'noopener'); } });
+  });
   stMembers.forEach(function (m) {
     add({ id: 'set:' + m[0], cat: 'Settings', label: m[1], run: function () { stOpenFor(m[1]); } });
   });
