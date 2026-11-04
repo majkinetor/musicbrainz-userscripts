@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.04.114652
+// @version      2026.11.04.183000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -3449,7 +3449,12 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   #pc-head > div:first-child { min-width: 0; }
   #pc-head h3 { overflow: hidden; text-overflow: ellipsis; }
   #mb-pin-btn { flex: none; }
-  #pc-foot > div { flex-wrap: wrap; }
+  /* The footer is one row at any width: when it doesn't fit, Artists & labels shows only its icon (pc-foot-narrow) */
+  #pc-foot > div { flex-wrap: nowrap; }
+  #mb-links-btn { display: inline-flex; align-items: center; }
+  #mb-links-btn .pc-links-i { display: none; }
+  #pc-foot.pc-foot-narrow #mb-links-btn .pc-links-i { display: block; }
+  #pc-foot.pc-foot-narrow #mb-links-btn .pc-links-t { display: none; }
   #pc-pos-menu { position: absolute; top: 100%; right: 0; z-index: 5; display: flex; flex-direction: column; min-width: min(170px, 100%); max-width: 100%; box-sizing: border-box; padding: 4px; background: var(--mbu-bg, #fff); border: 1px solid var(--mbu-border); border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.3); cursor: default; }
   #pc-pos-menu[hidden] { display: none; }
   #pc-pos-menu button { display: flex; align-items: center; gap: 6px; min-height: 30px; padding: 4px 10px 4px 6px; background: none; border: 0; border-radius: 4px; color: var(--mbu-text); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
@@ -3725,11 +3730,11 @@ Open while the mouse is on the dock icon, in place of its tooltip">Dock hover</b
   </div>`).join('')}
   <div id="pc-compact-strip" class="pc-compact-strip"></div>
 </div>
-<div id="pc-foot" style="display: flex; flex-wrap: wrap; row-gap: 4px; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid var(--mbu-border);">
+<div id="pc-foot" style="display: flex; flex-wrap: nowrap; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid var(--mbu-border);">
   <div style="display: flex; align-items: center; gap: 6px;">
     <span id="mb-inject-btn"      class="pc-icon-btn" data-tip="Add the found URLs\nClick: open the release editor with them queued\nRight-click: add them silently in the background\nMiddle-click / Alt+click: add them all, the ones the strict barcode and format settings withhold too; with Ctrl, in the background" style="${iconBtn}">+</span>
     <span id="mb-openall-btn"     class="pc-icon-btn" data-tip="Open the found pages not on MusicBrainz yet\nThe ones not circled, each in a new tab" style="${iconBtn}">↗</span>
-    <span id="mb-links-btn"       class="pc-icon-btn" data-tip="Artists &amp; labels\nThe artist and label pages the matched platforms name, for the release's artists and labels on MusicBrainz" style="${iconBtn} font-size: 11px; white-space: nowrap;">Artists &amp; labels</span>
+    <span id="mb-links-btn"       class="pc-icon-btn" data-tip="Artists &amp; labels\nThe artist and label pages the matched platforms name, for the release's artists and labels on MusicBrainz" style="${iconBtn} font-size: 11px; white-space: nowrap;"><svg class="pc-links-i" viewBox="0 0 16 16" width="15" height="15" fill="currentColor" aria-hidden="true"><circle cx="6" cy="5" r="2.6"/><path d="M1.2 13.6c0-2.9 2.2-4.8 4.8-4.8s4.8 1.9 4.8 4.8z"/><path d="M10.4 2.2h3.2a1.2 1.2 0 0 1 1.2 1.2v3.2l-3.4 3.4-4.4-4.4z" opacity=".75"/></svg><span class="pc-links-t">Artists &amp; labels</span></span>
   </div>
   <div style="display: flex; align-items: center; gap: 6px; margin-left: auto;">
     <span id="mb-log-open-btn"    class="pc-icon-btn" data-tip="The diagnostic log" style="${iconBtn} font-size: 11px;">log</span>
@@ -9251,7 +9256,10 @@ function pcShowLinksCount(n, held = 0) {
     const b = document.getElementById('mb-links-btn');
     if (!b) return;
     // the count as a badge, like an unread count, so a release with links to add stands out
-    b.innerHTML = n ? `Artists &amp; labels<span class="pc-links-n">${n}</span>` : 'Artists &amp; labels';
+    const badge = b.querySelector('.pc-links-n');
+    if (badge) badge.remove();
+    if (n) b.insertAdjacentHTML('beforeend', `<span class="pc-links-n">${n}</span>`);
+    pcFootFit();
     b.classList.toggle('pc-links-on', !!n);
     pcDockArtists = n; pcDockArtistsHeld = held; pcDockStatus();
 }
@@ -9428,6 +9436,15 @@ async function pcOpenLinksTable(btn) {
     ov.addEventListener('click', e => { if (!menu.hidden && !e.target.closest('.pc-lk-split')) menu.hidden = true; });
 }
 document.getElementById('mb-links-btn').addEventListener('click', e => pcOpenLinksTable(e.currentTarget));
+// The footer never wraps: measured with the full label, it falls back to the icon when the row overflows
+function pcFootFit() {
+    const foot = document.getElementById('pc-foot');
+    if (!foot || !foot.clientWidth) return;
+    foot.classList.remove('pc-foot-narrow');
+    if (foot.scrollWidth > foot.clientWidth + 1) foot.classList.add('pc-foot-narrow');
+}
+if (window.ResizeObserver) new window.ResizeObserver(pcFootFit).observe(document.getElementById('pc-foot'));
+pcFootFit();
 
 // ↻ REFRESH button: clear cached URLs for this MBID, blank the rows, re-run.
 // ↻ while it spins: stop the scan (#674) — what it found stays, the platforms still out are left unchecked
