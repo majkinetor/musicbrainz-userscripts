@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.04.101708
+// @version      2026.11.04.114652
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -3429,9 +3429,13 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   .mbu-dock-win.pc-win { transition: opacity .2s, visibility .2s; }
   .mbu-dock-win.pc-pinned.pc-ghost { opacity: .4; }
   .mbu-dock-win.pc-pinned.pc-ghost:hover, .mbu-dock-win.pc-pinned.pc-ghost:focus-within { opacity: 1; }
-  /* Keep the height constant: the wheel and a swipe scroll it, no scrollbar shows */
-  .mbu-dock-win.pc-pinned.pc-fixed-h { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
-  .mbu-dock-win.pc-pinned.pc-fixed-h::-webkit-scrollbar { display: none; }
+  /* Keep the height constant: the header, the not-found icons and the footer stay put; the rows between scroll by the wheel or a swipe, no scrollbar shows */
+  .mbu-dock-win.pc-pinned.pc-fixed-h { overflow: hidden; display: flex; flex-direction: column; }
+  .mbu-dock-win.pc-fixed-h > #mb-pc-panel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  .mbu-dock-win.pc-fixed-h > #mb-pc-panel > * { flex: none; }
+  .mbu-dock-win.pc-fixed-h > #mb-pc-panel > .pc-rows { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; align-content: start; }
+  .mbu-dock-win.pc-fixed-h > #mb-pc-panel > .pc-rows::-webkit-scrollbar { display: none; }
+  .mbu-dock-win.pc-fixed-h > #mb-pc-panel > .pc-compact-strip { margin-bottom: 6px; padding-top: 6px; }
   .mbu-dock-win.pc-edge-v, .mbu-dock-win.pc-edge-v * { cursor: ns-resize !important; }
   #pc-pos-menu .pc-pin-opt { display: flex; align-items: center; gap: 6px; min-height: 26px; padding: 2px 10px 2px 26px; border-radius: 4px; color: var(--mbu-text); font-size: 12px; cursor: pointer; white-space: nowrap; }
   #pc-pos-menu .pc-pin-opt:hover { background: var(--mbu-bg-sunken); }
@@ -3940,6 +3944,9 @@ if (!PC_SEED) {
         posMenu.querySelectorAll('button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.mode === mode)));
         const ghost = pcPinOpt('transparent'), fixedH = pcPinOpt('fixed-h');
         win.classList.toggle('pc-ghost', ghost); win.classList.toggle('pc-fixed-h', pin && fixedH);
+        // a constant height keeps the not-found icons with the footer, out of the rows that scroll
+        const strip = container.querySelector('#pc-compact-strip'), rowsBox = container.querySelector('.pc-rows');
+        if (pin && fixedH) container.insertBefore(strip, container.querySelector('#pc-foot')); else if (strip.parentNode !== rowsBox) rowsBox.appendChild(strip);
         posMenu.querySelectorAll('.pc-pin-opt').forEach(l => {
             const box = l.querySelector('input'), on = box.dataset.opt === 'transparent' ? ghost : fixedH;
             l.hidden = mode !== 'pin'; box.checked = on; l.setAttribute('aria-checked', String(on));
@@ -4128,7 +4135,7 @@ refreshCompactStrip();   // #355: start everything compact (rows rise out as the
         const order = [...list.querySelectorAll('.pc-prov-row')].map(r => r.dataset.provider);
         GM_setValue('pc:provider-order', JSON.stringify(order));
         const rowsContainer = container.querySelector('.pc-rows');
-        if (rowsContainer) order.forEach(p => { if (providerRows[p]) rowsContainer.appendChild(providerRows[p]); });
+        if (rowsContainer) order.forEach(p => { if (providerRows[p]) rowsContainer.insertBefore(providerRows[p], rowsContainer.querySelector('#pc-compact-strip')); });
     };
     for (const row of list.querySelectorAll('.pc-prov-row')) {
         row.addEventListener('dragstart', e => {

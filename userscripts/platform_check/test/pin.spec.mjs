@@ -92,17 +92,21 @@ test('a pinned dock panel stays open where it was dragged', { tag: ['@sandbox', 
   await page.locator('#mb-pin-btn').click();
   await page.locator('#pc-pos-menu [data-opt="transparent"]').click();
   check(await page.locator('.mbu-dock-win').evaluate(w => !w.classList.contains('pc-ghost')) && await page.locator('#pc-pos-menu').isVisible(), 'unticking Transparent makes it a plain pin, the menu stays open');
+  await page.evaluate(() => { const p = document.querySelector('#mb-pc-panel'); while (p.lastElementChild.id !== 'pc-foot') p.lastElementChild.remove(); });   // the filler grow() added
   await page.locator('#pc-pos-menu [data-opt="fixed-h"]').click();
   const fw = page.locator('.mbu-dock-win'), fb = await fw.boundingBox();
-  check(await fw.evaluate(w => w.classList.contains('pc-fixed-h') && getComputedStyle(w).scrollbarWidth === 'none'), 'Keep the height constant: no scrollbar shows');
+  check(await fw.evaluate(w => w.classList.contains('pc-fixed-h') && getComputedStyle(w.querySelector('.pc-rows')).scrollbarWidth === 'none'), 'Keep the height constant: no scrollbar shows');
   await page.locator('#mb-pin-btn').click();
   await page.mouse.move(fb.x + fb.width / 2, fb.y + fb.height - 2); await page.mouse.down();
-  await page.mouse.move(fb.x + fb.width / 2, fb.y + fb.height - 120, { steps: 4 }); await page.mouse.up();
+  await page.mouse.move(fb.x + fb.width / 2, fb.y + 220, { steps: 4 }); await page.mouse.up();
   const fb2 = await fw.boundingBox();
-  check(Math.abs(fb2.height - (fb.height - 118)) < 6 && Math.abs(fb2.y - fb.y) < 2, 'the bottom edge sets the height, the top stays put');
+  check(Math.abs(fb2.height - 222) < 6 && Math.abs(fb2.y - fb.y) < 2, 'the bottom edge sets the height, the top stays put');
   await page.mouse.move(fb2.x + fb2.width / 2, fb2.y + fb2.height / 2); await page.mouse.wheel(0, 200);
   await page.waitForTimeout(200);
-  check(await fw.evaluate(w => w.scrollTop > 0), 'the mouse wheel scrolls it');
+  check(await fw.evaluate(w => w.querySelector('.pc-rows').scrollTop > 0 && w.scrollTop === 0), 'the mouse wheel scrolls the rows');
+  check(await fw.evaluate(w => { const f = w.querySelector('#pc-foot').getBoundingClientRect(), b = w.getBoundingClientRect(), s = w.querySelector('#pc-compact-strip');
+    return Math.abs(b.bottom - f.bottom) < 12 && s.nextElementSibling?.id === 'pc-foot'; }), 'the not-found icons and the footer stay at the bottom');
+  await page.screenshot({ path: 'test-results/pin-fixed-h.png' });
   await page.evaluate(() => GM_setValue('pc:pin-fixed-h', false));
   await pick('pin');
   check(await page.evaluate(() => GM_getValue('pc:dock-mode')) === '', 'picking the ticked one turns it off');
