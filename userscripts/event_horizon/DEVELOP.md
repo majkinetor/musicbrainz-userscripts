@@ -93,7 +93,7 @@ Credit marks match by person, so someone with two credits, one pending, has both
 
 Drift uses three slowly moving radial masks over a stationary SVG lattice. Opacity scales the base outlines and glow together; reduced motion stops the mask animation. Wide drift uses two broader, fainter masks on a 110-second cycle. The standard select also offers Soft tension and Micro tilt; option titles and the selected-value shared tooltip describe each mode. Discontinued saved modes migrate to Drift. Micro tilt transforms the cached HTML layer through ±0.35° on a 120-second cycle. Soft tension uses `hexPattern`: cached shared topology, drawn at CSS-pixel resolution twice a second. Their slow subpixel changes do not need a frame-rate loop. Soft tension deforms shared vertices by up to 1.25px over 100 seconds. Hidden tabs and reduced motion stop drawing; zero opacity, mode changes and disabling EH dispose the renderer and its listeners before the EH body is detached.
 
-Animation intensity is stored as `hexIntensity` (0–300, default 100). `hexStrength` clamps it and converts it to a multiplier: glow opacity for Drift/Wide drift, vertex displacement for Soft tension, and rotation amplitude for Micro tilt. Zero intensity disables movement and disposes the canvas; changing intensity reuses the topology. Fine weave is retired and saved selections fall back to Drift.
+The animations run at their designed strength: `hexStrength` returns 1 (the Animation intensity setting was removed; a stored `hexIntensity` is ignored). Fine weave is retired and saved selections fall back to Drift.
 
 Keep effects out of animated SVG patterns: changing dash offsets and blur filters inside a repeated pattern repaints and rasterizes large areas continuously.
 
