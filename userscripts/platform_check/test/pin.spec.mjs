@@ -108,8 +108,14 @@ test('a pinned dock panel stays open where it was dragged', { tag: ['@sandbox', 
     return Math.abs(b.bottom - f.bottom) < 12 && s.nextElementSibling?.id === 'pc-foot'; }), 'the not-found icons and the footer stay at the bottom');
   await page.screenshot({ path: 'test-results/pin-fixed-h.png' });
   await page.evaluate(() => GM_setValue('pc:pin-fixed-h', false));
+  const spot = () => page.evaluate(() => JSON.stringify([GM_getValue('pc:dock-h'), GM_getValue('pc:dock-v')]));
+  const pinnedAt = await spot();
   await pick('pin');
   check(await page.evaluate(() => GM_getValue('pc:dock-mode')) === '', 'picking the ticked one turns it off');
+  const unpinned = await fw.boundingBox();
+  await pick('pin');
+  check(await spot() === pinnedAt && await fw.boundingBox().then(b => Math.abs(b.x - unpinned.x) > 2 || Math.abs(b.y - unpinned.y) > 2), 'pinned again, it goes back where it was last pinned');
+  await pick('pin');
   await page.mouse.click(5, 300);
   check(!await page.locator('.mbu-dock-win').isVisible(), 'unpinned, a click outside closes it again');
 
