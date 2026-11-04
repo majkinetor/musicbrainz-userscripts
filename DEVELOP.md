@@ -13,7 +13,7 @@ pnpm lint
 - **`main`** is latest; the *latest* install links point at it. It must always be releasable, because a release ships all of it.
 - **`stable`** is the official release; the *stable* install links point at it. Userscript managers update from whichever branch the script was installed from.
 - Which work goes straight to `main` and which on a feature branch: [Standard 13](dev/agents/STANDARDS.general.md#standard-13).
-- Each script has its own `@version`, bumped with every change: the date of the change, month and day always two digits so every version is the same size (`2026.09.28`), with the time appended for a second change the same day (`2026.09.28.214729`), so read the current value before bumping.
+- Each script has its own `@version`, bumped with every change by `node dev/bump-version.mjs [<script>…]` (no names: every script with uncommitted changes), never typed by hand: it writes the local date and time (`2026.09.28.214729`), or one second past the version already in the file or on `origin/main` when that is higher, so a guessed time can't push versions into the next day. Built files (`dist/`, the String Theory bundle) are stamped by their build.
 
 ## Checks
 
@@ -69,6 +69,7 @@ Nothing here ships. A script belongs in its subsystem's folder, next to that fol
 | `site-proposals/`, `reports/`                               | design proposals and measurement reports kept for reference                                              |
 | `templates/`                                                | starting points: a script's README in the [compact style](STANDARDS.md#script-readmes)                   |
 | `publish.mjs`                                               | the release (run by `release.yml`)                                                                       |
+| `bump-version.mjs`                                          | raises a script's `@version` from the clock, never below what's out                                      |
 | `regen.mjs`                                                 | rebuilds everything the pre-commit hook builds; `--check` fails if that changes anything                 |
 | [`issue-label/`](dev/issue-label/README.md)                 | labels a new issue by the scripts its title names (the `issue-label` workflow)                           |
 | `gh-inbox.mjs`                                              | every issue comment newer than the bot's last reply                                                      |
