@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.04.190000
+// @version      2026.11.04.200000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -2763,8 +2763,6 @@
     html[data-mbu-dock] #ii-btn[data-ii-pinned] { position: fixed; z-index: 2147483000; margin: 0; cursor: grab; font-size: 14px; }
     html[data-mbu-dock] #ii-btn[data-ii-pinned].ii-dragging { cursor: grabbing; }
     /* the pinned HUD's corner grip resizes it */
-    html[data-mbu-dock] #ii-btn[data-ii-pinned]::after { content: ''; position: absolute; right: 1px; bottom: 1px; width: 7px; height: 7px; background: linear-gradient(135deg, transparent 50%, currentColor 50%); opacity: .45; cursor: nwse-resize; }
-    html[data-mbu-dock] #ii-btn[data-ii-pinned].ii-resizing { cursor: nwse-resize; }
     html[data-mbu-dock] #ii-btn[data-ii-pinned] svg { width: 1em; height: 1em; flex: none; }
     html[data-mbu-dock] #ii-btn[data-ii-pinned] .ii-status { font-size: .9em !important; }
     /* a pinned HUD widened enough also shows how many tracks have any link: LINK 5/9 */
@@ -9318,10 +9316,20 @@
     document.addEventListener('pointerdown', close, true);
     document.addEventListener('keydown', close, true);
   });
+  // a pinned HUD resizes from any edge or corner: which edges the pointer is within 6px of
+  const hudEdges = e => {
+    const r = btn.getBoundingClientRect(), m = 6;
+    return { l: e.clientX - r.left <= m, r: r.right - e.clientX <= m, t: e.clientY - r.top <= m, b: r.bottom - e.clientY <= m };
+  };
+  const edgeCursor = g => (g.t || g.b) && (g.l || g.r) ? ((g.t && g.l) || (g.b && g.r) ? 'nwse-resize' : 'nesw-resize') : (g.l || g.r) ? 'ew-resize' : (g.t || g.b) ? 'ns-resize' : '';
+  btn.addEventListener('pointermove', e => {
+    if (!btn.hasAttribute('data-ii-pinned') || btn.classList.contains('ii-dragging') || btn.classList.contains('ii-resizing')) return;
+    btn.style.cursor = edgeCursor(hudEdges(e));
+  });
   btn.addEventListener('pointerdown', e => {
     if (e.button !== 0 || !btn.hasAttribute('data-ii-pinned')) return;
     const r = btn.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top, x0 = e.clientX, y0 = e.clientY;
-    const resize = r.right - e.clientX <= 12 && r.bottom - e.clientY <= 12;
+    const g = hudEdges(e), resize = g.l || g.r || g.t || g.b;
     let moved = false;
     document.documentElement.classList.add('ii-hud-busy');
     document.getElementById('mbu-tip')?.classList.remove('mbu-tip-on');
@@ -9329,8 +9337,14 @@
       if (!moved && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 4) return;
       moved = true; btn.classList.add(resize ? 'ii-resizing' : 'ii-dragging');
       if (resize) {
-        hudBox({ w: Math.round(Math.max(40, Math.min(innerWidth - r.left, ev.clientX - r.left + (r.right - x0)))),
-          h: Math.round(Math.max(16, Math.min(90, ev.clientY - r.top + (r.bottom - y0)))) });
+        const ddx = ev.clientX - x0, ddy = ev.clientY - y0;
+        let L = r.left, T = r.top, W = r.width, H = r.height;
+        if (g.r) W = Math.max(40, Math.min(innerWidth - L, r.width + ddx));
+        if (g.l) { W = Math.max(40, Math.min(r.right, r.width - ddx)); L = r.right - W; }
+        if (g.b) H = Math.max(16, Math.min(90, innerHeight - T, r.height + ddy));
+        if (g.t) { H = Math.max(16, Math.min(90, r.bottom, r.height - ddy)); T = r.bottom - H; }
+        btn.style.left = Math.round(L) + 'px'; btn.style.top = Math.round(T) + 'px';
+        hudBox({ w: Math.round(W), h: Math.round(H) });
         return;
       }
       btn.style.left = Math.max(0, Math.min(innerWidth - btn.offsetWidth, ev.clientX - dx)) + 'px';
@@ -9343,7 +9357,7 @@
       if (!moved) return;
       hudDragged = true;
       if (resize) store.set('hudBox', { w: parseInt(btn.style.width), h: parseInt(btn.style.height) });
-      else store.set('hudPos', { x: parseInt(btn.style.left), y: parseInt(btn.style.top) });
+      store.set('hudPos', { x: parseInt(btn.style.left), y: parseInt(btn.style.top) });
     };
     addEventListener('pointermove', move); addEventListener('pointerup', up);
   });
