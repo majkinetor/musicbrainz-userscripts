@@ -330,7 +330,19 @@ function stSettings(tab) {
   (document.body || html).appendChild(ov);
   stCfgOv = ov;
   var panel = ov.querySelector('#st-cfg'), q = function (s) { return panel.querySelector(s); };
-  var close = function () { if (tabObserver) tabObserver.disconnect(); ov.remove(); document.removeEventListener('keydown', onKey, true); document.removeEventListener('mousedown', onOut, true); };
+  // a phone: MusicBrainz's page is wider than the screen, so the browser's layout viewport (which a fixed
+  // inset:0 window fills) is too, and the screen shows a panned part of it. Fit the window to what shows.
+  var vv = window.visualViewport, narrow = window.matchMedia('(max-width:640px)');
+  var pin = function () {
+    var on = vv && narrow.matches, s = panel.style;
+    [['left', vv && vv.offsetLeft], ['top', vv && vv.offsetTop], ['width', vv && vv.width], ['height', vv && vv.height]].forEach(function (p) {
+      if (on) s.setProperty(p[0], p[1] + 'px', 'important'); else s.removeProperty(p[0]);
+    });
+    if (on) { s.setProperty('right', 'auto', 'important'); s.setProperty('bottom', 'auto', 'important'); } else { s.removeProperty('right'); s.removeProperty('bottom'); }
+  };
+  pin();
+  if (vv) { vv.addEventListener('resize', pin); vv.addEventListener('scroll', pin); }
+  var close = function () { if (vv) { vv.removeEventListener('resize', pin); vv.removeEventListener('scroll', pin); } if (tabObserver) tabObserver.disconnect(); ov.remove(); document.removeEventListener('keydown', onKey, true); document.removeEventListener('mousedown', onOut, true); };
   var newsLink = ov.querySelector('#st-cfg-news');
   if (newsLink) newsLink.addEventListener('click', function (e) { e.preventDefault(); close(); stNewsOpen(); });
   // #851: a script's settings opened from here sit above this window, which stays open; the one used last
