@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.04.235332
+// @version      2026.11.05.000215
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -9602,6 +9602,7 @@ function pcShowPastedBarcode(code) {
 // updateRow records each platform's (PC_FOUND_BC); resetRows clears them.
 function pcNoteFoundBarcode(p, barcode, format) {
     const code = barcode && (pcBarcodeOf(String(barcode)) || pcBarcodeOf(normBarcode(barcode).padStart(12, '0')));
+    if (barcode && !code) appendLog('System', `${PROVIDER_NAME[p] || p}: barcode "${barcode}" is no barcode — not offered`, 'info');
     if (code) PC_FOUND_BC.set(p, { code, format: format || null }); else PC_FOUND_BC.delete(p);
     pcShowFoundBarcodes();
 }
@@ -9890,10 +9891,12 @@ function pcBarcodeOf(text) {
     const t = String(text || '').trim();
     if (!/^[\d][\d\s-]*$/.test(t)) return null;
     const d = t.replace(/\D/g, '');
-    return /^(?:\d{8}|\d{12,14})$/.test(d) ? d : null;
+    // #919: zeros alone (000000000000, Discogs' placeholder) are no barcode, though their check digit adds up
+    return /^(?:\d{8}|\d{12,14})$/.test(d) && /[1-9]/.test(d) ? d : null;
 }
 // GTIN check digit: weights 3,1,3,… from the right, the check digit excluded
 function pcGtinValid(code) {
+    if (!/[1-9]/.test(String(code))) return false;
     const d = String(code).split('').map(Number);
     const check = d.pop();
     const sum = d.reverse().reduce((a, n, i) => a + n * (i % 2 ? 1 : 3), 0);
@@ -10414,7 +10417,7 @@ function pcMcBarcodeFindings() {
         else out.push({ ...f, state: !pasted && sure.length && !other ? 'new' : 'unsure', why: [from, other].filter(Boolean).join(' · '), mismatch: other ? [other] : undefined });
     }
     // #727: a consolidation's barcode is taken in (a pasted one still wins); the others are unsure beside it
-    const cb = String(_pcMcCons?.barcode || '').replace(/\D/g, '');
+    const cb = pcBarcodeOf(String(_pcMcCons?.barcode || '').replace(/\D/g, '')) || '';
     if (cb && pcGtinValid(cb) && !pasted) {
         const why = pcConsFrom(_pcMcCons.barcodeFrom);
         let f = out.find(x => normBarcode(x.code) === normBarcode(cb));
