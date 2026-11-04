@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.181000
+// @version      2026.11.04.182000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -10142,8 +10142,8 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '.eh-cfg .sw{all:unset;position:relative;width:34px;height:20px;border-radius:20px;background:var(--mbu-border);cursor:pointer;flex:none;transition:background .15s}'
     + '.eh-cfg .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .15s}'
     + '.eh-cfg .sw[aria-checked=true]{background:var(--mbu-accent)}.eh-cfg .sw[aria-checked=true]::after{left:16px}'
-    + '.eh-cfg .hex-controls{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;min-width:0;max-width:100%}.eh-cfg .hex-controls>.hex-motion{display:flex;gap:3px}.eh-cfg .hex-controls>label{flex:0 1 170px}.eh-cfg .hex-controls output{flex:none;min-width:32px}@media(max-width:400px){.eh-cfg .cr{grid-template-columns:76px minmax(0,1fr)}}'
-    + '.eh-cfg .chips{display:flex;flex-wrap:wrap;gap:3px;min-width:0}.eh-cfg label:has([data-hex-opacity]){display:flex;align-items:center;gap:6px;max-width:100%;min-width:0}.eh-cfg [data-hex-opacity]{min-width:0;width:130px;max-width:calc(100% - 40px)}'
+    + '.eh-cfg .hex-controls{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;min-width:0;max-width:100%}.eh-cfg .hex-controls>.hex-motion{display:flex;gap:3px}@media(max-width:400px){.eh-cfg .cr{grid-template-columns:76px minmax(0,1fr)}}'
+    + '.eh-cfg .chips{display:flex;flex-wrap:wrap;gap:3px;min-width:0}.eh-cfg label:has([data-hex-opacity]){display:flex;align-items:center;gap:1px;color:var(--mbu-text-weak)}'
     + '.eh-cfg .chip{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 7px;border-radius:20px;border:1px solid var(--mbu-border);background:var(--mbu-bg-raised);color:var(--mbu-text-dim);font:500 11.5px var(--mbu-font);cursor:pointer;user-select:none}'
     + '.eh-cfg .chip:hover{border-color:var(--mbu-accent)}.eh-cfg .chip[aria-pressed=true]{background:var(--mbu-accent-soft);border-color:var(--mbu-accent);color:var(--mbu-accent-text)}'
     + '.eh-cfg .chip svg{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}'
@@ -10213,7 +10213,7 @@ function cfgBody() {
             + row('Pending changes', chip('pending', 'pending', S.pending, 'Show', 'Mark what has edits open, as MusicBrainz does\nTakes one extra MusicBrainz request per page, sent last'))
             + row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen')
             + row('Background', [['flat', 'Flat'], ['aura', 'Cover aura'], ['glow', 'Glow'], ['band', 'Header band']].map(([k, l]) => chip('bg', k, (S.bg || 'aura') === k, l)).join(''), 'Cover aura blurs the page\'s cover or picture behind its head; pages without one get the glow')
-            + row('Hexagons', '<span class="hex-controls">' + chip('hex', 'hex', S.hex, 'Show') + `<label><input type="range" min="0" max="100" step="1" value="${S.hexOpacity}" data-hex-opacity aria-label="Hexagon opacity"> <output>${S.hexOpacity}%</output></label><span class="hex-motion">` + [['static', 'Static'], ['drift', 'Drift']].map(([k, l]) => chip('hexMotion', k, S.hexMotion === k, l)).join('') + '</span></span>', 'Overlay hexagon outlines on any background; the slider adjusts their opacity; Drift slowly moves pools of glow along the stationary outlines, reduced motion keeps them still'),
+            + row('Hexagons', '<span class="hex-controls">' + chip('hex', 'hex', S.hex, 'Show') + `<label><input type="number" min="0" max="100" step="5" value="${S.hexOpacity}" data-hex-opacity aria-label="Hexagon opacity">%</label><span class="hex-motion">` + [['static', 'Static'], ['drift', 'Drift']].map(([k, l]) => chip('hexMotion', k, S.hexMotion === k, l)).join('') + '</span></span>', 'Overlay hexagon outlines on any background; the stepper sets their opacity; Drift slowly moves pools of glow along the stationary outlines, reduced motion keeps them still'),
     };
     return `<div class="pane">${panes.general}</div>`;
 }
@@ -10245,11 +10245,12 @@ function openPlCfg(btn, hd) {
 // clicks and drags in a settings body; body() redraws it
 function cfgWire(panel, b, body) {
     panel.addEventListener('input', ev => {
-        if (!ev.target.matches('[data-hex-opacity]')) return;
-        S.hexOpacity = +ev.target.value;
-        ev.target.nextElementSibling.value = S.hexOpacity + '%';
+        if (!ev.target.matches('[data-hex-opacity]') || ev.target.value === '') return;
+        S.hexOpacity = Math.max(0, Math.min(100, Math.round(+ev.target.value) || 0));
         save(); hexApply();
     });
+    // number fields become the suite's − n + stepper, on every redraw of the body
+    mbuControls(b); new MutationObserver(() => mbuControls(b)).observe(b, { childList: true });
     panel.addEventListener('change', ev => { if (!ev.target.matches('[data-anno-hover]')) return; S.annoHover = ev.target.checked; save(); if (ehOn) { const sy = scrollY; render(); scrollTo(0, sy); } });
     // drag a shown platform onto another to put it before that one
     let dragK = null;
