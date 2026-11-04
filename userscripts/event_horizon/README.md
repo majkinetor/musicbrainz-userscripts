@@ -102,6 +102,8 @@ On an entity's page, in the viewer or on MusicBrainz's own page, a key opens one
 | D      | Details                                        |
 | A      | Aliases                                        |
 | V      | switches between Event Horizon and MusicBrainz |
+| Ctrl+H | back                                           |
+| Ctrl+L | forward                                        |
 | S      | search: the viewer's box, else MusicBrainz's   |
 | P      | your profile                                   |
 | .      | MusicBrainz's home page                        |
