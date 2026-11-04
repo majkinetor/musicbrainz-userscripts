@@ -17,8 +17,15 @@ test('the edit note is folded, rows carry a cover, and Dry run lives in the Subm
   const posts = await blockPosts(page);
   await openArtStation(page, inject, { path: 'add-cover-art' });
   const opened = await page.evaluate(async () => {
-    const png = Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='), c => c.charCodeAt(0));
-    const dt = new DataTransfer(); dt.items.add(new File([png], 'commit-668.png', { type: 'image/png' }));
+    // The two-column check needs two operations of its own. One upload only
+    // happened to produce two rows when a background reorder was also staged.
+    const dt = new DataTransfer();
+    for (const [i, color] of ['red', 'blue'].entries()) {
+      const canvas = document.createElement('canvas'); canvas.width = canvas.height = 2;
+      const ctx = canvas.getContext('2d'); ctx.fillStyle = color; ctx.fillRect(0, 0, 2, 2);
+      const png = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      dt.items.add(new File([png], `commit-668-${i}.png`, { type: 'image/png' }));
+    }
     window.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt }));
     for (let i = 0; i < 60; i++) { await new Promise(r => setTimeout(r, 100)); if (!document.querySelector('.as-commit')?.disabled) break; }
     document.querySelector('.as-commit').click();
