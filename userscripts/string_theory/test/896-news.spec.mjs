@@ -72,3 +72,20 @@ test.describe('what\'s new', () => {
     check((await page.textContent('#st-news-view h3 .n')) === 'One' && !(await page.isVisible('#st-news-list')), 'a tap opens that post');
   });
 });
+test.describe("what's new, older posts", () => {
+  const full = Array.from({ length: 20 }, (_, k) => post(990020 - k, 'Cached ' + (20 - k), 'stable'));
+  test.use({ gm: { name: 'String Theory', values: { stNews: { at: Date.now(), since: 1, seen: [], items: full } } } });
+  test('scrolling to the end loads older posts', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+    await page.goto(`${SANDBOX}/search/edits`, { waitUntil: 'load', timeout: 60000 });
+    await inject('string_theory');
+    await page.waitForSelector('#mbu-dock', { timeout: 15000 });
+    await until(() => page.evaluate(() => document.documentElement.hasAttribute('data-st-news')), v => v, { timeout: 5000 });
+    await page.click('#mbu-dock');
+    await page.waitForSelector('#st-news-list li[data-n="19"]', { timeout: 5000 });
+    await page.$eval('#st-news-list', l => { l.scrollTop = l.scrollHeight; });
+    const n = await until(() => page.$$eval('#st-news-list li[data-n]', xs => xs.length), v => v > 20, { timeout: 30000 });
+    check(n > 20, `older posts appended (${n})`);
+    check((await page.textContent('#st-news-n')) === String(n), 'the footer counts them');
+    if (process.env.SHOT) await page.screenshot({ path: process.env.SHOT + '-more.png' });
+  });
+});

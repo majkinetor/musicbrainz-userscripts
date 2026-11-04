@@ -1,9 +1,11 @@
 // What's new (#896): the Announcements discussions, checked once a day. While something is unread the
 // String Theory icon is golden and clicking it opens this viewer instead of the dock.
-// The discussions API ignores sort and category and answers oldest first, so read the last two pages.
+// The discussions API ignores sort and category and answers oldest first, so read the last two pages;
+// the viewer reads further back, page by page, as its list is scrolled to the end.
 var ST_NEWS_KEY = 'stNews', ST_NEWS_MAX = 20, ST_NEWS_DAY = 864e5, ST_NEWS_FIRST = 14 * ST_NEWS_DAY;
 var ST_NEWS_ALL = 'https://github.com/' + ST_REPO + '/discussions?discussions_q=category%3AAnnouncements+-label%3A%22skip+changelog%22';
 var ST_NEWS_LOG = 'https://github.com/' + ST_REPO + '/blob/main/userscripts/string_theory/CHANGELOG.md';
+var ST_NEWS_API = 'https://api.github.com/repos/' + ST_REPO + '/discussions?per_page=100', ST_NEWS_FULL = 'application/vnd.github.full+json';
 var stNewsOv = null;
 var ST_NEWS_CSS = ''
   + '#st-news-view abbr{text-decoration:underline dotted;text-underline-offset:2px;cursor:help}'
@@ -16,6 +18,7 @@ var ST_NEWS_CSS = ''
   + '#st-news-list li{display:flex;gap:8px;margin:0;padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--mbu-border)}'
   + '#st-news-list li:hover{background:var(--mbu-bg-hover)}'
   + '#st-news-list li[aria-selected=true]{background:var(--mbu-accent-soft)}'
+  + '#st-news-list li.x{justify-content:center;color:var(--mbu-text-weak);font-size:12px;cursor:default;border-bottom:0}#st-news-list li.x:hover{background:none}'
   + '#st-news-list img,#st-news-view h3 img{width:20px;height:20px;flex:0 0 auto;object-fit:contain}'
   + '#st-news-list .t{display:block;font-weight:400}#st-news-list .u .t{font-weight:700}'
   + '#st-news-list .s{display:block;color:var(--mbu-text-weak);font-size:12px}'
@@ -83,13 +86,13 @@ function stNewsItem(d) {
   return { id: d.number, title: d.title, url: d.html_url, at: d.created_at, html: d.body_html || '',
     script: s.name, icon: s.icon, issue: m ? +m[1] : 0, channel: '' };
 }
-function stNewsPick(pages) {
+function stNewsPick(pages, max) {
   var all = [];
   pages.forEach(function (t) { try { all = all.concat(JSON.parse(t)); } catch (e) { /* a bad page */ } });
   return all.filter(function (d) {
     return d.category && d.category.slug === 'announcements'
       && !(d.labels || []).some(function (l) { return l.name === 'skip changelog'; });
-  }).sort(function (a, b) { return Date.parse(b.created_at) - Date.parse(a.created_at); }).slice(0, ST_NEWS_MAX).map(stNewsItem);
+  }).sort(function (a, b) { return Date.parse(b.created_at) - Date.parse(a.created_at); }).slice(0, max || ST_NEWS_MAX).map(stNewsItem);
 }
 // an issue with the `released` label is on stable, any other on latest
 function stNewsChannels(items, old, cb) {
@@ -112,7 +115,7 @@ function stNewsChannels(items, old, cb) {
 function stNewsCheck(force, cb) {
   var v = stNewsRead();
   if (!force && Date.now() - v.at < ST_NEWS_DAY) return;
-  var base = 'https://api.github.com/repos/' + ST_REPO + '/discussions?per_page=100', full = 'application/vnd.github.full+json';
+  var base = ST_NEWS_API, full = ST_NEWS_FULL;
   v.at = Date.now(); stNewsSave(v);   // another tab need not check too; a failure waits for tomorrow
   stNewsGet(base + '&page=1', full, function (first, head) {
     if (!first) { if (cb) cb(false); return; }
@@ -197,7 +200,7 @@ function stNewsOpen() {
   ov.innerHTML = '<div class="mbu-ov-panel mbu-ui" id="st-news" role="dialog" aria-label="What\'s new" tabindex="-1">'
     + '<div class="mbu-ov-h"><span class="mbu-ov-title">What\'s new</span><button type="button" id="st-news-all">Mark all read</button><button type="button" class="mbu-ov-x" id="st-news-full" data-tip="Full screen" aria-label="Full screen">⛶</button><button type="button" class="mbu-ov-x" id="st-news-x" aria-label="Close">\u2715</button></div>'
     + '<div id="st-news-body"><ul id="st-news-list" role="listbox"></ul><div id="st-news-view"></div></div>'
-    + '<div id="st-news-foot"><span>Latest ' + ST_NEWS_MAX + ' · <span id="st-news-state">checked ' + (checked < 1 ? 'today' : checked + ' d ago') + '</span> · <a href="#" id="st-news-refresh">Refresh</a></span>'
+    + '<div id="st-news-foot"><span>Latest <span id="st-news-n">' + items.length + '</span> · <span id="st-news-state">checked ' + (checked < 1 ? 'today' : checked + ' d ago') + '</span> · <a href="#" id="st-news-refresh">Refresh</a></span>'
     + '<span><a href="' + ST_NEWS_ALL + '" target="_blank" rel="noopener">All announcements</a> · <a href="' + ST_NEWS_LOG + '" target="_blank" rel="noopener">Changelog</a></span></div></div>';
   (document.body || document.documentElement).appendChild(ov);
   stNewsOv = ov;
@@ -208,8 +211,46 @@ function stNewsOpen() {
     list.innerHTML = items.map(function (i, n) {
       return '<li role="option" data-n="' + n + '" aria-selected="' + (n === at) + '"' + (un.indexOf(i.id) >= 0 ? ' class="u"' : '') + '>' + stNewsIcon(i)
         + '<span><span class="t">' + stEsc(i.title) + '</span><span class="s">' + stEsc(i.script) + ' · ' + stEsc(stNewsDate(i.at)) + '</span></span></li>';
-    }).join('');
+    }).join('') + (busy ? '<li class="x">Loading older posts…</li>' : failed ? '<li class="x" id="st-news-retry">Could not load older posts · <a href="#">Retry</a></li>' : '');
+    ov.querySelector('#st-news-n').textContent = items.length;
   };
+  // Older posts, 20 at a time as the list nears its end: GitHub's pages run oldest first, so walk back from the last one.
+  // A cached set short of 20 is the whole history. They are kept for this window only, and carry no channel:
+  // that costs a call a post, and old changes are long released.
+  var older = [], pool = [], page = 0, busy = false, failed = false, end = items.length < ST_NEWS_MAX;
+  var moreNear = function () { return list.scrollHeight - list.scrollTop - list.clientHeight < 200; };
+  var moreGot = function (t) {
+    var have = {}; items.concat(pool).forEach(function (i) { have[i.id] = 1; });
+    pool = pool.concat(stNewsPick([t || '[]'], Infinity).filter(function (i) { return !have[i.id]; }));
+  };
+  var moreFill = function () {
+    if (pool.length < ST_NEWS_MAX && page >= 1) {
+      return stNewsGet(ST_NEWS_API + '&page=' + page, ST_NEWS_FULL, function (t) {
+        if (t === null) { busy = false; failed = true; draw(); return; }
+        page--; moreGot(t); moreFill();
+      });
+    }
+    var add = pool.splice(0, ST_NEWS_MAX);
+    older = older.concat(add); items = items.concat(add);
+    busy = false; end = page < 1 && !pool.length;
+    if (!ov.isConnected) return;
+    draw();
+    var nx = view.querySelector('#st-news-next'); if (nx) nx.disabled = at >= items.length - 1;
+    if (add.length && moreNear()) moreLoad();
+  };
+  var moreLoad = function () {
+    if (busy || end || !ov.isConnected) return;
+    busy = true; failed = false; draw();
+    if (page) return moreFill();
+    stNewsGet(ST_NEWS_API + '&page=1', ST_NEWS_FULL, function (t, head) {
+      if (t === null) { busy = false; failed = true; if (ov.isConnected) draw(); return; }
+      var last = /[?&]page=(d+)>;s*rel="last"/.exec(head);
+      page = last ? +last[1] : 0;
+      if (!page) moreGot(t);
+      moreFill();
+    });
+  };
+  list.addEventListener('scroll', function () { if (moreNear()) moreLoad(); }, { passive: true });
   var show = function (n) {
     at = n; var i = items[n];
     if (!i) { view.textContent = 'Nothing yet.'; return; }
@@ -223,6 +264,7 @@ function stNewsOpen() {
       + (i.channel ? '<span class="c">' + i.channel + '</span>' : '') + '</div><div class="b">' + stNewsClean(i.html) + '</div>';
     view.scrollTop = 0;
     var li = list.children[n]; if (li) li.scrollIntoView({ block: 'nearest' });
+    if (n >= items.length - 3 || moreNear()) moreLoad();
   };
   var close = function () { ov.remove(); document.removeEventListener('keydown', key, true); try { if (focusBack) focusBack.focus(); } catch (e) { /* gone */ } };
   var key = function (e) {
@@ -244,7 +286,10 @@ function stNewsOpen() {
     if (Math.abs(dx) > 60 && Math.abs(dx) > 2 * Math.abs(dy) && !window.getSelection().toString()) step(dx < 0 ? 1 : -1);
   }, { passive: true });
   view.addEventListener('click', function (e) { if (e.target.closest('#st-news-back')) { panel.classList.remove('reading'); list.scrollTop = 0; var li = list.children[at]; if (li) li.scrollIntoView({ block: 'nearest' }); } });
-  list.onclick = function (e) { var li = e.target.closest('li'); if (li) show(+li.dataset.n); };
+  list.onclick = function (e) {
+    if (e.target.closest('#st-news-retry a')) { e.preventDefault(); moreLoad(); return; }
+    var li = e.target.closest('li[data-n]'); if (li) show(+li.dataset.n);
+  };
   ov.querySelector('#st-news-x').onclick = close;
   var fullBtn = ov.querySelector('#st-news-full');
   var setFull = function (on) {
@@ -270,7 +315,9 @@ function stNewsOpen() {
       state.textContent = ok ? 'checked today' : 'check failed';
       if (!ok || !ov.isConnected) return;
       var id = items[at] && items[at].id;
-      v = stNewsRead(); items = v.items;
+      v = stNewsRead();
+      var fresh = {}; v.items.forEach(function (i) { fresh[i.id] = 1; });
+      items = v.items.concat(older.filter(function (i) { return !fresh[i.id]; }));
       var n = items.findIndex(function (i) { return i.id === id; });
       if (n < 0) show(0); else { at = n; draw(); }
     });
