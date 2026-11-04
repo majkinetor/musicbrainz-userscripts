@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.010402
+// @version      2026.11.05.020000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -5356,17 +5356,22 @@ function loadWinState() { try { return JSON.parse(GM_getValue(WINSTATE_KEY, '{}'
 function saveWinState(patch) { try { GM_setValue(WINSTATE_KEY, JSON.stringify(Object.assign(loadWinState(), patch))); } catch (e) {} }
 function applyWinState(cons) {
     const st = loadWinState();
-    if (st.maximized) { cons.classList.add('fs-maximized'); const mb = document.getElementById('fs-max'); if (mb) { mb.textContent = '❐'; mb.dataset.tip = 'Restore'; } return; }
-    if (st.left != null && st.top != null) { cons.style.position = 'fixed'; cons.style.left = st.left + 'px'; cons.style.top = st.top + 'px'; cons.style.margin = '0'; }
-    if (st.width != null) cons.style.width = st.width + 'px';
-    if (st.height != null) cons.style.height = st.height + 'px';
+    cons.style.boxSizing = 'border-box';   // the saved size is the border box (offsetWidth): applied as content it grew 2px each open
+    // the normal geometry is applied even when the window opens maximized: .fs-maximized
+    // overrides it with !important, so Restore returns to it (it used to fall back to the default)
+    if (st.width > 0) cons.style.width = Math.min(st.width, innerWidth - 16) + 'px';
+    if (st.height > 0) cons.style.height = Math.min(st.height, innerHeight * 0.96) + 'px';
+    if (st.left != null && st.top != null) {
+        cons.style.position = 'fixed'; cons.style.margin = '0';
+        cons.style.left = Math.max(0, Math.min(innerWidth - 80, st.left)) + 'px';
+        cons.style.top = Math.max(0, Math.min(innerHeight - 40, st.top)) + 'px';
+    }
+    if (st.maximized) { cons.classList.add('fs-maximized'); const mb = document.getElementById('fs-max'); if (mb) { mb.textContent = '❐'; mb.dataset.tip = 'Restore'; } }
 }
 // glyphs/behaviour match group_therapy's maximize control (⛶ / ❐, gt-cons-x style)
 function toggleMaximize(cons, btn) {
     const nowMax = !cons.classList.contains('fs-maximized');
-    cons.classList.toggle('fs-maximized', nowMax);
-    if (nowMax) { cons._savedW = cons.style.width; cons._savedH = cons.style.height; cons.style.width = ''; cons.style.height = ''; }
-    else { cons.style.width = cons._savedW || ''; cons.style.height = cons._savedH || ''; }
+    cons.classList.toggle('fs-maximized', nowMax);   // its !important box wins over the inline normal geometry, which stays for Restore
     if (btn) { btn.textContent = nowMax ? '❐' : '⛶'; btn.dataset.tip = nowMax ? 'Restore' : 'Maximize'; }
     saveWinState({ maximized: nowMax });
 }
@@ -5392,7 +5397,11 @@ function wireWindowChrome(cons, hdr, maxBtn) {
         document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
     });
     // resize:both is native CSS (see fsStyle) — just persist the size afterward
-    new ResizeObserver(() => { if (!cons.classList.contains('fs-maximized')) saveWinState({ width: cons.offsetWidth, height: cons.offsetHeight }); }).observe(cons);
+    // closing removes the window, and the observer then reports 0×0: saving that lost the size
+    new ResizeObserver(() => {
+        if (!cons.isConnected || cons.classList.contains('fs-maximized') || !cons.offsetWidth || !cons.offsetHeight) return;
+        saveWinState({ width: cons.offsetWidth, height: cons.offsetHeight });
+    }).observe(cons);
 }
 
 let FUSION_OPEN = false;
