@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.000501
+// @version      2026.11.04.123037
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2477,13 +2477,15 @@ body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;poin
 :root[data-eh-theme=dark] #eh-hex{--eh-hex-k:1}
 #eh-hex svg{display:block;width:100%;height:100%;overflow:visible}
 #eh-hex .hex-pattern{position:absolute;inset:0;width:100%;height:100%;opacity:calc(var(--eh-hex-opacity,.2) * var(--eh-hex-k) * .5)}
-:root:is([data-eh-hex=weave],[data-eh-hex=tension]) #eh-hex svg{display:none}
+:root[data-eh-hex=tension]:not([data-eh-hex-still]) #eh-hex svg{display:none}
+:root[data-eh-hex][data-eh-hex-still] #eh-hex .hex-drift{display:none}
+:root[data-eh-hex-still] #eh-hex{animation:none!important;transform:none}
 :root[data-eh-hex=tilt] #eh-hex{will-change:transform;transform-origin:center;animation:eh-hex-tilt 120s ease-in-out infinite}
-@keyframes eh-hex-tilt{0%,50%,100%{transform:rotate(0deg)}25%{transform:rotate(.35deg)}75%{transform:rotate(-.35deg)}}
+@keyframes eh-hex-tilt{0%,50%,100%{transform:rotate(0deg)}25%{transform:rotate(var(--eh-hex-angle,.35deg))}75%{transform:rotate(calc(-1 * var(--eh-hex-angle,.35deg)))}}
 #eh-hex .hex-base{opacity:calc(var(--eh-hex-opacity,.2) * var(--eh-hex-k) * .5)}
-#eh-hex .hex-drift{display:none;opacity:calc(var(--eh-hex-opacity,.2) * var(--eh-hex-k) * 2.25);-webkit-mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat;mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat}
+#eh-hex .hex-drift{display:none;opacity:calc(var(--eh-hex-opacity,.2) * var(--eh-hex-k) * var(--eh-hex-intensity,1) * 2.25);-webkit-mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat;mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat}
 :root[data-eh-hex=drift] #eh-hex .hex-drift{display:block;animation:eh-hex-drift 46s linear infinite}
-:root[data-eh-hex=wide] #eh-hex .hex-drift{display:block;opacity:calc(var(--eh-hex-opacity,.2) * var(--eh-hex-k) * .9);-webkit-mask:radial-gradient(closest-side,#000,transparent) 0 0/min(900px,90vw) min(740px,80vh) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(800px,85vw) min(620px,70vh) no-repeat;mask:radial-gradient(closest-side,#000,transparent) 0 0/min(900px,90vw) min(740px,80vh) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(800px,85vw) min(620px,70vh) no-repeat;animation:eh-hex-wide 110s ease-in-out infinite}
+:root[data-eh-hex=wide] #eh-hex .hex-drift{display:block;opacity:calc(var(--eh-hex-opacity,.2) * var(--eh-hex-k) * var(--eh-hex-intensity,1) * .9);-webkit-mask:radial-gradient(closest-side,#000,transparent) 0 0/min(900px,90vw) min(740px,80vh) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(800px,85vw) min(620px,70vh) no-repeat;mask:radial-gradient(closest-side,#000,transparent) 0 0/min(900px,90vw) min(740px,80vh) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(800px,85vw) min(620px,70vh) no-repeat;animation:eh-hex-wide 110s ease-in-out infinite}
 @keyframes eh-hex-wide{0%,100%{-webkit-mask-position:10% 35%,85% 75%;mask-position:10% 35%,85% 75%}25%{-webkit-mask-position:35% 60%,70% 15%;mask-position:35% 60%,70% 15%}50%{-webkit-mask-position:75% 35%,30% 65%;mask-position:75% 35%,30% 65%}75%{-webkit-mask-position:55% 70%,10% 30%;mask-position:55% 70%,10% 30%}}
 @keyframes eh-hex-drift{0%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}25%{-webkit-mask-position:35% 60%,70% 15%,10% 55%;mask-position:35% 60%,70% 15%,10% 55%}50%{-webkit-mask-position:75% 35%,30% 85%,60% 10%;mask-position:75% 35%,30% 85%,60% 10%}75%{-webkit-mask-position:55% 90%,10% 30%,95% 45%;mask-position:55% 90%,10% 30%,95% 45%}100%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}}
 @media (prefers-reduced-motion:reduce){#eh-hex,#eh-hex .hex-drift{animation:none!important}}
@@ -3135,13 +3137,13 @@ document.addEventListener('load', e => { if (e.target instanceof HTMLImageElemen
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'hex', 'hexOpacity', 'hexMotion', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
     plOrder: [], // the settings' platform order, shown or not; prov follows it
     crTracks: true,
-    byName: false, plNames: false, plHover: false, plSize: 18, trackStripe: true, dis: 'brackets', width: 1600, bg: 'aura', hex: false, hexOpacity: 20, hexMotion: 'static',
+    byName: false, plNames: false, plHover: false, plSize: 18, trackStripe: true, dis: 'brackets', width: 1600, bg: 'aura', hex: false, hexOpacity: 20, hexIntensity: 100, hexMotion: 'static',
     on: true, menuTitles: false,
     thumbs: true,
     factOff: { artist: [], label: [] }, // the artist's and label's header facts turned off
@@ -3181,7 +3183,7 @@ const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
 try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; } catch (e) {}
 // Preserve an existing hex background as an independent overlay over Flat.
 if (S.bg === 'hex') { S.bg = 'flat'; S.hex = true; S.hexMotion = 'drift'; }
-if (!['static', 'drift', 'wide', 'weave', 'tension', 'tilt'].includes(S.hexMotion)) S.hexMotion = 'drift';
+if (!['static', 'drift', 'wide', 'tension', 'tilt'].includes(S.hexMotion)) S.hexMotion = 'drift';
 if (!S.starView) S.starView = S.starGroup === 'none' ? 'row' : 'group';
 const menuTitlesApply = () => document.documentElement.style.setProperty('--eh-menu-titles', S.menuTitles ? 'inline' : 'none');
 menuTitlesApply();
@@ -7616,12 +7618,20 @@ function artHtml(r) {
 
 /* ── page ──────────────────────────────────────────── */
 // Hexagon background: glow, line-weight and geometry modes.
+function hexStrength() {
+    const n = Number(S.hexIntensity);
+    return Math.max(0, Math.min(300, Number.isFinite(n) ? n : 100)) / 100;
+}
 function hexApply() {
     const de = document.documentElement;
     let layer = document.getElementById('eh-hex');
     de.toggleAttribute('data-eh-hex', !!S.hex && ehOn);
     if (!S.hex || !ehOn) { layer?._ehPattern?.stop(); layer?.remove(); return; }
     de.setAttribute('data-eh-hex', S.hexMotion || 'static');
+    const strength = hexStrength();
+    de.toggleAttribute('data-eh-hex-still', strength === 0);
+    de.style.setProperty('--eh-hex-intensity', strength);
+    de.style.setProperty('--eh-hex-angle', (.35 * strength) + 'deg');
     de.style.setProperty('--eh-hex-opacity', Math.max(0, Math.min(100, Number(S.hexOpacity) || 0)) / 100);
     if (!layer) {
         layer = document.createElement('div'); layer.id = 'eh-hex'; layer.setAttribute('aria-hidden', 'true');
@@ -7631,18 +7641,17 @@ function hexApply() {
     hexPattern(layer);
 }
 
-// Slow geometry changes need only two draws per second. Cache the lattice topology
-// and direction paths; neither mode uses animated SVG patterns or blur filters.
+// Soft tension caches shared lattice vertices and draws twice per second.
 function hexPattern(layer) {
     const mode = S.hexMotion;
-    if (!['weave', 'tension'].includes(mode) || !(Number(S.hexOpacity) > 0)) { layer._ehPattern?.stop(); return; }
+    if (mode !== 'tension' || !(Number(S.hexOpacity) > 0) || hexStrength() === 0) { layer._ehPattern?.stop(); return; }
     const w = innerWidth + 96, h = innerHeight + 96, color = getComputedStyle(layer).color;
     const key = [mode, w, h, color].join('|');
-    if (layer._ehPattern?.key === key) return;
+    if (layer._ehPattern?.key === key) { layer._ehPattern.draw(); return; }
     layer._ehPattern?.stop();
     const cv = document.createElement('canvas'); cv.className = 'hex-pattern'; cv.width = w; cv.height = h; layer.append(cv);
     const ctx = cv.getContext('2d'), motion = matchMedia('(prefers-reduced-motion:reduce)');
-    const vertices = [], links = [], known = new Map(), connected = new Set(), paths = [new Path2D(), new Path2D(), new Path2D()];
+    const vertices = [], links = [], known = new Map(), connected = new Set();
     const corners = [[14, 0], [28, 8], [28, 24], [14, 32], [0, 24], [0, 8], [14, 0]];
     const vertex = (x, y) => {
         const k = x + ',' + y;
@@ -7653,8 +7662,6 @@ function hexPattern(layer) {
         const i = vertex(x, y), j = vertex(a, b), k = Math.min(i, j) + ':' + Math.max(i, j);
         if (connected.has(k)) return;
         connected.add(k); links.push(i * 2, j * 2);
-        const group = x === a ? 2 : (a - x) * (b - y) > 0 ? 0 : 1;
-        paths[group].moveTo(x, y); paths[group].lineTo(a, b);
     };
     for (let y = -48; y < h + 48; y += 48) for (let x = -28; x < w + 28; x += 28) {
         for (let i = 1; i < corners.length; i++) edge(x + corners[i - 1][0], y + corners[i - 1][1], x + corners[i][0], y + corners[i][1]);
@@ -7673,25 +7680,20 @@ function hexPattern(layer) {
         if (document.hidden) return;
         if (!motion.matches) phase = performance.now() / 1000;
         ctx.clearRect(0, 0, w, h);
-        if (mode === 'weave') {
-            const a = phase / 80 * Math.PI * 2;
-            paths.forEach((p, i) => { ctx.lineWidth = .82 + .24 * Math.sin(a + i * Math.PI * 2 / 3); ctx.stroke(p); });
-        } else {
-            const a = phase / 100 * Math.PI * 2;
-            for (let i = 0; i < vertices.length; i += 2) {
-                const x = vertices[i], y = vertices[i + 1];
-                warped[i] = x + 1.25 * Math.sin(y / 105 + a); warped[i + 1] = y + 1.25 * Math.sin(x / 145 - a);
-            }
-            ctx.lineWidth = 1; ctx.beginPath();
-            for (let i = 0; i < links.length; i += 2) {
-                const a = links[i], b = links[i + 1];
-                ctx.moveTo(warped[a], warped[a + 1]); ctx.lineTo(warped[b], warped[b + 1]);
-            }
-            ctx.stroke();
+        const a = phase / 100 * Math.PI * 2, size = 1.25 * hexStrength();
+        for (let i = 0; i < vertices.length; i += 2) {
+            const x = vertices[i], y = vertices[i + 1];
+            warped[i] = x + size * Math.sin(y / 105 + a); warped[i + 1] = y + size * Math.sin(x / 145 - a);
         }
+        ctx.lineWidth = 1; ctx.beginPath();
+        for (let i = 0; i < links.length; i += 2) {
+            const a = links[i], b = links[i + 1];
+            ctx.moveTo(warped[a], warped[a + 1]); ctx.lineTo(warped[b], warped[b + 1]);
+        }
+        ctx.stroke();
         if (!motion.matches) timer = setTimeout(draw, 500);
     }
-    layer._ehPattern = { key, stop };
+    layer._ehPattern = { key, stop, draw };
     document.addEventListener('visibilitychange', draw); motion.addEventListener('change', draw); draw();
 }
 
@@ -10247,7 +10249,7 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '.eh-cfg .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .15s}'
     + '.eh-cfg .sw[aria-checked=true]{background:var(--mbu-accent)}.eh-cfg .sw[aria-checked=true]::after{left:16px}'
     + '.eh-cfg .hex-controls{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;min-width:0;max-width:100%}@media(max-width:400px){.eh-cfg .cr{grid-template-columns:76px minmax(0,1fr)}}'
-    + '.eh-cfg .chips{display:flex;flex-wrap:wrap;gap:3px;min-width:0}.eh-cfg label:has([data-hex-opacity]){display:flex;align-items:center;gap:1px;color:var(--mbu-text-weak)}'
+    + '.eh-cfg .chips{display:flex;flex-wrap:wrap;gap:3px;min-width:0}.eh-cfg label:has([data-hex-opacity],[data-hex-intensity]){display:flex;align-items:center;gap:1px;color:var(--mbu-text-weak)}'
     + '.eh-cfg .chip{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 7px;border-radius:20px;border:1px solid var(--mbu-border);background:var(--mbu-bg-raised);color:var(--mbu-text-dim);font:500 11.5px var(--mbu-font);cursor:pointer;user-select:none}'
     + '.eh-cfg .chip:hover{border-color:var(--mbu-accent)}.eh-cfg .chip[aria-pressed=true]{background:var(--mbu-accent-soft);border-color:var(--mbu-accent);color:var(--mbu-accent-text)}'
     + '.eh-cfg .chip svg{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}'
@@ -10312,7 +10314,6 @@ const HEX_MOTIONS = [
     ['static', 'Static', 'Still hexagon outlines'],
     ['drift', 'Drift', 'Three small pools of glow roam over stationary outlines'],
     ['wide', 'Wide drift', 'Two wider, fainter pools of glow move more slowly'],
-    ['weave', 'Fine weave', 'Line weight slowly trades between the three edge directions'],
     ['tension', 'Soft tension', 'Connected hexagon vertices gently flex by about one pixel'],
     ['tilt', 'Micro tilt', 'The pattern slowly rocks through a fraction of a degree; page content stays still'],
 ];
@@ -10329,7 +10330,8 @@ function cfgBody() {
             + row('Pending changes', chip('pending', 'pending', S.pending, 'Show', 'Mark what has edits open, as MusicBrainz does\nTakes one extra MusicBrainz request per page, sent last'))
             + row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen')
             + row('Background', [['flat', 'Flat'], ['aura', 'Cover aura'], ['glow', 'Glow'], ['band', 'Header band']].map(([k, l]) => chip('bg', k, (S.bg || 'aura') === k, l)).join(''), 'Cover aura blurs the page\'s cover or picture behind its head; pages without one get the glow')
-            + row('Hexagons', '<span class="hex-controls">' + chip('hex', 'hex', S.hex, 'Show') + `<label><input type="number" min="0" max="100" step="5" value="${S.hexOpacity}" data-hex-opacity aria-label="Hexagon opacity">%</label>` + hexMotionSelect() + '</span>', 'Overlay hexagon outlines on any background; the stepper sets their opacity'),
+            + row('Hexagons', '<span class="hex-controls">' + chip('hex', 'hex', S.hex, 'Show') + `<label><input type="number" min="0" max="100" step="5" value="${S.hexOpacity}" data-hex-opacity aria-label="Hexagon opacity">%</label>` + hexMotionSelect() + '</span>', 'Overlay hexagon outlines on any background; the stepper sets their opacity')
+            + row('Animation intensity', `<label><input type="number" min="0" max="300" step="25" value="${S.hexIntensity}" data-hex-intensity aria-label="Hexagon animation intensity"${S.hexMotion === 'static' ? ' disabled' : ''}>%</label>`, 'Strength of the selected hexagon animation\n100%: default intensity\n0%: still outlines'),
     };
     return `<div class="pane">${panes.general}</div>`;
 }
@@ -10363,9 +10365,16 @@ function cfgWire(panel, b, body) {
     panel.addEventListener('change', ev => {
         if (!ev.target.matches('[data-hex-motion]')) return;
         const choice = HEX_MOTIONS.find(x => x[0] === ev.target.value); if (!choice) return;
-        S.hexMotion = choice[0]; ev.target.dataset.tip = choice[2]; save(); hexApply();
+        S.hexMotion = choice[0]; ev.target.dataset.tip = choice[2];
+        const intensity = panel.querySelector('[data-hex-intensity]'); if (intensity) intensity.disabled = S.hexMotion === 'static';
+        save(); hexApply();
     });
     panel.addEventListener('input', ev => {
+        if (ev.target.matches('[data-hex-intensity]')) {
+            if (ev.target.value === '') return;
+            S.hexIntensity = Math.max(0, Math.min(300, Math.round(+ev.target.value) || 0)); ev.target.value = S.hexIntensity;
+            save(); hexApply(); return;
+        }
         if (!ev.target.matches('[data-hex-opacity]') || ev.target.value === '') return;
         S.hexOpacity = Math.max(0, Math.min(100, Math.round(+ev.target.value) || 0));
         save(); hexApply();

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-04 13:33 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-04 13:35 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -897,11 +897,12 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | General → Page width                  | Wide                                                                | how wide the page grows on a big screen                                                     |
 | General → Background                  | Cover aura                                                          | Flat, Cover aura, Glow or Header band                                                       |
 | General → Hexagons                    | off, Static                                                         | show outlines, set opacity and choose an animation                                          |
+| General → Animation intensity         | 100%                                                                | glow strength for Drift modes; movement size for Soft tension and Micro tilt                |
 | General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                                      |
 | General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
 | General → Keyboard shortcuts          | on                                                                  | the keys below; [keyboard shortcuts](#keyboard-shortcuts); **Change keys** opens their list |
 
-Wide drift uses broader, fainter glow and moves more slowly than Drift. Fine weave gently changes line weight, Soft tension flexes connected vertices, and Micro tilt rocks the pattern while page content stays still. All respect reduced motion.
+Wide drift uses broader, fainter glow and moves more slowly than Drift. Soft tension flexes connected vertices, and Micro tilt rocks the pattern while page content stays still. All respect reduced motion. Animation intensity ranges from 0% (still outlines) to 300%; it is inactive for Static.
 
 ### Shortcuts
 
