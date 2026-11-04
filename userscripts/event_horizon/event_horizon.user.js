@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.123000
+// @version      2026.11.04.124500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2327,6 +2327,7 @@ const CSS = `
 .hm-hi{position:relative;font-size:30px;font-weight:800;margin:6px 0 16px}.hm-hi em{font-style:normal;background:linear-gradient(90deg,#f07dbf,#f5a06b);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hm-srch{position:relative;max-width:820px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--surface)!important;border:1px solid var(--border);border-radius:14px;padding:6px 6px 6px 16px;color:var(--muted);box-shadow:0 6px 22px var(--shadow)}
 .hm-srch:focus-within{border-color:var(--accent)}
+.hm-hero:has(.hm-qd:not([hidden])),.hm-srch:has(.hm-qd:not([hidden])){position:relative;z-index:30}
 .hm-qc{background:none!important;border:0;padding:6px;color:var(--muted)!important;cursor:pointer;filter:none!important;display:flex}.hm-qc:hover{color:var(--text)!important}.hm-qc svg{width:18px;height:18px}.hm-qd{position:absolute;z-index:20;top:calc(100% + 6px);left:0;right:0;background:var(--surface)!important;border:1px solid var(--border);border-radius:12px;padding:6px;box-shadow:0 6px 22px var(--shadow);max-height:60vh;overflow:auto}.hm-qd[hidden]{display:none}.hm-qd button{display:flex;gap:8px;width:100%;text-align:left;background:none!important;border:0;border-radius:8px;padding:8px 10px;font:inherit;font-size:15px;color:var(--text)!important;cursor:pointer;filter:none!important}.hm-qd button:hover,.hm-qd button.on{background:var(--chip)!important}.hm-qd b{color:var(--accent);font-weight:700}
 .hm-srch>input[name=query]{flex:1;min-width:0;border:0;outline:0;background:none!important;color:var(--text)!important;font:inherit;font-size:18px;padding:8px 0}
 .hm-srch select{border:0;background:var(--chip)!important;color:var(--chip-text)!important;filter:none!important;color-scheme:light dark;font:inherit;font-size:13px;border-radius:9px;padding:8px}
@@ -8406,7 +8407,7 @@ function srchWire(app) {
     if (qd) {
         const show = on => { qd.hidden = !on; f.query.setAttribute('aria-expanded', on); };
         const match = () => { const v = f.query.value.trim().toLowerCase(); let n = 0; qd.querySelectorAll('button').forEach(b => { const hit = !v || b.dataset.q.toLowerCase().includes(v); b.hidden = !hit; n += hit; }); return n; };
-        f.query.addEventListener('focus', () => show(match() > 0));
+        f.query.addEventListener('click', () => show(match() > 0));
         f.query.addEventListener('input', () => show(match() > 0));
         f.query.addEventListener('blur', () => setTimeout(() => show(false), 150));
         f.query.addEventListener('keydown', e => {
