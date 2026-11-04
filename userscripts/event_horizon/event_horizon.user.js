@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.233000
+// @version      2026.11.04.233001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2463,13 +2463,17 @@ body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;poin
 #eh-hex{position:fixed;inset:-48px;z-index:-1;pointer-events:none;color:var(--accent);--eh-hex-k:.5}
 :root[data-eh-theme=dark] #eh-hex{--eh-hex-k:1}
 #eh-hex svg{display:block;width:100%;height:100%;overflow:visible}
+#eh-hex .hex-pattern{position:absolute;inset:0;width:100%;height:100%;opacity:calc(var(--eh-hex-opacity,.2) * var(--eh-hex-k) * .5)}
+:root:is([data-eh-hex=weave],[data-eh-hex=tension]) #eh-hex svg{display:none}
+:root[data-eh-hex=tilt] #eh-hex{will-change:transform;transform-origin:center;animation:eh-hex-tilt 120s ease-in-out infinite}
+@keyframes eh-hex-tilt{0%,50%,100%{transform:rotate(0deg)}25%{transform:rotate(.35deg)}75%{transform:rotate(-.35deg)}}
 #eh-hex .hex-base{opacity:calc(var(--eh-hex-opacity,.2) * var(--eh-hex-k) * .5)}
 #eh-hex .hex-drift{display:none;opacity:calc(var(--eh-hex-opacity,.2) * var(--eh-hex-k) * 2.25);-webkit-mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat;mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat}
 :root[data-eh-hex=drift] #eh-hex .hex-drift{display:block;animation:eh-hex-drift 46s linear infinite}
 :root[data-eh-hex=wide] #eh-hex .hex-drift{display:block;opacity:calc(var(--eh-hex-opacity,.2) * var(--eh-hex-k) * .9);-webkit-mask:radial-gradient(closest-side,#000,transparent) 0 0/min(900px,90vw) min(740px,80vh) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(800px,85vw) min(620px,70vh) no-repeat;mask:radial-gradient(closest-side,#000,transparent) 0 0/min(900px,90vw) min(740px,80vh) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(800px,85vw) min(620px,70vh) no-repeat;animation:eh-hex-wide 110s ease-in-out infinite}
 @keyframes eh-hex-wide{0%,100%{-webkit-mask-position:10% 35%,85% 75%;mask-position:10% 35%,85% 75%}25%{-webkit-mask-position:35% 60%,70% 15%;mask-position:35% 60%,70% 15%}50%{-webkit-mask-position:75% 35%,30% 65%;mask-position:75% 35%,30% 65%}75%{-webkit-mask-position:55% 70%,10% 30%;mask-position:55% 70%,10% 30%}}
 @keyframes eh-hex-drift{0%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}25%{-webkit-mask-position:35% 60%,70% 15%,10% 55%;mask-position:35% 60%,70% 15%,10% 55%}50%{-webkit-mask-position:75% 35%,30% 85%,60% 10%;mask-position:75% 35%,30% 85%,60% 10%}75%{-webkit-mask-position:55% 90%,10% 30%,95% 45%;mask-position:55% 90%,10% 30%,95% 45%}100%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}}
-@media (prefers-reduced-motion:reduce){#eh-hex .hex-drift{animation:none!important}}
+@media (prefers-reduced-motion:reduce){#eh-hex,#eh-hex .hex-drift{animation:none!important}}
 :root[data-eh-hex] :is(.tl,.card,.u-bio,.u-facts,.u-vcol,.hm-pf,.hgrp,.eh-details){background:color-mix(in srgb,var(--surface) 62%,transparent)!important;backdrop-filter:blur(1px)}
 :root[data-eh-hex] .tl .disc{background:color-mix(in srgb,var(--chip) 55%,transparent)!important}
 :root[data-eh-hex] :is(.tl.striped .tr.alt,.tl .detail){background:color-mix(in srgb,var(--hover) 50%,transparent)!important}
@@ -3164,7 +3168,7 @@ const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
 try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; } catch (e) {}
 // Preserve an existing hex background as an independent overlay over Flat.
 if (S.bg === 'hex') { S.bg = 'flat'; S.hex = true; S.hexMotion = 'drift'; }
-if (!['static', 'drift', 'wide'].includes(S.hexMotion)) S.hexMotion = 'drift';
+if (!['static', 'drift', 'wide', 'weave', 'tension', 'tilt'].includes(S.hexMotion)) S.hexMotion = 'drift';
 if (!S.starView) S.starView = S.starGroup === 'none' ? 'row' : 'group';
 const menuTitlesApply = () => document.documentElement.style.setProperty('--eh-menu-titles', S.menuTitles ? 'inline' : 'none');
 menuTitlesApply();
@@ -7599,12 +7603,12 @@ function artHtml(r) {
 }
 
 /* ── page ──────────────────────────────────────────── */
-// Drift moves glow over the stationary lattice.
+// Hexagon background: glow, line-weight and geometry modes.
 function hexApply() {
     const de = document.documentElement;
     let layer = document.getElementById('eh-hex');
     de.toggleAttribute('data-eh-hex', !!S.hex && ehOn);
-    if (!S.hex || !ehOn) { layer?.remove(); return; }
+    if (!S.hex || !ehOn) { layer?._ehPattern?.stop(); layer?.remove(); return; }
     de.setAttribute('data-eh-hex', S.hexMotion || 'static');
     de.style.setProperty('--eh-hex-opacity', Math.max(0, Math.min(100, Number(S.hexOpacity) || 0)) / 100);
     if (!layer) {
@@ -7612,6 +7616,71 @@ function hexApply() {
         layer.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><pattern id="eh-hex-base" width="28" height="48" patternUnits="userSpaceOnUse"><path d="M14 0l14 8v16L14 32 0 24V8zM14 32v16" fill="none" stroke="currentColor"/></pattern></defs><rect class="hex-base" width="100%" height="100%" fill="url(#eh-hex-base)"/><rect class="hex-drift" width="100%" height="100%" fill="url(#eh-hex-base)"/></svg>';
         document.body.append(layer);
     }
+    hexPattern(layer);
+}
+
+// Slow geometry changes need only two draws per second. Cache the lattice topology
+// and direction paths; neither mode uses animated SVG patterns or blur filters.
+function hexPattern(layer) {
+    const mode = S.hexMotion;
+    if (!['weave', 'tension'].includes(mode) || !(Number(S.hexOpacity) > 0)) { layer._ehPattern?.stop(); return; }
+    const w = innerWidth + 96, h = innerHeight + 96, color = getComputedStyle(layer).color;
+    const key = [mode, w, h, color].join('|');
+    if (layer._ehPattern?.key === key) return;
+    layer._ehPattern?.stop();
+    const cv = document.createElement('canvas'); cv.className = 'hex-pattern'; cv.width = w; cv.height = h; layer.append(cv);
+    const ctx = cv.getContext('2d'), motion = matchMedia('(prefers-reduced-motion:reduce)');
+    const vertices = [], links = [], known = new Map(), connected = new Set(), paths = [new Path2D(), new Path2D(), new Path2D()];
+    const corners = [[14, 0], [28, 8], [28, 24], [14, 32], [0, 24], [0, 8], [14, 0]];
+    const vertex = (x, y) => {
+        const k = x + ',' + y;
+        if (!known.has(k)) { known.set(k, vertices.length / 2); vertices.push(x, y); }
+        return known.get(k);
+    };
+    const edge = (x, y, a, b) => {
+        const i = vertex(x, y), j = vertex(a, b), k = Math.min(i, j) + ':' + Math.max(i, j);
+        if (connected.has(k)) return;
+        connected.add(k); links.push(i * 2, j * 2);
+        const group = x === a ? 2 : (a - x) * (b - y) > 0 ? 0 : 1;
+        paths[group].moveTo(x, y); paths[group].lineTo(a, b);
+    };
+    for (let y = -48; y < h + 48; y += 48) for (let x = -28; x < w + 28; x += 28) {
+        for (let i = 1; i < corners.length; i++) edge(x + corners[i - 1][0], y + corners[i - 1][1], x + corners[i][0], y + corners[i][1]);
+        edge(x + 14, y + 32, x + 14, y + 48);
+    }
+    const warped = new Float32Array(vertices.length);
+    let timer, phase = 0;
+    ctx.strokeStyle = color;
+    const stop = () => {
+        clearTimeout(timer); document.removeEventListener('visibilitychange', draw);
+        motion.removeEventListener('change', draw); cv.remove(); delete layer._ehPattern;
+    };
+    function draw() {
+        clearTimeout(timer);
+        if (!layer.isConnected) { stop(); return; }
+        if (document.hidden) return;
+        if (!motion.matches) phase = performance.now() / 1000;
+        ctx.clearRect(0, 0, w, h);
+        if (mode === 'weave') {
+            const a = phase / 80 * Math.PI * 2;
+            paths.forEach((p, i) => { ctx.lineWidth = .82 + .24 * Math.sin(a + i * Math.PI * 2 / 3); ctx.stroke(p); });
+        } else {
+            const a = phase / 100 * Math.PI * 2;
+            for (let i = 0; i < vertices.length; i += 2) {
+                const x = vertices[i], y = vertices[i + 1];
+                warped[i] = x + 1.25 * Math.sin(y / 105 + a); warped[i + 1] = y + 1.25 * Math.sin(x / 145 - a);
+            }
+            ctx.lineWidth = 1; ctx.beginPath();
+            for (let i = 0; i < links.length; i += 2) {
+                const a = links[i], b = links[i + 1];
+                ctx.moveTo(warped[a], warped[a + 1]); ctx.lineTo(warped[b], warped[b + 1]);
+            }
+            ctx.stroke();
+        }
+        if (!motion.matches) timer = setTimeout(draw, 500);
+    }
+    layer._ehPattern = { key, stop };
+    document.addEventListener('visibilitychange', draw); motion.addEventListener('change', draw); draw();
 }
 
 function bgApply() {
@@ -10222,6 +10291,9 @@ const HEX_MOTIONS = [
     ['static', 'Static', 'Still hexagon outlines'],
     ['drift', 'Drift', 'Three small pools of glow roam over stationary outlines'],
     ['wide', 'Wide drift', 'Two wider, fainter pools of glow move more slowly'],
+    ['weave', 'Fine weave', 'Line weight slowly trades between the three edge directions'],
+    ['tension', 'Soft tension', 'Connected hexagon vertices gently flex by about one pixel'],
+    ['tilt', 'Micro tilt', 'The pattern slowly rocks through a fraction of a degree; page content stays still'],
 ];
 function hexMotionSelect() {
     const selected = HEX_MOTIONS.find(x => x[0] === S.hexMotion) || HEX_MOTIONS[0];

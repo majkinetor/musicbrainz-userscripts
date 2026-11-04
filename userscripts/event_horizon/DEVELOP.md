@@ -91,7 +91,7 @@ Credit marks match by person, so someone with two credits, one pending, has both
 
 ## Hexagon animation cost
 
-Drift uses three slowly moving radial masks over a stationary SVG lattice. Opacity scales the base outlines and glow together; reduced motion stops the mask animation. Wide drift uses two broader, fainter masks on a 110-second cycle. The standard select offers Static, Drift and Wide drift; its option titles and selected-value shared tooltip describe each mode. Discontinued saved modes migrate to Drift. There are no light renderers, animation timers or animation-frame loops.
+Drift uses three slowly moving radial masks over a stationary SVG lattice. Opacity scales the base outlines and glow together; reduced motion stops the mask animation. Wide drift uses two broader, fainter masks on a 110-second cycle. The standard select also offers Fine weave, Soft tension and Micro tilt; option titles and the selected-value shared tooltip describe each mode. Discontinued saved modes migrate to Drift. Micro tilt transforms the cached HTML layer through ±0.35° on a 120-second cycle. Fine weave and Soft tension use `hexPattern`: cached topology and direction paths, drawn at CSS-pixel resolution twice a second. Their slow subpixel changes do not need a frame-rate loop. Fine weave changes edge direction weights over 80 seconds; Soft tension deforms shared vertices by up to 1.25px over 100 seconds. Hidden tabs and reduced motion stop drawing; zero opacity, mode changes and disabling EH dispose the renderer and its listeners before the EH body is detached.
 
 Keep effects out of animated SVG patterns: changing dash offsets and blur filters inside a repeated pattern repaints and rasterizes large areas continuously.
 

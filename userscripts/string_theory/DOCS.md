@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-04 12:33 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-04 12:42 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -896,12 +896,12 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | Annotation → Show annotation on hover | on                                                                  | preview a folded annotation                                                                 |
 | General → Page width                  | Wide                                                                | how wide the page grows on a big screen                                                     |
 | General → Background                  | Cover aura                                                          | Flat, Cover aura, Glow or Header band                                                       |
-| General → Hexagons                    | off, Static                                                         | show outlines, set opacity and choose Static, Drift or Wide drift                           |
+| General → Hexagons                    | off, Static                                                         | show outlines, set opacity and choose an animation                                          |
 | General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                                      |
 | General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
 | General → Keyboard shortcuts          | on                                                                  | the keys below; [keyboard shortcuts](#keyboard-shortcuts); **Change keys** opens their list |
 
-Wide drift uses broader, fainter glow and moves more slowly than Drift. Both stop moving with reduced motion enabled.
+Wide drift uses broader, fainter glow and moves more slowly than Drift. Fine weave gently changes line weight, Soft tension flexes connected vertices, and Micro tilt rocks the pattern while page content stays still. All respect reduced motion.
 
 ### Shortcuts
 
