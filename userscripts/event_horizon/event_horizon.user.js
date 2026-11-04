@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.063659
+// @version      2026.11.04.081405
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2454,20 +2454,23 @@ body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;poin
 :root[data-eh-bg=aura][data-eh-theme=dark] #eh-aura{opacity:.28}
 :root:is([data-eh-bg=glow],[data-eh-bg=aura]:not([data-eh-aura])) body{background:radial-gradient(900px 520px at 100% 0,color-mix(in srgb,var(--accent2) 18%,transparent),transparent 70%) no-repeat,radial-gradient(800px 480px at 72% 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%) no-repeat,var(--eh-page)}
 :root[data-eh-bg=band] body::before{content:"";height:400px;background:linear-gradient(100deg,color-mix(in srgb,var(--accent) 11%,var(--eh-page)),color-mix(in srgb,var(--accent2) 11%,var(--eh-page)));border-bottom:1px solid color-mix(in srgb,var(--accent) 14%,var(--eh-page))}
-#eh-hex{position:fixed;inset:-48px;z-index:-1;pointer-events:none;opacity:var(--eh-hex-opacity,.2);color:var(--accent)}
+#eh-hex{position:fixed;inset:-48px;z-index:-1;pointer-events:none;color:var(--accent)}
 #eh-hex svg{display:block;width:100%;height:100%;overflow:visible}
-#eh-hex .hex-base{opacity:.5}
-#eh-hex .hex-light{display:none;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-dasharray:2 98;filter:drop-shadow(0 0 2px currentColor)}
+#eh-hex .hex-base{opacity:calc(var(--eh-hex-opacity,.2) * .5)}
+#eh-hex .hex-drift{display:none;opacity:calc(var(--eh-hex-opacity,.2) * 2.25);-webkit-mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat;mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat}
+#eh-hex .hex-lights{opacity:calc(var(--eh-hex-opacity,.2) * 2.5)}
+#eh-hex .hex-light{display:none;fill:none;stroke-linecap:round;filter:drop-shadow(0 0 var(--hex-halo) currentColor) drop-shadow(0 0 calc(var(--hex-halo) * 2) currentColor)}
 :root[data-eh-hex=breathe] #eh-hex svg{animation:eh-hex-breathe 40s ease-in-out infinite}
-:root[data-eh-hex=drift] #eh-hex svg{animation:eh-hex-drift 120s ease-in-out infinite}
-:root[data-eh-hex=christmas] #eh-hex .hex-light{display:block;animation:eh-hex-lights 90s linear infinite}
-#eh-hex .hex-light:nth-child(3n+1){color:var(--mbu-ok);animation-delay:-30s}
-#eh-hex .hex-light:nth-child(3n+2){color:var(--accent2);animation-delay:-60s}
+:root[data-eh-hex=drift] #eh-hex .hex-drift{display:block;animation:eh-hex-drift 46s linear infinite}
+:root[data-eh-hex=christmas] #eh-hex .hex-light{display:block;animation:eh-hex-lights var(--hex-travel) linear var(--hex-phase) infinite var(--hex-direction),eh-hex-shimmer var(--hex-pulse) ease-in-out var(--hex-pulse-phase) infinite}
+#eh-hex .hex-light:nth-child(3n+1){color:var(--mbu-ok)}
+#eh-hex .hex-light:nth-child(3n+2){color:var(--accent2)}
 #eh-hex .hex-light:nth-child(3n){color:var(--accent)}
 @keyframes eh-hex-breathe{0%,100%{opacity:.65}50%{opacity:1}}
-@keyframes eh-hex-drift{0%,100%{transform:translate(0,0)}50%{transform:translate(14px,24px)}}
+@keyframes eh-hex-drift{0%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}25%{-webkit-mask-position:35% 60%,70% 15%,10% 55%;mask-position:35% 60%,70% 15%,10% 55%}50%{-webkit-mask-position:75% 35%,30% 85%,60% 10%;mask-position:75% 35%,30% 85%,60% 10%}75%{-webkit-mask-position:55% 90%,10% 30%,95% 45%;mask-position:55% 90%,10% 30%,95% 45%}100%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}}
 @keyframes eh-hex-lights{to{stroke-dashoffset:-100}}
-@media (prefers-reduced-motion:reduce){#eh-hex svg,#eh-hex .hex-light{animation:none!important}}
+@keyframes eh-hex-shimmer{0%,100%{opacity:.55;filter:drop-shadow(0 0 var(--hex-halo) currentColor) drop-shadow(0 0 calc(var(--hex-halo) * 2) currentColor)}50%{opacity:.95;filter:drop-shadow(0 0 calc(var(--hex-halo) * 1.5) currentColor) drop-shadow(0 0 calc(var(--hex-halo) * 3) currentColor)}}
+@media (prefers-reduced-motion:reduce){#eh-hex svg,#eh-hex .hex-drift,#eh-hex .hex-light{animation:none!important}}
 :root[data-eh-hex] :is(.tl,.card,.u-bio,.u-facts,.u-vcol,.hm-pf,.hgrp,.eh-details){background:color-mix(in srgb,var(--surface) 62%,transparent)!important;backdrop-filter:blur(1px)}
 :root[data-eh-hex] .tl .disc{background:color-mix(in srgb,var(--chip) 55%,transparent)!important}
 :root[data-eh-hex] :is(.tl.striped .tr.alt,.tl .detail){background:color-mix(in srgb,var(--hover) 50%,transparent)!important}
@@ -7598,8 +7601,14 @@ function hexApply() {
     if (document.getElementById('eh-hex')) return;
     const layer = document.createElement('div'); layer.id = 'eh-hex'; layer.setAttribute('aria-hidden', 'true');
     const outline = 'M14 0l14 8v16L14 32 0 24V8z';
-    const lights = [[0, 0], [84, 48], [28, 144], [112, 192], [56, 240], [140, 96]].map(([x, y]) => `<path class="hex-light" transform="translate(${x} ${y})" d="${outline}" pathLength="100" stroke="currentColor"/>`).join('');
-    layer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><pattern id="eh-hex-base" width="28" height="48" patternUnits="userSpaceOnUse"><path d="${outline}M14 32v16" fill="none" stroke="currentColor"/></pattern><pattern id="eh-hex-lights" width="168" height="288" patternUnits="userSpaceOnUse">${lights}</pattern></defs><rect class="hex-base" width="100%" height="100%" fill="url(#eh-hex-base)"/><rect width="100%" height="100%" fill="url(#eh-hex-lights)"/></svg>`;
+    // A large, sparsely lit tile avoids a small repeated cluster. Each light has its own pace and pulse.
+    const lights = Array.from({ length: 1800 }, (_, i) => {
+        const c = i % 60, r = Math.floor(i / 60), h = (c * 73856093 ^ r * 19349663) >>> 0;
+        if (h % 29 || !c || !r) return '';
+        const length = 1.5 + h % 61 / 10;
+        return `<path class="hex-light" transform="translate(${c * 28} ${r * 48})" d="${outline}" pathLength="100" stroke="currentColor" style="--hex-travel:${75 + h % 71}s;--hex-phase:-${h % 149}s;--hex-direction:${h % 2 ? 'reverse' : 'normal'};--hex-pulse:${22 + h % 23}s;--hex-pulse-phase:-${h % 47}s;--hex-halo:${2 + h % 25 / 10}px;stroke-dasharray:${length} ${100 - length};stroke-width:${1 + h % 17 / 10}"/>`;
+    }).join('');
+    layer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><pattern id="eh-hex-base" width="28" height="48" patternUnits="userSpaceOnUse"><path d="${outline}M14 32v16" fill="none" stroke="currentColor"/></pattern><pattern id="eh-hex-lights" width="1680" height="1440" patternUnits="userSpaceOnUse">${lights}</pattern></defs><rect class="hex-base" width="100%" height="100%" fill="url(#eh-hex-base)"/><rect class="hex-drift" width="100%" height="100%" fill="url(#eh-hex-base)"/><rect class="hex-lights" width="100%" height="100%" fill="url(#eh-hex-lights)"/></svg>`;
     document.body.append(layer);
 }
 function bgApply() {
@@ -10064,22 +10073,22 @@ const CI = {
     aliases: '<path d="M4 7h10M4 12h7M4 17h10"/><path d="M17 10l3 3-3 3"/>',
     tags: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
 };
-const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-panel{pointer-events:auto}.eh-cfg{width:min(460px,94vw);font:12px var(--mbu-font)}.eh-cfg .mbu-ov-body{padding:6px 10px 6px}.eh-cfg .mbu-cfg-h{margin-bottom:2px;padding-bottom:5px;gap:6px;font-size:13px}.eh-cfg .mbu-cfg-ic{width:18px;height:18px}.eh-cfg .mbu-cfg-log{padding:0 6px;font-size:11px}'
+const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-panel{pointer-events:auto}.eh-cfg{width:min(460px,94vw);font:12px var(--mbu-font)}.eh-cfg .mbu-ov-body{padding:6px 10px 6px;overflow-x:hidden}.eh-cfg .mbu-cfg-h{margin-bottom:2px;padding-bottom:5px;gap:6px;font-size:13px}.eh-cfg .mbu-cfg-ic{width:18px;height:18px}.eh-cfg .mbu-cfg-log{padding:0 6px;font-size:11px}'
     + '.eh-cfg .tabs{display:flex;gap:2px;border-bottom:1px solid var(--mbu-border-soft);margin:0 -10px;padding:0 6px}'
     + '.eh-cfg .tab{all:unset;padding:5px 9px;margin-bottom:-1px;border-bottom:2px solid transparent;color:var(--mbu-text-weak);font:500 13px var(--mbu-font);cursor:pointer}'
     + '.eh-cfg .tab:hover{color:var(--mbu-text)}.eh-cfg .tab[aria-selected=true]{color:var(--mbu-accent-text);border-bottom-color:var(--mbu-accent);font-weight:600}.eh-cfg .tab .n{font-size:10px;color:var(--mbu-text-weak)}'
-    + '.eh-cfg .pane{height:230px;overflow-y:auto;padding-top:2px}'
+    + '.eh-cfg .pane{height:230px;overflow-y:auto;overflow-x:hidden;padding-top:2px}.eh-cfg .mbu-cfg-ver{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}'
     + '.eh-plpop .plh{margin:6px 0 2px;padding-bottom:4px;border-bottom:1px solid var(--mbu-border-soft);font:700 11px var(--mbu-font);letter-spacing:.08em;text-transform:uppercase;color:var(--mbu-accent-text)}'
     + '.eh-cfg .cr.ckr{display:block;border-bottom:0}.eh-cfg .ck{white-space:nowrap}.eh-cfg .ck{display:inline-flex;align-items:center;gap:8px;padding:6px 2px;border:0;background:none;color:var(--mbu-text);font:inherit;cursor:pointer}.eh-cfg .ck svg{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2}.eh-cfg .ck[aria-checked=true] svg{color:var(--mbu-accent-text)}'
     + '.eh-cfg.eh-plpop .cr{border-bottom:0}'
     + '.eh-plpop{position:absolute;z-index:2147482000;width:min(560px,94vw);max-height:70vh;overflow-y:auto;padding:4px 10px;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25)}'
-    + '.eh-cfg .cr{display:grid;grid-template-columns:108px 1fr;gap:6px;padding:4px 0;border-bottom:1px solid var(--mbu-border-soft);align-items:start}.eh-cfg .cr:last-child{border:0}'
+    + '.eh-cfg .cr{display:grid;grid-template-columns:108px minmax(0,1fr);gap:6px;padding:4px 0;border-bottom:1px solid var(--mbu-border-soft);align-items:start}.eh-cfg .cr:last-child{border:0}'
     + '.eh-cfg .cl{padding-top:5px;font:600 10px var(--mbu-font);letter-spacing:.06em;text-transform:uppercase;color:var(--mbu-text-weak)}'
     + '.eh-cfg .none{padding-top:5px;color:var(--mbu-text-weak);font-style:italic}.eh-cfg .sw{margin-top:3px}'
     + '.eh-cfg .sw{all:unset;position:relative;width:34px;height:20px;border-radius:20px;background:var(--mbu-border);cursor:pointer;flex:none;transition:background .15s}'
     + '.eh-cfg .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .15s}'
     + '.eh-cfg .sw[aria-checked=true]{background:var(--mbu-accent)}.eh-cfg .sw[aria-checked=true]::after{left:16px}'
-    + '.eh-cfg .chips{display:flex;flex-wrap:wrap;gap:3px}'
+    + '.eh-cfg .chips{display:flex;flex-wrap:wrap;gap:3px;min-width:0}.eh-cfg .chips>label:has([data-hex-opacity]){display:flex;align-items:center;gap:6px;max-width:100%;min-width:0}.eh-cfg [data-hex-opacity]{min-width:0;width:130px;max-width:calc(100% - 40px)}'
     + '.eh-cfg .chip{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 7px;border-radius:20px;border:1px solid var(--mbu-border);background:var(--mbu-bg-raised);color:var(--mbu-text-dim);font:500 11.5px var(--mbu-font);cursor:pointer;user-select:none}'
     + '.eh-cfg .chip:hover{border-color:var(--mbu-accent)}.eh-cfg .chip[aria-pressed=true]{background:var(--mbu-accent-soft);border-color:var(--mbu-accent);color:var(--mbu-accent-text)}'
     + '.eh-cfg .chip svg{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}'
