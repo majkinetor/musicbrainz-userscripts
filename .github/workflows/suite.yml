@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 jobs:
   suite:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # Playwright has no browsers for 26.04 (ubuntu-latest since 2026-11)
     timeout-minutes: 180
     concurrency: { group: sandbox, cancel-in-progress: false }
     steps:

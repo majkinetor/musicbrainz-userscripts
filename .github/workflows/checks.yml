@@ -17,7 +17,7 @@ on:
         default: true
 jobs:
   checks:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # Playwright has no browsers for 26.04 (ubuntu-latest since 2026-11)
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -52,7 +52,7 @@ jobs:
     needs: checks
     # (called from the release workflow, the event is its workflow_dispatch; the input decides)
     if: (github.event_name != 'push' || github.ref == 'refs/heads/main') && inputs.critical != false
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # Playwright has no browsers for 26.04 (ubuntu-latest since 2026-11)
     timeout-minutes: 30
     # one run at a time on the sandbox: two would edit the same fixture releases
     concurrency: { group: sandbox, cancel-in-progress: false }

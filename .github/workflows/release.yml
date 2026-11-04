@@ -31,7 +31,7 @@ jobs:
     needs: checks
     # a dry run skips the checks and goes ahead; a real run only on green checks
     if: ${{ !cancelled() && (needs.checks.result == 'success' || (inputs.mode == 'dry run' && needs.checks.result == 'skipped')) }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # Playwright has no browsers for 26.04 (ubuntu-latest since 2026-11)
     steps:
       - uses: actions/checkout@v4
         with:
