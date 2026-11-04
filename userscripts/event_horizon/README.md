@@ -126,10 +126,12 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | Annotation → Show annotation on hover | on                                                                  | preview a folded annotation                                                                 |
 | General → Page width                  | Wide                                                                | how wide the page grows on a big screen                                                     |
 | General → Background                  | Cover aura                                                          | Flat, Cover aura, Glow or Header band                                                       |
-| General → Hexagons                    | off, Static                                                         | show outlines on any background; the stepper sets their opacity, halved on the light theme; Static or Drift’s slowly moving glow, which respects reduced motion |
+| General → Hexagons                    | off, Static                                                         | show outlines, set opacity and choose Static, Drift or Wide drift                           |
 | General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                                      |
 | General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
 | General → Keyboard shortcuts          | on                                                                  | the keys below; [keyboard shortcuts](#keyboard-shortcuts); **Change keys** opens their list |
+
+Wide drift uses broader, fainter glow and moves more slowly than Drift. Both stop moving with reduced motion enabled.
 
 ## Shortcuts
 

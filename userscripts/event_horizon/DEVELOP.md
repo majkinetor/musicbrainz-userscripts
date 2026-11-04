@@ -91,7 +91,7 @@ Credit marks match by person, so someone with two credits, one pending, has both
 
 ## Hexagon animation cost
 
-Drift uses three slowly moving radial masks over a stationary SVG lattice. Opacity scales the base outlines and glow together; reduced motion stops the mask animation. Static and Drift are the only modes, and discontinued saved modes migrate to Drift. There are no light renderers, animation timers or animation-frame loops.
+Drift uses three slowly moving radial masks over a stationary SVG lattice. Opacity scales the base outlines and glow together; reduced motion stops the mask animation. Wide drift uses two broader, fainter masks on a 110-second cycle. The standard select offers Static, Drift and Wide drift; its option titles and selected-value shared tooltip describe each mode. Discontinued saved modes migrate to Drift. There are no light renderers, animation timers or animation-frame loops.
 
 Keep effects out of animated SVG patterns: changing dash offsets and blur filters inside a repeated pattern repaints and rasterizes large areas continuously.
 
