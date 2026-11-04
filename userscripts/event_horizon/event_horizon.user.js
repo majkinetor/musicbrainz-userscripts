@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.120000
+// @version      2026.11.04.120001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2458,19 +2458,13 @@ body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;poin
 #eh-hex svg{display:block;width:100%;height:100%;overflow:visible}
 #eh-hex .hex-base{opacity:calc(var(--eh-hex-opacity,.2) * .5)}
 #eh-hex .hex-drift{display:none;opacity:calc(var(--eh-hex-opacity,.2) * 2.25);-webkit-mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat;mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat}
-#eh-hex .hex-lights{opacity:calc(var(--eh-hex-opacity,.2) * 2.5)}
-#eh-hex .hex-light{display:none;fill:none;stroke-linecap:round;filter:drop-shadow(0 0 var(--hex-halo) currentColor) drop-shadow(0 0 calc(var(--hex-halo) * 2) currentColor)}
-:root[data-eh-hex=breathe] #eh-hex svg{animation:eh-hex-breathe 40s ease-in-out infinite}
+#eh-hex .hex-lights{position:absolute;inset:0;width:100%;height:100%;opacity:calc(var(--eh-hex-opacity,.2) * 2.5)}
+:root[data-eh-hex=breathe] #eh-hex{will-change:opacity;animation:eh-hex-breathe 24s ease-in-out infinite}
+:root[data-eh-hex=breathe] #eh-hex .hex-base{opacity:var(--eh-hex-opacity,.2)}
 :root[data-eh-hex=drift] #eh-hex .hex-drift{display:block;animation:eh-hex-drift 46s linear infinite}
-:root[data-eh-hex=christmas] #eh-hex .hex-light{display:block;animation:eh-hex-lights var(--hex-travel) linear var(--hex-phase) infinite var(--hex-direction),eh-hex-shimmer var(--hex-pulse) ease-in-out var(--hex-pulse-phase) infinite}
-#eh-hex .hex-light:nth-child(3n+1){color:var(--mbu-ok)}
-#eh-hex .hex-light:nth-child(3n+2){color:var(--accent2)}
-#eh-hex .hex-light:nth-child(3n){color:var(--accent)}
-@keyframes eh-hex-breathe{0%,100%{opacity:.65}50%{opacity:1}}
+@keyframes eh-hex-breathe{0%,100%{opacity:.15}50%{opacity:1}}
 @keyframes eh-hex-drift{0%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}25%{-webkit-mask-position:35% 60%,70% 15%,10% 55%;mask-position:35% 60%,70% 15%,10% 55%}50%{-webkit-mask-position:75% 35%,30% 85%,60% 10%;mask-position:75% 35%,30% 85%,60% 10%}75%{-webkit-mask-position:55% 90%,10% 30%,95% 45%;mask-position:55% 90%,10% 30%,95% 45%}100%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}}
-@keyframes eh-hex-lights{to{stroke-dashoffset:-100}}
-@keyframes eh-hex-shimmer{0%,100%{opacity:.55;filter:drop-shadow(0 0 var(--hex-halo) currentColor) drop-shadow(0 0 calc(var(--hex-halo) * 2) currentColor)}50%{opacity:.95;filter:drop-shadow(0 0 calc(var(--hex-halo) * 1.5) currentColor) drop-shadow(0 0 calc(var(--hex-halo) * 3) currentColor)}}
-@media (prefers-reduced-motion:reduce){#eh-hex svg,#eh-hex .hex-drift,#eh-hex .hex-light{animation:none!important}}
+@media (prefers-reduced-motion:reduce){#eh-hex,#eh-hex .hex-drift{animation:none!important}}
 :root[data-eh-hex] :is(.tl,.card,.u-bio,.u-facts,.u-vcol,.hm-pf,.hgrp,.eh-details){background:color-mix(in srgb,var(--surface) 62%,transparent)!important;backdrop-filter:blur(1px)}
 :root[data-eh-hex] .tl .disc{background:color-mix(in srgb,var(--chip) 55%,transparent)!important}
 :root[data-eh-hex] :is(.tl.striped .tr.alt,.tl .detail){background:color-mix(in srgb,var(--hover) 50%,transparent)!important}
@@ -7592,25 +7586,77 @@ function artHtml(r) {
 }
 
 /* ── page ──────────────────────────────────────────── */
-// The SVG repeats the same lattice for the base and the travelling outline lights.
+// The stationary lattice and its optional light renderer share the same hexagon outlines.
 function hexApply() {
     const de = document.documentElement;
+    let layer = document.getElementById('eh-hex');
     de.toggleAttribute('data-eh-hex', !!S.hex && ehOn);
-    if (!S.hex || !ehOn) { document.getElementById('eh-hex')?.remove(); return; }
+    if (!S.hex || !ehOn) { layer?._ehLights?.stop(); layer?.remove(); return; }
     de.setAttribute('data-eh-hex', S.hexMotion || 'static');
     de.style.setProperty('--eh-hex-opacity', Math.max(0, Math.min(100, Number(S.hexOpacity) || 0)) / 100);
-    if (document.getElementById('eh-hex')) return;
-    const layer = document.createElement('div'); layer.id = 'eh-hex'; layer.setAttribute('aria-hidden', 'true');
-    const outline = 'M14 0l14 8v16L14 32 0 24V8z';
-    // A large, sparsely lit tile avoids a small repeated cluster. Each light has its own pace and pulse.
-    const lights = Array.from({ length: 1800 }, (_, i) => {
-        const c = i % 60, r = Math.floor(i / 60), h = (c * 73856093 ^ r * 19349663) >>> 0;
-        if (h % 29 || !c || !r) return '';
-        const length = 1.5 + h % 61 / 10;
-        return `<path class="hex-light" transform="translate(${c * 28} ${r * 48})" d="${outline}" pathLength="100" stroke="currentColor" style="--hex-travel:${75 + h % 71}s;--hex-phase:-${h % 149}s;--hex-direction:${h % 2 ? 'reverse' : 'normal'};--hex-pulse:${22 + h % 23}s;--hex-pulse-phase:-${h % 47}s;--hex-halo:${2 + h % 25 / 10}px;stroke-dasharray:${length} ${100 - length};stroke-width:${1 + h % 17 / 10}"/>`;
-    }).join('');
-    layer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><pattern id="eh-hex-base" width="28" height="48" patternUnits="userSpaceOnUse"><path d="${outline}M14 32v16" fill="none" stroke="currentColor"/></pattern><pattern id="eh-hex-lights" width="1680" height="1440" patternUnits="userSpaceOnUse">${lights}</pattern></defs><rect class="hex-base" width="100%" height="100%" fill="url(#eh-hex-base)"/><rect class="hex-drift" width="100%" height="100%" fill="url(#eh-hex-base)"/><rect class="hex-lights" width="100%" height="100%" fill="url(#eh-hex-lights)"/></svg>`;
-    document.body.append(layer);
+    if (!layer) {
+        layer = document.createElement('div'); layer.id = 'eh-hex'; layer.setAttribute('aria-hidden', 'true');
+        layer.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><pattern id="eh-hex-base" width="28" height="48" patternUnits="userSpaceOnUse"><path d="M14 0l14 8v16L14 32 0 24V8zM14 32v16" fill="none" stroke="currentColor"/></pattern></defs><rect class="hex-base" width="100%" height="100%" fill="url(#eh-hex-base)"/><rect class="hex-drift" width="100%" height="100%" fill="url(#eh-hex-base)"/></svg>';
+        document.body.append(layer);
+    }
+    hexLights(layer);
+}
+// Rasterize each small glow once. Moving these sprites at 8 fps avoids animated SVG
+// patterns and per-frame blur filters; no work is scheduled in a hidden tab.
+function hexLights(layer) {
+    if (S.hexMotion !== 'christmas' || !Number(S.hexOpacity)) { layer._ehLights?.stop(); return; }
+    const w = innerWidth + 96, h = innerHeight + 96, style = getComputedStyle(layer);
+    const colors = ['--mbu-ok', '--accent2', '--accent'].map(k => style.getPropertyValue(k).trim());
+    const key = [w, h, ...colors].join('|');
+    if (layer._ehLights?.key === key) return;
+    layer._ehLights?.stop();
+    const cv = document.createElement('canvas'); cv.className = 'hex-lights'; cv.width = w; cv.height = h;
+    layer.append(cv);
+    const ctx = cv.getContext('2d'), lights = [], motion = matchMedia('(prefers-reduced-motion:reduce)');
+    const corners = [[14, 0], [28, 8], [28, 24], [14, 32], [0, 24], [0, 8], [14, 0]];
+    const lengths = corners.slice(1).map((p, i) => Math.hypot(p[0] - corners[i][0], p[1] - corners[i][1]));
+    const perimeter = lengths.reduce((a, b) => a + b, 0);
+    for (let r = 0; r * 48 < h; r++) for (let c = 0; c * 28 < w; c++) {
+        const seed = (c * 73856093 ^ r * 19349663) >>> 0;
+        if (seed % 29 || !c || !r) continue;
+        const sprite = document.createElement('canvas'); sprite.width = sprite.height = 48;
+        const sc = sprite.getContext('2d'), radius = 4 + seed % 50 / 10;
+        const color = colors[lights.length % colors.length];
+        const glow = sc.createRadialGradient(24, 24, 0, 24, 24, radius);
+        glow.addColorStop(0, color); glow.addColorStop(1, 'transparent');
+        sc.fillStyle = glow; sc.fillRect(0, 0, 48, 48);
+        sc.strokeStyle = color; sc.lineWidth = 1 + seed % 17 / 10; sc.lineCap = 'round';
+        const size = 1.5 + seed % 61 / 10;
+        sc.beginPath(); sc.moveTo(24 - size / 2, 24); sc.lineTo(24 + size / 2, 24); sc.stroke();
+        lights.push({ x: c * 28, y: r * 48, seed, sprite });
+    }
+    let timer;
+    const stop = () => {
+        clearTimeout(timer); document.removeEventListener('visibilitychange', draw);
+        motion.removeEventListener('change', draw); cv.remove(); delete layer._ehLights;
+    };
+    function draw() {
+        clearTimeout(timer);
+        if (!layer.isConnected) { stop(); return; }
+        if (document.hidden) return;
+        const t = motion.matches ? 0 : performance.now() / 1000;
+        ctx.clearRect(0, 0, w, h);
+        for (const light of lights) {
+            const { seed } = light, period = 75 + seed % 71, dir = seed % 2 ? -1 : 1;
+            let d = ((seed % 149 / 149 + dir * t / period) % 1 + 1) % 1 * perimeter, edge = 0;
+            while (edge < lengths.length - 1 && d > lengths[edge]) d -= lengths[edge++];
+            const a = corners[edge], b = corners[edge + 1], f = d / lengths[edge];
+            ctx.save();
+            ctx.globalAlpha = .75 + .2 * Math.sin(t * Math.PI * 2 / (22 + seed % 23) + seed);
+            ctx.translate(light.x + a[0] + (b[0] - a[0]) * f, light.y + a[1] + (b[1] - a[1]) * f);
+            ctx.rotate(Math.atan2(b[1] - a[1], b[0] - a[0])); ctx.drawImage(light.sprite, -24, -24);
+            ctx.restore();
+        }
+        if (!motion.matches) timer = setTimeout(draw, 125);
+    }
+    layer._ehLights = { key, stop };
+    document.addEventListener('visibilitychange', draw); motion.addEventListener('change', draw);
+    draw();
 }
 function bgApply() {
     hexApply();
@@ -9222,7 +9268,7 @@ async function discLoad(n, id) {
 // The shared watch noticed the theme change (String Theory's switch, say): follow it without a reload.
 new MutationObserver(() => {
     const de = document.documentElement, t = de.getAttribute('data-mbu-theme');
-    if (t && de.hasAttribute('data-eh-theme')) de.setAttribute('data-eh-theme', t);
+    if (t && de.hasAttribute('data-eh-theme')) { de.setAttribute('data-eh-theme', t); if (ehOn) hexApply(); }
 }).observe(document.documentElement, { attributeFilter: ['data-mbu-theme'] });
 const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-theme=dark\]\{[\s\S]*?\}/) || [''])[0].replace(/:root/g, ':root[data-eh-rel]')
     // the theme's band and bar colours, which the stuck section header and the pinned bar take
@@ -10019,6 +10065,7 @@ function setOn(on) {
     const first = on && !ehBody, theme = on && mbuTheme();   // read off MusicBrainz's page, before it goes
     if (first) build();
     ehOn = on;
+    if (!on) hexApply();
     ehRelMark(); ehPageMark();
     // the other scripts' corner launchers sit in whichever body was showing when they started: they move along
     // and fold behind String Theory's dock while EH shows (#847)

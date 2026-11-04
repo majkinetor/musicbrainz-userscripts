@@ -89,6 +89,12 @@ The gate has no priority levels, so `pdAsk` gets last place by waiting. It start
 
 Credit marks match by person, so someone with two credits, one pending, has both marked.
 
+## Hexagon animation cost
+
+Keep Christmas lights out of animated SVG patterns: changing dash offsets and blur filters inside a repeated pattern repaints and rasterizes large areas continuously. `hexLights` draws cached, small glow sprites on a canvas at eight frames per second. Light sizes, travel speeds and brightness phases vary without rebuilding their glow. A hidden tab schedules no draws; reduced motion draws one still frame. Switching modes, zero opacity or turning Event Horizon off destroys the renderer and its listeners. Stop it before detaching Event Horizon's body.
+
+Breathe animates the layer's opacity, with a separate, stronger base opacity and a wide fade range. Keep this on the HTML layer for compositing; a small fade of already faint outlines is barely visible.
+
 ## Declarations setOn can reach
 
 `setOn` runs while the script starts, before the rest of the file has run, so whatever it calls must exist by then. A `let`, `const` or arrow function declared below the call is in its temporal dead zone and throws. Declare such things with `var` and a `function` declaration (as `ehRel` and `ehRelMark` are).
