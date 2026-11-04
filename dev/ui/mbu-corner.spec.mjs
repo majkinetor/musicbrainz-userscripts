@@ -46,4 +46,11 @@ test('launchers in one corner stack by order, and a hidden one leaves no gap', {
   await page.evaluate(() => { document.getElementById('falcon').style.width = '30px'; window.mbuShared = k => (k === 'cornerSize' ? 1.5 : undefined); mbRestackCorner('br'); });
   const f = await at();
   check(f.apollo.right === '14px' && f.falcon.right === '22px' && f.fusion.right === '14px', `a narrower launcher is centred in the column (${JSON.stringify(f)})`);
+  // a folded dock's peek draws at its scale(.8) as well: centred on what is drawn, not flush to the side
+  await page.evaluate(() => {
+    const st = document.createElement('style'); st.textContent = '[data-mbu-docked=peek]{transform:scale(.8)}'; document.head.appendChild(st);
+    document.getElementById('falcon').setAttribute('data-mbu-docked', 'peek'); mbRestackCorner('br');
+  });
+  const g = await page.evaluate(() => Object.fromEntries(['apollo', 'falcon'].map(id => { const r = document.getElementById(id).getBoundingClientRect(); return [id, r.left + r.width / 2]; })));
+  check(Math.abs(g.apollo - g.falcon) <= 1, `a peek is centred on the column (${JSON.stringify(g)})`);
 });

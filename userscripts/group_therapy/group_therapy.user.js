@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.233000
+// @version      2026.11.04.133600
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -1250,10 +1250,13 @@
       var small = function (el) { return el.offsetHeight <= 64 && el.offsetWidth <= 240; };
       var size = Math.min(1.6, Math.max(0.6, Number(mbuShared('cornerSize')) || 1));
       if (corner === 'br') html.style.setProperty('--mbu-cs', String(size));
+      var peek = function (el) { return el.getAttribute('data-mbu-docked') === 'peek'; };
       var fit = function (el) {
           var on = size !== 1 && small(el);
-          if (on) { el.style.scale = String(size); el.style.transformOrigin = (bottom ? 'bottom ' : 'top ') + (right ? 'right' : 'left'); el.setAttribute('data-mb-corner-scaled', ''); }
-          else if (el.hasAttribute('data-mb-corner-scaled')) { el.style.scale = el.style.transformOrigin = ''; el.removeAttribute('data-mb-corner-scaled'); }
+          if (on) { el.style.scale = String(size); el.setAttribute('data-mb-corner-scaled', ''); }
+          else if (el.hasAttribute('data-mb-corner-scaled')) { el.style.scale = ''; el.removeAttribute('data-mb-corner-scaled'); }
+          // a peek's own scale(.8) shrinks it toward the corner too, so the stack below can centre what is drawn
+          el.style.transformOrigin = on || peek(el) ? (bottom ? 'bottom ' : 'top ') + (right ? 'right' : 'left') : '';
       };
       if (vv) {
           // what a fixed element is placed against, measured: clientWidth leaves out a scrollbar but is the screen's width on a phone, where the page is wider (360 of 780), and innerWidth is the reverse
@@ -1289,7 +1292,8 @@
           .sort(byRank);
       // launchers share one centre line across the flow: a 34px one beside the 40px dock button sat
       // flush to the edge instead, off centre by half the difference, times the corner's size
-      var across = function (el) { return (row ? el.offsetHeight : el.offsetWidth) * (el.hasAttribute('data-mb-corner-scaled') ? size : 1); };
+      // what is drawn across: the corner's size, and a folded dock's peek its scale(.8) as well
+      var across = function (el) { return (row ? el.offsetHeight : el.offsetWidth) * (el.hasAttribute('data-mb-corner-scaled') ? size : 1) * (peek(el) ? 0.8 : 1); };
       els.concat(peeks).forEach(fit);
       var lane = 0;
       els.concat(peeks).forEach(function (el) { if (small(el)) lane = Math.max(lane, across(el)); });

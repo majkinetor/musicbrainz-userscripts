@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.04.233000
+// @version      2026.11.04.133600
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -5162,10 +5162,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       var small = function (el) { return el.offsetHeight <= 64 && el.offsetWidth <= 240; };
       var size = Math.min(1.6, Math.max(0.6, Number(mbuShared('cornerSize')) || 1));
       if (corner === 'br') html.style.setProperty('--mbu-cs', String(size));
+      var peek = function (el) { return el.getAttribute('data-mbu-docked') === 'peek'; };
       var fit = function (el) {
           var on = size !== 1 && small(el);
-          if (on) { el.style.scale = String(size); el.style.transformOrigin = (bottom ? 'bottom ' : 'top ') + (right ? 'right' : 'left'); el.setAttribute('data-mb-corner-scaled', ''); }
-          else if (el.hasAttribute('data-mb-corner-scaled')) { el.style.scale = el.style.transformOrigin = ''; el.removeAttribute('data-mb-corner-scaled'); }
+          if (on) { el.style.scale = String(size); el.setAttribute('data-mb-corner-scaled', ''); }
+          else if (el.hasAttribute('data-mb-corner-scaled')) { el.style.scale = ''; el.removeAttribute('data-mb-corner-scaled'); }
+          // a peek's own scale(.8) shrinks it toward the corner too, so the stack below can centre what is drawn
+          el.style.transformOrigin = on || peek(el) ? (bottom ? 'bottom ' : 'top ') + (right ? 'right' : 'left') : '';
       };
       if (vv) {
           // what a fixed element is placed against, measured: clientWidth leaves out a scrollbar but is the screen's width on a phone, where the page is wider (360 of 780), and innerWidth is the reverse
@@ -5201,7 +5204,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           .sort(byRank);
       // launchers share one centre line across the flow: a 34px one beside the 40px dock button sat
       // flush to the edge instead, off centre by half the difference, times the corner's size
-      var across = function (el) { return (row ? el.offsetHeight : el.offsetWidth) * (el.hasAttribute('data-mb-corner-scaled') ? size : 1); };
+      // what is drawn across: the corner's size, and a folded dock's peek its scale(.8) as well
+      var across = function (el) { return (row ? el.offsetHeight : el.offsetWidth) * (el.hasAttribute('data-mb-corner-scaled') ? size : 1) * (peek(el) ? 0.8 : 1); };
       els.concat(peeks).forEach(fit);
       var lane = 0;
       els.concat(peeks).forEach(function (el) { if (small(el)) lane = Math.max(lane, across(el)); });
