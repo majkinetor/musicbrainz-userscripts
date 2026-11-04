@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.04.130000
+// @version      2026.11.04.140000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -2756,10 +2756,15 @@
     #ii-btn .ii-status { font-size: 10px; font-weight: 600; opacity: .9; }
     #ii-btn .ii-btn-links { border-left: 1px solid rgba(255,255,255,.4); padding-left: 6px; }
     /* in Event Horizon a quiet tinted chip in the theme's colours, not a filled, pulsing button */
-    html[data-mbu-dock] #app #ii-btn { --ii-c: var(--link, var(--accent)); color: var(--ii-c) !important; background: color-mix(in srgb, var(--ii-c) 12%, transparent); border: 1px solid color-mix(in srgb, var(--ii-c) 35%, transparent); box-shadow: none; outline: none; animation: none; }
-    html[data-mbu-dock] #app #ii-btn.has-missing { --ii-c: var(--mb-orange, var(--isrc)); }
-    html[data-mbu-dock] #app #ii-btn:hover { background: color-mix(in srgb, var(--ii-c) 22%, transparent); }
-    html[data-mbu-dock] #app #ii-btn .ii-btn-links { border-left-color: color-mix(in srgb, var(--ii-c) 35%, transparent); }
+    html[data-mbu-dock] #ii-btn[data-ii-quiet] { --ii-c: var(--link, var(--accent)); color: var(--ii-c) !important; background: color-mix(in srgb, var(--ii-c) 12%, transparent); border: 1px solid color-mix(in srgb, var(--ii-c) 35%, transparent); box-shadow: none; outline: none; animation: none; }
+    html[data-mbu-dock] #ii-btn[data-ii-quiet].has-missing { --ii-c: var(--mb-orange, var(--isrc)); }
+    html[data-mbu-dock] #ii-btn[data-ii-quiet]:hover { background: color-mix(in srgb, var(--ii-c) 22%, var(--surface, var(--mbu-surface, #fff))); }
+    html[data-mbu-dock] #ii-btn[data-ii-quiet] .ii-btn-links { border-left-color: color-mix(in srgb, var(--ii-c) 35%, transparent); }
+    html[data-mbu-dock] #ii-btn[data-ii-pinned] { position: fixed; z-index: 2147483000; margin: 0; cursor: grab; font-size: 14px; }
+    html[data-mbu-dock] #ii-btn[data-ii-pinned].ii-dragging { cursor: grabbing; }
+    #ii-hud-menu { position: fixed; z-index: 2147483600; min-width: 150px; padding: 4px 0; background: var(--mbu-surface, var(--surface, #fff)); color: var(--mbu-text, var(--text, #222)); border: 1px solid var(--mbu-border, var(--border, #ccc)); border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.25); font: 13px/1.3 system-ui, sans-serif; }
+    #ii-hud-menu label { display: flex; align-items: center; gap: 8px; padding: 6px 12px; cursor: pointer; white-space: nowrap; }
+    #ii-hud-menu label:hover { background: var(--mbu-hover, var(--hover, rgba(127,127,127,.12))); }
     @keyframes ii-pulse { 0%,100%{opacity:1} 50%{opacity:.72} }
 
     /* overlay + modal */
@@ -9249,12 +9254,69 @@
     // white on the purple/pink button), replacing the generic magnifying glass.
     '<svg width="14" height="14" viewBox="0 0 128 128" fill="none" stroke="currentColor" aria-hidden="true"><path d="M64 64 L64 24 A40 40 0 0 1 99 84 Z" fill="currentColor" opacity=".35" stroke="none"/><g stroke-width="8"><circle cx="64" cy="64" r="40"/><circle cx="64" cy="64" r="26" stroke-width="6"/><circle cx="64" cy="64" r="13" stroke-width="6"/></g><line x1="64" y1="64" x2="64" y2="24" stroke-width="8" stroke-linecap="round"/><circle cx="86" cy="50" r="9" fill="currentColor" stroke="none"/></svg>' +
     'ISRC <span class="ii-status" id="ii-btn-status">⏳</span>';
-  btn.addEventListener('click', openModal);
+  btn.addEventListener('click', e => { if (hudDragged) { hudDragged = false; e.stopImmediatePropagation(); return; } openModal(e); });
+
+  // HUD options in Event Horizon, on a right-click: transparent (a quiet tinted chip) and pinned (fixed, dragged anywhere)
+  const hudQuiet = () => store.get('hudTransparent', true) !== false;
+  const hudPinned = () => !!store.get('hudPinned', false);
+  let hudDragged = false;
+  function hudApply() {
+    const eh = document.documentElement.hasAttribute('data-mbu-dock');
+    btn.toggleAttribute('data-ii-quiet', eh && hudQuiet());
+    const pin = eh && hudPinned();
+    btn.toggleAttribute('data-ii-pinned', pin);
+    if (pin) {
+      const p = store.get('hudPos', null) || { x: innerWidth - 260, y: 80 };
+      btn.style.left = Math.max(0, Math.min(innerWidth - 40, p.x)) + 'px';
+      btn.style.top = Math.max(0, Math.min(innerHeight - 24, p.y)) + 'px';
+    } else { btn.style.left = btn.style.top = ''; }
+  }
+  btn.addEventListener('contextmenu', e => {
+    if (!document.documentElement.hasAttribute('data-mbu-dock')) return;
+    e.preventDefault();
+    document.getElementById('ii-hud-menu')?.remove();
+    const m = document.createElement('div');
+    m.id = 'ii-hud-menu';
+    m.innerHTML = '<label><input type="checkbox" data-k="hudTransparent"> Transparent</label><label><input type="checkbox" data-k="hudPinned"> Pin</label>';
+    m.querySelector('[data-k=hudTransparent]').checked = hudQuiet();
+    m.querySelector('[data-k=hudPinned]').checked = hudPinned();
+    m.addEventListener('change', ev => {
+      const k = ev.target.dataset.k;
+      if (k === 'hudPinned' && ev.target.checked && !store.get('hudPos', null)) {
+        const r = btn.getBoundingClientRect(); store.set('hudPos', { x: Math.round(r.left), y: Math.round(r.top) });
+      }
+      store.set(k, ev.target.checked);
+      hudApply(); btn.remove(); injectButton();
+    });
+    document.body.appendChild(m);
+    m.style.left = Math.min(e.clientX, innerWidth - m.offsetWidth - 4) + 'px';
+    m.style.top = Math.min(e.clientY, innerHeight - m.offsetHeight - 4) + 'px';
+    const close = ev => { if (ev.type === 'keydown' ? ev.key === 'Escape' : !m.contains(ev.target)) { m.remove(); document.removeEventListener('pointerdown', close, true); document.removeEventListener('keydown', close, true); } };
+    document.addEventListener('pointerdown', close, true);
+    document.addEventListener('keydown', close, true);
+  });
+  btn.addEventListener('pointerdown', e => {
+    if (e.button !== 0 || !btn.hasAttribute('data-ii-pinned')) return;
+    const r = btn.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top, x0 = e.clientX, y0 = e.clientY;
+    let moved = false;
+    const move = ev => {
+      if (!moved && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 4) return;
+      moved = true; btn.classList.add('ii-dragging');
+      btn.style.left = Math.max(0, Math.min(innerWidth - btn.offsetWidth, ev.clientX - dx)) + 'px';
+      btn.style.top = Math.max(0, Math.min(innerHeight - btn.offsetHeight, ev.clientY - dy)) + 'px';
+    };
+    const up = () => {
+      removeEventListener('pointermove', move); removeEventListener('pointerup', up);
+      btn.classList.remove('ii-dragging');
+      if (moved) { hudDragged = true; store.set('hudPos', { x: parseInt(btn.style.left), y: parseInt(btn.style.top) }); }
+    };
+    addEventListener('pointermove', move); addEventListener('pointerup', up);
+  });
 
   // In Event Horizon the title is its hero's h1, which it re-renders on every release change
   function injectButton() {
     const eh = document.documentElement.hasAttribute('data-mbu-dock');
-    const h1 = eh ? document.querySelector('#app section.hero h1') : document.querySelector('h1');
+    const h1 = eh ? (hudPinned() ? document.body : document.querySelector('#app section.hero h1')) : document.querySelector('h1');
     if (!h1) return false;
     if (btn.parentNode === h1) return true;
     if (!eh && document.getElementById('ii-btn')) return true;
@@ -9333,7 +9395,7 @@
     // kept running: Event Horizon swaps the page and re-renders its hero, dropping the button
     const want = () => iiIface() !== 'dock' && (document.documentElement.hasAttribute('data-mbu-dock') ? !!document.documentElement.getAttribute('data-mbu-release') : IS_OVERVIEW);
     let queued = false;
-    const tick = () => { queued = false; if (want()) injectButton(); else if (document.documentElement.hasAttribute('data-mbu-dock')) btn.remove(); };
+    const tick = () => { queued = false; hudApply(); if (want()) injectButton(); else if (document.documentElement.hasAttribute('data-mbu-dock')) btn.remove(); };
     tick();
     new MutationObserver(() => { if (!queued) { queued = true; requestAnimationFrame(tick); } })
       .observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-mbu-dock', 'data-mbu-release'] });
