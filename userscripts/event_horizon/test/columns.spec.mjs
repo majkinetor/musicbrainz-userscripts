@@ -103,7 +103,8 @@ test('the Columns menu works on a list of releases that stays MusicBrainz\'s pag
   await until(shown, h => h.endsWith('status'));
   await page.locator('#pop-cols-ed [data-colk="status"] .col-h').focus();
   await page.keyboard.press('ArrowUp');
-  await until(shown, h => h.endsWith('status,barcode,links'));
+  await until(shown, h => h.endsWith('status,barcode'));
+  check(!(await shown()).includes('links') && await page.locator('#pop-cols-ed [data-colk="links"]').count() === 0, 'no Links column, as the table has none');
   check(await page.locator('#pop-cols-ed').isVisible(), 'the menu stays open');
   // the menu's checkboxes toggle on this page too
   await page.locator('#pop-cols-ed [data-colk="status"] label').click();

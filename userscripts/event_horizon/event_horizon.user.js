@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.004523
+// @version      2026.11.05.005334
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3943,9 +3943,12 @@ const COLS = {
     dg: { keys: ['title', 'artist', 'date', 'rating', 'releases', 'links'], names: { title: 'Title', artist: 'Artist', date: 'First released', rating: 'Rating', releases: 'Releases', links: 'Links' }, off: [] },
 };
 // a section's columns as they stand; a column the saved choice doesn't know is one added later: it takes its usual place, on or off as usual
+// MusicBrainz's releases list drawn as EH's has no links to show: it reads MusicBrainz's table, which has none
+let edNoLinks = false;
 function colState(sc) {
     const { keys, off } = COLS[sc], saved = S.colPick[sc] || {}, known = (saved.order || []).filter(k => keys.includes(k)), order = [...known];
     keys.forEach((k, i) => { if (!order.includes(k)) order.splice(i ? order.indexOf(keys[i - 1]) + 1 : 0, 0, k); });
+    if (sc === 'ed' && edNoLinks) order.splice(order.indexOf('links'), 1);
     return { order, off: new Set(keys.slice(1).filter(k => known.includes(k) ? (saved.off || []).includes(k) : off.includes(k))) };
 }
 const colKeep = (sc, order, off) => { S.colPick = { ...S.colPick, [sc]: { order, off: [...off] } }; };
@@ -9695,6 +9698,7 @@ async function nativeMore(d) {
     d.editions = d.editions.concat(add); d.page++; d.more = !!add.length && pageMore(c, d.page);
 }
 function releasesDress(c) {
+    edNoLinks = true;
     // Scope the shared stylesheet with the browser's parser, including media rules.
     const sheet = new CSSStyleSheet(); sheet.replaceSync(CSS);
     const scope = rules => [...rules].map(r => r.type === CSSRule.STYLE_RULE ? ':root[data-eh-releases] .eh-release-views :is(' + r.selectorText.replace(/#app\b/g, '.eh-release-views') + '){' + r.style.cssText + '}' : r.type === CSSRule.MEDIA_RULE ? '@media ' + r.conditionText + '{' + scope(r.cssRules) + '}' : '').join(String.fromCharCode(10));
