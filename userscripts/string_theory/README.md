@@ -60,7 +60,7 @@ In String Theory's settings, on the **General** tab, **Mode** picks one of:
 
 String Theory checks the project's [announcements](https://github.com/majkinetor/musicbrainz-userscripts/discussions/categories/announcements) once a day. While some are unread, its icon is golden, and clicking it opens **What's new** instead of the dock.
 
-The window lists the latest 20 posts and loads older ones as you scroll to the end, each with its script's name and icon. A post shows **stable** when its change is released and **latest** when it isn't yet. 
+The window lists the latest 20 posts and loads older ones as you scroll to the end, each with its script's name and icon. A post shows **stable** when its change is released and **latest** when it isn't yet.
 
 ## Command palette
 
@@ -86,9 +86,9 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 - **Theme chooser** opens a slim bar at the bottom of the page instead: **◀ ▶** (or the arrow keys) show each light and dark theme on the whole page, **All** switches to **Light** or **Dark** only, **Keep** (**Enter**) saves it, **✕** (**Esc**) goes back to yours.
 - **Pin** a command with **Alt+P** or its ☆: pinned commands come first, then the ones you used last.
 - **Reorder pins** by dragging one up or down, or with **Alt+↑** / **Alt+↓** on the selected pin.
-- **Search**: `search work blue` or `work blue` is *Search Work: blue*; `search` alone lists the types.
-- **New issue** puts the script's name in the title and the versions in the report; *with log* adds that script's log of this page, or one of its last 10 kept logs.
-- The words you type can be in any order and abbreviated: `rel cov` finds *This release: Cover art*.
+- **Search**: `search work blue` or `work blue` is _Search Work: blue_; `search` alone lists the types.
+- **New issue** puts the script's name in the title and the versions in the report; _with log_ adds that script's log of this page, or one of its last 10 kept logs.
+- The words you type can be in any order and abbreviated: `rel cov` finds _This release: Cover art_.
 
 ## Sync and backup
 
@@ -96,7 +96,7 @@ Open String Theory's settings → **Sync**, choose **Provider**, and connect. Us
 
 **Dropbox** and **Google Drive** open their sign-in in a new tab, return to MusicBrainz and finish the connection automatically. Both support the sync actions and automatic sync, and stay connected until you disconnect or revoke access.
 
-**WebDAV** works with Nextcloud, ownCloud, a NAS or any WebDAV server. Enter the folder's address, your user name and password, then **Connect**; a missing folder is created. The address must start with `https://`. On Nextcloud and ownCloud, use an app password: the folder address is shown under *Files* → *Settings* → *WebDAV*, with a folder name added at the end. **Reconnect** shows the form again to change them. The password is saved in the userscript manager and, like other credentials, included in sync and backups.
+**WebDAV** works with Nextcloud, ownCloud, a NAS or any WebDAV server. Enter the folder's address, your user name and password, then **Connect**; a missing folder is created. The address must start with `https://`. On Nextcloud and ownCloud, use an app password: the folder address is shown under _Files_ → _Settings_ → _WebDAV_, with a folder name added at the end. **Reconnect** shows the form again to change them. The password is saved in the userscript manager and, like other credentials, included in sync and backups.
 
 | Action   | What it does                                                                 |
 | -------- | ---------------------------------------------------------------------------- |
@@ -118,21 +118,23 @@ Credentials, stars, saved notes, remembered field values, named filters and norm
 
 Right-click String Theory's icon to open its settings, or any dock icon for that script's own. About shows each script's installed, latest and stable version.
 
-| Setting          | Default           | What it does                                                                         |
-| ---------------- | ----------------- | ------------------------------------------------------------------------------------ |
-| Side             | Right             | The launchers' side of the page                                                      |
-| Orientation      | Column            | A column, or a row along the bottom edge                                             |
-| Size             | 100 %             | The launchers' size, 60 to 160 %                                                     |
-| Hover            | None              | While the pointer is over the dock, None, or Shelf: a frosted shelf behind its icons |
-| Launcher order   | Each script's own | Drag the icons to reorder the launchers; the first sits nearest the corner           |
-| Palette          | On                | The command palette's hotkey works                                                   |
-| Hotkey           | Ctrl+K            | The key that opens the command palette: click it, then press the new one             |
-| Provider         | Dropbox           | Where sync and remote backups are stored                                             |
-| Automatic sync   | Off               | Syncs with the selected provider while MusicBrainz is open                           |
-| every            | 30 minutes        | Time between automatic syncs, from 5 minutes to 1 day                                |
-| On conflict      | Use remote value  | Which value wins when both devices change the same setting                           |
-| Scripts          | All on            | Turns each bundled script on or off, from the next page load                         |
-| Copy as Markdown |                   | Copies versions, scripts and environment, to paste into an issue                     |
+| Setting          | Default           | What it does                                                                                                   |
+| ---------------- | ----------------- | -------------------------------------------------------------------------------------------------------------- |
+| Side             | Right             | The launchers' side of the page                                                                                |
+| Orientation      | Column            | A column, or a row along the bottom edge                                                                       |
+| Size             | 100 %             | The launchers' size, 60 to 160 %                                                                               |
+| Hover            | None              | While the pointer is over the dock, None, or Shelf: a frosted shelf behind its icons                           |
+| Counter          | Pill              | How an icon shows its count: Pill, Segmented (to do, held and already there in their own cells) or Bare digits |
+| Position         | On icon           | The count on the icon's corner, or Beside it: left of a right-side column, right of a left one, above a row    |
+| Launcher order   | Each script's own | Drag the icons to reorder the launchers; the first sits nearest the corner                                     |
+| Palette          | On                | The command palette's hotkey works                                                                             |
+| Hotkey           | Ctrl+K            | The key that opens the command palette: click it, then press the new one                                       |
+| Provider         | Dropbox           | Where sync and remote backups are stored                                                                       |
+| Automatic sync   | Off               | Syncs with the selected provider while MusicBrainz is open                                                     |
+| every            | 30 minutes        | Time between automatic syncs, from 5 minutes to 1 day                                                          |
+| On conflict      | Use remote value  | Which value wins when both devices change the same setting                                                     |
+| Scripts          | All on            | Turns each bundled script on or off, from the next page load                                                   |
+| Copy as Markdown |                   | Copies versions, scripts and environment, to paste into an issue                                               |
 
 - **Right-click a script's icon** in the settings, in the launcher order or in About, to open that script's settings, on any page and even when the script is off. String Theory's settings stay open behind them.
 - **A script that is off** doesn't run.

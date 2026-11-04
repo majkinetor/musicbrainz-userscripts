@@ -13,7 +13,7 @@ function stSyncAllow(kind, key, path) {
   if (/^apollo\.picks\..*\.open$/.test(key)) return false;
   if (/^artstation:typeNames:/.test(key)) return false;
   if (/(?:pending|handoff|harvest|oauth_oob_code|beatport_close|reloadedAfterImport|:match-changed|:bg-barcode|:pasted-barcode|:picked-catno|:forced:|^gt:createTab|^mc\.after)/i.test(key)) return false;
-  if (/^(?:fc\.(?:pos|scroll)|falcon:workerSize|pc:dock-[vhw]|mbu\.(?:cornerFlow|cornerSide|cornerSize|dockOrder|dockKnown|dockOpen|dockHover|logHistory)|st:news:full)$/.test(key)) return false;
+  if (/^(?:fc\.(?:pos|scroll)|falcon:workerSize|pc:dock-[vhw]|mbu\.(?:cornerFlow|cornerSide|cornerSize|dockOrder|dockKnown|dockOpen|dockHover|dockCount|dockCountPos|logHistory)|st:news:full)$/.test(key)) return false;
   if (/^(?:ii:interface|pc:(?:interface|layout|row-gap|col-gap|name-size|icon-size))$/.test(key)) return false;
   if (!path.length) return true;
   var field = path[0];

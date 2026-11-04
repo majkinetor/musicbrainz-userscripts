@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.020101
+// @version      2026.11.05.030000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -2205,7 +2205,7 @@ function mbuDock() {
             + '.mbu-dock-item,#mbu-dock,#mbu-dock-shelf,[data-mbu-docked=show],[data-mbu-docked=peek]{filter:none!important}'
             // The resting fade is on the icon, never the entry: the entry's opacity would fade its badge too, and the page showed through it
             + '[data-mbu-docked=show],[data-mbu-docked=peek]{opacity:1!important}'   // a launcher's own resting fade (Fusion's .85)
-            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])>:not(.mbu-dock-dots){opacity:.85;transition:opacity .12s}:is(:root[data-mbu-dock-over] [data-mbu-docked=show],[data-mbu-docked=show]:hover,[data-mbu-docked=peek]:hover)>*{opacity:1}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])>:not(.mbu-dock-dots,.mbu-dock-n){opacity:.85;transition:opacity .12s}:is(:root[data-mbu-dock-over] [data-mbu-docked=show],[data-mbu-docked=show]:hover,[data-mbu-docked=peek]:hover)>*{opacity:1}'
             // while the pointer is over the dock, a frosted shelf behind its icons, so they read on any page
             + '#mbu-dock-shelf{position:fixed;z-index:2147482989;box-sizing:border-box;background:transparent;opacity:0;visibility:hidden;transition:opacity .15s,visibility .15s}'   // catches the pointer between icons, so the page behind the dock's gaps doesn't react
             + ':root[data-mbu-dock-frost] #mbu-dock-shelf{background:rgba(255,255,255,.6);box-shadow:0 2px 10px rgba(0,0,0,.18),inset 0 0 0 1px rgba(0,0,0,.1);-webkit-backdrop-filter:blur(12px) saturate(1.6);backdrop-filter:blur(12px) saturate(1.6)}'   // String Theory's Hover: Shelf
@@ -2337,6 +2337,7 @@ function mbuDock() {
     if (mbuShared('cornerFlow') === 'row') root.setAttribute('data-mbu-flow', 'row'); else root.removeAttribute('data-mbu-flow');
     if (mbuShared('cornerSide') === 'left') root.setAttribute('data-mbu-side', 'left'); else root.removeAttribute('data-mbu-side');
     root.toggleAttribute('data-mbu-dock-frost', mbuShared('dockHover') === 'shelf');
+    mbuDockCount(root);
     els.forEach(function (el) {
         if ((eh && el.dataset.mbCornerDock === 'hide') || (el.dataset.mbCornerPaths && !new RegExp(el.dataset.mbCornerPaths).test(location.pathname))) { el.setAttribute('data-mbu-docked', 'off'); return; }
         var was = el.getAttribute('data-mbu-docked');
@@ -2359,6 +2360,71 @@ function mbuDock() {
     if (!n) { if (cnt) cnt.remove(); }
     else if (!cnt) btn.insertAdjacentHTML('beforeend', '<b>' + n + '</b>');
     else if (cnt.textContent !== String(n)) cnt.textContent = n;
+}
+// String Theory's Counter: dockCount (seg | bare, null the pill) draws a count ("3", "0,8", "2,4/44")
+// as coloured cells or bare digits, pink to do, grey held back, violet after the slash, a zero
+// left out; dockCountPos (side, null on the icon) moves it beside the icon, away from the dock's
+// edge: left of a right column, right of a left one, above a row. Cells are a child span, kept in
+// step with data-mb-corner-status by one observer for every script's copy. Its CSS is its own
+// sheet, so a copy of the block older than this one that injected the dock's CSS first still
+// gets it.
+function mbuDockCount(root) {
+    var style = mbuShared('dockCount');
+    style = style === 'seg' || style === 'bare' ? style : null;
+    if (style) root.setAttribute('data-mbu-count', style); else root.removeAttribute('data-mbu-count');
+    root.toggleAttribute('data-mbu-count-side', mbuShared('dockCountPos') === 'side');
+    if (!document.getElementById('mbu-dock-count-css')) {
+        var S = ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))';
+        var col = ':root[data-mbu-count-side]:not([data-mbu-flow=row])', row = ':root[data-mbu-count-side][data-mbu-flow=row]';
+        var at = function (sel) { return [S + '[data-mb-corner-status]:not([data-mb-corner-status^="✓"])::after', S + '>.mbu-dock-n', '#mbu-dock>b'].map(function (x) { return sel + ' ' + x; }).join(','); };
+        var css = document.createElement('style'); css.id = 'mbu-dock-count-css';
+        css.textContent = '.mbu-dock-n{display:none}.mbu-dock-n s{text-decoration:none}'
+            + ':root[data-mbu-count] ' + S + '[data-mbu-count-cells]::after{content:none}'
+            + ':root[data-mbu-count] ' + S + '[data-mbu-count-cells]>.mbu-dock-n{display:flex;position:absolute;top:-4px;right:-4px;font:700 11px/1 system-ui,sans-serif;white-space:nowrap;font-variant-numeric:tabular-nums;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none;opacity:1}'
+            + ':root[data-mbu-count] ' + S + '[data-mbu-busy]>.mbu-dock-n,:root[data-mbu-count] #mbu-dock[data-mbu-busy]>b{animation:mbu-dock-fade 1.2s ease-in-out infinite}'
+            // Segmented: one pill of solid cells, ringed in the page's colour
+            + ':root[data-mbu-count=seg] .mbu-dock-n{height:18px;border-radius:9px;overflow:hidden;box-shadow:0 0 0 1.5px var(--mbu-count-halo,#fff)}'
+            + ':root[data-mbu-count=seg] .mbu-dock-n s{min-width:18px;padding:0 5px;box-sizing:border-box;display:grid;place-items:center}'
+            + ':root[data-mbu-count=seg] .mbu-dock-n s+s{box-shadow:inset 1px 0 0 rgba(255,255,255,.55)}'
+            + ':root[data-mbu-count=seg] .mbu-dock-n-t{background:#e05aa5;color:#fff}:root[data-mbu-count=seg] .mbu-dock-n-h{background:#e6e3ea;color:#6d6777}:root[data-mbu-count=seg] .mbu-dock-n-a{background:#6f42c1;color:#fff}'
+            + ':root[data-mbu-count=seg] #mbu-dock>b{border:0;padding:0 5px;background:#e05aa5;color:#fff;line-height:18px;box-shadow:0 0 0 1.5px var(--mbu-count-halo,#fff)}'
+            // Bare: digits haloed in the page's colour, to do large
+            + ':root[data-mbu-count=bare] .mbu-dock-n{top:-7px;right:-8px;align-items:baseline;gap:2px}'
+            + ':root[data-mbu-count=bare] :is(.mbu-dock-n,#mbu-dock>b){font-size:14px;paint-order:stroke;-webkit-text-stroke:4px var(--mbu-count-halo,#fff)}'
+            + ':root[data-mbu-count=bare] .mbu-dock-n-t{color:#e05aa5}:root[data-mbu-count=bare] .mbu-dock-n-h{color:#8a8494;font-size:11px}:root[data-mbu-count=bare] .mbu-dock-n-a{color:#6f42c1;font-size:11px}'
+            + ':root[data-mbu-count=bare][data-mbu-count-dark] .mbu-dock-n-h{color:#9a94a3}:root[data-mbu-count=bare][data-mbu-count-dark] .mbu-dock-n-a{color:#9d7ae0}'
+            + ':root[data-mbu-count=bare] #mbu-dock>b{top:-7px;right:-6px;min-width:0;height:auto;padding:0;border:0;background:none;color:#e05aa5;font-weight:700;line-height:1}'
+            // Beside: centred on the icon's side away from the edge, or above it in a row
+            + at(col + ':not([data-mbu-side=left])') + '{top:50%;right:calc(100% + 3px);left:auto;bottom:auto;transform:translateY(-50%)}'
+            + at(col + '[data-mbu-side=left]') + '{top:50%;left:calc(100% + 3px);right:auto;bottom:auto;transform:translateY(-50%)}'
+            + at(row) + '{top:auto;bottom:calc(100% + 3px);right:50%;left:auto;transform:translateX(50%)}';
+        root.appendChild(css);
+    }
+    if (style) {
+        // the halo: the page's own background, a dark userstyle's included
+        var bg = function (el) { var c = el && getComputedStyle(el).backgroundColor, m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/.exec(c || ''); return m && !(m[4] !== undefined && +m[4] < 0.5) ? m : null; };
+        var m = bg(document.body) || bg(root);
+        root.style.setProperty('--mbu-count-halo', m ? 'rgb(' + m[1] + ',' + m[2] + ',' + m[3] + ')' : '#fff');
+        root.toggleAttribute('data-mbu-count-dark', !!m && (0.2126 * m[1] + 0.7152 * m[2] + 0.0722 * m[3]) / 255 < 0.5);
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('[data-mb-corner-status],[data-mbu-count-cells]'), mbuDockCells);
+    if (!root.hasAttribute('data-mbu-count-obs') && window.MutationObserver) {
+        root.setAttribute('data-mbu-count-obs', '');
+        new MutationObserver(function (ms) { ms.forEach(function (r) { mbuDockCells(r.target); }); })
+            .observe(root, { subtree: true, attributes: true, attributeFilter: ['data-mb-corner-status'] });
+    }
+}
+function mbuDockCells(el) {
+    var m = document.documentElement.hasAttribute('data-mbu-count') && /^(\d+)(?:,(\d+))?(?:\/(\d+))?$/.exec(el.getAttribute('data-mb-corner-status') || '');
+    var html = '', span = el.querySelector(':scope>.mbu-dock-n');
+    if (m) {
+        [['t', m[1]], ['h', m[2]], ['a', m[3]]].forEach(function (c) { if (+c[1]) html += '<s class="mbu-dock-n-' + c[0] + '">' + +c[1] + '</s>'; });
+        if (!html) html = '<s class="mbu-dock-n-h">0</s>';
+    }
+    if (!html) { if (span) span.remove(); el.removeAttribute('data-mbu-count-cells'); return; }
+    if (!span) { span = document.createElement('span'); span.className = 'mbu-dock-n'; el.appendChild(span); }
+    if (span.innerHTML !== html) span.innerHTML = html;
+    el.setAttribute('data-mbu-count-cells', '');
 }
 // Records each named bottom-right launcher's icon in dockKnown, for String Theory's settings to list
 // the ones not on this page too; written only when something changed.

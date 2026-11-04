@@ -333,6 +333,7 @@ function stSettings(tab) {
       + '<span class="st-lbl">Size</span><span class="st-step"><button type="button" id="st-size-dn" aria-label="Smaller">−</button>'
       + '<output id="st-size"></output><button type="button" id="st-size-up" aria-label="Bigger">+</button></span></div>'
       + '<div class="st-row">' + seg('st-hover', 'Hover', [['none', 'None'], ['shelf', 'Shelf']]) + '</div>'
+      + '<div class="st-row">' + seg('st-count', 'Counter', [['pill', 'Pill'], ['seg', 'Segmented'], ['bare', 'Bare']]) + seg('st-count-pos', 'Position', [['on', 'On icon'], ['side', 'Beside']]) + '</div>'
       + '<div class="st-strip" id="st-order"></div>'
       + '<div class="st-cap">Drag to reorder, the first nearest the corner; right-click for its settings.</div>'
       + '<h3 class="st-h">Command palette</h3>'
@@ -435,9 +436,11 @@ function stSettings(tab) {
       for (var i = 0; i + 1 < nodes.length; i += 2) { var f = document.createElement('div'); f.className = 'st-field'; f.appendChild(nodes[i]); f.appendChild(nodes[i + 1]); row.appendChild(f); }
     };
     q('#st-th-mode-l').classList.add('st-mode-label');
-    pairRow(q('#st-th-light').parentElement); pairRow(q('#st-side').parentElement); pairRow(q('#st-hover').parentElement); pairRow(q('#st-pal-on').parentElement);
+    pairRow(q('#st-th-light').parentElement); pairRow(q('#st-side').parentElement); pairRow(q('#st-hover').parentElement); pairRow(q('#st-count').parentElement); pairRow(q('#st-pal-on').parentElement);
     var dockGrid = q('#st-side').closest('.st-field-grid'), hoverGrid = q('#st-hover').closest('.st-field-grid');
     while (hoverGrid.firstChild) dockGrid.appendChild(hoverGrid.firstChild); hoverGrid.remove();
+    var countGrid = q('#st-count').closest('.st-field-grid');
+    while (countGrid.firstChild) dockGrid.appendChild(countGrid.firstChild); countGrid.remove();
     var sections = [], active = null; Array.prototype.slice.call(general.children).forEach(function (n) {
       if (n.tagName === 'H3') { active = document.createElement('section'); active.className = 'st-group'; sections.push(active); }
       if (active) active.appendChild(n);
@@ -484,6 +487,8 @@ function stSettings(tab) {
       pick('#st-side', mbuShared('cornerSide') === 'left' ? 'left' : 'right');
       pick('#st-flow', mbuShared('cornerFlow') === 'row' ? 'row' : 'column');
       pick('#st-hover', mbuShared('dockHover') === 'shelf' ? 'shelf' : 'none');
+      pick('#st-count', mbuShared('dockCount') === 'seg' || mbuShared('dockCount') === 'bare' ? mbuShared('dockCount') : 'pill');
+      pick('#st-count-pos', mbuShared('dockCountPos') === 'side' ? 'side' : 'on');
       var v = size();
       q('#st-size').textContent = v + ' %';
       q('#st-size-dn').disabled = v <= 60;
@@ -493,7 +498,8 @@ function stSettings(tab) {
       return function (e) {
         var b = e.target.closest('button');
         if (!b) return;
-        mbuShared(key, b.dataset.v === alt ? alt : null);
+        // alt: the one value stored, or a list of them; any other is the default, stored as null
+        mbuShared(key, [].concat(alt).indexOf(b.dataset.v) >= 0 ? b.dataset.v : null);
         restack(); show();
       };
     };
@@ -560,6 +566,8 @@ function stSettings(tab) {
     q('#st-side').onclick = segSet('cornerSide', 'left');
     q('#st-flow').onclick = segSet('cornerFlow', 'row');
     q('#st-hover').onclick = segSet('dockHover', 'shelf');
+    q('#st-count').onclick = segSet('dockCount', ['seg', 'bare']);
+    q('#st-count-pos').onclick = segSet('dockCountPos', 'side');
     var step = function (d) {
       var v = Math.min(160, Math.max(60, size() + d));
       mbuShared('cornerSize', v === 100 ? null : v / 100);

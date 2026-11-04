@@ -159,6 +159,8 @@ Most settings belong to one script and live in its GM storage, which no other sc
 | `dockOrder` | `["Mission Control", "Fusion"]`: launcher names, the first nearest the corner; unset is each script's own order | `mbRestackCorner`: the bottom-right launchers' order | String Theory's settings |
 | `dockKnown` | `{"Fusion": "<svg…>"}`: each launcher's icon by name | String Theory's settings: lists every launcher, also those not on the page | `mbuDock`, from the launchers it folds |
 | `dockOpen` | `true`; unset is folded | `mbuDock`: String Theory's dock unrolled | a click on the dock |
+| `dockCount` | `"seg"` or `"bare"`; unset is the pill | `mbuDockCount`: how a dock icon shows its count (`data-mb-corner-status`) | String Theory's settings |
+| `dockCountPos` | `"side"`; unset is on the icon | `mbuDockCount`: the count beside the icon, on the side away from the screen's edge (above it in a row) | String Theory's settings |
 | `isrcFormat` | `false`; unset is on | ISRC Scout and Mission Control: ISRCs shown as `CC-XXX-YY-NNNNN` | ISRC Scout's *Show ISRCs in parts* |
 | `logHistory` | `{"Platform Check": "pc:session:"}`: each log that keeps a history, by its script's name, and where its sessions are stored | `mbuLogHistory`: String Theory's *New issue with log* lists every kept session, on any page | `mbuLog`, when made with a history |
 | `extLinksHeading.<lang>` | the release's "External links" heading in that language | `mbpReleaseLinkList`: tells the release's links from the release group's when the page shows one list | learnt by `mbpReleaseLinkList` on a release page that shows both |
