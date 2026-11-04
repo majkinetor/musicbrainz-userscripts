@@ -69,9 +69,9 @@ test.describe('palette', () => {
     }
     await page.keyboard.press('Control+a');
     await page.keyboard.press('Backspace');
-    const pinned = () => page.$eval('#st-pal-list .st-pal-i[data-pinned] .st-pal-l', ls => ls.map(l => l.textContent));
+    const pinned = () => page.$$eval('#st-pal-list .st-pal-i[data-pinned] .st-pal-l', ls => ls.map(l => l.textContent));
     check((await pinned()).join() === 'Dock,String Theory,Dark', `pinned in order (${await pinned()})`);
-    const box = async i => (await page.$('#st-pal-list .st-pal-i[data-pinned]'))[i].boundingBox();
+    const box = async i => (await page.$$('#st-pal-list .st-pal-i[data-pinned]'))[i].boundingBox();
     const from = await box(2), to = await box(0);
     await page.mouse.move(from.x + 40, from.y + from.height / 2);
     await page.mouse.down();
@@ -82,7 +82,7 @@ test.describe('palette', () => {
     check(await page.$('#st-pal') && await variant(page) === 'light', 'the drop runs nothing');
     const kept = await page.evaluate(() => GM_getValue('string_theory.palette', {}).pins);
     check(kept.length === 3 && /theme/.test(kept[0]), `the order is kept (${kept})`);
-    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Control+Home');   // the first pin, Dark
     await page.keyboard.press('Alt+ArrowDown');
     check((await pinned()).join() === 'Dock,Dark,String Theory', `Alt+Down moves it (${await pinned()})`);
     check(await page.$eval('#st-pal-list .st-pal-i[aria-selected=true] .st-pal-l', l => l.textContent) === 'Dark', 'and it stays selected');
@@ -103,6 +103,7 @@ test.describe('palette', () => {
     await open(page, inject);
     await page.keyboard.press('Escape');
     await page.evaluate(() => document.dispatchEvent(new Event('mbu-st-settings')));
+    await page.locator('#st-tab-g').click();   // the settings reopen on the last tab used
     await page.locator('#st-pal-key').click();
     await page.keyboard.press('Control+Shift+Space');
     check(await page.locator('#st-pal-key').textContent() === 'Ctrl+Shift+Space', 'recorded');
