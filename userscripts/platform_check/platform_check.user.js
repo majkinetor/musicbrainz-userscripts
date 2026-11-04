@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.03.234742
+// @version      2026.11.04.101708
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -3427,8 +3427,16 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   .mbu-dock-win.pc-sized #mb-pc-panel { width: calc(var(--pc-w) - 2px) !important; max-width: min(calc(var(--pc-w) - 2px), calc(100vw - 92px)) !important; }
   .mbu-dock-win.pc-edge, .mbu-dock-win.pc-edge * { cursor: ew-resize !important; }
   .mbu-dock-win.pc-win { transition: opacity .2s, visibility .2s; }
-  .mbu-dock-win[data-pc-mode="ghost"] { opacity: .4; }
-  .mbu-dock-win[data-pc-mode="ghost"]:hover, .mbu-dock-win[data-pc-mode="ghost"]:focus-within { opacity: 1; }
+  .mbu-dock-win.pc-pinned.pc-ghost { opacity: .4; }
+  .mbu-dock-win.pc-pinned.pc-ghost:hover, .mbu-dock-win.pc-pinned.pc-ghost:focus-within { opacity: 1; }
+  /* Keep the height constant: the wheel and a swipe scroll it, no scrollbar shows */
+  .mbu-dock-win.pc-pinned.pc-fixed-h { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+  .mbu-dock-win.pc-pinned.pc-fixed-h::-webkit-scrollbar { display: none; }
+  .mbu-dock-win.pc-edge-v, .mbu-dock-win.pc-edge-v * { cursor: ns-resize !important; }
+  #pc-pos-menu .pc-pin-opt { display: flex; align-items: center; gap: 6px; min-height: 26px; padding: 2px 10px 2px 26px; border-radius: 4px; color: var(--mbu-text); font-size: 12px; cursor: pointer; white-space: nowrap; }
+  #pc-pos-menu .pc-pin-opt:hover { background: var(--mbu-bg-sunken); }
+  #pc-pos-menu .pc-pin-opt input { margin: 0; cursor: pointer; }
+  #pc-pos-menu .pc-pin-opt[hidden] { display: none; }
   .mbu-dock-win.pc-win.pc-away { opacity: 0; visibility: hidden; pointer-events: none; }
   .mbu-dock-win.pc-win.pc-covered { opacity: 0; visibility: hidden; pointer-events: none; }
   .mbu-dock-win.pc-win.pc-fading { opacity: 0; transition: opacity .4s; }
@@ -3666,8 +3674,10 @@ Where the panel stays: pinned, or opening from the dock icon" style="${iconBtn}"
     <div id="pc-pos-menu" role="menu" hidden>
       <button type="button" role="menuitemradio" data-mode="pin" data-tip="Pin
 Open on every release page. Drag it by its title">Pin</button>
-      <button type="button" role="menuitemradio" data-mode="ghost" data-tip="Pin transparent
-Pinned, and see-through until you hover it">Pin transparent</button>
+      <label class="pc-pin-opt" role="menuitemcheckbox" data-tip="Transparent
+See-through until you hover it"><input type="checkbox" data-opt="transparent">Transparent</label>
+      <label class="pc-pin-opt" role="menuitemcheckbox" data-tip="Keep the height constant
+Drag the top or bottom edge to set it; the wheel or a swipe scrolls what doesn't fit"><input type="checkbox" data-opt="fixed-h">Keep the height constant</label>
       <button type="button" role="menuitemradio" data-mode="hover" data-tip="Dock hover
 Open while the mouse is on the dock icon, in place of its tooltip">Dock hover</button>
     </div>
@@ -3861,10 +3871,18 @@ else sidebar.prepend(container);
 var pcDockItem = null, pcPark = null;
 // #851: Interface: 'hud', the panel in the sidebar (the default), or 'dock', the panel behind its own icon
 // in the corner, the way Event Horizon shows it: in String Theory's dock, or standing alone without it
-// How the dock panel stays (Position menu): 'pin', 'ghost' (pinned, see-through until hovered), 'hover' (opens from the dock icon's hover), '' (by click)
+// How the dock panel stays (Position menu): 'pin', 'hover' (opens from the dock icon's hover), '' (by click)
 function pcDockMode() {
     const m = GM_getValue('pc:dock-mode', null);
-    return m === null ? (GM_getValue('pc:dock-pin', false) === true ? 'ghost' : '') : m;   // a pin from before the menu was see-through
+    if (m === 'ghost') return 'pin';   // the old Pin transparent: a pin with Transparent ticked
+    return m === null ? (GM_getValue('pc:dock-pin', false) === true ? 'pin' : '') : m;   // a pin from before the menu
+}
+// The pin's options: 'transparent' (see-through until hovered), 'fixed-h' (Keep the height constant)
+function pcPinOpt(k) {
+    const v = GM_getValue('pc:pin-' + k, null);
+    if (v !== null) return v === true;
+    const m = GM_getValue('pc:dock-mode', null);   // an old Pin transparent, or a pin from before the menu, was see-through
+    return k === 'transparent' && (m === 'ghost' || (m === null && GM_getValue('pc:dock-pin', false) === true));
 }
 function pcIface() { return GM_getValue('pc:interface', 'hud') === 'dock' ? 'dock' : 'hud'; }
 function pcApplyIface() {
@@ -3899,7 +3917,7 @@ if (!PC_SEED) {
         if (pcPinned() && docked && !SETTINGS_ONLY) { open = true; win.hidden = false; pcPlace(); }
     };
     // Pinned (only while the panel is in its dock window): open on every page, where it was dragged, holding whichever of its own edges is nearer the screen's on each axis
-    const pcPinned = () => ['pin', 'ghost'].includes(pcDockMode());
+    const pcPinned = () => pcDockMode() === 'pin';
     // Event Horizon moves off a release without loading a page: the panel fades out there and back on the next release
     const pcOnRelease = () => !!pcEhRelease() || (!document.documentElement.hasAttribute('data-mbu-dock') && /^\/release\/[0-9a-f-]{36}/i.test(location.pathname));
     const pcAnchor = (top, height) => {
@@ -3920,12 +3938,20 @@ if (!PC_SEED) {
         const mode = container.parentNode === win ? pcDockMode() : '';
         if (mode) win.dataset.pcMode = mode; else delete win.dataset.pcMode;
         posMenu.querySelectorAll('button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.mode === mode)));
-        if (!pin) { st.left = st.top = st.right = st.bottom = st.maxHeight = ''; return; }
+        const ghost = pcPinOpt('transparent'), fixedH = pcPinOpt('fixed-h');
+        win.classList.toggle('pc-ghost', ghost); win.classList.toggle('pc-fixed-h', pin && fixedH);
+        posMenu.querySelectorAll('.pc-pin-opt').forEach(l => {
+            const box = l.querySelector('input'), on = box.dataset.opt === 'transparent' ? ghost : fixedH;
+            l.hidden = mode !== 'pin'; box.checked = on; l.setAttribute('aria-checked', String(on));
+        });
+        if (!pin) { st.left = st.top = st.right = st.bottom = st.maxHeight = st.height = ''; return; }
         const h = GM_getValue('pc:dock-h', { edge: 'right', gap: 0 }), hGap = Math.min(h.gap, Math.max(0, window.innerWidth - 200));
         st.left = h.edge === 'left' ? hGap + 'px' : 'auto'; st.right = h.edge === 'left' ? 'auto' : hGap + 'px';
         const v = GM_getValue('pc:dock-v', { edge: 'top', gap: 0 }), gap = Math.min(v.gap, Math.max(0, window.innerHeight - 120));
         st.top = v.edge === 'top' ? gap + 'px' : 'auto'; st.bottom = v.edge === 'top' ? 'auto' : gap + 'px';
         st.maxHeight = `calc(100vh - ${gap}px)`;
+        const hgt = GM_getValue('pc:dock-hgt', 0);
+        st.height = fixedH && hgt ? Math.min(hgt, window.innerHeight - gap) + 'px' : '';
     };
     const posBtn = container.querySelector('#mb-pin-btn');
     const posShow = on => { posMenu.hidden = !on; posBtn.setAttribute('aria-expanded', String(on)); };
@@ -3934,9 +3960,18 @@ if (!PC_SEED) {
         const item = e.target.closest('button');
         if (!item) return;
         const mode = item.dataset.mode === pcDockMode() ? '' : item.dataset.mode;   // the ticked one turns off
-        if (['pin', 'ghost'].includes(mode) && !pcPinned()) { const r = win.getBoundingClientRect(); pcAnchorH(r.left, r.width); pcAnchor(r.top, r.height); }
+        if (mode === 'pin' && !pcPinned()) { const r = win.getBoundingClientRect(); pcAnchorH(r.left, r.width); pcAnchor(r.top, r.height); }
+        if (GM_getValue('pc:pin-transparent', null) === null) GM_setValue('pc:pin-transparent', pcPinOpt('transparent'));   // the old Pin transparent keeps its look
         GM_setValue('pc:dock-mode', mode);
         posShow(false); pcPlace();
+    });
+    // The pin's checkboxes stay in the open menu
+    posMenu.addEventListener('change', e => {
+        const box = e.target.closest('input[data-opt]');
+        if (!box) return;
+        if (box.dataset.opt === 'fixed-h' && box.checked) GM_setValue('pc:dock-hgt', Math.round(win.getBoundingClientRect().height));   // the height it has now
+        GM_setValue('pc:pin-' + box.dataset.opt, box.checked);
+        pcPlace();
     });
     container.querySelector('#pc-head').addEventListener('pointerdown', e => {
         if (e.button || !win.classList.contains('pc-pinned') || e.target.closest('.pc-icon-btn, #pc-pos-menu')) return;
@@ -3951,16 +3986,26 @@ if (!PC_SEED) {
         if (!win.classList.contains('pc-pinned')) return '';
         const r = win.getBoundingClientRect(), zone = 6;
         if (e.clientX - r.left <= zone) return 'left';
-        return r.right - e.clientX <= zone && win.offsetWidth - win.clientWidth <= 2 * win.clientLeft ? 'right' : '';
+        if (r.right - e.clientX <= zone && win.offsetWidth - win.clientWidth <= 2 * win.clientLeft) return 'right';
+        // Keep the height constant: the top or bottom edge sets the height while the other stays put
+        if (!win.classList.contains('pc-fixed-h')) return '';
+        return e.clientY - r.top <= zone ? 'top' : r.bottom - e.clientY <= zone ? 'bottom' : '';
     };
-    win.addEventListener('pointermove', e => { if (!e.buttons) win.classList.toggle('pc-edge', !!pcEdge(e)); });
-    win.addEventListener('pointerleave', e => { if (!e.buttons) win.classList.remove('pc-edge'); });
+    const pcEdgeCls = edge => { win.classList.toggle('pc-edge', edge === 'left' || edge === 'right'); win.classList.toggle('pc-edge-v', edge === 'top' || edge === 'bottom'); };
+    win.addEventListener('pointermove', e => { if (!e.buttons) pcEdgeCls(pcEdge(e)); });
+    win.addEventListener('pointerleave', e => { if (!e.buttons) pcEdgeCls(''); });
     win.addEventListener('pointerdown', e => {
         const edge = e.button ? '' : pcEdge(e);
         if (!edge) return;
         e.preventDefault(); e.stopPropagation();   // not the title's drag
         const r = win.getBoundingClientRect();
-        const mv = ev => {
+        const mv = edge === 'top' || edge === 'bottom' ? ev => {
+            const top = edge === 'top' ? Math.max(0, Math.min(ev.clientY, r.bottom - 80)) : r.top;
+            const h = Math.round(Math.max(80, edge === 'top' ? r.bottom - top : Math.min(window.innerHeight - r.top, ev.clientY - r.top)));
+            GM_setValue('pc:dock-hgt', h);
+            pcAnchor(edge === 'top' ? r.bottom - h : r.top, h);
+            pcPlace();
+        } : ev => {
             const w = Math.round(Math.min(window.innerWidth - 90, Math.max(140, edge === 'left' ? r.width + e.clientX - ev.clientX : r.width + ev.clientX - e.clientX)));
             GM_setValue('pc:dock-w', w);
             pcAnchorH(edge === 'left' ? r.right - w : r.left, w);

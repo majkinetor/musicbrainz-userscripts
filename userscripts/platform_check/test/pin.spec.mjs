@@ -88,9 +88,22 @@ test('a pinned dock panel stays open where it was dragged', { tag: ['@sandbox', 
   check(await win.isVisible(), 'it is back on a release, and stays there with Event Horizon off');
 
   const pick = async mode => { await page.locator('#mb-pin-btn').click(); await page.locator(`#pc-pos-menu [data-mode="${mode}"]`).click(); };
-  check(await page.locator('.mbu-dock-win').getAttribute('data-pc-mode') === 'ghost', 'an old pin comes back as Pin transparent');
-  await pick('pin');
-  check(await page.locator('.mbu-dock-win').getAttribute('data-pc-mode') === 'pin', 'the menu switches to a plain pin');
+  check(await page.locator('.mbu-dock-win').evaluate(w => w.dataset.pcMode === 'pin' && w.classList.contains('pc-ghost')), 'an old pin comes back as a pin with Transparent ticked');
+  await page.locator('#mb-pin-btn').click();
+  await page.locator('#pc-pos-menu [data-opt="transparent"]').click();
+  check(await page.locator('.mbu-dock-win').evaluate(w => !w.classList.contains('pc-ghost')) && await page.locator('#pc-pos-menu').isVisible(), 'unticking Transparent makes it a plain pin, the menu stays open');
+  await page.locator('#pc-pos-menu [data-opt="fixed-h"]').click();
+  const fw = page.locator('.mbu-dock-win'), fb = await fw.boundingBox();
+  check(await fw.evaluate(w => w.classList.contains('pc-fixed-h') && getComputedStyle(w).scrollbarWidth === 'none'), 'Keep the height constant: no scrollbar shows');
+  await page.locator('#mb-pin-btn').click();
+  await page.mouse.move(fb.x + fb.width / 2, fb.y + fb.height - 2); await page.mouse.down();
+  await page.mouse.move(fb.x + fb.width / 2, fb.y + fb.height - 120, { steps: 4 }); await page.mouse.up();
+  const fb2 = await fw.boundingBox();
+  check(Math.abs(fb2.height - (fb.height - 118)) < 6 && Math.abs(fb2.y - fb.y) < 2, 'the bottom edge sets the height, the top stays put');
+  await page.mouse.move(fb2.x + fb2.width / 2, fb2.y + fb2.height / 2); await page.mouse.wheel(0, 200);
+  await page.waitForTimeout(200);
+  check(await fw.evaluate(w => w.scrollTop > 0), 'the mouse wheel scrolls it');
+  await page.evaluate(() => GM_setValue('pc:pin-fixed-h', false));
   await pick('pin');
   check(await page.evaluate(() => GM_getValue('pc:dock-mode')) === '', 'picking the ticked one turns it off');
   await page.mouse.click(5, 300);
