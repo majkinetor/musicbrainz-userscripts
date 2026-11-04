@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.04.170000
+// @version      2026.11.04.180000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -378,7 +378,7 @@
   ═══════════════════════════════════════════════════════════════════════ */
   const MB_ROOT  = location.origin;                 // musicbrainz.org or beta
   const MB_WS2   = MB_ROOT + '/ws/2/';
-  // Derive from the installed @version 2026.11.04.161000 the banner/CLIENT never drift out of
+  // Derive from the installed @version 2026.11.04.180000 the banner/CLIENT never drift out of
   // sync with the metadata again (the hardcoded constant kept lagging behind).
   const SCRIPT_VERSION = (() => {
     try { return (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '2026.6.27'; } catch (e) { return '2026.6.27'; }
@@ -2766,12 +2766,12 @@
     html[data-mbu-dock] #ii-btn[data-ii-pinned]::after { content: ''; position: absolute; right: 1px; bottom: 1px; width: 7px; height: 7px; background: linear-gradient(135deg, transparent 50%, currentColor 50%); opacity: .45; cursor: nwse-resize; }
     html[data-mbu-dock] #ii-btn[data-ii-pinned].ii-resizing { cursor: nwse-resize; }
     html[data-mbu-dock] #ii-btn[data-ii-pinned] svg { width: 1em; height: 1em; flex: none; }
-    html[data-mbu-dock] #ii-btn[data-ii-pinned] .ii-status { font-size: .77em !important; }
+    html[data-mbu-dock] #ii-btn[data-ii-pinned] .ii-status { font-size: .9em !important; }
     /* a pinned HUD widened enough also shows how many tracks have any link: LINK 5/9 */
     #ii-btn .ii-lcount { display: none; }
     html[data-mbu-dock] #ii-btn[data-ii-pinned][data-ii-sized] { container-type: inline-size; }
-    @container (min-width: 15em) { html[data-mbu-dock] #ii-btn[data-ii-pinned][data-ii-sized] .ii-lcount { display: inline; } }
-    html[data-mbu-dock] #ii-btn[data-ii-pinned] .ii-lcount b { font-weight: 600; font-size: 1.3em !important; margin-right: .25em; }
+    @container (min-width: 12em) { html[data-mbu-dock] #ii-btn[data-ii-pinned][data-ii-sized] .ii-lcount { display: inline; } }
+    html[data-mbu-dock] #ii-btn[data-ii-pinned] .ii-lcount b { font-weight: 600; font-size: 1.1em !important; margin-right: .25em; }
     html[data-mbu-dock] #ii-btn[data-ii-pinned] .ii-status * { font-size: inherit !important; }
     html[data-mbu-dock] #ii-btn[data-ii-pinned] .ii-btn-links svg, html[data-mbu-dock] #ii-btn[data-ii-pinned] .ii-status svg { width: 1em; height: 1em; }
     html[data-mbu-dock] #ii-btn[data-ii-pinned] { box-sizing: border-box; justify-content: center; overflow: hidden; white-space: nowrap; line-height: 1; }
@@ -9279,7 +9279,7 @@
   function hudBox(b) {
     btn.style.width = b ? b.w + 'px' : '';
     btn.style.height = b ? b.h + 'px' : '';
-    btn.style.fontSize = b ? (b.h / 1.85).toFixed(1) + 'px' : '';
+    btn.style.fontSize = b ? (b.h / 2.3).toFixed(1) + 'px' : '';
     btn.toggleAttribute('data-ii-sized', !!b);
   }
   function hudApply() {
