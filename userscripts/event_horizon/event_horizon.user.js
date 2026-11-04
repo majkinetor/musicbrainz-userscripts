@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.235901
+// @version      2026.11.05.000500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3117,7 +3117,7 @@ body.col-dragging,body.col-dragging *{cursor:grabbing!important;user-select:none
 .ehtip .mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:500;color:var(--muted)}
 .ehtip .mono.bc{color:var(--text)}
 /* a cover or picture shows a see-through outlined box while it loads: the image is marked eh-ok once it has loaded */
-img:not(.eh-ok){background-color:color-mix(in srgb,var(--chip) 40%,transparent)!important;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--text) 30%,transparent)!important}:is(.dn,.hm-ri,.u-av):has(>img:not(.eh-ok)){background:transparent!important}:is(.dn,.hm-ri):has(>img:not(.eh-ok))>svg{visibility:hidden}.rhcv:not([src]){background:color-mix(in srgb,var(--chip) 40%,transparent)!important;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--text) 30%,transparent)!important}`;
+img:not(.eh-ok){background-color:color-mix(in srgb,var(--chip) 40%,transparent)!important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 12%,transparent)!important}:is(.dn,.hm-ri,.u-av):has(>img:not(.eh-ok)){background:transparent!important}:is(.dn,.hm-ri):has(>img:not(.eh-ok))>svg{visibility:hidden}.rhcv:not([src]){background:color-mix(in srgb,var(--chip) 40%,transparent)!important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 12%,transparent)!important}`;
 document.addEventListener('load', e => { if (e.target instanceof HTMLImageElement) e.target.classList.add('eh-ok'); }, true);
 
 /* ── state ─────────────────────────────────────────── */
@@ -9428,7 +9428,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #set-cover-art-images .editimage.selected{border:2px solid var(--accent)!important;padding:9px!important;box-shadow:none!important;outline:none!important}
 :root[data-eh-rel] #set-cover-art-images .editimage>*{float:none!important;margin:0!important;width:auto!important}
 :root[data-eh-rel] #set-cover-art-images .cover-image{position:relative}:root[data-eh-rel] #set-cover-art-images .cover-image a{display:block}
-:root[data-eh-rel] #set-cover-art-images .cover-image img{width:100%;aspect-ratio:1;height:auto;object-fit:cover;border-radius:9px;display:block;background:var(--chip)}:root[data-eh-rel] #set-cover-art-images .cover-image img:not(.eh-ok){background:color-mix(in srgb,var(--chip) 40%,transparent);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--text) 30%,transparent)}
+:root[data-eh-rel] #set-cover-art-images .cover-image img{width:100%;aspect-ratio:1;height:auto;object-fit:cover;border-radius:9px;display:block;background:var(--chip)}:root[data-eh-rel] #set-cover-art-images .cover-image img:not(.eh-ok){background:color-mix(in srgb,var(--chip) 40%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 12%,transparent)}
 :root[data-eh-rel] #set-cover-art-images .eh-dim{position:absolute;right:6px;bottom:6px;padding:2px 7px;border-radius:6px;background:rgba(0,0,0,.7);color:#fff;font:600 11px/1.5 'JetBrains Mono',monospace}
 :root[data-eh-rel] #set-cover-art-images .release-description{color:var(--muted)}
 :root[data-eh-rel] #set-cover-art-images .release-description p{margin:0}
