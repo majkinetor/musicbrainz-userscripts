@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-04 12:25 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-04 12:32 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1294,6 +1294,7 @@ Pages: `<name>.bandcamp.com/album/<slug>` or `/track/<slug>`
 - On a label's page the label is filled in; on an artist's own page it is left empty.
 - A compilation's *Artist - Title* track titles are split into artist and title.
 - The album link gets both *purchase for download* and, when it streams, *stream for free*.
+- A Creative Commons album (*some rights reserved*) gets its licence link as the release's *license*.
 - Only the artist the page belongs to has a Bandcamp link to hand off.
 - An album that isn't out yet hides its unreleased tracks' lengths; First Contact takes them anyway, with a warning and a line in the edit note, as they can still change.
 
