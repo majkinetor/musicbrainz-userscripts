@@ -4,22 +4,23 @@
 // release, but nothing told the button.
 //
 // test.musicbrainz.org (a copy of the release from the issue), with production's data
-// (fixtures/ws-607.json.gz); the first release lookup is answered 503.
+// (fixtures/ws-607.json.gz); the release lookups are answered 503 until the dialog opens.
 import { test, check, answerGm, until } from '../../../dev/test/harness.mjs';
 import { openScout } from './is.mjs';
 
 test.use({ gm: { name: 'ISRC Scout' } });
 
 test('the button shows the real count once the dialog has loaded the release', { tag: ['@sandbox'] }, async ({ page, context, inject }) => {
-  let calls = 0;
+  let opened = false; // every page-load attempt is throttled (the gate retries a 503), the dialog's is not
   const ws = await openScout(page, inject, {
     release: '603bf0b9-df73-431c-8047-f2d8a1d108ee', replay: new URL('./fixtures/ws-607.json.gz', import.meta.url), open: false,
     // asked before the replay: the page-load lookup is throttled
-    before: () => answerGm(context, ({ url }) => (/\/ws\/2\/release\/[0-9a-f-]{36}\?/.test(url) && ++calls === 1 ? { status: 503, body: '{"error": "Your requests are exceeding the allowable rate limit."}' } : null)),
+    before: () => answerGm(context, ({ url }) => (/\/ws\/2\/release\/[0-9a-f-]{36}\?/.test(url) && !opened ? { status: 503, body: '{"error": "Your requests are exceeding the allowable rate limit."}' } : null)),
   });
   await page.waitForFunction(() => (b => b && !b.classList.contains('ii-loading'))(document.getElementById('ii-btn')), null, { timeout: 30000 });
   const before = await page.evaluate(() => document.getElementById('ii-btn-status').textContent);
   check(before === '?', `the throttled page load leaves "?" (${before})`);
+  opened = true;
   await page.evaluate(() => document.getElementById('ii-btn').click());
   await page.waitForFunction(() => !/Loading release/.test(document.getElementById('ii-modal')?.innerText || 'Loading release'), null, { timeout: 30000 }).catch(() => {});
   const after = await until(() => page.evaluate(() => ({ status: document.getElementById('ii-btn-status').textContent, title: document.getElementById('ii-btn').dataset.tip, rows: document.querySelectorAll('#ii-modal tbody tr').length })), a => a.rows > 1 && /^[✓⚠] \d+\/\d+$/.test(a.status));
