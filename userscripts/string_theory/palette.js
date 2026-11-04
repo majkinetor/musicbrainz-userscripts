@@ -276,10 +276,31 @@ function stPalMatch(c, q) {
   }
   // letters in order across words, read as "Category: label" or as "label category" ("ehse" → Event Horizon Settings)
   var flat = words.join(''), cut = c.cat.length + 2, lab = c.label.toLowerCase(), best = null;
+  // each letter costs nothing at a word's start or right after the letter before it, 1 elsewhere; the
+  // cheapest placement wins, so "seh" / "ehs" take Settings, Event, Horizon and rank above scattered hits
   [[text, function (n) { return n; }], [lab + ' ' + c.cat.toLowerCase(), function (n) { return n < lab.length ? cut + n : n - lab.length - 1; }]].forEach(function (t) {
-    var s = t[0], k = 0, first = -1, last = 0, hs = [];
-    for (var n = 0; n < s.length && k < flat.length; n++) if (s.charAt(n) === flat.charAt(k)) { if (first < 0) first = n; last = n; hs.push([t[1](n), 1]); k++; }
-    if (k === flat.length && (!best || 100 + (last - first) / 10 < best.score)) best = { score: 100 + (last - first) / 10, hits: hs };
+    var s = t[0], L = s.length, m = flat.length, cost = [], from = [];
+    var startAt = function (n) { return n === 0 || /[\s:·“(-]/.test(s.charAt(n - 1)); };
+    for (var k = 0; k < m; k++) {
+      cost.push([]); from.push([]);
+      for (var n = 0; n < L; n++) {
+        cost[k][n] = Infinity;
+        if (s.charAt(n) !== flat.charAt(k)) continue;
+        if (!k) { cost[k][n] = startAt(n) ? 0 : 1; continue; }
+        for (var p = 0; p < n; p++) {
+          if (cost[k - 1][p] === Infinity) continue;
+          var v = cost[k - 1][p] + (p === n - 1 || startAt(n) ? 0 : 1);
+          if (v < cost[k][n]) { cost[k][n] = v; from[k][n] = p; }
+        }
+      }
+    }
+    var end = -1;
+    for (var e = 0; e < L; e++) if (cost[m - 1][e] < Infinity && (end < 0 || cost[m - 1][e] < cost[m - 1][end])) end = e;
+    if (end < 0) return;
+    var hs = [], at = end;
+    for (var j = m - 1; j >= 0; j--) { hs.unshift([t[1](at), 1]); at = from[j][at]; }
+    var sc = 100 + cost[m - 1][end] * 5 + (end - hs.length) / 1000;
+    if (!best || sc < best.score) best = { score: sc, hits: hs };
   });
   return best;
 }
