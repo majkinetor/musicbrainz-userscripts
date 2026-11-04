@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.030000
+// @version      2026.11.05.040000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -2856,8 +2856,11 @@
     #ii-btn .ii-btn-links { border-left: 1px solid rgba(255,255,255,.4); padding-left: 6px; }
     /* in Event Horizon a quiet tinted chip in the theme's colours, not a filled, pulsing button */
     html[data-mbu-dock] #ii-btn[data-ii-quiet] { --ii-c: var(--link, var(--accent)); color: var(--ii-c) !important; background: color-mix(in srgb, var(--ii-c) 12%, transparent); border: 1px solid color-mix(in srgb, var(--ii-c) 35%, transparent); box-shadow: none; outline: none; animation: none; }
-    /* the quiet chip keeps its colour; a count that isn't full (ISRC 4/6, LINK 0/1) takes the theme's row highlight */
-    html[data-mbu-dock] #ii-btn[data-ii-quiet] .ii-part { background: var(--mbu-row-mark); border-radius: 4px; padding: .15em .35em; margin: -.15em 0; }
+    /* a count that isn't full (ISRC 4/6, LINK 0/1) sits on its own tint, in every HUD style: a light wash on the
+       filled button, and on the quiet chip a much stronger mix of the chip's own colour (the theme's row highlight
+       was lost against the chip's tint) */
+    #ii-btn .ii-part { background: rgba(255,255,255,.24); border-radius: 4px; padding: .15em .35em; margin: -.15em 0; }
+    html[data-mbu-dock] #ii-btn[data-ii-quiet] .ii-part { background: color-mix(in srgb, var(--ii-c) 32%, transparent); }
     html[data-mbu-dock] #ii-btn[data-ii-quiet]:hover { background: color-mix(in srgb, color-mix(in srgb, var(--ii-c) 22%, var(--surface, var(--mbu-surface, #fff))) 80%, transparent); }
     html[data-mbu-dock] #ii-btn[data-ii-quiet] .ii-btn-links { border-left-color: color-mix(in srgb, var(--ii-c) 35%, transparent); }
     /* under the dock (2147482989-91), so the dock shows over the bar */
