@@ -78,7 +78,9 @@ for (const f of files) {
     uses.forEach(u => usedGlobally.add(u));
 
     // 1. every token referenced must exist — a typo resolves to nothing, silently
-    const unknown = uses.filter(n => !(n in TOKENS));
+    // a component's own custom property (`--mbu-dw-x:` set by the dock window) is declared right there, not a typo
+    const local = new Set([...src.matchAll(/--mbu-([a-z-]+)\s*:/g)].map(m => m[1]));
+    const unknown = uses.filter(n => !(n in TOKENS) && !local.has(n));
     ck(unknown.length === 0, `${rel}: every referenced token is defined (${uses.length} used${unknown.length ? ', UNKNOWN: ' + unknown.join(', ') : ''})`);
 
     // 2. the UNIT must carry the block, and it must be current

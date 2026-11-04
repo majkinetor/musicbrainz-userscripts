@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.030101
+// @version      2026.11.05.030102
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15798,7 +15798,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-af-box{flex:1;min-width:0;display:flex;justify-content:flex-end;contain:inline-size;letter-spacing:0;text-transform:none}   /* takes what the heading leaves, never widens the column */
     #tc-af-box .tc-af-in{width:100%;height:18px;margin:-3px 0;padding:0 6px;font:12px var(--mbu-font);box-sizing:border-box}
     #tc-af-box .tc-af-st{font:12px var(--mbu-font);color:var(--mbu-text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    #tc-af-box .tc-af-st.bad{color:var(--mbu-err)}
+    #tc-af-box .tc-af-st.bad{color:var(--mbu-error)}
     #tc-af-box .tc-af-st:empty{display:none}
     #tc-af-box .tc-af-of{flex:none;width:20px;height:18px;margin:-3px 0 -3px 4px;padding:0;border:0;border-radius:var(--mbu-radius);background:transparent;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:none;opacity:.8}
     #tc-af-box .tc-af-of .favicon{transform:none;margin:0;pointer-events:none}
@@ -16990,7 +16990,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         #tc-alias input.tc-al-bad:not([type=checkbox]){border-bottom:2px solid #e53935!important;background:rgba(229,57,53,.18)!important;color:#e53935!important;border-radius:3px 3px 0 0}
         #tc-alias .tc-al-msg.tc-al-err{color:#e53935;font-weight:600}
         #tc-alias{position:relative}
-        #tc-alias .tc-al-pop{position:absolute;z-index:50;max-height:240px;overflow-y:auto;overflow-x:hidden;background:var(--mbu-bg, #fff);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.18);padding:2px 0;scrollbar-gutter:stable}
+        #tc-alias .tc-al-pop{position:absolute;z-index:50;max-height:240px;overflow-y:auto;overflow-x:hidden;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.18);padding:2px 0;scrollbar-gutter:stable}
         #tc-alias .tc-al-pop[hidden]{display:none}
         #tc-alias .tc-al-opt,#tc-alias .tc-al-none{padding:3px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
         #tc-alias .tc-al-none{color:var(--mbu-text-weak);cursor:default}

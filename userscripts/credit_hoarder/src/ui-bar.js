@@ -2508,7 +2508,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             background: var(--mbu-text-weak);
             transition: left 0.12s, background 0.12s;
         }
-        .discogs-toggle.active .discogs-toggle-dot::after { left: 14px; background: #fff; }
+        .discogs-toggle.active .discogs-toggle-dot::after { left: 14px; background: var(--mbu-text-on-accent); }
         .discogs-toggle.active {
             color: var(--mbu-text);
         }

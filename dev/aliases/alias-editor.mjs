@@ -376,7 +376,7 @@ const mbuAliasEditor = (() => {
       #tc-alias input.tc-al-bad:not([type=checkbox]){border-bottom:2px solid #e53935!important;background:rgba(229,57,53,.18)!important;color:#e53935!important;border-radius:3px 3px 0 0}
       #tc-alias .tc-al-msg.tc-al-err{color:#e53935;font-weight:600}
       #tc-alias{position:relative}
-      #tc-alias .tc-al-pop{position:absolute;z-index:50;max-height:240px;overflow-y:auto;overflow-x:hidden;background:var(--mbu-bg, #fff);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.18);padding:2px 0;scrollbar-gutter:stable}
+      #tc-alias .tc-al-pop{position:absolute;z-index:50;max-height:240px;overflow-y:auto;overflow-x:hidden;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.18);padding:2px 0;scrollbar-gutter:stable}
       #tc-alias .tc-al-pop[hidden]{display:none}
       #tc-alias .tc-al-opt,#tc-alias .tc-al-none{padding:3px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
       #tc-alias .tc-al-none{color:var(--mbu-text-weak);cursor:default}
