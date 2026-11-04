@@ -803,20 +803,22 @@ function mbuDock() {
             // launchers on <html> (the dock's button among them) stayed above a window appended to <body>.
             // Only full screen: a smaller window leaves the corner free, and the dock must stay reachable then
             + ':root:has(.mbu-ov > .full,#mbu-logpop.full) :is(#mbu-dock,#mbu-dock-shelf,.mbu-dock-item,.mbu-dock-win,[data-mb-corner]):not(.mbu-ov *){visibility:hidden!important}'
-            + '.mbu-dock-item{position:fixed;z-index:2147482990;width:40px;height:40px;box-sizing:border-box;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer;opacity:.85;transition:transform .12s,opacity .12s}'
-            + '.mbu-dock-item:hover{opacity:1;transform:scale(1.08)}.mbu-dock-item img{width:34px;height:34px;display:block;pointer-events:none}'
+            + '.mbu-dock-item{position:fixed;z-index:2147482990;width:40px;height:40px;box-sizing:border-box;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer;transition:transform .12s}'
+            + '.mbu-dock-item:hover{transform:scale(1.08)}.mbu-dock-item img{width:34px;height:34px;display:block;pointer-events:none;opacity:.85;transition:opacity .12s}.mbu-dock-item:hover img{opacity:1}'
             // beside the dock's button, wherever the corner's size (--mbu-cs, set by the restack) puts it
             + '.mbu-dock-win{position:fixed;z-index:2147482995;--mbu-dw-x:calc(22px + 40px*var(--mbu-cs,1));--mbu-dw-y:6px;right:var(--mbu-dw-x);bottom:var(--mbu-dw-y);width:max-content;max-width:calc(100vw - 90px);max-height:min(75vh,calc(100vh - 20px));overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}'
             + '.mbu-dock-win>*{margin:0!important}:root[data-mbu-flow=row] .mbu-dock-win{--mbu-dw-x:6px;--mbu-dw-y:calc(20px + 40px*var(--mbu-cs,1));max-height:min(75vh,calc(100vh - 80px))}:root[data-mbu-side=left] .mbu-dock-win{right:auto;left:var(--mbu-dw-x)}'
-            + '#mbu-dock{position:fixed;z-index:2147482991;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none;opacity:.85;transition:transform .12s,opacity .12s}'
-            + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none}'
-            + '#mbu-dock:hover{opacity:1;transform:scale(1.08)}:root[data-mbu-dock-open] #mbu-dock{opacity:1}'
+            + '#mbu-dock{position:fixed;z-index:2147482991;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none;transition:transform .12s}'
+            + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none;opacity:.85;transition:opacity .12s}'
+            + '#mbu-dock:hover{transform:scale(1.08)}:is(#mbu-dock:hover,:root[data-mbu-dock-open] #mbu-dock) svg{opacity:1}'
             + '#mbu-dock:focus-visible{outline:2px solid #ba478f;outline-offset:2px}'
             + '#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center}'
             // no names, only a short state (a count) as a badge on the entry's top-right corner
             // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
             + '.mbu-dock-item,#mbu-dock,#mbu-dock-shelf,[data-mbu-docked=show],[data-mbu-docked=peek]{filter:none!important}'
-            + ':root[data-mbu-dock-over] [data-mbu-docked=show]{opacity:1!important}'   // a launcher's own resting fade (Fusion's .85) reads as dim on the shelf
+            // The resting fade is on the icon, never the entry: the entry's opacity would fade its badge too, and the page showed through it
+            + '[data-mbu-docked=show],[data-mbu-docked=peek]{opacity:1!important}'   // a launcher's own resting fade (Fusion's .85)
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])>:not(.mbu-dock-dots){opacity:.85;transition:opacity .12s}:is(:root[data-mbu-dock-over] [data-mbu-docked=show],[data-mbu-docked=show]:hover,[data-mbu-docked=peek]:hover)>*{opacity:1}'
             // while the pointer is over the dock, a frosted shelf behind its icons, so they read on any page
             + '#mbu-dock-shelf{position:fixed;z-index:2147482989;box-sizing:border-box;background:transparent;opacity:0;visibility:hidden;transition:opacity .15s,visibility .15s}'   // catches the pointer between icons, so the page behind the dock's gaps doesn't react
             + ':root[data-mbu-dock-frost] #mbu-dock-shelf{background:rgba(255,255,255,.6);box-shadow:0 2px 10px rgba(0,0,0,.18),inset 0 0 0 1px rgba(0,0,0,.1);-webkit-backdrop-filter:blur(12px) saturate(1.6);backdrop-filter:blur(12px) saturate(1.6)}'   // String Theory's Hover: Shelf
