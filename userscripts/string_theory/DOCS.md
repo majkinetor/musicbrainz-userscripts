@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-04 12:58 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-04 13:00 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -800,7 +800,7 @@ When MB page has Event Horizon redesign available, EH dock button shows on the n
 - **Covers**: click a release's cover, thumbnail or Artwork image to view all its covers full screen in Art Station gallery.
 - **Relate**, the release's relationship editor, stays MusicBrainz's but takes Event Horizon's look; its regions and tracks fold like cards.
 - **Long titles**: a subtitle after a colon or dash sits smaller on its own line, long titles shrink, and very long ones stop at four lines with **Show full title**. Every page header follows this, and titles in grids, tables and track lists stop at three lines.
-- **Search**: start a search with a type's letter and a space to search that type: `w yesterday` searches works for "yesterday". On the homepage the type switches as soon as you type the space, and the letter leaves the box. The letters are **a** artist, **g** release group, **r** release, **w** work, **s** series, **p** place and **e** editor; the homepage's type list shows them beside the types.
+- **Search**: start a search with a type's letter and a space to search that type: `w yesterday` searches works for "yesterday". On the homepage the type switches as soon as you type the space, and the letter leaves the box. The letters are **a** artist, **g** release group, **r** release, **w** work, **s** series, **p** place and **e** editor; the homepage's type list shows them beside the types. An empty search shows them in a tip instead of searching. Recent searches in the search field's list show only the chosen type's.
 - **Pinned headers**: once the page's header scrolls away, a single bar keeps its cover, title and artist in reach; section headers are pinned to as you scroll.
 
 ### Sections
