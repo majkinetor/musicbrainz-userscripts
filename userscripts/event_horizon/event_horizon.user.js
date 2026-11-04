@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.130000
+// @version      2026.11.04.140000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3135,7 +3135,9 @@ const S = {
     hgrp: 'burst', // the history page's grouping
     tagView: 'bars', etagView: 'chips', tagSort: 'count', tagScope: 'a', tgxView: 'row', // the tags pages' view (an editor's, an entity's), order and kind
 };
-VIEW.push('menuTitles', 'annoHover', 'pending', 'colPick', 'colW', 'named', 'stars', 'starGroup', 'starView', 'starSort', 'recView', 'recSort', 'recMax', 'recOff', 'hmQs');
+VIEW.push('keysOn', 'keys', 'menuTitles', 'annoHover', 'pending', 'colPick', 'colW', 'named', 'stars', 'starGroup', 'starView', 'starSort', 'recView', 'recSort', 'recMax', 'recOff', 'hmQs');
+S.keysOn = true; // #907: keyboard shortcuts, and the keys changed from their defaults by command
+S.keys = {};
 S.stars = []; // starred entities travel with the manager's settings
 S.starGroup = 'type';
 S.starView = '';
@@ -10224,7 +10226,8 @@ function cfgBody() {
     const chip = cfgChip, row = cfgRow;
     const tabs = [['general', 'General']];
     const panes = {
-        general: row('Menu titles', chip('menuTitles', 'menuTitles', S.menuTitles, 'Show', 'Show text beside header menu icons\nOn: icons and titles\nOff: icons only'))
+        general: row('Keyboard shortcuts', chip('keysOn', 'keysOn', S.keysOn, 'On', 'Single keys open the page\'s edit, relationships, history and more\nCtrl+/ lists them') + '<button type="button" class="chip" data-keys-open>Change keys</button>', 'On MusicBrainz\'s pages and in Event Horizon alike')
+            + row('Menu titles', chip('menuTitles', 'menuTitles', S.menuTitles, 'Show', 'Show text beside header menu icons\nOn: icons and titles\nOff: icons only'))
             + row('Pending changes', chip('pending', 'pending', S.pending, 'Show', 'Mark what has edits open, as MusicBrainz does\nTakes one extra MusicBrainz request per page, sent last'))
             + row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen')
             + row('Background', [['flat', 'Flat'], ['aura', 'Cover aura'], ['glow', 'Glow'], ['band', 'Header band']].map(([k, l]) => chip('bg', k, (S.bg || 'aura') === k, l)).join(''), 'Cover aura blurs the page\'s cover or picture behind its head; pages without one get the glow')
@@ -10320,7 +10323,7 @@ function cfgWire(panel, b, body) {
             else if (g === 'factOff') { const [kd, fk] = k.split(':'); S.factOff = { ...S.factOff, [kd]: toggle(S.factOff[kd] || [], fk) }; }
             else if (g === 'extra') S.extras = toggle(S.extras, k);
             else if (g === 'prov') { S.prov = toggle(S.prov, k); plFollow(); }
-            else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'menuTitles') S[g] = !S[g];
+            else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'menuTitles' || g === 'keysOn') S[g] = !S[g];
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
             else if (g === 'bg') S.bg = k;
@@ -10549,9 +10552,98 @@ function cspMirror() {
     sync();
 }
 if (/^\/account\//.test(location.pathname)) cspMirror();
+/* ── keyboard shortcuts (#907) ─────────────────────── */
+// one key per command, on MusicBrainz's page and in the viewer alike; Ctrl+/ lists them, runs one and changes its key
+const KEY_ENT = () => { const m = location.pathname.match(/^\/([a-z-]+)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i); return m && { type: m[1], id: m[2].toLowerCase() }; };
+const keyGo = sub => () => {
+    const e = KEY_ENT(); if (!e) return false;
+    const url = `${MB}/${e.type}/${e.id}${sub ? '/' + sub : ''}`;
+    // the viewer's own button takes it, so it opens where the viewer would
+    const a = ehOn && [...document.querySelectorAll('#app a[href]')].find(x => x.href === url);
+    if (a) a.click(); else location.assign(url);
+    return true;
+};
+const KEY_CMDS = [
+    ['page', 'Overview', 'o', keyGo('')],
+    ['edit', 'Edit', 'e', keyGo('edit')],
+    ['rels', 'Edit relationships', 'r', keyGo('edit-relationships')],
+    ['covers', 'Cover art', 'c', () => KEY_ENT() && KEY_ENT().type === 'release' && keyGo('cover-art')()],
+    ['history', 'Editing history', 'h', keyGo('edits')],
+    ['tags', 'Tags', 't', keyGo('tags')],
+    ['details', 'Details', 'd', keyGo('details')],
+    ['aliases', 'Aliases', 'a', keyGo('aliases')],
+    ['view', 'Switch between Event Horizon and MusicBrainz', 'v', () => { if (!PAGE_ID) return false; switchOn(!ehOn); return true; }],
+    ['settings', 'Settings', ',', () => { mbuCss(); if (document.getElementById('eh-cfg')) closeCfg(); else openCfg(); return true; }],
+    ['palette', 'Shortcuts', 'ctrl+/', () => { keysOpen(); return true; }],
+];
+const keyOfCmd = c => S.keys[c[0]] != null ? S.keys[c[0]] : c[2];
+// a key press as it is stored: modifiers, then the key; Shift only where the key itself doesn't show it
+const keyCombo = ev => {
+    if (['Control', 'Alt', 'Shift', 'Meta'].includes(ev.key)) return '';
+    const k = ev.key === ' ' ? 'space' : ev.key.length === 1 ? ev.key.toLowerCase() : ev.key.toLowerCase();
+    return (ev.ctrlKey || ev.metaKey ? 'ctrl+' : '') + (ev.altKey ? 'alt+' : '') + (ev.shiftKey && ev.key.length > 1 ? 'shift+' : '') + (k === '?' && (ev.ctrlKey || ev.metaKey) ? '/' : k);
+};
+const keyShow = k => k ? k.split('+').map(p => `<kbd>${esc(p.length === 1 ? p.toUpperCase() : p[0].toUpperCase() + p.slice(1))}</kbd>`).join('+') : '<span class="eh-k-none">none</span>';
+const mbuCss = () => { if (!document.getElementById('eh-mbu')) { const m = document.createElement('style'); m.id = 'eh-mbu'; m.textContent = MBU_TOKENS + MBU_UI_CSS + CFG_CSS + KEYS_CSS; document.documentElement.append(m); } };
+const KEYS_CSS = '.eh-keys{width:min(460px,calc(100vw - 32px))}.eh-keys input[type=search]{width:100%;box-sizing:border-box;margin:0 0 8px;padding:6px 8px;font:inherit}.eh-keys ul{list-style:none;margin:0;padding:0;max-height:60vh;overflow:auto}.eh-keys li{display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:4px;cursor:pointer}.eh-keys li.sel{background:var(--mbu-hover,rgba(127,127,127,.15))}.eh-keys li>span{flex:1}.eh-keys li button{min-width:72px;padding:3px 8px;font:inherit;background:none;border:1px solid var(--mbu-border,rgba(127,127,127,.4));border-radius:4px;color:inherit;cursor:pointer}.eh-keys li button.rec{border-color:currentColor}.eh-keys kbd{font:inherit;font-size:.9em}.eh-k-none{opacity:.5}.eh-keys .eh-k-ft{display:flex;justify-content:space-between;gap:8px;margin-top:8px;font-size:.9em;opacity:.8}.eh-keys .eh-k-ft button{background:none;border:0;padding:0;color:inherit;text-decoration:underline;cursor:pointer;font:inherit}';
+let keysRec = null;   // the command whose key is being set
+function keysOpen() {
+    if (document.getElementById('eh-keys')) return;
+    mbuCss();
+    const ov = document.createElement('div'); ov.className = 'mbu-ov'; ov.id = 'eh-keys';
+    ov.innerHTML = `<div class="mbu-ov-panel eh-keys mbu-ui" role="dialog" aria-label="Keyboard shortcuts"><div class="mbu-ov-body"><button type="button" class="mbu-ov-x" aria-label="Close">×</button><h3>Keyboard shortcuts</h3><input type="search" placeholder="Find a command" aria-label="Find a command"><ul></ul><div class="eh-k-ft"><span>Enter runs · click a key to change it</span><button type="button" class="eh-k-reset">Default keys</button></div></div></div>`;
+    document.documentElement.append(ov);
+    const panel = ov.firstChild, inp = panel.querySelector('input'), ul = panel.querySelector('ul');
+    let sel = 0;
+    const close = () => { keysRec = null; ov.remove(); };
+    const list = () => { const q = inp.value.trim().toLowerCase(); return KEY_CMDS.filter(c => !q || c[1].toLowerCase().includes(q) || keyOfCmd(c).includes(q)); };
+    const draw = () => {
+        const l = list(); sel = Math.max(0, Math.min(sel, l.length - 1));
+        ul.innerHTML = l.map((c, i) => `<li data-cmd="${c[0]}"${i === sel ? ' class="sel"' : ''}><span>${esc(c[1])}</span><button type="button"${keysRec === c[0] ? ' class="rec"' : ''} aria-label="Change the key for ${esc(c[1])}">${keysRec === c[0] ? 'Press a key…' : keyShow(keyOfCmd(c))}</button></li>`).join('');
+    };
+    const run = c => { close(); if (c) c[3](); };
+    inp.addEventListener('input', () => { sel = 0; draw(); });
+    panel.addEventListener('keydown', ev => {
+        if (keysRec) {
+            ev.preventDefault(); ev.stopPropagation();
+            if (ev.key === 'Escape') { keysRec = null; draw(); return; }
+            const k = ev.key === 'Backspace' || ev.key === 'Delete' ? '' : keyCombo(ev); if (k == null || (k === '' && ev.key !== 'Backspace' && ev.key !== 'Delete')) return;
+            const c = KEY_CMDS.find(x => x[0] === keysRec);
+            // a key belongs to one command: the one that had it loses it
+            if (k) KEY_CMDS.forEach(x => { if (x !== c && keyOfCmd(x) === k) S.keys = { ...S.keys, [x[0]]: '' }; });
+            S.keys = { ...S.keys, [c[0]]: k }; if (k === c[2]) { const o = { ...S.keys }; delete o[c[0]]; S.keys = o; }
+            save(); keysRec = null; draw(); inp.focus(); return;
+        }
+        const l = list();
+        if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') { ev.preventDefault(); sel = (sel + (ev.key === 'ArrowDown' ? 1 : -1) + l.length) % Math.max(1, l.length); draw(); }
+        else if (ev.key === 'Enter') { ev.preventDefault(); run(l[sel]); }
+        else if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); close(); }
+    });
+    panel.addEventListener('click', ev => {
+        if (ev.target.closest('.mbu-ov-x')) return close();
+        if (ev.target.closest('.eh-k-reset')) { S.keys = {}; save(); draw(); return; }
+        const li = ev.target.closest('li[data-cmd]'); if (!li) return;
+        if (ev.target.closest('button')) { keysRec = keysRec === li.dataset.cmd ? null : li.dataset.cmd; draw(); panel.focus(); return; }
+        run(KEY_CMDS.find(x => x[0] === li.dataset.cmd));
+    });
+    panel.tabIndex = -1;
+    mbuDismissOn(panel, close);
+    draw(); inp.focus();
+}
+if (!SETTINGS_ONLY) {
+    document.addEventListener('keydown', ev => {
+        if (!S.keysOn || ev.defaultPrevented || ev.repeat || document.getElementById('eh-keys')) return;
+        const t = ev.target;
+        if (t && (t.isContentEditable || /^(input|textarea|select)$/i.test(t.tagName))) return;
+        const k = keyCombo(ev); if (!k) return;
+        const c = KEY_CMDS.find(x => keyOfCmd(x) === k); if (!c) return;
+        if (c[3]()) ev.preventDefault();
+    });
+    document.addEventListener('click', ev => { if (ev.target.closest && ev.target.closest('[data-keys-open]')) { ev.preventDefault(); if (document.getElementById('eh-cfg')) closeCfg(); keysOpen(); } });
+}
 // #851: String Theory's settings open these settings on any page, whether this script runs here or not
-document.addEventListener('mbu-open-settings', e => { if (e.detail === 'event_horizon' && !e.defaultPrevented) { e.preventDefault(); if (!document.getElementById('eh-mbu')) { const m = document.createElement('style'); m.id = 'eh-mbu'; m.textContent = MBU_TOKENS + MBU_UI_CSS + CFG_CSS; document.documentElement.append(m); } if (document.getElementById('eh-cfg')) closeCfg(); else openCfg(); } });
-if (SETTINGS_ONLY) { if (!document.getElementById('eh-mbu')) { const m = document.createElement('style'); m.id = 'eh-mbu'; m.textContent = MBU_TOKENS + MBU_UI_CSS + CFG_CSS; document.documentElement.append(m); } if (document.getElementById('eh-cfg')) closeCfg(); else openCfg(); return; }
+document.addEventListener('mbu-open-settings', e => { if (e.detail === 'event_horizon' && !e.defaultPrevented) { e.preventDefault(); if (!document.getElementById('eh-mbu')) { const m = document.createElement('style'); m.id = 'eh-mbu'; m.textContent = MBU_TOKENS + MBU_UI_CSS + CFG_CSS + KEYS_CSS; document.documentElement.append(m); } if (document.getElementById('eh-cfg')) closeCfg(); else openCfg(); } });
+if (SETTINGS_ONLY) { if (!document.getElementById('eh-mbu')) { const m = document.createElement('style'); m.id = 'eh-mbu'; m.textContent = MBU_TOKENS + MBU_UI_CSS + CFG_CSS + KEYS_CSS; document.documentElement.append(m); } if (document.getElementById('eh-cfg')) closeCfg(); else openCfg(); return; }
 if (!PAGE_ID && !SETTINGS_ONLY && new RegExp('^/release/(?:add|' + MBID.source + '/edit)/?$', 'i').test(location.pathname)) {
     const seed = () => { if (!document.querySelector('.confirm-seed')) return; PAGE_ID = 'form/seed/-/confirm'; cspMirror(); start(); };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', seed); else setTimeout(seed, 0);
