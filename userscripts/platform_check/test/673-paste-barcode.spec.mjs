@@ -112,6 +112,9 @@ test('a pasted barcode is read and noted', { tag: '@unit' }, async () => {
     check(pcBarcodeOf(t) === null, `not a barcode: ${JSON.stringify(t)}`);
   check(pcGtinValid('886443984059') && pcGtinValid('0602508146107') && pcGtinValid('96385074'), 'valid check digits');
   check(!pcGtinValid('886443984058'), 'a wrong check digit');
+  // #919: zeros alone are no barcode, though their check digit adds up
+  for (const t of ['000000000000', '0000000000000', '00000000'])
+    check(pcBarcodeOf(t) === null && !pcGtinValid(t), `zeros alone are no barcode: ${t}`);
 
   // its GM storage and URL identity stubbed: the settings at their defaults, URLs compared as given
   const pcEditNote = new Function('GM_getValue', 'pcSameUrl', await functionSource('platform_check', ['pcEditNote']) + '\nreturn pcEditNote;')((k, d) => d, (a, b) => a === b);
