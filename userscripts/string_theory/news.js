@@ -344,30 +344,11 @@ function stNewsStart() {
   var late = 0, t = setInterval(function () { stNewsSignal(); if (++late > 10) clearInterval(t); }, 1000);   // the button comes late
 }
 
-// Auto update: every so many minutes, read @version on the channel String Theory came from; when it is
-// newer, open its install link, so the manager offers the update. The next load after an update turns
-// the icon golden and puts a tip above it.
+// After the manager updates String Theory, the next load turns the icon golden and puts a tip above it.
 var ST_AU_KEY = 'stAutoUpdate';
 function stAuRead() {
   var v = null; try { v = GM_getValue(ST_AU_KEY, null); } catch (e) { /* no storage */ }
-  v = v && typeof v === 'object' ? v : {};
-  return { on: !!v.on, every: Math.max(10, +v.every || 60), at: +v.at || 0, offered: v.offered || '', seen: v.seen || '' };
-}
-function stAuSave(patch) { try { GM_setValue(ST_AU_KEY, Object.assign(stAuRead(), patch)); } catch (e) { /* not kept */ } }
-// the branch to follow: Latest is main, a branch build its branch; a pinned or unknown install has none
-function stAuRef() {
-  var ch = stChannel(), m;
-  return ch === 'Latest' ? 'main' : ch === 'Stable' ? 'stable' : (m = /^branch (.+)$/.exec(ch)) ? m[1] : null;
-}
-function stAuCheck() {
-  var a = stAuRead(), ref = stAuRef();
-  if (!a.on || !ref || Date.now() - a.at < a.every * 6e4) return;
-  stAuSave({ at: Date.now() });   // another tab need not check too
-  stRemoteVersion(ref, function (v) {
-    if (!v || stCmpVer(v, ST_VERSION) <= 0 || v === stAuRead().offered) return;
-    stAuSave({ offered: v });   // offered once; a declined update waits for the next version
-    try { if (typeof GM_openInTab === 'function') GM_openInTab(stInstallUrl(ref), { active: true }); else window.open(stInstallUrl(ref), '_blank'); } catch (e) { /* blocked */ }
-  });
+  return { seen: v && typeof v === 'object' && v.seen || '' };
 }
 function stAuTip(from) {
   var root = document.documentElement, tip = null, gone = false;
@@ -407,7 +388,5 @@ function stAuTip(from) {
 function stAuStart() {
   var a = stAuRead();
   if (a.seen && a.seen !== ST_VERSION && stCmpVer(ST_VERSION, a.seen) > 0) stAuTip(a.seen);
-  if (a.seen !== ST_VERSION) stAuSave({ seen: ST_VERSION });
-  stAuCheck();
-  setInterval(stAuCheck, 6e4);
+  if (a.seen !== ST_VERSION) try { GM_setValue(ST_AU_KEY, { seen: ST_VERSION }); } catch (e) { /* not kept */ }
 }
