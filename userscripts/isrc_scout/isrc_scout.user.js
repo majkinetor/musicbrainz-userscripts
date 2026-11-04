@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.04
+// @version      2026.11.04.233920
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -2832,10 +2832,13 @@
     /* button on the release page */
     #ii-btn {
       display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px;
-      margin-left: 12px; font-size: 12px; font-weight: 600; color: var(--mbu-text-on-accent) !important;
+      margin: 0; font-size: 12px; font-weight: 600; color: var(--mbu-text-on-accent) !important;
       background: var(--mbu-accent); border: none; border-radius: 4px; cursor: pointer;
       vertical-align: middle; white-space: nowrap; transition: background .15s; }
     #ii-btn:hover { background: var(--mbu-accent-hover); }
+    /* the gap before the button is a space, not a margin: when the button wraps under the title the space ends the
+       line above and collapses, so the button lines up with the title */
+    .ii-gap { font-size: 16px; font-weight: 400; word-spacing: 8px; }
     /* #749: ISRC and Links columns on the release page's tracklist */
     th.ii-col, td.ii-col { width: 1%; }                                              /* as wide as their content; Title takes the rest */
     td.ii-col-isrc, td.ii-col-links { white-space: nowrap; vertical-align: top; }
@@ -9381,6 +9384,7 @@
     '<svg width="14" height="14" viewBox="0 0 128 128" fill="none" stroke="currentColor" aria-hidden="true"><g stroke-width="8"><circle cx="64" cy="64" r="40"/><circle cx="64" cy="64" r="26" stroke-width="6"/><circle cx="64" cy="64" r="13" stroke-width="6"/></g><g class="ii-sweep"><path d="M64 64 L64 24 A40 40 0 0 1 99 84 Z" fill="currentColor" opacity=".35" stroke="none"/><line x1="64" y1="64" x2="64" y2="24" stroke-width="8" stroke-linecap="round"/><circle cx="86" cy="50" r="9" fill="currentColor" stroke="none"/></g></svg>' +
     'ISRC <span class="ii-status" id="ii-btn-status"></span>';
   btn.classList.add('ii-loading');   // the logo's sweep turns until the release's count arrives
+  const btnGap = Object.assign(document.createElement('span'), { className: 'ii-gap', textContent: ' ' });
   btn.addEventListener('click', e => { if (hudDragged) { hudDragged = false; e.stopImmediatePropagation(); return; } openModal(e); });
 
   // HUD options in Event Horizon, on a right-click: transparent (a quiet tinted chip) and pinned (fixed, dragged anywhere)
@@ -9484,7 +9488,7 @@
     if (!h1) return false;
     if (btn.parentNode === h1) return true;
     if (!eh && document.getElementById('ii-btn')) return true;
-    h1.appendChild(btn);
+    if (h1 === document.body) { btnGap.remove(); h1.appendChild(btn); } else h1.append(btnGap, btn);
     updateBtnStatus();           // in case the release already loaded before the button injected
     return true;
   }
@@ -9520,7 +9524,7 @@
     const dock = iiIface() === 'dock';
     if (iiDockItem) { if (dock) delete iiDockItem.dataset.mbCornerDock; else iiDockItem.dataset.mbCornerDock = 'only'; mbRestackCorner('br'); }
     if (!IS_OVERVIEW) return;
-    if (dock) btn.remove(); else injectButton();
+    if (dock) { btn.remove(); btnGap.remove(); } else injectButton();
   }
   // In Event Horizon, which replaces this page, the badge's state and the editor are in String Theory's dock (#847)
   whenDomReady(() => {
@@ -9560,7 +9564,7 @@
     // kept running: Event Horizon swaps the page and re-renders its hero, dropping the button
     const want = () => iiIface() !== 'dock' && (document.documentElement.hasAttribute('data-mbu-dock') ? !!document.documentElement.getAttribute('data-mbu-release') : IS_OVERVIEW);
     let queued = false;
-    const tick = () => { queued = false; hudApply(); if (want()) injectButton(); else if (document.documentElement.hasAttribute('data-mbu-dock')) btn.remove(); };
+    const tick = () => { queued = false; hudApply(); if (want()) injectButton(); else if (document.documentElement.hasAttribute('data-mbu-dock')) { btn.remove(); btnGap.remove(); } };
     tick();
     new MutationObserver(() => { if (!queued) { queued = true; requestAnimationFrame(tick); } })
       .observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-mbu-dock', 'data-mbu-release'] });
