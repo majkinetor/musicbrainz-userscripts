@@ -241,14 +241,18 @@ test('a track\'s artists are its artist column, not the "Recording artist:" line
 test('Artists & labels shows how many links it would add, from one lookup', { tag: '@unit' }, async () => {
   const src = await functionSource('platform_check', ['pcUrlKey', 'pcMarkCell', 'pcLinkedKey', 'pcLinkedFresh', 'pcLinkedCached', 'pcNewCount', 'pcShowLinksCount', 'pcCountLinks']);
   const run = async (setting) => {
-    const btn = { innerHTML: 'Artists &amp; labels', classList: { on: false, toggle(c, v) { this.on = v; } } }, calls = [];
+    const btn = {
+      innerHTML: 'Artists &amp; labels', classList: { on: false, toggle(c, v) { this.on = v; } },
+      querySelector(sel) { const b = this; return sel === '.pc-links-n' && /pc-links-n/.test(b.innerHTML) ? { remove() { b.innerHTML = b.innerHTML.replace(/<span class="pc-links-n">.*?<\/span>/, ''); } } : null; },
+      insertAdjacentHTML(where, html) { this.innerHTML += html; },
+    }, calls = [];
     let key = null;
     const rows = [
       { type: 'artist', mbid: 'a', name: 'A', cells: { discogs: [{ url: 'https://www.discogs.com/artist/1' }], deezer: [{ url: 'https://www.deezer.com/artist/2' }] } },
       { type: 'artist', mbid: 'b', name: 'B', cells: { discogs: [{ url: 'https://www.discogs.com/artist/3' }, { url: 'https://x.bandcamp.com/', uncertain: true }] } },
     ];
     const env = new Function('document', 'GM_getValue', 'mbDataGet', 'mbid', 'pcLinkRows', 'pcMbCredits', 'pcConfirmedCredits', 'pcLinkedTo', 'appendLog',
-      'let _pcLinked = null;\n' + src + '\nreturn { pcCountLinks, pcLinkedCached, pcUrlKey };')(
+      'let _pcLinked = null, pcDockArtists = 0, pcDockArtistsHeld = 0; const pcFootFit = () => {}, pcDockStatus = () => {};\n' + src + '\nreturn { pcCountLinks, pcLinkedCached, pcUrlKey };')(
       { getElementById: () => btn }, (k, d) => k === 'pc:links-count' ? setting : d, () => ({ mbTracks: 1 }), 'm',
       () => ({ rows }), () => ({}), () => ({ byProvider: {} }),
       async urls => { calls.push(urls); return new Map([[key('https://www.discogs.com/artist/1'), [{ type: 'artist', mbid: 'a' }]]]); }, () => {});

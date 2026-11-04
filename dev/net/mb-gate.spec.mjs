@@ -102,6 +102,8 @@ test('an interactive request goes ahead of queued background work; a cancelled w
 test('a lead holds other background requests, not the leader nor interactive ones', { tag: ['@unit'] }, async ({ context }) => {
   const a = await tab(context), b = await tab(context);
   await a.evaluate(() => { localStorage.clear(); return mbnLead('page', 5000); });
+  // tabs see each other's localStorage a moment late (a slow runner, more): start once B sees the lead
+  await b.waitForFunction(() => (JSON.parse(localStorage.getItem('mbu:mb-gate') || 'null') || {}).lead === 'page');
   const r = await b.evaluate(async () => {
     const t0 = Date.now(), at = p => p.then(() => Date.now() - t0);
     const other = at(mbnSlot({ label: 'other' })), mine = await at(mbnSlot({ lead: 'page' })), inter = await at(mbnSlot({ background: false }));
