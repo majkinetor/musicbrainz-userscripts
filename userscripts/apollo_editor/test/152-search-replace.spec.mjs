@@ -31,6 +31,15 @@ test('Search & Replace: literal and regex modes, and templates', { tag: ['@sandb
   await setFR('Song', '$1');
   R.literalDollar = await until(t0, t => t === 'Artist - $1');
 
+  // A native edit to another track rebuilds Apollo's rows. The S&R preview must
+  // still use this track's original title after that resync, rather than compound.
+  await page.evaluate(() => {
+    window.__srBeforeResync = window.__apolloEditor.model;
+    const t = window.MB.releaseEditor.rootField.release().mediums()[0].tracks()[1];
+    t.name(t.name() + ' resync fixture');
+  });
+  await page.waitForFunction(() => window.__apolloEditor.model !== window.__srBeforeResync);
+
   // (2) regex mode with $N
   if (!await reOn()) await toggleRE();
   await until(reOn);

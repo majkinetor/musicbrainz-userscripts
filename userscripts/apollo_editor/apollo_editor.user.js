@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.030100
+// @version      2026.11.05.030101
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -1607,6 +1607,9 @@
   const _nmMeasCtx = (() => { try { return document.createElement('canvas').getContext('2d'); } catch (e) { return null; } })();
   const fitNmWidth = inp => {
     if (!_nmMeasCtx) return;
+    // Rows are built off-page; measure after mounting so the real font and
+    // padding are available instead of sizing from the fallback font.
+    if (!inp.isConnected) { requestAnimationFrame(() => { if (inp.isConnected) fitNmWidth(inp); }); return; }
     const v = inp.value;
     if (!v) { inp.style.removeProperty('width'); return; }   // empty → let flex give it the full width
     // #909: measure in the font the input really renders (a hard-coded Arial ran short where the
@@ -1617,7 +1620,11 @@
     // #731: !important — the release artist cell resets MusicBrainz's pinned 354px inputs with
     // `width:auto!important`, which beat a plain inline width: an unfocused name fell back to the
     // input's default ~20 characters and was cut off
-    inp.style.setProperty('width', (Math.ceil(_nmMeasCtx.measureText(v).width + pad) + 5) + 'px', 'important');
+    const width = Math.ceil(_nmMeasCtx.measureText(v).width + pad) + 5;
+    inp.style.setProperty('width', width + 'px', 'important');
+    // Inputs can reserve more space for their text than canvas reports.
+    const overflow = inp.scrollWidth - inp.clientWidth;
+    if (overflow > 0) inp.style.setProperty('width', (width + overflow) + 'px', 'important');
   };
 
   // #394 any entity's standalone Edit-annotation page — /<type>/<gid>/edit_annotation (artist, recording,
@@ -10231,23 +10238,30 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     return (chain.members || []).map(n => byName.get(n)).filter(Boolean);
   }
   let _srSnap = null;
-  function srActivate() { _srSnap = MODEL ? MODEL.tracks.map(t => t.title) : []; if (MODEL) MODEL.tracks.forEach(t => { delete t._srLastResult; }); }
+  // Native tracks survive a table resync and keep their identity when reordered.
+  // A preview's original and last result must survive with them.
+  function srActivate() { _srSnap = new Map(); }
+  function srSnapshot(t) {
+    const key = koTrack(t.mi, t.ti);
+    let snap = _srSnap.get(key);
+    if (!snap || t.title !== snap.last) { snap = { base: t.title, last: t.title }; _srSnap.set(key, snap); }
+    return snap;
+  }
   function srLive(find, replace, ci) {
-    if (!MODEL) return; if (!_srSnap || _srSnap.length !== MODEL.tracks.length) srActivate();
+    if (!MODEL) return; if (!_srSnap) srActivate();
     const re = find ? srRe(find, ci, true) : null;
     const bad = !!(find && srRegexOn() && !re);   // invalid user regex — flag the field, change nothing
     const findEl = document.querySelector('.tc-sr-find'); if (findEl) findEl.classList.toggle('tc-sr-bad', bad);
     if (bad) { srRememberLast(find, replace); return; }
     const repl = srRepl(replace); let changed = 0;
-    MODEL.tracks.forEach((t, i) => {
+    MODEL.tracks.forEach(t => {
       // #375: if the title changed since our last replace (a manual edit, Guess Case, etc.), re-base the
       // snapshot to it — otherwise we'd replace from the stale original and clobber the manual change.
-      if (t._srLastResult == null || t.title !== t._srLastResult) _srSnap[i] = t.title;   // #409: re-base to the CURRENT title on a manual edit — incl. before the first replace (was stale until re-activation)
-      const base = _srSnap[i] != null ? _srSnap[i] : t.title;
+      const snap = srSnapshot(t), base = snap.base;
       const nt = re ? base.replace(re, repl) : base;
       if (nt !== base) changed++;
       if (nt !== t.title) { setTitle(t, nt); t.title = nt; t.guessTitle = guessTitleStr(t); }
-      t._srLastResult = t.title;   // remember what we left it as, to detect the next manual edit
+      snap.last = t.title;
       t._srFlash = !!(find && nt !== base);
     });
     rerender(); toast(changed ? `Search and Replace: ${changed} title${changed !== 1 ? 's' : ''} replaced` : '');
@@ -10260,16 +10274,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // visible, so a run that changed nothing only logs instead of toasting "no matches" over the page.
   function srApplyChain(chain, auto) {
     if (!MODEL) return;
-    if (!_srSnap || _srSnap.length !== MODEL.tracks.length) srActivate();
+    if (!_srSnap) srActivate();
     const pats = srChainPatterns(chain); let changed = 0;
-    MODEL.tracks.forEach((t, i) => {
-      if (t._srLastResult == null || t.title !== t._srLastResult) _srSnap[i] = t.title;   // #409: re-base to the CURRENT title on a manual edit — incl. before the first replace (was stale until re-activation)
-      const base = _srSnap[i] != null ? _srSnap[i] : t.title;
+    MODEL.tracks.forEach(t => {
+      const snap = srSnapshot(t), base = snap.base;
       let text = base;
       for (const p of pats) { const re = p.find ? srReFor(p.find, p.re, true, true) : null; if (re) text = text.replace(re, srReplFor(p.replace, p.re)); }
       if (text !== base) changed++;
       if (text !== t.title) { setTitle(t, text); t.title = text; t.guessTitle = guessTitleStr(t); }
-      t._srLastResult = t.title;
+      snap.last = t.title;
       t._srFlash = !!(pats.length && text !== base);
     });
     rerender();
