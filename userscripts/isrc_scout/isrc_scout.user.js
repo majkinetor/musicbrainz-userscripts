@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.03.234742
+// @version      2026.11.04.120000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -9246,10 +9246,13 @@
     'ISRC <span class="ii-status" id="ii-btn-status">⏳</span>';
   btn.addEventListener('click', openModal);
 
+  // In Event Horizon the title is its hero's h1, which it re-renders on every release change
   function injectButton() {
-    const h1 = document.querySelector('h1');
+    const eh = document.documentElement.hasAttribute('data-mbu-dock');
+    const h1 = eh ? document.querySelector('#app section.hero h1') : document.querySelector('h1');
     if (!h1) return false;
-    if (document.getElementById('ii-btn')) return true;
+    if (btn.parentNode === h1) return true;
+    if (!eh && document.getElementById('ii-btn')) return true;
     h1.appendChild(btn);
     updateBtnStatus();           // in case the release already loaded before the button injected
     return true;
@@ -9322,11 +9325,13 @@
     mirror();
   });
   whenDomReady(() => {
-    if (!IS_OVERVIEW || iiIface() === 'dock') return;
-    if (!injectButton()) {
-      const obs = new MutationObserver(() => { if (injectButton()) obs.disconnect(); });
-      obs.observe(document.documentElement, { childList: true, subtree: true });
-    }
+    // kept running: Event Horizon swaps the page and re-renders its hero, dropping the button
+    const want = () => iiIface() !== 'dock' && (document.documentElement.hasAttribute('data-mbu-dock') ? !!document.documentElement.getAttribute('data-mbu-release') : IS_OVERVIEW);
+    let queued = false;
+    const tick = () => { queued = false; if (want()) injectButton(); else if (document.documentElement.hasAttribute('data-mbu-dock')) btn.remove(); };
+    tick();
+    new MutationObserver(() => { if (!queued) { queued = true; requestAnimationFrame(tick); } })
+      .observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-mbu-dock', 'data-mbu-release'] });
   });
 
   // The button's own status span, found through the button: at document-start a load can

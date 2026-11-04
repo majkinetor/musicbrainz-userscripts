@@ -815,6 +815,12 @@ div.autocomplete2 button.search {
 html:root[data-eh-theme] .fbox input {
 	background: transparent !important;
 }
+html #ii-btn {
+	background: #6c71c4;
+}
+html #ii-btn:hover {
+	background: #5a5fb0;
+}
 html #ii-btn.has-missing {
 	background: #cb4b16;
 }
