@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.140000
+// @version      2026.11.04.140001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2460,13 +2460,17 @@ body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;poin
 #eh-hex svg{display:block;width:100%;height:100%;overflow:visible}
 #eh-hex .hex-base{opacity:calc(var(--eh-hex-opacity,.2) * .5)}
 #eh-hex .hex-drift{display:none;opacity:calc(var(--eh-hex-opacity,.2) * 2.25);-webkit-mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat;mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat}
+#eh-hex .hex-effects{position:absolute;inset:0;opacity:calc(var(--eh-hex-opacity,.2) * 2.5)}
+#eh-hex .hex-fx{position:absolute;display:block;pointer-events:none}
+#eh-hex .hex-pulse{will-change:opacity;animation:eh-hex-twinkle var(--hex-period) ease-in-out var(--hex-phase) infinite}
+@keyframes eh-hex-twinkle{0%,100%{opacity:.12}50%{opacity:1}}
 #eh-hex .hex-lights{position:absolute;inset:0;width:100%;height:100%;opacity:calc(var(--eh-hex-opacity,.2) * 2.5)}
 :root[data-eh-hex=breathe] #eh-hex{will-change:opacity;animation:eh-hex-breathe 24s ease-in-out infinite}
 :root[data-eh-hex=breathe] #eh-hex .hex-base{opacity:var(--eh-hex-opacity,.2)}
 :root[data-eh-hex=drift] #eh-hex .hex-drift{display:block;animation:eh-hex-drift 46s linear infinite}
 @keyframes eh-hex-breathe{0%,100%{opacity:.15}50%{opacity:1}}
 @keyframes eh-hex-drift{0%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}25%{-webkit-mask-position:35% 60%,70% 15%,10% 55%;mask-position:35% 60%,70% 15%,10% 55%}50%{-webkit-mask-position:75% 35%,30% 85%,60% 10%;mask-position:75% 35%,30% 85%,60% 10%}75%{-webkit-mask-position:55% 90%,10% 30%,95% 45%;mask-position:55% 90%,10% 30%,95% 45%}100%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}}
-@media (prefers-reduced-motion:reduce){#eh-hex,#eh-hex .hex-drift{animation:none!important}}
+@media (prefers-reduced-motion:reduce){#eh-hex,#eh-hex .hex-drift,#eh-hex .hex-pulse{animation:none!important}#eh-hex .hex-pulse{opacity:.65}}
 :root[data-eh-hex] :is(.tl,.card,.u-bio,.u-facts,.u-vcol,.hm-pf,.hgrp,.eh-details){background:color-mix(in srgb,var(--surface) 62%,transparent)!important;backdrop-filter:blur(1px)}
 :root[data-eh-hex] .tl .disc{background:color-mix(in srgb,var(--chip) 55%,transparent)!important}
 :root[data-eh-hex] :is(.tl.striped .tr.alt,.tl .detail){background:color-mix(in srgb,var(--hover) 50%,transparent)!important}
@@ -7608,10 +7612,178 @@ function hexApply() {
 // Rasterize each small glow once. Moving these sprites at 8 fps avoids animated SVG
 // patterns and per-frame blur filters; no work is scheduled in a hidden tab.
 function hexLights(layer) {
+    if (S.hexMotion === 'christmas') hexChristmas(layer);
+    else hexVariants(layer);
+}
+function hexFxNeighbors(p) {
+    const y = ((p[1] % 48) + 48) % 48;
+    const directions = y === 0 ? [[14, 8], [-14, 8], [0, -16]] : y === 32 ? [[14, -8], [-14, -8], [0, 16]]
+        : y === 8 ? [[0, 16], [14, -8], [-14, -8]] : [[0, -16], [14, 8], [-14, 8]];
+    return directions.map(d => [p[0] + d[0], p[1] + d[1]]);
+}
+function hexFxPath(points) {
+    const lengths = points.slice(1).map((p, i) => Math.hypot(p[0] - points[i][0], p[1] - points[i][1]));
+    return { points, lengths, total: lengths.reduce((a, b) => a + b, 0) };
+}
+function hexFxAt(path, distance, loop = false) {
+    let d = loop ? ((distance % path.total) + path.total) % path.total : Math.max(0, Math.min(path.total, distance)), edge = 0;
+    while (edge < path.lengths.length - 1 && d > path.lengths[edge]) d -= path.lengths[edge++];
+    const a = path.points[edge], b = path.points[edge + 1], f = d / path.lengths[edge];
+    return { x: a[0] + (b[0] - a[0]) * f, y: a[1] + (b[1] - a[1]) * f, edge };
+}
+function hexFxTrail(path, head, length, loop) {
+    const start = loop ? head - length : Math.max(0, head - length), points = [hexFxAt(path, start, loop)];
+    for (let cycle = Math.floor(start / path.total); cycle <= Math.floor(head / path.total); cycle++) {
+        let distance = cycle * path.total;
+        for (let i = 0; i < path.points.length; i++) {
+            if (distance > start && distance < head) points.push({ x: path.points[i][0], y: path.points[i][1] });
+            distance += path.lengths[i] || 0;
+        }
+    }
+    points.push(hexFxAt(path, head, loop));
+    return points;
+}
+function hexFxSprite(color, size, star = false) {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 48;
+    const ctx = cv.getContext('2d'), glow = ctx.createRadialGradient(24, 24, 0, 24, 24, size * 3.5);
+    glow.addColorStop(0, color); glow.addColorStop(1, 'transparent');
+    ctx.fillStyle = glow; ctx.fillRect(0, 0, 48, 48); ctx.fillStyle = color;
+    if (star) {
+        const rays = [[0, -2], [.22, -.22], [2, 0], [.22, .22], [0, 2], [-.22, .22], [-2, 0], [-.22, -.22]];
+        ctx.beginPath(); rays.forEach(([x, y], i) => i ? ctx.lineTo(24 + x * size, 24 + y * size) : ctx.moveTo(24 + x * size, 24 + y * size));
+        ctx.closePath(); ctx.fill();
+    } else { ctx.beginPath(); ctx.arc(24, 24, size * .45, 0, Math.PI * 2); ctx.fill(); }
+    return cv;
+}
+// Small, bounded regions keep repaint damage local. Stars and clusters are rendered
+// once and pulse on the compositor; moving effects draw at most 30 frames a second.
+function hexVariants(layer) {
+    const mode = S.hexMotion;
+    if (!['comets', 'winter', 'embers', 'electric'].includes(mode) || !(Number(S.hexOpacity) > 0)) { layer._ehLights?.stop(); return; }
+    const w = innerWidth + 96, h = innerHeight + 96, motion = matchMedia('(prefers-reduced-motion:reduce)');
+    const probe = document.createElement('span'); layer.append(probe);
+    const color = value => { probe.style.color = value; return getComputedStyle(probe).color; };
+    const colors = ['var(--mbu-ok)', 'var(--accent2)', 'var(--accent)', 'color-mix(in srgb,var(--mbu-info) 25%,var(--text))', 'color-mix(in srgb,var(--mbu-info) 65%,var(--text))'].map(color);
+    probe.remove();
+    const key = [mode, w, h, ...colors].join('|');
+    if (layer._ehLights?.key === key) return;
+    layer._ehLights?.stop();
+    const wrap = document.createElement('div'); wrap.className = 'hex-effects'; layer.append(wrap);
+    const candidates = [], regions = [], corners = [[14, 0], [28, 8], [28, 24], [14, 32], [0, 24], [0, 8], [14, 0]];
+    const hex = hexFxPath(corners), still = mode === 'winter' || mode === 'embers';
+    for (let r = 1; r * 48 < h - 48; r++) for (let c = 1; c * 28 < w - 28; c++) {
+        const seed = (c * 73856093 ^ r * 19349663) >>> 0;
+        if (!(seed % 29)) candidates.push({ x: c * 28, y: r * 48, seed });
+    }
+    if (!candidates.length) candidates.push({ x: 56, y: 96, seed: 29 });
+    const cap = mode === 'electric' ? Math.min(3, Math.ceil(w * h / 1000000)) : mode === 'winter' ? Math.min(28, Math.ceil(w * h / 55000)) : Math.min(10, Math.ceil(w * h / 180000));
+    const count = Math.min(cap, candidates.length);
+    for (let i = 0; i < count; i++) {
+        const cell = candidates[Math.floor((i + .5) * candidates.length / count)], { seed } = cell;
+        let path = hex;
+        if (mode === 'electric') {
+            const points = [[14, 0]]; let random = seed;
+            for (let j = 0; j < 14; j++) {
+                const last = points.at(-1), prev = points.at(-2);
+                const options = hexFxNeighbors(last).filter(p => !prev || p[0] !== prev[0] || p[1] !== prev[1]);
+                const fresh = options.filter(p => !points.some(v => v[0] === p[0] && v[1] === p[1]));
+                const choices = fresh.length ? fresh : options;
+                random = (Math.imul(random, 1664525) + 1013904223) >>> 0; points.push(choices[random % choices.length]);
+            }
+            path = hexFxPath(points);
+        }
+        const minX = Math.min(...path.points.map(p => p[0])), maxX = Math.max(...path.points.map(p => p[0]));
+        const minY = Math.min(...path.points.map(p => p[1])), maxY = Math.max(...path.points.map(p => p[1]));
+        const cv = document.createElement('canvas'), pad = 16;
+        cv.className = 'hex-fx'; cv.width = Math.ceil(maxX - minX + pad * 2); cv.height = Math.ceil(maxY - minY + pad * 2);
+        const x = Math.round(Math.max(-minX + 28, Math.min(cell.x, w - maxX - 28)) / 28) * 28;
+        const y = Math.round(Math.max(-minY + 48, Math.min(cell.y, h - maxY - 48)) / 48) * 48;
+        cv.style.left = (x + minX - pad) + 'px'; cv.style.top = (y + minY - pad) + 'px';
+        wrap.append(cv);
+        const ctx = cv.getContext('2d'), size = 1.4 + seed % 17 / 10;
+        const tint = mode === 'winter' ? colors[3] : mode === 'electric' ? colors[4] : mode === 'embers' ? colors[1] : colors[i % 3];
+        const sprite = hexFxSprite(tint, size, mode === 'winter');
+        const region = { cv, ctx, seed, path, tint, sprite, ox: pad - minX, oy: pad - minY, width: .45 + seed % 12 / 10 };
+        regions.push(region);
+        if (still) {
+            ctx.translate(region.ox, region.oy);
+            if (mode === 'winter') { const p = corners[seed % 6]; ctx.drawImage(sprite, p[0] - 24, p[1] - 24); }
+            else for (let j = 0; j < 5; j++) {
+                const p = hexFxAt(hex, hex.total * (seed % 100 / 100 + j * .055), true);
+                ctx.globalAlpha = .55 + j * .09; ctx.drawImage(sprite, p.x - 24, p.y - 24);
+            }
+            cv.classList.add('hex-pulse'); cv.style.setProperty('--hex-period', (24 + seed % 23) + 's');
+            cv.style.setProperty('--hex-phase', -(seed % 47) + 's');
+        }
+    }
+    const smooth = value => { const x = Math.max(0, Math.min(1, value)); return x * x * (3 - 2 * x); };
+    const line = (ctx, points, tint, width, alpha) => {
+        ctx.strokeStyle = tint; ctx.lineWidth = width; ctx.globalAlpha = alpha; ctx.lineCap = ctx.lineJoin = 'round';
+        ctx.beginPath(); points.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke();
+    };
+    function paint(now) {
+        const t = motion.matches ? 0 : now / 1000;
+        for (const r of regions) {
+            const { ctx, cv, seed, path, tint, sprite } = r;
+            ctx.resetTransform(); ctx.clearRect(0, 0, cv.width, cv.height); ctx.translate(r.ox, r.oy);
+            const period = (mode === 'electric' ? 110 : 75) + seed % 71;
+            const phase = ((seed % 149 / 149 + t / period) % 1 + 1) % 1, head = phase * path.total;
+            const loop = mode === 'comets', fade = loop ? 1 : smooth(phase / .08) * smooth((1 - phase) / .1);
+            const length = loop ? 24 + seed % 17 : 50 + seed % 41;
+            const points = hexFxTrail(path, head, length, loop), p = points.at(-1);
+            if (mode === 'comets') {
+                const tail = points[0], gradient = ctx.createLinearGradient(tail.x, tail.y, p.x, p.y);
+                gradient.addColorStop(0, 'transparent'); gradient.addColorStop(1, tint);
+                line(ctx, points, gradient, 4 + seed % 9 / 10, .12);
+                line(ctx, points, gradient, 1.2 + seed % 9 / 10, .7);
+                ctx.globalAlpha = .9; ctx.drawImage(sprite, p.x - 24, p.y - 24);
+            } else {
+                line(ctx, points, tint, r.width + 3, fade * .08);
+                line(ctx, points, tint, r.width + 1, fade * .22);
+                line(ctx, points, colors[3], r.width, fade * .8);
+                // One gently enveloped spark every 20–38 seconds, anchored to an
+                // actual junction's unused edge. No per-frame random displacement.
+                const interval = 20 + seed % 19, sparkPhase = ((t + seed % interval) % interval), duration = 1.2 + seed % 9 / 10;
+                const spark = Math.sin(Math.PI * Math.min(1, sparkPhase / duration)) ** 2 * fade;
+                const sparkStart = Math.floor((t + seed % interval) / interval) * interval - seed % interval;
+                const sparkHead = ((seed % 149 / 149 + sparkStart / period) % 1 + 1) % 1 * path.total;
+                const index = hexFxAt(path, sparkHead).edge, v = path.points[index], prev = path.points[index - 1], next = path.points[index + 1];
+                const branch = hexFxNeighbors(v).find(q => (!prev || q[0] !== prev[0] || q[1] !== prev[1]) && (!next || q[0] !== next[0] || q[1] !== next[1]));
+                if (branch && spark > .001) {
+                    const end = { x: v[0] + (branch[0] - v[0]) * .7, y: v[1] + (branch[1] - v[1]) * .7 };
+                    line(ctx, [{ x: v[0], y: v[1] }, end], tint, .4 + r.width * .35, spark * .65);
+                    ctx.globalAlpha = spark * .55; ctx.drawImage(sprite, end.x - 24, end.y - 24);
+                }
+                ctx.globalAlpha = fade * (.65 + spark * .2); ctx.drawImage(sprite, p.x - 24, p.y - 24);
+            }
+        }
+    }
+    let frame, last = -Infinity;
+    const stop = () => {
+        cancelAnimationFrame(frame); document.removeEventListener('visibilitychange', resume);
+        motion.removeEventListener('change', resume); wrap.remove(); delete layer._ehLights;
+    };
+    function tick(now) {
+        frame = 0;
+        if (!layer.isConnected) { stop(); return; }
+        if (document.hidden) return;
+        if (now - last >= 32) { paint(now); last = now; }
+        if (!motion.matches) frame = requestAnimationFrame(tick);
+    }
+    function resume() {
+        cancelAnimationFrame(frame); last = -Infinity;
+        for (const r of regions) r.cv.style.animationPlayState = document.hidden ? 'paused' : 'running';
+        if (!still && !document.hidden) tick(performance.now());
+    }
+    layer._ehLights = { key, stop };
+    document.addEventListener('visibilitychange', resume); motion.addEventListener('change', resume); resume();
+}
+
+function hexChristmas(layer) {
     if (S.hexMotion !== 'christmas' || !Number(S.hexOpacity)) { layer._ehLights?.stop(); return; }
     const w = innerWidth + 96, h = innerHeight + 96, style = getComputedStyle(layer);
     const colors = ['--mbu-ok', '--accent2', '--accent'].map(k => style.getPropertyValue(k).trim());
-    const key = [w, h, ...colors].join('|');
+    const key = ['christmas', w, h, ...colors].join('|');
     if (layer._ehLights?.key === key) return;
     layer._ehLights?.stop();
     const cv = document.createElement('canvas'); cv.className = 'hex-lights'; cv.width = w; cv.height = h;
@@ -10150,7 +10322,7 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '.eh-cfg .tabs{display:flex;gap:2px;border-bottom:1px solid var(--mbu-border-soft);margin:0 -10px;padding:0 6px}'
     + '.eh-cfg .tab{all:unset;padding:5px 9px;margin-bottom:-1px;border-bottom:2px solid transparent;color:var(--mbu-text-weak);font:500 13px var(--mbu-font);cursor:pointer}'
     + '.eh-cfg .tab:hover{color:var(--mbu-text)}.eh-cfg .tab[aria-selected=true]{color:var(--mbu-accent-text);border-bottom-color:var(--mbu-accent);font-weight:600}.eh-cfg .tab .n{font-size:10px;color:var(--mbu-text-weak)}'
-    + '.eh-cfg .pane{height:230px;overflow-y:auto;overflow-x:hidden;padding-top:2px}.eh-cfg .mbu-cfg-ver{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}'
+    + '.eh-cfg .pane{height:300px;max-height:60vh;overflow-y:auto;overflow-x:hidden;padding-top:2px}.eh-cfg .mbu-cfg-ver{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}'
     + '.eh-plpop .plh{margin:6px 0 2px;padding-bottom:4px;border-bottom:1px solid var(--mbu-border-soft);font:700 11px var(--mbu-font);letter-spacing:.08em;text-transform:uppercase;color:var(--mbu-accent-text)}'
     + '.eh-cfg .cr.ckr{display:block;border-bottom:0}.eh-cfg .ck{white-space:nowrap}.eh-cfg .ck{display:inline-flex;align-items:center;gap:8px;padding:6px 2px;border:0;background:none;color:var(--mbu-text);font:inherit;cursor:pointer}.eh-cfg .ck svg{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2}.eh-cfg .ck[aria-checked=true] svg{color:var(--mbu-accent-text)}'
     + '.eh-cfg.eh-plpop .cr{border-bottom:0}'
@@ -10233,7 +10405,7 @@ function cfgBody() {
             + row('Background', [['flat', 'Flat'], ['aura', 'Cover aura'], ['glow', 'Glow'], ['band', 'Header band']].map(([k, l]) => chip('bg', k, (S.bg || 'aura') === k, l)).join(''), 'Cover aura blurs the page\'s cover or picture behind its head; pages without one get the glow')
             + row('Hexagons', chip('hex', 'hex', S.hex, 'Show'), 'Overlay hexagon outlines on any background')
             + row('Hexagon opacity', `<label><input type="range" min="0" max="100" step="1" value="${S.hexOpacity}" data-hex-opacity aria-label="Hexagon opacity"> <output>${S.hexOpacity}%</output></label>`)
-            + row('Hexagon animation', [['static', 'Static'], ['breathe', 'Breathe'], ['drift', 'Drift'], ['christmas', 'Christmas lights']].map(([k, l]) => chip('hexMotion', k, S.hexMotion === k, l)).join(''), 'Very slow, subtle motion; reduced-motion preferences keep the outlines still'),
+            + row('Hexagon animation', [['static', 'Static'], ['breathe', 'Breathe'], ['drift', 'Drift'], ['christmas', 'Christmas lights'], ['comets', 'Soft comets'], ['winter', 'Winter stars'], ['embers', 'Ember clusters'], ['electric', 'Electric threads']].map(([k, l]) => chip('hexMotion', k, S.hexMotion === k, l)).join(''), 'Very slow, subtle motion; reduced-motion preferences keep the outlines still'),
     };
     return `<div class="pane">${panes.general}</div>`;
 }

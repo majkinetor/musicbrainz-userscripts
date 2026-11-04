@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-04 10:29 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-04 10:30 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -892,10 +892,25 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | General → Background                  | Cover aura                                                          | Flat, Cover aura, Glow or Header band                                                       |
 | General → Hexagons                    | off                                                                 | overlay hexagon outlines on any background                                                  |
 | General → Hexagon opacity             | 20%                                                                 | strength of the outlines and their glow                                                     |
-| General → Hexagon animation           | Static                                                              | Static, Breathe, Drift or Christmas lights along the outlines; respects reduced motion      |
+| General → Hexagon animation           | Static                                                              | choose an outline effect; see [Hexagon animations](#hexagon-animations)                     |
 | General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                                      |
 | General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
 | General → Keyboard shortcuts          | on                                                                  | the keys below; [keyboard shortcuts](#keyboard-shortcuts); **Change keys** opens their list |
+
+#### Hexagon animations
+
+All effects stay subtle, respect reduced motion and pause while the tab is hidden.
+
+| Hexagon animation | Effect                                                   |
+| ----------------- | -------------------------------------------------------- |
+| Static            | Still outlines                                           |
+| Breathe           | Slowly fading outlines                                   |
+| Drift             | Roaming pools of glow                                    |
+| Christmas lights  | Small coloured lights following the outlines             |
+| Soft comets       | Coloured heads with tapered trails                       |
+| Winter stars      | Pearl stars slowly brightening at corners                |
+| Ember clusters    | Small warm clusters glowing in waves                     |
+| Electric threads  | Rare threads of varied width with occasional soft sparks |
 
 ### Shortcuts
 

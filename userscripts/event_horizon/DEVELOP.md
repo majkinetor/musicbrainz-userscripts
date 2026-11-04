@@ -91,7 +91,9 @@ Credit marks match by person, so someone with two credits, one pending, has both
 
 ## Hexagon animation cost
 
-Keep Christmas lights out of animated SVG patterns: changing dash offsets and blur filters inside a repeated pattern repaints and rasterizes large areas continuously. `hexLights` draws cached, small glow sprites on a canvas at eight frames per second. Light sizes, travel speeds and brightness phases vary without rebuilding their glow. A hidden tab schedules no draws; reduced motion draws one still frame. Switching modes, zero opacity or turning Event Horizon off destroys the renderer and its listeners. Stop it before detaching Event Horizon's body.
+Keep lights out of animated SVG patterns: changing dash offsets and blur filters inside a repeated pattern repaints and rasterizes large areas continuously. `hexLights` dispatches to `hexChristmas` (cached glow sprites at eight frames per second) or `hexVariants`. Both stop work in hidden tabs, show a still frame with reduced motion, and destroy their renderer and listeners on a mode change, zero opacity or turning Event Horizon off. Stop them before detaching Event Horizon's body.
+
+`hexVariants` confines painting to small regions. Winter stars and Ember clusters are drawn once and pulse with composited opacity. Soft comets and Electric threads use elapsed time, at most 30 draws per second and cached glow sprites. Trails include exact lattice junctions; never sample straight chords across corners. The number of regions is capped, with at most three electric threads. Their deterministic walks use `hexFxNeighbors`, and spark branches follow an unused edge at a real junction. Smooth brightness envelopes and fade-out before a route wraps avoid flashes or position jumps; never add per-frame random displacement or live blur filters.
 
 Breathe animates the layer's opacity, with a separate, stronger base opacity and a wide fade range. Keep this on the HTML layer for compositing; a small fade of already faint outlines is barely visible.
 
