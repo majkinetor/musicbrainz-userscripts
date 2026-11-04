@@ -1,5 +1,20 @@
 # Credit Hoarder Changelog
 
+## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
+
+### Features
+
+1. Mellon support ([#815](https://github.com/majkinetor/musicbrainz-userscripts/issues/815))
+1. Allmusic support ([#814](https://github.com/majkinetor/musicbrainz-userscripts/issues/814))
+1. Mora support ([#813](https://github.com/majkinetor/musicbrainz-userscripts/issues/813))
+1. Match confidence cutoff ([#771](https://github.com/majkinetor/musicbrainz-userscripts/issues/771))
+
+### Fixes
+
+1. Wrong language used when creating work ([#903](https://github.com/majkinetor/musicbrainz-userscripts/issues/903))
+1. "Credited as" not taken into account properly ([#844](https://github.com/majkinetor/musicbrainz-userscripts/issues/844))
+1. Misc role task drops role name; role line hides task and source role ([#800](https://github.com/majkinetor/musicbrainz-userscripts/issues/800))
+
 ## [2026.10.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.16)
 
 - Small improvements

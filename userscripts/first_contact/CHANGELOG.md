@@ -1,5 +1,25 @@
 # First Contact Changelog
 
+## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
+
+### Features
+
+1. Include creative commons licence link when importing from Bandcamp ([#912](https://github.com/majkinetor/musicbrainz-userscripts/issues/912))
+1. Special handling of Distrokid ([#877](https://github.com/majkinetor/musicbrainz-userscripts/issues/877))
+1. Set Discogs country to Worldwide for digital releases (option) ([#868](https://github.com/majkinetor/musicbrainz-userscripts/issues/868))
+1. Bandcamp digital tracks support ([#850](https://github.com/majkinetor/musicbrainz-userscripts/issues/850))
+1. Bugs support ([#816](https://github.com/majkinetor/musicbrainz-userscripts/issues/816))
+1. Mellon support ([#815](https://github.com/majkinetor/musicbrainz-userscripts/issues/815))
+1. Allmusic support ([#814](https://github.com/majkinetor/musicbrainz-userscripts/issues/814))
+1. Mora support ([#813](https://github.com/majkinetor/musicbrainz-userscripts/issues/813))
+1. Existing release check before import ([#801](https://github.com/majkinetor/musicbrainz-userscripts/issues/801))
+1. Support for harmony.mybrainz.dev ([#799](https://github.com/majkinetor/musicbrainz-userscripts/issues/799))
+1. Presto Music support ([#779](https://github.com/majkinetor/musicbrainz-userscripts/issues/779))
+
+### Fixes
+
+1. Spotify refuses to work if "First Contact" is active ([#817](https://github.com/majkinetor/musicbrainz-userscripts/issues/817))
+
 ## [2026.10.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.16)
 
 ### Features

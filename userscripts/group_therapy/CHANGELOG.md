@@ -1,5 +1,18 @@
 # Group Therapy
 
+## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
+
+### Features
+
+1. Pick a staged new work for another track ([#874](https://github.com/majkinetor/musicbrainz-userscripts/issues/874))
+1. Inline review table with context matching for text parser ([#798](https://github.com/majkinetor/musicbrainz-userscripts/issues/798))
+1. Split on any word in a pattern's brackets ([#797](https://github.com/majkinetor/musicbrainz-userscripts/issues/797))
+1. Text parser: create needed works (option) ([#777](https://github.com/majkinetor/musicbrainz-userscripts/issues/777))
+
+### Fixes
+
+1. Relationship & related types of new works created by Match Works are wrong  ([#869](https://github.com/majkinetor/musicbrainz-userscripts/issues/869))
+
 ## [2026.10.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.16)
 
 ### Features

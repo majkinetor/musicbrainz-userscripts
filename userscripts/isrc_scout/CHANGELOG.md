@@ -1,5 +1,17 @@
 # ISRC Scout Changelog
 
+## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
+
+### Features
+
+1. HUD size, position and appereance options ([#856](https://github.com/majkinetor/musicbrainz-userscripts/issues/856))
+1. Bandcamp digital tracks support ([#850](https://github.com/majkinetor/musicbrainz-userscripts/issues/850))
+1. Presto Music support ([#779](https://github.com/majkinetor/musicbrainz-userscripts/issues/779))
+1. Spotify ISRCs through Harmony ([#775](https://github.com/majkinetor/musicbrainz-userscripts/issues/775))
+1. Tracks links providers configuration ([#768](https://github.com/majkinetor/musicbrainz-userscripts/issues/768))
+1. Format ISRCs ([#766](https://github.com/majkinetor/musicbrainz-userscripts/issues/766))
+1. Recording links favicons ([#765](https://github.com/majkinetor/musicbrainz-userscripts/issues/765))
+
 ## [2026.10.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.16)
 
 ### Features

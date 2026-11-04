@@ -1,5 +1,16 @@
 # Art Station Changelog
 
+## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
+
+### Features
+
+1. Bugs support ([#816](https://github.com/majkinetor/musicbrainz-userscripts/issues/816))
+1. Mellon support ([#815](https://github.com/majkinetor/musicbrainz-userscripts/issues/815))
+1. Allmusic support ([#814](https://github.com/majkinetor/musicbrainz-userscripts/issues/814))
+1. AI scan of cover credits for Text parser ([#796](https://github.com/majkinetor/musicbrainz-userscripts/issues/796))
+1. Open removals shown with their edit; remove single cover ([#787](https://github.com/majkinetor/musicbrainz-userscripts/issues/787))
+1. WebP, AVIF, BMP and TIFF images converted to JPEG/PNG on upload ([#781](https://github.com/majkinetor/musicbrainz-userscripts/issues/781))
+
 ## [2026.10.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.16)
 
 ### Features

@@ -1,5 +1,21 @@
 # Fusion Changelog
 
+## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
+
+### Features
+
+1. Include pending edits when matching (due to MB bug) ([#876](https://github.com/majkinetor/musicbrainz-userscripts/issues/876))
+1. Merge by track number ([#823](https://github.com/majkinetor/musicbrainz-userscripts/issues/823))
+1. Pool sort by title or artist ([#791](https://github.com/majkinetor/musicbrainz-userscripts/issues/791))
+1. Display disambiguations ([#764](https://github.com/majkinetor/musicbrainz-userscripts/issues/764))
+1. Removal of option to make edit votable ([#763](https://github.com/majkinetor/musicbrainz-userscripts/issues/763))
+1. Refresh and reevaluate AcoustID data ([#762](https://github.com/majkinetor/musicbrainz-userscripts/issues/762))
+1. Link AcoustID pages ([#761](https://github.com/majkinetor/musicbrainz-userscripts/issues/761))
+
+### Fixes
+
+1. Long AcoustID list stretches group row ([#806](https://github.com/majkinetor/musicbrainz-userscripts/issues/806))
+
 ## [2026.10.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.16)
 
 ### Fixes

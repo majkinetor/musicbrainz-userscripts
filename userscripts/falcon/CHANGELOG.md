@@ -1,5 +1,18 @@
 # Falcon 
 
+## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
+
+### Features
+
+1. Import label releases and RGs ([#854](https://github.com/majkinetor/musicbrainz-userscripts/issues/854))
+1. Right click to open settings on Harmony page ([#829](https://github.com/majkinetor/musicbrainz-userscripts/issues/829))
+1. Support for harmony.mybrainz.dev ([#799](https://github.com/majkinetor/musicbrainz-userscripts/issues/799))
+1. Release event and track/recording length ([#783](https://github.com/majkinetor/musicbrainz-userscripts/issues/783))
+
+### Fixes
+
+1. Whole edit refused when one of its links is already there in another form ([#769](https://github.com/majkinetor/musicbrainz-userscripts/issues/769))
+
 ## [2026.10.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.16)
 
 ### Features

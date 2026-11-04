@@ -1,5 +1,32 @@
 # Mission Control Changelog
 
+## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
+
+### Features
+
+1. List all pending changes ([#841](https://github.com/majkinetor/musicbrainz-userscripts/issues/841))
+1. Platform check header link count redesign ([#840](https://github.com/majkinetor/musicbrainz-userscripts/issues/840))
+1. Edit note when replacing cover art ([#819](https://github.com/majkinetor/musicbrainz-userscripts/issues/819))
+1. Various interface improvements ([#805](https://github.com/majkinetor/musicbrainz-userscripts/issues/805))
+1. Fusion's group card embeded under the track review ([#790](https://github.com/majkinetor/musicbrainz-userscripts/issues/790))
+1. More images in review: one row for single-image stores ([#788](https://github.com/majkinetor/musicbrainz-userscripts/issues/788))
+1. Art Station gallery embedded in the review ([#784](https://github.com/majkinetor/musicbrainz-userscripts/issues/784))
+1. Consolidation on existing release ([#782](https://github.com/majkinetor/musicbrainz-userscripts/issues/782))
+1. Execute after saving a consolidated release (option) ([#776](https://github.com/majkinetor/musicbrainz-userscripts/issues/776))
+1. Every Discogs and Amazon image, typed ([#772](https://github.com/majkinetor/musicbrainz-userscripts/issues/772))
+
+### Fixes
+
+1. Unrelated albums remain selected after consolidation reads ([#871](https://github.com/majkinetor/musicbrainz-userscripts/issues/871))
+1. Settings darken the main page ([#866](https://github.com/majkinetor/musicbrainz-userscripts/issues/866))
+1. Cancelling a artwork submission keeps the wait timer ([#827](https://github.com/majkinetor/musicbrainz-userscripts/issues/827))
+1. Links not added due to reload ([#825](https://github.com/majkinetor/musicbrainz-userscripts/issues/825))
+1. Merge failed, cannot be tried ([#822](https://github.com/majkinetor/musicbrainz-userscripts/issues/822))
+1. New cover art not inserted before replaced one ([#821](https://github.com/majkinetor/musicbrainz-userscripts/issues/821))
+1. Catalog numbers for one label as a choice ([#810](https://github.com/majkinetor/musicbrainz-userscripts/issues/810))
+1. Platform with another release's tracklist taken on track count ([#792](https://github.com/majkinetor/musicbrainz-userscripts/issues/792))
+1. Consolidated field grouped due to trailing space ([#778](https://github.com/majkinetor/musicbrainz-userscripts/issues/778))
+
 ## [2026.10.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.16)
 
 ### Features

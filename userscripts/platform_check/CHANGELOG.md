@@ -1,5 +1,21 @@
 # Platform Check Changelog
 
+## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
+
+### Features
+
+1. HUD size, position and appereance options ([#856](https://github.com/majkinetor/musicbrainz-userscripts/issues/856))
+1. Bandcamp digital tracks support ([#850](https://github.com/majkinetor/musicbrainz-userscripts/issues/850))
+1. Better network errors ([#828](https://github.com/majkinetor/musicbrainz-userscripts/issues/828))
+1. Allmusic support ([#814](https://github.com/majkinetor/musicbrainz-userscripts/issues/814))
+1. Barcode adding in background ([#780](https://github.com/majkinetor/musicbrainz-userscripts/issues/780))
+
+### Fixes
+
+1. Wrong Discogs match and weird behavior ([#855](https://github.com/majkinetor/musicbrainz-userscripts/issues/855))
+1. Beatport sign-in lost when token refresh fails ([#835](https://github.com/majkinetor/musicbrainz-userscripts/issues/835))
+1. Apple Music link offered as new when MusicBrainz has it as an iTunes link ([#770](https://github.com/majkinetor/musicbrainz-userscripts/issues/770))
+
 ## [2026.10.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.16)
 
 ### Features

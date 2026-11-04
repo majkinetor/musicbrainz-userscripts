@@ -1,5 +1,27 @@
 # Apollo Editor Changelog
 
+## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
+
+### Features
+
+1. Status/Type bars with a right-click default ([#892](https://github.com/majkinetor/musicbrainz-userscripts/issues/892))
+1. Bulk alias editor ([#849](https://github.com/majkinetor/musicbrainz-userscripts/issues/849))
+1. Artist, Label, Place, Series, Recording, Work, Event editors ([#843](https://github.com/majkinetor/musicbrainz-userscripts/issues/843))
+1. Release group editor ([#842](https://github.com/majkinetor/musicbrainz-userscripts/issues/842))
+1. Pinned and recent picks in the artist and label pickers ([#833](https://github.com/majkinetor/musicbrainz-userscripts/issues/833))
+1. Disc IDs from a rip log (moved from Falcon) ([#808](https://github.com/majkinetor/musicbrainz-userscripts/issues/808))
+1. Guess case Auto per title ([#804](https://github.com/majkinetor/musicbrainz-userscripts/issues/804))
+1. Guess case default mode and plain casings ([#803](https://github.com/majkinetor/musicbrainz-userscripts/issues/803))
+1. Guess case tool extended ([#785](https://github.com/majkinetor/musicbrainz-userscripts/issues/785))
+
+### Fixes
+
+1. Artist name cut off ([#909](https://github.com/majkinetor/musicbrainz-userscripts/issues/909))
+1. Auto-fill box keeps jumping around ([#895](https://github.com/majkinetor/musicbrainz-userscripts/issues/895))
+1. No edit button when editing Release Groups relationships ([#882](https://github.com/majkinetor/musicbrainz-userscripts/issues/882))
+1. Recording auto-match links recordings by unrelated artists ([#857](https://github.com/majkinetor/musicbrainz-userscripts/issues/857))
+1. Finish button disappears no Release Info tab ([#812](https://github.com/majkinetor/musicbrainz-userscripts/issues/812))
+
 ## [2026.10.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.10.16)
 
 ### Features
