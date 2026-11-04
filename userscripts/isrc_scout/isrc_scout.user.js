@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.020100
+// @version      2026.11.05.020101
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1123,7 +1123,8 @@
               + '.mbu-dock-item{position:fixed;z-index:2147482990;width:40px;height:40px;box-sizing:border-box;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer;transition:transform .12s}'
               + '.mbu-dock-item:hover{transform:scale(1.08)}.mbu-dock-item img{width:34px;height:34px;display:block;pointer-events:none;opacity:.85;transition:opacity .12s}.mbu-dock-item:hover img{opacity:1}'
               // beside the dock's button, wherever the corner's size (--mbu-cs, set by the restack) puts it
-              + '.mbu-dock-win{position:fixed;z-index:2147482995;--mbu-dw-x:calc(22px + 40px*var(--mbu-cs,1));--mbu-dw-y:6px;right:var(--mbu-dw-x);bottom:var(--mbu-dw-y);width:max-content;max-width:calc(100vw - 90px);max-height:min(75vh,calc(100vh - 20px));overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}'
+              // under the dock's entries (2147482989-91): the dock, when it shows, is above every floating panel; windows still cover it
+              + '.mbu-dock-win{position:fixed;z-index:2147482985;--mbu-dw-x:calc(22px + 40px*var(--mbu-cs,1));--mbu-dw-y:6px;right:var(--mbu-dw-x);bottom:var(--mbu-dw-y);width:max-content;max-width:calc(100vw - 90px);max-height:min(75vh,calc(100vh - 20px));overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}'
               + '.mbu-dock-win>*{margin:0!important}:root[data-mbu-flow=row] .mbu-dock-win{--mbu-dw-x:6px;--mbu-dw-y:calc(20px + 40px*var(--mbu-cs,1));max-height:min(75vh,calc(100vh - 80px))}:root[data-mbu-side=left] .mbu-dock-win{right:auto;left:var(--mbu-dw-x)}'
               + '#mbu-dock{position:fixed;z-index:2147482991;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none;transition:transform .12s}'
               + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none;opacity:.85;transition:opacity .12s}'
@@ -2789,7 +2790,8 @@
     html[data-mbu-dock] #ii-btn[data-ii-quiet] .ii-part { background: var(--mbu-row-mark); border-radius: 4px; padding: .15em .35em; margin: -.15em 0; }
     html[data-mbu-dock] #ii-btn[data-ii-quiet]:hover { background: color-mix(in srgb, color-mix(in srgb, var(--ii-c) 22%, var(--surface, var(--mbu-surface, #fff))) 80%, transparent); }
     html[data-mbu-dock] #ii-btn[data-ii-quiet] .ii-btn-links { border-left-color: color-mix(in srgb, var(--ii-c) 35%, transparent); }
-    html[data-mbu-dock] #ii-btn[data-ii-pinned] { position: fixed; z-index: 2147483000; margin: 0; cursor: grab; font-size: 14px; }
+    /* under the dock (2147482989-91), so the dock shows over the bar */
+    html[data-mbu-dock] #ii-btn[data-ii-pinned] { position: fixed; z-index: 2147482985; margin: 0; cursor: grab; font-size: 14px; }
     html[data-mbu-dock] #ii-btn[data-ii-pinned].ii-dragging { cursor: grabbing; }
     /* the pinned HUD's corner grip resizes it */
     html[data-mbu-dock] #ii-btn[data-ii-pinned] svg { width: 1em; height: 1em; flex: none; }

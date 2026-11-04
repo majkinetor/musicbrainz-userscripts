@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.020100
+// @version      2026.11.05.020101
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -2192,7 +2192,8 @@ function mbuDock() {
             + '.mbu-dock-item{position:fixed;z-index:2147482990;width:40px;height:40px;box-sizing:border-box;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer;transition:transform .12s}'
             + '.mbu-dock-item:hover{transform:scale(1.08)}.mbu-dock-item img{width:34px;height:34px;display:block;pointer-events:none;opacity:.85;transition:opacity .12s}.mbu-dock-item:hover img{opacity:1}'
             // beside the dock's button, wherever the corner's size (--mbu-cs, set by the restack) puts it
-            + '.mbu-dock-win{position:fixed;z-index:2147482995;--mbu-dw-x:calc(22px + 40px*var(--mbu-cs,1));--mbu-dw-y:6px;right:var(--mbu-dw-x);bottom:var(--mbu-dw-y);width:max-content;max-width:calc(100vw - 90px);max-height:min(75vh,calc(100vh - 20px));overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}'
+            // under the dock's entries (2147482989-91): the dock, when it shows, is above every floating panel; windows still cover it
+            + '.mbu-dock-win{position:fixed;z-index:2147482985;--mbu-dw-x:calc(22px + 40px*var(--mbu-cs,1));--mbu-dw-y:6px;right:var(--mbu-dw-x);bottom:var(--mbu-dw-y);width:max-content;max-width:calc(100vw - 90px);max-height:min(75vh,calc(100vh - 20px));overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}'
             + '.mbu-dock-win>*{margin:0!important}:root[data-mbu-flow=row] .mbu-dock-win{--mbu-dw-x:6px;--mbu-dw-y:calc(20px + 40px*var(--mbu-cs,1));max-height:min(75vh,calc(100vh - 80px))}:root[data-mbu-side=left] .mbu-dock-win{right:auto;left:var(--mbu-dw-x)}'
             + '#mbu-dock{position:fixed;z-index:2147482991;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none;transition:transform .12s}'
             + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none;opacity:.85;transition:opacity .12s}'
