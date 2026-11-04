@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.160000
+// @version      2026.11.04.170000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2331,6 +2331,10 @@ const CSS = `
 .hm-qc{background:none!important;border:0;padding:6px;color:var(--muted)!important;cursor:pointer;filter:none!important;display:flex}.hm-qc:hover{color:var(--text)!important}.hm-qc svg{width:18px;height:18px}.hm-qd{position:absolute;z-index:20;top:calc(100% + 6px);left:0;right:0;background:var(--surface)!important;border:1px solid var(--border);border-radius:12px;padding:6px;box-shadow:0 6px 22px var(--shadow);max-height:60vh;overflow:auto}.hm-qd[hidden]{display:none}.hm-qd button{display:flex;gap:8px;width:100%;text-align:left;background:none!important;border:0;border-radius:8px;padding:8px 10px;font:inherit;font-size:15px;color:var(--text)!important;cursor:pointer;filter:none!important}.hm-qd button:hover,.hm-qd button.on{background:var(--chip)!important}.hm-qd b{color:var(--accent);font-weight:700}
 .hm-srch>input[name=query]{flex:1;min-width:0;border:0;outline:0;background:none!important;color:var(--text)!important;font:inherit;font-size:18px;padding:8px 0}
 .hm-srch select{border:0;background:var(--chip)!important;color:var(--chip-text)!important;filter:none!important;color-scheme:light dark;font:inherit;font-size:13px;border-radius:9px;padding:8px}
+@supports (appearance:base-select){.hm-srch select,.hm-srch select::picker(select){appearance:base-select}.hm-srch select{display:inline-flex;align-items:center;gap:6px}.hm-srch select::picker-icon{color:var(--muted);font-size:10px}
+.hm-srch select::picker(select){background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:6px;box-shadow:0 10px 30px var(--shadow);margin-top:6px;max-height:min(70vh,640px)}
+.hm-srch option{display:flex;align-items:center;gap:28px;padding:7px 12px;border-radius:8px;font-size:14px;cursor:pointer}.hm-srch option::checkmark{display:none}.hm-srch option:is(:hover,:focus-visible){background:var(--chip);outline:0}.hm-srch option:checked{background:var(--chip);color:var(--accent);font-weight:700}
+.hm-srch option[data-k]::after{content:attr(data-k);margin-left:auto;font:600 12px 'JetBrains Mono',monospace;color:var(--muted);border:1px solid var(--border);border-radius:5px;padding:0 6px;line-height:18px}}
 .hm-srch button{filter:none!important;border:0;border-radius:9px;background:#ba478f;color:#fff;font:inherit;font-weight:700;padding:9px 18px;cursor:pointer}
 .hm-adv{flex:1 1 100%;min-width:0;display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;border-top:1px solid var(--border);margin:2px 10px 0 0;padding:10px 0 6px;font-size:13px}.hm-adv>label{white-space:nowrap}.hm-adv>select{max-width:100%;min-width:0}
 .hm-adv[hidden]{display:none}.hm-adv label{font-weight:700;color:var(--text)}.hm-adv select{justify-self:start}.hm-seg{display:inline-flex;justify-self:start;background:var(--chip);border-radius:9px;padding:3px;gap:2px}.hm-seg label{font-weight:400!important;cursor:pointer}.hm-seg input{position:absolute;opacity:0;pointer-events:none}.hm-seg span{display:block;padding:5px 12px;border-radius:7px;color:var(--chip-text)}.hm-seg input:checked+span{background:#ba478f;color:#fff;font-weight:700}.hm-seg input:focus-visible+span{outline:2px solid var(--accent);outline-offset:1px}
@@ -3511,6 +3515,8 @@ const TX_ICON = Object.fromEntries(Object.entries({
 }).map(([k, d]) => [k, `<svg class="txi" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`]));
 const SVG = d => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 // MusicBrainz search, sent as MB's own search form; a bare magnifier that, clicked, swaps the header's actions for its field until a search, × or Escape
+// a search that starts with one of these letters and a space searches that type: "w yesterday" is a work search
+const SRCH_K = { artist: 'a', work: 'w', release: 'r', series: 's', place: 'p', release_group: 'g', editor: 'e' };
 const SRCH_T = ['artist', 'event', 'recording', 'release', 'release_group', 'series', 'work', 'area', 'instrument', 'label', 'place', 'annotation', 'tag', 'cdstub', 'editor', 'doc'];
 const LENS = '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>';
 const SRCH = () => `<form class="srch" action="${MB}/search" method="get"><span class="sf">${SVG(LENS)}<input name="query" placeholder="Search" required><select name="type">${SRCH_T.map(t => `<option value="${t}">${t === 'doc' ? 'Documentation' : t === 'cdstub' ? 'CD stub' : (t[0].toUpperCase() + t.slice(1)).replace('_', ' ')}</option>`).join('')}</select><input type="hidden" name="method" value="indexed"><button class="x" type="button" data-srch aria-label="Close search">${SVG('<path d="M6 6l12 12M18 6 6 18"/>')}</button></span><button class="ab" type="button" data-srch data-tip="Search MusicBrainz" aria-label="Search MusicBrainz">${SVG(LENS)}</button></form><a class="ab eh-home" href="${MB}/" data-tip="Event Horizon's home page" aria-label="Home">${LOGO}</a>`;
@@ -8402,7 +8408,7 @@ function hmWire(app) {
 function hmImg(im) { const fallback = im.nextElementSibling; if (fallback) fallback.style.display = 'none'; im.onerror = () => { if (fallback) fallback.style.display = ''; im.remove(); }; }
 // the home page's hero: the logo, a heading, the search form (filled in on the search page), the recent searches, and the search's state under them
 function srchHero(hi, sub, q = '', ty = 'artist', meth = 'indexed', add = '') {
-    const kinds = SRCH_T.map(t => `<option value="${t}"${t === ty ? ' selected' : ''}>${srchName(t)}</option>`).join('');
+    const kinds = SRCH_T.map(t => `<option value="${t}"${t === ty ? ' selected' : ''}${SRCH_K[t] ? ` data-k="${SRCH_K[t]}"` : ''}>${srchName(t)}</option>`).join('');
     const ss = S.hmQs === 'off' ? [] : searches(), qs = S.hmQs !== 'below' ? '' : ss.map(x => `<a href="${MB}/search?query=${encodeURIComponent(x.q)}&type=${x.t}&method=indexed">${x.t === 'artist' ? '' : `<b>${x.t.replace('_', ' ')}:</b> `}${esc(x.q)}</a>`).join('');
     return `<header class="hm-hero"><a class="hm-home" href="${MB}/" data-tip="Event Horizon's home" aria-label="Event Horizon's home">${LOGO.replace('<svg', '<svg class="hm-orb"')}<div class="hm-wm"><b>Event<br>Horizon</b><small>MUSICBRAINZ</small></div></a><div class="hm-hi">${hi}</div>
         <form class="hm-srch" action="${MB}/search" method="get"><button type="submit" class="hm-go" data-tip="Search" aria-label="Search">${SVG(LENS)}</button><input name="query" value="${esc(q)}" placeholder="${matchMedia('(max-width:700px)').matches ? 'Search' : 'Search MusicBrainz'}"${S.hmQs === 'combo' && ss.length ? ' autocomplete="off" role="combobox" aria-expanded="false" aria-controls="hm-ql"' : ''} required${q ? '' : ' autofocus'}>${S.hmQs === 'combo' && ss.length ? `<button type="button" class="hm-qc" data-tip="Recent searches" aria-label="Recent searches">${SVG('<path d="M6 9l6 6 6-6"/>')}</button>` : ''}<select name="type">${kinds}</select><button type="button" class="hm-tg${S.hmAdv ? ' on' : ''}" data-tip="Advanced search" aria-label="Advanced search">${SVG('<path d="M4 6h10M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>')}</button>
@@ -8562,6 +8568,13 @@ async function srMore(d) {
     const y = searchParse(await r.text(), s.next);
     if (data !== d || d.s !== s) return;
     s.rows = s.rows.concat(y.rows); s.next = y.rows.length ? y.next : '';
+}
+// "w yesterday" searches works for "yesterday": a lowercase letter of SRCH_K, a space, and the words; anything else is left as typed
+function srchKey(fm) {
+    const q = fm.elements.query, ty = fm.elements.type, m = q && ty && q.value.match(/^([a-z]) +(\S.*)$/);
+    const t = m && Object.keys(SRCH_K).find(k => SRCH_K[k] === m[1]);
+    if (!t || ![...ty.options].some(o => o.value === t)) return;
+    q.value = m[2]; ty.value = t;
 }
 const srchName = t => t === 'doc' ? 'Documentation' : t === 'cdstub' ? 'CD stub' : (t[0].toUpperCase() + t.slice(1)).replace('_', ' ');
 function searchHtml(d) {
@@ -9912,6 +9925,8 @@ function build() {
     ehBody.innerHTML = `<main class="wrap" id="app"></main><div class="toast" id="toast" hidden role="status"></div>`;
     document.addEventListener('click', onClick);
     // a search from any of the viewer's search boxes opens in place
+    // a type's letter before the words picks that type (srchKey), first, so the recent searches keep the rewritten search
+    document.addEventListener('submit', ev => { const fm = ev.target; if (ehOn && fm.action && new URL(fm.action).pathname === '/search') srchKey(fm); }, true);
     document.addEventListener('submit', ev => {
         const fm = ev.target; if (!ehOn || ev.defaultPrevented || !fm.action || new URL(fm.action).pathname !== '/search') return;
         const u = new URL(fm.action); u.search = new URLSearchParams(new FormData(fm)).toString();

@@ -10,3 +10,20 @@ test("a search page links home with Event Horizon's orb", { tag: '@prod' }, asyn
   await attachShot(testInfo, page, 'search');
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT, clip: { x: 0, y: 0, width: 1400, height: 500 } });
 });
+
+test('a type letter before the words picks that type, and the type list shows the letters', { tag: '@prod' }, async ({ page, inject }, testInfo) => {
+  await page.goto('https://musicbrainz.org/search?query=music&type=series&method=indexed');
+  await inject('event_horizon');
+  await until(() => page.locator('#app .hm-srch select[name=type]').count(), n => n === 1);
+  check(await page.locator('.hm-srch option[value=work]').getAttribute('data-k') === 'w', 'Work carries its letter');
+  check(await page.locator('.hm-srch option[value=work]').textContent() === 'Work', 'the option text stays the type');
+  await page.locator('.hm-srch select[name=type]').click();
+  await page.waitForTimeout(300);
+  await attachShot(testInfo, page, 'types');
+  if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT, clip: { x: 0, y: 0, width: 1400, height: 900 } });
+  await page.keyboard.press('Escape');
+  await page.locator('.hm-srch input[name=query]').fill('w yesterday');
+  await page.locator('.hm-srch input[name=query]').press('Enter');
+  check(await until(() => page.url(), h => /type=work/.test(h) && /query=yesterday(&|$)/.test(h)), 'w yesterday searches works for yesterday');
+  check(await page.locator('.hm-srch select[name=type]').inputValue() === 'work', 'the type shows Work');
+});

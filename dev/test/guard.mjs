@@ -49,12 +49,15 @@ export function pageInit(cfg) {
     if (this.__harness && refuse(this.__harness.method, this.__harness.url, 'xhr')) throw refusal();
     return xSend.apply(this, arguments);
   };
+  // read through the prototype: a field named method or action (a search form's <select name="method">) shadows form.method
+  const FP = HTMLFormElement.prototype, fGet = k => Object.getOwnPropertyDescriptor(FP, k).get;
+  const fMethod = fGet('method'), fAction = fGet('action');
   const fSubmit = HTMLFormElement.prototype.submit;
-  HTMLFormElement.prototype.submit = function () { if (refuse(this.method, this.action, 'form')) return; return fSubmit.apply(this, arguments); };
+  HTMLFormElement.prototype.submit = function () { if (refuse(fMethod.call(this), fAction.call(this), 'form')) return; return fSubmit.apply(this, arguments); };
   window.addEventListener('submit', e => {
     const form = e.target, by = e.submitter;
-    const method = (by && by.hasAttribute('formmethod') && by.formMethod) || form.method;
-    const action = (by && by.hasAttribute('formaction') && by.formAction) || form.action;
+    const method = (by && by.hasAttribute('formmethod') && by.formMethod) || fMethod.call(form);
+    const action = (by && by.hasAttribute('formaction') && by.formAction) || fAction.call(form);
     if (refuse(method, action, 'form')) { e.preventDefault(); e.stopImmediatePropagation(); }
   }, true);
   if (navigator.sendBeacon) {
