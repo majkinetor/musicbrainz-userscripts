@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.234842
+// @version      2026.11.05.004523
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -9718,7 +9718,16 @@ function releasesDress(c) {
         for (const h of host.querySelectorAll('section.sec>.secthead')) h.parentNode.style.setProperty('--eh-sh', h.offsetHeight + 'px');
         railSpy();
     };
-    host.addEventListener('click', ev => { if (!ehOn || !ev.target.closest('button,.secthead')) return; ev.preventDefault(); onClick(ev); });
+    host.addEventListener('click', ev => { if (!ehOn || !ev.target.closest('button,.secthead') || ev.target.closest('input,label')) return; ev.preventDefault(); onClick(ev); });  // a menu's checkbox inside the heading keeps its own click
+    // a click anywhere outside an open menu closes it, as on EH's own pages; its own button toggles it through onClick
+    document.addEventListener('click', ev => {
+        const p = ehOn && host.querySelector('.pop:not([hidden])');
+        if (!p || p.contains(ev.target) || (ev.target.closest && ev.target.closest('[data-pop]'))) return;
+        p.hidden = true; host.querySelector('[aria-expanded="true"][data-pop]')?.setAttribute('aria-expanded', 'false');
+    });
+    // a click on a row opens its release, as on EH's own pages
+    host.addEventListener('click', edRow);
+    host.addEventListener('auxclick', edRow);
     listFilters(host);
     host.addEventListener('contextmenu', ev => { const b = ev.target.closest('[data-fold],[data-gfold]'); if (!ehOn || !b) return; ev.preventDefault(); b.click(); });
     releasePageDraw();
@@ -10143,6 +10152,15 @@ function listFilters(root) {
     root.addEventListener('focusin', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) fltSug(t.dataset.fq, t); });
     root.addEventListener('keydown', ev => { const t = ev.target; if (ev.key === 'Enter' && t.dataset && t.dataset.nmname) { ev.preventDefault(); t.parentNode.querySelector('button').click(); } });
 }
+// A click on a release or release group row, outside its controls, is a click on the row's first link.
+// EH's own pages and MusicBrainz's releases list drawn as EH's both listen
+function edRow(ev) {
+    const r = ehOn && ev.target.closest && ev.target.closest('.ed-t tbody tr');
+    if (!r || ev.target.closest('a,button,input,select,label,summary,.stars') || (ev.button === 0 && String(getSelection()).trim())) return;
+    const a = r.querySelector(':scope > td:not(.lk) a[href]');
+    if (!a || !/^\/release(-group)?\/[0-9a-f-]{36}/.test(a.pathname) || ev.button > 1) return;
+    if (ev.button === 1 || ev.ctrlKey || ev.metaKey) { ev.preventDefault(); open(a.href, '_blank'); } else a.click();
+}
 function build() {
     const head = document.head || document.documentElement;
     head.insertAdjacentHTML('beforeend', `<link id="eh-font" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"><style id="eh-css">${CSS}</style>`);
@@ -10161,14 +10179,6 @@ function build() {
     listFilters(document);
     // the search field folds away once focus leaves it
     document.addEventListener('focusout', ev => { const fm = ev.target.closest && ev.target.closest('.srch.open'); if (fm && !fm.contains(ev.relatedTarget)) fm.classList.remove('open'); });
-    // A click on a release or release group row, outside its controls, is a click on the row's first link.
-    const edRow = ev => {
-        const r = ehOn && ev.target.closest && ev.target.closest('.ed-t tbody tr');
-        if (!r || ev.target.closest('a,button,input,select,label,summary,.stars') || (ev.button === 0 && String(getSelection()).trim())) return;
-        const a = r.querySelector(':scope > td:not(.lk) a[href]');
-        if (!a || !/^\/release(-group)?\/[0-9a-f-]{36}/.test(a.pathname) || ev.button > 1) return;
-        if (ev.button === 1 || ev.ctrlKey || ev.metaKey) { ev.preventDefault(); open(a.href, '_blank'); } else a.click();
-    };
     document.addEventListener('click', edRow);
     document.addEventListener('auxclick', edRow);
     // right-click on a section's chevron: fold every section, or open them all when that one is folded

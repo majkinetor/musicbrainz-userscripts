@@ -105,6 +105,17 @@ test('the Columns menu works on a list of releases that stays MusicBrainz\'s pag
   await page.keyboard.press('ArrowUp');
   await until(shown, h => h.endsWith('status,barcode,links'));
   check(await page.locator('#pop-cols-ed').isVisible(), 'the menu stays open');
+  // the menu's checkboxes toggle on this page too
+  await page.locator('#pop-cols-ed [data-colk="status"] label').click();
+  await until(shown, h => !h.includes('status'));
+  // a click outside the menu, on MusicBrainz's own page, closes it
+  await page.locator('#footer, footer').first().click({ force: true });
+  await until(() => page.locator('#pop-cols-ed').isHidden(), v => v);
+  check(await page.locator('[data-pop="cols-ed"]').getAttribute('aria-expanded') === 'false', 'its button says it is closed');
+  // and a click on a row, outside its links, opens its release
+  const href = await page.locator('.eh-release-views table.ed-t tbody tr.ed-r').first().getAttribute('data-edhref');
+  await page.locator('.eh-release-views table.ed-t tbody tr.ed-r td[data-c="format"]').first().click();
+  await page.waitForURL(u => u.pathname === new URL(href, page.url()).pathname);
 });
 
 test('a column resizes by its edge, fits its content and goes back to fitting itself', { tag: '@sandbox' }, async ({ page, inject }) => {
