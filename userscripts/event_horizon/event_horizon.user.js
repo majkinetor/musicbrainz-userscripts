@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.03.234742
+// @version      2026.11.04.120000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -9188,9 +9188,12 @@ new MutationObserver(() => {
 }).observe(document.documentElement, { attributeFilter: ['data-mbu-theme'] });
 const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-theme=dark\]\{[\s\S]*?\}/) || [''])[0].replace(/:root/g, ':root[data-eh-rel]')
     // the theme's band and bar colours, which the stuck section header and the pinned bar take
+    // the background setting, from the same sheet: every rule that reads it, and the hexagons' drift; a page without a cover gets the glow for aura
+    + '\n' + CSS.split('\n').filter(l => /^(:root[^{]*\[data-eh-bg=|body(::before)?\{(position|content)|@keyframes eh-hexglow|@media \(prefers-reduced-motion:reduce\)\{:root\[data-eh-bg)/.test(l))
+        .map(l => l.replace(/:root/g, ':root[data-eh-rel]').replace(/^body/, ':root[data-eh-rel] body')
+            .replace(/(\bbody\{background(?:-attachment)?:[^}]*?)(!important)?\}/g, '$1!important}')).join('\n')
     + '\n' + (CSS.match(/^:root\{--eh-page:[^\n]*/m) || [''])[0].replace(/:root/g, ':root[data-eh-rel]') + `
 :root[data-eh-rel] body{background:var(--bg)!important}
-:root[data-eh-rel]:is([data-eh-bg=glow],[data-eh-bg=aura]) body{background:radial-gradient(900px 520px at 100% 0,color-mix(in srgb,var(--accent2) 18%,transparent),transparent 70%) no-repeat,radial-gradient(800px 480px at 72% 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%) no-repeat,var(--bg)!important}
 :root[data-eh-rel] :is(#page,#content,#container){background:none!important}
 :root[data-eh-rel] body{color:var(--text);font-family:Manrope,system-ui,sans-serif;font-size:15px}:root[data-eh-rel] #page :is(table,td,th,p,label,input,select,textarea,button,td.works>h3):not(.discogs-bar *,.eh-release-views *,.srch *){font-size:inherit}:root[data-eh-rel] #page .discogs-bar :is(label,button,select,span,input){font-size:13px}
 :root[data-eh-rel] body>.header,:root[data-eh-rel] body>.banner,:root[data-eh-rel] #footer,:root[data-eh-rel] #content>.releaseheader>:not(.discogs-bar),:root[data-eh-rel] #content>.tabs{display:none!important}
