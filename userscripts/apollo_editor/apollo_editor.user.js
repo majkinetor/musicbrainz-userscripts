@@ -4968,7 +4968,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
               // nothing counted yet: three small dots lighting in turn, no badge
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mbu-busy][data-mb-corner-status="···"]::after{content:none}'
               + '.mbu-dock-dots{display:none;position:absolute;top:0;right:-6px;gap:3px;pointer-events:none}:is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mbu-busy][data-mb-corner-status="···"] .mbu-dock-dots{display:flex}'
-              + '#mbu-dock .mbu-dock-run{display:none}#mbu-dock[data-mbu-busy] .mbu-dock-run{display:inline;stroke-dasharray:16 84;animation:mbu-dock-run 1.6s linear infinite}@keyframes mbu-dock-run{to{stroke-dashoffset:-100}}'   // while a member works, a light dash runs along the string
+              + '#mbu-dock .mbu-dock-run{display:none}#mbu-dock[data-mbu-busy] .mbu-dock-run{display:inline;stroke-dasharray:16 84;animation:mbu-dock-run 2.08s linear infinite}@keyframes mbu-dock-run{to{stroke-dashoffset:-100}}'   // while a member works, a light dash runs along the string
               + '.mbu-dock-dots i{width:5px;height:5px;border-radius:50%;background:#e05aa5;animation:mbu-dock-dot 1.2s ease-in-out infinite}.mbu-dock-dots i:nth-child(2){animation-delay:.2s}.mbu-dock-dots i:nth-child(3){animation-delay:.4s}'
               + '@keyframes mbu-dock-dot{0%,80%,100%{opacity:.25}40%{opacity:1}}'
               + '@media (prefers-reduced-motion:reduce){[data-mbu-busy]::after,.mbu-dock-dots i{animation:none!important}#mbu-dock[data-mbu-busy] .mbu-dock-run{animation-duration:6s!important}}';
