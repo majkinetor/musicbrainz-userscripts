@@ -460,7 +460,10 @@ var ST_TC_CSS = ''
   + '#st-tc button:hover,#st-tc button:focus-visible{color:var(--mbu-accent-text,var(--mbu-accent))}'
   + '#st-tc .st-tc-n{min-width:170px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
   + '#st-tc .st-tc-v{color:var(--mbu-text-weak)}'
-  + '#st-tc .st-tc-i{color:var(--mbu-text-weak);font-size:12px;min-width:36px;text-align:center}';
+  + '#st-tc .st-tc-i{color:var(--mbu-text-weak);font-size:12px;min-width:36px;text-align:center}'
+  // a phone: pinned to the bottom edge, the page's full width; the name takes what the buttons leave
+  + '@media (max-width:640px){#st-tc{left:0;right:0;bottom:0;transform:none;max-width:none;gap:2px;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));border-width:1px 0 0;border-radius:0}'
+  + '#st-tc .st-tc-n{flex:1 1 auto;min-width:0}#st-tc button{padding-inline:6px}}';
 var stTcEl = null;
 function stThemeChooser() {
   if (stTcEl && stTcEl.isConnected) return;
