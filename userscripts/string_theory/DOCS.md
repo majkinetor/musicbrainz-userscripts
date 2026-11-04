@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-04 11:32 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-04 11:35 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -896,7 +896,7 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | Annotation → Show annotation on hover | on                                                                  | preview a folded annotation                                                                 |
 | General → Page width                  | Wide                                                                | how wide the page grows on a big screen                                                     |
 | General → Background                  | Cover aura                                                          | Flat, Cover aura, Glow or Header band                                                       |
-| General → Hexagons                    | off                                                                 | show outlines on any background; the adjacent slider sets their opacity                     |
+| General → Hexagons                    | off                                                                 | show outlines on any background; the slider sets their opacity, halved on the light theme  |
 | General → Hexagon animation           | Static                                                              | Static outlines or Drift’s slowly moving glow; respects reduced motion                      |
 | General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                                      |
 | General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
