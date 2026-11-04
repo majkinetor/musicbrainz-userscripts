@@ -118,23 +118,23 @@ Credentials, stars, saved notes, remembered field values, named filters and norm
 
 Right-click String Theory's icon to open its settings, or any dock icon for that script's own. About shows each script's installed, latest and stable version.
 
-| Setting          | Default           | What it does                                                                                                   |
-| ---------------- | ----------------- | -------------------------------------------------------------------------------------------------------------- |
-| Side             | Right             | The launchers' side of the page                                                                                |
-| Orientation      | Column            | A column, or a row along the bottom edge                                                                       |
-| Size             | 100 %             | The launchers' size, 60 to 160 %                                                                               |
-| Hover            | None              | While the pointer is over the dock, None, or Shelf: a frosted shelf behind its icons                           |
-| Counter          | Pill              | How an icon shows its count: Pill, Segmented (to do, held and already there in their own cells) or Bare digits |
-| Position         | On icon           | The count on the icon's corner, or Beside it: left of a right-side column, right of a left one, above a row    |
-| Launcher order   | Each script's own | Drag the icons to reorder the launchers; the first sits nearest the corner                                     |
-| Palette          | On                | The command palette's hotkey works                                                                             |
-| Hotkey           | Ctrl+K            | The key that opens the command palette: click it, then press the new one                                       |
-| Provider         | Dropbox           | Where sync and remote backups are stored                                                                       |
-| Automatic sync   | Off               | Syncs with the selected provider while MusicBrainz is open                                                     |
-| every            | 30 minutes        | Time between automatic syncs, from 5 minutes to 1 day                                                          |
-| On conflict      | Use remote value  | Which value wins when both devices change the same setting                                                     |
-| Scripts          | All on            | Turns each bundled script on or off, from the next page load                                                   |
-| Copy as Markdown |                   | Copies versions, scripts and environment, to paste into an issue                                               |
+| Setting          | Default           | What it does                                                                                                                              |
+| ---------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Side             | Right             | The launchers' side of the page                                                                                                           |
+| Orientation      | Column            | A column, or a row along the bottom edge                                                                                                  |
+| Size             | 100 %             | The launchers' size, 60 to 160 %                                                                                                          |
+| Hover            | None              | While the pointer is over the dock, None, or Shelf: a frosted shelf behind its icons                                                      |
+| Counter          | Pill              | How an icon shows its count: Pill, Segmented (to do, held and already there in their own cells) or Bare: the pill's text without the pill |
+| Position         | On icon           | The count on the icon's corner, or Beside it: left of a right-side column, right of a left one, above a row                               |
+| Launcher order   | Each script's own | Drag the icons to reorder the launchers; the first sits nearest the corner                                                                |
+| Palette          | On                | The command palette's hotkey works                                                                                                        |
+| Hotkey           | Ctrl+K            | The key that opens the command palette: click it, then press the new one                                                                  |
+| Provider         | Dropbox           | Where sync and remote backups are stored                                                                                                  |
+| Automatic sync   | Off               | Syncs with the selected provider while MusicBrainz is open                                                                                |
+| every            | 30 minutes        | Time between automatic syncs, from 5 minutes to 1 day                                                                                     |
+| On conflict      | Use remote value  | Which value wins when both devices change the same setting                                                                                |
+| Scripts          | All on            | Turns each bundled script on or off, from the next page load                                                                              |
+| Copy as Markdown |                   | Copies versions, scripts and environment, to paste into an issue                                                                          |
 
 - **Right-click a script's icon** in the settings, in the launcher order or in About, to open that script's settings, on any page and even when the script is off. String Theory's settings stay open behind them.
 - **A script that is off** doesn't run.
