@@ -5,7 +5,7 @@
 // deduplication against this session and against MB's existing rels.
 
 import { log }                  from './log.js';
-import { pageWindow, EQUIVALENCE_SETS, SELECTORS, MATCH_LEVELS } from './constants.js';
+import { pageWindow, SELECTORS, MATCH_LEVELS, SPECIFIC_WRITER_ROLES } from './constants.js';
 import {
     mbThrottle,
     fetchMBEntity,
@@ -62,8 +62,6 @@ export function makeIdentifyingClassifier(lat) {
 // Dedup options come in as a trailing object (default empty). Used by
 // `relAlreadyExists` to honor the maintainer-configurable rules from
 // issue #62:
-//   dedupeEquivalenceSets  — treat writer ≡ composer (etc.) when looking
-//                            up existing rels for skipping.
 // A duplicate role is always skipped: when (linkType, target) is already
 // on the source with the same instrument/vocal, skip regardless of other
 // attr/credit/date differences (it was the "Duplicate roles" option, #62).
@@ -87,7 +85,6 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         confirmedMap.splits.forEach((parts, k) => log.info(`#605 split ${k} → ${parts.map(p => `${p.name} [${confirmedMap.get(p.key) || 'unresolved'}]`).join(' · ')}`));
         log.info(`#605 split: ${before} role(s) → ${after} after fan-out`);
     }
-    const dedupeEquivalenceSets = dedupOpts.dedupeEquivalenceSets !== false; // default ON
     const creditOverrides       = dedupOpts.creditOverrides || new Map();
     const re = await waitForMBEditor();
     if (!re) return;
@@ -100,35 +97,6 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
     // performances of DIFFERENT instruments aren't collapsed into one.
     const isIdentifyingAttr = makeIdentifyingClassifier(MB?.linkedEntities?.link_attribute_type);
 
-    // Precompute the equivalence-set lookup once: linkTypeID -> Set of
-    // sibling linkTypeIDs (incl. itself) that share a configured group.
-    // `EQUIVALENCE_SETS` lists names like ['writer', 'composer']; we
-    // resolve those against MB.linkedEntities.link_type to MBIDs at the
-    // exact (sourceType, targetType) pair to keep matches strict.
-    const equivalenceLookup = (() => {
-        const m = new Map();
-        if (!dedupeEquivalenceSets || !MB?.linkedEntities?.link_type) return m;
-        for (const set of EQUIVALENCE_SETS) {
-            // For each set, collect all link types whose name lowercase-matches
-            // any member. Group them by (type0, type1) pair so we don't
-            // cross-contaminate (e.g. work-level composer vs recording-level
-            // composer have different IDs but live under the same pair name).
-            const byPair = new Map(); // 'type0|type1' -> [linkTypeID]
-            for (const [id, lt] of Object.entries(MB.linkedEntities.link_type)) {
-                if (!lt?.name) continue;
-                if (!set.includes(String(lt.name).toLowerCase())) continue;
-                const key = `${lt.type0}|${lt.type1}`;
-                if (!byPair.has(key)) byPair.set(key, []);
-                byPair.get(key).push(Number(id));
-            }
-            for (const ids of byPair.values()) {
-                if (ids.length < 2) continue; // single-member pair: no equivalence
-                const sibSet = new Set(ids);
-                for (const id of ids) m.set(id, sibSet);
-            }
-        }
-        return m;
-    })();
     const releaseEntity = re.state.entity;
     // Counter semantics (issues #14, #34):
     //   added       — rels actually dispatched into editor state this session
@@ -150,6 +118,8 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
     // existedInMb (persisted, status 0) so a 2nd source's note reads honestly
     // ("2 added, 4 already added this session") instead of claiming "in MB".
     let added = 0, existedInMb = 0, existedStaged = 0, dedupedThisSession = 0, skipped = 0, failed = 0;
+    const writersRemoved = [];    // #928: existing writer rels removed as redundant
+    const writersNotAdded = [];   // #928: incoming writer credits not added
     // Track dispatched relationships this session to catch same-run duplicates
     const dispatchedThisSession = new Set(); // "sourceGid|linkTypeID|targetGid"
 
@@ -410,14 +380,10 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
     // Returns `null` when no match, or `{ kind, existingLinkName }` so the
     // caller can pick a distinct log message per #62 feedback:
     //   - 'exact'          identical link type + same attrs ("Already in MB")
-    //   - 'equivalence'    equivalent link type (e.g. writer when adding composer)
     //   - 'duplicate-role' same link type + same target but DIFFERENT attrs
     function relAlreadyExists(sourceEntity, linkTypeID, targetGid, attrTree) {
         const rels = sourceEntity?.relationships;
         if (!Array.isArray(rels) || rels.length === 0) return null;
-        // Equivalence-set expansion: when ON, a writer rel counts as
-        // existing for an incoming composer dispatch (and vice versa).
-        const acceptableLinkTypes = equivalenceLookup.get(linkTypeID) || new Set([linkTypeID]);
         // #233: include each attribute's credited-as — a vocal credited
         // "spoken vocals [Michal]" is a different role from "[Tonda]", so one
         // actor voicing several characters keeps every rel (no false dedup).
@@ -443,10 +409,9 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         // both could fire, so the log message reflects the cheaper match.
         let dupMatch = null;
         for (const r of rels) {
-            if (!acceptableLinkTypes.has(r.linkTypeID)) continue;
+            if (r.linkTypeID !== linkTypeID) continue;
             const tgt = r.target?.gid || r.entity0?.gid || r.entity1?.gid;
             if (tgt !== targetGid) continue;
-            const isEquivalent = (r.linkTypeID !== linkTypeID);
             const existingAttrs = (r.attributes || []).map(a => ({ typeID: a.typeID, text_value: a.text_value || '', credited_as: a.credited_as || '' }));
             const exactMatch = (sigOf(existingAttrs) === candSig);
             if (exactMatch) {
@@ -455,14 +420,14 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                 // persisted in MB. The caller reports those distinctly so a
                 // multi-source run doesn't claim "already in MB" for credits a
                 // prior source just staged.
-                return { kind: isEquivalent ? 'equivalence' : 'exact', existingLinkName: lookupName(r.linkTypeID), status: r._status };
+                return { kind: 'exact', existingLinkName: lookupName(r.linkTypeID), status: r._status };
             }
             // Attrs differ. It's a duplicate *role* only when the identifying
             // instrument/vocal attributes are the same (e.g. "guitar" vs
             // "guitar (solo)"). Different instruments (synthesizer vs drum
             // machine) are distinct performances and must both be added (#225).
             if (!dupMatch && idSigOf(existingAttrs) === candIdSig) {
-                dupMatch = { kind: isEquivalent ? 'equivalence' : 'duplicate-role', existingLinkName: lookupName(r.linkTypeID), status: r._status };
+                dupMatch = { kind: 'duplicate-role', existingLinkName: lookupName(r.linkTypeID), status: r._status };
             }
         }
         return dupMatch;
@@ -556,7 +521,6 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         if (dedupHit) {
             // Distinct log message per #62 feedback. Three cases:
             //   exact          — identical rel already in MB
-            //   equivalence    — equivalent role (writer ↔ composer) already there
             //   duplicate-role — same role + different attrs
             const pair = `${sourceEntity.name} ↔ ${targetEntity.name}${credit && credit !== targetEntity.name ? ` (credited: ${credit})` : ''}`;
             const existing = dedupHit.existingLinkName;
@@ -564,9 +528,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             // "in MB" — it was staged by a previous source (or by hand).
             const staged = dedupHit.status === 1;
             const where = staged ? 'already added this session' : 'already in MB';
-            if (dedupHit.kind === 'equivalence') {
-                log.info(`Deduplication (equivalence sets): <strong>${linkTypeName}</strong> not added — equivalent <strong>${existing}</strong> ${where} on ${pair}`);
-            } else if (dedupHit.kind === 'duplicate-role') {
+            if (dedupHit.kind === 'duplicate-role') {
                 log.info(`Deduplication (duplicate roles): <strong>${linkTypeName}</strong> not added — same role ${where} with different attributes on ${pair}`);
             } else {
                 log.info(`${staged ? 'Already added this session' : 'Already in MB'}: <strong>${linkTypeName}</strong>: ${pair}`);
@@ -847,11 +809,38 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                 workEntity = getWorkFromEditorState(recEntity) || workEntity;
             }
 
+            // #928: writer is redundant for an artist who has a specific writing role
+            // (composer, lyricist, librettist, scriptwriter) on this work, existing or
+            // incoming: an incoming writer is not added, an existing one is removed below.
+            const mbidOf = (url) => String(url || '').replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
+            const specificByArtist = new Map();   // artist gid → Set of specific role names
+            const noteSpecific = (gid, name) => {
+                if (!gid) return;
+                if (!specificByArtist.has(gid)) specificByArtist.set(gid, new Set());
+                specificByArtist.get(gid).add(name);
+            };
+            for (const { role } of entries) {
+                if (SPECIFIC_WRITER_ROLES.includes(role.linkType)) noteSpecific(mbidOf(confirmedMbUrl(role.artist)), role.linkType);
+            }
+            const workRels = (() => { try { return [...MB.tree.iterate(workEntity.relationships)]; } catch (e) { return []; } })();
+            const relArtist = (r) => [r.entity0, r.entity1, r.target].find(e => e?.entityType === 'artist');
+            const relName = (r) => String(MB.linkedEntities?.link_type?.[r.linkTypeID]?.name || '').toLowerCase();
+            for (const r of workRels) {
+                if (r._status === 3) continue;   // already being removed
+                if (SPECIFIC_WRITER_ROLES.includes(relName(r))) noteSpecific(relArtist(r)?.gid, relName(r));
+            }
+
             // Apply all work-only artist rels to the work
             for (const { role } of entries) {
                 const mbUrl = confirmedMbUrl(role.artist);
                 if (!mbUrl) {
                     log.skip(`Skipped ${role.artist.name} — not resolved in review (${role.linkType})`);
+                    continue;
+                }
+                const has = role.linkType === 'writer' && specificByArtist.get(mbidOf(mbUrl));
+                if (has) {
+                    log.info(`Writer not added for ${role.artist.name} on "${trackTitle}": ${[...has].join(' and ')} is there (#928)`);
+                    writersNotAdded.push(`${role.artist.name} on "${trackTitle}" (${[...has].join(' and ')})`);
                     continue;
                 }
                 const credit = role.creditedAs || stripDiscogsNum(role.artist.anv?.trim() || role.artist.name);
@@ -883,6 +872,40 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                             log.error(`Failed to add ${role.linkType} for new work: ${e.message}`);
                         }
                     }
+                }
+            }
+
+            // #928: drop a writer already on the work whose artist has a specific writing
+            // role here. One in MB is removed (its own edit); one added earlier this session
+            // (_status 1, e.g. by a previous source) is simply taken back, so it counts as
+            // not added. One carrying a credited-as name or attributes is kept and flagged:
+            // removing it would lose what the specific role doesn't say.
+            for (const r of workRels) {
+                if (relName(r) !== 'writer' || r._status === 3) continue;
+                const artist = relArtist(r);
+                const has = artist && specificByArtist.get(artist.gid);
+                if (!has) continue;
+                const roles = [...has].join(' and ');
+                const what = `${artist.name} on "${trackTitle}" (${roles})`;
+                const credit = (r.entity0?.entityType === 'artist' ? r.entity0_credit : r.entity1_credit) || '';
+                const attrCount = (() => { try { return [...MB.tree.iterate(r.attributes)].length; } catch (e) { return 0; } })();
+                if (credit || attrCount) {
+                    log.warn(`Writer kept for ${artist.name} on "${trackTitle}": redundant next to ${roles}, but it has ${credit ? `credited-as "${credit}"` : 'attributes'}; remove it by hand if that isn't needed (#928)`);
+                    continue;
+                }
+                const staged = r._status === 1;
+                try {
+                    re.dispatch({ type: 'remove-relationship', relationship: r });
+                    if (staged) {
+                        writersNotAdded.push(what);
+                        added--;
+                        log.info(`Writer added earlier this session taken back for ${artist.name} on "${trackTitle}": ${roles} is there (#928)`);
+                    } else {
+                        writersRemoved.push(what);
+                        log.info(`Existing writer removed for ${artist.name} on "${trackTitle}": redundant next to ${roles} (#928)`);
+                    }
+                } catch (e) {
+                    log.error(`Failed to remove writer for ${artist.name} on "${trackTitle}": ${e.message}`);
                 }
             }
         }
@@ -959,7 +982,17 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             ? `, ${existedStaged} already added this session`
             : '';
         const resultStats = `Result: ${added} added, ${existedInMb} already in MB${editNoteStagedPart}${editNoteDedupPart}, ${skipped} skipped, ${failed} failed${recSelectionActive ? ` (applied to ${checkedRecGids.size} of ${recordingByGid.size} selected recordings)` : ''}`;
-        const ourNote = buildEditNote(discogsUrl, opts, [inputStats, matchedLine, unresolvedLine, resultStats].filter(Boolean), dedupOpts.sourceLabel);   // #408: consolidated runs label the source
+        // #928: existing writers removed (each its own removal edit) are told apart from
+        // the source's writer credits that were never added.
+        const WRITER_DOC = 'https://musicbrainz.org/relationship/a255bca1-b157-4518-9108-7b147dc3fc68';
+        const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+        const removedLine = writersRemoved.length
+            ? `Removed ${plural(writersRemoved.length, 'existing writer relationship')}: the same artist has the more specific composer / lyricist / librettist / scriptwriter role on the same work, which the writer guideline prefers (${WRITER_DOC}). ${writersRemoved.join('; ')}`
+            : null;
+        const notAddedLine = writersNotAdded.length
+            ? `Not added: ${plural(writersNotAdded.length, 'writer credit')} from the source, as the same artist has a more specific role on the same work. ${writersNotAdded.join('; ')}`
+            : null;
+        const ourNote = buildEditNote(discogsUrl, opts, [inputStats, matchedLine, unresolvedLine, resultStats, removedLine, notAddedLine].filter(Boolean), dedupOpts.sourceLabel);   // #408: consolidated runs label the source
         // Preserve any note another script already wrote — append ours instead
         // of overwriting (issue #174). Read the live textarea value as the base.
         const existingNote = document.querySelector(SELECTORS.EditNote)?.value || '';

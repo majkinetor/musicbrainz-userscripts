@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.11.05.162146
+// @version      2026.11.05.174816
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -134,9 +134,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     EditNote: "#edit-note-text",
     TaskInput: "#add-relationship-dialog .attribute-container.task input"
   };
-  var EQUIVALENCE_SETS = [
-    ["writer", "composer"]
-  ];
+  var SPECIFIC_WRITER_ROLES = ["composer", "lyricist", "librettist", "scriptwriter"];
   var MB = typeof location !== "undefined" && /(^|\.)musicbrainz\.org$/.test(location.hostname) ? "//" + location.hostname : "//musicbrainz.org";
   var DISCOGS_CHANNEL = new BroadcastChannel("discogs-importer-artist");
   DISCOGS_CHANNEL.unref?.();
@@ -7860,34 +7858,15 @@ Its \u{1F517} chip adds the link.`;
       confirmedMap.splits.forEach((parts, k) => log.info(`#605 split ${k} \u2192 ${parts.map((p) => `${p.name} [${confirmedMap.get(p.key) || "unresolved"}]`).join(" \xB7 ")}`));
       log.info(`#605 split: ${before} role(s) \u2192 ${after} after fan-out`);
     }
-    const dedupeEquivalenceSets = dedupOpts.dedupeEquivalenceSets !== false;
     const creditOverrides = dedupOpts.creditOverrides || /* @__PURE__ */ new Map();
     const re = await waitForMBEditor();
     if (!re) return;
     const MB2 = pageWindow.MB;
     const isIdentifyingAttr = makeIdentifyingClassifier(MB2?.linkedEntities?.link_attribute_type);
-    const equivalenceLookup = (() => {
-      const m = /* @__PURE__ */ new Map();
-      if (!dedupeEquivalenceSets || !MB2?.linkedEntities?.link_type) return m;
-      for (const set of EQUIVALENCE_SETS) {
-        const byPair = /* @__PURE__ */ new Map();
-        for (const [id, lt] of Object.entries(MB2.linkedEntities.link_type)) {
-          if (!lt?.name) continue;
-          if (!set.includes(String(lt.name).toLowerCase())) continue;
-          const key = `${lt.type0}|${lt.type1}`;
-          if (!byPair.has(key)) byPair.set(key, []);
-          byPair.get(key).push(Number(id));
-        }
-        for (const ids of byPair.values()) {
-          if (ids.length < 2) continue;
-          const sibSet = new Set(ids);
-          for (const id of ids) m.set(id, sibSet);
-        }
-      }
-      return m;
-    })();
     const releaseEntity = re.state.entity;
     let added = 0, existedInMb = 0, existedStaged = 0, dedupedThisSession = 0, skipped = 0, failed = 0;
+    const writersRemoved = [];
+    const writersNotAdded = [];
     const dispatchedThisSession = /* @__PURE__ */ new Set();
     const RECORDING_LINK_TYPES = /* @__PURE__ */ new Set([
       "performer",
@@ -8083,7 +8062,6 @@ Its \u{1F517} chip adds the link.`;
     function relAlreadyExists(sourceEntity, linkTypeID, targetGid, attrTree) {
       const rels = sourceEntity?.relationships;
       if (!Array.isArray(rels) || rels.length === 0) return null;
-      const acceptableLinkTypes = equivalenceLookup.get(linkTypeID) || /* @__PURE__ */ new Set([linkTypeID]);
       const sigOf = (attrs) => attrs.map((a) => `${a.typeID}:${a.text_value || ""}:${a.credited_as || ""}`).sort().join(",");
       const idSigOf = (attrs) => attrs.filter((a) => isIdentifyingAttr(a.typeID)).map((a) => `${a.typeID}:${a.text_value || ""}:${a.credited_as || ""}`).sort().join(",");
       const candAttrs = (() => {
@@ -8105,17 +8083,16 @@ Its \u{1F517} chip adds the link.`;
       };
       let dupMatch = null;
       for (const r of rels) {
-        if (!acceptableLinkTypes.has(r.linkTypeID)) continue;
+        if (r.linkTypeID !== linkTypeID) continue;
         const tgt = r.target?.gid || r.entity0?.gid || r.entity1?.gid;
         if (tgt !== targetGid) continue;
-        const isEquivalent = r.linkTypeID !== linkTypeID;
         const existingAttrs = (r.attributes || []).map((a) => ({ typeID: a.typeID, text_value: a.text_value || "", credited_as: a.credited_as || "" }));
         const exactMatch = sigOf(existingAttrs) === candSig;
         if (exactMatch) {
-          return { kind: isEquivalent ? "equivalence" : "exact", existingLinkName: lookupName(r.linkTypeID), status: r._status };
+          return { kind: "exact", existingLinkName: lookupName(r.linkTypeID), status: r._status };
         }
         if (!dupMatch && idSigOf(existingAttrs) === candIdSig) {
-          dupMatch = { kind: isEquivalent ? "equivalence" : "duplicate-role", existingLinkName: lookupName(r.linkTypeID), status: r._status };
+          dupMatch = { kind: "duplicate-role", existingLinkName: lookupName(r.linkTypeID), status: r._status };
         }
       }
       return dupMatch;
@@ -8191,9 +8168,7 @@ Its \u{1F517} chip adds the link.`;
         const existing = dedupHit.existingLinkName;
         const staged = dedupHit.status === 1;
         const where = staged ? "already added this session" : "already in MB";
-        if (dedupHit.kind === "equivalence") {
-          log.info(`Deduplication (equivalence sets): <strong>${linkTypeName}</strong> not added \u2014 equivalent <strong>${existing}</strong> ${where} on ${pair}`);
-        } else if (dedupHit.kind === "duplicate-role") {
+        if (dedupHit.kind === "duplicate-role") {
           log.info(`Deduplication (duplicate roles): <strong>${linkTypeName}</strong> not added \u2014 same role ${where} with different attributes on ${pair}`);
         } else {
           log.info(`${staged ? "Already added this session" : "Already in MB"}: <strong>${linkTypeName}</strong>: ${pair}`);
@@ -8402,10 +8377,39 @@ Its \u{1F517} chip adds the link.`;
           tickProgress();
           workEntity = getWorkFromEditorState(recEntity) || workEntity;
         }
+        const mbidOf = (url) => String(url || "").replace(/.*\//, "").replace(/[^a-f0-9-]/gi, "").substring(0, 36);
+        const specificByArtist = /* @__PURE__ */ new Map();
+        const noteSpecific = (gid, name) => {
+          if (!gid) return;
+          if (!specificByArtist.has(gid)) specificByArtist.set(gid, /* @__PURE__ */ new Set());
+          specificByArtist.get(gid).add(name);
+        };
+        for (const { role } of entries) {
+          if (SPECIFIC_WRITER_ROLES.includes(role.linkType)) noteSpecific(mbidOf(confirmedMbUrl(role.artist)), role.linkType);
+        }
+        const workRels = (() => {
+          try {
+            return [...MB2.tree.iterate(workEntity.relationships)];
+          } catch (e) {
+            return [];
+          }
+        })();
+        const relArtist = (r) => [r.entity0, r.entity1, r.target].find((e) => e?.entityType === "artist");
+        const relName = (r) => String(MB2.linkedEntities?.link_type?.[r.linkTypeID]?.name || "").toLowerCase();
+        for (const r of workRels) {
+          if (r._status === 3) continue;
+          if (SPECIFIC_WRITER_ROLES.includes(relName(r))) noteSpecific(relArtist(r)?.gid, relName(r));
+        }
         for (const { role } of entries) {
           const mbUrl = confirmedMbUrl(role.artist);
           if (!mbUrl) {
             log.skip(`Skipped ${role.artist.name} \u2014 not resolved in review (${role.linkType})`);
+            continue;
+          }
+          const has = role.linkType === "writer" && specificByArtist.get(mbidOf(mbUrl));
+          if (has) {
+            log.info(`Writer not added for ${role.artist.name} on "${trackTitle}": ${[...has].join(" and ")} is there (#928)`);
+            writersNotAdded.push(`${role.artist.name} on "${trackTitle}" (${[...has].join(" and ")})`);
             continue;
           }
           const credit = role.creditedAs || stripDiscogsNum2(role.artist.anv?.trim() || role.artist.name);
@@ -8430,6 +8434,40 @@ Its \u{1F517} chip adds the link.`;
                 log.error(`Failed to add ${role.linkType} for new work: ${e.message}`);
               }
             }
+          }
+        }
+        for (const r of workRels) {
+          if (relName(r) !== "writer" || r._status === 3) continue;
+          const artist = relArtist(r);
+          const has = artist && specificByArtist.get(artist.gid);
+          if (!has) continue;
+          const roles = [...has].join(" and ");
+          const what = `${artist.name} on "${trackTitle}" (${roles})`;
+          const credit = (r.entity0?.entityType === "artist" ? r.entity0_credit : r.entity1_credit) || "";
+          const attrCount = (() => {
+            try {
+              return [...MB2.tree.iterate(r.attributes)].length;
+            } catch (e) {
+              return 0;
+            }
+          })();
+          if (credit || attrCount) {
+            log.warn(`Writer kept for ${artist.name} on "${trackTitle}": redundant next to ${roles}, but it has ${credit ? `credited-as "${credit}"` : "attributes"}; remove it by hand if that isn't needed (#928)`);
+            continue;
+          }
+          const staged = r._status === 1;
+          try {
+            re.dispatch({ type: "remove-relationship", relationship: r });
+            if (staged) {
+              writersNotAdded.push(what);
+              added--;
+              log.info(`Writer added earlier this session taken back for ${artist.name} on "${trackTitle}": ${roles} is there (#928)`);
+            } else {
+              writersRemoved.push(what);
+              log.info(`Existing writer removed for ${artist.name} on "${trackTitle}": redundant next to ${roles} (#928)`);
+            }
+          } catch (e) {
+            log.error(`Failed to remove writer for ${artist.name} on "${trackTitle}": ${e.message}`);
           }
         }
       }
@@ -8483,7 +8521,11 @@ Its \u{1F517} chip adds the link.`;
       const editNoteDedupPart = dedupedThisSession > 0 ? `, ${dedupedThisSession} dispatch duplicate${dedupedThisSession === 1 ? "" : "s"}` : "";
       const editNoteStagedPart = existedStaged > 0 ? `, ${existedStaged} already added this session` : "";
       const resultStats = `Result: ${added} added, ${existedInMb} already in MB${editNoteStagedPart}${editNoteDedupPart}, ${skipped} skipped, ${failed} failed${recSelectionActive ? ` (applied to ${checkedRecGids.size} of ${recordingByGid.size} selected recordings)` : ""}`;
-      const ourNote = buildEditNote(discogsUrl, opts, [inputStats, matchedLine, unresolvedLine, resultStats].filter(Boolean), dedupOpts.sourceLabel);
+      const WRITER_DOC = "https://musicbrainz.org/relationship/a255bca1-b157-4518-9108-7b147dc3fc68";
+      const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+      const removedLine = writersRemoved.length ? `Removed ${plural(writersRemoved.length, "existing writer relationship")}: the same artist has the more specific composer / lyricist / librettist / scriptwriter role on the same work, which the writer guideline prefers (${WRITER_DOC}). ${writersRemoved.join("; ")}` : null;
+      const notAddedLine = writersNotAdded.length ? `Not added: ${plural(writersNotAdded.length, "writer credit")} from the source, as the same artist has a more specific role on the same work. ${writersNotAdded.join("; ")}` : null;
+      const ourNote = buildEditNote(discogsUrl, opts, [inputStats, matchedLine, unresolvedLine, resultStats, removedLine, notAddedLine].filter(Boolean), dedupOpts.sourceLabel);
       const existingNote = document.querySelector(SELECTORS.EditNote)?.value || "";
       const note = combineEditNote(existingNote, ourNote);
       re.dispatch({ type: "update-edit-note", editNote: note });
@@ -12484,17 +12526,6 @@ Merged, without duplicates, into one review`;
     credHd.className = "discogs-opts-panel-hd";
     credHd.textContent = "Credits";
     optsPanel.append(credHd, applyTracksCb.closest("label"));
-    const dedupHd = document.createElement("div");
-    dedupHd.className = "discogs-opts-panel-hd";
-    dedupHd.textContent = "Deduplication";
-    optsPanel.appendChild(dedupHd);
-    _optsHost = optsPanel;
-    const dedupeEqCb = makeCheckbox(
-      "Equivalence sets",
-      bv("dedupeEquivalenceSets", true),
-      "Skip a role when an equivalent role already exists on the target (writer \u2261 composer)."
-    );
-    _optsHost = optsWrap;
     optsWrap.appendChild(optsBtn);
     document.body.appendChild(optsPanel);
     optsBtn.addEventListener("click", (e) => {
@@ -12520,14 +12551,13 @@ Merged, without duplicates, into one review`;
           useWorks: useWorksCb.checked,
           // #424 master toggle
           createWorksMode: createWorksMode.value,
-          createWorksReset421: true,
+          createWorksReset421: true
           // #421 one-time reset already applied — must survive every save
-          dedupeEquivalenceSets: dedupeEqCb.checked
         }));
       } catch (e) {
       }
     };
-    [tracklistCb, applyTracksCb, useWorksCb, dedupeEqCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
+    [tracklistCb, applyTracksCb, useWorksCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener("change", saveOpts);
     const outputDiv = document.createElement("div");
     outputDiv.className = "discogs-output empty";
@@ -12869,8 +12899,7 @@ ${lines}
         processTracklist: tracklistCb.checked,
         applyToTracks: applyTracksCb.checked,
         // #424: "Use works" off → dispatch sees mode 'off' and touches no work rels
-        createWorksMode: useWorksCb.checked ? createWorksMode.value : "off",
-        dedupeEquivalenceSets: dedupeEqCb.checked
+        createWorksMode: useWorksCb.checked ? createWorksMode.value : "off"
       });
       const _click = getOpts();
       const opts = `per-track:${_click.processTracklist ? "on" : "off"}, move-to-tracks:${_click.applyToTracks ? "on" : "off"}, create-works:${_click.createWorksMode}`;
@@ -13705,7 +13734,6 @@ ${lines}
         log.warn(`"Per-track credits" toggled during review (preflight ran with "${processTracklist ? "on" : "off"}", import will follow preflight). To change, restart the import.`);
       }
       const dedupOpts = {
-        dedupeEquivalenceSets: live.dedupeEquivalenceSets,
         creditOverrides: capturedConfirmedMap?.creditOverrides,
         sourceLabel
         // #408: consolidated runs label the edit note "Import all (…)"

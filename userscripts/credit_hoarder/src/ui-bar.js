@@ -3045,14 +3045,6 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     credHd.className = 'discogs-opts-panel-hd';
     credHd.textContent = 'Credits';
     optsPanel.append(credHd, applyTracksCb.closest('label'));
-    const dedupHd = document.createElement('div');
-    dedupHd.className = 'discogs-opts-panel-hd';
-    dedupHd.textContent = 'Deduplication';
-    optsPanel.appendChild(dedupHd);
-    _optsHost = optsPanel;   // the next toggle lands inside the popover
-    const dedupeEqCb  = makeCheckbox('Equivalence sets',  bv('dedupeEquivalenceSets', true),
-        'Skip a role when an equivalent role already exists on the target (writer ≡ composer).');
-    _optsHost = optsWrap;    // back to the inline strip
     optsWrap.appendChild(optsBtn);
     document.body.appendChild(optsPanel);   // floating; positioned when opened
     optsBtn.addEventListener('click', (e) => {
@@ -3072,10 +3064,9 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             useWorks: useWorksCb.checked,   // #424 master toggle
             createWorksMode: createWorksMode.value,
             createWorksReset421: true,   // #421 one-time reset already applied — must survive every save
-            dedupeEquivalenceSets: dedupeEqCb.checked,
         })); } catch(e) {}
     };
-    [tracklistCb, applyTracksCb, useWorksCb, dedupeEqCb].forEach(cb =>
+    [tracklistCb, applyTracksCb, useWorksCb].forEach(cb =>
         cb.closest('label').addEventListener('click', () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener('change', saveOpts);
 
@@ -3490,7 +3481,6 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             applyToTracks:           applyTracksCb.checked,
             // #424: "Use works" off → dispatch sees mode 'off' and touches no work rels
             createWorksMode:         useWorksCb.checked ? createWorksMode.value : 'off',
-            dedupeEquivalenceSets:   dedupeEqCb.checked,
         });
         const _click = getOpts();
         const opts = `per-track:${_click.processTracklist?'on':'off'}, move-to-tracks:${_click.applyToTracks?'on':'off'}, create-works:${_click.createWorksMode}`;
@@ -4432,7 +4422,6 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
                     // `creditOverrides`). `dispatchAllRelationships` reads
                     // them from a trailing opts arg per #62.
                     const dedupOpts = {
-                        dedupeEquivalenceSets: live.dedupeEquivalenceSets,
                         creditOverrides: capturedConfirmedMap?.creditOverrides,
                         sourceLabel,   // #408: consolidated runs label the edit note "Import all (…)"
                     };
