@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.180000
+// @version      2026.11.05.190000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2590,6 +2590,7 @@ body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;poin
 @keyframes eh-hex-drift{0%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}25%{-webkit-mask-position:35% 60%,70% 15%,10% 55%;mask-position:35% 60%,70% 15%,10% 55%}50%{-webkit-mask-position:75% 35%,30% 85%,60% 10%;mask-position:75% 35%,30% 85%,60% 10%}75%{-webkit-mask-position:55% 90%,10% 30%,95% 45%;mask-position:55% 90%,10% 30%,95% 45%}100%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}}
 @media (prefers-reduced-motion:reduce){#eh-hex .hex-drift,#eh-hex .hex-drift2,#eh-hex .hex-pattern{display:none!important}}
 :root[data-eh-hex] :is(.tl,.card,.u-bio,.u-facts,.u-vcol,.hm-pf,.hgrp,.eh-details){background:color-mix(in srgb,var(--surface) 62%,transparent)!important;backdrop-filter:blur(1px)}
+:root[data-eh-hex] :is(.discogs-bar,.gt-toolbar){background:color-mix(in srgb,var(--mbu-bg-raised) 62%,transparent)!important;backdrop-filter:blur(1px)}
 :root[data-eh-hex] .tl .disc{background:color-mix(in srgb,var(--chip) 55%,transparent)!important}
 :root[data-eh-hex] :is(.tl.striped .tr.alt,.tl .detail){background:color-mix(in srgb,var(--hover) 50%,transparent)!important}
 :root[data-eh-hex] .tl .tr:hover{background:color-mix(in srgb,var(--accent) 14%,transparent)!important}
@@ -9817,7 +9818,12 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #relationship-editor-form legend::before{content:"";width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:-4px 2px 0}
 :root[data-eh-rel] #relationship-editor-form.eh-fold legend::before{transform:rotate(-45deg);margin:0 2px}
 :root[data-eh-rel] #relationship-editor-form.eh-fold>:not(fieldset),:root[data-eh-rel] #relationship-editor-form.eh-fold fieldset>:not(legend){display:none!important}
-:root[data-eh-rel] #relationship-editor-form.eh-fold legend{margin:0!important;padding:0!important}:root[data-eh-rel] #relationship-editor-form.eh-fold{padding:10px 16px!important}:root[data-eh-rel] #relationship-editor-form.eh-fold fieldset{margin:0!important;padding:0!important}:root[data-eh-rel] #relationship-editor-form legend{font-size:17px!important;font-weight:700}` + relHdCss();
+:root[data-eh-rel] #relationship-editor-form.eh-fold legend{margin:0!important;padding:0!important}:root[data-eh-rel] #relationship-editor-form.eh-fold{padding:10px 16px!important}:root[data-eh-rel] #relationship-editor-form.eh-fold fieldset{margin:0!important;padding:0!important}:root[data-eh-rel] #relationship-editor-form legend{font-size:17px!important;font-weight:700}
+:root[data-eh-rel]{scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
+:root[data-eh-rel][data-eh-hex] :is(.release-relationship-editor>h2,.release-relationship-editor>:is(#batch-tools,#medium-toolbox,#tracklist,.ars),#tracklist,#relationship-editor-form,#page fieldset.editnote,#page table.tbl,#set-cover-art-images .editimage,.eh-details){background:color-mix(in srgb,var(--surface) 62%,transparent)!important;backdrop-filter:blur(1px)}
+:root[data-eh-rel][data-eh-hex] #page .release-relationship-editor:has(>#medium-toolbox)>#medium-toolbox{background:none!important;backdrop-filter:none}
+:root[data-eh-rel][data-eh-hex] #page #tracklist>tbody>tr>td{background:transparent!important}
+:root[data-eh-rel][data-eh-hex] :is(.discogs-bar,.gt-toolbar){background:color-mix(in srgb,var(--mbu-bg-raised) 62%,transparent)!important;backdrop-filter:blur(1px)}` + relHdCss();
 // EH's own header rules, scoped to the header, so it is the same as on the other pages
 // and to the bar pinned over the releases and details pages, which carries its title and action row
 const relHdCss = () => CSS.split('\n').filter(l => /^(\.kicker|\.label\{|h1\b|\.eh-t[sx]\{|\.disamb|\.by\{|\.arthd|\.rg-l|#eh-pin)/.test(l) || l.startsWith('.eh-collections')).join('\n')
