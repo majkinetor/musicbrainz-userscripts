@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.191000
+// @version      2026.11.05.190606
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7922,12 +7922,12 @@ const HEX_FX = {
             shift() {},
         };
     },
-    // sparks of different voltages run along 20 to 50 sides, flicker, fork and fade; a few at once, at random gaps
+    // sparks of different voltages run along 20 to 50 sides, flicker, fork and fade, over slow dim currents that glow in and out; all of it glows
     electricity({ L, w, h, ctx, rnd, pick, tone, pace, trail, often }) {
-        let bolts = [], due = .3;
+        let bolts = [], due = .3, slow = [], slowDue = 1;
         const corners = () => { const i = Math.random() * L.xs.length | 0; return L.xs[i] > 0 && L.xs[i] < w && L.ys[i] > 0 && L.ys[i] < h ? i : corners(); };
         const bolt = () => {
-            const v = pick([.45, .7, 1]), main = hexWalk(L, corners(), Math.round(rnd(20, 50)));
+            const v = pick([.3, .45, .7, 1, 1.25]), main = hexWalk(L, corners(), Math.round(rnd(20, 50)));
             const paths = [main];
             for (let k = 0; k < (v > .6 ? 3 : 1); k++) if (Math.random() < .7) paths.push(hexWalk(L, pick(main), Math.round(rnd(4, 12))));
             return { pts: paths.map(p => p.map(i => [L.xs[i], L.ys[i]])), v, c: tone(), age: 0, grow: .18 / pace, life: rnd(.5, .9) * trail + .18 / pace };
@@ -7937,21 +7937,35 @@ const HEX_FX = {
                 due -= dt;
                 if (due <= 0) { const n = Math.random() < .35 ? 2 + (Math.random() < .3) : 1; for (let k = 0; k < n; k++) bolts.push(bolt()); due = rnd(.6, 3.2) / often; }
                 ctx.clearRect(0, 0, w, h);
+                // slow currents: long dim lines that fade in and out over several seconds, under the sparks
+                slowDue -= dt;
+                if (slowDue <= 0 && slow.length < 3) { slow.push({ pts: hexWalk(L, corners(), Math.round(rnd(30, 70))).map(i => [L.xs[i], L.ys[i]]), c: tone(), v: pick([.3, .55, .8, 1.15]), age: 0, life: rnd(6, 11) / pace }); slowDue = rnd(2.5, 6) / often; }
+                slow = slow.filter(s => (s.age += dt) < s.life);
+                ctx.shadowBlur = 22;
+                for (const s of slow) {
+                    const a = s.v * Math.sin(Math.PI * s.age / s.life) ** 2 * (.85 + .15 * Math.sin(s.age * 3.1)) * (Math.random() < .07 ? rnd(.15, .6) : 1); ctx.shadowBlur = 10 + 18 * s.v;
+                    ctx.strokeStyle = ctx.shadowColor = s.c;
+                    for (const [lw, al] of [[10, .05], [4, .1], [1, .45]]) {
+                        ctx.lineWidth = lw; ctx.globalAlpha = a * al; ctx.beginPath();
+                        s.pts.forEach(([x, y], k) => ctx[k ? 'lineTo' : 'moveTo'](x, y)); ctx.stroke();
+                    }
+                }
+                ctx.shadowBlur = 26;
                 bolts = bolts.filter(b => (b.age += dt) < b.life);
                 for (const b of bolts) {
                     const grown = Math.min(1, b.age / b.grow), fade = b.age < b.grow ? 1 : 1 - (b.age - b.grow) / (b.life - b.grow);
-                    // it flickers only while it strikes; the fade is smooth
-                    const a = b.v * fade * fade * (b.age < b.grow * 1.5 && Math.random() < .25 ? .55 : 1);
-                    ctx.strokeStyle = b.c;
-                    for (const [lw, al] of [[3.5, .22], [1.2, 1]]) {
+                    // it flickers hard while it strikes, then now and then as it fades
+                    const a = b.v * fade * fade * (Math.random() < (b.age < b.grow * 1.5 ? .25 : .12) ? rnd(.3, .65) : 1);
+                    ctx.strokeStyle = ctx.shadowColor = b.c; ctx.shadowBlur = 12 + 20 * b.v;
+                    for (const [lw, al] of [[9, .07], [3.5, .22], [1.2, 1]]) {
                         ctx.lineWidth = lw * (.6 + b.v * .5); ctx.globalAlpha = a * al; ctx.beginPath();
                         for (const p of b.pts) { const m = Math.max(2, Math.ceil(p.length * grown)); p.slice(0, m).forEach(([x, y], k) => ctx[k ? 'lineTo' : 'moveTo'](x, y)); }
                         ctx.stroke();
                     }
                 }
-                ctx.globalAlpha = 1;
+                ctx.globalAlpha = 1; ctx.shadowBlur = 0;
             },
-            shift(d) { for (const b of bolts) for (const p of b.pts) for (const q of p) q[1] -= 48 * d; },
+            shift(d) { for (const b of bolts) for (const p of b.pts) for (const q of p) q[1] -= 48 * d; for (const s of slow) for (const q of s.pts) q[1] -= 48 * d; },
         };
     },
     // a signal starts at one corner and spreads, branching, along the sides; what it passed glows and fades
@@ -10643,7 +10657,7 @@ const HEX_MOTIONS = [
     ['ripple', 'Ripple', 'Rings of glow spread out from random points'],
     ['lantern', 'Lantern', 'A pool of glow follows the pointer'],
     ['horizon', 'Horizon', 'The lattice bends around a slowly wandering point'],
-    ['electricity', 'Electricity', 'Sparks of different voltages run along the hexagon sides and fade'],
+    ['electricity', 'Electricity', 'Sparks of different voltages flicker along the hexagon sides, over slow currents that glow in and out'],
     ['neural', 'Neural', 'Signals spread and branch through the lattice like a neural network'],
 ];
 // which of the effect's settings each motion takes
