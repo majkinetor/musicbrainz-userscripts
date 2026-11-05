@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.203005
+// @version      2026.11.05.205019
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjg1Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMwNzM1NDgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiMzNDIwNGUiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjNTAzMDFhIi8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -2492,8 +2492,10 @@
   }
 
   // ── entity and its links ──────────────────────────────────────────────────
-  const em = location.pathname.match(/^\/(release|release-group|artist|label|recording)\/([0-9a-f-]{36})\/?$/);
-  let TYPE = em ? em[1] : null, MBID = em ? em[2] : null;   // Event Horizon's tag editor can switch them (below)
+  const ENT_RE = /^\/(release|release-group|artist|label|recording)\/([0-9a-f-]{36})\/?$/;
+  const em = location.pathname.match(ENT_RE);
+  // Event Horizon's tag editor, and its in-page navigation, switch them (below)
+  let TYPE = em ? em[1] : null, MBID = em ? em[2] : null, PATH = location.pathname;
 
   async function ws(path) {
     const r = await mbnFetch(location.origin + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json');
@@ -2591,7 +2593,7 @@
   // ── state ─────────────────────────────────────────────────────────────────
   const loggedIn = !!document.querySelector('#tag-form, a[href*="/logout"]');
   const S = { status: {}, raw: [], tags: new Map(), genres: new Set(), sel: new Set(), suggest: [], showAll: !CFG.genresOnly,
-    busy: false, ran: false, have: new Set(), eh: null, prop: CFG.propRG || CFG.propRec };
+    busy: false, ran: false, gen: 0, have: new Set(), eh: null, prop: CFG.propRG || CFG.propRec };
   const sidebarTags = () => new Set([...document.querySelectorAll('#sidebar a[href*="/tag/"]')].map(a => a.textContent.trim().toLowerCase()));
   const ehTags = () => new Set([...(S.eh ? S.eh.querySelectorAll('.tgi') : [])].map(c => (c.firstChild && c.firstChild.textContent || '').trim().toLowerCase()));
   const haveNow = () => S.eh ? ehTags() : sidebarTags();
@@ -2626,7 +2628,8 @@
 
   async function collect() {
     if (!TYPE || S.busy) return;
-    S.busy = true; S.raw = []; S.status = {}; dockBusy(true); draw();
+    const gen = ++S.gen, raw = S.raw = [], status = S.status = {};   // a navigation mid-run orphans these
+    S.busy = true; dockBusy(true); draw();
     try {
       const [g, ls] = await Promise.all([genres(), links()]);
       S.genres = g;
@@ -2638,12 +2641,14 @@
       }
       const MAX = 10;
       const jobs = Object.values(queues).map(async ({ f, urls }) => {
-        const st = S.status[f.src] = { state: 'run', n: 0, urls: urls.slice(0, MAX), ok: 0 };
+        if (gen !== S.gen) return;
+        const st = status[f.src] = { state: 'run', n: 0, urls: urls.slice(0, MAX), ok: 0 };
         if (urls.length > MAX) LOG.info(SOURCES[f.src] + ': ' + urls.length + ' links, reading the first ' + MAX);
         for (const u of st.urls) {
+          if (gen !== S.gen) return;
           try {
             const tags = [...new Set((await f.run(u)).map(t => String(t).trim()).filter(Boolean))];
-            tags.forEach(tag => S.raw.push({ src: f.src, tag, url: u }));
+            tags.forEach(tag => raw.push({ src: f.src, tag, url: u }));
             st.n += tags.length; st.ok++;
             LOG.info(SOURCES[f.src] + ' ' + u + ': ' + (tags.join(', ') || 'none'));
           } catch (err) {
@@ -2651,6 +2656,7 @@
             LOG.warn(SOURCES[f.src] + ' ' + u + ': ' + err.message);
             if (/\b429\b/.test(err.message)) break;
           }
+          if (gen !== S.gen) return;
           rebuild(); draw();
         }
         st.state = st.ok ? 'ok' : 'err';
@@ -2661,9 +2667,10 @@
       LOG.error('Collect failed: ' + e.message);
       mbuToast('⚠ ' + NAME + ': ' + e.message, { kind: 'warn' });
     }
+    if (gen !== S.gen) return;
     S.busy = false; rebuild(); S.ran = true; dockBusy(false); draw();
   }
-  const reset = () => Object.assign(S, { status: {}, raw: [], tags: new Map(), sel: new Set(), suggest: [], ran: false });
+  const reset = () => { S.gen++; if (S.busy) dockBusy(false); Object.assign(S, { status: {}, raw: [], tags: new Map(), sel: new Set(), suggest: [], ran: false, busy: false }); };
 
   // ── styles and icons ──────────────────────────────────────────────────────
   const SB = 'scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent';
@@ -3116,7 +3123,8 @@
   let dock = null;
   function badge() { if (dock) { const n = fresh(); dock.status(S.ran || n ? String(n || '') : ''); } }
   function dockBusy(on) { if (dock) dock.busy(on); }
-  if (TYPE) {
+  function mkDock() {
+    if (dock || !TYPE) return;
     dock = mbuDockItem({
       id: 'mb-fl-dock', label: NAME, icon: ICON_URI, order: 63,
       paths: '^/(release|release-group|artist|label|recording)/[0-9a-fA-F-]{36}/?$',
@@ -3164,6 +3172,22 @@
   new MutationObserver(() => { if (!ehQ) ehQ = requestAnimationFrame(() => { ehQ = 0; const a = ehAnchor(); if (a && a.nextElementSibling !== ehBtn) drawEhBtn(); }); })
     .observe(document.documentElement, { childList: true, subtree: true });   // EH swaps the body
 
+  // Event Horizon moves between pages without a load (pushState, a new body): start over on another entity
+  function navCheck() {
+    if (location.pathname === PATH) return;
+    PATH = location.pathname;
+    const m = PATH.match(ENT_RE);
+    if (m && m[1] === TYPE && m[2] === MBID) return;
+    closePop(); reset(); S.eh = null; S.have = haveNow();
+    TYPE = m ? m[1] : null; MBID = m ? m[2] : null;
+    LOG.info(TYPE ? 'Navigated to ' + TYPE + ' ' + MBID : 'Navigated off an entity');
+    mkDock(); draw();
+    if (TYPE && CFG.background) collect();
+  }
+  addEventListener('popstate', () => setTimeout(navCheck));
+  new MutationObserver(() => navCheck()).observe(document.documentElement, { childList: true, subtree: true });
+
   window.__fuzzyLogic = S;   // for the specs
+  mkDock();
   if (TYPE && CFG.background) collect();
 })();
