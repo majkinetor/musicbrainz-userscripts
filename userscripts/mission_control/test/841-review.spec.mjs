@@ -41,6 +41,13 @@ test('#841: Execute lists the changes first; an unticked one is left out', { tag
   check(/Execute 2 changes\?/.test(await rv.locator('h2').textContent()), 'the list says how many');
   const lines = await rv.locator('.mc-rv-i').allTextContents();
   check(lines.length === 2 && /Spotify/.test(lines[0]) && /Deezer/.test(lines[1]), `a line per change (${JSON.stringify(lines)})`);
+  check(lines.every(l => !/on the release/.test(l)), 'the release's links are named by platform alone');
+  const head = rv.locator('.mc-rv-t', { hasText: 'Release links' });
+  check(await head.count() === 1, 'the release's links sit under one "Release links" head');
+  await head.locator('input').uncheck();
+  check(await rv.locator('.mc-rv-i input:checked').count() === 0, 'its box unselects every link on the release');
+  check(/Execute 0 changes?/.test(await rv.locator('h2').textContent()), 'and the count follows');
+  await head.locator('input').check();
   await rv.screenshot({ path: 'test-results/mc-841-review.png' });
   check(await page.evaluate(() => window.__applies.length) === 0, 'nothing applied while it is open');
   await rv.locator('.mc-rv-i input').nth(1).uncheck();
