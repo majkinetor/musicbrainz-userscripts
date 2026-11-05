@@ -9,10 +9,9 @@ test('votes through Event Horizon\'s tag editor', { tag: '@sandbox' }, async ({ 
   await inject('event_horizon');
   await inject('fuzzy_logic', { waitFor: '__fuzzyLogic' });
   await until(() => page.locator('button.eh-edit[data-tgin="open"]').count(), n => n > 0);
-  await page.click('button.eh-edit[data-tgin="open"]');
-  await until(() => page.evaluate(() => window.__fuzzyLogic.ran && !window.__fuzzyLogic.busy), b => b, { timeout: 90000 });
-  check(await page.locator('[data-tgin]:not(button) + .fl-ehb').count() === 1, 'the button sits under the editor');
+  check(await until(() => page.locator('button.eh-edit[data-tgin="open"] + .fl-ehb').count(), n => n === 1) === 1, 'the icon sits beside the pencil');
   await page.click('.fl-ehb');
+  await until(() => page.evaluate(() => window.__fuzzyLogic.ran && !window.__fuzzyLogic.busy), b => b, { timeout: 90000 });
   if (!(await page.locator('.fl-row:not(.have):not(.bad)').count())) await page.click('[data-a=alltags]');
   await page.evaluate(() => window.__fuzzyLogic.sel.clear());
   const row = page.locator('.fl-row:not(.have):not(.bad)').first();
@@ -27,5 +26,5 @@ test('votes through Event Horizon\'s tag editor', { tag: '@sandbox' }, async ({ 
   await mine.locator('button').click();
   check(await until(() => mine.count(), n => n === 0) === 0, 'withdrawn');
   await page.click('button[data-tgin="close"]');
-  check(await until(() => page.locator('.fl-ehb').count(), n => n === 0) === 0, 'Done removes the button');
+  check(await until(() => page.locator('button.eh-edit[data-tgin="open"] + .fl-ehb').count(), n => n === 1) === 1, 'after Done the icon is back beside the pencil');
 });

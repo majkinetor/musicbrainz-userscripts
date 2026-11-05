@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.194430
+// @version      2026.11.05.194935
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjg1Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMwNzM1NDgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiMzNDIwNGUiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjNTAzMDFhIi8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -1452,6 +1452,7 @@
           var st = state();
           var pop = document.createElement('div'); pop.id = 'mbu-logpop';
           document.body.appendChild(pop);
+    mbuCfgDrag(pop.querySelector('.mbu-ov-panel'));
           var v = view(pop, true);
           if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
           var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
@@ -2663,7 +2664,11 @@
 .fl-pop .mbu-ov-panel{width:min(560px,94vw);max-height:86vh;display:flex;flex-direction:column}
 .fl-pop .mbu-ov-body{padding:0;display:flex;flex-direction:column;min-height:0}
 .fl-ui{font:var(--mbu-fs-sm)/1.4 var(--mbu-font);color:var(--mbu-text)}
-.fl-h-srcs{display:inline-flex;gap:4px;align-items:center;margin-left:6px}
+.fl-srcs{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 10px}
+.fl-src.fl-src{display:inline-grid;place-items:center;width:28px;height:28px;padding:0;border:1px solid transparent;border-radius:var(--mbu-radius);background:none;cursor:pointer}
+.fl-src.fl-src:hover{border-color:var(--mbu-border)}
+.fl-src.out .fl-fav{filter:grayscale(1);opacity:.3}
+.fl-gear{font-size:18px;line-height:1;width:28px;height:28px;justify-content:center;align-items:center}
 .fl-fav{width:16px;height:16px;border-radius:3px;flex:0 0 auto;vertical-align:middle}
 .fl-fav-l{display:inline-grid;place-items:center;font-size:10px;font-weight:600;background:var(--mbu-bg-hover);color:var(--mbu-text-dim)}
 .fl-fav.off{filter:grayscale(1);opacity:.35}
@@ -2711,11 +2716,10 @@
 .fl-menu .fl-mapin{display:flex;gap:4px;padding:4px 8px}
 .fl-in{font:inherit;padding:3px 6px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-text);min-width:0;flex:1 1 auto;box-sizing:border-box}
 .fl-in.err{border-color:var(--mbu-error)}
-.fl-ehb{display:inline-flex;align-items:center;gap:5px;margin:4px 0;font:var(--mbu-fs-sm)/1.4 var(--mbu-font);padding:2px 10px 2px 6px;border:1px solid var(--mbu-border);border-radius:999px;background:var(--mbu-bg);color:var(--mbu-text);cursor:pointer}
-.fl-ehb.fl-ehb{width:auto!important;height:auto!important;min-width:0!important;max-width:none!important;aspect-ratio:auto!important;box-sizing:border-box}
-.fl-ehb svg{width:16px!important;height:16px!important;min-width:16px;flex:none;display:block}
-.fl-ehb:hover{border-color:var(--mbu-accent)}
-.fl-ehb b{color:var(--mbu-accent-text)}
+.fl-ehb.fl-ehb{position:relative;display:inline-flex;align-items:center;justify-content:center;width:24px!important;height:24px!important;min-width:0!important;margin-left:2px;padding:0;border:0;border-radius:6px;background:none;cursor:pointer;vertical-align:middle;box-sizing:border-box}
+.fl-ehb.fl-ehb:hover{background:color-mix(in srgb,var(--mbu-accent) 14%,transparent)}
+.fl-ehb svg{width:18px!important;height:18px!important;flex:none;display:block}
+.fl-ehb b{position:absolute;top:-4px;right:-6px;min-width:14px;padding:0 3px;border-radius:7px;background:var(--mbu-accent);color:var(--mbu-text-on-accent);font:700 10px/14px var(--mbu-font);text-align:center;box-sizing:border-box}
 .fl-cfg .mbu-ov-panel{width:min(680px,94vw);height:min(620px,90vh);display:flex;flex-direction:column}
 .fl-cfg .mbu-ov-body{${SB};flex:1 1 auto;overflow:auto}
 .fl-tabs{display:flex;gap:2px;padding:0 14px;border-bottom:1px solid var(--mbu-border)}
@@ -2748,8 +2752,6 @@
   st.textContent = MBU_TOKENS + MBU_UI_CSS + CSS;
   document.head.appendChild(st);
 
-  const GEAR = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
-  const RELOAD = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>';
   const DOTS = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>';
   const XS = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 
@@ -2769,20 +2771,33 @@
   mbuTipOn('.fl-row[data-t]', el => { const e = S.tags.get(el.dataset.t); return e ? tagTip(e) : ''; }, { card: true });
 
   function sorted() {
-    return [...S.tags.values()].sort((a, b) => (b.genre - a.genre) || (b.srcs.size - a.srcs.size) || a.name.localeCompare(b.name));
+    // a source switched off in the first row drops out of every tag; a tag only it gave goes
+    const off = S.off || new Set();
+    const list = !off.size ? [...S.tags.values()] : [...S.tags.values()].map(e => {
+      const srcs = new Map([...e.srcs].filter(([k]) => !off.has(k)));
+      return srcs.size || !e.srcs.size ? Object.assign({}, e, { srcs }) : null;
+    }).filter(Boolean);
+    return list.sort((a, b) => (b.genre - a.genre) || (b.srcs.size - a.srcs.size) || a.name.localeCompare(b.name));
   }
   function header() {
-    const icons = Object.entries(S.status).map(([k, v]) =>
-      '<span data-tip="' + esc(SOURCES[k] + (v.state === 'err' ? ': ' + v.err : v.state === 'run' ? ': reading…' : ': ' + plural(v.n, 'tag'))) + '">' + fav(k, v.state === 'err' ? 'off' : v.state === 'run' ? 'run' : '') + '</span>').join('');
     return mbuCfgHeader({ icon: ICON, name: NAME, version: VER, log: true, script: 'fuzzy_logic' })
-      .replace('<span class="mbu-cfg-sp"></span>', '<span class="fl-h-srcs">' + icons + '</span><span class="mbu-cfg-sp"></span>'
-        + '<button type="button" class="fl-ic" data-a="reload" data-tip="Collect again">' + RELOAD + '</button>'
-        + '<button type="button" class="fl-ic" data-a="cfg" data-tip="Settings">' + GEAR + '</button>');
+      .replace('<span class="mbu-cfg-sp"></span>', '<span class="mbu-cfg-sp"></span>'
+        + '<button type="button" class="fl-ic fl-gear" data-a="cfg" data-tip="Settings">' + MBU_CFG_ICON + '</button>');
+  }
+  // the sources read, one button each: a click leaves its tags out, another brings them back
+  function srcRow() {
+    const off = S.off || new Set();
+    const b = Object.entries(S.status).map(([k, v]) => {
+      const out = off.has(k), why = v.state === 'err' ? ': ' + v.err : v.state === 'run' ? ': reading…' : ': ' + plural(v.n, 'tag');
+      return '<button type="button" class="fl-src' + (out ? ' out' : '') + '" data-a="src" data-s="' + k + '" aria-pressed="' + !out + '" data-tip="' + esc(SOURCES[k] + why + (v.state === 'err' ? '' : out ? ' · left out, click to use' : ' · click to leave out')) + '">'
+        + fav(k, v.state === 'err' ? 'off' : v.state === 'run' ? 'run' : '') + '</button>';
+    }).join('');
+    return b ? '<div class="fl-srcs">' + b + '</div>' : '';
   }
   function body() {
     const list = sorted(), nG = list.filter(e => e.genre).length;
     const shown = S.showAll ? list : list.filter(e => e.genre || e.fav);
-    let h = '<div class="fl-bar"><span class="fl-sw">'
+    let h = srcRow() + '<div class="fl-bar"><span class="fl-sw">'
       + '<button type="button" data-a="genres" class="' + (S.showAll ? '' : 'on') + '" data-tip="Only MusicBrainz genres">Genres ' + nG + '</button>'
       + '<button type="button" data-a="alltags" class="' + (S.showAll ? 'on' : '') + '" data-tip="Every collected tag">All ' + list.length + '</button></span><span class="fl-sp"></span>';
     if (TYPE === 'release') h += '<label class="fl-chk" data-tip="Vote on its release group and every recording too"><input type="checkbox" data-a="prop"' + (S.prop ? ' checked' : '') + '>Release group + recordings</label>';
@@ -2850,7 +2865,14 @@
     const row = e.target.closest('.fl-row');
     if (a) {
       const act = a.dataset.a;
-      if (act === 'reload') { reset(); collect(); }
+      if (act === 'src') {
+        const k = a.dataset.s; S.off = S.off || new Set();
+        if (S.off.has(k)) S.off.delete(k); else S.off.add(k);
+        const keep = new Set(sorted().map(e => e.name));
+        for (const t of [...S.sel]) if (!keep.has(t)) S.sel.delete(t);
+        LOG.info(SOURCES[k] + (S.off.has(k) ? ' left out' : ' used again'));
+        draw();
+      }
       else if (act === 'cfg') openCfg();
       else if (act === 'genres' || act === 'alltags') { S.showAll = act === 'alltags'; draw(); }
       else if (act === 'selall') {
@@ -3091,18 +3113,27 @@
   }
 
   // ── Event Horizon ─────────────────────────────────────────────────────────
-  // EH's header tag editor (its pencil) tells which entity it edits and where its box is (mbu-tags-edit); a button
-  // under that box opens the window, whose votes then go through EH (mbu-tags-add), which votes and redraws
+  // An icon beside EH's tag pencil, and beside the editor's ✓ while it is open. EH's editor tells which entity it
+  // edits and where its box is (mbu-tags-edit); the window's votes then go through EH (mbu-tags-add), which votes and
+  // redraws. A click before the editor is open opens it first, so the votes always go through EH.
   const ehBtn = document.createElement('button');
   ehBtn.type = 'button'; ehBtn.className = 'fl-ehb mbu-ui';
   ehBtn.addEventListener('mousedown', e => e.preventDefault());   // keeps the focus in EH's input
-  ehBtn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openPop(); });
+  let ehOpenPop = false;
+  ehBtn.addEventListener('click', e => {
+    e.preventDefault(); e.stopPropagation();
+    const pen = !S.eh && document.querySelector('button.eh-edit[data-tgin="open"]');
+    if (pen) { ehOpenPop = true; pen.click(); } else openPop();
+  });
+  const ehAnchor = () => S.eh ? S.eh.querySelector('button[data-tgin="close"]') : document.querySelector('button.eh-edit[data-tgin="open"]');
   function drawEhBtn() {
-    if (!S.eh) { ehBtn.remove(); return; }
-    if (ehBtn.previousElementSibling !== S.eh) S.eh.after(ehBtn);
+    const a = ehAnchor();
+    if (!a) { ehBtn.remove(); return; }
+    if (a.nextElementSibling !== ehBtn) a.after(ehBtn);
     const n = fresh();
-    ehBtn.innerHTML = ICON_SM + '<span>' + NAME + '</span>' + (S.busy ? '<span>…</span>' : S.ran ? '<b>' + n + '</b>' : '');
-    mbuTip(ehBtn, S.ran ? plural(n, 'genre') + ' from the links, not tagged yet' : 'Tags from this entity\'s links');
+    ehBtn.innerHTML = ICON_SM + (S.ran && n ? '<b>' + n + '</b>' : '');
+    ehBtn.setAttribute('aria-label', NAME);
+    mbuTip(ehBtn, NAME + (S.busy ? ': collecting…' : S.ran ? ': ' + plural(n, 'genre') + ' from the links, not tagged yet' : ': tags from the links'));
   }
   document.addEventListener('mbu-tags-edit', e => {
     const d = e.detail || {}, m = d.path && d.path.match(/^\/(release|release-group|artist|label|recording)\/([0-9a-f-]{36})$/);
@@ -3113,8 +3144,13 @@
     }
     if (!S.eh && pop) closePop();
     S.have = haveNow();
+    if (S.eh && ehOpenPop) { ehOpenPop = false; openPop(); }
     if (S.eh && !S.ran && !S.busy) collect(); else draw();
   });
+  // EH redraws its header (and the editor) whenever it likes: put the icon back beside the pencil each time
+  let ehQ = 0;
+  new MutationObserver(() => { if (!ehQ) ehQ = requestAnimationFrame(() => { ehQ = 0; const a = ehAnchor(); if (a && a.nextElementSibling !== ehBtn) drawEhBtn(); }); })
+    .observe(document.body, { childList: true, subtree: true });
 
   window.__fuzzyLogic = S;   // for the specs
   if (TYPE && CFG.background) collect();
