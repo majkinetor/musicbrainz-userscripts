@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.195737
+// @version      2026.11.05.203337
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -332,7 +332,7 @@ async function wsGet(path, retries) {
 
 // ── settings (GM-persisted) ──────────────────────────────────────────────
 const SETTINGS_KEY = 'fusion.settings';
-const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, autoMatchOnOpen: false, prefetchGroupReleases: false, releasePrefetchCap: 200, poolCollapsed: false, matchCutoff: 'strict', poolSort: 'added' };
+const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, prefetchGroupReleases: false, releasePrefetchCap: 200, poolCollapsed: false, matchCutoff: 'strict', poolSort: 'added' };
 function loadSettings() {
     // (#623: the one-time #529 migrations of the old AcoustID cap and prefetch default are retired)
     try { return Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(GM_getValue(SETTINGS_KEY, '{}'))); }
@@ -5070,9 +5070,8 @@ function renderBusy() {
     else { e.style.display = 'none'; e.textContent = ''; }
 }
 // A SEPARATE indicator from the _busyCount one on purpose. Background work must
-// not participate in that counter: maybeAutoMatchOnOpen waits for it to drain,
-// so counting a long prefetch there would stall auto-match — and #529 asked for
-// this explicitly ("should not block from working").
+// not participate in that counter, which gates the toolbar; #529 asked for this
+// explicitly ("should not block from working").
 let _bgLabel = '';
 function setBgTask(text) {
     _bgLabel = text || '';
@@ -5520,7 +5519,6 @@ function openSettings(anchor) {
     const s = el('div', 'fs-settings'); s.id = 'fs-settings';
     s.innerHTML = mbuCfgHeader({ script: 'fusion', name: 'Fusion', version: VERSION, icon: '<img src="' + 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==' + '" alt="">', log: true })
         + '<label class="fs-opt"><input type="checkbox" id="fs-opt-acoustid"> Look up AcoustIDs (acoustid.org, batched)</label>'
-        + '<label class="fs-opt" data-tip="Run Match once the pool has loaded\nInstead of waiting for you to press it"><input type="checkbox" id="fs-opt-automatch"> Match on open</label>'
         + '<label class="fs-opt" data-tip="Read the releases of every grouped recording at once\nAs soon as a group forms, so opening a row is instant. It runs in the background, and the stop button in the header halts it.\n⚠ One request per grouped recording: off by default, as seeding already makes many"><input type="checkbox" id="fs-opt-prefetch"> Preload group release details in the background</label>'
         + '<label class="fs-opt">Length tolerance <input type="number" id="fs-opt-tol" min="0" max="60"> s</label>'
         + '<label class="fs-opt" data-tip="Match never groups two recordings whose known lengths differ more than this\nWhatever else matches. Grouping by hand is not affected.">Match never groups if lengths differ by more than <input type="number" id="fs-opt-gross" min="5" max="600"> s</label>';
@@ -5529,12 +5527,10 @@ function openSettings(anchor) {
     Object.assign(s.style, { left: '50%', top: '50%', transform: 'translate(-50%, -50%)' });   // in the middle of the screen, moved by its header (#847)
     mbuCfgDrag(s);
     s.querySelector('#fs-opt-acoustid').checked = SETTINGS.acoustidEnrich !== false;
-    s.querySelector('#fs-opt-automatch').checked = !!SETTINGS.autoMatchOnOpen;
     s.querySelector('#fs-opt-tol').value = Math.round(SETTINGS.lengthToleranceMs / 1000);
     s.querySelector('#fs-opt-gross').value = Math.round((SETTINGS.grossLengthMs != null ? SETTINGS.grossLengthMs : 30000) / 1000);
     s.querySelector('#fs-opt-prefetch').checked = !!SETTINGS.prefetchGroupReleases;
     s.querySelector('#fs-opt-acoustid').onchange = e => { SETTINGS.acoustidEnrich = e.target.checked; saveSettings(); };
-    s.querySelector('#fs-opt-automatch').onchange = e => { SETTINGS.autoMatchOnOpen = e.target.checked; saveSettings(); Log.info('Match on open: ' + (SETTINGS.autoMatchOnOpen ? 'on' : 'off')); };
     s.querySelector('#fs-opt-prefetch').onchange = e => { SETTINGS.prefetchGroupReleases = e.target.checked; saveSettings(); Log.info('Background release prefetch: ' + (SETTINGS.prefetchGroupReleases ? 'on' : 'off')); if (SETTINGS.prefetchGroupReleases) prefetchGroupReleases(); };
     s.querySelector('#fs-opt-tol').onchange = e => { SETTINGS.lengthToleranceMs = Math.max(0, Number(e.target.value) || 0) * 1000; saveSettings(); };
     s.querySelector('#fs-opt-gross').onchange = e => { SETTINGS.grossLengthMs = Math.max(5, Number(e.target.value) || 30) * 1000; saveSettings(); Log.info('Gross-length guard set to ' + Math.round(SETTINGS.grossLengthMs / 1000) + 's'); };
@@ -5779,18 +5775,6 @@ async function seedFromScope() {
     }
     } finally { busyEnd(); }
     renderAll();
-}
-// #529 (majkinetor): "Lets also have an option to run match automatically."
-// Deliberately waits for the AcoustID pass to finish first — matching before
-// the identifiers land would just produce weaker groups.
-async function maybeAutoMatchOnOpen() {
-    if (!SETTINGS.autoMatchOnOpen) return;
-    if (!STATE.poolOrder.length) { Log.info('Match on open: nothing in the pool'); return; }
-    // eslint-disable-next-line no-unmodified-loop-condition -- busyEnd() lowers it while this awaits
-    for (let i = 0; i < 120 && _busyCount > 0; i++) await new Promise(r => setTimeout(r, 250));
-    if (!FUSION_OPEN) return;
-    Log.info('Match on open: starting');
-    await onAutoMatch();
 }
 let scopeLoad = null;
 const scopeBoards = new Map();
@@ -6180,8 +6164,7 @@ async function addFromPage(sel, gid) {
     }
     if (want('recording')) loadScopeRecordings();
 }
-// the page's recordings onto the recording board; #908: without opening the window,
-// whose auto-match runs only when it is open
+// the page's recordings onto the recording board; #908: without opening the window
 async function loadScopeRecordings() {
     const sc = detectScope(); if (!sc) return;
     if (scopeLoad) { await scopeLoad; return; }
@@ -6193,7 +6176,6 @@ async function loadScopeRecordings() {
     const n = STATE.poolOrder.length - before;
     Log.info('Add menu: ' + n + ' recording(s) into the pool');
     mbuToast(n ? 'Added ' + n + ' recording' + (n === 1 ? '' : 's') + ' to Fusion' : 'The recordings are already in Fusion');
-    if (FUSION_OPEN && detectScope()?.mbid === sc.mbid) maybeAutoMatchOnOpen().catch(e => Log.error('Match on open failed: ' + e.message));
 }
 
 /* ── The entity board ─────────────────────────────────────────────────────────
@@ -6716,7 +6698,7 @@ try {
         toggleCollapseAll, allGroupsCollapsed, placeLenBadges, toggleExpandAllDeep, everythingExpanded, setPoolCollapsed, renderPoolCount, sortPool, setPoolSort, backfillMissingReleases, prefetchGroupReleases, setBgTask, renderCollapseAllBtn, toggleAllDetails, groupAllExpanded, clearMerged,
         addToPool, createGroupWithMember, addToGroup, returnToPool, removeFromGroupAndPool, removeFromPoolPermanently, findGroup, deleteGroup, clearBoard, videoConflict,
         buildEditNote, autoEditNote, evidenceLines, ensureInternalIds, mergeGroup, mergeAll, describeRecordingForLog,
-        openFusion, closeFusion, onAutoMatch, seedFromScope, maybeAutoMatchOnOpen, renderAll, renderPool, renderGroups, busyStart, busyEnd,
+        openFusion, closeFusion, onAutoMatch, seedFromScope, renderAll, renderPool, renderGroups, busyStart, busyEnd,
         gmGet, gmPost, wsGet, setNetTrouble, clearNetTrouble,
         getLogLines: () => Log.messages(),
         getBusyCount: () => _busyCount,

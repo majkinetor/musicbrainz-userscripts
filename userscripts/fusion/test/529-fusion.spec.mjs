@@ -935,11 +935,8 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   check(['Strict', 'Normal', 'Loose'].every(l => new RegExp('^\\{#[0-9a-f]+[^}]*\\} ' + l + ': .{10,}', 'm').test(cutoffTip)), 'the cutoff tip explains every level (' + cutoffTip + ')');
   check(await page.evaluate(() => !document.querySelector('.fs-tierlegend, select#fs-cutoff')), 'no colour legend, no dropdown: Apollo’s chip');
 
-  // #529: "Lets also have an option to run match automatically."
-  check(await page.evaluate(() => 'autoMatchOnOpen' in window.__fusion.SETTINGS_DEFAULTS), 'there is an auto-match-on-open setting');
-  check(await page.evaluate(() => typeof window.__fusion.maybeAutoMatchOnOpen === 'function'), 'and it is wired to a runner');
-  check(await page.evaluate(async () => { const F = window.__fusion; const was = F.SETTINGS.autoMatchOnOpen; F.SETTINGS.autoMatchOnOpen = false; await F.maybeAutoMatchOnOpen(); F.SETTINGS.autoMatchOnOpen = was; return true; }),
-     'with the option off it does nothing');
+  // #908: Match on open was dropped
+  check(await page.evaluate(() => !('autoMatchOnOpen' in window.__fusion.SETTINGS_DEFAULTS)), 'no match-on-open setting');
 
   // #529: "when network error prevents any fetch, it should be shown in main UI
   // instead just in the logs"

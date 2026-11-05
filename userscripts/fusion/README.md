@@ -124,7 +124,6 @@ The ⚙ window (or right-click Fusion's corner icon), which also holds the activ
 | Setting                                           | Default |                                                            |
 | ------------------------------------------------- | ------- | ---------------------------------------------------------- |
 | Look up AcoustIDs                                 | on      | fetch the pool's AcoustIDs from acoustid.org               |
-| Match on open                                     | off     | run Match once the pool has loaded                         |
 | Preload group release details                     | off     | fetch every grouped recording's releases in the background |
 | Length tolerance                                  | 5 s     | lengths this close count as the same                       |
 | Match never groups if lengths differ by more than | 30 s    | whatever else matches; grouping by hand still can          |
