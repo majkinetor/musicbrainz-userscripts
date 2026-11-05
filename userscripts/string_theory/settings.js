@@ -256,7 +256,7 @@ ST_CSS += '#st-cfg .st-sync-columns{display:grid;grid-template-columns:minmax(0,
 ST_CSS += '#st-cfg .st-title .mbu-ov-x{padding:0;margin:0;align-self:center;width:26px;height:26px}#st-cfg .st-title .mbu-ov-x svg{width:18px;height:18px;display:block}#st-cfg .st-title .mbu-help{align-self:center}';
 ST_CSS += '#st-cfg .st-footer .st-links{margin-left:auto}';
 ST_CSS += '#st-cfg .st-section-lead{display:flex;align-items:center;gap:16px;margin:0 0 4px}#st-cfg .st-section-lead>h3.st-h,#st-cfg .st-palette-enabled>h3.st-h{flex:0 0 auto;border:0;margin:0;padding:0;font:600 13px/1.4 var(--mbu-font)}#st-cfg .st-section-lead>.st-row{flex:0 1 auto;min-width:0;margin:0;flex-wrap:wrap}#st-cfg .st-inline-side,#st-cfg .st-palette-enabled{display:flex;align-items:center;gap:12px;min-height:28px}#st-cfg .st-inline-side .st-lbl{margin:0}#st-cfg .st-section-lead .st-seg{flex-wrap:wrap}#st-cfg .st-palette-enabled>h3.st-h{font-size:12px}#st-cfg .st-group:has(.st-palette-enabled)>.st-field-grid{margin-top:0}';
-ST_CSS += '#st-cfg .st-section-lead{align-items:flex-start}#st-cfg .st-section-lead>h3.st-h{margin-top:5px}';
+ST_CSS += '#st-cfg .st-section-lead{align-items:flex-start}#st-cfg .st-section-lead>h3.st-h{margin-top:5px}#st-cfg .st-section-lead>.st-inline-side+.st-inline-side{margin-inline-start:18px}';
 ST_CSS += '#st-cfg{background:var(--mbu-bg)!important}';
 // a button pair wraps as one, never one button left behind; on a phone Time's hours get their own line under Theme
 ST_CSS += '#st-cfg #st-p-s .st-sync-acts{display:inline-flex;flex-wrap:wrap;align-items:center;gap:inherit}'
@@ -453,6 +453,7 @@ function stSettings(tab) {
     inlineLead(sections[0], q('#st-th-mode').parentElement);
     var sideField = q('#st-side').closest('.st-field'); sideField.classList.add('st-inline-side');
     inlineLead(sections[1], sideField);
+    var flowField = q('#st-flow').closest('.st-field'); flowField.classList.add('st-inline-side'); sideField.parentElement.appendChild(flowField);
     var paletteField = q('#st-pal-on').closest('.st-field'), paletteHeading = sections[2].querySelector('h3');
     paletteHeading.textContent = 'Palette'; paletteField.classList.add('st-palette-enabled');
     q('#st-pal-on-l').classList.add('st-mode-label'); paletteField.insertBefore(paletteHeading, paletteField.firstChild);
