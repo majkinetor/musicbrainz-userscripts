@@ -20,6 +20,10 @@ While Event Horizon shows, `<html>` carries `data-mbu-page` with the page's path
 
 String Theory reads it ([its DEVELOP.md](../string_theory/DEVELOP.md#runtime)): a tab loaded on a page a script isn't for never starts that script, so a release reached inside Event Horizon from the home page had no Platform Check, ISRC Scout or Mission Control at all, though all three can read the release from the API. String Theory starts them there. Falcon, which runs on every page, watches it to put its icon on a release, release group or series.
 
+## The header's tag editor
+
+While the pencil's editor is open, every redraw fires `mbu-tags-edit` on `document` with `{path, box}`: the entity's path and the editor's element. Closing fires it with `box: null`. An `mbu-tags-add` event with `{names}` upvotes those tags through the editor; names sent before its tags load wait, as typed ones do. Necessary Evil uses both to put the tags it collected from the links under the box. A row there must sit outside the box, since each redraw replaces the box's contents.
+
 ## MusicBrainz's page stays in the document
 
 While Event Horizon shows, MusicBrainz's body is hidden after Event Horizon's, not detached ([#853](https://github.com/majkinetor/musicbrainz-userscripts/issues/853)), so the scripts that read the page (Mission Control's tracklist, Platform Check's catalog numbers, Art Station's links) still find it.

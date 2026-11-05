@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Necessary Evil
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.145623
+// @version      2026.11.05.163338
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBkPSJNMTYgNjRWMjhhMTAgMTAgMCAwIDEgMTAtMTBoMzZsNTAgNDYtNDggNDh6IiBmaWxsPSIjOGUyYTNhIiBzdHJva2U9IiM0YTEwMjAiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iNDIiIHI9IjgiIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJNNTggMTggNTAgNE04NiAzNCAxMDAgMjQiIHN0cm9rZT0iIzRhMTAyMCIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=
@@ -2446,7 +2446,7 @@
   // ── entity and its links ──────────────────────────────────────────────────
   const em = location.pathname.match(/^\/(release|release-group|artist|label|recording)\/([0-9a-f-]{36})\/?$/);
   if (!em) return;
-  const TYPE = em[1], MBID = em[2];
+  let TYPE = em[1], MBID = em[2];   // Event Horizon's tag editor can switch them (below)
 
   async function ws(path) {
     const r = await mbnFetch(location.origin + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json');
@@ -2656,6 +2656,8 @@
 .ne-cfg h3:first-child{margin-top:0}
 .ne-cfg textarea{width:100%;box-sizing:border-box;min-height:110px;font:var(--mbu-fs-sm)/1.45 var(--mbu-font-mono);background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:6px;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
 .ne-cfg .ne-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:4px}
+.ne-eh{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:4px 0;font:var(--mbu-fs-sm)/1.4 var(--mbu-font);color:var(--mbu-text)}
+.ne-eh .ne-sum{display:inline-flex;color:var(--mbu-text-weak)}
 .ne-cfg .ne-hint{color:var(--mbu-text-weak);font-size:var(--mbu-fs-xs);margin:2px 0 4px}
 `;
   const st = document.createElement('style');
@@ -2677,7 +2679,7 @@
     if (sb) { sb.appendChild(box); return true; }
     return false;
   }
-  if (!mount()) { LOG.info('No sidebar on this page'); return; }
+  if (!mount()) LOG.info('No sidebar on this page');
 
   function chip(e, have) {
     const cls = ['ne-chip'];
@@ -2694,6 +2696,7 @@
   }
 
   function render() {
+    drawEh();
     const have = onEntity();
     const list = [...S.tags.values()].sort((a, b) => (b.genre - a.genre) || (b.srcs.size - a.srcs.size) || a.name.localeCompare(b.name));
     const shown = S.showAll ? list : list.filter(e => e.genre);
@@ -2839,6 +2842,43 @@
     });
   }
   GM_registerMenuCommand(NAME + ' settings', openCfg);
+
+  // ── Event Horizon ─────────────────────────────────────────────────────────
+  // EH's header tag editor (its pencil) tells which entity it edits and where its box is (mbu-tags-edit); a row of
+  // the collected tags goes under that box, and a click adds one through EH (mbu-tags-add), which votes and redraws
+  const ehRow = document.createElement('div');
+  ehRow.className = 'ne-eh mbu-ui';
+  let ehBox = null;
+  function drawEh() {
+    if (!ehBox) { ehRow.remove(); return; }
+    if (ehRow.previousElementSibling !== ehBox) ehBox.after(ehRow);
+    const have = new Set([...ehBox.querySelectorAll('.tgi')].map(c => (c.firstChild && c.firstChild.textContent || '').trim().toLowerCase()));
+    const list = [...S.tags.values()].filter(e => !e.name.includes(',') && !have.has(e.name))
+      .sort((a, b) => (b.genre - a.genre) || (b.srcs.size - a.srcs.size) || a.name.localeCompare(b.name));
+    const shown = S.showAll ? list : list.filter(e => e.genre);
+    ehRow.innerHTML = '<span class="ne-sum" data-tip="' + NAME + ': tags from this entity&#39;s links">' + ICON.replace(/width="20" height="20"/, 'width="16" height="16"') + '</span>'
+      + (S.busy && !shown.length ? '<span class="ne-empty">Collecting tags…</span>'
+        : shown.length ? shown.slice(0, 24).map(e => chip(e, have)).join('') : '<span class="ne-empty">' + (list.length ? 'No genres' : 'No tags from the links') + '</span>')
+      + (list.length > shown.length || S.showAll ? '<button type="button" class="ne-link" data-a="all">' + (S.showAll ? 'Genres only' : 'All tags') + '</button>' : '');
+  }
+  ehRow.addEventListener('mousedown', e => e.preventDefault());   // keeps the focus in EH's input
+  ehRow.addEventListener('click', e => {
+    const a = e.target.closest('[data-a],[data-t]'); if (!a) return;
+    e.preventDefault(); e.stopPropagation();
+    if (a.dataset.a === 'all') { S.showAll = !S.showAll; render(); return; }
+    LOG.info('Adding through Event Horizon: ' + a.dataset.t);
+    document.dispatchEvent(new CustomEvent('mbu-tags-add', { detail: { names: [a.dataset.t] } }));
+  });
+  document.addEventListener('mbu-tags-edit', e => {
+    const d = e.detail || {}, m = d.path && d.path.match(/^\/(release|release-group|artist|label|recording)\/([0-9a-f-]{36})$/);
+    ehBox = d.box && m ? d.box : null;
+    if (ehBox && (m[1] !== TYPE || m[2] !== MBID)) {
+      TYPE = m[1]; MBID = m[2];
+      Object.assign(S, { status: {}, raw: [], tags: new Map(), sel: new Set(), suggest: [], ran: false });
+      LOG.info('Event Horizon edits ' + TYPE + ' ' + MBID);
+    }
+    if (ehBox && !S.ran && !S.busy) collect(); else drawEh();
+  });
 
   window.__necessaryEvil = S;   // for the specs
   render();
