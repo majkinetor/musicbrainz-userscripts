@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.120222
+// @version      2026.11.05.122631
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -3016,6 +3016,8 @@
        now full-colour, so a brand FILL would hide them (e.g. green Spotify on green). */
     .ii-tbtn.ii-mb { border-color: currentColor; box-shadow: 0 0 0 1px currentColor; }
     .ii-tbtn.ii-mb:hover { background: var(--mbu-bg-raised); }
+    #ii-tools .ii-tbtn[id$="-all"]:not(.ii-mb):not(.all):not(.sx) { border-style: dashed; }   /* only matched, not linked on MB */
+    .ii-tl.new { outline: 1px dashed currentColor; outline-offset: 1px; border-radius: 3px; }   /* found, not linked yet */
     /* Unified "paste a URL" control (#180), apollo "+"-unroll style: a small
        round button that expands to an input on click; auto-detects the platform. */
     .ii-urladd { display: inline-flex; align-items: center; gap: 5px; }
@@ -3528,8 +3530,7 @@
         font-size: 11px; padding: 0 0 2px; }
       #ii-hdr .ii-hico { border-color: transparent; background: none; width: 30px; height: 30px; }
       #ii-maximize-toggle { display: none !important; }   /* already the whole screen */
-      #ii-tools { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; padding: 4px 6px; gap: 3px; }
-      #ii-tools::-webkit-scrollbar { display: none; }
+      #ii-tools { flex-wrap: wrap; padding: 4px 6px; gap: 3px; }   /* every control on the screen: a sideways scroll hid the last ones */
       #ii-tools > * { flex: 0 0 auto; }
       #ii-tools .ii-tbtn { padding: 4px 6px; }
       #ii-tools .ii-mlabel, #ii-tools .ii-blabel { display: none !important; }
@@ -3549,7 +3550,7 @@
       #ii-table tr:not(.ii-medrow) > td:nth-child(2) { line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
       #ii-table tr:not(.ii-medrow) > td:nth-child(2) > div { display: inline; }
       #ii-table tr:not(.ii-medrow) .ii-track-artist { font-size: 11px; margin-left: 6px; }
-      #ii-table tr:not(.ii-medrow):not(.ii-row-missing) > td:nth-child(5) { display: none; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(5):not(:has(.ii-input-box)) { display: none; }
       #ii-table tr:not(.ii-medrow) > td:nth-child(4) { grid-column: 2; }
       #ii-foot { flex-wrap: nowrap; height: 44px; padding: 0 6px 0 8px; gap: 4px; }
       #ii-foot .ii-summary { flex: 1 1 auto; font-size: 11px; }

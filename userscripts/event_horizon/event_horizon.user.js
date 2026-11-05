@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.121413
+// @version      2026.11.05.122631
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11102,6 +11102,33 @@ if (SETTINGS_ONLY) { if (!document.getElementById('eh-mbu')) { const m = documen
 if (!PAGE_ID && !SETTINGS_ONLY && new RegExp('^/release/(?:add|' + MBID.source + '/edit)/?$', 'i').test(location.pathname)) {
     const seed = () => { if (!document.querySelector('.confirm-seed')) return; PAGE_ID = 'form/seed/-/confirm'; cspMirror(); start(); };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', seed); else setTimeout(seed, 0);
+}
+// a phone on an entity's own Edit or Add form (MusicBrainz's, not dressed): its header holds the page 780px wide, so
+// a max-width query never matches there; keyed on the screen instead, the form stacks to the screen's width
+if (!PAGE_ID && !SETTINGS_ONLY && S.on && matchMedia('(max-device-width:700px)').matches && new RegExp('^/(?:artist|label|recording|work|area|instrument|place|series|event|release-group)/(?:' + MBID.source + '/edit|create)/?$', 'i').test(location.pathname)) {
+    const st = document.createElement('style'); st.id = 'eh-phone-form';
+    st.textContent = `html,body,#page{min-width:0!important;max-width:100vw;overflow-x:clip}
+body>.header{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;height:auto!important;padding:6px 10px!important;box-sizing:border-box}
+body>.header>.logo{float:none;margin:0}body>.header>.logo img{height:30px;width:auto}
+body>.header>.right{float:none!important;width:100%!important;min-width:0}
+body>.header .top,body>.header .bottom{float:none!important;width:auto!important;text-align:left}
+body>.header ul.menu{display:flex;flex-wrap:wrap;gap:0 4px;width:auto!important}body>.header ul.menu>li{float:none}
+body>.header .search-container form{display:flex;gap:4px;width:100%}body>.header .search-container input{flex:1 1 0;min-width:0;width:auto!important}
+body>.banner{margin:6px 10px!important}
+#page{padding:10px!important;box-sizing:border-box}#content{width:auto!important;float:none!important;margin:0!important;contain:inline-size}form[class^=edit-] fieldset{contain:inline-size}form[class^=edit-] :is(.form-row-text-list,.form-row-add,.text-list-row,.form-row-text-list-container>div){margin-left:0!important;padding-left:0!important}
+#content>.tabs ul.tabs{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}#content>.tabs ul.tabs>li{flex:none}
+form[class^=edit-] :is(.half-width,fieldset){width:auto!important;min-width:0!important;max-width:100%;box-sizing:border-box;float:none!important}
+form[class^=edit-] fieldset{margin-left:0!important;margin-right:0!important;padding-left:10px!important;padding-right:10px!important}
+form[class^=edit-] .row{display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;margin-left:0!important;padding-left:0!important}
+form[class^=edit-] .row>label:first-child{display:block;flex:0 0 100%;width:auto!important;text-align:left!important;margin:6px 0 0!important;float:none!important}
+form[class^=edit-] .row>label.inline{flex:0 1 auto}
+form[class^=edit-] :is(input:not([type=checkbox],[type=radio],[type=button],[type=submit]),select,textarea){min-width:0!important;max-width:100%!important;box-sizing:border-box}
+form[class^=edit-] .row>:is(input:not([type=checkbox],[type=radio]),select,textarea,.autocomplete,span.autocomplete){flex:1 1 0;width:auto!important}
+form[class^=edit-] :is(ul,ol,div,td){max-width:100%;min-width:0;overflow-wrap:anywhere}
+form[class^=edit-] table:not(.row-form){display:block;max-width:100%;overflow-x:auto}form[class^=edit-] table.row-form,form[class^=edit-] table.row-form>tbody{display:block;width:100%}form[class^=edit-] table.row-form tr{display:flex;align-items:center;gap:4px;margin:0 0 6px}form[class^=edit-] table.row-form td{display:block;padding:0!important;flex:none}form[class^=edit-] table.row-form td:has(select){flex:0 1 45%}form[class^=edit-] table.row-form td:has(input){flex:1 1 0}form[class^=edit-] table.row-form td :is(select,input){width:100%!important}form[class^=edit-] .row>:is(.form-row-select-list,.form-row-text-list){flex:1 1 100%;margin:0!important;min-width:0}form[class^=edit-] :is(.select-list-row,.text-list-row){display:flex;align-items:center;gap:4px;margin-left:0!important}form[class^=edit-] :is(.select-list-row,.text-list-row)>:is(select,input){flex:1 1 0;width:auto!important}
+form[class^=edit-] .no-label,form[class^=edit-] .row.no-label{margin-left:0!important;padding-left:0!important}
+form[class^=edit-] .documentation,#content>.documentation{display:none}`;
+    document.documentElement.append(st);
 }
 if (PAGE_ID) {
     // hide MusicBrainz's page before it paints; the style goes once the viewer or the page itself is shown

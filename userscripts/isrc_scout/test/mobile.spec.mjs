@@ -25,7 +25,7 @@ test('the window fits a phone screen', { tag: ['@sandbox', '@cosmetic'] }, async
   });
   console.log(JSON.stringify(r));
   check(r.zen.beside && r.zen.w > 150, `the release sits beside the header's icons (${JSON.stringify(r.zen)})`);
-  check(r.bars.tools <= 44 && r.bars.foot <= 48 && r.bars.hdr <= 60, `header, toolbar and footer are one thin row each (${JSON.stringify(r.bars)})`);
+  check(r.bars.tools <= 80 && r.bars.foot <= 48 && r.bars.hdr <= 60, `header, toolbar (at most two rows) and footer stay thin (${JSON.stringify(r.bars)})`);
   check(r.modal[0] <= r.vv[0] + 1 && r.modal[1] >= r.vv[1] - 1, `the window fills the screen's width (${r.modal} on ${r.vv})`);
   check(r.modal[0] >= r.vv[0] - 1 && r.modal[1] <= r.vv[1] + 1, `the window is on the screen (${r.modal} on ${r.vv})`);
   check(r.out.length === 0, `nothing in it sticks out of the screen (${r.out.slice(0, 8).join(' · ')})`);
