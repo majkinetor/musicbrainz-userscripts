@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.122802
+// @version      2026.11.05.135124
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -3532,7 +3532,18 @@
       #ii-maximize-toggle { display: none !important; }   /* already the whole screen */
       #ii-tools { flex-wrap: wrap; padding: 4px 6px; gap: 3px; }   /* every control on the screen: a sideways scroll hid the last ones */
       #ii-tools > * { flex: 0 0 auto; }
-      #ii-tools #ii-links-btn, #ii-tools #ii-find-all { order: -1; }   /* Find links and Match lead, never pushed off */
+      #ii-tools #ii-links-btn, #ii-tools #ii-find-all { order: -1; }
+      /* one even grid of small square buttons; progress on a thin line of its own under them */
+      #ii-tools { align-items: center; row-gap: 3px; justify-content: flex-start; }
+      #ii-tools > * { margin-left: 0 !important; }
+      #ii-tools .ii-tbtn, #ii-tools .ii-urladd-btn, #ii-tools .ii-clear-toggle, #ii-tools .ii-exact-toggle {
+        height: 30px; min-width: 30px; padding: 0 5px !important; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; }
+      #ii-tools .ii-bico svg, #ii-tools .ii-bico img { width: 18px; height: 18px; }
+      #ii-tools .ii-sx-group { border: 0; padding: 0; gap: 3px; background: none; box-shadow: none; }
+      #ii-tools .ii-clear-wrap { order: 50; }
+      #ii-tools .ii-prog { order: 99; flex: 1 1 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #ii-tools .ii-prog:empty { display: none; }
+      #ii-foot #ii-suspect-badge { flex: 0 0 auto; }   /* Find links and Match lead, never pushed off */
       #ii-foot #ii-submit { white-space: nowrap; flex: 0 0 auto; }
       #ii-tools .ii-tbtn { padding: 4px 6px; }
       #ii-tools .ii-mlabel, #ii-tools .ii-blabel { display: none !important; }
@@ -3552,7 +3563,7 @@
       #ii-table tr:not(.ii-medrow) > td:nth-child(2) { line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
       #ii-table tr:not(.ii-medrow) > td:nth-child(2) > div { display: inline; }
       #ii-table tr:not(.ii-medrow) .ii-track-artist { font-size: 11px; margin-left: 6px; }
-      #ii-table tr:not(.ii-medrow) > td:nth-child(5):not(:has(.ii-input-box)) { display: none; }
+      #ii-table tr:not(.ii-medrow):not(.ii-row-missing):not(.ii-row-pending) > td:nth-child(5) { display: none; }   /* the input only where an ISRC is missing or being entered */
       #ii-table tr:not(.ii-medrow) > td:nth-child(4) { grid-column: 2; }
       #ii-foot { flex-wrap: nowrap; height: 44px; padding: 0 6px 0 8px; gap: 4px; }
       #ii-foot .ii-summary { flex: 1 1 auto; font-size: 11px; }
@@ -8036,7 +8047,7 @@
       const rowMissing = !t.existing.length && !t.pending;
       if (rowMissing) missing++;
       const row = tbody && tbody.querySelector('tr[data-idx="' + i + '"]');   // #159: flag still-missing rows
-      if (row) row.classList.toggle('ii-row-missing', rowMissing);
+      if (row) { row.classList.toggle('ii-row-missing', rowMissing); row.classList.toggle('ii-row-pending', !!t.pending); }
       if (!t.pending) return;
       const v = normalizeIsrc(t.pending);
       if (!isValidIsrc(v)) { bad++; return; }
@@ -8692,8 +8703,8 @@
     if (n) _suspectUndo = null;   // new amber fills: the last Remove is over
     const u = _suspectUndo && _suspectUndo.length;
     el.innerHTML = n
-      ? '<span data-a="jump" data-tip="These fills differ from the MusicBrainz track in length or title\nClick: go to the first one">⚠ ' + n + ' implausible fill' + s(n) + ' — verify</span>' +
-        '<button type="button" data-a="rm" data-tip="Empty the ' + n + ' amber box' + (n === 1 ? '' : 'es') + '">✕ Remove</button>'
+      ? '<span data-a="jump" data-tip="These fills differ from the MusicBrainz track in length or title\nClick: go to the first one">⚠ ' + n + '<span class="ii-mlabel"> implausible fill' + s(n) + ' — verify</span></span>' +
+        '<button type="button" data-a="rm" data-tip="Empty the ' + n + ' amber box' + (n === 1 ? '' : 'es') + '">✕<span class="ii-mlabel"> Remove</span></button>'
       : u ? '<span>' + u + ' implausible fill' + s(u) + ' removed</span><button type="button" data-a="undo" data-tip="Put them back">Undo</button>' : '';
     el.classList.toggle('ii-sb-undo', !n && !!u);
     el.style.display = n || u ? '' : 'none';
