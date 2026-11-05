@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.074958
+// @version      2026.11.05.115942
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -3512,6 +3512,48 @@
       #ii-foot .ii-summary { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       #ii-foot .ii-tbtn { padding: 4px 8px; }
       #ii-body { padding-bottom: 72px; }
+      /* layout A: one-row header (release + small icons, status on a thin line under it),
+         one sideways-scrolling icon toolbar, two-line track cards, one-row footer */
+      #ii-hdr { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 6px; padding: 3px 6px 0 8px; }
+      #ii-hdr .ii-zen { grid-row: 1; grid-column: 1; text-align: left; padding-bottom: 2px; }
+      #ii-hdr .ii-zen-t { font-size: 13px; color: var(--mbu-text); }
+      #ii-hdr .ii-hicons { grid-row: 1; grid-column: 2; align-self: center; gap: 2px; padding-bottom: 2px; }
+      #ii-hdr .ii-hdr-status { grid-row: 2; grid-column: 1 / -1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        font-size: 11px; padding: 0 0 2px; }
+      #ii-hdr .ii-hico { border-color: transparent; background: none; width: 30px; height: 30px; }
+      #ii-maximize-toggle { display: none !important; }   /* already the whole screen */
+      #ii-tools { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; padding: 4px 6px; gap: 3px; }
+      #ii-tools::-webkit-scrollbar { display: none; }
+      #ii-tools > * { flex: 0 0 auto; }
+      #ii-tools .ii-tbtn { padding: 4px 6px; }
+      #ii-tools .ii-mlabel, #ii-tools .ii-blabel { display: none !important; }
+      #ii-tools .ii-bico { display: inline-flex !important; align-items: center; }
+      #ii-tools .ii-urladd.open { flex: 0 0 220px; }
+      #ii-table tr:not(.ii-medrow) { padding: 4px 8px; column-gap: 6px; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(6) { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(6) .ii-tl-linked { flex-wrap: nowrap; justify-content: flex-end; gap: 4px; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(5):has(.ii-input-box) { grid-column: 2 / 4; }
+      #ii-table tr:not(.ii-medrow) { grid-template-columns: 20px 1fr auto auto; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(3) { grid-column: 3 / 5; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(5):has(.ii-input-box) { grid-column: 2 / 5; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(7) { grid-column: 4; grid-row: 2; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(7):not(:has(.ii-tl-add > *)) { display: none; }
+      #ii-table tr:not(.ii-medrow) .ii-tl-linked:empty::before { content: none; }
+      #ii-table tr:not(.ii-medrow) { height: auto !important; min-height: 0 !important; align-content: start; grid-auto-rows: min-content; row-gap: 1px; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(2) { line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(2) > div { display: inline; }
+      #ii-table tr:not(.ii-medrow) .ii-track-artist { font-size: 11px; margin-left: 6px; }
+      #ii-table tr:not(.ii-medrow):not(.ii-row-missing) > td:nth-child(5) { display: none; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(4) { grid-column: 2; }
+      #ii-foot { flex-wrap: nowrap; height: 44px; padding: 0 6px 0 8px; gap: 4px; }
+      #ii-foot .ii-summary { flex: 1 1 auto; font-size: 11px; }
+      #ii-foot #ii-summary-links { flex: 0 1 auto; }
+      #ii-foot .ii-seq-badge { margin-left: 0; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      #ii-foot #ii-delete, #ii-foot #ii-note-toggle { padding: 4px 7px; font-size: 14px; }
+      #ii-foot .ii-mlabel { display: none; }
+      #ii-foot #ii-delete:disabled { display: none; }
+      #ii-foot #ii-submit { padding: 6px 10px; font-size: 12px; }
+      #ii-body { padding-bottom: 48px; }
       #ii-sxpanel { top: 2vh !important; left: 2vw !important; right: 2vw !important;
         width: auto !important; max-width: none !important; max-height: 92vh !important; }
     }
@@ -5737,7 +5779,7 @@
            where majkinetor said they used to live. -->
       <div id="ii-tools">
         <span class="ii-sx-group" id="ii-sx-group">
-          <button class="ii-tbtn sx" id="ii-sx-all" data-tip="Search every track on SoundExchange">⟳ SoundExchange</button>
+          <button class="ii-tbtn sx" id="ii-sx-all" data-tip="Search every track on SoundExchange">⟳<span class="ii-mlabel"> SoundExchange</span></button>
           <button class="ii-exact-toggle" id="ii-exact-toggle" type="button" data-tip="Exact-match options" aria-expanded="false">exact <span class="ii-exact-car">▾</span></button>
           <span class="ii-exact-set" id="ii-exact-set" data-tip="Wrap the SoundExchange query in quotes for an exact match">
             <label><input type="checkbox" id="ii-ex-title">title</label>
@@ -5763,9 +5805,9 @@
           <input class="ii-urladd-input" type="text" id="ii-url-input" placeholder="Paste a streaming album URL…" autocomplete="off">
         </span>
         <span class="ii-prog" id="ii-prog"></span>
-        <button class="ii-tbtn sx" id="ii-links-btn" type="button" data-tip="Find each track on Deezer, Tidal and Bandcamp\nShows what can be linked.\nGrey: already linked on MusicBrainz\nColour: found, and can be added"><svg class="ii-flat-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg> Find links</button>
+        <button class="ii-tbtn sx" id="ii-links-btn" type="button" data-tip="Find each track on Deezer, Tidal and Bandcamp\nShows what can be linked.\nGrey: already linked on MusicBrainz\nColour: found, and can be added"><svg class="ii-flat-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg><span class="ii-mlabel"> Find links</span></button>
         <!-- #680: Match imports ISRCs, then runs Find links, so it sits after it -->
-        <button class="ii-tbtn sx" id="ii-find-all" type="button" data-tip="Import ISRCs from the fastest source this release links, then find links\nThe next source when one fails or gives none">⚡ Match</button>
+        <button class="ii-tbtn sx" id="ii-find-all" type="button" data-tip="Import ISRCs from the fastest source this release links, then find links\nThe next source when one fails or gives none">⚡<span class="ii-mlabel"> Match</span></button>
         <span class="ii-clear-wrap">
           <button class="ii-clear-toggle" id="ii-clear-toggle" type="button" data-tip="Clear…" aria-expanded="false">▾</button>
           <div class="ii-clear-menu" id="ii-clear-menu">
@@ -5800,8 +5842,8 @@
         <!-- #471: both summaries always shown now (no ISRCs/Links scope toggle) -->
         <span class="ii-summary" id="ii-summary"></span>
         <span class="ii-summary" id="ii-summary-links"></span>
-        <button class="ii-tbtn" id="ii-delete" data-tip="Delete the ticked ISRCs" disabled>🗑 Delete ISRC</button>
-        <button class="ii-tbtn ghost" id="ii-note-toggle" data-tip="Edit note">✎ Edit note</button>
+        <button class="ii-tbtn" id="ii-delete" data-tip="Delete the ticked ISRCs" disabled>🗑<span class="ii-mlabel"> Delete ISRC</span></button>
+        <button class="ii-tbtn ghost" id="ii-note-toggle" data-tip="Edit note">✎<span class="ii-mlabel"> Edit note</span></button>
         <button class="ii-tbtn primary" id="ii-submit" data-tip="Submit everything pending in one go, then close\nThe ISRCs entered and the streaming links found">Submit to MusicBrainz</button>
       </div>
     `;
@@ -5882,6 +5924,11 @@
     const clearToggle = modal.querySelector('#ii-clear-toggle'), clearMenu = modal.querySelector('#ii-clear-menu');
     clearToggle.addEventListener('click', () => {
       const open = clearMenu.classList.toggle('open');
+      // the phone toolbar scrolls sideways, which would clip an absolute menu: pin it to the screen under its caret
+      if (open && window.matchMedia('(max-width: 700px)').matches) {
+        const r = clearToggle.getBoundingClientRect();
+        Object.assign(clearMenu.style, { position: 'fixed', top: r.bottom + 'px', right: Math.max(4, innerWidth - r.right) + 'px' });
+      } else clearMenu.style.removeProperty('position');
       clearToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
     modal.querySelector('#ii-clear-links').addEventListener('click', () => { clearMenu.classList.remove('open'); TrackLinks.clearResolved(); toast('Cleared resolved links'); });
@@ -6291,7 +6338,7 @@
   function pinModalToViewport() {
     const vv = window.visualViewport;
     if (!vv || !window.matchMedia('(max-width: 700px)').matches) { clearModalViewportPin(); return; }
-    const w = Math.min(vv.width * 0.96, 1080), h = vv.height * 0.96;
+    const w = vv.width, h = vv.height;   // the whole screen on a phone
     const set = (el, props) => { for (const k in props) el.style.setProperty(k, props[k], 'important'); };
     set(overlay, { left: vv.offsetLeft + 'px', top: vv.offsetTop + 'px', width: vv.width + 'px', height: vv.height + 'px' });
     set(modal, {

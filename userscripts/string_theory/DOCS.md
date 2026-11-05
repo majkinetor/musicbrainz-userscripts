@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-05 11:53 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-05 11:59 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1868,7 +1868,7 @@ Right-click a credit's pencil for **Replace role "writer"…** (every credit wit
 
 ### Highlight
 
-Hover an entity or a role to light up every occurrence, with a count and where it appears: *48× · tracks 1–12*. An entity's tooltip shows its track and release counts, then a row per role it holds with its tracks (* when on every track) and a release icon when the release has it too; the role you hover stands out. So a release credit that repeats a track credit shows at a glance.
+Hover an entity or a role to light up every occurrence, with a count and where it appears: *48× · tracks 1–12*.
 
 <img width="500" src="../group_therapy/screenshots/highlight.png" />
 
