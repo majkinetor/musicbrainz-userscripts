@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.1330
+// @version      2026.11.05.120222
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2637,7 +2637,9 @@
               a.setAttribute('aria-label', s.split('\n')[0]);
           }
       }
-      t.className = 'mbu-ui' + (o.card ? ' mbu-tip-card' : '') + (o.interactive ? ' mbu-tip-act' : '') + (o.wide ? ' mbu-tip-wide' : '');
+      // a render of the open tip (its text changed) keeps it shown
+      var on = t.classList.contains('mbu-tip-on') && t.getAttribute('data-owner') === _mbuTip.me;
+      t.className = 'mbu-ui' + (o.card ? ' mbu-tip-card' : '') + (o.interactive ? ' mbu-tip-act' : '') + (o.wide ? ' mbu-tip-wide' : '') + (on ? ' mbu-tip-on' : '');
       t.setAttribute('data-owner', _mbuTip.me);
       mbuTipPlace(t, a, o.place);
       return true;
@@ -2677,9 +2679,13 @@
       clearInterval(_mbuTip.liveT);
       _mbuTip.liveT = setInterval(function () { if (!_mbuTip.cur || !_mbuTip.cur.isConnected) mbuTipHide(true); }, 300);
       try {
-          if (!_mbuTip.obs) _mbuTip.obs = new MutationObserver(function () { if (_mbuTip.cur && !mbuTipRender()) mbuTipHide(true); });
+          if (!_mbuTip.obs) _mbuTip.obs = new MutationObserver(function (ms) {
+              // a repaint that sets the same text again changes nothing
+              if (!_mbuTip.cur || ms.every(function (m) { return m.oldValue === _mbuTip.cur.getAttribute('data-tip'); })) return;
+              if (!mbuTipRender()) mbuTipHide(true);
+          });
           _mbuTip.obs.disconnect();
-          if (!found.fn) _mbuTip.obs.observe(found.el, { attributes: true, attributeFilter: ['data-tip'] });
+          if (!found.fn) _mbuTip.obs.observe(found.el, { attributes: true, attributeOldValue: true, attributeFilter: ['data-tip'] });
       } catch (e) { /* no observer: the text is read again on the next hover */ }
   }
   function mbuTipHide(now) {

@@ -2108,7 +2108,9 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
                 a.setAttribute('aria-label', s.split('\n')[0]);
             }
         }
-        t.className = 'mbu-ui' + (o.card ? ' mbu-tip-card' : '') + (o.interactive ? ' mbu-tip-act' : '') + (o.wide ? ' mbu-tip-wide' : '');
+        // a render of the open tip (its text changed) keeps it shown
+        var on = t.classList.contains('mbu-tip-on') && t.getAttribute('data-owner') === _mbuTip.me;
+        t.className = 'mbu-ui' + (o.card ? ' mbu-tip-card' : '') + (o.interactive ? ' mbu-tip-act' : '') + (o.wide ? ' mbu-tip-wide' : '') + (on ? ' mbu-tip-on' : '');
         t.setAttribute('data-owner', _mbuTip.me);
         mbuTipPlace(t, a, o.place);
         return true;
@@ -2148,9 +2150,13 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         clearInterval(_mbuTip.liveT);
         _mbuTip.liveT = setInterval(function () { if (!_mbuTip.cur || !_mbuTip.cur.isConnected) mbuTipHide(true); }, 300);
         try {
-            if (!_mbuTip.obs) _mbuTip.obs = new MutationObserver(function () { if (_mbuTip.cur && !mbuTipRender()) mbuTipHide(true); });
+            if (!_mbuTip.obs) _mbuTip.obs = new MutationObserver(function (ms) {
+                // a repaint that sets the same text again changes nothing
+                if (!_mbuTip.cur || ms.every(function (m) { return m.oldValue === _mbuTip.cur.getAttribute('data-tip'); })) return;
+                if (!mbuTipRender()) mbuTipHide(true);
+            });
             _mbuTip.obs.disconnect();
-            if (!found.fn) _mbuTip.obs.observe(found.el, { attributes: true, attributeFilter: ['data-tip'] });
+            if (!found.fn) _mbuTip.obs.observe(found.el, { attributes: true, attributeOldValue: true, attributeFilter: ['data-tip'] });
         } catch (e) { /* no observer: the text is read again on the next hover */ }
     }
     function mbuTipHide(now) {
