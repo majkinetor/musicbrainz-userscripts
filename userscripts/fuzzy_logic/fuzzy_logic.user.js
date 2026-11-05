@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.210539
+// @version      2026.11.05.210902
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjg1Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMwNzM1NDgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiMzNDIwNGUiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjNTAzMDFhIi8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -2741,7 +2741,7 @@
 .fl-ehb svg{width:22px!important;height:22px!important;flex:none;display:block}
 .fl-ehb b{position:absolute;top:-4px;right:-6px;min-width:14px;padding:0 3px;border-radius:7px;background:var(--mbu-accent);color:var(--mbu-text-on-accent);font:700 10px/14px var(--mbu-font);text-align:center;box-sizing:border-box}
 .mbu-ov.fl-cfg{background:none}
-.fl-cfg .mbu-ov-panel{width:min(680px,94vw);height:min(620px,90vh);display:flex;flex-direction:column}
+.fl-cfg .mbu-ov-panel{width:min(680px,94vw);max-height:90vh;box-sizing:border-box;border:1px solid var(--mbu-border);border-radius:10px;background:color-mix(in srgb,var(--mbu-bg) 88%,transparent);backdrop-filter:blur(6px);box-shadow:0 10px 32px rgba(0,0,0,.35);display:flex;flex-direction:column}
 .fl-cfg .mbu-ov-body{${SB};flex:1 1 auto;overflow:auto}
 .fl-tabs{display:flex;gap:2px;padding:0 14px;border-bottom:1px solid var(--mbu-border)}
 .fl-tabs button{font:inherit;border:0;border-bottom:2px solid transparent;background:none;color:var(--mbu-text-dim);padding:7px 12px;cursor:pointer;margin-bottom:-1px}
