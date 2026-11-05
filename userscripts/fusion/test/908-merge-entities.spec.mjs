@@ -22,6 +22,7 @@ for (const type of ['artist', 'release']) {
     await page.fill('#fs-em-input', `https://test.musicbrainz.org/${type}/${b.mbid}`);
     await page.press('#fs-em-input', 'Enter');
     await until(() => page.locator('#fs-em-pool .fs-pcard').count(), n => n === 2, { timeout: 30000 });
+    await page.press('#fs-em-input', 'Escape');   // fold the paste field, which covers the header's buttons
     await page.click('#fs-em-overlay [data-act="newgroup"]');
     check(await page.locator('#fs-em-groups .fs-grow').count() === 2, 'one group of two');
     await page.click('#fs-em-groups [data-act="merge-group"]');
