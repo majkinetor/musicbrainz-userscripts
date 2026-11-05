@@ -29,7 +29,6 @@ Credit Hoarder lists every credited artist, label and place, with clear matches 
 
 - **Import credits:** one icon per source available on this release. Click to import; right-click opens the source's page. Several sources can run in one session; their edits stack.
 - **⚛ All** (with more than one source) runs a [consolidated import](#consolidated-import).
-- **The ant** cancels a running import, or after one brings the sources back; what was added stays in the editor.
 
 | Option                         |                                                                                          |
 | ------------------------------ | ---------------------------------------------------------------------------------------- |

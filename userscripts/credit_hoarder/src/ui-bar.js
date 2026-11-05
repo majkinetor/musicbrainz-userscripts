@@ -2758,7 +2758,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     progressPct.id = 'discogs-progress-pct';
     progressPct.style.cssText = 'display:none; margin-left:0.5rem; font-size:0.85rem; color:var(--mbu-warn); font-weight:bold; min-width:3.5rem;';
     // the ant's tooltip names the script and its version (String Theory's, when it runs bundled)
-    try { const gs = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {}, host = String(gs.name || '').replace(/\*$/, ''); importLabel.dataset.tip = (host && host !== 'Credit Hoarder' ? 'Credit Hoarder (' + host + ' v' : 'Credit Hoarder v') + (gs.version || '?') + (host && host !== 'Credit Hoarder' ? ')' : ''); } catch (e) { /* no GM_info */ }
+    try { const gs = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {}, host = String(gs.name || '').replace(/\*$/, ''); importLabel.dataset.tip = (host && host !== 'Credit Hoarder' ? 'Credit Hoarder (' + host + ' v' : 'Credit Hoarder v') + (gs.version || '?') + (host && host !== 'Credit Hoarder' ? ')' : '') + '\nClick during or after an import: back to the sources (added relationships stay)'; } catch (e) { /* no GM_info */ }
     // mid-run, a click on the ant cancels the run and brings the source picker back
     // after a run (Done, or stopped) the same click brings the picker back too
     importLabel.addEventListener('click', () => { if (importing || srcButtons.some(b => b.style.display === 'none') || reviewSlot.childElementCount) cancelRun(); });

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-05 18:15 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-05 18:16 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -646,7 +646,6 @@ Credit Hoarder lists every credited artist, label and place, with clear matches 
 
 - **Import credits:** one icon per source available on this release. Click to import; right-click opens the source's page. Several sources can run in one session; their edits stack.
 - **⚛ All** (with more than one source) runs a [consolidated import](#consolidated-import).
-- **The ant** cancels a running import, or after one brings the sources back; what was added stays in the editor.
 
 | Option                         |                                                                                          |
 | ------------------------------ | ---------------------------------------------------------------------------------------- |
