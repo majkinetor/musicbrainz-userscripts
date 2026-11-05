@@ -3949,9 +3949,39 @@ function fsStyle() {
         + '.fs-cons.fs-maximized{position:fixed !important;left:8px !important;top:8px !important;right:8px !important;bottom:8px !important;width:auto !important;height:auto !important;max-width:none !important;max-height:none !important;margin:0 !important}'
         + '.fs-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--fs-panel2);border-bottom:1px solid var(--fs-border);cursor:move}'
         + '.fs-title{font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px}'
-        + '.fs-typepick{font:700 14px var(--mbu-font);color:var(--fs-purple);background:transparent;border:1px solid var(--fs-border);border-radius:var(--mbu-radius);padding:2px 6px;cursor:pointer}'
-        + '.fs-typepick:hover{border-color:var(--fs-purple)}'
-        + '.fs-launch .fs-launch-n{position:absolute;right:-3px;top:-3px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:var(--fs-purple,#7b4fa0);color:#fff;font:700 10px/16px var(--mbu-font);text-align:center;pointer-events:auto;cursor:pointer}'
+        + '.fs-ctrs{display:inline-flex;align-items:center;gap:4px;margin-left:8px}'
+        + '.fs-ctr{position:relative;display:inline-grid;place-items:center;width:26px;height:24px;border-radius:5px;color:var(--mbu-text-weak);cursor:pointer;font-weight:400}'
+        + '.fs-ctr svg{width:16px;height:16px;display:block}'
+        + '.fs-ctr:hover{color:var(--mbu-text);background:color-mix(in srgb, var(--mbu-text) 8%, transparent)}'
+        + '.fs-ctr.fs-on{color:var(--mbu-accent,#7b4fa0);background:color-mix(in srgb, var(--mbu-accent,#7b4fa0) 12%, transparent)}'
+        + '.fs-ctr b{position:absolute;right:-4px;top:-4px;min-width:14px;height:14px;padding:0 3px;box-sizing:border-box;border-radius:7px;background:var(--mbu-accent,#7b4fa0);color:var(--mbu-text-on-accent,#fff);font:700 9px/14px var(--mbu-font);text-align:center}'
+        + '.fs-ctr b:empty{display:none}'
+        + '.fs-launch .fs-lctrs{position:absolute;right:100%;top:50%;transform:translateY(-50%);display:flex;gap:3px;margin-right:4px}'
+        + '.fs-launch .fs-lctrs .fs-ctr{background:var(--mbu-bg);border:1px solid var(--mbu-border)}'
+        + '.fs-launch .fs-lctrs .fs-ctr:hover{color:var(--mbu-text)}'
+        + '.fs-addmenu{font-family:var(--mbu-font);max-height:70vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}'
+        + '.fs-addmenu .fs-am-t{font-weight:700;margin:0 0 6px}'
+        + '.fs-addmenu label{display:flex;align-items:center;gap:7px;padding:4px 2px;cursor:pointer;white-space:nowrap}'
+        + '.fs-addmenu label:hover{color:var(--mbu-accent,#7b4fa0)}'
+        + '.fs-addmenu label svg{width:15px;height:15px;flex-shrink:0;color:var(--mbu-text-weak)}'
+        + '.fs-addmenu label i{font-style:normal;color:var(--mbu-text-weak);margin-left:auto;padding-left:10px;font-size:11px}'
+        + '.fs-addmenu .fs-am-b{display:flex;justify-content:flex-end;gap:6px;margin-top:8px}'
+        + '.fs-addmenu .fs-am-b button{font:inherit;padding:3px 10px;border-radius:5px;border:1px solid var(--mbu-border);background:transparent;color:var(--mbu-text);cursor:pointer}'
+        + '.fs-addmenu .fs-am-b button.fs-am-go{font-weight:700;border-color:var(--mbu-accent,#7b4fa0);color:var(--mbu-accent,#7b4fa0)}'
+        + ':root[data-fs-max] :is(#mbu-dock,#mbu-dock-shelf,[data-mbu-docked],.mbu-dock-win,[data-mb-corner]){visibility:hidden!important;pointer-events:none!important}'
+        + '.fs-emc{box-sizing:border-box;color:var(--fs-muted);font-size:11px;width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;line-height:1.45;padding-top:1px}'
+        + '.fs-emc.fs-wide{width:150px}'
+        + '.fs-emh{display:flex;gap:8px;padding:4px 13px 0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--mbu-text-weak)}'
+        + '.fs-emh .fs-emc{color:inherit;font-size:inherit}'
+        + '.fs-emh .fs-emh-n{flex:1;min-width:0;padding-left:24px}'
+        + '.fs-emh .fs-emh-a{width:44px;flex-shrink:0}'
+        + '.fs-grow .fs-dis{color:var(--fs-muted);font-size:11px;margin-left:4px}'
+        + '#fs-em-cons .fs-sig{flex-wrap:wrap;justify-content:center}'
+        + '#fs-em-cons .fs-sig span{width:auto;min-width:48px}'
+        + '#fs-em-cons .fs-strat{font-size:11px;padding:2px 4px;border:1px solid var(--fs-border);border-radius:5px;background:var(--fs-bg);color:var(--fs-text)}'
+        + '#fs-em-cons .fs-colbody{scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}'
+        + '#fs-em-cons .fs-newgroup.fs-dragover{outline:2px dashed var(--fs-purple);outline-offset:-3px}'
+        + '#fs-em-cons .fs-colbody.fs-dragover{background:color-mix(in srgb, var(--fs-purple) 5%, transparent)}'
         + '.fs-scope{color:var(--fs-muted);font-size:12px}'
         + '.fs-busy{color:var(--mbu-accent-deep-text);font-size:12px;font-weight:600;animation:fs-pulse 1.1s ease-in-out infinite;white-space:nowrap}'
         + '@keyframes fs-pulse{0%,100%{opacity:1}50%{opacity:.25}}'
@@ -4865,7 +4895,7 @@ function renderPool() {
     if (cnt) { cnt.textContent = q ? recs.length + ' / ' + all.length : String(all.length); cnt.classList.toggle('fs-cnt-filtered', !!q); }
     body.innerHTML = recs.length
         ? sortPool(recs, SETTINGS.poolSort).map(({ rec, run }) => poolCardHtml(rec, run)).join('')
-        : '<div class="fs-empty">' + (q ? 'No pool recording matches “' + escapeHtml(q) + '”.' : 'Pool is empty — add a recording by MBID/URL above.') + '</div>';
+        : '<div class="fs-empty">' + (q ? 'No pool recording matches “' + escapeHtml(q) + '”.' : 'Pool is empty — add a recording by MBID/URL above, or Ctrl+click Fusion’s icon to add this page’s.') + '</div>';
     if (STATE.selected) { const c = body.querySelector('[data-gid="' + STATE.selected + '"]'); if (c) c.classList.add('fs-selected'); }
     renderPoolCount();
 }
@@ -4955,7 +4985,7 @@ function renderFooter() {
     // #529: the lightning bolt belongs to Auto-match alone; this is a merge.
     if (btn) { btn.disabled = ready === 0; btn.innerHTML = MERGE_MARK + ' Merge All (' + ready + ') →'; }
 }
-function renderAll() { renderPool(); renderGroups(); renderFooter(); }
+function renderAll() { renderPool(); renderGroups(); renderFooter(); refreshCounters(); }
 
 // _scopeBaseLabel remembers the scope text on its own, so later additions (the
 // RG-edition count) can't compound by re-reading and re-appending the DOM text.
@@ -5456,7 +5486,7 @@ function openSettings(anchor) {
 const WINSTATE_KEY = 'fusion.winstate';
 function loadWinState() { try { return JSON.parse(GM_getValue(WINSTATE_KEY, '{}')); } catch (e) { return {}; } }
 function saveWinState(patch) { try { GM_setValue(WINSTATE_KEY, JSON.stringify(Object.assign(loadWinState(), patch))); } catch (e) {} }
-function applyWinState(cons) {
+function applyWinState(cons, maxBtn) {
     const st = loadWinState();
     cons.style.boxSizing = 'border-box';   // the saved size is the border box (offsetWidth): applied as content it grew 2px each open
     // the normal geometry is applied even when the window opens maximized: .fs-maximized
@@ -5468,7 +5498,7 @@ function applyWinState(cons) {
         cons.style.left = Math.max(0, Math.min(innerWidth - 80, st.left)) + 'px';
         cons.style.top = Math.max(0, Math.min(innerHeight - 40, st.top)) + 'px';
     }
-    if (st.maximized) { cons.classList.add('fs-maximized'); const mb = document.getElementById('fs-max'); if (mb) { mb.textContent = '❐'; mb.dataset.tip = 'Restore'; } }
+    if (st.maximized) { cons.classList.add('fs-maximized'); const mb = maxBtn || document.getElementById('fs-max'); if (mb) { mb.textContent = '❐'; mb.dataset.tip = 'Restore'; } }
 }
 // glyphs/behaviour match group_therapy's maximize control (⛶ / ❐, gt-cons-x style)
 function toggleMaximize(cons, btn) {
@@ -5476,12 +5506,13 @@ function toggleMaximize(cons, btn) {
     cons.classList.toggle('fs-maximized', nowMax);   // its !important box wins over the inline normal geometry, which stays for Restore
     if (btn) { btn.textContent = nowMax ? '❐' : '⛶'; btn.dataset.tip = nowMax ? 'Restore' : 'Maximize'; }
     saveWinState({ maximized: nowMax });
+    refreshFsMax();
 }
 function wireWindowChrome(cons, hdr, maxBtn) {
-    applyWinState(cons);
+    applyWinState(cons, maxBtn); refreshFsMax();
     maxBtn.onclick = () => toggleMaximize(cons, maxBtn);
     hdr.addEventListener('mousedown', e => {
-        if (e.target.closest('button, .fs-cfgbtn, .fs-x, select, input')) return;
+        if (e.target.closest('button, .fs-cfgbtn, .fs-x, .fs-ctr, select, input')) return;
         if (cons.classList.contains('fs-maximized')) return;
         const rect = cons.getBoundingClientRect();
         cons.style.position = 'fixed'; cons.style.left = rect.left + 'px'; cons.style.top = rect.top + 'px'; cons.style.margin = '0';
@@ -5527,7 +5558,7 @@ function buildShell() {
             + MATCH_CUTOFFS.map((c, i) => '{' + TIER_COLORS[c] + (i === cur ? ' on' : i > cur ? ' off' : '') + '} ' + c[0].toUpperCase() + c.slice(1) + ': ' + CUTOFF_MEANS[c]).join('\n');
     };
     overlay.innerHTML = '<div class="fs-cons" id="fs-cons">'
-        + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge ' + emPicker('recording') + '</div><span class="fs-busy" id="fs-busy" style="display:none" data-tip="Open the activity log"></span><span class="fs-bgtask" id="fs-bgtask" style="display:none" data-tip="Open the activity log"></span><span class="fs-netbanner" id="fs-netbanner" style="display:none"></span><div class="fs-scope" id="fs-scope" data-tip="Open the activity log">…</div><div class="fs-sp"></div>'
+        + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge Recordings' + emCounters('recording') + '</div><span class="fs-busy" id="fs-busy" style="display:none" data-tip="Open the activity log"></span><span class="fs-bgtask" id="fs-bgtask" style="display:none" data-tip="Open the activity log"></span><span class="fs-netbanner" id="fs-netbanner" style="display:none"></span><div class="fs-scope" id="fs-scope" data-tip="Open the activity log">…</div><div class="fs-sp"></div>'
         + '<button class="fs-cons-x" id="fs-max" type="button" data-tip="Maximize or restore">⛶</button><button class="fs-cons-x" id="fs-cfg" type="button" data-tip="Fusion\nOptions, the log, help">' + MBU_CFG_ICON + '</button><button class="fs-cons-x" id="fs-close" type="button" data-tip="Close">✕</button></div>'
         + '<div class="fs-ctrl"><select id="fs-rg-editions" style="display:none;"><option value="">+ Load recordings from RG edition ▾</option></select>'
         + '<input type="text" id="fs-add-input" placeholder="paste a recording, release, or release-group MBID|URL…" data-tip="Add recordings to the pool\nPaste: a recording’s, release’s or release group’s MBID, or its MusicBrainz URL, adds its recordings at once">'
@@ -5551,7 +5582,7 @@ function buildShell() {
     overlay.addEventListener('mousedown', e => { if (e.target === overlay) closeFusion(); });
     document.addEventListener('keydown', _fsEscHandler);
     document.getElementById('fs-close').onclick = closeFusion;
-    emPickerWire(overlay);
+    emCountersWire(document.getElementById('fs-hdr'));
     document.getElementById('fs-cfg').onclick = () => openSettings(document.getElementById('fs-cfg'));
     // #529 (majkinetor): "remove Add button on MBID edit, it should be added on
     // paste" — pasting is the only realistic way to enter a 36-char MBID, so the
@@ -5644,6 +5675,7 @@ function closeFusion() {
     document.querySelectorAll('.fs-cutoff-menu').forEach(m => m.remove());
     document.getElementById('fs-overlay')?.remove();
     document.removeEventListener('keydown', _fsEscHandler);
+    refreshFsMax();
 }
 async function seedFromScope() {
     setScopeLabel('Loading…');
@@ -5713,58 +5745,21 @@ async function openFusion() {
     }
     if (FUSION_OPEN) return;
     FUSION_OPEN = true;
+    document.getElementById('fs-em-overlay')?.remove();
     fsStyle();
     buildShell();
     renderAll();
-    if (STATE.recordings.size === 0) {
-        scopeLoad = seedFromScope();
-        try { await scopeLoad; } finally { scopeLoad = null; }
-        if (detectScope()?.mbid === next.mbid) maybeAutoMatchOnOpen().catch(e => Log.error('Match on open failed: ' + e.message));
-    }
 }
 
-function ensureLauncher() {
-    if (!detectScope() && !emCount()) { document.getElementById('fs-launch')?.remove(); return; }
-    if (document.getElementById('fs-launch')) return;
-    fsStyle();
-    const btn = el('button', 'fs-launch'); btn.id = 'fs-launch'; btn.type = 'button';
-    const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; btn.appendChild(img);
-    btn.dataset.tip = 'Fusion — merge recordings\nRight-click: settings';   // icon-only: the tooltip carries the name
-    btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '30'; btn.dataset.mbCornerLabel = 'Fusion'; btn.dataset.mbCornerPaths = '^/(release|release-group|recording)/|^/artist/[^/]+/recordings';   // its @match
-    btn.onclick = e => { if (!e.target.closest('.fs-launch-n') && detectScope()) openFusion(); else openEntities(); };
-    btn.oncontextmenu = e => { e.preventDefault(); if (document.getElementById('fs-settings')) document.getElementById('fs-settings').remove(); else openSettings(btn); };   // #695: right-click on every corner launcher opens its settings
-    document.body.appendChild(btn);
-    mbRestackCorner('br');
-    emBadge();
-}
-// the entities waiting to merge, as a badge on the corner icon; a click on it opens their window
-function emBadge() {
-    const btn = document.getElementById('fs-launch'); if (!btn) return;
-    const n = emCount(); let b = btn.querySelector('.fs-launch-n');
-    if (!n) { b?.remove(); btn.dataset.tip = 'Fusion — merge recordings\nRight-click: settings'; return; }
-    if (!b) { b = el('span', 'fs-launch-n'); btn.appendChild(b); }
-    b.textContent = n > 99 ? '99+' : String(n);
-    btn.dataset.tip = (detectScope() ? 'Fusion — merge recordings\nThe badge: ' : 'Fusion\n') + n + ' other entit' + (n === 1 ? 'y' : 'ies') + ' to merge\nRight-click: settings';
-}
-// the type in the window's title is a picker: Recordings is the recording board, the rest the entities window
-function emPicker(cur) {
-    const cnt = type => { const u = EM.types[type]; return u ? u.pool.length + u.groups.filter(g => g.state !== 'done').reduce((m, g) => m + g.members.length, 0) : 0; };
-    return '<select class="fs-typepick" data-tip="What to merge\nEach type has its own pool and groups.">'
-        + [['recording', 'Recordings']].concat(EM_TYPES.filter(x => x[0] !== 'recording')).map(([k, l]) => '<option value="' + k + '"' + (k === cur ? ' selected' : '') + '>' + l + (k !== 'recording' && cnt(k) ? ' (' + cnt(k) + ')' : '') + '</option>').join('') + '</select>';
-}
-function emPickerWire(root) {
-    const sel = root.querySelector('.fs-typepick'); if (!sel) return;
-    sel.addEventListener('mousedown', e => e.stopPropagation());
-    sel.onchange = () => { if (sel.value === 'recording') { document.getElementById('fs-em-overlay')?.remove(); openFusion(); } else openEntities(sel.value); };
-}
 /* ── Merge any entity type (#908) ────────────────────────────────────────────
    A pool and any number of groups per mergeable type, kept in GM storage so
    every tab and window sees the same board (GM_addValueChangeListener repaints
    the others). Nothing here touches MB's own merge queue until a group is
    merged: then its members go through /<type>/merge_queue and the merge form,
    the recording board's path, one at a time under withMergeLock. Entities come
-   in from Event Horizon's "Add to Fusion pool" button (the mbu-fusion-add
-   event, a JSON-string detail) or by pasting a URL into the window. A group's
+   in from the add menu (Ctrl+click or middle-click on Fusion's corner icon:
+   this page's entity and its related ones) or by pasting a URL into the
+   window. A group's
    busy state lives in this tab only, so a closed tab never leaves one stuck. */
 const EM_KEY = 'fusion.merge';
 const EM_TYPES = [['artist', 'Artists'], ['release-group', 'Release groups'], ['release', 'Releases'], ['work', 'Works'], ['label', 'Labels'], ['place', 'Places'], ['area', 'Areas'], ['instrument', 'Instruments'], ['series', 'Series'], ['event', 'Events']];
@@ -5777,8 +5772,8 @@ const emT = type => EM.types[type] || (EM.types[type] = { pool: [], groups: [], 
 const emHas = (t, gid) => t.pool.some(x => x.gid === gid) || t.groups.some(g => g.state !== 'done' && g.members.some(x => x.gid === gid));
 const emCount = () => Object.values(EM.types).reduce((n, t) => n + t.pool.length + t.groups.reduce((m, g) => m + (g.state === 'done' ? 0 : g.members.length), 0), 0);
 // read the latest copy first, so a change made in another tab is never written over
-function emEdit(fn) { EM = emLoad(); const r = fn(); GM_setValue(EM_KEY, JSON.stringify(EM)); emRender(); ensureLauncher(); emBadge(); return r; }
-if (typeof GM_addValueChangeListener === 'function') GM_addValueChangeListener(EM_KEY, (k, o, n, remote) => { if (remote) { EM = emLoad(); emRender(); ensureLauncher(); emBadge(); } });
+function emEdit(fn) { EM = emLoad(); const r = fn(); GM_setValue(EM_KEY, JSON.stringify(EM)); emRender(); ensureLauncher(); return r; }
+if (typeof GM_addValueChangeListener === 'function') GM_addValueChangeListener(EM_KEY, (k, o, n, remote) => { if (remote) { EM = emLoad(); emRender(); ensureLauncher(); } });
 function emAdd(ent) {
     if (!ent || !EM_TYPES.some(x => x[0] === ent.type) || !/^[0-9a-f-]{36}$/i.test(ent.gid || '')) return 'bad';
     return emEdit(() => {
@@ -5788,15 +5783,6 @@ function emAdd(ent) {
         return 'ok';
     });
 }
-document.addEventListener('mbu-fusion-add', e => {
-    if (e.defaultPrevented) return;
-    e.preventDefault();
-    let d = e.detail; try { if (typeof d === 'string') d = JSON.parse(d); } catch (x) { d = null; }
-    const r = emAdd(d), label = (EM_TYPES.find(x => x[0] === (d && d.type)) || [, 'entities'])[1].toLowerCase();
-    if (r === 'ok') { Log.info('Merge pool: added ' + d.type + ' ' + d.gid + ' (' + d.name + ')'); mbuToast('Added to Fusion’s ' + label + ' pool'); }
-    else if (r === 'dup') mbuToast('Already in Fusion’s ' + label);
-    else Log.warn('mbu-fusion-add: not a mergeable entity');
-});
 const EM_INC = { release: 'artist-credits+labels+media', 'release-group': 'artist-credits', work: 'artist-rels', event: '' };
 const EM_COLS = {
     release: ['Artist', 'Format', 'Tracks', 'Country/Date', 'Label', 'Catalog#', 'Barcode'],
@@ -5836,7 +5822,7 @@ async function emFetch(type, gid) {
     const j = await wsGet('/ws/2/' + type + '/' + gid + '?fmt=json' + (inc ? '&inc=' + inc : ''));
     return { name: j.title || j.name || gid, dis: j.disambiguation || '', info: emInfo(type, j).map(v => v == null ? '' : String(v)) };
 }
-// entries added without details (from Event Horizon, or before they existed) get them on first show
+// entries added without details (an album artist from the add menu, say) get them on first show
 function emFillMissing(type) {
     const t = emT(type), need = t.pool.concat(...t.groups.filter(g => g.state !== 'done').map(g => g.members)).filter(x => !x.info && !EM_FETCHING.has(x.gid));
     need.forEach(x => EM_FETCHING.add(x.gid));
@@ -5862,7 +5848,7 @@ function emMerge(type, gid) {
     const t = emT(type), g = t.groups.find(x => x.id === gid);
     if (!g || EM_BUSY.has(g.id) || g.state === 'done' || g.members.length < 2) return Promise.resolve();
     const target = g.members.some(x => x.gid === g.target) ? g.target : g.members[0].gid;
-    const strategy = g.strategy, note = (g.note || '').trim(), members = g.members.map(x => x.gid);
+    const strategy = g.strategy, note = ((g.note || '').trim() || emAutoNote(type, g)) + '\n\n' + (GM_info.script.name || 'Fusion') + ' v' + VERSION + ' by majkinetor - ' + HELP_URL, members = g.members.map(x => x.gid);
     EM_BUSY.add(g.id); emRender();
     Log.info('▶ Merge ' + type + ' group ' + g.id + ': ' + g.members.map(x => x.name + (x.gid === target ? ' (kept)' : '')).join(', '));
     Log.keep();
@@ -5891,7 +5877,7 @@ function emMerge(type, gid) {
             if (strategy) body.append('merge.merge_strategy', strategy);
             ids.forEach((id, i) => body.append('merge.merging.' + i, String(id)));
             body.append('merge.target', String(targetId));
-            body.append('merge.edit_note', note || 'Merged with Fusion.');
+            body.append('merge.edit_note', note);
             const pr = await gmPost(mergeUrl, body.toString(), { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'text/html', Referer: mergeUrl, Origin: location.origin });
             if (pr.status >= 400) throw new Error('merge POST failed: HTTP ' + pr.status);
             const landed = pr.finalUrl || '', lm = landed.match(EM_TYPE_RE);
@@ -5909,134 +5895,431 @@ function emMerge(type, gid) {
         e => { Log.error('✗ Merge failed for ' + type + ' group: ' + e.message); set({ state: 'error', error: e.message }); })
         .finally(() => { EM_BUSY.delete(g.id); emRender(); });
 }
-function emStyle() {
-    if (document.getElementById('fs-em-style')) return;
-    const s = el('style'); s.id = 'fs-em-style';
-    s.textContent = '.fs-em-tabs{display:flex;flex-wrap:wrap;gap:4px;padding:8px 12px;border-bottom:1px solid var(--fs-border);background:var(--fs-panel)}'
-        + '.fs-em-tabs .fs-btn.fs-on{background:var(--fs-purple);color:var(--mbu-text-on-accent);border-color:var(--fs-purple)}'
-        + '.fs-em-tabs .fs-btn i{font-style:normal;opacity:.75;margin-left:4px}'
-        + '.fs-em-row{display:flex;align-items:center;gap:6px;padding:5px 8px;border-bottom:1px solid var(--fs-border)}'
-        + '.fs-em-row:last-child{border-bottom:0}.fs-em-row a{color:var(--fs-text);text-decoration:none;font-weight:600}.fs-em-row a:hover{text-decoration:underline}'
-        + '.fs-em-dis{color:var(--fs-muted);font-size:12px}.fs-em-grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
-        + '.fs-em-x,.fs-em-star{background:none;border:0;cursor:pointer;color:var(--fs-muted);font-size:14px;padding:2px 5px}.fs-em-x:hover{color:var(--fs-red)}'
-        + '.fs-em-star.fs-on{color:var(--fs-amber)}.fs-em-star:hover{color:var(--fs-amber)}'
-        + '.fs-em-g{border:1px solid var(--fs-border);border-radius:var(--mbu-radius);margin:0 0 10px;background:var(--fs-panel)}'
-        + '.fs-em-g.fs-active{border-color:var(--fs-purple)}.fs-em-g.fs-em-done{opacity:.7}'
-        + '.fs-em-gh{display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid var(--fs-border);cursor:pointer}'
-        + '.fs-em-gf{display:flex;align-items:center;gap:6px;padding:6px 8px;border-top:1px solid var(--fs-border)}'
-        + '.fs-em-gf input{flex:1;min-width:0;padding:4px 6px;border:1px solid var(--fs-border);border-radius:var(--mbu-radius);background:var(--fs-bg);color:var(--fs-text)}'
-        + '.fs-em-gf select{padding:3px;border:1px solid var(--fs-border);border-radius:var(--mbu-radius);background:var(--fs-bg);color:var(--fs-text)}'
-        + '.fs-em-err{color:var(--fs-red);font-size:12px;padding:4px 8px}.fs-em-ok{color:var(--fs-green);font-size:12px}'
-        + '.fs-em-empty{color:var(--fs-muted);padding:16px;text-align:center}'
-        + '.fs-em-add{background:none;border:0;cursor:pointer;color:var(--fs-purple);font-size:13px;padding:2px 5px}'
-        + '.fs-em-tbl{width:100%;border-collapse:collapse;font-size:12px}.fs-em-tbl th{text-align:left;font-weight:600;color:var(--fs-muted);padding:4px 6px;border-bottom:1px solid var(--fs-border);white-space:nowrap}'
-        + '.fs-em-tbl td{padding:4px 6px;border-bottom:1px solid var(--fs-border);vertical-align:top}.fs-em-tbl tr:last-child td{border-bottom:0}'
-        + '.fs-em-tbl td.fs-em-nm{font-size:13px}.fs-em-tbl td.fs-em-nm a{color:var(--fs-text);font-weight:600;text-decoration:none}.fs-em-tbl td.fs-em-nm a:hover{text-decoration:underline}'
-        + '.fs-em-tbl td.fs-em-c{width:1px;white-space:nowrap;padding:2px}.fs-em-tbl tr.fs-em-kept td{background:var(--fs-panel2)}'
-        + '.fs-em-tbl .fs-em-v{color:var(--fs-text)}.fs-em-pend{color:var(--fs-muted);font-style:italic}';
-    document.head.appendChild(s);
+/* ── The launcher, the counters and the add menu (#908) ──────────────────────
+   Opening a board loads nothing: what goes in comes from the add menu
+   (Ctrl+click or middle-click on the corner icon), which offers this page's
+   entity and the related ones (a release: itself, its recordings, its release
+   group, its album artists). Every type with something waiting shows as an
+   icon with its count, beside the corner icon and in each window's title; a
+   click on one opens that type's board. */
+const EM_ALL = [['recording', 'Recordings']].concat(EM_TYPES);
+const emLabel = type => (EM_ALL.find(x => x[0] === type) || [type, type])[1];
+const emOne = type => type === 'series' ? 'series' : type === 'release-group' ? 'release group' : emLabel(type).toLowerCase().replace(/s$/, '');
+function poolCount(type) {
+    if (type === 'recording') return STATE.recordings?.size || 0;
+    const u = EM.types[type];
+    return u ? u.pool.length + u.groups.filter(g => g.state !== 'done').reduce((m, g) => m + g.members.length, 0) : 0;
+}
+const entSvg = (type, size = 14) => '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (MBU_ENT_ICONS[type] || '') + '</svg>';
+function ctrHtml(k, on) {
+    const n = poolCount(k);
+    return '<span class="fs-ctr' + (on ? ' fs-on' : '') + '" role="button" tabindex="0" data-type="' + k + '" data-tip="' + emLabel(k) + '\n' + n + ' to merge · click: open">'
+        + entSvg(k, 16) + '<b>' + (n ? (n > 99 ? '99+' : n) : '') + '</b></span>';
+}
+function emCounters(cur) {
+    const ks = EM_ALL.map(x => x[0]).filter(k => k === cur || (poolCount(k) && (k !== 'recording' || detectScope())));
+    return '<span class="fs-ctrs">' + ks.map(k => ctrHtml(k, k === cur)).join('') + '</span>';
+}
+function emCountersWire(hdr) {
+    if (!hdr) return;
+    const go = e => { const c = e.target.closest('.fs-ctr'); if (!c) return; e.stopPropagation(); e.preventDefault(); openPool(c.dataset.type); };
+    hdr.addEventListener('click', go);
+    hdr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') go(e); });
+}
+function refreshCounters() {
+    const emOv = document.getElementById('fs-em-overlay');
+    document.querySelectorAll('.fs-hdr .fs-ctrs').forEach(c => { c.outerHTML = emCounters(emOv && emOv.contains(c) ? EM_TYPE : 'recording'); });
+    const lc = document.getElementById('fs-launch-ctrs');
+    if (lc) lc.innerHTML = EM_ALL.map(x => x[0]).filter(k => poolCount(k) && (k !== 'recording' || detectScope())).map(k => ctrHtml(k, false)).join('');
+}
+function openPool(type) {
+    document.getElementById('fs-addmenu')?.remove();
+    if (type === 'recording') { document.getElementById('fs-em-overlay')?.remove(); refreshFsMax(); if (detectScope()) openFusion(); }
+    else openEntities(type);
+}
+// a maximized window hides the page's dock and corner icons, as Platform Check's does
+function refreshFsMax() {
+    const on = [...document.querySelectorAll('.fs-cons.fs-maximized')].some(c => c.isConnected);
+    if (on) document.documentElement.dataset.fsMax = '1'; else delete document.documentElement.dataset.fsMax;
+}
+function ensureLauncher() {
+    if (!detectScope() && !EM_TYPE_RE.test(location.pathname) && !EM_ALL.some(([k]) => poolCount(k))) { document.getElementById('fs-launch')?.remove(); return; }
+    let btn = document.getElementById('fs-launch');
+    if (!btn) {
+        fsStyle();
+        btn = el('button', 'fs-launch'); btn.id = 'fs-launch'; btn.type = 'button';
+        const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; btn.appendChild(img);
+        const lc = el('span', 'fs-lctrs'); lc.id = 'fs-launch-ctrs'; btn.appendChild(lc);
+        btn.dataset.tip = 'Fusion — merge\nClick: open · Ctrl+click or middle-click: add from this page\nRight-click: settings';   // icon-only: the tooltip carries the name
+        btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '30'; btn.dataset.mbCornerLabel = 'Fusion';
+        btn.addEventListener('mousedown', e => { if (e.button === 1) e.preventDefault(); });   // no autoscroll
+        btn.addEventListener('auxclick', e => { if (e.button === 1) { e.preventDefault(); openAddMenu(btn); } });
+        btn.onclick = e => {
+            const c = e.target.closest('.fs-ctr'); if (c) { openPool(c.dataset.type); return; }
+            if (e.ctrlKey || e.metaKey) { openAddMenu(btn); return; }
+            if (detectScope() && (STATE.recordings.size || !emCount())) openFusion(); else openEntities();
+        };
+        btn.oncontextmenu = e => { e.preventDefault(); if (document.getElementById('fs-settings')) document.getElementById('fs-settings').remove(); else openSettings(btn); };   // #695: right-click on every corner launcher opens its settings
+        document.body.appendChild(btn);
+        mbRestackCorner('br');
+    }
+    refreshCounters();
+}
+// what the add menu offers on this page: [type, label, ticked]; only the page's own entity starts ticked
+function addMenuOptions() {
+    const sc = detectScope(), m = location.pathname.match(EM_TYPE_RE);
+    if (sc && sc.type === 'release') return { gid: sc.mbid, o: [['release', 'This release', 1], ['recording', 'Its recordings', 0], ['release-group', 'Its release group', 0], ['artist', 'Its album artists', 0]] };
+    if (sc && sc.type === 'release-group') return { gid: sc.mbid, o: [['release-group', 'This release group', 1], ['recording', 'Recordings of its releases', 0], ['release', 'Its releases', 0], ['artist', 'Its artists', 0]] };
+    if (sc && sc.type === 'recording') return { gid: sc.mbid, o: [['recording', 'This recording', 1], ['artist', 'Its artists', 0]] };
+    if (sc && sc.type === 'artist-recordings') return { gid: sc.mbid, o: [['artist', 'This artist', 1], ['recording', 'Its recordings', 0]] };
+    if (m) { const t = m[1].toLowerCase(); return { gid: m[2].toLowerCase(), o: [[t, 'This ' + emOne(t), 1]] }; }
+    return { gid: null, o: [] };
+}
+function openAddMenu(anchor) {
+    const old = document.getElementById('fs-addmenu'); if (old) { old.remove(); return; }
+    const { o, gid } = addMenuOptions();
+    if (!o.length) { mbuToast('Nothing on this page to merge'); return; }
+    fsStyle();
+    const m = el('div', 'fs-addmenu'); m.id = 'fs-addmenu';
+    m.style.cssText = 'position:fixed;z-index:2147483647;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.2);padding:8px 10px;font-size:12px;color:var(--mbu-text);min-width:210px';
+    m.innerHTML = '<div class="fs-am-t">Add to Fusion</div>'
+        + o.map(([k, l, on], i) => { const n = poolCount(k); return '<label><input type="checkbox" data-i="' + i + '"' + (on ? ' checked' : '') + '>' + entSvg(k, 15) + '<span>' + l + '</span>' + (n ? '<i>' + n + ' in pool</i>' : '') + '</label>'; }).join('')
+        + '<div class="fs-am-b"><button type="button" data-a="cancel">Cancel</button><button type="button" class="fs-am-go" data-a="add">Add</button></div>';
+    const r = (anchor || document.body).getBoundingClientRect();
+    m.style.right = Math.max(4, innerWidth - r.right) + 'px'; m.style.bottom = Math.max(4, innerHeight - r.top + 4) + 'px';
+    document.body.appendChild(m);
+    const close = () => { m.remove(); document.removeEventListener('mousedown', out, true); document.removeEventListener('keydown', key, true); };
+    const go = () => { const sel = [...m.querySelectorAll('input:checked')].map(x => o[+x.dataset.i][0]); close(); if (sel.length) addFromPage(sel, gid); };
+    const out = e => { if (!m.contains(e.target) && !(anchor && anchor.contains(e.target))) close(); };
+    const key = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } else if (e.key === 'Enter') { e.preventDefault(); go(); } };
+    setTimeout(() => document.addEventListener('mousedown', out, true), 0);
+    document.addEventListener('keydown', key, true);
+    m.addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (!b) return; if (b.dataset.a === 'add') go(); else close(); });
+    (m.querySelector('input:checked') || m.querySelector('input')).focus();
+}
+// put many entities in their pools in one write; returns { type: { ok, dup } }
+function emAddMany(list) {
+    return emEdit(() => {
+        const res = {};
+        for (const x of list) {
+            const t = emT(x.type), c = res[x.type] || (res[x.type] = { ok: 0, dup: 0 });
+            if (emHas(t, x.gid)) { c.dup++; continue; }
+            t.pool.push({ gid: x.gid, name: x.name || x.gid, dis: x.dis || '', info: Array.isArray(x.info) ? x.info : null });
+            c.ok++;
+        }
+        return res;
+    });
+}
+async function addFromPage(sel, gid) {
+    const ent = (type, j) => ({ type, gid: j.id, name: j.title || j.name, dis: j.disambiguation || '', info: emInfo(type, j).map(v => v == null ? '' : String(v)) });
+    const acArtists = j => (j['artist-credit'] || []).map(c => c.artist).filter(a => a && a.id);
+    const sc = detectScope(), here = sc ? sc.type : (location.pathname.match(EM_TYPE_RE) || [])[1]?.toLowerCase();
+    const list = [], want = k => sel.includes(k), artists = new Map();
+    const addArtists = j => acArtists(j).forEach(a => { if (!artists.has(a.id)) artists.set(a.id, { type: 'artist', gid: a.id, name: a.name, dis: a.disambiguation || '', info: null }); });
+    Log.info('Add menu: ' + sel.join(', ') + ' from ' + location.pathname);
+    try {
+        if (here === 'release') {
+            const j = await wsGet('/ws/2/release/' + gid + '?fmt=json&inc=artist-credits+labels+media+release-groups');
+            if (want('release')) list.push(ent('release', j));
+            if (want('release-group') && j['release-group']) list.push({ type: 'release-group', gid: j['release-group'].id, name: j['release-group'].title, dis: j['release-group'].disambiguation || '', info: null });
+            if (want('artist')) addArtists(j);
+        } else if (here === 'release-group') {
+            const j = await wsGet('/ws/2/release-group/' + gid + '?fmt=json&inc=artist-credits');
+            if (want('release-group')) list.push(ent('release-group', j));
+            if (want('artist')) addArtists(j);
+            if (want('release')) {
+                for (let off = 0, total = 1; off < total; off += 100) {
+                    const p = await wsGet('/ws/2/release?release-group=' + gid + '&limit=100&offset=' + off + '&inc=artist-credits+labels+media&fmt=json');
+                    total = p['release-count'] || 0;
+                    (p.releases || []).forEach(r => list.push(ent('release', r)));
+                    if (!(p.releases || []).length) break;
+                }
+            }
+        } else if (here === 'recording') {
+            if (want('artist')) addArtists(await wsGet('/ws/2/recording/' + gid + '?fmt=json&inc=artist-credits'));
+        } else if (here === 'artist-recordings') {
+            if (want('artist')) list.push(ent('artist', await wsGet('/ws/2/artist/' + gid + '?fmt=json')));
+        } else if (here && sel.includes(here)) {
+            list.push(Object.assign({ type: here, gid }, await emFetch(here, gid)));
+        }
+    } catch (e) { Log.error('Add menu failed: ' + e.message); mbuToast('Fusion could not read this page’s entities: ' + e.message); return; }
+    list.push(...artists.values());
+    if (list.length) {
+        const res = emAddMany(list);
+        const added = Object.entries(res).filter(([, c]) => c.ok).map(([k, c]) => c.ok + ' ' + (c.ok === 1 ? emOne(k) : emLabel(k).toLowerCase()));
+        Log.info('Add menu: ' + JSON.stringify(res));
+        mbuToast(added.length ? 'Added ' + added.join(', ') + ' to Fusion' : 'Already in Fusion');
+        if (!want('recording')) { const first = Object.keys(res).find(k => res[k].ok) || Object.keys(res)[0]; if (document.getElementById('fs-em-overlay') && first) openEntities(first); }
+    }
+    if (want('recording')) loadScopeRecordings();
+}
+// the page's recordings onto the recording board, then its auto-match, as opening it once did
+async function loadScopeRecordings() {
+    const sc = detectScope(); if (!sc) return;
+    document.getElementById('fs-em-overlay')?.remove();
+    await openFusion();
+    if (!SCOPE || SCOPE.mbid !== sc.mbid) return;
+    if (scopeLoad) { await scopeLoad; return; }
+    scopeLoad = seedFromScope();
+    try { await scopeLoad; } finally { scopeLoad = null; }
+    renderAll();
+    if (detectScope()?.mbid === sc.mbid) maybeAutoMatchOnOpen().catch(e => Log.error('Match on open failed: ' + e.message));
+}
+
+/* ── The entity board ─────────────────────────────────────────────────────────
+   The recording board's look and handling for every other type: pool cards
+   that select, drag and double-click into a group, group cards with the same
+   header (count, target, a chip per compared field, note, Merge, delete) and
+   rows (star for the target, the fields as columns, shared values coloured
+   alike, back to the pool / remove). What differs: the chips compare the
+   type's own fields, and a release picks how its mediums combine. */
+const EM_SEL = new Set(), EM_EDITING = new Set(), EM_DRAFT = new Map();
+const EM_WIDE = new Set(['Artist', 'Writers', 'Label', 'Address']);
+function emAutoNote(type, g) {
+    const target = g.members.find(x => x.gid === g.target) || g.members[0];
+    if (!target) return '';
+    const cols = EM_COLS[type] || [], lines = [];
+    cols.forEach((c, i) => {
+        const vs = g.members.map(x => x.info ? (x.info[i] || '') : '');
+        if (g.members.length > 1 && vs[0] && vs.every(v => v === vs[0])) lines.push('- Same ' + c + ': ' + vs[0]);
+    });
+    return 'Merge ' + g.members.length + ' ' + emLabel(type).toLowerCase() + ' into "' + target.name + '": ' + location.origin + '/' + type + '/' + target.gid + (lines.length ? '\n' + lines.join('\n') : '');
+}
+const emNewId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+// move entries (from the pool or open groups) into a group, a new group ('new') or back to the pool ('pool')
+function emMove(gids, dest) {
+    if (!gids.length) return;
+    emEdit(() => {
+        const t = emT(EM_TYPE), moved = [];
+        for (const gid of gids) {
+            let i = t.pool.findIndex(x => x.gid === gid);
+            if (i >= 0) { moved.push(t.pool.splice(i, 1)[0]); continue; }
+            for (const g of t.groups) {
+                if (g.state === 'done' || EM_BUSY.has(g.id)) continue;
+                i = g.members.findIndex(x => x.gid === gid);
+                if (i >= 0) { if (g.id === dest) break; moved.push(g.members.splice(i, 1)[0]); if (g.state === 'error') { g.state = null; g.error = null; } break; }
+            }
+        }
+        if (!moved.length) return;
+        if (dest === 'pool') t.pool.push(...moved);
+        else {
+            let g = t.groups.find(x => x.id === dest && x.state !== 'done');
+            if (!g) { g = { id: emNewId(), members: [], target: moved[0].gid, note: '' }; t.groups.push(g); }
+            g.members.push(...moved);
+            if (!g.members.some(x => x.gid === g.target)) g.target = g.members[0].gid;
+            t.current = g.id;
+        }
+        t.groups = t.groups.filter(g => g.state === 'done' || g.members.length);
+        t.groups.forEach(g => { if (g.members.length && !g.members.some(x => x.gid === g.target)) g.target = g.members[0].gid; });
+        if (!t.groups.some(g => g.id === t.current)) t.current = null;
+    });
+    gids.forEach(x => EM_SEL.delete(x));
+    emRender();
 }
 function emRender() {
-    const ov = document.getElementById('fs-em-overlay'); if (!ov) return;
-    const t = emT(EM_TYPE), label = EM_TYPES.find(x => x[0] === EM_TYPE)[1];
-    const pick = ov.querySelector('.fs-typepick'); if (pick && document.activeElement !== pick) { pick.outerHTML = emPicker(EM_TYPE); emPickerWire(ov); }
-    emFillMissing(EM_TYPE);
-    const cols = EM_COLS[EM_TYPE] || [];
-    const cells = x => cols.map((c, i) => '<td class="fs-em-v">' + (x.info ? escapeHtml(x.info[i] || '') : (i ? '' : '<span class="fs-em-pend">…</span>')) + '</td>').join('');
-    const head = (lead, tail) => '<tr>' + (lead ? '<th></th>' : '') + '<th>' + label.replace(/s$/, '').replace(/^Serie$/, 'Series') + '</th>' + cols.map(c => '<th>' + c + '</th>').join('') + (tail ? '<th></th>' : '') + '</tr>';
-    const link = x => '<a href="/' + EM_TYPE + '/' + x.gid + '" target="_blank" rel="noopener">' + escapeHtml(x.name) + '</a>' + (x.dis ? ' <span class="fs-em-dis">(' + escapeHtml(x.dis) + ')</span>' : '');
-    const cur = t.groups.find(g => g.id === t.current && g.state !== 'done');
+    const ov = document.getElementById('fs-em-overlay'); if (!ov) { refreshCounters(); return; }
+    const type = EM_TYPE, t = emT(type), label = emLabel(type), cols = EM_COLS[type] || [];
+    emFillMissing(type);
+    refreshCounters();
+    const ttl = ov.querySelector('#fs-em-ttl'); if (ttl) ttl.textContent = ' Fusion — Merge ' + label;
+    const link = x => '<a href="/' + type + '/' + x.gid + '" target="_blank" rel="noopener">' + escapeHtml(x.name) + '</a>';
+    // pool
+    [...EM_SEL].forEach(g => { if (!t.pool.some(x => x.gid === g)) EM_SEL.delete(g); });
     ov.querySelector('#fs-em-pool-cnt').textContent = t.pool.length;
-    ov.querySelector('#fs-em-pool').innerHTML = t.pool.length ? '<table class="fs-em-tbl">' + head(false, true) + t.pool.map(x => '<tr class="fs-em-row" data-gid="' + x.gid + '"><td class="fs-em-nm">' + link(x) + '</td>' + cells(x)
-        + '<td class="fs-em-c"><button type="button" class="fs-em-add" data-act="to" data-tip="' + (cur ? 'Add to the current group' : 'Start a new group with it') + '">→</button>'
-        + '<button type="button" class="fs-em-x" data-act="unpool" data-tip="Remove from the pool">✕</button></td></tr>').join('') + '</table>'
-        : '<div class="fs-em-empty">No ' + label.toLowerCase() + ' yet.<br>Add them with Event Horizon’s “Add to Fusion pool”, or paste a URL above.</div>';
+    ov.querySelector('#fs-em-pool').innerHTML = t.pool.length ? t.pool.map(x => {
+        const meta = x.info ? cols.map((c, i) => x.info[i]).filter(Boolean).join(' · ') : '…';
+        return '<div class="fs-pcard' + (EM_SEL.has(x.gid) ? ' fs-selected' : '') + '" draggable="true" data-gid="' + x.gid + '" data-tip="' + escapeHtml(x.name) + '\nClick: select · double-click or drag: into a group">'
+            + '<span class="fs-grip">⠿</span><div class="fs-info"><div class="fs-t">' + link(x) + (x.dis ? '<span class="fs-dis">(' + escapeHtml(x.dis) + ')</span>' : '') + '</div><div class="fs-m">' + escapeHtml(meta) + '</div></div>'
+            + '<span class="fs-rm" data-act="pool-remove" data-tip="Remove from the pool">✕</span></div>';
+    }).join('') : '<div class="fs-empty">No ' + label.toLowerCase() + ' yet.<br>Add them with Ctrl+click or middle-click on Fusion’s icon, or paste a URL above.</div>';
+    // groups
     const open = t.groups.filter(g => g.state !== 'done');
     ov.querySelector('#fs-em-groups-cnt').textContent = open.length;
-    ov.querySelector('#fs-em-groups').innerHTML = t.groups.length ? t.groups.map((g, i) => {
-        const busy = EM_BUSY.has(g.id), done = g.state === 'done', target = g.members.some(x => x.gid === g.target) ? g.target : (g.members[0] || {}).gid;
-        return '<div class="fs-em-g' + (g.id === t.current && !done ? ' fs-active' : '') + (done ? ' fs-em-done' : '') + '" data-g="' + g.id + '">'
-            + '<div class="fs-em-gh" data-act="pick" data-tip="Make it the current group\nThe pool’s → adds to it.">Group ' + (i + 1) + ' <span class="fs-cnt">' + g.members.length + '</span><span class="fs-sp"></span>'
-            + (done ? '<span class="fs-em-ok">✓ merged' + (g.mergedUrl ? ' · <a href="' + escapeHtml(g.mergedUrl) + '" target="_blank" rel="noopener">view</a>' : '') + '</span>'
-                : '<button type="button" class="fs-btn fs-primary" data-act="merge"' + (busy || g.members.length < 2 ? ' disabled' : '') + '>' + (busy ? 'Merging…' : 'Merge →') + '</button>')
-            + '<button type="button" class="fs-em-x" data-act="dissolve" data-tip="' + (done ? 'Remove this group' : 'Dissolve the group\nIts members go back to the pool.') + '">✕</button></div>'
-            + '<table class="fs-em-tbl">' + head(true, !done) + g.members.map(x => '<tr class="fs-em-row' + (x.gid === target ? ' fs-em-kept' : '') + '" data-gid="' + x.gid + '">'
-                + '<td class="fs-em-c">' + (done ? '' : '<button type="button" class="fs-em-star' + (x.gid === target ? ' fs-on' : '') + '" data-act="target" data-tip="' + (x.gid === target ? 'The one kept' : 'Keep this one') + '">★</button>') + '</td>'
-                + '<td class="fs-em-nm">' + link(x) + '</td>' + cells(x)
-                + (done ? '' : '<td class="fs-em-c"><button type="button" class="fs-em-x" data-act="ungroup" data-tip="Back to the pool">✕</button></td>') + '</tr>').join('') + '</table>'
-            + (g.error && !done ? '<div class="fs-em-err">' + escapeHtml(g.error) + '</div>' : '')
-            + (done ? '' : '<div class="fs-em-gf"><input type="text" data-note placeholder="Edit note (optional)" value="' + escapeHtml(g.note || '') + '">'
-                + (EM_TYPE === 'release' ? '<select data-strategy data-tip="How the releases’ mediums combine"><option value="1"' + (g.strategy !== '2' ? ' selected' : '') + '>Append mediums</option><option value="2"' + (g.strategy === '2' ? ' selected' : '') + '>Merge mediums</option></select>' : '') + '</div>')
-            + '</div>';
-    }).join('') : '<div class="fs-em-empty">No groups. Use → on a pool entry to start one.</div>';
+    ov.querySelector('#fs-em-groups').innerHTML = t.groups.map((g, gi) => {
+        const busy = EM_BUSY.has(g.id), done = g.state === 'done', err = g.state === 'error', tooFew = g.members.length < 2;
+        const target = g.members.find(x => x.gid === g.target) || g.members[0] || {};
+        const active = g.id === t.current && !done ? ' fs-active' : '';
+        if (EM_EDITING.has(g.id) && !done) {
+            const hasNote = !!(g.note || '').trim(), draft = EM_DRAFT.has(g.id) ? EM_DRAFT.get(g.id) : (hasNote ? g.note : emAutoNote(type, g));
+            return '<div class="fs-gcard fs-gcard-manual fs-tier-manual' + active + ' fs-editing" data-g="' + g.id + '">'
+                + '<div class="fs-ghdr"><span class="fs-gt">✎ Edit note — ' + escapeHtml(target.name || 'group') + '</span><div class="fs-sp"></div>'
+                + '<button class="fs-btn fs-note-save" type="button" data-act="note-save">Save</button>'
+                + '<button class="fs-btn fs-note-cancel" type="button" data-act="note-cancel">Cancel</button>'
+                + (hasNote ? '<button class="fs-btn fs-note-clear" type="button" data-act="note-clear" data-tip="Back to the generated note">Reset</button>' : '')
+                + '</div><div class="fs-note-wrap"><textarea class="fs-note-ta" spellcheck="false" placeholder="Edit note submitted with this merge…">' + escapeHtml(draft) + '</textarea>'
+                + '<div class="fs-note-hint">Replaces the auto-generated reason line. Fusion\'s attribution footer is always appended.</div></div></div>';
+        }
+        // per column: how many members share each value; the chips and the row colours both come from it
+        const colStats = cols.map((c, i) => {
+            const vs = g.members.map(x => x.info ? (x.info[i] || '') : ''), cnt = {};
+            vs.forEach(v => { if (v) cnt[v] = (cnt[v] || 0) + 1; });
+            const rep = Object.entries(cnt).filter(([, n]) => n > 1).sort((a, b) => b[1] - a[1]);
+            return { vs, rep, color: Object.fromEntries(rep.map(([v], k) => [v, 'fs-idc' + (k % 6)])) };
+        });
+        const chips = g.members.length > 1 ? cols.map((c, i) => {
+            const { vs, rep } = colStats[i], all = vs[0] && vs.every(v => v === vs[0]);
+            const cls = all ? 'hit' : rep.length ? 'partial' : '';
+            const tip = all ? c + ': the same on all\n' + vs[0] : rep.length ? c + ': shared by ' + rep[0][1] + ' of ' + g.members.length + '\n' + rep[0][0] : c + ': all differ';
+            return '<span class="' + cls + '" data-tip="' + escapeHtml(tip) + '">' + c + '</span>';
+        }).join('') : '';
+        const hasNote = !!(g.note || '').trim();
+        const mLabel = busy ? '⏳ Merging…' : done ? '✓ Merged' : err ? '⚠ Retry merge' : tooFew ? MERGE_MARK + ' Merge (needs 2+)' : MERGE_MARK + ' Merge';
+        const head = '<div class="fs-ghdr fs-ghdr-grid"><div class="fs-ghl">'
+            + '<span class="fs-gnum" data-tip="Group ' + (gi + 1) + '\n' + g.members.length + ' ' + (g.members.length === 1 ? emOne(type) : label.toLowerCase()) + '">' + g.members.length + '</span>'
+            + '<span class="fs-gt" data-tip="' + escapeHtml(target.name || '') + '">' + (target.gid ? link(target) : 'New group') + '</span></div>'
+            + '<div class="fs-sig">' + chips + '</div><div class="fs-ghr">'
+            + (type === 'release' && !done ? '<select class="fs-strat" data-act="strategy" data-tip="Mediums\nHow the releases’ mediums combine"><option value="1"' + (g.strategy !== '2' ? ' selected' : '') + '>Append mediums</option><option value="2"' + (g.strategy === '2' ? ' selected' : '') + '>Merge mediums</option></select>' : '')
+            + (done ? (g.mergedUrl ? '<a href="' + escapeHtml(g.mergedUrl) + '" target="_blank" rel="noopener">view</a>' : '')
+                : '<span class="fs-note-btn' + (hasNote ? ' fs-has-note' : '') + '" data-act="edit-note" data-tip="' + (hasNote ? 'A custom edit note is set\nClick: edit it' : 'Add a custom edit note for this merge') + '">✎</span>')
+            + '<button class="fs-mbtn' + (done ? ' fs-done' : err ? ' fs-err' : '') + '" type="button" data-act="merge-group"' + (busy || done || tooFew ? ' disabled' : '') + (err ? ' data-tip="' + escapeHtml('Merge failed\n' + (g.error || '')) + '"' : '') + '>' + mLabel + '</button>'
+            + '<span class="fs-kill" data-act="delete-group" data-tip="' + (done ? 'Remove this group' : 'Delete this group\nIts ' + label.toLowerCase() + ' go back to the pool.') + '">🗑</span>'
+            + '</div></div>';
+        const colHead = cols.length ? '<div class="fs-emh"><span class="fs-emh-n">' + escapeHtml(emOne(type)) + '</span>' + cols.map(c => '<span class="fs-emc' + (EM_WIDE.has(c) ? ' fs-wide' : '') + '">' + c + '</span>').join('') + '<span class="fs-emh-a"></span></div>' : '';
+        const rows = g.members.map(x => {
+            const isT = x.gid === target.gid;
+            const star = isT ? '<span class="fs-star fs-star-on" data-tip="The merge target\nThis one is kept.">★</span>'
+                : done ? '<span class="fs-star"></span>' : '<span class="fs-star" data-act="set-target" data-tip="Make this the merge target\nThe one kept; the others merge into it.">☆</span>';
+            const cells = cols.map((c, i) => {
+                const v = x.info ? (x.info[i] || '') : null, cc = v ? colStats[i].color[v] : '';
+                return '<span class="fs-emc' + (EM_WIDE.has(c) ? ' fs-wide' : '') + '" data-tip="' + escapeHtml(c + '\n' + (v == null ? 'loading…' : v || '—')) + '">' + (v == null ? '…' : v ? (cc ? '<span class="' + cc + '">' + escapeHtml(v) + '</span>' : escapeHtml(v)) : '') + '</span>';
+            }).join('');
+            return '<div class="fs-growwrap"><div class="fs-grow' + (isT ? ' fs-target-row' : '') + '"' + (busy || done ? '' : ' draggable="true"') + ' data-gid="' + x.gid + '">' + star
+                + '<span class="fs-t">' + link(x) + (x.dis ? '<span class="fs-dis">(' + escapeHtml(x.dis) + ')</span>' : '') + '</span>' + cells
+                + (busy || done ? '<span class="fs-acts"></span>' : '<span class="fs-acts"><span data-act="return" data-tip="Back to the pool">↩</span><span class="fs-rm-x" data-act="remove-both" data-tip="Remove from the group and the pool">✕</span></span>') + '</div></div>';
+        }).join('');
+        return '<div class="fs-gcard fs-gcard-manual fs-tier-manual' + active + '" data-g="' + g.id + '">' + head + colHead + '<div class="fs-grows">' + rows + '</div>'
+            + (err && g.error ? '<div class="fs-gerr">' + escapeHtml(g.error) + '</div>' : '') + '</div>';
+    }).join('') + '<div class="fs-newgroup" id="fs-em-newgroup">+ New group — drag a pool entry here, or select some and click here</div>';
     const ready = open.filter(g => g.members.length > 1 && !EM_BUSY.has(g.id)).length;
-    const all = ov.querySelector('#fs-em-mergeall'); all.disabled = !ready; all.textContent = 'Merge All' + (ready ? ' (' + ready + ')' : '') + ' →';
+    ov.querySelector('#fs-em-sum').innerHTML = '<b>' + open.length + '</b> group' + (open.length === 1 ? '' : 's') + ' · <b>' + ready + '</b> ready · <b>' + t.pool.length + '</b> in pool';
+    const all = ov.querySelector('#fs-em-mergeall'); all.disabled = !ready; all.textContent = MERGE_MARK + ' Merge All (' + ready + ') →';
 }
 function openEntities(type) {
     closeFusion();
-    emStyle(); fsStyle();
+    document.getElementById('fs-addmenu')?.remove();
+    fsStyle();
     EM = emLoad();
     const here = (location.pathname.match(EM_TYPE_RE) || [])[1];
-    EM_TYPE = type || EM_TYPE || (here && here.toLowerCase()) || (EM_TYPES.find(([k]) => EM.types[k] && (EM.types[k].pool.length || EM.types[k].groups.length)) || EM_TYPES[0])[0];
+    EM_TYPE = type || EM_TYPE || (here && here.toLowerCase()) || (EM_TYPES.find(([k]) => poolCount(k)) || EM_TYPES[0])[0];
+    if (EM_TYPE === 'recording') { openPool('recording'); return; }
     document.getElementById('fs-em-overlay')?.remove();
+    EM_SEL.clear();
     const ov = el('div', 'fs-overlay'); ov.id = 'fs-em-overlay';
-    ov.innerHTML = '<div class="fs-cons"><div class="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge ' + emPicker(EM_TYPE) + '</div><div class="fs-sp"></div>'
+    ov.innerHTML = '<div class="fs-cons" id="fs-em-cons"><div class="fs-hdr" id="fs-em-hdr"><div class="fs-title">' + ICON + '<span id="fs-em-ttl"> Fusion — Merge ' + emLabel(EM_TYPE) + '</span>' + emCounters(EM_TYPE) + '</div><div class="fs-sp"></div>'
+        + '<button class="fs-cons-x" id="fs-em-max" type="button" data-tip="Maximize or restore">⛶</button>'
         + '<button class="fs-cons-x" id="fs-em-cfg" type="button" data-tip="Fusion\nOptions, the log, help">' + MBU_CFG_ICON + '</button><button class="fs-cons-x" id="fs-em-close" type="button" data-tip="Close">✕</button></div>'
-        + '<div class="fs-ctrl"><input type="text" id="fs-em-input" placeholder="paste an entity URL or MBID…" data-tip="Add to the pool\nPaste a MusicBrainz URL of any mergeable entity, or an MBID of the open tab’s type."><div class="fs-sp"></div></div>'
-        + '<div class="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-em-pool-cnt">0</span><span class="fs-sp"></span><button type="button" class="fs-btn" data-act="newgroup" data-tip="Put the whole pool in one new group">Group all</button></div><div class="fs-colbody" id="fs-em-pool"></div></div>'
-        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-em-groups-cnt">0</span><span class="fs-sp"></span><button type="button" class="fs-btn" data-act="clearmerged" data-tip="Remove the merged groups">Clear merged</button></div><div class="fs-colbody" id="fs-em-groups"></div></div></div>'
-        + '<div class="fs-ftr"><div class="fs-sp"></div><div class="fs-note">Merges submit directly in the background — no MB merge page involved</div><button type="button" id="fs-em-mergeall" class="fs-btn fs-primary">Merge All →</button></div></div>';
+        + '<div class="fs-ctrl"><input type="text" id="fs-em-input" placeholder="paste an entity URL or MBID…" data-tip="Add to the pool\nPaste a MusicBrainz URL of any mergeable entity, or an MBID of this board’s type."><div class="fs-sp"></div></div>'
+        + '<div class="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-em-pool-cnt">0</span><span class="fs-sp"></span><button type="button" class="fs-btn" data-act="newgroup" data-tip="Group all\nThe selected entries, or the whole pool, in one new group">Group all</button></div><div class="fs-colbody" id="fs-em-pool"></div></div>'
+        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-em-groups-cnt">0</span><span class="fs-sp"></span><button type="button" class="fs-btn" data-act="clearmerged" data-tip="Clear merged\nRemove the merged groups">Clear merged</button></div><div class="fs-colbody" id="fs-em-groups"></div></div></div>'
+        + '<div class="fs-ftr"><div class="fs-sum" id="fs-em-sum"></div><div class="fs-sp"></div><div class="fs-note">Merges submit directly in the background — no MB merge page involved</div><button type="button" id="fs-em-mergeall" class="fs-btn fs-primary">' + MERGE_MARK + ' Merge All (0) →</button></div></div>';
     document.body.appendChild(ov);
-    const close = () => { ov.remove(); document.removeEventListener('keydown', esc); };
-    const esc = e => { if (e.key === 'Escape' && !document.getElementById('fs-settings')) close(); };
+    const cons = ov.querySelector('#fs-em-cons'), hdr = ov.querySelector('#fs-em-hdr');
+    wireWindowChrome(cons, hdr, ov.querySelector('#fs-em-max'));
+    emCountersWire(hdr);
+    const close = () => { ov.remove(); document.removeEventListener('keydown', esc); refreshFsMax(); };
+    const esc = e => { if (e.key === 'Escape' && !document.getElementById('fs-settings') && !document.getElementById('fs-addmenu') && !e.target.closest?.('.fs-note-ta')) close(); };
     document.addEventListener('keydown', esc);
     ov.addEventListener('mousedown', e => { if (e.target === ov) close(); });
     ov.querySelector('#fs-em-close').onclick = close;
-    emPickerWire(ov);
     ov.querySelector('#fs-em-cfg').onclick = e => openSettings(e.currentTarget);
     const input = ov.querySelector('#fs-em-input');
     input.addEventListener('paste', () => setTimeout(() => { emAddByUrl(input.value); input.value = ''; }, 0));
     input.addEventListener('keydown', e => { if (e.key === 'Enter') { emAddByUrl(input.value); input.value = ''; } });
     ov.querySelector('#fs-em-mergeall').onclick = async () => {
-        const ids = emT(EM_TYPE).groups.filter(g => g.state !== 'done' && g.members.length > 1).map(g => g.id), type = EM_TYPE;
+        const type = EM_TYPE, ids = emT(type).groups.filter(g => g.state !== 'done' && g.members.length > 1).map(g => g.id);
         for (const id of ids) await emMerge(type, id);
     };
+    const pool = ov.querySelector('#fs-em-pool'), groups = ov.querySelector('#fs-em-groups');
     ov.addEventListener('change', e => {
-        const gEl = e.target.closest('[data-g]'); if (!gEl) return;
-        const key = e.target.hasAttribute('data-note') ? 'note' : e.target.hasAttribute('data-strategy') ? 'strategy' : null; if (!key) return;
-        emEdit(() => { const g = emT(EM_TYPE).groups.find(x => x.id === gEl.dataset.g); if (g) g[key] = e.target.value; });
+        if (e.target.dataset.act !== 'strategy') return;
+        const gk = e.target.closest('[data-g]')?.dataset.g;
+        emEdit(() => { const g = emT(EM_TYPE).groups.find(x => x.id === gk); if (g) g.strategy = e.target.value; });
     });
+    ov.addEventListener('input', e => { if (e.target.classList.contains('fs-note-ta')) EM_DRAFT.set(e.target.closest('[data-g]').dataset.g, e.target.value); });
     ov.addEventListener('click', e => {
-        const b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
-        const act = b.dataset.act, gid = (b.closest('[data-gid]') || {}).dataset?.gid, gk = (b.closest('[data-g]') || {}).dataset?.g;
-        if (act === 'merge') { emMerge(EM_TYPE, gk); return; }
-        emEdit(() => {
-            const t = emT(EM_TYPE), g = t.groups.find(x => x.id === gk);
-            if (act === 'unpool') t.pool = t.pool.filter(x => x.gid !== gid);
-            else if (act === 'to') {
-                const ent = t.pool.find(x => x.gid === gid); if (!ent) return;
-                let to = t.groups.find(x => x.id === t.current && x.state !== 'done');
-                if (!to) { to = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), members: [], target: gid, note: '' }; t.groups.push(to); t.current = to.id; }
-                to.members.push(ent); t.pool = t.pool.filter(x => x.gid !== gid);
-            } else if (act === 'newgroup') {
-                if (!t.pool.length) return;
-                const ng = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), members: t.pool, target: t.pool[0].gid, note: '' };
-                t.groups.push(ng); t.current = ng.id; t.pool = [];
-            } else if (act === 'clearmerged') t.groups = t.groups.filter(x => x.state !== 'done');
-            else if (!g) return;
-            else if (act === 'pick') { if (g.state !== 'done' && !e.target.closest('a,button')) t.current = g.id; }
-            else if (act === 'target') { g.target = gid; }
-            else if (act === 'ungroup') { const ent = g.members.find(x => x.gid === gid); g.members = g.members.filter(x => x.gid !== gid); if (ent) t.pool.push(ent); g.state = g.state === 'error' ? null : g.state; if (!g.members.length) t.groups = t.groups.filter(x => x !== g); }
-            else if (act === 'dissolve') { if (g.state !== 'done') t.pool.push(...g.members); t.groups = t.groups.filter(x => x !== g); if (t.current === g.id) t.current = null; }
-        });
+        if (e.target.closest('a')) return;
+        const b = e.target.closest('[data-act]'), card = e.target.closest('[data-g]'), gk = card?.dataset.g, gid = e.target.closest('[data-gid]')?.dataset.gid;
+        const act = b && !b.disabled ? b.dataset.act : null;
+        if (b && b.disabled) return;
+        if (act === 'strategy') return;
+        if (act === 'merge-group') { emMerge(EM_TYPE, gk); return; }
+        if (act === 'edit-note') { EM_EDITING.add(gk); EM_DRAFT.delete(gk); emRender(); ov.querySelector('[data-g="' + gk + '"] .fs-note-ta')?.focus(); return; }
+        if (act === 'note-cancel') { EM_EDITING.delete(gk); EM_DRAFT.delete(gk); emRender(); return; }
+        if (act === 'note-save' || act === 'note-clear') {
+            const ta = card.querySelector('.fs-note-ta'), type = EM_TYPE;
+            EM_EDITING.delete(gk); EM_DRAFT.delete(gk);
+            emEdit(() => {
+                const g = emT(type).groups.find(x => x.id === gk); if (!g) return;
+                const v = act === 'note-clear' ? '' : (ta ? ta.value : '').trim();
+                g.note = v && v !== emAutoNote(type, g).trim() ? v : '';
+            });
+            return;
+        }
+        if (act === 'pool-remove') { EM_SEL.delete(gid); emEdit(() => { const t = emT(EM_TYPE); t.pool = t.pool.filter(x => x.gid !== gid); }); return; }
+        if (act === 'return') { emMove([gid], 'pool'); return; }
+        if (act === 'remove-both') {
+            emEdit(() => {
+                const t = emT(EM_TYPE), g = t.groups.find(x => x.id === gk); if (!g) return;
+                g.members = g.members.filter(x => x.gid !== gid);
+                if (g.state === 'error') { g.state = null; g.error = null; }
+                if (!g.members.length) t.groups = t.groups.filter(x => x !== g);
+                else if (!g.members.some(x => x.gid === g.target)) g.target = g.members[0].gid;
+            });
+            return;
+        }
+        if (act === 'set-target') { emEdit(() => { const g = emT(EM_TYPE).groups.find(x => x.id === gk); if (g) g.target = gid; }); return; }
+        if (act === 'delete-group') {
+            EM_EDITING.delete(gk);
+            emEdit(() => { const t = emT(EM_TYPE), g = t.groups.find(x => x.id === gk); if (!g) return; if (g.state !== 'done') t.pool.push(...g.members); t.groups = t.groups.filter(x => x !== g); if (t.current === gk) t.current = null; });
+            return;
+        }
+        if (act === 'newgroup') { const t = emT(EM_TYPE); emMove(EM_SEL.size ? [...EM_SEL] : t.pool.map(x => x.gid), 'new'); return; }
+        if (act === 'clearmerged') { emEdit(() => { const t = emT(EM_TYPE); t.groups = t.groups.filter(x => x.state !== 'done'); }); return; }
+        if (e.target.closest('#fs-em-newgroup')) { if (EM_SEL.size) emMove([...EM_SEL], 'new'); else mbuToast('Select pool entries first, or drag one here'); return; }
+        const pc = e.target.closest('.fs-pcard');
+        if (pc) { if (EM_SEL.has(pc.dataset.gid)) EM_SEL.delete(pc.dataset.gid); else EM_SEL.add(pc.dataset.gid); pc.classList.toggle('fs-selected', EM_SEL.has(pc.dataset.gid)); return; }
+        // a group's header: the selection goes there, or the group becomes the current one
+        if (card && e.target.closest('.fs-ghdr') && !e.target.closest('select')) {
+            const g = emT(EM_TYPE).groups.find(x => x.id === gk); if (!g || g.state === 'done') return;
+            if (EM_SEL.size) emMove([...EM_SEL], gk); else emEdit(() => { emT(EM_TYPE).current = gk; });
+        }
+    });
+    pool.addEventListener('dblclick', e => {
+        const pc = e.target.closest('.fs-pcard'); if (!pc || e.target.closest('a,[data-act]')) return;
+        const t = emT(EM_TYPE), openG = t.groups.filter(g => g.state !== 'done' && !EM_BUSY.has(g.id));
+        const dest = (openG.find(g => g.id === t.current) || openG[openG.length - 1] || {}).id || 'new';
+        emMove([...new Set([pc.dataset.gid, ...EM_SEL])], dest);
+    });
+    // drag: a pool card (with the selection, if it is part of it) or a group row
+    const DT = 'text/x-fs-em';
+    ov.addEventListener('dragstart', e => {
+        const src = e.target.closest?.('.fs-pcard, .fs-grow[draggable="true"]'); if (!src) return;
+        const gid = src.dataset.gid, fromPool = src.classList.contains('fs-pcard');
+        const gids = fromPool && EM_SEL.has(gid) ? [...EM_SEL] : [gid];
+        e.dataTransfer.setData(DT, JSON.stringify({ from: fromPool ? 'pool' : src.closest('[data-g]').dataset.g, gids }));
+        e.dataTransfer.effectAllowed = 'move';
+    });
+    const zoneOf = e => e.target.closest?.('#fs-em-groups [data-g], #fs-em-newgroup') || (e.target.closest?.('#fs-em-groups') ? groups : e.target.closest?.('#fs-em-pool') ? pool : null);
+    const clear = () => ov.querySelectorAll('.fs-dragover').forEach(x => x.classList.remove('fs-dragover'));
+    ov.addEventListener('dragover', e => {
+        if (![...e.dataTransfer.types].includes(DT)) return;
+        const z = zoneOf(e); if (!z) return;
+        e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+        if (!z.classList.contains('fs-dragover')) { clear(); z.classList.add('fs-dragover'); }
+    });
+    ov.addEventListener('dragleave', e => { if (!ov.contains(e.relatedTarget)) clear(); });
+    ov.addEventListener('drop', e => {
+        const z = zoneOf(e); clear(); if (!z) return;
+        let d; try { d = JSON.parse(e.dataTransfer.getData(DT)); } catch (x) { return; }
+        e.preventDefault();
+        const dest = z === pool ? 'pool' : z.dataset.g ? z.dataset.g : 'new';
+        if (dest === d.from) return;
+        emMove(d.gids, dest);
     });
     emRender();
 }
-// the launcher: the recording board on its pages, the entity board anywhere once it holds something
 function boot() {
     Log.info('Fusion v' + VERSION + ' — startup on ' + location.pathname);
-    document.documentElement.dataset.mbuFusion = '1';
-    document.dispatchEvent(new CustomEvent('mbu-fusion-ready'));
     ensureLauncher();
     // reopen the log window if it was left open (same as apollo_editor #283)
     setTimeout(() => { try { Log.reopen(); } catch (e) {} }, 800);   // #283 reopen the log if it was left open
@@ -6045,7 +6328,7 @@ function boot() {
 document.addEventListener('mbu-open-settings', e => { if (e.detail === 'fusion' && !e.defaultPrevented) { e.preventDefault(); fsStyle(); const fsS = document.getElementById('fs-settings'); if (fsS) fsS.remove(); else openSettings(null); } });
 if (SETTINGS_ONLY) { fsStyle(); const fsS = document.getElementById('fs-settings'); if (fsS) fsS.remove(); else openSettings(null); return; }
 boot();
-new MutationObserver(() => { closeFusion(); ensureLauncher(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-page'] });
+new MutationObserver(() => { closeFusion(); document.getElementById('fs-em-overlay')?.remove(); document.getElementById('fs-addmenu')?.remove(); refreshFsMax(); ensureLauncher(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-page'] });
 
 /* ── Mission Control adapter (#680) ──────────────────────────────────────────
    Mission Control asks over document events with JSON-string details (see

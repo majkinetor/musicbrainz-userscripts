@@ -3949,12 +3949,9 @@ const COLS = {
     dg: { keys: ['title', 'artist', 'date', 'rating', 'releases', 'links'], names: { title: 'Title', artist: 'Artist', date: 'First released', rating: 'Rating', releases: 'Releases', links: 'Links' }, off: [] },
 };
 // a section's columns as they stand; a column the saved choice doesn't know is one added later: it takes its usual place, on or off as usual
-// MusicBrainz's releases list drawn as EH's has no links to show: it reads MusicBrainz's table, which has none
-let edNoLinks = false;
 function colState(sc) {
     const { keys, off } = COLS[sc], saved = S.colPick[sc] || {}, known = (saved.order || []).filter(k => keys.includes(k)), order = [...known];
     keys.forEach((k, i) => { if (!order.includes(k)) order.splice(i ? order.indexOf(keys[i - 1]) + 1 : 0, 0, k); });
-    if (sc === 'ed' && edNoLinks) order.splice(order.indexOf('links'), 1);
     return { order, off: new Set(keys.slice(1).filter(k => known.includes(k) ? (saved.off || []).includes(k) : off.includes(k))) };
 }
 const colKeep = (sc, order, off) => { S.colPick = { ...S.colPick, [sc]: { order, off: [...off] } }; };
@@ -8617,25 +8614,6 @@ function starButton(app) {
         save(); paint();
     });
 }
-// #908: Fusion keeps a merge pool per entity type; the button shows only while Fusion runs on the page
-const FUSE = '<circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/>';
-function fusionButton(app) {
-    const m = location.pathname.match(/^\/(release-group|release|artist|label|recording|work|area|instrument|place|series|event)\/([0-9a-f-]{36})(?:\/|$)/i);
-    const acts = app && app.querySelector('.kicker .acts'), r = data && (data.rel || data.g || data.t);
-    if (!m || !acts || !r || acts.querySelector('[data-fusion]') || !document.documentElement.dataset.mbuFusion) return;
-    const name = r.title || r.name || r.en; if (!name) return;
-    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'ab'; btn.dataset.fusion = '1';
-    btn.setAttribute('aria-label', 'Add to Fusion pool'); btn.dataset.tip = 'Add to Fusion pool\nCollect entities to merge, then group them in Fusion’s window.';
-    btn.innerHTML = SVG(FUSE);
-    const star = acts.querySelector('[data-star]'), search = acts.querySelector('.srch,[data-srch]');
-    if (star) star.after(btn); else if (search) search.before(btn); else acts.append(btn);
-    btn.addEventListener('click', () => {
-        const ev = new CustomEvent('mbu-fusion-add', { cancelable: true, detail: JSON.stringify({ type: m[1].toLowerCase(), gid: m[2].toLowerCase(), name, dis: r.dis || r.comment || '' }) });
-        document.dispatchEvent(ev);
-        if (!ev.defaultPrevented) toast('Fusion is not running');
-    });
-}
-document.addEventListener('mbu-fusion-ready', () => fusionButton(document.querySelector('.kicker') && document.querySelector('.kicker').closest('#app, main, body')));
 const hmChip = (href, name, ic) => `<a class="hm-chip" href="${href}">${SVG(ic)}<span>${name}</span></a>`;
 // the pages last opened here, newest first
 const visits = () => { try { return GM_getValue('visits', []) || []; } catch (e) { return []; } };
@@ -9183,7 +9161,6 @@ function secRail(app) {
     }
     rail.hidden = secs.length < 2 && !secs.some(x => x.hidden);
     starButton(app);
-    fusionButton(app);
     collectionButton(app);
     const acts = app.querySelector('.kicker .acts');
     if (acts && !rail.hidden && !acts.querySelector('[data-ehsec]')) {
@@ -9951,7 +9928,6 @@ async function nativeMore(d) {
     d.editions = d.editions.concat(add); d.page++; d.more = !!add.length && pageMore(c, d.page);
 }
 function releasesDress(c) {
-    edNoLinks = true;
     // Scope the shared stylesheet with the browser's parser, including media rules.
     const sheet = new CSSStyleSheet(); sheet.replaceSync(CSS);
     const scope = rules => [...rules].map(r => r.type === CSSRule.STYLE_RULE ? ':root[data-eh-releases] .eh-release-views :is(' + r.selectorText.replace(/#app\b/g, '.eh-release-views') + '){' + r.style.cssText + '}' : r.type === CSSRule.MEDIA_RULE ? '@media ' + r.conditionText + '{' + scope(r.cssRules) + '}' : '').join(String.fromCharCode(10));
@@ -9975,16 +9951,7 @@ function releasesDress(c) {
         for (const h of host.querySelectorAll('section.sec>.secthead')) h.parentNode.style.setProperty('--eh-sh', h.offsetHeight + 'px');
         railSpy();
     };
-    host.addEventListener('click', ev => { if (!ehOn || !ev.target.closest('button,.secthead') || ev.target.closest('input,label')) return; ev.preventDefault(); onClick(ev); });  // a menu's checkbox inside the heading keeps its own click
-    // a click anywhere outside an open menu closes it, as on EH's own pages; its own button toggles it through onClick
-    document.addEventListener('click', ev => {
-        const p = ehOn && host.querySelector('.pop:not([hidden])');
-        if (!p || p.contains(ev.target) || (ev.target.closest && ev.target.closest('[data-pop]'))) return;
-        p.hidden = true; host.querySelector('[aria-expanded="true"][data-pop]')?.setAttribute('aria-expanded', 'false');
-    });
-    // a click on a row opens its release, as on EH's own pages
-    host.addEventListener('click', edRow);
-    host.addEventListener('auxclick', edRow);
+    host.addEventListener('click', ev => { if (!ehOn || !ev.target.closest('button,.secthead')) return; ev.preventDefault(); onClick(ev); });
     listFilters(host);
     host.addEventListener('contextmenu', ev => { const b = ev.target.closest('[data-fold],[data-gfold]'); if (!ehOn || !b) return; ev.preventDefault(); b.click(); });
     releasePageDraw();
@@ -10409,15 +10376,6 @@ function listFilters(root) {
     root.addEventListener('focusin', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) fltSug(t.dataset.fq, t); });
     root.addEventListener('keydown', ev => { const t = ev.target; if (ev.key === 'Enter' && t.dataset && t.dataset.nmname) { ev.preventDefault(); t.parentNode.querySelector('button').click(); } });
 }
-// A click on a release or release group row, outside its controls, is a click on the row's first link.
-// EH's own pages and MusicBrainz's releases list drawn as EH's both listen
-function edRow(ev) {
-    const r = ehOn && ev.target.closest && ev.target.closest('.ed-t tbody tr');
-    if (!r || ev.target.closest('a,button,input,select,label,summary,.stars') || (ev.button === 0 && String(getSelection()).trim())) return;
-    const a = r.querySelector(':scope > td:not(.lk) a[href]');
-    if (!a || !/^\/release(-group)?\/[0-9a-f-]{36}/.test(a.pathname) || ev.button > 1) return;
-    if (ev.button === 1 || ev.ctrlKey || ev.metaKey) { ev.preventDefault(); open(a.href, '_blank'); } else a.click();
-}
 function build() {
     const head = document.head || document.documentElement;
     head.insertAdjacentHTML('beforeend', `<link id="eh-font" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"><style id="eh-css">${CSS}</style>`);
@@ -10436,6 +10394,14 @@ function build() {
     listFilters(document);
     // the search field folds away once focus leaves it
     document.addEventListener('focusout', ev => { const fm = ev.target.closest && ev.target.closest('.srch.open'); if (fm && !fm.contains(ev.relatedTarget)) fm.classList.remove('open'); });
+    // A click on a release or release group row, outside its controls, is a click on the row's first link.
+    const edRow = ev => {
+        const r = ehOn && ev.target.closest && ev.target.closest('.ed-t tbody tr');
+        if (!r || ev.target.closest('a,button,input,select,label,summary,.stars') || (ev.button === 0 && String(getSelection()).trim())) return;
+        const a = r.querySelector(':scope > td:not(.lk) a[href]');
+        if (!a || !/^\/release(-group)?\/[0-9a-f-]{36}/.test(a.pathname) || ev.button > 1) return;
+        if (ev.button === 1 || ev.ctrlKey || ev.metaKey) { ev.preventDefault(); open(a.href, '_blank'); } else a.click();
+    };
     document.addEventListener('click', edRow);
     document.addEventListener('auxclick', edRow);
     // right-click on a section's chevron: fold every section, or open them all when that one is folded

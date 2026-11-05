@@ -1,7 +1,7 @@
-// #908 — merge any entity type. Two fresh entities per type go into Fusion's pool
-// through the mbu-fusion-add event (Event Horizon's button), one group is built
-// from the window's buttons, Merge is clicked, and MB is asked whether the merge
-// edit exists. REAL merges on test.musicbrainz.org (the sandbox).
+// #908 — merge any entity type. Two fresh entities per type: the first comes in
+// from the add menu (Ctrl+click on Fusion's corner icon, on its own page), the
+// second is pasted into the board. One group is built, Merge is clicked, and MB
+// is asked whether the merge edit exists. REAL merges on test.musicbrainz.org.
 import { test, check, until, pristine } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Fusion' } });
@@ -9,21 +9,24 @@ test.use({ gm: { name: 'Fusion' } });
 for (const type of ['artist', 'release']) {
   test(`a ${type} group merges through MB's merge form`, { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
     const a = await pristine(page, type, type === 'release' ? { tracks: 1 } : {}), b = await pristine(page, type, type === 'release' ? { tracks: 1 } : {});
-    await page.goto('https://test.musicbrainz.org/', { waitUntil: 'domcontentloaded' });
+    await page.goto(`https://test.musicbrainz.org/${type}/${a.mbid}`, { waitUntil: 'domcontentloaded' });
     await inject('fusion', { waitFor: '__fusion' });
-    for (const x of [a, b]) {
-      const prevented = await page.evaluate(d => { const e = new CustomEvent('mbu-fusion-add', { cancelable: true, detail: JSON.stringify(d) }); document.dispatchEvent(e); return e.defaultPrevented; }, { type, gid: x.mbid, name: x.name });
-      check(prevented, 'Fusion answered the add event');
-    }
     await until(() => page.locator('#fs-launch').count(), n => n === 1);
-    await page.click('#fs-launch');
-    await page.selectOption("#fs-em-overlay .fs-typepick", type);
-    check(await page.locator('#fs-em-pool .fs-em-row').count() === 2, 'both are in the pool');
+    await page.click('#fs-launch', { modifiers: ['Control'] });
+    await page.waitForSelector('#fs-addmenu');
+    check(await page.locator('#fs-addmenu input:checked').count() === 1, 'the add menu has the page entity selected');
+    await page.click('#fs-addmenu [data-a="add"]');
+    await until(() => page.locator(`#fs-launch-ctrs .fs-ctr[data-type="${type}"]`).count(), n => n === 1);
+    await page.click(`#fs-launch-ctrs .fs-ctr[data-type="${type}"]`);
+    await page.waitForSelector('#fs-em-input');
+    await page.fill('#fs-em-input', `https://test.musicbrainz.org/${type}/${b.mbid}`);
+    await page.press('#fs-em-input', 'Enter');
+    await until(() => page.locator('#fs-em-pool .fs-pcard').count(), n => n === 2, { timeout: 30000 });
     await page.click('#fs-em-overlay [data-act="newgroup"]');
-    check(await page.locator('#fs-em-groups .fs-em-row').count() === 2, 'one group of two');
-    await page.click('#fs-em-groups [data-act="merge"]');
-    await page.waitForSelector('#fs-em-groups .fs-em-ok, #fs-em-groups .fs-em-err', { timeout: 90000 });
-    const err = await page.locator('#fs-em-groups .fs-em-err').textContent().catch(() => null);
+    check(await page.locator('#fs-em-groups .fs-grow').count() === 2, 'one group of two');
+    await page.click('#fs-em-groups [data-act="merge-group"]');
+    await page.waitForSelector('#fs-em-groups .fs-mbtn.fs-done, #fs-em-groups .fs-mbtn.fs-err', { timeout: 90000 });
+    const err = await page.locator('#fs-em-groups .fs-mbtn.fs-err').getAttribute('data-tip').catch(() => null);
     if (err) console.log((await page.evaluate(() => window.__fusion.getLogLines())).filter(l => /merge|POST|Merge/.test(l)).join('\n'));
     check(!err, 'merged without an error: ' + err);
     const ok = await until(() => page.evaluate(async gids => {

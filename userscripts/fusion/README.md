@@ -12,7 +12,7 @@ A merge assistant for MusicBrainz recordings: gather candidates, let Match group
 ## Features
 
 - **[Pool and groups](#pool-and-groups)**: candidates on the left, merge groups on the right.
-- **[Seeding](#seeding)** from a release, a release group, a recording, or an artist's whole catalogue.
+- **[Adding](#adding)** from the page you are on: a release, a release group, a recording, an artist's whole catalogue, or any entity to merge.
 - **[Match](#match)** groups likely duplicates by ISRC, AcoustID, title, artist and length.
 - **[Merging](#merging)** submits the merges in the background, each with an itemised edit note.
 - **[Other entities](#other-entities)**: artists, releases, works and the other types collected and merged the same way.
@@ -34,9 +34,19 @@ In a group:
 - a warning next to the title says when the members can't be one recording, or may not be: *live + studio*, *N places* (recorded at different places, or at one place on different dates), or *disamb.* (their disambiguations differ);
 - a recording without a disambiguation shows its release's, tagged *album*, when another member's release is in the same release group; the *disamb.* warning compares it too.
 
-## Seeding
+## Adding
 
-Fusion opens with a pool already filled from the page you launched it on:
+Fusion opens empty. **Ctrl+click** or **middle-click** its corner icon for the add menu, which offers what this page has to merge; select what you want and **Add**:
+
+| Page                | Offers                                                       |
+| ------------------- | ------------------------------------------------------------ |
+| Release             | the release, its recordings, its release group, its artists  |
+| Release group       | the release group, its recordings, its releases, its artists |
+| Recording           | the recording, its artists                                   |
+| Artist → Recordings | the artist, its recordings                                   |
+| Any other entity    | that entity                                                  |
+
+Recordings come into the pool as follows:
 
 | Page                | Pool                                                                   |
 | ------------------- | ---------------------------------------------------------------------- |
@@ -93,12 +103,12 @@ A merge always goes to a vote, even an auto-editor's, as a [destructive edit](ht
 
 ## Other entities
 
-Artists, releases, release groups, works, labels, places, events, series, instruments and areas are merged in Fusion's **Merge entities** window. Switch to it with the type picker in either window's title (*Merge Recordings ▾*), or click the count badge on Fusion's corner icon, which shows how many entities wait to merge. Each row shows what MusicBrainz's own merge page does: for a release its artist, format, tracks, country and date, label, catalog number and barcode; for other types their type, area, dates, ISWCs and the like.
+Artists, releases, release groups, works, labels, places, events, series, instruments and areas are merged in a window like the recordings' one, a window per type. Every type with something waiting shows as an icon with its count, beside Fusion's corner icon and in the window's title; click one to open that type. Each row shows what MusicBrainz's own merge page does: for a release its artist, format, tracks, country and date, label, catalog number and barcode; for other types their type, area, dates, ISWCs and the like.
 
-- Collect entities with [Event Horizon](../event_horizon/README.md)'s **Add to Fusion pool** button, or paste a MusicBrainz link or MBID into the window.
-- Each type has its own pool and groups, under its tab. **Group all** puts the pool in one group; → adds an entity to the current group (the one whose header you clicked last).
-- ★ picks the one that's kept. A group has its own edit note and, for releases, the merge strategy (append mediums or merge them).
-- **Merge →** submits one group, **Merge All →** every group in turn; **Clear merged** removes the merged ones.
+- Add them with the [add menu](#adding), or paste a MusicBrainz link or MBID into the window.
+- The pool and the groups work as the recordings' do: select, drag or double-click entries into a group, ★ for the one that's kept, ↩ and ✕, ✎ for the edit note. **Group all** puts the selection, or the whole pool, in one group.
+- A group's chips show the fields all its members share, and a value shared by some is tinted alike in the rows. A release group of releases picks the merge strategy: append mediums or merge them.
+- **Merge** submits one group, **Merge All** every group in turn; **Clear merged** removes the merged ones.
 
 What you collect is kept in your userscript manager and shows in every open tab.
 
