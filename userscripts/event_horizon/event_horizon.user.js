@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.191947
+// @version      2026.11.05.192941
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2578,7 +2578,6 @@ body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;poin
 :root[data-eh-theme=dark] #eh-hex{--eh-hex-k:1}
 #eh-hex svg{display:block;width:100%;height:100%;overflow:visible}
 #eh-hex .hex-pattern{position:absolute;inset:0;width:100%;height:100%;opacity:min(1,calc(var(--eh-hex-fx,.45) * var(--eh-hex-k) * var(--eh-hex-mf,1)))}
-:root[data-eh-hex=horizon] #eh-hex svg{display:none}
 #eh-hex .hex-base{opacity:calc(var(--eh-hex-opacity,.2) * var(--eh-hex-k) * .5)}
 #eh-hex .hex-drift,#eh-hex .hex-drift2{display:none;opacity:min(1,calc(var(--eh-hex-fx,.45) * var(--eh-hex-k) * var(--eh-hex-mf,1)));-webkit-mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat;mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat}
 #eh-hex .hex-drift2{-webkit-mask:radial-gradient(closest-side,#000,transparent) 0 0/min(200px,34vw) min(200px,34vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(260px,44vw) min(260px,44vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(160px,28vw) min(160px,28vw) no-repeat;mask:radial-gradient(closest-side,#000,transparent) 0 0/min(200px,34vw) min(200px,34vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(260px,44vw) min(260px,44vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(160px,28vw) min(160px,28vw) no-repeat}
@@ -3285,7 +3284,7 @@ const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
 try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; if (v.hexFx == null && v.hexOpacity != null) S.hexFx = Math.min(100, Math.round(S.hexOpacity * 2.25)); } catch (e) {}
 // Preserve an existing hex background as an independent overlay over Flat.
 if (S.bg === 'hex') { S.bg = 'flat'; S.hex = true; S.hexMotion = 'drift'; }
-if (!['static', 'drift', 'tide', 'twinkle', 'ripple', 'lantern', 'horizon', 'electricity', 'neural'].includes(S.hexMotion)) S.hexMotion = 'drift';
+if (!['static', 'drift', 'tide', 'twinkle', 'ripple', 'lantern', 'electricity', 'neural'].includes(S.hexMotion)) S.hexMotion = 'drift';
 if (!S.starView) S.starView = S.starGroup === 'none' ? 'row' : 'group';
 const menuTitlesApply = () => document.documentElement.style.setProperty('--eh-menu-titles', S.menuTitles ? 'inline' : 'none');
 menuTitlesApply();
@@ -7724,8 +7723,8 @@ function artHtml(r) {
 /* ── page ──────────────────────────────────────────── */
 // Hexagon background: still outlines, and the motion the settings choose over them.
 // the effects' strength next to Drift's, so one Effect opacity reads the same in each
-const HEX_MF = { drift: 1, tide: .8, twinkle: 1.16, ripple: 1.24, lantern: 1.16, horizon: .71, neural: 1.78, electricity: 2.22 };
-const HEX_JS = ['twinkle', 'ripple', 'lantern', 'horizon', 'electricity', 'neural'];
+const HEX_MF = { drift: 1, tide: .8, twinkle: 1.16, ripple: 1.24, lantern: 1.16, neural: 1.78, electricity: 2.22 };
+const HEX_JS = ['twinkle', 'ripple', 'lantern', 'electricity', 'neural'];
 const HEXV = [[0, -16], [14, -8], [14, 8], [0, 16], [-14, 8], [-14, -8]];
 const hexReduce = matchMedia('(prefers-reduced-motion:reduce)');
 hexReduce.addEventListener?.('change', () => hexApply());
@@ -7904,26 +7903,6 @@ const HEX_FX = {
             },
             shift() {},
             off() { document.removeEventListener('pointermove', move); },
-        };
-    },
-    // the lattice bends around a point that wanders slowly over the page
-    horizon({ L, w, h, ctx, toLayer, c1, P }) {
-        const n = L.xs.length, X = new Float32Array(n), Y = new Float32Array(n), R = Math.min(innerWidth, innerHeight) * .32;
-        let at = -1, s = 0, was = 0;
-        return {
-            tick(dt, t) {
-                s += (t - was) * P.pace; was = t;
-                if (t - at < .041) return; at = t;
-                const [cx, cy] = toLayer(innerWidth * (.5 + .32 * Math.cos(s * .05)), innerHeight * (.5 + .26 * Math.sin(s * .037)));
-                for (let i = 0; i < n; i++) {
-                    const dx = L.xs[i] - cx, dy = L.ys[i] - cy, d2 = dx * dx + dy * dy, f = 22 * R * R / (d2 + R * R) / Math.sqrt(d2 + 1);
-                    X[i] = L.xs[i] - dx * f; Y[i] = L.ys[i] - dy * f;
-                }
-                ctx.clearRect(0, 0, w, h); ctx.strokeStyle = P.c1; ctx.lineWidth = 1; ctx.beginPath();
-                for (let k = 0; k < L.edges.length; k += 2) { const a = L.edges[k], b = L.edges[k + 1]; ctx.moveTo(X[a], Y[a]); ctx.lineTo(X[b], Y[b]); }
-                ctx.stroke();
-            },
-            shift() {},
         };
     },
     // sparks of different voltages run along 20 to 50 sides, flicker, fork and fade, over slow dim currents that glow in and out;
@@ -10678,12 +10657,11 @@ const HEX_MOTIONS = [
     ['twinkle', 'Twinkle', 'Single hexagons light up here and there and fade'],
     ['ripple', 'Ripple', 'Rings of glow spread out from random points'],
     ['lantern', 'Lantern', 'A pool of glow follows the pointer'],
-    ['horizon', 'Horizon', 'The lattice bends around a slowly wandering point'],
     ['electricity', 'Electricity', 'Sparks of different voltages flicker along the hexagon sides, over slow currents that glow in and out'],
     ['neural', 'Neural', 'Signals spread and branch through the lattice like a neural network'],
 ];
 // which of the effect's settings each motion takes
-const HEX_USES = { pace: ['drift', 'tide', 'twinkle', 'ripple', 'horizon', 'electricity', 'neural'], trail: ['twinkle', 'electricity', 'neural'], often: ['twinkle', 'ripple', 'electricity', 'neural'], glow: ['twinkle', 'electricity', 'neural'], two: ['drift', 'twinkle', 'electricity', 'neural'] };
+const HEX_USES = { pace: ['drift', 'tide', 'twinkle', 'ripple', 'electricity', 'neural'], trail: ['twinkle', 'electricity', 'neural'], often: ['twinkle', 'ripple', 'electricity', 'neural'], glow: ['twinkle', 'electricity', 'neural'], two: ['drift', 'twinkle', 'electricity', 'neural'] };
 // the effects drawn over the background; Hexagons is the first
 const EFFECTS = [['none', 'None', 'No effect over the background'], ['hexagons', 'Hexagons', 'Hexagon outlines over any background, with an animation']];
 function hexRows(chip, row) {
