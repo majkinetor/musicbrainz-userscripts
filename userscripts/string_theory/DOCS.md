@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-05 19:06 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-05 19:09 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -898,7 +898,7 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
 | General → Keyboard shortcuts          | on                                                                  | the keys below; [keyboard shortcuts](#keyboard-shortcuts); **Change keys** opens their list |
 
-Motions: Static, Drift, Tide, Twinkle, Ripple, Lantern (follows the pointer), Horizon, Electricity and Neural. Pick Hexagons in the Effects tab and its settings follow; the ones the motion doesn't take (Pace, Trail, How often, a two-tone Colour) are greyed out. **Depth** scrolls the hexagons slower than the page. All respect reduced motion.
+Motions: Static, Drift, Tide, Twinkle, Ripple, Lantern (follows the pointer), Horizon, Electricity and Neural. Pick Hexagons in the Effects tab and its settings follow; the ones the motion doesn't take (Pace, Trail, How often, Glow, a two-tone Colour) are greyed out. **Depth** scrolls the hexagons slower than the page. All respect reduced motion.
 
 ### Shortcuts
 
