@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.195040
+// @version      2026.11.05.195647
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjg1Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMwNzM1NDgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiMzNDIwNGUiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjNTAzMDFhIi8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -1452,7 +1452,6 @@
           var st = state();
           var pop = document.createElement('div'); pop.id = 'mbu-logpop';
           document.body.appendChild(pop);
-    mbuCfgDrag(pop.querySelector('.mbu-ov-panel'));
           var v = view(pop, true);
           if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
           var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
@@ -2660,13 +2659,14 @@
   // ── styles and icons ──────────────────────────────────────────────────────
   const SB = 'scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent';
   const CSS = `
-.mbu-ov.fl-pop{background:none;pointer-events:none}.fl-pop .mbu-ov-panel{pointer-events:auto;border:1px solid var(--mbu-border);background:color-mix(in srgb,var(--mbu-bg) 88%,transparent);backdrop-filter:blur(6px)}
-.fl-pop .mbu-ov-panel{width:min(560px,94vw);max-height:86vh;display:flex;flex-direction:column}
+.mbu-ov.fl-pop{background:none;pointer-events:none}.fl-pop .mbu-ov-panel{width:min(560px,94vw);box-sizing:border-box;pointer-events:auto;border:1px solid var(--mbu-border);background:color-mix(in srgb,var(--mbu-bg) 88%,transparent);backdrop-filter:blur(6px)}
+.fl-pop .mbu-ov-panel{width:min(560px,94vw)!important;max-width:94vw!important;max-height:86vh;display:flex;flex-direction:column}
 .fl-pop .mbu-ov-body{padding:0;display:flex;flex-direction:column;min-height:0}
 .fl-ui{font:var(--mbu-fs-sm)/1.4 var(--mbu-font);color:var(--mbu-text)}
 .fl-srcs{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 10px}
-.fl-src.fl-src{display:inline-grid;place-items:center;width:28px;height:28px;padding:0;border:1px solid transparent;border-radius:var(--mbu-radius);background:none;cursor:pointer}
+.fl-src.fl-src{display:inline-grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid transparent;border-radius:var(--mbu-radius);background:none;cursor:pointer}
 .fl-src.fl-src:hover{border-color:var(--mbu-border)}
+.fl-src .fl-fav{width:24px;height:24px;border-radius:4px}
 .fl-src.out .fl-fav{filter:grayscale(1);opacity:.3}
 .fl-gear{font-size:18px;line-height:1;width:28px;height:28px;justify-content:center;align-items:center}
 .fl-fav{width:16px;height:16px;border-radius:3px;flex:0 0 auto;vertical-align:middle}
@@ -2682,7 +2682,7 @@
 .fl-sw button.on{background:var(--mbu-accent-soft);color:var(--mbu-accent-deep-text)}
 .fl-chk{display:inline-flex;align-items:center;gap:4px;color:var(--mbu-text-dim);cursor:pointer}
 .fl-sp{flex:1 1 auto}
-.fl-list{overflow:auto;${SB};min-height:60px}
+.fl-list{overflow:auto;${SB};height:min(420px,50vh)}
 .fl-t{width:100%;border-collapse:collapse}
 .fl-t td{padding:4px 8px;border-bottom:1px solid var(--mbu-border-soft,var(--mbu-border));vertical-align:middle}
 .fl-t tr:last-child td{border-bottom:0}
@@ -2690,7 +2690,7 @@
 .fl-t tr.fl-row:hover td{background:var(--mbu-bg-hover)}
 .fl-t td.fl-c0{width:22px;padding-left:14px}
 .fl-t td.fl-cs{white-space:nowrap;width:1%}
-.fl-t td.fl-cs .fl-fav{margin-right:2px}
+.fl-t td.fl-cs .fl-fav{width:20px;height:20px;min-width:20px;max-width:none;object-fit:contain;margin-right:6px;border-radius:4px}
 .fl-t td.fl-cn{width:1%;text-align:right;color:var(--mbu-text-weak)}
 .fl-t td.fl-cm{width:1%;padding-right:10px}
 .fl-tag.genre{font-weight:600}
@@ -2716,9 +2716,9 @@
 .fl-menu .fl-mapin{display:flex;gap:4px;padding:4px 8px}
 .fl-in{font:inherit;padding:3px 6px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-text);min-width:0;flex:1 1 auto;box-sizing:border-box}
 .fl-in.err{border-color:var(--mbu-error)}
-.fl-ehb.fl-ehb{position:relative;display:inline-flex;align-items:center;justify-content:center;width:24px!important;height:24px!important;min-width:0!important;margin-left:2px;padding:0;border:0;border-radius:6px;background:none;cursor:pointer;vertical-align:middle;box-sizing:border-box}
+.fl-ehb.fl-ehb{position:relative;display:inline-flex;align-items:center;justify-content:center;width:28px!important;height:28px!important;min-width:0!important;margin-left:2px;padding:0;border:0;border-radius:6px;background:none;cursor:pointer;vertical-align:middle;box-sizing:border-box}
 .fl-ehb.fl-ehb:hover{background:color-mix(in srgb,var(--mbu-accent) 14%,transparent)}
-.fl-ehb svg{width:18px!important;height:18px!important;flex:none;display:block}
+.fl-ehb svg{width:22px!important;height:22px!important;flex:none;display:block}
 .fl-ehb b{position:absolute;top:-4px;right:-6px;min-width:14px;padding:0 3px;border-radius:7px;background:var(--mbu-accent);color:var(--mbu-text-on-accent);font:700 10px/14px var(--mbu-font);text-align:center;box-sizing:border-box}
 .fl-cfg .mbu-ov-panel{width:min(680px,94vw);height:min(620px,90vh);display:flex;flex-direction:column}
 .fl-cfg .mbu-ov-body{${SB};flex:1 1 auto;overflow:auto}
@@ -2781,8 +2781,7 @@
   }
   function header() {
     return mbuCfgHeader({ icon: ICON, name: NAME, version: VER, log: true, script: 'fuzzy_logic' })
-      .replace('<span class="mbu-cfg-sp"></span>', '<span class="mbu-cfg-sp"></span>'
-        + '<button type="button" class="fl-ic fl-gear" data-a="cfg" data-tip="Settings">' + MBU_CFG_ICON + '</button>');
+      .replace('<button type="button" class="mbu-ov-x', '<button type="button" class="fl-ic fl-gear" data-a="cfg" data-tip="Settings">' + MBU_CFG_ICON + '</button><button type="button" class="mbu-ov-x');
   }
   // the sources read, one button each: a click leaves its tags out, another brings them back
   function srcRow() {
@@ -2807,19 +2806,18 @@
     } else {
       const vis = shown.filter(e => !e.name.includes(','));
       const allSel = vis.length && vis.every(e => S.sel.has(e.name));
-      h += '<table class="fl-t"><tr class="fl-sec"><td class="fl-c0"><input type="checkbox" data-a="selall"' + (allSel ? ' checked' : '') + ' data-tip="Select all"></td><td colspan="4">' + plural(shown.length, S.showAll ? 'tag' : 'genre') + (S.busy ? ' · collecting…' : '') + '</td></tr>';
+      h += '<table class="fl-t"><tr class="fl-sec"><td class="fl-c0"><input type="checkbox" data-a="selall"' + (allSel ? ' checked' : '') + ' data-tip="Select all"></td><td colspan="3">' + plural(shown.length, S.showAll ? 'tag' : 'genre') + (S.busy ? ' · collecting…' : '') + '</td></tr>';
       for (const e of shown) {
         const bad = e.name.includes(','), have = S.have.has(e.name);
         const as = [...e.orig].filter(o => o.toLowerCase() !== e.name);
         h += '<tr class="fl-row' + (have ? ' have' : '') + (bad ? ' bad' : '') + '" data-t="' + esc(e.name) + '">'
           + '<td class="fl-c0"><input type="checkbox"' + (S.sel.has(e.name) ? ' checked' : '') + (bad ? ' disabled' : '') + '></td>'
           + '<td><span class="fl-tag' + (e.genre ? ' genre' : '') + '">' + esc(e.name) + '</span>' + (as.length ? '<span class="fl-orig">' + esc(as.join(', ')) + '</span>' : '') + '</td>'
-          + '<td class="fl-cs">' + srcIcons(e, 6) + '</td><td class="fl-cn">' + (e.srcs.size > 1 ? e.srcs.size : '') + '</td>'
-          + '<td class="fl-cm"><button type="button" class="fl-ic" data-a="menu" aria-label="More">' + DOTS + '</button></td></tr>';
+          + '<td class="fl-cs">' + srcIcons(e, 6) + '</td><td class="fl-cn">' + (e.srcs.size > 1 ? e.srcs.size : '') + '</td></tr>';
       }
       if (S.suggest.length) {
         h += '<tr class="fl-sec"><td></td><td colspan="4">Mapping suggestions</td></tr>' + S.suggest.map((s, i) =>
-          '<tr class="fl-sug"><td></td><td colspan="3">' + esc(s.from) + ' → ' + esc(s.to) + '</td><td class="fl-cm"><button type="button" class="fl-link" data-a="rule" data-i="' + i + '" data-tip="Add this rule to the mapping">Add</button></td></tr>').join('');
+          '<tr class="fl-sug"><td></td><td>' + esc(s.from) + ' → ' + esc(s.to) + '</td><td colspan="2" class="fl-cm"><button type="button" class="fl-link" data-a="rule" data-i="' + i + '" data-tip="Add this rule to the mapping">Add</button></td></tr>').join('');
       }
       h += '</table>';
     }
@@ -2850,9 +2848,11 @@
     pop.className = 'mbu-ov fl-pop fl-ui mbu-ui';
     pop.innerHTML = '<div class="mbu-ov-panel" role="dialog" aria-label="' + NAME + '"><div class="mbu-cfg-h"></div><div class="mbu-ov-body"></div></div>';
     document.body.appendChild(pop);
+    mbuCfgDrag(pop.querySelector('.mbu-ov-panel'));
     document.addEventListener('keydown', popKey, true);
     pop.addEventListener('mousedown', e => { if (e.target === pop) closePop(); });
     pop.addEventListener('click', onPopClick);
+    pop.addEventListener('contextmenu', e => { const r = e.target.closest('tr.fl-row'); if (!r) return; e.preventDefault(); openMenu(r, r.dataset.t); });
     pop.addEventListener('change', e => { if (e.target.dataset.a === 'prop') S.prop = e.target.checked; });
     S.have = haveNow();
     draw();
@@ -3125,7 +3125,8 @@
     const pen = !S.eh && document.querySelector('button.eh-edit[data-tgin="open"]');
     if (pen) { ehOpenPop = true; pen.click(); } else openPop();
   });
-  const ehAnchor = () => S.eh ? S.eh.querySelector('button[data-tgin="close"]') : document.querySelector('button.eh-edit[data-tgin="open"]');
+  // EH can name its box while the editor is shut: the pencil then
+  const ehAnchor = () => (S.eh && S.eh.querySelector('button[data-tgin="close"]')) || document.querySelector('button.eh-edit[data-tgin="open"]');
   function drawEhBtn() {
     const a = ehAnchor();
     if (!a) { ehBtn.remove(); return; }
