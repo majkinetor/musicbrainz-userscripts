@@ -2760,7 +2760,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // the ant's tooltip names the script and its version (String Theory's, when it runs bundled)
     try { const gs = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {}, host = String(gs.name || '').replace(/\*$/, ''); importLabel.dataset.tip = (host && host !== 'Credit Hoarder' ? 'Credit Hoarder (' + host + ' v' : 'Credit Hoarder v') + (gs.version || '?') + (host && host !== 'Credit Hoarder' ? ')' : ''); } catch (e) { /* no GM_info */ }
     // mid-run, a click on the ant cancels the run and brings the source picker back
-    importLabel.addEventListener('click', () => { if (importing) cancelRun(); });
+    // after a run (Done, or stopped) the same click brings the picker back too
+    importLabel.addEventListener('click', () => { if (importing || srcButtons.some(b => b.style.display === 'none') || reviewSlot.childElementCount) cancelRun(); });
     row1.appendChild(importLabel);
     row1.appendChild(srcIcons);
     row1.appendChild(progressPct);
@@ -3207,6 +3208,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // promise (so the review chain unwinds without dispatching).
     function cancelRun() {
         bar._runToken++;                 // invalidate the current run's token
+        const wasImporting = importing;
         importing = false;
         // Unblock the review-table promise if we're mid-review.
         if (typeof bar._reviewAbort === 'function') { const abort = bar._reviewAbort; bar._reviewAbort = null; abort(); }
@@ -3223,7 +3225,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         actionSlot.replaceChildren();
         setReviewContainer(reviewSlot);   // re-arm the (now empty) review host for the next run
         bar._hideEnterEdit();   // #412: back at source selection → drop the submit button
-        bar._setStopMessage('Import cancelled — pick a source to start again.');
+        bar._setStopMessage(wasImporting ? 'Import cancelled — pick a source to start again.' : '');
         bar._pin();
         delete bar._setProgress;
     }
