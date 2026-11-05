@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.192941
+// @version      2026.11.05.194411
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4329,7 +4329,9 @@ function tgInHtml() {
     return chips + `<span class="tgi-row"><span class="tgi-w"><input class="tgi-in" placeholder="add tag…" aria-label="Add tags" autocomplete="off">${d.t ? '' : '<span class="tgi-spin" aria-label="Loading the tags"></span>'}<span class="tg-ac" hidden></span></span><button type="button" class="eh-edit" data-tgin="close" aria-label="Done" data-tip="Done&#10;Esc">✓</button></span>`;
 }
 // a redraw keeps what's typed in the box
-function tgInDraw(focus) { const b = tgInBox(); if (!b || !tgIn) return; const o = b.querySelector('.tgi-in'), v = o ? o.value : ''; b.innerHTML = tgInHtml(); const i = b.querySelector('.tgi-in'); if (i) { i.value = v; if (focus) i.focus(); if (v) tgInAc(); } }
+function tgInDraw(focus) { const b = tgInBox(); if (!b || !tgIn) return; const o = b.querySelector('.tgi-in'), v = o ? o.value : ''; b.innerHTML = tgInHtml(); const i = b.querySelector('.tgi-in'); if (i) { i.value = v; if (focus) i.focus(); if (v) tgInAc(); } tgInTell(b); }
+// Fuzzy Logic follows the box (mbu-tags-edit) to offer its tags under it, and adds them through mbu-tags-add
+function tgInTell(box) { document.dispatchEvent(new CustomEvent('mbu-tags-edit', { detail: { path: tgIn ? tgIn.path : null, box: tgIn ? box : null } })); }
 // the suggestions under the box, as on the Tags page: the genres and this entity's tags that hold what's typed
 function tgInAc() {
     const b = tgInBox(), i = b && b.querySelector('.tgi-in'), ac = b && b.querySelector('.tg-ac'); if (!i || !ac || !tgIn) return;
@@ -4360,9 +4362,10 @@ async function tgInSend(names, v) {
     } catch (e) { LOG.err('Tagging failed: ' + e.message); toast('Tagging failed: ' + e.message); }
     if (tgIn === d) tgInDraw(true);
 }
-function tgInClose() { const dirty = tgIn && tgIn.dirty && tgIn.t.tags; tgIn = null; if (dirty && data && data.g) { const ts = dirty.filter(t => t.c > 0); data.g.genres = ts.filter(t => t.g).slice(0, 5).map(t => t.n); data.g.tags = ts.filter(t => !t.g).map(t => t.n); } render(); }
+function tgInClose() { const dirty = tgIn && tgIn.dirty && tgIn.t.tags; tgIn = null; tgInTell(null); if (dirty && data && data.g) { const ts = dirty.filter(t => t.c > 0); data.g.genres = ts.filter(t => t.g).slice(0, 5).map(t => t.n); data.g.tags = ts.filter(t => !t.g).map(t => t.n); } render(); }
 function tgInWire() {
     if (tgInWired) return; tgInWired = true;
+    document.addEventListener('mbu-tags-add', ev => { const ns = ((ev.detail && ev.detail.names) || []).map(x => String(x).trim().toLowerCase()).filter(Boolean); if (!tgIn || !ns.length) return; if (tgIn.t) tgInSend(ns, 1); else tgIn.pend = [...(tgIn.pend || []), ...ns]; });
     document.addEventListener('click', ev => {
         const b = ehOn && ev.target.closest('button[data-tgin]'); if (!b) return;
         ev.preventDefault(); const [a, i, v] = b.dataset.tgin.split(':');

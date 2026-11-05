@@ -27,5 +27,5 @@ group_therapy
 isrc_scout
 mammoth
 mission_control
-necessary_evil
+fuzzy_logic
 platform_check

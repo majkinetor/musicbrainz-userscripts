@@ -22,7 +22,7 @@ String Theory reads it ([its DEVELOP.md](../string_theory/DEVELOP.md#runtime)): 
 
 ## The header's tag editor
 
-While the pencil's editor is open, every redraw fires `mbu-tags-edit` on `document` with `{path, box}`: the entity's path and the editor's element. Closing fires it with `box: null`. An `mbu-tags-add` event with `{names}` upvotes those tags through the editor; names sent before its tags load wait, as typed ones do. Necessary Evil uses both to put the tags it collected from the links under the box. A row there must sit outside the box, since each redraw replaces the box's contents.
+While the pencil's editor is open, every redraw fires `mbu-tags-edit` on `document` with `{path, box}`: the entity's path and the editor's element. Closing fires it with `box: null`. An `mbu-tags-add` event with `{names}` upvotes those tags through the editor; names sent before its tags load wait, as typed ones do. Fuzzy Logic uses both: a button under the box opens its window, whose votes go through the editor. Anything placed there must sit outside the box, since each redraw replaces the box's contents.
 
 ## MusicBrainz's page stays in the document
 

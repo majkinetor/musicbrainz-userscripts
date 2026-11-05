@@ -1,10 +1,10 @@
 // ==UserScript==
-// @name         Necessary Evil
+// @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.163338
+// @version      2026.11.05.190800
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
-// @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBkPSJNMTYgNjRWMjhhMTAgMTAgMCAwIDEgMTAtMTBoMzZsNTAgNDYtNDggNDh6IiBmaWxsPSIjOGUyYTNhIiBzdHJva2U9IiM0YTEwMjAiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iNDIiIHI9IjgiIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJNNTggMTggNTAgNE04NiAzNCAxMDAgMjQiIHN0cm9rZT0iIzRhMTAyMCIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=
+// @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjg1Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMwNzM1NDgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiMzNDIwNGUiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjNTAzMDFhIi8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
 // @match        *://*.musicbrainz.org/release/*
 // @match        *://*.musicbrainz.org/release-group/*
 // @match        *://*.musicbrainz.org/artist/*
@@ -31,11 +31,15 @@
 
 (function () {
   'use strict';
-  if (!mbuClaim('necessary_evil', 'Necessary Evil')) return;
+  if (!mbuClaim('fuzzy_logic', 'Fuzzy Logic')) return;
 
-  const NAME = 'Necessary Evil';
+  const NAME = 'Fuzzy Logic';
   const VER = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '0';
-  const ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 12V5a2 2 0 0 1 2-2h7l9 9-9 9-9-9z"/><circle cx="7.5" cy="7.5" r="1.5"/><path d="M10 2.5 8.5 0.8M14.5 4.5 16.5 3"/></svg>';
+  // its own gradient ids each time, so two copies on a page don't share them
+  let flIc = 0;
+  const flSvg = (px) => { const id = "fl" + (++flIc); return "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 256 256\"><defs><linearGradient id=\"c" + id + "\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#12d4f7\"/><stop offset=\"1\" stop-color=\"#49b6f8\"/></linearGradient><linearGradient id=\"v" + id + "\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#7665fa\"/><stop offset=\"1\" stop-color=\"#ec41c9\"/></linearGradient><linearGradient id=\"a" + id + "\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#ffd56b\"/><stop offset=\"1\" stop-color=\"#ff8320\"/></linearGradient><filter id=\"g" + id + "\" x=\"-30%\" y=\"-30%\" width=\"160%\" height=\"160%\"><feGaussianBlur stdDeviation=\"3\"/></filter></defs><g fill-opacity=\".85\"><circle cx=\"128\" cy=\"84\" r=\"54\" fill=\"#073548\"/><circle cx=\"89\" cy=\"150\" r=\"54\" fill=\"#34204e\"/><circle cx=\"167\" cy=\"150\" r=\"54\" fill=\"#50301a\"/></g><g fill=\"none\" stroke-width=\"7\" opacity=\".28\" filter=\"url(#g" + id + ")\"><circle cx=\"128\" cy=\"84\" r=\"54\" stroke=\"#16ccf8\"/><circle cx=\"89\" cy=\"150\" r=\"54\" stroke=\"#ba56e9\"/><circle cx=\"167\" cy=\"150\" r=\"54\" stroke=\"#ffae38\"/></g><g fill=\"none\" stroke-width=\"6.5\"><circle cx=\"128\" cy=\"84\" r=\"54\" stroke=\"url(#c" + id + ")\"/><circle cx=\"89\" cy=\"150\" r=\"54\" stroke=\"url(#v" + id + ")\"/><circle cx=\"167\" cy=\"150\" r=\"54\" stroke=\"url(#a" + id + ")\"/></g></svg>".replace('<svg ', '<svg width="' + px + '" height="' + px + '" aria-hidden="true" '); };
+  const ICON = flSvg(20), ICON_SM = flSvg(16);
+  const ICON_URI = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjg1Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMwNzM1NDgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiMzNDIwNGUiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjNTAzMDFhIi8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+';
 
   // <ST-NET> — generated by dev/net/sync-gate.mjs from dev/net/mb-gate.mjs — DO NOT EDIT
   const MBN_GAP = 1000;
@@ -2357,61 +2361,67 @@
   mbuTipStart();
   // </ST-UI>
 
-  const LOG = mbuLog({ name: NAME, version: VER, key: 'necessary_evil:logwin' });
+  const LOG = mbuLog({ name: NAME, version: VER, key: 'fuzzy_logic:logwin' });
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const xesc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[c]));
+  const plural = (n, w) => n + ' ' + w + (n === 1 ? '' : 's');
 
   // ── settings ──────────────────────────────────────────────────────────────
   const SOURCES = {
     bandcamp: 'Bandcamp', discogs: 'Discogs', deezer: 'Deezer', apple: 'Apple Music', allmusic: 'AllMusic',
     beatport: 'Beatport', wikidata: 'Wikidata', soundcloud: 'SoundCloud', vocadb: 'VocaDB', lastfm: 'Last.fm',
   };
+  const DOMAIN = {
+    bandcamp: 'bandcamp.com', discogs: 'discogs.com', deezer: 'deezer.com', apple: 'music.apple.com', allmusic: 'allmusic.com',
+    beatport: 'beatport.com', wikidata: 'wikidata.org', soundcloud: 'soundcloud.com', vocadb: 'vocadb.net', lastfm: 'last.fm',
+  };
+  // one rule per line, `left → a; b`; /re/ on the left is a regex ($1 works on the right). The right side is never
+  // empty: dropping a tag is what the ignore list is for
   const DEFAULT_MAPPER = [
     'Folk, World, & Country → folk; world; country',
     'Funk / Soul → funk; soul',
     'Stage & Screen → soundtrack',
     'Brass & Military → brass band; military',
     "Children's → children's music",
-    'Non-Music →',
   ].join('\n');
   const DEFAULTS = {
     sources: Object.fromEntries(Object.keys(SOURCES).map(k => [k, true])),
     mapper: DEFAULT_MAPPER,
-    ignore: 'seen live\nfavorites\n/^\\d+$/',
+    ignore: 'seen live\nfavorites\nnon-music\n/^\\d+$/',
     favourites: '',
     genresOnly: true,
-    open: false,
+    background: false,
     propRG: false,
     propRec: false,
   };
   const loadCfg = () => {
     let c = {};
-    try { c = JSON.parse(GM_getValue('necessary_evil:cfg', '{}')) || {}; } catch (e) { /* default */ }
+    try { c = JSON.parse(GM_getValue('fuzzy_logic:cfg', '{}')) || {}; } catch (e) { /* default */ }
     return Object.assign({}, DEFAULTS, c, { sources: Object.assign({}, DEFAULTS.sources, c.sources || {}) });
   };
   let CFG = loadCfg();
-  const saveCfg = () => GM_setValue('necessary_evil:cfg', JSON.stringify(CFG));
+  const saveCfg = () => GM_setValue('fuzzy_logic:cfg', JSON.stringify(CFG));
+  const lines = s => String(s || '').split('\n').map(x => x.trim()).filter(Boolean);
 
   // ── mapper ────────────────────────────────────────────────────────────────
-  // One rule per line, `left → a; b` (or ->). /re/ on the left is a regex ($1 works on the
-  // right); an empty right side drops the tag. The first matching rule wins.
   function parseRules(text) {
     const out = [];
-    for (const raw of String(text || '').split('\n')) {
-      const line = raw.trim();
-      if (!line || line.startsWith('#')) continue;
+    for (const line of lines(text)) {
+      if (line.startsWith('#')) continue;
       const m = line.match(/^(.*?)\s*(?:→|->)\s*(.*)$/);
       if (!m) continue;
       const left = m[1].trim(), right = m[2].split(';').map(s => s.trim()).filter(Boolean);
+      if (!left || !right.length) continue;   // nothing on the right is the ignore list's job
       const re = left.match(/^\/(.+)\/([a-z]*)$/);
       let rx = null;
       if (re) { try { rx = new RegExp(re[1], re[2].includes('i') ? re[2] : re[2] + 'i'); } catch (e) { LOG.warn('Bad mapper regex: ' + left); continue; } }
-      out.push({ left: left.toLowerCase(), rx, right });
+      out.push({ src: left, left: left.toLowerCase(), rx, right });
     }
     return out;
   }
+  const rulesText = rows => rows.filter(r => r.src.trim() && r.right.length).map(r => r.src.trim() + ' → ' + r.right.join('; ')).join('\n');
   function parseIgnore(text) {
-    return String(text || '').split('\n').map(s => s.trim()).filter(Boolean).map(s => {
+    return lines(text).map(s => {
       const re = s.match(/^\/(.+)\/([a-z]*)$/);
       if (re) { try { return new RegExp(re[1], re[2].includes('i') ? re[2] : re[2] + 'i'); } catch (e) { return null; } }
       return s.toLowerCase();
@@ -2429,24 +2439,52 @@
   }
   const ignored = (t, ign) => ign.some(i => typeof i === 'string' ? i === t : i.test(t));
   const keyOf = s => s.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]/g, '');
+  const favs = () => CFG.favourites.split(/[\n;]/).map(s => s.trim().toLowerCase()).filter(Boolean);
 
   // ── genre list (7-day cache) ──────────────────────────────────────────────
   async function genres() {
     let c = null;
-    try { c = JSON.parse(GM_getValue('necessary_evil:genres', 'null')); } catch (e) { /* none */ }
+    try { c = JSON.parse(GM_getValue('fuzzy_logic:genres', 'null')); } catch (e) { /* none */ }
     if (c && Date.now() - c.t < 7 * 864e5 && c.list && c.list.length) return new Set(c.list);
     const r = await mbnFetch(location.origin + '/ws/2/genre/all?fmt=txt');
     if (!r || !r.ok) { LOG.warn('Genre list failed: ' + (r && r.status)); return new Set(c ? c.list : []); }
     const list = (await r.text()).split('\n').map(s => s.trim().toLowerCase()).filter(Boolean);
-    GM_setValue('necessary_evil:genres', JSON.stringify({ t: Date.now(), list }));
+    GM_setValue('fuzzy_logic:genres', JSON.stringify({ t: Date.now(), list }));
     LOG.info('Genre list loaded: ' + list.length);
     return new Set(list);
   }
 
+  // ── favicons (fetched once, kept as data URLs) ────────────────────────────
+  const FAV = {};
+  try { Object.assign(FAV, JSON.parse(GM_getValue('fuzzy_logic:favicons', '{}')) || {}); } catch (e) { /* none */ }
+  const favPend = {};
+  function favicon(src) {
+    if (FAV[src] || favPend[src]) return;
+    favPend[src] = true;
+    GM_xmlhttpRequest({
+      method: 'GET', url: 'https://www.google.com/s2/favicons?sz=32&domain=' + DOMAIN[src], responseType: 'blob', timeout: 15000,
+      onload: r => {
+        if (r.status !== 200 || !r.response) return;
+        const fr = new FileReader();
+        fr.onload = () => {
+          FAV[src] = fr.result; GM_setValue('fuzzy_logic:favicons', JSON.stringify(FAV));
+          document.querySelectorAll('.fl-fav[data-src="' + src + '"]').forEach(i => { i.outerHTML = fav(src, i.getAttribute('data-cls') || ''); });
+        };
+        fr.readAsDataURL(r.response);
+      },
+    });
+  }
+  // the icon, or its initial while it loads
+  function fav(src, cls) {
+    favicon(src);
+    const c = 'fl-fav' + (cls ? ' ' + cls : '');
+    return FAV[src] ? '<img class="' + c + '" data-src="' + src + '" data-cls="' + esc(cls || '') + '" src="' + FAV[src] + '" alt="">'
+      : '<span class="' + c + ' fl-fav-l" data-src="' + src + '" data-cls="' + esc(cls || '') + '">' + SOURCES[src][0] + '</span>';
+  }
+
   // ── entity and its links ──────────────────────────────────────────────────
   const em = location.pathname.match(/^\/(release|release-group|artist|label|recording)\/([0-9a-f-]{36})\/?$/);
-  if (!em) return;
-  let TYPE = em[1], MBID = em[2];   // Event Horizon's tag editor can switch them (below)
+  let TYPE = em ? em[1] : null, MBID = em ? em[2] : null;   // Event Horizon's tag editor can switch them (below)
 
   async function ws(path) {
     const r = await mbnFetch(location.origin + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json');
@@ -2478,7 +2516,6 @@
   const all = (text, re) => [...text.matchAll(re)].map(m => decode(m[1]));
   const lastSeg = u => u.replace(/[?#].*$/, '').replace(/\/+$/, '');
 
-  // Each returns { src, url } for a link it handles, or null; run() gives the tags.
   const FETCHERS = [
     { src: 'bandcamp', test: u => /bandcamp\.com\//.test(u) && /\/(album|track)\//.test(u),
       run: async u => { const h = await gm(u); const t = all(h, /<a class="tag"[^>]*>([^<]+)<\/a>/g); if (t.length) return t; const k = h.match(/"keywords":(\[[^\]]*\])/); try { return k ? JSON.parse(k[1]) : []; } catch { return []; } } },
@@ -2509,7 +2546,6 @@
 
   // ── voting via ws/2 (one batched POST per 200 entities) ───────────────────
   async function vote(entities, tags, kind) {
-    // entities: [{type, mbid}]; kind: 'upvote' | 'withdraw'
     const byType = {};
     for (const e of entities) (byType[e.type] = byType[e.type] || []).push(e.mbid);
     const tagXml = tags.map(t => '<user-tag vote="' + kind + '"><name>' + xesc(t) + '</name></user-tag>').join('');
@@ -2519,7 +2555,7 @@
         const body = '<metadata xmlns="http://musicbrainz.org/ns/mmd-2.0#"><' + type + '-list>'
           + ids.slice(i, i + 200).map(id => '<' + type + ' id="' + id + '"><user-tag-list>' + tagXml + '</user-tag-list></' + type + '>').join('')
           + '</' + type + '-list></metadata>';
-        const r = await mbnFetch(location.origin + '/ws/2/tag?client=NecessaryEvil-' + VER, {
+        const r = await mbnFetch(location.origin + '/ws/2/tag?client=FuzzyLogic-' + VER, {
           method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/xml; charset=utf-8' }, body,
         });
         const txt = r ? await r.text() : '';
@@ -2533,34 +2569,34 @@
 
   async function targets() {
     const list = [{ type: TYPE, mbid: MBID }];
-    if (TYPE !== 'release') return list;
-    if (CFG.propRG || CFG.propRec) {
-      const j = await ws('release/' + MBID + '?inc=release-groups+recordings');
-      if (CFG.propRG && j['release-group']) list.push({ type: 'release-group', mbid: j['release-group'].id });
-      if (CFG.propRec) {
-        const seen = new Set();
-        for (const m of j.media || []) for (const t of m.tracks || []) {
-          if (t.recording && !seen.has(t.recording.id)) { seen.add(t.recording.id); list.push({ type: 'recording', mbid: t.recording.id }); }
-        }
-      }
+    if (TYPE !== 'release' || !S.prop) return list;
+    const j = await ws('release/' + MBID + '?inc=release-groups+recordings');
+    if (j['release-group']) list.push({ type: 'release-group', mbid: j['release-group'].id });
+    const seen = new Set();
+    for (const m of j.media || []) for (const t of m.tracks || []) {
+      if (t.recording && !seen.has(t.recording.id)) { seen.add(t.recording.id); list.push({ type: 'recording', mbid: t.recording.id }); }
     }
     return list;
   }
 
   // ── state ─────────────────────────────────────────────────────────────────
   const loggedIn = !!document.querySelector('#tag-form, a[href*="/logout"]');
-  const onEntity = () => new Set([...document.querySelectorAll('#sidebar a[href^="/tag/"], #sidebar a[href*="/tag/"]')].map(a => a.textContent.trim().toLowerCase()));
-  const S = { status: {}, raw: [], tags: new Map(), genres: new Set(), sel: new Set(), suggest: [], showAll: !CFG.genresOnly, busy: false, ran: false };
+  const S = { status: {}, raw: [], tags: new Map(), genres: new Set(), sel: new Set(), suggest: [], showAll: !CFG.genresOnly,
+    busy: false, ran: false, have: new Set(), eh: null, prop: CFG.propRG || CFG.propRec };
+  const sidebarTags = () => new Set([...document.querySelectorAll('#sidebar a[href*="/tag/"]')].map(a => a.textContent.trim().toLowerCase()));
+  const ehTags = () => new Set([...(S.eh ? S.eh.querySelectorAll('.tgi') : [])].map(c => (c.firstChild && c.firstChild.textContent || '').trim().toLowerCase()));
+  const haveNow = () => S.eh ? ehTags() : sidebarTags();
 
   function rebuild() {
     const rules = parseRules(CFG.mapper), ign = parseIgnore(CFG.ignore);
     const m = new Map(), sug = new Map();
-    for (const { src, tag } of S.raw) {
+    for (const { src, tag, url } of S.raw) {
       for (let t of mapTag(tag, rules)) {
         t = t.toLowerCase().replace(/\s+/g, ' ').trim();
         if (!t || ignored(t, ign)) continue;
-        const e = m.get(t) || { name: t, srcs: new Set(), genre: S.genres.has(t), orig: new Set() };
-        e.srcs.add(src); e.orig.add(tag);
+        const e = m.get(t) || { name: t, srcs: new Map(), genre: S.genres.has(t), orig: new Set() };
+        if (!e.srcs.has(src)) e.srcs.set(src, new Set());
+        e.srcs.get(src).add(url); e.orig.add(tag);
         m.set(t, e);
         if (!e.genre && S.genres.size) {
           const k = keyOf(t);
@@ -2568,16 +2604,20 @@
         }
       }
     }
+    for (const f of favs()) if (!m.has(f) && !ignored(f, ign)) m.set(f, { name: f, srcs: new Map(), genre: S.genres.has(f), orig: new Set(), fav: true });
     S.tags = m;
     S.suggest = [...sug].map(([from, to]) => ({ from, to }));
-    const have = onEntity();
-    if (!S.ran) for (const e of m.values()) if (e.genre && !have.has(e.name) && !e.name.includes(',')) S.sel.add(e.name);
-    for (const n of [...S.sel]) if (!m.has(n) && !favs().includes(n)) S.sel.delete(n);
+    S.have = haveNow();
+    if (!S.ran) for (const e of m.values()) if (e.genre && e.srcs.size && !S.have.has(e.name) && !e.name.includes(',')) S.sel.add(e.name);
+    for (const n of [...S.sel]) if (!m.has(n)) S.sel.delete(n);
+    badge();
   }
-  const favs = () => CFG.favourites.split(/[\n;]/).map(s => s.trim().toLowerCase()).filter(Boolean);
+  // what the badge counts: genres offered and not on the entity yet
+  const fresh = () => [...S.tags.values()].filter(e => e.genre && e.srcs.size && !S.have.has(e.name)).length;
 
   async function collect() {
-    S.busy = true; S.raw = []; S.status = {}; render();
+    if (!TYPE || S.busy) return;
+    S.busy = true; S.raw = []; S.status = {}; dockBusy(true); draw();
     try {
       const [g, ls] = await Promise.all([genres(), links()]);
       S.genres = g;
@@ -2594,7 +2634,7 @@
         for (const u of st.urls) {
           try {
             const tags = [...new Set((await f.run(u)).map(t => String(t).trim()).filter(Boolean))];
-            tags.forEach(tag => S.raw.push({ src: f.src, tag }));
+            tags.forEach(tag => S.raw.push({ src: f.src, tag, url: u }));
             st.n += tags.length; st.ok++;
             LOG.info(SOURCES[f.src] + ' ' + u + ': ' + (tags.join(', ') || 'none'));
           } catch (err) {
@@ -2602,7 +2642,7 @@
             LOG.warn(SOURCES[f.src] + ' ' + u + ': ' + err.message);
             if (/\b429\b/.test(err.message)) break;
           }
-          rebuild(); render();
+          rebuild(); draw();
         }
         st.state = st.ok ? 'ok' : 'err';
       });
@@ -2612,176 +2652,298 @@
       LOG.error('Collect failed: ' + e.message);
       mbuToast('⚠ ' + NAME + ': ' + e.message, { kind: 'warn' });
     }
-    S.busy = false; rebuild(); S.ran = true; render();
+    S.busy = false; rebuild(); S.ran = true; dockBusy(false); draw();
   }
+  const reset = () => Object.assign(S, { status: {}, raw: [], tags: new Map(), sel: new Set(), suggest: [], ran: false });
 
-  // ── panel ─────────────────────────────────────────────────────────────────
+  // ── styles and icons ──────────────────────────────────────────────────────
+  const SB = 'scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent';
   const CSS = `
-.ne-box{margin:8px 0 12px;font:var(--mbu-fs-sm)/1.4 var(--mbu-font);color:var(--mbu-text)}
-.ne-head{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;color:var(--mbu-text-dim)}
-.ne-head:hover{color:var(--mbu-accent-text)}
-.ne-head svg{flex:0 0 auto}
-.ne-head .ne-sum{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ne-ic{background:none;border:0;padding:2px;cursor:pointer;color:var(--mbu-text-weak);border-radius:var(--mbu-radius);display:inline-flex}
-.ne-ic:hover{color:var(--mbu-accent-text);background:var(--mbu-bg-hover)}
-.ne-body{margin-top:6px}
-.ne-srcs{display:flex;flex-wrap:wrap;gap:4px 10px;margin-bottom:6px;color:var(--mbu-text-dim)}
-.ne-src{display:inline-flex;align-items:center;gap:4px}
-.ne-dot{width:7px;height:7px;border-radius:50%;background:var(--mbu-text-weak)}
-.ne-dot.ok{background:var(--mbu-ok)}.ne-dot.err{background:var(--mbu-error)}.ne-dot.run{background:var(--mbu-info);animation:ne-p 1s infinite alternate}
-@keyframes ne-p{to{opacity:.3}}
-.ne-chips{display:flex;flex-wrap:wrap;gap:4px;max-height:240px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
-.ne-chip{display:inline-flex;align-items:center;gap:4px;padding:1px 7px;border:1px solid var(--mbu-border);border-radius:999px;background:var(--mbu-bg);color:var(--mbu-text);cursor:pointer;font:inherit}
-.ne-chip:hover{border-color:var(--mbu-accent)}
-.ne-chip.sel{background:var(--mbu-accent-soft);border-color:var(--mbu-accent);color:var(--mbu-accent-deep-text)}
-.ne-chip.have{text-decoration:line-through;color:var(--mbu-text-weak)}
-.ne-chip.bad{border-style:dashed;color:var(--mbu-warn)}
-.ne-chip .ne-g{width:6px;height:6px;border-radius:50%;background:var(--mbu-accent)}
-.ne-chip .ne-n{font-size:var(--mbu-fs-xs);color:var(--mbu-text-weak)}
-.ne-lbl{margin:8px 0 3px;color:var(--mbu-text-weak);font-size:var(--mbu-fs-xs);text-transform:uppercase;letter-spacing:.04em}
-.ne-sug{display:flex;align-items:center;gap:6px;margin:2px 0}
-.ne-act{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
-.ne-btn{font:inherit;padding:3px 10px;border-radius:var(--mbu-radius);border:1px solid var(--mbu-border);background:var(--mbu-bg);color:var(--mbu-text);cursor:pointer}
-.ne-btn:hover{background:var(--mbu-bg-hover)}
-.ne-btn.pri{background:var(--mbu-accent);border-color:var(--mbu-accent);color:var(--mbu-accent-fg)}
-.ne-btn.pri:hover{background:var(--mbu-accent-hover)}
-.ne-btn:disabled{opacity:.5;cursor:default}
-.ne-link{background:none;border:0;padding:0;font:inherit;color:var(--mbu-accent-text);cursor:pointer}
-.ne-link:hover{text-decoration:underline}
-.ne-chk{display:inline-flex;align-items:center;gap:3px;color:var(--mbu-text-dim)}
-.ne-empty{color:var(--mbu-text-weak)}
-.ne-cfg .mbu-ov-panel{width:min(640px,94vw);max-height:90vh;display:flex;flex-direction:column}
-.ne-cfg .mbu-ov-body{scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
-.ne-cfg h3{margin:14px 0 6px;font-size:var(--mbu-fs);color:var(--mbu-text)}
-.ne-cfg h3:first-child{margin-top:0}
-.ne-cfg textarea{width:100%;box-sizing:border-box;min-height:110px;font:var(--mbu-fs-sm)/1.45 var(--mbu-font-mono);background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:6px;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
-.ne-cfg .ne-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:4px}
-.ne-eh{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:4px 0;font:var(--mbu-fs-sm)/1.4 var(--mbu-font);color:var(--mbu-text)}
-.ne-eh .ne-sum{display:inline-flex;color:var(--mbu-text-weak)}
-.ne-cfg .ne-hint{color:var(--mbu-text-weak);font-size:var(--mbu-fs-xs);margin:2px 0 4px}
+.fl-pop .mbu-ov-panel{width:min(560px,94vw);max-height:86vh;display:flex;flex-direction:column}
+.fl-pop .mbu-ov-body{padding:0;display:flex;flex-direction:column;min-height:0}
+.fl-ui{font:var(--mbu-fs-sm)/1.4 var(--mbu-font);color:var(--mbu-text)}
+.fl-h-srcs{display:inline-flex;gap:4px;align-items:center;margin-left:6px}
+.fl-fav{width:16px;height:16px;border-radius:3px;flex:0 0 auto;vertical-align:middle}
+.fl-fav-l{display:inline-grid;place-items:center;font-size:10px;font-weight:600;background:var(--mbu-bg-hover);color:var(--mbu-text-dim)}
+.fl-fav.off{filter:grayscale(1);opacity:.35}
+.fl-fav.run{animation:fl-p 1s infinite alternate}
+@keyframes fl-p{to{opacity:.3}}
+.fl-ic{background:none;border:0;padding:4px;cursor:pointer;color:var(--mbu-text-weak);border-radius:var(--mbu-radius);display:inline-flex}
+.fl-ic:hover{color:var(--mbu-accent-text);background:var(--mbu-bg-hover)}
+.fl-bar{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--mbu-border)}
+.fl-sw{display:inline-flex;border:1px solid var(--mbu-border);border-radius:999px;overflow:hidden}
+.fl-sw button{font:inherit;border:0;background:none;color:var(--mbu-text-dim);padding:2px 10px;cursor:pointer}
+.fl-sw button.on{background:var(--mbu-accent-soft);color:var(--mbu-accent-deep-text)}
+.fl-chk{display:inline-flex;align-items:center;gap:4px;color:var(--mbu-text-dim);cursor:pointer}
+.fl-sp{flex:1 1 auto}
+.fl-list{overflow:auto;${SB};min-height:60px}
+.fl-t{width:100%;border-collapse:collapse}
+.fl-t td{padding:4px 8px;border-bottom:1px solid var(--mbu-border-soft,var(--mbu-border));vertical-align:middle}
+.fl-t tr:last-child td{border-bottom:0}
+.fl-t tr.fl-row{cursor:pointer}
+.fl-t tr.fl-row:hover td{background:var(--mbu-bg-hover)}
+.fl-t td.fl-c0{width:22px;padding-left:14px}
+.fl-t td.fl-cs{white-space:nowrap;width:1%}
+.fl-t td.fl-cs .fl-fav{margin-right:2px}
+.fl-t td.fl-cn{width:1%;text-align:right;color:var(--mbu-text-weak)}
+.fl-t td.fl-cm{width:1%;padding-right:10px}
+.fl-tag.genre{font-weight:600}
+.fl-tag.genre::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--mbu-accent);margin-right:6px;vertical-align:middle}
+.fl-row.have .fl-tag{text-decoration:line-through;color:var(--mbu-text-weak)}
+.fl-row.bad .fl-tag{color:var(--mbu-warn)}
+.fl-orig{color:var(--mbu-text-weak);font-size:var(--mbu-fs-xs);margin-left:6px}
+.fl-sec td{color:var(--mbu-text-weak);font-size:var(--mbu-fs-xs);text-transform:uppercase;letter-spacing:.04em;padding-top:10px}
+.fl-sug td{color:var(--mbu-text-dim)}
+.fl-empty{padding:18px 14px;color:var(--mbu-text-weak)}
+.fl-foot{display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid var(--mbu-border)}
+.fl-btn{font:inherit;padding:3px 12px;border-radius:var(--mbu-radius);border:1px solid var(--mbu-border);background:var(--mbu-bg);color:var(--mbu-text);cursor:pointer}
+.fl-btn:hover{background:var(--mbu-bg-hover)}
+.fl-btn.pri{background:var(--mbu-accent);border-color:var(--mbu-accent);color:var(--mbu-accent-fg)}
+.fl-btn.pri:hover{background:var(--mbu-accent-hover)}
+.fl-btn:disabled{opacity:.5;cursor:default}
+.fl-link{background:none;border:0;padding:0;font:inherit;color:var(--mbu-accent-text);cursor:pointer}
+.fl-link:hover{text-decoration:underline}
+.fl-menu{position:fixed;z-index:var(--mbu-z-pop,2147483600);min-width:170px;padding:4px 0;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);box-shadow:0 6px 20px rgba(0,0,0,.18);max-height:60vh;overflow:auto;${SB}}
+.fl-menu button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;font:inherit;border:0;background:none;color:var(--mbu-text);padding:5px 12px;cursor:pointer}
+.fl-menu button:hover{background:var(--mbu-bg-hover)}
+.fl-menu hr{border:0;border-top:1px solid var(--mbu-border);margin:4px 0}
+.fl-menu .fl-mapin{display:flex;gap:4px;padding:4px 8px}
+.fl-in{font:inherit;padding:3px 6px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-text);min-width:0;flex:1 1 auto;box-sizing:border-box}
+.fl-in.err{border-color:var(--mbu-error)}
+.fl-ehb{display:inline-flex;align-items:center;gap:5px;margin:4px 0;font:var(--mbu-fs-sm)/1.4 var(--mbu-font);padding:2px 10px 2px 6px;border:1px solid var(--mbu-border);border-radius:999px;background:var(--mbu-bg);color:var(--mbu-text);cursor:pointer}
+.fl-ehb:hover{border-color:var(--mbu-accent)}
+.fl-ehb b{color:var(--mbu-accent-text)}
+.fl-cfg .mbu-ov-panel{width:min(680px,94vw);height:min(620px,90vh);display:flex;flex-direction:column}
+.fl-cfg .mbu-ov-body{${SB};flex:1 1 auto;overflow:auto}
+.fl-tabs{display:flex;gap:2px;padding:0 14px;border-bottom:1px solid var(--mbu-border)}
+.fl-tabs button{font:inherit;border:0;border-bottom:2px solid transparent;background:none;color:var(--mbu-text-dim);padding:7px 12px;cursor:pointer;margin-bottom:-1px}
+.fl-tabs button:hover{color:var(--mbu-text)}
+.fl-tabs button.on{color:var(--mbu-accent-text);border-bottom-color:var(--mbu-accent)}
+.fl-cfg h3{margin:14px 0 6px;font-size:var(--mbu-fs);color:var(--mbu-text)}
+.fl-cfg h3:first-child{margin-top:0}
+.fl-hint{color:var(--mbu-text-weak);font-size:var(--mbu-fs-xs);margin:2px 0 6px}
+.fl-opt{display:flex;align-items:center;gap:6px;margin:6px 0;cursor:pointer}
+.fl-srcg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.fl-srcg label{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);cursor:pointer}
+.fl-srcg label.off{color:var(--mbu-text-weak)}
+.fl-srcg label.off .fl-fav{filter:grayscale(1);opacity:.4}
+.fl-mt{width:100%;border-collapse:collapse}
+.fl-mt th{text-align:left;font-weight:normal;color:var(--mbu-text-weak);font-size:var(--mbu-fs-xs);padding:2px 4px}
+.fl-mt td{padding:3px 4px;vertical-align:top}
+.fl-mt td.fl-arrow{color:var(--mbu-text-weak);padding-top:6px;width:1%}
+.fl-mt td:first-child{width:38%}
+.fl-mt td:last-child{width:1%}
+.fl-chips{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:2px 4px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);min-height:26px;box-sizing:border-box;background:var(--mbu-bg)}
+.fl-chips.err{border-color:var(--mbu-error)}
+.fl-chips input{border:0;outline:0;background:none;font:inherit;color:var(--mbu-text);flex:1 1 60px;min-width:60px;padding:2px}
+.fl-chip{display:inline-flex;align-items:center;gap:3px;padding:0 4px 0 8px;border-radius:999px;background:var(--mbu-accent-soft);color:var(--mbu-accent-deep-text)}
+.fl-chip button{border:0;background:none;color:inherit;cursor:pointer;padding:0 2px;font:inherit;opacity:.6}
+.fl-chip button:hover{opacity:1}
+.fl-tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0}
 `;
   const st = document.createElement('style');
   st.textContent = MBU_TOKENS + MBU_UI_CSS + CSS;
   document.head.appendChild(st);
 
-  const CARET = o => '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + (o ? 'M6 9l6 6 6-6' : 'M9 6l6 6-6 6') + '"/></svg>';
-  const GEAR = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
-  const RELOAD = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>';
+  const GEAR = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
+  const RELOAD = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>';
+  const DOTS = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>';
+  const XS = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 
-  const box = document.createElement('div');
-  box.className = 'ne-box mbu-ui';
-  function mount() {
-    const form = document.querySelector('#tag-form');
-    if (form) { form.after(box); return true; }
-    const h = [...document.querySelectorAll('#sidebar h2')].find(x => x.classList.contains('tags') || /tag|genre/i.test(x.textContent));
-    if (h) { let n = h.nextElementSibling; while (n && n.tagName !== 'H2' && n.nextElementSibling && n.nextElementSibling.tagName !== 'H2') n = n.nextElementSibling; (n || h).after(box); return true; }
-    const sb = document.querySelector('#sidebar');
-    if (sb) { sb.appendChild(box); return true; }
-    return false;
+  // ── the popup ─────────────────────────────────────────────────────────────
+  let pop = null;
+  const srcIcons = (e, max) => [...e.srcs.keys()].slice(0, max || 10).map(s => fav(s)).join('');
+  function tagTip(e) {
+    const have = S.have.has(e.name);
+    const rows = [...e.srcs].map(([s, urls]) => '<div style="display:flex;align-items:center;gap:6px;margin:2px 0">' + fav(s) + esc(SOURCES[s]) + (urls.size > 1 ? ' · ' + urls.size : '') + '</div>').join('');
+    const as = [...e.orig].filter(o => o.toLowerCase() !== e.name);
+    return mbuTipCard({
+      title: e.name, aside: e.genre ? 'genre' : 'tag',
+      body: (rows || '<div>' + (e.fav ? 'A favourite' : '') + '</div>') + (as.length ? '<div style="opacity:.7;margin-top:4px">As ' + esc(as.join(', ')) + '</div>' : ''),
+      foot: e.name.includes(',') ? 'Has a comma, which MusicBrainz splits: map it first' : have ? 'Already tagged here' : '',
+    });
   }
-  if (!mount()) LOG.info('No sidebar on this page');
+  mbuTipOn('.fl-row[data-t]', el => { const e = S.tags.get(el.dataset.t); return e ? tagTip(e) : ''; }, { card: true });
 
-  function chip(e, have) {
-    const cls = ['ne-chip'];
-    if (S.sel.has(e.name)) cls.push('sel');
-    if (have.has(e.name)) cls.push('have');
-    const bad = e.name.includes(',');
-    if (bad) cls.push('bad');
-    const tip = bad ? 'Has a comma, so it cannot be voted: add a mapper rule for it'
-      : (e.srcs ? 'From ' + [...e.srcs].map(s => SOURCES[s]).join(', ') + ([...e.orig].some(o => o.toLowerCase() !== e.name) ? ' (as ' + [...e.orig].join(', ') + ')' : '') : 'A favourite')
-        + (have.has(e.name) ? '; already tagged here' : '') + (e.genre ? '; a MusicBrainz genre' : '');
-    return '<button type="button" class="' + cls.join(' ') + '" data-t="' + esc(e.name) + '" data-tip="' + esc(tip) + '">'
-      + (e.genre ? '<span class="ne-g"></span>' : '') + esc(e.name)
-      + (e.srcs && e.srcs.size > 1 ? '<span class="ne-n">' + e.srcs.size + '</span>' : '') + '</button>';
+  function sorted() {
+    return [...S.tags.values()].sort((a, b) => (b.genre - a.genre) || (b.srcs.size - a.srcs.size) || a.name.localeCompare(b.name));
   }
-
-  function render() {
-    drawEh();
-    const have = onEntity();
-    const list = [...S.tags.values()].sort((a, b) => (b.genre - a.genre) || (b.srcs.size - a.srcs.size) || a.name.localeCompare(b.name));
-    const shown = S.showAll ? list : list.filter(e => e.genre);
-    const nG = list.filter(e => e.genre).length;
-    const srcN = Object.keys(S.status).length;
-    const sum = S.busy ? 'Collecting tags…'
-      : !S.ran ? 'Collect tags from links'
-        : list.length ? nG + ' genre' + (nG === 1 ? '' : 's') + ', ' + (list.length - nG) + ' other tag' + (list.length - nG === 1 ? '' : 's') + ' from ' + srcN + ' source' + (srcN === 1 ? '' : 's')
-          : 'No tags found in this ' + TYPE.replace('-', ' ') + "'s links";
-    let h = '<div class="ne-head" data-a="fold"><span>' + CARET(CFG.open) + '</span><span class="ne-sum">' + esc(sum) + '</span>'
-      + '<button type="button" class="ne-ic" data-a="reload" data-tip="Collect again">' + RELOAD + '</button>'
-      + '<button type="button" class="ne-ic" data-a="cfg" data-tip="' + NAME + ' settings">' + GEAR + '</button></div>';
-    if (CFG.open) {
-      h += '<div class="ne-body">';
-      if (srcN) {
-        h += '<div class="ne-srcs">' + Object.entries(S.status).map(([k, v]) =>
-          '<span class="ne-src" data-tip="' + esc(v.state === 'err' ? v.err : v.urls.join('\n')) + '"><span class="ne-dot ' + v.state + '"></span>' + SOURCES[k] + (v.state === 'ok' ? ' ' + v.n : '') + '</span>').join('') + '</div>';
-      }
-      h += shown.length ? '<div class="ne-chips">' + shown.map(e => chip(e, have)).join('') + '</div>'
-        : S.ran ? '<div class="ne-empty">' + (list.length ? 'No genres; show all tags to pick others.' : 'Nothing to vote.') + '</div>' : '';
-      const fv = favs();
-      if (fv.length) {
-        h += '<div class="ne-lbl">Favourites</div><div class="ne-chips">'
-          + fv.map(n => chip(S.tags.get(n) || { name: n, genre: S.genres.has(n), srcs: null, orig: new Set() }, have)).join('') + '</div>';
+  function header() {
+    const icons = Object.entries(S.status).map(([k, v]) =>
+      '<span data-tip="' + esc(SOURCES[k] + (v.state === 'err' ? ': ' + v.err : v.state === 'run' ? ': reading…' : ': ' + plural(v.n, 'tag'))) + '">' + fav(k, v.state === 'err' ? 'off' : v.state === 'run' ? 'run' : '') + '</span>').join('');
+    return mbuCfgHeader({ icon: ICON, name: NAME, version: VER, log: true, script: 'fuzzy_logic' })
+      .replace('<span class="mbu-cfg-sp"></span>', '<span class="fl-h-srcs">' + icons + '</span><span class="mbu-cfg-sp"></span>'
+        + '<button type="button" class="fl-ic" data-a="reload" data-tip="Collect again">' + RELOAD + '</button>'
+        + '<button type="button" class="fl-ic" data-a="cfg" data-tip="Settings">' + GEAR + '</button>');
+  }
+  function body() {
+    const list = sorted(), nG = list.filter(e => e.genre).length;
+    const shown = S.showAll ? list : list.filter(e => e.genre || e.fav);
+    let h = '<div class="fl-bar"><span class="fl-sw">'
+      + '<button type="button" data-a="genres" class="' + (S.showAll ? '' : 'on') + '" data-tip="Only MusicBrainz genres">Genres ' + nG + '</button>'
+      + '<button type="button" data-a="alltags" class="' + (S.showAll ? 'on' : '') + '" data-tip="Every collected tag">All ' + list.length + '</button></span><span class="fl-sp"></span>';
+    if (TYPE === 'release') h += '<label class="fl-chk" data-tip="Vote on its release group and every recording too"><input type="checkbox" data-a="prop"' + (S.prop ? ' checked' : '') + '>Release group + recordings</label>';
+    h += '</div><div class="fl-list">';
+    if (!shown.length) {
+      h += '<div class="fl-empty">' + (S.busy ? 'Collecting tags…' : !S.ran ? '' : list.length ? 'No genres among ' + plural(list.length, 'tag') + '.' : 'No tags in this ' + TYPE.replace('-', ' ') + "'s links.") + '</div>';
+    } else {
+      const vis = shown.filter(e => !e.name.includes(','));
+      const allSel = vis.length && vis.every(e => S.sel.has(e.name));
+      h += '<table class="fl-t"><tr class="fl-sec"><td class="fl-c0"><input type="checkbox" data-a="selall"' + (allSel ? ' checked' : '') + ' data-tip="Select all"></td><td colspan="4">' + plural(shown.length, S.showAll ? 'tag' : 'genre') + (S.busy ? ' · collecting…' : '') + '</td></tr>';
+      for (const e of shown) {
+        const bad = e.name.includes(','), have = S.have.has(e.name);
+        const as = [...e.orig].filter(o => o.toLowerCase() !== e.name);
+        h += '<tr class="fl-row' + (have ? ' have' : '') + (bad ? ' bad' : '') + '" data-t="' + esc(e.name) + '">'
+          + '<td class="fl-c0"><input type="checkbox"' + (S.sel.has(e.name) ? ' checked' : '') + (bad ? ' disabled' : '') + '></td>'
+          + '<td><span class="fl-tag' + (e.genre ? ' genre' : '') + '">' + esc(e.name) + '</span>' + (as.length ? '<span class="fl-orig">' + esc(as.join(', ')) + '</span>' : '') + '</td>'
+          + '<td class="fl-cs">' + srcIcons(e, 6) + '</td><td class="fl-cn">' + (e.srcs.size > 1 ? e.srcs.size : '') + '</td>'
+          + '<td class="fl-cm"><button type="button" class="fl-ic" data-a="menu" aria-label="More">' + DOTS + '</button></td></tr>';
       }
       if (S.suggest.length) {
-        h += '<div class="ne-lbl">Mapper suggestions</div>' + S.suggest.map((s, i) =>
-          '<div class="ne-sug"><span>' + esc(s.from) + ' → ' + esc(s.to) + '</span><button type="button" class="ne-link" data-a="rule" data-i="' + i + '" data-tip="Add this rule to the mapper">Add rule</button></div>').join('');
+        h += '<tr class="fl-sec"><td></td><td colspan="4">Mapping suggestions</td></tr>' + S.suggest.map((s, i) =>
+          '<tr class="fl-sug"><td></td><td colspan="3">' + esc(s.from) + ' → ' + esc(s.to) + '</td><td class="fl-cm"><button type="button" class="fl-link" data-a="rule" data-i="' + i + '" data-tip="Add this rule to the mapping">Add</button></td></tr>').join('');
       }
-      const n = S.sel.size;
-      h += '<div class="ne-act">'
-        + '<button type="button" class="ne-btn pri" data-a="vote"' + (!n || !loggedIn || S.busy ? ' disabled' : '') + ' data-tip="' + (loggedIn ? 'Upvote the selected tags' : 'Log in to vote') + '">Vote ' + n + '</button>'
-        + '<button type="button" class="ne-btn" data-a="withdraw"' + (!n || !loggedIn || S.busy ? ' disabled' : '') + ' data-tip="Withdraw your votes for the selected tags">Withdraw</button>'
-        + '<button type="button" class="ne-btn" data-a="all" data-tip="' + (S.showAll ? 'Show only MusicBrainz genres' : 'Show every tag, not only genres') + '">' + (S.showAll ? 'Genres only' : 'All tags') + '</button>';
-      if (TYPE === 'release') {
-        h += '<label class="ne-chk" data-tip="Vote on the release group too"><input type="checkbox" data-a="propRG"' + (CFG.propRG ? ' checked' : '') + '>Release group</label>'
-          + '<label class="ne-chk" data-tip="Vote on every recording of this release too"><input type="checkbox" data-a="propRec"' + (CFG.propRec ? ' checked' : '') + '>Recordings</label>';
-      }
-      h += '</div></div>';
+      h += '</table>';
     }
-    box.innerHTML = h;
+    const n = [...S.sel].filter(t => !t.includes(',')).length, off = !n || !loggedIn || S.busy;
+    h += '</div><div class="fl-foot"><span class="fl-sp"></span>'
+      + '<button type="button" class="fl-btn" data-a="withdraw"' + (off ? ' disabled' : '') + ' data-tip="Withdraw your votes for the selected tags">Withdraw</button>'
+      + '<button type="button" class="fl-btn pri" data-a="vote"' + (off ? ' disabled' : '') + ' data-tip="' + (loggedIn ? 'Upvote the selected tags' : 'Log in to vote') + '">Vote ' + n + '</button></div>';
+    return h;
+  }
+  function draw() {
+    badge(); drawEhBtn();
+    if (!pop) return;
+    const sc = pop.querySelector('.fl-list'), top = sc ? sc.scrollTop : 0;
+    pop.querySelector('.mbu-cfg-h').outerHTML = header();
+    pop.querySelector('.mbu-ov-body').innerHTML = body();
+    const sc2 = pop.querySelector('.fl-list'); if (sc2) sc2.scrollTop = top;
+    const lg = pop.querySelector('.mbu-cfg-log'); if (lg) lg.onclick = () => LOG.open();
+  }
+  function closePop() {
+    if (!pop) return;
+    closeMenu(); pop.remove(); pop = null; document.removeEventListener('keydown', popKey, true);
+  }
+  const popKey = e => { if (e.key === 'Escape' && !document.querySelector('.fl-menu') && !document.querySelector('.fl-cfg')) { e.stopPropagation(); closePop(); } };
+  function openPop() {
+    if (!TYPE) return;
+    if (pop) { closePop(); return; }
+    pop = document.createElement('div');
+    pop.className = 'mbu-ov fl-pop fl-ui mbu-ui';
+    pop.innerHTML = '<div class="mbu-ov-panel" role="dialog" aria-label="' + NAME + '"><div class="mbu-cfg-h"></div><div class="mbu-ov-body"></div></div>';
+    document.body.appendChild(pop);
+    document.addEventListener('keydown', popKey, true);
+    pop.addEventListener('mousedown', e => { if (e.target === pop) closePop(); });
+    pop.addEventListener('click', onPopClick);
+    pop.addEventListener('change', e => { if (e.target.dataset.a === 'prop') S.prop = e.target.checked; });
+    S.have = haveNow();
+    draw();
+    if (!S.ran && !S.busy) collect();
+    LOG.info('Opened' + (S.eh ? ' from Event Horizon' : ''));
+  }
+  function onPopClick(e) {
+    if (e.target.closest('.mbu-cfg-x')) { e.preventDefault(); closePop(); return; }
+    const a = e.target.closest('[data-a]');
+    const row = e.target.closest('.fl-row');
+    if (a) {
+      const act = a.dataset.a;
+      if (act === 'reload') { reset(); collect(); }
+      else if (act === 'cfg') openCfg();
+      else if (act === 'genres' || act === 'alltags') { S.showAll = act === 'alltags'; draw(); }
+      else if (act === 'selall') {
+        const list = sorted().filter(x => (S.showAll || x.genre || x.fav) && !x.name.includes(','));
+        list.forEach(x => a.checked ? S.sel.add(x.name) : S.sel.delete(x.name)); draw();
+      }
+      else if (act === 'vote') doVote('upvote');
+      else if (act === 'withdraw') doVote('withdraw');
+      else if (act === 'menu') { e.stopPropagation(); openMenu(a, row.dataset.t); }
+      else if (act === 'rule') { const s = S.suggest[+a.dataset.i]; addRule(s.from, [s.to]); S.sel.add(s.to); }
+      return;
+    }
+    if (row) {
+      const t = row.dataset.t;
+      if (t.includes(',')) { mbuToast('⚠ "' + t + '" has a comma, which MusicBrainz splits; map it first', { kind: 'warn' }); return; }
+      S.sel.has(t) ? S.sel.delete(t) : S.sel.add(t); draw();
+    }
+  }
+  function addRule(from, to) {
+    CFG.mapper = (CFG.mapper.trim() + '\n' + from + ' → ' + to.join('; ')).trim(); saveCfg();
+    LOG.info('Mapping added: ' + from + ' → ' + to.join('; '));
+    rebuild(); draw();
+  }
+
+  // the ⋯ menu of a tag: map it, ignore it, make it a favourite, open where it came from
+  let menu = null, menuOff = null;
+  function closeMenu() { if (menuOff) menuOff(); menuOff = null; if (menu) menu.remove(); menu = null; }
+  function openMenu(btn, name) {
+    closeMenu();
+    const e = S.tags.get(name); if (!e) return;
+    const isFav = favs().includes(name);
+    menu = document.createElement('div');
+    menu.className = 'fl-menu fl-ui mbu-ui';
+    const from = e.orig.size === 1 ? [...e.orig][0] : name;
+    let h = '<div class="fl-mapin"><input class="fl-in" data-m="to" placeholder="Map ' + esc(from) + ' to…" spellcheck="false"><button type="button" class="fl-btn" data-m="map">Map</button></div><hr>'
+      + '<button type="button" data-m="ignore">Ignore ' + esc(name) + '</button>'
+      + '<button type="button" data-m="fav">' + (isFav ? 'No longer a favourite' : 'Favourite') + '</button>';
+    const urls = [...e.srcs].flatMap(([s, us]) => [...us].map(u => [s, u]));
+    if (urls.length) h += '<hr>' + urls.map(([s, u]) => '<button type="button" data-m="open" data-u="' + esc(u) + '" data-tip="' + esc(u) + '">' + fav(s) + 'Open on ' + esc(SOURCES[s]) + '</button>').join('');
+    menu.innerHTML = h;
+    document.body.appendChild(menu);
+    const r = btn.getBoundingClientRect(), mw = menu.offsetWidth, mh = menu.offsetHeight;
+    menu.style.left = Math.max(8, Math.min(r.right - mw, innerWidth - mw - 8)) + 'px';
+    menu.style.top = (r.bottom + mh + 8 > innerHeight ? Math.max(8, r.top - mh - 4) : r.bottom + 4) + 'px';
+    const inp = menu.querySelector('[data-m=to]');
+    const doMap = () => {
+      const to = inp.value.split(';').map(s => s.trim()).filter(Boolean);
+      if (!to.length) { inp.classList.add('err'); inp.focus(); return; }   // nothing on the right is Ignore
+      closeMenu(); S.sel.delete(name); to.forEach(t => S.sel.add(t.toLowerCase()));
+      addRule(from, to);
+    };
+    inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); doMap(); } else if (ev.key === 'Escape') { ev.stopPropagation(); closeMenu(); } });
+    menu.addEventListener('click', ev => {
+      const b = ev.target.closest('[data-m]'); if (!b || b === inp) return;
+      const m = b.dataset.m;
+      if (m === 'map') { doMap(); return; }
+      closeMenu();
+      if (m === 'ignore') { CFG.ignore = (CFG.ignore.trim() + '\n' + name).trim(); saveCfg(); LOG.info('Ignored: ' + name); }
+      else if (m === 'fav') {
+        const f = favs(); CFG.favourites = (isFav ? f.filter(x => x !== name) : f.concat(name)).join('\n'); saveCfg();
+        LOG.info((isFav ? 'Unfavourited: ' : 'Favourite: ') + name);
+      }
+      else if (m === 'open') { window.open(b.dataset.u, '_blank', 'noopener'); return; }
+      rebuild(); draw();
+    });
+    menuOff = mbuDismissOn(menu, closeMenu, { ignore: '[data-a=menu]' }) || null;
+    if (typeof menuOff !== 'function') menuOff = null;
+    inp.focus();
   }
 
   async function doVote(kind) {
     const tags = [...S.sel].filter(t => !t.includes(','));
     if (!tags.length) return;
-    S.busy = true; render();
+    if (S.eh && !S.prop) {
+      // from Event Horizon's editor: it votes and redraws its own chips
+      LOG.info((kind === 'upvote' ? 'Adding' : 'Withdrawing') + ' through Event Horizon: ' + tags.join(', '));
+      document.dispatchEvent(new CustomEvent(kind === 'upvote' ? 'mbu-tags-add' : 'mbu-tags-remove', { detail: { names: tags } }));
+      if (kind === 'upvote') tags.forEach(t => S.have.add(t)); else tags.forEach(t => S.have.delete(t));
+      if (kind !== 'upvote') {
+        // EH has no bulk remove yet: vote ourselves too
+        try { await vote([{ type: TYPE, mbid: MBID }], tags, kind); } catch (e) { LOG.warn('Withdraw failed: ' + e.message); }
+      }
+      S.sel.clear(); draw(); return;
+    }
+    S.busy = true; draw();
     try {
-      const t = await targets();
-      const n = await vote(t, tags, kind);
-      mbuToast('✓ ' + (kind === 'upvote' ? 'Voted ' : 'Withdrew ') + tags.length + ' tag' + (tags.length === 1 ? '' : 's') + ' on ' + n + ' entit' + (n === 1 ? 'y' : 'ies') + (kind === 'upvote' ? '; reload to see them' : ''), { kind: 'ok' });
+      const n = await vote(await targets(), tags, kind);
+      if (kind === 'upvote') tags.forEach(t => S.have.add(t)); else tags.forEach(t => S.have.delete(t));
+      S.sel.clear();
+      mbuToast('✓ ' + (kind === 'upvote' ? 'Voted ' : 'Withdrew ') + plural(tags.length, 'tag') + ' on ' + n + ' entit' + (n === 1 ? 'y' : 'ies') + (kind === 'upvote' ? '; reload to see them' : ''), { kind: 'ok' });
     } catch (e) {
       LOG.error('Vote failed: ' + e.message);
       mbuToast('⚠ Vote failed: ' + e.message, { kind: 'warn' });
     }
-    S.busy = false; render();
+    S.busy = false; draw();
   }
-
-  box.addEventListener('click', e => {
-    const a = e.target.closest('[data-a],[data-t]');
-    if (!a) return;
-    if (a.dataset.t !== undefined) {
-      const t = a.dataset.t;
-      if (t.includes(',')) { mbuToast('⚠ "' + t + '" has a comma, which MusicBrainz splits; add a mapper rule for it', { kind: 'warn' }); return; }
-      S.sel.has(t) ? S.sel.delete(t) : S.sel.add(t);
-      render(); return;
-    }
-    const act = a.dataset.a;
-    if (act === 'fold') { if (e.target.closest('.ne-ic')) return; CFG.open = !CFG.open; saveCfg(); if (CFG.open && !S.ran && !S.busy) collect(); else render(); }
-    else if (act === 'reload') { e.stopPropagation(); S.ran = false; S.sel.clear(); CFG.open = true; saveCfg(); collect(); }
-    else if (act === 'cfg') { e.stopPropagation(); openCfg(); }
-    else if (act === 'vote') doVote('upvote');
-    else if (act === 'withdraw') doVote('withdraw');
-    else if (act === 'all') { S.showAll = !S.showAll; render(); }
-    else if (act === 'rule') {
-      const s = S.suggest[+a.dataset.i];
-      CFG.mapper = (CFG.mapper.trim() + '\n' + s.from + ' → ' + s.to).trim(); saveCfg();
-      S.sel.add(s.to); rebuild(); render();
-      LOG.info('Mapper rule added: ' + s.from + ' → ' + s.to);
-    }
-  });
-  box.addEventListener('change', e => {
-    const k = e.target.dataset.a;
-    if (k === 'propRG' || k === 'propRec') { CFG[k] = e.target.checked; saveCfg(); }
-  });
 
   // ── settings window ───────────────────────────────────────────────────────
   function download(name, text) {
@@ -2790,52 +2952,120 @@
     a.download = name; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
+  let cfgTab = 'general';
   function openCfg() {
-    if (document.querySelector('.ne-cfg')) return;
+    if (document.querySelector('.fl-cfg')) return;
     const ov = document.createElement('div');
-    ov.className = 'mbu-ov ne-cfg mbu-ui';
+    ov.className = 'mbu-ov fl-cfg fl-ui mbu-ui';
+    // the mapping table works on rows; the text in CFG.mapper is what is kept, exported and imported
+    let rows = lines(CFG.mapper).filter(l => !l.startsWith('#')).map(l => {
+      const m = l.match(/^(.*?)\s*(?:→|->)\s*(.*)$/);
+      return m ? { src: m[1].trim(), right: m[2].split(';').map(s => s.trim()).filter(Boolean) } : null;
+    }).filter(Boolean);
+    let filter = '';
+    const chipsBox = (list, key, ph) => '<div class="fl-chips' + (key.startsWith('r') && !list.length ? ' err' : '') + '" data-c="' + key + '">'
+      + list.map((t, i) => '<span class="fl-chip">' + esc(t) + '<button type="button" data-cx="' + i + '" aria-label="Remove">×</button></span>').join('')
+      + '<input placeholder="' + esc(ph) + '" spellcheck="false"></div>';
+    const tabs = { general: 'General', sources: 'Sources', mapping: 'Mapping', lists: 'Lists' };
+    function tabBody() {
+      if (cfgTab === 'general') {
+        return '<h3>Show</h3><label class="fl-opt"><input type="checkbox" data-k="genresOnly"' + (CFG.genresOnly ? ' checked' : '') + '>Only MusicBrainz genres at first</label>'
+          + '<h3>Background</h3><label class="fl-opt"><input type="checkbox" data-k="background"' + (CFG.background ? ' checked' : '') + '>Collect tags when a page opens</label>'
+          + '<div class="fl-hint">The launcher then shows how many genres are new here. Off, collecting starts when you open the window.</div>'
+          + '<h3>Releases</h3><label class="fl-opt"><input type="checkbox" data-k="propRG"' + (CFG.propRG || CFG.propRec ? ' checked' : '') + '>Vote on the release group and recordings too, by default</label>';
+      }
+      if (cfgTab === 'sources') {
+        return '<div class="fl-hint">Where tags are read from, through the entity\'s links.</div><div class="fl-srcg">' + Object.entries(SOURCES).map(([k, v]) =>
+          '<label class="' + (CFG.sources[k] ? '' : 'off') + '"><input type="checkbox" data-src="' + k + '"' + (CFG.sources[k] ? ' checked' : '') + '>' + fav(k) + esc(v) + '</label>').join('') + '</div>';
+      }
+      if (cfgTab === 'mapping') {
+        const f = filter.toLowerCase();
+        return '<div class="fl-hint">A collected tag on the left becomes the tags on the right. <code>/regex/</code> on the left, <code>$1</code> on the right. The first match wins. To drop a tag, ignore it (Lists).</div>'
+          + '<div class="fl-tools"><input class="fl-in" data-x="filter" placeholder="Filter" value="' + esc(filter) + '" style="max-width:200px">'
+          + '<span class="fl-sp"></span><button type="button" class="fl-btn" data-x="add">+ Rule</button><button type="button" class="fl-btn" data-x="import">Import</button>'
+          + '<button type="button" class="fl-btn" data-x="export">Export</button><button type="button" class="fl-btn" data-x="reset">Defaults</button></div>'
+          + '<table class="fl-mt"><tr><th>Collected</th><th></th><th>Becomes</th><th></th></tr>'
+          + rows.map((r, i) => (f && !(r.src + ' ' + r.right.join(' ')).toLowerCase().includes(f)) ? '' :
+            '<tr data-r="' + i + '"><td><input class="fl-in' + (r.src.trim() ? '' : ' err') + '" data-l="' + i + '" value="' + esc(r.src) + '" spellcheck="false" style="width:100%"></td><td class="fl-arrow">→</td>'
+            + '<td>' + chipsBox(r.right, 'r' + i, r.right.length ? '' : 'a tag, Enter') + '</td>'
+            + '<td><button type="button" class="fl-ic" data-x="del" data-i="' + i + '" data-tip="Delete the rule">' + XS + '</button></td></tr>').join('')
+          + '</table>' + (rows.length ? '' : '<div class="fl-hint">No rules.</div>');
+      }
+      return '<h3>Ignore</h3><div class="fl-hint">Never shown. <code>/regex/</code> works.</div>' + chipsBox(lines(CFG.ignore), 'ignore', 'a tag, Enter')
+        + '<h3>Favourites</h3><div class="fl-hint">Always offered, collected or not.</div>' + chipsBox(favs(), 'favourites', 'a tag, Enter');
+    }
+    function paint(focus) {
+      ov.querySelector('.fl-tabs').innerHTML = Object.entries(tabs).map(([k, v]) => '<button type="button" data-tab="' + k + '" class="' + (k === cfgTab ? 'on' : '') + '">' + v + '</button>').join('');
+      ov.querySelector('.mbu-ov-body').innerHTML = tabBody();
+      if (focus) { const el = ov.querySelector(focus); if (el) { el.focus(); if (el.setSelectionRange) el.setSelectionRange(el.value.length, el.value.length); } }
+    }
+    const saveRows = () => { CFG.mapper = rulesText(rows); saveCfg(); };
+    const listSet = (key, list) => { CFG[key] = list.join('\n'); saveCfg(); };
+    const chipList = key => key[0] === 'r' ? rows[+key.slice(1)].right : key === 'ignore' ? lines(CFG.ignore) : favs();
+    const chipAdd = (key, val) => {
+      const v = val.trim(); if (!v) return;
+      if (key[0] === 'r') { rows[+key.slice(1)].right.push(...v.split(';').map(s => s.trim()).filter(Boolean)); saveRows(); }
+      else { const l = chipList(key); if (!l.includes(v)) listSet(key, l.concat(key === 'favourites' ? v.toLowerCase() : v)); }
+      paint('[data-c="' + key + '"] input');
+    };
     ov.innerHTML = '<div class="mbu-ov-panel" role="dialog" aria-label="' + NAME + ' settings">'
-      + mbuCfgHeader({ icon: ICON, name: NAME, version: VER, log: true, script: 'necessary_evil' })
-      + '<div class="mbu-ov-body">'
-      + '<h3>Sources</h3><div class="ne-grid">' + Object.entries(SOURCES).map(([k, v]) =>
-        '<label class="ne-chk"><input type="checkbox" data-src="' + k + '"' + (CFG.sources[k] ? ' checked' : '') + '>' + v + '</label>').join('') + '</div>'
-      + '<h3>Show</h3><label class="ne-chk"><input type="checkbox" data-k="genresOnly"' + (CFG.genresOnly ? ' checked' : '') + '>Only MusicBrainz genres at first</label>'
-      + '<h3>Mapper</h3><div class="ne-hint">One rule per line: <code>tag → genre; other</code>. <code>/regex/</code> on the left, <code>$1</code> on the right; nothing on the right drops the tag. The first match wins.</div>'
-      + '<textarea data-k="mapper" spellcheck="false">' + esc(CFG.mapper) + '</textarea>'
-      + '<div class="ne-act"><button type="button" class="ne-btn" data-x="export">Export</button><button type="button" class="ne-btn" data-x="import">Import</button><button type="button" class="ne-btn" data-x="reset">Defaults</button></div>'
-      + '<h3>Ignore</h3><div class="ne-hint">Tags never shown, one per line; <code>/regex/</code> works.</div>'
-      + '<textarea data-k="ignore" spellcheck="false" style="min-height:70px">' + esc(CFG.ignore) + '</textarea>'
-      + '<h3>Favourites</h3><div class="ne-hint">Tags always offered, one per line.</div>'
-      + '<textarea data-k="favourites" spellcheck="false" style="min-height:70px">' + esc(CFG.favourites) + '</textarea>'
-      + '</div></div>';
+      + mbuCfgHeader({ icon: ICON, name: NAME, version: VER, log: true, script: 'fuzzy_logic' })
+      + '<div class="fl-tabs"></div><div class="mbu-ov-body"></div></div>';
     document.body.appendChild(ov);
-    const close = () => { ov.remove(); document.removeEventListener('keydown', onKey, true); rebuild(); render(); };
+    paint();
+    const close = () => { ov.remove(); document.removeEventListener('keydown', onKey, true); rebuild(); draw(); };
     const onKey = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
     document.addEventListener('keydown', onKey, true);
     ov.addEventListener('mousedown', e => { if (e.target === ov) close(); });
     ov.querySelector('.mbu-cfg-x').onclick = close;
     const lg = ov.querySelector('.mbu-cfg-log'); if (lg) lg.onclick = () => LOG.open();
+    ov.addEventListener('change', e => {
+      const t = e.target;
+      if (t.dataset.src) { CFG.sources[t.dataset.src] = t.checked; saveCfg(); paint(); }
+      else if (t.dataset.k === 'genresOnly') { CFG.genresOnly = t.checked; S.showAll = !t.checked; saveCfg(); }
+      else if (t.dataset.k === 'background') { CFG.background = t.checked; saveCfg(); if (t.checked && !S.ran) collect(); }
+      else if (t.dataset.k === 'propRG') { CFG.propRG = CFG.propRec = t.checked; S.prop = t.checked; saveCfg(); }
+    });
     ov.addEventListener('input', e => {
       const t = e.target;
-      if (t.dataset.src) CFG.sources[t.dataset.src] = t.checked;
-      else if (t.dataset.k === 'genresOnly') { CFG.genresOnly = t.checked; S.showAll = !t.checked; }
-      else if (t.dataset.k) CFG[t.dataset.k] = t.value;
-      saveCfg();
+      if (t.dataset.x === 'filter') { filter = t.value; paint('[data-x=filter]'); }
+      else if (t.dataset.l !== undefined) { rows[+t.dataset.l].src = t.value; t.classList.toggle('err', !t.value.trim()); saveRows(); }
     });
+    ov.addEventListener('keydown', e => {
+      const box = e.target.closest('.fl-chips'); if (!box || e.target.tagName !== 'INPUT') return;
+      if (e.key === 'Enter' || e.key === ';') { e.preventDefault(); chipAdd(box.dataset.c, e.target.value); }
+      else if (e.key === 'Backspace' && !e.target.value) {
+        const k = box.dataset.c, l = chipList(k); if (!l.length) return;
+        if (k[0] === 'r') { l.pop(); saveRows(); } else listSet(k, l.slice(0, -1));
+        paint('[data-c="' + k + '"] input');
+      }
+    });
+    ov.addEventListener('focusout', e => { const box = e.target.closest && e.target.closest('.fl-chips'); if (box && e.target.value && e.target.value.trim()) chipAdd(box.dataset.c, e.target.value); });
     ov.addEventListener('click', e => {
+      const tb = e.target.closest('[data-tab]');
+      if (tb) { cfgTab = tb.dataset.tab; paint(); return; }
+      const cx = e.target.closest('[data-cx]');
+      if (cx) {
+        const k = cx.closest('.fl-chips').dataset.c, l = chipList(k); l.splice(+cx.dataset.cx, 1);
+        if (k[0] === 'r') saveRows(); else listSet(k, l);
+        paint(); return;
+      }
       const x = e.target.closest('[data-x]');
-      if (!x) return;
-      const ta = ov.querySelector('textarea[data-k=mapper]');
-      if (x.dataset.x === 'export') download('necessary-evil-mapper.txt', CFG.mapper + '\n');
-      else if (x.dataset.x === 'reset') { ta.value = CFG.mapper = DEFAULT_MAPPER; saveCfg(); }
-      else if (x.dataset.x === 'import') {
+      if (!x || x.tagName === 'INPUT') { const cb = e.target.closest('.fl-chips'); if (cb && e.target === cb) cb.querySelector('input').focus(); return; }
+      const act = x.dataset.x;
+      if (act === 'add') { rows.unshift({ src: '', right: [] }); filter = ''; paint('[data-l="0"]'); }
+      else if (act === 'del') { rows.splice(+x.dataset.i, 1); saveRows(); paint(); }
+      else if (act === 'export') download('fuzzy-logic-mapping.txt', CFG.mapper + '\n');
+      else if (act === 'reset') { CFG.mapper = DEFAULT_MAPPER; saveCfg(); ov.remove(); document.removeEventListener('keydown', onKey, true); openCfg(); }
+      else if (act === 'import') {
         const f = document.createElement('input'); f.type = 'file'; f.accept = '.txt,text/plain';
         f.onchange = async () => {
           if (!f.files[0]) return;
           const txt = (await f.files[0].text()).replace(/\r/g, '').trim();
-          const n = parseRules(txt).length;
-          ta.value = CFG.mapper = txt; saveCfg();
-          mbuToast('✓ Imported ' + n + ' mapper rule' + (n === 1 ? '' : 's'), { kind: 'ok' });
+          const rules = parseRules(txt);
+          CFG.mapper = rules.map(r => r.src + ' → ' + r.right.join('; ')).join('\n'); saveCfg();
+          rows = rules.map(r => ({ src: r.src, right: r.right.slice() })); paint();
+          mbuToast('✓ Imported ' + plural(rules.length, 'mapping rule'), { kind: 'ok' });
         };
         f.click();
       }
@@ -2843,44 +3073,46 @@
   }
   GM_registerMenuCommand(NAME + ' settings', openCfg);
 
-  // ── Event Horizon ─────────────────────────────────────────────────────────
-  // EH's header tag editor (its pencil) tells which entity it edits and where its box is (mbu-tags-edit); a row of
-  // the collected tags goes under that box, and a click adds one through EH (mbu-tags-add), which votes and redraws
-  const ehRow = document.createElement('div');
-  ehRow.className = 'ne-eh mbu-ui';
-  let ehBox = null;
-  function drawEh() {
-    if (!ehBox) { ehRow.remove(); return; }
-    if (ehRow.previousElementSibling !== ehBox) ehBox.after(ehRow);
-    const have = new Set([...ehBox.querySelectorAll('.tgi')].map(c => (c.firstChild && c.firstChild.textContent || '').trim().toLowerCase()));
-    const list = [...S.tags.values()].filter(e => !e.name.includes(',') && !have.has(e.name))
-      .sort((a, b) => (b.genre - a.genre) || (b.srcs.size - a.srcs.size) || a.name.localeCompare(b.name));
-    const shown = S.showAll ? list : list.filter(e => e.genre);
-    ehRow.innerHTML = '<span class="ne-sum" data-tip="' + NAME + ': tags from this entity&#39;s links">' + ICON.replace(/width="20" height="20"/, 'width="16" height="16"') + '</span>'
-      + (S.busy && !shown.length ? '<span class="ne-empty">Collecting tags…</span>'
-        : shown.length ? shown.slice(0, 24).map(e => chip(e, have)).join('') : '<span class="ne-empty">' + (list.length ? 'No genres' : 'No tags from the links') + '</span>')
-      + (list.length > shown.length || S.showAll ? '<button type="button" class="ne-link" data-a="all">' + (S.showAll ? 'Genres only' : 'All tags') + '</button>' : '');
+  // ── the launcher (String Theory's dock) ───────────────────────────────────
+  let dock = null;
+  function badge() { if (dock) { const n = fresh(); dock.status(S.ran || n ? String(n || '') : ''); } }
+  function dockBusy(on) { if (dock) dock.busy(on); }
+  if (TYPE) {
+    dock = mbuDockItem({
+      id: 'mb-fl-dock', label: NAME, icon: ICON_URI, order: 63,
+      paths: '^/(release|release-group|artist|label|recording)/[0-9a-fA-F-]{36}/?$',
+      click: () => openPop(),
+    });
+    dock.addEventListener('contextmenu', e => { e.preventDefault(); openCfg(); });
+    dock.card(() => mbuTipCard({ title: NAME, body: S.ran ? plural(fresh(), 'new genre') + ' from ' + plural(Object.keys(S.status).length, 'source') : 'Tags from this entity\'s links', foot: 'Right-click for settings' }));
   }
-  ehRow.addEventListener('mousedown', e => e.preventDefault());   // keeps the focus in EH's input
-  ehRow.addEventListener('click', e => {
-    const a = e.target.closest('[data-a],[data-t]'); if (!a) return;
-    e.preventDefault(); e.stopPropagation();
-    if (a.dataset.a === 'all') { S.showAll = !S.showAll; render(); return; }
-    LOG.info('Adding through Event Horizon: ' + a.dataset.t);
-    document.dispatchEvent(new CustomEvent('mbu-tags-add', { detail: { names: [a.dataset.t] } }));
-  });
+
+  // ── Event Horizon ─────────────────────────────────────────────────────────
+  // EH's header tag editor (its pencil) tells which entity it edits and where its box is (mbu-tags-edit); a button
+  // under that box opens the window, whose votes then go through EH (mbu-tags-add), which votes and redraws
+  const ehBtn = document.createElement('button');
+  ehBtn.type = 'button'; ehBtn.className = 'fl-ehb mbu-ui';
+  ehBtn.addEventListener('mousedown', e => e.preventDefault());   // keeps the focus in EH's input
+  ehBtn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openPop(); });
+  function drawEhBtn() {
+    if (!S.eh) { ehBtn.remove(); return; }
+    if (ehBtn.previousElementSibling !== S.eh) S.eh.after(ehBtn);
+    const n = fresh();
+    ehBtn.innerHTML = ICON_SM + '<span>' + NAME + '</span>' + (S.busy ? '<span>…</span>' : S.ran ? '<b>' + n + '</b>' : '');
+    mbuTip(ehBtn, S.ran ? plural(n, 'genre') + ' from the links, not tagged yet' : 'Tags from this entity\'s links');
+  }
   document.addEventListener('mbu-tags-edit', e => {
     const d = e.detail || {}, m = d.path && d.path.match(/^\/(release|release-group|artist|label|recording)\/([0-9a-f-]{36})$/);
-    ehBox = d.box && m ? d.box : null;
-    if (ehBox && (m[1] !== TYPE || m[2] !== MBID)) {
-      TYPE = m[1]; MBID = m[2];
-      Object.assign(S, { status: {}, raw: [], tags: new Map(), sel: new Set(), suggest: [], ran: false });
+    S.eh = d.box && m ? d.box : null;
+    if (S.eh && (m[1] !== TYPE || m[2] !== MBID)) {
+      TYPE = m[1]; MBID = m[2]; reset();
       LOG.info('Event Horizon edits ' + TYPE + ' ' + MBID);
     }
-    if (ehBox && !S.ran && !S.busy) collect(); else drawEh();
+    if (!S.eh && pop) closePop();
+    S.have = haveNow();
+    if (S.eh && !S.ran && !S.busy) collect(); else draw();
   });
 
-  window.__necessaryEvil = S;   // for the specs
-  render();
-  if (CFG.open) collect();
+  window.__fuzzyLogic = S;   // for the specs
+  if (TYPE && CFG.background) collect();
 })();
