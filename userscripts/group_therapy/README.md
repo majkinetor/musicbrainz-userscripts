@@ -196,7 +196,7 @@ Right-click a credit's pencil for **Replace role "writer"…** (every credit wit
 
 ## Highlight
 
-Hover an entity or a role to light up every occurrence, with a count and where it appears: *48× · tracks 1–12*. An entity's tooltip adds a line per role it holds, such as *lyricist · tracks 1–3*, so a release credit that repeats a track credit shows at a glance.
+Hover an entity or a role to light up every occurrence, with a count and where it appears: *48× · tracks 1–12*. An entity's tooltip shows its track and release counts, then a row per role it holds with its tracks (* when on every track) and a release icon when the release has it too; the role you hover stands out. So a release credit that repeats a track credit shows at a glance.
 
 <img width="500" src="./screenshots/highlight.png" />
 

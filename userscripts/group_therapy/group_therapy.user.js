@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.0900
+// @version      2026.11.05.1300
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -561,7 +561,7 @@
   function highlightPage(needle) {
     if (!needle || !window.CSS?.highlights || typeof Highlight === 'undefined') return { n: 0 };
     const lower = needle.toLowerCase(); if (lower.length < 2) return { n: 0 };
-    const exist = [], neu = [], tracks = new Set(), roles = new Map(); let release = false, n = 0;
+    const exist = [], neu = [], tracks = new Set(), roles = new Map(); let release = false, n = 0, nTrack = 0, nRel = 0;
     // #379 count/highlight only within the relationship editor — not the (possibly hidden) edit log, edit
     // notes, sidebar, etc., which were inflating the tooltip counts.
     const root = document.querySelector('div.release-relationship-editor') || document.body;
@@ -574,7 +574,7 @@
       const isNew = isNewRow(node);
       for (const i of at) { const r = document.createRange(); r.setStart(node, i); r.setEnd(node, i + lower.length); (isNew ? neu : exist).push(r); n++; }
       const p = trackPosOf(node, multi), item = node.parentNode && node.parentNode.closest ? node.parentNode.closest('.relationship-item') : null;
-      if (p != null) tracks.add(p); else if (item) release = true;
+      if (p != null) { tracks.add(p); nTrack += at.length; } else if (item) { release = true; nRel += at.length; }
       // #924 which role each hit credits, and where, so the tooltip tells a release credit's twin on the tracks apart
       if (item) {
         const ptr = item.closest('tr'), lab = ptr && ptr.querySelector('th.link-phrase label');
@@ -587,30 +587,48 @@
     }
     try { window.CSS.highlights.set('gt-hl-existing', new Highlight(...exist)); window.CSS.highlights.set('gt-hl-new', new Highlight(...neu)); } catch (e) {}
     console.debug(`[GT] highlight "${needle}": ${n} hits, roles: ${[...roles.keys()].join(', ') || '-'}`);
-    return { n, tracks, release, roles };
+    // #924 every track position on the page, so a role on all of them shows as *
+    const all = new Set(); root.querySelectorAll('tr.track').forEach(tr => { const q = posLabel(tr, multi); if (q != null) all.add(q); });
+    return { n, tracks, release, roles, nTrack, nRel, all };
   }
   function clearHighlight() { try { window.CSS.highlights?.delete('gt-hl-existing'); window.CSS.highlights?.delete('gt-hl-new'); } catch (e) {} }
-  // compress [1,2,3,5] → "1–3, 5"; non-numeric positions (vinyl "D4","D5") are natural-sorted + joined
+  // compress [1,2,3,5] → "1–3, 5"; a run keeps its prefix (vinyl "A1","A2","A3" → "A1–A3", disc "2.1" … "2.4" → "2.1–2.4", #924)
   function ranges(vals) {
-    const a = [...vals];
-    if (a.length && a.every(v => /^\d+$/.test(String(v)))) {
-      const nums = a.map(Number).sort((x, y) => x - y), out = []; let s = null, p = null;
-      for (const v of nums) { if (s == null) { s = p = v; } else if (v === p + 1) { p = v; } else { out.push(s === p ? `${s}` : `${s}–${p}`); s = p = v; } }
-      if (s != null) out.push(s === p ? `${s}` : `${s}–${p}`);
-      return out.join(', ');
+    const a = [...vals].map(String).sort((x, y) => x.localeCompare(y, undefined, { numeric: true })), out = [];
+    let pre = null, s = null, p = null;
+    const flush = () => { if (s != null) out.push(s === p ? pre + s : `${pre}${s}–${pre}${p}`); };
+    for (const v of a) {
+      const m = /^(.*?)(d+)$/.exec(v);
+      if (!m) { flush(); s = null; out.push(v); continue; }
+      const k = m[1], x = Number(m[2]);
+      if (s != null && k === pre && x === p + 1) { p = x; continue; }
+      flush(); pre = k; s = p = x;
     }
-    return a.map(String).sort((x, y) => x.localeCompare(y, undefined, { numeric: true })).join(', ');
+    flush();
+    return out.join(', ');
   }
   // the count, in the shared tooltip (dev/ui/tooltip.mjs), under the credit hovered
-  function showTip(anchor, info, name) {
+  const GT_TIP_ICON = k => `<svg class="gt-tip-ei" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="${k}">${MBU_ENT_ICONS[k]}</svg>`;
+  // #924 an entity's tooltip: its credited name, track and release hit counts with entity icons,
+  // then one right-aligned row per role it holds; the hovered credit's role stands out, * = every track
+  function entityTip(label, info, curRole) {
+    const e = mbuTipEsc, rec = GT_TIP_ICON('recording'), rel = GT_TIP_ICON('release');
+    const head = [info.nTrack ? `${rec} ${info.nTrack}` : '', info.nRel ? `${rel} ${info.nRel}` : ''].filter(Boolean).join(' &nbsp; ');
+    const rows = [...info.roles].map(([role, r]) => {
+      const every = r.tracks.size && info.all && r.tracks.size >= info.all.size;
+      const t = r.tracks.size ? `${rec} ${r.tracks.size} ${every ? '*' : '· ' + e(ranges(r.tracks))}` : '';
+      return `<tr${role === curRole ? ' class="gt-tip-cur"' : ''}><td class="gt-tip-r">${e(role)}</td><td>${[t, r.release ? rel : ''].filter(Boolean).join(' &nbsp; ')}</td></tr>`;
+    }).join('');
+    return `<div class="gt-tip-hd"><b>${e(label)}</b><span>${head}</span></div>${rows ? `<table class="gt-tip-roles">${rows}</table>` : ''}`;
+  }
+  function showTip(anchor, info, name, label, curRole) {
+    if (info && info.n && info.roles && info.roles.size && label) { mbuTipShowFor(anchor, entityTip(label, info, curRole), { place: 'above' }); return; }
     if (!info || (!info.n && !name)) { hideTip(); return; }
     // we hid MB's native title (the entity's real/sort name, shown when Credited As differs) —
     // so surface it here instead so that info isn't lost.
     const parts = [];
     if (info.n) { parts.push(`${info.n}×`); if (info.tracks && info.tracks.size) parts.push(`track${info.tracks.size > 1 ? 's' : ''} ${ranges(info.tracks)}`); if (info.release) parts.push('release'); }
-    // #924 one line per role: "lyricist · tracks 1–3", "saxophone · release"
-    const roleLines = [...((info.n && info.roles) || new Map())].map(([role, r]) => [role, r.tracks.size ? `track${r.tracks.size > 1 ? 's' : ''} ${ranges(r.tracks)}` : '', r.release ? 'release' : ''].filter(Boolean).join(' · '));
-    mbuTipShowFor(anchor, mbuTipText([name, parts.join(' · '), ...roleLines].filter(Boolean).join('\n')), { place: 'above' });
+    mbuTipShowFor(anchor, mbuTipText([name, parts.join(' · '), ].filter(Boolean).join('\n')), { place: 'above' });
   }
   function hideTip() { mbuTipHide(true); }
   // MB puts the entity's sort name in the link's `title`, so the browser's native tooltip stacks on
@@ -618,7 +636,7 @@
   let _hidTitle = null;
   function suppressTitle(target) { const te = target.closest && target.closest('[title]'); if (!te || (_hidTitle && te === _hidTitle.el)) return; restoreTitle(); const v = te.getAttribute('title'); if (v == null) return; _hidTitle = { el: te, val: v }; te.removeAttribute('title'); }
   function restoreTitle() { if (_hidTitle) { try { _hidTitle.el.setAttribute('title', _hidTitle.val); } catch (e) {} _hidTitle = null; } }
-  function onOver(ev) { const nd = needleFor(ev.target); if (!nd) return; suppressTitle(ev.target); const nm = (_hidTitle && _hidTitle.val && _hidTitle.val !== nd) ? _hidTitle.val : null; const info = highlightPage(nd); showTip((_hidTitle && _hidTitle.el) || (ev.target.closest && ev.target.closest('a')) || ev.target, info, nm); }
+  function onOver(ev) { const nd = needleFor(ev.target); if (!nd) return; suppressTitle(ev.target); const nm = (_hidTitle && _hidTitle.val && _hidTitle.val !== nd) ? _hidTitle.val : null; const info = highlightPage(nd); const ptr = ev.target.closest && ev.target.closest('.relationship-item') && ev.target.closest('.relationship-item').closest('tr'); const cur = ptr ? pickRoleLabel(ptr) : null; showTip((_hidTitle && _hidTitle.el) || (ev.target.closest && ev.target.closest('a')) || ev.target, info, nm, nd, cur); }
   function onOut(ev) { if (!needleFor(ev.target)) return; const rt = ev.relatedTarget; if (_hidTitle && rt && _hidTitle.el.contains && _hidTitle.el.contains(rt)) return; clearHighlight(); hideTip(); restoreTitle(); }
 
   // ── styles ────────────────────────────────────────────────────────────────
@@ -2809,7 +2827,7 @@
       .gt-cfg-btn{float:right;margin-left:8px;font-size:15px;line-height:1.4;color:var(--mbu-text-weak);background:none;border:none;cursor:pointer;padding:2px 7px;border-radius:5px}
       .gt-cfg-btn:hover{background:var(--mbu-info-bg);color:var(--mbu-text-dim)}
       /* #372 top toolbar (moved off the "Release relationships" heading to the top of the tab) */
-      .gt-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-sizing:border-box;min-height:40px;margin:6px 0 14px;padding:4px 12px;background:var(--mbu-bg-raised);border:1px solid var(--mbu-border);border-radius:10px}@media (max-width:700px){.gt-toolbar{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-top:16px}.gt-toolbar::-webkit-scrollbar{display:none}.gt-toolbar>*{flex:none;white-space:nowrap}#tracklist.tbl{display:block;width:100%!important}#tracklist.tbl>:is(thead,tbody){display:block}#tracklist.tbl>:is(thead,tbody)>tr{display:flex;flex-wrap:wrap;align-items:flex-start}#tracklist.tbl>:is(thead,tbody)>tr>.pos{flex:0 0 40px;box-sizing:border-box}#tracklist.tbl>:is(thead,tbody)>tr>:nth-child(2){flex:1 1 0;min-width:0;box-sizing:border-box}#tracklist.tbl>:is(thead,tbody)>tr>:nth-child(n+3){flex:1 1 100%;box-sizing:border-box;padding-left:40px}#tracklist.tbl>thead>tr>th.works{padding-top:0}.release-relationship-editor{overflow-x:clip}.release-relationship-editor tr:has(>th.link-phrase){display:flex;flex-wrap:wrap}.release-relationship-editor tr>th.link-phrase{flex:1 1 100%;width:auto!important;text-align:left!important}.release-relationship-editor tr:has(>th.link-phrase)>td.relationship-list{flex:1 1 100%;min-width:0;padding-left:12px;box-sizing:border-box}}
+      .gt-tip-hd{display:flex;justify-content:space-between;gap:18px;margin-bottom:4px}.gt-tip-hd span{opacity:.8;white-space:nowrap}.gt-tip-ei{width:14px;height:14px;vertical-align:-2px}.gt-tip-roles{border-collapse:collapse;opacity:.85}.gt-tip-roles td{padding:1px 0;vertical-align:top;border:0}.gt-tip-r{text-align:right;padding-right:10px!important;white-space:nowrap}.gt-tip-roles tr.gt-tip-cur{opacity:1}.gt-tip-roles tr.gt-tip-cur .gt-tip-r{color:var(--mbu-accent-text,var(--mbu-accent));font-weight:600}.gt-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-sizing:border-box;min-height:40px;margin:6px 0 14px;padding:4px 12px;background:var(--mbu-bg-raised);border:1px solid var(--mbu-border);border-radius:10px}@media (max-width:700px){.gt-toolbar{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-top:16px}.gt-toolbar::-webkit-scrollbar{display:none}.gt-toolbar>*{flex:none;white-space:nowrap}#tracklist.tbl{display:block;width:100%!important}#tracklist.tbl>:is(thead,tbody){display:block}#tracklist.tbl>:is(thead,tbody)>tr{display:flex;flex-wrap:wrap;align-items:flex-start}#tracklist.tbl>:is(thead,tbody)>tr>.pos{flex:0 0 40px;box-sizing:border-box}#tracklist.tbl>:is(thead,tbody)>tr>:nth-child(2){flex:1 1 0;min-width:0;box-sizing:border-box}#tracklist.tbl>:is(thead,tbody)>tr>:nth-child(n+3){flex:1 1 100%;box-sizing:border-box;padding-left:40px}#tracklist.tbl>thead>tr>th.works{padding-top:0}.release-relationship-editor{overflow-x:clip}.release-relationship-editor tr:has(>th.link-phrase){display:flex;flex-wrap:wrap}.release-relationship-editor tr>th.link-phrase{flex:1 1 100%;width:auto!important;text-align:left!important}.release-relationship-editor tr:has(>th.link-phrase)>td.relationship-list{flex:1 1 100%;min-width:0;padding-left:12px;box-sizing:border-box}}
       .gt-toolbar>*,.gt-toolbar .gt-vert>*{margin-top:0!important;margin-bottom:0!important}
       .gt-bar-ic{display:inline-flex;flex:0 0 auto}.gt-bar-ic img{width:30px;height:30px;display:block}
       .gt-bar-sep{flex:0 0 auto;width:1px;height:24px;background:var(--mbu-border)}
