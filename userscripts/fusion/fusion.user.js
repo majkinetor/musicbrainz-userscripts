@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.191426
+// @version      2026.11.05.195423
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -38,7 +38,7 @@ function detectScope() {
     let m = p.match(/^\/release\/([0-9a-fA-F-]{36})\/?$/); if (m) return { type: 'release', mbid: m[1].toLowerCase() };
     m = p.match(/^\/release-group\/([0-9a-fA-F-]{36})\/?$/); if (m) return { type: 'release-group', mbid: m[1].toLowerCase() };
     m = p.match(/^\/recording\/([0-9a-fA-F-]{36})\/?$/); if (m) return { type: 'recording', mbid: m[1].toLowerCase() };
-    m = p.match(/^\/artist\/([0-9a-fA-F-]{36})\/recordings\/?$/); if (m) return { type: 'artist-recordings', mbid: m[1].toLowerCase() };
+    m = p.match(/^\/artist\/([0-9a-fA-F-]{36})(?:\/(?:recordings|works|releases|release-groups|events|relationships|aliases|details|tags|ratings))?\/?$/); if (m) return { type: 'artist-recordings', mbid: m[1].toLowerCase() };   // #908: any of the artist's tabs
     return null;
 }
 let SCOPE = detectScope();
@@ -6084,7 +6084,7 @@ function addMenuOptions() {
     if (sc && sc.type === 'release') return { gid: sc.mbid, o: [['release', 'This release', 1], ['recording', 'Its recordings', 0], ['release-group', 'Its release group', 0], ['artist', 'Its album artists', 0]] };
     if (sc && sc.type === 'release-group') return { gid: sc.mbid, o: [['release-group', 'This release group', 1], ['recording', 'Recordings of its releases', 0], ['release', 'Its releases', 0], ['artist', 'Its artists', 0]] };
     if (sc && sc.type === 'recording') return { gid: sc.mbid, o: [['recording', 'This recording', 1], ['artist', 'Its artists', 0]] };
-    if (sc && sc.type === 'artist-recordings') return { gid: sc.mbid, o: [['artist', 'This artist', 1], ['recording', 'Its recordings', 0]] };
+    if (sc && sc.type === 'artist-recordings') return { gid: sc.mbid, o: [['artist', 'This artist', 1], ['recording', 'Its recordings', 0], ['work', 'Its works', 0], ['release', 'Its releases', 0], ['release-group', 'Its release groups', 0]] };
     if (m) { const t = m[1].toLowerCase(); return { gid: m[2].toLowerCase(), o: [[t, 'This ' + emOne(t), 1]] }; }
     return { gid: null, o: [] };
 }
@@ -6152,6 +6152,18 @@ async function addFromPage(sel, gid) {
             if (want('artist')) addArtists(await wsGet('/ws/2/recording/' + gid + '?fmt=json&inc=artist-credits'));
         } else if (here === 'artist-recordings') {
             if (want('artist')) list.push(ent('artist', await wsGet('/ws/2/artist/' + gid + '?fmt=json')));
+            // #908: the artist's works, releases and release groups, browsed 100 at a time
+            for (const [type, inc] of [['work', 'artist-rels'], ['release', 'artist-credits+labels+media'], ['release-group', 'artist-credits']]) {
+                if (!want(type)) continue;
+                const key = type === 'release-group' ? 'release-groups' : type + 's';
+                for (let off = 0, total = 1; off < total; off += 100) {
+                    const pg = await wsGet('/ws/2/' + type + '?artist=' + gid + '&limit=100&offset=' + off + '&inc=' + inc + '&fmt=json');
+                    total = pg[type + '-count'] || 0;
+                    (pg[key] || []).forEach(x => list.push(ent(type, x)));
+                    if (!(pg[key] || []).length) break;
+                }
+                Log.info('Add menu: ' + list.filter(x => x.type === type).length + ' ' + type + '(s) of the artist');
+            }
         } else if (here && sel.includes(here)) {
             list.push(Object.assign({ type: here, gid }, await emFetch(here, gid)));
         }

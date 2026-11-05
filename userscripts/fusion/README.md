@@ -43,13 +43,13 @@ In a group:
 
 Fusion opens empty. **Ctrl+click** or **middle-click** its corner icon for the add menu, which offers what this page has to merge; select what you want (nothing is preselected) and **Add**. The pool fills without opening the window:
 
-| Page                | Offers                                                       |
-| ------------------- | ------------------------------------------------------------ |
-| Release             | the release, its recordings, its release group, its artists  |
-| Release group       | the release group, its recordings, its releases, its artists |
-| Recording           | the recording, its artists                                   |
-| Artist → Recordings | the artist, its recordings                                   |
-| Any other entity    | that entity                                                  |
+| Page             | Offers                                                                  |
+| ---------------- | ----------------------------------------------------------------------- |
+| Release          | the release, its recordings, its release group, its artists             |
+| Release group    | the release group, its recordings, its releases, its artists            |
+| Recording        | the recording, its artists                                              |
+| Artist, any tab  | the artist, its recordings, its works, its releases, its release groups |
+| Any other entity | that entity                                                             |
 
 Recordings come into the pool as follows:
 
@@ -58,7 +58,7 @@ Recordings come into the pool as follows:
 | Release             | its recordings; *Load recordings from RG edition* adds another edition |
 | Release group       | the recordings of every release in the group                           |
 | Recording           | that recording                                                         |
-| Artist → Recordings | the artist's entire catalogue, not just the visible page (up to 2000)  |
+| Artist, any tab     | the artist's entire catalogue, not just the visible page (up to 2000)  |
 
 **+** in the pool's header opens a field across it: paste a recording, release or release-group MBID or URL there to add it.
 
