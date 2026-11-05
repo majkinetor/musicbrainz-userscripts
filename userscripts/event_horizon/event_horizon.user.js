@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.190919
+// @version      2026.11.05.191202
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7799,12 +7799,12 @@ function hexPattern(layer, mode) {
     // the layer's own size, not the window's: the window counts the scrollbar, and a canvas stretched to fit would drift off the outlines
     const w = layer.clientWidth || innerWidth + 96, h = layer.clientHeight || innerHeight + 96, cs = getComputedStyle(layer);
     const c1 = cs.color, c2 = cs.getPropertyValue('--accent2').trim() || c1;
-    const pace = Number(S.hexPace) || 1, trail = Number(S.hexTrail) || 1, often = Number(S.hexOften) || 1, glow = Number(S.hexGlow ?? 1), two = !!S.hexTwo;
+    const pace = Number(S.hexPace) || 1, trail = Number(S.hexTrail) || 1, often = Number(S.hexOften) || 1, glow = Number(S.hexGlow ?? 1), two = S.hexTwo === 2 ? 2 : !!S.hexTwo;
     const key = [mode, w, h, c1, c2, pace, trail, often, glow, two].join('|');
     if (layer._ehPattern?.key === key) return;
     layer._ehPattern?.stop();
     const L = hexLattice(w, h), rnd = (a, b) => a + Math.random() * (b - a), pick = a => a[Math.random() * a.length | 0];
-    const tone = () => two && Math.random() < .5 ? c2 : c1;
+    const tone = () => two === 2 ? `hsl(${Math.random() * 360 | 0},${70 + Math.random() * 25 | 0}%,${58 + Math.random() * 14 | 0}%)` : two && Math.random() < .5 ? c2 : c1;
     const rect = layer.querySelector('.hex-drift');
     let cv, ctx;
     if (mode !== 'ripple' && mode !== 'lantern') {
@@ -7922,16 +7922,32 @@ const HEX_FX = {
             shift() {},
         };
     },
-    // sparks of different voltages run along 20 to 50 sides, flicker, fork and fade, over slow dim currents that glow in and out; all of it glows
+    // sparks of different voltages run along 20 to 50 sides, flicker, fork and fade, over slow dim currents that glow in and out;
+    // each is white-hot at its core and cools into its colour along its length, with brighter knots, like a real arc
     electricity({ L, w, h, ctx, rnd, pick, tone, pace, trail, often, glow }) {
         let bolts = [], due = .3, slow = [], slowDue = 1;
         const corners = () => { const i = Math.random() * L.xs.length | 0; return L.xs[i] > 0 && L.xs[i] < w && L.ys[i] > 0 && L.ys[i] < h ? i : corners(); };
+        // any CSS colour as [r, g, b], through the canvas's own parser
+        const rgbOf = c => { ctx.fillStyle = '#000'; ctx.fillStyle = c; const v = ctx.fillStyle; return v[0] === '#' ? [1, 3, 5].map(k => parseInt(v.slice(k, k + 2), 16)) : v.match(/\d+/g).slice(0, 3).map(Number); };
+        const mix = ([r, g, b], t, al) => `rgba(${r + (255 - r) * t | 0},${g + (255 - g) * t | 0},${b + (255 - b) * t | 0},${al})`;
+        // a gradient along a path: hot where it starts, cooling toward the tip, with a few random hot knots
+        const grad = (p, rgb, hot, tip) => {
+            const [x0, y0] = p[0], [x1, y1] = p[p.length - 1];
+            const g = ctx.createLinearGradient(x0, y0, x1 === x0 && y1 === y0 ? x1 + 1 : x1, y1);
+            g.addColorStop(0, mix(rgb, hot, 1));
+            for (const k of p.knots) g.addColorStop(k[0], mix(rgb, hot * k[1], .6 + .4 * k[1]));
+            g.addColorStop(1, mix(rgb, 0, tip));
+            return g;
+        };
+        const knots = p => { p.knots = [...Array(2 + (Math.random() * 3 | 0))].map(() => [rnd(.08, .92), Math.random() < .4 ? rnd(.6, 1) : rnd(0, .25)]).sort((x, y) => x[0] - y[0]); return p; };
         const bolt = () => {
             const v = pick([.3, .45, .7, 1, 1.25]), main = hexWalk(L, corners(), Math.round(rnd(20, 50)));
             const paths = [main];
             for (let k = 0; k < (v > .6 ? 3 : 1); k++) if (Math.random() < .7) paths.push(hexWalk(L, pick(main), Math.round(rnd(4, 12))));
-            return { pts: paths.map(p => p.map(i => [L.xs[i], L.ys[i]])), v, c: tone(), age: 0, grow: .18 / pace, life: rnd(.5, .9) * trail + .18 / pace };
+            const c = tone();
+            return { pts: paths.map(p => knots(p.map(i => [L.xs[i], L.ys[i]]))), v, c, rgb: rgbOf(c), age: 0, grow: .18 / pace, life: rnd(.5, .9) * trail + .18 / pace };
         };
+        const line = (p, m) => { ctx.beginPath(); p.slice(0, m).forEach(([x, y], k) => ctx[k ? 'lineTo' : 'moveTo'](x, y)); ctx.stroke(); };
         return {
             tick(dt) {
                 due -= dt;
@@ -7939,14 +7955,14 @@ const HEX_FX = {
                 ctx.clearRect(0, 0, w, h);
                 // slow currents: long dim lines that fade in and out over several seconds, under the sparks
                 slowDue -= dt;
-                if (slowDue <= 0 && slow.length < 3) { slow.push({ pts: hexWalk(L, corners(), Math.round(rnd(30, 70))).map(i => [L.xs[i], L.ys[i]]), c: tone(), v: pick([.3, .55, .8, 1.15]), age: 0, life: rnd(6, 11) / pace }); slowDue = rnd(2.5, 6) / often; }
+                if (slowDue <= 0 && slow.length < 3) { const c = tone(); slow.push({ pts: knots(hexWalk(L, corners(), Math.round(rnd(30, 70))).map(i => [L.xs[i], L.ys[i]])), c, rgb: rgbOf(c), v: pick([.3, .55, .8, 1.15]), age: 0, life: rnd(6, 11) / pace }); slowDue = rnd(2.5, 6) / often; }
                 slow = slow.filter(s => (s.age += dt) < s.life);
                 for (const s of slow) {
-                    const a = s.v * Math.sin(Math.PI * s.age / s.life) ** 2 * (.85 + .15 * Math.sin(s.age * 3.1)) * (Math.random() < .07 ? rnd(.15, .6) : 1); ctx.shadowBlur = (10 + 18 * s.v) * glow;
-                    ctx.strokeStyle = ctx.shadowColor = s.c;
-                    for (const [lw, al] of [[10 * glow, .05 * glow], [4, .1], [1, .45]]) {
-                        ctx.lineWidth = lw; ctx.globalAlpha = a * al; ctx.beginPath();
-                        s.pts.forEach(([x, y], k) => ctx[k ? 'lineTo' : 'moveTo'](x, y)); ctx.stroke();
+                    const a = s.v * Math.sin(Math.PI * s.age / s.life) ** 2 * (.85 + .15 * Math.sin(s.age * 3.1)) * (Math.random() < .07 ? rnd(.15, .6) : 1);
+                    ctx.shadowBlur = (10 + 18 * s.v) * glow; ctx.shadowColor = s.c;
+                    for (const [lw, al, core] of [[10 * glow, .05 * glow], [4, .1], [1, .45, 1]]) {
+                        ctx.lineWidth = lw; ctx.globalAlpha = a * al; ctx.strokeStyle = core ? grad(s.pts, s.rgb, .55, .25) : s.c;
+                        line(s.pts, s.pts.length);
                     }
                 }
                 bolts = bolts.filter(b => (b.age += dt) < b.life);
@@ -7954,11 +7970,11 @@ const HEX_FX = {
                     const grown = Math.min(1, b.age / b.grow), fade = b.age < b.grow ? 1 : 1 - (b.age - b.grow) / (b.life - b.grow);
                     // it flickers hard while it strikes, then now and then as it fades
                     const a = b.v * fade * fade * (Math.random() < (b.age < b.grow * 1.5 ? .25 : .12) ? rnd(.3, .65) : 1);
-                    ctx.strokeStyle = ctx.shadowColor = b.c; ctx.shadowBlur = (12 + 20 * b.v) * glow;
-                    for (const [lw, al] of [[9 * glow, .07 * glow], [3.5, .22], [1.2, 1]]) {
-                        ctx.lineWidth = lw * (.6 + b.v * .5); ctx.globalAlpha = a * al; ctx.beginPath();
-                        for (const p of b.pts) { const m = Math.max(2, Math.ceil(p.length * grown)); p.slice(0, m).forEach(([x, y], k) => ctx[k ? 'lineTo' : 'moveTo'](x, y)); }
-                        ctx.stroke();
+                    ctx.shadowColor = b.c; ctx.shadowBlur = (12 + 20 * b.v) * glow;
+                    for (const [lw, al, core] of [[9 * glow, .07 * glow], [3.5, .22], [1.2, 1, 1]]) {
+                        ctx.lineWidth = lw * (.6 + b.v * .5); ctx.globalAlpha = a * al;
+                        // the core is hotter the higher the voltage, and the forks run cooler than the main arc
+                        b.pts.forEach((p, k) => { ctx.strokeStyle = core ? grad(p, b.rgb, Math.min(1, .55 + .35 * b.v) * (k ? .7 : 1), .35) : b.c; line(p, Math.max(2, Math.ceil(p.length * grown))); });
                     }
                 }
                 ctx.globalAlpha = 1; ctx.shadowBlur = 0;
@@ -10674,7 +10690,7 @@ function hexRows(chip, row) {
         + dim(use('trail'), row('Trail', opts('hexTrail', [[.5, 'Short'], [1, 'Normal'], [2, 'Long']]), 'How long what lights up takes to fade'))
         + dim(use('often'), row('How often', opts('hexOften', [[.5, 'Rarely'], [1, 'Normal'], [2, 'Often']]), 'How often something new lights up'))
         + dim(use('glow'), row('Glow', opts('hexGlow', [[0, 'None'], [.5, 'Faint'], [1, 'Normal'], [2, 'Wide']]), 'How far the soft glow around the lines spreads'))
-        + dim(use('two'), row('Colour', chip('hexTwo', '0', !S.hexTwo, 'One tone') + chip('hexTwo', '1', !!S.hexTwo, 'Two-tone'), 'Two-tone mixes in the second accent colour'))
+        + dim(use('two'), row('Colour', chip('hexTwo', '0', !S.hexTwo, 'One tone') + chip('hexTwo', '1', S.hexTwo === true, 'Two-tone') + chip('hexTwo', '2', S.hexTwo === 2, 'All'), 'Two-tone mixes in the second accent colour\nAll: each light takes its own colour'))
         + row('Depth', chip('hexDepth', 'hexDepth', S.hexDepth, 'On', 'The hexagons scroll slower than the page\nOn: they sit deeper, behind the page\nOff: they stay still'));
 }
 function cfgBody() {
@@ -10787,7 +10803,7 @@ function cfgWire(panel, b, body) {
             else if (g === 'hex' || g === 'hexDepth') { S[g] = !S[g]; hexApply(); }
             else if (g === 'hexPace' || g === 'hexTrail' || g === 'hexOften' || g === 'hexGlow' || g === 'hexOpacity' || g === 'hexFx') { S[g] = +k; hexApply(); }
             else if (g === 'hexMotion') { S.hexMotion = k; hexApply(); }
-            else if (g === 'hexTwo') { S.hexTwo = k === '1'; hexApply(); }
+            else if (g === 'hexTwo') { S.hexTwo = k === '2' ? 2 : k === '1'; hexApply(); }
             else if (g === 'imgP') { S.imgOff = toggle(S.imgOff, k); imgResort(); }
         }
         save();
