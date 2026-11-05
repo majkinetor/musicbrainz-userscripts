@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.135124
+// @version      2026.11.05.145352
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -3532,10 +3532,9 @@
       #ii-maximize-toggle { display: none !important; }   /* already the whole screen */
       #ii-tools { flex-wrap: wrap; padding: 4px 6px; gap: 3px; }   /* every control on the screen: a sideways scroll hid the last ones */
       #ii-tools > * { flex: 0 0 auto; }
-      #ii-tools #ii-links-btn, #ii-tools #ii-find-all { order: -1; }
       /* one even grid of small square buttons; progress on a thin line of its own under them */
       #ii-tools { align-items: center; row-gap: 3px; justify-content: flex-start; }
-      #ii-tools > * { margin-left: 0 !important; }
+      #ii-tools > :not(#ii-links-btn) { margin-left: 0 !important; }
       #ii-tools .ii-tbtn, #ii-tools .ii-urladd-btn, #ii-tools .ii-clear-toggle, #ii-tools .ii-exact-toggle {
         height: 30px; min-width: 30px; padding: 0 5px !important; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; }
       #ii-tools .ii-bico svg, #ii-tools .ii-bico img { width: 18px; height: 18px; }
@@ -3574,6 +3573,23 @@
       #ii-foot #ii-delete:disabled { display: none; }
       #ii-foot #ii-submit { padding: 6px 10px; font-size: 12px; }
       #ii-body { padding-bottom: 48px; }
+      /* the platforms live behind one menu button; opened, they wrap onto lines of their own under the row */
+      #ii-tools #ii-plat-btn { display: inline-flex !important; gap: 3px; }
+      #ii-tools .ii-exact-toggle, #ii-tools .ii-exact-set { display: none !important; }
+      #ii-tools:not(.ii-plat-open) > .ii-tbtn[id$="-all"]:not(#ii-sx-all):not(#ii-find-all), #ii-tools:not(.ii-plat-open) > .ii-urladd { display: none !important; }
+      #ii-tools > .ii-tbtn[id$="-all"]:not(#ii-sx-all):not(#ii-find-all), #ii-tools > .ii-urladd { order: 70; }
+      #ii-tools.ii-plat-open::before { content: ''; order: 65; flex: 0 0 100%; height: 0; }
+      #ii-tools.ii-plat-open #ii-plat-btn { background: var(--mbu-bg-raised); }
+      /* a track's icons, linked and to add, share one line under the ISRC; no icons, no line */
+      #ii-table tr:not(.ii-medrow) { grid-template-columns: 20px minmax(0, max-content) minmax(0, max-content) 1fr auto; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(2) { grid-column: 2 / 5; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(3) { grid-column: 5; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(4) { grid-column: 2 / 6; grid-row: 2; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(6) { grid-column: 2; grid-row: 3; text-align: left; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(7) { grid-column: 3; grid-row: 3; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(6) .ii-tl-linked { justify-content: flex-start; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(6):not(:has(.ii-tl-linked > *)) { display: none; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(5), #ii-table tr:not(.ii-medrow) > td:nth-child(5):has(.ii-input-box) { grid-column: 2 / 6; grid-row: 4; }
       #ii-sxpanel { top: 2vh !important; left: 2vw !important; right: 2vw !important;
         width: auto !important; max-width: none !important; max-height: 92vh !important; }
     }
@@ -5807,6 +5823,7 @@
             <label><input type="checkbox" id="ii-ex-release">release</label>
           </span>
         </span>
+        <button class="ii-tbtn" id="ii-plat-btn" type="button" data-tip="Platforms" aria-expanded="false" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span class="ii-exact-car">▾</span></button>
         <button class="ii-tbtn dz" id="ii-dz-all" data-tip="Import ISRCs from Deezer"><span class="ii-bico">${SRC_ICON.dz}</span><span class="ii-blabel">Deezer</span></button>
         <button class="ii-tbtn sp" id="ii-sp-all" data-tip="Import ISRCs from Spotify"><span class="ii-bico">${SRC_ICON.sp}</span><span class="ii-blabel">Spotify</span></button>
         <button class="ii-tbtn bp" id="ii-bp-all" data-tip="Import ISRCs from Beatport"><span class="ii-bico">${SRC_ICON.bp}</span><span class="ii-blabel">Beatport</span></button>
@@ -5980,6 +5997,11 @@
 
     // SX exact toggles + their collapsible container (collapsed state persisted)
     const sxGroup = modal.querySelector('#ii-sx-group');
+    { // phone: the platforms menu opens and closes the platform buttons; a platform's click closes it
+      const tools = modal.querySelector('#ii-tools'), pb = modal.querySelector('#ii-plat-btn');
+      pb.addEventListener('click', () => { const o = tools.classList.toggle('ii-plat-open'); pb.setAttribute('aria-expanded', o); });
+      tools.addEventListener('click', e => { const b = e.target.closest('.ii-tbtn[id$="-all"]'); if (b && !['ii-sx-all', 'ii-find-all'].includes(b.id)) { tools.classList.remove('ii-plat-open'); pb.setAttribute('aria-expanded', false); } });
+    }
     const exactToggle = modal.querySelector('#ii-exact-toggle');
     // reflect "any exact option active" on the toggle, so it's visible even when collapsed
     const refreshExactToggle = () => {
