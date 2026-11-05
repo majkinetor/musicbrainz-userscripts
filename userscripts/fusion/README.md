@@ -27,7 +27,8 @@ In a group:
 
 - the **target**, the recording that survives, is on top with a gold ★; another row's ☆ makes it the target;
 - ↩ returns a recording to the pool, ✕ drops it altogether;
-- 🗑 deletes the group and returns its members to the pool; **Clear board** does it for every group;
+- 🗑 deletes the group and returns its members to the pool;
+- **Clear ▾** in the groups' header empties the pool, returns every group to the pool, or removes the merged groups;
 - a shared ISRC or AcoustID is tinted, one colour per value; past three, the unshared rest folds behind *+N more*;
 - an AcoustID opens acoustid.org, where a wrong link can be fixed; ↻ then reloads the group's AcoustIDs, keeping its members;
 - a length outside the tolerance is flagged amber, with the spread next to the title;
@@ -55,7 +56,7 @@ Recordings come into the pool as follows:
 | Recording           | that recording                                                         |
 | Artist → Recordings | the artist's entire catalogue, not just the visible page (up to 2000)  |
 
-Paste a recording, release or release-group MBID or URL into the input to add it.
+**+** in the pool's header opens a field across it: paste a recording, release or release-group MBID or URL there to add it.
 
 ## Match
 
@@ -103,12 +104,12 @@ A merge always goes to a vote, even an auto-editor's, as a [destructive edit](ht
 
 ## Other entities
 
-Artists, releases, release groups, works, labels, places, events, series, instruments and areas are merged in a window like the recordings' one, a window per type. Every type with something waiting shows as an icon with its count, beside Fusion's corner icon and in the window's title; click one to open that type. Each row shows what MusicBrainz's own merge page does: for a release its artist, format, tracks, country and date, label, catalog number and barcode; for other types their type, area, dates, ISWCs and the like.
+Artists, releases, release groups, works, labels, places, events, series, instruments and areas are merged in a window like the recordings' one, a window per type. Every type with something waiting shows as an icon with its count, beside Fusion's corner icon and in the window's title; click one to open that type. The title shows every type, so an empty one can be opened too. Each row shows what MusicBrainz's own merge page does: for a release its artist, format, tracks, country and date, label, catalog number and barcode; for other types their type, area, dates, ISWCs and the like.
 
-- Add them with the [add menu](#adding), or paste a MusicBrainz link or MBID into the window.
+- Add them with the [add menu](#adding), or paste a MusicBrainz link or MBID into the field under **+** in the pool's header.
 - The pool and the groups work as the recordings' do: select, drag or double-click entries into a group, ★ for the one that's kept, ↩ and ✕, ✎ for the edit note. **Group all** puts the selection, or the whole pool, in one group.
 - A group's chips show the fields all its members share, and a value shared by some is tinted alike in the rows. A release group of releases picks the merge strategy: append mediums or merge them.
-- **Merge** submits one group, **Merge All** every group in turn; **Clear merged** removes the merged ones.
+- **Merge** submits one group, **Merge All** every group in turn; **Clear ▾** empties the pool, returns the groups to the pool, or removes the merged ones.
 
 What you collect is kept in your userscript manager and shows in every open tab.
 

@@ -18,7 +18,7 @@ for (const type of ['artist', 'release']) {
     await page.click('#fs-addmenu [data-a="add"]');
     await until(() => page.locator(`#fs-launch-ctrs .fs-ctr[data-type="${type}"]`).count(), n => n === 1);
     await page.click(`#fs-launch-ctrs .fs-ctr[data-type="${type}"]`);
-    await page.waitForSelector('#fs-em-input');
+    await page.click('#fs-em-pool-hdr .fs-addbtn');   // the pool header's + unrolls the paste field
     await page.fill('#fs-em-input', `https://test.musicbrainz.org/${type}/${b.mbid}`);
     await page.press('#fs-em-input', 'Enter');
     await until(() => page.locator('#fs-em-pool .fs-pcard').count(), n => n === 2, { timeout: 30000 });

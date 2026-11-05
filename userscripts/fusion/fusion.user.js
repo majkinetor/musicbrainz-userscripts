@@ -1187,6 +1187,14 @@ function clearMerged() {
     Log.info('Clear merged: removed ' + done.length + ' merged group(s) and ' + dropped + ' recording(s) from the board');
     return done.length;
 }
+// #908: the pool's recordings leave the board; grouped ones stay
+function clearPool() {
+    const inG = new Set(STATE.groups.flatMap(g => g.memberGids)), gone = STATE.poolOrder.filter(g => !inG.has(g));
+    gone.forEach(g => { STATE.recordings.delete(g); STATE.expandedReleases.delete(g); });
+    STATE.poolOrder = STATE.poolOrder.filter(g => inG.has(g));
+    if (STATE.selected && !STATE.recordings.has(STATE.selected)) STATE.selected = null;
+    Log.info('Clear pool: removed ' + gone.length + ' recording(s)');
+}
 function clearBoard() {
     const n = STATE.groups.length;
     STATE.groups.slice().forEach(g => deleteGroup(g.id));
@@ -3946,7 +3954,7 @@ function fsStyle() {
         + '.fs-cons{width:min(1560px,calc(100% - 24px));height:min(760px,92vh);max-width:calc(100% - 16px);max-height:96vh;min-width:640px;min-height:400px;resize:both;'
         + 'background:var(--fs-panel);color:var(--fs-text);border:1px solid var(--fs-border);border-radius:var(--mbu-radius-lg);box-shadow:0 8px 30px rgba(0,0,0,.5);'
         + 'font:13px -apple-system,Segoe UI,Helvetica,Arial,sans-serif;display:flex;flex-direction:column;overflow:hidden}'
-        + '.fs-cons.fs-maximized{position:fixed !important;left:8px !important;top:8px !important;right:8px !important;bottom:8px !important;width:auto !important;height:auto !important;max-width:none !important;max-height:none !important;margin:0 !important}'
+        + '.fs-cons.fs-maximized{position:fixed !important;left:0 !important;top:0 !important;right:0 !important;bottom:0 !important;border-radius:0 !important;border:0 !important;width:auto !important;height:auto !important;max-width:none !important;max-height:none !important;margin:0 !important}'
         + '.fs-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--fs-panel2);border-bottom:1px solid var(--fs-border);cursor:move}'
         + '.fs-title{font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px}'
         + '.fs-ctrs{display:inline-flex;align-items:center;gap:4px;margin-left:8px}'
@@ -3956,7 +3964,8 @@ function fsStyle() {
         + '.fs-ctr.fs-on{color:var(--mbu-accent,#7b4fa0);background:color-mix(in srgb, var(--mbu-accent,#7b4fa0) 12%, transparent)}'
         + '.fs-ctr b{position:absolute;right:-4px;top:-4px;min-width:14px;height:14px;padding:0 3px;box-sizing:border-box;border-radius:7px;background:var(--mbu-accent,#7b4fa0);color:var(--mbu-text-on-accent,#fff);font:700 9px/14px var(--mbu-font);text-align:center}'
         + '.fs-ctr b:empty{display:none}'
-        + '.fs-launch .fs-lctrs{position:absolute;right:100%;top:50%;transform:translateY(-50%);display:flex;gap:3px;margin-right:4px}'
+        + '.fs-launch .fs-lctrs{position:absolute;right:100%;top:50%;transform:translateY(-50%);display:flex;gap:3px;margin-right:4px;pointer-events:none}.fs-launch .fs-lctrs>*{pointer-events:auto}'
+        + '.fs-launch .fs-lctrs.fs-lv{right:auto;left:50%;top:auto;bottom:100%;transform:translateX(-50%);flex-direction:column-reverse;margin:0 0 4px}'
         + '.fs-launch .fs-lctrs .fs-ctr{background:var(--mbu-bg);border:1px solid var(--mbu-border)}'
         + '.fs-launch .fs-lctrs .fs-ctr:hover{color:var(--mbu-text)}'
         + '.fs-addmenu{font-family:var(--mbu-font);max-height:70vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}'
@@ -3990,12 +3999,14 @@ function fsStyle() {
         + '.fs-cons-x:hover{background:rgba(0,0,0,.06);color:var(--fs-text)}'
         + '.fs-cfgbtn,.fs-x{color:var(--fs-muted);cursor:pointer;font-size:15px;padding:2px 6px}'
         + '.fs-cfgbtn:hover,.fs-x:hover{color:var(--fs-text)}'
-        + '.fs-ctrl{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--fs-panel);border-bottom:1px solid var(--fs-border);flex-wrap:wrap}'
-        + '.fs-ctrl select,.fs-ctrl input[type=text]{background:var(--fs-panel2);border:1px solid var(--fs-border);color:var(--fs-text);border-radius:var(--mbu-radius);padding:5px 8px;font-size:12px}'
-        + '#fs-rg-editions{max-width:420px}'
+                + '#fs-rg-editions{flex:1;min-width:0;max-width:420px;margin-left:auto;background:var(--fs-panel);border:1px solid var(--fs-border);color:var(--fs-text);border-radius:var(--mbu-radius);padding:3px 6px;font-size:11.5px}'
+        + '.fs-title .fs-ticon{width:18px;height:18px;display:block;flex:none}.fs-ttlg{display:inline-grid}.fs-ttlg>span{grid-area:1/1;visibility:hidden;white-space:nowrap}.fs-ttlg>span.fs-on{visibility:visible}'
+        + '.fs-addbtn{flex:none;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--fs-border);border-radius:var(--mbu-radius);background:transparent;color:var(--fs-muted);font:700 15px/1 Arial;cursor:pointer;padding:0}.fs-addbtn:hover{color:var(--fs-text);background:var(--mbu-bg-hover)}'
+        + '.fs-addin{display:none;flex:1;min-width:0;background:var(--fs-panel);border:1px solid var(--fs-border);color:var(--fs-text);border-radius:var(--mbu-radius);padding:4px 8px;font:400 12px Arial;letter-spacing:0;text-transform:none}'
+        + '.fs-colhdr.fs-adding>*{display:none !important}.fs-colhdr.fs-adding>.fs-addin{display:block !important}'
+        + '.fs-colhdr .fs-legend,.fs-colhdr .fs-split,.fs-colhdr .fs-clearbtn{text-transform:none;letter-spacing:0;font-weight:400}'
         + '#fs-rg-editions:disabled{opacity:.7;font-style:italic;cursor:default}'
-        + '.fs-ctrl input[type=text]{width:220px}'
-        + '.fs-btn{border:1px solid var(--fs-border);background:var(--fs-panel2);color:var(--fs-text);border-radius:var(--mbu-radius);padding:5px 10px;font-size:12px;cursor:pointer}'
+                + '.fs-btn{border:1px solid var(--fs-border);background:var(--fs-panel2);color:var(--fs-text);border-radius:var(--mbu-radius);padding:5px 10px;font-size:12px;cursor:pointer}'
         // Match and its caret are one split button: shared edge, a thin divider between the halves
         + '.fs-split{display:inline-flex;align-items:stretch}.fs-split>.fs-btn{margin:0!important}'
         + '.fs-split>.fs-btn:first-child{border-top-right-radius:0!important;border-bottom-right-radius:0!important}'
@@ -4232,8 +4243,7 @@ function fsStyle() {
         + '.fs-bgtask{font-size:11px;color:var(--fs-muted);white-space:nowrap}'
         + '.fs-bgstop{margin-left:6px;padding:0 4px;border-radius:3px;font-weight:700;color:var(--fs-muted);background:rgba(0,0,0,.06)}'
         + '.fs-bgstop:hover{background:rgba(200,56,79,.15);color:var(--fs-red)}'
-        + '.fs-clearset{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--fs-muted);white-space:nowrap}'
-        + '.fs-subcnt{font-size:10.5px;font-weight:600;color:var(--fs-muted);text-transform:none;letter-spacing:0;white-space:nowrap}'
+                + '.fs-subcnt{font-size:10.5px;font-weight:600;color:var(--fs-muted);text-transform:none;letter-spacing:0;white-space:nowrap}'
         + '.fs-runsum{position:relative;margin:8px 10px 0;border:1px solid rgba(28,155,99,.4);background:rgba(28,155,99,.07);border-radius:var(--mbu-radius);font-size:11.5px}'
         + '.fs-runsum-d>summary{cursor:pointer;padding:7px 26px 7px 10px;font-weight:600;color:var(--mbu-ok);list-style:revert}'
         + '.fs-runlist{margin:0;padding:2px 10px 8px 26px;max-height:220px;overflow:auto}'
@@ -4254,8 +4264,7 @@ function fsStyle() {
         + '.fs-cutoff-menu .mi{display:flex;align-items:center;gap:9px;padding:5px 11px 5px 8px;border-radius:5px;cursor:pointer;white-space:nowrap;color:var(--mbu-text)}'
         + '.fs-cutoff-menu .mi:hover,.fs-cutoff-menu .mi.sel{background:var(--mbu-bg-hover)}'
         + '.fs-toLog{cursor:pointer} .fs-toLog:hover{text-decoration:underline}'
-        + '.fs-clearset .fs-btn{padding:2px 8px}'
-        + '.fs-detbtn{font-size:12px;line-height:1;color:var(--fs-muted);border:1px solid var(--fs-border);border-radius:4px;padding:3px 6px;cursor:pointer;white-space:nowrap;background:var(--mbu-bg);flex-shrink:0}'
+                + '.fs-detbtn{font-size:12px;line-height:1;color:var(--fs-muted);border:1px solid var(--fs-border);border-radius:4px;padding:3px 6px;cursor:pointer;white-space:nowrap;background:var(--mbu-bg);flex-shrink:0}'
         + '.fs-detbtn:hover{border-color:var(--fs-purple);color:var(--mbu-accent-text)}'
         + '.fs-detbtn-on{background:rgba(109,63,240,.09);border-color:var(--fs-purple);color:var(--mbu-accent-text)}'
         + '.fs-idstat{white-space:nowrap;cursor:help}'
@@ -5558,22 +5567,18 @@ function buildShell() {
             + MATCH_CUTOFFS.map((c, i) => '{' + TIER_COLORS[c] + (i === cur ? ' on' : i > cur ? ' off' : '') + '} ' + c[0].toUpperCase() + c.slice(1) + ': ' + CUTOFF_MEANS[c]).join('\n');
     };
     overlay.innerHTML = '<div class="fs-cons" id="fs-cons">'
-        + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge Recordings' + emCounters('recording') + '</div><span class="fs-busy" id="fs-busy" style="display:none" data-tip="Open the activity log"></span><span class="fs-bgtask" id="fs-bgtask" style="display:none" data-tip="Open the activity log"></span><span class="fs-netbanner" id="fs-netbanner" style="display:none"></span><div class="fs-scope" id="fs-scope" data-tip="Open the activity log">…</div><div class="fs-sp"></div>'
+        + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + fsTitle('recording') + '</div><span class="fs-busy" id="fs-busy" style="display:none" data-tip="Open the activity log"></span><span class="fs-bgtask" id="fs-bgtask" style="display:none" data-tip="Open the activity log"></span><span class="fs-netbanner" id="fs-netbanner" style="display:none"></span><div class="fs-scope" id="fs-scope" data-tip="Open the activity log">…</div><div class="fs-sp"></div>'
         + '<button class="fs-cons-x" id="fs-max" type="button" data-tip="Maximize or restore">⛶</button><button class="fs-cons-x" id="fs-cfg" type="button" data-tip="Fusion\nOptions, the log, help">' + MBU_CFG_ICON + '</button><button class="fs-cons-x" id="fs-close" type="button" data-tip="Close">✕</button></div>'
-        + '<div class="fs-ctrl"><select id="fs-rg-editions" style="display:none;"><option value="">+ Load recordings from RG edition ▾</option></select>'
-        + '<input type="text" id="fs-add-input" placeholder="paste a recording, release, or release-group MBID|URL…" data-tip="Add recordings to the pool\nPaste: a recording’s, release’s or release group’s MBID, or its MusicBrainz URL, adds its recordings at once">'
-        + '<div class="fs-sp"></div><div class="fs-legend">'
+        + '<div class="fs-body" id="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr" id="fs-pool-hdr"><span>Pool</span><span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" data-tip="Filter by title, artist, release, ISRC or AcoustID\nMatch still looks at the whole pool.">' + fsAddField('fs-add-input', 'paste a recording, release, or release-group MBID|URL…', 'Add recordings\nPaste a recording’s, release’s or release group’s MBID or MusicBrainz URL; its recordings come in at once.') + '<span class="fs-pooltog" id="fs-pooltog" data-tip="Fold the pool away\nThe groups get the full width.">◀</span></div>'
+        + '<div class="fs-poolsort">Sort <span class="fs-seg" id="fs-pool-sort"><button type="button" data-sort="added" data-tip="In the order they were added">Added</button><button type="button" data-sort="title" data-tip="By title, so the versions of one song sit together">Title</button><button type="button" data-sort="artist" data-tip="By artist, then title">Artist</button></span><select id="fs-rg-editions" style="display:none;"><option value="">+ Load recordings from RG edition ▾</option></select></div>'
+        + '<div class="fs-colbody" id="fs-pool-body"></div></div>'
+        + '<div class="fs-poolrail" id="fs-poolrail" data-tip="Show the pool again"><span class="fs-railarrow">▶</span><span class="fs-raillabel">POOL <span id="fs-rail-cnt">0</span></span></div>'
+        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-subcnt" id="fs-groups-recs"></span><button type="button" id="fs-expandall-deep" class="fs-btn" data-tip="Expand every group and every release table\nAgain: collapse it all">⇲ All details</button><button type="button" id="fs-collapseall" class="fs-btn" data-tip="Collapse or expand every group card">▼ Collapse all</button><span class="fs-matchmsg" id="fs-matchmsg" style="display:none"></span><span class="fs-sp"></span>' + '<div class="fs-legend">'
         // the cutoff as Apollo's: a chip with the level's dot, a menu of the levels, their table in the tip; the
         // colour legend beside it went (majkinetor: "make fusion cutoff resemble the apollo's and remove [ ] strict …")
         + '<label class="fs-cutwrap" id="fs-cutwrap"><b>Cutoff</b><span class="fs-cutoff" id="fs-cutoff" tabindex="0" role="button">'
         + '<span class="fs-cutoff-dot"></span><span class="fs-cutoff-lbl"></span><span class="fs-cutoff-caret">▾</span></span></label></div>'
-        + '<span class="fs-split"><button type="button" id="fs-automatch" class="fs-btn fs-primary">⚡ Match</button><button type="button" id="fs-matchmore" class="fs-btn fs-primary" data-tip="More ways to match">▾</button></span></div>'
-
-        + '<div class="fs-body" id="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" data-tip="Filter by title, artist, release, ISRC or AcoustID\nMatch still looks at the whole pool."><span class="fs-pooltog" id="fs-pooltog" data-tip="Fold the pool away\nThe groups get the full width.">◀</span></div>'
-        + '<div class="fs-poolsort">Sort <span class="fs-seg" id="fs-pool-sort"><button type="button" data-sort="added" data-tip="In the order they were added">Added</button><button type="button" data-sort="title" data-tip="By title, so the versions of one song sit together">Title</button><button type="button" data-sort="artist" data-tip="By artist, then title">Artist</button></span></div>'
-        + '<div class="fs-colbody" id="fs-pool-body"></div></div>'
-        + '<div class="fs-poolrail" id="fs-poolrail" data-tip="Show the pool again"><span class="fs-railarrow">▶</span><span class="fs-raillabel">POOL <span id="fs-rail-cnt">0</span></span></div>'
-        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-subcnt" id="fs-groups-recs"></span><button type="button" id="fs-expandall-deep" class="fs-btn" data-tip="Expand every group and every release table\nAgain: collapse it all">⇲ All details</button><button type="button" id="fs-collapseall" class="fs-btn" data-tip="Collapse or expand every group card">▼ Collapse all</button><span class="fs-matchmsg" id="fs-matchmsg" style="display:none"></span><span class="fs-sp"></span><span class="fs-clearset">Clear: <button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" data-tip="Dissolve every group\nAll the recordings go back to the pool.">all</button><button type="button" id="fs-clearmerged" class="fs-btn fs-clearboard-btn" data-tip="Remove the groups already merged\nTheir recordings leave the board; the merged-away ones no longer exist in MusicBrainz.">merged</button></span></div>'
+        + '<span class="fs-split"><button type="button" id="fs-automatch" class="fs-btn fs-primary">⚡ Match</button><button type="button" id="fs-matchmore" class="fs-btn fs-primary" data-tip="More ways to match">▾</button></span>' + '<button type="button" id="fs-clear" class="fs-btn fs-clearbtn" data-tip="Clear the pool, the groups or the merged groups">Clear ▾</button></div>'
         + '<div class="fs-runsum" id="fs-runsum" style="display:none"></div><div class="fs-colbody" id="fs-groups-body"></div></div></div>'
         + '<div class="fs-ftr"><div class="fs-sum" id="fs-summary"></div><div class="fs-sp"></div>'
         + '<div class="fs-note">Merges submit directly in the background — no MB merge page involved</div>'
@@ -5589,9 +5594,7 @@ function buildShell() {
     // paste itself is the action. Deferred a tick because on paste the input's
     // value is still the OLD text; it updates after the event completes.
     // Enter still works for anything typed or edited by hand.
-    const addInput = document.getElementById('fs-add-input');
-    addInput.addEventListener('paste', () => setTimeout(() => onAddByMbid(), 0));
-    addInput.addEventListener('keydown', e => { if (e.key === 'Enter') onAddByMbid(); });
+    wireAddField(document.getElementById('fs-pool-hdr'), () => onAddByMbid());
     document.getElementById('fs-automatch').onclick = () => onAutoMatch();
     // #823: the Match submenu; Match by position runs only from here
     {
@@ -5613,7 +5616,11 @@ function buildShell() {
     // Math.min(Event, n) → NaN → Array.from({length:NaN}) → zero workers → the
     // whole Merge All silently no-ops. Bit us live; see the guard in mergeAll too.
     document.getElementById('fs-mergeall').onclick = () => mergeAll();
-    document.getElementById('fs-clearboard').onclick = () => { clearBoard(); renderAll(); };
+    document.getElementById('fs-clear').onclick = e => openClearMenu(e.currentTarget, [
+        ['Clear pool', 'Remove the recordings in the pool\nThe grouped ones stay.', () => { clearPool(); renderAll(); }],
+        ['Clear groups', 'Dissolve every group\nAll the recordings go back to the pool.', () => { clearBoard(); renderAll(); }],
+        ['Clear merged', 'Remove the groups already merged\nTheir recordings leave the board; the merged-away ones no longer exist in MusicBrainz.', () => { clearMerged(); renderAll(); }],
+    ]);
     // wrapper, not a bare reference: onclick hands the click Event to the first
     // parameter, which has bitten this script before (#503, mergeAll's NaN)
     document.getElementById('fs-collapseall').onclick = () => toggleCollapseAll();
@@ -5623,7 +5630,6 @@ function buildShell() {
     setPoolCollapsed(SETTINGS.poolCollapsed === true);
     document.getElementById('fs-pool-sort').addEventListener('click', e => { const b = e.target.closest('[data-sort]'); if (b) setPoolSort(b.dataset.sort); });
     renderPoolSort();
-    document.getElementById('fs-clearmerged').onclick = () => { clearMerged(); renderAll(); };
     document.getElementById('fs-runsum').addEventListener('click', e => {
         if (e.target.classList.contains('fs-runclose')) { _lastRun = null; renderRunSummary(); }
     });
@@ -5916,8 +5922,41 @@ function ctrHtml(k, on) {
     return '<span class="fs-ctr' + (on ? ' fs-on' : '') + '" role="button" tabindex="0" data-type="' + k + '" data-tip="' + emLabel(k) + '\n' + n + ' to merge · click: open">'
         + entSvg(k, 16) + '<b>' + (n ? (n > 99 ? '99+' : n) : '') + '</b></span>';
 }
+// #908: a window's title, Fusion's own icon, the text of every type stacked in one cell (only the current
+// one shows), so the counters after it never move when the type changes
+function fsTitle(cur) {
+    return '<img class="fs-ticon" src="' + ICON_URL + '" alt="" draggable="false"><span class="fs-ttlg">' + EM_ALL.map(([k, l]) => '<span data-type="' + k + '"' + (k === cur ? ' class="fs-on"' : '') + '>Fusion — Merge ' + l + '</span>').join('') + '</span>' + emCounters(cur);
+}
+// #908: the pool header's +, which unrolls into a paste field over the whole header
+function fsAddField(id, placeholder, tip) {
+    return '<button type="button" class="fs-addbtn" data-tip="' + tip + '">+</button><input type="text" class="fs-addin" id="' + id + '" placeholder="' + placeholder + '">';
+}
+function wireAddField(hdr, onAdd) {
+    const btn = hdr.querySelector('.fs-addbtn'), inp = hdr.querySelector('.fs-addin');
+    const fold = () => { inp.value = ''; hdr.classList.remove('fs-adding'); };
+    btn.onclick = () => { hdr.classList.add('fs-adding'); inp.focus(); };
+    // pasting is the action: the value updates a tick after the paste event
+    inp.addEventListener('paste', () => setTimeout(() => { if (inp.value.trim()) onAdd(inp); }, 0));
+    inp.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && inp.value.trim()) onAdd(inp);
+        else if (e.key === 'Escape') { e.stopPropagation(); fold(); }
+    });
+    inp.addEventListener('blur', () => { if (!inp.value.trim()) fold(); });
+}
+// #908: Clear ▾, a menu of what to clear
+function openClearMenu(btn, items) {
+    if (document.querySelector('.fs-clear-menu')) { document.querySelectorAll('.fs-clear-menu').forEach(m => m.remove()); return; }
+    const m = document.createElement('div'); m.className = 'fs-cutoff-menu fs-clear-menu';
+    m.innerHTML = items.map((it, i) => '<div class="mi" data-i="' + i + '" data-tip="' + it[1] + '">' + it[0] + '</div>').join('');
+    document.body.appendChild(m);
+    const r = btn.getBoundingClientRect(); m.style.left = Math.max(4, r.right - m.offsetWidth) + 'px'; m.style.top = (r.bottom + 3) + 'px';
+    const off = e => { if (!m.contains(e.target) && !btn.contains(e.target)) { m.remove(); document.removeEventListener('mousedown', off, true); } };
+    document.addEventListener('mousedown', off, true);
+    m.onclick = e => { const mi = e.target.closest('.mi'); if (!mi) return; m.remove(); document.removeEventListener('mousedown', off, true); items[+mi.dataset.i][2](); };
+}
 function emCounters(cur) {
-    const ks = EM_ALL.map(x => x[0]).filter(k => k === cur || (poolCount(k) && (k !== 'recording' || detectScope())));
+    // every type, empty ones too, so an empty board can be opened; recordings only where there's a scope
+    const ks = EM_ALL.map(x => x[0]).filter(k => k === cur || k !== 'recording' || detectScope());
     return '<span class="fs-ctrs">' + ks.map(k => ctrHtml(k, k === cur)).join('') + '</span>';
 }
 function emCountersWire(hdr) {
@@ -5930,7 +5969,10 @@ function refreshCounters() {
     const emOv = document.getElementById('fs-em-overlay');
     document.querySelectorAll('.fs-hdr .fs-ctrs').forEach(c => { c.outerHTML = emCounters(emOv && emOv.contains(c) ? EM_TYPE : 'recording'); });
     const lc = document.getElementById('fs-launch-ctrs');
-    if (lc) lc.innerHTML = EM_ALL.map(x => x[0]).filter(k => poolCount(k) && (k !== 'recording' || detectScope())).map(k => ctrHtml(k, false)).join('');
+    if (lc) {
+        lc.innerHTML = EM_ALL.map(x => x[0]).filter(k => poolCount(k) && (k !== 'recording' || detectScope())).map(k => ctrHtml(k, false)).join('');
+        lc.classList.toggle('fs-lv', mbuShared('cornerFlow') === 'row');   // icons in a row: the counters stack above
+    }
 }
 function openPool(type) {
     document.getElementById('fs-addmenu')?.remove();
@@ -6121,7 +6163,7 @@ function emRender() {
     const type = EM_TYPE, t = emT(type), label = emLabel(type), cols = EM_COLS[type] || [];
     emFillMissing(type);
     refreshCounters();
-    const ttl = ov.querySelector('#fs-em-ttl'); if (ttl) ttl.textContent = ' Fusion — Merge ' + label;
+    ov.querySelectorAll('.fs-ttlg>span').forEach(x => x.classList.toggle('fs-on', x.dataset.type === type));
     const link = x => '<a href="/' + type + '/' + x.gid + '" target="_blank" rel="noopener">' + escapeHtml(x.name) + '</a>';
     // pool
     [...EM_SEL].forEach(g => { if (!t.pool.some(x => x.gid === g)) EM_SEL.delete(g); });
@@ -6192,7 +6234,7 @@ function emRender() {
     }).join('') + '<div class="fs-newgroup" id="fs-em-newgroup">+ New group — drag a pool entry here, or select some and click here</div>';
     const ready = open.filter(g => g.members.length > 1 && !EM_BUSY.has(g.id)).length;
     ov.querySelector('#fs-em-sum').innerHTML = '<b>' + open.length + '</b> group' + (open.length === 1 ? '' : 's') + ' · <b>' + ready + '</b> ready · <b>' + t.pool.length + '</b> in pool';
-    const all = ov.querySelector('#fs-em-mergeall'); all.disabled = !ready; all.textContent = MERGE_MARK + ' Merge All (' + ready + ') →';
+    const all = ov.querySelector('#fs-em-mergeall'); all.disabled = !ready; all.innerHTML = MERGE_MARK + ' Merge All (' + ready + ') →';
 }
 function openEntities(type) {
     closeFusion();
@@ -6205,12 +6247,11 @@ function openEntities(type) {
     document.getElementById('fs-em-overlay')?.remove();
     EM_SEL.clear();
     const ov = el('div', 'fs-overlay'); ov.id = 'fs-em-overlay';
-    ov.innerHTML = '<div class="fs-cons" id="fs-em-cons"><div class="fs-hdr" id="fs-em-hdr"><div class="fs-title">' + ICON + '<span id="fs-em-ttl"> Fusion — Merge ' + emLabel(EM_TYPE) + '</span>' + emCounters(EM_TYPE) + '</div><div class="fs-sp"></div>'
+    ov.innerHTML = '<div class="fs-cons" id="fs-em-cons"><div class="fs-hdr" id="fs-em-hdr"><div class="fs-title">' + fsTitle(EM_TYPE) + '</div><div class="fs-sp"></div>'
         + '<button class="fs-cons-x" id="fs-em-max" type="button" data-tip="Maximize or restore">⛶</button>'
         + '<button class="fs-cons-x" id="fs-em-cfg" type="button" data-tip="Fusion\nOptions, the log, help">' + MBU_CFG_ICON + '</button><button class="fs-cons-x" id="fs-em-close" type="button" data-tip="Close">✕</button></div>'
-        + '<div class="fs-ctrl"><input type="text" id="fs-em-input" placeholder="paste an entity URL or MBID…" data-tip="Add to the pool\nPaste a MusicBrainz URL of any mergeable entity, or an MBID of this board’s type."><div class="fs-sp"></div></div>'
-        + '<div class="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-em-pool-cnt">0</span><span class="fs-sp"></span><button type="button" class="fs-btn" data-act="newgroup" data-tip="Group all\nThe selected entries, or the whole pool, in one new group">Group all</button></div><div class="fs-colbody" id="fs-em-pool"></div></div>'
-        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-em-groups-cnt">0</span><span class="fs-sp"></span><button type="button" class="fs-btn" data-act="clearmerged" data-tip="Clear merged\nRemove the merged groups">Clear merged</button></div><div class="fs-colbody" id="fs-em-groups"></div></div></div>'
+        + '<div class="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr" id="fs-em-pool-hdr"><span>Pool</span><span class="fs-cnt" id="fs-em-pool-cnt">0</span><span class="fs-sp"></span>' + fsAddField('fs-em-input', 'paste an entity URL or MBID…', 'Add to the pool\nPaste a MusicBrainz URL of any mergeable entity, or an MBID of this board’s type.') + '<button type="button" class="fs-btn" data-act="newgroup" data-tip="Group all\nThe selected entries, or the whole pool, in one new group">Group all</button></div><div class="fs-colbody" id="fs-em-pool"></div></div>'
+        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-em-groups-cnt">0</span><span class="fs-sp"></span><button type="button" class="fs-btn fs-clearbtn" data-act="clearmenu" data-tip="Clear the pool, the groups or the merged groups">Clear ▾</button></div><div class="fs-colbody" id="fs-em-groups"></div></div></div>'
         + '<div class="fs-ftr"><div class="fs-sum" id="fs-em-sum"></div><div class="fs-sp"></div><div class="fs-note">Merges submit directly in the background — no MB merge page involved</div><button type="button" id="fs-em-mergeall" class="fs-btn fs-primary">' + MERGE_MARK + ' Merge All (0) →</button></div></div>';
     document.body.appendChild(ov);
     const cons = ov.querySelector('#fs-em-cons'), hdr = ov.querySelector('#fs-em-hdr');
@@ -6222,9 +6263,7 @@ function openEntities(type) {
     ov.addEventListener('mousedown', e => { if (e.target === ov) close(); });
     ov.querySelector('#fs-em-close').onclick = close;
     ov.querySelector('#fs-em-cfg').onclick = e => openSettings(e.currentTarget);
-    const input = ov.querySelector('#fs-em-input');
-    input.addEventListener('paste', () => setTimeout(() => { emAddByUrl(input.value); input.value = ''; }, 0));
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') { emAddByUrl(input.value); input.value = ''; } });
+    wireAddField(ov.querySelector('#fs-em-pool-hdr'), inp => { emAddByUrl(inp.value); inp.value = ''; });
     ov.querySelector('#fs-em-mergeall').onclick = async () => {
         const type = EM_TYPE, ids = emT(type).groups.filter(g => g.state !== 'done' && g.members.length > 1).map(g => g.id);
         for (const id of ids) await emMerge(type, id);
@@ -6274,7 +6313,14 @@ function openEntities(type) {
             return;
         }
         if (act === 'newgroup') { const t = emT(EM_TYPE); emMove(EM_SEL.size ? [...EM_SEL] : t.pool.map(x => x.gid), 'new'); return; }
-        if (act === 'clearmerged') { emEdit(() => { const t = emT(EM_TYPE); t.groups = t.groups.filter(x => x.state !== 'done'); }); return; }
+        if (act === 'clearmenu') {
+            openClearMenu(e.target.closest('[data-act]'), [
+                ['Clear pool', 'Remove the entries in the pool\nThe grouped ones stay.', () => { EM_SEL.clear(); emEdit(() => { emT(EM_TYPE).pool = []; }); }],
+                ['Clear groups', 'Dissolve every group\nTheir entries go back to the pool; merged groups are removed.', () => { EM_EDITING.clear(); emEdit(() => { const t = emT(EM_TYPE); t.groups.forEach(g => { if (g.state !== 'done') t.pool.push(...g.members.filter(m => !t.pool.some(x => x.gid === m.gid))); }); t.groups = []; t.current = null; }); }],
+                ['Clear merged', 'Remove the merged groups', () => emEdit(() => { const t = emT(EM_TYPE); t.groups = t.groups.filter(x => x.state !== 'done'); })],
+            ]);
+            return;
+        }
         if (e.target.closest('#fs-em-newgroup')) { if (EM_SEL.size) emMove([...EM_SEL], 'new'); else mbuToast('Select pool entries first, or drag one here'); return; }
         const pc = e.target.closest('.fs-pcard');
         if (pc) { if (EM_SEL.has(pc.dataset.gid)) EM_SEL.delete(pc.dataset.gid); else EM_SEL.add(pc.dataset.gid); pc.classList.toggle('fs-selected', EM_SEL.has(pc.dataset.gid)); return; }
