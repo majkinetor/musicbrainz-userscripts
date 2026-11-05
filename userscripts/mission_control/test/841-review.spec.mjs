@@ -1,5 +1,5 @@
 // #841: Execute first lists what it will send, one line per selected change, grouped by step; an unticked line is
-// left out, Cancel sends nothing, and a right-click on Execute skips the list. A stand-in Art Station gives two rows.
+// left out, Cancel sends nothing, and a right-click on Execute skips the list. A stand-in Platform Check gives two release links.
 import { test, check, until } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Mission Control' } });
@@ -15,21 +15,24 @@ async function open(page, inject) {
     window.__applies = [];
     document.addEventListener('mc:probe', e => {
       const d = JSON.parse(e.detail);
-      setTimeout(() => send('mc:findings', { id: 'as', run: d.run, release: d.release, summary: '', findings: [
+      setTimeout(() => send('mc:findings', { id: 'pc', run: d.run, release: d.release, summary: '', findings: [
         { key: 'Spotify', name: 'Spotify', icon: 'spotify', url: 'https://open.spotify.com/album/1', state: 'new' },
         { key: 'Deezer', name: 'Deezer', icon: 'deezer', url: 'https://www.deezer.com/album/1', state: 'new' },
       ] }), 50);
     });
     document.addEventListener('mc:apply', e => {
-      const d = JSON.parse(e.detail); if (d.id !== 'as') return;
+      const d = JSON.parse(e.detail); if (d.id !== 'pc') return;
       window.__applies.push(d.keys);
-      setTimeout(() => send('mc:applied', { id: 'as', run: d.run, release: d.release, ok: true, sent: d.keys.length, note: 'done' }), 50);
+      setTimeout(() => send('mc:applied', { id: 'pc', run: d.run, release: d.release, ok: true, sent: d.keys.length, note: 'done' }), 50);
     });
-    send('mc:provider', { id: 'as', name: 'Art Station', version: 1, capabilities: ['probe', 'apply'] });
+    send('mc:provider', { id: 'pc', name: 'Platform Check', version: 1, capabilities: ['probe', 'apply'] });
   });
   await page.click('#mc-launch');
   await page.waitForSelector('#mc-root');
   await page.click('#mc-root [data-act="probe"]');
+  // without First Contact a release link waits unselected: select both by hand
+  await until(() => page.locator('#mc-root [data-card="pc"] .mc-pick').count(), n => n === 2, { timeout: 10_000 });
+  for (const pick of await page.locator('#mc-root [data-card="pc"] .mc-pick').all()) await pick.click();
   await until(() => page.locator('#mc-root [data-act="exec"]').textContent(), t => t === 'Execute (2)', { timeout: 10_000 });
 }
 
@@ -41,9 +44,9 @@ test('#841: Execute lists the changes first; an unticked one is left out', { tag
   check(/Execute 2 changes\?/.test(await rv.locator('h2').textContent()), 'the list says how many');
   const lines = await rv.locator('.mc-rv-i').allTextContents();
   check(lines.length === 2 && /Spotify/.test(lines[0]) && /Deezer/.test(lines[1]), `a line per change (${JSON.stringify(lines)})`);
-  check(lines.every(l => !/on the release/.test(l)), 'the release's links are named by platform alone');
+  check(lines.every(l => !/on the release/.test(l)), "the release's links are named by platform alone");
   const head = rv.locator('.mc-rv-t', { hasText: 'Release links' });
-  check(await head.count() === 1, 'the release's links sit under one "Release links" head');
+  check(await head.count() === 1, 'the release links sit under one "Release links" head');
   await head.locator('input').uncheck();
   check(await rv.locator('.mc-rv-i input:checked').count() === 0, 'its box unselects every link on the release');
   check(/Execute 0 changes?/.test(await rv.locator('h2').textContent()), 'and the count follows');
