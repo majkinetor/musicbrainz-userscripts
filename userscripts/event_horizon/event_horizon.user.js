@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.191202
+// @version      2026.11.05.191635
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7844,7 +7844,7 @@ function hexWalk(L, i, n) {
 }
 const HEX_FX = {
     // single hexagons light up and fade
-    twinkle({ L, w, h, ctx, rnd, tone, pace, trail, often }) {
+    twinkle({ L, w, h, ctx, rnd, tone, pace, trail, often, glow }) {
         let on = [], due = 0;
         const rate = 7 * often * (w * h) / 1e6;
         return {
@@ -7860,10 +7860,13 @@ const HEX_FX = {
                 for (const p of on) {
                     const a = Math.sin(Math.PI * p.age / p.life);
                     ctx.beginPath(); HEXV.forEach(([dx, dy], k) => ctx[k ? 'lineTo' : 'moveTo'](p.x + dx, p.y + dy)); ctx.closePath();
+                    ctx.shadowColor = p.c; ctx.shadowBlur = 0;
                     ctx.globalAlpha = a * .22; ctx.fillStyle = p.c; ctx.fill();
-                    ctx.globalAlpha = a; ctx.strokeStyle = p.c; ctx.lineWidth = 1; ctx.stroke();
+                    // a soft halo around the cell, as wide as the Glow setting says
+                    if (glow) { ctx.shadowBlur = 18 * glow; ctx.globalAlpha = a * .12 * Math.min(1.5, glow); ctx.lineWidth = 6 * glow; ctx.strokeStyle = p.c; ctx.stroke(); }
+                    ctx.shadowBlur = 10 * glow; ctx.globalAlpha = a; ctx.strokeStyle = p.c; ctx.lineWidth = 1; ctx.stroke();
                 }
-                ctx.globalAlpha = 1;
+                ctx.globalAlpha = 1; ctx.shadowBlur = 0;
             },
             shift(d) { for (const p of on) p.y -= 48 * d; },
         };
@@ -7983,7 +7986,7 @@ const HEX_FX = {
         };
     },
     // a signal starts at one corner and spreads, branching, along the sides; what it passed glows and fades
-    neural({ L, w, h, ctx, rnd, tone, pace, trail, often }) {
+    neural({ L, w, h, ctx, rnd, tone, pace, trail, often, glow }) {
         let lit = [], front = [], due = 0;
         const fire = () => {
             let i; do i = Math.random() * L.xs.length | 0; while (!(L.xs[i] > 0 && L.xs[i] < w && L.ys[i] > 0 && L.ys[i] < h));
@@ -8009,12 +8012,16 @@ const HEX_FX = {
                 front = next.slice(0, 400);
                 ctx.clearRect(0, 0, w, h); ctx.lineWidth = 1.2;
                 lit = lit.filter(e => (e.age += dt) < fade);
-                for (const e of lit) { ctx.globalAlpha = (1 - e.age / fade) ** 1.5; ctx.strokeStyle = e.c; ctx.beginPath(); ctx.moveTo(...e.a); ctx.lineTo(...e.b); ctx.stroke(); }
+                const seg = (a, b, al, c) => { ctx.strokeStyle = ctx.shadowColor = c; for (const [lw, k] of glow ? [[6 * glow, .1 * Math.min(1.5, glow)], [1.2, 1]] : [[1.2, 1]]) { ctx.lineWidth = lw; ctx.globalAlpha = al * k; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke(); } };
+                ctx.shadowBlur = 8 * glow;
+                for (const e of lit) seg(e.a, e.b, (1 - e.age / fade) ** 1.5, e.c);
+                // the signal's head burns brighter than its trail
+                ctx.shadowBlur = 16 * glow;
                 for (const f of front) if (f.j >= 0) {
                     const x = L.xs[f.i] + (L.xs[f.j] - L.xs[f.i]) * f.p, y = L.ys[f.i] + (L.ys[f.j] - L.ys[f.i]) * f.p;
-                    ctx.globalAlpha = 1; ctx.strokeStyle = f.c; ctx.beginPath(); ctx.moveTo(L.xs[f.i], L.ys[f.i]); ctx.lineTo(x, y); ctx.stroke();
+                    seg([L.xs[f.i], L.ys[f.i]], [x, y], 1, f.c);
                 }
-                ctx.globalAlpha = 1;
+                ctx.globalAlpha = 1; ctx.shadowBlur = 0;
             },
             shift(d) {
                 for (const e of lit) { e.a[1] -= 48 * d; e.b[1] -= 48 * d; }
@@ -10675,7 +10682,7 @@ const HEX_MOTIONS = [
     ['neural', 'Neural', 'Signals spread and branch through the lattice like a neural network'],
 ];
 // which of the effect's settings each motion takes
-const HEX_USES = { pace: ['drift', 'tide', 'twinkle', 'ripple', 'horizon', 'electricity', 'neural'], trail: ['twinkle', 'electricity', 'neural'], often: ['twinkle', 'ripple', 'electricity', 'neural'], glow: ['electricity'], two: ['drift', 'twinkle', 'electricity', 'neural'] };
+const HEX_USES = { pace: ['drift', 'tide', 'twinkle', 'ripple', 'horizon', 'electricity', 'neural'], trail: ['twinkle', 'electricity', 'neural'], often: ['twinkle', 'ripple', 'electricity', 'neural'], glow: ['twinkle', 'electricity', 'neural'], two: ['drift', 'twinkle', 'electricity', 'neural'] };
 // the effects drawn over the background; Hexagons is the first
 const EFFECTS = [['none', 'None', 'No effect over the background'], ['hexagons', 'Hexagons', 'Hexagon outlines over any background, with an animation']];
 function hexRows(chip, row) {
