@@ -21,8 +21,7 @@ test('votes through Event Horizon\'s tag editor', { tag: '@sandbox' }, async ({ 
   await page.click('[data-a=vote]');
   const mine = page.locator('.tgi.mine', { hasText: name });
   check(await until(() => mine.count(), n => n === 1) === 1, 'EH added ' + name);
-  check(await page.locator('.fl-row.have[data-t="' + name + '"]').count() === 1, 'the window strikes what is tagged');
-  await page.keyboard.press('Escape');
+  check(await until(() => page.locator('.fl-pop').count(), n => n === 0) === 0, 'voting closes the window');
   await mine.locator('button').click();
   check(await until(() => mine.count(), n => n === 0) === 0, 'withdrawn');
   await page.click('button[data-tgin="close"]');

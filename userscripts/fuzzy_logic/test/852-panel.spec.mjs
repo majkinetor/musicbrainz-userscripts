@@ -32,6 +32,9 @@ test('votes and withdraws', { tag: '@sandbox' }, async ({ page, inject }) => {
   await row.click();
   await page.click('[data-a=vote]');
   check(/Voted 1 tag/.test(await until(() => page.locator('#mbu-toast').innerText().catch(() => ''), t => /Voted|failed/.test(t))), 'vote toast ok (' + name + ')');
+  check(await until(() => page.locator('.fl-pop').count(), n => n === 0) === 0, 'voting closes the window');
+  await page.evaluate(() => document.getElementById('mb-fl-dock').click());
+  if (!(await page.locator('.fl-row[data-t="' + name + '"]').count())) await page.click('[data-a=alltags]');
   await page.locator('.fl-row[data-t="' + name + '"]').click();
   await page.click('[data-a=withdraw]');
   check(/Withdrew 1 tag/.test(await until(() => page.locator('#mbu-toast').innerText().catch(() => ''), t => /Withdrew|failed/.test(t))), 'withdrawn');
