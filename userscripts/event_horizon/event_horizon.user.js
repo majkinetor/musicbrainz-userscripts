@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.202326
+// @version      2026.11.05.231601
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3502,7 +3502,7 @@ function release(r, rg, images) {
         lang: r['text-representation'] && [nameOf('language', r['text-representation'].language), nameOf('script', r['text-representation'].script)].filter(Boolean).join(' / '),
         title: r.title, ac, type: rg['primary-type'], rgId: rg.id, rating: rg.rating || {}, rg: { title: rg.title, rels: rg.relations || [] },
         credits: [...creditsOf(r.relations || []), ...labelCreditsOf(r.relations || [])], front: (r['cover-art-archive'] || {}).front, images,
-        genres: (r.genres || []).sort((a, b) => b.count - a.count).slice(0, 5).map(g => g.name),
+        genres: (r.genres || []).sort((a, b) => b.count - a.count).map(g => g.name),
         events: (r['release-events'] || []).map(v => ({ date: v.date, area: v.area && v.area.name.replace(/^\[(.*)\]$/, '$1'), aid: v.area && v.area.id, iso: v.area && (v.area['iso-3166-1-codes'] || [])[0] || '' })),
         labels: (r['label-info'] || []).map(l => ({ name: l.label && l.label.name, id: l.label && l.label.id, catno: l['catalog-number'] })),
         links: urlsOf(r.relations || []), urlCredits: (r.relations || []).filter(x => x['target-type'] === 'url').map(x => ({ type: x.type, url: x.url.resource })),
@@ -3809,13 +3809,14 @@ function heroFacts(app) {
     }
     u.remove();
 }
-function under(r, more = '') {
+function under(r) {
     const on = k => S.extras.includes(k);
     // a page MB rates gets its stars even unrated, to rate it; the rest show theirs only when they have one
     const t = r.rgId ? 'release_group' : RATE_T[data && data.kind], ref = r.rgId || (data && data.id);
     const nat = mbBody && mbBody.querySelector('#sidebar .inline-rating .current-user-rating'), w = nat && /width:\s*([\d.]+)%/.exec(nat.getAttribute('style') || '');
     const stars = on('rating') && (t || r.rating.value != null) ? rateStars(t, ref, r.rating, false, w ? Math.round(+w[1] / 20) : mbBody && mbBody.querySelector('#sidebar .inline-rating') ? 0 : null) : '';
-    const tags = on('tags') && (r.genres.length || more || ME) ? `<div class="gtags">${r.genres.map(g => `<a class="chip" href="${MB}/tag/${encodeURIComponent(g)}">${esc(g)}</a>`).join('')}${more}</div>` : '';
+    const more = on('tags') ? tagsMore(r.tags || [], r.genres.slice(GENRES_SHOWN)) : '';
+    const tags = on('tags') && (r.genres.length || more || ME) ? `<div class="gtags">${r.genres.slice(0, GENRES_SHOWN).map(genreChip).join('')}${more}</div>` : '';
     return stars || tags ? `<div class="under">${stars ? `<div class="meta">${stars}</div>` : ''}${tags}</div>` : '';
 }
 // stars, as MusicBrainz's own: the average lit in the accent, yours once set in gold; logged in, a click rates
@@ -4296,7 +4297,7 @@ function group(g) {
     return {
         id: g.id, rgId: g.id, title: g.title, disambig: g.disambiguation, ac: g['artist-credit'] || [], type: g['primary-type'],
         types: [g['primary-type'], ...(g['secondary-types'] || [])].filter(Boolean), first: g['first-release-date'] || '',
-        rating: g.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
+        rating: g.rating || {}, genres: genres.map(x => x.name),
         tags: (g.tags || []).filter(t => !gn.has(t.name)).sort((a, b) => b.count - a.count).slice(0, 8).map(t => t.name),
         aliases: [...new Set((g.aliases || []).map(aliasName))], annotation: g.annotation || '',
         links: urlsOf(g.relations || []), rg: { title: g.title, rels: g.relations || [] },
@@ -4313,9 +4314,12 @@ async function loadRg(id, step = () => {}) {
     const gP = wsk(`release-group/${id}?inc=artist-credits+ratings+genres+tags+aliases+annotation+release-group-rels+series-rels+url-rels`).then(g => { step('group'); return group(g); });
     return { kind: 'rg', g: null, gP, editions: [], edCount: 0, eds, wiki, covers: Promise.resolve([]) };
 }
-// the folksonomy tags (not the genres) sit behind a chip that opens them
+// the header shows the top genres; the rest of them, and the folksonomy tags, sit behind a chip that opens them
+const GENRES_SHOWN = 5;
 let tagsOpen = false;
-const tagsMore = ts => !ts.length ? '' : `${tagsOpen ? ts.map(t => `<a class="chip tag" href="${MB}/tag/${encodeURIComponent(t)}">${esc(t)}</a>`).join('') : ''}<button class="chip tag" type="button" data-tagsmore aria-expanded="${tagsOpen}" data-tgn="${esc(ts.join('\n'))}">${tagsOpen ? 'Fewer' : `+${ts.length} tag${ts.length === 1 ? '' : 's'}`}</button>`;
+const genreChip = g => `<a class="chip" href="${MB}/tag/${encodeURIComponent(g)}">${esc(g)}</a>`;
+const nOf = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+const tagsMore = (ts, gs = []) => !ts.length && !gs.length ? '' : `${tagsOpen ? gs.map(genreChip).join('') + ts.map(t => `<a class="chip tag" href="${MB}/tag/${encodeURIComponent(t)}">${esc(t)}</a>`).join('') : ''}<button class="chip tag" type="button" data-tagsmore aria-expanded="${tagsOpen}" data-tgg="${esc(gs.join('\n'))}" data-tgn="${esc(ts.join('\n'))}">${tagsOpen ? 'Fewer' : '+' + [gs.length && nOf(gs.length, 'genre'), ts.length && nOf(ts.length, 'tag')].filter(Boolean).join(', ')}</button>`;
 // the header's tags edited in place: the pencil loads the entity's tags page (all tags, your votes), then
 // your tags get × (withdraw), the others ▲ (upvote), and an input adds; ✓ or Esc closes and redraws the page
 let tgIn = null, tgInWired = false;
@@ -4343,7 +4347,8 @@ function tgInTake(i, pick) { const ps = i.value.split(','); if (pick && ps[ps.le
 async function tgInOpen() {
     // the box opens at once, focused, on the header's own chips (the collapsed tags too); counts and votes fill in when the page loads
     const b = tgInBox(), mo = b && b.querySelector('[data-tgn]');
-    const pre = b ? [...[...b.querySelectorAll('a.chip:not(.tag)')].map(a => ({ n: a.textContent.trim(), g: true })), ...(mo ? mo.dataset.tgn.split('\n').filter(Boolean).map(n => ({ n, g: false })) : [])] : [];
+    const gs = b ? [...new Set([...[...b.querySelectorAll('a.chip:not(.tag)')].map(a => a.textContent.trim()), ...(mo ? (mo.dataset.tgg || '').split('\n').filter(Boolean) : [])])] : [];
+    const pre = b ? [...gs.map(n => ({ n, g: true })), ...(mo ? mo.dataset.tgn.split('\n').filter(Boolean).map(n => ({ n, g: false })) : [])] : [];
     const d = tgIn = { path: tgPath(), t: null, pre }; tgInDraw(true);
     try {
         const r = await mbnFetch(MB + d.path + '/tags'); if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -4362,11 +4367,11 @@ async function tgInSend(names, v) {
     } catch (e) { LOG.err('Tagging failed: ' + e.message); toast('Tagging failed: ' + e.message); }
     if (tgIn === d) tgInDraw(true);
 }
-function tgInClose() { const dirty = tgIn && tgIn.dirty && tgIn.t.tags; tgIn = null; tgInTell(null); if (dirty && data && data.g) { const ts = dirty.filter(t => t.c > 0); data.g.genres = ts.filter(t => t.g).slice(0, 5).map(t => t.n); data.g.tags = ts.filter(t => !t.g).map(t => t.n); } render(); }
+function tgInClose() { const dirty = tgIn && tgIn.dirty && tgIn.t.tags; tgIn = null; tgInTell(null); if (dirty && data && data.g) { const ts = dirty.filter(t => t.c > 0); data.g.genres = ts.filter(t => t.g).map(t => t.n); data.g.tags = ts.filter(t => !t.g).map(t => t.n); } render(); }
 function tgInWire() {
     if (tgInWired) return; tgInWired = true;
     // Fuzzy Logic voted itself (the editor shut): show its tags in the header without a reload
-    document.addEventListener('mbu-tags-voted', ev => { const d = ev.detail || {}; if (tgIn || !d.path || !tgPath().startsWith(d.path) || !data || !data.g) return; const lc = xs => (xs || []).map(x => String(x).trim().toLowerCase()).filter(Boolean); const g = data.g; g.genres = [...new Set([...(g.genres || []), ...lc(d.genres)])].slice(0, 5); g.tags = [...new Set([...(g.tags || []), ...lc(d.tags)])]; render(); });
+    document.addEventListener('mbu-tags-voted', ev => { const d = ev.detail || {}; if (tgIn || !d.path || !tgPath().startsWith(d.path) || !data || !data.g) return; const lc = xs => (xs || []).map(x => String(x).trim().toLowerCase()).filter(Boolean); const g = data.g; g.genres = [...new Set([...(g.genres || []), ...lc(d.genres)])]; g.tags = [...new Set([...(g.tags || []), ...lc(d.tags)])]; render(); });
     document.addEventListener('mbu-tags-add', ev => { const ns = ((ev.detail && ev.detail.names) || []).map(x => String(x).trim().toLowerCase()).filter(Boolean); if (!tgIn || !ns.length) return; if (tgIn.t) tgInSend(ns, 1); else tgIn.pend = [...(tgIn.pend || []), ...ns]; });
     document.addEventListener('click', ev => {
         const b = ehOn && ev.target.closest('button[data-tgin]'); if (!b) return;
@@ -4410,11 +4415,10 @@ function rgHero(d) {
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
         ['', g.links.length && rlQuiet(g), 'wide'],
     ];
-    const tags = on('tags') ? tagsMore(g.tags) : '';
     return `<section class="hero">
         <div class="art">
             <div class="picw"><img class="cover" data-rgcover src="https://coverartarchive.org/release-group/${g.id}/front-500" alt="Front cover"><a class="cvact" href="${MB}/release-group/${g.id}/set-cover-art">${SVG('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>')}Set cover art</a></div>
-            ${under(g, tags)}
+            ${under(g)}
         </div>
         <div class="facts-col">
             <div class="kicker label">${LAYERS(18)}<span>${esc(['Release group', ...g.types].join(' · '))}</span><span class="acts">${actionRow(RG_ACTS, 'release-group', g.id)}${SRCH()}</span></div>
@@ -6196,7 +6200,7 @@ function artist(a) {
     return {
         id: a.id, title: a.name, sort: a['sort-name'], disambig: a.disambiguation, type: a.type || '', gender: a.gender || '',
         area: a.area, begin: ls.begin || '', end: ls.end || '', ended: !!ls.ended, beginArea: a['begin-area'], endArea: a['end-area'],
-        rating: a.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
+        rating: a.rating || {}, genres: genres.map(x => x.name),
         tags: (a.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
         aliases: [...new Set((a.aliases || []).map(aliasName))].filter(n => n !== a.name), annotation: a.annotation || '',
         ipis: a.ipis || [], isnis: a.isnis || [], links: urlsOf(a.relations || []), rels: a.relations || [], imgs: [],
@@ -6228,7 +6232,7 @@ function label(l) {
     const genres = (l.genres || []).sort((x, y) => y.count - x.count), gn = new Set(genres.map(x => x.name)), ls = l['life-span'] || {};
     return {
         id: l.id, title: l.name, disambig: l.disambiguation, type: l.type || '', area: l.area, code: l['label-code'],
-        begin: ls.begin || '', end: ls.end || '', ended: !!ls.ended, rating: l.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
+        begin: ls.begin || '', end: ls.end || '', ended: !!ls.ended, rating: l.rating || {}, genres: genres.map(x => x.name),
         tags: (l.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
         aliases: [...new Set((l.aliases || []).map(aliasName))].filter(n => n !== l.name), annotation: l.annotation || '',
         ipis: l.ipis || [], isnis: l.isnis || [], links: urlsOf(l.relations || []), rels: l.relations || [], imgs: [],
@@ -6257,7 +6261,7 @@ function lbHero(d) {
     ];
     const pic = picHtml(g, 'lpic', `<div class="nocover">${SVG(CI_TAG).replace(/width="18" height="18"/, 'width="96" height="96"').replace('stroke-width="2"', 'stroke-width=".8"')}${imgRetryBtn(g)}</div>`);
     return `<section class="hero">
-        <div class="art">${pic}${under(g, on('tags') ? tagsMore(g.tags) : '')}</div>
+        <div class="art">${pic}${under(g)}</div>
         <div class="facts-col">
             <div class="kicker label">${SVG(CI_TAG)}<span>${esc(g.type || 'Label')}</span><span class="acts">${actionRow(LB_ACTS, 'label', g.id)}${SRCH()}</span></div>
             ${heroH1(g.title, g.disambig)}
@@ -6324,10 +6328,9 @@ function arHero(d) {
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide', 'mbid'],
         ['', g.links.length && rlQuiet(g), 'wide', 'links'],
     ];
-    const tags = on('tags') ? tagsMore(g.tags) : '';
     const pic = picHtml(g, 'apic', `<div class="nocover">${IC_NAME.replace('width="16" height="16"', 'width="96" height="96"').replace('stroke-width="1.6"', 'stroke-width=".6"')}${imgRetryBtn(g)}</div>`);
     return `<section class="hero">
-        <div class="art">${pic}${under(g, tags)}</div>
+        <div class="art">${pic}${under(g)}</div>
         <div class="facts-col">
             <div class="kicker label">${IC_NAME}<span>${esc(g.type || 'Artist')}</span><span class="acts">${actionRow(AR_ACTS, 'artist', g.id)}${SRCH()}</span></div>
             ${heroH1(g.title, g.disambig)}
@@ -6348,7 +6351,7 @@ function recording(x) {
     const genres = genresOf(x), gn = new Set(genres.map(g => g.name)), rels = x.relations || [];
     return {
         id: x.id, title: x.title, disambig: x.disambiguation, ac: x['artist-credit'] || [], len: x.length || 0, video: !!x.video,
-        first: x['first-release-date'] || '', isrcs: x.isrcs || [], rating: x.rating || {}, genres: genres.slice(0, 5).map(g => g.name), tags: tagsOf(x, gn),
+        first: x['first-release-date'] || '', isrcs: x.isrcs || [], rating: x.rating || {}, genres: genres.map(g => g.name), tags: tagsOf(x, gn),
         aliases: [...new Set((x.aliases || []).map(aliasName))].filter(n => n !== x.title), annotation: x.annotation || '',
         cr: creditsOf(rels), links: urlsOf(rels),
         works: rels.filter(r => r['target-type'] === 'work').map(r => Object.assign(wkOf(r.work), { perf: r.attributes || [] })),
@@ -6364,7 +6367,7 @@ async function loadRecording(id, step = () => {}) {
 function work(w) {
     const genres = genresOf(w), gn = new Set(genres.map(g => g.name)), rels = w.relations || [];
     return Object.assign(wkOf(w), {
-        disambig: w.disambiguation, rating: w.rating || {}, genres: genres.slice(0, 5).map(g => g.name), tags: tagsOf(w, gn),
+        disambig: w.disambiguation, rating: w.rating || {}, genres: genres.map(g => g.name), tags: tagsOf(w, gn),
         aliases: [...new Set((w.aliases || []).map(aliasName))].filter(n => n !== w.title), annotation: w.annotation || '', links: urlsOf(rels),
         related: rels.filter(r => r['target-type'] === 'work').map(r => ({ role: phrase(r) + (r.direction === 'backward' ? ' of' : ''), id: r.work.id, title: r.work.title })),
     });
@@ -6380,7 +6383,7 @@ const bigMk = d => mkSvg(d).replace('width="15" height="15"', 'width="96" height
 const factsHtml = F => `<div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>`;
 function pgHero(g, type, icon, kind, F, by, pic) {
     return `<section class="hero">
-        <div class="art">${pic || picHtml(g, 'mpic', `<div class="nocover pg">${bigMk(icon)}</div>`)}${under(g, S.extras.includes('tags') ? tagsMore(g.tags) : '')}</div>
+        <div class="art">${pic || picHtml(g, 'mpic', `<div class="nocover pg">${bigMk(icon)}</div>`)}${under(g)}</div>
         <div class="facts-col">
             <div class="kicker label">${mkSvg(icon)}<span>${esc(kind)}</span><span class="acts">${pgActs(type, g.id)}</span></div>
             ${heroH1(g.title, g.disambig)}
@@ -6453,7 +6456,7 @@ function area(a) {
         id: a.id, title: a.name, disambig: a.disambiguation, type: a.type || '', begin: ls.begin || '', end: ls.end || '', ended: !!ls.ended,
         iso: [...(a['iso-3166-1-codes'] || []), ...(a['iso-3166-2-codes'] || []), ...(a['iso-3166-3-codes'] || [])],
         partOf: ar.filter(x => x.direction === 'backward').map(x => x.area), parts: ar.filter(x => x.direction === 'forward').map(x => x.area),
-        rating: a.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
+        rating: a.rating || {}, genres: genres.map(x => x.name),
         tags: (a.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
         aliases: [...new Set((a.aliases || []).map(aliasName))].filter(n => n !== a.name), annotation: a.annotation || '',
         links: urlsOf(a.relations || []), rels: a.relations || [], imgs: [],
@@ -6562,7 +6565,7 @@ function instrument(a) {
     return {
         from, usedIn,
         id: a.id, title: a.name, disambig: a.disambiguation, type: a.type || '', desc: a.description || '', groups,
-        img: im ? im.url.resource : '', rating: a.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
+        img: im ? im.url.resource : '', rating: a.rating || {}, genres: genres.map(x => x.name),
         tags: (a.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
         aliases: [...new Set((a.aliases || []).map(aliasName))].filter(n => n !== a.name), annotation: a.annotation || '',
         links: urlsOf(rels.filter(x => x.type !== 'image')), rels,
@@ -6757,7 +6760,7 @@ function place(a) {
     return {
         id: a.id, title: a.name, disambig: a.disambiguation, type: a.type || '', begin: ls.begin || '', end: ls.end || '', ended: !!ls.ended,
         address: a.address || '', area: a.area || null, coords: c && c.latitude != null ? [+c.latitude, +c.longitude] : null, groups,
-        img: im ? im.url.resource : '', rating: a.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
+        img: im ? im.url.resource : '', rating: a.rating || {}, genres: genres.map(x => x.name),
         tags: (a.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
         aliases: [...new Set((a.aliases || []).map(aliasName))].filter(n => n !== a.name), annotation: a.annotation || '',
         links: urlsOf(rels.filter(x => x.type !== 'image')), rels, imgs: [],
@@ -6810,7 +6813,7 @@ function event(a) {
     return {
         id: a.id, title: a.name, disambig: a.disambiguation, type: a.type || '', begin: ls.begin || '', end: ls.end || '', time: a.time || '',
         cancelled: !!a.cancelled, setlist: a.setlist || '', groups, rating: a.rating || {},
-        genres: (a.genres || []).sort((x, y) => y.count - x.count).slice(0, 5).map(x => x.name),
+        genres: (a.genres || []).sort((x, y) => y.count - x.count).map(x => x.name),
         tags: (a.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
         aliases: [...new Set((a.aliases || []).map(aliasName))].filter(n => n !== a.name), annotation: a.annotation || '',
         links: urlsOf(rels), rels, imgs: [],
@@ -6866,7 +6869,7 @@ function series(a) {
     }
     return {
         id: a.id, title: a.name, disambig: a.disambiguation, type: a.type || '', groups, rating: {},
-        genres: (a.genres || []).sort((x, y) => y.count - x.count).slice(0, 5).map(x => x.name),
+        genres: (a.genres || []).sort((x, y) => y.count - x.count).map(x => x.name),
         tags: (a.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
         aliases: [...new Set((a.aliases || []).map(aliasName))].filter(n => n !== a.name), annotation: a.annotation || '',
         links: urlsOf(rels), rels, imgs: [],
