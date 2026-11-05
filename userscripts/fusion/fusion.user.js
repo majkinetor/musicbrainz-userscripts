@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.195423
+// @version      2026.11.05.195737
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -4009,6 +4009,7 @@ function fsStyle() {
         + '.fs-grow .fs-dis{color:var(--fs-muted);font-size:11px;margin-left:4px}'
         + '#fs-em-cons .fs-sig{flex-wrap:wrap;justify-content:center}'
         + '#fs-em-cons .fs-sig span{width:auto;min-width:48px}'
+        + '#fs-em-cons .fs-strat.fs-strat-unset{border-color:var(--mbu-warn);color:var(--mbu-text-dim)}'
         + '#fs-em-cons .fs-strat{font-size:11px;padding:2px 4px;border:1px solid var(--fs-border);border-radius:5px;background:var(--fs-bg);color:var(--fs-text)}'
         + '#fs-em-cons .fs-colbody{scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}'
         + '#fs-em-cons .fs-newgroup.fs-dragover{outline:2px dashed var(--fs-purple);outline-offset:-3px}'
@@ -5917,6 +5918,7 @@ async function emAddByUrl(text) {
 function emMerge(type, gid) {
     const t = emT(type), g = t.groups.find(x => x.id === gid);
     if (!g || EM_BUSY.has(g.id) || g.state === 'done' || g.members.length < 2) return Promise.resolve();
+    if (type === 'release' && !g.strategy) { Log.info('Merge skipped: group ' + g.id + ' has no medium strategy chosen'); return Promise.resolve(); }
     const target = g.members.some(x => x.gid === g.target) ? g.target : g.members[0].gid;
     const strategy = g.strategy, note = ((g.note || '').trim() || emAutoNote(type, g)) + '\n\n' + (GM_info.script.name || 'Fusion') + ' v' + VERSION + ' by majkinetor - ' + HELP_URL, members = g.members.map(x => x.gid);
     EM_BUSY.add(g.id); emRender();
@@ -6272,7 +6274,7 @@ function emRender() {
     const open = t.groups.filter(g => g.state !== 'done');
     ov.querySelector('#fs-em-groups-cnt').textContent = open.length;
     ov.querySelector('#fs-em-groups').innerHTML = t.groups.map((g, gi) => {
-        const busy = EM_BUSY.has(g.id), done = g.state === 'done', err = g.state === 'error', tooFew = g.members.length < 2;
+        const busy = EM_BUSY.has(g.id), done = g.state === 'done', err = g.state === 'error', tooFew = g.members.length < 2, noStrat = type === 'release' && !g.strategy;   // #908: no medium strategy preselected
         const target = g.members.find(x => x.gid === g.target) || g.members[0] || {};
         const active = g.id === t.current && !done ? ' fs-active' : '';
         if (EM_EDITING.has(g.id) && !done) {
@@ -6304,10 +6306,10 @@ function emRender() {
             + '<span class="fs-gnum" data-tip="Group ' + (gi + 1) + '\n' + g.members.length + ' ' + (g.members.length === 1 ? emOne(type) : label.toLowerCase()) + '">' + g.members.length + '</span>'
             + '<span class="fs-gt" data-tip="' + escapeHtml(target.name || '') + '">' + (target.gid ? link(target) : 'New group') + '</span></div>'
             + '<div class="fs-sig">' + chips + '</div><div class="fs-ghr">'
-            + (type === 'release' && !done ? '<select class="fs-strat" data-act="strategy" data-tip="Mediums\nHow the releases’ mediums combine"><option value="1"' + (g.strategy !== '2' ? ' selected' : '') + '>Append mediums</option><option value="2"' + (g.strategy === '2' ? ' selected' : '') + '>Merge mediums</option></select>' : '')
+            + (type === 'release' && !done ? '<select class="fs-strat' + (noStrat ? ' fs-strat-unset' : '') + '" data-act="strategy" data-tip="Mediums\nHow the releases’ mediums combine">' + (noStrat ? '<option value="" disabled selected hidden>Mediums…</option>' : '') + '<option value="1"' + (g.strategy === '1' ? ' selected' : '') + '>Append mediums</option><option value="2"' + (g.strategy === '2' ? ' selected' : '') + '>Merge mediums</option></select>' : '')
             + (done ? (g.mergedUrl ? '<a href="' + escapeHtml(g.mergedUrl) + '" target="_blank" rel="noopener">view</a>' : '')
                 : '<span class="fs-note-btn' + (hasNote ? ' fs-has-note' : '') + '" data-act="edit-note" data-tip="' + (hasNote ? 'A custom edit note is set\nClick: edit it' : 'Add a custom edit note for this merge') + '">✎</span>')
-            + '<button class="fs-mbtn' + (done ? ' fs-done' : err ? ' fs-err' : '') + '" type="button" data-act="merge-group"' + (busy || done || tooFew ? ' disabled' : '') + (err ? ' data-tip="' + escapeHtml('Merge failed\n' + (g.error || '')) + '"' : '') + '>' + mLabel + '</button>'
+            + '<button class="fs-mbtn' + (done ? ' fs-done' : err ? ' fs-err' : '') + '" type="button" data-act="merge-group"' + (busy || done || tooFew || noStrat ? ' disabled' : '') + (err ? ' data-tip="' + escapeHtml('Merge failed\n' + (g.error || '')) + '"' : noStrat && !tooFew ? ' data-tip="Choose how the mediums combine first"' : '') + '>' + mLabel + '</button>'
             + '<span class="fs-kill" data-act="delete-group" data-tip="' + (done ? 'Remove this group' : 'Delete this group\nIts ' + label.toLowerCase() + ' go back to the pool.') + '">🗑</span>'
             + '</div></div>';
         const colHead = cols.length ? '<div class="fs-emh"><span class="fs-emh-n">' + escapeHtml(emOne(type)) + '</span>' + cols.map(c => '<span class="fs-emc' + (EM_WIDE.has(c) ? ' fs-wide' : '') + '">' + c + '</span>').join('') + '<span class="fs-emh-a"></span></div>' : '';

@@ -26,6 +26,10 @@ for (const type of ['artist', 'release']) {
     await page.press('#fs-em-input', 'Escape');   // fold the paste field, which covers the header's buttons
     await page.click('#fs-em-overlay [data-act="newgroup"]');
     check(await page.locator('#fs-em-groups .fs-grow').count() === 2, 'one group of two');
+    if (type === 'release') {
+      check(await page.locator('#fs-em-groups [data-act="merge-group"]').isDisabled(), 'Merge waits for a medium strategy');
+      await page.selectOption('#fs-em-groups .fs-strat', '1');
+    }
     await page.click('#fs-em-groups [data-act="merge-group"]');
     await page.waitForSelector('#fs-em-groups .fs-mbtn.fs-done, #fs-em-groups .fs-mbtn.fs-err', { timeout: 90000 });
     const err = await page.locator('#fs-em-groups .fs-mbtn.fs-err').getAttribute('data-tip').catch(() => null);
