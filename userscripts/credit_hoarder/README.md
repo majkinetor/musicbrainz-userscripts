@@ -30,12 +30,11 @@ Credit Hoarder lists every credited artist, label and place, with clear matches 
 - **Import credits:** one icon per source available on this release. Click to import; right-click opens the source's page. Several sources can run in one session; their edits stack.
 - **⚛ All** (with more than one source) runs a [consolidated import](#consolidated-import).
 
-*Per-track credits* and *Use works* are on the bar; the rest are in its **Options** menu.
+*Per-track credits* and *Use works* are on the bar.
 
 | Option                         |                                                                                          |
 | ------------------------------ | ---------------------------------------------------------------------------------------- |
 | Per-track credits              | import track credits as well as release credits                                          |
-| Move release credits to tracks | put release-level recording credits (instruments, vocals, producer, mix…) on every track |
 | Use works                      | existing ones (*create none*), also those writer credits need (*create needed*), or off  |
 
 ## Review table

@@ -2277,13 +2277,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         /* inline options strip in the single bar (#139) */
         .discogs-bar-opts { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-left: 0.9rem; }
         .discogs-bar-opts .discogs-opts-label { font-size: 0.75rem; color: var(--mbu-text-weak); text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
-        .discogs-opts-btn { font-size: 0.8rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid var(--mbu-border); border-radius: 8px; height: 1.9rem; padding: 0 0.65rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; }
-        .discogs-opts-btn:hover { border-color: var(--mbu-accent); color: var(--mbu-text); }
-        .discogs-opts-caret { color: var(--mbu-text-weak); font-size: 0.7rem; }
         /* "Options ▾" popover (Dedup toggles) */
-        .discogs-opts-panel { position: fixed; z-index: 100002; display: none; flex-direction: column; gap: 0.4rem; background: var(--mbu-bg); border: 1px solid var(--mbu-warn); border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.55rem 0.6rem; font-family: inherit; }
-        .discogs-opts-panel.open { display: flex; }
-        .discogs-opts-panel .discogs-opts-panel-hd { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--mbu-text-weak); font-weight: 600; }
         /* "Log" header toggle — a split button (#142, #217): "Log" toggles, the
            ▾ half (its own clickable target) opens the copy menu. */
         .discogs-log-split { display: inline-flex; align-items: stretch; }
@@ -2970,8 +2964,6 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
 
     const tracklistCb    = makeCheckbox('Per-track credits',              bv('tracklist', true),
         'Import per-track artist credits.');
-    const applyTracksCb  = makeCheckbox('Move release credits to tracks', bv('applyTracks', false),
-        'Move performance credits from the release down to every recording.');
     // #424: "Use works" master toggle + mode picker (renamed from "Create works").
     // Toggle OFF: no work relationship is touched AT ALL — nothing created and nothing
     // attached to pre-existing works either (some editors keep credits off works
@@ -3031,42 +3023,15 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // already there" against MB's pre-existing state. The third part of
     // #62 — editable "Credited as" per entity — lives in the review
     // table, not as a checkbox.
-    // The secondary Dedup toggles fold into an "Options ▾" popover to keep the
-    // single bar compact (#139).
-    const optsBtn = document.createElement('button');
-    optsBtn.type = 'button';
-    optsBtn.className = 'discogs-opts-btn';
-    optsBtn.innerHTML = 'Options <span class="discogs-opts-caret">▾</span>';
-    optsBtn.dataset.tip = 'Options: credits, duplicates and matching';
-    const optsPanel = document.createElement('div');
-    optsPanel.className = 'discogs-opts-panel mbu-ui';   // #564: floating, so same escape as the log menu
-    // "Move release credits to tracks" is rarely switched, so it waits in the popover too (maintainer)
-    const credHd = document.createElement('div');
-    credHd.className = 'discogs-opts-panel-hd';
-    credHd.textContent = 'Credits';
-    optsPanel.append(credHd, applyTracksCb.closest('label'));
-    optsWrap.appendChild(optsBtn);
-    document.body.appendChild(optsPanel);   // floating; positioned when opened
-    optsBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const open = optsPanel.classList.toggle('open');
-        if (!open) return;
-        const r = optsBtn.getBoundingClientRect();
-        optsPanel.style.left = Math.max(8, Math.min(r.left, window.innerWidth - optsPanel.offsetWidth - 8)) + 'px';
-        optsPanel.style.top = (r.bottom + 4) + 'px';
-        const off = ev => { if (!optsPanel.contains(ev.target) && ev.target !== optsBtn && !optsBtn.contains(ev.target)) { optsPanel.classList.remove('open'); document.removeEventListener('mousedown', off); } };
-        setTimeout(() => document.addEventListener('mousedown', off), 0);
-    });
-
     const saveOpts = () => {
         try { gmSave(OPTS_KEY, JSON.stringify({
-            tracklist: tracklistCb.checked, applyTracks: applyTracksCb.checked,
+            tracklist: tracklistCb.checked,
             useWorks: useWorksCb.checked,   // #424 master toggle
             createWorksMode: createWorksMode.value,
             createWorksReset421: true,   // #421 one-time reset already applied — must survive every save
         })); } catch(e) {}
     };
-    [tracklistCb, applyTracksCb, useWorksCb].forEach(cb =>
+    [tracklistCb, useWorksCb].forEach(cb =>
         cb.closest('label').addEventListener('click', () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener('change', saveOpts);
 
@@ -3478,7 +3443,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         // values were captured at click time and frozen.
         const getOpts = () => ({
             processTracklist:        tracklistCb.checked,
-            applyToTracks:           applyTracksCb.checked,
+            applyToTracks:           false,
             // #424: "Use works" off → dispatch sees mode 'off' and touches no work rels
             createWorksMode:         useWorksCb.checked ? createWorksMode.value : 'off',
         });
