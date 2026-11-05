@@ -54,19 +54,47 @@ function stNewsSave(v) { try { GM_setValue(ST_NEWS_KEY, v); } catch (e) { /* no 
 function stNewsUnread(v) {
   return v.items.filter(function (i) { return v.seen.indexOf(i.id) < 0 && Date.parse(i.at) >= v.since; });
 }
+// GitHub's anonymous API allows 60 requests an hour per IP, shared with everything on the machine.
+// Each answer is kept with its ETag and asked for again conditionally: a 304 costs nothing.
+var ST_NEWS_ETAG = 'stNewsEtag', stNewsWhy = '';
+function stNewsHead(head, name) { var m = new RegExp('^' + name + ':\\s*(.+)$', 'im').exec(head || ''); return m ? m[1].trim() : ''; }
+// why a request failed, in words: a spent rate limit says when it resets
+function stNewsFail(status, head) {
+  var reset = +stNewsHead(head, 'x-ratelimit-reset');
+  if ((status === 403 || status === 429) && (stNewsHead(head, 'x-ratelimit-remaining') === '0' || reset)) {
+    return reset ? 'GitHub limit reached, try after ' + new Date(reset * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'GitHub limit reached';
+  }
+  return status ? 'GitHub answered ' + status : 'GitHub is unreachable';
+}
 function stNewsGet(url, accept, cb) {
   var h = { Accept: accept };
+  var fail = function (status, head) { stNewsWhy = stNewsFail(status, head); try { console.debug('[String Theory] news: ' + url + ': ' + stNewsWhy); } catch (x) {} cb(null, ''); };
   try {
     if (typeof GM_xmlhttpRequest === 'function') {
+      var tags = {}; try { tags = GM_getValue(ST_NEWS_ETAG, {}) || {}; } catch (e) { /* no storage */ }
+      var old = tags[url];
+      if (old && old.e) h['If-None-Match'] = old.e;
       GM_xmlhttpRequest({ method: 'GET', url: url, headers: h, timeout: 20000,
-        onload: function (r) { cb(r.status >= 200 && r.status < 300 ? r.responseText : null, r.responseHeaders || ''); },
-        onerror: function () { cb(null, ''); }, ontimeout: function () { cb(null, ''); } });
+        onload: function (r) {
+          var head = r.responseHeaders || '';
+          if (r.status === 304 && old) return cb(old.t, old.h);
+          if (r.status < 200 || r.status >= 300) return fail(r.status, head);
+          var e = stNewsHead(head, 'etag');
+          if (e) {
+            delete tags[url]; tags[url] = { e: e, t: r.responseText, h: head };
+            var keys = Object.keys(tags); while (keys.length > 16) delete tags[keys.shift()];
+            try { GM_setValue(ST_NEWS_ETAG, tags); } catch (x) { /* no storage */ }
+          }
+          cb(r.responseText, head);
+        },
+        onerror: function () { fail(0, ''); }, ontimeout: function () { fail(0, ''); } });
     } else {
       fetch(url, { headers: h }).then(function (r) {
-        return r.ok ? r.text().then(function (t) { cb(t, 'link: ' + (r.headers.get('link') || '')); }) : cb(null, '');
-      }).catch(function () { cb(null, ''); });
+        if (r.ok) return r.text().then(function (t) { cb(t, 'link: ' + (r.headers.get('link') || '')); });
+        fail(r.status, 'x-ratelimit-remaining: ' + (r.headers.get('x-ratelimit-remaining') || '') + '\nx-ratelimit-reset: ' + (r.headers.get('x-ratelimit-reset') || ''));
+      }).catch(function () { fail(0, ''); });
     }
-  } catch (e) { cb(null, ''); }
+  } catch (e) { fail(0, ''); }
 }
 // the script a post is about, from its `area | <script>` label
 function stNewsScript(labels) {
@@ -97,15 +125,19 @@ function stNewsPick(pages, max) {
 // an issue with the `released` label is on stable, any other on latest
 function stNewsChannels(items, old, cb) {
   var known = {}, left = 0;
-  old.forEach(function (i) { if (i.channel === 'stable') known[i.issue] = 'stable'; });
+  // stable never goes back; latest is asked again after six hours
+  old.forEach(function (i) {
+    if (i.channel === 'stable' || (i.channel === 'latest' && Date.now() - (i.chAt || 0) < 6 * 36e5)) known[i.issue] = { c: i.channel, at: i.chAt };
+  });
   var finish = function () { if (!left) cb(items); };
   items.forEach(function (i) {
     if (!i.issue) return;
-    if (known[i.issue]) { i.channel = known[i.issue]; return; }
+    if (known[i.issue]) { i.channel = known[i.issue].c; i.chAt = known[i.issue].at; return; }
     left++;
     stNewsGet('https://api.github.com/repos/' + ST_REPO + '/issues/' + i.issue, 'application/vnd.github+json', function (t) {
       try {
         i.channel = JSON.parse(t).labels.some(function (l) { return l.name === 'released'; }) ? 'stable' : 'latest';
+        i.chAt = Date.now();
       } catch (e) { i.channel = ''; }
       left--; finish();
     });
@@ -118,7 +150,7 @@ function stNewsCheck(force, cb) {
   var base = ST_NEWS_API, full = ST_NEWS_FULL;
   v.at = Date.now(); stNewsSave(v);   // another tab need not check too; a failure waits for tomorrow
   stNewsGet(base + '&page=1', full, function (first, head) {
-    if (!first) { if (cb) cb(false); return; }
+    if (!first) { if (cb) cb(false, stNewsWhy); return; }
     var last = /[?&]page=(\d+)>;\s*rel="last"/.exec(head), n = last ? +last[1] : 1;
     var done = function (pages) {
       var items = stNewsPick(pages);
@@ -310,9 +342,9 @@ function stNewsOpen() {
   var refresh = function () {
     if (checking) return;
     checking = true; state.textContent = 'checking…';
-    stNewsCheck(true, function (ok) {
+    stNewsCheck(true, function (ok, why) {
       checking = false;
-      state.textContent = ok ? 'checked today' : 'check failed';
+      state.textContent = ok ? 'checked today' : 'check failed' + (why ? ': ' + why : '');
       if (!ok || !ov.isConnected) return;
       var id = items[at] && items[at].id;
       v = stNewsRead();
