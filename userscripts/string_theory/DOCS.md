@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-05 21:33 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-05 21:50 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1620,6 +1620,8 @@ Recordings come into the pool as follows:
 | Artist, any tab     | the artist's entire catalogue, not just the visible page (up to 2000)  |
 
 **+** in the pool's header opens a field across it: paste a recording, release or release-group MBID or URL there to add it.
+
+With the [String Theory](../string_theory/README.md#command-palette) bundle, **Ctrl+K** lists Fusion's commands too: open each type's window, add what this page offers, and the open window's buttons (Match, Group all, Merge all, Clear everything and the rest).
 
 ### Match
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.203337
+// @version      2026.11.05.205018
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -6452,6 +6452,37 @@ function openEntities(type) {
     });
     emRender();
 }
+// String Theory's command palette (Ctrl+K) lists these, asked again each time it opens: every board,
+// what this page can add, and the open window's buttons, each run as a click on that button would
+function fsPaletteCommands() {
+    const out = [], sc = detectScope();
+    for (const [k, l] of EM_ALL) {
+        if (k === 'recording' && !sc) continue;   // the recording board belongs to a release, release group, recording or artist page
+        const n = poolCount(k);
+        out.push({ id: 'open:' + k, label: 'Open ' + l.toLowerCase(), hint: n ? n + ' to merge' : '', run: () => openPool(k) });
+    }
+    const { o, gid } = addMenuOptions();
+    if (o.length) {
+        out.push({ id: 'addmenu', label: 'Add from this page…', run: () => openAddMenu(document.getElementById('fs-launch')) });
+        for (const [k, l] of o) out.push({ id: 'add:' + k, label: 'Add ' + l.charAt(0).toLowerCase() + l.slice(1), hint: poolCount(k) ? poolCount(k) + ' in pool' : '', run: () => addFromPage([k], gid) });
+    }
+    const cons = [...document.querySelectorAll('#fs-cons, #fs-em-cons')].find(c => c.isConnected);
+    if (cons) {
+        const btn = (id, label, sel) => { const b = cons.querySelector(sel); if (b && !b.disabled && b.offsetParent) out.push({ id: 'win:' + id, label, run: () => b.click() }); };
+        btn('match', 'Match', '#fs-automatch');
+        btn('groupall', 'Group all', '.fs-grpall');
+        btn('mergeall', 'Merge all', '#fs-mergeall, #fs-em-mergeall');
+        btn('collapse', (cons.querySelector('#fs-collapseall')?.textContent || '').includes('Expand') ? 'Expand all groups' : 'Collapse all groups', '#fs-collapseall');
+        btn('details', 'All details', '#fs-expandall-deep');
+        btn('pool', 'Fold the pool', '.fs-pooltog');
+        btn('rail', 'Show the pool', '.fs-poolrail');
+        btn('clearall', 'Clear everything', '[data-act="clearall"]');
+        btn('max', cons.classList.contains('fs-maximized') ? 'Restore the window' : 'Maximize the window', '#fs-max, #fs-em-max');
+        btn('close', 'Close the window', '#fs-close, #fs-em-close');
+    }
+    return out;
+}
+try { (window.__mbuPalette = window.__mbuPalette || {}).Fusion = fsPaletteCommands; } catch (e) { /* no palette */ }
 function boot() {
     Log.info('Fusion v' + VERSION + ' — startup on ' + location.pathname);
     ensureLauncher();

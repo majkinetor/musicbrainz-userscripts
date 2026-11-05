@@ -62,6 +62,8 @@ Recordings come into the pool as follows:
 
 **+** in the pool's header opens a field across it: paste a recording, release or release-group MBID or URL there to add it.
 
+With the [String Theory](../string_theory/README.md#command-palette) bundle, **Ctrl+K** lists Fusion's commands too: open each type's window, add what this page offers, and the open window's buttons (Match, Group all, Merge all, Clear everything and the rest).
+
 ## Match
 
 Match groups the recordings still in the pool, so a group you built by hand is never undone. The **Cutoff** sets how much evidence it needs:

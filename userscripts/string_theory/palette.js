@@ -115,6 +115,17 @@ function stPalCommands() {
     add({ id: 'open:' + n, cat: 'Open', label: n, run: function () { el.click(); } });
   });
 
+  // each member's own commands: window.__mbuPalette = { <script name>: function () { return [{ id, label, cat?, hint?, recentless?, run }] } },
+  // asked again every time the palette opens, so a script lists what its page and windows offer now
+  var reg = {}; try { reg = window.__mbuPalette || {}; } catch (e) { /* none */ }
+  Object.keys(reg).forEach(function (name) {
+    var list = []; try { list = reg[name]() || []; } catch (e) { try { console.error('[String Theory] ' + name + "'s commands failed:", e); } catch (x) { /* no console */ } }
+    list.forEach(function (c) {
+      if (!c || !c.id || !c.label || typeof c.run !== 'function') return;
+      add({ id: 'x:' + name + ':' + c.id, cat: c.cat || name, label: c.label, hint: c.hint || '', recentless: !!c.recentless, run: c.run });
+    });
+  });
+
   if (ST_ON_MB) {
     // Go to: what the page shows, then MusicBrainz's own pages
     var m = new RegExp('^/(' + ST_ENTITIES + ')/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})').exec(stPagePath());
