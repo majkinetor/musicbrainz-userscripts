@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.191635
+// @version      2026.11.05.191947
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7799,12 +7799,13 @@ function hexPattern(layer, mode) {
     // the layer's own size, not the window's: the window counts the scrollbar, and a canvas stretched to fit would drift off the outlines
     const w = layer.clientWidth || innerWidth + 96, h = layer.clientHeight || innerHeight + 96, cs = getComputedStyle(layer);
     const c1 = cs.color, c2 = cs.getPropertyValue('--accent2').trim() || c1;
-    const pace = Number(S.hexPace) || 1, trail = Number(S.hexTrail) || 1, often = Number(S.hexOften) || 1, glow = Number(S.hexGlow ?? 1), two = S.hexTwo === 2 ? 2 : !!S.hexTwo;
-    const key = [mode, w, h, c1, c2, pace, trail, often, glow, two].join('|');
-    if (layer._ehPattern?.key === key) return;
+    const P = { pace: Number(S.hexPace) || 1, trail: Number(S.hexTrail) || 1, often: Number(S.hexOften) || 1, glow: Number(S.hexGlow ?? 1), two: S.hexTwo === 2 ? 2 : !!S.hexTwo, c1, c2 };
+    const key = [mode, w, h].join('|');
+    // the same motion keeps running and takes the new settings from its next frame
+    if (layer._ehPattern?.key === key) { Object.assign(layer._ehPattern.P, P); return; }
     layer._ehPattern?.stop();
     const L = hexLattice(w, h), rnd = (a, b) => a + Math.random() * (b - a), pick = a => a[Math.random() * a.length | 0];
-    const tone = () => two === 2 ? `hsl(${Math.random() * 360 | 0},${70 + Math.random() * 25 | 0}%,${58 + Math.random() * 14 | 0}%)` : two && Math.random() < .5 ? c2 : c1;
+    const tone = () => P.two === 2 ? `hsl(${Math.random() * 360 | 0},${70 + Math.random() * 25 | 0}%,${58 + Math.random() * 14 | 0}%)` : P.two && Math.random() < .5 ? P.c2 : P.c1;
     const rect = layer.querySelector('.hex-drift');
     let cv, ctx;
     if (mode !== 'ripple' && mode !== 'lantern') {
@@ -7815,7 +7816,7 @@ function hexPattern(layer, mode) {
     const setMask = m => { rect.style.webkitMask = m; rect.style.mask = m; };
     // the viewport's point on the layer, which sits 48px out and may be scrolled for Depth
     const toLayer = (x, y) => { const r = layer.getBoundingClientRect(); return [x - r.left, y - r.top]; };
-    const fx = HEX_FX[mode]({ L, w, h, ctx, rnd, pick, tone, setMask, toLayer, pace, trail, often, glow, c1 });
+    const fx = HEX_FX[mode]({ L, w, h, ctx, rnd, pick, tone, setMask, toLayer, P, c1 });
     let raf = 0, last = performance.now(), t = 0;
     const frame = now => {
         if (!layer.isConnected) { stop(); return; }
@@ -7828,7 +7829,7 @@ function hexPattern(layer, mode) {
         cancelAnimationFrame(raf); document.removeEventListener('visibilitychange', vis); fx.off?.();
         cv?.remove(); setMask(''); delete layer._ehPattern;
     }
-    layer._ehPattern = { key, stop, draw() {}, shift: d => fx.shift(d) };
+    layer._ehPattern = { key, P, stop, draw() {}, shift: d => fx.shift(d) };
     document.addEventListener('visibilitychange', vis); vis();
 }
 
@@ -7844,16 +7845,16 @@ function hexWalk(L, i, n) {
 }
 const HEX_FX = {
     // single hexagons light up and fade
-    twinkle({ L, w, h, ctx, rnd, tone, pace, trail, often, glow }) {
+    twinkle({ L, w, h, ctx, rnd, tone, P }) {
         let on = [], due = 0;
-        const rate = 7 * often * (w * h) / 1e6;
+        const rate = () => 7 * P.often * (w * h) / 1e6;
         return {
             tick(dt) {
                 due -= dt;
                 while (due <= 0) {
-                    due += rnd(.3, 1.7) / rate;
+                    due += rnd(.3, 1.7) / rate();
                     const odd = Math.random() < .5, i = Math.floor(rnd(0, w / 28 + 1)), j = Math.floor(rnd(-1, h / 48 + 1));
-                    on.push({ x: odd ? 28 * i : 14 + 28 * i, y: odd ? 40 + 48 * j : 16 + 48 * j, age: 0, life: rnd(1.8, 3.2) * trail / pace, c: tone() });
+                    on.push({ x: odd ? 28 * i : 14 + 28 * i, y: odd ? 40 + 48 * j : 16 + 48 * j, age: 0, life: rnd(1.8, 3.2) * P.trail / P.pace, c: tone() });
                 }
                 ctx.clearRect(0, 0, w, h);
                 on = on.filter(p => (p.age += dt) < p.life);
@@ -7863,8 +7864,8 @@ const HEX_FX = {
                     ctx.shadowColor = p.c; ctx.shadowBlur = 0;
                     ctx.globalAlpha = a * .22; ctx.fillStyle = p.c; ctx.fill();
                     // a soft halo around the cell, as wide as the Glow setting says
-                    if (glow) { ctx.shadowBlur = 18 * glow; ctx.globalAlpha = a * .12 * Math.min(1.5, glow); ctx.lineWidth = 6 * glow; ctx.strokeStyle = p.c; ctx.stroke(); }
-                    ctx.shadowBlur = 10 * glow; ctx.globalAlpha = a; ctx.strokeStyle = p.c; ctx.lineWidth = 1; ctx.stroke();
+                    if (P.glow) { ctx.shadowBlur = 18 * P.glow; ctx.globalAlpha = a * .12 * Math.min(1.5, P.glow); ctx.lineWidth = 6 * P.glow; ctx.strokeStyle = p.c; ctx.stroke(); }
+                    ctx.shadowBlur = 10 * P.glow; ctx.globalAlpha = a; ctx.strokeStyle = p.c; ctx.lineWidth = 1; ctx.stroke();
                 }
                 ctx.globalAlpha = 1; ctx.shadowBlur = 0;
             },
@@ -7872,13 +7873,13 @@ const HEX_FX = {
         };
     },
     // rings of glow spread from random points
-    ripple({ w, h, rnd, setMask, pace, often }) {
+    ripple({ w, h, rnd, setMask, P }) {
         let rings = [], due = .4, at = 0;
         return {
             tick(dt, t) {
                 due -= dt;
-                if (due <= 0) { due = rnd(2.5, 6) / often; rings.push({ x: rnd(0, w), y: rnd(0, h), r: 0, max: rnd(380, 720) }); }
-                for (const g of rings) g.r += dt * 85 * pace;
+                if (due <= 0) { due = rnd(2.5, 6) / P.often; rings.push({ x: rnd(0, w), y: rnd(0, h), r: 0, max: rnd(380, 720) }); }
+                for (const g of rings) g.r += dt * 85 * P.pace;
                 rings = rings.filter(g => g.r < g.max);
                 if (t - at < .033) return; at = t;
                 setMask(rings.length ? rings.map(g => {
@@ -7906,19 +7907,19 @@ const HEX_FX = {
         };
     },
     // the lattice bends around a point that wanders slowly over the page
-    horizon({ L, w, h, ctx, toLayer, pace, c1 }) {
+    horizon({ L, w, h, ctx, toLayer, c1, P }) {
         const n = L.xs.length, X = new Float32Array(n), Y = new Float32Array(n), R = Math.min(innerWidth, innerHeight) * .32;
-        let at = -1;
+        let at = -1, s = 0, was = 0;
         return {
             tick(dt, t) {
+                s += (t - was) * P.pace; was = t;
                 if (t - at < .041) return; at = t;
-                const s = t * pace;
                 const [cx, cy] = toLayer(innerWidth * (.5 + .32 * Math.cos(s * .05)), innerHeight * (.5 + .26 * Math.sin(s * .037)));
                 for (let i = 0; i < n; i++) {
                     const dx = L.xs[i] - cx, dy = L.ys[i] - cy, d2 = dx * dx + dy * dy, f = 22 * R * R / (d2 + R * R) / Math.sqrt(d2 + 1);
                     X[i] = L.xs[i] - dx * f; Y[i] = L.ys[i] - dy * f;
                 }
-                ctx.clearRect(0, 0, w, h); ctx.strokeStyle = c1; ctx.lineWidth = 1; ctx.beginPath();
+                ctx.clearRect(0, 0, w, h); ctx.strokeStyle = P.c1; ctx.lineWidth = 1; ctx.beginPath();
                 for (let k = 0; k < L.edges.length; k += 2) { const a = L.edges[k], b = L.edges[k + 1]; ctx.moveTo(X[a], Y[a]); ctx.lineTo(X[b], Y[b]); }
                 ctx.stroke();
             },
@@ -7927,7 +7928,7 @@ const HEX_FX = {
     },
     // sparks of different voltages run along 20 to 50 sides, flicker, fork and fade, over slow dim currents that glow in and out;
     // each is white-hot at its core and cools into its colour along its length, with brighter knots, like a real arc
-    electricity({ L, w, h, ctx, rnd, pick, tone, pace, trail, often, glow }) {
+    electricity({ L, w, h, ctx, rnd, pick, tone, P }) {
         let bolts = [], due = .3, slow = [], slowDue = 1;
         const corners = () => { const i = Math.random() * L.xs.length | 0; return L.xs[i] > 0 && L.xs[i] < w && L.ys[i] > 0 && L.ys[i] < h ? i : corners(); };
         // any CSS colour as [r, g, b], through the canvas's own parser
@@ -7948,22 +7949,22 @@ const HEX_FX = {
             const paths = [main];
             for (let k = 0; k < (v > .6 ? 3 : 1); k++) if (Math.random() < .7) paths.push(hexWalk(L, pick(main), Math.round(rnd(4, 12))));
             const c = tone();
-            return { pts: paths.map(p => knots(p.map(i => [L.xs[i], L.ys[i]]))), v, c, rgb: rgbOf(c), age: 0, grow: .18 / pace, life: rnd(.5, .9) * trail + .18 / pace };
+            return { pts: paths.map(p => knots(p.map(i => [L.xs[i], L.ys[i]]))), v, c, rgb: rgbOf(c), age: 0, grow: .18 / P.pace, life: rnd(.5, .9) * P.trail + .18 / P.pace };
         };
         const line = (p, m) => { ctx.beginPath(); p.slice(0, m).forEach(([x, y], k) => ctx[k ? 'lineTo' : 'moveTo'](x, y)); ctx.stroke(); };
         return {
             tick(dt) {
                 due -= dt;
-                if (due <= 0) { const n = Math.random() < .35 ? 2 + (Math.random() < .3) : 1; for (let k = 0; k < n; k++) bolts.push(bolt()); due = rnd(.6, 3.2) / often; }
+                if (due <= 0) { const n = Math.random() < .35 ? 2 + (Math.random() < .3) : 1; for (let k = 0; k < n; k++) bolts.push(bolt()); due = rnd(.6, 3.2) / P.often; }
                 ctx.clearRect(0, 0, w, h);
                 // slow currents: long dim lines that fade in and out over several seconds, under the sparks
                 slowDue -= dt;
-                if (slowDue <= 0 && slow.length < 3) { const c = tone(); slow.push({ pts: knots(hexWalk(L, corners(), Math.round(rnd(30, 70))).map(i => [L.xs[i], L.ys[i]])), c, rgb: rgbOf(c), v: pick([.3, .55, .8, 1.15]), age: 0, life: rnd(6, 11) / pace }); slowDue = rnd(2.5, 6) / often; }
+                if (slowDue <= 0 && slow.length < 3) { const c = tone(); slow.push({ pts: knots(hexWalk(L, corners(), Math.round(rnd(30, 70))).map(i => [L.xs[i], L.ys[i]])), c, rgb: rgbOf(c), v: pick([.3, .55, .8, 1.15]), age: 0, life: rnd(6, 11) / P.pace }); slowDue = rnd(2.5, 6) / P.often; }
                 slow = slow.filter(s => (s.age += dt) < s.life);
                 for (const s of slow) {
                     const a = s.v * Math.sin(Math.PI * s.age / s.life) ** 2 * (.85 + .15 * Math.sin(s.age * 3.1)) * (Math.random() < .07 ? rnd(.15, .6) : 1);
-                    ctx.shadowBlur = (10 + 18 * s.v) * glow; ctx.shadowColor = s.c;
-                    for (const [lw, al, core] of [[10 * glow, .05 * glow], [4, .1], [1, .45, 1]]) {
+                    ctx.shadowBlur = (10 + 18 * s.v) * P.glow; ctx.shadowColor = s.c;
+                    for (const [lw, al, core] of [[10 * P.glow, .05 * P.glow], [4, .1], [1, .45, 1]]) {
                         ctx.lineWidth = lw; ctx.globalAlpha = a * al; ctx.strokeStyle = core ? grad(s.pts, s.rgb, .55, .25) : s.c;
                         line(s.pts, s.pts.length);
                     }
@@ -7973,8 +7974,8 @@ const HEX_FX = {
                     const grown = Math.min(1, b.age / b.grow), fade = b.age < b.grow ? 1 : 1 - (b.age - b.grow) / (b.life - b.grow);
                     // it flickers hard while it strikes, then now and then as it fades
                     const a = b.v * fade * fade * (Math.random() < (b.age < b.grow * 1.5 ? .25 : .12) ? rnd(.3, .65) : 1);
-                    ctx.shadowColor = b.c; ctx.shadowBlur = (12 + 20 * b.v) * glow;
-                    for (const [lw, al, core] of [[9 * glow, .07 * glow], [3.5, .22], [1.2, 1, 1]]) {
+                    ctx.shadowColor = b.c; ctx.shadowBlur = (12 + 20 * b.v) * P.glow;
+                    for (const [lw, al, core] of [[9 * P.glow, .07 * P.glow], [3.5, .22], [1.2, 1, 1]]) {
                         ctx.lineWidth = lw * (.6 + b.v * .5); ctx.globalAlpha = a * al;
                         // the core is hotter the higher the voltage, and the forks run cooler than the main arc
                         b.pts.forEach((p, k) => { ctx.strokeStyle = core ? grad(p, b.rgb, Math.min(1, .55 + .35 * b.v) * (k ? .7 : 1), .35) : b.c; line(p, Math.max(2, Math.ceil(p.length * grown))); });
@@ -7986,21 +7987,20 @@ const HEX_FX = {
         };
     },
     // a signal starts at one corner and spreads, branching, along the sides; what it passed glows and fades
-    neural({ L, w, h, ctx, rnd, tone, pace, trail, often, glow }) {
+    neural({ L, w, h, ctx, rnd, tone, P }) {
         let lit = [], front = [], due = 0;
         const fire = () => {
             let i; do i = Math.random() * L.xs.length | 0; while (!(L.xs[i] > 0 && L.xs[i] < w && L.ys[i] > 0 && L.ys[i] < h));
             const c = tone(), seen = new Set([i]);
             front.push(...[0, 1].map(() => ({ i, prev: -1, j: -1, p: 1, left: Math.round(rnd(26, 46)), c, seen })));
         };
-        const speed = 70 * pace, fade = 1.6 * trail;
         return {
             tick(dt) {
                 due -= dt;
-                if (due <= 0) { fire(); due = rnd(2.5, 5.5) / often; }
+                if (due <= 0) { fire(); due = rnd(2.5, 5.5) / P.often; }
                 const next = [];
                 for (const f of front) {
-                    if (f.j >= 0) f.p += dt * speed / 16;
+                    if (f.j >= 0) f.p += dt * 70 * P.pace / 16;
                     if (f.p < 1) { next.push(f); continue; }
                     if (f.j >= 0) { lit.push({ a: [L.xs[f.i], L.ys[f.i]], b: [L.xs[f.j], L.ys[f.j]], age: 0, c: f.c }); f.prev = f.i; f.i = f.j; }
                     if (--f.left < 0) continue;
@@ -8011,12 +8011,13 @@ const HEX_FX = {
                 }
                 front = next.slice(0, 400);
                 ctx.clearRect(0, 0, w, h); ctx.lineWidth = 1.2;
+                const fade = 1.6 * P.trail;
                 lit = lit.filter(e => (e.age += dt) < fade);
-                const seg = (a, b, al, c) => { ctx.strokeStyle = ctx.shadowColor = c; for (const [lw, k] of glow ? [[6 * glow, .1 * Math.min(1.5, glow)], [1.2, 1]] : [[1.2, 1]]) { ctx.lineWidth = lw; ctx.globalAlpha = al * k; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke(); } };
-                ctx.shadowBlur = 8 * glow;
+                const seg = (a, b, al, c) => { ctx.strokeStyle = ctx.shadowColor = c; for (const [lw, k] of P.glow ? [[6 * P.glow, .1 * Math.min(1.5, P.glow)], [1.2, 1]] : [[1.2, 1]]) { ctx.lineWidth = lw; ctx.globalAlpha = al * k; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke(); } };
+                ctx.shadowBlur = 8 * P.glow;
                 for (const e of lit) seg(e.a, e.b, (1 - e.age / fade) ** 1.5, e.c);
                 // the signal's head burns brighter than its trail
-                ctx.shadowBlur = 16 * glow;
+                ctx.shadowBlur = 16 * P.glow;
                 for (const f of front) if (f.j >= 0) {
                     const x = L.xs[f.i] + (L.xs[f.j] - L.xs[f.i]) * f.p, y = L.ys[f.i] + (L.ys[f.j] - L.ys[f.i]) * f.p;
                     seg([L.xs[f.i], L.ys[f.i]], [x, y], 1, f.c);
