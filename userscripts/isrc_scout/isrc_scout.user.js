@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.04.234842
+// @version      2026.11.05.062353
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -2881,6 +2881,8 @@
     /* under the dock (2147482989-91), so the dock shows over the bar */
     html[data-mbu-dock] #ii-btn[data-ii-pinned] { position: fixed; z-index: 2147482985; margin: 0; cursor: grab; font-size: 14px; }
     html[data-mbu-dock] #ii-btn[data-ii-pinned].ii-dragging { cursor: grabbing; }
+    html[data-mbu-dock] #ii-btn[data-ii-pinned][data-ii-locked] { cursor: pointer; }
+    #ii-hud-menu label:has(input:disabled) { opacity: .5; cursor: default; }
     /* the pinned HUD's corner grip resizes it */
     html[data-mbu-dock] #ii-btn[data-ii-pinned] svg { width: 1em; height: 1em; flex: none; }
     html[data-mbu-dock] #ii-btn[data-ii-pinned] .ii-status { font-size: .9em !important; }
@@ -9397,6 +9399,9 @@
   // HUD options in Event Horizon, on a right-click: transparent (a quiet tinted chip) and pinned (fixed, dragged anywhere)
   const hudQuiet = () => store.get('hudTransparent', true) !== false;
   const hudPinned = () => !!store.get('hudPinned', false);
+  const hudLocked = () => !!store.get('hudLocked', false);
+  // the HUD moves and resizes only pinned, unlocked and inside Event Horizon
+  const hudMovable = () => btn.hasAttribute('data-ii-pinned') && !btn.hasAttribute('data-ii-locked') && document.documentElement.hasAttribute('data-mbu-dock');
   let hudDragged = false;
   // a resized pinned HUD: width and height apart, the content scales with the height
   function hudBox(b) {
@@ -9411,6 +9416,8 @@
     btn.toggleAttribute('data-ii-quiet', eh && hudQuiet());
     const pin = eh && hudPinned();
     btn.toggleAttribute('data-ii-pinned', pin);
+    btn.toggleAttribute('data-ii-locked', pin && hudLocked());
+    btn.style.cursor = '';
     if (pin) {
       const p = store.get('hudPos', null) || { x: innerWidth - 260, y: 80 };
       btn.style.left = Math.max(0, Math.min(innerWidth - 40, p.x)) + 'px';
@@ -9424,15 +9431,17 @@
     document.getElementById('ii-hud-menu')?.remove();
     const m = document.createElement('div');
     m.id = 'ii-hud-menu';
-    m.innerHTML = '<label><input type="checkbox" data-k="hudTransparent"> Transparent</label><label><input type="checkbox" data-k="hudPinned"> Pin</label>';
+    m.innerHTML = '<label><input type="checkbox" data-k="hudTransparent"> Transparent</label><label><input type="checkbox" data-k="hudPinned"> Pin</label><label><input type="checkbox" data-k="hudLocked"> Lock</label>';
     m.querySelector('[data-k=hudTransparent]').checked = hudQuiet();
     m.querySelector('[data-k=hudPinned]').checked = hudPinned();
+    const lk = m.querySelector('[data-k=hudLocked]'); lk.checked = hudLocked(); lk.disabled = !hudPinned();
     m.addEventListener('change', ev => {
       const k = ev.target.dataset.k;
       if (k === 'hudPinned' && ev.target.checked && !store.get('hudPos', null)) {
         const r = btn.getBoundingClientRect(); store.set('hudPos', { x: Math.round(r.left), y: Math.round(r.top) });
       }
       store.set(k, ev.target.checked);
+      lk.disabled = !hudPinned();
       hudApply(); btn.remove(); injectButton();
     });
     document.body.appendChild(m);
@@ -9449,11 +9458,12 @@
   };
   const edgeCursor = g => (g.t || g.b) && (g.l || g.r) ? ((g.t && g.l) || (g.b && g.r) ? 'nwse-resize' : 'nesw-resize') : (g.l || g.r) ? 'ew-resize' : (g.t || g.b) ? 'ns-resize' : '';
   btn.addEventListener('pointermove', e => {
-    if (!btn.hasAttribute('data-ii-pinned') || btn.classList.contains('ii-dragging') || btn.classList.contains('ii-resizing')) return;
+    if (!hudMovable()) { if (btn.style.cursor) btn.style.cursor = ''; return; }
+    if (btn.classList.contains('ii-dragging') || btn.classList.contains('ii-resizing')) return;
     btn.style.cursor = edgeCursor(hudEdges(e));
   });
   btn.addEventListener('pointerdown', e => {
-    if (e.button !== 0 || !btn.hasAttribute('data-ii-pinned')) return;
+    if (e.button !== 0 || !hudMovable()) return;
     const r = btn.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top, x0 = e.clientX, y0 = e.clientY;
     const g = hudEdges(e), resize = g.l || g.r || g.t || g.b;
     let moved = false;
