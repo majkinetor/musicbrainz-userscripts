@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.120222
+// @version      2026.11.05.121413
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2577,19 +2577,18 @@ body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;poin
 #eh-hex{position:fixed;inset:-48px;z-index:-1;pointer-events:none;color:var(--accent);--eh-hex-k:.5}
 :root[data-eh-theme=dark] #eh-hex{--eh-hex-k:1}
 #eh-hex svg{display:block;width:100%;height:100%;overflow:visible}
-#eh-hex .hex-pattern{position:absolute;inset:0;width:100%;height:100%;opacity:calc(var(--eh-hex-opacity,.2) * var(--eh-hex-k) * .5)}
-:root[data-eh-hex=tension]:not([data-eh-hex-still]) #eh-hex svg{display:none}
-:root[data-eh-hex][data-eh-hex-still] #eh-hex .hex-drift{display:none}
-:root[data-eh-hex-still] #eh-hex{animation:none!important;transform:none}
-:root[data-eh-hex=tilt] #eh-hex{will-change:transform;transform-origin:center;animation:eh-hex-tilt 120s ease-in-out infinite}
-@keyframes eh-hex-tilt{0%,50%,100%{transform:rotate(0deg)}25%{transform:rotate(var(--eh-hex-angle,.35deg))}75%{transform:rotate(calc(-1 * var(--eh-hex-angle,.35deg)))}}
+#eh-hex .hex-pattern{position:absolute;inset:0;width:100%;height:100%;opacity:min(1,calc(var(--eh-hex-fx,.45) * var(--eh-hex-k) * var(--eh-hex-mf,1)))}
+:root[data-eh-hex=horizon] #eh-hex svg{display:none}
 #eh-hex .hex-base{opacity:calc(var(--eh-hex-opacity,.2) * var(--eh-hex-k) * .5)}
-#eh-hex .hex-drift{display:none;opacity:calc(var(--eh-hex-opacity,.2) * var(--eh-hex-k) * var(--eh-hex-intensity,1) * 2.25);-webkit-mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat;mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat}
-:root[data-eh-hex=drift] #eh-hex .hex-drift{display:block;animation:eh-hex-drift 46s linear infinite}
-:root[data-eh-hex=wide] #eh-hex .hex-drift{display:block;opacity:calc(var(--eh-hex-opacity,.2) * var(--eh-hex-k) * var(--eh-hex-intensity,1) * .9);-webkit-mask:radial-gradient(closest-side,#000,transparent) 0 0/min(900px,90vw) min(740px,80vh) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(800px,85vw) min(620px,70vh) no-repeat;mask:radial-gradient(closest-side,#000,transparent) 0 0/min(900px,90vw) min(740px,80vh) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(800px,85vw) min(620px,70vh) no-repeat;animation:eh-hex-wide 110s ease-in-out infinite}
-@keyframes eh-hex-wide{0%,100%{-webkit-mask-position:10% 35%,85% 75%;mask-position:10% 35%,85% 75%}25%{-webkit-mask-position:35% 60%,70% 15%;mask-position:35% 60%,70% 15%}50%{-webkit-mask-position:75% 35%,30% 65%;mask-position:75% 35%,30% 65%}75%{-webkit-mask-position:55% 70%,10% 30%;mask-position:55% 70%,10% 30%}}
+#eh-hex .hex-drift,#eh-hex .hex-drift2{display:none;opacity:min(1,calc(var(--eh-hex-fx,.45) * var(--eh-hex-k) * var(--eh-hex-mf,1)));-webkit-mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat;mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat}
+#eh-hex .hex-drift2{-webkit-mask:radial-gradient(closest-side,#000,transparent) 0 0/min(200px,34vw) min(200px,34vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(260px,44vw) min(260px,44vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(160px,28vw) min(160px,28vw) no-repeat;mask:radial-gradient(closest-side,#000,transparent) 0 0/min(200px,34vw) min(200px,34vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(260px,44vw) min(260px,44vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(160px,28vw) min(160px,28vw) no-repeat}
+:root:is([data-eh-hex=drift],[data-eh-hex=tide],[data-eh-hex=ripple],[data-eh-hex=lantern]) #eh-hex .hex-drift{display:block}
+:root[data-eh-hex=drift] #eh-hex .hex-drift{animation:eh-hex-drift calc(46s / var(--eh-hex-pace,1)) linear infinite}
+:root[data-eh-hex=drift][data-eh-hex-two] #eh-hex .hex-drift2{display:block;animation:eh-hex-drift calc(46s / var(--eh-hex-pace,1)) linear calc(-23s / var(--eh-hex-pace,1)) infinite}
+:root[data-eh-hex=tide] #eh-hex .hex-drift{-webkit-mask:linear-gradient(100deg,transparent 30%,#000 50%,transparent 70%) 0 0/300% 100% no-repeat;mask:linear-gradient(100deg,transparent 30%,#000 50%,transparent 70%) 0 0/300% 100% no-repeat;animation:eh-hex-tide calc(34s / var(--eh-hex-pace,1)) ease-in-out infinite alternate}
+@keyframes eh-hex-tide{0%{-webkit-mask-position:100% 0;mask-position:100% 0}100%{-webkit-mask-position:0 0;mask-position:0 0}}
 @keyframes eh-hex-drift{0%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}25%{-webkit-mask-position:35% 60%,70% 15%,10% 55%;mask-position:35% 60%,70% 15%,10% 55%}50%{-webkit-mask-position:75% 35%,30% 85%,60% 10%;mask-position:75% 35%,30% 85%,60% 10%}75%{-webkit-mask-position:55% 90%,10% 30%,95% 45%;mask-position:55% 90%,10% 30%,95% 45%}100%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}}
-@media (prefers-reduced-motion:reduce){#eh-hex,#eh-hex .hex-drift{animation:none!important}}
+@media (prefers-reduced-motion:reduce){#eh-hex .hex-drift,#eh-hex .hex-drift2,#eh-hex .hex-pattern{display:none!important}}
 :root[data-eh-hex] :is(.tl,.card,.u-bio,.u-facts,.u-vcol,.hm-pf,.hgrp,.eh-details){background:color-mix(in srgb,var(--surface) 62%,transparent)!important;backdrop-filter:blur(1px)}
 :root[data-eh-hex] .tl .disc{background:color-mix(in srgb,var(--chip) 55%,transparent)!important}
 :root[data-eh-hex] :is(.tl.striped .tr.alt,.tl .detail){background:color-mix(in srgb,var(--hover) 50%,transparent)!important}
@@ -3239,13 +3238,13 @@ document.addEventListener('load', e => { if (e.target instanceof HTMLImageElemen
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexTwo', 'hexDepth', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
     plOrder: [], // the settings' platform order, shown or not; prov follows it
     crTracks: true,
-    byName: false, plNames: false, plHover: false, plSize: 18, trackStripe: true, dis: 'brackets', width: 1600, bg: 'aura', hex: false, hexOpacity: 20, hexIntensity: 100, hexMotion: 'static',
+    byName: false, plNames: false, plHover: false, plSize: 18, trackStripe: true, dis: 'brackets', width: 1600, bg: 'aura', hex: false, hexOpacity: 20, hexIntensity: 100, hexMotion: 'static', hexFx: 45, hexPace: 1, hexTrail: 1, hexOften: 1, hexTwo: false, hexDepth: false,
     on: true, menuTitles: false,
     thumbs: true,
     factOff: { artist: [], label: [] }, // the artist's and label's header facts turned off
@@ -3282,10 +3281,10 @@ S.pending = false; // MusicBrainz's grey mark on what has edits open; takes one 
 // the page's width; --eh-wn is the same as a length (the screen's for Full), for the launchers' column
 const ehWidth = () => { const s = document.documentElement.style; s.setProperty('--eh-w', S.width ? S.width + 'px' : 'none'); s.setProperty('--eh-wn', S.width ? S.width + 'px' : '100vw'); };
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
-try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; } catch (e) {}
+try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; if (v.hexFx == null && v.hexOpacity != null) S.hexFx = Math.min(100, Math.round(S.hexOpacity * 2.25)); } catch (e) {}
 // Preserve an existing hex background as an independent overlay over Flat.
 if (S.bg === 'hex') { S.bg = 'flat'; S.hex = true; S.hexMotion = 'drift'; }
-if (!['static', 'drift', 'wide', 'tension', 'tilt'].includes(S.hexMotion)) S.hexMotion = 'drift';
+if (!['static', 'drift', 'tide', 'twinkle', 'ripple', 'lantern', 'horizon', 'electricity', 'neural'].includes(S.hexMotion)) S.hexMotion = 'drift';
 if (!S.starView) S.starView = S.starGroup === 'none' ? 'row' : 'group';
 const menuTitlesApply = () => document.documentElement.style.setProperty('--eh-menu-titles', S.menuTitles ? 'inline' : 'none');
 menuTitlesApply();
@@ -7722,83 +7721,277 @@ function artHtml(r) {
 }
 
 /* ── page ──────────────────────────────────────────── */
-// Hexagon background: glow, line-weight and geometry modes.
-// the animations run at their designed strength; the Animation intensity setting is gone
-function hexStrength() { return 1; }
+// Hexagon background: still outlines, and the motion the settings choose over them.
+// the effects' strength next to Drift's, so one Effect opacity reads the same in each
+const HEX_MF = { drift: 1, tide: .8, twinkle: 1.16, ripple: 1.24, lantern: 1.16, horizon: .71, neural: 1.78, electricity: 2.22 };
+const HEX_JS = ['twinkle', 'ripple', 'lantern', 'horizon', 'electricity', 'neural'];
+const HEXV = [[0, -16], [14, -8], [14, 8], [0, 16], [-14, 8], [-14, -8]];
+const hexReduce = matchMedia('(prefers-reduced-motion:reduce)');
+hexReduce.addEventListener?.('change', () => hexApply());
+// what moves: nothing under reduced motion
+const hexMode = () => hexReduce.matches ? 'static' : S.hexMotion || 'static';
 function hexApply() {
     const de = document.documentElement;
     let layer = document.getElementById('eh-hex');
     de.toggleAttribute('data-eh-hex', !!S.hex && ehOn);
-    if (!S.hex || !ehOn) { layer?._ehPattern?.stop(); layer?.remove(); return; }
-    de.setAttribute('data-eh-hex', S.hexMotion || 'static');
-    const strength = hexStrength();
-    de.toggleAttribute('data-eh-hex-still', strength === 0);
-    de.style.setProperty('--eh-hex-intensity', strength);
-    de.style.setProperty('--eh-hex-angle', (.35 * strength) + 'deg');
-    de.style.setProperty('--eh-hex-opacity', Math.max(0, Math.min(100, Number(S.hexOpacity) || 0)) / 100);
+    if (!S.hex || !ehOn) { layer?._ehPattern?.stop(); layer?._ehDepthOff?.(); layer?.remove(); return; }
+    const mode = hexMode(), pct = v => Math.max(0, Math.min(100, Number(v) || 0)) / 100;
+    de.setAttribute('data-eh-hex', mode);
+    de.toggleAttribute('data-eh-hex-two', !!S.hexTwo);
+    de.style.setProperty('--eh-hex-opacity', pct(S.hexOpacity));
+    de.style.setProperty('--eh-hex-fx', pct(S.hexFx));
+    de.style.setProperty('--eh-hex-mf', HEX_MF[mode] || 1);
+    de.style.setProperty('--eh-hex-pace', Number(S.hexPace) || 1);
     if (!layer) {
+        const tile = '<path d="M14 0l14 8v16L14 32 0 24V8zM14 32v16" fill="none" stroke="currentColor"/>';
         layer = document.createElement('div'); layer.id = 'eh-hex'; layer.setAttribute('aria-hidden', 'true');
-        layer.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><pattern id="eh-hex-base" width="28" height="48" patternUnits="userSpaceOnUse"><path d="M14 0l14 8v16L14 32 0 24V8zM14 32v16" fill="none" stroke="currentColor"/></pattern></defs><rect class="hex-base" width="100%" height="100%" fill="url(#eh-hex-base)"/><rect class="hex-drift" width="100%" height="100%" fill="url(#eh-hex-base)"/></svg>';
+        layer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><pattern id="eh-hex-base" width="28" height="48" patternUnits="userSpaceOnUse">${tile}</pattern><pattern id="eh-hex-base2" width="28" height="48" patternUnits="userSpaceOnUse" style="color:var(--accent2)">${tile}</pattern></defs><rect class="hex-base" width="100%" height="100%" fill="url(#eh-hex-base)"/><rect class="hex-drift" width="100%" height="100%" fill="url(#eh-hex-base)"/><rect class="hex-drift2" width="100%" height="100%" fill="url(#eh-hex-base2)"/></svg>`;
         document.body.append(layer);
     }
-    hexPattern(layer);
+    hexDepth(layer);
+    hexPattern(layer, mode);
 }
 
-// Soft tension caches shared lattice vertices and draws twice per second.
-function hexPattern(layer) {
-    const mode = S.hexMotion;
-    if (mode !== 'tension' || !(Number(S.hexOpacity) > 0) || hexStrength() === 0) { layer._ehPattern?.stop(); return; }
-    const w = innerWidth + 96, h = innerHeight + 96, color = getComputedStyle(layer).color;
-    const key = [mode, w, h, color].join('|');
-    if (layer._ehPattern?.key === key) { layer._ehPattern.draw(); return; }
-    layer._ehPattern?.stop();
-    const cv = document.createElement('canvas'); cv.className = 'hex-pattern'; cv.width = w; cv.height = h; layer.append(cv);
-    const ctx = cv.getContext('2d'), motion = matchMedia('(prefers-reduced-motion:reduce)');
-    const vertices = [], links = [], known = new Map(), connected = new Set();
-    const corners = [[14, 0], [28, 8], [28, 24], [14, 32], [0, 24], [0, 8], [14, 0]];
-    const vertex = (x, y) => {
-        const k = x + ',' + y;
-        if (!known.has(k)) { known.set(k, vertices.length / 2); vertices.push(x, y); }
-        return known.get(k);
+// Depth: the layer scrolls at a third of the page's pace, in steps of one pattern row so it never runs out;
+// at each step the drawn effects move back one row, and stay where they were on the screen
+function hexDepth(layer) {
+    const on = !!S.hexDepth && !hexReduce.matches;
+    if (!on) { layer._ehDepthOff?.(); return; }
+    if (layer._ehDepthOff) { layer._ehDepthOn(); return; }
+    let row = 0;
+    const f = () => {
+        const y = scrollY * .33, n = Math.floor(y / 48), d = n - row;
+        layer.style.transform = `translateY(${-(y - 48 * n)}px)`;
+        row = n; if (d) layer._ehPattern?.shift(d);
     };
-    const edge = (x, y, a, b) => {
-        const i = vertex(x, y), j = vertex(a, b), k = Math.min(i, j) + ':' + Math.max(i, j);
-        if (connected.has(k)) return;
-        connected.add(k); links.push(i * 2, j * 2);
-    };
-    for (let y = -48; y < h + 48; y += 48) for (let x = -28; x < w + 28; x += 28) {
-        for (let i = 1; i < corners.length; i++) edge(x + corners[i - 1][0], y + corners[i - 1][1], x + corners[i][0], y + corners[i][1]);
-        edge(x + 14, y + 32, x + 14, y + 48);
-    }
-    const warped = new Float32Array(vertices.length);
-    let timer, phase = 0;
-    ctx.strokeStyle = color;
-    const stop = () => {
-        clearTimeout(timer); document.removeEventListener('visibilitychange', draw);
-        motion.removeEventListener('change', draw); cv.remove(); delete layer._ehPattern;
-    };
-    function draw() {
-        clearTimeout(timer);
-        if (!layer.isConnected) { stop(); return; }
-        if (document.hidden) return;
-        if (!motion.matches) phase = performance.now() / 1000;
-        ctx.clearRect(0, 0, w, h);
-        const a = phase / 100 * Math.PI * 2, size = 1.25 * hexStrength();
-        for (let i = 0; i < vertices.length; i += 2) {
-            const x = vertices[i], y = vertices[i + 1];
-            warped[i] = x + size * Math.sin(y / 105 + a); warped[i + 1] = y + size * Math.sin(x / 145 - a);
-        }
-        ctx.lineWidth = 1; ctx.beginPath();
-        for (let i = 0; i < links.length; i += 2) {
-            const a = links[i], b = links[i + 1];
-            ctx.moveTo(warped[a], warped[a + 1]); ctx.lineTo(warped[b], warped[b + 1]);
-        }
-        ctx.stroke();
-        if (!motion.matches) timer = setTimeout(draw, 500);
-    }
-    layer._ehPattern = { key, stop, draw };
-    document.addEventListener('visibilitychange', draw); motion.addEventListener('change', draw); draw();
+    addEventListener('scroll', f, { passive: true });
+    layer._ehDepthOn = f;
+    layer._ehDepthOff = () => { removeEventListener('scroll', f); layer.style.transform = ''; delete layer._ehDepthOff; delete layer._ehDepthOn; if (row) layer._ehPattern?.shift(-row); };
+    f();
 }
+
+// the lattice's corners and sides, the same the SVG pattern draws
+function hexLattice(w, h) {
+    const xs = [], ys = [], adj = [], edges = [], key = new Map(), seen = new Set();
+    const v = (x, y) => {
+        const k = x + ',' + y; let i = key.get(k);
+        if (i == null) { i = xs.length; key.set(k, i); xs.push(x); ys.push(y); adj.push([]); }
+        return i;
+    };
+    const e = (a, b, c, d) => {
+        const i = v(a, b), j = v(c, d), k = i < j ? i + ':' + j : j + ':' + i;
+        if (seen.has(k)) return; seen.add(k); edges.push(i, j); adj[i].push(j); adj[j].push(i);
+    };
+    const C = [[14, 0], [28, 8], [28, 24], [14, 32], [0, 24], [0, 8], [14, 0]];
+    for (let y = -48; y < h + 48; y += 48) for (let x = -28; x < w + 28; x += 28) {
+        for (let i = 1; i < C.length; i++) e(x + C[i - 1][0], y + C[i - 1][1], x + C[i][0], y + C[i][1]);
+        e(x + 14, y + 32, x + 14, y + 48);
+    }
+    // the same corner one row up or down, or -1 when the lattice has none there
+    const moved = (i, d) => key.get(xs[i] + ',' + (ys[i] - 48 * d)) ?? -1;
+    return { xs, ys, adj, edges, moved };
+}
+
+// The moving effects: one animation frame loop per layer; it stops when the tab is hidden or the motion changes.
+function hexPattern(layer, mode) {
+    if (!HEX_JS.includes(mode) || !(Number(S.hexFx) > 0)) { layer._ehPattern?.stop(); return; }
+    const w = innerWidth + 96, h = innerHeight + 96, cs = getComputedStyle(layer);
+    const c1 = cs.color, c2 = cs.getPropertyValue('--accent2').trim() || c1;
+    const pace = Number(S.hexPace) || 1, trail = Number(S.hexTrail) || 1, often = Number(S.hexOften) || 1, two = !!S.hexTwo;
+    const key = [mode, w, h, c1, c2, pace, trail, often, two].join('|');
+    if (layer._ehPattern?.key === key) return;
+    layer._ehPattern?.stop();
+    const L = hexLattice(w, h), rnd = (a, b) => a + Math.random() * (b - a), pick = a => a[Math.random() * a.length | 0];
+    const tone = () => two && Math.random() < .5 ? c2 : c1;
+    const rect = layer.querySelector('.hex-drift');
+    let cv, ctx;
+    if (mode !== 'ripple' && mode !== 'lantern') {
+        const dpr = Math.min(2, devicePixelRatio || 1);
+        cv = document.createElement('canvas'); cv.className = 'hex-pattern'; cv.width = w * dpr; cv.height = h * dpr;
+        layer.append(cv); ctx = cv.getContext('2d'); ctx.scale(dpr, dpr); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    }
+    const setMask = m => { rect.style.webkitMask = m; rect.style.mask = m; };
+    // the viewport's point on the layer, which sits 48px out and may be scrolled for Depth
+    const toLayer = (x, y) => { const r = layer.getBoundingClientRect(); return [x - r.left, y - r.top]; };
+    const fx = HEX_FX[mode]({ L, w, h, ctx, rnd, pick, tone, setMask, toLayer, pace, trail, often, c1 });
+    let raf = 0, last = performance.now(), t = 0;
+    const frame = now => {
+        if (!layer.isConnected) { stop(); return; }
+        raf = requestAnimationFrame(frame);
+        const dt = Math.min(.25, (now - last) / 1000); last = now; t += dt;
+        fx.tick(dt, t);
+    };
+    const vis = () => { cancelAnimationFrame(raf); raf = 0; if (!document.hidden) { last = performance.now(); raf = requestAnimationFrame(frame); } };
+    function stop() {
+        cancelAnimationFrame(raf); document.removeEventListener('visibilitychange', vis); fx.off?.();
+        cv?.remove(); setMask(''); delete layer._ehPattern;
+    }
+    layer._ehPattern = { key, stop, draw() {}, shift: d => fx.shift(d) };
+    document.addEventListener('visibilitychange', vis); vis();
+}
+
+// a path along the lattice's sides from corner i, n sides long, never stepping straight back
+function hexWalk(L, i, n) {
+    const path = [i];
+    for (let k = 0, prev = -1; k < n; k++) {
+        const next = L.adj[i].filter(j => j !== prev);
+        if (!next.length) break;
+        prev = i; i = next[Math.random() * next.length | 0]; path.push(i);
+    }
+    return path;
+}
+const HEX_FX = {
+    // single hexagons light up and fade
+    twinkle({ L, w, h, ctx, rnd, tone, pace, trail, often }) {
+        let on = [], due = 0;
+        const rate = 7 * often * (w * h) / 1e6;
+        return {
+            tick(dt) {
+                due -= dt;
+                while (due <= 0) {
+                    due += rnd(.3, 1.7) / rate;
+                    const odd = Math.random() < .5, i = Math.floor(rnd(0, w / 28 + 1)), j = Math.floor(rnd(-1, h / 48 + 1));
+                    on.push({ x: odd ? 28 * i : 14 + 28 * i, y: odd ? 40 + 48 * j : 16 + 48 * j, age: 0, life: rnd(1.8, 3.2) * trail / pace, c: tone() });
+                }
+                ctx.clearRect(0, 0, w, h);
+                on = on.filter(p => (p.age += dt) < p.life);
+                for (const p of on) {
+                    const a = Math.sin(Math.PI * p.age / p.life);
+                    ctx.beginPath(); HEXV.forEach(([dx, dy], k) => ctx[k ? 'lineTo' : 'moveTo'](p.x + dx, p.y + dy)); ctx.closePath();
+                    ctx.globalAlpha = a * .22; ctx.fillStyle = p.c; ctx.fill();
+                    ctx.globalAlpha = a; ctx.strokeStyle = p.c; ctx.lineWidth = 1; ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
+            },
+            shift(d) { for (const p of on) p.y -= 48 * d; },
+        };
+    },
+    // rings of glow spread from random points
+    ripple({ w, h, rnd, setMask, pace, often }) {
+        let rings = [], due = .4, at = 0;
+        return {
+            tick(dt, t) {
+                due -= dt;
+                if (due <= 0) { due = rnd(2.5, 6) / often; rings.push({ x: rnd(0, w), y: rnd(0, h), r: 0, max: rnd(380, 720) }); }
+                for (const g of rings) g.r += dt * 85 * pace;
+                rings = rings.filter(g => g.r < g.max);
+                if (t - at < .033) return; at = t;
+                setMask(rings.length ? rings.map(g => {
+                    const a = (1 - g.r / g.max).toFixed(3), r = g.r.toFixed(1);
+                    return `radial-gradient(circle at ${g.x.toFixed(0)}px ${g.y.toFixed(0)}px,transparent calc(${r}px - 34px),rgba(0,0,0,${a}) ${r}px,transparent calc(${r}px + 34px))`;
+                }).join(',') : 'linear-gradient(transparent,transparent)');
+            },
+            shift(d) { for (const g of rings) g.y -= 48 * d; },
+        };
+    },
+    // a pool of glow follows the pointer, a little behind it
+    lantern({ setMask, toLayer }) {
+        let px = innerWidth / 2, py = innerHeight / 2, x = px, y = py, at = -1, seen = false;
+        const move = e => { px = e.clientX; py = e.clientY; seen = true; };
+        document.addEventListener('pointermove', move, { passive: true });
+        return {
+            tick(dt, t) {
+                const k = 1 - Math.exp(-dt * 6); x += (px - x) * k; y += (py - y) * k;
+                if (t - at < .033) return; at = t;
+                const [lx, ly] = toLayer(x, y);
+                setMask(seen ? `radial-gradient(circle min(240px,40vw) at ${lx.toFixed(0)}px ${ly.toFixed(0)}px,#000,transparent)` : 'linear-gradient(transparent,transparent)');
+            },
+            shift() {},
+            off() { document.removeEventListener('pointermove', move); },
+        };
+    },
+    // the lattice bends around a point that wanders slowly over the page
+    horizon({ L, w, h, ctx, toLayer, pace, c1 }) {
+        const n = L.xs.length, X = new Float32Array(n), Y = new Float32Array(n), R = Math.min(innerWidth, innerHeight) * .32;
+        let at = -1;
+        return {
+            tick(dt, t) {
+                if (t - at < .041) return; at = t;
+                const s = t * pace;
+                const [cx, cy] = toLayer(innerWidth * (.5 + .32 * Math.cos(s * .05)), innerHeight * (.5 + .26 * Math.sin(s * .037)));
+                for (let i = 0; i < n; i++) {
+                    const dx = L.xs[i] - cx, dy = L.ys[i] - cy, d2 = dx * dx + dy * dy, f = 22 * R * R / (d2 + R * R) / Math.sqrt(d2 + 1);
+                    X[i] = L.xs[i] - dx * f; Y[i] = L.ys[i] - dy * f;
+                }
+                ctx.clearRect(0, 0, w, h); ctx.strokeStyle = c1; ctx.lineWidth = 1; ctx.beginPath();
+                for (let k = 0; k < L.edges.length; k += 2) { const a = L.edges[k], b = L.edges[k + 1]; ctx.moveTo(X[a], Y[a]); ctx.lineTo(X[b], Y[b]); }
+                ctx.stroke();
+            },
+            shift() {},
+        };
+    },
+    // sparks of different voltages run along 20 to 50 sides, flicker, fork and fade; a few at once, at random gaps
+    electricity({ L, w, h, ctx, rnd, pick, tone, pace, trail, often }) {
+        let bolts = [], due = .3;
+        const corners = () => { const i = Math.random() * L.xs.length | 0; return L.xs[i] > 0 && L.xs[i] < w && L.ys[i] > 0 && L.ys[i] < h ? i : corners(); };
+        const bolt = () => {
+            const v = pick([.45, .7, 1]), main = hexWalk(L, corners(), Math.round(rnd(20, 50)));
+            const paths = [main];
+            for (let k = 0; k < (v > .6 ? 3 : 1); k++) if (Math.random() < .7) paths.push(hexWalk(L, pick(main), Math.round(rnd(4, 12))));
+            return { pts: paths.map(p => p.map(i => [L.xs[i], L.ys[i]])), v, c: tone(), age: 0, grow: .18 / pace, life: rnd(.5, .9) * trail + .18 / pace };
+        };
+        return {
+            tick(dt) {
+                due -= dt;
+                if (due <= 0) { const n = Math.random() < .35 ? 2 + (Math.random() < .3) : 1; for (let k = 0; k < n; k++) bolts.push(bolt()); due = rnd(.6, 3.2) / often; }
+                ctx.clearRect(0, 0, w, h);
+                bolts = bolts.filter(b => (b.age += dt) < b.life);
+                for (const b of bolts) {
+                    const grown = Math.min(1, b.age / b.grow), fade = b.age < b.grow ? 1 : 1 - (b.age - b.grow) / (b.life - b.grow);
+                    const a = b.v * fade * fade * (Math.random() < .25 ? .55 : 1);
+                    ctx.strokeStyle = b.c;
+                    for (const [lw, al] of [[3.5, .22], [1.2, 1]]) {
+                        ctx.lineWidth = lw * (.6 + b.v * .5); ctx.globalAlpha = a * al; ctx.beginPath();
+                        for (const p of b.pts) { const m = Math.max(1, Math.ceil(p.length * grown)); p.slice(0, m).forEach(([x, y], k) => ctx[k ? 'lineTo' : 'moveTo'](x, y)); }
+                        ctx.stroke();
+                    }
+                }
+                ctx.globalAlpha = 1;
+            },
+            shift(d) { for (const b of bolts) for (const p of b.pts) for (const q of p) q[1] -= 48 * d; },
+        };
+    },
+    // a signal starts at one corner and spreads, branching, along the sides; what it passed glows and fades
+    neural({ L, w, h, ctx, rnd, tone, pace, trail, often }) {
+        let lit = [], front = [], due = 0;
+        const fire = () => {
+            let i; do i = Math.random() * L.xs.length | 0; while (!(L.xs[i] > 0 && L.xs[i] < w && L.ys[i] > 0 && L.ys[i] < h));
+            const c = tone(), seen = new Set([i]);
+            front.push(...[0, 1].map(() => ({ i, prev: -1, j: -1, p: 1, left: Math.round(rnd(26, 46)), c, seen })));
+        };
+        const speed = 70 * pace, fade = 1.6 * trail;
+        return {
+            tick(dt) {
+                due -= dt;
+                if (due <= 0) { fire(); due = rnd(2.5, 5.5) / often; }
+                const next = [];
+                for (const f of front) {
+                    if (f.j >= 0) f.p += dt * speed / 16;
+                    if (f.p < 1) { next.push(f); continue; }
+                    if (f.j >= 0) { lit.push({ a: [L.xs[f.i], L.ys[f.i]], b: [L.xs[f.j], L.ys[f.j]], age: 0, c: f.c }); f.prev = f.i; f.i = f.j; }
+                    if (--f.left < 0) continue;
+                    const ways = L.adj[f.i].filter(j => j !== f.prev && !f.seen.has(j));
+                    if (!ways.length) continue;
+                    const n = ways.length > 1 && Math.random() < .3 ? 2 : 1;
+                    ways.sort(() => Math.random() - .5).slice(0, n).forEach((j, k) => { f.seen.add(j); next.push({ ...f, j, p: 0, left: k ? Math.min(f.left, Math.round(rnd(4, 14))) : f.left }); });
+                }
+                front = next.slice(0, 400);
+                ctx.clearRect(0, 0, w, h); ctx.lineWidth = 1.2;
+                lit = lit.filter(e => (e.age += dt) < fade);
+                for (const e of lit) { ctx.globalAlpha = (1 - e.age / fade) ** 1.5; ctx.strokeStyle = e.c; ctx.beginPath(); ctx.moveTo(...e.a); ctx.lineTo(...e.b); ctx.stroke(); }
+                for (const f of front) if (f.j >= 0) {
+                    const x = L.xs[f.i] + (L.xs[f.j] - L.xs[f.i]) * f.p, y = L.ys[f.i] + (L.ys[f.j] - L.ys[f.i]) * f.p;
+                    ctx.globalAlpha = 1; ctx.strokeStyle = f.c; ctx.beginPath(); ctx.moveTo(L.xs[f.i], L.ys[f.i]); ctx.lineTo(x, y); ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
+            },
+            shift(d) {
+                for (const e of lit) { e.a[1] -= 48 * d; e.b[1] -= 48 * d; }
+                front = front.filter(f => { f.i = L.moved(f.i, d); f.j = f.j < 0 ? -1 : L.moved(f.j, d); f.prev = f.prev < 0 ? -1 : L.moved(f.prev, d); return f.i >= 0 && (f.j >= 0 || f.p >= 1); });
+            },
+        };
+    },
+};
 
 function bgApply() {
     hexApply();
@@ -10360,7 +10553,7 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '.eh-cfg .tabs{display:flex;gap:2px;border-bottom:1px solid var(--mbu-border-soft);margin:0 -10px;padding:0 6px}'
     + '.eh-cfg .tab{all:unset;padding:5px 9px;margin-bottom:-1px;border-bottom:2px solid transparent;color:var(--mbu-text-weak);font:500 13px var(--mbu-font);cursor:pointer}'
     + '.eh-cfg .tab:hover{color:var(--mbu-text)}.eh-cfg .tab[aria-selected=true]{color:var(--mbu-accent-text);border-bottom-color:var(--mbu-accent);font-weight:600}.eh-cfg .tab .n{font-size:10px;color:var(--mbu-text-weak)}'
-    + '.eh-cfg .pane{height:250px;max-height:60vh;overflow-y:auto;overflow-x:hidden;padding-top:2px}.eh-cfg .mbu-cfg-ver{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}'
+    + '.eh-cfg .pane{height:250px;max-height:60vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;overflow-x:hidden;padding-top:2px}.eh-cfg .mbu-cfg-ver{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}'
     + '.eh-plpop .plh{margin:6px 0 2px;padding-bottom:4px;border-bottom:1px solid var(--mbu-border-soft);font:700 11px var(--mbu-font);letter-spacing:.08em;text-transform:uppercase;color:var(--mbu-accent-text)}'
     + '.eh-cfg .cr.ckr{display:block;border-bottom:0}.eh-cfg .ck{white-space:nowrap}.eh-cfg .ck{display:inline-flex;align-items:center;gap:8px;padding:6px 2px;border:0;background:none;color:var(--mbu-text);font:inherit;cursor:pointer}.eh-cfg .ck svg{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2}.eh-cfg .ck[aria-checked=true] svg{color:var(--mbu-accent-text)}'
     + '.eh-cfg.eh-plpop .cr{border-bottom:0}'
@@ -10372,7 +10565,7 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '.eh-cfg .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .15s}'
     + '.eh-cfg .sw[aria-checked=true]{background:var(--mbu-accent)}.eh-cfg .sw[aria-checked=true]::after{left:16px}'
     + '.eh-cfg .hex-controls{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;min-width:0;max-width:100%}@media(max-width:400px){.eh-cfg .cr{grid-template-columns:76px minmax(0,1fr)}}'
-    + '.eh-cfg .chips{display:flex;flex-wrap:wrap;gap:3px;min-width:0}.eh-cfg label:has([data-hex-opacity]){display:flex;align-items:center;gap:1px;color:var(--mbu-text-weak)}'
+    + '.eh-cfg .chips{display:flex;flex-wrap:wrap;gap:3px;min-width:0}.eh-cfg label:has([data-hex-opacity],[data-hex-fx]){display:flex;align-items:center;gap:4px;color:var(--mbu-text-weak)}'
     + '.eh-cfg .chip{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 7px;border-radius:20px;border:1px solid var(--mbu-border);background:var(--mbu-bg-raised);color:var(--mbu-text-dim);font:500 11.5px var(--mbu-font);cursor:pointer;user-select:none}'
     + '.eh-cfg .chip:hover{border-color:var(--mbu-accent)}.eh-cfg .chip[aria-pressed=true]{background:var(--mbu-accent-soft);border-color:var(--mbu-accent);color:var(--mbu-accent-text)}'
     + '.eh-cfg .chip svg{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}'
@@ -10435,14 +10628,30 @@ Click to ${off ? 'use' : 'turn off'}, drag to reorder">${stIcon(k, 16)}${esc((IM
 }
 const HEX_MOTIONS = [
     ['static', 'Static', 'Still hexagon outlines'],
-    ['drift', 'Drift', 'Three small pools of glow roam over stationary outlines'],
-    ['wide', 'Wide drift', 'Two wider, fainter pools of glow move more slowly'],
-    ['tension', 'Soft tension', 'Connected hexagon vertices gently flex by about one pixel'],
-    ['tilt', 'Micro tilt', 'The pattern slowly rocks through a fraction of a degree; page content stays still'],
+    ['drift', 'Drift', 'Three small pools of glow roam over the outlines'],
+    ['tide', 'Tide', 'A soft band of glow sweeps slowly across and back'],
+    ['twinkle', 'Twinkle', 'Single hexagons light up here and there and fade'],
+    ['ripple', 'Ripple', 'Rings of glow spread out from random points'],
+    ['lantern', 'Lantern', 'A pool of glow follows the pointer'],
+    ['horizon', 'Horizon', 'The lattice bends around a slowly wandering point'],
+    ['electricity', 'Electricity', 'Sparks of different voltages run along the hexagon sides and fade'],
+    ['neural', 'Neural', 'Signals spread and branch through the lattice like a neural network'],
 ];
+// which of the effect's settings each motion takes
+const HEX_USES = { pace: ['drift', 'tide', 'twinkle', 'ripple', 'horizon', 'electricity', 'neural'], trail: ['twinkle', 'electricity', 'neural'], often: ['twinkle', 'ripple', 'electricity', 'neural'], two: ['drift', 'twinkle', 'electricity', 'neural'] };
 function hexMotionSelect() {
     const selected = HEX_MOTIONS.find(x => x[0] === S.hexMotion) || HEX_MOTIONS[0];
     return `<select data-hex-motion aria-label="Hexagon animation" data-tip="${esc(selected[2])}">${HEX_MOTIONS.map(([k, label, tip]) => `<option value="${k}" title="${esc(tip)}"${k === S.hexMotion ? ' selected' : ''}>${label}</option>`).join('')}</select>`;
+}
+function hexRows(chip, row) {
+    const m = S.hexMotion, use = k => HEX_USES[k].includes(m);
+    const num = (attr, v, label, aria) => `<label>${label}<input type="number" min="0" max="100" step="5" value="${v}" ${attr} aria-label="${aria}">%</label>`;
+    const opts = (g, list) => list.map(([v, l]) => chip(g, v, S[g] === v, l)).join('');
+    return row('Opacity', '<span class="hex-controls">' + num('data-hex-opacity', S.hexOpacity, 'Hexagons', 'Hexagon opacity') + (m === 'static' ? '' : num('data-hex-fx', S.hexFx, 'Effect', 'Effect opacity')) + '</span>', 'How strong the outlines are, and the effect over them')
+        + (use('pace') ? row('Pace', opts('hexPace', [[.6, 'Slow'], [1, 'Normal'], [1.6, 'Fast']]), 'How fast the effect moves') : '')
+        + (use('trail') ? row('Trail', opts('hexTrail', [[.5, 'Short'], [1, 'Normal'], [2, 'Long']]), 'How long what lights up takes to fade') : '')
+        + (use('often') ? row('How often', opts('hexOften', [[.5, 'Rarely'], [1, 'Normal'], [2, 'Often']]), 'How often something new lights up') : '')
+        + (use('two') ? row('Colour', chip('hexTwo', '0', !S.hexTwo, 'One tone') + chip('hexTwo', '1', !!S.hexTwo, 'Two-tone'), 'Two-tone mixes in the second accent colour') : '');
 }
 function cfgBody() {
     const chip = cfgChip, row = cfgRow;
@@ -10453,7 +10662,8 @@ function cfgBody() {
             + row('Pending changes', chip('pending', 'pending', S.pending, 'Show', 'Mark what has edits open, as MusicBrainz does\nTakes one extra MusicBrainz request per page, sent last'))
             + row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen')
             + row('Background', [['flat', 'Flat'], ['aura', 'Cover aura'], ['glow', 'Glow'], ['band', 'Header band']].map(([k, l]) => chip('bg', k, (S.bg || 'aura') === k, l)).join(''), 'Cover aura blurs the page\'s cover or picture behind its head; pages without one get the glow')
-            + row('Hexagons', '<span class="hex-controls">' + chip('hex', 'hex', S.hex, 'Show') + `<label><input type="number" min="0" max="100" step="5" value="${S.hexOpacity}" data-hex-opacity aria-label="Hexagon opacity">%</label>` + hexMotionSelect() + '</span>', 'Overlay hexagon outlines on any background; the stepper sets their opacity'),
+            + row('Hexagons', '<span class="hex-controls">' + chip('hex', 'hex', S.hex, 'Show') + hexMotionSelect() + chip('hexDepth', 'hexDepth', S.hexDepth, 'Depth', 'The hexagons scroll slower than the page\nOn: they sit deeper, behind the page\nOff: they stay still') + '</span>', 'Overlay hexagon outlines on any background')
+            + (S.hex ? hexRows(chip, row) : ''),
     };
     return `<div class="pane">${panes.general}</div>`;
 }
@@ -10487,12 +10697,13 @@ function cfgWire(panel, b, body) {
     panel.addEventListener('change', ev => {
         if (!ev.target.matches('[data-hex-motion]')) return;
         const choice = HEX_MOTIONS.find(x => x[0] === ev.target.value); if (!choice) return;
-        S.hexMotion = choice[0]; ev.target.dataset.tip = choice[2];
-        save(); hexApply();
+        S.hexMotion = choice[0];
+        save(); hexApply(); b.innerHTML = body();
     });
     panel.addEventListener('input', ev => {
-        if (!ev.target.matches('[data-hex-opacity]') || ev.target.value === '') return;
-        S.hexOpacity = Math.max(0, Math.min(100, Math.round(+ev.target.value) || 0));
+        const fx = ev.target.matches('[data-hex-fx]');
+        if (!(fx || ev.target.matches('[data-hex-opacity]')) || ev.target.value === '') return;
+        S[fx ? 'hexFx' : 'hexOpacity'] = Math.max(0, Math.min(100, Math.round(+ev.target.value) || 0));
         save(); hexApply();
     });
     // number fields become the suite's − n + stepper, on every redraw of the body
@@ -10554,7 +10765,9 @@ function cfgWire(panel, b, body) {
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
             else if (g === 'bg') S.bg = k;
-            else if (g === 'hex') S.hex = !S.hex;
+            else if (g === 'hex' || g === 'hexDepth') { S[g] = !S[g]; hexApply(); }
+            else if (g === 'hexPace' || g === 'hexTrail' || g === 'hexOften') { S[g] = +k; hexApply(); }
+            else if (g === 'hexTwo') { S.hexTwo = k === '1'; hexApply(); }
             else if (g === 'imgP') { S.imgOff = toggle(S.imgOff, k); imgResort(); }
         }
         save();

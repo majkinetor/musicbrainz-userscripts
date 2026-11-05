@@ -91,9 +91,8 @@ Credit marks match by person, so someone with two credits, one pending, has both
 
 ## Hexagon animation cost
 
-Drift uses three slowly moving radial masks over a stationary SVG lattice. Opacity scales the base outlines and glow together; reduced motion stops the mask animation. Wide drift uses two broader, fainter masks on a 110-second cycle. The standard select also offers Soft tension and Micro tilt; option titles and the selected-value shared tooltip describe each mode. Discontinued saved modes migrate to Drift. Micro tilt transforms the cached HTML layer through ±0.35° on a 120-second cycle. Soft tension uses `hexPattern`: cached shared topology, drawn at CSS-pixel resolution twice a second. Their slow subpixel changes do not need a frame-rate loop. Soft tension deforms shared vertices by up to 1.25px over 100 seconds. Hidden tabs and reduced motion stop drawing; zero opacity, mode changes and disabling EH dispose the renderer and its listeners before the EH body is detached.
+Drift, Tide, Ripple and Lantern are radial or linear masks over the stationary SVG lattice (`.hex-drift`, `.hex-drift2` for two-tone); Twinkle, Ripple, Horizon, Electricity and Neural draw on a canvas from `HEX_FX`, built on the cached `hexLattice` topology, one rAF loop per layer (`layer._ehPattern`). `--eh-hex-opacity` sets the outlines, `--eh-hex-fx` the effect, `--eh-hex-pace` the CSS durations; `HEX_USES` picks which settings rows a motion shows. Depth moves the layer by `translateY` and calls `_ehPattern.shift`. Wide drift, Soft tension and Micro tilt are retired and saved values migrate to Drift; a missing `hexFx` is derived from `hexOpacity`. Hidden tabs and reduced motion stop drawing; mode changes and disabling EH dispose the loop before the body is detached.
 
-The animations run at their designed strength: `hexStrength` returns 1 (the Animation intensity setting was removed; a stored `hexIntensity` is ignored). Fine weave is retired and saved selections fall back to Drift.
 
 Keep effects out of animated SVG patterns: changing dash offsets and blur filters inside a repeated pattern repaints and rasterizes large areas continuously.
 

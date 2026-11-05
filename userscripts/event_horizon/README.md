@@ -126,12 +126,12 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | Annotation → Show annotation on hover | on                                                                  | preview a folded annotation                                                                 |
 | General → Page width                  | Wide                                                                | how wide the page grows on a big screen                                                     |
 | General → Background                  | Cover aura                                                          | Flat, Cover aura, Glow or Header band                                                       |
-| General → Hexagons                    | off, Static                                                         | show outlines, set opacity and choose an animation                                          |
+| General → Hexagons                    | off, Static                                                         | show outlines, choose a motion, Depth; opacity of the outlines and the effect              |
 | General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                                      |
 | General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
 | General → Keyboard shortcuts          | on                                                                  | the keys below; [keyboard shortcuts](#keyboard-shortcuts); **Change keys** opens their list |
 
-Wide drift uses broader, fainter glow and moves more slowly than Drift. Soft tension flexes connected vertices, and Micro tilt rocks the pattern while page content stays still. All respect reduced motion.
+Motions: Static, Drift, Tide, Twinkle, Ripple, Lantern (follows the pointer), Horizon, Electricity and Neural. Under the row, settings appear for what the motion takes: Pace, Trail, How often and a two-tone Colour. **Depth** scrolls the hexagons slower than the page. All respect reduced motion.
 
 ## Shortcuts
 
