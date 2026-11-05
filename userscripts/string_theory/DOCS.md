@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-05 20:15 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-05 20:16 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1581,6 +1581,8 @@ A merge assistant for MusicBrainz recordings: gather candidates, let Match group
 Every candidate starts in the **Pool**. A live recording has a **live** tag; the place a recording was made shows after **@**, the date in its tooltip. Drag a candidate into a group, double-click it for the *current* group (whose header you clicked last), or select it and click a group.
 
 **Sort** the pool by **Added**, **Title** (ignoring a bracketed part such as *(remastered)*) or **Artist** then title. A repeated title is tinted, each run in its own colour. Match doesn't depend on the sort.
+
+◀ in the pool's header folds the pool to a thin rail, so the groups get the full width. Hovering the rail opens the pool over the groups until the pointer leaves it; ◀ there, or a click on the rail, keeps it open.
 
 In a group:
 

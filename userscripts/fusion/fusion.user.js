@@ -4016,12 +4016,14 @@ function fsStyle() {
         + '.fs-netbanner{display:inline-flex;align-items:center;box-sizing:border-box;height:18px;padding:0 8px;border-radius:4px;font-size:11px;line-height:1;font-weight:600;white-space:nowrap;cursor:pointer;background:rgba(168,112,42,.14);color:var(--mbu-warn);border:1px solid rgba(168,112,42,.4)}'
         + '.fs-netbanner.fs-netbanner-err{background:rgba(200,56,79,.12);color:var(--fs-red);border-color:rgba(200,56,79,.45)}'
         + '.fs-legend{display:flex;gap:10px;color:var(--fs-muted);font-size:11px;align-items:center}'
-        + '.fs-body{display:flex;flex:1;min-height:0}'
+        + '.fs-body{display:flex;flex:1;min-height:0;position:relative}'
         + '.fs-col{display:flex;flex-direction:column;min-width:0;min-height:0}'
         + '.fs-pool{width:360px;border-right:1px solid var(--fs-border);background:var(--fs-bg)}'
         + '.fs-body.fs-poolhidden .fs-pool{display:none}'
         + '.fs-poolrail{display:none;flex-direction:column;align-items:center;gap:10px;width:28px;flex-shrink:0;padding:10px 0;cursor:pointer;border-right:1px solid var(--fs-border);background:var(--fs-panel2);color:var(--fs-muted)}'
         + '.fs-body.fs-poolhidden .fs-poolrail{display:flex}'
+        // #908: hovering the folded pool's rail shows the pool over the groups until the pointer leaves it
+        + '.fs-body.fs-poolhidden.fs-peek .fs-pool{display:flex;position:absolute;top:0;bottom:0;left:28px;z-index:5;box-shadow:4px 0 16px rgba(0,0,0,.18)}'
         + '.fs-poolrail:hover{background:rgba(109,63,240,.06);color:var(--mbu-accent-text)}'
         + '.fs-railarrow{font-size:14px;line-height:1}'
         + '.fs-raillabel{writing-mode:vertical-rl;font-size:10px;font-weight:700;letter-spacing:.12em}'
@@ -5625,8 +5627,19 @@ function buildShell() {
     // parameter, which has bitten this script before (#503, mergeAll's NaN)
     document.getElementById('fs-collapseall').onclick = () => toggleCollapseAll();
     document.getElementById('fs-expandall-deep').onclick = () => toggleExpandAllDeep();
-    document.getElementById('fs-pooltog').onclick = () => setPoolCollapsed(true);
-    document.getElementById('fs-poolrail').onclick = () => setPoolCollapsed(false);
+    // in a hover peek the fold button pins the pool open instead
+    document.getElementById('fs-pooltog').onclick = () => { const b = document.getElementById('fs-body'); if (b.classList.contains('fs-peek')) { b.classList.remove('fs-peek'); setPoolCollapsed(false); } else setPoolCollapsed(true); };
+    document.getElementById('fs-poolrail').onclick = () => { body0.classList.remove('fs-peek'); setPoolCollapsed(false); };
+    // #908: the folded pool opens on hover, for as long as the pointer stays on the rail or the pool;
+    // a drag out of it keeps it open until the drag ends, since hiding a drag's source cancels the drag
+    const body0 = document.getElementById('fs-body'), pool0 = body0.querySelector('.fs-pool'), rail0 = document.getElementById('fs-poolrail');
+    let peekT = 0;
+    const inPeek = el => !!el && (pool0.contains(el) || rail0.contains(el) || !!el.closest?.('.fs-cutoff-menu, .mbu-tip'));
+    rail0.addEventListener('mouseenter', () => { clearTimeout(peekT); peekT = setTimeout(() => { if (body0.classList.contains('fs-poolhidden')) { body0.classList.add('fs-peek'); Log.debug('pool: peek open'); } }, 120); });
+    const peekLeave = e => { clearTimeout(peekT); if (e.buttons || inPeek(e.relatedTarget)) return; body0.classList.remove('fs-peek'); };
+    rail0.addEventListener('mouseleave', peekLeave); pool0.addEventListener('mouseleave', peekLeave);
+    const peekEnd = () => setTimeout(() => { if (!pool0.matches(':hover') && !rail0.matches(':hover')) body0.classList.remove('fs-peek'); }, 0);
+    body0.addEventListener('drop', peekEnd); body0.addEventListener('dragend', peekEnd);
     setPoolCollapsed(SETTINGS.poolCollapsed === true);
     document.getElementById('fs-pool-sort').addEventListener('click', e => { const b = e.target.closest('[data-sort]'); if (b) setPoolSort(b.dataset.sort); });
     renderPoolSort();
