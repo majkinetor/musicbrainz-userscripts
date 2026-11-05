@@ -2,7 +2,7 @@ import { test, check, until, requireLogin, attachShot } from '../../../dev/test/
 
 test.use({ gm: { name: 'Fuzzy Logic' } });
 
-// #852: Event Horizon's header pencil gets a button under its box; the window it opens votes through EH
+// #852: Event Horizon's header pencil gets an icon beside it; the window it opens votes itself and EH’s header shows the votes
 test('votes through Event Horizon\'s tag editor', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
   await page.goto('https://test.musicbrainz.org/release-group/b1392450-e666-3926-a536-22c65f834433');
   await requireLogin(page);
@@ -17,11 +17,14 @@ test('votes through Event Horizon\'s tag editor', { tag: '@sandbox' }, async ({ 
   const row = page.locator('.fl-row:not(.have):not(.bad)').first();
   const name = await row.getAttribute('data-t');
   await attachShot(testInfo, page.locator('.fl-pop .mbu-ov-panel'), 'window');
+  check(await page.locator('button[data-tgin="close"]').count() === 0, 'the icon opens only the window, not EH’s editor');
   await row.click();
   await page.click('[data-a=vote]');
-  const mine = page.locator('.tgi.mine', { hasText: name });
-  check(await until(() => mine.count(), n => n === 1) === 1, 'EH added ' + name);
   check(await until(() => page.locator('.fl-pop').count(), n => n === 0) === 0, 'voting closes the window');
+  check(await until(() => page.evaluate(n => document.body.innerText.toLowerCase().includes(n.toLowerCase()), name), b => b) === true, 'EH’s header shows ' + name + ' without a reload');
+  await page.click('button.eh-edit[data-tgin="open"]');
+  const mine = page.locator('.tgi.mine', { hasText: name });
+  check(await until(() => mine.count(), n => n === 1) === 1, 'EH’s editor has the vote');
   await mine.locator('button').click();
   check(await until(() => mine.count(), n => n === 0) === 0, 'withdrawn');
   await page.click('button[data-tgin="close"]');

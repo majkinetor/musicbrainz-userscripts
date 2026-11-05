@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.194411
+// @version      2026.11.05.202326
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4365,6 +4365,8 @@ async function tgInSend(names, v) {
 function tgInClose() { const dirty = tgIn && tgIn.dirty && tgIn.t.tags; tgIn = null; tgInTell(null); if (dirty && data && data.g) { const ts = dirty.filter(t => t.c > 0); data.g.genres = ts.filter(t => t.g).slice(0, 5).map(t => t.n); data.g.tags = ts.filter(t => !t.g).map(t => t.n); } render(); }
 function tgInWire() {
     if (tgInWired) return; tgInWired = true;
+    // Fuzzy Logic voted itself (the editor shut): show its tags in the header without a reload
+    document.addEventListener('mbu-tags-voted', ev => { const d = ev.detail || {}; if (tgIn || !d.path || !tgPath().startsWith(d.path) || !data || !data.g) return; const lc = xs => (xs || []).map(x => String(x).trim().toLowerCase()).filter(Boolean); const g = data.g; g.genres = [...new Set([...(g.genres || []), ...lc(d.genres)])].slice(0, 5); g.tags = [...new Set([...(g.tags || []), ...lc(d.tags)])]; render(); });
     document.addEventListener('mbu-tags-add', ev => { const ns = ((ev.detail && ev.detail.names) || []).map(x => String(x).trim().toLowerCase()).filter(Boolean); if (!tgIn || !ns.length) return; if (tgIn.t) tgInSend(ns, 1); else tgIn.pend = [...(tgIn.pend || []), ...ns]; });
     document.addEventListener('click', ev => {
         const b = ehOn && ev.target.closest('button[data-tgin]'); if (!b) return;
