@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.062353
+// @version      2026.11.05.074958
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -3494,6 +3494,24 @@
       #ii-body { padding-bottom: 108px; }   /* clear the taller wrapped footer */
 
       /* secondary panels: keep them on-screen */
+      /* compact phone layout: the whole screen, a thin header and footer, short track cards */
+      #ii-modal { top: 0 !important; width: 100vw !important; max-width: 100vw !important;
+        height: 100vh !important; max-height: 100vh !important; border-radius: 0 !important; border: 0 !important; }
+      @supports (height: 100dvh) { #ii-modal { height: 100dvh !important; max-height: 100dvh !important; } }
+      #ii-hdr { padding: 2px 8px 0; }
+      #ii-hdr .ii-hdr-status, #ii-hdr .ii-zen { padding-bottom: 3px; }
+      #ii-hdr .ii-hicons { gap: 3px; padding-bottom: 2px; }
+      #ii-hdr .ii-zen-s { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #ii-tools { padding: 4px 8px; gap: 4px; }
+      #ii-table tr:not(.ii-medrow) { padding: 5px 8px; row-gap: 2px; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(6) { grid-column: 3; grid-row: 2; text-align: right; }   /* linked, beside the ISRC */
+      #ii-table tr:not(.ii-medrow) > td:nth-child(5) { grid-row: 3; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(7) { grid-row: 4; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(7):has(.ii-tl-add:empty) { display: none; }
+      #ii-foot { min-height: 0; padding: 4px 8px; gap: 4px; }
+      #ii-foot .ii-summary { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #ii-foot .ii-tbtn { padding: 4px 8px; }
+      #ii-body { padding-bottom: 72px; }
       #ii-sxpanel { top: 2vh !important; left: 2vw !important; right: 2vw !important;
         width: auto !important; max-width: none !important; max-height: 92vh !important; }
     }
