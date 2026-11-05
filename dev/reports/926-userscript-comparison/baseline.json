@@ -1,0 +1,287 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Planning baseline only; no external script has been assessed.",
+  "capturedAt": "2026-11-05T10:30:04.869609+00:00",
+  "wiki": {
+    "url": "https://wiki.musicbrainz.org/Guides/Userscripts",
+    "apiUrl": "https://wiki.musicbrainz.org/api.php",
+    "pageId": 9092,
+    "revisionId": 79510,
+    "parentRevisionId": 79509,
+    "revisionTimestamp": "2026-09-15T01:31:27Z",
+    "snapshot": "wiki-79510.wikitext",
+    "sha256": "aa6b0c863716a96d4c629a425147a867bd56762b158561d9d670a1dca9c9839c",
+    "renderedMusicBrainzSnapshot": null,
+    "note": "Direct wiki revision; MusicBrainz mirror fetch returned browser verification HTML and was rejected. Template dependencies are not yet captured."
+  },
+  "toolset": {
+    "channel": "origin/main",
+    "commit": "359310b6fee31500b3e3a56cd967cca55c582bdc",
+    "scripts": [
+      {
+        "name": "Apollo Editor",
+        "version": "2026.11.04.234842",
+        "files": [
+          {
+            "path": "userscripts/apollo_editor/apollo_editor.user.js",
+            "sha256": "12f64c2397bac6e060d44503c1c92ac143bdc6ff1d1d2625f6486394219e0cb8"
+          },
+          {
+            "path": "userscripts/apollo_editor/README.md",
+            "sha256": "d0212a6b101859ebbf04c1204a0d28d04d72620065407ee16d29a0b06af150fa"
+          },
+          {
+            "path": "userscripts/apollo_editor/DEVELOP.md",
+            "sha256": "cf01184df82e9ff7ccecc2f0488c8c8a30ba9cf3320bb396c70a302288a3f32d"
+          }
+        ]
+      },
+      {
+        "name": "Art Station",
+        "version": "2026.11.05.030102",
+        "files": [
+          {
+            "path": "userscripts/art_station/art_station.user.js",
+            "sha256": "6071d537158bb6a3a2461baac4e0f63812780d4e1ca1e4cf51f7fcb34a87f4bd"
+          },
+          {
+            "path": "userscripts/art_station/README.md",
+            "sha256": "9e09fdc09caf0e6be688225ae4cd013dda5529f192d973a3b56ea0d4b268e3ed"
+          },
+          {
+            "path": "userscripts/art_station/DEVELOP.md",
+            "sha256": "b864d99ffc0dade55a55bf84edf72f08779c5e411a5d8b4707b335279af079fc"
+          }
+        ]
+      },
+      {
+        "name": "Art Station Picker",
+        "version": "2026.11.02.163740",
+        "files": [
+          {
+            "path": "userscripts/art_station/as_picker/as_picker.user.js",
+            "sha256": "2f79164aebfaea2a91e49bb27bac3595a4ac776374852450faaa6c94565e5702"
+          },
+          {
+            "path": "userscripts/art_station/as_picker/README.md",
+            "sha256": "13384e6ff06f6c28841961f07a0b4bbfc48eb26cb9e035d3ede577419842f688"
+          }
+        ]
+      },
+      {
+        "name": "Bandcamp Player Enhanced",
+        "version": "2026.11.04",
+        "files": [
+          {
+            "path": "userscripts/bandcamp_player_enhanced/bandcamp_player_enhanced.user.js",
+            "sha256": "ab45dfbf9c2271efda3744dbfd2c72a156bca0700bc2289020b02a47832b622b"
+          },
+          {
+            "path": "userscripts/bandcamp_player_enhanced/README.md",
+            "sha256": "4ac9f1c9599b0da4a6e57ac12352ae8f25ba7cc526917b42582866609756b305"
+          }
+        ]
+      },
+      {
+        "name": "Event Horizon",
+        "version": "2026.11.05.005335",
+        "files": [
+          {
+            "path": "userscripts/event_horizon/event_horizon.user.js",
+            "sha256": "39a746e945ae4c5d64c44ff2c4ad99d6574938c332717fada6528dab9d323d87"
+          },
+          {
+            "path": "userscripts/event_horizon/README.md",
+            "sha256": "17648446580a691a0f443286dd3700f3107230c412dd7913cb71cfa67d241248"
+          },
+          {
+            "path": "userscripts/event_horizon/DEVELOP.md",
+            "sha256": "ef131865fb066fb935ca71e4b2284d9d24fb83768d2b67f3da0fd21cc935da3d"
+          }
+        ]
+      },
+      {
+        "name": "Falcon",
+        "version": "2026.11.05.000215",
+        "files": [
+          {
+            "path": "userscripts/falcon/falcon.user.js",
+            "sha256": "9d803d1ad2a36d6af6748a1a57739ee109767497cbfb65de501ca794c0239d79"
+          },
+          {
+            "path": "userscripts/falcon/README.md",
+            "sha256": "3939937ec7d86bb60707356f3f88cdbb751b21ac2a1c77707666a2a040018f5b"
+          },
+          {
+            "path": "userscripts/falcon/DEVELOP.md",
+            "sha256": "a877fe99bb971bab7fce8b77b27cc9b262bc605ad756c486c8bd0ef2c5092cc5"
+          }
+        ]
+      },
+      {
+        "name": "First Contact",
+        "version": "2026.11.05.000215",
+        "files": [
+          {
+            "path": "userscripts/first_contact/first_contact.user.js",
+            "sha256": "76d934ed163250c9e5b46be3ac37624bb28acfb70173bd98b4fddfd84f6ded1a"
+          },
+          {
+            "path": "userscripts/first_contact/README.md",
+            "sha256": "21398cbf4aaf6d8c923b43f38921c2cb9c23b31ecb6acc25e71d7969f1166d59"
+          },
+          {
+            "path": "userscripts/first_contact/DEVELOP.md",
+            "sha256": "5b2e0c9e0f0513589c22362ac5b81db20deec8be8f0a63d7dbb205ba5674cc84"
+          }
+        ]
+      },
+      {
+        "name": "Fusion",
+        "version": "2026.11.04.234842",
+        "files": [
+          {
+            "path": "userscripts/fusion/fusion.user.js",
+            "sha256": "cdb6faecae059e7f30b3de17ff29fe27457e9dad095a578a9f1f7a21394bfa05"
+          },
+          {
+            "path": "userscripts/fusion/README.md",
+            "sha256": "05dd22b72ff575c77dceeb502f68a56db7853e9a6888bd5335039ac3bbc2eb7d"
+          },
+          {
+            "path": "userscripts/fusion/DEVELOP.md",
+            "sha256": "0a66b28b897563d8ac877eedf1375c99cc52e08a1d0f0cbfadb68c03409ddd0c"
+          }
+        ]
+      },
+      {
+        "name": "Group Therapy",
+        "version": "2026.11.05.1330",
+        "files": [
+          {
+            "path": "userscripts/group_therapy/group_therapy.user.js",
+            "sha256": "6ce6dd50083b638669900fcd73d443c4205130fce187725b0f6f9aec82b583f3"
+          },
+          {
+            "path": "userscripts/group_therapy/README.md",
+            "sha256": "2cca1d7da3fa2c2699bfc055113cd1aa13430928326e3bd6ed28c5ebf4a10c1e"
+          },
+          {
+            "path": "userscripts/group_therapy/DEVELOP.md",
+            "sha256": "9f00d14f8f446c8a6bad0195c594b610dbfd5de2126e1f9f06748a5029bbfff0"
+          }
+        ]
+      },
+      {
+        "name": "ISRC Scout",
+        "version": "2026.11.05.074958",
+        "files": [
+          {
+            "path": "userscripts/isrc_scout/isrc_scout.user.js",
+            "sha256": "4073c42fbfcf19c27ae8f2f8546d356dbdf256d7b1217fdd0893aff7fd1bc254"
+          },
+          {
+            "path": "userscripts/isrc_scout/README.md",
+            "sha256": "42d9b02c34a13c8f43f1851d49c6bef9762653479cfd6ffb3d3b715d89ab9a51"
+          },
+          {
+            "path": "userscripts/isrc_scout/DEVELOP.md",
+            "sha256": "8916395048348b759f0ba69b83f6b0d9a4dc1b005738953ba141497da9d88f3b"
+          }
+        ]
+      },
+      {
+        "name": "Mammoth",
+        "version": "2026.11.04.234842",
+        "files": [
+          {
+            "path": "userscripts/mammoth/mammoth.user.js",
+            "sha256": "64521e26f6d651ba70a83cfbf78415103790d6e9d0cc98b0a7c6b5c66d69a178"
+          },
+          {
+            "path": "userscripts/mammoth/README.md",
+            "sha256": "a1907b47052711c0490ecfb4d6b7b5f70d90fed2cf6df6530e42c96247e48df3"
+          },
+          {
+            "path": "userscripts/mammoth/DEVELOP.md",
+            "sha256": "914f6954709c1788439bf375cfaa522fac70b4f68a34f237c46c3110b1ae8391"
+          }
+        ]
+      },
+      {
+        "name": "Mission Control",
+        "version": "2026.11.05.000216",
+        "files": [
+          {
+            "path": "userscripts/mission_control/mission_control.user.js",
+            "sha256": "a229d820e391af6c9de4f8ec0e5e1582834f679dd7c63ec44ccda13d1e5a6140"
+          },
+          {
+            "path": "userscripts/mission_control/README.md",
+            "sha256": "d998e0626a2101ca38009998f66a181d8e3e8a89f8c3ca302eddfc62389f14e7"
+          },
+          {
+            "path": "userscripts/mission_control/DEVELOP.md",
+            "sha256": "72231256630270fcc1fbc241d81c357cac57ac3fefe1037acc7086784ed35c35"
+          }
+        ]
+      },
+      {
+        "name": "Platform Check",
+        "version": "2026.11.05.074056",
+        "files": [
+          {
+            "path": "userscripts/platform_check/platform_check.user.js",
+            "sha256": "c4d2f4980f208ce0897d795e19202551e07e8727fe79389fba8d9db246531782"
+          },
+          {
+            "path": "userscripts/platform_check/README.md",
+            "sha256": "d2513813fb8ba2ab1537250c9abfa780bf80338b80c7184c2195c3a4d5ea1066"
+          },
+          {
+            "path": "userscripts/platform_check/DEVELOP.md",
+            "sha256": "be6f4e8693e00aebf02edc61a4bbb25f4e7197159449572fade6fa8d93d96376"
+          }
+        ]
+      },
+      {
+        "name": "Scribe",
+        "version": "2026.11.04",
+        "files": [
+          {
+            "path": "userscripts/scribe/scribe.user.js",
+            "sha256": "061491c01793e7a69e34abbaba10b7ba01c120ce69c3512a9960fd59f5a43bc6"
+          },
+          {
+            "path": "userscripts/scribe/README.md",
+            "sha256": "4f9f1232710d5b49ad7d5c969a87a55811365c7c98124fa3f31c3fb6cf537d5a"
+          },
+          {
+            "path": "userscripts/scribe/DEVELOP.md",
+            "sha256": "e37772117b6dbe00b0e6a71c90cc406f86f7f15245a0b34ea188f1cbaaa0f643"
+          }
+        ]
+      },
+      {
+        "name": "String Theory",
+        "version": "2026.11.05.102849",
+        "files": [
+          {
+            "path": "userscripts/string_theory/string_theory.user.js",
+            "sha256": "863549bb81719c30c6441095d72d78ba280d6fcf92f16ffa3c439fd31b3923de"
+          },
+          {
+            "path": "userscripts/string_theory/README.md",
+            "sha256": "924d8da62ee9ab7cd6ed1cc4ecbe7e59a9a7d6467bd63aff85629e2add6cd4c9"
+          },
+          {
+            "path": "userscripts/string_theory/DEVELOP.md",
+            "sha256": "eff8d484aafd6621b24fd0d7793dfd9e7ef91734997b72c344a7d26742d4388c"
+          }
+        ]
+      }
+    ]
+  },
+  "externalScripts": [],
+  "assessments": []
+}
