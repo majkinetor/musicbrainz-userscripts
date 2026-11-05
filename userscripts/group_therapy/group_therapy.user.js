@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.04.234842
+// @version      2026.11.05.0900
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -561,7 +561,7 @@
   function highlightPage(needle) {
     if (!needle || !window.CSS?.highlights || typeof Highlight === 'undefined') return { n: 0 };
     const lower = needle.toLowerCase(); if (lower.length < 2) return { n: 0 };
-    const exist = [], neu = [], tracks = new Set(); let release = false, n = 0;
+    const exist = [], neu = [], tracks = new Set(), roles = new Map(); let release = false, n = 0;
     // #379 count/highlight only within the relationship editor — not the (possibly hidden) edit log, edit
     // notes, sidebar, etc., which were inflating the tooltip counts.
     const root = document.querySelector('div.release-relationship-editor') || document.body;
@@ -573,10 +573,21 @@
       const at = wordHits(lt, lower); if (!at.length) continue;
       const isNew = isNewRow(node);
       for (const i of at) { const r = document.createRange(); r.setStart(node, i); r.setEnd(node, i + lower.length); (isNew ? neu : exist).push(r); n++; }
-      const p = trackPosOf(node, multi); if (p != null) tracks.add(p); else if (node.parentNode && node.parentNode.closest && node.parentNode.closest('.relationship-item')) release = true;
+      const p = trackPosOf(node, multi), item = node.parentNode && node.parentNode.closest ? node.parentNode.closest('.relationship-item') : null;
+      if (p != null) tracks.add(p); else if (item) release = true;
+      // #924 which role each hit credits, and where, so the tooltip tells a release credit's twin on the tracks apart
+      if (item) {
+        const ptr = item.closest('tr'), lab = ptr && ptr.querySelector('th.link-phrase label');
+        const role = lab ? (lab.textContent || '').replace(/:\s*$/, '').trim() : '';
+        if (role && role.toLowerCase() !== lower) {
+          let r = roles.get(role); if (!r) roles.set(role, r = { tracks: new Set(), release: false });
+          if (p != null) r.tracks.add(p); else r.release = true;
+        }
+      }
     }
     try { window.CSS.highlights.set('gt-hl-existing', new Highlight(...exist)); window.CSS.highlights.set('gt-hl-new', new Highlight(...neu)); } catch (e) {}
-    return { n, tracks, release };
+    console.debug(`[GT] highlight "${needle}": ${n} hits, roles: ${[...roles.keys()].join(', ') || '-'}`);
+    return { n, tracks, release, roles };
   }
   function clearHighlight() { try { window.CSS.highlights?.delete('gt-hl-existing'); window.CSS.highlights?.delete('gt-hl-new'); } catch (e) {} }
   // compress [1,2,3,5] → "1–3, 5"; non-numeric positions (vinyl "D4","D5") are natural-sorted + joined
@@ -597,7 +608,9 @@
     // so surface it here instead so that info isn't lost.
     const parts = [];
     if (info.n) { parts.push(`${info.n}×`); if (info.tracks && info.tracks.size) parts.push(`track${info.tracks.size > 1 ? 's' : ''} ${ranges(info.tracks)}`); if (info.release) parts.push('release'); }
-    mbuTipShowFor(anchor, mbuTipText([name, parts.join(' · ')].filter(Boolean).join('\n')), { place: 'above' });
+    // #924 one line per role: "lyricist · tracks 1–3", "saxophone · release"
+    const roleLines = [...((info.n && info.roles) || new Map())].map(([role, r]) => [role, r.tracks.size ? `track${r.tracks.size > 1 ? 's' : ''} ${ranges(r.tracks)}` : '', r.release ? 'release' : ''].filter(Boolean).join(' · '));
+    mbuTipShowFor(anchor, mbuTipText([name, parts.join(' · '), ...roleLines].filter(Boolean).join('\n')), { place: 'above' });
   }
   function hideTip() { mbuTipHide(true); }
   // MB puts the entity's sort name in the link's `title`, so the browser's native tooltip stacks on
