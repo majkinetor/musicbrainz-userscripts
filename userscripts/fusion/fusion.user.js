@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.205018
+// @version      2026.11.05.210105
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -3984,7 +3984,7 @@ function fsStyle() {
         + '.fs-ctr b{position:absolute;right:-4px;top:-4px;min-width:14px;height:14px;padding:0 3px;box-sizing:border-box;border-radius:7px;background:var(--mbu-accent,#7b4fa0);color:var(--mbu-text-on-accent,#fff);font:700 9px/14px var(--mbu-font);text-align:center}'
         + '.fs-ctr b:empty{display:none}'
         + '.fs-launch .fs-lctrs{position:absolute;right:100%;top:50%;transform:translateY(-50%);display:flex;gap:3px;margin-right:4px;pointer-events:none}.fs-launch .fs-lctrs>*{pointer-events:auto}'
-        + '.fs-launch .fs-lctrs.fs-lv{right:auto;left:50%;top:auto;bottom:100%;transform:translateX(-50%);flex-direction:column-reverse;margin:0 0 4px}'
+        + ':root[data-mbu-flow=row] .fs-launch .fs-lctrs,.fs-launch .fs-lctrs.fs-lv{right:auto;left:50%;top:auto;bottom:100%;transform:translateX(-50%);flex-direction:column-reverse;margin:0 0 4px}'
         + '.fs-launch .fs-lctrs .fs-ctr:hover{color:var(--mbu-text)}'
         + '.fs-addmenu{font-family:var(--mbu-font);max-height:70vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}'
         + '.fs-addmenu .fs-am-t{font-weight:700;margin:0 0 6px}'
