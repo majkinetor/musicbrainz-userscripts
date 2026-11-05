@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-05 12:28 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-05 12:36 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -896,12 +896,12 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | Annotation → Show annotation on hover | on                                                                  | preview a folded annotation                                                                 |
 | General → Page width                  | Wide                                                                | how wide the page grows on a big screen                                                     |
 | General → Background                  | Cover aura                                                          | Flat, Cover aura, Glow or Header band                                                       |
-| General → Hexagons                    | off, Static                                                         | show outlines, choose a motion, Depth; opacity of the outlines and the effect              |
+| Effects → Effect                      | None                                                                | Hexagons: outlines with a motion, their strength and the effect's, Depth                    |
 | General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                                      |
 | General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
 | General → Keyboard shortcuts          | on                                                                  | the keys below; [keyboard shortcuts](#keyboard-shortcuts); **Change keys** opens their list |
 
-Motions: Static, Drift, Tide, Twinkle, Ripple, Lantern (follows the pointer), Horizon, Electricity and Neural. Under the row, settings appear for what the motion takes: Pace, Trail, How often and a two-tone Colour. **Depth** scrolls the hexagons slower than the page. All respect reduced motion.
+Motions: Static, Drift, Tide, Twinkle, Ripple, Lantern (follows the pointer), Horizon, Electricity and Neural. Pick Hexagons in the Effects tab and its settings follow; the ones the motion doesn't take (Pace, Trail, How often, a two-tone Colour) are greyed out. **Depth** scrolls the hexagons slower than the page. All respect reduced motion.
 
 ### Shortcuts
 

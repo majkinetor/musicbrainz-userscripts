@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.122631
+// @version      2026.11.05.150000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -10558,7 +10558,7 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '.eh-cfg .cr.ckr{display:block;border-bottom:0}.eh-cfg .ck{white-space:nowrap}.eh-cfg .ck{display:inline-flex;align-items:center;gap:8px;padding:6px 2px;border:0;background:none;color:var(--mbu-text);font:inherit;cursor:pointer}.eh-cfg .ck svg{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2}.eh-cfg .ck[aria-checked=true] svg{color:var(--mbu-accent-text)}'
     + '.eh-cfg.eh-plpop .cr{border-bottom:0}'
     + '.eh-plpop{position:absolute;z-index:2147482000;width:min(560px,94vw);max-height:70vh;overflow-y:auto;padding:4px 10px;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25)}'
-    + '.eh-cfg .cr{display:grid;grid-template-columns:108px minmax(0,1fr);gap:6px;padding:4px 0;border-bottom:1px solid var(--mbu-border-soft);align-items:start}.eh-cfg .cr:last-child{border:0}'
+    + '.eh-cfg .cr{display:grid;grid-template-columns:108px minmax(0,1fr);gap:6px;padding:4px 0;border-bottom:1px solid var(--mbu-border-soft);align-items:start}.eh-cfg .cr:last-child{border:0}.eh-cfg .cr.dim{opacity:.45}'
     + '.eh-cfg .cl{padding-top:5px;font:600 10px var(--mbu-font);letter-spacing:.06em;text-transform:uppercase;color:var(--mbu-text-weak)}'
     + '.eh-cfg .none{padding-top:5px;color:var(--mbu-text-weak);font-style:italic}.eh-cfg .sw{margin-top:3px}'
     + '.eh-cfg .sw{all:unset;position:relative;width:34px;height:20px;border-radius:20px;background:var(--mbu-border);cursor:pointer;flex:none;transition:background .15s}'
@@ -10639,33 +10639,37 @@ const HEX_MOTIONS = [
 ];
 // which of the effect's settings each motion takes
 const HEX_USES = { pace: ['drift', 'tide', 'twinkle', 'ripple', 'horizon', 'electricity', 'neural'], trail: ['twinkle', 'electricity', 'neural'], often: ['twinkle', 'ripple', 'electricity', 'neural'], two: ['drift', 'twinkle', 'electricity', 'neural'] };
-function hexMotionSelect() {
-    const selected = HEX_MOTIONS.find(x => x[0] === S.hexMotion) || HEX_MOTIONS[0];
-    return `<select data-hex-motion aria-label="Hexagon animation" data-tip="${esc(selected[2])}">${HEX_MOTIONS.map(([k, label, tip]) => `<option value="${k}" title="${esc(tip)}"${k === S.hexMotion ? ' selected' : ''}>${label}</option>`).join('')}</select>`;
-}
+// the effects drawn over the background; Hexagons is the first
+const EFFECTS = [['none', 'None', 'No effect over the background'], ['hexagons', 'Hexagons', 'Hexagon outlines over any background, with an animation']];
 function hexRows(chip, row) {
     const m = S.hexMotion, use = k => HEX_USES[k].includes(m);
-    const num = (attr, v, label, aria) => `<label>${label}<input type="number" min="0" max="100" step="5" value="${v}" ${attr} aria-label="${aria}">%</label>`;
-    const opts = (g, list) => list.map(([v, l]) => chip(g, v, S[g] === v, l)).join('');
-    return row('Opacity', '<span class="hex-controls">' + num('data-hex-opacity', S.hexOpacity, 'Hexagons', 'Hexagon opacity') + (m === 'static' ? '' : num('data-hex-fx', S.hexFx, 'Effect', 'Effect opacity')) + '</span>', 'How strong the outlines are, and the effect over them')
-        + (use('pace') ? row('Pace', opts('hexPace', [[.6, 'Slow'], [1, 'Normal'], [1.6, 'Fast']]), 'How fast the effect moves') : '')
-        + (use('trail') ? row('Trail', opts('hexTrail', [[.5, 'Short'], [1, 'Normal'], [2, 'Long']]), 'How long what lights up takes to fade') : '')
-        + (use('often') ? row('How often', opts('hexOften', [[.5, 'Rarely'], [1, 'Normal'], [2, 'Often']]), 'How often something new lights up') : '')
-        + (use('two') ? row('Colour', chip('hexTwo', '0', !S.hexTwo, 'One tone') + chip('hexTwo', '1', !!S.hexTwo, 'Two-tone'), 'Two-tone mixes in the second accent colour') : '');
+    const dim = (on, html) => on ? html : html.replace('class="cr"', 'class="cr dim"');
+    const opts = (g, list) => list.map(([v, l, tip]) => chip(g, v, S[g] === v, l, tip)).join('');
+    const pct = g => list => list.map(v => [v, v + '%']);
+    return row('Motion', opts('hexMotion', HEX_MOTIONS), 'How the hexagons move')
+        + row('Outlines', opts('hexOpacity', pct()([10, 20, 30, 40, 60])), 'How strong the hexagon outlines are')
+        + dim(m !== 'static', row('Effect', opts('hexFx', pct()([25, 45, 65, 85, 100])), 'How strong the effect over the outlines is'))
+        + dim(use('pace'), row('Pace', opts('hexPace', [[.6, 'Slow'], [1, 'Normal'], [1.6, 'Fast']]), 'How fast the effect moves'))
+        + dim(use('trail'), row('Trail', opts('hexTrail', [[.5, 'Short'], [1, 'Normal'], [2, 'Long']]), 'How long what lights up takes to fade'))
+        + dim(use('often'), row('How often', opts('hexOften', [[.5, 'Rarely'], [1, 'Normal'], [2, 'Often']]), 'How often something new lights up'))
+        + dim(use('two'), row('Colour', chip('hexTwo', '0', !S.hexTwo, 'One tone') + chip('hexTwo', '1', !!S.hexTwo, 'Two-tone'), 'Two-tone mixes in the second accent colour'))
+        + row('Depth', chip('hexDepth', 'hexDepth', S.hexDepth, 'On', 'The hexagons scroll slower than the page\nOn: they sit deeper, behind the page\nOff: they stay still'));
 }
 function cfgBody() {
     const chip = cfgChip, row = cfgRow;
-    const tabs = [['general', 'General']];
+    const tabs = [['general', 'General'], ['effects', 'Effects']];
+    const fx = S.hex ? 'hexagons' : 'none';
     const panes = {
         general: row('Keyboard shortcuts', chip('keysOn', 'keysOn', S.keysOn, 'On', 'Single keys open the page\'s edit, relationships, history and more\nCtrl+/ lists them') + '<button type="button" class="chip" data-keys-open>Change keys</button>', 'On MusicBrainz\'s pages and in Event Horizon alike')
             + row('Menu titles', chip('menuTitles', 'menuTitles', S.menuTitles, 'Show', 'Show text beside header menu icons\nOn: icons and titles\nOff: icons only'))
             + row('Pending changes', chip('pending', 'pending', S.pending, 'Show', 'Mark what has edits open, as MusicBrainz does\nTakes one extra MusicBrainz request per page, sent last'))
             + row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen')
-            + row('Background', [['flat', 'Flat'], ['aura', 'Cover aura'], ['glow', 'Glow'], ['band', 'Header band']].map(([k, l]) => chip('bg', k, (S.bg || 'aura') === k, l)).join(''), 'Cover aura blurs the page\'s cover or picture behind its head; pages without one get the glow')
-            + row('Hexagons', '<span class="hex-controls">' + chip('hex', 'hex', S.hex, 'Show') + hexMotionSelect() + chip('hexDepth', 'hexDepth', S.hexDepth, 'Depth', 'The hexagons scroll slower than the page\nOn: they sit deeper, behind the page\nOff: they stay still') + '</span>', 'Overlay hexagon outlines on any background')
-            + (S.hex ? hexRows(chip, row) : ''),
+            + row('Background', [['flat', 'Flat'], ['aura', 'Cover aura'], ['glow', 'Glow'], ['band', 'Header band']].map(([k, l]) => chip('bg', k, (S.bg || 'aura') === k, l)).join(''), 'Cover aura blurs the page\'s cover or picture behind its head; pages without one get the glow'),
+        effects: row('Effect', `<select data-fx-pick aria-label="Effect">${EFFECTS.map(([k, l, tip]) => `<option value="${k}" title="${esc(tip)}"${k === fx ? ' selected' : ''}>${l}</option>`).join('')}</select>`, 'An effect drawn over the background')
+            + (fx === 'hexagons' ? hexRows(chip, row) : ''),
     };
-    return `<div class="pane">${panes.general}</div>`;
+    if (!panes[cfgTab]) cfgTab = 'general';
+    return `<div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button type="button" class="tab" role="tab" data-tab="${k}" aria-selected="${k === cfgTab}">${l}</button>`).join('')}</div><div class="pane">${panes[cfgTab]}</div>`;
 }
 let cfgTab = 'general';
 function openCfg() {
@@ -10695,16 +10699,9 @@ function openPlCfg(btn, hd) {
 // clicks and drags in a settings body; body() redraws it
 function cfgWire(panel, b, body) {
     panel.addEventListener('change', ev => {
-        if (!ev.target.matches('[data-hex-motion]')) return;
-        const choice = HEX_MOTIONS.find(x => x[0] === ev.target.value); if (!choice) return;
-        S.hexMotion = choice[0];
+        if (!ev.target.matches('[data-fx-pick]')) return;
+        S.hex = ev.target.value === 'hexagons';
         save(); hexApply(); b.innerHTML = body();
-    });
-    panel.addEventListener('input', ev => {
-        const fx = ev.target.matches('[data-hex-fx]');
-        if (!(fx || ev.target.matches('[data-hex-opacity]')) || ev.target.value === '') return;
-        S[fx ? 'hexFx' : 'hexOpacity'] = Math.max(0, Math.min(100, Math.round(+ev.target.value) || 0));
-        save(); hexApply();
     });
     // number fields become the suite's − n + stepper, on every redraw of the body
     mbuControls(b); new MutationObserver(() => mbuControls(b)).observe(b, { childList: true });
@@ -10766,7 +10763,8 @@ function cfgWire(panel, b, body) {
             else if (g === 'width') S.width = +k;
             else if (g === 'bg') S.bg = k;
             else if (g === 'hex' || g === 'hexDepth') { S[g] = !S[g]; hexApply(); }
-            else if (g === 'hexPace' || g === 'hexTrail' || g === 'hexOften') { S[g] = +k; hexApply(); }
+            else if (g === 'hexPace' || g === 'hexTrail' || g === 'hexOften' || g === 'hexOpacity' || g === 'hexFx') { S[g] = +k; hexApply(); }
+            else if (g === 'hexMotion') { S.hexMotion = k; hexApply(); }
             else if (g === 'hexTwo') { S.hexTwo = k === '1'; hexApply(); }
             else if (g === 'imgP') { S.imgOff = toggle(S.imgOff, k); imgResort(); }
         }
