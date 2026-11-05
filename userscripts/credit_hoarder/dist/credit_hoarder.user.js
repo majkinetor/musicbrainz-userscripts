@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.11.05.120515
+// @version      2026.11.05.162146
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -7861,7 +7861,6 @@ Its \u{1F517} chip adds the link.`;
       log.info(`#605 split: ${before} role(s) \u2192 ${after} after fan-out`);
     }
     const dedupeEquivalenceSets = dedupOpts.dedupeEquivalenceSets !== false;
-    const dedupeDuplicateRoles = dedupOpts.dedupeDuplicateRoles !== false;
     const creditOverrides = dedupOpts.creditOverrides || /* @__PURE__ */ new Map();
     const re = await waitForMBEditor();
     if (!re) return;
@@ -8115,7 +8114,7 @@ Its \u{1F517} chip adds the link.`;
         if (exactMatch) {
           return { kind: isEquivalent ? "equivalence" : "exact", existingLinkName: lookupName(r.linkTypeID), status: r._status };
         }
-        if (dedupeDuplicateRoles && !dupMatch && idSigOf(existingAttrs) === candIdSig) {
+        if (!dupMatch && idSigOf(existingAttrs) === candIdSig) {
           dupMatch = { kind: isEquivalent ? "equivalence" : "duplicate-role", existingLinkName: lookupName(r.linkTypeID), status: r._status };
         }
       }
@@ -12495,11 +12494,6 @@ Merged, without duplicates, into one review`;
       bv("dedupeEquivalenceSets", true),
       "Skip a role when an equivalent role already exists on the target (writer \u2261 composer)."
     );
-    const dedupeDupCb = makeCheckbox(
-      "Duplicate roles",
-      bv("dedupeDuplicateRoles", true),
-      "Skip adding a role when the target already has the same role (regardless of task / dates / attributes)."
-    );
     _optsHost = optsWrap;
     optsWrap.appendChild(optsBtn);
     document.body.appendChild(optsPanel);
@@ -12528,13 +12522,12 @@ Merged, without duplicates, into one review`;
           createWorksMode: createWorksMode.value,
           createWorksReset421: true,
           // #421 one-time reset already applied — must survive every save
-          dedupeEquivalenceSets: dedupeEqCb.checked,
-          dedupeDuplicateRoles: dedupeDupCb.checked
+          dedupeEquivalenceSets: dedupeEqCb.checked
         }));
       } catch (e) {
       }
     };
-    [tracklistCb, applyTracksCb, useWorksCb, dedupeEqCb, dedupeDupCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
+    [tracklistCb, applyTracksCb, useWorksCb, dedupeEqCb].forEach((cb) => cb.closest("label").addEventListener("click", () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener("change", saveOpts);
     const outputDiv = document.createElement("div");
     outputDiv.className = "discogs-output empty";
@@ -12877,8 +12870,7 @@ ${lines}
         applyToTracks: applyTracksCb.checked,
         // #424: "Use works" off → dispatch sees mode 'off' and touches no work rels
         createWorksMode: useWorksCb.checked ? createWorksMode.value : "off",
-        dedupeEquivalenceSets: dedupeEqCb.checked,
-        dedupeDuplicateRoles: dedupeDupCb.checked
+        dedupeEquivalenceSets: dedupeEqCb.checked
       });
       const _click = getOpts();
       const opts = `per-track:${_click.processTracklist ? "on" : "off"}, move-to-tracks:${_click.applyToTracks ? "on" : "off"}, create-works:${_click.createWorksMode}`;
@@ -13714,7 +13706,6 @@ ${lines}
       }
       const dedupOpts = {
         dedupeEquivalenceSets: live.dedupeEquivalenceSets,
-        dedupeDuplicateRoles: live.dedupeDuplicateRoles,
         creditOverrides: capturedConfirmedMap?.creditOverrides,
         sourceLabel
         // #408: consolidated runs label the edit note "Import all (…)"

@@ -64,12 +64,9 @@ export function makeIdentifyingClassifier(lat) {
 // issue #62:
 //   dedupeEquivalenceSets  — treat writer ≡ composer (etc.) when looking
 //                            up existing rels for skipping.
-//   dedupeDuplicateRoles   — when (linkType, target) is already on the
-//                            source, skip regardless of attr/credit/date
-//                            differences. Without this, only an exact
-//                            attr-signature match counts as "already
-//                            there", so e.g. instrument with different
-//                            tasks would still dispatch.
+// A duplicate role is always skipped: when (linkType, target) is already
+// on the source with the same instrument/vocal, skip regardless of other
+// attr/credit/date differences (it was the "Duplicate roles" option, #62).
 //   creditOverrides        — Map<mbUrl, string> from the review table's
 //                            editable "Credited as" input. When present
 //                            for the resolved entity, the override wins
@@ -91,7 +88,6 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         log.info(`#605 split: ${before} role(s) → ${after} after fan-out`);
     }
     const dedupeEquivalenceSets = dedupOpts.dedupeEquivalenceSets !== false; // default ON
-    const dedupeDuplicateRoles  = dedupOpts.dedupeDuplicateRoles  !== false; // default ON
     const creditOverrides       = dedupOpts.creditOverrides || new Map();
     const re = await waitForMBEditor();
     if (!re) return;
@@ -416,7 +412,6 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
     //   - 'exact'          identical link type + same attrs ("Already in MB")
     //   - 'equivalence'    equivalent link type (e.g. writer when adding composer)
     //   - 'duplicate-role' same link type + same target but DIFFERENT attrs
-    //                      (only counted when `dedupeDuplicateRoles` is on)
     function relAlreadyExists(sourceEntity, linkTypeID, targetGid, attrTree) {
         const rels = sourceEntity?.relationships;
         if (!Array.isArray(rels) || rels.length === 0) return null;
@@ -466,7 +461,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             // instrument/vocal attributes are the same (e.g. "guitar" vs
             // "guitar (solo)"). Different instruments (synthesizer vs drum
             // machine) are distinct performances and must both be added (#225).
-            if (dedupeDuplicateRoles && !dupMatch && idSigOf(existingAttrs) === candIdSig) {
+            if (!dupMatch && idSigOf(existingAttrs) === candIdSig) {
                 dupMatch = { kind: isEquivalent ? 'equivalence' : 'duplicate-role', existingLinkName: lookupName(r.linkTypeID), status: r._status };
             }
         }
@@ -562,8 +557,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             // Distinct log message per #62 feedback. Three cases:
             //   exact          — identical rel already in MB
             //   equivalence    — equivalent role (writer ↔ composer) already there
-            //   duplicate-role — same role + different attrs (only when
-            //                    the "Duplicate roles" option is on)
+            //   duplicate-role — same role + different attrs
             const pair = `${sourceEntity.name} ↔ ${targetEntity.name}${credit && credit !== targetEntity.name ? ` (credited: ${credit})` : ''}`;
             const existing = dedupHit.existingLinkName;
             // #272: a match against a rel added THIS session (status 1) is not

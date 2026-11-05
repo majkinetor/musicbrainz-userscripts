@@ -38,7 +38,6 @@ Credit Hoarder lists every credited artist, label and place, with clear matches 
 | Move release credits to tracks | put release-level recording credits (instruments, vocals, producer, mix…) on every track |
 | Use works                      | existing ones (*create none*), also those writer credits need (*create needed*), or off  |
 | Equivalence sets               | skip a role when an equivalent one is already there (writer ≡ composer)                  |
-| Duplicate roles                | skip a role the recording already has                                                    |
 
 ## Review table
 
@@ -99,7 +98,7 @@ On a row:
 
 ## Instant Fill
 
-Adds the confirmed relationships to the editor without dialogs: release-level (labels, places, companies, artists), per track (instruments, vocals, engineers…) and per work (composer, lyricist, writer). A relationship that already exists, or was added earlier in the session, is skipped.
+Adds the confirmed relationships to the editor without dialogs: release-level (labels, places, companies, artists), per track (instruments, vocals, engineers…) and per work (composer, lyricist, writer). A relationship that already exists, or was added earlier in the session, is skipped, and so is the same role with only other attributes (*guitar* where *guitar (solo)* is there); a different instrument or voice is still added.
 
 The edit note carries the statistics per source, with how the entities were matched: *Matched: 9 exact, 4 strong, 1 user (cutoff: strong)*. What an earlier source added counts as *already added this session*, not *already in MB*.
 

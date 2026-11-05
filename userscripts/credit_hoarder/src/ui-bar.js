@@ -3049,11 +3049,9 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     dedupHd.className = 'discogs-opts-panel-hd';
     dedupHd.textContent = 'Deduplication';
     optsPanel.appendChild(dedupHd);
-    _optsHost = optsPanel;   // the next two toggles land inside the popover
+    _optsHost = optsPanel;   // the next toggle lands inside the popover
     const dedupeEqCb  = makeCheckbox('Equivalence sets',  bv('dedupeEquivalenceSets', true),
         'Skip a role when an equivalent role already exists on the target (writer ≡ composer).');
-    const dedupeDupCb = makeCheckbox('Duplicate roles',   bv('dedupeDuplicateRoles', true),
-        'Skip adding a role when the target already has the same role (regardless of task / dates / attributes).');
     _optsHost = optsWrap;    // back to the inline strip
     optsWrap.appendChild(optsBtn);
     document.body.appendChild(optsPanel);   // floating; positioned when opened
@@ -3075,10 +3073,9 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             createWorksMode: createWorksMode.value,
             createWorksReset421: true,   // #421 one-time reset already applied — must survive every save
             dedupeEquivalenceSets: dedupeEqCb.checked,
-            dedupeDuplicateRoles:  dedupeDupCb.checked,
         })); } catch(e) {}
     };
-    [tracklistCb, applyTracksCb, useWorksCb, dedupeEqCb, dedupeDupCb].forEach(cb =>
+    [tracklistCb, applyTracksCb, useWorksCb, dedupeEqCb].forEach(cb =>
         cb.closest('label').addEventListener('click', () => setTimeout(saveOpts, 0)));
     createWorksMode.addEventListener('change', saveOpts);
 
@@ -3494,7 +3491,6 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             // #424: "Use works" off → dispatch sees mode 'off' and touches no work rels
             createWorksMode:         useWorksCb.checked ? createWorksMode.value : 'off',
             dedupeEquivalenceSets:   dedupeEqCb.checked,
-            dedupeDuplicateRoles:    dedupeDupCb.checked,
         });
         const _click = getOpts();
         const opts = `per-track:${_click.processTracklist?'on':'off'}, move-to-tracks:${_click.applyToTracks?'on':'off'}, create-works:${_click.createWorksMode}`;
@@ -4437,7 +4433,6 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
                     // them from a trailing opts arg per #62.
                     const dedupOpts = {
                         dedupeEquivalenceSets: live.dedupeEquivalenceSets,
-                        dedupeDuplicateRoles:  live.dedupeDuplicateRoles,
                         creditOverrides: capturedConfirmedMap?.creditOverrides,
                         sourceLabel,   // #408: consolidated runs label the edit note "Import all (…)"
                     };
