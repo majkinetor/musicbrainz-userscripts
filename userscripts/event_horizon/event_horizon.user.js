@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.150000
+// @version      2026.11.05.160000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7795,7 +7795,8 @@ function hexLattice(w, h) {
 // The moving effects: one animation frame loop per layer; it stops when the tab is hidden or the motion changes.
 function hexPattern(layer, mode) {
     if (!HEX_JS.includes(mode) || !(Number(S.hexFx) > 0)) { layer._ehPattern?.stop(); return; }
-    const w = innerWidth + 96, h = innerHeight + 96, cs = getComputedStyle(layer);
+    // the layer's own size, not the window's: the window counts the scrollbar, and a canvas stretched to fit would drift off the outlines
+    const w = layer.clientWidth || innerWidth + 96, h = layer.clientHeight || innerHeight + 96, cs = getComputedStyle(layer);
     const c1 = cs.color, c2 = cs.getPropertyValue('--accent2').trim() || c1;
     const pace = Number(S.hexPace) || 1, trail = Number(S.hexTrail) || 1, often = Number(S.hexOften) || 1, two = !!S.hexTwo;
     const key = [mode, w, h, c1, c2, pace, trail, often, two].join('|');
@@ -7807,7 +7808,7 @@ function hexPattern(layer, mode) {
     let cv, ctx;
     if (mode !== 'ripple' && mode !== 'lantern') {
         const dpr = Math.min(2, devicePixelRatio || 1);
-        cv = document.createElement('canvas'); cv.className = 'hex-pattern'; cv.width = w * dpr; cv.height = h * dpr;
+        cv = document.createElement('canvas'); cv.className = 'hex-pattern'; cv.width = w * dpr; cv.height = h * dpr; cv.style.width = w + 'px'; cv.style.height = h + 'px';
         layer.append(cv); ctx = cv.getContext('2d'); ctx.scale(dpr, dpr); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     }
     const setMask = m => { rect.style.webkitMask = m; rect.style.mask = m; };
@@ -7938,11 +7939,12 @@ const HEX_FX = {
                 bolts = bolts.filter(b => (b.age += dt) < b.life);
                 for (const b of bolts) {
                     const grown = Math.min(1, b.age / b.grow), fade = b.age < b.grow ? 1 : 1 - (b.age - b.grow) / (b.life - b.grow);
-                    const a = b.v * fade * fade * (Math.random() < .25 ? .55 : 1);
+                    // it flickers only while it strikes; the fade is smooth
+                    const a = b.v * fade * fade * (b.age < b.grow * 1.5 && Math.random() < .25 ? .55 : 1);
                     ctx.strokeStyle = b.c;
                     for (const [lw, al] of [[3.5, .22], [1.2, 1]]) {
                         ctx.lineWidth = lw * (.6 + b.v * .5); ctx.globalAlpha = a * al; ctx.beginPath();
-                        for (const p of b.pts) { const m = Math.max(1, Math.ceil(p.length * grown)); p.slice(0, m).forEach(([x, y], k) => ctx[k ? 'lineTo' : 'moveTo'](x, y)); }
+                        for (const p of b.pts) { const m = Math.max(2, Math.ceil(p.length * grown)); p.slice(0, m).forEach(([x, y], k) => ctx[k ? 'lineTo' : 'moveTo'](x, y)); }
                         ctx.stroke();
                     }
                 }
