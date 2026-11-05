@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.195647
+// @version      2026.11.05.200908
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjg1Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMwNzM1NDgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiMzNDIwNGUiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjNTAzMDFhIi8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -2720,6 +2720,7 @@
 .fl-ehb.fl-ehb:hover{background:color-mix(in srgb,var(--mbu-accent) 14%,transparent)}
 .fl-ehb svg{width:22px!important;height:22px!important;flex:none;display:block}
 .fl-ehb b{position:absolute;top:-4px;right:-6px;min-width:14px;padding:0 3px;border-radius:7px;background:var(--mbu-accent);color:var(--mbu-text-on-accent);font:700 10px/14px var(--mbu-font);text-align:center;box-sizing:border-box}
+.mbu-ov.fl-cfg{background:none}
 .fl-cfg .mbu-ov-panel{width:min(680px,94vw);height:min(620px,90vh);display:flex;flex-direction:column}
 .fl-cfg .mbu-ov-body{${SB};flex:1 1 auto;overflow:auto}
 .fl-tabs{display:flex;gap:2px;padding:0 14px;border-bottom:1px solid var(--mbu-border)}
@@ -2768,7 +2769,6 @@
       foot: e.name.includes(',') ? 'Has a comma, which MusicBrainz splits: map it first' : have ? 'Already tagged here' : '',
     });
   }
-  mbuTipOn('.fl-row[data-t]', el => { const e = S.tags.get(el.dataset.t); return e ? tagTip(e) : ''; }, { card: true });
 
   function sorted() {
     // a source switched off in the first row drops out of every tag; a tag only it gave goes
@@ -2806,18 +2806,18 @@
     } else {
       const vis = shown.filter(e => !e.name.includes(','));
       const allSel = vis.length && vis.every(e => S.sel.has(e.name));
-      h += '<table class="fl-t"><tr class="fl-sec"><td class="fl-c0"><input type="checkbox" data-a="selall"' + (allSel ? ' checked' : '') + ' data-tip="Select all"></td><td colspan="3">' + plural(shown.length, S.showAll ? 'tag' : 'genre') + (S.busy ? ' · collecting…' : '') + '</td></tr>';
+      h += '<table class="fl-t"><tr class="fl-sec"><td class="fl-c0"><input type="checkbox" data-a="selall"' + (allSel ? ' checked' : '') + ' data-tip="Select all"></td><td colspan="2">' + plural(shown.length, S.showAll ? 'tag' : 'genre') + (S.busy ? ' · collecting…' : '') + '</td></tr>';
       for (const e of shown) {
         const bad = e.name.includes(','), have = S.have.has(e.name);
         const as = [...e.orig].filter(o => o.toLowerCase() !== e.name);
         h += '<tr class="fl-row' + (have ? ' have' : '') + (bad ? ' bad' : '') + '" data-t="' + esc(e.name) + '">'
           + '<td class="fl-c0"><input type="checkbox"' + (S.sel.has(e.name) ? ' checked' : '') + (bad ? ' disabled' : '') + '></td>'
           + '<td><span class="fl-tag' + (e.genre ? ' genre' : '') + '">' + esc(e.name) + '</span>' + (as.length ? '<span class="fl-orig">' + esc(as.join(', ')) + '</span>' : '') + '</td>'
-          + '<td class="fl-cs">' + srcIcons(e, 6) + '</td><td class="fl-cn">' + (e.srcs.size > 1 ? e.srcs.size : '') + '</td></tr>';
+          + '<td class="fl-cs">' + srcIcons(e, 6) + '</td></tr>';
       }
       if (S.suggest.length) {
-        h += '<tr class="fl-sec"><td></td><td colspan="4">Mapping suggestions</td></tr>' + S.suggest.map((s, i) =>
-          '<tr class="fl-sug"><td></td><td>' + esc(s.from) + ' → ' + esc(s.to) + '</td><td colspan="2" class="fl-cm"><button type="button" class="fl-link" data-a="rule" data-i="' + i + '" data-tip="Add this rule to the mapping">Add</button></td></tr>').join('');
+        h += '<tr class="fl-sec"><td></td><td colspan="2">Mapping suggestions</td></tr>' + S.suggest.map((s, i) =>
+          '<tr class="fl-sug"><td></td><td>' + esc(s.from) + ' → ' + esc(s.to) + '</td><td class="fl-cm"><button type="button" class="fl-link" data-a="rule" data-i="' + i + '" data-tip="Add this rule to the mapping">Add</button></td></tr>').join('');
       }
       h += '</table>';
     }
@@ -3151,7 +3151,7 @@
   // EH redraws its header (and the editor) whenever it likes: put the icon back beside the pencil each time
   let ehQ = 0;
   new MutationObserver(() => { if (!ehQ) ehQ = requestAnimationFrame(() => { ehQ = 0; const a = ehAnchor(); if (a && a.nextElementSibling !== ehBtn) drawEhBtn(); }); })
-    .observe(document.body, { childList: true, subtree: true });
+    .observe(document.documentElement, { childList: true, subtree: true });   // EH swaps the body
 
   window.__fuzzyLogic = S;   // for the specs
   if (TYPE && CFG.background) collect();
