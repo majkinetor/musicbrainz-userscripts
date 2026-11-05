@@ -6551,7 +6551,7 @@ new MutationObserver(() => { closeFusion(); document.getElementById('fs-em-overl
 
 try {
     W.__fusion = {
-        VERSION, get SCOPE() { return SCOPE; }, STATE, SETTINGS_DEFAULTS, MATCH_CUTOFFS,
+        VERSION, addFromPage, openEntities, get SCOPE() { return SCOPE; }, STATE, SETTINGS_DEFAULTS, MATCH_CUTOFFS,
         get SETTINGS() { return SETTINGS; },
         recordingSetting, placeConflict, settingWarning, memberDis,
         normName, tokenMatch, titleSimilar, titleAlike, titleDistinctWords, isrcConflict, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, acGids, dur, parseMbidFromInput, parseAddInput,

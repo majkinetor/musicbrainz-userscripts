@@ -17,7 +17,7 @@ test('Fusion follows EH navigation and restores each page board', { tag: '@unit'
       document.documentElement.setAttribute('data-mbu-page', location.pathname);
     }, id);
     await expect(page.locator('#fs-launch')).toHaveCount(1);
-    await page.evaluate(() => window.__fusion.openFusion());
+    await page.evaluate(async () => { await window.__fusion.openFusion(); await window.__fusion.seedFromScope(); });
   };
   await go(a);
   expect(await page.evaluate(() => window.__fusion.SCOPE.mbid)).toBe(a);

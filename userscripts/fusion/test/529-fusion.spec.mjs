@@ -237,7 +237,7 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   // ── live: open the real UI (not just STATE), seed, add a second recording,
   // group via REAL double-clicks (regression guard for the bug below), merge ──
   const seedInfo = await page.evaluate(async () => {
-      await window.__fusion.openFusion();
+      await window.__fusion.openFusion(); await window.__fusion.seedFromScope();
       return { poolSize: window.__fusion.STATE.poolOrder.length, scopeType: window.__fusion.SCOPE.type };
   });
   check(seedInfo.scopeType === 'recording', 'Fusion detects recording-page scope on /recording/' + RECORDING_A.slice(0, 8) + '…');
@@ -560,7 +560,10 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   await page.goto('https://test.musicbrainz.org/release-group/ce90ac93-3c64-464a-8a44-ce6f20ae0f53', { waitUntil: 'domcontentloaded' });
   await inject('fusion');
   await page.waitForFunction(() => !!window.__fusion, { timeout: 15000 });
-  await page.click('#fs-launch');
+  await page.click('#fs-launch', { modifiers: ['Control'] });   // #908: the add menu, not a plain open, loads the page
+  await page.locator('#fs-addmenu label', { hasText: 'This release group' }).locator('input').uncheck();
+  await page.locator('#fs-addmenu label', { hasText: 'Recordings of its releases' }).locator('input').check();
+  await page.click('#fs-addmenu [data-a="add"]');
   const seedAc = await page.waitForFunction(
       () => { const r = [...window.__fusion.STATE.recordings.values()]; return r.length && r.every(x => x.acoustids !== null) ? { total: r.length, withAc: r.filter(x => x.acoustids.length).length } : null; },
       { timeout: 90000 }).then(h => h.jsonValue());
@@ -969,7 +972,10 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   await page.goto('https://test.musicbrainz.org/artist/c321a13a-1c52-43c0-b60a-3a454cb7f9a2/recordings', { waitUntil: 'domcontentloaded' });
   await inject('fusion');
   await page.waitForFunction(() => !!window.__fusion, { timeout: 15000 });
-  await page.click('#fs-launch');
+  await page.click('#fs-launch', { modifiers: ['Control'] });
+  await page.locator('#fs-addmenu label', { hasText: 'This artist' }).locator('input').uncheck();
+  await page.locator('#fs-addmenu label', { hasText: 'Its recordings' }).locator('input').check();
+  await page.click('#fs-addmenu [data-a="add"]');
   await page.waitForFunction(() => window.__fusion.STATE.poolOrder.length > 0, { timeout: 60000 });
   // until the seed has reported (its log line) and every seeded recording has its releases
   const artistSeed = await until(() => page.evaluate(() => {

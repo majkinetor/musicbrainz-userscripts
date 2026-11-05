@@ -14,7 +14,7 @@ test("a recording's disambiguation shows after its title", { tag: ['@sandbox'] }
   test.skip(!want, 'the sandbox recording has no disambiguation any more');
   await page.goto(`${SANDBOX}/recording/${REC}`, { waitUntil: 'domcontentloaded' });
   await inject('fusion', { waitFor: '__fusion' });
-  await page.evaluate(() => window.__fusion.openFusion());
+  await page.evaluate(async () => { await window.__fusion.openFusion(); await window.__fusion.seedFromScope(); });
   const got = await until(() => page.evaluate(gid => {
     const a = document.querySelector(`.fs-t a[href$="/recording/${gid}"]`);
     const dis = a && a.parentElement.querySelector('.fs-dis');
