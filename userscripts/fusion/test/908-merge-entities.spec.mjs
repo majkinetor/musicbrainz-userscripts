@@ -14,7 +14,8 @@ for (const type of ['artist', 'release']) {
     await until(() => page.locator('#fs-launch').count(), n => n === 1);
     await page.click('#fs-launch', { modifiers: ['Control'] });
     await page.waitForSelector('#fs-addmenu');
-    check(await page.locator('#fs-addmenu input:checked').count() === 1, 'the add menu has the page entity selected');
+    check(await page.locator('#fs-addmenu input:checked').count() === 0, 'nothing in the add menu is preselected');
+    await page.check('#fs-addmenu input[data-i="0"]');
     await page.click('#fs-addmenu [data-a="add"]');
     await until(() => page.locator(`#fs-launch-ctrs .fs-ctr[data-type="${type}"]`).count(), n => n === 1);
     await page.click(`#fs-launch-ctrs .fs-ctr[data-type="${type}"]`);

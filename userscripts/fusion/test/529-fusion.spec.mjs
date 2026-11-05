@@ -564,6 +564,7 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   await page.locator('#fs-addmenu label', { hasText: 'This release group' }).locator('input').uncheck();
   await page.locator('#fs-addmenu label', { hasText: 'Recordings of its releases' }).locator('input').check();
   await page.click('#fs-addmenu [data-a="add"]');
+  await page.click('#fs-launch');                              // #908: adding no longer opens the window
   const seedAc = await page.waitForFunction(
       () => { const r = [...window.__fusion.STATE.recordings.values()]; return r.length && r.every(x => x.acoustids !== null) ? { total: r.length, withAc: r.filter(x => x.acoustids.length).length } : null; },
       { timeout: 90000 }).then(h => h.jsonValue());
@@ -976,6 +977,7 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   await page.locator('#fs-addmenu label', { hasText: 'This artist' }).locator('input').uncheck();
   await page.locator('#fs-addmenu label', { hasText: 'Its recordings' }).locator('input').check();
   await page.click('#fs-addmenu [data-a="add"]');
+  await page.click('#fs-launch');                              // #908: adding no longer opens the window
   await page.waitForFunction(() => window.__fusion.STATE.poolOrder.length > 0, { timeout: 60000 });
   // until the seed has reported (its log line) and every seeded recording has its releases
   const artistSeed = await until(() => page.evaluate(() => {
