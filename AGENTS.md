@@ -4,7 +4,7 @@ Entry point for any AI assistant (Claude Code, a cloud agent, a subagent). It's 
 
 **Read [`dev/agents/AGENTS.general.md`](dev/agents/AGENTS.general.md) first, every session.** It holds the rules that apply on any project — authority, how much to do alone, GitHub work, testing, Playwright landmines — and they all apply here. This file adds only what is specific to userscripts and to this repo, and wins where the two differ.
 
-**A session that opens with an issue link: first rename the session `#<n> <issue title>`** (`set_session_title`), before anything else, then read the issue ([AGENTS.general → GitHub work](dev/agents/AGENTS.general.md)).
+**A session that opens with an issue link: first rename the session `#<n> <issue title>`** (`set_session_title`, with `session_id` = your own id, `get_session` with no arguments, `session_` swapped for `cse_`), before anything else, then read the issue ([AGENTS.general → GitHub work](dev/agents/AGENTS.general.md)).
 
 ## Read first
 
