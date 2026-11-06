@@ -3,7 +3,7 @@ import { test, check, until, SANDBOX } from '../../../dev/test/harness.mjs';
 
 const variant = page => page.evaluate(() => document.getElementById('st-theme').dataset.variant);
 const open = async page => {
-  await page.locator('body').click({ position: { x: 5, y: 5 } });
+  await page.locator('body:not([hidden])').click({ position: { x: 5, y: 5 } });
   await page.keyboard.press('Control+k');
   await page.waitForSelector('#st-pal-q', { timeout: 10000 });
   await page.keyboard.type('theme chooser');
@@ -50,5 +50,53 @@ test.describe('theme chooser', () => {
     await page.click('#st-tc-open');
     await page.waitForSelector('#st-tc', { timeout: 5000 });
     check(!(await page.$('#st-cfg')), 'settings step aside for the chooser');
+  });
+});
+
+test.describe('theme chooser effect', () => {
+  test.use({ gm: { name: 'String Theory', values: {} }, profile: 'fresh' });
+  test('picks the Event Horizon effect a theme brings: tried as picked, put back on Escape, kept on Enter', { tag: ['@prod'] }, async ({ page, inject }) => {
+    await page.goto('https://musicbrainz.org/artist/f27ec8db-af05-4f36-916e-3d57f91ecf5e', { waitUntil: 'load', timeout: 60000 });
+    await inject('string_theory');
+    const op = () => page.evaluate(() => document.documentElement.style.getPropertyValue('--eh-hex-opacity'));
+    const attr = n => page.evaluate(k => document.documentElement.getAttribute(k), n);
+    // Dim saved in Event Horizon's Effects tab, then Bright, which follows the effect to 0.6
+    await until(() => page.evaluate(() => document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: 'event_horizon', cancelable: true })) || document.getElementById('eh-cfg') !== null), v => v);
+    const cfg = page.locator('#eh-cfg');
+    await cfg.locator('[data-tab=effects]').click();
+    await cfg.locator('[data-g=fxAdd][data-k=fx]').click();
+    await cfg.locator('[data-g=fxKind][data-k=hexagons]').click();
+    await cfg.locator('[data-g=hexOpacity][data-k="30"]').click();
+    await cfg.locator('[data-fx-name]').fill('Dim');
+    await cfg.locator('[data-fx-save]').click();
+    await cfg.locator('[data-fx-name]').fill('Bright');
+    await cfg.locator('[data-fx-new]').click();
+    await cfg.locator('[data-g=hexOpacity][data-k="60"]').click();
+    await page.keyboard.press('Escape');
+    check(await until(op, v => v === '0.6') === '0.6', 'the effect starts at 0.6');
+    await open(page);
+    const sel = page.locator('#st-tc-e');
+    const opts = (await sel.locator('option').allTextContents()).join();
+    check(opts === 'No effect,Dim,Bright', `the chooser lists Event Horizon's presets (${opts})`);
+    await sel.selectOption('Dim');
+    check(await until(op, v => v === '0.3') === '0.3', 'the picked effect shows at once');
+    check(await attr('data-st-eh-fx-try') === 'Dim' && await attr('data-st-eh-fx') === null, 'tried, not saved');
+    await page.keyboard.press('ArrowRight');
+    check(await sel.inputValue() === '', 'the next theme brings none');
+    check(await until(op, v => v === '0.6') === '0.6', 'and the effect goes back');
+    await page.keyboard.press('ArrowLeft');
+    check(await sel.inputValue() === 'Dim', 'the pick stays with its theme');
+    await page.screenshot({ path: 'test-results/theme-chooser-effect.png' });
+    await page.keyboard.press('Escape');
+    check(await until(op, v => v === '0.6') === '0.6', 'Escape puts the effect back');
+    const none = await page.evaluate(() => GM_getValue('string_theory.theme', {}).eh || {});
+    check(!Object.keys(none).length, `and saves no effect (${JSON.stringify(none)})`);
+    await open(page);
+    await sel.selectOption('Dim');
+    await page.keyboard.press('Enter');
+    const saved = await page.evaluate(() => GM_getValue('string_theory.theme', {}));
+    check(saved.eh && saved.eh['light:' + saved.light] === 'Dim', `Enter keeps the theme's effect (${JSON.stringify(saved)})`);
+    check(await until(() => attr('data-st-eh-fx'), v => v === 'Dim') === 'Dim' && await attr('data-st-eh-fx-try') === null, 'the theme names it now');
+    check(await until(op, v => v === '0.3') === '0.3', 'and Event Horizon keeps it');
   });
 });

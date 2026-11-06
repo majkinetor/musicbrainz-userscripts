@@ -69,11 +69,15 @@ var __stTheme = (function () {
     if (!style.isConnected) (document.head || document.documentElement).appendChild(style);
     document.documentElement.classList.toggle('st-dark', v === 'dark');   // wakes the shared theme watch
     // Event Horizon's effect preset for this theme, by 'variant:name'; EH applies a new one once
-    var fx = s.eh[v + ':' + s[v]];
-    if (fx) document.documentElement.setAttribute('data-st-eh-fx', fx); else document.documentElement.removeAttribute('data-st-eh-fx');
+    // the saved theme's preset on data-st-eh-fx; a preview names its own on data-st-eh-fx-try,
+    // which Event Horizon shows without saving and drops when it goes
+    var de = document.documentElement, attr = function (k, x) { if (x) de.setAttribute(k, x); else de.removeAttribute(k); };
+    var sv = over ? read() : s, svv = over ? variant(sv) : v;
+    attr('data-st-eh-fx', sv.eh[svv + ':' + sv[svv]]);
+    attr('data-st-eh-fx-try', over ? s.eh[v + ':' + s[v]] : '');
   }
   var tc = onMb && tcRead();
-  if (tc) { over = read(); over.mode = tc.v; over[tc.v] = tc.n; }
+  if (tc) { over = read(); over.mode = tc.v; over[tc.v] = tc.n; if (tc.eh && typeof tc.eh === 'object') over.eh = tc.eh; }
   if (onMb) {
     apply();
     // last in the page, or MusicBrainz's stylesheet, loaded after it, wins every tie

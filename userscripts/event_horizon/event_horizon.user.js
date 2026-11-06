@@ -11169,11 +11169,28 @@ function fxImport(text) {
     return '';
 }
 // String Theory's theme names a preset on <html data-st-eh-fx>: a new name is applied once, so the user's changes after it stay
+// String Theory's theme chooser names one to try on data-st-eh-fx-try: shown, not saved; gone, the effect is back to
+// what it was, unless the theme kept brings that same preset
+let fxTry = null;   // { cur, v, name } while one is tried: the preset and the effect from before
 function fxTheme() {
-    const n = document.documentElement.dataset.stEhFx || '';
-    if (n === S.fxTheme) return;
+    const de = document.documentElement, n = de.dataset.stEhFx || '', t = de.dataset.stEhFxTry || '';
+    const redraw = () => { const b = document.querySelector('#eh-cfg .eh-cfg-b'); if (b) b.innerHTML = cfgBody(); };
+    const show = () => { if (ehOn) bgApply(); else hexApply(); redraw(); };
+    const p = t && fxFind(t);
+    if (p) {
+        if (!fxTry) fxTry = { cur: S.fxCur, v: fxNow(), name: '' };
+        if (fxTry.name !== p.name) { fxTry.name = p.name; S.fxCur = p.name; Object.assign(S, fxFull(p)); show(); LOG.info('Effect preset tried: ' + p.name); }
+        return;
+    }
+    let kept = false;
+    if (fxTry) {
+        const was = fxTry; fxTry = null;
+        kept = !!n && fxLow(n) === fxLow(was.name);
+        if (!kept) { S.fxCur = was.cur; Object.assign(S, was.v); show(); LOG.info('Effect preset tried, back to: ' + (was.cur || 'unnamed')); }
+    }
+    if (n === S.fxTheme && !kept) return;
     S.fxTheme = n; save();
-    if (n && fxUse(n)) { const b = document.querySelector('#eh-cfg .eh-cfg-b'); if (b) b.innerHTML = cfgBody(); }
+    if (n && fxUse(n)) redraw();
 }
 const FX_SVG = { dd: '<path d="M6 9l6 6 6-6"/>', plus: '<path d="M12 5v14M5 12h14"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>',
     ok: '<path d="M5 12l5 5 9-10"/>',
@@ -11451,7 +11468,7 @@ function start() {
     setTimeout(() => setOn(S.on && !off), 0);
     // the effect presets for String Theory's theme settings, and the one its theme names
     fxPublish(); fxTheme();
-    new MutationObserver(fxTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-st-eh-fx'] });
+    new MutationObserver(fxTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-st-eh-fx', 'data-st-eh-fx-try'] });
 }
 let showing = 0;
 // the page's shape while it loads, so nothing jumps when the data lands

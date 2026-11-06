@@ -577,7 +577,8 @@ function stPalListen() {
 
 // ── Theme chooser ───────────────────────────────────────────────────────────
 // A slim bar at the bottom of the page that steps through every theme with ◀ ▶ (or the arrow keys),
-// showing each on the whole page; nothing covers the view. All / Light / Dark limits them to one variant. Keep (Enter) saves it, ✕ (Esc) goes back.
+// showing each on the whole page; nothing covers the view. All / Light / Dark limits them to one variant.
+// With Event Horizon's effect presets, the effect beside picks the one the theme brings, shown as picked. Keep (Enter) saves both, ✕ (Esc) goes back.
 // It stays open across pages until closed (the runtime's chooser state), and above any popup: it sits in the top layer.
 var ST_TC_CSS = ''
   + '#st-tc{position:fixed;inset:auto auto 16px 50%;margin:0;overflow:visible;transform:translateX(-50%);z-index:2147483600;display:flex;align-items:center;gap:6px;padding:6px 8px;'
@@ -587,9 +588,13 @@ var ST_TC_CSS = ''
   + '#st-tc .st-tc-n{min-width:170px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
   + '#st-tc .st-tc-v{color:var(--mbu-text-weak)}'
   + '#st-tc .st-tc-i{color:var(--mbu-text-weak);font-size:12px;min-width:36px;text-align:center}'
+  // the effect: a flat dropdown, set off from the theme by a thin rule
+  + '#st-tc select{margin:0 0 0 2px;height:30px;max-width:180px;padding:0 4px 0 10px;border:0!important;border-left:1px solid var(--mbu-border)!important;border-radius:0;background:none!important;box-shadow:none!important;color:inherit;font:inherit;cursor:pointer}'
+  + '#st-tc select:hover,#st-tc select:focus-visible{color:var(--mbu-accent-text,var(--mbu-accent));outline:0}'
+  + '#st-tc select option{background:var(--mbu-bg);color:var(--mbu-text)}'
   // a phone: pinned to the bottom edge, the page's full width; the name takes what the buttons leave
   + '@media (max-width:640px){#st-tc{inset:auto 0 0 0;width:auto;transform:none;max-width:none;gap:2px;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));border-width:1px 0 0;border-radius:0}'
-  + '#st-tc .st-tc-n{flex:1 1 auto;min-width:0}#st-tc button{padding-inline:6px}}';
+  + '#st-tc .st-tc-n{flex:1 1 auto;min-width:0}#st-tc button{padding-inline:6px}#st-tc select{max-width:110px}}';
 var stTcEl = null;
 function stThemeChooser() {
   if (stTcEl && stTcEl.isConnected) return;
@@ -602,6 +607,11 @@ function stThemeChooser() {
     (document.head || html).appendChild(css);
   }
   var th = __stTheme.read(), cur = __stTheme.variant(), all = [], only = was && /^(light|dark)$/.test(was.only) ? was.only : 'all', i = 0;
+  // Event Horizon's effect presets, when it's on and has any; eh: the preset each theme brings, by 'variant:name', as picked here
+  var fx = __stReadOff().indexOf('event_horizon') < 0 && mbuShared('ehFxPresets') || [];
+  if (!Array.isArray(fx)) fx = [];
+  var eh = {}, ehWas = was && was.eh && typeof was.eh === 'object' ? was.eh : th.eh || {};
+  Object.keys(ehWas).forEach(function (k) { eh[k] = ehWas[k]; });
   // only: 'all', 'light' or 'dark', which themes the arrows step through
   var list = function () {
     var was = all[i];
@@ -624,6 +634,7 @@ function stThemeChooser() {
     + '<button type="button" id="st-tc-p" aria-label="Previous theme">◀</button>'
     + '<span class="st-tc-n" aria-live="polite"></span><span class="st-tc-i"></span>'
     + '<button type="button" id="st-tc-nx" aria-label="Next theme">▶</button>'
+    + (fx.length ? '<select id="st-tc-e" aria-label="Event Horizon effect this theme brings"></select>' : '')
     + '<button type="button" id="st-tc-k">Keep</button>'
     + '<button type="button" class="mbu-ov-x" id="st-tc-x" aria-label="Close">✕</button>';
   // a manual popover is in the top layer, above any z-index; a popup opened later goes over it, so it climbs back on top
@@ -648,9 +659,16 @@ function stThemeChooser() {
   // a popup that closes on a click outside it leaves the bar's clicks alone
   ['pointerdown', 'mousedown', 'click'].forEach(function (t) { bar.addEventListener(t, function (e) { e.stopPropagation(); }); });
   var show = function () {
-    var t = all[i], p = { mode: t[0] }; p[t[0]] = t[1];
+    var t = all[i], p = { mode: t[0], eh: eh }; p[t[0]] = t[1];
     __stTheme.preview(p);
-    __stTheme.chooserPut({ only: only, v: t[0], n: t[1] });
+    __stTheme.chooserPut({ only: only, v: t[0], n: t[1], eh: eh });
+    var sel = bar.querySelector('#st-tc-e');
+    if (sel) {
+      // a preset deleted in Event Horizon still shows while it's picked, as in the settings
+      var on = eh[t[0] + ':' + t[1]] || '';
+      sel.innerHTML = '<option value="">No effect</option>' + fx.concat(on && fx.indexOf(on) < 0 ? [on] : []).map(function (n) { return '<option>' + stEsc(n) + '</option>'; }).join('');
+      sel.value = on;
+    }
     bar.querySelector('.st-tc-n').innerHTML = stEsc(t[1]) + ' <span class="st-tc-v">' + t[0] + '</span>';
     bar.querySelector('.st-tc-i').textContent = (i + 1) + '/' + all.length;
   };
@@ -664,6 +682,13 @@ function stThemeChooser() {
     bar.remove();
     if (!keep) { __stTheme.preview(null); return; }
     var t = all[i], p = {}; p[t[0]] = t[1];
+    // the kept theme's effect only; what was picked for the others is dropped
+    if (fx.length) {
+      var map = {}, k = t[0] + ':' + t[1];
+      Object.keys(th.eh || {}).forEach(function (x) { map[x] = th.eh[x]; });
+      if (eh[k]) map[k] = eh[k]; else delete map[k];
+      p.eh = map;
+    }
     // the mode follows the kept theme only when it was fixed light or dark
     if (th.mode === 'light' || th.mode === 'dark') p.mode = t[0];
     __stTheme.set(p);
@@ -671,6 +696,7 @@ function stThemeChooser() {
   };
   var onKey = function (e) {
     var a = document.activeElement;
+    if (a && a.id === 'st-tc-e' && e.key !== 'Escape') return;   // the effect's own keys while it's open
     if (a && a !== document.body && !bar.contains(a) && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable)) return;
     // Enter and Esc focused elsewhere (a link, a popup's button) are theirs: Esc closes the popup, not the chooser
     var away = a && a !== document.body && a !== html && !bar.contains(a);
@@ -688,5 +714,12 @@ function stThemeChooser() {
   bar.querySelector('#st-tc-nx').onclick = function () { step(1); };
   bar.querySelector('#st-tc-k').onclick = function () { close(true); };
   bar.querySelector('#st-tc-x').onclick = function () { close(false); };
+  // picked, it's shown at once, and the arrows step the themes again
+  if (fx.length) bar.querySelector('#st-tc-e').onchange = function (e) {
+    var t = all[i], k = t[0] + ':' + t[1];
+    if (e.target.value) eh[k] = e.target.value; else delete eh[k];
+    e.target.blur();
+    show();
+  };
   show();
 }
