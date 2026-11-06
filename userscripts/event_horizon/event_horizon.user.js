@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.173403
+// @version      2026.11.06.174641
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3347,6 +3347,95 @@ document.addEventListener('load', e => { if (e.target instanceof HTMLImageElemen
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
 // Independent background geometries. The preview and userscript use this same renderer.
+// A rider chooses a new route at each junction. Trails are bounded by distance, not frame count.
+function tronCreate(w, h, p, random = Math.random) {
+    const grid = p.tronGrid;
+    const state = { grid, maxX: Math.max(grid, Math.floor(w / grid) * grid), maxY: Math.max(grid, Math.floor(h / grid) * grid), random, time: 0, effects: [], riders: [], dirs: [[1, 0], [0, 1], [-1, 0], [0, -1]] };
+    for (let i = 0; i < p.tronRiders; i++) {
+        const r = { id: i, alive: false, trail: [], distance: 0, remaining: 0, respawn: 0, died: -1 };
+        state.riders.push(r); tronSpawn(state, r);
+    }
+    return state;
+}
+function tronSpawn(state, r) {
+    for (let attempt = 0; attempt < 40; attempt++) {
+        const x = Math.floor(state.random() * (state.maxX / state.grid + 1)) * state.grid;
+        const y = Math.floor(state.random() * (state.maxY / state.grid + 1)) * state.grid;
+        const occupied = state.riders.some(other => other !== r && ((other.alive && Math.hypot(other.x - x, other.y - y) < state.grid * .5)
+            || other.trail.some(edge => tronHit(x, y, x, y, edge) === 0)));
+        if (occupied) continue;
+        Object.assign(r, { x, y, dir: Math.floor(state.random() * 4), alive: true, trail: [], distance: 0, remaining: 0, died: -1 });
+        return true;
+    }
+    r.alive = false; r.respawn = state.time + .3;
+    return false;
+}
+// Distance to the first crossing, including collinear trails and endpoints; Infinity means no hit.
+function tronHit(x, y, nx, ny, edge) {
+    const [ax, ay] = edge.a, [bx, by] = edge.b, eps = 1e-6;
+    const within = (v, a, b) => v >= Math.min(a, b) - eps && v <= Math.max(a, b) + eps;
+    if (Math.abs(y - ny) < eps) {
+        if (Math.abs(ax - bx) < eps) return within(ax, x, nx) && within(y, ay, by) ? Math.abs(ax - x) : Infinity;
+        if (Math.abs(y - ay) > eps) return Infinity;
+        const lo = Math.max(Math.min(x, nx), Math.min(ax, bx)), hi = Math.min(Math.max(x, nx), Math.max(ax, bx));
+        return lo <= hi + eps ? Math.abs((nx >= x ? lo : hi) - x) : Infinity;
+    }
+    if (Math.abs(ay - by) < eps) return within(ay, y, ny) && within(x, ax, bx) ? Math.abs(ay - y) : Infinity;
+    if (Math.abs(x - ax) > eps) return Infinity;
+    const lo = Math.max(Math.min(y, ny), Math.min(ay, by)), hi = Math.min(Math.max(y, ny), Math.max(ay, by));
+    return lo <= hi + eps ? Math.abs((ny >= y ? lo : hi) - y) : Infinity;
+}
+function tronStep(state, dt, p) {
+    dt = Math.max(0, Math.min(.1, dt)); state.time += dt;
+    state.effects = state.effects.filter(e => state.time - e.born < .6);
+    // Dead trails fade before a replacement can spawn, and cannot remain invisible collision hazards.
+    for (const r of state.riders) if (!r.alive && state.time - r.died >= .65) r.trail = [];
+    for (const r of state.riders) {
+        if (!r.alive) { if (state.time >= r.respawn) tronSpawn(state, r); continue; }
+        let travel = dt * p.tronSpeed * 35;
+        while (travel > 1e-6 && r.alive) {
+            if (r.remaining < 1e-6) {
+                r.x = Math.round(r.x / state.grid) * state.grid; r.y = Math.round(r.y / state.grid) * state.grid;
+                const choices = [r.dir, (r.dir + 1) % 4, (r.dir + 3) % 4].filter(d => {
+                    const [dx, dy] = state.dirs[d], x = r.x + dx * state.grid, y = r.y + dy * state.grid;
+                    return x >= 0 && y >= 0 && x <= state.maxX && y <= state.maxY;
+                });
+                // The only exit at a corner can be behind the rider.
+                if (!choices.length) choices.push((r.dir + 2) % 4);
+                r.dir = choices[Math.floor(state.random() * choices.length)]; r.remaining = state.grid;
+            }
+            const [dx, dy] = state.dirs[r.dir], planned = Math.min(travel, r.remaining);
+            let distance = planned, hit = false;
+            for (const other of state.riders) {
+                if (other === r) continue;
+                for (const edge of other.trail) {
+                    const d = tronHit(r.x, r.y, r.x + dx * planned, r.y + dy * planned, edge);
+                    if (d <= distance) { distance = d; hit = true; }
+                }
+            }
+            const a = [r.x, r.y], start = r.distance;
+            r.x += dx * distance; r.y += dy * distance; r.distance += distance;
+            const last = r.trail[r.trail.length - 1];
+            if (distance > 1e-6) {
+                if (last && last.dir === r.dir) { last.b = [r.x, r.y]; last.end = r.distance; }
+                else r.trail.push({ a, b: [r.x, r.y], start, end: r.distance, dir: r.dir });
+            }
+            r.remaining -= distance; travel -= distance;
+            const cut = r.distance - state.grid * p.tronTrail;
+            while (r.trail.length && r.trail[0].end <= cut) r.trail.shift();
+            const tail = r.trail[0];
+            if (tail && tail.start < cut) {
+                const f = (cut - tail.start) / (tail.end - tail.start);
+                tail.a = [tail.a[0] + (tail.b[0] - tail.a[0]) * f, tail.a[1] + (tail.b[1] - tail.a[1]) * f]; tail.start = cut;
+            }
+            if (hit) {
+                r.alive = false; r.died = state.time; r.respawn = state.time + .9 + state.random() * 1.2;
+                state.effects.push({ x: r.x, y: r.y, id: r.id, born: state.time });
+            }
+        }
+    }
+}
+
 function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
     const tau = Math.PI * 2, fract = x => x - Math.floor(x);
     const rand = n => fract(Math.sin(n * 127.1 + 311.7) * 43758.5453);
@@ -3363,30 +3452,37 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
     };
     ctx.clearRect(0, 0, w, h); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     if (kind === 'tron') {
-        const grid = p.tronGrid, count = p.tronRiders, speed = t * p.tronSpeed * 35;
-        // Dim square circuitry, with luminous riders making only right-angle turns.
-        for (let x = 0; x < w; x += grid) line([[x, 0], [x, h]], c1, .045);
-        for (let y = 0; y < h; y += grid) line([[0, y], [w, y]], c1, .045);
-        for (let i = 0; i < count; i++) {
-            const seed = i + 1, col = tone(i), length = grid * p.tronTrail;
-            const advance = speed + rand(seed) * (w + h), turn = grid * (2 + Math.floor(rand(seed + 23) * 5));
-            const x0 = Math.floor(rand(seed + 7) * w / grid) * grid;
-            const y0 = Math.floor(rand(seed + 17) * h / grid) * grid;
-            const pos = d => {
-                const v = ((advance - d) % (turn * 4) + turn * 4) % (turn * 4);
-                let x = 0, y = 0;
-                if (v < turn) x = v;
-                else if (v < turn * 2) { x = turn; y = v - turn; }
-                else if (v < turn * 3) { x = turn - (v - turn * 2); y = turn; }
-                else y = turn - (v - turn * 3);
-                return [(x0 + x) % (w + turn) - turn / 2, (y0 + y) % (h + turn) - turn / 2];
-            };
-            for (let d = length; d > 0; d -= 4) {
-                const a = pos(d), b = pos(Math.max(0, d - 4));
-                if (Math.hypot(a[0] - b[0], a[1] - b[1]) > 10) continue;
-                line([a, b], col, (1 - d / length) * .9, 1.5);
+        const grid = p.tronGrid, key = [w, h, grid, p.tronRiders, p.tronTrail].join('|');
+        let state = ctx._ehTron;
+        if (!state || state.key !== key) {
+            state = ctx._ehTron = tronCreate(w, h, p); state.key = key; state.last = t;
+            for (let i = 0; i < 60; i++) tronStep(state, 1 / 30, p);
+        }
+        tronStep(state, t - state.last, p); state.last = t;
+        const outlines = Math.max(0, Math.min(100, p.tronOutlines ?? 25)) / 100 * .18;
+        if (outlines) {
+            for (let x = 0; x < w; x += grid) line([[x, 0], [x, h]], c1, outlines);
+            for (let y = 0; y < h; y += grid) line([[0, y], [w, y]], c1, outlines);
+        }
+        for (const r of state.riders) {
+            const col = tone(r.id), fade = r.alive ? 1 : Math.max(0, 1 - (state.time - r.died) / .65);
+            for (const edge of r.trail) {
+                const n = Math.max(1, Math.ceil((edge.end - edge.start) / 16));
+                for (let j = 0; j < n; j++) {
+                    const point = f => [edge.a[0] + (edge.b[0] - edge.a[0]) * f, edge.a[1] + (edge.b[1] - edge.a[1]) * f];
+                    const d = edge.start + (edge.end - edge.start) * (j + .5) / n;
+                    const alpha = Math.max(0, 1 - (r.distance - d) / (grid * p.tronTrail));
+                    line([point(j / n), point((j + 1) / n)], col, alpha * .9 * fade, 1.5);
+                }
             }
-            const [x, y] = pos(0); ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.fillRect(x - 1.7, y - 1.7, 3.4, 3.4);
+            if (r.alive) { ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.fillRect(r.x - 1.7, r.y - 1.7, 3.4, 3.4); }
+        }
+        for (const e of state.effects) {
+            const age = (state.time - e.born) / .6;
+            for (let i = 0; i < 8; i++) {
+                const angle = i * tau / 8 + rand(e.id) * tau, near = 1 + age * 7, far = near + (1 - age) * 6;
+                line([[e.x + Math.cos(angle) * near, e.y + Math.sin(angle) * near], [e.x + Math.cos(angle) * far, e.y + Math.sin(angle) * far]], tone(e.id), (1 - age) ** 2, 1);
+            }
         }
     } else if (kind === 'stars') {
         const count = Math.min(900, Math.round(w * h / 1100 * p.starDensity));
@@ -3431,7 +3527,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
 
 const AMBIENT = {
     tron: { name: 'Tron', tip: 'Light riders turn through a square circuit grid', rows: [
-        ['tronGrid', 'Grid size', [24, 40, 64], 40], ['tronRiders', 'Riders', [8, 16, 28], 16], ['tronSpeed', 'Speed', [.4, 1, 2], 1], ['tronTrail', 'Trail length', [1, 3, 6], 3],
+        ['tronOutlines', 'Outlines', [0, 10, 25, 50, 100], 25], ['tronGrid', 'Grid size', [24, 40, 64], 40], ['tronRiders', 'Riders', [8, 16, 28], 16], ['tronSpeed', 'Speed', [.4, 1, 2], 1], ['tronTrail', 'Trail length', [1, 3, 6], 3],
     ] },
     stars: { name: 'Stars', tip: 'Layers of drifting stars with a quiet twinkle', rows: [
         ['starDensity', 'Density', [.4, 1, 2], 1], ['starDrift', 'Drift', [0, .4, 1], .4], ['starDepth', 'Depth', [.5, 1, 2], 1], ['starTwinkle', 'Twinkle', [0, .5, 1], .5],
@@ -10930,8 +11026,11 @@ function fxRow(row) {
 }
 function effectColourRow(chip, row) { return row('Colour', chip('hexTwo', '0', !S.hexTwo, 'One tone') + chip('hexTwo', '1', S.hexTwo === true, 'Two-tone') + chip('hexTwo', '2', S.hexTwo === 2, 'All'), 'Two-tone mixes in the second accent colour\nAll: each light takes its own colour'); }
 function ambientRows(kind, chip, row) {
-    return row('Opacity', [25, 45, 65, 85, 100].map(v => chip('ambientOpacity', v, S.ambientOpacity === v, v + '%')).join(''), 'How strong the effect is')
-        + AMBIENT[kind].rows.map(([key, label, values]) => row(label, values.map(v => chip(key, v, S[key] === v, String(v))).join(''))).join('')
+    const fields = AMBIENT[kind].rows;
+    const field = ([key, label, values]) => row(label, values.map(v => chip(key, v, S[key] === v, key === 'tronOutlines' ? v + '%' : String(v))).join(''));
+    return fields.filter(([key]) => key === 'tronOutlines').map(field).join('')
+        + row('Opacity', [25, 45, 65, 85, 100].map(v => chip('ambientOpacity', v, S.ambientOpacity === v, v + '%')).join(''), 'How strong the effect is')
+        + fields.filter(([key]) => key !== 'tronOutlines').map(field).join('')
         + row('Glow', [[0, 'None'], [.5, 'Faint'], [1, 'Normal'], [2, 'Wide']].map(([v, l]) => chip('hexGlow', v, S.hexGlow === v, l)).join(''), 'How far the soft glow around the lights spreads')
         + effectColourRow(chip, row);
 }

@@ -259,7 +259,7 @@ for(const [key,f] of specs) {
   const section = document.createElement('section');
   section.innerHTML = `<h3>${f.name}</h3><p class="desc">${f.tip}</p><div class="stage"><canvas aria-hidden="true"></canvas><div class="page"><header>EVENT HORIZON</header><strong>Random Access Memories</strong><small>Daft Punk · 2013</small><div class="tracks"><div class="track"><span>01 &nbsp; Give Life Back to Music</span><span>4:34</span></div><div class="track"><span>02 &nbsp; The Game of Love</span><span>5:21</span></div><div class="track"><span>03 &nbsp; Giorgio by Moroder</span><span>9:04</span></div></div></div></div><div class="params"></div>`;
   const params = section.querySelector('.params'), p = {};
-  const rows = key==='hexagons' ? f.rows : [['ambientOpacity','Opacity',[25,45,65,85,100],65],...f.rows,['glow','Glow',[0,.5,1,2],1],['colour','Colour',[0,1,2],1]];
+  const rows = key==='hexagons' ? f.rows : [...f.rows.filter(([k])=>k==='tronOutlines'),['ambientOpacity','Opacity',[25,45,65,85,100],65],...f.rows.filter(([k])=>k!=='tronOutlines'),['glow','Glow',[0,.5,1,2],1],['colour','Colour',[0,1,2],1]];
   for(const [k,label,values,def] of rows) {
     p[k] = values.includes(saved.params?.[key]?.[k]) ? saved.params[key][k] : def;
     const l = document.createElement('label');l.textContent=label;
