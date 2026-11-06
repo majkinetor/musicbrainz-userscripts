@@ -9,6 +9,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 ## Features
 
 - **[The viewer](#the-viewer)** takes over a page, moves between pages without reloading, and keeps the page's identity and actions in reach while scrolling.
+- **[Background effects](#background-effects)**: Hexagons, Tron, Stars, Aurora, Contour and Orbit, each with its own controls.
 - **[Sections](#sections)**: all data, an entity's facts and external links included, in cards that can be reordered, hidden and configured.
 - **[Starred entities](#starred-entities)** keeps favorite entities on the homepage.
 - **[Collections](#collections)** adds or removes an entity from your MusicBrainz collections.
@@ -32,6 +33,31 @@ When MB page has Event Horizon redesign available, EH dock button shows on the n
 - **Long titles**: a subtitle after a colon or dash sits smaller on its own line, long titles shrink, and very long ones stop at four lines with **Show full title**. Every page header follows this, and titles in grids, tables and track lists stop at three lines.
 - **Search**: start a search with a type's letter and a space to search that type: `w yesterday` searches works for "yesterday". On the homepage the type switches as soon as you type the space, and the letter leaves the box. The letters are **a** artist, **g** release group, **r** release, **w** work, **s** series, **p** place and **e** editor; the homepage's type list shows them beside the types. An empty search shows them in a tip instead of searching. Recent searches in the search field's list show only the chosen type's.
 - **Pinned headers**: once the page's header scrolls away, a single bar keeps its cover, title and artist in reach; section headers are pinned to as you scroll.
+
+## Background effects
+
+Choose an effect under **Settings → Effects**. Each keeps its own parameters when you switch effects, and **Preset** saves the whole configuration. New effects use the theme's two accent colours; **Opacity** sets their strength.
+
+| Effect   | Controls                                                              |
+| -------- | --------------------------------------------------------------------- |
+| Tron     | Grid size, Riders, Speed, Trail length                                |
+| Stars    | Density, Drift, Depth, Twinkle                                        |
+| Aurora   | Ribbons, Speed, Height, Folds                                         |
+| Contour  | Line spacing, Wave height, Bends, Speed                               |
+| Orbit    | Rings, Satellites, Tilt, Speed                                        |
+| Hexagons | Motion, Outlines, Effect, Pace, Trail, How often, Glow, Colour, Depth |
+
+**Tron**: Grid size sets the circuit spacing, Riders their count, Speed their pace and Trail length how far the light follows.
+
+**Stars**: Density sets the star count, Drift their movement, Depth the difference in size and pace, and Twinkle their shimmer.
+
+**Aurora**: Ribbons sets the curtain count, Speed their movement, Height their reach and Folds their ripples.
+
+**Contour**: Line spacing sets the gaps, Wave height the displacement, Bends the broad curves and Speed their movement.
+
+**Orbit**: Rings sets the orbit count, Satellites the lights per ring, Tilt their angle and Speed their movement.
+
+Motion pauses in a hidden tab and respects reduced motion.
 
 ## Sections
 
@@ -127,7 +153,7 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | General → Page width                  | Wide                                                                | how wide the page grows on a big screen                                                     |
 | General → Background                  | Cover aura                                                          | Flat, Cover aura, Glow or Header band                                                       |
 | Effects → Preset                      | none                                                                | an effect with all its settings, saved by name                                              |
-| Effects → Effect                      | None                                                                | Hexagons: outlines with a motion, their strength and the effect's, Depth                    |
+| Effects → Effect                      | None                                                                | [background effects](#background-effects), each with its own settings                       |
 | General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                                      |
 | General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
 | General → Keyboard shortcuts          | on                                                                  | the keys below; [keyboard shortcuts](#keyboard-shortcuts); **Change keys** opens their list |

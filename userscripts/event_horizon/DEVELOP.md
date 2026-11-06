@@ -102,6 +102,12 @@ Effect presets are `{ name, v }` with `v` holding the `FX_KEYS` settings: the us
 
 Keep effects out of animated SVG patterns: changing dash offsets and blur filters inside a repeated pattern repaints and rasterizes large areas continuously.
 
+## Independent background effects
+
+Tron, Stars, Aurora, Contour and Orbit use `ambientDraw`, a deterministic canvas renderer independent of the hexagonal lattice. `AMBIENT` declares each effect's rows, supported values and defaults; `AMBIENT_KEYS` joins both view storage and `FX_KEYS`, so saved presets and String Theory theme presets restore all effect parameters. Older presets default to Hexagons. `S.hex` remains the overlay's on/off switch for compatibility; `S.effect` selects its geometry.
+
+`ambientApply` owns one canvas and one animation loop, cleans up on switching or disabling, and pauses while hidden. Reduced motion draws once (the existing reduced-motion CSS hides the canvas). Theme changes and viewport resizing rebuild it with resolved accent colours and a pixel ratio capped at two. The comparison sampler in [dev/mockups/event_horizon/effects](../../dev/mockups/event_horizon/effects/) embeds the same renderer; update it with renderer changes.
+
 ## Declarations setOn can reach
 
 `setOn` runs while the script starts, before the rest of the file has run, so whatever it calls must exist by then. A `let`, `const` or arrow function declared below the call is in its temporal dead zone and throws. Declare such things with `var` and a `function` declaration (as `ehRel` and `ehRelMark` are).

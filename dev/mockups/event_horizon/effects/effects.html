@@ -1,0 +1,206 @@
+<div id="eh-effects-sampler">
+  <div class="sample-bar"><label>Appearance <select data-theme><option value="dark">Dark</option><option value="light">Light</option></select></label><label>Content <select data-content><option value="show">Show page</option><option value="hide">Effects only</option></select></label><button type="button" data-pause aria-pressed="false">Pause</button></div>
+  <div class="sample-grid"></div>
+</div>
+<style>
+#eh-effects-sampler{font:13px/1.45 system-ui,sans-serif;--eh-s-bg:#101319;--eh-s-surface:#191d26;--eh-s-text:#e2e7f0;--eh-s-muted:#9ca9bb;--eh-s-border:#343c4c;--eh-s-c1:#79c8f4;--eh-s-c2:#bb97f3;color:var(--eh-s-text)}
+#eh-effects-sampler.light{--eh-s-bg:#f4f6fa;--eh-s-surface:#fff;--eh-s-text:#243044;--eh-s-muted:#52627a;--eh-s-border:#c9d0dd;--eh-s-c1:#2779af;--eh-s-c2:#8251b3}
+#eh-effects-sampler *{box-sizing:border-box}
+#eh-effects-sampler .sample-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:0 0 14px;color:inherit}
+#eh-effects-sampler .sample-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+#eh-effects-sampler section{min-width:0;background:var(--eh-s-bg);padding:12px}
+#eh-effects-sampler h3{font-size:16px;font-weight:500;line-height:1.4;margin:0}
+#eh-effects-sampler .desc{font-size:12px;color:var(--eh-s-muted);min-height:36px;margin:3px 0 10px}
+#eh-effects-sampler .stage{position:relative;height:230px;overflow:hidden}
+#eh-effects-sampler canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#eh-effects-sampler .page{position:relative;margin:18px 14px;pointer-events:none}
+#eh-effects-sampler .page header{font-size:11px;letter-spacing:1.4px;color:var(--eh-s-muted)}
+#eh-effects-sampler .page strong{display:block;font-size:22px;font-weight:500;margin:10px 0 0}
+#eh-effects-sampler .page small{color:var(--eh-s-muted)}
+#eh-effects-sampler .tracks{margin-top:18px;background:color-mix(in srgb,var(--eh-s-surface) 62%,transparent)}
+#eh-effects-sampler .track{display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid color-mix(in srgb,var(--eh-s-border) 55%,transparent);font-size:11px}
+#eh-effects-sampler .params{display:grid;gap:6px;margin-top:12px}
+#eh-effects-sampler label{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;min-width:0}
+#eh-effects-sampler select,#eh-effects-sampler button{background:var(--eh-s-surface);color:var(--eh-s-text);border:1px solid var(--eh-s-border);border-radius:3px;font:inherit;padding:4px 6px;max-width:100%}
+#eh-effects-sampler .sample-bar{padding:8px;background:var(--eh-s-bg)}
+#eh-effects-sampler.hide-content .page{visibility:hidden}
+@media(max-width:800px){#eh-effects-sampler .sample-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){#eh-effects-sampler .sample-grid{grid-template-columns:minmax(0,1fr)}}
+@media(pointer:coarse){#eh-effects-sampler select,#eh-effects-sampler button{min-height:44px;font-size:16px}}
+</style>
+<script>
+(() => {
+// Independent background geometries. The preview and userscript use this same renderer.
+function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
+    const tau = Math.PI * 2, fract = x => x - Math.floor(x);
+    const rand = n => fract(Math.sin(n * 127.1 + 311.7) * 43758.5453);
+    const line = (points, color, alpha, width = 1) => {
+        ctx.beginPath(); points.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+        ctx.strokeStyle = color; ctx.globalAlpha = alpha; ctx.lineWidth = width; ctx.stroke();
+    };
+    ctx.clearRect(0, 0, w, h); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    if (kind === 'tron') {
+        const grid = p.tronGrid, count = p.tronRiders, speed = t * p.tronSpeed * 35;
+        // Dim square circuitry, with luminous riders making only right-angle turns.
+        for (let x = 0; x < w; x += grid) line([[x, 0], [x, h]], c1, .045);
+        for (let y = 0; y < h; y += grid) line([[0, y], [w, y]], c1, .045);
+        for (let i = 0; i < count; i++) {
+            const seed = i + 1, col = i % 2 ? c1 : c2, length = grid * p.tronTrail;
+            const advance = speed + rand(seed) * (w + h), turn = grid * (2 + Math.floor(rand(seed + 23) * 5));
+            const x0 = Math.floor(rand(seed + 7) * w / grid) * grid;
+            const y0 = Math.floor(rand(seed + 17) * h / grid) * grid;
+            const pos = d => {
+                const v = ((advance - d) % (turn * 4) + turn * 4) % (turn * 4);
+                let x = 0, y = 0;
+                if (v < turn) x = v;
+                else if (v < turn * 2) { x = turn; y = v - turn; }
+                else if (v < turn * 3) { x = turn - (v - turn * 2); y = turn; }
+                else y = turn - (v - turn * 3);
+                return [(x0 + x) % (w + turn) - turn / 2, (y0 + y) % (h + turn) - turn / 2];
+            };
+            for (let d = length; d > 0; d -= 4) {
+                const a = pos(d), b = pos(Math.max(0, d - 4));
+                if (Math.hypot(a[0] - b[0], a[1] - b[1]) > 10) continue;
+                line([a, b], col, (1 - d / length) * .9, 1.5);
+            }
+            const [x, y] = pos(0); ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.fillRect(x - 1.7, y - 1.7, 3.4, 3.4);
+        }
+    } else if (kind === 'stars') {
+        const count = Math.min(900, Math.round(w * h / 1100 * p.starDensity));
+        for (let i = 1; i <= count; i++) {
+            const z = .25 + rand(i + 9) * p.starDepth;
+            const x = fract(rand(i) + t * p.starDrift * z / w * 4) * w;
+            const y = fract(rand(i + 3) + t * p.starDrift * z / h) * h;
+            ctx.globalAlpha = (.25 + .55 * rand(i + 4)) * (1 - p.starTwinkle * .35 + p.starTwinkle * .35 * Math.sin(t * .8 + i));
+            ctx.fillStyle = i % 5 ? c1 : c2; ctx.beginPath(); ctx.arc(x, y, .45 + z * .7, 0, tau); ctx.fill();
+        }
+    } else if (kind === 'aurora') {
+        for (let band = 0; band < p.auroraRibbons; band++) {
+            const col = band % 2 ? c2 : c1;
+            for (let stripe = 0; stripe < 22; stripe++) {
+                const points = [];
+                for (let x = -10; x <= w + 10; x += 10) {
+                    const wave = Math.sin(x / w * 5 + t * p.auroraSpeed * .2 + band * 1.8) * .6 + Math.sin(x / w * p.auroraFolds + t * .12 + band) * .23;
+                    points.push([x, h * (.3 + band * .13) + wave * h * p.auroraHeight + stripe * 2.5]);
+                }
+                line(points, col, Math.sin(stripe / 22 * Math.PI) * .09, 3.5);
+            }
+        }
+    } else if (kind === 'contour') {
+        for (let y = -80, j = 0; y < h + 80; y += p.contourSpacing, j++) {
+            const points = [];
+            for (let x = -8; x <= w + 8; x += 8) {
+                const wave = Math.sin(x / w * p.contourBend + y / h * 3 + t * p.contourSpeed * .12)
+                    + .4 * Math.sin(x / w * 9 - y / h * 5 - t * p.contourSpeed * .08);
+                points.push([x, y + wave * p.contourHeight]);
+            }
+            line(points, j % 5 ? c1 : c2, j % 5 ? .16 : .45, j % 5 ? .8 : 1.2);
+        }
+    } else if (kind === 'orbit') {
+        ctx.save(); ctx.translate(w * .52, h * .5); ctx.rotate(p.orbitTilt * Math.PI / 180);
+        for (let i = 0; i < p.orbitRings; i++) {
+            const radius = Math.min(w, h) * (.18 + i * .105), col = i % 2 ? c2 : c1;
+            ctx.globalAlpha = .18; ctx.strokeStyle = col; ctx.lineWidth = .8; ctx.beginPath();
+            ctx.ellipse(0, 0, radius * 1.8, radius * .65, 0, 0, tau); ctx.stroke();
+            for (let n = 0; n < p.orbitMoons; n++) {
+                const angle = t * p.orbitSpeed * .12 / (1 + i * .18) + i * 2 + n * tau / p.orbitMoons;
+                ctx.globalAlpha = .65; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(0, 0, radius * 1.8, radius * .65, 0, angle - .22, angle); ctx.stroke();
+                ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(Math.cos(angle) * radius * 1.8, Math.sin(angle) * radius * .65, 2, 0, tau); ctx.fill();
+            }
+        }
+        ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+}
+
+const AMBIENT = {
+    tron: { name: 'Tron', tip: 'Light riders turn through a square circuit grid', rows: [
+        ['tronGrid', 'Grid size', [24, 40, 64], 40], ['tronRiders', 'Riders', [8, 16, 28], 16], ['tronSpeed', 'Speed', [.4, 1, 2], 1], ['tronTrail', 'Trail length', [1, 3, 6], 3],
+    ] },
+    stars: { name: 'Stars', tip: 'Layers of drifting stars with a quiet twinkle', rows: [
+        ['starDensity', 'Density', [.4, 1, 2], 1], ['starDrift', 'Drift', [0, .4, 1], .4], ['starDepth', 'Depth', [.5, 1, 2], 1], ['starTwinkle', 'Twinkle', [0, .5, 1], .5],
+    ] },
+    aurora: { name: 'Aurora', tip: 'Translucent curtains of light fold across the page', rows: [
+        ['auroraRibbons', 'Ribbons', [1, 2, 3], 2], ['auroraSpeed', 'Speed', [.4, 1, 2], .4], ['auroraHeight', 'Height', [.1, .25, .4], .25], ['auroraFolds', 'Folds', [5, 10, 18], 10],
+    ] },
+    contour: { name: 'Contour', tip: 'Slowly shifting topographic lines', rows: [
+        ['contourSpacing', 'Line spacing', [12, 22, 36], 22], ['contourHeight', 'Wave height', [12, 32, 64], 32], ['contourBend', 'Bends', [3, 6, 10], 6], ['contourSpeed', 'Speed', [.4, 1, 2], .4],
+    ] },
+    orbit: { name: 'Orbit', tip: 'Tilted orbital rings carry small satellites', rows: [
+        ['orbitRings', 'Rings', [3, 5, 8], 5], ['orbitMoons', 'Satellites', [1, 2, 3], 1], ['orbitTilt', 'Tilt', [-35, -15, 15], -15], ['orbitSpeed', 'Speed', [.4, 1, 2], .4],
+    ] },
+};
+const AMBIENT_DEFAULTS = Object.fromEntries(Object.values(AMBIENT).flatMap(f => f.rows.map(([k, , , v]) => [k, v])));
+const AMBIENT_KEYS = ['effect', 'ambientOpacity', ...Object.keys(AMBIENT_DEFAULTS)];
+
+function ambientApply(layer, kind) {
+    layer._ehDepthOff?.(); layer.querySelector('svg').style.display = 'none';
+    layer.style.setProperty('--eh-hex-mf', '1'); layer.style.setProperty('--eh-hex-fx', Math.max(0, Math.min(100, Number(S.ambientOpacity) || 0)) / 100);
+    layer._ehPattern?.stop();
+    const cv = document.createElement('canvas'); cv.className = 'hex-pattern'; layer.append(cv);
+    const w = layer.clientWidth, h = layer.clientHeight, dpr = Math.min(2, devicePixelRatio || 1);
+    cv.width = w * dpr; cv.height = h * dpr; cv.style.width = w + 'px'; cv.style.height = h + 'px';
+    const ctx = cv.getContext('2d'); if (!ctx) { cv.remove(); return; } ctx.scale(dpr, dpr);
+    const css = getComputedStyle(layer), c1 = css.color, c2 = css.getPropertyValue('--accent2').trim() || c1;
+    const p = {};
+    for (const [k, , values, fallback] of AMBIENT[kind].rows) p[k] = values.includes(Number(S[k])) ? Number(S[k]) : fallback;
+    let raf = 0, time = 0, last = 0;
+    const draw = now => {
+        if (!layer.isConnected) { stop(); return; }
+        if (last) time += Math.min(.1, (now - last) / 1000); last = now;
+        ambientDraw(ctx, w, h, kind, p, time, c1, c2);
+        if (!hexReduce.matches) raf = requestAnimationFrame(draw);
+    };
+    const vis = () => { cancelAnimationFrame(raf); last = 0; if (!document.hidden) draw(performance.now()); };
+    function stop() { cancelAnimationFrame(raf); document.removeEventListener('visibilitychange', vis); cv.remove(); delete layer._ehPattern; }
+    layer._ehPattern = { stop, shift() {} }; document.addEventListener('visibilitychange', vis); vis();
+}
+
+const root = document.getElementById('eh-effects-sampler');
+const saved = window.openai?.widgetState?.privateContent || {};
+let paused = !!saved.paused, t = 12, last = 0, raf = 0;
+const reduce = matchMedia('(prefers-reduced-motion:reduce)');
+const specs = [['hexagons',{name:'Hexagons · current',tip:'Existing lattice with the Drift motion',rows:[['hexOpacity','Outlines',[20,40,60],40],['hexSpeed','Pace',[.6,1,1.6],.6],['hexStrength','Effect',[25,65,100],65]]}],...Object.entries(AMBIENT)];
+const items = [];
+for(const [key,f] of specs) {
+  const section = document.createElement('section');
+  section.innerHTML = `<h3>${f.name}</h3><p class="desc">${f.tip}</p><div class="stage"><canvas aria-hidden="true"></canvas><div class="page"><header>EVENT HORIZON</header><strong>Random Access Memories</strong><small>Daft Punk · 2013</small><div class="tracks"><div class="track"><span>01 &nbsp; Give Life Back to Music</span><span>4:34</span></div><div class="track"><span>02 &nbsp; The Game of Love</span><span>5:21</span></div><div class="track"><span>03 &nbsp; Giorgio by Moroder</span><span>9:04</span></div></div></div></div><div class="params"></div>`;
+  const params = section.querySelector('.params'), p = {};
+  const rows = key==='hexagons' ? f.rows : [['ambientOpacity','Opacity',[25,45,65,85,100],65],...f.rows];
+  for(const [k,label,values,def] of rows) {
+    p[k] = values.includes(saved.params?.[key]?.[k]) ? saved.params[key][k] : def;
+    const l = document.createElement('label');l.textContent=label;
+    const select=document.createElement('select');select.setAttribute('aria-label',f.name+' '+label);
+    values.forEach(v=>{const opt=document.createElement('option');opt.value=v;opt.textContent=v+(k==='ambientOpacity'?'%':'');opt.selected=v===p[k];select.append(opt);});
+    select.onchange=()=>{p[k]=Number(select.value);draw();persist();}; l.append(select);params.append(l);
+  }
+  const cv=section.querySelector('canvas'),ctx=cv.getContext('2d');root.querySelector('.sample-grid').append(section);items.push({key,p,cv,ctx});
+}
+function draw(){
+  const css=getComputedStyle(root),c1=css.getPropertyValue('--eh-s-c1').trim(),c2=css.getPropertyValue('--eh-s-c2').trim();
+  for(const {key,p,cv,ctx} of items){
+    const w=cv.clientWidth,h=cv.clientHeight,dpr=Math.min(2,devicePixelRatio||1);
+    if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    if(key!=='hexagons'){cv.style.opacity=p.ambientOpacity/100;ambientDraw(ctx,w,h,key,p,t,c1,c2);continue;}
+    ctx.clearRect(0,0,w,h);ctx.strokeStyle=c1;ctx.lineWidth=.7;
+    for(let y=-48;y<h+48;y+=48)for(let x=-28;x<w+28;x+=28){
+      const wave=Math.exp(-((x-w*(.5+.42*Math.sin(t*p.hexSpeed*.11)))**2+(y-h*(.5+.4*Math.cos(t*p.hexSpeed*.13)))**2)/7000);
+      ctx.globalAlpha=p.hexOpacity/200+wave*p.hexStrength/100;ctx.beginPath();ctx.moveTo(x+14,y);ctx.lineTo(x+28,y+8);ctx.lineTo(x+28,y+24);ctx.lineTo(x+14,y+32);ctx.lineTo(x,y+24);ctx.lineTo(x,y+8);ctx.closePath();ctx.moveTo(x+14,y+32);ctx.lineTo(x+14,y+48);ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+  }
+}
+function persist(){window.openai?.setWidgetState?.({modelContent:{effects:Object.fromEntries(items.map(i=>[i.key,i.p]))},privateContent:{params:Object.fromEntries(items.map(i=>[i.key,i.p])),paused,theme:root.querySelector('[data-theme]').value,content:root.querySelector('[data-content]').value}})?.catch(()=>{});}
+const theme=root.querySelector('[data-theme]'),content=root.querySelector('[data-content]'),pause=root.querySelector('[data-pause]');
+theme.value=saved.theme==='light'?'light':'dark';content.value=saved.content==='hide'?'hide':'show';
+function appearance(){root.classList.toggle('light',theme.value==='light');root.classList.toggle('hide-content',content.value==='hide');draw();}
+theme.onchange=()=>{appearance();persist();};content.onchange=()=>{appearance();persist();};
+function syncPause(){pause.textContent=paused?'Play':'Pause';pause.setAttribute('aria-pressed',String(paused));}
+pause.onclick=()=>{paused=!paused;syncPause();persist();schedule();};
+function frame(now){raf=0;if(last)t+=Math.min(.1,(now-last)/1000);last=now;draw();if(!paused&&!reduce.matches&&!document.hidden)raf=requestAnimationFrame(frame);}
+function schedule(){cancelAnimationFrame(raf);raf=0;last=0;draw();if(!paused&&!reduce.matches&&!document.hidden)raf=requestAnimationFrame(frame);}
+document.addEventListener('visibilitychange',schedule);reduce.addEventListener('change',schedule);
+new ResizeObserver(draw).observe(root);appearance();syncPause();schedule();
+})();
+</script>

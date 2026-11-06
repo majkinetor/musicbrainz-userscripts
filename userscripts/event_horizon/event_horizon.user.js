@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.170000
+// @version      2026.11.06.170001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3339,6 +3339,132 @@ document.addEventListener('load', e => { if (e.target instanceof HTMLImageElemen
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
+// Independent background geometries. The preview and userscript use this same renderer.
+function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
+    const tau = Math.PI * 2, fract = x => x - Math.floor(x);
+    const rand = n => fract(Math.sin(n * 127.1 + 311.7) * 43758.5453);
+    const line = (points, color, alpha, width = 1) => {
+        ctx.beginPath(); points.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+        ctx.strokeStyle = color; ctx.globalAlpha = alpha; ctx.lineWidth = width; ctx.stroke();
+    };
+    ctx.clearRect(0, 0, w, h); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    if (kind === 'tron') {
+        const grid = p.tronGrid, count = p.tronRiders, speed = t * p.tronSpeed * 35;
+        // Dim square circuitry, with luminous riders making only right-angle turns.
+        for (let x = 0; x < w; x += grid) line([[x, 0], [x, h]], c1, .045);
+        for (let y = 0; y < h; y += grid) line([[0, y], [w, y]], c1, .045);
+        for (let i = 0; i < count; i++) {
+            const seed = i + 1, col = i % 2 ? c1 : c2, length = grid * p.tronTrail;
+            const advance = speed + rand(seed) * (w + h), turn = grid * (2 + Math.floor(rand(seed + 23) * 5));
+            const x0 = Math.floor(rand(seed + 7) * w / grid) * grid;
+            const y0 = Math.floor(rand(seed + 17) * h / grid) * grid;
+            const pos = d => {
+                const v = ((advance - d) % (turn * 4) + turn * 4) % (turn * 4);
+                let x = 0, y = 0;
+                if (v < turn) x = v;
+                else if (v < turn * 2) { x = turn; y = v - turn; }
+                else if (v < turn * 3) { x = turn - (v - turn * 2); y = turn; }
+                else y = turn - (v - turn * 3);
+                return [(x0 + x) % (w + turn) - turn / 2, (y0 + y) % (h + turn) - turn / 2];
+            };
+            for (let d = length; d > 0; d -= 4) {
+                const a = pos(d), b = pos(Math.max(0, d - 4));
+                if (Math.hypot(a[0] - b[0], a[1] - b[1]) > 10) continue;
+                line([a, b], col, (1 - d / length) * .9, 1.5);
+            }
+            const [x, y] = pos(0); ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.fillRect(x - 1.7, y - 1.7, 3.4, 3.4);
+        }
+    } else if (kind === 'stars') {
+        const count = Math.min(900, Math.round(w * h / 1100 * p.starDensity));
+        for (let i = 1; i <= count; i++) {
+            const z = .25 + rand(i + 9) * p.starDepth;
+            const x = fract(rand(i) + t * p.starDrift * z / w * 4) * w;
+            const y = fract(rand(i + 3) + t * p.starDrift * z / h) * h;
+            ctx.globalAlpha = (.25 + .55 * rand(i + 4)) * (1 - p.starTwinkle * .35 + p.starTwinkle * .35 * Math.sin(t * .8 + i));
+            ctx.fillStyle = i % 5 ? c1 : c2; ctx.beginPath(); ctx.arc(x, y, .45 + z * .7, 0, tau); ctx.fill();
+        }
+    } else if (kind === 'aurora') {
+        for (let band = 0; band < p.auroraRibbons; band++) {
+            const col = band % 2 ? c2 : c1;
+            for (let stripe = 0; stripe < 22; stripe++) {
+                const points = [];
+                for (let x = -10; x <= w + 10; x += 10) {
+                    const wave = Math.sin(x / w * 5 + t * p.auroraSpeed * .2 + band * 1.8) * .6 + Math.sin(x / w * p.auroraFolds + t * .12 + band) * .23;
+                    points.push([x, h * (.3 + band * .13) + wave * h * p.auroraHeight + stripe * 2.5]);
+                }
+                line(points, col, Math.sin(stripe / 22 * Math.PI) * .09, 3.5);
+            }
+        }
+    } else if (kind === 'contour') {
+        for (let y = -80, j = 0; y < h + 80; y += p.contourSpacing, j++) {
+            const points = [];
+            for (let x = -8; x <= w + 8; x += 8) {
+                const wave = Math.sin(x / w * p.contourBend + y / h * 3 + t * p.contourSpeed * .12)
+                    + .4 * Math.sin(x / w * 9 - y / h * 5 - t * p.contourSpeed * .08);
+                points.push([x, y + wave * p.contourHeight]);
+            }
+            line(points, j % 5 ? c1 : c2, j % 5 ? .16 : .45, j % 5 ? .8 : 1.2);
+        }
+    } else if (kind === 'orbit') {
+        ctx.save(); ctx.translate(w * .52, h * .5); ctx.rotate(p.orbitTilt * Math.PI / 180);
+        for (let i = 0; i < p.orbitRings; i++) {
+            const radius = Math.min(w, h) * (.18 + i * .105), col = i % 2 ? c2 : c1;
+            ctx.globalAlpha = .18; ctx.strokeStyle = col; ctx.lineWidth = .8; ctx.beginPath();
+            ctx.ellipse(0, 0, radius * 1.8, radius * .65, 0, 0, tau); ctx.stroke();
+            for (let n = 0; n < p.orbitMoons; n++) {
+                const angle = t * p.orbitSpeed * .12 / (1 + i * .18) + i * 2 + n * tau / p.orbitMoons;
+                ctx.globalAlpha = .65; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(0, 0, radius * 1.8, radius * .65, 0, angle - .22, angle); ctx.stroke();
+                ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(Math.cos(angle) * radius * 1.8, Math.sin(angle) * radius * .65, 2, 0, tau); ctx.fill();
+            }
+        }
+        ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+}
+
+const AMBIENT = {
+    tron: { name: 'Tron', tip: 'Light riders turn through a square circuit grid', rows: [
+        ['tronGrid', 'Grid size', [24, 40, 64], 40], ['tronRiders', 'Riders', [8, 16, 28], 16], ['tronSpeed', 'Speed', [.4, 1, 2], 1], ['tronTrail', 'Trail length', [1, 3, 6], 3],
+    ] },
+    stars: { name: 'Stars', tip: 'Layers of drifting stars with a quiet twinkle', rows: [
+        ['starDensity', 'Density', [.4, 1, 2], 1], ['starDrift', 'Drift', [0, .4, 1], .4], ['starDepth', 'Depth', [.5, 1, 2], 1], ['starTwinkle', 'Twinkle', [0, .5, 1], .5],
+    ] },
+    aurora: { name: 'Aurora', tip: 'Translucent curtains of light fold across the page', rows: [
+        ['auroraRibbons', 'Ribbons', [1, 2, 3], 2], ['auroraSpeed', 'Speed', [.4, 1, 2], .4], ['auroraHeight', 'Height', [.1, .25, .4], .25], ['auroraFolds', 'Folds', [5, 10, 18], 10],
+    ] },
+    contour: { name: 'Contour', tip: 'Slowly shifting topographic lines', rows: [
+        ['contourSpacing', 'Line spacing', [12, 22, 36], 22], ['contourHeight', 'Wave height', [12, 32, 64], 32], ['contourBend', 'Bends', [3, 6, 10], 6], ['contourSpeed', 'Speed', [.4, 1, 2], .4],
+    ] },
+    orbit: { name: 'Orbit', tip: 'Tilted orbital rings carry small satellites', rows: [
+        ['orbitRings', 'Rings', [3, 5, 8], 5], ['orbitMoons', 'Satellites', [1, 2, 3], 1], ['orbitTilt', 'Tilt', [-35, -15, 15], -15], ['orbitSpeed', 'Speed', [.4, 1, 2], .4],
+    ] },
+};
+const AMBIENT_DEFAULTS = Object.fromEntries(Object.values(AMBIENT).flatMap(f => f.rows.map(([k, , , v]) => [k, v])));
+const AMBIENT_KEYS = ['effect', 'ambientOpacity', ...Object.keys(AMBIENT_DEFAULTS)];
+
+function ambientApply(layer, kind) {
+    layer._ehDepthOff?.(); layer.querySelector('svg').style.display = 'none';
+    layer.style.setProperty('--eh-hex-mf', '1'); layer.style.setProperty('--eh-hex-fx', Math.max(0, Math.min(100, Number(S.ambientOpacity) || 0)) / 100);
+    layer._ehPattern?.stop();
+    const cv = document.createElement('canvas'); cv.className = 'hex-pattern'; layer.append(cv);
+    const w = layer.clientWidth, h = layer.clientHeight, dpr = Math.min(2, devicePixelRatio || 1);
+    cv.width = w * dpr; cv.height = h * dpr; cv.style.width = w + 'px'; cv.style.height = h + 'px';
+    const ctx = cv.getContext('2d'); if (!ctx) { cv.remove(); return; } ctx.scale(dpr, dpr);
+    const css = getComputedStyle(layer), c1 = css.color, c2 = css.getPropertyValue('--accent2').trim() || c1;
+    const p = {};
+    for (const [k, , values, fallback] of AMBIENT[kind].rows) p[k] = values.includes(Number(S[k])) ? Number(S[k]) : fallback;
+    let raf = 0, time = 0, last = 0;
+    const draw = now => {
+        if (!layer.isConnected) { stop(); return; }
+        if (last) time += Math.min(.1, (now - last) / 1000); last = now;
+        ambientDraw(ctx, w, h, kind, p, time, c1, c2);
+        if (!hexReduce.matches) raf = requestAnimationFrame(draw);
+    };
+    const vis = () => { cancelAnimationFrame(raf); last = 0; if (!document.hidden) draw(performance.now()); };
+    function stop() { cancelAnimationFrame(raf); document.removeEventListener('visibilitychange', vis); cv.remove(); delete layer._ehPattern; }
+    layer._ehPattern = { stop, shift() {} }; document.addEventListener('visibilitychange', vis); vis();
+}
+
 const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
@@ -3362,6 +3488,8 @@ const S = {
     hgrp: 'burst', // the history page's grouping
     tagView: 'bars', etagView: 'chips', tagSort: 'count', tagScope: 'a', tgxView: 'row', // the tags pages' view (an editor's, an entity's), order and kind
 };
+VIEW.push(...AMBIENT_KEYS);
+Object.assign(S, { effect: 'hexagons', ambientOpacity: 65, ...AMBIENT_DEFAULTS });
 VIEW.push('keysOn', 'keys', 'menuTitles', 'annoHover', 'pending', 'colPick', 'colW', 'named', 'fxTheme', 'stars', 'starGroup', 'starView', 'starSort', 'recView', 'recSort', 'recMax', 'recOff', 'hmQs');
 S.keysOn = true; // #907: keyboard shortcuts, and the keys changed from their defaults by command
 S.keys = {};
@@ -7842,7 +7970,7 @@ function hexApply() {
     let layer = document.getElementById('eh-hex');
     de.toggleAttribute('data-eh-hex', !!S.hex && ehOn);
     if (!S.hex || !ehOn) { layer?._ehPattern?.stop(); layer?._ehDepthOff?.(); layer?.remove(); return; }
-    const mode = hexMode(), pct = v => Math.max(0, Math.min(100, Number(v) || 0)) / 100;
+    const mode = AMBIENT[S.effect] ? S.effect : hexMode(), pct = v => Math.max(0, Math.min(100, Number(v) || 0)) / 100;
     de.setAttribute('data-eh-hex', mode);
     de.toggleAttribute('data-eh-hex-two', !!S.hexTwo);
     de.style.setProperty('--eh-hex-opacity', pct(S.hexOpacity));
@@ -7855,6 +7983,9 @@ function hexApply() {
         layer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><pattern id="eh-hex-base" width="28" height="48" patternUnits="userSpaceOnUse">${tile}</pattern><pattern id="eh-hex-base2" width="28" height="48" patternUnits="userSpaceOnUse" style="color:var(--accent2)">${tile}</pattern></defs><rect class="hex-base" width="100%" height="100%" fill="url(#eh-hex-base)"/><rect class="hex-drift" width="100%" height="100%" fill="url(#eh-hex-base)"/><rect class="hex-drift2" width="100%" height="100%" fill="url(#eh-hex-base2)"/></svg>`;
         document.body.append(layer);
     }
+    if (AMBIENT[mode]) { ambientApply(layer, mode); return; }
+    layer.querySelector('svg').style.display = '';
+    layer.style.removeProperty('--eh-hex-mf'); layer.style.removeProperty('--eh-hex-fx');
     hexDepth(layer);
     hexPattern(layer, mode);
 }
@@ -10765,11 +10896,11 @@ const HEX_MOTIONS = [
 // which of the effect's settings each motion takes
 const HEX_USES = { pace: ['drift', 'tide', 'twinkle', 'ripple', 'electricity', 'neural'], trail: ['twinkle', 'electricity', 'neural'], often: ['twinkle', 'ripple', 'electricity', 'neural'], glow: ['twinkle', 'electricity', 'neural'], two: ['drift', 'twinkle', 'electricity', 'neural'] };
 // the effects drawn over the background; Hexagons is the first
-const EFFECTS = [['none', 'None', 'No effect over the background'], ['hexagons', 'Hexagons', 'Hexagon outlines over any background, with an animation']];
+const EFFECTS = [['none', 'None', 'No effect over the background'], ['hexagons', 'Hexagons', 'Hexagon outlines over any background, with an animation'], ...Object.entries(AMBIENT).map(([k, f]) => [k, f.name, f.tip])];
 // an effect with all its settings, saved by name: the shipped ones here ({ name, v }, v holding any of FX_KEYS, the
 // rest at their defaults), the user's own in S.named.fx; one of the user's shadows a shipped one of the same name
 const FX_PRESETS = [];
-const FX_KEYS = ['hex', 'hexOpacity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth'];
+const FX_KEYS = [...AMBIENT_KEYS, 'hex', 'hexOpacity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth'];
 const fxNow = () => Object.fromEntries(FX_KEYS.map(k => [k, S[k]]));
 const fxFull = p => { const d = JSON.parse(DEFAULTS); return Object.fromEntries(FX_KEYS.map(k => [k, k in p.v ? p.v[k] : d[k]])); };
 const fxLow = s => String(s).toLowerCase();
@@ -10793,6 +10924,10 @@ function fxRow(row) {
     const del = own ? `<button type="button" class="chip" data-fx-del="${esc(m.name)}" data-tip="Delete this preset">Delete</button>` : '';
     return row('Preset', `${pick}${del}<input type="text" class="fx-name" data-fx-name maxlength="60" autocomplete="off" placeholder="Name" aria-label="Preset name" value="${m && own ? esc(m.name) : ''}"><button type="button" class="chip" data-fx-save>Save</button>`, 'An effect with all its settings, saved by name\nThe same name replaces it');
 }
+function ambientRows(kind, chip, row) {
+    return row('Opacity', [25, 45, 65, 85, 100].map(v => chip('ambientOpacity', v, S.ambientOpacity === v, v + '%')).join(''), 'How strong the effect is')
+        + AMBIENT[kind].rows.map(([key, label, values]) => row(label, values.map(v => chip(key, v, S[key] === v, String(v))).join(''))).join('');
+}
 function hexRows(chip, row) {
     const m = S.hexMotion, use = k => HEX_USES[k].includes(m);
     const dim = (on, html) => on ? html : html.replace('class="cr"', 'class="cr dim"');
@@ -10811,7 +10946,7 @@ function hexRows(chip, row) {
 function cfgBody() {
     const chip = cfgChip, row = cfgRow;
     const tabs = [['general', 'General'], ['effects', 'Effects']];
-    const fx = S.hex ? 'hexagons' : 'none';
+    const fx = S.hex ? (AMBIENT[S.effect] ? S.effect : 'hexagons') : 'none';
     const panes = {
         general: row('Keyboard shortcuts', chip('keysOn', 'keysOn', S.keysOn, 'On', 'Single keys open the page\'s edit, relationships, history and more\nCtrl+/ lists them') + '<button type="button" class="chip" data-keys-open>Change keys</button>', 'On MusicBrainz\'s pages and in Event Horizon alike')
             + row('Menu titles', chip('menuTitles', 'menuTitles', S.menuTitles, 'Show', 'Show text beside header menu icons\nOn: icons and titles\nOff: icons only'))
@@ -10819,7 +10954,7 @@ function cfgBody() {
             + row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen')
             + row('Background', [['flat', 'Flat'], ['aura', 'Cover aura'], ['glow', 'Glow'], ['band', 'Header band']].map(([k, l]) => chip('bg', k, (S.bg || 'aura') === k, l)).join(''), 'Cover aura blurs the page\'s cover or picture behind its head; pages without one get the glow'),
         effects: fxRow(row) + row('Effect', `<select data-fx-pick aria-label="Effect">${EFFECTS.map(([k, l, tip]) => `<option value="${k}" title="${esc(tip)}"${k === fx ? ' selected' : ''}>${l}</option>`).join('')}</select>`, 'An effect drawn over the background')
-            + (fx === 'hexagons' ? hexRows(chip, row) : ''),
+            + (fx === 'hexagons' ? hexRows(chip, row) : AMBIENT[fx] ? ambientRows(fx, chip, row) : ''),
     };
     if (!panes[cfgTab]) cfgTab = 'general';
     return `<div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button type="button" class="tab" role="tab" data-tab="${k}" aria-selected="${k === cfgTab}">${l}</button>`).join('')}</div><div class="pane">${panes[cfgTab]}</div>`;
@@ -10853,7 +10988,7 @@ function openPlCfg(btn, hd) {
 function cfgWire(panel, b, body) {
     panel.addEventListener('change', ev => {
         if (!ev.target.matches('[data-fx-pick]')) return;
-        S.hex = ev.target.value === 'hexagons';
+        S.hex = ev.target.value !== 'none'; S.effect = S.hex ? ev.target.value : 'hexagons';
         save(); hexApply(); b.innerHTML = body();
     });
     // the effect presets: pick one to bring it back; Save keeps the effect under the name, the same name replaces it
@@ -10930,6 +11065,7 @@ function cfgWire(panel, b, body) {
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
             else if (g === 'bg') S.bg = k;
+            else if (AMBIENT_KEYS.includes(g) && g !== 'effect') { S[g] = +k; hexApply(); }
             else if (g === 'hex' || g === 'hexDepth') { S[g] = !S[g]; hexApply(); }
             else if (g === 'hexPace' || g === 'hexTrail' || g === 'hexOften' || g === 'hexGlow' || g === 'hexOpacity' || g === 'hexFx') { S[g] = +k; hexApply(); }
             else if (g === 'hexMotion') { S.hexMotion = k; hexApply(); }
