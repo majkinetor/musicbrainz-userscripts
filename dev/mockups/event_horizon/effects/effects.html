@@ -126,7 +126,7 @@ function auroraDiffuse(ctx, w, h, p, t, c1, c2) {
     const settings = [null, { step: 4, spread: 8, height: .4, bloom: .18, rays: .28, folds: 10 },
         { step: 9, spread: 38, height: .48, bloom: .16, rays: 0, folds: 7 },
         { step: 6, spread: 17, height: .72, bloom: .11, rays: .13, folds: 5 }][p.auroraStyle];
-    const pace = t * p.auroraSpeed * .1125, unit = w / 480, scale = 1 + p.auroraDiffuse / 100 * .75;
+    const pace = t * p.auroraSpeed * .65, unit = w / 480, scale = 1 + p.auroraDiffuse / 100 * .75;
     const tone = i => {
         const n = Math.sin((i + 91) * 127.1 + 311.7) * 43758.5453, hue = Math.round((n - Math.floor(n)) * 360);
         return p.colour === 2 ? `hsl(${hue},85%,65%)` : p.colour === 1 && i % 2 ? c2 : c1;
@@ -138,22 +138,23 @@ function auroraDiffuse(ctx, w, h, p, t, c1, c2) {
         ctx.fillStyle = gradient; ctx.globalAlpha = alpha; ctx.fillRect(-1, -1, 2, 2); ctx.restore();
     };
     for (let band = 0; band < p.auroraRibbons; band++) {
-        const col = tone(band), upper = p.colour === 1 ? tone(band + 1) : col;
+        const col = tone(band), upper = p.colour === 1 ? tone(band + 1) : col, wind = pace * (band % 2 ? -.7 : 1);
         for (let x = -20 * unit; x < w + 20 * unit; x += Math.max(3, settings.step * unit)) {
-            const u = x / w, fold = u * settings.folds * p.auroraFolds / 10 + band * 1.8 + Math.sin(pace * .4) * .4;
+            const u = x / w, fold = u * settings.folds * p.auroraFolds / 10 + band * 1.8 - wind * .85 + Math.sin(pace * .5 + band) * .3;
             const envelope = Math.max(0, Math.sin(Math.PI * Math.max(0, Math.min(1, u)))) ** .7;
-            const pulse = .35 + .65 * (.5 + .5 * Math.sin(fold + pace * .2)) ** 2;
-            const hem = h * (.53 + band * .15) + h * .07 * Math.sin(u * 4.5 + band * 2 + pace * .3) + h * .03 * Math.sin(fold);
-            const height = h * settings.height * (.1 + p.auroraHeight) / .35 * (.8 + .2 * Math.sin(u * 8 + band + pace * .2));
-            const lean = Math.sin(u * 4 + band + pace * .1) * .055;
-            const width = settings.spread * unit * scale * (.8 + .2 * Math.sin(u * 40)) * (1 + p.glow * .15);
+            const pulse = .22 + .78 * (.5 + .5 * Math.sin(fold - wind * .65 + .35 * Math.sin(u * 13 - wind * 1.4))) ** 2;
+            const hem = h * (.53 + band * .15) + h * .07 * Math.sin(u * 4.5 + band * 2 + wind * .5) + h * .03 * Math.sin(fold);
+            const height = h * settings.height * (.1 + p.auroraHeight) / .35 * (.8 + .2 * Math.sin(u * 8 + band - wind * .55));
+            const lean = Math.sin(u * 4 + band + wind * .4) * .055;
+            const width = settings.spread * unit * scale * (.8 + .2 * Math.sin(u * 40 - wind * 2)) * (1 + p.glow * .15);
             const alpha = settings.bloom * envelope * pulse * (.8 + p.glow * .2);
-            glow(x, hem - height * .35, width, height * .63, col, alpha, lean);
-            glow(x + height * lean * .3, hem - height * .67, width * 1.25, height * .5, upper, alpha * .36, lean);
+            const drift = x + w * .035 * Math.sin(wind * .5 + band * 2);
+            glow(drift, hem - height * .35, width, height * .63, col, alpha, lean);
+            glow(drift + height * lean * .3, hem - height * .67, width * 1.25, height * .5, upper, alpha * .36, lean);
             if (settings.rays) {
-                const glint = .5 + .5 * Math.sin(u * 89 + Math.sin(pace + u * 6));
-                glow(x, hem - height * .36, Math.max(2, width * .35), height * .56, col, settings.rays * envelope * pulse * glint, lean);
-                glow(x, hem, width * 1.25, 5 * scale * h / 265, col, .16 * envelope * pulse);
+                const glint = .5 + .5 * Math.sin(u * 89 - wind * 2 + Math.sin(pace + u * 6));
+                glow(drift, hem - height * .36, Math.max(2, width * .35), height * .56, col, settings.rays * envelope * pulse * glint, lean);
+                glow(drift, hem, width * 1.25, 5 * scale * h / 265, col, .16 * envelope * pulse);
             }
         }
     }
@@ -245,19 +246,19 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
         if (p.auroraStyle > 0 || p.auroraDiffuse > 0) { auroraLayer(ctx, w, h, p, t, c1, c2); ctx.globalAlpha = 1; return; }
         // Polar-light curtains: fine vertical rays rise from a folded, luminous lower edge.
         // Cap ray count rather than blurring a full-screen canvas every frame.
-        const pace = t * p.auroraSpeed * .12, step = Math.max(2.5, w / 260);
+        const pace = t * p.auroraSpeed * .65, step = Math.max(2.5, w / 260);
         for (let band = 0; band < p.auroraRibbons; band++) {
-            const col = tone(band), upper = p.colour === 1 ? tone(band + 1) : col;
+            const col = tone(band), upper = p.colour === 1 ? tone(band + 1) : col, wind = pace * (band % 2 ? -.7 : 1);
             for (let x = 0; x <= w; x += step) {
-                const u = x / w, fold = u * p.auroraFolds + band * 1.9 + Math.sin(pace * .45) * .35;
+                const u = x / w, fold = u * p.auroraFolds + band * 1.9 - wind * .85 + Math.sin(pace * .5 + band) * .3;
                 const pleat = (.5 + .5 * Math.sin(fold)) ** 4;
                 const edge = Math.sin(Math.PI * u) ** .6;
-                const hem = h * (.47 + band * .15) + h * .065 * Math.sin(u * 4.5 + band * 2 + pace * .3)
-                    + h * .035 * Math.sin(fold + pace * .2);
-                const height = h * (.1 + p.auroraHeight) * (.65 + .35 * Math.sin(u * 2.4 + band + .8) ** 2);
-                const top = hem - height * (.85 + .15 * Math.sin(u * 17 + band + pace * .4));
-                const lean = h * .025 * Math.sin(u * 3 + band * 1.7 + pace * .15);
-                const shimmer = .65 + .35 * Math.sin(u * 210 + band * 13 + Math.sin(pace + u * 8) * 1.3) ** 2;
+                const hem = h * (.47 + band * .15) + h * .065 * Math.sin(u * 4.5 + band * 2 + wind * .5)
+                    + h * .035 * Math.sin(fold + wind * .35);
+                const height = h * (.1 + p.auroraHeight) * (.65 + .35 * Math.sin(u * 2.4 + band + .8 + wind * .3) ** 2);
+                const top = hem - height * (.85 + .15 * Math.sin(u * 17 + band - wind * .8));
+                const lean = h * .025 * Math.sin(u * 3 + band * 1.7 + wind * .4);
+                const shimmer = .65 + .35 * Math.sin(u * 210 + band * 13 - wind * 3 + Math.sin(pace + u * 8) * 1.3) ** 2;
                 const beam = ctx.createLinearGradient(x + lean, top, x, hem + 3);
                 beam.addColorStop(0, 'transparent'); beam.addColorStop(.32, upper);
                 beam.addColorStop(.8, col); beam.addColorStop(.97, col); beam.addColorStop(1, 'transparent');
