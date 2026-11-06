@@ -1,0 +1,9 @@
+[
+  {"id":"bandcamp","name":"Import Bandcamp releases to MusicBrainz","author":"murdos and contributors","repo":"murdos/musicbrainz-userscripts","branch":"master","path":"bandcamp_importer.user.js"},
+  {"id":"elephant","name":"Elephant Editor","author":"jesus2099","repo":"jesus2099/konami-command","branch":"master","path":"mb_ELEPHANT-EDITOR.user.js"},
+  {"id":"covers","name":"Enhanced Cover Art Uploads","author":"ROpdebee","repo":"ROpdebee/mb-userscripts","branch":"dist","path":"mb_enhanced_cover_art_uploads.user.js"},
+  {"id":"aliases","name":"Add entity aliases in batch","author":"loujine","repo":"loujine/musicbrainz-scripts","branch":"master","path":"mb-edit-add_aliases.user.js"},
+  {"id":"acoustid","name":"Merge recordings from AcoustID page","author":"loujine","repo":"loujine/musicbrainz-scripts","branch":"master","path":"acoustid-merge-recordings.user.js"},
+  {"id":"setlist","name":"Fill event setlist","author":"loujine","repo":"loujine/musicbrainz-scripts","branch":"master","path":"mb-edit-fill_event_setlist.user.js"},
+  {"id":"jasrac","name":"JASRAC work importer and cross-linking","author":"jesus2099","repo":"jesus2099/konami-command","branch":"master","path":"jasrac-mb-minc_WORK-IMPORT-CROSS-LINKING.user.js"}
+]
