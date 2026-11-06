@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.120222
+// @version      2026.11.06.120000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -1373,7 +1373,7 @@
       ${IS_EVENT ? '' : `<button class="as-btn as-mh" data-tip="MH Covers\nFind a cover on covers.musichoarders.xyz"><img class="as-mh-ic" src="https://covers.musichoarders.xyz/favicon.svg" alt="MH" width="18" height="18"></button>`}
       <button class="as-btn as-src" data-tip="Source ${ENT.noun}\nFrom a linked platform, a registered provider, or any URL"><span class="as-bi">🔗</span><span class="mbu-bt">URL</span><span class="as-src-n"></span></button>
       <span class="as-size" data-tip="${SIZE_TIP}">${TILE_SIZES.map(([n], i) => `<button type="button" class="${i === tileIdx() ? 'on' : ''}" aria-label="${n}">${tileIcon(i)}</button>`).join('')}</span>
-      <button class="as-btn as-view" data-tip="Sort and group">View ▾</button>
+      <button class="as-btn as-view" data-tip="Sort and group"><span class="as-bi as-view-ic"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></span><span class="mbu-bt">View</span> ▾</button>
       ${!canReorder() ? '<span class="as-dragwarn" data-tip="Dragging to reorder is off\nIt works only sorted by Position, in the grid view.\nClick: change the view">⚠</span>' : ''}
       <span class="as-selbox">${selBox()}</span>
       <button class="as-btn as-commit" data-tip="Review and apply the staged changes as MusicBrainz edits\nRight-click: start at once, without the Run click"${n?'':' disabled'}>${commitInner(n)}</button>
@@ -1386,7 +1386,7 @@
   function selBox() {
     const sel = MODEL.filter(it => it._sel && !it._del), kept = MODEL.filter(it => it._sel && it._del && !it._mcOffer);   // #787 marked ones can be selected, to keep them
     const all = sel.length + kept.length;
-    return `${all ? `<b class="as-selcnt">${all} selected</b>` : '<span class="as-selcnt none">none selected</span>'}
+    return `${all ? '<button class="as-ic as-selback" aria-label="Clear selection">←</button>' : ''}${all ? `<b class="as-selcnt">${all} selected</b>` : '<span class="as-selcnt none">none selected</span>'}
       <button class="as-ic as-selall" data-tip="Select all ${ITEMS}">✳</button>
       <button class="as-ic as-selclr" data-tip="Clear selection"${all ? '' : ' disabled'}>✕</button>
       ${kept.length ? `<button class="as-btn as-bk-keep" data-tip="Keep the selected ${ITEMS} marked for removal"><span class="as-bi">↺</span><span class="mbu-bt">Keep${sel.length ? ` (${kept.length})` : ''}</span></button>` : ''}
@@ -1394,7 +1394,8 @@
       <button class="as-btn as-bk-cmt" data-tip="Set a comment on the selection"><span class="as-bi">✎</span><span class="mbu-bt">Comment ▾</span></button>
       <button class="as-btn as-bk-dl" data-tip="Download the selected ${ITEMS}"><span class="as-bi">⬇</span><span class="mbu-bt">Download</span></button>
       <button class="as-btn as-bk-report" data-tip="A report of the selection\nMarkdown or HTML, ready to post"><span class="as-bi">📋</span><span class="mbu-bt">Report</span></button>
-      <button class="as-btn as-bk-rm" data-tip="Mark the selected ${ITEMS} for removal"><span class="as-bi">${trashSvg(16)}</span><span class="mbu-bt">Delete</span></button>` : ''}`;
+      <button class="as-btn as-bk-rm" data-tip="Mark the selected ${ITEMS} for removal"><span class="as-bi">${trashSvg(16)}</span><span class="mbu-bt">Delete</span></button>` : ''}
+      ${all ? '<button class="as-ic as-selmore" aria-label="More">⋯</button>' : ''}`;
   }
   function section(type, items) {
     const label = type === null ? ('All ' + ITEMS) : type;
@@ -1832,6 +1833,8 @@
     const q = s => root.querySelector(s);
     q('.as-selall') && (q('.as-selall').onclick = () => { selectable().forEach(it => it._sel = true); root.querySelectorAll('.as-card:not(.del), .as-drow').forEach(c => c.classList.add('sel')); root.querySelectorAll('.as-dsel').forEach(cb => cb.checked = true); syncSel(); });
     q('.as-selclr') && (q('.as-selclr').onclick = () => clearSel());
+    q('.as-selback') && (q('.as-selback').onclick = () => clearSel());
+    q('.as-selmore') && (q('.as-selmore').onclick = e => { e.stopPropagation(); openSelMore(e.currentTarget); });
     q('.as-bk-keep') && (q('.as-bk-keep').onclick = () => { let n = 0; MODEL.forEach(it => { if (it._sel && it._del && !it._mcOffer) { it._del = false; it._sel = false; n++; } }); asLog.info(`Batch: kept ${n} ${n === 1 ? ITEM : ITEMS} marked for removal`); render(); });   // #787
     q('.as-bk-rm')  && (q('.as-bk-rm').onclick  = () => { let n = 0; MODEL.forEach(it => { if (it._sel && !it._del && !it._rmOpen) { it._del = true; it._sel = false; n++; } }); asLog.info(`Batch: marked ${n} ${n === 1 ? ITEM : ITEMS} for removal`); render(); });
     q('.as-bk-dl')  && (q('.as-bk-dl').onclick  = async e => {
@@ -1992,6 +1995,25 @@
   const opsCount = () => buildPlan().length;
   // #234: the "View ▾" dropdown — Sort options + Group toggle, moved off the
   // main toolbar to free its center for the selection controls.
+  // a phone's selection bar: the cluster's rarer actions sit in its ⋯ menu
+  function openSelMore(btn) {
+    document.querySelectorAll('.as-pop').forEach(p => p.remove());
+    const pop = document.createElement('div'); pop.className = 'as-pop as-more-pop';
+    pop.innerHTML = '<button data-a="all">Select all</button><button data-a="inv">Invert selection</button><button data-a="clr">Clear selection</button>';
+    document.body.appendChild(pop);
+    placePop(pop, btn.getBoundingClientRect());
+    const close = () => { pop.remove(); document.removeEventListener('mousedown', off); };
+    const off = e => { if (!pop.contains(e.target) && e.target !== btn) close(); };
+    pop.onclick = e => {
+      const a = e.target.closest('button') && e.target.dataset.a; if (!a) return;
+      close();
+      if (a === 'clr') return clearSel();
+      selectable().forEach(it => it._sel = a === 'all' ? true : !it._sel);
+      asLog.debug('Selection: ' + (a === 'all' ? 'select all' : 'invert'));
+      render();
+    };
+    setTimeout(() => document.addEventListener('mousedown', off), 0);
+  }
   function openViewPop(btn) {
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop as-view-pop';
@@ -2016,7 +2038,8 @@
 
   // position a popover next to an anchor, flipping up / clamping so it stays on-screen
   function placePop(pop, r) {
-    const ph = pop.offsetHeight, pw = pop.offsetWidth, vh = innerHeight, vw = innerWidth, M = 8;
+    // a phone: MusicBrainz's page is wider than the screen, so keep to the visual viewport
+    const vv = window.visualViewport, ph = pop.offsetHeight, pw = pop.offsetWidth, vh = innerHeight, vw = vv ? Math.min(innerWidth, vv.offsetLeft + vv.width) : innerWidth, M = 8;
     let top = r.bottom + 3;
     if (top + ph > vh - M && r.top - ph - 3 >= M) top = r.top - ph - 3;   // flip above the anchor
     top = Math.max(M, Math.min(top, vh - ph - M));
@@ -7980,6 +8003,9 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
   .as-selall{color:var(--mbu-ok)}
   .as-bk-rm{border-color:var(--mbu-error);color:var(--as-warn)}
   .as-view{font-weight:600}
+  .as-selback,.as-selmore{display:none}
+  .as-more-pop button{display:block;width:100%;text-align:left;border:0;background:none;color:inherit;font:inherit;padding:9px 10px;border-radius:5px;cursor:pointer}
+  .as-more-pop button:hover{background:var(--mbu-bg-hover)}
   .as-dragwarn{font-size:13px;color:var(--mbu-warn);background:var(--mbu-warn-bg);border:1px solid var(--mbu-warn);border-radius:var(--mbu-radius);padding:3px 7px;line-height:1;cursor:help}
   .as-pop-note{color:var(--mbu-accent-text);font-size:11px}
   .as-pop{position:absolute;z-index:calc(var(--mbu-z-modal) + 1);background:var(--mbu-bg);border:1px solid var(--mbu-accent);border-radius:8px;box-shadow:0 6px 22px rgba(60,40,110,.22);padding:6px;min-width:150px;max-height:340px;overflow:auto;font-size:13px}   /* z above the lightbox (the modal layer, over a pinned dock window) so the type picker shows over it */
@@ -8150,6 +8176,17 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
     #as-root .as-bar .as-selbox{flex-wrap:wrap;justify-content:flex-start;gap:5px;min-width:0;max-width:100%}
     #as-root .as-bar :is(.as-btn:not(.as-commit),.as-ic,select){border-color:transparent;background:none}
     #as-root .as-bar :is(.as-btn:not(.as-commit),.as-ic,select):hover:not(:disabled){border-color:var(--mbu-border)}
+    /* one row: icons only, View an icon with its caret */
+    #as-root .as-bar{flex-wrap:nowrap}
+    #as-root .as-bar .mbu-bt,#as-root .as-bar .as-selclr{display:none}
+    /* with a selection the whole bar becomes the selection bar: ← count Type ✎ ⬇ 📋 🗑 ⋯ */
+    #as-root .as-bar:has(.as-selback){background:var(--mbu-accent-bg,color-mix(in srgb,var(--mbu-accent) 14%,var(--mbu-bg)))}
+    #as-root .as-bar:has(.as-selback)>:not(.as-selbox){display:none}
+    #as-root .as-bar:has(.as-selback) .as-selbox{flex:1;flex-wrap:nowrap;order:0}
+    #as-root .as-bar .as-selbox .as-selall{display:none}
+    #as-root .as-bar:not(:has(.as-selback)) .as-selbox{display:none}
+    #as-root .as-bar .as-selback,#as-root .as-bar .as-selmore{display:inline-flex}
+    #as-root .as-bar .as-selmore{margin-left:auto}
   }
   /* commit panel */
   #as-commit,#as-report{position:fixed;inset:0;z-index:var(--mbu-z-modal);background:rgba(15,12,28,.45);display:flex;align-items:center;justify-content:center;padding:24px}

@@ -27,7 +27,20 @@ test('the cover-art page fits a phone screen', { tag: ['@sandbox', '@cosmetic'] 
   console.log(JSON.stringify(r));
   check(r.tops.length < 2 || r.tops[0] === r.tops[1], `two covers to a row (${r.tops})`);
   const barH = await page.evaluate(() => Math.round(document.querySelector('#as-root .as-bar').getBoundingClientRect().height));
-  check(barH <= 100, `the toolbar is compact, two rows at most (${barH}px)`);
+  check(barH <= 50, `the toolbar is one row (${barH}px)`);
+  // a selection turns the whole bar into the selection bar, still one row; ← brings the normal bar back
+  await page.evaluate(() => document.querySelector('#as-root .as-selall').click());
+  const sb = await page.evaluate(() => { const b = document.querySelector('#as-root .as-bar'), v = e => e && e.getClientRects().length > 0;
+    return { h: Math.round(b.getBoundingClientRect().height), back: v(b.querySelector('.as-selback')), more: v(b.querySelector('.as-selmore')), add: v(b.querySelector('.as-add')), right: Math.round(b.querySelector('.as-selmore').getBoundingClientRect().right), vw: document.documentElement.clientWidth }; });
+  if (process.env.SHOTS) await page.screenshot({ path: process.env.SHOTS + '/as-mobile-sel.png' });
+  check(sb.h <= 50 && sb.back && sb.more && !sb.add && sb.right <= sb.vw, `the selection bar is one row with ← and ⋯ (${JSON.stringify(sb)})`);
+  await page.click('#as-root .as-selmore');
+  check(await page.locator('.as-more-pop button').count() === 3, 'the ⋯ menu holds select all, invert and clear');
+  await page.click('.as-more-pop [data-a=inv]');
+  check(await page.locator('#as-root .as-selback').count() === 0, 'inverting a full selection empties it');
+  await page.evaluate(() => document.querySelector('#as-root .as-selall').click());
+  await page.click('#as-root .as-selback');
+  check(await page.evaluate(() => document.querySelector('#as-root .as-add').getClientRects().length > 0), '← brings the normal bar back');
   check(r.out.length === 0, `nothing of Art Station's runs past the screen's right edge (${r.vw}px: ${r.out.slice(0, 8).join(' · ')})`);
 
   // full screen: the viewer covers the screen, not the page's 780px, and closing it puts the page back where it was
