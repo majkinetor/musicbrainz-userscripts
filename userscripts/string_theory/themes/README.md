@@ -18,6 +18,10 @@ String Theory's themes for MusicBrainz. Each is one CSS file, `<name>.dark.css` 
 
 **Orchid** uses soft typography, pill-shaped controls and petal-shaped cards. In String Theory's **Theme** settings, choose it for both **Light theme** and **Dark theme**.
 
+## Light-only themes
+
+**Hearth** combines cream surfaces, walnut text and burnt-orange accents with clean sans-serif headings and flat controls. Choose **Hearth** under **Light theme** in String Theory’s **Theme** settings.
+
 ## Customizing
 
 To tweak a theme, change the values in its `:root`. To add one, copy `default.dark.css`, rename it, give it a new `Theme:` name and run `node userscripts/string_theory/build.mjs`.
