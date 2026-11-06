@@ -5,9 +5,8 @@ test.use({ gm: { name: 'Event Horizon' }, profile: 'fresh' });
 const openCfg = page => page.evaluate(() => document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: 'event_horizon', cancelable: true })));
 // the hexagons on: the effect badge added when missing, then Hexagons picked
 const hexOn = async cfg => {
-  if (await cfg.locator('[data-g=fxAdd][data-k=fx]').count()) await cfg.locator('[data-g=fxAdd][data-k=fx]').click();
-  else await cfg.locator('[data-fx-sel=fx]').click();
-  await cfg.locator('[data-g=fxKind][data-k=hexagons]').click();
+  if (await cfg.locator('[data-fx-sel=hexagons]').count()) await cfg.locator('[data-fx-sel=hexagons]').click();
+  else { await cfg.locator('[data-g=fxAdd][data-k=fx]').click(); await cfg.locator('[data-g=fxKind][data-k=hexagons]').click(); }
 };
 const openFx = async page => {
   await openCfg(page);
@@ -35,7 +34,7 @@ test('the Effects tab shows the hexagons settings and dims what the motion does 
   check(d.length === 0, 'Electricity takes all of them: ' + d);
   await cfg.locator('[data-g=hexMotion][data-k=lantern]').click();
   check((await until(dimmed, v => v.includes('Pace'))).includes('Pace'), 'Lantern takes no pace');
-  await cfg.locator('[data-g=fxRm][data-k=fx]').click();
+  await cfg.locator('[data-g=fxRm][data-k=hexagons]').click();
   check(await until(() => cfg.locator('[data-g=hexMotion]').count(), n => n === 0) === 0, 'Removing the effect hides the rows');
   await hexOn(cfg);
   await cfg.locator('.mbu-ov-panel').screenshot({ path: 'test-results/eh-hex-row.png' });

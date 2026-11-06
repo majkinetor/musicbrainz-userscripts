@@ -12,9 +12,8 @@ const openFx = async page => {
 };
 // the hexagons on: the effect badge added when missing, then Hexagons picked
 const hexOn = async cfg => {
-  if (await cfg.locator('[data-g=fxAdd][data-k=fx]').count()) await cfg.locator('[data-g=fxAdd][data-k=fx]').click();
-  else await cfg.locator('[data-fx-sel=fx]').click();
-  await cfg.locator('[data-g=fxKind][data-k=hexagons]').click();
+  if (await cfg.locator('[data-fx-sel=hexagons]').count()) await cfg.locator('[data-fx-sel=hexagons]').click();
+  else { await cfg.locator('[data-g=fxAdd][data-k=fx]').click(); await cfg.locator('[data-g=fxKind][data-k=hexagons]').click(); }
   await until(() => cfg.locator('[data-g=hexOpacity]').count(), n => n > 0);
 };
 const css = (page, p) => page.evaluate(p => document.documentElement.style.getPropertyValue(p), p);
@@ -94,7 +93,7 @@ test('a theme\'s preset applies when String Theory names it', { tag: ['@prod'] }
   await cfg.locator('[data-fx-save]').click();
   await cfg.locator('[data-fx-name]').fill('Day');
   await cfg.locator('.chip[data-fx-new]').click();
-  await cfg.locator('[data-g=fxRm][data-k=fx]').click();
+  await cfg.locator('[data-g=fxRm][data-k=hexagons]').click();
   check(await until(() => page.evaluate(() => document.documentElement.dataset.ehHex || ''), v => !v) === '', 'the effect removed');
   await page.evaluate(() => document.documentElement.setAttribute('data-st-eh-fx', 'Night'));
   check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.3') === '0.3', 'the theme\'s preset comes on');
@@ -102,4 +101,20 @@ test('a theme\'s preset applies when String Theory names it', { tag: ['@prod'] }
   await cfg.locator('[data-g=hexOpacity][data-k="60"]').click();
   await page.evaluate(() => document.documentElement.setAttribute('data-st-eh-fx', 'Night'));
   check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.6') === '0.6', 'the same name again leaves the user\'s change');
+});
+
+// several effects at once: each added one gets its badge and its own layer, and goes on its own
+test('effects stack', { tag: ['@prod'] }, async ({ page, inject }) => {
+  await page.goto('https://musicbrainz.org/artist/f27ec8db-af05-4f36-916e-3d57f91ecf5e');
+  await inject('event_horizon');
+  const cfg = await openFx(page);
+  await hexOn(cfg);
+  await cfg.locator('[data-g=fxAdd][data-k=fx]').click();
+  await cfg.locator('[data-g=fxKind][data-k=stars]').click();
+  await cfg.locator('[data-g=fxAdd][data-k=fx]').click();
+  await cfg.locator('[data-g=fxKind][data-k=aurora]').click();
+  check(await until(() => cfg.locator('.fx-b [data-fx-sel]:not([data-fx-sel=bg])').count(), n => n === 3) === 3, 'three effect badges');
+  check(await until(() => page.locator('.eh-amb').count(), n => n === 2) === 2 && await page.locator('#eh-hex').count() === 1, 'hexagons and two more layers');
+  await cfg.locator('[data-g=fxRm][data-k=stars]').click();
+  check(await until(() => page.locator('.eh-amb').count(), n => n === 1) === 1 && await page.locator('#eh-hex').count() === 1, 'one removed, the others stay');
 });

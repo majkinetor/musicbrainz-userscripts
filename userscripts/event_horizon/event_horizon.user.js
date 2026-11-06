@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.230001
+// @version      2026.11.06.231000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2703,10 +2703,10 @@ body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;poin
 :root[data-eh-bg=aura][data-eh-theme=dark] #eh-aura{opacity:.28}
 :root:is([data-eh-bg=glow],[data-eh-bg=aura]:not([data-eh-aura])) body{background:radial-gradient(900px 520px at 100% 0,color-mix(in srgb,var(--accent2) 18%,transparent),transparent 70%) no-repeat,radial-gradient(800px 480px at 72% 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%) no-repeat,var(--eh-page)}
 /* light pages show the same lines far stronger than dark ones: one slider value reads alike on both */
-#eh-hex{position:fixed;inset:-48px;z-index:-1;pointer-events:none;color:var(--accent);--eh-hex-k:.5}
-:root[data-eh-theme=dark] #eh-hex{--eh-hex-k:1}
+:is(#eh-hex,.eh-amb){position:fixed;inset:-48px;z-index:-1;pointer-events:none;color:var(--accent);--eh-hex-k:.5}
+:root[data-eh-theme=dark] :is(#eh-hex,.eh-amb){--eh-hex-k:1}
 #eh-hex svg{display:block;width:100%;height:100%;overflow:visible}
-#eh-hex .hex-pattern{position:absolute;inset:0;width:100%;height:100%;opacity:min(1,calc(var(--eh-hex-fx,.45) * var(--eh-hex-k) * var(--eh-hex-mf,1)))}
+:is(#eh-hex,.eh-amb) .hex-pattern{position:absolute;inset:0;width:100%;height:100%;opacity:min(1,calc(var(--eh-hex-fx,.45) * var(--eh-hex-k) * var(--eh-hex-mf,1)))}
 #eh-hex .hex-base{opacity:calc(var(--eh-hex-opacity,.2) * var(--eh-hex-k) * .5)}
 #eh-hex .hex-drift,#eh-hex .hex-drift2{display:none;opacity:min(1,calc(var(--eh-hex-fx,.45) * var(--eh-hex-k) * var(--eh-hex-mf,1)));-webkit-mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat;mask:radial-gradient(closest-side,#000,transparent) 0 0/min(240px,40vw) min(240px,40vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(180px,30vw) min(180px,30vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(300px,50vw) min(300px,50vw) no-repeat}
 #eh-hex .hex-drift2{-webkit-mask:radial-gradient(closest-side,#000,transparent) 0 0/min(200px,34vw) min(200px,34vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(260px,44vw) min(260px,44vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(160px,28vw) min(160px,28vw) no-repeat;mask:radial-gradient(closest-side,#000,transparent) 0 0/min(200px,34vw) min(200px,34vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(260px,44vw) min(260px,44vw) no-repeat,radial-gradient(closest-side,#000,transparent) 0 0/min(160px,28vw) min(160px,28vw) no-repeat}
@@ -2716,7 +2716,7 @@ body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;poin
 :root[data-eh-hex=tide] #eh-hex .hex-drift{-webkit-mask:linear-gradient(100deg,transparent 30%,#000 50%,transparent 70%) 0 0/300% 100% no-repeat;mask:linear-gradient(100deg,transparent 30%,#000 50%,transparent 70%) 0 0/300% 100% no-repeat;animation:eh-hex-tide calc(34s / var(--eh-hex-pace,1)) ease-in-out infinite alternate}
 @keyframes eh-hex-tide{0%{-webkit-mask-position:100% 0;mask-position:100% 0}100%{-webkit-mask-position:0 0;mask-position:0 0}}
 @keyframes eh-hex-drift{0%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}25%{-webkit-mask-position:35% 60%,70% 15%,10% 55%;mask-position:35% 60%,70% 15%,10% 55%}50%{-webkit-mask-position:75% 35%,30% 85%,60% 10%;mask-position:75% 35%,30% 85%,60% 10%}75%{-webkit-mask-position:55% 90%,10% 30%,95% 45%;mask-position:55% 90%,10% 30%,95% 45%}100%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}}
-@media (prefers-reduced-motion:reduce){#eh-hex .hex-drift,#eh-hex .hex-drift2,#eh-hex .hex-pattern{display:none!important}}
+@media (prefers-reduced-motion:reduce){#eh-hex .hex-drift,#eh-hex .hex-drift2,:is(#eh-hex,.eh-amb) .hex-pattern{display:none!important}}
 :root[data-eh-hex] :is(.tl,.card,.u-bio,.u-facts,.u-vcol,.hm-pf,.hgrp,.eh-details){background:color-mix(in srgb,var(--surface) 62%,transparent)!important;backdrop-filter:blur(1px)}
 :root[data-eh-hex] :is(.discogs-bar,.gt-toolbar){background:color-mix(in srgb,var(--mbu-bg-raised) 62%,transparent)!important;backdrop-filter:blur(1px)}
 :root[data-eh-hex] .tl .disc{background:color-mix(in srgb,var(--chip) 55%,transparent)!important}
@@ -3573,10 +3573,12 @@ const AMBIENT = {
     ] },
 };
 const AMBIENT_DEFAULTS = Object.fromEntries(Object.values(AMBIENT).flatMap(f => f.rows.map(([k, , , v]) => [k, v])));
+// the effects on, in order; settings saved before there could be several hold one in hex and effect
+const fxOf = v => Array.isArray(v.fx) ? [...new Set(v.fx.filter(k => k === 'hexagons' || AMBIENT[k]))] : v.hex ? [AMBIENT[v.effect] ? v.effect : 'hexagons'] : [];
 const AMBIENT_KEYS = ['effect', 'ambientOpacity', ...Object.keys(AMBIENT_DEFAULTS)];
 
 function ambientApply(layer, kind) {
-    layer._ehDepthOff?.(); layer.querySelector('svg').style.display = 'none';
+    layer._ehDepthOff?.(); const svg = layer.querySelector('svg'); if (svg) svg.style.display = 'none';
     layer.style.setProperty('--eh-hex-mf', '1'); layer.style.setProperty('--eh-hex-fx', Math.max(0, Math.min(100, Number(S.ambientOpacity) || 0)) / 100);
     layer._ehPattern?.stop();
     const cv = document.createElement('canvas'); cv.className = 'hex-pattern'; layer.append(cv);
@@ -3598,13 +3600,13 @@ function ambientApply(layer, kind) {
     layer._ehPattern = { stop, shift() {} }; document.addEventListener('visibilitychange', vis); vis();
 }
 
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'fx', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
     plOrder: [], // the settings' platform order, shown or not; prov follows it
     crTracks: true,
-    byName: false, plNames: false, plHover: false, plSize: 18, trackStripe: true, dis: 'brackets', width: 1600, bg: 'aura', hex: false, hexOpacity: 60, hexIntensity: 100, hexMotion: 'static', hexFx: 100, hexPace: .6, hexTrail: 1, hexOften: 1, hexGlow: 1, hexTwo: false, hexDepth: false,
+    byName: false, plNames: false, plHover: false, plSize: 18, trackStripe: true, dis: 'brackets', width: 1600, bg: 'aura', fx: null, hex: false, hexOpacity: 60, hexIntensity: 100, hexMotion: 'static', hexFx: 100, hexPace: .6, hexTrail: 1, hexOften: 1, hexGlow: 1, hexTwo: false, hexDepth: false,
     on: true, menuTitles: false,
     thumbs: true,
     factOff: { artist: [], label: [] }, // the artist's and label's header facts turned off
@@ -3649,6 +3651,7 @@ try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null)
 // Preserve an existing hex background as an independent overlay over Flat.
 if (S.bg === 'hex') { S.bg = 'flat'; S.hex = true; S.hexMotion = 'drift'; }
 if (S.bg === 'band') S.bg = 'flat'; // Header band is gone
+S.fx = fxOf(S);
 if (!['static', 'drift', 'tide', 'twinkle', 'ripple', 'lantern', 'electricity', 'neural'].includes(S.hexMotion)) S.hexMotion = 'drift';
 if (!S.starView) S.starView = S.starGroup === 'none' ? 'row' : 'group';
 const menuTitlesApply = () => document.documentElement.style.setProperty('--eh-menu-titles', S.menuTitles ? 'inline' : 'none');
@@ -8106,9 +8109,17 @@ const hexMode = () => hexReduce.matches ? 'static' : S.hexMotion || 'static';
 function hexApply() {
     const de = document.documentElement;
     let layer = document.getElementById('eh-hex');
-    de.toggleAttribute('data-eh-hex', !!S.hex && ehOn);
-    if (!S.hex || !ehOn) { layer?._ehPattern?.stop(); layer?._ehDepthOff?.(); layer?.remove(); return; }
-    const mode = AMBIENT[S.effect] ? S.effect : hexMode(), pct = v => Math.max(0, Math.min(100, Number(v) || 0)) / 100;
+    S.fx = fxOf(S); S.hex = S.fx.length > 0; S.effect = S.fx.find(k => AMBIENT[k]) || S.effect;
+    const on = ehOn ? S.fx : [];
+    for (const a of document.querySelectorAll('.eh-amb')) if (!on.includes(a.dataset.kind)) { a._ehPattern?.stop(); a.remove(); }
+    for (const k of on) if (AMBIENT[k]) {
+        let a = document.querySelector('.eh-amb[data-kind="' + k + '"]');
+        if (!a) { a = document.createElement('div'); a.className = 'eh-amb'; a.dataset.kind = k; a.setAttribute('aria-hidden', 'true'); document.body.append(a); }
+        ambientApply(a, k);
+    }
+    de.toggleAttribute('data-eh-hex', on.length > 0);
+    if (!on.includes('hexagons')) { layer?._ehPattern?.stop(); layer?._ehDepthOff?.(); layer?.remove(); if (on.length) de.setAttribute('data-eh-hex', 'ambient'); return; }
+    const mode = hexMode(), pct = v => Math.max(0, Math.min(100, Number(v) || 0)) / 100;
     de.setAttribute('data-eh-hex', mode);
     de.toggleAttribute('data-eh-hex-two', !!S.hexTwo);
     de.style.setProperty('--eh-hex-opacity', pct(S.hexOpacity));
@@ -8121,7 +8132,6 @@ function hexApply() {
         layer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><pattern id="eh-hex-base" width="28" height="48" patternUnits="userSpaceOnUse">${tile}</pattern><pattern id="eh-hex-base2" width="28" height="48" patternUnits="userSpaceOnUse" style="color:var(--accent2)">${tile}</pattern></defs><rect class="hex-base" width="100%" height="100%" fill="url(#eh-hex-base)"/><rect class="hex-drift" width="100%" height="100%" fill="url(#eh-hex-base)"/><rect class="hex-drift2" width="100%" height="100%" fill="url(#eh-hex-base2)"/></svg>`;
         document.body.append(layer);
     }
-    if (AMBIENT[mode]) { ambientApply(layer, mode); return; }
     layer.querySelector('svg').style.display = '';
     layer.style.removeProperty('--eh-hex-mf'); layer.style.removeProperty('--eh-hex-fx');
     hexDepth(layer);
@@ -10084,7 +10094,7 @@ new MutationObserver(() => {
 const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-theme=dark\]\{[\s\S]*?\}/) || [''])[0].replace(/:root/g, ':root:where([data-eh-rel])')
     // the theme's band and bar colours, which the stuck section header and the pinned bar take
     // The background and hexagon overlay share the viewer's rules; aura falls back to glow.
-    + '\n' + CSS.split('\n').filter(l => /^(:root[^{]*\[data-eh-(bg=|hex)|#eh-hex|body(::before)?\{(position|content)|@keyframes eh-hex-|@media \(prefers-reduced-motion:reduce\)\{#eh-hex)/.test(l))
+    + '\n' + CSS.split('\n').filter(l => /^(:root[^{]*\[data-eh-(bg=|hex)|#eh-hex|:is\(#eh-hex|body(::before)?\{(position|content)|@keyframes eh-hex-|@media \(prefers-reduced-motion:reduce\)\{#eh-hex)/.test(l))
         .map(l => l.replace(/:root/g, ':root[data-eh-rel]').replace(/^body/, ':root[data-eh-rel] body')
             .replace(/(\bbody\{background(?:-attachment)?:[^}]*?)(!important)?\}/g, '$1!important}')).join('\n')
     + '\n' + (CSS.match(/^:root\{--eh-page:[^\n]*/m) || [''])[0].replace(/:root/g, ':root[data-eh-rel]') + `
@@ -11041,22 +11051,22 @@ const BGS = [['aura', 'Cover aura', 'The page\'s cover or picture, blurred behin
 // rest at their defaults), the user's own in S.named.fx; one of the user's shadows a built-in one of the same name.
 // S.fxCur names the one being worked on: changes save into it when it is the user's own; a built-in one stays as shipped
 const FX_PRESETS = [];
-const FX_KEYS = ['bg', ...AMBIENT_KEYS, 'hex', 'hexOpacity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth'];
+const FX_KEYS = ['bg', 'fx', ...AMBIENT_KEYS, 'hex', 'hexOpacity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth'];
 const FX_UNNAMED = 'Unnamed effect';
 const fxNow = () => Object.fromEntries(FX_KEYS.map(k => [k, S[k]]));
-const fxFull = p => { const d = JSON.parse(DEFAULTS); return Object.fromEntries(FX_KEYS.map(k => [k, k in p.v ? p.v[k] : d[k]])); };
+const fxFull = p => { const d = JSON.parse(DEFAULTS), f = Object.fromEntries(FX_KEYS.map(k => [k, k in p.v ? p.v[k] : d[k]])); f.fx = fxOf(f); f.hex = f.fx.length > 0; return f; };
 const fxLow = s => String(s).toLowerCase();
 const fxAll = () => { const own = nmList('fx'), low = new Set(own.map(x => fxLow(x.name))); return [...FX_PRESETS.filter(x => !low.has(fxLow(x.name))), ...own]; };
 const fxFind = name => name ? fxAll().find(x => fxLow(x.name) === fxLow(name)) : undefined;
 const fxOwn = name => name ? nmList('fx').find(x => fxLow(x.name) === fxLow(name)) : undefined;
-const fxSame = p => { const f = fxFull(p); return FX_KEYS.every(k => f[k] === S[k]); };
+const fxSame = p => { const f = fxFull(p); return FX_KEYS.every(k => JSON.stringify(f[k]) === JSON.stringify(S[k])); };
 // a name no other preset has: the one asked for, else "Unnamed effect", with " 2", " 3" and so on after it when taken
 const fxFree = (want, but) => { const base = String(want || '').trim().slice(0, 60) || FX_UNNAMED, taken = n => fxAll().some(x => x !== but && fxLow(x.name) === fxLow(n)); let n = base, i = 1; while (taken(n)) n = base + ' ' + ++i; return n; };
 // what a preset shows: its background and its effect
 const fxSum = v => {
     const bg = BGS.find(x => x[0] === v.bg), m = HEX_MOTIONS.find(x => x[0] === v.hexMotion);
-    const fx = !v.hex ? '' : AMBIENT[v.effect] ? AMBIENT[v.effect].name : 'Hexagons' + (m ? ' (' + m[1] + ')' : '');
-    return [bg && bg[1], fx].filter(Boolean).join(' · ') || 'Nothing';
+    const fx = fxOf(v).map(k => AMBIENT[k] ? AMBIENT[k].name : 'Hexagons' + (m ? ' (' + m[1] + ')' : ''));
+    return [bg && bg[1], ...fx].filter(Boolean).join(' · ') || 'Nothing';
 };
 function fxUse(name) { const p = fxFind(name); if (!p) return false; S.fxCur = p.name; Object.assign(S, fxFull(p)); save(); if (ehOn) bgApply(); else hexApply(); LOG.info('Effect preset: ' + p.name); return true; }
 // the effect changed: kept in the current preset when that is the user's own
@@ -11064,7 +11074,7 @@ function fxKeep() { const p = fxOwn(S.fxCur); if (p) nmKeep('fx', nmList('fx').m
 // the names, for String Theory's theme settings
 const fxPublish = () => { const n = fxAll().map(x => x.name); if (JSON.stringify(mbuShared('ehFxPresets') || []) !== JSON.stringify(n)) mbuShared('ehFxPresets', n.length ? n : null); };
 // a preset to share: { name, v } with only the settings it changes from the defaults, under the format's own key
-const fxExport = () => { const d = JSON.parse(DEFAULTS), v = Object.fromEntries(FX_KEYS.filter(k => S[k] !== d[k]).map(k => [k, S[k]])); return JSON.stringify({ ehFxPreset: 1, name: S.fxCur || FX_UNNAMED, v }, null, 1); };
+const fxExport = () => { const d = JSON.parse(DEFAULTS), v = Object.fromEntries(FX_KEYS.filter(k => JSON.stringify(S[k]) !== JSON.stringify(d[k])).map(k => [k, S[k]])); return JSON.stringify({ ehFxPreset: 1, name: S.fxCur || FX_UNNAMED, v }, null, 1); };
 // a shared preset back: unknown keys and values of the wrong type are left out, so a hand-edited one can't break the effect
 function fxImport(text) {
     let o; try { o = JSON.parse(text); } catch (e) { return 'That isn\'t JSON'; }
@@ -11086,7 +11096,7 @@ const FX_SVG = { dd: '<path d="M6 9l6 6 6-6"/>', plus: '<path d="M12 5v14M5 12h1
     save: '<path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7V3M8 21v-7h8v7"/>',
     del: '<path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/>' };
 const fxSvg = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${FX_SVG[k]}</svg>`;
-let fxSel = 'fx', fxPaste = false, fxErr = '';
+let fxSel = '', fxPaste = false, fxErr = '';
 // the Effects tab: the preset, the effects in it as badges, then the settings of the one selected
 function fxPane(chip, row) {
     const cur = fxFind(S.fxCur), own = !!cur && nmList('fx').includes(cur), built = !!cur && !own;
@@ -11099,15 +11109,16 @@ function fxPane(chip, row) {
         + `<button type="button" class="chip" data-fx-save${built ? off(false, 'Save\nA built-in preset can\'t be changed; + keeps a copy') : ` data-tip="${own ? 'Save\nKeeps the new name; changes save on their own' : 'Save\nThe effect as a preset'}"`}>${fxSvg('save')}</button>`
         + `<button type="button" class="chip del" data-fx-del${off(own, built ? 'Delete\nA built-in preset can\'t be deleted' : 'Delete\nNothing saved yet')}>${fxSvg('del')}</button>`);
     const paste = !fxPaste ? '' : row('Import', `<textarea class="fx-json" data-fx-json rows="3" spellcheck="false" aria-label="Preset JSON" placeholder="Paste a preset copied with Copy as JSON"></textarea><button type="button" class="chip" data-fx-import>Import</button><button type="button" class="chip" data-fx-cancel>Cancel</button>${fxErr ? `<span class="fx-err">${esc(fxErr)}</span>` : ''}`);
-    const fx = S.hex ? (AMBIENT[S.effect] ? S.effect : 'hexagons') : '', bg = BGS.find(x => x[0] === S.bg);
-    const sel = fxSel === 'bg' && bg ? 'bg' : fx ? 'fx' : bg ? 'bg' : '';
+    const on = fxOf(S), bg = BGS.find(x => x[0] === S.bg);
+    const sel = fxSel === 'bg' && bg ? 'bg' : on.includes(fxSel) ? fxSel : on.length ? on[on.length - 1] : bg ? 'bg' : '', fx = sel !== 'bg' ? sel : '';
     const m = HEX_MOTIONS.find(x => x[0] === S.hexMotion);
     const badge = (k, label, rm) => `<span class="fx-b" aria-current="${sel === k}"><button type="button" class="n" data-fx-sel="${k}">${label}</button><button type="button" class="x" data-g="fxRm" data-k="${k}" aria-label="Remove ${rm}">${fxSvg('x')}</button></span>`;
     const add = (k, label, tip) => `<button type="button" class="chip fx-add" data-g="fxAdd" data-k="${k}" data-tip="${esc(tip)}">${fxSvg('plus')}${label}</button>`;
     const badges = row('Effects', (bg ? badge('bg', `Background&nbsp;· <b>${bg[1]}</b>`, 'the background') : add('bg', 'Background', 'Add a background\nWithout one the page is flat'))
-        + (fx ? badge('fx', fx === 'hexagons' ? `Hexagons&nbsp;· <b>${m ? m[1] : ''}</b>` : `<b>${AMBIENT[fx].name}</b>`, 'the effect') : add('fx', 'Effect', 'Add an effect over the background')), 'Select one to show its settings');
+        + on.map(k => badge(k, k === 'hexagons' ? `Hexagons&nbsp;· <b>${m ? m[1] : ''}</b>` : `<b>${AMBIENT[k].name}</b>`, 'the effect')).join('')
+        + (on.length < EFFECTS.length ? add('fx', 'Effect', 'Add an effect\nEffects stack over the background and each other') : ''), 'Select one to show its settings');
     const body = sel === 'bg' ? row('Background', BGS.map(([k, l, tip]) => chip('bg', k, S.bg === k, l, tip)).join(''))
-        : sel === 'fx' ? row('Effect', EFFECTS.map(([k, l, tip]) => chip('fxKind', k, fx === k, l, tip)).join('')) + (fx === 'hexagons' ? hexRows(chip, row) : ambientRows(fx, chip, row))
+        : fx ? row('Effect', EFFECTS.filter(([k]) => k === fx || !on.includes(k)).map(([k, l, tip]) => chip('fxKind', k, fx === k, l, tip)).join('')) + (fx === 'hexagons' ? hexRows(chip, row) : ambientRows(fx, chip, row))
         : '';
     return preset + paste + badges + body;
 }
@@ -11290,9 +11301,9 @@ function cfgWire(panel, b, body) {
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
             else if (g === 'bg') { S.bg = k; bgApply(); }
-            else if (g === 'fxKind') { S.hex = true; S.effect = k; hexApply(); }
-            else if (g === 'fxRm') { if (k === 'bg') { S.bg = 'flat'; bgApply(); } else { S.hex = false; hexApply(); } }
-            else if (g === 'fxAdd') { if (k === 'bg') { S.bg = 'aura'; bgApply(); } else { S.hex = true; hexApply(); } fxSel = k; }
+            else if (g === 'fxKind') { const on = fxOf(S), i = on.indexOf(fxSel); if (!on.includes(k)) { if (i < 0) on.push(k); else on[i] = k; } S.fx = on; fxSel = k; hexApply(); }
+            else if (g === 'fxRm') { if (k === 'bg') { S.bg = 'flat'; bgApply(); } else { S.fx = fxOf(S).filter(x => x !== k); hexApply(); } }
+            else if (g === 'fxAdd') { if (k === 'bg') { S.bg = 'aura'; bgApply(); fxSel = k; } else { const on = fxOf(S), n = EFFECTS.find(([x]) => !on.includes(x)); if (n) { S.fx = [...on, n[0]]; fxSel = n[0]; } hexApply(); } }
             else if (AMBIENT_KEYS.includes(g) && g !== 'effect') { S[g] = +k; hexApply(); }
             else if (g === 'hex' || g === 'hexDepth') { S[g] = !S[g]; hexApply(); }
             else if (g === 'hexPace' || g === 'hexTrail' || g === 'hexOften' || g === 'hexGlow' || g === 'hexOpacity' || g === 'hexFx') { S[g] = +k; hexApply(); }
