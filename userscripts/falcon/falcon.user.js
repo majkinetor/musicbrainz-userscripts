@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.081136
+// @version      2026.11.06.131000
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -7539,6 +7539,9 @@
         + 'border:2px solid rgba(27,42,74,.25);border-top-color:#1b2a4a;border-radius:50%;animation:falcon-spin .7s linear infinite}',
       '@keyframes falcon-progress-pulse{0%,100%{background:var(--mbu-bg-sunken)}50%{background:var(--mbu-ok-bg)}}',
       '#falcon-progress-track.falcon-running{animation:falcon-progress-pulse 1.1s ease-in-out infinite}',
+      // a phone: the grid keeps readable columns and scrolls sideways; bars stay inside the screen
+      '@media (max-width:640px){#falcon-panel .falcon-grid{min-width:560px}#falcon-queue-list{scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}'
+        + '#falcon-panel .falcon-bar{flex-wrap:wrap;row-gap:4px}#falcon-hdr{flex-wrap:wrap}#falcon-panel{resize:none!important}}',
     ].join('\n');
     document.head.appendChild(style);
     panel = document.createElement('div'); panel.id = 'falcon-panel';
@@ -8350,6 +8353,19 @@
     if (t === 'workers') renderWorkerLayout();   // sizes were computed while off-screen; recompute for the real viewport
     fitBars();   // a bar that was hidden measured 0-wide; re-fit now it's laid out
   }
+  // on a phone MB's page is wider than the screen: the window fills what is on screen
+  const PIN = ['left', 'top', 'width', 'height', 'max-width', 'max-height', 'min-width', 'transform', 'right', 'bottom', 'box-sizing'];
+  function phonePin() {
+    if (!panel) return;
+    const vv = window.visualViewport;
+    const on = vv && panel.style.display !== 'none' && !panel.dataset.headless && matchMedia('(max-width: 640px)').matches;
+    if (!on) { if (panel.dataset.pinned) { PIN.forEach(k => panel.style.removeProperty(k)); panel.style.cssText += panel.dataset.pinned; delete panel.dataset.pinned; } return; }
+    if (!panel.dataset.pinned) panel.dataset.pinned = PIN.map(k => panel.style.getPropertyValue(k) ? k + ':' + panel.style.getPropertyValue(k) + ';' : '').join('');
+    const o = { left: vv.offsetLeft + 'px', top: vv.offsetTop + 'px', width: vv.width + 'px', height: vv.height + 'px', 'max-width': 'none', 'max-height': 'none', 'min-width': '0', transform: 'none', right: 'auto', bottom: 'auto', 'box-sizing': 'border-box' };
+    for (const k in o) panel.style.setProperty(k, o[k], 'important');
+    fitBars();
+  }
+  if (window.visualViewport) { visualViewport.addEventListener('resize', phonePin); visualViewport.addEventListener('scroll', phonePin); }
   function showPanel() {
     ensurePanel();
     if (panel.dataset.headless) {   // #680: back from a headless batch's off-screen spot
@@ -8358,7 +8374,7 @@
       panel.style.left = was.left || '50%'; panel.style.top = was.top || '50%';
       panel.style.removeProperty('opacity'); panel.style.removeProperty('pointer-events');
     }
-    panel.style.display = 'flex'; renderQueue(); fitBars();
+    panel.style.display = 'flex'; renderQueue(); fitBars(); phonePin();
   }
   function togglePanel() { ensurePanel(); if (panel.style.display === 'none' || panel.dataset.headless) showPanel(); else panel.style.display = 'none'; }
 
