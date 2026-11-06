@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.06.150000
+// @version      2026.11.06.160000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -4189,7 +4189,7 @@ if (!PC_SEED) {
     const close = () => { open = false; win.hidden = true; win.classList.remove('pc-fading'); posShow(false); };
     document.addEventListener('keydown', ev => { if (ev.key !== 'Escape') return; if (!posMenu.hidden) posShow(false); else if (!pcPinned()) close(); });
     document.addEventListener('pointerdown', ev => { if (!posMenu.hidden && !ev.target.closest('#pc-pos-menu, #mb-pin-btn')) posShow(false); }, true);
-    document.addEventListener('pointerdown', ev => { if (open && !pcPinned() && !win.contains(ev.target) && !ev.target.closest('#mb-pc-dock, #mb-provider-modal-overlay, .mbu-ov, .mbu-logpop')) close(); }, true);
+    document.addEventListener('pointerdown', ev => { if (open && !pcPinned() && !win.contains(ev.target) && !ev.target.closest('#mb-pc-dock, #mb-provider-modal-overlay, .mbu-ov, .mbu-logpop, #pc-bc-pop, #pc-cat-pop')) close(); }, true);
     // Another script's window (Mission Control, a modal, a panel) takes over: the open panel steps aside until it closes.
     // Any script's, so no script has to tell: a fixed window at the modal layer, too big to be a launcher or a toast
     const pcOwnUi = '.mbu-dock-win, #st-pal-ov, [id^="pc-"], [id^="mb-pc"], #mb-provider-modal-overlay, #mbu-logpop, #mbu-tip, #mbu-toast';
@@ -4227,7 +4227,7 @@ if (!PC_SEED) {
         clearTimeout(hoverT);
         hoverT = setTimeout(() => {
             if (!open || pcDockMode() !== 'hover') return;
-            if (win.matches(':hover') || nearWin() || pcDockItem.matches(':hover') || document.querySelector('.mbu-logpop:hover, .mbu-ov:hover, #mb-provider-modal-overlay:hover, #mbu-tip:hover')) { hoverStay(); hoverOut(); return; }
+            if (win.matches(':hover') || nearWin() || pcDockItem.matches(':hover') || document.querySelector('.mbu-logpop:hover, .mbu-ov:hover, #mb-provider-modal-overlay:hover, #mbu-tip:hover, #pc-bc-pop:hover, #pc-cat-pop:hover')) { hoverStay(); hoverOut(); return; }
             awayFor += 250;
             if (awayFor >= 3000) win.classList.add('pc-fading');
             if (awayFor >= 3500) { awayFor = 0; close(); } else hoverOut();
