@@ -158,8 +158,8 @@ function ambientApply(layer, kind) {
 
 const root = document.getElementById('eh-effects-sampler');
 const saved = window.openai?.widgetState?.privateContent || {};
-let paused = !!saved.paused, t = 12, last = 0, raf = 0;
 const reduce = matchMedia('(prefers-reduced-motion:reduce)');
+let paused = typeof saved.paused === 'boolean' ? saved.paused : reduce.matches, explicitPlay = false, t = 12, last = 0, raf = 0;
 const specs = [['hexagons',{name:'Hexagons · current',tip:'Existing lattice with the Drift motion',rows:[['hexOpacity','Outlines',[20,40,60],40],['hexSpeed','Pace',[.6,1,1.6],.6],['hexStrength','Effect',[25,65,100],65]]}],...Object.entries(AMBIENT)];
 const items = [];
 for(const [key,f] of specs) {
@@ -197,10 +197,10 @@ theme.value=saved.theme==='light'?'light':'dark';content.value=saved.content==='
 function appearance(){root.classList.toggle('light',theme.value==='light');root.classList.toggle('hide-content',content.value==='hide');draw();}
 theme.onchange=()=>{appearance();persist();};content.onchange=()=>{appearance();persist();};
 function syncPause(){pause.textContent=paused?'Play':'Pause';pause.setAttribute('aria-pressed',String(paused));}
-pause.onclick=()=>{paused=!paused;syncPause();persist();schedule();};
-function frame(now){raf=0;if(last)t+=Math.min(.1,(now-last)/1000);last=now;draw();if(!paused&&!reduce.matches&&!document.hidden)raf=requestAnimationFrame(frame);}
-function schedule(){cancelAnimationFrame(raf);raf=0;last=0;draw();if(!paused&&!reduce.matches&&!document.hidden)raf=requestAnimationFrame(frame);}
-document.addEventListener('visibilitychange',schedule);reduce.addEventListener('change',schedule);
+pause.onclick=()=>{paused=!paused;explicitPlay=!paused;syncPause();schedule();persist();};
+function frame(now){raf=0;if(last)t+=Math.min(.1,(now-last)/1000);last=now;draw();if(!paused&&(!reduce.matches||explicitPlay)&&!document.hidden)raf=requestAnimationFrame(frame);}
+function schedule(){cancelAnimationFrame(raf);raf=0;last=0;draw();if(!paused&&(!reduce.matches||explicitPlay)&&!document.hidden)raf=requestAnimationFrame(frame);}
+document.addEventListener('visibilitychange',schedule);reduce.addEventListener('change',()=>{explicitPlay=false;if(reduce.matches)paused=true;syncPause();schedule();});
 new ResizeObserver(draw).observe(root);appearance();syncPause();schedule();
 })();
 </script>
