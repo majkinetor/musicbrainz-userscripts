@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.090955
+// @version      2026.11.06.092825
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjI4Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMxNmNjZjgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjZmZhZTM4Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -2772,6 +2772,9 @@
 .fl-chip button{border:0;background:none;color:inherit;cursor:pointer;padding:0 2px;font:inherit;opacity:.6}
 .fl-chip button:hover{opacity:1}
 .fl-tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0}
+.fl-pop .mbu-cfg-h{min-width:0}.fl-pop .mbu-cfg-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fl-pop .mbu-cfg-ver{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fl-sw button,.fl-chk{white-space:nowrap}
+.fl-phone .mbu-ov-panel{position:fixed!important;border:0!important;border-radius:0!important;margin:0!important;background:var(--mbu-bg)!important}.fl-phone .mbu-cfg-ver{display:none}.fl-phone .mbu-ov-body{flex:1}.fl-phone .fl-list{flex:1 1 0;height:auto}
 `;
   const st = document.createElement('style');
   st.textContent = MBU_TOKENS + MBU_UI_CSS + CSS;
@@ -2862,8 +2865,20 @@
     const sc2 = pop.querySelector('.fl-list'); if (sc2) sc2.scrollTop = top;
     const lg = pop.querySelector('.mbu-cfg-log'); if (lg) lg.onclick = () => LOG.open();
   }
+  // on a phone the window fills the screen: MB's page is wider than it, so pin to the visual viewport
+  function pinPop() {
+    const vv = window.visualViewport, p = pop && pop.querySelector('.mbu-ov-panel');
+    if (!p) return;
+    const props = ['left', 'top', 'width', 'height', 'max-width', 'max-height', 'transform', 'inset', 'right', 'bottom'];
+    if (!vv || vv.width > 600) { props.forEach(k => p.style.removeProperty(k)); pop.classList.remove('fl-phone'); return; }
+    pop.classList.add('fl-phone');
+    const set = { left: vv.offsetLeft + 'px', top: vv.offsetTop + 'px', right: 'auto', bottom: 'auto', inset: 'auto', width: vv.width + 'px', height: vv.height + 'px', 'max-width': 'none', 'max-height': 'none', transform: 'none' };
+    p.style.removeProperty('inset');
+    for (const k in set) if (k !== 'inset') p.style.setProperty(k, set[k], 'important');
+  }
   function closePop() {
     if (!pop) return;
+    if (window.visualViewport) { visualViewport.removeEventListener('resize', pinPop); visualViewport.removeEventListener('scroll', pinPop); }
     closeMenu(); pop.remove(); pop = null; document.removeEventListener('keydown', popKey, true);
   }
   const popKey = e => { if (e.key === 'Escape' && !document.querySelector('.fl-menu') && !document.querySelector('.fl-cfg')) { e.stopPropagation(); closePop(); } };
@@ -2875,6 +2890,8 @@
     pop.innerHTML = '<div class="mbu-ov-panel" role="dialog" aria-label="' + NAME + '"><div class="mbu-cfg-h"></div><div class="mbu-ov-body"></div></div>';
     document.body.appendChild(pop);
     mbuCfgDrag(pop.querySelector('.mbu-ov-panel'));
+    pinPop();
+    if (window.visualViewport) { visualViewport.addEventListener('resize', pinPop); visualViewport.addEventListener('scroll', pinPop); }
     document.addEventListener('keydown', popKey, true);
     pop.addEventListener('mousedown', e => { if (e.target === pop) closePop(); });
     pop.addEventListener('click', onPopClick);
