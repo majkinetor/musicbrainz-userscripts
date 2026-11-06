@@ -1,0 +1,438 @@
+{
+  "schemaVersion": 1,
+  "collectedAt": "2026-11-06T15:47:39.283Z",
+  "wiki": {
+    "revision": 79510,
+    "timestamp": "2026-09-15T01:31:27Z",
+    "sha256": "aa6b0c863716a96d4c629a425147a867bd56762b158561d9d670a1dca9c9839c",
+    "url": "https://wiki.musicbrainz.org/index.php?title=Guides/Userscripts&oldid=79510",
+    "scope": "Wiki source; MusicBrainz mirror and non-list template content not captured."
+  },
+  "toolset": {
+    "commit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+    "files": [
+      {
+        "path": "dev/aliases/alias-editor.mjs",
+        "sha256": "3b659e372590f94f7bb893a76f3b9c0792c96d53223fa31db58fa38756d5055c",
+        "version": null
+      },
+      {
+        "path": "userscripts/apollo_editor/DEVELOP.md",
+        "sha256": "cf01184df82e9ff7ccecc2f0488c8c8a30ba9cf3320bb396c70a302288a3f32d",
+        "version": null
+      },
+      {
+        "path": "userscripts/apollo_editor/README.md",
+        "sha256": "d0212a6b101859ebbf04c1204a0d28d04d72620065407ee16d29a0b06af150fa",
+        "version": null
+      },
+      {
+        "path": "userscripts/apollo_editor/apollo_editor.user.js",
+        "sha256": "8f930adbcce452b0d4eabefd080d07740c955a733275eaff73ab1781c4fb52d5",
+        "version": "2026.11.06.170000"
+      },
+      {
+        "path": "userscripts/art_station/DEVELOP.md",
+        "sha256": "b864d99ffc0dade55a55bf84edf72f08779c5e411a5d8b4707b335279af079fc",
+        "version": null
+      },
+      {
+        "path": "userscripts/art_station/README.md",
+        "sha256": "9e09fdc09caf0e6be688225ae4cd013dda5529f192d973a3b56ea0d4b268e3ed",
+        "version": null
+      },
+      {
+        "path": "userscripts/art_station/art_station.user.js",
+        "sha256": "2c07af072ff5344ab2b46743478a81e74cf2e41e85a69cdcc9476cade8be362f",
+        "version": "2026.11.06.170001"
+      },
+      {
+        "path": "userscripts/art_station/as_picker/README.md",
+        "sha256": "13384e6ff06f6c28841961f07a0b4bbfc48eb26cb9e035d3ede577419842f688",
+        "version": null
+      },
+      {
+        "path": "userscripts/art_station/as_picker/as_picker.user.js",
+        "sha256": "2f79164aebfaea2a91e49bb27bac3595a4ac776374852450faaa6c94565e5702",
+        "version": "2026.11.02.163740"
+      },
+      {
+        "path": "userscripts/bandcamp_player_enhanced/README.md",
+        "sha256": "4ac9f1c9599b0da4a6e57ac12352ae8f25ba7cc526917b42582866609756b305",
+        "version": null
+      },
+      {
+        "path": "userscripts/bandcamp_player_enhanced/bandcamp_player_enhanced.user.js",
+        "sha256": "d9048e1b8a4b2edcfbc739614ba80624601b105e727eeb578be111e99e300218",
+        "version": "2026.11.05.120222"
+      },
+      {
+        "path": "userscripts/credit_hoarder/DEVELOP.md",
+        "sha256": "5afc665e0950eab607fc5319c4ecdf43e291c753daf8797bef6ce64d4f4751b3",
+        "version": null
+      },
+      {
+        "path": "userscripts/credit_hoarder/README.md",
+        "sha256": "08af81786ca54447b3d562397e225b11829fd7202a06c03d1d4c9eeddb70a60e",
+        "version": null
+      },
+      {
+        "path": "userscripts/credit_hoarder/dist/credit_hoarder.user.js",
+        "sha256": "6399ada0891f10b0523e9ffad7a47fe2c118f83d77075a55f7d24d4c34aa6a96",
+        "version": "2026.11.06.122151"
+      },
+      {
+        "path": "userscripts/credit_hoarder/src/credit_hoarder.user.js",
+        "sha256": "bfc927260c4d18bbcc4ec4fd4fdc1950fa64f6b3747ba97f44949a3be758ce2b",
+        "version": null
+      },
+      {
+        "path": "userscripts/discogs_credits/DEVELOP.md",
+        "sha256": "aae851925597a6f79cef72709c7e8a0389841324c09ceac002556832015fde6f",
+        "version": null
+      },
+      {
+        "path": "userscripts/discogs_credits/README.md",
+        "sha256": "c883b8601699b479ae94fd339d11751fcb211f7e4168d5e9c6b61660563489df",
+        "version": null
+      },
+      {
+        "path": "userscripts/discogs_credits/dist/discogs_credits.user.js",
+        "sha256": "2e1ee27d9228dcd2c75bc0f4673368b045dfccff2e0b52f688a5b5de8ac39fe3",
+        "version": "2026.11.04"
+      },
+      {
+        "path": "userscripts/discogs_credits/src/discogs_credits.user.js",
+        "sha256": "d204cf9e05a52698f08e05f73a8536dce09a24ad2f533ea3fddf4ae150337f36",
+        "version": null
+      },
+      {
+        "path": "userscripts/event_horizon/DEVELOP.md",
+        "sha256": "9f023c4e65219a12d706a0b9eaf60068ef4609832899eb78ea74fe72c0d91f28",
+        "version": null
+      },
+      {
+        "path": "userscripts/event_horizon/README.md",
+        "sha256": "d4d34e904742d65440a813dd0697ad6d52f3022c30d1fc3e0db0e023e39b4669",
+        "version": null
+      },
+      {
+        "path": "userscripts/event_horizon/event_horizon.user.js",
+        "sha256": "34957b5f3f9cee1b9d29bade072389debc2f2b4fceaefc3b23f10414fff7880b",
+        "version": "2026.11.06.170002"
+      },
+      {
+        "path": "userscripts/falcon/DEVELOP.md",
+        "sha256": "a877fe99bb971bab7fce8b77b27cc9b262bc605ad756c486c8bd0ef2c5092cc5",
+        "version": null
+      },
+      {
+        "path": "userscripts/falcon/README.md",
+        "sha256": "3939937ec7d86bb60707356f3f88cdbb751b21ac2a1c77707666a2a040018f5b",
+        "version": null
+      },
+      {
+        "path": "userscripts/falcon/falcon.user.js",
+        "sha256": "863b0ae5ae6df0d21372d75fda69a48b314a5f52e0f73d3050cbc0cba893d270",
+        "version": "2026.11.06.170000"
+      },
+      {
+        "path": "userscripts/first_contact/DEVELOP.md",
+        "sha256": "5b2e0c9e0f0513589c22362ac5b81db20deec8be8f0a63d7dbb205ba5674cc84",
+        "version": null
+      },
+      {
+        "path": "userscripts/first_contact/README.md",
+        "sha256": "ce754795deb8ec7ab4478ae1e318c94b33c267b65f05fff08511ea8b658097ee",
+        "version": null
+      },
+      {
+        "path": "userscripts/first_contact/first_contact.user.js",
+        "sha256": "b0b6f17340de69d8c9d8ebca9ae83f789f9319438dc8cf4f67d1866ce25b5bbc",
+        "version": "2026.11.06.170000"
+      },
+      {
+        "path": "userscripts/fusion/DEVELOP.md",
+        "sha256": "2ae1c9a7ba8c6a73b4e83202232f714d256a781e4f615b6ed9d985163a6c5289",
+        "version": null
+      },
+      {
+        "path": "userscripts/fusion/README.md",
+        "sha256": "eab10077a4c070968d033fbd9c8ce5a6c55a09082ff9d760782e9ccd6e758aea",
+        "version": null
+      },
+      {
+        "path": "userscripts/fusion/fusion.user.js",
+        "sha256": "e940c90aef10bf005a20cf432d42982fd92d963a9b6de507c4086e89b6db6938",
+        "version": "2026.11.06.170000"
+      },
+      {
+        "path": "userscripts/fuzzy_logic/fuzzy_logic.user.js",
+        "sha256": "754236eae993e46aec599be252b6e6075939c90994fe6c178acd639419fac0df",
+        "version": "2026.11.06.170000"
+      },
+      {
+        "path": "userscripts/group_therapy/DEVELOP.md",
+        "sha256": "9f00d14f8f446c8a6bad0195c594b610dbfd5de2126e1f9f06748a5029bbfff0",
+        "version": null
+      },
+      {
+        "path": "userscripts/group_therapy/README.md",
+        "sha256": "2cca1d7da3fa2c2699bfc055113cd1aa13430928326e3bd6ed28c5ebf4a10c1e",
+        "version": null
+      },
+      {
+        "path": "userscripts/group_therapy/group_therapy.user.js",
+        "sha256": "32073d2460d691e739792b5937bf1fdff46a5d34933e675976efe285f8c6d143",
+        "version": "2026.11.06.170000"
+      },
+      {
+        "path": "userscripts/isrc_scout/DEVELOP.md",
+        "sha256": "8916395048348b759f0ba69b83f6b0d9a4dc1b005738953ba141497da9d88f3b",
+        "version": null
+      },
+      {
+        "path": "userscripts/isrc_scout/README.md",
+        "sha256": "42d9b02c34a13c8f43f1851d49c6bef9762653479cfd6ffb3d3b715d89ab9a51",
+        "version": null
+      },
+      {
+        "path": "userscripts/isrc_scout/isrc_scout.user.js",
+        "sha256": "da26ac5c901618fab15def32d4e116aef966f2052d91260ce61ecd883e6ed1e5",
+        "version": "2026.11.06.170000"
+      },
+      {
+        "path": "userscripts/mammoth/DEVELOP.md",
+        "sha256": "914f6954709c1788439bf375cfaa522fac70b4f68a34f237c46c3110b1ae8391",
+        "version": null
+      },
+      {
+        "path": "userscripts/mammoth/README.md",
+        "sha256": "a1907b47052711c0490ecfb4d6b7b5f70d90fed2cf6df6530e42c96247e48df3",
+        "version": null
+      },
+      {
+        "path": "userscripts/mammoth/mammoth.user.js",
+        "sha256": "d1aeef46b0ef1841fd941a3502a8fbc0a03ffee7b1158ff42360ce257f3d50e3",
+        "version": "2026.11.06.170000"
+      },
+      {
+        "path": "userscripts/mission_control/DEVELOP.md",
+        "sha256": "fd8d791f95b9a6e2678d3c09b4d70f976394dd49bd933ae72f7d3610fbe5125d",
+        "version": null
+      },
+      {
+        "path": "userscripts/mission_control/README.md",
+        "sha256": "86517fbbe54cb9775ddf87868eea605782331ae70eee10652292d0873f5879c5",
+        "version": null
+      },
+      {
+        "path": "userscripts/mission_control/mission_control.user.js",
+        "sha256": "d0dcf2ba6e46ffa7462af1bd5674e2ca3463a9e08cc64e21878cbbcb5986a782",
+        "version": "2026.11.06.190000"
+      },
+      {
+        "path": "userscripts/platform_check/DEVELOP.md",
+        "sha256": "be6f4e8693e00aebf02edc61a4bbb25f4e7197159449572fade6fa8d93d96376",
+        "version": null
+      },
+      {
+        "path": "userscripts/platform_check/README.md",
+        "sha256": "d2513813fb8ba2ab1537250c9abfa780bf80338b80c7184c2195c3a4d5ea1066",
+        "version": null
+      },
+      {
+        "path": "userscripts/platform_check/platform_check.user.js",
+        "sha256": "8b516bbf880e15a485d9c86c71ac8de8ef8b1d292cde90f6e20b3b95baaf2091",
+        "version": "2026.11.06.170001"
+      },
+      {
+        "path": "userscripts/scribe/DEVELOP.md",
+        "sha256": "e37772117b6dbe00b0e6a71c90cc406f86f7f15245a0b34ea188f1cbaaa0f643",
+        "version": null
+      },
+      {
+        "path": "userscripts/scribe/README.md",
+        "sha256": "4f9f1232710d5b49ad7d5c969a87a55811365c7c98124fa3f31c3fb6cf537d5a",
+        "version": null
+      },
+      {
+        "path": "userscripts/scribe/scribe.user.js",
+        "sha256": "e917396f8ed2f638a03d820100072d5a94b914c9e4bd2421ea28c3acd8edbbab",
+        "version": "2026.11.06.150000"
+      },
+      {
+        "path": "userscripts/string_theory/DEVELOP.md",
+        "sha256": "30eb3cddfdea3cda3b0bf54cc8fbecf40d25426c836650c707c5d04800458ce7",
+        "version": null
+      },
+      {
+        "path": "userscripts/string_theory/README.md",
+        "sha256": "e30d7728803d376d1b90ee68535b02a39050097903afdbc08711c8185113b98d",
+        "version": null
+      },
+      {
+        "path": "userscripts/string_theory/string_theory.user.js",
+        "sha256": "f181acd77f05200ebaeac14b0f12a21500392803a4e4ad9f51de67509938963c",
+        "version": "2026.11.06.163521"
+      },
+      {
+        "path": "userscripts/string_theory/themes/README.md",
+        "sha256": "f17a68d7f910d22d5f407641493635ec660ed7bde8b11f70b93691ae2f8e70f0",
+        "version": null
+      }
+    ]
+  },
+  "external": [
+    {
+      "id": "bandcamp",
+      "name": "Import Bandcamp releases to MusicBrainz",
+      "author": "murdos and contributors",
+      "repo": "murdos/musicbrainz-userscripts",
+      "branch": "master",
+      "path": "bandcamp_importer.user.js",
+      "stableId": "github:murdos/musicbrainz-userscripts/bandcamp_importer.user.js",
+      "commit": "d5c2bcebe3fd9d650005c2e083d70e01d3ca3607",
+      "sha256": "a0f26ed7d88bcd381774ca5cf459b76f960d08cc165c241883c4515f1cccfb44",
+      "version": "2026.11.05.1",
+      "license": [],
+      "requires": [
+        "https://raw.githubusercontent.com/murdos/musicbrainz-userscripts/17f74bff40e00823f552b0f5e47a10478599f81e/lib/mbimport.js",
+        "lib/logger.js",
+        "https://raw.githubusercontent.com/murdos/musicbrainz-userscripts/755843cf53404869f6817310153fc8bb6cf9cb9b/lib/mblinks.js",
+        "https://raw.githubusercontent.com/murdos/musicbrainz-userscripts/07068ab3a4dd38bbdc8502ab3d3d71c1c0ef51e6/lib/mbimportstyle.js"
+      ],
+      "url": "https://github.com/murdos/musicbrainz-userscripts/blob/d5c2bcebe3fd9d650005c2e083d70e01d3ca3607/bandcamp_importer.user.js",
+      "checkedAt": "2026-11-06T15:47:39.283Z",
+      "dependencyScope": "Entry script captured; @require dependencies have not been independently verified."
+    },
+    {
+      "id": "elephant",
+      "name": "Elephant Editor",
+      "author": "jesus2099",
+      "repo": "jesus2099/konami-command",
+      "branch": "master",
+      "path": "mb_ELEPHANT-EDITOR.user.js",
+      "stableId": "github:jesus2099/konami-command/mb_ELEPHANT-EDITOR.user.js",
+      "commit": "619bfdf520a5162abc5467af32d5b2a386745b5e",
+      "sha256": "b7a3bb43e1c5d20bebc2440e0fca514683053936173c10f8dfe86e6b32993e24",
+      "version": "2026.4.6",
+      "license": [
+        "CC-BY-NC-SA-4.0; https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "GPL-3.0-or-later; http://www.gnu.org/licenses/gpl-3.0.txt"
+      ],
+      "requires": [
+        "https://github.com/jesus2099/konami-command/raw/c5fb7fe162530fdbd7e017170f24169272a729a0/lib/CONTROL-POMME.js?version=2024.3.14.1822",
+        "https://github.com/jesus2099/konami-command/raw/f1cbb2368209bc51a175062dc512f1a1eb7d25a7/lib/SUPER.js?version=2024.11.8"
+      ],
+      "url": "https://github.com/jesus2099/konami-command/blob/619bfdf520a5162abc5467af32d5b2a386745b5e/mb_ELEPHANT-EDITOR.user.js",
+      "checkedAt": "2026-11-06T15:47:39.283Z",
+      "dependencyScope": "Entry script captured; @require dependencies have not been independently verified."
+    },
+    {
+      "id": "covers",
+      "name": "Enhanced Cover Art Uploads",
+      "author": "ROpdebee",
+      "repo": "ROpdebee/mb-userscripts",
+      "branch": "dist",
+      "path": "mb_enhanced_cover_art_uploads.user.js",
+      "stableId": "github:ROpdebee/mb-userscripts/mb_enhanced_cover_art_uploads.user.js",
+      "commit": "a6229e42d91c1e581d9e950e80d07b2f9707eb2e",
+      "sha256": "e85a104964954cf769fcd52917b5a57f6be313010fd968d585cdfa4e66740a55",
+      "version": "2026.10.17",
+      "license": [
+        "MIT; https://opensource.org/licenses/MIT"
+      ],
+      "requires": [
+        "https://github.com/qsniyg/maxurl/blob/045102cc7c5ac821254eadc52970343ddd04f036/userscript.user.js?raw=true"
+      ],
+      "url": "https://github.com/ROpdebee/mb-userscripts/blob/a6229e42d91c1e581d9e950e80d07b2f9707eb2e/mb_enhanced_cover_art_uploads.user.js",
+      "checkedAt": "2026-11-06T15:47:39.283Z",
+      "dependencyScope": "Entry script captured; @require dependencies have not been independently verified."
+    },
+    {
+      "id": "aliases",
+      "name": "Add entity aliases in batch",
+      "author": "loujine",
+      "repo": "loujine/musicbrainz-scripts",
+      "branch": "master",
+      "path": "mb-edit-add_aliases.user.js",
+      "stableId": "github:loujine/musicbrainz-scripts/mb-edit-add_aliases.user.js",
+      "commit": "37df091b3ddc3651a77291ff3a895c017e50750b",
+      "sha256": "a73a2e134a71268db1f9c6f72680d511c4a3d5448ecdfaa448b8c76fed6c7b22",
+      "version": "2022.1.28",
+      "license": [
+        "MIT"
+      ],
+      "requires": [
+        "https://raw.githubusercontent.com/loujine/musicbrainz-scripts/master/mbz-loujine-common.js"
+      ],
+      "url": "https://github.com/loujine/musicbrainz-scripts/blob/37df091b3ddc3651a77291ff3a895c017e50750b/mb-edit-add_aliases.user.js",
+      "checkedAt": "2026-11-06T15:47:39.283Z",
+      "dependencyScope": "Entry script captured; @require dependencies have not been independently verified."
+    },
+    {
+      "id": "acoustid",
+      "name": "Merge recordings from AcoustID page",
+      "author": "loujine",
+      "repo": "loujine/musicbrainz-scripts",
+      "branch": "master",
+      "path": "acoustid-merge-recordings.user.js",
+      "stableId": "github:loujine/musicbrainz-scripts/acoustid-merge-recordings.user.js",
+      "commit": "37df091b3ddc3651a77291ff3a895c017e50750b",
+      "sha256": "0b9fe63b6324993f021db05259f8b0bdc4fd8993340ea7309625afde491a0891",
+      "version": "2020.9.14",
+      "license": [
+        "MIT"
+      ],
+      "requires": [],
+      "url": "https://github.com/loujine/musicbrainz-scripts/blob/37df091b3ddc3651a77291ff3a895c017e50750b/acoustid-merge-recordings.user.js",
+      "checkedAt": "2026-11-06T15:47:39.283Z",
+      "dependencyScope": "Entry script captured; @require dependencies have not been independently verified."
+    },
+    {
+      "id": "setlist",
+      "name": "Fill event setlist",
+      "author": "loujine",
+      "repo": "loujine/musicbrainz-scripts",
+      "branch": "master",
+      "path": "mb-edit-fill_event_setlist.user.js",
+      "stableId": "github:loujine/musicbrainz-scripts/mb-edit-fill_event_setlist.user.js",
+      "commit": "37df091b3ddc3651a77291ff3a895c017e50750b",
+      "sha256": "506eadfbdff71dd22696e7119ef3a23d1c11bf5c7696673b3b3eff54b33f35c8",
+      "version": "2021.10.30",
+      "license": [
+        "MIT"
+      ],
+      "requires": [
+        "https://raw.githubusercontent.com/loujine/musicbrainz-scripts/master/mbz-loujine-common.js"
+      ],
+      "url": "https://github.com/loujine/musicbrainz-scripts/blob/37df091b3ddc3651a77291ff3a895c017e50750b/mb-edit-fill_event_setlist.user.js",
+      "checkedAt": "2026-11-06T15:47:39.283Z",
+      "dependencyScope": "Entry script captured; @require dependencies have not been independently verified."
+    },
+    {
+      "id": "jasrac",
+      "name": "JASRAC work importer and cross-linking",
+      "author": "jesus2099",
+      "repo": "jesus2099/konami-command",
+      "branch": "master",
+      "path": "jasrac-mb-minc_WORK-IMPORT-CROSS-LINKING.user.js",
+      "stableId": "github:jesus2099/konami-command/jasrac-mb-minc_WORK-IMPORT-CROSS-LINKING.user.js",
+      "commit": "619bfdf520a5162abc5467af32d5b2a386745b5e",
+      "sha256": "fa70485ce0e5cd1b0ccffc02363acc1b43b1974b26cdbb62802a9d8f82db6c2a",
+      "version": "2026.4.6",
+      "license": [
+        "CC-BY-NC-SA-4.0; https://creativecommons.org/licenses/by-nc-sa/4.0/",
+        "GPL-3.0-or-later; http://www.gnu.org/licenses/gpl-3.0.txt"
+      ],
+      "requires": [
+        "https://github.com/jesus2099/konami-command/raw/84cae2328f2dca0bc750e0961d669005771f16b8/lib/CONTROL-POMME.js?version=2024.3.14",
+        "https://github.com/jesus2099/konami-command/raw/1036cd5ccd35d404c3e9e197151f6cb22c52dd87/lib/SUPER.js?version=2024.12.3"
+      ],
+      "url": "https://github.com/jesus2099/konami-command/blob/619bfdf520a5162abc5467af32d5b2a386745b5e/jasrac-mb-minc_WORK-IMPORT-CROSS-LINKING.user.js",
+      "checkedAt": "2026-11-06T15:47:39.283Z",
+      "dependencyScope": "Entry script captured; @require dependencies have not been independently verified."
+    }
+  ]
+}
