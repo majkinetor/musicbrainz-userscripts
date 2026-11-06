@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.232000
+// @version      2026.11.06.233000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11135,7 +11135,7 @@ function fxUse(name) { const p = fxFind(name); if (!p) return false; S.fxCur = p
 // the effect changed: kept in the current preset when that is the user's own
 function fxKeep() { const p = fxOwn(S.fxCur); if (p) nmKeep('fx', nmList('fx').map(x => x === p ? { name: x.name, v: fxNow() } : x)); }
 // the names, for String Theory's theme settings
-const fxPublish = () => { const n = fxAll().map(x => x.name); if (JSON.stringify(mbuShared('ehFxPresets') || []) !== JSON.stringify(n)) mbuShared('ehFxPresets', n.length ? n : null); };
+const fxPublish = () => { const n = fxAll().map(x => x.name); if (JSON.stringify(mbuShared('ehFxPresets') || []) !== JSON.stringify(n)) mbuShared('ehFxPresets', n); };
 // a preset to share: { name, v } with only the settings it changes from the defaults, under the format's own key
 const fxExport = () => { const d = JSON.parse(DEFAULTS), v = Object.fromEntries(FX_KEYS.filter(k => JSON.stringify(S[k]) !== JSON.stringify(d[k])).map(k => [k, S[k]])); return JSON.stringify({ ehFxPreset: 1, name: S.fxCur || FX_UNNAMED, v }, null, 1); };
 // a shared preset back: unknown keys and values of the wrong type are left out, so a hand-edited one can't break the effect

@@ -16,6 +16,9 @@ var __stTheme = (function () {
   function read() {
     var v; try { v = GM_getValue(KEY, null); } catch (e) { v = null; }
     v = v && typeof v === 'object' ? v : {};
+    // a theme's Event Horizon preset that was deleted there is no longer mapped
+    var fx = null; try { fx = JSON.parse(localStorage.getItem('mbu.ehFxPresets')); } catch (e) {}
+    if (Array.isArray(fx) && v.eh && typeof v.eh === 'object') { var eh = {}; Object.keys(v.eh).forEach(function (k) { if (fx.indexOf(v.eh[k]) >= 0) eh[k] = v.eh[k]; }); v.eh = eh; }
     // light is the start: its Default is MusicBrainz untouched, so nothing changes until it's asked for
     return { mode: MODES.indexOf(v.mode) < 0 ? 'light' : v.mode, dark: v.dark || 'Default', light: v.light || 'Default', lat: v.lat, lon: v.lon, from: v.from || '20:00', to: v.to || '07:00', eh: v.eh && typeof v.eh === 'object' ? v.eh : {} };
   }

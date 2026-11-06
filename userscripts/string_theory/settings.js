@@ -515,7 +515,7 @@ function stSettings(tab) {
       var th = __stTheme.read();
       Array.prototype.forEach.call(q('#st-th-mode').children, function (b) { b.setAttribute('aria-checked', String(b.dataset.v === th.mode)); });
       q('#st-th-dark').value = th.dark; q('#st-th-light').value = th.light;
-      // each theme's effect preset: a name no longer in Event Horizon's list stays an option until it's changed
+      // each theme's effect preset; one deleted in Event Horizon is already gone from the map
       if (ehFx.length) ['light', 'dark'].forEach(function (v) {
         var cur = th.eh[v + ':' + th[v]] || '', sel = q('#st-th-eh-' + v);
         sel.innerHTML = '<option value="">No preset</option>' + ehFx.concat(cur && ehFx.indexOf(cur) < 0 ? [cur] : []).map(function (n) { return '<option>' + stEsc(n) + '</option>'; }).join('');
