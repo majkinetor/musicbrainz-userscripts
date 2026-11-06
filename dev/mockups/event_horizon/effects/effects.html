@@ -122,6 +122,27 @@ function tronStep(state, dt, p) {
 
 const AURORA_STYLES = ['Rays', 'Velvet curtains', 'Polar haze', 'Wide veil'];
 // Diffuse styles paint broad feathered volumes, retaining the shared theme colour modes.
+// Coloured light textures are made once per canvas/palette, then stretched instead of re-rasterizing gradients.
+function auroraSprite(ctx, col, upper) {
+    const cache = ctx._ehAuroraSprites || (ctx._ehAuroraSprites = new Map()), key = (upper ? 'ray:' + upper : 'fog') + ':' + col;
+    if (cache.has(key)) return cache.get(key);
+    const sprite = ctx.canvas.ownerDocument.createElement('canvas'); sprite.width = upper ? 8 : 64; sprite.height = upper ? 128 : 64;
+    const paint = sprite.getContext('2d'); if (!paint) return sprite;
+    const gradient = upper ? paint.createLinearGradient(0, 0, 0, 128) : paint.createRadialGradient(32, 32, 0, 32, 32, 32);
+    if (upper) {
+        gradient.addColorStop(0, 'transparent'); gradient.addColorStop(.32, upper); gradient.addColorStop(.8, col);
+        gradient.addColorStop(.97, col); gradient.addColorStop(1, 'transparent');
+    } else { gradient.addColorStop(0, col); gradient.addColorStop(.2, col); gradient.addColorStop(1, 'transparent'); }
+    paint.fillStyle = gradient; paint.fillRect(0, 0, sprite.width, sprite.height);
+    if (cache.size >= 12) cache.clear(); cache.set(key, sprite); return sprite;
+}
+function auroraRay(ctx, sprite, x0, y0, x1, y1, width, alpha, glow) {
+    const dx = x1 - x0, dy = y1 - y0, length = Math.hypot(dx, dy);
+    ctx.save(); ctx.translate(x0, y0); ctx.rotate(-Math.atan2(dx, dy));
+    if (glow > 0) { ctx.globalAlpha = alpha * .16; const wide = width + glow * 5; ctx.drawImage(sprite, -wide / 2, 0, wide, length); }
+    ctx.globalAlpha = alpha; ctx.drawImage(sprite, -width / 2, 0, width, length); ctx.restore();
+}
+
 function auroraDiffuse(ctx, w, h, p, t, c1, c2) {
     const settings = [null, { step: 4, spread: 8, height: .4, bloom: .18, rays: .28, folds: 10 },
         { step: 9, spread: 38, height: .48, bloom: .16, rays: 0, folds: 7 },
@@ -132,10 +153,9 @@ function auroraDiffuse(ctx, w, h, p, t, c1, c2) {
         return p.colour === 2 ? `hsl(${hue},85%,65%)` : p.colour === 1 && i % 2 ? c2 : c1;
     };
     const glow = (x, y, rx, ry, col, alpha, lean = 0) => {
-        ctx.save(); ctx.translate(x, y); ctx.rotate(lean); ctx.scale(rx, ry);
-        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
-        gradient.addColorStop(0, col); gradient.addColorStop(.2, col); gradient.addColorStop(1, 'transparent');
-        ctx.fillStyle = gradient; ctx.globalAlpha = alpha; ctx.fillRect(-1, -1, 2, 2); ctx.restore();
+        const sprite = auroraSprite(ctx, col);
+        ctx.save(); ctx.translate(x, y); ctx.rotate(lean); ctx.globalAlpha = alpha;
+        ctx.drawImage(sprite, -rx, -ry, rx * 2, ry * 2); ctx.restore();
     };
     for (let band = 0; band < p.auroraRibbons; band++) {
         const col = tone(band), upper = p.colour === 1 ? tone(band + 1) : col, wind = pace * (band % 2 ? -.7 : 1);
@@ -161,25 +181,40 @@ function auroraDiffuse(ctx, w, h, p, t, c1, c2) {
 }
 // Cache two small surfaces per live Aurora canvas. Diffusion blurs at this resolution, then scales up.
 function auroraLayer(ctx, w, h, p, t, c1, c2) {
-    const resolution = Math.min(.65, 700 / w, 500 / h), bw = Math.max(1, Math.ceil(w * resolution)), bh = Math.max(1, Math.ceil(h * resolution));
+    const resolution = Math.min(.5, 480 / w, 320 / h), bw = Math.max(1, Math.ceil(w * resolution)), bh = Math.max(1, Math.ceil(h * resolution));
+    const key = [w, h, p.auroraStyle, p.auroraDiffuse, p.auroraRibbons, p.auroraHeight, p.auroraFolds, p.colour, p.glow, c1, c2].join('|');
     let cache = ctx._ehAurora;
-    if (!cache) {
-        const canvas = ctx.canvas.ownerDocument.createElement('canvas'), blur = ctx.canvas.ownerDocument.createElement('canvas');
-        cache = ctx._ehAurora = { canvas, blur, paint: canvas.getContext('2d'), soften: blur.getContext('2d') };
+    if (!cache || cache.key !== key) {
+        const make = phase => {
+            const canvas = ctx.canvas.ownerDocument.createElement('canvas'); canvas.width = bw; canvas.height = bh;
+            const paint = canvas.getContext('2d'); if (!paint) return canvas;
+            paint.scale(resolution, resolution);
+            const snapshot = { ...p, auroraSpeed: 1, auroraDiffuse: 0, auroraDirect: true };
+            if (p.auroraStyle === 0) ambientDraw(paint, w, h, 'aurora', snapshot, phase, c1, c2);
+            else auroraDiffuse(paint, w, h, { ...snapshot, auroraDiffuse: p.auroraDiffuse }, phase, c1, c2);
+            if (!(p.auroraDiffuse > 0)) return canvas;
+            const blur = ctx.canvas.ownerDocument.createElement('canvas'); blur.width = bw; blur.height = bh;
+            const soften = blur.getContext('2d'); if (!soften) return canvas;
+            soften.filter = `blur(${p.auroraDiffuse / 100 * 8 * resolution}px)`; soften.drawImage(canvas, 0, 0);
+            return blur;
+        };
+        cache = ctx._ehAurora = { key, frames: [make(0), make(4)] };
     }
-    if (!cache.paint || !cache.soften) return;
-    if (cache.canvas.width !== bw || cache.canvas.height !== bh) {
-        cache.canvas.width = cache.blur.width = bw; cache.canvas.height = cache.blur.height = bh;
+    // Morph two cached curtains in narrow strips. No fog painting or blur runs in the frame loop.
+    const pace = t * p.auroraSpeed * .65, mix = .5 + .25 * Math.sin(pace * .8), strips = 24;
+    ctx.save(); ctx.imageSmoothingEnabled = true;
+    for (let frame = 0; frame < 2; frame++) {
+        ctx.globalAlpha = frame ? 1 - mix : mix;
+        const drift = w * .045 * Math.sin(pace * 1.5 + frame * 2);
+        for (let i = 0; i < strips; i++) {
+            const u = i / strips, lift = h * .025 * Math.sin(u * 6 + pace * 1.2 + frame * 2);
+            ctx.drawImage(cache.frames[frame], u * bw, 0, bw / strips, bh, u * w + drift, lift, w / strips + 1, h);
+        }
     }
-    const paint = cache.paint; paint.setTransform(resolution, 0, 0, resolution, 0, 0); paint.clearRect(0, 0, w + 2, h + 2);
-    if (p.auroraStyle === 0) ambientDraw(paint, w, h, 'aurora', { ...p, auroraDiffuse: 0 }, t, c1, c2);
-    else auroraDiffuse(paint, w, h, p, t, c1, c2);
-    let image = cache.canvas;
-    if (p.auroraDiffuse > 0) {
-        const soften = cache.soften; soften.clearRect(0, 0, bw, bh); soften.save();
-        soften.filter = `blur(${p.auroraDiffuse / 100 * 8 * resolution}px)`; soften.drawImage(cache.canvas, 0, 0); soften.restore(); image = cache.blur;
-    }
-    ctx.save(); ctx.globalAlpha = 1; ctx.imageSmoothingEnabled = true; ctx.drawImage(image, 0, 0, w, h); ctx.restore();
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'destination-in';
+    const travel = w * Math.sin(pace * 1.7), light = ctx.createLinearGradient(-w + travel, 0, w + travel, 0);
+    light.addColorStop(0, 'rgba(255,255,255,.55)'); light.addColorStop(.5, '#fff'); light.addColorStop(1, 'rgba(255,255,255,.55)');
+    ctx.fillStyle = light; ctx.fillRect(0, 0, w, h); ctx.restore();
 }
 
 function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
@@ -243,7 +278,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
             ctx.globalAlpha = alpha; ctx.beginPath(); ctx.arc(x, y, radius, 0, tau); ctx.fill();
         }
     } else if (kind === 'aurora') {
-        if (p.auroraStyle > 0 || p.auroraDiffuse > 0) { auroraLayer(ctx, w, h, p, t, c1, c2); ctx.globalAlpha = 1; return; }
+        if (!p.auroraDirect) { auroraLayer(ctx, w, h, p, t, c1, c2); ctx.globalAlpha = 1; return; }
         // Polar-light curtains: fine vertical rays rise from a folded, luminous lower edge.
         // Cap ray count rather than blurring a full-screen canvas every frame.
         const pace = t * p.auroraSpeed * .65, step = Math.max(2.5, w / 260);
@@ -259,10 +294,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
                 const top = hem - height * (.85 + .15 * Math.sin(u * 17 + band - wind * .8));
                 const lean = h * .025 * Math.sin(u * 3 + band * 1.7 + wind * .4);
                 const shimmer = .65 + .35 * Math.sin(u * 210 + band * 13 - wind * 3 + Math.sin(pace + u * 8) * 1.3) ** 2;
-                const beam = ctx.createLinearGradient(x + lean, top, x, hem + 3);
-                beam.addColorStop(0, 'transparent'); beam.addColorStop(.32, upper);
-                beam.addColorStop(.8, col); beam.addColorStop(.97, col); beam.addColorStop(1, 'transparent');
-                line([[x + lean, top], [x, hem]], beam, edge * (.12 + .48 * pleat) * shimmer, step * 1.15);
+                auroraRay(ctx, auroraSprite(ctx, col, upper), x + lean, top, x, hem, step * 1.15, edge * (.12 + .48 * pleat) * shimmer, p.glow);
                 // The brightest emission sits at the foot of the rays, not along a flowing horizontal band.
                 line([[x, hem - 2], [x, hem + 1]], col, edge * (.2 + .4 * pleat) * shimmer, step * .8);
             }
@@ -292,20 +324,23 @@ function ambientApply(layer, kind) {
     layer.style.setProperty('--eh-hex-mf', '1'); layer.style.setProperty('--eh-hex-fx', Math.max(0, Math.min(100, Number(S.ambientOpacity) || 0)) / 100);
     layer._ehPattern?.stop();
     const cv = document.createElement('canvas'); cv.className = 'hex-pattern'; layer.append(cv);
-    const w = layer.clientWidth, h = layer.clientHeight, dpr = Math.min(2, devicePixelRatio || 1);
+    const w = layer.clientWidth, h = layer.clientHeight, dpr = kind === 'aurora' ? Math.min(.5, 480 / w, 320 / h) : Math.min(2, devicePixelRatio || 1);
     cv.width = w * dpr; cv.height = h * dpr; cv.style.width = w + 'px'; cv.style.height = h + 'px';
     const ctx = cv.getContext('2d'); if (!ctx) { cv.remove(); return; } ctx.scale(dpr, dpr);
     const css = getComputedStyle(layer), c1 = css.color, c2 = css.getPropertyValue('--accent2').trim() || c1;
     const p = { colour: S.hexTwo === 2 ? 2 : S.hexTwo ? 1 : 0, glow: Math.max(0, Math.min(2, Number(S.hexGlow) || 0)) };
     for (const [k, , values, fallback] of AMBIENT[kind].rows) p[k] = values.includes(Number(S[k])) ? Number(S[k]) : fallback;
-    let raf = 0, time = 0, last = 0;
+    let raf = 0, time = 0, last = 0, lastPaint = -Infinity;
     const draw = now => {
         if (!layer.isConnected) { stop(); return; }
         if (last) time += Math.min(.1, (now - last) / 1000); last = now;
-        ambientDraw(ctx, w, h, kind, p, time, c1, c2);
+        // Decorative Aurora paints at most 20 fps; animation time still follows the clock.
+        if (kind !== 'aurora' || now - lastPaint >= 48 || hexReduce.matches) {
+            ambientDraw(ctx, w, h, kind, p, time, c1, c2); lastPaint = now;
+        }
         if (!hexReduce.matches) raf = requestAnimationFrame(draw);
     };
-    const vis = () => { cancelAnimationFrame(raf); last = 0; if (!document.hidden) draw(performance.now()); };
+    const vis = () => { cancelAnimationFrame(raf); last = 0; lastPaint = -Infinity; if (!document.hidden) draw(performance.now()); };
     function stop() { cancelAnimationFrame(raf); document.removeEventListener('visibilitychange', vis); cv.remove(); delete layer._ehPattern; }
     layer._ehPattern = { stop, shift() {} }; document.addEventListener('visibilitychange', vis); vis();
 }
