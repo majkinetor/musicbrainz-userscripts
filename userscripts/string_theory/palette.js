@@ -578,7 +578,7 @@ function stPalListen() {
 // ── Theme chooser ───────────────────────────────────────────────────────────
 // A slim bar at the bottom of the page that steps through every theme with ◀ ▶ (or the arrow keys),
 // showing each on the whole page; nothing covers the view. All / Light / Dark limits them to one variant.
-// With Event Horizon's effect presets, the effect beside (or up and down) picks the one the theme brings, shown as picked; the themes stepped to after a pick bring it too. Keep (Enter) saves both, ✕ (Esc) goes back.
+// With Event Horizon's effect presets, the effect beside (or up and down) picks the one the theme brings, shown as picked; stepping keeps the effect on show. Keep (Enter) saves both, ✕ (Esc) goes back.
 // It stays open across pages until closed (the runtime's chooser state), and above any popup: it sits in the top layer.
 var ST_TC_CSS = ''
   + '#st-tc{position:fixed;inset:auto auto 16px 50%;margin:0;overflow:visible;transform:translateX(-50%);z-index:2147483600;display:flex;align-items:center;gap:6px;padding:6px 8px;'
@@ -661,7 +661,7 @@ function stThemeChooser() {
   var show = function () {
     var t = all[i], p = { mode: t[0], eh: eh }; p[t[0]] = t[1];
     __stTheme.preview(p);
-    __stTheme.chooserPut({ only: only, v: t[0], n: t[1], eh: eh });
+    __stTheme.chooserPut({ only: only, v: t[0], n: t[1], eh: eh, fx: last });
     var sel = bar.querySelector('#st-tc-e');
     if (sel) {
       // a preset deleted in Event Horizon still shows while it's picked, as in the settings
@@ -673,14 +673,12 @@ function stThemeChooser() {
     bar.querySelector('.st-tc-i').textContent = (i + 1) + '/' + all.length;
   };
   var ONLY = { all: ['light', 'Light'], light: ['dark', 'Dark'], dark: ['all', 'All'] };
-  var filter = function () { var n = ONLY[only]; only = n[0]; bar.querySelector('#st-tc-f').textContent = n[1]; list(); show(); };
-  // once an effect is picked, the themes stepped to bring it too
-  var last;
-  var step = function (d) {
-    i = (i + d + all.length) % all.length;
-    if (last !== undefined) { var t = all[i], k = t[0] + ':' + t[1]; if (last) eh[k] = last; else delete eh[k]; }
-    show();
-  };
+  var filter = function () { var n = ONLY[only]; only = n[0]; bar.querySelector('#st-tc-f').textContent = n[1]; list(); bring(); show(); };
+  // last: the effect on show, the one the chooser opened with until another is picked; the themes stepped to bring it
+  // too, so stepping never changes the effect
+  var last = was && typeof was.fx === 'string' ? was.fx : eh[all[i][0] + ':' + all[i][1]] || '';
+  var bring = function () { var t = all[i], k = t[0] + ':' + t[1]; if (last) eh[k] = last; else delete eh[k]; };
+  var step = function (d) { i = (i + d + all.length) % all.length; bring(); show(); };
   // the effect: "No effect", then the presets, round
   var pick = function (k, n) { last = n || ''; if (n) eh[k] = n; else delete eh[k]; show(); };
   var stepFx = function (d) {
