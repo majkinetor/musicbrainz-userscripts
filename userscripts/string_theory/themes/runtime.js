@@ -18,7 +18,7 @@ var __stTheme = (function () {
     v = v && typeof v === 'object' ? v : {};
     // a theme's Event Horizon preset that was deleted there is no longer mapped
     var fx = null; try { fx = JSON.parse(localStorage.getItem('mbu.ehFxPresets')); } catch (e) {}
-    if (Array.isArray(fx) && v.eh && typeof v.eh === 'object') { var eh = {}; Object.keys(v.eh).forEach(function (k) { if (fx.indexOf(v.eh[k]) >= 0) eh[k] = v.eh[k]; }); v.eh = eh; }
+    if (Array.isArray(fx) && v.eh && typeof v.eh === 'object') { var eh = {}; Object.keys(v.eh).forEach(function (k) { if (v.eh[k] === '-' || fx.indexOf(v.eh[k]) >= 0) eh[k] = v.eh[k]; }); v.eh = eh; }
     // light is the start: its Default is MusicBrainz untouched, so nothing changes until it's asked for
     return { mode: MODES.indexOf(v.mode) < 0 ? 'light' : v.mode, dark: v.dark || 'Default', light: v.light || 'Default', lat: v.lat, lon: v.lon, from: v.from || '20:00', to: v.to || '07:00', eh: v.eh && typeof v.eh === 'object' ? v.eh : {} };
   }
@@ -69,7 +69,7 @@ var __stTheme = (function () {
     if (!style.isConnected) (document.head || document.documentElement).appendChild(style);
     document.documentElement.classList.toggle('st-dark', v === 'dark');   // wakes the shared theme watch
     // Event Horizon's effect preset for this theme, by 'variant:name'; EH applies a new one once
-    // the saved theme's preset on data-st-eh-fx; a preview names its own on data-st-eh-fx-try,
+    // the saved theme's preset on data-st-eh-fx ('-': no effect); a preview names its own on data-st-eh-fx-try,
     // which Event Horizon shows without saving and drops when it goes
     var de = document.documentElement, attr = function (k, x) { if (x) de.setAttribute(k, x); else de.removeAttribute(k); };
     var sv = over ? read() : s, svv = over ? variant(sv) : v;

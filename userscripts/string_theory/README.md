@@ -56,7 +56,7 @@ In String Theory's settings, on the **General** tab, **Mode** picks one of:
 
 **Light theme** and **Dark theme** pick which theme each one uses. To add or tweak a theme, see [themes](themes/README.md).
 
-With Event Horizon on and an effect preset saved in its settings, **Light effect** and **Dark effect** pick the preset each theme brings. It is applied each time that theme comes on; what you change in Event Horizon after that stays until the theme changes again. The [theme chooser](#command-palette) picks it too, as you try the themes.
+With Event Horizon on and an effect preset saved in its settings, **Light effect** and **Dark effect** pick the preset each theme brings, by name; **No effect** turns the effects off, and **No preset** leaves yours as it is. It is applied each time that theme comes on; what you change in Event Horizon after that stays until the theme changes again. The [theme chooser](#command-palette) picks it too, as you try the themes.
 
 ## What's new
 
@@ -86,7 +86,7 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 
 - **Your last input comes back** selected when you open the palette again: type to replace it.
 - **Theme commands show as you move over them** with the arrows; **Enter** keeps one, **Esc** goes back to yours.
-- **Theme chooser** opens a slim bar at the bottom of the page instead: **←** **→** show each light and dark theme on the whole page, **All** switches to **Light** or **Dark** only, and with Event Horizon's effect presets the dropdown beside (or **↑** **↓**) shows the effect the theme brings and changes it; stepping to another theme keeps the effect on show, and the pencil beside it opens Event Horizon's Effects tab. **Keep** (**Enter**) saves both, **✕** (**Esc**) goes back to yours.
+- **Theme chooser** opens a slim bar at the bottom of the page instead: **←** **→** show each light and dark theme on the whole page, **All** switches to **Light** or **Dark** only, and with Event Horizon's effect presets the dropdown beside (or **↑** **↓**) shows the effect the theme brings and changes it (**Current effect** keeps yours, **No effect** shows none); stepping to another theme keeps the effect on show, and the pencil beside it opens Event Horizon's Effects tab on that effect. **Keep** (**Enter**) saves both, **✕** (**Esc**) goes back to yours.
 - **Pin** a command with **Alt+P** or its ☆: pinned commands come first, then the ones you used last.
 - **Reorder pins** by dragging one up or down, or with **Alt+↑** / **Alt+↓** on the selected pin.
 - **Search**: `search work blue` or `work blue` is _Search Work: blue_; `search` alone lists the types.

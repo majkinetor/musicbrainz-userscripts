@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.07.230000
+// @version      2026.11.07.233000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11522,7 +11522,8 @@ const FX_UNNAMED = 'Unnamed effect';
 const fxNow = () => Object.fromEntries(FX_KEYS.map(k => [k, S[k]]));
 const fxFull = p => { const d = JSON.parse(DEFAULTS); fxMigrate(p.v = { ...p.v }); const f = Object.fromEntries(FX_KEYS.map(k => [k, k in p.v ? p.v[k] : d[k]])); f.fx = fxOf(f); f.hex = f.fx.length > 0; return f; };
 const fxLow = s => String(s).toLowerCase();
-const fxAll = () => { const own = nmList('fx'), low = new Set(own.map(x => fxLow(x.name))); return [...FX_PRESETS.filter(x => !low.has(fxLow(x.name))), ...own]; };
+// by name, built-in and the user's own together
+const fxAll = () => { const own = nmList('fx'), low = new Set(own.map(x => fxLow(x.name))); return [...FX_PRESETS.filter(x => !low.has(fxLow(x.name))), ...own].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true })); };
 const fxFind = name => name ? fxAll().find(x => fxLow(x.name) === fxLow(name)) : undefined;
 const fxOwn = name => name ? nmList('fx').find(x => fxLow(x.name) === fxLow(name)) : undefined;
 const fxSame = p => { const f = fxFull(p); return FX_KEYS.every(k => JSON.stringify(f[k]) === JSON.stringify(S[k])); };
@@ -11534,7 +11535,10 @@ const fxSum = v => {
     const fx = fxOf(v).map(k => AMBIENT[k] ? AMBIENT[k].name : 'Hexagons' + (m ? ' (' + m[1] + ')' : ''));
     return [bg && bg[1], ...fx].filter(Boolean).join(' · ') || 'Nothing';
 };
-function fxUse(name) { const p = fxFind(name); if (!p) return false; S.fxCur = p.name; Object.assign(S, fxFull(p)); save(); if (ehOn) bgApply(); else hexApply(); LOG.info('Effect preset: ' + p.name); return true; }
+// String Theory's "No effect": the background plain and no effect over it, under no preset's name
+const FX_NONE = '-';
+const fxGet = name => name === FX_NONE ? { name: FX_NONE, v: { bg: 'flat', fx: [] } } : fxFind(name);
+function fxUse(name) { const p = fxGet(name); if (!p) return false; S.fxCur = p.name === FX_NONE ? '' : p.name; Object.assign(S, fxFull(p)); save(); if (ehOn) bgApply(); else hexApply(); LOG.info('Effect preset: ' + p.name); return true; }
 // the names, for String Theory's theme settings
 const fxPublish = () => { const n = fxAll().map(x => x.name); if (JSON.stringify(mbuShared('ehFxPresets') || []) !== JSON.stringify(n)) mbuShared('ehFxPresets', n); };
 // a preset to share: { name, v } with only the settings it changes from the defaults, under the format's own key
@@ -11552,16 +11556,18 @@ function fxImport(text) {
 }
 // String Theory's theme names a preset on <html data-st-eh-fx>: a new name is applied once, so the user's changes after it stay
 // String Theory's theme chooser names one to try on data-st-eh-fx-try: shown, not saved; gone, the effect is back to
-// what it was, unless the theme kept brings that same preset
+// what it was, unless the theme kept brings that same preset; the chooser's pencil names one on data-st-eh-fx-edit,
+// applied and kept, for the Effects tab it opens
 let fxTry = null;   // { cur, v, name } while one is tried: the preset and the effect from before
 function fxTheme() {
-    const de = document.documentElement, n = de.dataset.stEhFx || '', t = de.dataset.stEhFxTry || '';
+    const de = document.documentElement, n = de.dataset.stEhFx || '', t = de.dataset.stEhFxTry || '', e = de.dataset.stEhFxEdit || '';
     const redraw = () => { const b = document.querySelector('#eh-cfg .eh-cfg-b'); if (b) b.innerHTML = cfgBody(); };
     const show = () => { if (ehOn) bgApply(); else hexApply(); redraw(); };
-    const p = t && fxFind(t);
+    if (e) { de.removeAttribute('data-st-eh-fx-edit'); if (!t) { fxTry = null; if (fxUse(e)) show(); } }
+    const p = t && fxGet(t);
     if (p) {
         if (!fxTry) fxTry = { cur: S.fxCur, v: fxNow(), name: '' };
-        if (fxTry.name !== p.name) { fxTry.name = p.name; S.fxCur = p.name; Object.assign(S, fxFull(p)); show(); LOG.info('Effect preset tried: ' + p.name); }
+        if (fxTry.name !== p.name) { fxTry.name = p.name; S.fxCur = p.name === FX_NONE ? '' : p.name; Object.assign(S, fxFull(p)); show(); LOG.info('Effect preset tried: ' + p.name); }
         return;
     }
     let kept = false;
@@ -11900,7 +11906,7 @@ function start() {
     setTimeout(() => setOn(S.on && !off), 0);
     // the effect presets for String Theory's theme settings, and the one its theme names
     fxPublish(); fxTheme();
-    new MutationObserver(fxTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-st-eh-fx', 'data-st-eh-fx-try'] });
+    new MutationObserver(fxTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-st-eh-fx', 'data-st-eh-fx-try', 'data-st-eh-fx-edit'] });
 }
 let showing = 0;
 // the page's shape while it loads, so nothing jumps when the data lands

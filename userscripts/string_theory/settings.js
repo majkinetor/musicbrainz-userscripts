@@ -301,7 +301,7 @@ function stSettings(tab) {
   var U = stUI(), T = stTokens(), html = document.documentElement;
   // Event Horizon's effect presets, when it's on and has any: each theme can bring one
   var ehFx = __stReadOff().indexOf('event_horizon') < 0 && mbuShared('ehFxPresets') || [];
-  if (!Array.isArray(ehFx)) ehFx = [];
+  ehFx = Array.isArray(ehFx) ? ehFx.slice().sort(function (a, b) { return a.localeCompare(b, undefined, { sensitivity: 'base', numeric: true }); }) : [];
   if (!document.getElementById('st-cfg-css')) {
     var css = document.createElement('style');
     css.id = 'st-cfg-css';
@@ -518,7 +518,7 @@ function stSettings(tab) {
       // each theme's effect preset; one deleted in Event Horizon is already gone from the map
       if (ehFx.length) ['light', 'dark'].forEach(function (v) {
         var cur = th.eh[v + ':' + th[v]] || '', sel = q('#st-th-eh-' + v);
-        sel.innerHTML = '<option value="">No preset</option>' + ehFx.concat(cur && ehFx.indexOf(cur) < 0 ? [cur] : []).map(function (n) { return '<option>' + stEsc(n) + '</option>'; }).join('');
+        sel.innerHTML = '<option value="">No preset</option><option value="-">No effect</option>' + ehFx.concat(cur && cur !== '-' && ehFx.indexOf(cur) < 0 ? [cur] : []).map(function (n) { return '<option>' + stEsc(n) + '</option>'; }).join('');
         sel.value = cur;
       });
       q('#st-th-from').value = th.from; q('#st-th-to').value = th.to;

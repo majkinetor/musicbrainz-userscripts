@@ -610,7 +610,7 @@ function stThemeChooser() {
   var th = __stTheme.read(), cur = __stTheme.variant(), all = [], only = was && /^(light|dark)$/.test(was.only) ? was.only : 'all', i = 0;
   // Event Horizon's effect presets, when it's on and has any; eh: the preset each theme brings, by 'variant:name', as picked here
   var fx = __stReadOff().indexOf('event_horizon') < 0 && mbuShared('ehFxPresets') || [];
-  if (!Array.isArray(fx)) fx = [];
+  fx = Array.isArray(fx) ? fx.slice().sort(function (a, b) { return a.localeCompare(b, undefined, { sensitivity: 'base', numeric: true }); }) : [];
   var eh = {}, ehWas = was && was.eh && typeof was.eh === 'object' ? was.eh : th.eh || {};
   Object.keys(ehWas).forEach(function (k) { eh[k] = ehWas[k]; });
   // only: 'all', 'light' or 'dark', which themes the arrows step through
@@ -666,7 +666,7 @@ function stThemeChooser() {
     if (sel) {
       // a preset deleted in Event Horizon still shows while it's picked, as in the settings
       var on = eh[t[0] + ':' + t[1]] || '';
-      sel.innerHTML = '<option value="">No effect</option>' + fx.concat(on && fx.indexOf(on) < 0 ? [on] : []).map(function (n) { return '<option>' + stEsc(n) + '</option>'; }).join('');
+      sel.innerHTML = '<option value="">Current effect</option><option value="-">No effect</option>' + fx.concat(on && on !== '-' && fx.indexOf(on) < 0 ? [on] : []).map(function (n) { return '<option>' + stEsc(n) + '</option>'; }).join('');
       sel.value = on;
     }
     bar.querySelector('.st-tc-n').innerHTML = stEsc(t[1]) + ' <span class="st-tc-v">' + t[0] + '</span>';
@@ -679,10 +679,10 @@ function stThemeChooser() {
   var last = was && typeof was.fx === 'string' ? was.fx : eh[all[i][0] + ':' + all[i][1]] || '';
   var bring = function () { var t = all[i], k = t[0] + ':' + t[1]; if (last) eh[k] = last; else delete eh[k]; };
   var step = function (d) { i = (i + d + all.length) % all.length; bring(); show(); };
-  // the effect: "No effect", then the presets, round
+  // the effect: "Current effect" (none brought), "No effect", then the presets, round
   var pick = function (k, n) { last = n || ''; if (n) eh[k] = n; else delete eh[k]; show(); };
   var stepFx = function (d) {
-    var t = all[i], k = t[0] + ':' + t[1], on = eh[k] || '', ns = [''].concat(fx);
+    var t = all[i], k = t[0] + ':' + t[1], on = eh[k] || '', ns = ['', '-'].concat(fx);
     if (on && ns.indexOf(on) < 0) ns.push(on);
     pick(k, ns[(ns.indexOf(on) + d + ns.length) % ns.length]);
   };
@@ -727,7 +727,10 @@ function stThemeChooser() {
   bar.querySelector('#st-tc-x').onclick = function () { close(false); };
   // the pencil: the chooser goes back, and Event Horizon's settings open on Effects (or switch to it, open already)
   if (fx.length) bar.querySelector('#st-tc-ed').onclick = function () {
+    // the effect on show stays on, so the tab opens on it
+    var on = eh[all[i][0] + ':' + all[i][1]] || '';
     close(false);
+    if (on) html.setAttribute('data-st-eh-fx-edit', on);
     if (!document.getElementById('eh-cfg')) document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: 'event_horizon', cancelable: true }));
     var tab = document.querySelector('#eh-cfg [data-tab=effects]');
     if (tab) tab.click();
