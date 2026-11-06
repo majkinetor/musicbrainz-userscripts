@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.222116
+// @version      2026.11.06.150000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -3589,10 +3589,20 @@
       #ii-table tr:not(.ii-medrow) > td:nth-child(7) { grid-column: 3; grid-row: 3; }
       #ii-table tr:not(.ii-medrow) > td:nth-child(6) .ii-tl-linked { justify-content: flex-start; }
       #ii-table tr:not(.ii-medrow) > td:nth-child(6):not(:has(.ii-tl-linked > *)) { display: none; }
-      /* a thin rule between the linked icons and the ones to add, only when both are there */
-      #ii-table tr:not(.ii-medrow) > td:nth-child(6):has(.ii-tl-linked > *) + td:nth-child(7):has(.ii-tl-add > .ii-tl:not(.cand):not(.absent)) {
-        border-left: 1px solid var(--mbu-border); padding-left: 8px; margin-left: 2px; }
-      #ii-table tr:not(.ii-medrow) > td:nth-child(5), #ii-table tr:not(.ii-medrow) > td:nth-child(5):has(.ii-input-box) { grid-column: 2 / 6; grid-row: 4; }
+      /* every row: the ISRC box and its lookup under the ISRC, the result on a line of its own */
+      #ii-table tr:not(.ii-medrow):not(.ii-row-missing):not(.ii-row-pending) > td:nth-child(5),
+      #ii-table tr:not(.ii-medrow) > td:nth-child(5), #ii-table tr:not(.ii-medrow) > td:nth-child(5):has(.ii-input-box) { display: block; grid-column: 2 / 6; grid-row: 3; }
+      #ii-table tr:not(.ii-medrow) .ii-inwrap { flex-wrap: wrap; row-gap: 2px; }
+      #ii-table tr:not(.ii-medrow) .ii-lookup { flex: 1 1 100%; order: 10; }
+      #ii-table tr:not(.ii-medrow) .ii-lookup:empty { display: none; }
+      /* the icons line: new icons first, an arrow, then the linked ones; no outline on the new */
+      #ii-table tr:not(.ii-medrow) > td:nth-child(7) { grid-column: 2; grid-row: 4; display: flex; align-items: center; }
+      #ii-table tr:not(.ii-medrow) > td:nth-child(6) { grid-column: 3; grid-row: 4; }
+      #ii-table tr:not(.ii-medrow):has(> td:nth-child(6) .ii-tl-linked > *) > td:nth-child(7):has(.ii-tl-add > .ii-tl:not(.cand):not(.absent))::after {
+        content: ''; flex: 0 0 auto; width: 16px; height: 12px; margin: 0 6px; background: var(--mbu-text-dim);
+        -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 14' fill='none' stroke='black' stroke-width='2'%3E%3Cpath d='M1 7h15M11 2l5 5-5 5'/%3E%3C/svg%3E") center / contain no-repeat;
+        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 14' fill='none' stroke='black' stroke-width='2'%3E%3Cpath d='M1 7h15M11 2l5 5-5 5'/%3E%3C/svg%3E") center / contain no-repeat; }
+      #ii-table tr:not(.ii-medrow) .ii-tl.new { outline: none; }
       #ii-sxpanel { top: 2vh !important; left: 2vw !important; right: 2vw !important;
         width: auto !important; max-width: none !important; max-height: 92vh !important; }
     }
