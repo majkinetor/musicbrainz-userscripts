@@ -75,7 +75,7 @@ test('a release seen before draws its kept cover', { tag: ['@sandbox'] }, async 
   const THRILLER = '359c3b04-6354-42fa-8438-11393b1e46a3';
   const cover = () => page.evaluate(() => (document.querySelector('#app img[data-relcover]') || {}).src || '');
   const kept = () => page.evaluate(id => new Promise(ok => { const q = indexedDB.open('eh-kept', 1);
-    q.onsuccess = () => { const g = q.result.transaction('a').objectStore('a').getAllKeys(IDBKeyRange.bound('cov:' + id, 'cov:' + id + '￿')); g.onsuccess = () => ok(g.result.length); }; q.onerror = () => ok(0); }), THRILLER);
+    q.onsuccess = () => { const g = q.result.transaction('a').objectStore('a').getAllKeys(IDBKeyRange.bound('cov:' + id, 'cov:' + id + '\uffff')); g.onsuccess = () => ok(g.result.length); }; q.onerror = () => ok(0); }), THRILLER);
   await page.goto(`https://test.musicbrainz.org/release/${THRILLER}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await open(page, inject);
   check(await until(kept, n => n > 0, 20000) > 0, 'its cover is kept');
