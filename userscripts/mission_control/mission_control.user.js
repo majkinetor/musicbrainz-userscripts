@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.06.172000
+// @version      2026.11.06.190000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -1606,16 +1606,27 @@ const pfGuessMode = () => mbuGuessCase.modeFor(rel && rel.language);
 function pfGuess(title) {   // the language, not its mode: a Cyrillic title gets Sentence whatever it is
     try { return mbuGuessCase(title || '', { entity: 'track', language: (rel && rel.language) || null }); } catch (e) { Log.cat('UI').warn('guess case failed on "' + title + '": ' + e.message); return title; }
 }
-// a title the platforms give that differs from the track's only in its capitals: a matter of guess case, not another title
-function pfCaseOnly(x) { const t = rel.tracks[pfIndex(x)]; return !!(x.differs && t && x.title.toLowerCase() === String(t.title || '').toLowerCase()); }
+// how a title the platforms give differs from the track's when it is the same words: 'case' (only its capitals, a matter
+// of guess case), 'sym' (only its punctuation, brackets and spaces), 'sym,case' (both); '' when it is another title
+const pfBare = s => String(s || '').normalize('NFKC').replace(/[^\p{L}\p{M}\p{N}]+/gu, '');
+function pfDiffKind(x) {
+    const t = rel.tracks[pfIndex(x)];
+    if (!x.differs || !t) return '';
+    const a = x.title, b = String(t.title || '');
+    if (a.toLowerCase() === b.toLowerCase()) return 'case';
+    if (pfBare(a) === pfBare(b)) return 'sym';
+    return pfBare(a).toLowerCase() === pfBare(b).toLowerCase() ? 'sym,case' : '';
+}
 // #782: the row under the track: what each platform gives for it, each title and length a click takes in
 function pfPill(x) {
-    const open = fxOpen.has(x.key), d = x.differs, cs = pfCaseOnly(x);
+    const open = fxOpen.has(x.key), d = x.differs, kind = pfDiffKind(x);
     const lead = !d ? 'The platforms agree with the title (' + x.titleFrom + ')'
-        : cs ? 'Only the capitals differ: the platforms give “' + x.title + '” (' + x.titleFrom + ')\nAa on the track\'s title guesses its case'
+        : kind === 'sym' ? 'Only the punctuation differs: the platforms give “' + x.title + '” (' + x.titleFrom + ')'
+        : kind === 'sym,case' ? 'Only the punctuation and the capitals differ: the platforms give “' + x.title + '” (' + x.titleFrom + ')\nAa on the track\'s title guesses its case'
+        : kind ? 'Only the capitals differ: the platforms give “' + x.title + '” (' + x.titleFrom + ')\nAa on the track\'s title guesses its case'
         : 'The platforms give “' + x.title + '” (' + x.titleFrom + ')';
-    return '<button type="button" class="mc-fxo' + (!d ? ' same' : cs ? ' case' : '') + '" data-act="fx-pf" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" data-tip="' + esc(lead + '\nClick: ' + (open ? 'hide' : 'show') + ' what each platform gives\n\nA click on a title or a length there takes it in.') + '">'
-        + '<span class="car">▸</span>' + (!d ? '✓' : cs ? '≠ case' : '≠ title') + '</button>';
+    return '<button type="button" class="mc-fxo' + (!d ? ' same' : kind ? ' case' : '') + '" data-act="fx-pf" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" data-tip="' + esc(lead + '\nClick: ' + (open ? 'hide' : 'show') + ' what each platform gives\n\nA click on a title or a length there takes it in.') + '">'
+        + '<span class="car">▸</span>' + (!d ? '✓' : '≠ ' + (kind || 'title')) + '</button>';
 }
 // the lines under a track, as rows of the Tracks table: the track's own (what it gets, typed in), then one per version
 // (the platforms giving the same title, length and ISRC), each value in its column, the platforms under Platforms
@@ -1714,7 +1725,8 @@ function fxAct(b) {
         pfSet(i, 'title', g, from);
         return;
     }
-    if (b.dataset.act === 'fx' || b.dataset.act === 'fx-pf') { if (fxOpen.has(k)) fxOpen.delete(k); else fxOpen.add(k); paintMatrix(); return; }
+    if (b.dataset.act === 'fx-pf') { pfToggle(k); return; }
+    if (b.dataset.act === 'fx') { if (fxOpen.has(k)) fxOpen.delete(k); else fxOpen.add(k); paintMatrix(); return; }
     if (b.dataset.act === 'fx-all') {
         const ks = fxOpenable(), all = ks.every(x => fxOpen.has(x));
         ks.forEach(x => { if (all) fxOpen.delete(x); else fxOpen.add(x); });
@@ -1737,6 +1749,29 @@ function trackPicks(t) {
     });
     if (modeNow('platforms') !== 'off' && CMP.picks[rel.tracks.indexOf(t)]) n++;   // #782: a title or length taken in
     return n;
+}
+// #782: the platforms' lines under one track (its marker row `tr`), put in or taken out as its comparison is open
+const pfHeads = () => ['n', 'ttl', 'len'].concat([...ui.querySelectorAll('.mc-tbl th[data-colh]')].map(th => th.dataset.colh));
+function pfPaint(tr, heads) {
+    const n = tr.dataset.pf, t = rel.tracks[+n], x = modeNow('platforms') !== 'off' && t ? trackFinding('fc', t.rec) : null;
+    const show = !!(x && fxOpen.has(x.key)), old = [...ui.querySelectorAll('.mc-tbl tr.mc-pfr[data-pfr="' + n + '"]')];
+    const trk = ui.querySelector('.mc-tbl tbody tr[data-i="' + n + '"]');
+    if (trk) trk.classList.toggle('pfopen', show);
+    if (show && old.some(r => r.contains(document.activeElement) && document.activeElement.classList.contains('mc-pf-in'))) return;   // being typed in
+    old.forEach(r => r.remove());
+    if (show) tr.insertAdjacentHTML('afterend', mbuHtml(pfRows(x, t, heads)));
+}
+// opening or folding one track's platforms repaints that track alone (its pill, its lines, Expand all), not the table
+function pfToggle(k) {
+    if (fxOpen.has(k)) fxOpen.delete(k); else fxOpen.add(k);
+    const i = rel.tracks.findIndex(t => { const x = trackFinding('fc', t.rec); return x && x.key === k; });
+    const tr = i >= 0 && ui.querySelector('.mc-tbl tr.mc-fxd[data-pf="' + i + '"]');
+    if (!tr) { paintMatrix(); return; }
+    const td = ui.querySelector('.mc-tbl tbody tr[data-i="' + i + '"] td[data-col="plat"]');
+    if (td) td.innerHTML = mbuHtml(cellHtml(COLS.find(c => c.id === 'plat'), rel.tracks[i]));
+    const fa = ui.querySelector('.mc-fxall');
+    if (fa) fa.innerHTML = mbuHtml(fxAllBtn());
+    pfPaint(tr, pfHeads());
 }
 function paintMatrix() {
     ui.querySelectorAll('.mc-tbl th[data-colh]').forEach(th => { th.innerHTML = mbuHtml(colHead(COLS.find(c => c.id === th.dataset.colh))); });
@@ -1762,16 +1797,8 @@ function paintMatrix() {
     }
     // #782: the platforms' lines go in after the track's marker row, as rows of the table; the columns they fill
     // are the header's (#, Title, Len, then each provider's)
-    const heads = ['n', 'ttl', 'len'].concat([...ui.querySelectorAll('.mc-tbl th[data-colh]')].map(th => th.dataset.colh));
-    ui.querySelectorAll('.mc-tbl tr.mc-fxd[data-pf]').forEach(tr => {
-        const n = tr.dataset.pf, t = rel.tracks[+n], x = modeNow('platforms') !== 'off' && t ? trackFinding('fc', t.rec) : null;
-        const show = !!(x && fxOpen.has(x.key)), old = [...ui.querySelectorAll('.mc-tbl tr.mc-pfr[data-pfr="' + n + '"]')];
-        const trk = ui.querySelector('.mc-tbl tbody tr[data-i="' + n + '"]');
-        if (trk) trk.classList.toggle('pfopen', show);
-        if (show && old.some(r => r.contains(document.activeElement) && document.activeElement.classList.contains('mc-pf-in'))) return;   // being typed in
-        old.forEach(r => r.remove());
-        if (show) tr.insertAdjacentHTML('afterend', mbuHtml(pfRows(x, t, heads)));
-    });
+    const heads = pfHeads();
+    ui.querySelectorAll('.mc-tbl tr.mc-fxd[data-pf]').forEach(tr => pfPaint(tr, heads));
     // #790: a slot stays while its track's comparison is open, so Fusion's card in it isn't rebuilt on every paint
     let mount = false;
     ui.querySelectorAll('.mc-tbl tr.mc-fxd[data-fx]').forEach(tr => {
@@ -2412,7 +2439,7 @@ function onClick(e) {
         const row = (fx.dataset.act === 'fx' || fx.dataset.act === 'fx-pf') && fx.closest('.mc-tbl tbody tr[data-i]');
         if (fx.tagName === 'INPUT') return;
         fxAct(fx);
-        if (row) selectTrack(Number(row.dataset.i), false);   // the count also selects its track
+        if (row && Number(row.dataset.i) !== selected) selectTrack(Number(row.dataset.i), false);   // the count also selects its track
         return;
     }
     // a pickable row or cell toggles on click (#680); a link inside it still just opens
@@ -5153,10 +5180,10 @@ function cmpFinish() {
     CMP.cons = cons;
     Log.cat('Platforms').ok('platforms: ' + read + ' · barcode ' + (cons.barcode || '—') + ' · labels ' + (cons.labels.map(l => l.name + (l.catno ? ' ' + l.catno : '')).join(', ') || '—') + ' · event ' + (cons.event ? JSON.stringify(cons.event.date) + ' ' + (cons.event.country || '') : '—')
         + ' · ' + lengths.length + ' length(s) · ' + (CMP.isrcs || []).filter(Boolean).length + ' ISRC(s) · ' + findings.filter(x => x.differs).length + ' title(s) differ' + (CMP.title ? ' · release title "' + CMP.title.val + '"' : ''));
-    // a title that differs only in its capitals is counted apart: guess case settles it, not another title
-    const caseOnly = findings.filter(pfCaseOnly).length;
-    const differ = findings.filter(x => x.differs).length - caseOnly;
-    const said = [differ && differ + ' track title' + (differ === 1 ? ' differs' : 's differ'), caseOnly && caseOnly + ' in case only'].filter(Boolean).join(', ');
+    // a title that differs only in its capitals or its punctuation is counted apart: the same words, not another title
+    const kinds = findings.map(pfDiffKind), caseOnly = kinds.filter(k => k === 'case').length, symOnly = kinds.filter(k => k && k !== 'case').length;
+    const differ = findings.filter(x => x.differs).length - caseOnly - symOnly;
+    const said = [differ && differ + ' track title' + (differ === 1 ? ' differs' : 's differ'), caseOnly && caseOnly + ' in case only', symOnly && symOnly + ' in punctuation only'].filter(Boolean).join(', ');
     cmpDone(read + (aligned ? said ? ' · ' + said : '' : ' · ' + t.n + ' tracks there, not compared'), findings);
     // what the release lacks, offered by those who add it
     if (found.pc && !providerOff('pc')) probeOne('pc');
