@@ -578,7 +578,7 @@ function stPalListen() {
 // ── Theme chooser ───────────────────────────────────────────────────────────
 // A slim bar at the bottom of the page that steps through every theme with ◀ ▶ (or the arrow keys),
 // showing each on the whole page; nothing covers the view. All / Light / Dark limits them to one variant.
-// With Event Horizon's effect presets, the effect beside picks the one the theme brings, shown as picked. Keep (Enter) saves both, ✕ (Esc) goes back.
+// With Event Horizon's effect presets, the effect beside (or up and down) picks the one the theme brings, shown as picked. Keep (Enter) saves both, ✕ (Esc) goes back.
 // It stays open across pages until closed (the runtime's chooser state), and above any popup: it sits in the top layer.
 var ST_TC_CSS = ''
   + '#st-tc{position:fixed;inset:auto auto 16px 50%;margin:0;overflow:visible;transform:translateX(-50%);z-index:2147483600;display:flex;align-items:center;gap:6px;padding:6px 8px;'
@@ -675,6 +675,13 @@ function stThemeChooser() {
   var ONLY = { all: ['light', 'Light'], light: ['dark', 'Dark'], dark: ['all', 'All'] };
   var filter = function () { var n = ONLY[only]; only = n[0]; bar.querySelector('#st-tc-f').textContent = n[1]; list(); show(); };
   var step = function (d) { i = (i + d + all.length) % all.length; show(); };
+  // the effect: "No effect", then the presets, round
+  var pick = function (k, n) { if (n) eh[k] = n; else delete eh[k]; show(); };
+  var stepFx = function (d) {
+    var t = all[i], k = t[0] + ':' + t[1], on = eh[k] || '', ns = [''].concat(fx);
+    if (on && ns.indexOf(on) < 0) ns.push(on);
+    pick(k, ns[(ns.indexOf(on) + d + ns.length) % ns.length]);
+  };
   var close = function (keep) {
     window.removeEventListener('keydown', onKey, true);
     watch.disconnect();
@@ -701,7 +708,9 @@ function stThemeChooser() {
     // Enter and Esc focused elsewhere (a link, a popup's button) are theirs: Esc closes the popup, not the chooser
     var away = a && a !== document.body && a !== html && !bar.contains(a);
     if (away && (e.key === 'Enter' || e.key === 'Escape')) return;
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') step(-1);
+    // left and right step the themes, up and down the effect; with no effects, all four the themes
+    if (fx.length && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) stepFx(e.key === 'ArrowUp' ? -1 : 1);
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') step(-1);
     else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') step(1);
     else if (e.key === 'Enter') close(true);
     else if (e.key === 'Escape') close(false);
@@ -716,10 +725,9 @@ function stThemeChooser() {
   bar.querySelector('#st-tc-x').onclick = function () { close(false); };
   // picked, it's shown at once, and the arrows step the themes again
   if (fx.length) bar.querySelector('#st-tc-e').onchange = function (e) {
-    var t = all[i], k = t[0] + ':' + t[1];
-    if (e.target.value) eh[k] = e.target.value; else delete eh[k];
+    var t = all[i];
     e.target.blur();
-    show();
+    pick(t[0] + ':' + t[1], e.target.value);
   };
   show();
 }

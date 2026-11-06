@@ -84,6 +84,10 @@ test.describe('theme chooser effect', () => {
     await page.keyboard.press('ArrowRight');
     check(await sel.inputValue() === '', 'the next theme brings none');
     check(await until(op, v => v === '0.6') === '0.6', 'and the effect goes back');
+    await page.keyboard.press('ArrowDown');
+    check(await sel.inputValue() === 'Dim' && await until(op, v => v === '0.3') === '0.3', 'down picks the next effect');
+    await page.keyboard.press('ArrowUp');
+    check(await sel.inputValue() === '' && await until(op, v => v === '0.6') === '0.6', 'up the one before');
     await page.keyboard.press('ArrowLeft');
     check(await sel.inputValue() === 'Dim', 'the pick stays with its theme');
     await page.screenshot({ path: 'test-results/theme-chooser-effect.png' });
