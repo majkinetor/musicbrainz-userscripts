@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.06.130000
+// @version      2026.11.06.130100
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -8892,8 +8892,14 @@ async function runScansInner() {
     // The release group is the authority on its own links, so ask it rather than
     // hoping the page has rendered. One cheap request, only when the DOM came up
     // empty, and never on the Overview path where the DOM already answered.
-    if (!mbData.existing?.discogsMaster && mbData.releaseGroupMbid) {
+    // #931: only for the Discogs master, so never when Discogs is disabled; a
+    // release group the API showed has no master is not asked again this session.
+    const rgNoMasterKey = `pc:rg-no-master:${mbData.releaseGroupMbid}`;
+    let rgNoMaster = false;
+    try { rgNoMaster = sessionStorage.getItem(rgNoMasterKey) === '1'; } catch (e) {}
+    if (providerEnabled('discogs') && !rgNoMaster && !mbData.existing?.discogsMaster && mbData.releaseGroupMbid) {
         try {
+            appendLog('MusicBrainz', 'RG Discogs master not on the page — asking the release group');
             const rgRes = await gmGet(`${MB_ORIGIN}/ws/2/release-group/${mbData.releaseGroupMbid}?inc=url-rels&fmt=json`);
             const rgJson = rgRes && rgRes.status === 200 ? JSON.parse(rgRes.responseText) : null;
             const found = (rgJson?.relations || [])
@@ -8902,6 +8908,8 @@ async function runScansInner() {
             if (found) {
                 mbData.existing = { ...(mbData.existing || {}), discogsMaster: found };
                 appendLog('MusicBrainz', `RG Discogs master resolved from the API (the page DOM had none): ${found}`);
+            } else if (rgJson) {
+                try { sessionStorage.setItem(rgNoMasterKey, '1'); } catch (e) {}
             }
         } catch (e) {
             appendLog('MusicBrainz', `RG master lookup failed — ${(e && e.message) || e}`, 'warn');
