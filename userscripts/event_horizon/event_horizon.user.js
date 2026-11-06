@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.231000
+// @version      2026.11.06.231001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3457,6 +3457,67 @@ function tronStep(state, dt, p) {
     }
 }
 
+const AURORA_STYLES = ['Rays', 'Velvet curtains', 'Polar haze', 'Wide veil'];
+// Diffuse styles paint broad feathered volumes, retaining the shared theme colour modes.
+function auroraDiffuse(ctx, w, h, p, t, c1, c2) {
+    const settings = [null, { step: 4, spread: 8, height: .4, bloom: .18, rays: .28, folds: 10 },
+        { step: 9, spread: 38, height: .48, bloom: .16, rays: 0, folds: 7 },
+        { step: 6, spread: 17, height: .72, bloom: .11, rays: .13, folds: 5 }][p.auroraStyle];
+    const pace = t * p.auroraSpeed * .1125, unit = w / 480, scale = 1 + p.auroraDiffuse / 100 * .75;
+    const tone = i => {
+        const n = Math.sin((i + 91) * 127.1 + 311.7) * 43758.5453, hue = Math.round((n - Math.floor(n)) * 360);
+        return p.colour === 2 ? `hsl(${hue},85%,65%)` : p.colour === 1 && i % 2 ? c2 : c1;
+    };
+    const glow = (x, y, rx, ry, col, alpha, lean = 0) => {
+        ctx.save(); ctx.translate(x, y); ctx.rotate(lean); ctx.scale(rx, ry);
+        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+        gradient.addColorStop(0, col); gradient.addColorStop(.2, col); gradient.addColorStop(1, 'transparent');
+        ctx.fillStyle = gradient; ctx.globalAlpha = alpha; ctx.fillRect(-1, -1, 2, 2); ctx.restore();
+    };
+    for (let band = 0; band < p.auroraRibbons; band++) {
+        const col = tone(band), upper = p.colour === 1 ? tone(band + 1) : col;
+        for (let x = -20 * unit; x < w + 20 * unit; x += Math.max(3, settings.step * unit)) {
+            const u = x / w, fold = u * settings.folds * p.auroraFolds / 10 + band * 1.8 + Math.sin(pace * .4) * .4;
+            const envelope = Math.max(0, Math.sin(Math.PI * Math.max(0, Math.min(1, u)))) ** .7;
+            const pulse = .35 + .65 * (.5 + .5 * Math.sin(fold + pace * .2)) ** 2;
+            const hem = h * (.53 + band * .15) + h * .07 * Math.sin(u * 4.5 + band * 2 + pace * .3) + h * .03 * Math.sin(fold);
+            const height = h * settings.height * (.1 + p.auroraHeight) / .35 * (.8 + .2 * Math.sin(u * 8 + band + pace * .2));
+            const lean = Math.sin(u * 4 + band + pace * .1) * .055;
+            const width = settings.spread * unit * scale * (.8 + .2 * Math.sin(u * 40)) * (1 + p.glow * .15);
+            const alpha = settings.bloom * envelope * pulse * (.8 + p.glow * .2);
+            glow(x, hem - height * .35, width, height * .63, col, alpha, lean);
+            glow(x + height * lean * .3, hem - height * .67, width * 1.25, height * .5, upper, alpha * .36, lean);
+            if (settings.rays) {
+                const glint = .5 + .5 * Math.sin(u * 89 + Math.sin(pace + u * 6));
+                glow(x, hem - height * .36, Math.max(2, width * .35), height * .56, col, settings.rays * envelope * pulse * glint, lean);
+                glow(x, hem, width * 1.25, 5 * scale * h / 265, col, .16 * envelope * pulse);
+            }
+        }
+    }
+}
+// Cache two small surfaces per live Aurora canvas. Diffusion blurs at this resolution, then scales up.
+function auroraLayer(ctx, w, h, p, t, c1, c2) {
+    const resolution = Math.min(.65, 700 / w, 500 / h), bw = Math.max(1, Math.ceil(w * resolution)), bh = Math.max(1, Math.ceil(h * resolution));
+    let cache = ctx._ehAurora;
+    if (!cache) {
+        const canvas = ctx.canvas.ownerDocument.createElement('canvas'), blur = ctx.canvas.ownerDocument.createElement('canvas');
+        cache = ctx._ehAurora = { canvas, blur, paint: canvas.getContext('2d'), soften: blur.getContext('2d') };
+    }
+    if (!cache.paint || !cache.soften) return;
+    if (cache.canvas.width !== bw || cache.canvas.height !== bh) {
+        cache.canvas.width = cache.blur.width = bw; cache.canvas.height = cache.blur.height = bh;
+    }
+    const paint = cache.paint; paint.setTransform(resolution, 0, 0, resolution, 0, 0); paint.clearRect(0, 0, w + 2, h + 2);
+    if (p.auroraStyle === 0) ambientDraw(paint, w, h, 'aurora', { ...p, auroraDiffuse: 0 }, t, c1, c2);
+    else auroraDiffuse(paint, w, h, p, t, c1, c2);
+    let image = cache.canvas;
+    if (p.auroraDiffuse > 0) {
+        const soften = cache.soften; soften.clearRect(0, 0, bw, bh); soften.save();
+        soften.filter = `blur(${p.auroraDiffuse / 100 * 8 * resolution}px)`; soften.drawImage(cache.canvas, 0, 0); soften.restore(); image = cache.blur;
+    }
+    ctx.save(); ctx.globalAlpha = 1; ctx.imageSmoothingEnabled = true; ctx.drawImage(image, 0, 0, w, h); ctx.restore();
+}
+
 function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
     const tau = Math.PI * 2, fract = x => x - Math.floor(x);
     const rand = n => fract(Math.sin(n * 127.1 + 311.7) * 43758.5453);
@@ -3518,6 +3579,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
             ctx.globalAlpha = alpha; ctx.beginPath(); ctx.arc(x, y, radius, 0, tau); ctx.fill();
         }
     } else if (kind === 'aurora') {
+        if (p.auroraStyle > 0 || p.auroraDiffuse > 0) { auroraLayer(ctx, w, h, p, t, c1, c2); ctx.globalAlpha = 1; return; }
         // Polar-light curtains: fine vertical rays rise from a folded, luminous lower edge.
         // Cap ray count rather than blurring a full-screen canvas every frame.
         const pace = t * p.auroraSpeed * .12, step = Math.max(2.5, w / 260);
@@ -3566,7 +3628,7 @@ const AMBIENT = {
         ['starDensity', 'Density', [.4, 1, 2], 1], ['starDrift', 'Drift', [0, .4, 1], .4], ['starDepth', 'Depth', [.5, 1, 2], 1], ['starTwinkle', 'Twinkle', [0, .5, 1], .5],
     ] },
     aurora: { name: 'Aurora', tip: 'Polar-light curtains with fine vertical rays and a luminous lower edge', rows: [
-        ['auroraRibbons', 'Ribbons', [1, 2, 3], 2], ['auroraSpeed', 'Speed', [.4, 1, 2], .4], ['auroraHeight', 'Height', [.1, .25, .4], .25], ['auroraFolds', 'Folds', [5, 10, 18], 10],
+        ['auroraStyle', 'Style', [0, 1, 2, 3], 0], ['auroraDiffuse', 'Diffuse', [0, 35, 65, 80, 100], 0], ['auroraRibbons', 'Ribbons', [1, 2, 3], 2], ['auroraSpeed', 'Speed', [.4, 1, 2], .4], ['auroraHeight', 'Height', [.1, .25, .4], .25], ['auroraFolds', 'Folds', [5, 10, 18], 10],
     ] },
     orbit: { name: 'Orbit', tip: 'Tilted orbital rings carry small satellites', rows: [
         ['orbitRings', 'Rings', [3, 5, 8], 5], ['orbitMoons', 'Satellites', [1, 2, 3], 1], ['orbitTilt', 'Tilt', [-35, -15, 15], -15], ['orbitSpeed', 'Speed', [.4, 1, 2], .4],
@@ -11125,7 +11187,7 @@ function fxPane(chip, row) {
 function effectColourRow(chip, row) { return row('Colour', chip('hexTwo', '0', !S.hexTwo, 'One tone') + chip('hexTwo', '1', S.hexTwo === true, 'Two-tone') + chip('hexTwo', '2', S.hexTwo === 2, 'All'), 'Two-tone mixes in the second accent colour\nAll: each light takes its own colour'); }
 function ambientRows(kind, chip, row) {
     const fields = AMBIENT[kind].rows;
-    const field = ([key, label, values]) => row(label, values.map(v => chip(key, v, S[key] === v, key === 'tronOutlines' ? v + '%' : String(v))).join(''));
+    const field = ([key, label, values]) => row(label, values.map(v => chip(key, v, S[key] === v, key === 'auroraStyle' ? AURORA_STYLES[v] : ['tronOutlines', 'auroraDiffuse'].includes(key) ? v + '%' : String(v))).join(''));
     return fields.filter(([key]) => key === 'tronOutlines').map(field).join('')
         + row('Opacity', [25, 45, 65, 85, 100].map(v => chip('ambientOpacity', v, S.ambientOpacity === v, v + '%')).join(''), 'How strong the effect is')
         + fields.filter(([key]) => key !== 'tronOutlines').map(field).join('')

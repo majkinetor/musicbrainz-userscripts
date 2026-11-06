@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-06 18:56 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-06 19:04 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -809,7 +809,7 @@ Under **Settings → Effects**, add a **Background** and as many **Effects** as 
 | -------- | --------------------------------------------------------------------- |
 | Tron     | Outlines, Grid size, Riders, Speed, Trail length                      |
 | Stars    | Density, Drift, Depth, Twinkle                                        |
-| Aurora   | Ribbons, Speed, Height, Folds                                         |
+| Aurora   | Style, Diffuse, Ribbons, Speed, Height, Folds                         |
 | Orbit    | Rings, Satellites, Tilt, Speed                                        |
 | Hexagons | Motion, Outlines, Effect, Pace, Trail, How often, Glow, Colour, Depth |
 
@@ -817,7 +817,7 @@ Under **Settings → Effects**, add a **Background** and as many **Effects** as 
 
 **Stars**: Density sets the star count, Drift their movement, Depth the difference in size and pace, and Twinkle their shimmer.
 
-**Aurora**: Ribbons sets the curtain count, Speed their movement, Height their reach and Folds their ripples.
+**Aurora**: Style chooses Rays, Velvet curtains, Polar haze or Wide veil. Diffuse softens any style, with 0% leaving its natural edges. Ribbons sets the curtain count, Speed their movement, Height their reach and Folds their ripples.
 
 **Orbit**: Rings sets the orbit count, Satellites the lights per ring, Tilt their angle and Speed their movement. Each ring moves at a different speed.
 
