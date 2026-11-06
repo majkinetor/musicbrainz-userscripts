@@ -48,7 +48,7 @@ test('effect presets save, load and delete by name', { tag: ['@prod', '@critical
   check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.6') === '0.6', 'and stays out of the preset until saved');
   await cfg.locator('[data-g=hexOpacity][data-k="40"]').click();
   await cfg.locator('[data-fx-save]').click();
-  check(await until(() => cfg.locator('[data-fx-changed]').count(), n => n === 0), 'Save keeps it');
+  check(await until(() => cfg.locator('[data-fx-changed]').count(), n => n === 0) === 0, 'Save keeps it');
   await pick('Soft'); await pick('Strong');
   check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.4') === '0.4', 'in Strong');
 
