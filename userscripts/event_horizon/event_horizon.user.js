@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.172005
+// @version      2026.11.06.173403
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -716,15 +716,20 @@ function mbuDock() {
     if (!document.getElementById('mbu-dock-css')) {
         var css = document.createElement('style'); css.id = 'mbu-dock-css';
         css.textContent = '[data-mbu-docked]{z-index:2147482990!important}[data-mbu-docked=hide],[data-mbu-docked=off],:root:not([data-mbu-dock]) [data-mb-corner-dock=only]{display:none!important}'
-            + '.mbu-dock-item{position:fixed;z-index:2147482990;width:40px;height:40px;box-sizing:border-box;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer;transition:transform .12s}'
-            + '.mbu-dock-item:hover{transform:scale(1.08)}.mbu-dock-item img{width:34px;height:34px;display:block;pointer-events:none;opacity:.85;transition:opacity .12s}.mbu-dock-item:hover img{opacity:1}'
+            // No transform on an entry, ever: its count badge is drawn inside it, and Chrome cut seams through the
+            // badge's border under a fractional scale (a peek's .8, a hover's 1.08). The hover grows the icon only, a
+            // folded entry is laid out smaller in whole pixels, and a bigger icon (mbuDockItem's scale) is its size
+            // (--mbu-di, --mbu-di-p when folded)
+            + '.mbu-dock-item{position:fixed;z-index:2147482990;width:40px;height:40px;box-sizing:border-box;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer}'
+            + '.mbu-dock-item img{width:var(--mbu-di,34px);height:var(--mbu-di,34px);max-width:none;margin:calc((34px - var(--mbu-di,34px))/2);display:block;pointer-events:none;opacity:.85;transition:opacity .12s,transform .12s}.mbu-dock-item:hover img{opacity:1;transform:scale(1.08)}'
+            + '.mbu-dock-item[data-mbu-docked=peek]{width:32px;height:32px;padding:2px}.mbu-dock-item[data-mbu-docked=peek] img{width:var(--mbu-di-p,28px);height:var(--mbu-di-p,28px);margin:calc((28px - var(--mbu-di-p,28px))/2)}.mbu-dock-item[data-mbu-docked=peek]:hover img{transform:scale(1.125)}'
             // beside the dock's button, wherever the corner's size (--mbu-cs, set by the restack) puts it
             // under the dock's entries (2147482989-91): the dock, when it shows, is above every floating panel; windows still cover it
             + '.mbu-dock-win{position:fixed;z-index:2147482985;--mbu-dw-x:calc(22px + 40px*var(--mbu-cs,1));--mbu-dw-y:6px;right:var(--mbu-dw-x);bottom:var(--mbu-dw-y);width:max-content;max-width:calc(100vw - 90px);max-height:min(75vh,calc(100vh - 20px));overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}'
             + '.mbu-dock-win>*{margin:0!important}:root[data-mbu-flow=row] .mbu-dock-win{--mbu-dw-x:6px;--mbu-dw-y:calc(20px + 40px*var(--mbu-cs,1));max-height:min(75vh,calc(100vh - 80px))}:root[data-mbu-side=left] .mbu-dock-win{right:auto;left:var(--mbu-dw-x)}'
-            + '#mbu-dock{position:fixed;z-index:2147482991;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none;transition:transform .12s}'
-            + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none;opacity:.85;transition:opacity .12s}'
-            + '#mbu-dock:hover{transform:scale(1.08)}:is(#mbu-dock:hover,:root[data-mbu-dock-open] #mbu-dock) svg{opacity:1}'
+            + '#mbu-dock{position:fixed;z-index:2147482991;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none}'
+            + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none;opacity:.85;transition:opacity .12s,transform .12s}'
+            + '#mbu-dock:hover svg{transform:scale(1.08)}:is(#mbu-dock:hover,:root[data-mbu-dock-open] #mbu-dock) svg{opacity:1}'
             + '#mbu-dock:focus-visible{outline:2px solid #ba478f;outline-offset:2px}'
             + '#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center}'
             // no names, only a short state (a count) as a badge on the entry's top-right corner
@@ -735,17 +740,20 @@ function mbuDock() {
             // animation can move under the !important (it can't move opacity itself)
             + '@property --mbu-peek-o{syntax:"<number>";inherits:false;initial-value:1}'
             + '[data-mbu-docked=show],[data-mbu-docked=peek]{opacity:var(--mbu-peek-o,1)!important}'
-            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])>:not(.mbu-dock-dots,.mbu-dock-n){opacity:.85;transition:opacity .12s}:is(:root[data-mbu-dock-over] [data-mbu-docked=show],[data-mbu-docked=show]:hover,[data-mbu-docked=peek]:hover)>*{opacity:1}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])>:not(.mbu-dock-dots,.mbu-dock-n){opacity:.85;transition:opacity .12s,transform .12s}:is(:root[data-mbu-dock-over] [data-mbu-docked=show],[data-mbu-docked=show]:hover,[data-mbu-docked=peek]:hover)>*{opacity:1}'
             // while the pointer is over the dock, a frosted shelf behind its icons, so they read on any page
             + '#mbu-dock-shelf{position:fixed;z-index:2147482989;box-sizing:border-box;background:transparent;opacity:0;visibility:hidden;transition:opacity .15s,visibility .15s}'   // catches the pointer between icons, so the page behind the dock's gaps doesn't react
             + ':root[data-mbu-dock-frost] #mbu-dock-shelf{background:rgba(255,255,255,.6);box-shadow:0 2px 10px rgba(0,0,0,.18),inset 0 0 0 1px rgba(0,0,0,.1);-webkit-backdrop-filter:blur(12px) saturate(1.6);backdrop-filter:blur(12px) saturate(1.6)}'   // String Theory's Hover: Shelf
             + ':root[data-mbu-dock-frost] #mbu-dock-shelf[data-dark]{background:rgba(40,42,47,.6);box-shadow:0 2px 10px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.12)}'
             + ':root[data-mbu-dock-over] #mbu-dock-shelf{opacity:1;visibility:visible}'
             // folded, an entry with something to do peeks beside the button, smaller
-            + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}[data-mbu-peek-out]{pointer-events:none}'
+            // (a script's own launcher still shrinks by a transform: its insides are its own; a dock entry is sized above)
+            + '[data-mbu-docked=peek]:not(.mbu-dock-item){transform:scale(.8)}[data-mbu-docked=peek]:not(.mbu-dock-item):hover{transform:scale(.9)}[data-mbu-peek-out]{pointer-events:none}'
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
+            + '.mbu-dock-item[data-mbu-docked=peek][data-mb-corner-status]::after{top:-3px;right:-3px;min-width:16px;height:16px;padding:0 3px;border-radius:8px;font:700 10px/13px system-ui,sans-serif}'   // a folded entry's, smaller in whole pixels
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked])):hover::after{opacity:1}'
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status^="✓"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}'   // all done: a quiet dot, so a count beside it stands out
+            + '.mbu-dock-item[data-mbu-docked=peek][data-mb-corner-status^="✓"]::after{width:8px;height:8px}'
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status^="0,"]:not([data-mb-corner-status*="/"])::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}'   // "0,3": nothing to do, only held back
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
             + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
@@ -1029,9 +1037,8 @@ function mbuDockItem(o) {
     b.status = function (t) { b.mbuSt = t || ''; show(); };
     b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };
     b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };
-    // a bigger icon gets its size, whole pixels, not a transform: inside a folded entry's scale(.8) a second one
-    // drew seams through the badge in Chrome
-    if (o.scale) { var px = Math.round(17 * o.scale) * 2, m = (34 - px) / 2 + 'px'; Object.assign(b.querySelector('img').style, { width: px + 'px', height: px + 'px', maxWidth: 'none', margin: m }); }
+    // a bigger icon gets its size, even whole pixels, never a transform (the dock's CSS has why), folded too
+    if (o.scale) { b.style.setProperty('--mbu-di', Math.round(17 * o.scale) * 2 + 'px'); b.style.setProperty('--mbu-di-p', Math.round(14 * o.scale) * 2 + 'px'); }
     b.status('');
     mbRestackCorner('br');
     return b;
@@ -1079,7 +1086,7 @@ function mbRestackCorner(corner) {
         var on = size !== 1 && small(el);
         if (on) { el.style.scale = String(size); el.setAttribute('data-mb-corner-scaled', ''); }
         else if (el.hasAttribute('data-mb-corner-scaled')) { el.style.scale = ''; el.removeAttribute('data-mb-corner-scaled'); }
-        // a peek's own scale(.8) shrinks it toward the corner too, so the stack below can centre what is drawn
+        // a launcher's peek scale(.8) shrinks it toward the corner too, so the stack below can centre what is drawn
         el.style.transformOrigin = on || peek(el) ? (bottom ? 'bottom ' : 'top ') + (right ? 'right' : 'left') : '';
     };
     if (vv) {
@@ -1116,8 +1123,8 @@ function mbRestackCorner(corner) {
         .sort(byRank);
     // launchers share one centre line across the flow: a 34px one beside the 40px dock button sat
     // flush to the edge instead, off centre by half the difference, times the corner's size
-    // what is drawn across: the corner's size, and a folded dock's peek its scale(.8) as well
-    var across = function (el) { return (row ? el.offsetHeight : el.offsetWidth) * (el.hasAttribute('data-mb-corner-scaled') ? size : 1) * (peek(el) ? 0.8 : 1); };
+    // what is drawn across: the corner's size, and a peeking launcher's scale(.8) as well (a dock entry is laid out smaller)
+    var across = function (el) { return (row ? el.offsetHeight : el.offsetWidth) * (el.hasAttribute('data-mb-corner-scaled') ? size : 1) * (peek(el) && !el.classList.contains('mbu-dock-item') ? 0.8 : 1); };
     els.concat(peeks).forEach(fit);
     var lane = 0;
     els.concat(peeks).forEach(function (el) { if (small(el)) lane = Math.max(lane, across(el)); });
@@ -3340,95 +3347,6 @@ document.addEventListener('load', e => { if (e.target instanceof HTMLImageElemen
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
 // Independent background geometries. The preview and userscript use this same renderer.
-// A rider chooses a new route at each junction. Trails are bounded by distance, not frame count.
-function tronCreate(w, h, p, random = Math.random) {
-    const grid = p.tronGrid;
-    const state = { grid, maxX: Math.max(grid, Math.floor(w / grid) * grid), maxY: Math.max(grid, Math.floor(h / grid) * grid), random, time: 0, effects: [], riders: [], dirs: [[1, 0], [0, 1], [-1, 0], [0, -1]] };
-    for (let i = 0; i < p.tronRiders; i++) {
-        const r = { id: i, alive: false, trail: [], distance: 0, remaining: 0, respawn: 0, died: -1 };
-        state.riders.push(r); tronSpawn(state, r);
-    }
-    return state;
-}
-function tronSpawn(state, r) {
-    for (let attempt = 0; attempt < 40; attempt++) {
-        const x = Math.floor(state.random() * (state.maxX / state.grid + 1)) * state.grid;
-        const y = Math.floor(state.random() * (state.maxY / state.grid + 1)) * state.grid;
-        const occupied = state.riders.some(other => other !== r && ((other.alive && Math.hypot(other.x - x, other.y - y) < state.grid * .5)
-            || other.trail.some(edge => tronHit(x, y, x, y, edge) === 0)));
-        if (occupied) continue;
-        Object.assign(r, { x, y, dir: Math.floor(state.random() * 4), alive: true, trail: [], distance: 0, remaining: 0, died: -1 });
-        return true;
-    }
-    r.alive = false; r.respawn = state.time + .3;
-    return false;
-}
-// Distance to the first crossing, including collinear trails and endpoints; Infinity means no hit.
-function tronHit(x, y, nx, ny, edge) {
-    const [ax, ay] = edge.a, [bx, by] = edge.b, eps = 1e-6;
-    const within = (v, a, b) => v >= Math.min(a, b) - eps && v <= Math.max(a, b) + eps;
-    if (Math.abs(y - ny) < eps) {
-        if (Math.abs(ax - bx) < eps) return within(ax, x, nx) && within(y, ay, by) ? Math.abs(ax - x) : Infinity;
-        if (Math.abs(y - ay) > eps) return Infinity;
-        const lo = Math.max(Math.min(x, nx), Math.min(ax, bx)), hi = Math.min(Math.max(x, nx), Math.max(ax, bx));
-        return lo <= hi + eps ? Math.abs((nx >= x ? lo : hi) - x) : Infinity;
-    }
-    if (Math.abs(ay - by) < eps) return within(ay, y, ny) && within(x, ax, bx) ? Math.abs(ay - y) : Infinity;
-    if (Math.abs(x - ax) > eps) return Infinity;
-    const lo = Math.max(Math.min(y, ny), Math.min(ay, by)), hi = Math.min(Math.max(y, ny), Math.max(ay, by));
-    return lo <= hi + eps ? Math.abs((ny >= y ? lo : hi) - y) : Infinity;
-}
-function tronStep(state, dt, p) {
-    dt = Math.max(0, Math.min(.1, dt)); state.time += dt;
-    state.effects = state.effects.filter(e => state.time - e.born < .6);
-    // Dead trails fade before a replacement can spawn, and cannot remain invisible collision hazards.
-    for (const r of state.riders) if (!r.alive && state.time - r.died >= .65) r.trail = [];
-    for (const r of state.riders) {
-        if (!r.alive) { if (state.time >= r.respawn) tronSpawn(state, r); continue; }
-        let travel = dt * p.tronSpeed * 35;
-        while (travel > 1e-6 && r.alive) {
-            if (r.remaining < 1e-6) {
-                r.x = Math.round(r.x / state.grid) * state.grid; r.y = Math.round(r.y / state.grid) * state.grid;
-                const choices = [r.dir, (r.dir + 1) % 4, (r.dir + 3) % 4].filter(d => {
-                    const [dx, dy] = state.dirs[d], x = r.x + dx * state.grid, y = r.y + dy * state.grid;
-                    return x >= 0 && y >= 0 && x <= state.maxX && y <= state.maxY;
-                });
-                // The only exit at a corner can be behind the rider.
-                if (!choices.length) choices.push((r.dir + 2) % 4);
-                r.dir = choices[Math.floor(state.random() * choices.length)]; r.remaining = state.grid;
-            }
-            const [dx, dy] = state.dirs[r.dir], planned = Math.min(travel, r.remaining);
-            let distance = planned, hit = false;
-            for (const other of state.riders) {
-                if (other === r) continue;
-                for (const edge of other.trail) {
-                    const d = tronHit(r.x, r.y, r.x + dx * planned, r.y + dy * planned, edge);
-                    if (d <= distance) { distance = d; hit = true; }
-                }
-            }
-            const a = [r.x, r.y], start = r.distance;
-            r.x += dx * distance; r.y += dy * distance; r.distance += distance;
-            const last = r.trail[r.trail.length - 1];
-            if (distance > 1e-6) {
-                if (last && last.dir === r.dir) { last.b = [r.x, r.y]; last.end = r.distance; }
-                else r.trail.push({ a, b: [r.x, r.y], start, end: r.distance, dir: r.dir });
-            }
-            r.remaining -= distance; travel -= distance;
-            const cut = r.distance - state.grid * p.tronTrail;
-            while (r.trail.length && r.trail[0].end <= cut) r.trail.shift();
-            const tail = r.trail[0];
-            if (tail && tail.start < cut) {
-                const f = (cut - tail.start) / (tail.end - tail.start);
-                tail.a = [tail.a[0] + (tail.b[0] - tail.a[0]) * f, tail.a[1] + (tail.b[1] - tail.a[1]) * f]; tail.start = cut;
-            }
-            if (hit) {
-                r.alive = false; r.died = state.time; r.respawn = state.time + .9 + state.random() * 1.2;
-                state.effects.push({ x: r.x, y: r.y, id: r.id, born: state.time });
-            }
-        }
-    }
-}
-
 function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
     const tau = Math.PI * 2, fract = x => x - Math.floor(x);
     const rand = n => fract(Math.sin(n * 127.1 + 311.7) * 43758.5453);
@@ -3445,37 +3363,30 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
     };
     ctx.clearRect(0, 0, w, h); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     if (kind === 'tron') {
-        const grid = p.tronGrid, key = [w, h, grid, p.tronRiders, p.tronTrail].join('|');
-        let state = ctx._ehTron;
-        if (!state || state.key !== key) {
-            state = ctx._ehTron = tronCreate(w, h, p); state.key = key; state.last = t;
-            for (let i = 0; i < 60; i++) tronStep(state, 1 / 30, p);
-        }
-        tronStep(state, t - state.last, p); state.last = t;
-        const outlines = Math.max(0, Math.min(100, p.tronOutlines ?? 25)) / 100 * .18;
-        if (outlines) {
-            for (let x = 0; x < w; x += grid) line([[x, 0], [x, h]], c1, outlines);
-            for (let y = 0; y < h; y += grid) line([[0, y], [w, y]], c1, outlines);
-        }
-        for (const r of state.riders) {
-            const col = tone(r.id), fade = r.alive ? 1 : Math.max(0, 1 - (state.time - r.died) / .65);
-            for (const edge of r.trail) {
-                const n = Math.max(1, Math.ceil((edge.end - edge.start) / 16));
-                for (let j = 0; j < n; j++) {
-                    const point = f => [edge.a[0] + (edge.b[0] - edge.a[0]) * f, edge.a[1] + (edge.b[1] - edge.a[1]) * f];
-                    const d = edge.start + (edge.end - edge.start) * (j + .5) / n;
-                    const alpha = Math.max(0, 1 - (r.distance - d) / (grid * p.tronTrail));
-                    line([point(j / n), point((j + 1) / n)], col, alpha * .9 * fade, 1.5);
-                }
+        const grid = p.tronGrid, count = p.tronRiders, speed = t * p.tronSpeed * 35;
+        // Dim square circuitry, with luminous riders making only right-angle turns.
+        for (let x = 0; x < w; x += grid) line([[x, 0], [x, h]], c1, .045);
+        for (let y = 0; y < h; y += grid) line([[0, y], [w, y]], c1, .045);
+        for (let i = 0; i < count; i++) {
+            const seed = i + 1, col = tone(i), length = grid * p.tronTrail;
+            const advance = speed + rand(seed) * (w + h), turn = grid * (2 + Math.floor(rand(seed + 23) * 5));
+            const x0 = Math.floor(rand(seed + 7) * w / grid) * grid;
+            const y0 = Math.floor(rand(seed + 17) * h / grid) * grid;
+            const pos = d => {
+                const v = ((advance - d) % (turn * 4) + turn * 4) % (turn * 4);
+                let x = 0, y = 0;
+                if (v < turn) x = v;
+                else if (v < turn * 2) { x = turn; y = v - turn; }
+                else if (v < turn * 3) { x = turn - (v - turn * 2); y = turn; }
+                else y = turn - (v - turn * 3);
+                return [(x0 + x) % (w + turn) - turn / 2, (y0 + y) % (h + turn) - turn / 2];
+            };
+            for (let d = length; d > 0; d -= 4) {
+                const a = pos(d), b = pos(Math.max(0, d - 4));
+                if (Math.hypot(a[0] - b[0], a[1] - b[1]) > 10) continue;
+                line([a, b], col, (1 - d / length) * .9, 1.5);
             }
-            if (r.alive) { ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.fillRect(r.x - 1.7, r.y - 1.7, 3.4, 3.4); }
-        }
-        for (const e of state.effects) {
-            const age = (state.time - e.born) / .6;
-            for (let i = 0; i < 8; i++) {
-                const angle = i * tau / 8 + rand(e.id) * tau, near = 1 + age * 7, far = near + (1 - age) * 6;
-                line([[e.x + Math.cos(angle) * near, e.y + Math.sin(angle) * near], [e.x + Math.cos(angle) * far, e.y + Math.sin(angle) * far]], tone(e.id), (1 - age) ** 2, 1);
-            }
+            const [x, y] = pos(0); ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.fillRect(x - 1.7, y - 1.7, 3.4, 3.4);
         }
     } else if (kind === 'stars') {
         const count = Math.min(900, Math.round(w * h / 1100 * p.starDensity));
@@ -3520,7 +3431,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
 
 const AMBIENT = {
     tron: { name: 'Tron', tip: 'Light riders turn through a square circuit grid', rows: [
-        ['tronOutlines', 'Outlines', [0, 10, 25, 50, 100], 25], ['tronGrid', 'Grid size', [24, 40, 64], 40], ['tronRiders', 'Riders', [8, 16, 28], 16], ['tronSpeed', 'Speed', [.4, 1, 2], 1], ['tronTrail', 'Trail length', [1, 3, 6], 3],
+        ['tronGrid', 'Grid size', [24, 40, 64], 40], ['tronRiders', 'Riders', [8, 16, 28], 16], ['tronSpeed', 'Speed', [.4, 1, 2], 1], ['tronTrail', 'Trail length', [1, 3, 6], 3],
     ] },
     stars: { name: 'Stars', tip: 'Layers of drifting stars with a quiet twinkle', rows: [
         ['starDensity', 'Density', [.4, 1, 2], 1], ['starDrift', 'Drift', [0, .4, 1], .4], ['starDepth', 'Depth', [.5, 1, 2], 1], ['starTwinkle', 'Twinkle', [0, .5, 1], .5],
@@ -11020,7 +10931,7 @@ function fxRow(row) {
 function effectColourRow(chip, row) { return row('Colour', chip('hexTwo', '0', !S.hexTwo, 'One tone') + chip('hexTwo', '1', S.hexTwo === true, 'Two-tone') + chip('hexTwo', '2', S.hexTwo === 2, 'All'), 'Two-tone mixes in the second accent colour\nAll: each light takes its own colour'); }
 function ambientRows(kind, chip, row) {
     return row('Opacity', [25, 45, 65, 85, 100].map(v => chip('ambientOpacity', v, S.ambientOpacity === v, v + '%')).join(''), 'How strong the effect is')
-        + AMBIENT[kind].rows.map(([key, label, values]) => row(label, values.map(v => chip(key, v, S[key] === v, key === 'tronOutlines' ? v + '%' : String(v))).join(''))).join('')
+        + AMBIENT[kind].rows.map(([key, label, values]) => row(label, values.map(v => chip(key, v, S[key] === v, String(v))).join(''))).join('')
         + row('Glow', [[0, 'None'], [.5, 'Faint'], [1, 'Normal'], [2, 'Wide']].map(([v, l]) => chip('hexGlow', v, S.hexGlow === v, l)).join(''), 'How far the soft glow around the lights spreads')
         + effectColourRow(chip, row);
 }

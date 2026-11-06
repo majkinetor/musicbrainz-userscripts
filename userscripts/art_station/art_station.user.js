@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.06.171848
+// @version      2026.11.06.173403
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -6078,15 +6078,20 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
       if (!document.getElementById('mbu-dock-css')) {
           var css = document.createElement('style'); css.id = 'mbu-dock-css';
           css.textContent = '[data-mbu-docked]{z-index:2147482990!important}[data-mbu-docked=hide],[data-mbu-docked=off],:root:not([data-mbu-dock]) [data-mb-corner-dock=only]{display:none!important}'
-              + '.mbu-dock-item{position:fixed;z-index:2147482990;width:40px;height:40px;box-sizing:border-box;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer;transition:transform .12s}'
-              + '.mbu-dock-item:hover{transform:scale(1.08)}.mbu-dock-item img{width:34px;height:34px;display:block;pointer-events:none;opacity:.85;transition:opacity .12s}.mbu-dock-item:hover img{opacity:1}'
+              // No transform on an entry, ever: its count badge is drawn inside it, and Chrome cut seams through the
+              // badge's border under a fractional scale (a peek's .8, a hover's 1.08). The hover grows the icon only, a
+              // folded entry is laid out smaller in whole pixels, and a bigger icon (mbuDockItem's scale) is its size
+              // (--mbu-di, --mbu-di-p when folded)
+              + '.mbu-dock-item{position:fixed;z-index:2147482990;width:40px;height:40px;box-sizing:border-box;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer}'
+              + '.mbu-dock-item img{width:var(--mbu-di,34px);height:var(--mbu-di,34px);max-width:none;margin:calc((34px - var(--mbu-di,34px))/2);display:block;pointer-events:none;opacity:.85;transition:opacity .12s,transform .12s}.mbu-dock-item:hover img{opacity:1;transform:scale(1.08)}'
+              + '.mbu-dock-item[data-mbu-docked=peek]{width:32px;height:32px;padding:2px}.mbu-dock-item[data-mbu-docked=peek] img{width:var(--mbu-di-p,28px);height:var(--mbu-di-p,28px);margin:calc((28px - var(--mbu-di-p,28px))/2)}.mbu-dock-item[data-mbu-docked=peek]:hover img{transform:scale(1.125)}'
               // beside the dock's button, wherever the corner's size (--mbu-cs, set by the restack) puts it
               // under the dock's entries (2147482989-91): the dock, when it shows, is above every floating panel; windows still cover it
               + '.mbu-dock-win{position:fixed;z-index:2147482985;--mbu-dw-x:calc(22px + 40px*var(--mbu-cs,1));--mbu-dw-y:6px;right:var(--mbu-dw-x);bottom:var(--mbu-dw-y);width:max-content;max-width:calc(100vw - 90px);max-height:min(75vh,calc(100vh - 20px));overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}'
               + '.mbu-dock-win>*{margin:0!important}:root[data-mbu-flow=row] .mbu-dock-win{--mbu-dw-x:6px;--mbu-dw-y:calc(20px + 40px*var(--mbu-cs,1));max-height:min(75vh,calc(100vh - 80px))}:root[data-mbu-side=left] .mbu-dock-win{right:auto;left:var(--mbu-dw-x)}'
-              + '#mbu-dock{position:fixed;z-index:2147482991;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none;transition:transform .12s}'
-              + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none;opacity:.85;transition:opacity .12s}'
-              + '#mbu-dock:hover{transform:scale(1.08)}:is(#mbu-dock:hover,:root[data-mbu-dock-open] #mbu-dock) svg{opacity:1}'
+              + '#mbu-dock{position:fixed;z-index:2147482991;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none}'
+              + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none;opacity:.85;transition:opacity .12s,transform .12s}'
+              + '#mbu-dock:hover svg{transform:scale(1.08)}:is(#mbu-dock:hover,:root[data-mbu-dock-open] #mbu-dock) svg{opacity:1}'
               + '#mbu-dock:focus-visible{outline:2px solid #ba478f;outline-offset:2px}'
               + '#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center}'
               // no names, only a short state (a count) as a badge on the entry's top-right corner
@@ -6097,17 +6102,20 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
               // animation can move under the !important (it can't move opacity itself)
               + '@property --mbu-peek-o{syntax:"<number>";inherits:false;initial-value:1}'
               + '[data-mbu-docked=show],[data-mbu-docked=peek]{opacity:var(--mbu-peek-o,1)!important}'
-              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])>:not(.mbu-dock-dots,.mbu-dock-n){opacity:.85;transition:opacity .12s}:is(:root[data-mbu-dock-over] [data-mbu-docked=show],[data-mbu-docked=show]:hover,[data-mbu-docked=peek]:hover)>*{opacity:1}'
+              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])>:not(.mbu-dock-dots,.mbu-dock-n){opacity:.85;transition:opacity .12s,transform .12s}:is(:root[data-mbu-dock-over] [data-mbu-docked=show],[data-mbu-docked=show]:hover,[data-mbu-docked=peek]:hover)>*{opacity:1}'
               // while the pointer is over the dock, a frosted shelf behind its icons, so they read on any page
               + '#mbu-dock-shelf{position:fixed;z-index:2147482989;box-sizing:border-box;background:transparent;opacity:0;visibility:hidden;transition:opacity .15s,visibility .15s}'   // catches the pointer between icons, so the page behind the dock's gaps doesn't react
               + ':root[data-mbu-dock-frost] #mbu-dock-shelf{background:rgba(255,255,255,.6);box-shadow:0 2px 10px rgba(0,0,0,.18),inset 0 0 0 1px rgba(0,0,0,.1);-webkit-backdrop-filter:blur(12px) saturate(1.6);backdrop-filter:blur(12px) saturate(1.6)}'   // String Theory's Hover: Shelf
               + ':root[data-mbu-dock-frost] #mbu-dock-shelf[data-dark]{background:rgba(40,42,47,.6);box-shadow:0 2px 10px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.12)}'
               + ':root[data-mbu-dock-over] #mbu-dock-shelf{opacity:1;visibility:visible}'
               // folded, an entry with something to do peeks beside the button, smaller
-              + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}[data-mbu-peek-out]{pointer-events:none}'
+              // (a script's own launcher still shrinks by a transform: its insides are its own; a dock entry is sized above)
+              + '[data-mbu-docked=peek]:not(.mbu-dock-item){transform:scale(.8)}[data-mbu-docked=peek]:not(.mbu-dock-item):hover{transform:scale(.9)}[data-mbu-peek-out]{pointer-events:none}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
+              + '.mbu-dock-item[data-mbu-docked=peek][data-mb-corner-status]::after{top:-3px;right:-3px;min-width:16px;height:16px;padding:0 3px;border-radius:8px;font:700 10px/13px system-ui,sans-serif}'   // a folded entry's, smaller in whole pixels
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked])):hover::after{opacity:1}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status^="✓"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}'   // all done: a quiet dot, so a count beside it stands out
+              + '.mbu-dock-item[data-mbu-docked=peek][data-mb-corner-status^="✓"]::after{width:8px;height:8px}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status^="0,"]:not([data-mb-corner-status*="/"])::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}'   // "0,3": nothing to do, only held back
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
               + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
@@ -6391,9 +6399,8 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
       b.status = function (t) { b.mbuSt = t || ''; show(); };
       b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };
       b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };
-      // a bigger icon gets its size, whole pixels, not a transform: inside a folded entry's scale(.8) a second one
-      // drew seams through the badge in Chrome
-      if (o.scale) { var px = Math.round(17 * o.scale) * 2, m = (34 - px) / 2 + 'px'; Object.assign(b.querySelector('img').style, { width: px + 'px', height: px + 'px', maxWidth: 'none', margin: m }); }
+      // a bigger icon gets its size, even whole pixels, never a transform (the dock's CSS has why), folded too
+      if (o.scale) { b.style.setProperty('--mbu-di', Math.round(17 * o.scale) * 2 + 'px'); b.style.setProperty('--mbu-di-p', Math.round(14 * o.scale) * 2 + 'px'); }
       b.status('');
       mbRestackCorner('br');
       return b;
@@ -6441,7 +6448,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
           var on = size !== 1 && small(el);
           if (on) { el.style.scale = String(size); el.setAttribute('data-mb-corner-scaled', ''); }
           else if (el.hasAttribute('data-mb-corner-scaled')) { el.style.scale = ''; el.removeAttribute('data-mb-corner-scaled'); }
-          // a peek's own scale(.8) shrinks it toward the corner too, so the stack below can centre what is drawn
+          // a launcher's peek scale(.8) shrinks it toward the corner too, so the stack below can centre what is drawn
           el.style.transformOrigin = on || peek(el) ? (bottom ? 'bottom ' : 'top ') + (right ? 'right' : 'left') : '';
       };
       if (vv) {
@@ -6478,8 +6485,8 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
           .sort(byRank);
       // launchers share one centre line across the flow: a 34px one beside the 40px dock button sat
       // flush to the edge instead, off centre by half the difference, times the corner's size
-      // what is drawn across: the corner's size, and a folded dock's peek its scale(.8) as well
-      var across = function (el) { return (row ? el.offsetHeight : el.offsetWidth) * (el.hasAttribute('data-mb-corner-scaled') ? size : 1) * (peek(el) ? 0.8 : 1); };
+      // what is drawn across: the corner's size, and a peeking launcher's scale(.8) as well (a dock entry is laid out smaller)
+      var across = function (el) { return (row ? el.offsetHeight : el.offsetWidth) * (el.hasAttribute('data-mb-corner-scaled') ? size : 1) * (peek(el) && !el.classList.contains('mbu-dock-item') ? 0.8 : 1); };
       els.concat(peeks).forEach(fit);
       var lane = 0;
       els.concat(peeks).forEach(function (el) { if (small(el)) lane = Math.max(lane, across(el)); });

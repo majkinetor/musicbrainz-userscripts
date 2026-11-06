@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.171848
+// @version      2026.11.06.173403
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -761,15 +761,20 @@
       if (!document.getElementById('mbu-dock-css')) {
           var css = document.createElement('style'); css.id = 'mbu-dock-css';
           css.textContent = '[data-mbu-docked]{z-index:2147482990!important}[data-mbu-docked=hide],[data-mbu-docked=off],:root:not([data-mbu-dock]) [data-mb-corner-dock=only]{display:none!important}'
-              + '.mbu-dock-item{position:fixed;z-index:2147482990;width:40px;height:40px;box-sizing:border-box;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer;transition:transform .12s}'
-              + '.mbu-dock-item:hover{transform:scale(1.08)}.mbu-dock-item img{width:34px;height:34px;display:block;pointer-events:none;opacity:.85;transition:opacity .12s}.mbu-dock-item:hover img{opacity:1}'
+              // No transform on an entry, ever: its count badge is drawn inside it, and Chrome cut seams through the
+              // badge's border under a fractional scale (a peek's .8, a hover's 1.08). The hover grows the icon only, a
+              // folded entry is laid out smaller in whole pixels, and a bigger icon (mbuDockItem's scale) is its size
+              // (--mbu-di, --mbu-di-p when folded)
+              + '.mbu-dock-item{position:fixed;z-index:2147482990;width:40px;height:40px;box-sizing:border-box;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer}'
+              + '.mbu-dock-item img{width:var(--mbu-di,34px);height:var(--mbu-di,34px);max-width:none;margin:calc((34px - var(--mbu-di,34px))/2);display:block;pointer-events:none;opacity:.85;transition:opacity .12s,transform .12s}.mbu-dock-item:hover img{opacity:1;transform:scale(1.08)}'
+              + '.mbu-dock-item[data-mbu-docked=peek]{width:32px;height:32px;padding:2px}.mbu-dock-item[data-mbu-docked=peek] img{width:var(--mbu-di-p,28px);height:var(--mbu-di-p,28px);margin:calc((28px - var(--mbu-di-p,28px))/2)}.mbu-dock-item[data-mbu-docked=peek]:hover img{transform:scale(1.125)}'
               // beside the dock's button, wherever the corner's size (--mbu-cs, set by the restack) puts it
               // under the dock's entries (2147482989-91): the dock, when it shows, is above every floating panel; windows still cover it
               + '.mbu-dock-win{position:fixed;z-index:2147482985;--mbu-dw-x:calc(22px + 40px*var(--mbu-cs,1));--mbu-dw-y:6px;right:var(--mbu-dw-x);bottom:var(--mbu-dw-y);width:max-content;max-width:calc(100vw - 90px);max-height:min(75vh,calc(100vh - 20px));overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}'
               + '.mbu-dock-win>*{margin:0!important}:root[data-mbu-flow=row] .mbu-dock-win{--mbu-dw-x:6px;--mbu-dw-y:calc(20px + 40px*var(--mbu-cs,1));max-height:min(75vh,calc(100vh - 80px))}:root[data-mbu-side=left] .mbu-dock-win{right:auto;left:var(--mbu-dw-x)}'
-              + '#mbu-dock{position:fixed;z-index:2147482991;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none;transition:transform .12s}'
-              + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none;opacity:.85;transition:opacity .12s}'
-              + '#mbu-dock:hover{transform:scale(1.08)}:is(#mbu-dock:hover,:root[data-mbu-dock-open] #mbu-dock) svg{opacity:1}'
+              + '#mbu-dock{position:fixed;z-index:2147482991;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none}'
+              + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none;opacity:.85;transition:opacity .12s,transform .12s}'
+              + '#mbu-dock:hover svg{transform:scale(1.08)}:is(#mbu-dock:hover,:root[data-mbu-dock-open] #mbu-dock) svg{opacity:1}'
               + '#mbu-dock:focus-visible{outline:2px solid #ba478f;outline-offset:2px}'
               + '#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center}'
               // no names, only a short state (a count) as a badge on the entry's top-right corner
@@ -780,17 +785,20 @@
               // animation can move under the !important (it can't move opacity itself)
               + '@property --mbu-peek-o{syntax:"<number>";inherits:false;initial-value:1}'
               + '[data-mbu-docked=show],[data-mbu-docked=peek]{opacity:var(--mbu-peek-o,1)!important}'
-              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])>:not(.mbu-dock-dots,.mbu-dock-n){opacity:.85;transition:opacity .12s}:is(:root[data-mbu-dock-over] [data-mbu-docked=show],[data-mbu-docked=show]:hover,[data-mbu-docked=peek]:hover)>*{opacity:1}'
+              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])>:not(.mbu-dock-dots,.mbu-dock-n){opacity:.85;transition:opacity .12s,transform .12s}:is(:root[data-mbu-dock-over] [data-mbu-docked=show],[data-mbu-docked=show]:hover,[data-mbu-docked=peek]:hover)>*{opacity:1}'
               // while the pointer is over the dock, a frosted shelf behind its icons, so they read on any page
               + '#mbu-dock-shelf{position:fixed;z-index:2147482989;box-sizing:border-box;background:transparent;opacity:0;visibility:hidden;transition:opacity .15s,visibility .15s}'   // catches the pointer between icons, so the page behind the dock's gaps doesn't react
               + ':root[data-mbu-dock-frost] #mbu-dock-shelf{background:rgba(255,255,255,.6);box-shadow:0 2px 10px rgba(0,0,0,.18),inset 0 0 0 1px rgba(0,0,0,.1);-webkit-backdrop-filter:blur(12px) saturate(1.6);backdrop-filter:blur(12px) saturate(1.6)}'   // String Theory's Hover: Shelf
               + ':root[data-mbu-dock-frost] #mbu-dock-shelf[data-dark]{background:rgba(40,42,47,.6);box-shadow:0 2px 10px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.12)}'
               + ':root[data-mbu-dock-over] #mbu-dock-shelf{opacity:1;visibility:visible}'
               // folded, an entry with something to do peeks beside the button, smaller
-              + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}[data-mbu-peek-out]{pointer-events:none}'
+              // (a script's own launcher still shrinks by a transform: its insides are its own; a dock entry is sized above)
+              + '[data-mbu-docked=peek]:not(.mbu-dock-item){transform:scale(.8)}[data-mbu-docked=peek]:not(.mbu-dock-item):hover{transform:scale(.9)}[data-mbu-peek-out]{pointer-events:none}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
+              + '.mbu-dock-item[data-mbu-docked=peek][data-mb-corner-status]::after{top:-3px;right:-3px;min-width:16px;height:16px;padding:0 3px;border-radius:8px;font:700 10px/13px system-ui,sans-serif}'   // a folded entry's, smaller in whole pixels
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked])):hover::after{opacity:1}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status^="✓"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}'   // all done: a quiet dot, so a count beside it stands out
+              + '.mbu-dock-item[data-mbu-docked=peek][data-mb-corner-status^="✓"]::after{width:8px;height:8px}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status^="0,"]:not([data-mb-corner-status*="/"])::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}'   // "0,3": nothing to do, only held back
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
               + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
@@ -1074,9 +1082,8 @@
       b.status = function (t) { b.mbuSt = t || ''; show(); };
       b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };
       b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };
-      // a bigger icon gets its size, whole pixels, not a transform: inside a folded entry's scale(.8) a second one
-      // drew seams through the badge in Chrome
-      if (o.scale) { var px = Math.round(17 * o.scale) * 2, m = (34 - px) / 2 + 'px'; Object.assign(b.querySelector('img').style, { width: px + 'px', height: px + 'px', maxWidth: 'none', margin: m }); }
+      // a bigger icon gets its size, even whole pixels, never a transform (the dock's CSS has why), folded too
+      if (o.scale) { b.style.setProperty('--mbu-di', Math.round(17 * o.scale) * 2 + 'px'); b.style.setProperty('--mbu-di-p', Math.round(14 * o.scale) * 2 + 'px'); }
       b.status('');
       mbRestackCorner('br');
       return b;
@@ -1124,7 +1131,7 @@
           var on = size !== 1 && small(el);
           if (on) { el.style.scale = String(size); el.setAttribute('data-mb-corner-scaled', ''); }
           else if (el.hasAttribute('data-mb-corner-scaled')) { el.style.scale = ''; el.removeAttribute('data-mb-corner-scaled'); }
-          // a peek's own scale(.8) shrinks it toward the corner too, so the stack below can centre what is drawn
+          // a launcher's peek scale(.8) shrinks it toward the corner too, so the stack below can centre what is drawn
           el.style.transformOrigin = on || peek(el) ? (bottom ? 'bottom ' : 'top ') + (right ? 'right' : 'left') : '';
       };
       if (vv) {
@@ -1161,8 +1168,8 @@
           .sort(byRank);
       // launchers share one centre line across the flow: a 34px one beside the 40px dock button sat
       // flush to the edge instead, off centre by half the difference, times the corner's size
-      // what is drawn across: the corner's size, and a folded dock's peek its scale(.8) as well
-      var across = function (el) { return (row ? el.offsetHeight : el.offsetWidth) * (el.hasAttribute('data-mb-corner-scaled') ? size : 1) * (peek(el) ? 0.8 : 1); };
+      // what is drawn across: the corner's size, and a peeking launcher's scale(.8) as well (a dock entry is laid out smaller)
+      var across = function (el) { return (row ? el.offsetHeight : el.offsetWidth) * (el.hasAttribute('data-mb-corner-scaled') ? size : 1) * (peek(el) && !el.classList.contains('mbu-dock-item') ? 0.8 : 1); };
       els.concat(peeks).forEach(fit);
       var lane = 0;
       els.concat(peeks).forEach(function (el) { if (small(el)) lane = Math.max(lane, across(el)); });
