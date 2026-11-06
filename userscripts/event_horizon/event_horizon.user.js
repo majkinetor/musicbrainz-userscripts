@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.170001
+// @version      2026.11.06.170002
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3343,9 +3343,16 @@ document.addEventListener('load', e => { if (e.target instanceof HTMLImageElemen
 function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
     const tau = Math.PI * 2, fract = x => x - Math.floor(x);
     const rand = n => fract(Math.sin(n * 127.1 + 311.7) * 43758.5453);
+    // Stable colours per rider/star/ribbon/line/ring, so All does not flicker each frame.
+    const tone = i => p.colour === 2 ? `hsl(${Math.round(rand(i + 91) * 360)},85%,65%)` : p.colour === 1 && i % 2 ? c2 : c1;
+    const stroke = (color, alpha, width = 1) => {
+        ctx.strokeStyle = color;
+        if (p.glow > 0) { ctx.globalAlpha = alpha * .16; ctx.lineWidth = width + p.glow * 5; ctx.stroke(); }
+        ctx.globalAlpha = alpha; ctx.lineWidth = width; ctx.stroke();
+    };
     const line = (points, color, alpha, width = 1) => {
         ctx.beginPath(); points.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
-        ctx.strokeStyle = color; ctx.globalAlpha = alpha; ctx.lineWidth = width; ctx.stroke();
+        stroke(color, alpha, width);
     };
     ctx.clearRect(0, 0, w, h); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     if (kind === 'tron') {
@@ -3354,7 +3361,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
         for (let x = 0; x < w; x += grid) line([[x, 0], [x, h]], c1, .045);
         for (let y = 0; y < h; y += grid) line([[0, y], [w, y]], c1, .045);
         for (let i = 0; i < count; i++) {
-            const seed = i + 1, col = i % 2 ? c1 : c2, length = grid * p.tronTrail;
+            const seed = i + 1, col = tone(i), length = grid * p.tronTrail;
             const advance = speed + rand(seed) * (w + h), turn = grid * (2 + Math.floor(rand(seed + 23) * 5));
             const x0 = Math.floor(rand(seed + 7) * w / grid) * grid;
             const y0 = Math.floor(rand(seed + 17) * h / grid) * grid;
@@ -3381,11 +3388,14 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
             const x = fract(rand(i) + t * p.starDrift * z / w * 4) * w;
             const y = fract(rand(i + 3) + t * p.starDrift * z / h) * h;
             ctx.globalAlpha = (.25 + .55 * rand(i + 4)) * (1 - p.starTwinkle * .35 + p.starTwinkle * .35 * Math.sin(t * .8 + i));
-            ctx.fillStyle = i % 5 ? c1 : c2; ctx.beginPath(); ctx.arc(x, y, .45 + z * .7, 0, tau); ctx.fill();
+            const alpha = ctx.globalAlpha, radius = .45 + z * .7;
+            ctx.fillStyle = tone(p.colour === 2 ? i : i % 5 ? 0 : 1);
+            if (p.glow > 0) { ctx.globalAlpha = alpha * .12; ctx.beginPath(); ctx.arc(x, y, radius + p.glow * 2, 0, tau); ctx.fill(); }
+            ctx.globalAlpha = alpha; ctx.beginPath(); ctx.arc(x, y, radius, 0, tau); ctx.fill();
         }
     } else if (kind === 'aurora') {
         for (let band = 0; band < p.auroraRibbons; band++) {
-            const col = band % 2 ? c2 : c1;
+            const col = tone(band);
             for (let stripe = 0; stripe < 22; stripe++) {
                 const points = [];
                 for (let x = -10; x <= w + 10; x += 10) {
@@ -3403,17 +3413,17 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
                     + .4 * Math.sin(x / w * 9 - y / h * 5 - t * p.contourSpeed * .08);
                 points.push([x, y + wave * p.contourHeight]);
             }
-            line(points, j % 5 ? c1 : c2, j % 5 ? .16 : .45, j % 5 ? .8 : 1.2);
+            line(points, tone(p.colour === 2 ? j : j % 5 ? 0 : 1), j % 5 ? .16 : .45, j % 5 ? .8 : 1.2);
         }
     } else if (kind === 'orbit') {
         ctx.save(); ctx.translate(w * .52, h * .5); ctx.rotate(p.orbitTilt * Math.PI / 180);
         for (let i = 0; i < p.orbitRings; i++) {
-            const radius = Math.min(w, h) * (.18 + i * .105), col = i % 2 ? c2 : c1;
+            const radius = Math.min(w, h) * (.18 + i * .105), col = tone(i);
             ctx.globalAlpha = .18; ctx.strokeStyle = col; ctx.lineWidth = .8; ctx.beginPath();
-            ctx.ellipse(0, 0, radius * 1.8, radius * .65, 0, 0, tau); ctx.stroke();
+            ctx.ellipse(0, 0, radius * 1.8, radius * .65, 0, 0, tau); stroke(col, .18, .8);
             for (let n = 0; n < p.orbitMoons; n++) {
                 const angle = t * p.orbitSpeed * .12 / (1 + i * .18) + i * 2 + n * tau / p.orbitMoons;
-                ctx.globalAlpha = .65; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(0, 0, radius * 1.8, radius * .65, 0, angle - .22, angle); ctx.stroke();
+                ctx.globalAlpha = .65; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(0, 0, radius * 1.8, radius * .65, 0, angle - .22, angle); stroke(col, .65, 2);
                 ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(Math.cos(angle) * radius * 1.8, Math.sin(angle) * radius * .65, 2, 0, tau); ctx.fill();
             }
         }
@@ -3451,7 +3461,7 @@ function ambientApply(layer, kind) {
     cv.width = w * dpr; cv.height = h * dpr; cv.style.width = w + 'px'; cv.style.height = h + 'px';
     const ctx = cv.getContext('2d'); if (!ctx) { cv.remove(); return; } ctx.scale(dpr, dpr);
     const css = getComputedStyle(layer), c1 = css.color, c2 = css.getPropertyValue('--accent2').trim() || c1;
-    const p = {};
+    const p = { colour: S.hexTwo === 2 ? 2 : S.hexTwo ? 1 : 0, glow: Math.max(0, Math.min(2, Number(S.hexGlow) || 0)) };
     for (const [k, , values, fallback] of AMBIENT[kind].rows) p[k] = values.includes(Number(S[k])) ? Number(S[k]) : fallback;
     let raf = 0, time = 0, last = 0;
     const draw = now => {
@@ -10924,9 +10934,12 @@ function fxRow(row) {
     const del = own ? `<button type="button" class="chip" data-fx-del="${esc(m.name)}" data-tip="Delete this preset">Delete</button>` : '';
     return row('Preset', `${pick}${del}<input type="text" class="fx-name" data-fx-name maxlength="60" autocomplete="off" placeholder="Name" aria-label="Preset name" value="${m && own ? esc(m.name) : ''}"><button type="button" class="chip" data-fx-save>Save</button>`, 'An effect with all its settings, saved by name\nThe same name replaces it');
 }
+function effectColourRow(chip, row) { return row('Colour', chip('hexTwo', '0', !S.hexTwo, 'One tone') + chip('hexTwo', '1', S.hexTwo === true, 'Two-tone') + chip('hexTwo', '2', S.hexTwo === 2, 'All'), 'Two-tone mixes in the second accent colour\nAll: each light takes its own colour'); }
 function ambientRows(kind, chip, row) {
     return row('Opacity', [25, 45, 65, 85, 100].map(v => chip('ambientOpacity', v, S.ambientOpacity === v, v + '%')).join(''), 'How strong the effect is')
-        + AMBIENT[kind].rows.map(([key, label, values]) => row(label, values.map(v => chip(key, v, S[key] === v, String(v))).join(''))).join('');
+        + AMBIENT[kind].rows.map(([key, label, values]) => row(label, values.map(v => chip(key, v, S[key] === v, String(v))).join(''))).join('')
+        + row('Glow', [[0, 'None'], [.5, 'Faint'], [1, 'Normal'], [2, 'Wide']].map(([v, l]) => chip('hexGlow', v, S.hexGlow === v, l)).join(''), 'How far the soft glow around the lights spreads')
+        + effectColourRow(chip, row);
 }
 function hexRows(chip, row) {
     const m = S.hexMotion, use = k => HEX_USES[k].includes(m);
@@ -10940,7 +10953,7 @@ function hexRows(chip, row) {
         + dim(use('trail'), row('Trail', opts('hexTrail', [[.5, 'Short'], [1, 'Normal'], [2, 'Long']]), 'How long what lights up takes to fade'))
         + dim(use('often'), row('How often', opts('hexOften', [[.5, 'Rarely'], [1, 'Normal'], [2, 'Often']]), 'How often something new lights up'))
         + dim(use('glow'), row('Glow', opts('hexGlow', [[0, 'None'], [.5, 'Faint'], [1, 'Normal'], [2, 'Wide']]), 'How far the soft glow around the lines spreads'))
-        + dim(use('two'), row('Colour', chip('hexTwo', '0', !S.hexTwo, 'One tone') + chip('hexTwo', '1', S.hexTwo === true, 'Two-tone') + chip('hexTwo', '2', S.hexTwo === 2, 'All'), 'Two-tone mixes in the second accent colour\nAll: each light takes its own colour'))
+        + dim(use('two'), effectColourRow(chip, row))
         + row('Depth', chip('hexDepth', 'hexDepth', S.hexDepth, 'On', 'The hexagons scroll slower than the page\nOn: they sit deeper, behind the page\nOff: they stay still'));
 }
 function cfgBody() {

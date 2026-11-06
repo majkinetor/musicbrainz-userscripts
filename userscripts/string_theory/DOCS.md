@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-06 16:33 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-06 16:34 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -803,7 +803,7 @@ When MB page has Event Horizon redesign available, EH dock button shows on the n
 
 ### Background effects
 
-Choose an effect under **Settings → Effects**. Each keeps its own parameters when you switch effects, and **Preset** saves the whole configuration. New effects use the theme's two accent colours; **Opacity** sets their strength.
+Choose an effect under **Settings → Effects**. Each keeps its own parameters when you switch effects, and **Preset** saves the whole configuration. **Opacity** sets their strength. **Colour** is shared across effects: **One tone** uses the theme's accent, **Two-tone** adds its second accent, and **All** gives each light its own colour. **Glow**, also shared, sets how far the soft light spreads. Speed and the other controls stay specific to each effect.
 
 | Effect   | Controls                                                              |
 | -------- | --------------------------------------------------------------------- |

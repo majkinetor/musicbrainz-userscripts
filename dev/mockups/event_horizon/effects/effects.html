@@ -34,9 +34,16 @@
 function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
     const tau = Math.PI * 2, fract = x => x - Math.floor(x);
     const rand = n => fract(Math.sin(n * 127.1 + 311.7) * 43758.5453);
+    // Stable colours per rider/star/ribbon/line/ring, so All does not flicker each frame.
+    const tone = i => p.colour === 2 ? `hsl(${Math.round(rand(i + 91) * 360)},85%,65%)` : p.colour === 1 && i % 2 ? c2 : c1;
+    const stroke = (color, alpha, width = 1) => {
+        ctx.strokeStyle = color;
+        if (p.glow > 0) { ctx.globalAlpha = alpha * .16; ctx.lineWidth = width + p.glow * 5; ctx.stroke(); }
+        ctx.globalAlpha = alpha; ctx.lineWidth = width; ctx.stroke();
+    };
     const line = (points, color, alpha, width = 1) => {
         ctx.beginPath(); points.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
-        ctx.strokeStyle = color; ctx.globalAlpha = alpha; ctx.lineWidth = width; ctx.stroke();
+        stroke(color, alpha, width);
     };
     ctx.clearRect(0, 0, w, h); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     if (kind === 'tron') {
@@ -45,7 +52,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
         for (let x = 0; x < w; x += grid) line([[x, 0], [x, h]], c1, .045);
         for (let y = 0; y < h; y += grid) line([[0, y], [w, y]], c1, .045);
         for (let i = 0; i < count; i++) {
-            const seed = i + 1, col = i % 2 ? c1 : c2, length = grid * p.tronTrail;
+            const seed = i + 1, col = tone(i), length = grid * p.tronTrail;
             const advance = speed + rand(seed) * (w + h), turn = grid * (2 + Math.floor(rand(seed + 23) * 5));
             const x0 = Math.floor(rand(seed + 7) * w / grid) * grid;
             const y0 = Math.floor(rand(seed + 17) * h / grid) * grid;
@@ -72,11 +79,14 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
             const x = fract(rand(i) + t * p.starDrift * z / w * 4) * w;
             const y = fract(rand(i + 3) + t * p.starDrift * z / h) * h;
             ctx.globalAlpha = (.25 + .55 * rand(i + 4)) * (1 - p.starTwinkle * .35 + p.starTwinkle * .35 * Math.sin(t * .8 + i));
-            ctx.fillStyle = i % 5 ? c1 : c2; ctx.beginPath(); ctx.arc(x, y, .45 + z * .7, 0, tau); ctx.fill();
+            const alpha = ctx.globalAlpha, radius = .45 + z * .7;
+            ctx.fillStyle = tone(p.colour === 2 ? i : i % 5 ? 0 : 1);
+            if (p.glow > 0) { ctx.globalAlpha = alpha * .12; ctx.beginPath(); ctx.arc(x, y, radius + p.glow * 2, 0, tau); ctx.fill(); }
+            ctx.globalAlpha = alpha; ctx.beginPath(); ctx.arc(x, y, radius, 0, tau); ctx.fill();
         }
     } else if (kind === 'aurora') {
         for (let band = 0; band < p.auroraRibbons; band++) {
-            const col = band % 2 ? c2 : c1;
+            const col = tone(band);
             for (let stripe = 0; stripe < 22; stripe++) {
                 const points = [];
                 for (let x = -10; x <= w + 10; x += 10) {
@@ -94,17 +104,17 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
                     + .4 * Math.sin(x / w * 9 - y / h * 5 - t * p.contourSpeed * .08);
                 points.push([x, y + wave * p.contourHeight]);
             }
-            line(points, j % 5 ? c1 : c2, j % 5 ? .16 : .45, j % 5 ? .8 : 1.2);
+            line(points, tone(p.colour === 2 ? j : j % 5 ? 0 : 1), j % 5 ? .16 : .45, j % 5 ? .8 : 1.2);
         }
     } else if (kind === 'orbit') {
         ctx.save(); ctx.translate(w * .52, h * .5); ctx.rotate(p.orbitTilt * Math.PI / 180);
         for (let i = 0; i < p.orbitRings; i++) {
-            const radius = Math.min(w, h) * (.18 + i * .105), col = i % 2 ? c2 : c1;
+            const radius = Math.min(w, h) * (.18 + i * .105), col = tone(i);
             ctx.globalAlpha = .18; ctx.strokeStyle = col; ctx.lineWidth = .8; ctx.beginPath();
-            ctx.ellipse(0, 0, radius * 1.8, radius * .65, 0, 0, tau); ctx.stroke();
+            ctx.ellipse(0, 0, radius * 1.8, radius * .65, 0, 0, tau); stroke(col, .18, .8);
             for (let n = 0; n < p.orbitMoons; n++) {
                 const angle = t * p.orbitSpeed * .12 / (1 + i * .18) + i * 2 + n * tau / p.orbitMoons;
-                ctx.globalAlpha = .65; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(0, 0, radius * 1.8, radius * .65, 0, angle - .22, angle); ctx.stroke();
+                ctx.globalAlpha = .65; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(0, 0, radius * 1.8, radius * .65, 0, angle - .22, angle); stroke(col, .65, 2);
                 ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(Math.cos(angle) * radius * 1.8, Math.sin(angle) * radius * .65, 2, 0, tau); ctx.fill();
             }
         }
@@ -142,7 +152,7 @@ function ambientApply(layer, kind) {
     cv.width = w * dpr; cv.height = h * dpr; cv.style.width = w + 'px'; cv.style.height = h + 'px';
     const ctx = cv.getContext('2d'); if (!ctx) { cv.remove(); return; } ctx.scale(dpr, dpr);
     const css = getComputedStyle(layer), c1 = css.color, c2 = css.getPropertyValue('--accent2').trim() || c1;
-    const p = {};
+    const p = { colour: S.hexTwo === 2 ? 2 : S.hexTwo ? 1 : 0, glow: Math.max(0, Math.min(2, Number(S.hexGlow) || 0)) };
     for (const [k, , values, fallback] of AMBIENT[kind].rows) p[k] = values.includes(Number(S[k])) ? Number(S[k]) : fallback;
     let raf = 0, time = 0, last = 0;
     const draw = now => {
@@ -166,12 +176,12 @@ for(const [key,f] of specs) {
   const section = document.createElement('section');
   section.innerHTML = `<h3>${f.name}</h3><p class="desc">${f.tip}</p><div class="stage"><canvas aria-hidden="true"></canvas><div class="page"><header>EVENT HORIZON</header><strong>Random Access Memories</strong><small>Daft Punk · 2013</small><div class="tracks"><div class="track"><span>01 &nbsp; Give Life Back to Music</span><span>4:34</span></div><div class="track"><span>02 &nbsp; The Game of Love</span><span>5:21</span></div><div class="track"><span>03 &nbsp; Giorgio by Moroder</span><span>9:04</span></div></div></div></div><div class="params"></div>`;
   const params = section.querySelector('.params'), p = {};
-  const rows = key==='hexagons' ? f.rows : [['ambientOpacity','Opacity',[25,45,65,85,100],65],...f.rows];
+  const rows = key==='hexagons' ? f.rows : [['ambientOpacity','Opacity',[25,45,65,85,100],65],...f.rows,['glow','Glow',[0,.5,1,2],1],['colour','Colour',[0,1,2],1]];
   for(const [k,label,values,def] of rows) {
     p[k] = values.includes(saved.params?.[key]?.[k]) ? saved.params[key][k] : def;
     const l = document.createElement('label');l.textContent=label;
     const select=document.createElement('select');select.setAttribute('aria-label',f.name+' '+label);
-    values.forEach(v=>{const opt=document.createElement('option');opt.value=v;opt.textContent=v+(k==='ambientOpacity'?'%':'');opt.selected=v===p[k];select.append(opt);});
+    values.forEach(v=>{const opt=document.createElement('option');opt.value=v;opt.textContent=k==='colour'?['One tone','Two-tone','All'][v]:k==='glow'?({0:'None',0.5:'Faint',1:'Normal',2:'Wide'})[v]:v+(k==='ambientOpacity'?'%':'');opt.selected=v===p[k];select.append(opt);});
     select.onchange=()=>{p[k]=Number(select.value);draw();persist();}; l.append(select);params.append(l);
   }
   const cv=section.querySelector('canvas'),ctx=cv.getContext('2d');root.querySelector('.sample-grid').append(section);items.push({key,p,cv,ctx});
