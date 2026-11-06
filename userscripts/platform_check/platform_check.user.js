@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.06.170000
+// @version      2026.11.06.170001
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -6553,10 +6553,8 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
         if (!releaseUrl) {   // (#182) text search only when barcode-first didn't resolve
         // Discogs HTTP UI is Cloudflare-protected (403); the public API works
         // without an auth token for search + detail (~25 req/min unauth'd).
-        // For VA compilations drop the artist term — Discogs doesn't credit
-        // compilations to a literal "Various Artists" string, so including
-        // it in the query produces 0 results.
-        const apiQ = isVariousArtists ? album : `${artist} ${album}`;
+        // Discogs credits Various Artists compilations to "Various".
+        const apiQ = `${isVariousArtists ? 'Various' : artist} ${album}`;
         const discogsFmt = mbFormatToDiscogs(format);
         // Format-aware first try: a CD release shouldn't pick a vinyl Discogs
         // entry when a CD edition exists. If the format-filtered search
@@ -6616,7 +6614,7 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
             // searchWeb returns an ARRAY of filtered candidate URLs (not a single string). The old code
             // did `if (fallback) { fallback.match(...) }` — but `[]` is truthy, so an empty result threw a
             // TypeError that aborted the whole scan before the not-found render below. Take the first hit.
-            const candidates = await searchWeb(`site:discogs.com release ${artist} ${album}`, u => /www\.discogs\.com\/release\/\d+/.test(u) || /www\.discogs\.com\/.*\/release\/\d+/.test(u), label);
+            const candidates = await searchWeb(`site:discogs.com release ${isVariousArtists ? 'Various' : artist} ${album}`, u => /www\.discogs\.com\/release\/\d+/.test(u) || /www\.discogs\.com\/.*\/release\/\d+/.test(u), label);
             const hit = candidates[0];
             if (hit) {
                 releaseUrl = hit;
@@ -9041,7 +9039,7 @@ async function runScansInner() {
     // after a positive match (convenient for cross-checking).
     const searchUrls = {
         spotify:  `https://open.spotify.com/search/${encodeURIComponent(`${artist} ${album}`)}`,
-        discogs:  `https://www.discogs.com/search/?q=${encodeURIComponent(`${artist} ${album}`)}&type=release`,
+        discogs:  `https://www.discogs.com/search/?q=${encodeURIComponent(`${isVariousArtists ? 'Various' : artist} ${album}`)}&type=release`,
         bandcamp: `https://bandcamp.com/search?q=${encodeURIComponent(`${artist} ${album}`)}&item_type=a`,
         deezer:   `https://www.deezer.com/search/${encodeURIComponent(`${artist} ${album}`)}`,
         apple:    `https://music.apple.com/us/search?term=${encodeURIComponent(`${artist} ${album}`)}`,
@@ -9088,7 +9086,7 @@ async function runScansInner() {
     if (trkEl) trkEl.textContent = `${mbTracks}`;
     const nameEl = document.getElementById('mb-mb-name');
     if (nameEl) nameEl.href = `${MB_ORIGIN}/release/${mbid}`;
-    appendLog('MusicBrainz', `Artist: "${artist}"${isVariousArtists ? ' (Various Artists — search by album only)' : ''}  Album: "${album}"  Tracks: ${mbTracks}  rg=${releaseGroupMbid || '(none)'}`);
+    appendLog('MusicBrainz', `Artist: "${artist}"${isVariousArtists ? ' (Various Artists)' : ''}  Album: "${album}"  Tracks: ${mbTracks}  rg=${releaseGroupMbid || '(none)'}`);
     appendLog('MusicBrainz', `Header meta — year=${year || '?'}  format=${format || '?'}  label=${releaseLabel || '?'}  catno=${(releaseCatnos || []).map(c => c.catno).join(', ') || '?'}  source=${dataSource}`);
     // #527 follow-up (majkinetor, live): this line used to hardcode only 5 of
     // the 11 providers (spotify/discogs/bandcamp/deezer/apple) — soundcloud
