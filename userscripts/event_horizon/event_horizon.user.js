@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.231601
+// @version      2026.11.06.113000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2482,7 +2482,7 @@ const CSS = `
 .hm-bars div{display:grid;grid-template-columns:100px 1fr 56px;gap:8px;align-items:center;font-size:12px;padding:2px 0}
 .hm-bars i{height:8px;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.hm-bars em{font-style:normal;text-align:right;color:var(--muted)}
 .hm-home{position:absolute;inset:0 0 auto auto;width:400px;height:190px}@media (max-width:1100px){.hm-home{width:190px}}@media (max-width:700px){.hm-home{display:none}}.hm-hi{overflow-wrap:anywhere}.sr-sub{position:relative;margin:12px 0 0}
-.sr-t td.sr-sc,.sr-t th.sr-sc{width:64px;white-space:nowrap}.sr-sc i{display:inline-block;vertical-align:middle;width:34px;height:6px;border-radius:3px;background:linear-gradient(90deg,#ba478f,#eb743b) 0/var(--w) 100% no-repeat,var(--chip)}.sr-sc small{margin-left:6px;color:var(--muted)}
+.sr-t .flagi{display:inline;height:.8em;width:auto;margin-right:5px;vertical-align:0;border-radius:2px;box-shadow:0 0 0 1px var(--border)}.sr-t td.sr-sc,.sr-t th.sr-sc{width:64px;white-space:nowrap}.sr-sc i{display:inline-block;vertical-align:middle;width:34px;height:6px;border-radius:3px;background:linear-gradient(90deg,#ba478f,#eb743b) 0/var(--w) 100% no-repeat,var(--chip)}.sr-sc small{margin-left:6px;color:var(--muted)}
 .u-hero{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,.9fr);gap:24px;align-items:start;margin:8px 0 26px}
 .u-hero{position:relative}.u-hero .kicker .acts{position:absolute;top:0;right:0;display:flex;align-items:center;gap:6px}
 @media (max-width:900px){.u-hero{grid-template-columns:auto minmax(0,1fr)}.u-facts{grid-column:1/-1}}@media (min-width:901px){.u-hero>.u-facts{margin-top:44px}}
@@ -8997,7 +8997,12 @@ function searchParse(html, base) {
     const d = new DOMParser().parseFromString(html, 'text/html'), c = d.querySelector('#content') || d.body, tx = n => n ? n.textContent.replace(/\s+/g, ' ').trim() : '';
     const t = c.querySelector('table.tbl');
     // the release's cover-art icon and the blank one beside a name go, and the release events' JSON
-    const cell = td => { td.querySelectorAll('script,.artwork-icon,.blank-icon,a[href$="/cover-art"]').forEach(x => x.remove()); return td.innerHTML.trim(); };
+    // #933: MB's flags are its stylesheet's sprite (span.flag.flag-GB), which isn't loaded here: each gets the image the rest of the page uses
+    const cell = td => {
+        td.querySelectorAll('script,.artwork-icon,.blank-icon,a[href$="/cover-art"]').forEach(x => x.remove());
+        td.querySelectorAll('.flag').forEach(x => { const m = x.className.match(/flag-([A-Z]{2})/); if (m) x.insertAdjacentHTML('afterbegin', flagI(m[1])); });
+        return td.innerHTML.trim();
+    };
     const head = t ? [...t.querySelectorAll('thead th')].map(tx) : [];
     const rows = t ? [...t.querySelectorAll('tbody tr')].map(r => ({ score: +r.dataset.score || 0, cells: [...r.querySelectorAll('td')].map(cell) })) : [];
     const ps = [...c.querySelectorAll(':scope>p')].map(tx).filter(x => x && !/^\S+:\s*\d{4}-\d\d-\d\d/.test(x));
