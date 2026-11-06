@@ -65,7 +65,8 @@ const DEMOS = demos(srcOf, iconOf).map(d => {
 });
 console.log(DEMOS.map(d => `${(d.name + ' · ' + d.label).padEnd(48)} css ${d.css.length}`).join('\n'));
 // busy icons: shown in place of the icon while a dock entry works with nothing counted yet
-const busy = icons.map(ic => { const m = srcOf(ic.key).match(/(?:busyIcon\s*:|BUSY_URI\s*=)\s*'(data:[^']+)'/); return m && { ...ic, busy: m[1] }; }).filter(Boolean);
+// not String Theory's: its file is the bundle, whose busy icons are its members'; its own busy state is the dock's dash
+const busy = icons.filter(ic => ic.key !== 'string_theory').map(ic => { const m = srcOf(ic.key).match(/(?:busyIcon\s*:|BUSY_URI\s*=)\s*'(data:[^']+)'/); return m && { ...ic, busy: m[1] }; }).filter(Boolean);
 const bfig = c => `<figure>${[48, 28].map(z => `<img data-i="${c.key}" width="${z}" height="${z}" alt="">`).join('')}<span class="arrow">→</span>${[48, 28].map(z => `<img src="${c.busy}" width="${z}" height="${z}" alt="">`).join('')}<figcaption><b>${c.name}</b><br><small>busy icon</small></figcaption></figure>`;
 // the folded dock, live: entries peek out (a count, or actionable) and slide back; busy runs the dash, the dots or the busy icon
 const DOCK = ['isrc_scout', 'fuzzy_logic', 'platform_check', 'fusion'].filter(k => icons.some(c => c.key === k));
@@ -77,11 +78,12 @@ var steps = [function () { e[0].status('3'); }, function () { e[1].busy(true); }
   function () { e[2].status(''); }], s = 0;
 setInterval(function () { steps[s++ % steps.length](); }, 1800);
 <\/script>`;
-const live = dark => `<figure class="live"><iframe srcdoc="${dockDoc(dark).replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"></iframe><figcaption><b>Folded dock</b><br><small>entries peek out and slide back (a count, or actionable); busy runs the dash, the dots or the busy icon</small></figcaption></figure>`;
+const live = dark => `<figure class="live"><iframe data-live="${dark ? 1 : 0}" title="Folded dock"></iframe><figcaption><b>Folded dock</b><br><small>entries peek out and slide back (a count, or actionable); busy runs the dash, the dots or the busy icon</small></figcaption></figure>`;
 const dfig = (d, i) => `<figure class="demo"><iframe data-demo="${i}" title="${d.label}"></iframe><figcaption><b>${d.label}</b><br><small>${d.name}</small></figcaption></figure>`;
 const animSection = dark => `<h2>Animations</h2>${live(dark)}${busy.map(bfig).join('')}${DEMOS.map(dfig).join('')}`;
-// fills each demo frame at load: one copy of the shared CSS in the page, not one per frame
+// fills each frame at load, the folded dock's too (htmlpreview mangles a srcdoc attribute full of script): one copy of the shared CSS in the page, not one per frame
 const DEMO_JS = `<script>(function(){var BASE=${JSON.stringify(TOK + UI_CSS).replace(/</g, '\\u003c')},D=${JSON.stringify(DEMOS).replace(/</g, '\\u003c')};
+var L=${JSON.stringify([dockDoc(false), dockDoc(true)]).replace(/</g, '\\u003c')};document.querySelectorAll('iframe[data-live]').forEach(function(f){f.srcdoc=L[f.dataset.live]});
 document.querySelectorAll('iframe[data-demo]').forEach(function(f){var d=D[f.dataset.demo],dark=!!f.closest('.dark');
 f.srcdoc='<!doctype html><html data-mbu-st'+(dark?' data-mbu-theme="dark" data-eh-theme="dark"':'')+d.root+'><meta charset="utf-8"><style>'+BASE+d.css+'\\nhtml,body{margin:0;height:100%}body{background:'+(dark?'#000':'#fff')+';color:'+(dark?'#ddd':'#222')+';display:flex;align-items:center;justify-content:center;gap:10px;font:13px system-ui,sans-serif}</style><body class="'+d.body+'">'+d.html;});})();</script>`;
 const ANIM_CSS = `h2{grid-column:1/-1;margin:14px 0 0;font-size:15px}.arrow{opacity:.5;align-self:end;margin-bottom:14px}

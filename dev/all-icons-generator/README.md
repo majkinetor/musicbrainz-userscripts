@@ -2,6 +2,8 @@
 
 Lays every userscript's icon side by side, fitted to the same box. Use it to check that the icons read as one set: same visual size, centred, legible down to toolbar size on light and dark backgrounds.
 
+[See the page on GitHub](https://htmlpreview.github.io/?https://github.com/majkinetor/musicbrainz-userscripts/blob/main/dev/all-icons-generator/preview.html) (main's committed `preview.html`).
+
 ```powershell
 node dev/all-icons-generator/gen.mjs
 ```

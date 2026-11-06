@@ -8,10 +8,15 @@ const RADAR = '<svg width="14" height="14" viewBox="0 0 128 128" fill="none" str
 const LINK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>';
 const DISC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>';
 const re = r => s => r.test(s);
+const DOCK = re(/^#mbu-dock(?![\w-])/);
+const DOCK_AT = '#mbu-dock{position:relative!important}';   // in the frame, not fixed to its corner
 
 /** The demos, given the script sources (`srcOf`) and the icons (`iconOf(key)`, a data URI). */
 export function demos(srcOf, iconOf) {
   const logo = cls => (srcOf('event_horizon').match(/const LOGO = '([^']+)'/) || [, ''])[1].replace('<svg', `<svg class="${cls}"`);
+  const st = srcOf('string_theory');
+  const dockIcon = () => (st.match(/var MBU_DOCK_ICON = '([^']+)'/) || [, ''])[1];
+  const newsGold = () => { const m = st.match(/var ST_NEWS_ON = [\s\S]*?\n\s*var ST_NEWS_GOLD = [\s\S]*?';\n/); return m ? new Function(m[0] + 'return ST_NEWS_GOLD;')() : ''; };
   return [
     { key: 'isrc_scout', label: 'ISRC button, loading', want: re(/#ii-btn(?![\w-])|\.ii-sweep/),
       html: `<button id="ii-btn" class="ii-loading">${RADAR}ISRC <span class="ii-status"></span></button>` },
@@ -93,13 +98,11 @@ export function demos(srcOf, iconOf) {
       extra: '.discogs-bar{border-left:3px solid var(--mbu-border)}.discogs-bar-row1{padding:6px 10px;border-bottom:1px solid var(--mbu-border)}',
       html: '<div class="discogs-bar is-saving" style="width:220px"><div class="discogs-bar-row1">Saving 12 edits…</div></div>' },
 
-    // news.js builds these rules from a variable, out of reach of css-of: its CSS, as it ships
-    { key: 'string_theory', label: 'News, golden icon', want: () => false, root: ' data-st-news',
-      extra: `#mbu-dock{position:relative;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--mbu-bg)}#mbu-dock img{width:22px;height:22px}
-:root[data-st-news] #mbu-dock::before,:root[data-st-news] #mbu-dock::after{content:"";position:absolute;inset:0;box-sizing:border-box;z-index:-1;border:2px solid #ffb300;border-radius:50%;pointer-events:none;animation:st-news-ripple 2.4s ease-out infinite backwards}
-:root[data-st-news] #mbu-dock::after{animation-delay:1.2s}
-@keyframes st-news-ripple{0%{opacity:.9;transform:scale(.8)}100%{opacity:0;transform:scale(1.7)}}`,
-      html: `<div style="position:relative;z-index:0"><div id="mbu-dock"><img src="${iconOf('string_theory')}"></div></div>` },
+    // the dock's button, as String Theory draws it: its inline icon, whose strokes the gold and the running dash colour
+    { key: 'string_theory', label: 'Dock, a member working', want: DOCK, extra: DOCK_AT, html: `<button id="mbu-dock" data-mbu-busy>${dockIcon()}</button>` },
+    // news.js builds these rules from a variable, out of reach of css-of: run those lines of the source for them
+    { key: 'string_theory', label: 'News, golden icon', want: DOCK, root: ' data-st-news', extra: DOCK_AT + newsGold(),
+      html: `<div style="position:relative;z-index:0"><button id="mbu-dock">${dockIcon()}</button></div>` },
     { key: 'string_theory', label: 'Sync, running', want: re(/#st-cfg \.st-sync-spinner/), extra: 'h3{margin:0;display:flex;gap:8px;align-items:center}',
       html: '<div id="st-cfg"><h3>Sync<span class="st-sync-spinner" role="status"></span></h3></div>' },
   ];
