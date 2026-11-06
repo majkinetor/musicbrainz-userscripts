@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.06.094245
+// @version      2026.11.06.130000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -5004,6 +5004,19 @@ function pcWireForce(el, fn) {
             e.preventDefault(); e.stopImmediatePropagation();
             el._pcForce(pcBgKey(e));
         }, true);
+        // on a touch screen, press and hold: the same as a middle-click (a + can't add a withheld link)
+        let t = 0, held = false, x0 = 0, y0 = 0;
+        const stop = () => { clearTimeout(t); t = 0; };
+        el.addEventListener('touchstart', (e) => {
+            held = false; if (!el._pcForce || e.touches.length !== 1) return;
+            x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+            stop(); t = setTimeout(() => { t = 0; held = true; el._pcForce(false); }, 500);
+        }, { passive: true });
+        el.addEventListener('touchmove', (e) => { const p = e.touches[0]; if (p && Math.hypot(p.clientX - x0, p.clientY - y0) > 10) stop(); }, { passive: true });
+        el.addEventListener('touchend', (e) => { stop(); if (held) e.preventDefault(); });
+        el.addEventListener('touchcancel', stop);
+        el.addEventListener('contextmenu', (e) => { if (held || t) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+        el.addEventListener('click', (e) => { if (held) { held = false; e.preventDefault(); e.stopImmediatePropagation(); } }, true);
     }
 }
 function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache, format, masterState, hiddenTracks, unoffered, barcode }) {
@@ -5084,7 +5097,7 @@ The barcode is MusicBrainz's, ${MB_BARCODE}`;
     // #641: middle click adds a confirmed (✓) link anyway — over a strict barcode/format
     // withholding, which sometimes keeps back a legitimate find — in the foreground
     const canForce = !!(url && ico.textContent === '✓' && !fromMbRels);
-    const forceTip = (blocked ? '\nMiddle-click / Alt+click: add it anyway' : '\nMiddle-click / Alt+click: add it even if the strict settings withhold it') + '\nCtrl+middle-click / Ctrl+Alt+click: the same, in the background';
+    const forceTip = (blocked ? '\nMiddle-click / Alt+click / press and hold: add it anyway' : '\nMiddle-click / Alt+click / press and hold: add it even if the strict settings withhold it') + '\nCtrl+middle-click / Ctrl+Alt+click: the same, in the background';
     ico.style.cursor = canAdd || (blocked && canForce) ? 'pointer' : '';
     // The icon's tip: the URL's state and where it was found as dotted rows, then what a click does
     // (majkinetor: "tooltip on icon should contain resolution too", and picked D of six mocks)
@@ -5209,7 +5222,7 @@ function refreshCompactStrip() {
         // #641: a withheld match (✓, folded into the strip as a mismatch) takes the same
         // middle click as its full row's icon: add it anyway, in the foreground
         const canForce = !!(a && /^https?:\/\//.test(a.getAttribute('href') || '') && document.getElementById(`ico-${p}`)?.textContent.trim() === '✓' && !row.classList.contains('pc-inmb'));
-        ico.dataset.tip = `${PROVIDER_NAME[p]} — ${mismatch ? 'found, but another release\nClick: open it' : 'not found\nClick: search'}${canForce ? '\nMiddle-click / Alt+click: add it anyway\nCtrl+middle-click / Ctrl+Alt+click: the same, in the background' : ''}`;
+        ico.dataset.tip = `${PROVIDER_NAME[p]} — ${mismatch ? 'found, but another release\nClick: open it' : 'not found\nClick: search'}${canForce ? '\nMiddle-click / Alt+click / press and hold: add it anyway\nCtrl+middle-click / Ctrl+Alt+click: the same, in the background' : ''}`;
         pcWireForce(ico, canForce ? (bg) => addSingleUrl(p, bg, true) : null);
         ico.innerHTML = stIcon(p, 16);
         ico.addEventListener('click', () => {
@@ -9442,12 +9455,23 @@ async function pcOpenLinksTable(btn) {
       #pc-links-ov .pc-lk-menu[hidden] { display: none; }
       #pc-links-ov .pc-lk-menu button { display: block; width: 100%; text-align: left; background: none; border: none; color: var(--mbu-text); padding: 5px 14px; font: 13px var(--mbu-font); cursor: pointer; }
       #pc-links-ov .pc-lk-menu button:hover { background: var(--mbu-bg-hover); }
+      @media (max-width: 640px) {
+        #pc-links-ov .mbu-ov-panel { min-width: 0; display: flex; flex-direction: column; }
+        #pc-links-ov .mbu-ov-body { flex: 1 1 auto; min-height: 0; overflow: auto; scrollbar-width: thin; scrollbar-color: var(--mbu-border) transparent; }
+        #pc-links-ov td.pc-lk-name { max-width: 130px; }
+        #pc-links-ov .pc-lk-foot { flex-wrap: wrap; gap: 6px 10px; padding: 8px 10px; }
+        #pc-links-ov .pc-lk-split { margin-left: auto; }
+      }
     </style>
     <div class="mbu-ov-panel"><div class="mbu-ov-h"><span class="mbu-ov-title">Artists &amp; labels</span><button type="button" class="mbu-ov-x" data-tip="Close">✕</button></div>
     <div class="mbu-ov-body"></div>
     <div class="pc-lk-foot"><span class="pc-lk-status">Checking MusicBrainz for links already there…</span><span class="pc-lk-split"><button type="button" class="pc-lk-send" disabled data-tip="Queue the new links in Falcon and start it">Run in Falcon</button><button type="button" class="pc-lk-send pc-lk-more" disabled data-tip="More">▾</button><span class="pc-lk-menu" hidden><button type="button" class="pc-lk-queue" data-tip="Queue the new links in Falcon without starting it">Send only</button></span></span></div></div>`);
     document.documentElement.appendChild(ov);
-    const close = () => { ov.remove(); document.removeEventListener('keydown', onKey, true); };
+    // on a phone MB's page is wider than the screen: pin the window to what is on screen
+    const pin = () => pcPinModal(ov, ov.querySelector('.mbu-ov-panel'), 9999);
+    pin();
+    window.visualViewport?.addEventListener('resize', pin); window.visualViewport?.addEventListener('scroll', pin);
+    const close = () => { ov.remove(); document.removeEventListener('keydown', onKey, true); window.visualViewport?.removeEventListener('resize', pin); window.visualViewport?.removeEventListener('scroll', pin); };
     const onKey = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
     document.addEventListener('keydown', onKey, true);
     ov.addEventListener('mousedown', e => { if (e.target === ov) close(); });
