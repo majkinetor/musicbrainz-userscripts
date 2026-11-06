@@ -705,6 +705,45 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             return null;
         }
 
+        // #928: a work's relationships as the editor holds them. A work linked before the
+        // page loaded carries its MB relationships as a plain array of server rels (not
+        // removable, `target` instead of entity0/1), so the editor's own store,
+        // relationshipsBySource, is read first: it has every rel of the work, from MB and
+        // staged this session, as state rels that `remove-relationship` takes.
+        function workRelsOf(work) {
+            const isThisWork = (e) => e?.entityType === 'work' && (work.gid ? e.gid === work.gid : e.id === work.id);
+            const seen = new Set();
+            const out = [];
+            const push = (r) => {
+                if (!r || typeof r !== 'object') return;
+                const key = r.id ?? `${r.linkTypeID}|${r.entity0?.gid || r.entity0?.id}|${r.entity1?.gid || r.entity1?.id}`;
+                if (seen.has(key)) return;
+                seen.add(key);
+                out.push(r);
+            };
+            const valOf = (x, i) => (Array.isArray(x) ? x[i] : x);
+            try {
+                for (const l1 of MB.tree.iterate(re.state.relationshipsBySource)) {
+                    for (const l2 of MB.tree.iterate(valOf(l1, 1))) {
+                        for (const typeGroup of MB.tree.iterate(valOf(l2, 1))) {
+                            for (const phrase of MB.tree.iterate(typeGroup?.phraseGroups)) {
+                                for (const r of MB.tree.iterate(phrase?.relationships)) {
+                                    if (isThisWork(r?.entity0) || isThisWork(r?.entity1)) push(r);
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (e) { log.warn(`Reading relationshipsBySource for "${work.name}": ${e.message}`); }
+            if (!out.length) {
+                const rels = work.relationships;
+                if (Array.isArray(rels)) rels.forEach(push);
+                else { try { for (const r of MB.tree.iterate(rels)) push(r); } catch (e) {} }
+            }
+            log.info(`Work "${work.name}": ${out.length} relationship(s) read for the writer rule (#928)`);
+            return out;
+        }
+
         // #257 a recording must never get more than one freshly-created work in a single
         // run. The loop keys on unique recording GIDs so this can't happen normally — if it
         // ever does it's a logic error, so we surface it (error + skip) instead of silently
@@ -822,7 +861,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
             for (const { role } of entries) {
                 if (SPECIFIC_WRITER_ROLES.includes(role.linkType)) noteSpecific(mbidOf(confirmedMbUrl(role.artist)), role.linkType);
             }
-            const workRels = (() => { try { return [...MB.tree.iterate(workEntity.relationships)]; } catch (e) { return []; } })();
+            const workRels = workRelsOf(workEntity);
             const relArtist = (r) => [r.entity0, r.entity1, r.target].find(e => e?.entityType === 'artist');
             const relName = (r) => String(MB.linkedEntities?.link_type?.[r.linkTypeID]?.name || '').toLowerCase();
             for (const r of workRels) {
@@ -891,6 +930,10 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                 const attrCount = (() => { try { return [...MB.tree.iterate(r.attributes)].length; } catch (e) { return 0; } })();
                 if (credit || attrCount) {
                     log.warn(`Writer kept for ${artist.name} on "${trackTitle}": redundant next to ${roles}, but it has ${credit ? `credited-as "${credit}"` : 'attributes'}; remove it by hand if that isn't needed (#928)`);
+                    continue;
+                }
+                if (r._status == null) {   // a server rel, not the editor's: it can't be removed from here
+                    log.warn(`Writer kept for ${artist.name} on "${trackTitle}": redundant next to ${roles}, but the editor doesn't hold it as a removable relationship; remove it by hand (#928)`);
                     continue;
                 }
                 const staged = r._status === 1;

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.11.06.092627
+// @version      2026.11.06.101924
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -8301,6 +8301,46 @@ Its \u{1F517} chip adds the link.`;
         }
         return null;
       }
+      function workRelsOf(work) {
+        const isThisWork = (e) => e?.entityType === "work" && (work.gid ? e.gid === work.gid : e.id === work.id);
+        const seen = /* @__PURE__ */ new Set();
+        const out = [];
+        const push = (r) => {
+          if (!r || typeof r !== "object") return;
+          const key = r.id ?? `${r.linkTypeID}|${r.entity0?.gid || r.entity0?.id}|${r.entity1?.gid || r.entity1?.id}`;
+          if (seen.has(key)) return;
+          seen.add(key);
+          out.push(r);
+        };
+        const valOf = (x, i) => Array.isArray(x) ? x[i] : x;
+        try {
+          for (const l1 of MB2.tree.iterate(re.state.relationshipsBySource)) {
+            for (const l2 of MB2.tree.iterate(valOf(l1, 1))) {
+              for (const typeGroup of MB2.tree.iterate(valOf(l2, 1))) {
+                for (const phrase of MB2.tree.iterate(typeGroup?.phraseGroups)) {
+                  for (const r of MB2.tree.iterate(phrase?.relationships)) {
+                    if (isThisWork(r?.entity0) || isThisWork(r?.entity1)) push(r);
+                  }
+                }
+              }
+            }
+          }
+        } catch (e) {
+          log.warn(`Reading relationshipsBySource for "${work.name}": ${e.message}`);
+        }
+        if (!out.length) {
+          const rels = work.relationships;
+          if (Array.isArray(rels)) rels.forEach(push);
+          else {
+            try {
+              for (const r of MB2.tree.iterate(rels)) push(r);
+            } catch (e) {
+            }
+          }
+        }
+        log.info(`Work "${work.name}": ${out.length} relationship(s) read for the writer rule (#928)`);
+        return out;
+      }
       const createdWorkRecGids = /* @__PURE__ */ new Set();
       for (const [recGid, entries] of workOnlyByGid) {
         const recEntity = entries[0]?.recEntity ?? recordingByGid.get(recGid);
@@ -8387,13 +8427,7 @@ Its \u{1F517} chip adds the link.`;
         for (const { role } of entries) {
           if (SPECIFIC_WRITER_ROLES.includes(role.linkType)) noteSpecific(mbidOf(confirmedMbUrl(role.artist)), role.linkType);
         }
-        const workRels = (() => {
-          try {
-            return [...MB2.tree.iterate(workEntity.relationships)];
-          } catch (e) {
-            return [];
-          }
-        })();
+        const workRels = workRelsOf(workEntity);
         const relArtist = (r) => [r.entity0, r.entity1, r.target].find((e) => e?.entityType === "artist");
         const relName = (r) => String(MB2.linkedEntities?.link_type?.[r.linkTypeID]?.name || "").toLowerCase();
         for (const r of workRels) {
@@ -8453,6 +8487,10 @@ Its \u{1F517} chip adds the link.`;
           })();
           if (credit || attrCount) {
             log.warn(`Writer kept for ${artist.name} on "${trackTitle}": redundant next to ${roles}, but it has ${credit ? `credited-as "${credit}"` : "attributes"}; remove it by hand if that isn't needed (#928)`);
+            continue;
+          }
+          if (r._status == null) {
+            log.warn(`Writer kept for ${artist.name} on "${trackTitle}": redundant next to ${roles}, but the editor doesn't hold it as a removable relationship; remove it by hand (#928)`);
             continue;
           }
           const staged = r._status === 1;
