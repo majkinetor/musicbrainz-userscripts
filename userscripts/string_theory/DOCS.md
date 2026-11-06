@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-06 19:09 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-06 19:33 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -776,7 +776,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 ### Features
 
 - **[The viewer](#the-viewer)** takes over a page, moves between pages without reloading, and keeps the page's identity and actions in reach while scrolling.
-- **[Background effects](#background-effects)**: Hexagons, Tron, Stars, Aurora and Orbit, each with its own controls.
+- **[Background effects](#background-effects)**: Hexagons, Tron, Stars and Aurora, each with its own controls.
 - **[Sections](#sections)**: all data, an entity's facts and external links included, in cards that can be reordered, hidden and configured.
 - **[Starred entities](#starred-entities)** keeps favorite entities on the homepage.
 - **[Collections](#collections)** adds or removes an entity from your MusicBrainz collections.
@@ -810,7 +810,6 @@ Under **Settings → Effects**, add a **Background** and as many **Effects** as 
 | Tron     | Outlines, Grid size, Riders, Speed, Trail length                      |
 | Stars    | Density, Drift, Depth, Twinkle                                        |
 | Aurora   | Style, Diffuse, Ribbons, Speed, Height, Folds                         |
-| Orbit    | Rings, Satellites, Tilt, Speed                                        |
 | Hexagons | Motion, Outlines, Effect, Pace, Trail, How often, Glow, Colour, Depth |
 
 **Tron**: Outlines sets the grid strength (0% hides it), Grid size the circuit spacing, Riders their count, Speed their pace and Trail length how far the light follows. Riders choose new turns at junctions. Hitting another rider’s trail destroys the rider in a small burst of sparks; a replacement appears elsewhere after a short pause.
@@ -818,8 +817,6 @@ Under **Settings → Effects**, add a **Background** and as many **Effects** as 
 **Stars**: Density sets the star count, Drift their movement, Depth the difference in size and pace, and Twinkle their shimmer.
 
 **Aurora**: Style chooses Rays, Velvet curtains, Polar haze or Wide veil. Diffuse softens any style, with 0% leaving its natural edges. Ribbons sets the curtain count, Speed their movement, Height their reach and Folds their ripples.
-
-**Orbit**: Rings sets the orbit count, Satellites the lights per ring, Tilt their angle and Speed their movement. Each ring moves at a different speed.
 
 Motion pauses in a hidden tab and respects reduced motion.
 

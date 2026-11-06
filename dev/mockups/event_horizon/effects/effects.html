@@ -266,19 +266,6 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
                 line([[x, hem - 2], [x, hem + 1]], col, edge * (.2 + .4 * pleat) * shimmer, step * .8);
             }
         }
-    } else if (kind === 'orbit') {
-        ctx.save(); ctx.translate(w * .52, h * .5); ctx.rotate(p.orbitTilt * Math.PI / 180);
-        for (let i = 0; i < p.orbitRings; i++) {
-            const radius = Math.min(w, h) * (.18 + i * .105), col = tone(i);
-            ctx.globalAlpha = .18; ctx.strokeStyle = col; ctx.lineWidth = .8; ctx.beginPath();
-            ctx.ellipse(0, 0, radius * 1.8, radius * .65, 0, 0, tau); stroke(col, .18, .8);
-            for (let n = 0; n < p.orbitMoons; n++) {
-                const angle = t * p.orbitSpeed * .12 * (.5 + rand(i + 57) * 1.1) + i * 2 + n * tau / p.orbitMoons;
-                ctx.globalAlpha = .65; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(0, 0, radius * 1.8, radius * .65, 0, angle - .22, angle); stroke(col, .65, 2);
-                ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(Math.cos(angle) * radius * 1.8, Math.sin(angle) * radius * .65, 2, 0, tau); ctx.fill();
-            }
-        }
-        ctx.restore();
     }
     ctx.globalAlpha = 1;
 }
@@ -292,9 +279,6 @@ const AMBIENT = {
     ] },
     aurora: { name: 'Aurora', tip: 'Polar-light curtains with fine vertical rays and a luminous lower edge', rows: [
         ['auroraStyle', 'Style', [0, 1, 2, 3], 0], ['auroraDiffuse', 'Diffuse', [0, 35, 65, 80, 100], 0], ['auroraRibbons', 'Ribbons', [1, 2, 3], 2], ['auroraSpeed', 'Speed', [.4, 1, 2], .4], ['auroraHeight', 'Height', [.1, .25, .4], .25], ['auroraFolds', 'Folds', [5, 10, 18], 10],
-    ] },
-    orbit: { name: 'Orbit', tip: 'Tilted orbital rings carry small satellites', rows: [
-        ['orbitRings', 'Rings', [3, 5, 8], 5], ['orbitMoons', 'Satellites', [1, 2, 3], 1], ['orbitTilt', 'Tilt', [-35, -15, 15], -15], ['orbitSpeed', 'Speed', [.4, 1, 2], .4],
     ] },
 };
 const AMBIENT_DEFAULTS = Object.fromEntries(Object.values(AMBIENT).flatMap(f => f.rows.map(([k, , , v]) => [k, v])));
