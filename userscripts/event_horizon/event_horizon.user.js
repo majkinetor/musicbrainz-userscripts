@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.07.000501
+// @version      2026.11.07.000502
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3614,32 +3614,77 @@ function rainStep(s, dt, p) {
     }
     s.drops = s.drops.filter(d => !d.dead && d.y < s.h + 40 && (d.falling || d.age < d.life));
 }
+// Pre-render the water's surface normals, Fresnel edge and reflected window light.
+// Only twelve small materials are needed; the animation stretches these instead
+// of drawing a flat outline or recalculating lighting for every drop, every frame.
+function rainMaterial(variant, tint, glow) {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 96;
+    const cx = cv.getContext('2d'), image = cx.createImageData(96, 96);
+    const smooth = (a, b, x) => { const v = Math.max(0, Math.min(1, (x - a) / (b - a))); return v * v * (3 - 2 * v); };
+    for (let y = 0; y < 96; y++) for (let x = 0; x < 96; x++) {
+        const u = (x - 47.5) / 38, v = (y - 47.5) / 38, angle = Math.atan2(v, u);
+        const edge = 1 + .035 * Math.sin(angle * 3 + variant * 1.7) + .025 * Math.cos(angle * 5 - variant);
+        const radius = Math.hypot(u, v) / edge, at = (y * 96 + x) * 4;
+        if (radius > 1.14) continue;
+        let dark = 0, light = 0;
+        if (radius > 1) {
+            // A soft contact shadow sits below the bead, rather than a drawn border.
+            dark = Math.exp(-(((radius - 1.025) / .055) ** 2)) * .16 * smooth(-.5, .7, v);
+        } else {
+            const z = Math.sqrt(1 - radius * radius), nx = u / edge, ny = v / edge;
+            const rx = 2 * nx * z, ry = 2 * ny * z;
+            const fresnel = .025 + .975 * (1 - z) ** 5;
+            const windowLight = (1 - smooth(.2, .35, Math.abs(rx + .38))) * (1 - smooth(.25, .4, Math.abs(ry + .43)));
+            const glint = Math.exp(-((rx + .38) ** 2 + (ry + .43) ** 2) / (.009 + glow * .002));
+            const caustic = Math.exp(-(((radius - .79) / .12) ** 2)) * smooth(.05, .85, ny - nx * .25);
+            const coverage = 1 - smooth(.97, 1, radius);
+            dark = (.025 + .38 * fresnel + .2 * smooth(.4, .95, radius) * smooth(.1, .8, -ny)) * coverage;
+            light = (.38 * windowLight + .5 * glint + .36 * caustic + fresnel * .4 * smooth(-.2, .8, ny)) * coverage;
+        }
+        const alpha = dark + light * (1 - dark), value = alpha ? 255 * light * (1 - dark) / alpha : 0;
+        image.data[at] = image.data[at + 1] = image.data[at + 2] = value;
+        image.data[at + 3] = Math.min(1, alpha) * 255;
+    }
+    cx.putImageData(image, 0, 0);
+    // Colour is a faint reflection in clear water, never an opaque coloured fill.
+    cx.globalCompositeOperation = 'source-atop'; cx.globalAlpha = .035; cx.fillStyle = tint; cx.fillRect(0, 0, 96, 96);
+    return cv;
+}
 function rainDraw(ctx, w, h, p, t, tone) {
     const s = ctx._ehRain || (ctx._ehRain = rainCreate(w, h, p));
     rainStep(s, t - s.last, p); s.last = t;
+    const colours = Array.from({ length: 12 }, (_, i) => tone(i)), materialKey = colours.join('|') + '|' + p.glow;
+    if (s.materialKey !== materialKey) { s.materials = colours.map((c, i) => rainMaterial(i, c, p.glow)); s.materialKey = materialKey; }
+    const aura = document.documentElement.hasAttribute('data-eh-aura') && document.getElementById('eh-aura');
+    const ar = aura && aura.getBoundingClientRect();
     for (const d of s.drops) {
-        const col = tone(d.id), alpha = Math.min(1, d.age * 2 + .2, d.falling ? 1 : (d.life - d.age) / 2), r = d.r;
-        ctx.strokeStyle = col; ctx.lineCap = 'round';
-        for (let i = 0; i < d.trail.length; i++) {
-            const a = d.trail[i], b = d.trail[i + 1] || d, life = d.falling ? .12 : 1.8 * p.rainTrail;
-            ctx.globalAlpha = alpha * .22 * Math.max(0, 1 - a.age / life);
-            ctx.lineWidth = Math.max(.4, r * .45 * (1 - a.age / life));
-            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        const alpha = Math.min(1, d.age * 2 + .2, d.falling ? 1 : (d.life - d.age) / 2), r = d.r;
+        ctx.lineCap = 'round';
+        if (d.trail.length > 1) {
+            const start = d.trail[0], wet = ctx.createLinearGradient(start.x, start.y, d.x, d.y);
+            wet.addColorStop(0, 'rgba(0,0,0,0)'); wet.addColorStop(1, 'rgba(0,0,0,.18)');
+            ctx.strokeStyle = wet; ctx.globalAlpha = alpha; ctx.lineWidth = Math.max(.4, r * .28);
+            ctx.beginPath(); ctx.moveTo(start.x, start.y);
+            for (const point of d.trail) ctx.lineTo(point.x, point.y);
+            ctx.lineTo(d.x, d.y); ctx.stroke();
+            const light = ctx.createLinearGradient(start.x, start.y, d.x, d.y);
+            light.addColorStop(0, 'rgba(255,255,255,0)'); light.addColorStop(1, 'rgba(255,255,255,.12)');
+            ctx.strokeStyle = light; ctx.lineWidth *= .3; ctx.stroke();
         }
-        const stretch = d.falling ? 1.4 + d.speed / 220 : 1 + Math.min(1.8, d.speed / 65);
-        const wobble = Math.sin(t * d.wobble * 3 + d.phase) * Math.min(.18, d.speed / 450);
+        const stretch = d.falling ? 1.1 + d.speed / 600 : 1 + Math.min(.85, d.speed / 140);
+        const wobble = Math.sin(t * d.wobble * 3 + d.phase) * Math.min(.1, d.speed / 900);
         ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.skew + wobble);
         ctx.scale(r * (1 - wobble), r * stretch);
-        // Asymmetric water bead: a tapered shoulder and heavy, rounded lower edge.
-        ctx.beginPath(); ctx.moveTo(-.1, -1);
-        ctx.bezierCurveTo(.35 + wobble, -.85, .8, -.4, .9, .15);
-        ctx.bezierCurveTo(1.05, 1.15, -.85, 1.35, -.95, .25);
-        ctx.bezierCurveTo(-1.1, -.3, -.5 + wobble, -.8, -.1, -1);
-        ctx.fillStyle = col; ctx.globalAlpha = alpha * .13; ctx.fill();
-        ctx.lineWidth = .65 / Math.max(1, r); ctx.globalAlpha = alpha * .6; ctx.stroke();
-        if (p.glow > 0) { ctx.globalAlpha = alpha * .05; ctx.lineWidth = p.glow * 2 / Math.max(1, r); ctx.stroke(); }
-        ctx.beginPath(); ctx.ellipse(-.3, -.3, .17, .35, .4, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.globalAlpha = alpha * .75; ctx.fill(); ctx.restore();
+        if (aura && ar.width && ar.height && d.y - 48 < ar.bottom) {
+            // Magnify and invert the existing blurred cover inside the water lens.
+            // Drawing the canvas needs no new request or cross-origin pixel readback.
+            const sx = (d.x - 48 - ar.left) * aura.width / ar.width, sy = (d.y - 48 - ar.top) * aura.height / ar.height;
+            const sw = Math.max(1, r * 5 * aura.width / ar.width), sh = Math.max(1, r * 5 * aura.height / ar.height);
+            ctx.save(); ctx.beginPath(); ctx.ellipse(0, 0, .88, .88, 0, 0, Math.PI * 2); ctx.clip();
+            ctx.scale(-1, -1); ctx.globalAlpha = alpha * .45;
+            ctx.drawImage(aura, sx - sw / 2, sy - sh / 2, sw, sh, -1, -1, 2, 2); ctx.restore();
+        }
+        ctx.globalAlpha = alpha; ctx.drawImage(s.materials[d.id % 12], -1.263, -1.263, 2.526, 2.526); ctx.restore();
     }
     ctx.globalAlpha = 1;
 }
@@ -3752,6 +3797,7 @@ const AMBIENT_KEYS = ['effect', 'ambientOpacity', ...Object.keys(AMBIENT_DEFAULT
 
 function ambientApply(layer, kind) {
     layer._ehDepthOff?.(); const svg = layer.querySelector('svg'); if (svg) svg.style.display = 'none';
+    if (kind === 'rain') layer.style.setProperty('--eh-hex-k', '1');
     layer.style.setProperty('--eh-hex-mf', '1'); layer.style.setProperty('--eh-hex-fx', Math.max(0, Math.min(100, Number(S.ambientOpacity) || 0)) / 100);
     const w = layer.clientWidth, h = layer.clientHeight, dpr = kind === 'aurora' ? Math.min(.5, 480 / w, 320 / h) : Math.min(2, devicePixelRatio || 1);
     const css = getComputedStyle(layer), c1 = css.color, c2 = css.getPropertyValue('--accent2').trim() || c1;
