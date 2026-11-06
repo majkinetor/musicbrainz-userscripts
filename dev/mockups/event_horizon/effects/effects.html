@@ -272,15 +272,17 @@ class RainGlass {
         const doc = src.ownerDocument;
         Object.assign(this, { P, w, h, d, src, fog, doc, drops: [], acc: 0, bacc: 0, evap: 0, regrow: 0 });
         this.st = rainCanvas(doc, w * d, h * d); this.sx = this.st.getContext('2d'); this.sx.setTransform(d, 0, 0, d, 0, 0);
-        // The fog is a blur, so it runs at half the page's pixels: compositing it at full size cost most of a frame.
-        const fd = Math.min(d, .5); this.fogS = rainCanvas(doc, w * fd, h * fd); this.fogS.getContext('2d').drawImage(fog, 0, 0, this.fogS.width, this.fogS.height);
-        this.mask = rainCanvas(doc, w * fd, h * fd); this.mx = this.mask.getContext('2d'); this.mx.fillStyle = '#000'; this.mx.fillRect(0, 0, w * fd, h * fd);
-        this.mx.setTransform(fd, 0, 0, fd, 0, 0); this.fl = rainCanvas(doc, w * fd, h * fd); this.fx = this.fl.getContext('2d');
+        // The fog is one canvas at the page's pixels: sliding drops erase lines from it, and regrowing paints the clean fog
+        // faintly over it, so a frame only copies it. A mask composited every frame, or a smaller fog scaled up, cost most of a frame.
+        this.fogC = rainCanvas(doc, w * d, h * d); this.mx = this.fogC.getContext('2d'); this.mx.drawImage(fog, 0, 0); this.mx.setTransform(d, 0, 0, d, 0, 0);
+        // Still drops change only as they grow, so they live in a cached layer: a frame draws just the sliding ones.
+        this.still = rainCanvas(doc, w * d, h * d); this.lx = this.still.getContext('2d'); this.lx.setTransform(d, 0, 0, d, 0, 0); this.since = 0; this.stale = false;
         for (let i = 0; i < 150; i++) this.step(1 / 30);
+        this.rebuild();
     }
     drop(ctx, x, y, r, moving) {
         const stretch = moving ? 1.18 : 1, ry = r * stretch, P = this.P, s = r / 48;
-        if (P.refr > 0) {
+        if (P.refr > 0 && r > 1.2) {
             // A drop is a tiny lens: it shows the lights behind it upside down and magnified.
             const d = this.d, k = 1 + P.refr * 5, W = this.src.width, H = this.src.height;
             const sw = Math.min(W, r * 2 * k * d), sh = Math.min(H, ry * 2 * k * d);
@@ -299,18 +301,21 @@ class RainGlass {
         if ((this.evap += dt) > .5) {
             this.evap = 0; const x = this.sx; x.globalCompositeOperation = 'destination-out'; x.fillStyle = 'rgba(0,0,0,.02)'; x.fillRect(0, 0, w, h); x.globalCompositeOperation = 'source-over';
         }
-        if ((this.regrow += dt) > .25) { this.regrow = 0; this.mx.fillStyle = 'rgba(0,0,0,.025)'; this.mx.fillRect(0, 0, w, h); }
+        if ((this.regrow += dt) > .25) { this.regrow = 0; this.mx.globalAlpha = .025; this.mx.drawImage(this.fog, 0, 0, w, h); this.mx.globalAlpha = 1; }
         // A full window holds at most 500 drops: merging compares the sliding ones with every other.
         this.acc += dt * 9 * P.amount * area;
         while (this.acc > 1) {
             this.acc--;
-            if (this.drops.length < Math.min(500, 260 * area * P.amount)) this.drops.push({ x: rainR(0, w), y: rainR(-10, h), r: rainR(2.2, 5.5) * size * (Math.random() < .12 ? 1.7 : 1), vy: 0, vx: 0, moving: false, trail: 0 });
+            if (this.drops.length < Math.min(500, 260 * area * P.amount)) {
+                const n = { x: rainR(0, w), y: rainR(-10, h), r: rainR(2.2, 5.5) * size * (Math.random() < .12 ? 1.7 : 1), vy: 0, vx: 0, moving: false, trail: 0 };
+                this.drops.push(n); this.drop(this.lx, n.x, n.y, n.r, false);
+            }
         }
         const thr = 6.5 * size;
         for (const d of this.drops) {
             if (d.dead) continue;
-            if (Math.random() < dt * .7 * P.amount) d.r = Math.hypot(d.r, rainR(1, 2.4) * size * .55);
-            if (!d.moving) { if (d.r > thr && Math.random() < dt * 1.4 * P.slide) d.moving = true; continue; }
+            if (Math.random() < dt * .7 * P.amount) { d.r = Math.hypot(d.r, rainR(1, 2.4) * size * .55); if (!d.moving) this.stale = true; }
+            if (!d.moving) { if (d.r > thr && Math.random() < dt * 1.4 * P.slide) { d.moving = true; this.erase(d); } continue; }
             const f = d.r / thr;
             d.vy = Math.min(d.vy + 140 * P.slide * f * dt, 240 * P.slide * f);
             if (Math.random() < dt * 1.3) d.vy *= rainR(.05, .5);
@@ -324,26 +329,32 @@ class RainGlass {
                 const gap = d.r * (P.trails === 2 ? .8 : 1.9);
                 if (d.trail > gap) { d.trail = 0; const br = d.r * rainR(.16, .36); this.drop(this.sx, ox + rainR(-.2, .2) * d.r, oy - d.r * 1.6, br, false); d.r = Math.sqrt(Math.max(1, d.r * d.r - br * br * .7)); }
             }
-            if (d.r < thr * .55) { d.moving = false; d.vy = 0; }
+            if (d.r < thr * .55) { d.moving = false; d.vy = 0; this.drop(this.lx, d.x, d.y, d.r, false); }
             if (P.merge) for (const o of this.drops) {
                 if (o === d || o.dead) continue;
                 const dx = o.x - d.x, dy = o.y - d.y, rr = (o.r + d.r) * .8;
-                if (dx * dx + dy * dy < rr * rr) { d.r = Math.hypot(d.r, o.r); o.dead = true; }
+                if (dx * dx + dy * dy < rr * rr) { d.r = Math.hypot(d.r, o.r); o.dead = true; if (!o.moving) this.erase(o); }
             }
         }
         this.drops = this.drops.filter(d => !d.dead && d.y - d.r < h + 20);
+        if ((this.since += dt) > .5 && this.stale) this.rebuild();
+    }
+    erase(o) {
+        const x = this.lx; x.globalCompositeOperation = 'destination-out'; x.beginPath(); x.ellipse(o.x + 1, o.y + 2, o.r * 1.45, o.r * 1.75, 0, 0, 7); x.fill(); x.globalCompositeOperation = 'source-over';
+        this.stale = true;
+    }
+    rebuild() {
+        const x = this.lx; x.clearRect(0, 0, this.w, this.h);
+        for (const o of this.drops) if (!o.moving && !o.dead) this.drop(x, o.x, o.y, o.r, false);
+        this.since = 0; this.stale = false;
     }
     draw(ctx) {
         const d = this.d;
         ctx.setTransform(1, 0, 0, 1, 0, 0);
-        if (this.P.fog > 0) {
-            const f = this.fx; f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, this.fl.width, this.fl.height);
-            f.drawImage(this.fogS, 0, 0); f.globalCompositeOperation = 'destination-in'; f.drawImage(this.mask, 0, 0);
-            ctx.globalAlpha = this.P.fog; ctx.drawImage(this.fl, 0, 0, this.w * d, this.h * d); ctx.globalAlpha = 1;
-        }
-        ctx.drawImage(this.st, 0, 0);
+        if (this.P.fog > 0) { ctx.globalAlpha = this.P.fog; ctx.drawImage(this.fogC, 0, 0); ctx.globalAlpha = 1; }
+        ctx.drawImage(this.st, 0, 0); ctx.drawImage(this.still, 0, 0);
         ctx.setTransform(d, 0, 0, d, 0, 0);
-        for (const o of this.drops) this.drop(ctx, o.x, o.y, o.r, o.moving);
+        for (const o of this.drops) if (o.moving) this.drop(ctx, o.x, o.y, o.r, true);
     }
 }
 // The rain beyond the glass: streaks in two depth layers, and lightning.
@@ -414,7 +425,8 @@ function rainDraw(ctx, w, h, p, t, c1, c2, tone) {
         const lights = rainLights(ctx.canvas.ownerDocument, w * d, h * d, tone, c1);
         state = ctx._ehRain = { key, last: t, lights, glass: new RainGlass(glassP, w, h, d, lights.sharp, lights.fog), fall: new RainFall(fallP, w, h) };
     }
-    Object.assign(state.glass.P, glassP); Object.assign(state.fall.P, fallP);
+    const refr = state.glass.P.refr; Object.assign(state.glass.P, glassP); Object.assign(state.fall.P, fallP);
+    if (refr !== glassP.refr) state.glass.rebuild();
     const dt = Math.max(0, Math.min(.1, t - state.last)); state.last = t;
     if (dt) { state.glass.step(dt); state.fall.step(dt); }
     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = .55; ctx.drawImage(state.lights.sharp, 0, 0); ctx.restore();
