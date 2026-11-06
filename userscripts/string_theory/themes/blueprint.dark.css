@@ -868,6 +868,11 @@ html:root[data-eh-theme] .detail .grp h4 .tag {
 	color: var(--link);
 	background: color-mix(in srgb, var(--link) 8%, transparent);
 }
+/* Your tags while editing, and a tag chip on hover, in ink, not the deep button blue. */
+html:root[data-eh-theme] .tgi.mine,
+html:root[data-eh-theme] .tgi button:hover,
+html:root[data-eh-theme] .uchip:hover { color: var(--link) !important; }
+html:root[data-eh-theme] .gtags a.chip:hover { color: var(--link); border-color: var(--link); }
 /* Quiet large-area hover, with a clearer accent left to buttons and links. */
 html:root[data-eh-theme] .ed-t .ed-tr:hover { background: var(--hover); }
 html:root[data-eh-theme] .tl .tr:hover,
