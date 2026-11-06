@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.175511
+// @version      2026.11.06.180000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4090,7 +4090,7 @@ function facts(r) {
         packaging: ['Packaging', r.packaging && esc(r.packaging)],
         lang: ['Language', r.langName && (q => `<div><span>${q('lang', (r.tr || {}).language, r.langName)}</span>${r.script ? ` <span class="sub">${q('script', (r.tr || {}).script, r.script)}</span>` : ''}</div>`)((k, c, n) => c ? `<a href="${MB}/search?query=${k}%3A${encodeURIComponent(c)}&type=release&method=advanced">${esc(n)}</a>` : esc(n))],
         quality: ['Data quality', esc(r.quality || 'normal')],
-        links: ['', r.links.length && rlQuiet(r)],
+        links: ['', (r.links.length || rgOnly(r).length) && rlQuiet(r, '', rgOnly(r))],
         aliases: [`Alias${r.aliases.length === 1 ? '' : 'es'}`, aliasList(r.aliases)],
     };
     // the aliases go before the links, so they can be added; none (only the pencil) take one cell, not a row
@@ -4206,10 +4206,13 @@ function hero(r) {
         </div>
     </section>`;
 }
-function rlQuiet(r, scope = '') {
-    if (!r.links.length) return '—';
-    const ps = KINDS.flatMap(([k]) => sortP(r.links.filter(p => primaryKind(p) === k)));
-    const kname = k => KINDS.find(x => x[0] === k)[1], kindOf = p => KINDS.map(x => x[0]).filter(k => p.kinds.includes(k)).map(kname).join(' · ');
+// the release group's links a release doesn't have itself: on a release they show as one more kind (majkinetor)
+const rgOnly = r => { if (!r.rg) return []; const own = new Set((r.urlCredits || []).map(u => u.url)); return urlsOf(r.rg.rels.filter(x => x['target-type'] === 'url' && !own.has(x.url.resource))); };
+function rlQuiet(r, scope = '', rgl = []) {
+    if (!r.links.length && !rgl.length) return '—';
+    const KS = rgl.length ? [...KINDS, ['rg', 'Release group']] : KINDS, pk = p => p.rgk ? 'rg' : primaryKind(p);
+    const ps = [...KINDS.flatMap(([k]) => sortP(r.links.filter(p => primaryKind(p) === k))), ...sortP(rgl).map(p => ({ ...p, rgk: true }))];
+    const kname = k => KS.find(x => x[0] === k)[1], kindOf = p => KINDS.map(x => x[0]).filter(k => p.kinds.includes(k)).map(kname).join(' · ');
     // the platform's link of a kind; its icon leads with its first kind's
     const urlOf = (p, k) => (p.urls.find(u => KIND(u.type) === k) || p.urls[0]).url;
     const lead = p => ({ ...p, urls: [...p.urls].sort((a, b) => (KIND(b.type) === primaryKind(p)) - (KIND(a.type) === primaryKind(p))) });
@@ -4217,7 +4220,7 @@ function rlQuiet(r, scope = '') {
     // a site with several links: a row per link, its address under the kind (majkinetor)
     const uRow = (p, u) => `<a class="row" href="${esc(u.url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${kname(KIND(u.type) || primaryKind(p))}${u.region ? ' · ' + esc(u.region.toUpperCase()) : ''}<br><small>${esc(u.url.replace(/^https?:\/\/(www\.)?/, ''))}</small></span></a>`;
     const qi = (p, i) => {
-        const a = plA(lead(p), S.plSize + 6, 'qi').replace('<a ', `<a data-i="${i}" `), rest = KINDS.map(x => x[0]).filter(k => k !== primaryKind(p) && p.kinds.includes(k));
+        const a = plA(lead(p), S.plSize + 6, 'qi').replace('<a ', `<a data-i="${i}" `), rest = p.rgk ? [] : KINDS.map(x => x[0]).filter(k => k !== primaryKind(p) && p.kinds.includes(k));
         const many = p.urls.length > 1;
         if (!rest.length && !many) return a;
         const ar = a.replace('" aria-label=', `&#10;Right-click: ${many ? 'its ' + p.urls.length + ' links' : 'its other kinds'}" aria-label=`);
@@ -4226,11 +4229,11 @@ function rlQuiet(r, scope = '') {
         const body = many ? lead(p).urls.map(u => uRow(p, u)).join('') : `${kRow(p, primaryKind(p))}<div class="h label also">Also</div>${rest.map(k => kRow(p, k)).join('')}`;
         return `<span class="qk" style="--qk-size:${S.plSize + 6}px">${ar}<span class="popwrap"><button class="kn" type="button" data-pop="kn-${scope}${i}" aria-expanded="false" aria-label="${lbl}" data-tip="${esc(tip)}">+${many ? p.urls.length : rest.length}</button><div class="pop" id="pop-kn-${scope}${i}" hidden><div class="h label">${esc(p.name)}</div>${body}</div></span></span>`;
     };
-    const icons = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k); return g.length ? `<span class="kg"><span class="label">${name}</span><span class="ki">${g.map(([p, i]) => qi(p, i)).join('')}</span></span>` : ''; }).join('');
+    const icons = KS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => pk(p) === k); return g.length ? `<span class="kg"><span class="label">${name}</span><span class="ki">${g.map(([p, i]) => qi(p, i)).join('')}</span></span>` : ''; }).join('');
     // the sites behind +N: a grid under their kind's heading, so the kind isn't repeated on every row;
     // A–Z (majkinetor), the bare hostnames after the named sites
     const az = ([a], [b]) => (a.key === 'globe') - (b.key === 'globe') || a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
-    const rows = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k).sort(az); return g.length ? `<div class="mk"><div class="h label">${name}</div><div class="mg">${g.map(([p, i]) => `<a class="row" data-i="${i}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(p.name)}${p.kinds.length > 1 ? ': ' + kindOf(p) : ''}">${icon(p, 22)}<span>${esc(p.name)}</span></a>`).join('')}</div></div>` : ''; }).join('');
+    const rows = KS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => pk(p) === k).sort(az); return g.length ? `<div class="mk"><div class="h label">${name}</div><div class="mg">${g.map(([p, i]) => `<a class="row" data-i="${i}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(p.name)}${p.kinds.length > 1 ? ': ' + kindOf(p) : ''}">${icon(p, 22)}<span>${esc(p.name)}</span></a>`).join('')}</div></div>` : ''; }).join('');
     return `<div class="rl-one quiet${S.plHover ? ' pl-hov' : ''}" style="--rl-size:${S.plSize + 6}px"><span class="icons">${icons}</span><span class="popwrap" hidden><button class="chip pn" type="button" data-pop="rlmore${scope}" aria-expanded="false"></button><div class="pop r more-sites" id="pop-rlmore${scope}" hidden><input class="mflt" type="search" placeholder="Filter sites" aria-label="Filter sites" hidden>${rows}</div></span></div>`;
 }
 
@@ -4600,16 +4603,16 @@ const rgAttrs = x => [...(x.attributes || []).map(a => (x['attribute-values'] ||
 function rgCard(r, own) {
     const groups = new Map(), add = (k, h) => { const l = groups.get(k) || []; l.push(h); groups.set(k, l); };
     const rels = r.rg.rels.filter(x => x['target-type'] !== 'url');
-    const links = own ? [] : urlsOf(r.rg.rels);
     for (const x of rels) {
         if (x['target-type'] === 'release_group') {
             const p = RG_PHRASE[x.type] || [x.type, x.type], g = x['release_group'];
             add(p[x.direction === 'backward' ? 1 : 0], `${entA('release-group', g.id, g.title)}${g.disambiguation ? ` <span class="rga">(${esc(g.disambiguation)})</span>` : ''} ${rgAttrs(x)}`);
         } else if (x['target-type'] === 'series') add('part of', `${entA('series', x.series.id, x.series.name)} ${rgAttrs(x)}`);
     }
-    if (!groups.size && !links.length) return '';
-    const n = rels.length + (own ? 0 : r.rg.rels.filter(x => x['target-type'] === 'url').length);
-    const body = (links.length ? rlQuiet({ links }, 'rg-') : '') + (groups.size ? `<dl class="rgc">${[...groups].map(([k, l]) => `<dt>${esc(k)}</dt><dd>${l.map(h => `<div>${h}</div>`).join('')}</dd>`).join('')}</dl>` : '');
+    // its links aren't here: a release shows them among its own, a group in its hero; links alone leave no card
+    if (!groups.size) return '';
+    const n = rels.length;
+    const body = `<dl class="rgc">${[...groups].map(([k, l]) => `<dt>${esc(k)}</dt><dd>${l.map(h => `<div>${h}</div>`).join('')}</dd>`).join('')}</dl>`;
     if (own) return sect('rg', `Relationships <span class="count">${n}</span>`, '', body, `<div class="folded-note">${n} relationship${n === 1 ? '' : 's'}</div>`);
     return sect('rg', 'Release group', `<a class="rgt" href="${MB}/release-group/${r.rgId}">${esc(r.rg.title)}</a><span class="aside">${n} relationship${n === 1 ? '' : 's'}</span>`, body, `<div class="folded-note">${n} relationship${n === 1 ? '' : 's'}</div>`);
 }
