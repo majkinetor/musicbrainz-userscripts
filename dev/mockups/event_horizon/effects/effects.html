@@ -204,7 +204,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
             for (let i = 0; i < 60; i++) tronStep(state, 1 / 30, p);
         }
         tronStep(state, t - state.last, p); state.last = t;
-        const outlines = Math.sqrt(Math.max(0, Math.min(100, p.tronOutlines ?? 25)) / 100) * .7;
+        const outlines = Math.max(0, Math.min(100, p.tronOutlines ?? 25)) / 100 * .22;
         if (outlines) {
             for (let x = 0; x < w; x += grid) line([[x, 0], [x, h]], c1, outlines);
             for (let y = 0; y < h; y += grid) line([[0, y], [w, y]], c1, outlines);
