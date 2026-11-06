@@ -578,7 +578,7 @@ function stPalListen() {
 // ── Theme chooser ───────────────────────────────────────────────────────────
 // A slim bar at the bottom of the page that steps through every theme with the left and right keys,
 // showing each on the whole page; nothing covers the view. All / Light / Dark limits them to one variant.
-// With Event Horizon's effect presets, the effect beside (or up and down) picks the one the theme brings, shown as picked; stepping keeps the effect on show. Keep (Enter) saves both, ✕ (Esc) goes back.
+// With Event Horizon's effect presets, the effect beside (or up and down) picks the one the theme brings, shown as picked; stepping keeps the effect on show; the pencil beside opens Event Horizon's Effects tab. Keep (Enter) saves both, ✕ (Esc) goes back.
 // It stays open across pages until closed (the runtime's chooser state), and above any popup: it sits in the top layer.
 var ST_TC_CSS = ''
   + '#st-tc{position:fixed;inset:auto auto 16px 50%;margin:0;overflow:visible;transform:translateX(-50%);z-index:2147483600;display:flex;align-items:center;gap:6px;padding:6px 8px;'
@@ -592,6 +592,7 @@ var ST_TC_CSS = ''
   + '#st-tc select{margin:0 0 0 2px;height:30px;max-width:180px;padding:0 4px 0 10px;border:0!important;border-left:1px solid var(--mbu-border)!important;border-radius:0;background:none!important;box-shadow:none!important;color:inherit;font:inherit;cursor:pointer}'
   + '#st-tc select:hover,#st-tc select:focus-visible{color:var(--mbu-accent-text,var(--mbu-accent));outline:0}'
   + '#st-tc select option{background:var(--mbu-bg);color:var(--mbu-text)}'
+  + '#st-tc #st-tc-ed{display:inline-flex;align-items:center;padding:0 6px}#st-tc #st-tc-ed svg{width:14px;height:14px}'
   // a phone: pinned to the bottom edge, the page's full width; the name takes what the buttons leave
   + '@media (max-width:640px){#st-tc{inset:auto 0 0 0;width:auto;transform:none;max-width:none;gap:2px;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));border-width:1px 0 0;border-radius:0}'
   + '#st-tc .st-tc-n{flex:1 1 auto;min-width:0}#st-tc button{padding-inline:6px}#st-tc select{max-width:110px}}';
@@ -632,7 +633,8 @@ function stThemeChooser() {
   bar.setAttribute('aria-label', 'Theme chooser');
   bar.innerHTML = '<button type="button" id="st-tc-f" aria-label="Themes to step through">' + { all: 'All', light: 'Light', dark: 'Dark' }[only] + '</button>'
     + '<span class="st-tc-n" aria-live="polite" data-tip="The theme on show&#10;Left: the previous theme&#10;Right: the next theme"></span><span class="st-tc-i"></span>'
-    + (fx.length ? '<select id="st-tc-e" aria-label="Event Horizon effect this theme brings" data-tip="The Event Horizon effect this theme brings&#10;It stays as you step to other themes&#10;Up: the previous effect&#10;Down: the next effect"></select>' : '')
+    + (fx.length ? '<select id="st-tc-e" aria-label="Event Horizon effect this theme brings" data-tip="The Event Horizon effect this theme brings&#10;It stays as you step to other themes&#10;Up: the previous effect&#10;Down: the next effect"></select>'
+      + '<button type="button" id="st-tc-ed" aria-label="Edit the effects" data-tip="Edit the effects&#10;Opens Event Horizon&#39;s settings on Effects; the chooser goes back"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M11 2.5l2.5 2.5L6 12.5 3 13l.5-3z"/><path d="M9.5 4l2.5 2.5"/></svg></button>' : '')
     + '<button type="button" id="st-tc-k">Keep</button>'
     + '<button type="button" class="mbu-ov-x" id="st-tc-x" aria-label="Close">✕</button>';
   // a manual popover is in the top layer, above any z-index; a popup opened later goes over it, so it climbs back on top
@@ -723,6 +725,13 @@ function stThemeChooser() {
   bar.querySelector('#st-tc-f').onclick = filter;
   bar.querySelector('#st-tc-k').onclick = function () { close(true); };
   bar.querySelector('#st-tc-x').onclick = function () { close(false); };
+  // the pencil: the chooser goes back, and Event Horizon's settings open on Effects (or switch to it, open already)
+  if (fx.length) bar.querySelector('#st-tc-ed').onclick = function () {
+    close(false);
+    if (!document.getElementById('eh-cfg')) document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: 'event_horizon', cancelable: true }));
+    var tab = document.querySelector('#eh-cfg [data-tab=effects]');
+    if (tab) tab.click();
+  };
   // picked, it's shown at once, and the arrows step the themes again
   if (fx.length) bar.querySelector('#st-tc-e').onchange = function (e) {
     var t = all[i];

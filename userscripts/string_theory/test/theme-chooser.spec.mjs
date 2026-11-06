@@ -101,5 +101,10 @@ test.describe('theme chooser effect', () => {
     check(saved.eh && saved.eh['light:' + saved.light] === 'Dim', `Enter keeps the theme's effect (${JSON.stringify(saved)})`);
     check(await until(() => attr('data-st-eh-fx'), v => v === 'Dim') === 'Dim' && await attr('data-st-eh-fx-try') === null, 'the theme names it now');
     check(await until(op, v => v === '0.3') === '0.3', 'and Event Horizon keeps it');
+    await open(page);
+    await page.click('#st-tc-ed');
+    await page.waitForSelector('#eh-cfg [data-tab=effects][aria-selected=true]', { timeout: 5000 });
+    check(!(await page.$('#st-tc')), 'the pencil opens Event Horizon on Effects, and the chooser goes');
+    await page.screenshot({ path: 'test-results/theme-chooser-edit.png' });
   });
 });
