@@ -158,14 +158,24 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   const at = await places();
   await page.evaluate(() => {
     window.__mcTest.setStall(1500);
-    document.addEventListener('mc:probe', e => { window.__asRun = JSON.parse(e.detail).run; });
+    window.__asAsked = 0;
+    document.addEventListener('mc:probe', e => { const d = JSON.parse(e.detail); window.__asRun = d.run; if (!d.only || d.only.includes('as')) window.__asAsked++; });
     document.dispatchEvent(new CustomEvent('mc:provider', { detail: JSON.stringify({ id: 'as', name: 'Art Station', version: 1, capabilities: ['probe'] }) }));
   });
   check((await step()).say === 'not probed', 'connected, it waits for Probe');
   await page.click('#mc-root [data-act="probe"]');
   check(/\bbusy\b/.test((await step()).cls), 'probing: busy');
+  // no word at all: asked again once by itself, and stalled after that too
+  const asked = () => page.evaluate(() => window.__asAsked);
+  const again = await until(step, s => s.say === 'asked again', { timeout: 5000 });
+  check(again.say === 'asked again' && await asked() === 2, `no word: asked again once by itself (${JSON.stringify(again)}, asked ${await asked()})`);
   const quiet = await until(step, s => /\bstalled\b/.test(s.cls), { timeout: 5000 });
-  check(/^no word for \d+ s · starting$/.test(quiet.say) && quiet.mark === '!', `no word: stalled, with the time (${JSON.stringify(quiet)})`);
+  check(/^no word for \d+ s · asked again$/.test(quiet.say) && quiet.mark === '!' && /\breask\b/.test(quiet.cls), `still no word: stalled, with the time (${JSON.stringify(quiet)})`);
+  check(await asked() === 2, `and not asked a third time by itself (${await asked()})`);
+  check(/\nClick the status: ask again\n/.test(await page.locator('#mc-root .mc-step[data-step="as"]').getAttribute('data-tip')), 'its tip says a click on the status asks again');
+  await page.click('#mc-root .mc-step[data-step="as"] .tx i');
+  const byHand = await step();
+  check(await asked() === 3 && /\bbusy\b/.test(byHand.cls) && byHand.say === 'asked again', `a click on the status asks again by hand, and does not switch it off (${JSON.stringify(byHand)})`);
   const send = (type, d) => page.evaluate(([type, d]) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(Object.assign({ id: 'as', run: window.__asRun }, d)) })), [type, d]);
   await page.evaluate(() => window.__mcTest.setStall(8000));   // room for the seconds to show (from 2 s)
   await send('mc:progress', { state: 'busy', note: 'finding the best cover' });

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-06 12:47 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-06 13:09 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -2300,7 +2300,7 @@ Open Mission Control with its corner icon on a release page. On a phone it fills
 
 ### Probe
 
-**↻** in the header asks every script at once. The header and the **Execution order** on the left show each step as it works: what it is doing, and how long since it last reported. A step that stays silent turns amber.
+**↻** in the header asks every script at once. The header and the **Execution order** on the left show each step as it works: what it is doing, and how long since it last reported. A step that stays silent turns amber, and a script that never answered is asked again once; after that, click the amber status under its name to ask again.
 
 | Step                     | Script                                        | Finds                                                  |
 | ------------------------ | --------------------------------------------- | ------------------------------------------------------ |

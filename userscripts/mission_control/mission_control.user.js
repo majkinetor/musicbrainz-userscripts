@@ -158,7 +158,8 @@ document.addEventListener('mc:progress', e => {
     // during Execute a provider that already answered keeps its findings: the note goes beside them
     // (a late tick from the probe, after its findings, is dropped: no stuck spinner)
     if (r && r.state === 'done') { if (executing) { r.working = d.note || 'working'; r.at = Date.now(); if (d.best) r.best = d.best; } }
-    else results[d.id] = Object.assign(r || {}, { state: 'busy', note: d.note || '', at: Date.now() });
+    // spoke: it heard the probe (one that never says a word is asked again, see askAgain)
+    else results[d.id] = Object.assign(r || {}, { state: 'busy', note: d.note || '', at: Date.now(), spoke: true });
     Log.cat('Providers').debug('progress ' + d.id + ': ' + (d.note || d.state));
     paintAll();
 });
@@ -266,7 +267,7 @@ function probe() {
 }
 // An Ask-mode provider is probed on its own Fetch button, inside the current run
 // (a run is started if there is none), leaving the others' results alone.
-function probeOne(id) {
+function probeOne(id, why) {
     if (!found[id]) return;
     if (id === 'fc') { cmpStart(); return; }
     if (!run) run = Date.now().toString(36);
@@ -276,9 +277,23 @@ function probeOne(id) {
     probeAt = Date.now(); probeTook = 0;
     const links = pcAlbumLinks();
     if (LINK_READERS.includes(id)) linksAsked[id] = JSON.stringify(links);
-    Log.cat('Probe').info('probe ' + id + ' on request · run ' + run + (links.length ? ' · selected album links ' + links.join(' ') : ''));
+    Log.cat('Probe').info('probe ' + id + ' ' + (why || 'on request') + ' · run ' + run + (links.length ? ' · selected album links ' + links.join(' ') : ''));
     document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: [id], links, isrcs: isrcsNow(), cons: CMP.cons || undefined }) }));
     paintAll();
+}
+// A probe that got no word back in STALL_MS (lost on the way, or turned down without a word) is
+// asked again once by itself; after that, a click on the stalled step's status asks again by hand.
+// The count of times asked again survives the new probe, so the step can say "asked again".
+function askAgain(id, why) {
+    const n = ((results[id] || {}).again || 0) + 1;
+    probeOne(id, why + ' (' + n + ')');
+    if (results[id]) results[id].again = n;
+    paintAll();
+}
+// a provider asked by the probe that never said a word, past STALL_MS, and not asked again yet
+function unheard() {
+    if (executing) return [];
+    return PROVIDERS.filter(p => { const r = results[p.id]; return p.id !== 'fc' && r && r.state === 'busy' && !r.spoke && !r.again && Date.now() - (r.at || Date.now()) >= STALL_MS; });
 }
 // Execute: the steps in order, the lanes of a parallel step together. Each
 // provider with selected findings gets 'mc:apply' { id, run, release, keys, dry }
@@ -981,7 +996,7 @@ function mcStyle() {
         + '.mc-step.ok sup{background:var(--mbu-ok)}'
         + '.mc-step.add i{color:var(--mbu-accent-text);font-weight:600}'
         + '.mc-step.busy .mc-ring::before{content:"";position:absolute;left:2px;right:2px;bottom:-6px;height:2px;border-radius:1px;background:linear-gradient(90deg,transparent,var(--mbu-info),transparent);background-size:200% 100%;animation:mc-sweep 1s linear infinite}@keyframes mc-sweep{from{background-position:100% 0}to{background-position:-100% 0}}.mc-step.busy i{color:var(--mbu-info)}'
-        + '.mc-step.stalled sup{background:var(--mbu-warn)}.mc-step.stalled i,.mc-step.stalled b{color:var(--mbu-warn)}'
+        + '.mc-step.stalled sup{background:var(--mbu-warn)}.mc-step.stalled i,.mc-step.stalled b{color:var(--mbu-warn)}.mc-step.reask i{cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;padding:3px 0;margin:-3px 0}.mc-step.reask i:hover{text-decoration-style:solid}'
         + '.mc-step.err sup{background:var(--mbu-error)}.mc-step.err i{color:var(--mbu-error)}'
         + '.mc-step.wait .mc-ring img{filter:grayscale(1);opacity:.5}.mc-step.wait b{color:var(--mbu-text-weak)}.mc-step.off{opacity:.45}.mc-step.off .mc-ring img{filter:grayscale(1)}.mc-step.off b{text-decoration:line-through}'
         + '.mc-steps .mc-arrow{color:var(--mbu-text-weak);flex:none}.mc-steps .mc-par{display:inline-flex;align-items:center;gap:4px;height:40px;margin:0;background:none;padding:0 6px;border:1px dashed var(--mbu-border);border-radius:10px;box-sizing:border-box;min-width:0}'
@@ -1389,6 +1404,8 @@ function sIcon(id) { return PROVIDER_ICONS[id] ? '<img class="mc-sic" alt="" src
 // C (#680): the execution order as a stepper under the header, a ring per provider and what it
 // is doing in words: the step it is on and for how long, amber when no word came for STALL_MS
 // (what is stuck), or what it found. ↻ probes again; a click on a step switches it off or on (#753).
+// A provider that never said a word is asked again once at STALL_MS (askAgain); a stalled probe's
+// status line then asks again by hand (a click elsewhere on the step and a right-click are taken).
 let STALL_MS = 20000;
 function steps() {
     const d = el('div', 'mc-steps');
@@ -1412,7 +1429,7 @@ function stepState(p) {
     if (st === 'off') return ['off', 'off', ''];
     if (st === 'idle') return ['wait', 'not installed', ''];
     const f = r.falcon, falcon = f && f.running ? 'Falcon: ' + f.items.filter(i => !['queued', 'active'].includes(i.status)).length + ' of ' + f.items.length + ' done' : null;
-    const doing = st === 'busy' ? (r.note || 'starting') : (executing && r.working) || falcon;
+    const doing = st === 'busy' ? (r.note || (r.again ? 'asked again' : 'starting')) : (executing && r.working) || falcon;
     if (doing) {
         const s = Math.max(0, Math.round((Date.now() - (r.at || Date.now())) / 1000));
         return Date.now() - (r.at || Date.now()) >= STALL_MS ? ['stalled', 'no word for ' + s + ' s · ' + doing, '!', doing] : ['busy', doing + (s >= 2 ? ' · ' + s + ' s' : ''), '', doing];
@@ -1438,10 +1455,12 @@ function paintSteps() {
         const n = ui.querySelector('.mc-step[data-step="' + p.id + '"]'); if (!n) return;
         const [cls, words, mark, doing] = stepState(p);
         n.className = 'mc-step ' + cls;
+        const reask = cls === 'stalled' && stateOf(p) === 'busy' && p.id !== 'fc' && !executing;
+        n.classList.toggle('reask', reask);
         const said = stepSaid(p.id, doing);
         // while it runs, the current word is the title and is not repeated in the list
         const past = doing ? said.slice(0, -1) : said;
-        n.dataset.tip = p.provider + ' — ' + (cls === 'busy' || cls === 'stalled' ? words : stateText(p)) + (past.length ? '\n' + past.map(w => '- ' + w).join('\n') : '') + (cls === 'off' ? (PAGE_OFF.has(p.id) ? ' (off for this page)' : '') + '\nClick: switch it on' : '\nClick: off for this page\nRight-click: off for good');
+        n.dataset.tip = p.provider + ' — ' + (cls === 'busy' || cls === 'stalled' ? words : stateText(p)) + (past.length ? '\n' + past.map(w => '- ' + w).join('\n') : '') + (cls === 'off' ? (PAGE_OFF.has(p.id) ? ' (off for this page)' : '') + '\nClick: switch it on' : (reask ? '\nClick the status: ask again\nClick elsewhere: off for this page' : '\nClick: off for this page') + '\nRight-click: off for good');
         n.querySelector('i').textContent = words;
         const sup = n.querySelector('sup'); sup.hidden = !mark; sup.textContent = mark;
         // the provider's card shows the same state: a stripe on its edge, a tint and a word in its header (#680)
@@ -2304,7 +2323,7 @@ function open() {
     // a cover thumbnail that fails falls back to its full image once (errors don't bubble: capture)
     ui.addEventListener('error', e => { const i = e.target; if (i.tagName === 'IMG' && i.dataset.alt) { const a = i.dataset.alt; delete i.dataset.alt; i.dataset.from = i.getAttribute('src'); i.src = a; } }, true);
     document.addEventListener('keydown', onKey);
-    stepClock = setInterval(() => { if (isBusy()) paintSteps(); paintFoot(); }, 1000);
+    stepClock = setInterval(() => { unheard().forEach(p => askAgain(p.id, 'again: no word in ' + Math.round(STALL_MS / 1000) + ' s')); if (isBusy()) paintSteps(); paintFoot(); }, 1000);
     Log.cat('UI').info('opened · sidebars ' + (S.left ? 'order ' : '') + (S.right ? 'inspector' : '') + ' · fusion ' + S.fusion + ' · ch ' + S.ch + ' · auto probe ' + (S.autoProbe ? 'on' : 'off'));
     discover();
     // Auto: probe once the providers had discover's moment to answer
@@ -2456,6 +2475,8 @@ function onClick(e) {
     const act = t.closest('[data-act]');
     // #753: a step switches its provider off and on; the format icon shows or hides the execution order
     const stp = !act && t.closest('.mc-step');
+    // a stalled probe's status line asks again (the rest of the step still switches it off)
+    if (stp && stp.classList.contains('reask') && t.closest('.tx i')) { askAgain(stp.dataset.step, 'again on request'); return; }
     if (stp) { toggleProvider(stp.dataset.step); return; }
     if (t.closest('.mc-hdr .mc-fmt')) { S.left = !S.left; saveSettings(); paintSides(); return; }
     if (!act) return;
