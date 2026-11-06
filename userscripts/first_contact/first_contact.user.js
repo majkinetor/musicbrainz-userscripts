@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.06.120000
+// @version      2026.11.06.121647
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Presto Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -5022,7 +5022,10 @@ function mbuDock() {
             // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
             + '.mbu-dock-item,#mbu-dock,#mbu-dock-shelf,[data-mbu-docked=show],[data-mbu-docked=peek]{filter:none!important}'
             // The resting fade is on the icon, never the entry: the entry's opacity would fade its badge too, and the page showed through it
-            + '[data-mbu-docked=show],[data-mbu-docked=peek]{opacity:1!important}'   // a launcher's own resting fade (Fusion's .85)
+            // a launcher's own resting fade (Fusion's .85) is overruled; a peek's fade runs through --mbu-peek-o, which an
+            // animation can move under the !important (it can't move opacity itself)
+            + '@property --mbu-peek-o{syntax:"<number>";inherits:false;initial-value:1}'
+            + '[data-mbu-docked=show],[data-mbu-docked=peek]{opacity:var(--mbu-peek-o,1)!important}'
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek])>:not(.mbu-dock-dots,.mbu-dock-n){opacity:.85;transition:opacity .12s}:is(:root[data-mbu-dock-over] [data-mbu-docked=show],[data-mbu-docked=show]:hover,[data-mbu-docked=peek]:hover)>*{opacity:1}'
             // while the pointer is over the dock, a frosted shelf behind its icons, so they read on any page
             + '#mbu-dock-shelf{position:fixed;z-index:2147482989;box-sizing:border-box;background:transparent;opacity:0;visibility:hidden;transition:opacity .15s,visibility .15s}'   // catches the pointer between icons, so the page behind the dock's gaps doesn't react
@@ -5030,7 +5033,7 @@ function mbuDock() {
             + ':root[data-mbu-dock-frost] #mbu-dock-shelf[data-dark]{background:rgba(40,42,47,.6);box-shadow:0 2px 10px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.12)}'
             + ':root[data-mbu-dock-over] #mbu-dock-shelf{opacity:1;visibility:visible}'
             // folded, an entry with something to do peeks beside the button, smaller
-            + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}'
+            + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}[data-mbu-peek-out]{pointer-events:none}'
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked])):hover::after{opacity:1}'
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status^="✓"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}'   // all done: a quiet dot, so a count beside it stands out
@@ -5162,9 +5165,19 @@ function mbuDock() {
         el.removeAttribute('data-mbu-docked');   // measured as its script left it
         var shown = getComputedStyle(el).display !== 'none';
         if (shown) { n++; if (el.hasAttribute('data-mbu-busy')) busy = true; }
-        el.setAttribute('data-mbu-docked', !shown ? 'hide' : open ? 'show' : /^[+]?[1-9]/.test(el.dataset.mbCornerStatus || '') || el.hasAttribute('data-mbu-actionable') ? 'peek' : 'hide');
-        // fades in only when it starts peeking: this runs on every restack, so a CSS animation would replay
-        if (was !== 'peek' && el.getAttribute('data-mbu-docked') === 'peek' && el.animate) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 350, easing: 'ease-out' });
+        var now = !shown ? 'hide' : open ? 'show' : /^[+]?[1-9]/.test(el.dataset.mbCornerStatus || '') || el.hasAttribute('data-mbu-actionable') ? 'peek' : 'hide';
+        var out = el.hasAttribute('data-mbu-peek-out');
+        // A peek that ends slides back into the dock button, so it stays drawn until it is there
+        // (mbRestackCorner runs the slide, which knows the distance). This runs on every restack,
+        // hence the attributes: a CSS animation would replay, and another script's copy can't see a property.
+        if (now === 'hide' && shown && (was === 'peek' || out) && el.animate && !mbuStill()) {
+            el.setAttribute('data-mbu-docked', 'peek');
+            el.setAttribute('data-mbu-peek-out', '');
+            return;
+        }
+        if (out) { el.removeAttribute('data-mbu-peek-out'); mbuPeekStop(el); }
+        el.setAttribute('data-mbu-docked', now);
+        if (now === 'peek' && (was !== 'peek' || out)) el.setAttribute('data-mbu-peek-in', '');
     });
     mbuDockKnow(els);
     // Busy ends a moment late: members hand work on with short gaps, and each would blink the dash out.
@@ -5314,6 +5327,35 @@ function mbuDockItem(o) {
     mbRestackCorner('br');
     return b;
 }
+// The folded dock's peeks move out of its button and back into it: fast at first, slowing to a stop
+// at the end. Reduced motion keeps only a fade in.
+function mbuStill() { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
+function mbuPeekStop(el) {
+    if (el.getAnimations) el.getAnimations().forEach(function (a) { if (/^mbu-peek/.test(a.id)) a.cancel(); });
+}
+function mbuPeekMove(el, dx, dy) {
+    var away = dx + 'px ' + dy + 'px', ease = 'cubic-bezier(.16,1,.3,1)';
+    if (el.hasAttribute('data-mbu-peek-in')) {
+        el.removeAttribute('data-mbu-peek-in');
+        if (!el.animate) return;
+        mbuPeekStop(el);
+        var a = mbuStill() ? el.animate([{ '--mbu-peek-o': 0 }, { '--mbu-peek-o': 1 }], { duration: 250, easing: 'ease-out' })
+            : el.animate([{ translate: away, '--mbu-peek-o': 0 }, { translate: '0px 0px', '--mbu-peek-o': 1 }], { duration: 450, easing: ease });
+        a.id = 'mbu-peek-in';
+    }
+    if (el.hasAttribute('data-mbu-peek-out') && el.getAnimations && !el.getAnimations().some(function (a) { return a.id === 'mbu-peek-out'; })) {
+        mbuPeekStop(el);
+        var b = el.animate([{ translate: '0px 0px', '--mbu-peek-o': 1 }, { translate: away, '--mbu-peek-o': 0 }], { duration: 350, easing: ease, fill: 'forwards' });
+        b.id = 'mbu-peek-out';
+        b.onfinish = function () {
+            if (!el.hasAttribute('data-mbu-peek-out')) return;
+            el.removeAttribute('data-mbu-peek-out');
+            el.setAttribute('data-mbu-docked', 'hide');
+            b.cancel();
+            mbRestackCorner('br');   // the peeks after it close up
+        };
+    }
+}
 function mbRestackCorner(corner) {
     if (corner === 'br') mbuDock();
     var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
@@ -5384,6 +5426,8 @@ function mbRestackCorner(corner) {
         el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge + inset(el) : side)) + 'px';
         el.style[right ? 'right' : 'left'] = (gapX + (row ? side : edge + inset(el))) + 'px';
         el.style[right ? 'left' : 'right'] = 'auto';
+        var d = Math.round(side - edge);   // its way to the dock button, along the flow
+        mbuPeekMove(el, row ? (right ? d : -d) : 0, row ? 0 : (bottom ? d : -d));
         side += 36 * size;
     });
 }

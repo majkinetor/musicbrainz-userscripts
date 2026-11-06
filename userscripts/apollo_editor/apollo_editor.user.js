@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.06.150000
+// @version      2026.11.06.150001
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -5007,7 +5007,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
               // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
               + '.mbu-dock-item,#mbu-dock,#mbu-dock-shelf,[data-mbu-docked=show],[data-mbu-docked=peek]{filter:none!important}'
               // The resting fade is on the icon, never the entry: the entry's opacity would fade its badge too, and the page showed through it
-              + '[data-mbu-docked=show],[data-mbu-docked=peek]{opacity:1!important}'   // a launcher's own resting fade (Fusion's .85)
+              // a launcher's own resting fade (Fusion's .85) is overruled; a peek's fade runs through --mbu-peek-o, which an
+              // animation can move under the !important (it can't move opacity itself)
+              + '@property --mbu-peek-o{syntax:"<number>";inherits:false;initial-value:1}'
+              + '[data-mbu-docked=show],[data-mbu-docked=peek]{opacity:var(--mbu-peek-o,1)!important}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek])>:not(.mbu-dock-dots,.mbu-dock-n){opacity:.85;transition:opacity .12s}:is(:root[data-mbu-dock-over] [data-mbu-docked=show],[data-mbu-docked=show]:hover,[data-mbu-docked=peek]:hover)>*{opacity:1}'
               // while the pointer is over the dock, a frosted shelf behind its icons, so they read on any page
               + '#mbu-dock-shelf{position:fixed;z-index:2147482989;box-sizing:border-box;background:transparent;opacity:0;visibility:hidden;transition:opacity .15s,visibility .15s}'   // catches the pointer between icons, so the page behind the dock's gaps doesn't react
@@ -5015,7 +5018,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
               + ':root[data-mbu-dock-frost] #mbu-dock-shelf[data-dark]{background:rgba(40,42,47,.6);box-shadow:0 2px 10px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.12)}'
               + ':root[data-mbu-dock-over] #mbu-dock-shelf{opacity:1;visibility:visible}'
               // folded, an entry with something to do peeks beside the button, smaller
-              + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}'
+              + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}[data-mbu-peek-out]{pointer-events:none}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked])):hover::after{opacity:1}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status^="✓"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}'   // all done: a quiet dot, so a count beside it stands out
@@ -5147,9 +5150,19 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           el.removeAttribute('data-mbu-docked');   // measured as its script left it
           var shown = getComputedStyle(el).display !== 'none';
           if (shown) { n++; if (el.hasAttribute('data-mbu-busy')) busy = true; }
-          el.setAttribute('data-mbu-docked', !shown ? 'hide' : open ? 'show' : /^[+]?[1-9]/.test(el.dataset.mbCornerStatus || '') || el.hasAttribute('data-mbu-actionable') ? 'peek' : 'hide');
-          // fades in only when it starts peeking: this runs on every restack, so a CSS animation would replay
-          if (was !== 'peek' && el.getAttribute('data-mbu-docked') === 'peek' && el.animate) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 350, easing: 'ease-out' });
+          var now = !shown ? 'hide' : open ? 'show' : /^[+]?[1-9]/.test(el.dataset.mbCornerStatus || '') || el.hasAttribute('data-mbu-actionable') ? 'peek' : 'hide';
+          var out = el.hasAttribute('data-mbu-peek-out');
+          // A peek that ends slides back into the dock button, so it stays drawn until it is there
+          // (mbRestackCorner runs the slide, which knows the distance). This runs on every restack,
+          // hence the attributes: a CSS animation would replay, and another script's copy can't see a property.
+          if (now === 'hide' && shown && (was === 'peek' || out) && el.animate && !mbuStill()) {
+              el.setAttribute('data-mbu-docked', 'peek');
+              el.setAttribute('data-mbu-peek-out', '');
+              return;
+          }
+          if (out) { el.removeAttribute('data-mbu-peek-out'); mbuPeekStop(el); }
+          el.setAttribute('data-mbu-docked', now);
+          if (now === 'peek' && (was !== 'peek' || out)) el.setAttribute('data-mbu-peek-in', '');
       });
       mbuDockKnow(els);
       // Busy ends a moment late: members hand work on with short gaps, and each would blink the dash out.
@@ -5299,6 +5312,35 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       mbRestackCorner('br');
       return b;
   }
+  // The folded dock's peeks move out of its button and back into it: fast at first, slowing to a stop
+  // at the end. Reduced motion keeps only a fade in.
+  function mbuStill() { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
+  function mbuPeekStop(el) {
+      if (el.getAnimations) el.getAnimations().forEach(function (a) { if (/^mbu-peek/.test(a.id)) a.cancel(); });
+  }
+  function mbuPeekMove(el, dx, dy) {
+      var away = dx + 'px ' + dy + 'px', ease = 'cubic-bezier(.16,1,.3,1)';
+      if (el.hasAttribute('data-mbu-peek-in')) {
+          el.removeAttribute('data-mbu-peek-in');
+          if (!el.animate) return;
+          mbuPeekStop(el);
+          var a = mbuStill() ? el.animate([{ '--mbu-peek-o': 0 }, { '--mbu-peek-o': 1 }], { duration: 250, easing: 'ease-out' })
+              : el.animate([{ translate: away, '--mbu-peek-o': 0 }, { translate: '0px 0px', '--mbu-peek-o': 1 }], { duration: 450, easing: ease });
+          a.id = 'mbu-peek-in';
+      }
+      if (el.hasAttribute('data-mbu-peek-out') && el.getAnimations && !el.getAnimations().some(function (a) { return a.id === 'mbu-peek-out'; })) {
+          mbuPeekStop(el);
+          var b = el.animate([{ translate: '0px 0px', '--mbu-peek-o': 1 }, { translate: away, '--mbu-peek-o': 0 }], { duration: 350, easing: ease, fill: 'forwards' });
+          b.id = 'mbu-peek-out';
+          b.onfinish = function () {
+              if (!el.hasAttribute('data-mbu-peek-out')) return;
+              el.removeAttribute('data-mbu-peek-out');
+              el.setAttribute('data-mbu-docked', 'hide');
+              b.cancel();
+              mbRestackCorner('br');   // the peeks after it close up
+          };
+      }
+  }
   function mbRestackCorner(corner) {
       if (corner === 'br') mbuDock();
       var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
@@ -5369,6 +5411,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge + inset(el) : side)) + 'px';
           el.style[right ? 'right' : 'left'] = (gapX + (row ? side : edge + inset(el))) + 'px';
           el.style[right ? 'left' : 'right'] = 'auto';
+          var d = Math.round(side - edge);   // its way to the dock button, along the flow
+          mbuPeekMove(el, row ? (right ? d : -d) : 0, row ? 0 : (bottom ? d : -d));
           side += 36 * size;
       });
   }
