@@ -1,54 +1,54 @@
 /* Theme: Hearth
-   Cream, walnut and burnt orange: a cozy, clean light palette.
+   Toasted oak, tobacco, rust and olive: a vintage jazz-shop light palette.
    MusicBrainz rules adapted from Default / Solarized (after Dark Side of MusicBrainz by kellnerd, MIT).
    Palette, typography and finishing rules are original. See README.md here. */
 
 :root {
-	--background: #faf6ef;
-	--row-mark: #f5e4d2;
-	--background-accent: #f1e8dc;
-	--background-emphasis: #e8d9c7;
-	--background-dimmed: #fffdf8;
-	--text: #3e3028;
-	--text-dimmed: #705b4b;
-	--text-weak: #806a58;
-	--border: #d6c3ad;
-	--border-accent: #bca086;
-	--border-emphasis: #98765b;
-	--border-dimmed: #e2d3c0;
-	--border-weak: #eee3d5;
+	--background: #ddc09a;
+	--row-mark: #dcb180;
+	--background-accent: #cfad80;
+	--background-emphasis: #c39c6c;
+	--background-dimmed: #ecd4af;
+	--text: #34291f;
+	--text-dimmed: #58432f;
+	--text-weak: #665039;
+	--border: #ad8b61;
+	--border-accent: #957047;
+	--border-emphasis: #795534;
+	--border-dimmed: #bfa078;
+	--border-weak: #c9aa80;
 	--shadow: transparent;
 	/* Page accents */
-	--mb-orange: #a34d20;
-	--mb-purple: #795338;
+	--mb-orange: #8e3c20;
+	--mb-purple: #59603b;
 	/* header menu hover */
-	--menu-hover: #a34d20;
-	--menu-hover-text: #fffdf8;
+	--menu-hover: #8e3c20;
+	--menu-hover-text: #ecd4af;
 	/* Status fills */
-	--negative: #f2dada;
-	--negative-emphasis: #e9c3c4;
-	--positive: #dde8dc;
-	--positive-emphasis: #c5d9c4;
-	--attention: #eee1bd;
-	--error: #f0d3d4;
-	--pending-edits: #e5dce7;
+	--negative: #e0b19a;
+	--negative-emphasis: #cf9985;
+	--positive: #cbd0a2;
+	--positive-emphasis: #b1bd86;
+	--attention: #e4c47e;
+	--error: #dca48d;
+	--pending-edits: #c5b69b;
 	/* Links */
-	--link: #a34d20;
-	--link-visited: #7b5e50;
-	--link-hover: #773513;
+	--link: #8e3c20;
+	--link-visited: #665a37;
+	--link-hover: #632b19;
 	--link-new: #a02e30;
 
 	/* specific elements */
 	--release-tabs-background: var(--background-emphasis);
 	--bubble-background: var(--background-emphasis);
-	--tag-count-background: #e8d9c7;
-	--edit-list-item-background: #f5eee4;
-	--edit-actions-background: #e8d9c7;
-	--wiki-tab: #795338;
-	--table-head: #e8d9c7;
-	--table-subhead: #f1e8dc;
-	--selection: #a34d20;
-	--selection-text: #fffdf8;
+	--tag-count-background: #c39c6c;
+	--edit-list-item-background: #d5b68c;
+	--edit-actions-background: #c39c6c;
+	--wiki-tab: #59603b;
+	--table-head: #c39c6c;
+	--table-subhead: #cfad80;
+	--selection: #8e3c20;
+	--selection-text: #ecd4af;
 	/* edit headers */
 	--edit-add: #e4ebe0;
 	--edit-add-open: #d4e2ce;
@@ -65,26 +65,26 @@
 	--diff-plus: #375d40;
 	--diff-minus: #a02e30;
 	--diff-added: #7e9d85;
-	--diff-added-change: #dde8dc;
+	--diff-added-change: #cbd0a2;
 	--diff-deleted: #b86e71;
-	--diff-deleted-change: #f2dada;
+	--diff-deleted-change: #e0b19a;
 
 	/* filter definitions: none, MusicBrainz's icons are made for a light page */
 	--invert: none;
 	--invert-value: none;
 
 	/* text fields and checkboxes */
-	--field: #fffdf8;
-	--checkbox-border: #98765b;
-	--checkbox-on: #a34d20;
+	--field: #ecd4af;
+	--checkbox-border: #795534;
+	--checkbox-on: #8e3c20;
 	/* controls */
-	--control: #f1e8dc;
-	--control-hover: #e8d9c7;
-	--control-text: #3e3028;
-	--control-border: #bca086;
+	--control: #cfad80;
+	--control-hover: #c39c6c;
+	--control-text: #34291f;
+	--control-border: #957047;
 
 	color-scheme: light;
-	accent-color: #a34d20;
+	accent-color: #8e3c20;
 }
 
 body {
@@ -792,20 +792,20 @@ body.skin--responsive #p-cactions li.selected a {
 
 /* Event Horizon: its own surfaces in this palette, or they stay its lilac greys */
 html:root[data-eh-theme] {
-	--bg: #faf6ef;
-	--surface: #fffdf8;
-	--text: #3e3028;
-	--muted: #806a58;
-	--soft: #705b4b;
-	--border: #d6c3ad;
-	--line: #eee3d5;
-	--chip: #f1e8dc;
-	--chip-text: #705b4b;
-	--hover: #f5ecdf;
-	--accent: #a34d20;
-	--accent2: #795338;
-	--link: #a34d20;
-	--link-hover: #773513;
+	--bg: #ddc09a;
+	--surface: #ecd4af;
+	--text: #34291f;
+	--muted: #665039;
+	--soft: #58432f;
+	--border: #ad8b61;
+	--line: #c9aa80;
+	--chip: #cfad80;
+	--chip-text: #58432f;
+	--hover: #d4b185;
+	--accent: #8e3c20;
+	--accent2: #59603b;
+	--link: #8e3c20;
+	--link-hover: #632b19;
 }
 
 /* the autocomplete's search button: its icon is its background */
@@ -816,55 +816,69 @@ html:root[data-eh-theme] .fbox input {
 	background: transparent !important;
 }
 html #ii-btn {
-	background: #795338;
+	background: #59603b;
 }
 html #ii-btn:hover {
-	background: #5b3d29;
+	background: #42492b;
 }
 html #ii-btn.has-missing {
-	background: #a34d20;
+	background: #8e3c20;
 }
 html #ii-btn.has-missing:hover {
-	background: #803a17;
+	background: #6e2d18;
 }
 
 /* Outrank the shared token variants even when a member injects its sheet later. */
 html:root:root:root {
-	--mbu-bg: #faf6ef;
-	--mbu-text: #3e3028;
-	--mbu-border: #d6c3ad;
-	--mbu-border-soft: #eee3d5;
-	--mbu-accent: #a34d20;
-	--mbu-accent-hover: #803a17;
-	--mbu-accent-deep: #803a17;
-	--mbu-accent-text: #a34d20;
-	--mbu-accent-deep-text: #a34d20;
+	--mbu-bg: #ddc09a;
+	--mbu-text: #34291f;
+	--mbu-border: #ad8b61;
+	--mbu-border-soft: #c9aa80;
+	--mbu-accent: #8e3c20;
+	--mbu-accent-hover: #6e2d18;
+	--mbu-accent-deep: #6e2d18;
+	--mbu-accent-text: #8e3c20;
+	--mbu-accent-deep-text: #8e3c20;
 	--mbu-font: 'Segoe UI', Arial, sans-serif;
 	--mbu-radius: 5px;
 	--mbu-radius-lg: 8px;
 	--mbu-shadow: none;
-	--mbu-shadow-lg: 0 0 0 1px #bca086;
+	--mbu-shadow-lg: 0 0 0 1px #957047;
 }
 
-/* Quiet sans-serif typography and flat, gently rounded controls. */
+/* Bold record-sleeve display type; quiet, readable labels and forms. */
 html body, html #app { font-family: 'Segoe UI', Arial, sans-serif; }
-html :where(h1, h2, h3) { font-family: 'Segoe UI', Arial, sans-serif; }
-html :where(h1, h2, h3) { font-weight: 600; letter-spacing: -.015em; }
+html :where(h1), html:root[data-eh-theme] :where(h1, .hero-title, .hm-hi) {
+	font-family: 'Cooper Black', 'Bookman Old Style', Georgia, serif;
+	font-weight: 900;
+	letter-spacing: -.045em;
+	color: var(--text);
+}
+html :where(h2, h3), html:root[data-eh-theme] :where(h2, h3) {
+	font-family: 'Segoe UI', Arial, sans-serif;
+	font-weight: 700;
+	letter-spacing: .035em;
+}
 html :where(input, select, textarea, button) { border-radius: 5px; }
 html .header .right :where(a, .menu-header) { color: var(--link); }
-html:root[data-eh-theme] :where(h1, h2, h3, .hero-title, .hm-hi) {
-	font-family: 'Segoe UI', Arial, sans-serif;
-	font-weight: 600;
-	letter-spacing: -.015em;
-}
 html:root[data-eh-theme] :where(.card, .panel, .seg, .fbox, .hm-srch, .hm-pf, .hm-links a) {
-	border-radius: 8px;
+	border-radius: 6px;
 	box-shadow: none;
 }
 html:root[data-eh-theme] .hm-srch :where(button, select) { border-radius: 5px; }
 html:root[data-eh-theme] .hm-srch button[type=submit],
 html:root[data-eh-theme] .hm-seg input:checked + span { background: var(--accent); }
 html:root[data-eh-theme] .hm-hi em { background: none; color: var(--link); }
+/* A small sleeve-label motif, kept clear of form controls and dense tables. */
+html:root[data-eh-theme] .hm-hi::after {
+	content: '';
+	display: block;
+	width: 104px;
+	height: 5px;
+	margin-top: 14px;
+	background: linear-gradient(to right, #8e3c20 0 42%, #b07a30 42% 72%, #59603b 72%);
+}
+html:root[data-eh-theme] .kicker { color: #59603b; letter-spacing: .12em; }
 html :where(*) { scrollbar-width: thin; scrollbar-color: var(--mbu-border) transparent; }
 
 /* Large rows need a paper tint, rather than the solid fill used by small controls. */

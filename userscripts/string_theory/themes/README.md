@@ -20,7 +20,7 @@ String Theory's themes for MusicBrainz. Each is one CSS file, `<name>.dark.css` 
 
 ## Light-only themes
 
-**Hearth** combines cream surfaces, walnut text and burnt-orange accents with clean sans-serif headings and flat controls. Choose **Hearth** under **Light theme** in String Theory’s **Theme** settings.
+**Hearth** combines toasted-tan surfaces, tobacco-brown text, rusty orange and muted olive with bold record-sleeve headings and flat controls. Choose **Hearth** under **Light theme** in String Theory’s **Theme** settings.
 
 ## Customizing
 
