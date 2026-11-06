@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.231002
+// @version      2026.11.06.232000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11039,6 +11039,7 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '.eh-cfg .chip.p{padding-left:3px}.eh-cfg .chip.p svg,.eh-cfg .chip.p .mgram{width:16px;height:16px;stroke:none;fill:revert}.eh-cfg .ord{font-size:10px;font-weight:700}.eh-cfg .chip[draggable=true]{cursor:grab}.eh-cfg .chip.drag{opacity:.4}.eh-cfg .chip.over{box-shadow:-3px 0 0 var(--mbu-accent)}'
     + '.eh-cfg .foot{display:flex;justify-content:space-between;align-items:center;padding:4px 10px;border-top:1px solid var(--mbu-border-soft);background:var(--mbu-bg-raised);font-size:12px;color:var(--mbu-text-weak)}'
     + '.eh-cfg .mgram{display:inline-grid;place-items:center;border-radius:50%;background:var(--mbu-bg-sunken);color:var(--mbu-text-dim);font-weight:800;text-transform:uppercase}'
+    + '.eh-cfg .chip.fx-ok{color:var(--mbu-ok)!important;border-color:var(--mbu-ok)!important}.eh-cfg .fx-done{color:var(--mbu-ok);font-size:12px;margin-left:4px;transition:opacity .4s}.eh-cfg .fx-done.out{opacity:0}'
     + '.eh-cfg .fx-combo{position:relative;display:inline-flex;align-items:center;width:170px;height:24px;box-sizing:border-box;border:1px solid var(--mbu-border);border-radius:20px;background:var(--mbu-bg-raised);padding:0 2px 0 9px}.eh-cfg .fx-combo:focus-within{border-color:var(--mbu-accent)}.eh-cfg .fx-combo input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--mbu-text);font:600 12px var(--mbu-font);padding:0}.eh-cfg .fx-combo [data-fx-dd]{border:0;background:transparent;color:var(--mbu-text-muted);padding:3px 6px;cursor:pointer;display:inline-flex}.eh-cfg .fx-combo svg,.eh-cfg .chip svg,.eh-cfg .fx-b svg,.eh-cfg .fx-dd svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.eh-cfg .fx-dd{position:absolute;z-index:5;left:-1px;top:calc(100% + 4px);min-width:240px;max-height:280px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:4px}.eh-cfg .fx-dd .it{display:flex;flex-direction:column;align-items:flex-start;gap:1px;width:100%;border:0;border-radius:7px;background:transparent;color:var(--mbu-text);font:13px var(--mbu-font);text-align:left;padding:6px 9px;cursor:pointer}.eh-cfg .fx-dd .it:hover{background:var(--mbu-bg-raised)}.eh-cfg .fx-dd .it[aria-current=true]{background:var(--mbu-accent-soft);color:var(--mbu-accent-text)}.eh-cfg .fx-dd .it .t{font-weight:600;display:flex;gap:6px;align-items:center}.eh-cfg .fx-dd .it .s{font-size:11.5px;color:var(--mbu-text-muted)}.eh-cfg .fx-dd .it.act{flex-direction:row;align-items:center;gap:6px;color:var(--mbu-accent)}.eh-cfg .fx-dd .sep{height:1px;background:var(--mbu-border);margin:4px 2px}.eh-cfg .fx-tag{font:600 10px var(--mbu-font);letter-spacing:.04em;text-transform:uppercase;color:var(--mbu-text-muted);border:1px solid var(--mbu-border);border-radius:20px;padding:1px 6px}.eh-cfg .chip.del{color:var(--mbu-error)}.eh-cfg .chip[aria-disabled=true]{opacity:.45;cursor:default}.eh-cfg .fx-b{display:inline-flex;align-items:center;border:1px solid var(--mbu-border);border-radius:20px;overflow:hidden}.eh-cfg .fx-b[aria-current=true]{background:var(--mbu-accent-soft);border-color:var(--mbu-accent);color:var(--mbu-accent-text)}.eh-cfg .fx-b button{border:0;background:transparent;color:inherit;font:12px var(--mbu-font);cursor:pointer;display:inline-flex;align-items:center}.eh-cfg .fx-b .n{padding:3px 4px 3px 10px}.eh-cfg .fx-b .x{padding:3px 8px 3px 4px;opacity:.7}.eh-cfg .fx-b .x:hover{opacity:1}.eh-cfg .chip.fx-add{border-style:dashed;color:var(--mbu-accent)}.eh-cfg .fx-json{box-sizing:border-box;width:100%;min-height:54px;resize:vertical;border:1px solid var(--mbu-border);border-radius:8px;background:var(--mbu-bg-raised);color:var(--mbu-text);font:11.5px ui-monospace,monospace;padding:5px 7px;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.eh-cfg .fx-err{color:var(--mbu-error);font-size:12px}'
     + '.eh-cfg .reset{all:unset;color:var(--mbu-accent-text);cursor:pointer}.eh-cfg .reset:hover{text-decoration:underline}';
 // the settings' order: plOrder first (seeded by the picks), then the usual order
@@ -11155,6 +11156,7 @@ function fxTheme() {
     if (n && fxUse(n)) { const b = document.querySelector('#eh-cfg .eh-cfg-b'); if (b) b.innerHTML = cfgBody(); }
 }
 const FX_SVG = { dd: '<path d="M6 9l6 6 6-6"/>', plus: '<path d="M12 5v14M5 12h14"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>',
+    ok: '<path d="M5 12l5 5 9-10"/>',
     save: '<path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7V3M8 21v-7h8v7"/>',
     del: '<path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/>' };
 const fxSvg = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${FX_SVG[k]}</svg>`;
@@ -11252,16 +11254,25 @@ function cfgWire(panel, b, body) {
     // the effect presets: the name field with its list, Save, Delete, + for a copy, and JSON to share one
     const fxRedraw = () => { b.innerHTML = body(); };
     const fxTyped = () => { const i = b.querySelector('[data-fx-name]'); return i ? i.value.trim() : ''; };
+    const fxDone = (sel, word) => {
+        const bt = b.querySelector(sel); if (!bt) return;
+        bt.classList.add('fx-ok'); bt.innerHTML = fxSvg('ok');
+        b.querySelector('.fx-done')?.remove();
+        const w = document.createElement('span'); w.className = 'fx-done'; w.setAttribute('role', 'status'); w.textContent = word;
+        (b.querySelector('[data-fx-del]') || bt).after(w);
+        setTimeout(() => w.classList.add('out'), 1400);
+        setTimeout(() => { w.remove(); if (bt.isConnected) { bt.classList.remove('fx-ok'); bt.innerHTML = fxSvg(sel === '[data-fx-new]' ? 'plus' : 'save'); } }, 1800);
+    };
     const fxAddOwn = name => { nmKeep('fx', [...nmList('fx'), { name, v: fxNow() }]); S.fxCur = name; save(); fxPublish(); LOG.info('Effect preset saved: ' + name); fxRedraw(); };
-    const fxSaveAs = () => { const cur = fxFind(S.fxCur); fxAddOwn(fxFree(fxTyped() || (cur ? cur.name : ''))); };
+    const fxSaveAs = (sel = '[data-fx-save]') => { const cur = fxFind(S.fxCur), n = fxFree(fxTyped() || (cur ? cur.name : '')); fxAddOwn(n); fxDone(sel, 'Saved as ' + n); };
     const fxSave = () => {
         const cur = fxFind(S.fxCur), own = fxOwn(S.fxCur);
         if (!cur || !own) return fxSaveAs();   // unsaved, or built in: a copy of its own
         const want = fxTyped();
-        if (!want || want === own.name) return;
+        if (!want || want === own.name) return fxDone('[data-fx-save]', 'Saved');
         const name = fxFree(want, own);
         nmKeep('fx', nmList('fx').map(x => x === own ? { name, v: x.v } : x)); S.fxCur = name; save(); fxPublish();
-        LOG.info('Effect preset renamed: ' + own.name + ' → ' + name); fxRedraw();
+        LOG.info('Effect preset renamed: ' + own.name + ' → ' + name); fxRedraw(); fxDone('[data-fx-save]', 'Saved as ' + name);
     };
     let ddOff = null;
     const ddClose = () => { const dd = b.querySelector('.fx-dd'), bt = b.querySelector('[data-fx-dd]'); if (dd) dd.hidden = true; if (bt) bt.setAttribute('aria-expanded', 'false'); if (ddOff) { ddOff(); ddOff = null; } };
@@ -11281,7 +11292,7 @@ function cfgWire(panel, b, body) {
         const it = t.closest('[data-fx-item]'); if (it) { ddClose(); fxUse(it.dataset.fxItem); return fxRedraw(); }
         if (t.closest('[aria-disabled=true]')) return;
         if (t.closest('[data-fx-new]')) {
-            ddClose(); fxSaveAs();
+            ddClose(); fxSaveAs('[data-fx-new]');
             const i = b.querySelector('[data-fx-name]'); if (i) { i.focus(); i.select(); }
             return;
         }
