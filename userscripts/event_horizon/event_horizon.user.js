@@ -3602,6 +3602,34 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
                 line([[e.x + Math.cos(angle) * near, e.y + Math.sin(angle) * near], [e.x + Math.cos(angle) * far, e.y + Math.sin(angle) * far]], tone(e.id), (1 - age) ** 2, 1);
             }
         }
+    } else if (kind === 'rain') {
+        // Each drop follows the same winding track as its trail. A monotone slip curve
+        // alternates between clinging to the glass and sliding, without jumping backwards.
+        const count = Math.min(240, Math.round(w * h / 14000 * p.rainIntensity / 100));
+        for (let i = 1; i <= count; i++) {
+            const r = (1.8 + rand(i + 21) * 3.2) * p.rainSize;
+            const reach = (24 + r * 17) * p.rainTrail, span = h + reach + 40;
+            const phase = rand(i + 7) * 100 + t * p.rainSpeed * (.15 + r * .045);
+            const slip = phase - Math.sin(phase * tau) * .9 / tau;
+            const y = fract(slip * 38 / span + rand(i + 15)) * span - 20;
+            const xAt = yy => rand(i) * w + Math.sin(yy / 65 + i) * r * .6 + Math.sin(yy / 23 + i * 3) * r * .18;
+            const x = xAt(y), col = tone(i), alpha = .4 + rand(i + 5) * .45;
+            if (reach > 0) {
+                const n = 12;
+                for (let j = 0; j < n; j++) {
+                    const a = y - reach * (1 - j / n), b = y - reach * (1 - (j + 1) / n);
+                    line([[xAt(a), a], [xAt(b), b]], col, alpha * .2 * (j + 1) / n, r * .65 * (j + 1) / n);
+                }
+            }
+            // A translucent body, shaded rim and offset highlight read as water on glass.
+            ctx.beginPath(); ctx.ellipse(x, y, r, r * 1.45, -.08, 0, tau);
+            ctx.fillStyle = col; ctx.globalAlpha = alpha * .12; ctx.fill();
+            stroke(col, alpha * .65, .8);
+            ctx.beginPath(); ctx.ellipse(x + r * .2, y + r * .24, r * .75, r * 1.1, 0, 0, Math.PI);
+            ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.globalAlpha = alpha; ctx.lineWidth = .8; ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(x - r * .25, y - r * .35, r * .28, r * .55, .3, 0, tau);
+            ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.globalAlpha = alpha; ctx.fill();
+        }
     } else if (kind === 'stars') {
         const count = Math.min(900, Math.round(w * h / 1100 * p.starDensity));
         for (let i = 1; i <= count; i++) {
@@ -3641,6 +3669,9 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
 }
 
 const AMBIENT = {
+    rain: { name: 'Rain', tip: 'Droplets cling to the window and slide down with fading trails', rows: [
+        ['rainIntensity', 'Intensity', [25, 50, 100, 175], 100], ['rainSize', 'Droplet size', [.6, 1, 1.6], 1], ['rainSpeed', 'Speed', [.4, 1, 2], 1], ['rainTrail', 'Trail length', [0, .5, 1, 2], 1],
+    ] },
     tron: { name: 'Tron', tip: 'Light riders turn through a square circuit grid', rows: [
         ['tronOutlines', 'Outlines', [0, 10, 25, 50, 100], 25], ['tronGrid', 'Grid size', [24, 40, 64], 40], ['tronRiders', 'Riders', [8, 16, 28], 16], ['tronSpeed', 'Speed', [.4, 1, 2], 1], ['tronTrail', 'Trail length', [1, 3, 6], 3],
     ] },
@@ -11228,7 +11259,8 @@ function fxPane(chip, row) {
 function effectColourRow(chip, row) { return row('Colour', chip('hexTwo', '0', !S.hexTwo, 'One tone') + chip('hexTwo', '1', S.hexTwo === true, 'Two-tone') + chip('hexTwo', '2', S.hexTwo === 2, 'All'), 'Two-tone mixes in the second accent colour\nAll: each light takes its own colour'); }
 function ambientRows(kind, chip, row) {
     const fields = AMBIENT[kind].rows;
-    const field = ([key, label, values]) => row(label, values.map(v => chip(key, v, S[key] === v, key === 'auroraStyle' ? AURORA_STYLES[v] : ['tronOutlines', 'auroraDiffuse'].includes(key) ? v + '%' : String(v))).join(''));
+    const rainLabels = { rainSize: ['Small', 'Medium', 'Large'], rainSpeed: ['Slow', 'Normal', 'Fast'], rainTrail: ['None', 'Short', 'Normal', 'Long'] };
+    const field = ([key, label, values]) => row(label, values.map((v, i) => chip(key, v, S[key] === v, rainLabels[key] ? rainLabels[key][i] : key === 'auroraStyle' ? AURORA_STYLES[v] : ['tronOutlines', 'auroraDiffuse', 'rainIntensity'].includes(key) ? v + '%' : String(v))).join(''));
     return fields.filter(([key]) => key === 'tronOutlines').map(field).join('')
         + row('Opacity', [25, 45, 65, 85, 100].map(v => chip('ambientOpacity', v, S.ambientOpacity === v, v + '%')).join(''), 'How strong the effect is')
         + fields.filter(([key]) => key !== 'tronOutlines').map(field).join('')
