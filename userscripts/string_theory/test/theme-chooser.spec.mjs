@@ -27,7 +27,7 @@ test.describe('theme chooser', () => {
     check(await variant(page) === 'dark', 'reaches a dark theme');
     await page.click('#st-tc-f'); await page.click('#st-tc-f');
     check(await page.textContent('#st-tc-f') === 'Dark', 'the switch reads Dark');
-    for (let i = 0; i < 12; i++) { await page.click('#st-tc-nx'); check(await variant(page) === 'dark', 'Dark steps through dark themes only'); }
+    for (let i = 0; i < 12; i++) { await page.keyboard.press('ArrowRight'); check(await variant(page) === 'dark', 'Dark steps through dark themes only'); }
     await page.screenshot({ path: 'test-results/theme-chooser-bar.png' });
     await page.click('#st-tc-f');
     await page.keyboard.press('Escape');

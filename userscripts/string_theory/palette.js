@@ -576,7 +576,7 @@ function stPalListen() {
 }
 
 // ── Theme chooser ───────────────────────────────────────────────────────────
-// A slim bar at the bottom of the page that steps through every theme with ◀ ▶ (or the arrow keys),
+// A slim bar at the bottom of the page that steps through every theme with the left and right keys,
 // showing each on the whole page; nothing covers the view. All / Light / Dark limits them to one variant.
 // With Event Horizon's effect presets, the effect beside (or up and down) picks the one the theme brings, shown as picked; stepping keeps the effect on show. Keep (Enter) saves both, ✕ (Esc) goes back.
 // It stays open across pages until closed (the runtime's chooser state), and above any popup: it sits in the top layer.
@@ -631,10 +631,8 @@ function stThemeChooser() {
   bar.setAttribute('role', 'toolbar');
   bar.setAttribute('aria-label', 'Theme chooser');
   bar.innerHTML = '<button type="button" id="st-tc-f" aria-label="Themes to step through">' + { all: 'All', light: 'Light', dark: 'Dark' }[only] + '</button>'
-    + '<button type="button" id="st-tc-p" aria-label="Previous theme">◀</button>'
-    + '<span class="st-tc-n" aria-live="polite"></span><span class="st-tc-i"></span>'
-    + '<button type="button" id="st-tc-nx" aria-label="Next theme">▶</button>'
-    + (fx.length ? '<select id="st-tc-e" aria-label="Event Horizon effect this theme brings"></select>' : '')
+    + '<span class="st-tc-n" aria-live="polite" data-tip="The theme on show&#10;Left: the previous theme&#10;Right: the next theme"></span><span class="st-tc-i"></span>'
+    + (fx.length ? '<select id="st-tc-e" aria-label="Event Horizon effect this theme brings" data-tip="The Event Horizon effect this theme brings&#10;It stays as you step to other themes&#10;Up: the previous effect&#10;Down: the next effect"></select>' : '')
     + '<button type="button" id="st-tc-k">Keep</button>'
     + '<button type="button" class="mbu-ov-x" id="st-tc-x" aria-label="Close">✕</button>';
   // a manual popover is in the top layer, above any z-index; a popup opened later goes over it, so it climbs back on top
@@ -723,8 +721,6 @@ function stThemeChooser() {
   };
   window.addEventListener('keydown', onKey, true);
   bar.querySelector('#st-tc-f').onclick = filter;
-  bar.querySelector('#st-tc-p').onclick = function () { step(-1); };
-  bar.querySelector('#st-tc-nx').onclick = function () { step(1); };
   bar.querySelector('#st-tc-k').onclick = function () { close(true); };
   bar.querySelector('#st-tc-x').onclick = function () { close(false); };
   // picked, it's shown at once, and the arrows step the themes again
