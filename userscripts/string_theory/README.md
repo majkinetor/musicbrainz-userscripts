@@ -56,6 +56,8 @@ In String Theory's settings, on the **General** tab, **Mode** picks one of:
 
 **Light theme** and **Dark theme** pick which theme each one uses. To add or tweak a theme, see [themes](themes/README.md).
 
+With Event Horizon on and an effect preset saved in its settings, **Light effect** and **Dark effect** pick the preset each theme brings. It is applied each time that theme comes on; what you change in Event Horizon after that stays until the theme changes again.
+
 ## What's new
 
 String Theory checks the project's [announcements](https://github.com/majkinetor/musicbrainz-userscripts/discussions/categories/announcements) once a day. While some are unread, its icon is golden, and clicking it opens **What's new** instead of the dock.

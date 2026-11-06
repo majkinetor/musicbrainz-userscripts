@@ -299,6 +299,9 @@ function stSettings(tab) {
     return;
   }
   var U = stUI(), T = stTokens(), html = document.documentElement;
+  // Event Horizon's effect presets, when it's on and has any: each theme can bring one
+  var ehFx = __stReadOff().indexOf('event_horizon') < 0 && mbuShared('ehFxPresets') || [];
+  if (!Array.isArray(ehFx)) ehFx = [];
   if (!document.getElementById('st-cfg-css')) {
     var css = document.createElement('style');
     css.id = 'st-cfg-css';
@@ -328,6 +331,9 @@ function stSettings(tab) {
         return '<label class="st-lbl" for="st-th-' + v + '">' + (v === 'dark' ? 'Dark theme' : 'Light theme') + '</label><select id="st-th-' + v + '">'
           + __stTheme.names(v).map(function (n) { return '<option>' + stEsc(n) + '</option>'; }).join('') + '</select>';
       }).join('') + '</div>'
+      + (ehFx.length ? '<div class="st-row">' + ['light', 'dark'].map(function (v) {
+        return '<label class="st-lbl" for="st-th-eh-' + v + '" data-tip="Event Horizon’s effect preset for the ' + v + ' theme&#10;Applied each time that theme comes on; changes in Event Horizon after it stay">' + (v === 'dark' ? 'Dark effect' : 'Light effect') + '</label><select id="st-th-eh-' + v + '"></select>';
+      }).join('') + '</div>' : '')
       + '<h3 class="st-h" id="st-dock">Dock</h3>'
       + '<div class="st-row">' + seg('st-side', 'Side', [['left', 'Left'], ['right', 'Right']]) + seg('st-flow', 'Orientation', [['column', 'Column'], ['row', 'Row']])
       + '<span class="st-lbl">Size</span><span class="st-step"><button type="button" id="st-size-dn" aria-label="Smaller">−</button>'
@@ -437,6 +443,7 @@ function stSettings(tab) {
     };
     q('#st-th-mode-l').classList.add('st-mode-label');
     pairRow(q('#st-th-light').parentElement); pairRow(q('#st-side').parentElement); pairRow(q('#st-hover').parentElement); pairRow(q('#st-count').parentElement); pairRow(q('#st-pal-on').parentElement);
+    if (ehFx.length) { var ehRow = q('#st-th-eh-light').parentElement, thGrid = q('#st-th-light').closest('.st-field-grid'); pairRow(ehRow); while (ehRow.firstChild) thGrid.appendChild(ehRow.firstChild); ehRow.remove(); }
     var dockGrid = q('#st-side').closest('.st-field-grid'), hoverGrid = q('#st-hover').closest('.st-field-grid');
     while (hoverGrid.firstChild) dockGrid.appendChild(hoverGrid.firstChild); hoverGrid.remove();
     var countGrid = q('#st-count').closest('.st-field-grid');
@@ -508,6 +515,12 @@ function stSettings(tab) {
       var th = __stTheme.read();
       Array.prototype.forEach.call(q('#st-th-mode').children, function (b) { b.setAttribute('aria-checked', String(b.dataset.v === th.mode)); });
       q('#st-th-dark').value = th.dark; q('#st-th-light').value = th.light;
+      // each theme's effect preset: a name no longer in Event Horizon's list stays an option until it's changed
+      if (ehFx.length) ['light', 'dark'].forEach(function (v) {
+        var cur = th.eh[v + ':' + th[v]] || '', sel = q('#st-th-eh-' + v);
+        sel.innerHTML = '<option value="">No preset</option>' + ehFx.concat(cur && ehFx.indexOf(cur) < 0 ? [cur] : []).map(function (n) { return '<option>' + stEsc(n) + '</option>'; }).join('');
+        sel.value = cur;
+      });
       q('#st-th-from').value = th.from; q('#st-th-to').value = th.to;
       q('#st-th-time').hidden = th.mode !== 'time';
       q('#st-th-sun').hidden = th.mode !== 'sun';
@@ -519,7 +532,13 @@ function stSettings(tab) {
       showTheme();
     };
     ['dark', 'light'].forEach(function (v) {
-      q('#st-th-' + v).onchange = function (e) { var p = {}; p[v] = e.target.value; __stTheme.set(p); };
+      q('#st-th-' + v).onchange = function (e) { var p = {}; p[v] = e.target.value; __stTheme.set(p); showTheme(); };
+      if (ehFx.length) q('#st-th-eh-' + v).onchange = function (e) {
+        var th = __stTheme.read(), map = {};
+        Object.keys(th.eh).forEach(function (k) { map[k] = th.eh[k]; });
+        if (e.target.value) map[v + ':' + th[v]] = e.target.value; else delete map[v + ':' + th[v]];
+        __stTheme.set({ eh: map });
+      };
     });
     ['from', 'to'].forEach(function (k) {
       // text, not type=time: that one shows AM/PM by the browser's locale

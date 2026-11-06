@@ -98,6 +98,8 @@ Credit marks match by person, so someone with two credits, one pending, has both
 Drift, Tide, Ripple and Lantern are radial or linear masks over the stationary SVG lattice (`.hex-drift`, `.hex-drift2` for two-tone); Twinkle, Ripple, Electricity and Neural draw on a canvas from `HEX_FX`, built on the cached `hexLattice` topology, one rAF loop per layer (`layer._ehPattern`). `--eh-hex-opacity` sets the outlines, `--eh-hex-fx` the effect, `--eh-hex-pace` the CSS durations; `HEX_USES` picks which settings rows a motion takes; the rest are dimmed (`.cr.dim`). The Effects tab's select lists `EFFECTS`, where a new effect gets its entry and its rows. Depth moves the layer by `translateY` and calls `_ehPattern.shift`. Wide drift, Soft tension and Micro tilt are retired and saved values migrate to Drift; a missing `hexFx` is derived from `hexOpacity`. Hidden tabs and reduced motion stop drawing; mode changes and disabling EH dispose the loop before the body is detached.
 
 
+Effect presets are `{ name, v }` with `v` holding the `FX_KEYS` settings: the user's in `S.named.fx`, shipped ones in `FX_PRESETS` (a key a preset leaves out takes its default), a user's shadowing a shipped one of the same name. `fxPublish` writes their names to the shared key `ehFxPresets` for String Theory's settings. String Theory names a theme's preset on `<html data-st-eh-fx>`; `fxTheme` applies it only when the name differs from `S.fxTheme`, so changes made after it stay until the theme changes.
+
 Keep effects out of animated SVG patterns: changing dash offsets and blur filters inside a repeated pattern repaints and rasterizes large areas continuously.
 
 ## Declarations setOn can reach

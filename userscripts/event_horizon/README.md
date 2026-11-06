@@ -126,12 +126,15 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | Annotation → Show annotation on hover | on                                                                  | preview a folded annotation                                                                 |
 | General → Page width                  | Wide                                                                | how wide the page grows on a big screen                                                     |
 | General → Background                  | Cover aura                                                          | Flat, Cover aura, Glow or Header band                                                       |
+| Effects → Preset                      | none                                                                | an effect with all its settings, saved by name                                              |
 | Effects → Effect                      | None                                                                | Hexagons: outlines with a motion, their strength and the effect's, Depth                    |
 | General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                                      |
 | General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
 | General → Keyboard shortcuts          | on                                                                  | the keys below; [keyboard shortcuts](#keyboard-shortcuts); **Change keys** opens their list |
 
 Motions: Static, Drift, Tide, Twinkle, Ripple, Lantern (follows the pointer), Electricity and Neural. Pick Hexagons in the Effects tab and its settings follow; the ones the motion doesn't take (Pace, Trail, How often, Glow, a two-tone Colour) are greyed out. **Depth** scrolls the hexagons slower than the page. All respect reduced motion.
+
+To keep an effect you like, type a name beside **Preset** and click **Save** (or press Enter); the same name replaces it. **Preset** then picks it back, and **Delete** removes the one shown. With [String Theory](../string_theory/README.md#theme), each theme can bring its own preset.
 
 ## Shortcuts
 

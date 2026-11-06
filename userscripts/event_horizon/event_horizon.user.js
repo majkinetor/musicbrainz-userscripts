@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.150000
+// @version      2026.11.06.170000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3301,7 +3301,7 @@ const S = {
     hgrp: 'burst', // the history page's grouping
     tagView: 'bars', etagView: 'chips', tagSort: 'count', tagScope: 'a', tgxView: 'row', // the tags pages' view (an editor's, an entity's), order and kind
 };
-VIEW.push('keysOn', 'keys', 'menuTitles', 'annoHover', 'pending', 'colPick', 'colW', 'named', 'stars', 'starGroup', 'starView', 'starSort', 'recView', 'recSort', 'recMax', 'recOff', 'hmQs');
+VIEW.push('keysOn', 'keys', 'menuTitles', 'annoHover', 'pending', 'colPick', 'colW', 'named', 'fxTheme', 'stars', 'starGroup', 'starView', 'starSort', 'recView', 'recSort', 'recMax', 'recOff', 'hmQs');
 S.keysOn = true; // #907: keyboard shortcuts, and the keys changed from their defaults by command
 S.keys = {};
 S.stars = []; // starred entities travel with the manager's settings
@@ -3315,6 +3315,7 @@ S.recMax = 12;
 S.recOff = [];
 S.annoHover = true;
 S.named = {}; // filters and column choices saved by name, by 'flt-dg', 'cols-ed' and so on: [{ name, v }]
+S.fxTheme = ''; // the effect preset String Theory's theme last asked for: a new one is applied once, then the effect is the user's again
 S.colW = {}; // the widths dragged in a table, by section; the title takes what they leave, and none means the table fits itself
 S.colPick = {}; // the tables' column choice, by section: { order, off }; none is the usual table
 S.pending = false; // MusicBrainz's grey mark on what has edits open; takes one more request per page
@@ -10635,6 +10636,7 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '.eh-cfg .chip.p{padding-left:3px}.eh-cfg .chip.p svg,.eh-cfg .chip.p .mgram{width:16px;height:16px;stroke:none;fill:revert}.eh-cfg .ord{font-size:10px;font-weight:700}.eh-cfg .chip[draggable=true]{cursor:grab}.eh-cfg .chip.drag{opacity:.4}.eh-cfg .chip.over{box-shadow:-3px 0 0 var(--mbu-accent)}'
     + '.eh-cfg .foot{display:flex;justify-content:space-between;align-items:center;padding:4px 10px;border-top:1px solid var(--mbu-border-soft);background:var(--mbu-bg-raised);font-size:12px;color:var(--mbu-text-weak)}'
     + '.eh-cfg .mgram{display:inline-grid;place-items:center;border-radius:50%;background:var(--mbu-bg-sunken);color:var(--mbu-text-dim);font-weight:800;text-transform:uppercase}'
+    + '.eh-cfg .fx-name{box-sizing:border-box;width:110px;height:22px;padding:0 7px;border:1px solid var(--mbu-border);border-radius:20px;background:var(--mbu-bg-raised);color:var(--mbu-text);font:500 11.5px var(--mbu-font)}.eh-cfg .fx-name:focus{outline:0;border-color:var(--mbu-accent)}.eh-cfg [data-fx-preset]{height:22px;max-width:160px}'
     + '.eh-cfg .reset{all:unset;color:var(--mbu-accent-text);cursor:pointer}.eh-cfg .reset:hover{text-decoration:underline}';
 // the settings' order: plOrder first (seeded by the picks), then the usual order
 function plSorted(ps) {
@@ -10703,6 +10705,33 @@ const HEX_MOTIONS = [
 const HEX_USES = { pace: ['drift', 'tide', 'twinkle', 'ripple', 'electricity', 'neural'], trail: ['twinkle', 'electricity', 'neural'], often: ['twinkle', 'ripple', 'electricity', 'neural'], glow: ['twinkle', 'electricity', 'neural'], two: ['drift', 'twinkle', 'electricity', 'neural'] };
 // the effects drawn over the background; Hexagons is the first
 const EFFECTS = [['none', 'None', 'No effect over the background'], ['hexagons', 'Hexagons', 'Hexagon outlines over any background, with an animation']];
+// an effect with all its settings, saved by name: the shipped ones here ({ name, v }, v holding any of FX_KEYS, the
+// rest at their defaults), the user's own in S.named.fx; one of the user's shadows a shipped one of the same name
+const FX_PRESETS = [];
+const FX_KEYS = ['hex', 'hexOpacity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth'];
+const fxNow = () => Object.fromEntries(FX_KEYS.map(k => [k, S[k]]));
+const fxFull = p => { const d = JSON.parse(DEFAULTS); return Object.fromEntries(FX_KEYS.map(k => [k, k in p.v ? p.v[k] : d[k]])); };
+const fxLow = s => String(s).toLowerCase();
+const fxAll = () => { const own = nmList('fx'), low = new Set(own.map(x => fxLow(x.name))); return [...FX_PRESETS.filter(x => !low.has(fxLow(x.name))), ...own]; };
+const fxFind = name => fxAll().find(x => fxLow(x.name) === fxLow(name));
+// the preset the effect is now, if any: the one named last wins a tie
+const fxMatch = () => { const now = fxNow(); return fxAll().filter(p => { const f = fxFull(p); return FX_KEYS.every(k => f[k] === now[k]); }).pop(); };
+function fxUse(name) { const p = fxFind(name); if (!p) return false; Object.assign(S, fxFull(p)); save(); hexApply(); LOG.info('Effect preset: ' + p.name); return true; }
+// the names, for String Theory's theme settings
+const fxPublish = () => { const n = fxAll().map(x => x.name); if (JSON.stringify(mbuShared('ehFxPresets') || []) !== JSON.stringify(n)) mbuShared('ehFxPresets', n.length ? n : null); };
+// String Theory's theme names a preset on <html data-st-eh-fx>: a new name is applied once, so the user's changes after it stay
+function fxTheme() {
+    const n = document.documentElement.dataset.stEhFx || '';
+    if (n === S.fxTheme) return;
+    S.fxTheme = n; save();
+    if (n && fxUse(n)) { const b = document.querySelector('#eh-cfg .eh-cfg-b'); if (b) b.innerHTML = cfgBody(); }
+}
+function fxRow(row) {
+    const all = fxAll(), m = fxMatch(), own = m && nmList('fx').includes(m);
+    const pick = all.length ? `<select data-fx-preset aria-label="Preset">${m ? '' : '<option value="" selected>Custom</option>'}${all.map(p => `<option${p === m ? ' selected' : ''}>${esc(p.name)}</option>`).join('')}</select>` : '';
+    const del = own ? `<button type="button" class="chip" data-fx-del="${esc(m.name)}" data-tip="Delete this preset">Delete</button>` : '';
+    return row('Preset', `${pick}${del}<input type="text" class="fx-name" data-fx-name maxlength="60" autocomplete="off" placeholder="Name" aria-label="Preset name" value="${m && own ? esc(m.name) : ''}"><button type="button" class="chip" data-fx-save>Save</button>`, 'An effect with all its settings, saved by name\nThe same name replaces it');
+}
 function hexRows(chip, row) {
     const m = S.hexMotion, use = k => HEX_USES[k].includes(m);
     const dim = (on, html) => on ? html : html.replace('class="cr"', 'class="cr dim"');
@@ -10728,7 +10757,7 @@ function cfgBody() {
             + row('Pending changes', chip('pending', 'pending', S.pending, 'Show', 'Mark what has edits open, as MusicBrainz does\nTakes one extra MusicBrainz request per page, sent last'))
             + row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen')
             + row('Background', [['flat', 'Flat'], ['aura', 'Cover aura'], ['glow', 'Glow'], ['band', 'Header band']].map(([k, l]) => chip('bg', k, (S.bg || 'aura') === k, l)).join(''), 'Cover aura blurs the page\'s cover or picture behind its head; pages without one get the glow'),
-        effects: row('Effect', `<select data-fx-pick aria-label="Effect">${EFFECTS.map(([k, l, tip]) => `<option value="${k}" title="${esc(tip)}"${k === fx ? ' selected' : ''}>${l}</option>`).join('')}</select>`, 'An effect drawn over the background')
+        effects: fxRow(row) + row('Effect', `<select data-fx-pick aria-label="Effect">${EFFECTS.map(([k, l, tip]) => `<option value="${k}" title="${esc(tip)}"${k === fx ? ' selected' : ''}>${l}</option>`).join('')}</select>`, 'An effect drawn over the background')
             + (fx === 'hexagons' ? hexRows(chip, row) : ''),
     };
     if (!panes[cfgTab]) cfgTab = 'general';
@@ -10765,6 +10794,21 @@ function cfgWire(panel, b, body) {
         if (!ev.target.matches('[data-fx-pick]')) return;
         S.hex = ev.target.value === 'hexagons';
         save(); hexApply(); b.innerHTML = body();
+    });
+    // the effect presets: pick one to bring it back; Save keeps the effect under the name, the same name replaces it
+    panel.addEventListener('change', ev => { if (!ev.target.matches('[data-fx-preset]') || !ev.target.value) return; fxUse(ev.target.value); b.innerHTML = body(); });
+    const fxSave = () => {
+        const inp = b.querySelector('[data-fx-name]'), name = inp ? inp.value.trim() : '';
+        if (!name) { if (inp) inp.focus(); return; }
+        nmKeep('fx', [...nmList('fx').filter(x => fxLow(x.name) !== fxLow(name)), { name, v: fxNow() }]);
+        LOG.info('Effect preset saved: ' + name); fxPublish(); b.innerHTML = body();
+    };
+    panel.addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target.matches('[data-fx-name]')) { ev.preventDefault(); fxSave(); } });
+    panel.addEventListener('click', ev => {
+        if (ev.target.closest('[data-fx-save]')) return fxSave();
+        const d = ev.target.closest('[data-fx-del]'); if (!d) return;
+        nmKeep('fx', nmList('fx').filter(x => fxLow(x.name) !== fxLow(d.dataset.fxDel)));
+        LOG.info('Effect preset deleted: ' + d.dataset.fxDel); fxPublish(); b.innerHTML = body();
     });
     // number fields become the suite's − n + stepper, on every redraw of the body
     mbuControls(b); new MutationObserver(() => mbuControls(b)).observe(b, { childList: true });
@@ -10875,6 +10919,9 @@ function start() {
     // a tick later (#847): the scripts started with it (String Theory runs them in a row, Platform Check after
     // EH) read MusicBrainz's page first, its sidebar and tracklist, before EH swaps the body for its own
     setTimeout(() => setOn(S.on && !off), 0);
+    // the effect presets for String Theory's theme settings, and the one its theme names
+    fxPublish(); fxTheme();
+    new MutationObserver(fxTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-st-eh-fx'] });
 }
 let showing = 0;
 // the page's shape while it loads, so nothing jumps when the data lands

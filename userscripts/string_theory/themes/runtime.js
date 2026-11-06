@@ -17,7 +17,7 @@ var __stTheme = (function () {
     var v; try { v = GM_getValue(KEY, null); } catch (e) { v = null; }
     v = v && typeof v === 'object' ? v : {};
     // light is the start: its Default is MusicBrainz untouched, so nothing changes until it's asked for
-    return { mode: MODES.indexOf(v.mode) < 0 ? 'light' : v.mode, dark: v.dark || 'Default', light: v.light || 'Default', lat: v.lat, lon: v.lon, from: v.from || '20:00', to: v.to || '07:00' };
+    return { mode: MODES.indexOf(v.mode) < 0 ? 'light' : v.mode, dark: v.dark || 'Default', light: v.light || 'Default', lat: v.lat, lon: v.lon, from: v.from || '20:00', to: v.to || '07:00', eh: v.eh && typeof v.eh === 'object' ? v.eh : {} };
   }
   function save(s) { try { GM_setValue(KEY, s); } catch (e) {} }
 
@@ -65,6 +65,9 @@ var __stTheme = (function () {
     if (style.textContent !== css) style.textContent = css;
     if (!style.isConnected) (document.head || document.documentElement).appendChild(style);
     document.documentElement.classList.toggle('st-dark', v === 'dark');   // wakes the shared theme watch
+    // Event Horizon's effect preset for this theme, by 'variant:name'; EH applies a new one once
+    var fx = s.eh[v + ':' + s[v]];
+    if (fx) document.documentElement.setAttribute('data-st-eh-fx', fx); else document.documentElement.removeAttribute('data-st-eh-fx');
   }
   var tc = onMb && tcRead();
   if (tc) { over = read(); over.mode = tc.v; over[tc.v] = tc.n; }
