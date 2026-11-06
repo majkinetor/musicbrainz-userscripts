@@ -2266,7 +2266,6 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             min-height: 40px;
             box-sizing: border-box;
             padding: 4px 12px;
-            background: var(--mbu-bg-raised);
         }
         /* MB's margins on labels, selects and buttons pushed the row's content up, leaving more room below */
         .discogs-bar-row1 > *, .discogs-bar-row1 > * > :is(label, select, button, input, span, img) { margin-top: 0 !important; margin-bottom: 0 !important; }
@@ -2493,7 +2492,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             border-radius: 2rem;
             background: transparent;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 12px;
             color: var(--mbu-text-dim);
             user-select: none;
             transition: color 0.12s;
@@ -2925,12 +2924,12 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         const wrap = document.createElement('span');
         wrap.className = 'discogs-select-wrap';
         // Borderless to match the toggles (#118).
-        wrap.style.cssText = 'display:inline-flex;align-items:center;gap:0.3rem;font-size:0.8rem;color:var(--mbu-text-dim);padding:0.15rem 0.2rem;border:none;background:transparent;';
+        wrap.style.cssText = 'display:inline-flex;align-items:center;gap:0.3rem;font-size:12px;color:var(--mbu-text-dim);padding:0.15rem 0.2rem;border:none;background:transparent;';
         const lbl = document.createElement('span');
         lbl.textContent = labelText + ':';
         wrap.appendChild(lbl);
         const sel = document.createElement('select');
-        sel.style.cssText = 'font-size:0.8rem;padding:0.05rem 0.2rem;border:none;background:transparent;cursor:pointer;color:var(--mbu-text);font-weight:600;';
+        sel.style.cssText = 'font-size:12px;padding:0.05rem 0.2rem;border:none;background:transparent;cursor:pointer;color:var(--mbu-text);font-weight:600;';
         options.forEach(opt => {
             const o = document.createElement('option');
             o.value = opt.value;
