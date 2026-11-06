@@ -1,6 +1,8 @@
 // #784: on a phone, a finger swipe over Art Station's gallery scrolls Mission Control's card. The frame lies fixed
 // over the card's slot, so the browser's own scroll chaining never reached the card: the page stuck on the gallery.
-// Read-only: nothing is applied.
+// A slow drag, held without letting go, moved the frame under the finger as the card scrolled, and the frame read that
+// as the finger going back: the gallery shook up and down and the card would not scroll past it. Read-only: nothing
+// is applied.
 import { test, check, until } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Mission Control', values: { 'mc.settings': JSON.stringify({ v: 2, reloadAfter: false }) } }, pageErrors: ['MB is not defined'],
@@ -37,14 +39,22 @@ test('#784: a swipe over the gallery scrolls the card on a phone', { tag: ['@san
   const g = await until(geo, v => v.frame.join() === v.slot.join() && v.slot[3] > 150);
   check(g.frame.join() === g.slot.join(), `the frame lies over the slot (${JSON.stringify(g)})`);
   const at = await scrollerAt();
-  // a slow swipe over the gallery, finger up (down when the card is near its bottom already); slow, so no coast
+  // a slow drag over the gallery in small steps, the way a finger reports one, finger up (down when the card is near
+  // its bottom already); slow, so no coast. The card follows the finger: always the same way, as far as it went
   const x = g.slot[0] + 30, top = Math.max(g.slot[1], 0) + 20, bot = Math.min(g.slot[1] + g.slot[3], 790) - 20, up = at.max - at.top >= 120;
-  const ys = up ? [bot, top] : [top, bot];
+  const mid = (top + bot) / 2, ys = up ? [mid + 120, mid - 120] : [mid - 120, mid + 120];   // 240px: the slot stays in view
   const cdp = await page.context().newCDPSession(page);
   const touch = (type, y) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y }] });
   await touch('touchStart', ys[0]);
-  for (let i = 1; i <= 20; i++) { await touch('touchMove', ys[0] + (ys[1] - ys[0]) * i / 20); await page.waitForTimeout(30); }
+  const N = 80, seen = [];
+  for (let i = 1; i <= N; i++) { await touch('touchMove', ys[0] + (ys[1] - ys[0]) * i / N); seen.push((await scrollerAt()).top); }
+  await page.waitForTimeout(300);   // the last moves' scroll lands; a slow drag has no coast to wait out
+  seen.push((await scrollerAt()).top);
   await touch('touchEnd');
+  const back = seen.filter((v, i) => i && (up ? v < seen[i - 1] : v > seen[i - 1])).length, went = Math.abs(seen[seen.length - 1] - at.top), far = Math.abs(ys[1] - ys[0]);
+  console.log(JSON.stringify({ seen, back, went, far }));
+  check(back === 0, `the card never scrolls back while the finger goes one way (${back} steps back: ${seen.join(' ')})`);
+  check(Math.abs(went - Math.min(far, up ? at.max - at.top : at.top)) <= 0.1 * far, `the card scrolls as far as the finger went (${went} of ${far})`);
   const want = v => up ? v.top - at.top > 60 : at.top - v.top > 60;
   const after = await until(scrollerAt, want);
   console.log(JSON.stringify({ g, at, after, ys }));
