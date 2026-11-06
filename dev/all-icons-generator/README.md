@@ -8,11 +8,11 @@ node dev/all-icons-generator/gen.mjs
 
 It writes:
 
-| File           | What                                                                                          |
-| -------------- | --------------------------------------------------------------------------------------------- |
-| `norm/*.svg`   | each script's icon fitted to the shared box                                                   |
-| `preview.html` | all icons at 128, 48, 28 and 16 px, toolbar strips and every animation, on white and on black |
-| `preview.png`  | a screenshot of `preview.html`, kept up to date by hand                                       |
+| File           | What                                                                                                                   |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `norm/*.svg`   | each script's icon fitted to the shared box                                                                            |
+| `preview.html` | one self-contained page: all icons at 128, 48, 28 and 16 px, toolbar strips and every animation, on white and on black |
+| `preview.png`  | a screenshot of `preview.html`, kept up to date by hand                                                                |
 
 The console prints each demo's CSS size, then each icon's fill ratio and the margin it got.
 

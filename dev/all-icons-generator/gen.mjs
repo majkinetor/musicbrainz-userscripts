@@ -1,6 +1,6 @@
 // Every userscript's icon side by side, as each script ships it (its @icon), with candidate swaps — then each one measured
 // and fitted to the same box, so the set reads as one bundle: same visual size, centred both ways.
-// Writes norm/<script>.svg and preview.html (128, 48, 28, 16 px on white and black, plus a toolbar strip).
+// Writes norm/<script>.svg and preview.html, a single file: 128, 48, 28, 16 px on white and black, toolbar strips, every animation.
 //   node dev/all-icons-generator/gen.mjs
 import { readFileSync, readdirSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join, extname } from 'node:path';
@@ -66,7 +66,7 @@ const DEMOS = demos(srcOf, iconOf).map(d => {
 console.log(DEMOS.map(d => `${(d.name + ' · ' + d.label).padEnd(48)} css ${d.css.length}`).join('\n'));
 // busy icons: shown in place of the icon while a dock entry works with nothing counted yet
 const busy = icons.map(ic => { const m = srcOf(ic.key).match(/(?:busyIcon\s*:|BUSY_URI\s*=)\s*'(data:[^']+)'/); return m && { ...ic, busy: m[1] }; }).filter(Boolean);
-const bfig = c => `<figure>${[48, 28].map(z => `<img src="norm/${c.key}.svg" width="${z}" height="${z}" alt="">`).join('')}<span class="arrow">→</span>${[48, 28].map(z => `<img src="${c.busy}" width="${z}" height="${z}" alt="">`).join('')}<figcaption><b>${c.name}</b><br><small>busy icon</small></figcaption></figure>`;
+const bfig = c => `<figure>${[48, 28].map(z => `<img data-i="${c.key}" width="${z}" height="${z}" alt="">`).join('')}<span class="arrow">→</span>${[48, 28].map(z => `<img src="${c.busy}" width="${z}" height="${z}" alt="">`).join('')}<figcaption><b>${c.name}</b><br><small>busy icon</small></figcaption></figure>`;
 // the folded dock, live: entries peek out (a count, or actionable) and slide back; busy runs the dash, the dots or the busy icon
 const DOCK = ['isrc_scout', 'fuzzy_logic', 'platform_check', 'fusion'].filter(k => icons.some(c => c.key === k));
 const dockDoc = dark => `<!doctype html><html data-mbu-st data-mbu-dock${dark ? ' data-mbu-theme="dark"' : ''}><meta charset="utf-8"><style>${TOK}${UI_CSS}html,body{margin:0;height:100%;background:${dark ? '#000' : '#fff'}}</style><body><script>${UI_JS}
@@ -87,11 +87,14 @@ f.srcdoc='<!doctype html><html data-mbu-st'+(dark?' data-mbu-theme="dark" data-e
 const ANIM_CSS = `h2{grid-column:1/-1;margin:14px 0 0;font-size:15px}.arrow{opacity:.5;align-self:end;margin-bottom:14px}
 .live{grid-column:span 2}.live iframe{width:100%;height:240px;border:1px solid rgba(127,127,127,.3);border-radius:10px}
 .demo iframe{width:100%;height:96px;border:1px solid rgba(127,127,127,.3);border-radius:10px}`;
-const fig = c => `<figure>${[128, 48, 28, 16].map(z => `<img src="norm/${c.key}.svg" width="${z}" height="${z}" alt="">`).join('')}<figcaption><b>${c.name}</b>${c.note ? `<br><small>${c.note}</small>` : ''}</figcaption></figure>`;
-const strip = z => `<div class="strip">${icons.map(c => `<img src="norm/${c.key}.svg" width="${z}" height="${z}" title="${c.name}" alt="">`).join('')}</div>`;
+// the fitted icons ride in the page, once each, so preview.html is a single file that opens anywhere
+const NORM_JS = `<script>(function(){var I=${JSON.stringify(Object.fromEntries(icons.map(c => [c.key, 'data:image/svg+xml;base64,' + readFileSync(join(dir, 'norm', `${c.key}.svg`)).toString('base64')])))};
+document.querySelectorAll('img[data-i]').forEach(function(e){e.src=I[e.dataset.i]})})()</script>`;
+const fig = c => `<figure>${[128, 48, 28, 16].map(z => `<img data-i="${c.key}" width="${z}" height="${z}" alt="">`).join('')}<figcaption><b>${c.name}</b>${c.note ? `<br><small>${c.note}</small>` : ''}</figcaption></figure>`;
+const strip = z => `<div class="strip">${icons.map(c => `<img data-i="${c.key}" width="${z}" height="${z}" title="${c.name}" alt="">`).join('')}</div>`;
 writeFileSync(join(dir, 'preview.html'), `<!doctype html><meta charset="utf-8"><title>All userscript icons</title>
 <style>body{margin:0;font:13px system-ui,sans-serif}section{padding:18px;display:grid;grid-template-columns:repeat(5,1fr);gap:18px}.dark{background:#000;color:#ddd}.light{background:#fff;color:#222}figure{margin:0;display:flex;align-items:end;gap:8px;flex-wrap:wrap}figcaption{width:100%}small{opacity:.65}
 .strip{grid-column:1/-1;display:flex;gap:14px;align-items:center;padding:10px 14px;border-radius:10px;background:rgba(127,127,127,.12)}
 ${ANIM_CSS}</style>
-<section class="light">${strip(40)}${strip(24)}${icons.map(fig).join('')}${animSection(false)}</section><section class="dark">${strip(40)}${strip(24)}${icons.map(fig).join('')}${animSection(true)}</section>${DEMO_JS}\n`);
+<section class="light">${strip(40)}${strip(24)}${icons.map(fig).join('')}${animSection(false)}</section><section class="dark">${strip(40)}${strip(24)}${icons.map(fig).join('')}${animSection(true)}</section>${NORM_JS}${DEMO_JS}\n`);
 console.log(icons.map(c => `${c.key.padEnd(26)} fill ${c.m.fill.toFixed(2)} margin ${c.m.margin}`).join('\n'));
