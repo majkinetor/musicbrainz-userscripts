@@ -3659,27 +3659,30 @@ const AMBIENT_KEYS = ['effect', 'ambientOpacity', ...Object.keys(AMBIENT_DEFAULT
 function ambientApply(layer, kind) {
     layer._ehDepthOff?.(); const svg = layer.querySelector('svg'); if (svg) svg.style.display = 'none';
     layer.style.setProperty('--eh-hex-mf', '1'); layer.style.setProperty('--eh-hex-fx', Math.max(0, Math.min(100, Number(S.ambientOpacity) || 0)) / 100);
+    const w = layer.clientWidth, h = layer.clientHeight, dpr = kind === 'aurora' ? Math.min(.5, 480 / w, 320 / h) : Math.min(2, devicePixelRatio || 1);
+    const css = getComputedStyle(layer), c1 = css.color, c2 = css.getPropertyValue('--accent2').trim() || c1;
+    const p = { colour: S.hexTwo === 2 ? 2 : S.hexTwo ? 1 : 0, glow: Math.max(0, Math.min(2, Number(S.hexGlow) || 0)), c1, c2 };
+    for (const [k, , values, fallback] of AMBIENT[kind].rows) p[k] = values.includes(Number(S[k])) ? Number(S[k]) : fallback;
+    const key = [kind, w, h, dpr, hexReduce.matches].join('|');
+    // Page redraws keep the canvas, simulation and clock; controls and theme colours update in place.
+    if (layer._ehPattern?.key === key) { Object.assign(layer._ehPattern.P, p); return; }
     layer._ehPattern?.stop();
     const cv = document.createElement('canvas'); cv.className = 'hex-pattern'; layer.append(cv);
-    const w = layer.clientWidth, h = layer.clientHeight, dpr = kind === 'aurora' ? Math.min(.5, 480 / w, 320 / h) : Math.min(2, devicePixelRatio || 1);
     cv.width = w * dpr; cv.height = h * dpr; cv.style.width = w + 'px'; cv.style.height = h + 'px';
     const ctx = cv.getContext('2d'); if (!ctx) { cv.remove(); return; } ctx.scale(dpr, dpr);
-    const css = getComputedStyle(layer), c1 = css.color, c2 = css.getPropertyValue('--accent2').trim() || c1;
-    const p = { colour: S.hexTwo === 2 ? 2 : S.hexTwo ? 1 : 0, glow: Math.max(0, Math.min(2, Number(S.hexGlow) || 0)) };
-    for (const [k, , values, fallback] of AMBIENT[kind].rows) p[k] = values.includes(Number(S[k])) ? Number(S[k]) : fallback;
     let raf = 0, time = 0, last = 0, lastPaint = -Infinity;
     const draw = now => {
         if (!layer.isConnected) { stop(); return; }
         if (last) time += Math.min(.1, (now - last) / 1000); last = now;
         // Decorative Aurora paints at most 20 fps; animation time still follows the clock.
         if (kind !== 'aurora' || now - lastPaint >= 48 || hexReduce.matches) {
-            ambientDraw(ctx, w, h, kind, p, time, c1, c2); lastPaint = now;
+            ambientDraw(ctx, w, h, kind, p, time, p.c1, p.c2); lastPaint = now;
         }
         if (!hexReduce.matches) raf = requestAnimationFrame(draw);
     };
     const vis = () => { cancelAnimationFrame(raf); last = 0; lastPaint = -Infinity; if (!document.hidden) draw(performance.now()); };
     function stop() { cancelAnimationFrame(raf); document.removeEventListener('visibilitychange', vis); cv.remove(); delete layer._ehPattern; }
-    layer._ehPattern = { stop, shift() {} }; document.addEventListener('visibilitychange', vis); vis();
+    layer._ehPattern = { key, P: p, stop, shift() {} }; document.addEventListener('visibilitychange', vis); vis();
 }
 
 const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'fx', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
