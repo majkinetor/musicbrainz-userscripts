@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.07.000500
+// @version      2026.11.07.001000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2701,6 +2701,17 @@ body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;poin
 @media (max-width:700px){#eh-aura{left:0;width:var(--eh-aura-w,100%);transform:none}}
 @media (max-width:700px){html main#app.wrap{padding-top:12px}:is(#app,#eh-pin) .kicker{gap:4px}:is(#app,#eh-pin) .kicker .acts{gap:0}:is(#app,#eh-pin) .kicker .ab{padding:0 5px}:is(#app,#eh-pin) .kicker :is(.srch,.acts>*+.ab[data-star]){margin-left:0}:is(#app,#eh-pin) .kicker .abm{max-width:calc(100vw - 16px)}:is(#app,#eh-pin) .kicker .abm .ab{white-space:normal}#app .detail .grp h4{flex-wrap:wrap;row-gap:4px}#app .hm-hi{display:none}#app .hm-hero{padding-bottom:2px}#app .hm-srch{gap:4px;padding:3px 3px 3px 12px;border-radius:22px}#app .hm-srch>.hm-go{flex:none;width:24px;height:30px}#app .hm-srch>.hm-go svg{width:16px;height:16px}#app .hm-srch>input[name=query]{flex:1 1 0;min-width:0;font-size:15px;padding:6px 0}#app .hm-srch>.hm-ty{flex:none;max-width:84px;padding:4px;font-size:12px}#app .hm-srch>button.hm-tg{width:30px;height:30px}#app .hm-qr{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:6px;margin-top:10px;padding-right:40px;-webkit-mask-image:linear-gradient(90deg,#000 80%,transparent);mask-image:linear-gradient(90deg,#000 80%,transparent)}#app .hm-qr::-webkit-scrollbar{display:none}#app .hm-qr a{flex:none;white-space:nowrap}#app .hm-add{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:2px;margin-top:10px;padding-right:40px;-webkit-mask-image:linear-gradient(90deg,#000 80%,transparent);mask-image:linear-gradient(90deg,#000 80%,transparent)}#app .hm-add::-webkit-scrollbar{display:none}#app .hm-add span{flex:none;font-size:11px;margin-right:2px}#app .hm-add a{flex:none;width:34px;height:34px}#app .hm-add a svg{width:18px;height:18px}#app #s-tl>.secthead>.tools>.label{display:none}}   /* past the edges it widened a phone's page by 270px */
 :root[data-eh-bg=aura][data-eh-theme=dark] #eh-aura{opacity:.28}
+/* the Image background: a picture from the web, fixed behind the page and below the effects; the filters go on the picture
+   (oversized by the blur, so its soft edges stay off screen), the tint and vignette over it, blended inside it alone */
+#eh-bgimg{display:none;position:fixed;inset:0;z-index:-2;pointer-events:none;overflow:hidden;isolation:isolate;opacity:var(--eh-bgimg-o,.65)}
+:root[data-eh-bg=url][data-eh-bgimg] #eh-bgimg,:root[data-eh-bg=art][data-eh-bgimg] #eh-bgimg{display:block}
+#eh-bgimg i{position:absolute;inset:calc(var(--eh-bgimg-b,0px) * -2.5);background-position:center;background-repeat:no-repeat;filter:var(--eh-bgimg-f,none)}
+#eh-bgimg[data-fit=tile] i{background-repeat:repeat;background-size:auto}
+#eh-bgimg[data-fit=cover] i{background-size:cover}
+#eh-bgimg[data-fit=contain] i{background-size:contain}
+#eh-bgimg::before{content:none;position:absolute;inset:0;z-index:1;background:var(--accent);mix-blend-mode:color}
+#eh-bgimg[data-tone=accent]::before{content:''}
+#eh-bgimg::after{content:'';position:absolute;inset:0;z-index:2;background:radial-gradient(ellipse at 50% 40%,transparent 35%,var(--eh-page) 100%);opacity:var(--eh-bgimg-v,0)}
 :root:is([data-eh-bg=glow],[data-eh-bg=aura]:not([data-eh-aura])) body{background:radial-gradient(900px 520px at 100% 0,color-mix(in srgb,var(--accent2) 18%,transparent),transparent 70%) no-repeat,radial-gradient(800px 480px at 72% 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%) no-repeat,var(--eh-page)}
 /* light pages show the same lines far stronger than dark ones: one slider value reads alike on both */
 :is(#eh-hex,.eh-amb){position:fixed;inset:-48px;z-index:-1;pointer-events:none;color:var(--accent);--eh-hex-k:.5}
@@ -3685,13 +3696,15 @@ function ambientApply(layer, kind) {
     layer._ehPattern = { key, P: p, stop, shift() {} }; document.addEventListener('visibilitychange', vis); vis();
 }
 
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'fx', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'fx', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
     plOrder: [], // the settings' platform order, shown or not; prov follows it
     crTracks: true,
     byName: false, plNames: false, plHover: false, plSize: 18, trackStripe: true, dis: 'brackets', width: 1600, bg: 'aura', fx: null, hex: false, hexOpacity: 60, hexIntensity: 100, hexMotion: 'static', hexFx: 100, hexPace: .6, hexTrail: 1, hexOften: 1, hexGlow: 1, hexTwo: false, hexDepth: false,
+    // the Image background: its address, and the filters over it
+    bgUrl: '', bgArt: 'chillwave', bgSeed: 1, bgBlur: 0, bgBright: 100, bgSat: 100, bgOpacity: 65, bgFit: 'cover', bgVig: 0, bgTone: 'natural',
     on: true, menuTitles: false,
     thumbs: true,
     factOff: { artist: [], label: [] }, // the artist's and label's header facts turned off
@@ -8487,6 +8500,7 @@ function bgApply() {
     hexApply();
     const de = document.documentElement;
     de.setAttribute('data-eh-bg', S.bg || 'flat');
+    bgImgApply();
     requestAnimationFrame(() => {
         const im = S.bg === 'aura' && document.querySelector('#app img.cover, #app .picw img');
         if (!im || !im.complete || !im.naturalWidth) {
@@ -8519,6 +8533,175 @@ function auraWidth() {
     if (w) de.style.setProperty('--eh-aura-w', w + 'px'); else de.style.removeProperty('--eh-aura-w');
 }
 window.visualViewport?.addEventListener('resize', () => { if (document.getElementById('eh-aura')) auraWidth(); });
+// the Artwork background: a picture drawn here from a seed, the same one every time for the same scene and seed
+const BG_ARTS = [
+    ['chillwave', 'Chillwave', 'A city skyline under a striped sunset, on a neon grid'],
+    ['peaks', 'Peaks', 'Mountain ridges fading into the haze at dusk'],
+    ['aurora', 'Aurora', 'Northern lights over a pine forest'],
+    ['nebula', 'Nebula', 'Coloured gas clouds and stars in deep space'],
+    ['ocean', 'Ocean', 'Layered waves rolling towards the shore'],
+    ['lowpoly', 'Low poly', 'A field of shaded triangles'],
+    ['bokeh', 'Bokeh', 'Out-of-focus lights in the dark'],
+];
+const bgRand = seed => { let a = (seed >>> 0) || 1; return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
+// one ridge line: midpoint displacement across the width
+const bgRidge = (r, n, rough) => { const p = new Array(n + 1).fill(0); let step = n, amp = 1; while (step > 1) { const h = step / 2; for (let i = h; i < n; i += step) p[i] = (p[i - h] + p[i + h]) / 2 + (r() * 2 - 1) * amp; step = h; amp *= rough; } return p; };
+const BG_DRAW = {
+    chillwave(c, W, H, r) {
+        const hz = H * .64, sky = c.createLinearGradient(0, 0, 0, hz);
+        sky.addColorStop(0, '#120726'); sky.addColorStop(.45, '#4a1d73'); sky.addColorStop(.8, '#c43d82'); sky.addColorStop(1, '#ff9a6b');
+        c.fillStyle = sky; c.fillRect(0, 0, W, hz);
+        for (let i = 0; i < 140; i++) { c.fillStyle = `rgba(255,255,255,${.2 + r() * .6})`; const s = r() < .1 ? 2 : 1; c.fillRect(r() * W, r() * hz * .55, s, s); }
+        const sx = W * (.35 + r() * .3), sr = H * .2, sun = c.createLinearGradient(0, hz - sr * 1.7, 0, hz);
+        sun.addColorStop(0, '#ffe66b'); sun.addColorStop(.6, '#ff8a5c'); sun.addColorStop(1, '#ff3d8b');
+        c.fillStyle = sun; c.beginPath(); c.arc(sx, hz - sr * .55, sr, 0, Math.PI * 2); c.fill();
+        c.fillStyle = sky; for (let k = 0, y = hz - sr * .7; y < hz; k++) { const h = 2 + k * 1.6; c.fillRect(sx - sr - 2, y, sr * 2 + 4, h); y += h + 9 - k * .5; }
+        const city = (base, col, lo, hi, lit) => {
+            for (let x = -20; x < W;) {
+                const w = 26 + r() * 70, h = lo + r() * (hi - lo);
+                c.fillStyle = col; c.fillRect(x, base - h, w, h);
+                if (r() < .25) c.fillRect(x + w * .4, base - h - 18 - r() * 30, 2, 40);
+                for (let wy = base - h + 8; wy < base - 6; wy += 9) for (let wx = x + 5; wx < x + w - 6; wx += 8) if (r() < lit) { c.fillStyle = ['#ffd36b', '#ff7ad9', '#6be4ff'][r() * 3 | 0]; c.globalAlpha = .55 + r() * .45; c.fillRect(wx, wy, 3, 4); c.globalAlpha = 1; }
+                x += w + r() * 6;
+            }
+        };
+        city(hz, '#3a1a5c', 60, 260, .06); city(hz, '#1a0b2c', 30, 170, .14);
+        const gr = c.createLinearGradient(0, hz, 0, H); gr.addColorStop(0, '#2a0b3d'); gr.addColorStop(1, '#07020f');
+        c.fillStyle = gr; c.fillRect(0, hz, W, H - hz);
+        c.strokeStyle = '#ff3dc8'; c.shadowColor = '#ff3dc8'; c.shadowBlur = 8; c.lineWidth = 1.5;
+        for (let i = 1; i < 18; i++) { const y = hz + (H - hz) * Math.pow(i / 17, 2.2); c.globalAlpha = .25 + .75 * i / 17; c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
+        c.globalAlpha = .8; for (let i = -24; i <= 24; i++) { c.beginPath(); c.moveTo(W / 2 + i * 6, hz); c.lineTo(W / 2 + i * W * .12, H); c.stroke(); }
+        c.globalAlpha = 1; c.shadowBlur = 0; c.fillStyle = '#ffb3e6'; c.fillRect(0, hz - 1, W, 2);
+    },
+    peaks(c, W, H, r) {
+        const hue = r() * 360, sky = c.createLinearGradient(0, 0, 0, H);
+        sky.addColorStop(0, `hsl(${hue + 220},45%,22%)`); sky.addColorStop(.55, `hsl(${hue + 260},40%,55%)`); sky.addColorStop(1, `hsl(${hue + 20},75%,75%)`);
+        c.fillStyle = sky; c.fillRect(0, 0, W, H);
+        c.fillStyle = `hsla(${hue + 40},90%,92%,.9)`; c.beginPath(); c.arc(W * (.2 + r() * .6), H * (.22 + r() * .15), H * .06, 0, Math.PI * 2); c.fill();
+        const n = 6;
+        for (let l = 0; l < n; l++) {
+            const p = bgRidge(r, 256, .55), base = H * (.42 + l * .1), amp = H * (.22 - l * .025), t = l / (n - 1);
+            c.fillStyle = `hsl(${hue + 250 - t * 20},${30 + t * 15}%,${62 - t * 54}%)`;
+            c.beginPath(); c.moveTo(0, H); for (let i = 0; i <= 256; i++) c.lineTo(i / 256 * W, base - p[i] * amp * .55); c.lineTo(W, H); c.fill();
+            const fog = c.createLinearGradient(0, base - amp * .3, 0, base + H * .12); fog.addColorStop(0, 'rgba(255,255,255,0)'); fog.addColorStop(1, `hsla(${hue + 260},40%,80%,${.25 - t * .04})`);
+            c.fillStyle = fog; c.fillRect(0, base - amp * .3, W, H * .2);
+        }
+    },
+    aurora(c, W, H, r) {
+        const sky = c.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, '#020615'); sky.addColorStop(.7, '#0a1f33'); sky.addColorStop(1, '#0d2a3a');
+        c.fillStyle = sky; c.fillRect(0, 0, W, H);
+        for (let i = 0; i < 260; i++) { c.fillStyle = `rgba(255,255,255,${.2 + r() * .7})`; c.fillRect(r() * W, r() * H * .8, r() < .08 ? 2 : 1, r() < .08 ? 2 : 1); }
+        c.globalCompositeOperation = 'lighter';
+        const bands = 2 + (r() * 2 | 0);
+        for (let b = 0; b < bands; b++) {
+            const ph = r() * 9, f1 = .002 + r() * .003, f2 = .007 + r() * .006, y0 = H * (.18 + b * .12 + r() * .08), hue = [140, 160, 120, 290][b + (r() * 2 | 0)] || 150;
+            for (let x = 0; x < W; x += 2) {
+                const y = y0 + Math.sin(x * f1 + ph) * H * .08 + Math.sin(x * f2 + ph * 2) * H * .03, len = H * (.12 + .2 * (.5 + .5 * Math.sin(x * f2 * 1.7 + ph)));
+                const a = .05 + .1 * (.5 + .5 * Math.sin(x * .03 + ph * 3)), g = c.createLinearGradient(0, y - len, 0, y);
+                g.addColorStop(0, `hsla(${hue + 120},80%,60%,0)`); g.addColorStop(.7, `hsla(${hue},85%,60%,${a})`); g.addColorStop(1, `hsla(${hue},90%,70%,${a * 1.6})`);
+                c.fillStyle = g; c.fillRect(x, y - len, 2, len + 4);
+            }
+        }
+        c.globalCompositeOperation = 'source-over';
+        const p = bgRidge(r, 128, .5); c.fillStyle = '#03080d'; c.beginPath(); c.moveTo(0, H);
+        for (let i = 0; i <= 128; i++) c.lineTo(i / 128 * W, H * .86 - p[i] * H * .04); c.lineTo(W, H); c.fill();
+        for (let x = -10; x < W; x += 8 + r() * 22) { const h = H * (.08 + r() * .14), w = h * .32, y = H * .87 + r() * H * .05; c.beginPath(); c.moveTo(x, y - h); c.lineTo(x + w / 2, y); c.lineTo(x - w / 2, y); c.fill(); c.fillRect(x - 1, y - 2, 2, H); }
+    },
+    nebula(c, W, H, r) {
+        c.fillStyle = '#04030c'; c.fillRect(0, 0, W, H);
+        c.globalCompositeOperation = 'lighter';
+        const hue = r() * 360;
+        for (let i = 0; i < 18; i++) {
+            const x = W * (.15 + r() * .7), y = H * (.15 + r() * .7), rad = H * (.15 + r() * .45), h = hue + (r() * 2 - 1) * 70, g = c.createRadialGradient(x, y, 0, x, y, rad);
+            g.addColorStop(0, `hsla(${h},80%,55%,${.12 + r() * .14})`); g.addColorStop(.5, `hsla(${h + 30},70%,35%,.06)`); g.addColorStop(1, 'hsla(0,0%,0%,0)');
+            c.fillStyle = g; c.fillRect(0, 0, W, H);
+        }
+        for (let i = 0; i < 700; i++) { const s = r() < .03 ? 2.2 : r() * 1.3 + .3; c.fillStyle = `hsla(${r() < .5 ? 210 : 40},60%,${80 + r() * 20}%,${.3 + r() * .7})`; c.beginPath(); c.arc(r() * W, r() * H, s, 0, Math.PI * 2); c.fill(); }
+        for (let i = 0; i < 5; i++) { const x = r() * W, y = r() * H, g = c.createRadialGradient(x, y, 0, x, y, 30); g.addColorStop(0, 'rgba(255,255,255,.9)'); g.addColorStop(.1, 'rgba(200,220,255,.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.fillRect(x - 30, y - 30, 60, 60); }
+        c.globalCompositeOperation = 'source-over';
+    },
+    ocean(c, W, H, r) {
+        const hue = 180 + r() * 60, sky = c.createLinearGradient(0, 0, 0, H * .4);
+        sky.addColorStop(0, `hsl(${hue + 20},55%,82%)`); sky.addColorStop(1, `hsl(${hue - 170},80%,85%)`);
+        c.fillStyle = sky; c.fillRect(0, 0, W, H);
+        const n = 9;
+        for (let l = 0; l < n; l++) {
+            const t = l / (n - 1), base = H * (.38 + t * .62), f = [.004 + r() * .004, .011 + r() * .01, .027 + r() * .02], ph = [r() * 9, r() * 9, r() * 9], amp = 6 + t * 26;
+            c.fillStyle = `hsl(${hue + t * 20},${55 + t * 20}%,${66 - t * 46}%)`;
+            c.beginPath(); c.moveTo(0, H);
+            for (let x = 0; x <= W; x += 4) c.lineTo(x, base + amp * (Math.sin(x * f[0] + ph[0]) + .5 * Math.sin(x * f[1] + ph[1]) + .2 * Math.sin(x * f[2] + ph[2])));
+            c.lineTo(W, H); c.fill();
+            c.strokeStyle = `hsla(${hue},60%,92%,${.35 - t * .2})`; c.lineWidth = 1.5; c.stroke();
+        }
+    },
+    lowpoly(c, W, H, r) {
+        const h1 = r() * 360, h2 = h1 + 60 + r() * 120, cols = 16, rows = 10, cw = W / cols, ch = H / rows, pt = [];
+        for (let j = 0; j <= rows; j++) { pt[j] = []; for (let i = 0; i <= cols; i++) pt[j][i] = [i * cw + (i && i < cols ? (r() - .5) * cw * .8 : 0), j * ch + (j && j < rows ? (r() - .5) * ch * .8 : 0)]; }
+        const tri = (a, b, d) => {
+            const cx = (a[0] + b[0] + d[0]) / 3, cy = (a[1] + b[1] + d[1]) / 3, t = (cx / W * .6 + cy / H * .4);
+            c.fillStyle = `hsl(${h1 + (h2 - h1) * t},${50 + r() * 15}%,${26 + (1 - cy / H) * 30 + r() * 8}%)`; c.strokeStyle = c.fillStyle;
+            c.beginPath(); c.moveTo(...a); c.lineTo(...b); c.lineTo(...d); c.closePath(); c.fill(); c.stroke();
+        };
+        for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) { const a = pt[j][i], b = pt[j][i + 1], d = pt[j + 1][i], e = pt[j + 1][i + 1]; if (r() < .5) { tri(a, b, e); tri(a, e, d); } else { tri(a, b, d); tri(b, e, d); } }
+    },
+    bokeh(c, W, H, r) {
+        const hue = r() * 360, g = c.createLinearGradient(0, 0, W, H);
+        g.addColorStop(0, `hsl(${hue},45%,8%)`); g.addColorStop(1, `hsl(${hue + 60},45%,14%)`);
+        c.fillStyle = g; c.fillRect(0, 0, W, H);
+        c.globalCompositeOperation = 'lighter';
+        for (let i = 0; i < 90; i++) {
+            const x = r() * W, y = r() * H, rad = 12 + Math.pow(r(), 2) * 110, h = hue + (r() * 2 - 1) * 50, a = .05 + r() * .18, d = c.createRadialGradient(x, y, 0, x, y, rad);
+            d.addColorStop(0, `hsla(${h},80%,65%,${a * .6})`); d.addColorStop(.85, `hsla(${h},80%,65%,${a})`); d.addColorStop(1, `hsla(${h},80%,65%,0)`);
+            c.fillStyle = d; c.beginPath(); c.arc(x, y, rad, 0, Math.PI * 2); c.fill();
+        }
+        c.globalCompositeOperation = 'source-over';
+    },
+};
+const bgArtCache = {};
+function bgArtUrl() {
+    const k = BG_DRAW[S.bgArt] ? S.bgArt : 'chillwave', key = k + ':' + (S.bgSeed >>> 0);
+    if (!bgArtCache[key]) {
+        const cv = document.createElement('canvas'); cv.width = 1600; cv.height = 1000;
+        BG_DRAW[k](cv.getContext('2d'), cv.width, cv.height, bgRand(S.bgSeed));
+        bgArtCache[key] = cv.toDataURL('image/jpeg', .92);
+    }
+    return bgArtCache[key];
+}
+// an address the Image background takes: http(s), or a data: image
+const bgUrlOk = u => /^(https?:\/\/\S+|data:image\/[\w.+-]+[;,]\S+)$/i.test(u || '');
+const BG_TONES = { natural: '', mono: 'grayscale(1)', sepia: 'sepia(.85)', accent: 'grayscale(1)' };
+let bgImgErr = '';   // the address that failed to load, for the settings to say so
+// the Image background: the picture, loaded once per address, and its filters
+function bgImgApply() {
+    const de = document.documentElement, u = S.bg === 'art' ? bgArtUrl() : S.bg === 'url' && bgUrlOk(S.bgUrl) ? S.bgUrl : '';
+    let box = document.getElementById('eh-bgimg');
+    if (!u || !ehBody) { de.removeAttribute('data-eh-bgimg'); return; }
+    if (!box) { box = document.createElement('div'); box.id = 'eh-bgimg'; box.setAttribute('aria-hidden', 'true'); box.append(document.createElement('i')); }
+    if (box.parentNode !== ehBody) ehBody.prepend(box);   // ours, never MusicBrainz's page
+    const blur = Math.max(0, +S.bgBlur || 0);
+    box.dataset.fit = ['cover', 'contain', 'tile'].includes(S.bgFit) ? S.bgFit : 'cover';
+    box.dataset.tone = S.bgTone in BG_TONES ? S.bgTone : 'natural';
+    box.style.setProperty('--eh-bgimg-o', String((+S.bgOpacity || 0) / 100));
+    box.style.setProperty('--eh-bgimg-b', blur + 'px');
+    box.style.setProperty('--eh-bgimg-v', String((+S.bgVig || 0) / 100));
+    box.style.setProperty('--eh-bgimg-f', [blur && `blur(${blur}px)`, S.bgBright !== 100 && `brightness(${S.bgBright / 100})`, S.bgSat !== 100 && `saturate(${S.bgSat / 100})`, BG_TONES[box.dataset.tone]].filter(Boolean).join(' ') || 'none');
+    if (box.dataset.src === u) { if (box.dataset.ok) de.setAttribute('data-eh-bgimg', ''); return; }
+    box.dataset.src = u; delete box.dataset.ok; de.removeAttribute('data-eh-bgimg');
+    const im = new Image();
+    im.onload = () => {
+        if (box.dataset.src !== u) return;
+        box.firstChild.style.backgroundImage = 'url(' + JSON.stringify(u) + ')';
+        box.dataset.ok = '1'; bgImgErr = '';
+        if (S.bg === 'url' || S.bg === 'art') de.setAttribute('data-eh-bgimg', '');
+        if (S.bg === 'url') LOG.info('Background image loaded: ' + (u.length > 120 ? u.slice(0, 120) + '…' : u));
+    };
+    im.onerror = () => {
+        if (box.dataset.src !== u) return;
+        bgImgErr = u; LOG.warn('Background image failed to load: ' + (u.length > 120 ? u.slice(0, 120) + '…' : u));
+        const b = document.querySelector('#eh-cfg .eh-cfg-b'); if (b) b.innerHTML = cfgBody();
+    };
+    im.src = u;
+}
 // a phone: the page's widths, the text size and whatever sticks out past the right edge go in the log, to reproduce a layout
 let phoneSeen = '';
 function phoneDiag(when) {
@@ -11133,12 +11316,12 @@ const HEX_MOTIONS = [
 const HEX_USES = { pace: ['drift', 'tide', 'twinkle', 'ripple', 'electricity', 'neural'], trail: ['twinkle', 'electricity', 'neural'], often: ['twinkle', 'ripple', 'electricity', 'neural'], glow: ['twinkle', 'electricity', 'neural'], two: ['drift', 'twinkle', 'electricity', 'neural'] };
 // the effects drawn over the background; Hexagons is the first
 const EFFECTS = [['hexagons', 'Hexagons', 'Hexagon outlines over any background, with an animation'], ...Object.entries(AMBIENT).map(([k, f]) => [k, f.name, f.tip])];
-const BGS = [['aura', 'Cover aura', 'The page\'s cover or picture, blurred behind its head\nPages without one get the glow'], ['glow', 'Glow', 'A soft glow of the accent colour behind the page head']];
+const BGS = [['aura', 'Cover aura', 'The page\'s cover or picture, blurred behind its head\nPages without one get the glow'], ['glow', 'Glow', 'A soft glow of the accent colour behind the page head'], ['art', 'Artwork', 'A picture drawn by Event Horizon: a city at sunset, mountains, an aurora and more'], ['url', 'Image', 'A picture from the web behind the page\nPaste its address']];
 // an effect with all its settings, saved by name: the built-in ones here ({ name, v }, v holding any of FX_KEYS, the
 // rest at their defaults), the user's own in S.named.fx; one of the user's shadows a built-in one of the same name.
 // S.fxCur names the one being worked on: a change stays out of it until Save, + keeps it as a new one; a built-in one stays as shipped
 const FX_PRESETS = [];
-const FX_KEYS = ['bg', 'fx', ...AMBIENT_KEYS, 'hex', 'hexOpacity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth'];
+const FX_KEYS = ['bg', 'fx', ...AMBIENT_KEYS, 'hex', 'hexOpacity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone'];
 const FX_UNNAMED = 'Unnamed effect';
 const fxNow = () => Object.fromEntries(FX_KEYS.map(k => [k, S[k]]));
 const fxFull = p => { const d = JSON.parse(DEFAULTS), f = Object.fromEntries(FX_KEYS.map(k => [k, k in p.v ? p.v[k] : d[k]])); f.fx = fxOf(f); f.hex = f.fx.length > 0; return f; };
@@ -11195,7 +11378,7 @@ function fxTheme() {
     if (n && fxUse(n)) redraw();
 }
 const FX_SVG = { dd: '<path d="M6 9l6 6 6-6"/>', plus: '<path d="M12 5v14M5 12h14"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>',
-    ok: '<path d="M5 12l5 5 9-10"/>',
+    ok: '<path d="M5 12l5 5 9-10"/>', shuffle: '<path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>',
     save: '<path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7V3M8 21v-7h8v7"/>',
     del: '<path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/>' };
 const fxSvg = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${FX_SVG[k]}</svg>`;
@@ -11220,10 +11403,29 @@ function fxPane(chip, row) {
     const badges = row('Effects', (bg ? badge('bg', `Background&nbsp;· <b>${bg[1]}</b>`, 'the background') : add('bg', 'Background', 'Add a background\nWithout one the page is flat'))
         + on.map(k => badge(k, k === 'hexagons' ? `Hexagons&nbsp;· <b>${m ? m[1] : ''}</b>` : `<b>${AMBIENT[k].name}</b>`, 'the effect')).join('')
         + (on.length < EFFECTS.length ? add('fx', 'Effect', 'Add an effect\nEffects stack over the background and each other') : ''), 'Select one to show its settings');
-    const body = sel === 'bg' ? row('Background', BGS.map(([k, l, tip]) => chip('bg', k, S.bg === k, l, tip)).join(''))
+    const body = sel === 'bg' ? row('Background', BGS.map(([k, l, tip]) => chip('bg', k, S.bg === k, l, tip)).join('')) + bgImgRows(chip, row)
         : fx ? row('Effect', EFFECTS.filter(([k]) => k === fx || !on.includes(k)).map(([k, l, tip]) => chip('fxKind', k, fx === k, l, tip)).join('')) + (fx === 'hexagons' ? hexRows(chip, row) : ambientRows(fx, chip, row))
         : '';
     return preset + paste + badges + body;
+}
+// the Artwork's scene, or the Image's address, then the filters both share
+function bgImgRows(chip, row) {
+    if (S.bg !== 'url' && S.bg !== 'art') return '';
+    const opts = (g, list, tip) => list.map(([v, l]) => chip(g, v, S[g] === v, l)).join('');
+    const pct = list => list.map(v => [v, v + '%']);
+    const src = S.bg === 'art'
+        ? row('Scene', BG_ARTS.map(([k, l, tip]) => chip('bgArt', k, S.bgArt === k, l, tip)).join('')
+            + `<button type="button" class="chip" data-g="bgSeed" data-k="new" data-tip="Shuffle\nThe same scene, drawn anew">${fxSvg('shuffle')}Shuffle</button>`, 'What the artwork shows')
+        : row('Address', `<span class="fx-combo"><input type="url" data-eh-bgurl autocomplete="off" spellcheck="false" placeholder="https://… an image address" aria-label="Image address" value="${esc(S.bgUrl)}"></span><button type="button" class="chip" data-eh-bgurl-ok data-tip="Show\nThe picture at this address">${fxSvg('ok')}</button>`
+            + (S.bgUrl && !bgUrlOk(S.bgUrl) ? '<span class="fx-err">Not an image address: it starts with https://</span>' : bgImgErr && bgImgErr === S.bgUrl ? '<span class="fx-err">The image didn\'t load: check the address</span>' : ''), 'Right-click a picture on the web and copy its image address');
+    return src
+        + row('Opacity', opts('bgOpacity', pct([25, 45, 65, 85, 100])), 'How strongly the picture shows through')
+        + row('Blur', opts('bgBlur', [[0, 'None'], [4, 'Slight'], [10, 'Soft'], [20, 'Strong'], [40, 'Heavy']]), 'How blurred the picture is')
+        + row('Brightness', opts('bgBright', pct([50, 70, 85, 100, 115])), 'Darker or lighter')
+        + row('Saturation', opts('bgSat', pct([0, 50, 100, 150])), 'How vivid the colours are')
+        + row('Tone', opts('bgTone', [['natural', 'Natural'], ['mono', 'Mono'], ['sepia', 'Sepia'], ['accent', 'Accent']]), 'Recolour the picture\nAccent: in the theme\'s accent colour')
+        + row('Fit', opts('bgFit', [['cover', 'Fill'], ['contain', 'Whole'], ['tile', 'Tile']]), 'Fill: covers the page, cropped\nWhole: all of it shows\nTile: repeated at its own size')
+        + row('Vignette', opts('bgVig', [[0, 'None'], [50, 'Soft'], [100, 'Strong']]), 'Fade the edges into the page');
 }
 function effectColourRow(chip, row) { return row('Colour', chip('hexTwo', '0', !S.hexTwo, 'One tone') + chip('hexTwo', '1', S.hexTwo === true, 'Two-tone') + chip('hexTwo', '2', S.hexTwo === 2, 'All'), 'Two-tone mixes in the second accent colour\nAll: each light takes its own colour'); }
 function ambientRows(kind, chip, row) {
@@ -11325,6 +11527,10 @@ function cfgWire(panel, b, body) {
         ddOff = () => { if (typeof off1 === 'function') off1(); removeEventListener('keydown', esc, true); };
     };
     panel.addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target.matches('[data-fx-name]')) { ev.preventDefault(); fxSave(); } });
+    // the Image background's address: Enter, the tick, or leaving the field takes it
+    const bgUrlTake = () => { const i = b.querySelector('[data-eh-bgurl]'); if (!i) return; const u = i.value.trim(); if (u === S.bgUrl) return; S.bgUrl = u; save(); bgApply(); fxRedraw(); };
+    panel.addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target.matches('[data-eh-bgurl]')) { ev.preventDefault(); bgUrlTake(); } });
+    panel.addEventListener('change', ev => { if (ev.target.matches('[data-eh-bgurl]')) bgUrlTake(); });
     panel.addEventListener('click', ev => {
         const t = ev.target;
         const sel = t.closest('[data-fx-sel]'); if (sel) { fxSel = sel.dataset.fxSel; return fxRedraw(); }
@@ -11337,6 +11543,7 @@ function cfgWire(panel, b, body) {
             return;
         }
         if (t.closest('[data-fx-save]')) return fxSave();
+        if (t.closest('[data-eh-bgurl-ok]')) return bgUrlTake();
         if (t.closest('[data-fx-del]')) {
             const own = fxOwn(S.fxCur); if (!own) return;
             nmKeep('fx', nmList('fx').filter(x => x !== own)); S.fxCur = ''; save(); fxPublish();
@@ -11415,6 +11622,10 @@ function cfgWire(panel, b, body) {
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
             else if (g === 'bg') { S.bg = k; bgApply(); }
+            else if (g === 'bgArt') { S.bgArt = k; bgApply(); }
+            else if (g === 'bgSeed') { S.bgSeed = 1 + (Math.random() * 1e9 | 0); bgApply(); }
+            else if (g === 'bgBlur' || g === 'bgBright' || g === 'bgSat' || g === 'bgOpacity' || g === 'bgVig') { S[g] = +k; bgApply(); }
+            else if (g === 'bgFit' || g === 'bgTone') { S[g] = k; bgApply(); }
             else if (g === 'fxKind') { const on = fxOf(S), i = on.indexOf(fxSel); if (!on.includes(k)) { if (i < 0) on.push(k); else on[i] = k; } S.fx = on; fxSel = k; hexApply(); }
             else if (g === 'fxRm') { if (k === 'bg') { S.bg = 'flat'; bgApply(); } else { S.fx = fxOf(S).filter(x => x !== k); hexApply(); } }
             else if (g === 'fxAdd') { if (k === 'bg') { S.bg = 'aura'; bgApply(); fxSel = k; } else { const on = fxOf(S), n = EFFECTS.find(([x]) => !on.includes(x)); if (n) { S.fx = [...on, n[0]]; fxSel = n[0]; } hexApply(); } }

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-06 21:42 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-06 21:45 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -776,7 +776,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 ### Features
 
 - **[The viewer](#the-viewer)** takes over a page, moves between pages without reloading, and keeps the page's identity and actions in reach while scrolling.
-- **[Background effects](#background-effects)**: Hexagons, Tron, Stars and Aurora, each with its own controls.
+- **[Background effects](#background-effects)**: Hexagons, Tron, Stars and Aurora, each with its own controls, over a background: the cover, a glow, generated artwork or any picture from the web.
 - **[Sections](#sections)**: all data, an entity's facts and external links included, in cards that can be reordered, hidden and configured.
 - **[Starred entities](#starred-entities)** keeps favorite entities on the homepage.
 - **[Collections](#collections)** adds or removes an entity from your MusicBrainz collections.
@@ -811,6 +811,13 @@ Under **Settings → Effects**, add a **Background** and as many **Effects** as 
 | Stars    | Density, Drift, Depth, Twinkle                                        |
 | Aurora   | Style, Diffuse, Ribbons, Speed, Height, Folds                         |
 | Hexagons | Motion, Outlines, Effect, Pace, Trail, How often, Glow, Colour, Depth |
+
+**Background** is **Cover aura** (the page's cover, blurred behind its head), **Glow** (the accent colour), **Artwork** or **Image**:
+
+- **Artwork** is drawn by Event Horizon. **Scene** picks Chillwave (a city at sunset over a neon grid), Peaks, Aurora, Nebula, Ocean, Low poly or Bokeh, and **Shuffle** draws the same scene anew.
+- **Image** shows a picture from the web: paste its address (right-click a picture, *Copy image address*) and press Enter or the tick. An address that doesn't load says so.
+
+Both take the same image effects: **Opacity**, **Blur**, **Brightness**, **Saturation**, **Tone** (Natural, Mono, Sepia, or Accent in the theme's accent colour), **Fit** (Fill crops it to the page, Whole shows all of it, Tile repeats it) and **Vignette**, which fades the edges into the page. A preset saves the background with its effects.
 
 **Tron**: Outlines sets the grid strength (0% hides it), Grid size the circuit spacing, Riders their count, Speed their pace and Trail length how far the light follows. Riders choose new turns at junctions. Hitting another rider’s trail destroys the rider in a small burst of sparks; a replacement appears elsewhere after a short pause.
 
