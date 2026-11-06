@@ -8,13 +8,25 @@ node dev/all-icons-generator/gen.mjs
 
 It writes:
 
-| File           | What                                                                           |
-| -------------- | ------------------------------------------------------------------------------ |
-| `norm/*.svg`   | each script's icon fitted to the shared box                                    |
-| `preview.html` | all icons at 128, 48, 28 and 16 px, plus toolbar strips, on white and on black |
-| `preview.png`  | a screenshot of `preview.html`, kept up to date by hand                        |
+| File           | What                                                                                          |
+| -------------- | --------------------------------------------------------------------------------------------- |
+| `norm/*.svg`   | each script's icon fitted to the shared box                                                   |
+| `preview.html` | all icons at 128, 48, 28 and 16 px, toolbar strips and every animation, on white and on black |
+| `preview.png`  | a screenshot of `preview.html`, kept up to date by hand                                       |
 
-The console prints each icon's fill ratio and the margin it got.
+The console prints each demo's CSS size, then each icon's fill ratio and the margin it got.
+
+## Animations
+
+Under the icons, each theme shows the animations the scripts play, running:
+
+- **Folded dock**: live dock entries peeking out and sliding back, and their busy states.
+- **Busy icons**: each icon beside the busy icon that stands in for it.
+- **Every other animation**, on the script's own element in its animated state, with its name and the script's below.
+
+Each demo is listed in `demos.mjs`: the script, the markup, and which of the script's rules it needs. `css-of.mjs` reads those rules and their `@keyframes` out of the script's source, so a demo plays the CSS the script ships. Every demo runs in a frame of its own, so no script's rules reach another's. A one-off animation, such as a flash, replays every few seconds.
+
+To add one, add an entry to `demos.mjs`. A demo that warns "no @keyframes found" isn't picking up the script's rules: its selector test or its markup is off.
 
 ## How icons are found
 
