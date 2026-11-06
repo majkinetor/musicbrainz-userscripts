@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.180941
+// @version      2026.11.06.210000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2702,7 +2702,6 @@ body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;poin
 @media (max-width:700px){html main#app.wrap{padding-top:12px}:is(#app,#eh-pin) .kicker{gap:4px}:is(#app,#eh-pin) .kicker .acts{gap:0}:is(#app,#eh-pin) .kicker .ab{padding:0 5px}:is(#app,#eh-pin) .kicker :is(.srch,.acts>*+.ab[data-star]){margin-left:0}:is(#app,#eh-pin) .kicker .abm{max-width:calc(100vw - 16px)}:is(#app,#eh-pin) .kicker .abm .ab{white-space:normal}#app .detail .grp h4{flex-wrap:wrap;row-gap:4px}#app .hm-hi{display:none}#app .hm-hero{padding-bottom:2px}#app .hm-srch{gap:4px;padding:3px 3px 3px 12px;border-radius:22px}#app .hm-srch>.hm-go{flex:none;width:24px;height:30px}#app .hm-srch>.hm-go svg{width:16px;height:16px}#app .hm-srch>input[name=query]{flex:1 1 0;min-width:0;font-size:15px;padding:6px 0}#app .hm-srch>.hm-ty{flex:none;max-width:84px;padding:4px;font-size:12px}#app .hm-srch>button.hm-tg{width:30px;height:30px}#app .hm-qr{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:6px;margin-top:10px;padding-right:40px;-webkit-mask-image:linear-gradient(90deg,#000 80%,transparent);mask-image:linear-gradient(90deg,#000 80%,transparent)}#app .hm-qr::-webkit-scrollbar{display:none}#app .hm-qr a{flex:none;white-space:nowrap}#app .hm-add{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:2px;margin-top:10px;padding-right:40px;-webkit-mask-image:linear-gradient(90deg,#000 80%,transparent);mask-image:linear-gradient(90deg,#000 80%,transparent)}#app .hm-add::-webkit-scrollbar{display:none}#app .hm-add span{flex:none;font-size:11px;margin-right:2px}#app .hm-add a{flex:none;width:34px;height:34px}#app .hm-add a svg{width:18px;height:18px}#app #s-tl>.secthead>.tools>.label{display:none}}   /* past the edges it widened a phone's page by 270px */
 :root[data-eh-bg=aura][data-eh-theme=dark] #eh-aura{opacity:.28}
 :root:is([data-eh-bg=glow],[data-eh-bg=aura]:not([data-eh-aura])) body{background:radial-gradient(900px 520px at 100% 0,color-mix(in srgb,var(--accent2) 18%,transparent),transparent 70%) no-repeat,radial-gradient(800px 480px at 72% 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%) no-repeat,var(--eh-page)}
-:root[data-eh-bg=band] body::before{content:"";height:400px;background:linear-gradient(100deg,color-mix(in srgb,var(--accent) 11%,var(--eh-page)),color-mix(in srgb,var(--accent2) 11%,var(--eh-page)));border-bottom:1px solid color-mix(in srgb,var(--accent) 14%,var(--eh-page))}
 /* light pages show the same lines far stronger than dark ones: one slider value reads alike on both */
 #eh-hex{position:fixed;inset:-48px;z-index:-1;pointer-events:none;color:var(--accent);--eh-hex-k:.5}
 :root[data-eh-theme=dark] #eh-hex{--eh-hex-k:1}
@@ -3612,7 +3611,7 @@ const S = {
 };
 VIEW.push(...AMBIENT_KEYS);
 Object.assign(S, { effect: 'hexagons', ambientOpacity: 65, ...AMBIENT_DEFAULTS });
-VIEW.push('keysOn', 'keys', 'menuTitles', 'annoHover', 'pending', 'colPick', 'colW', 'named', 'fxTheme', 'stars', 'starGroup', 'starView', 'starSort', 'recView', 'recSort', 'recMax', 'recOff', 'hmQs');
+VIEW.push('keysOn', 'keys', 'menuTitles', 'annoHover', 'pending', 'colPick', 'colW', 'named', 'fxTheme', 'fxCur', 'stars', 'starGroup', 'starView', 'starSort', 'recView', 'recSort', 'recMax', 'recOff', 'hmQs');
 S.keysOn = true; // #907: keyboard shortcuts, and the keys changed from their defaults by command
 S.keys = {};
 S.stars = []; // starred entities travel with the manager's settings
@@ -3627,6 +3626,7 @@ S.recOff = [];
 S.annoHover = true;
 S.named = {}; // filters and column choices saved by name, by 'flt-dg', 'cols-ed' and so on: [{ name, v }]
 S.fxTheme = ''; // the effect preset String Theory's theme last asked for: a new one is applied once, then the effect is the user's again
+S.fxCur = ''; // the effect preset being worked on: changes save into it when it is the user's own; none is an unsaved effect
 S.colW = {}; // the widths dragged in a table, by section; the title takes what they leave, and none means the table fits itself
 S.colPick = {}; // the tables' column choice, by section: { order, off }; none is the usual table
 S.pending = false; // MusicBrainz's grey mark on what has edits open; takes one more request per page
@@ -3636,6 +3636,7 @@ const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
 try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; if (v.hexFx == null && v.hexOpacity != null) S.hexFx = Math.min(100, Math.round(S.hexOpacity * 2.25)); } catch (e) {}
 // Preserve an existing hex background as an independent overlay over Flat.
 if (S.bg === 'hex') { S.bg = 'flat'; S.hex = true; S.hexMotion = 'drift'; }
+if (S.bg === 'band') S.bg = 'flat'; // Header band is gone
 if (!['static', 'drift', 'tide', 'twinkle', 'ripple', 'lantern', 'electricity', 'neural'].includes(S.hexMotion)) S.hexMotion = 'drift';
 if (!S.starView) S.starView = S.starGroup === 'none' ? 'row' : 'group';
 const menuTitlesApply = () => document.documentElement.style.setProperty('--eh-menu-titles', S.menuTitles ? 'inline' : 'none');
@@ -10953,7 +10954,7 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '.eh-cfg .chip.p{padding-left:3px}.eh-cfg .chip.p svg,.eh-cfg .chip.p .mgram{width:16px;height:16px;stroke:none;fill:revert}.eh-cfg .ord{font-size:10px;font-weight:700}.eh-cfg .chip[draggable=true]{cursor:grab}.eh-cfg .chip.drag{opacity:.4}.eh-cfg .chip.over{box-shadow:-3px 0 0 var(--mbu-accent)}'
     + '.eh-cfg .foot{display:flex;justify-content:space-between;align-items:center;padding:4px 10px;border-top:1px solid var(--mbu-border-soft);background:var(--mbu-bg-raised);font-size:12px;color:var(--mbu-text-weak)}'
     + '.eh-cfg .mgram{display:inline-grid;place-items:center;border-radius:50%;background:var(--mbu-bg-sunken);color:var(--mbu-text-dim);font-weight:800;text-transform:uppercase}'
-    + '.eh-cfg .fx-name{box-sizing:border-box;width:110px;height:22px;padding:0 7px;border:1px solid var(--mbu-border);border-radius:20px;background:var(--mbu-bg-raised);color:var(--mbu-text);font:500 11.5px var(--mbu-font)}.eh-cfg .fx-name:focus{outline:0;border-color:var(--mbu-accent)}.eh-cfg [data-fx-preset]{height:22px;max-width:160px}'
+    + '.eh-cfg .fx-combo{position:relative;display:inline-flex;align-items:center;width:170px;height:24px;box-sizing:border-box;border:1px solid var(--mbu-border);border-radius:20px;background:var(--mbu-bg-raised);padding:0 2px 0 9px}.eh-cfg .fx-combo:focus-within{border-color:var(--mbu-accent)}.eh-cfg .fx-combo input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--mbu-text);font:600 12px var(--mbu-font);padding:0}.eh-cfg .fx-combo [data-fx-dd]{border:0;background:transparent;color:var(--mbu-text-muted);padding:3px 6px;cursor:pointer;display:inline-flex}.eh-cfg .fx-combo svg,.eh-cfg .chip svg,.eh-cfg .fx-b svg,.eh-cfg .fx-dd svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.eh-cfg .fx-dd{position:absolute;z-index:5;left:-1px;top:calc(100% + 4px);min-width:240px;max-height:280px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:4px}.eh-cfg .fx-dd .it{display:flex;flex-direction:column;align-items:flex-start;gap:1px;width:100%;border:0;border-radius:7px;background:transparent;color:var(--mbu-text);font:13px var(--mbu-font);text-align:left;padding:6px 9px;cursor:pointer}.eh-cfg .fx-dd .it:hover{background:var(--mbu-bg-raised)}.eh-cfg .fx-dd .it[aria-current=true]{background:var(--mbu-accent-soft);color:var(--mbu-accent)}.eh-cfg .fx-dd .it .t{font-weight:600;display:flex;gap:6px;align-items:center}.eh-cfg .fx-dd .it .s{font-size:11.5px;color:var(--mbu-text-muted)}.eh-cfg .fx-dd .it.act{flex-direction:row;align-items:center;gap:6px;color:var(--mbu-accent)}.eh-cfg .fx-dd .sep{height:1px;background:var(--mbu-border);margin:4px 2px}.eh-cfg .fx-tag{font:600 10px var(--mbu-font);letter-spacing:.04em;text-transform:uppercase;color:var(--mbu-text-muted);border:1px solid var(--mbu-border);border-radius:20px;padding:1px 6px}.eh-cfg .chip.del{color:var(--mbu-error)}.eh-cfg .chip[aria-disabled=true]{opacity:.45;cursor:default}.eh-cfg .fx-b{display:inline-flex;align-items:center;border:1px solid var(--mbu-border);border-radius:20px;overflow:hidden}.eh-cfg .fx-b[aria-current=true]{background:var(--mbu-accent-soft);border-color:var(--mbu-accent);color:var(--mbu-accent)}.eh-cfg .fx-b button{border:0;background:transparent;color:inherit;font:12px var(--mbu-font);cursor:pointer;display:inline-flex;align-items:center}.eh-cfg .fx-b .n{padding:3px 4px 3px 10px}.eh-cfg .fx-b .x{padding:3px 8px 3px 4px;opacity:.7}.eh-cfg .fx-b .x:hover{opacity:1}.eh-cfg .chip.fx-add{border-style:dashed;color:var(--mbu-accent)}.eh-cfg .fx-json{box-sizing:border-box;width:100%;min-height:54px;resize:vertical;border:1px solid var(--mbu-border);border-radius:8px;background:var(--mbu-bg-raised);color:var(--mbu-text);font:11.5px ui-monospace,monospace;padding:5px 7px;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.eh-cfg .fx-err{color:var(--mbu-error);font-size:12px}'
     + '.eh-cfg .reset{all:unset;color:var(--mbu-accent-text);cursor:pointer}.eh-cfg .reset:hover{text-decoration:underline}';
 // the settings' order: plOrder first (seeded by the picks), then the usual order
 function plSorted(ps) {
@@ -11021,21 +11022,46 @@ const HEX_MOTIONS = [
 // which of the effect's settings each motion takes
 const HEX_USES = { pace: ['drift', 'tide', 'twinkle', 'ripple', 'electricity', 'neural'], trail: ['twinkle', 'electricity', 'neural'], often: ['twinkle', 'ripple', 'electricity', 'neural'], glow: ['twinkle', 'electricity', 'neural'], two: ['drift', 'twinkle', 'electricity', 'neural'] };
 // the effects drawn over the background; Hexagons is the first
-const EFFECTS = [['none', 'None', 'No effect over the background'], ['hexagons', 'Hexagons', 'Hexagon outlines over any background, with an animation'], ...Object.entries(AMBIENT).map(([k, f]) => [k, f.name, f.tip])];
-// an effect with all its settings, saved by name: the shipped ones here ({ name, v }, v holding any of FX_KEYS, the
-// rest at their defaults), the user's own in S.named.fx; one of the user's shadows a shipped one of the same name
+const EFFECTS = [['hexagons', 'Hexagons', 'Hexagon outlines over any background, with an animation'], ...Object.entries(AMBIENT).map(([k, f]) => [k, f.name, f.tip])];
+const BGS = [['aura', 'Cover aura', 'The page\'s cover or picture, blurred behind its head\nPages without one get the glow'], ['glow', 'Glow', 'A soft glow of the accent colour behind the page head']];
+// an effect with all its settings, saved by name: the built-in ones here ({ name, v }, v holding any of FX_KEYS, the
+// rest at their defaults), the user's own in S.named.fx; one of the user's shadows a built-in one of the same name.
+// S.fxCur names the one being worked on: changes save into it when it is the user's own; a built-in one stays as shipped
 const FX_PRESETS = [];
-const FX_KEYS = [...AMBIENT_KEYS, 'hex', 'hexOpacity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth'];
+const FX_KEYS = ['bg', ...AMBIENT_KEYS, 'hex', 'hexOpacity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth'];
+const FX_UNNAMED = 'Unnamed effect';
 const fxNow = () => Object.fromEntries(FX_KEYS.map(k => [k, S[k]]));
 const fxFull = p => { const d = JSON.parse(DEFAULTS); return Object.fromEntries(FX_KEYS.map(k => [k, k in p.v ? p.v[k] : d[k]])); };
 const fxLow = s => String(s).toLowerCase();
 const fxAll = () => { const own = nmList('fx'), low = new Set(own.map(x => fxLow(x.name))); return [...FX_PRESETS.filter(x => !low.has(fxLow(x.name))), ...own]; };
-const fxFind = name => fxAll().find(x => fxLow(x.name) === fxLow(name));
-// the preset the effect is now, if any: the one named last wins a tie
-const fxMatch = () => { const now = fxNow(); return fxAll().filter(p => { const f = fxFull(p); return FX_KEYS.every(k => f[k] === now[k]); }).pop(); };
-function fxUse(name) { const p = fxFind(name); if (!p) return false; Object.assign(S, fxFull(p)); save(); hexApply(); LOG.info('Effect preset: ' + p.name); return true; }
+const fxFind = name => name ? fxAll().find(x => fxLow(x.name) === fxLow(name)) : undefined;
+const fxOwn = name => name ? nmList('fx').find(x => fxLow(x.name) === fxLow(name)) : undefined;
+const fxSame = p => { const f = fxFull(p); return FX_KEYS.every(k => f[k] === S[k]); };
+// a name no other preset has: the one asked for, else "Unnamed effect", with " 2", " 3" and so on after it when taken
+const fxFree = (want, but) => { const base = String(want || '').trim().slice(0, 60) || FX_UNNAMED, taken = n => fxAll().some(x => x !== but && fxLow(x.name) === fxLow(n)); let n = base, i = 1; while (taken(n)) n = base + ' ' + ++i; return n; };
+// what a preset shows: its background and its effect
+const fxSum = v => {
+    const bg = BGS.find(x => x[0] === v.bg), m = HEX_MOTIONS.find(x => x[0] === v.hexMotion);
+    const fx = !v.hex ? '' : AMBIENT[v.effect] ? AMBIENT[v.effect].name : 'Hexagons' + (m ? ' (' + m[1] + ')' : '');
+    return [bg && bg[1], fx].filter(Boolean).join(' · ') || 'Nothing';
+};
+function fxUse(name) { const p = fxFind(name); if (!p) return false; S.fxCur = p.name; Object.assign(S, fxFull(p)); save(); if (ehOn) bgApply(); else hexApply(); LOG.info('Effect preset: ' + p.name); return true; }
+// the effect changed: kept in the current preset when that is the user's own
+function fxKeep() { const p = fxOwn(S.fxCur); if (p) nmKeep('fx', nmList('fx').map(x => x === p ? { name: x.name, v: fxNow() } : x)); }
 // the names, for String Theory's theme settings
 const fxPublish = () => { const n = fxAll().map(x => x.name); if (JSON.stringify(mbuShared('ehFxPresets') || []) !== JSON.stringify(n)) mbuShared('ehFxPresets', n.length ? n : null); };
+// a preset to share: { name, v } with only the settings it changes from the defaults, under the format's own key
+const fxExport = () => { const d = JSON.parse(DEFAULTS), v = Object.fromEntries(FX_KEYS.filter(k => S[k] !== d[k]).map(k => [k, S[k]])); return JSON.stringify({ ehFxPreset: 1, name: S.fxCur || FX_UNNAMED, v }, null, 1); };
+// a shared preset back: unknown keys and values of the wrong type are left out, so a hand-edited one can't break the effect
+function fxImport(text) {
+    let o; try { o = JSON.parse(text); } catch (e) { return 'That isn\'t JSON'; }
+    if (!o || typeof o !== 'object' || !o.v || typeof o.v !== 'object') return 'That isn\'t an effect preset';
+    const d = JSON.parse(DEFAULTS), v = Object.fromEntries(FX_KEYS.filter(k => k in o.v && typeof o.v[k] === typeof d[k] || k === 'hexTwo' && [true, false, 2].includes(o.v[k])).map(k => [k, o.v[k]]));
+    const name = fxFree(o.name);
+    nmKeep('fx', [...nmList('fx'), { name, v }]); fxPublish(); fxUse(name);
+    LOG.info('Effect preset imported: ' + name);
+    return '';
+}
 // String Theory's theme names a preset on <html data-st-eh-fx>: a new name is applied once, so the user's changes after it stay
 function fxTheme() {
     const n = document.documentElement.dataset.stEhFx || '';
@@ -11043,11 +11069,34 @@ function fxTheme() {
     S.fxTheme = n; save();
     if (n && fxUse(n)) { const b = document.querySelector('#eh-cfg .eh-cfg-b'); if (b) b.innerHTML = cfgBody(); }
 }
-function fxRow(row) {
-    const all = fxAll(), m = fxMatch(), own = m && nmList('fx').includes(m);
-    const pick = all.length ? `<select data-fx-preset aria-label="Preset">${m ? '' : '<option value="" selected>Custom</option>'}${all.map(p => `<option${p === m ? ' selected' : ''}>${esc(p.name)}</option>`).join('')}</select>` : '';
-    const del = own ? `<button type="button" class="chip" data-fx-del="${esc(m.name)}" data-tip="Delete this preset">Delete</button>` : '';
-    return row('Preset', `${pick}${del}<input type="text" class="fx-name" data-fx-name maxlength="60" autocomplete="off" placeholder="Name" aria-label="Preset name" value="${m && own ? esc(m.name) : ''}"><button type="button" class="chip" data-fx-save>Save</button>`, 'An effect with all its settings, saved by name\nThe same name replaces it');
+const FX_SVG = { dd: '<path d="M6 9l6 6 6-6"/>', plus: '<path d="M12 5v14M5 12h14"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>',
+    save: '<path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7V3M8 21v-7h8v7"/>',
+    del: '<path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/>' };
+const fxSvg = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${FX_SVG[k]}</svg>`;
+let fxSel = 'fx', fxPaste = false, fxErr = '';
+// the Effects tab: the preset, the effects in it as badges, then the settings of the one selected
+function fxPane(chip, row) {
+    const cur = fxFind(S.fxCur), own = !!cur && nmList('fx').includes(cur), built = !!cur && !own;
+    const off = (on, tip) => on ? '' : ` aria-disabled="true" data-tip="${esc(tip)}"`;
+    const items = fxAll().map(p => `<button type="button" class="it" data-fx-item="${esc(p.name)}" aria-current="${p === cur}"><span class="t">${esc(p.name)}${nmList('fx').includes(p) ? '' : '<span class="fx-tag">Built in</span>'}</span><span class="s">${esc(fxSum(fxFull(p)))}</span></button>`).join('');
+    const dd = `<div class="fx-dd" hidden>${items}${items ? '<div class="sep"></div>' : ''}<button type="button" class="it act" data-fx-copy>Copy as JSON</button><button type="button" class="it act" data-fx-paste>Import from JSON</button></div>`;
+    const preset = row('Preset', `<span class="fx-combo"><input type="text" data-fx-name maxlength="60" autocomplete="off" spellcheck="false" placeholder="${FX_UNNAMED}" aria-label="Preset name" value="${cur ? esc(cur.name) : ''}"><button type="button" data-fx-dd aria-label="Show presets" aria-expanded="false">${fxSvg('dd')}</button>${dd}</span>`
+        + (built && !fxSame(cur) ? '<span class="fx-tag">Changed</span>' : '')
+        + `<button type="button" class="chip" data-fx-new data-tip="New preset\nA copy of this effect, under the name typed">${fxSvg('plus')}</button>`
+        + `<button type="button" class="chip" data-fx-save${built ? off(false, 'Save\nA built-in preset can\'t be changed; + keeps a copy') : ` data-tip="${own ? 'Save\nKeeps the new name; changes save on their own' : 'Save\nThe effect as a preset'}"`}>${fxSvg('save')}</button>`
+        + `<button type="button" class="chip del" data-fx-del${off(own, built ? 'Delete\nA built-in preset can\'t be deleted' : 'Delete\nNothing saved yet')}>${fxSvg('del')}</button>`);
+    const paste = !fxPaste ? '' : row('Import', `<textarea class="fx-json" data-fx-json rows="3" spellcheck="false" aria-label="Preset JSON" placeholder="Paste a preset copied with Copy as JSON"></textarea><button type="button" class="chip" data-fx-import>Import</button><button type="button" class="chip" data-fx-cancel>Cancel</button>${fxErr ? `<span class="fx-err">${esc(fxErr)}</span>` : ''}`);
+    const fx = S.hex ? (AMBIENT[S.effect] ? S.effect : 'hexagons') : '', bg = BGS.find(x => x[0] === S.bg);
+    const sel = fxSel === 'bg' && bg ? 'bg' : fx ? 'fx' : bg ? 'bg' : '';
+    const m = HEX_MOTIONS.find(x => x[0] === S.hexMotion);
+    const badge = (k, label, rm) => `<span class="fx-b" aria-current="${sel === k}"><button type="button" class="n" data-fx-sel="${k}">${label}</button><button type="button" class="x" data-g="fxRm" data-k="${k}" aria-label="Remove ${rm}">${fxSvg('x')}</button></span>`;
+    const add = (k, label, tip) => `<button type="button" class="chip fx-add" data-g="fxAdd" data-k="${k}" data-tip="${esc(tip)}">${fxSvg('plus')}${label}</button>`;
+    const badges = row('Effects', (bg ? badge('bg', `Background&nbsp;· <b>${bg[1]}</b>`, 'the background') : add('bg', 'Background', 'Add a background\nWithout one the page is flat'))
+        + (fx ? badge('fx', fx === 'hexagons' ? `Hexagons&nbsp;· <b>${m ? m[1] : ''}</b>` : `<b>${AMBIENT[fx].name}</b>`, 'the effect') : add('fx', 'Effect', 'Add an effect over the background')), 'Select one to show its settings');
+    const body = sel === 'bg' ? row('Background', BGS.map(([k, l, tip]) => chip('bg', k, S.bg === k, l, tip)).join(''))
+        : sel === 'fx' ? row('Effect', EFFECTS.map(([k, l, tip]) => chip('fxKind', k, fx === k, l, tip)).join('')) + (fx === 'hexagons' ? hexRows(chip, row) : ambientRows(fx, chip, row))
+        : '';
+    return preset + paste + badges + body;
 }
 function effectColourRow(chip, row) { return row('Colour', chip('hexTwo', '0', !S.hexTwo, 'One tone') + chip('hexTwo', '1', S.hexTwo === true, 'Two-tone') + chip('hexTwo', '2', S.hexTwo === 2, 'All'), 'Two-tone mixes in the second accent colour\nAll: each light takes its own colour'); }
 function ambientRows(kind, chip, row) {
@@ -11066,7 +11115,7 @@ function hexRows(chip, row) {
     const pct = g => list => list.map(v => [v, v + '%']);
     return row('Motion', opts('hexMotion', HEX_MOTIONS), 'How the hexagons move')
         + row('Outlines', opts('hexOpacity', pct()([10, 20, 30, 40, 60])), 'How strong the hexagon outlines are')
-        + dim(m !== 'static', row('Effect', opts('hexFx', pct()([25, 45, 65, 85, 100])), 'How strong the effect over the outlines is'))
+        + dim(m !== 'static', row('Strength', opts('hexFx', pct()([25, 45, 65, 85, 100])), 'How strong the effect over the outlines is'))
         + dim(use('pace'), row('Pace', opts('hexPace', [[.6, 'Slow'], [1, 'Normal'], [1.6, 'Fast']]), 'How fast the effect moves'))
         + dim(use('trail'), row('Trail', opts('hexTrail', [[.5, 'Short'], [1, 'Normal'], [2, 'Long']]), 'How long what lights up takes to fade'))
         + dim(use('often'), row('How often', opts('hexOften', [[.5, 'Rarely'], [1, 'Normal'], [2, 'Often']]), 'How often something new lights up'))
@@ -11077,15 +11126,12 @@ function hexRows(chip, row) {
 function cfgBody() {
     const chip = cfgChip, row = cfgRow;
     const tabs = [['general', 'General'], ['effects', 'Effects']];
-    const fx = S.hex ? (AMBIENT[S.effect] ? S.effect : 'hexagons') : 'none';
     const panes = {
         general: row('Keyboard shortcuts', chip('keysOn', 'keysOn', S.keysOn, 'On', 'Single keys open the page\'s edit, relationships, history and more\nCtrl+/ lists them') + '<button type="button" class="chip" data-keys-open>Change keys</button>', 'On MusicBrainz\'s pages and in Event Horizon alike')
             + row('Menu titles', chip('menuTitles', 'menuTitles', S.menuTitles, 'Show', 'Show text beside header menu icons\nOn: icons and titles\nOff: icons only'))
             + row('Pending changes', chip('pending', 'pending', S.pending, 'Show', 'Mark what has edits open, as MusicBrainz does\nTakes one extra MusicBrainz request per page, sent last'))
-            + row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen')
-            + row('Background', [['flat', 'Flat'], ['aura', 'Cover aura'], ['glow', 'Glow'], ['band', 'Header band']].map(([k, l]) => chip('bg', k, (S.bg || 'aura') === k, l)).join(''), 'Cover aura blurs the page\'s cover or picture behind its head; pages without one get the glow'),
-        effects: fxRow(row) + row('Effect', `<select data-fx-pick aria-label="Effect">${EFFECTS.map(([k, l, tip]) => `<option value="${k}" title="${esc(tip)}"${k === fx ? ' selected' : ''}>${l}</option>`).join('')}</select>`, 'An effect drawn over the background')
-            + (fx === 'hexagons' ? hexRows(chip, row) : AMBIENT[fx] ? ambientRows(fx, chip, row) : ''),
+            + row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen'),
+        effects: fxPane(chip, row),
     };
     if (!panes[cfgTab]) cfgTab = 'general';
     return `<div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button type="button" class="tab" role="tab" data-tab="${k}" aria-selected="${k === cfgTab}">${l}</button>`).join('')}</div><div class="pane">${panes[cfgTab]}</div>`;
@@ -11117,25 +11163,60 @@ function openPlCfg(btn, hd) {
 }
 // clicks and drags in a settings body; body() redraws it
 function cfgWire(panel, b, body) {
-    panel.addEventListener('change', ev => {
-        if (!ev.target.matches('[data-fx-pick]')) return;
-        S.hex = ev.target.value !== 'none'; S.effect = S.hex ? ev.target.value : 'hexagons';
-        save(); hexApply(); b.innerHTML = body();
-    });
-    // the effect presets: pick one to bring it back; Save keeps the effect under the name, the same name replaces it
-    panel.addEventListener('change', ev => { if (!ev.target.matches('[data-fx-preset]') || !ev.target.value) return; fxUse(ev.target.value); b.innerHTML = body(); });
+    // the effect presets: the name field with its list, Save, Delete, + for a copy, and JSON to share one
+    const fxRedraw = () => { b.innerHTML = body(); };
+    const fxTyped = () => { const i = b.querySelector('[data-fx-name]'); return i ? i.value.trim() : ''; };
+    const fxAddOwn = name => { nmKeep('fx', [...nmList('fx'), { name, v: fxNow() }]); S.fxCur = name; save(); fxPublish(); LOG.info('Effect preset saved: ' + name); fxRedraw(); };
+    const fxSaveAs = () => { const cur = fxFind(S.fxCur); fxAddOwn(fxFree(fxTyped() || (cur ? cur.name : ''))); };
     const fxSave = () => {
-        const inp = b.querySelector('[data-fx-name]'), name = inp ? inp.value.trim() : '';
-        if (!name) { if (inp) inp.focus(); return; }
-        nmKeep('fx', [...nmList('fx').filter(x => fxLow(x.name) !== fxLow(name)), { name, v: fxNow() }]);
-        LOG.info('Effect preset saved: ' + name); fxPublish(); b.innerHTML = body();
+        const cur = fxFind(S.fxCur), own = fxOwn(S.fxCur);
+        if (!cur || !own) return fxSaveAs();   // unsaved, or built in: a copy of its own
+        const want = fxTyped();
+        if (!want || want === own.name) return;
+        const name = fxFree(want, own);
+        nmKeep('fx', nmList('fx').map(x => x === own ? { name, v: x.v } : x)); S.fxCur = name; save(); fxPublish();
+        LOG.info('Effect preset renamed: ' + own.name + ' → ' + name); fxRedraw();
+    };
+    let ddOff = null;
+    const ddClose = () => { const dd = b.querySelector('.fx-dd'), bt = b.querySelector('[data-fx-dd]'); if (dd) dd.hidden = true; if (bt) bt.setAttribute('aria-expanded', 'false'); if (ddOff) { ddOff(); ddOff = null; } };
+    const ddOpen = () => {
+        const combo = b.querySelector('.fx-combo'); if (!combo) return;
+        combo.querySelector('.fx-dd').hidden = false; combo.querySelector('[data-fx-dd]').setAttribute('aria-expanded', 'true');
+        const off1 = mbuDismissOn(combo, ddClose);
+        const esc = ev => { if (ev.key === 'Escape') { ev.stopPropagation(); ev.preventDefault(); ddClose(); } };
+        addEventListener('keydown', esc, true);
+        ddOff = () => { if (typeof off1 === 'function') off1(); removeEventListener('keydown', esc, true); };
     };
     panel.addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target.matches('[data-fx-name]')) { ev.preventDefault(); fxSave(); } });
     panel.addEventListener('click', ev => {
-        if (ev.target.closest('[data-fx-save]')) return fxSave();
-        const d = ev.target.closest('[data-fx-del]'); if (!d) return;
-        nmKeep('fx', nmList('fx').filter(x => fxLow(x.name) !== fxLow(d.dataset.fxDel)));
-        LOG.info('Effect preset deleted: ' + d.dataset.fxDel); fxPublish(); b.innerHTML = body();
+        const t = ev.target;
+        const sel = t.closest('[data-fx-sel]'); if (sel) { fxSel = sel.dataset.fxSel; return fxRedraw(); }
+        if (t.closest('[data-fx-dd]')) { const dd = b.querySelector('.fx-dd'); return dd && dd.hidden ? ddOpen() : ddClose(); }
+        const it = t.closest('[data-fx-item]'); if (it) { ddClose(); fxUse(it.dataset.fxItem); return fxRedraw(); }
+        if (t.closest('[aria-disabled=true]')) return;
+        if (t.closest('[data-fx-new]')) {
+            ddClose(); fxSaveAs();
+            const i = b.querySelector('[data-fx-name]'); if (i) { i.focus(); i.select(); }
+            return;
+        }
+        if (t.closest('[data-fx-save]')) return fxSave();
+        if (t.closest('[data-fx-del]')) {
+            const own = fxOwn(S.fxCur); if (!own) return;
+            nmKeep('fx', nmList('fx').filter(x => x !== own)); S.fxCur = ''; save(); fxPublish();
+            LOG.info('Effect preset deleted: ' + own.name); return fxRedraw();
+        }
+        if (t.closest('[data-fx-copy]')) {
+            ddClose(); const x = fxExport();
+            try { navigator.clipboard.writeText(x).then(() => toast('Copied the preset as JSON'), () => toast('Copy failed')); } catch (e) { toast('Copy failed'); }
+            return;
+        }
+        if (t.closest('[data-fx-paste]')) { ddClose(); fxPaste = true; fxErr = ''; fxRedraw(); const a = b.querySelector('[data-fx-json]'); if (a) a.focus(); return; }
+        if (t.closest('[data-fx-cancel]')) { fxPaste = false; fxErr = ''; return fxRedraw(); }
+        if (t.closest('[data-fx-import]')) {
+            const a = b.querySelector('[data-fx-json]'), text = a ? a.value : '';
+            fxErr = fxImport(text); if (!fxErr) { fxPaste = false; toast('Imported ' + S.fxCur); }
+            fxRedraw(); if (fxErr) { const a2 = b.querySelector('[data-fx-json]'); if (a2) a2.value = text; }
+        }
     });
     // number fields become the suite's − n + stepper, on every redraw of the body
     mbuControls(b); new MutationObserver(() => mbuControls(b)).observe(b, { childList: true });
@@ -11195,13 +11276,17 @@ function cfgWire(panel, b, body) {
             else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'menuTitles' || g === 'keysOn') S[g] = !S[g];
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
-            else if (g === 'bg') S.bg = k;
+            else if (g === 'bg') { S.bg = k; bgApply(); }
+            else if (g === 'fxKind') { S.hex = true; S.effect = k; hexApply(); }
+            else if (g === 'fxRm') { if (k === 'bg') { S.bg = 'flat'; bgApply(); } else { S.hex = false; hexApply(); } }
+            else if (g === 'fxAdd') { if (k === 'bg') { S.bg = 'aura'; bgApply(); } else { S.hex = true; hexApply(); } fxSel = k; }
             else if (AMBIENT_KEYS.includes(g) && g !== 'effect') { S[g] = +k; hexApply(); }
             else if (g === 'hex' || g === 'hexDepth') { S[g] = !S[g]; hexApply(); }
             else if (g === 'hexPace' || g === 'hexTrail' || g === 'hexOften' || g === 'hexGlow' || g === 'hexOpacity' || g === 'hexFx') { S[g] = +k; hexApply(); }
             else if (g === 'hexMotion') { S.hexMotion = k; hexApply(); }
             else if (g === 'hexTwo') { S.hexTwo = k === '2' ? 2 : k === '1'; hexApply(); }
             else if (g === 'imgP') { S.imgOff = toggle(S.imgOff, k); imgResort(); }
+            if (FX_KEYS.includes(g) || g === 'fxKind' || g === 'fxRm' || g === 'fxAdd') fxKeep();
         }
         save();
         b.innerHTML = body();

@@ -111,11 +111,11 @@ test.describe('Event Horizon effect', () => {
     await until(() => page.evaluate(() => document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: 'event_horizon', cancelable: true })) || document.getElementById('eh-cfg') !== null), v => v);
     const cfg = page.locator('#eh-cfg');
     await cfg.locator('[data-tab=effects]').click();
-    await cfg.locator('select[data-fx-pick]').selectOption('hexagons');
+    await cfg.locator('[data-g=fxAdd][data-k=fx]').click();
+    await cfg.locator('[data-g=fxKind][data-k=hexagons]').click();
     await cfg.locator('[data-g=hexOpacity][data-k="30"]').click();
     await cfg.locator('[data-fx-name]').fill('Dim');
     await cfg.locator('[data-fx-save]').click();
-    await cfg.locator('[data-g=hexOpacity][data-k="60"]').click();
     await page.keyboard.press('Escape');
     await page.evaluate(() => document.dispatchEvent(new Event('mbu-st-settings')));
     await page.locator('#st-tab-g').click();

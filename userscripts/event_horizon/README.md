@@ -36,7 +36,7 @@ When MB page has Event Horizon redesign available, EH dock button shows on the n
 
 ## Background effects
 
-Choose an effect under **Settings → Effects**. Each keeps its own parameters when you switch effects, and **Preset** saves the whole configuration. **Opacity** sets their strength. **Colour** is shared across effects: **One tone** uses the theme's accent, **Two-tone** adds its second accent, and **All** gives each light its own colour. **Glow**, also shared, sets how far the soft light spreads. Speed and the other controls stay specific to each effect.
+Under **Settings → Effects**, add a **Background** and an **Effect**, each a badge you select to show its settings. Each effect keeps its own parameters when you switch effects. **Preset** saves the whole configuration by name: **+** saves a copy under a new name, changes save on their own, and a built-in preset is kept as shipped (**+** copies it). **Copy as JSON** and **Import from JSON** in the preset list share a preset. **Opacity** sets their strength. **Colour** is shared across effects: **One tone** uses the theme's accent, **Two-tone** adds its second accent, and **All** gives each light its own colour. **Glow**, also shared, sets how far the soft light spreads. Speed and the other controls stay specific to each effect.
 
 | Effect   | Controls                                                              |
 | -------- | --------------------------------------------------------------------- |
@@ -148,8 +148,8 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | Artist → Artist images                | Discogs, Wikipedia, Deezer, Spotify, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown                  |
 | Annotation → Show annotation on hover | on                                                                  | preview a folded annotation                                                                 |
 | General → Page width                  | Wide                                                                | how wide the page grows on a big screen                                                     |
-| General → Background                  | Cover aura                                                          | Flat, Cover aura, Glow or Header band                                                       |
-| Effects → Preset                      | none                                                                | an effect with all its settings, saved by name                                              |
+| Effects → Preset                      | none                                                                | an effect with its settings, saved by name; shared as JSON from its list                    |
+| Effects → Effects                     | Background: Cover aura                                              | a **Background** (none is flat) and an **Effect** over it; select one for its settings      |
 | Effects → Effect                      | None                                                                | [background effects](#background-effects), each with its own settings                       |
 | General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                                      |
 | General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
