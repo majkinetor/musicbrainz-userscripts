@@ -2558,7 +2558,11 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         .discogs-sticky-spacer { display: none; }
         .discogs-import-label.cancels { cursor: pointer; }
         /* With row1 pinned the bar's box would hold only the spacer: the output below carries the box instead */
-        .discogs-bar:is(.is-importing, .is-pinned) { border-color: transparent; background: none; overflow: visible; }
+        /* A filter, backdrop-filter or transform on the bar would make it row1's containing block, so the fixed row
+           would ride along with the page instead of staying on top: Event Horizon's hex theme blurs the bar's backdrop */
+        .discogs-bar:is(.is-importing, .is-pinned) { border-color: transparent; background: none; overflow: visible; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; filter: none !important; transform: none !important; }
+        /* outranks Event Horizon's important tint on the bar, which would lay a second layer over the output's own */
+        :root .discogs-bar.discogs-bar.discogs-bar:is(.is-importing, .is-pinned) { background: none !important; }
         .discogs-bar:is(.is-importing, .is-pinned) > .discogs-output { border: 1px solid var(--mbu-border); border-radius: 10px; background: var(--mbu-bg-raised); overflow: hidden; }
         .discogs-bar.is-importing .discogs-sticky-spacer,
         .discogs-bar.is-pinned .discogs-sticky-spacer { display: block; }
@@ -3449,7 +3453,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             createWorksMode:         useWorksCb.checked ? createWorksMode.value : 'off',
         });
         const _click = getOpts();
-        const opts = `per-track:${_click.processTracklist?'on':'off'}, move-to-tracks:${_click.applyToTracks?'on':'off'}, create-works:${_click.createWorksMode}`;
+        const opts = `per-track:${_click.processTracklist?'on':'off'}, create-works:${_click.createWorksMode}`;
         const editNote = buildEditNote(sourceUrl, opts, undefined, sourceLabel);
         editNote.split('\n').forEach(line => {
             if (!line.trim()) return;

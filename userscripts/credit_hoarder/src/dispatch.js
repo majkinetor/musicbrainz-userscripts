@@ -953,7 +953,6 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
     try {
         const opts = [
             processTracklist !== undefined ? `per-track:${processTracklist ? 'on' : 'off'}` : null,
-            applyToTracks   !== undefined ? `move-to-tracks:${applyToTracks ? 'on' : 'off'}` : null,
             createWorksMode !== undefined ? `create-works:${createWorksMode}` : null,
         ].filter(Boolean).join(', ');
         // Statistics (issues #56, follow-up) — surface input size, review
