@@ -578,7 +578,7 @@ function stPalListen() {
 // ── Theme chooser ───────────────────────────────────────────────────────────
 // A slim bar at the bottom of the page that steps through every theme with ◀ ▶ (or the arrow keys),
 // showing each on the whole page; nothing covers the view. All / Light / Dark limits them to one variant.
-// With Event Horizon's effect presets, the effect beside (or up and down) picks the one the theme brings, shown as picked. Keep (Enter) saves both, ✕ (Esc) goes back.
+// With Event Horizon's effect presets, the effect beside (or up and down) picks the one the theme brings, shown as picked; the themes stepped to after a pick bring it too. Keep (Enter) saves both, ✕ (Esc) goes back.
 // It stays open across pages until closed (the runtime's chooser state), and above any popup: it sits in the top layer.
 var ST_TC_CSS = ''
   + '#st-tc{position:fixed;inset:auto auto 16px 50%;margin:0;overflow:visible;transform:translateX(-50%);z-index:2147483600;display:flex;align-items:center;gap:6px;padding:6px 8px;'
@@ -674,9 +674,15 @@ function stThemeChooser() {
   };
   var ONLY = { all: ['light', 'Light'], light: ['dark', 'Dark'], dark: ['all', 'All'] };
   var filter = function () { var n = ONLY[only]; only = n[0]; bar.querySelector('#st-tc-f').textContent = n[1]; list(); show(); };
-  var step = function (d) { i = (i + d + all.length) % all.length; show(); };
+  // once an effect is picked, the themes stepped to bring it too
+  var last;
+  var step = function (d) {
+    i = (i + d + all.length) % all.length;
+    if (last !== undefined) { var t = all[i], k = t[0] + ':' + t[1]; if (last) eh[k] = last; else delete eh[k]; }
+    show();
+  };
   // the effect: "No effect", then the presets, round
-  var pick = function (k, n) { if (n) eh[k] = n; else delete eh[k]; show(); };
+  var pick = function (k, n) { last = n || ''; if (n) eh[k] = n; else delete eh[k]; show(); };
   var stepFx = function (d) {
     var t = all[i], k = t[0] + ':' + t[1], on = eh[k] || '', ns = [''].concat(fx);
     if (on && ns.indexOf(on) < 0) ns.push(on);

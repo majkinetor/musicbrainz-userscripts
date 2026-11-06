@@ -86,7 +86,7 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 
 - **Your last input comes back** selected when you open the palette again: type to replace it.
 - **Theme commands show as you move over them** with the arrows; **Enter** keeps one, **Esc** goes back to yours.
-- **Theme chooser** opens a slim bar at the bottom of the page instead: **◀ ▶** (or **←** **→**) show each light and dark theme on the whole page, **All** switches to **Light** or **Dark** only, and with Event Horizon's effect presets the dropdown beside (or **↑** **↓**) shows the effect the theme brings and changes it. **Keep** (**Enter**) saves both, **✕** (**Esc**) goes back to yours.
+- **Theme chooser** opens a slim bar at the bottom of the page instead: **◀ ▶** (or **←** **→**) show each light and dark theme on the whole page, **All** switches to **Light** or **Dark** only, and with Event Horizon's effect presets the dropdown beside (or **↑** **↓**) shows the effect the theme brings and changes it; the one you pick stays as you step to other themes. **Keep** (**Enter**) saves both, **✕** (**Esc**) goes back to yours.
 - **Pin** a command with **Alt+P** or its ☆: pinned commands come first, then the ones you used last.
 - **Reorder pins** by dragging one up or down, or with **Alt+↑** / **Alt+↓** on the selected pin.
 - **Search**: `search work blue` or `work blue` is _Search Work: blue_; `search` alone lists the types.

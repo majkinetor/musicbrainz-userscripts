@@ -82,14 +82,13 @@ test.describe('theme chooser effect', () => {
     check(await until(op, v => v === '0.3') === '0.3', 'the picked effect shows at once');
     check(await attr('data-st-eh-fx-try') === 'Dim' && await attr('data-st-eh-fx') === null, 'tried, not saved');
     await page.keyboard.press('ArrowRight');
-    check(await sel.inputValue() === '', 'the next theme brings none');
-    check(await until(op, v => v === '0.6') === '0.6', 'and the effect goes back');
+    check(await sel.inputValue() === 'Dim' && await until(op, v => v === '0.3') === '0.3', 'the next theme keeps the picked effect');
     await page.keyboard.press('ArrowDown');
-    check(await sel.inputValue() === 'Dim' && await until(op, v => v === '0.3') === '0.3', 'down picks the next effect');
-    await page.keyboard.press('ArrowUp');
+    check(await sel.inputValue() === 'Bright', 'down picks the next effect');
+    await page.keyboard.press('ArrowUp'); await page.keyboard.press('ArrowUp');
     check(await sel.inputValue() === '' && await until(op, v => v === '0.6') === '0.6', 'up the one before');
     await page.keyboard.press('ArrowLeft');
-    check(await sel.inputValue() === 'Dim', 'the pick stays with its theme');
+    check(await sel.inputValue() === '', 'and the themes stepped to bring that');
     await page.screenshot({ path: 'test-results/theme-chooser-effect.png' });
     await page.keyboard.press('Escape');
     check(await until(op, v => v === '0.6') === '0.6', 'Escape puts the effect back');
