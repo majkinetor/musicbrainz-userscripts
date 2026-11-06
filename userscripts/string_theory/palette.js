@@ -582,7 +582,7 @@ function stPalListen() {
 // It stays open across pages until closed (the runtime's chooser state), and above any popup: it sits in the top layer.
 var ST_TC_CSS = ''
   + '#st-tc{position:fixed;inset:auto auto 16px 50%;margin:0;overflow:visible;transform:translateX(-50%);z-index:2147483600;display:flex;align-items:center;gap:6px;padding:6px 8px;'
-  + 'background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);font:13px/1.4 var(--mbu-font);max-width:calc(100vw - 32px);box-sizing:border-box}'
+  + 'background:color-mix(in srgb,var(--mbu-bg) 80%,transparent);backdrop-filter:blur(6px);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);font:13px/1.4 var(--mbu-font);max-width:calc(100vw - 32px);box-sizing:border-box}'
   + '#st-tc button{margin:0;height:30px;border:0!important;background:none!important;box-shadow:none!important;color:inherit;cursor:pointer}'
   + '#st-tc button:hover,#st-tc button:focus-visible{color:var(--mbu-accent-text,var(--mbu-accent))}'
   + '#st-tc .st-tc-n{min-width:170px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
