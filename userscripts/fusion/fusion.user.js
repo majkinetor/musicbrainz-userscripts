@@ -1,7 +1,11 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
+<<<<<<< HEAD
 // @version      2026.11.06.150001
+=======
+// @version      2026.11.06.160000
+>>>>>>> d12d187f (Fusion: on a phone the settings fit the screen)
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -5608,6 +5612,10 @@ function openSettings(anchor) {
     document.body.appendChild(s);
     mbuControls(s);   // the shared − n + steppers
     Object.assign(s.style, { left: '50%', top: '50%', transform: 'translate(-50%, -50%)' });   // in the middle of the screen, moved by its header (#847)
+    // on a phone MB's page is wider than the screen, so 50% and 100vw measure the page: centre on what is shown, sized to it
+    const vv = window.visualViewport;
+    if (vv && vv.width < 700) Object.assign(s.style, { left: (vv.offsetLeft + vv.width / 2) + 'px', top: (vv.offsetTop + vv.height / 2) + 'px',
+      minWidth: '0', maxWidth: (vv.width - 16) + 'px', maxHeight: (vv.height - 16) + 'px', overflowY: 'auto', textSizeAdjust: '100%', webkitTextSizeAdjust: '100%' });
     mbuCfgDrag(s);
     s.querySelector('#fs-opt-acoustid').checked = SETTINGS.acoustidEnrich !== false;
     s.querySelector('#fs-opt-tol').value = Math.round(SETTINGS.lengthToleranceMs / 1000);
