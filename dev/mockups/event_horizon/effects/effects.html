@@ -217,6 +217,212 @@ function auroraLayer(ctx, w, h, p, t, c1, c2) {
     ctx.fillStyle = light; ctx.fillRect(0, 0, w, h); ctx.restore();
 }
 
+// Rain: a window behind the page. Drops on the glass refract a soft layer of out-of-focus lights,
+// grow, slide, leave beaded trails, merge and wipe clear lines through the fog; rain falls beyond.
+const rainR = (a, b) => a + Math.random() * (b - a);
+function rainCanvas(doc, w, h) { const c = doc.createElement('canvas'); c.width = Math.max(1, Math.round(w)); c.height = Math.max(1, Math.round(h)); return c; }
+// Smooth blur by halving then doubling: cheap, and the same in every browser, unlike ctx.filter.
+function rainBlur(src, levels) {
+    const doc = src.ownerDocument; let c = src;
+    for (let i = 0; i < levels; i++) { const s = rainCanvas(doc, c.width / 2, c.height / 2); s.getContext('2d').drawImage(c, 0, 0, s.width, s.height); c = s; }
+    for (let i = 0; i < levels; i++) { const u = rainCanvas(doc, c.width * 2, c.height * 2), x = u.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(c, 0, 0, u.width, u.height); c = u; }
+    const out = rainCanvas(doc, src.width, src.height), x = out.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(c, 0, 0, out.width, out.height); return out;
+}
+// The shading of one drop, drawn once and scaled: shadow crescent, dark rim, bright lower caustic, glint.
+const RAIN_SPRITES = {};
+function rainSprite(doc, stretch) {
+    if (RAIN_SPRITES[stretch]) return RAIN_SPRITES[stretch];
+    const c = rainCanvas(doc, 128, 160), x = c.getContext('2d'), cx = 64, cy = 80, rx = 48, ry = 48 * stretch;
+    const el = (X, Y, a, b) => { x.beginPath(); x.ellipse(X, Y, a, b, 0, 0, 7); };
+    x.save(); x.shadowColor = 'rgba(0,0,0,.55)'; x.shadowBlur = 7; x.fillStyle = 'rgba(0,0,0,.4)'; el(cx + 3, cy + 7, rx, ry); x.fill(); x.restore();
+    x.globalCompositeOperation = 'destination-out'; el(cx, cy, rx, ry); x.fill(); x.globalCompositeOperation = 'source-over';
+    x.save(); el(cx, cy, rx, ry); x.clip();
+    let g = x.createRadialGradient(cx, cy + ry * .12, rx * .3, cx, cy, ry * 1.05);
+    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.62, 'rgba(0,0,0,.06)'); g.addColorStop(1, 'rgba(0,0,0,.6)');
+    x.fillStyle = g; x.fillRect(0, 0, 128, 160);
+    g = x.createLinearGradient(0, cy - ry, 0, cy); g.addColorStop(0, 'rgba(0,0,0,.3)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = g; x.fillRect(0, 0, 128, 160);
+    x.save(); x.translate(cx, cy + ry * .6); x.scale(1, .42);
+    g = x.createRadialGradient(0, 0, 0, 0, 0, 40); g.addColorStop(0, 'rgba(255,255,255,.38)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = g; x.beginPath(); x.arc(0, 0, 40, 0, 7); x.fill(); x.restore();
+    g = x.createLinearGradient(0, cy - ry, 0, cy + ry); g.addColorStop(.5, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(255,255,255,.3)');
+    x.strokeStyle = g; x.lineWidth = 2.5; el(cx, cy, rx - 1.2, ry - 1.2); x.stroke();
+    x.restore();
+    x.save(); x.translate(cx - 17, cy - ry * .5); x.rotate(-.6); x.scale(1, .6);
+    g = x.createRadialGradient(0, 0, 0, 0, 0, 12); g.addColorStop(0, 'rgba(255,255,255,.95)'); g.addColorStop(.35, 'rgba(255,255,255,.55)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = g; x.beginPath(); x.arc(0, 0, 12, 0, 7); x.fill(); x.restore();
+    g = x.createRadialGradient(cx + 18, cy + ry * .42, 0, cx + 18, cy + ry * .42, 5); g.addColorStop(0, 'rgba(255,255,255,.45)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = g; x.beginPath(); x.arc(cx + 18, cy + ry * .42, 5, 0, 7); x.fill();
+    return (RAIN_SPRITES[stretch] = c);
+}
+// The lights beyond the glass, out of focus: soft discs in the effect's colours on a clear canvas.
+function rainLights(doc, W, H, tone, c1) {
+    const c = rainCanvas(doc, W, H), x = c.getContext('2d'), n = Math.round(Math.min(160, Math.max(40, W * H / 9000)));
+    for (let i = 0; i < n; i++) {
+        const r = rainR(.006, .05) * Math.max(W, H * 1.4);
+        x.globalAlpha = rainR(.08, .5); x.fillStyle = tone(i); x.beginPath(); x.arc(rainR(0, W), H * Math.random() ** .7, r, 0, 7); x.fill();
+    }
+    const sharp = rainBlur(c, 2), fog = rainBlur(c, 5), f = fog.getContext('2d');
+    f.globalAlpha = .1; f.fillStyle = c1; f.fillRect(0, 0, W, H);
+    return { sharp, fog };
+}
+// The drops on the glass. Beads are painted once into a still canvas that slowly evaporates.
+class RainGlass {
+    constructor(P, w, h, d, src, fog) {
+        const doc = src.ownerDocument;
+        Object.assign(this, { P, w, h, d, src, fog, doc, drops: [], acc: 0, bacc: 0, evap: 0, regrow: 0 });
+        this.st = rainCanvas(doc, w * d, h * d); this.sx = this.st.getContext('2d'); this.sx.setTransform(d, 0, 0, d, 0, 0);
+        // The fog is a blur, so it runs at half the page's pixels: compositing it at full size cost most of a frame.
+        const fd = Math.min(d, .5); this.fogS = rainCanvas(doc, w * fd, h * fd); this.fogS.getContext('2d').drawImage(fog, 0, 0, this.fogS.width, this.fogS.height);
+        this.mask = rainCanvas(doc, w * fd, h * fd); this.mx = this.mask.getContext('2d'); this.mx.fillStyle = '#000'; this.mx.fillRect(0, 0, w * fd, h * fd);
+        this.mx.setTransform(fd, 0, 0, fd, 0, 0); this.fl = rainCanvas(doc, w * fd, h * fd); this.fx = this.fl.getContext('2d');
+        for (let i = 0; i < 150; i++) this.step(1 / 30);
+    }
+    drop(ctx, x, y, r, moving) {
+        const stretch = moving ? 1.18 : 1, ry = r * stretch, P = this.P, s = r / 48;
+        if (P.refr > 0) {
+            // A drop is a tiny lens: it shows the lights behind it upside down and magnified.
+            const d = this.d, k = 1 + P.refr * 5, W = this.src.width, H = this.src.height;
+            const sw = Math.min(W, r * 2 * k * d), sh = Math.min(H, ry * 2 * k * d);
+            const sx = Math.max(0, Math.min(W - sw, x * d - sw / 2)), sy = Math.max(0, Math.min(H - sh, y * d - sh / 2));
+            ctx.save(); ctx.beginPath(); ctx.ellipse(x, y, r, ry, 0, 0, 7); ctx.clip();
+            ctx.translate(x, y); ctx.scale(-1, -1);
+            ctx.drawImage(this.src, sx, sy, sw, sh, -r, -ry, r * 2, ry * 2);
+            ctx.restore();
+        } else { ctx.fillStyle = 'rgba(255,255,255,.04)'; ctx.beginPath(); ctx.ellipse(x, y, r, ry, 0, 0, 7); ctx.fill(); }
+        ctx.drawImage(rainSprite(this.doc, stretch), x - 64 * s, y - 80 * s, 128 * s, 160 * s);
+    }
+    step(dt) {
+        const P = this.P, w = this.w, h = this.h, size = P.size, area = w * h / 400000;
+        this.bacc += dt * 110 * P.amount * area;
+        while (this.bacc > 1) { this.bacc--; this.drop(this.sx, rainR(0, w), rainR(0, h), rainR(.5, 1.9) * Math.sqrt(size), false); }
+        if ((this.evap += dt) > .5) {
+            this.evap = 0; const x = this.sx; x.globalCompositeOperation = 'destination-out'; x.fillStyle = 'rgba(0,0,0,.02)'; x.fillRect(0, 0, w, h); x.globalCompositeOperation = 'source-over';
+        }
+        if ((this.regrow += dt) > .25) { this.regrow = 0; this.mx.fillStyle = 'rgba(0,0,0,.025)'; this.mx.fillRect(0, 0, w, h); }
+        // A full window holds at most 500 drops: merging compares the sliding ones with every other.
+        this.acc += dt * 9 * P.amount * area;
+        while (this.acc > 1) {
+            this.acc--;
+            if (this.drops.length < Math.min(500, 260 * area * P.amount)) this.drops.push({ x: rainR(0, w), y: rainR(-10, h), r: rainR(2.2, 5.5) * size * (Math.random() < .12 ? 1.7 : 1), vy: 0, vx: 0, moving: false, trail: 0 });
+        }
+        const thr = 6.5 * size;
+        for (const d of this.drops) {
+            if (d.dead) continue;
+            if (Math.random() < dt * .7 * P.amount) d.r = Math.hypot(d.r, rainR(1, 2.4) * size * .55);
+            if (!d.moving) { if (d.r > thr && Math.random() < dt * 1.4 * P.slide) d.moving = true; continue; }
+            const f = d.r / thr;
+            d.vy = Math.min(d.vy + 140 * P.slide * f * dt, 240 * P.slide * f);
+            if (Math.random() < dt * 1.3) d.vy *= rainR(.05, .5);
+            if (Math.random() < dt * 2.2) d.vx = rainR(-1, 1) * d.vy * .16;
+            const ox = d.x, oy = d.y; d.x += d.vx * dt; d.y += d.vy * dt;
+            // A sliding drop gathers the beads in its path and wipes a clear line through the fog.
+            const sx = this.sx; sx.globalCompositeOperation = 'destination-out'; sx.beginPath(); sx.ellipse(d.x, d.y, d.r * 1.05, d.r * 1.25, 0, 0, 7); sx.fill(); sx.globalCompositeOperation = 'source-over';
+            const m = this.mx; m.globalCompositeOperation = 'destination-out'; m.strokeStyle = 'rgba(0,0,0,.85)'; m.lineCap = 'round'; m.lineWidth = d.r * 1.7; m.beginPath(); m.moveTo(ox, oy); m.lineTo(d.x, d.y); m.stroke(); m.globalCompositeOperation = 'source-over';
+            d.trail += Math.hypot(d.x - ox, d.y - oy);
+            if (P.trails > 0) {
+                const gap = d.r * (P.trails === 2 ? .8 : 1.9);
+                if (d.trail > gap) { d.trail = 0; const br = d.r * rainR(.16, .36); this.drop(this.sx, ox + rainR(-.2, .2) * d.r, oy - d.r * 1.6, br, false); d.r = Math.sqrt(Math.max(1, d.r * d.r - br * br * .7)); }
+            }
+            if (d.r < thr * .55) { d.moving = false; d.vy = 0; }
+            if (P.merge) for (const o of this.drops) {
+                if (o === d || o.dead) continue;
+                const dx = o.x - d.x, dy = o.y - d.y, rr = (o.r + d.r) * .8;
+                if (dx * dx + dy * dy < rr * rr) { d.r = Math.hypot(d.r, o.r); o.dead = true; }
+            }
+        }
+        this.drops = this.drops.filter(d => !d.dead && d.y - d.r < h + 20);
+    }
+    draw(ctx) {
+        const d = this.d;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        if (this.P.fog > 0) {
+            const f = this.fx; f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, this.fl.width, this.fl.height);
+            f.drawImage(this.fogS, 0, 0); f.globalCompositeOperation = 'destination-in'; f.drawImage(this.mask, 0, 0);
+            ctx.globalAlpha = this.P.fog; ctx.drawImage(this.fl, 0, 0, this.w * d, this.h * d); ctx.globalAlpha = 1;
+        }
+        ctx.drawImage(this.st, 0, 0);
+        ctx.setTransform(d, 0, 0, d, 0, 0);
+        for (const o of this.drops) this.drop(ctx, o.x, o.y, o.r, o.moving);
+    }
+}
+// The rain beyond the glass: streaks in two depth layers, and lightning.
+class RainFall {
+    constructor(P, w, h) {
+        Object.assign(this, { P, w, h, ps: [], fl: -1, bolt: null, next: rainR(2, 5) });
+        for (let i = 0; i < 4000 && this.ps.length < this.want(); i++) this.ps.push(this.spawn(true));
+    }
+    want() { return Math.min(2500, Math.round(380 * this.P.intensity * this.w * this.h / 400000)); }
+    spawn(any) {
+        const z = [.45, .9][Math.random() * 2 | 0] * rainR(.9, 1.08), h = this.h;
+        return { x: rainR(-.3, 1.3) * this.w, y: any ? rainR(-h * .1, h) : rainR(-h * .25, -10), z, ground: z > .8 ? h * rainR(.7, 1.02) : h + 60 };
+    }
+    speed(p) { return (650 + 650 * p.z) * Math.sqrt(p.z); }
+    step(dt) {
+        const P = this.P, w = this.w, want = this.want();
+        while (this.ps.length < want) this.ps.push(this.spawn(false));
+        if (this.ps.length > want) this.ps.length = want;
+        for (const p of this.ps) {
+            const v = this.speed(p); p.x += .12 * v * .35 * dt; p.y += v * dt;
+            if (p.y > p.ground) Object.assign(p, this.spawn(false));
+            if (p.x > w * 1.35) p.x -= w * 1.6;
+        }
+        if (P.lightning > 0 && (this.next -= dt) < 0) { this.fl = 0; this.bolt = this.makeBolt(); this.next = rainR(4, 11) / P.lightning; }
+        if (this.fl >= 0) { this.fl += dt; if (this.fl > 1.4) this.fl = -1; }
+    }
+    makeBolt() {
+        const pts = [[rainR(.15, .85) * this.w, -5]], end = this.h * rainR(.45, .7), branches = []; let [x, y] = pts[0];
+        while (y < end) {
+            x += rainR(-1, 1) * this.w * .03; y += rainR(.02, .05) * this.h; pts.push([x, y]);
+            if (Math.random() < .18) { const b = [[x, y]], dir = Math.random() < .5 ? -1 : 1; let bx = x, by = y; for (let i = 0; i < 5; i++) { bx += dir * rainR(.005, .03) * this.w; by += rainR(.015, .035) * this.h; b.push([bx, by]); } branches.push(b); }
+        }
+        return { pts, branches };
+    }
+    flash() { const t = this.fl; return t < 0 ? 0 : t < .07 ? 1 : t < .14 ? .15 : t < .24 ? .8 : .8 * Math.exp(-(t - .24) * 4); }
+    draw(ctx, tone) {
+        const fl = this.flash();
+        if (fl > 0) {
+            ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(170,185,255,${.32 * fl})`; ctx.fillRect(0, 0, this.w, this.h);
+            if (this.bolt && this.fl < .4) {
+                const line = pts => { ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); };
+                ctx.strokeStyle = `rgba(200,210,255,${.18 * fl})`; ctx.lineWidth = 9; line(this.bolt.pts);
+                ctx.strokeStyle = `rgba(240,244,255,${.95 * fl})`; ctx.lineWidth = 1.6; line(this.bolt.pts);
+                ctx.lineWidth = .8; this.bolt.branches.forEach(line);
+            }
+            ctx.globalCompositeOperation = 'source-over';
+        }
+        if (!this.ps.length) return;
+        ctx.lineCap = 'round';
+        [.45, .9].forEach((z, layer) => {
+            ctx.beginPath();
+            for (const p of this.ps) {
+                if (Math.abs(p.z - z) > z * .12) continue;
+                const len = this.speed(p) * .028; ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - .12 * .35 * len, p.y - len);
+            }
+            ctx.globalAlpha = Math.min(.75, .12 + .3 * z + .35 * fl); ctx.strokeStyle = tone(layer); ctx.lineWidth = .45 + 1.25 * z; ctx.stroke();
+        });
+        ctx.globalAlpha = 1;
+    }
+}
+function rainDraw(ctx, w, h, p, t, c1, c2, tone) {
+    const d = ctx.canvas.width / w, key = [w, h, ctx.canvas.width, c1, c2, p.colour].join('|');
+    const glassP = { amount: p.rainAmount, size: p.rainSize, slide: p.rainSlide, trails: p.rainTrails, merge: p.rainMerge, fog: p.rainFog, refr: p.rainRefraction };
+    const fallP = { intensity: p.rainFall * .7, lightning: p.rainLightning };
+    let state = ctx._ehRain;
+    if (!state || state.key !== key) {
+        // A theme or colour change repaints the lights; the drops start over on the new glass.
+        const lights = rainLights(ctx.canvas.ownerDocument, w * d, h * d, tone, c1);
+        state = ctx._ehRain = { key, last: t, lights, glass: new RainGlass(glassP, w, h, d, lights.sharp, lights.fog), fall: new RainFall(fallP, w, h) };
+    }
+    Object.assign(state.glass.P, glassP); Object.assign(state.fall.P, fallP);
+    const dt = Math.max(0, Math.min(.1, t - state.last)); state.last = t;
+    if (dt) { state.glass.step(dt); state.fall.step(dt); }
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = .55; ctx.drawImage(state.lights.sharp, 0, 0); ctx.restore();
+    state.fall.draw(ctx, i => tone(i));
+    state.glass.draw(ctx);
+    ctx.setTransform(d, 0, 0, d, 0, 0);
+}
+
 function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
     const tau = Math.PI * 2, fract = x => x - Math.floor(x);
     const rand = n => fract(Math.sin(n * 127.1 + 311.7) * 43758.5453);
@@ -299,7 +505,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
                 line([[x, hem - 2], [x, hem + 1]], col, edge * (.2 + .4 * pleat) * shimmer, step * .8);
             }
         }
-    }
+    } else if (kind === 'rain') rainDraw(ctx, w, h, p, t, c1, c2, tone);
     ctx.globalAlpha = 1;
 }
 
@@ -313,6 +519,17 @@ const AMBIENT = {
     aurora: { name: 'Aurora', tip: 'Polar-light curtains with fine vertical rays and a luminous lower edge', rows: [
         ['auroraStyle', 'Style', [0, 1, 2, 3], 0], ['auroraDiffuse', 'Diffuse', [0, 35, 65, 80, 100], 0], ['auroraRibbons', 'Ribbons', [1, 2, 3], 2], ['auroraSpeed', 'Speed', [.4, 1, 2], .4], ['auroraHeight', 'Height', [.1, .25, .4], .25], ['auroraFolds', 'Folds', [5, 10, 18], 10],
     ] },
+    rain: { name: 'Rain', tip: 'Rain on a window behind the page\nDrops bend the light, slide down and wipe clear lines through the fog', rows: [
+        ['rainAmount', 'Amount', [.5, 1, 2], 1, ['Drizzle', 'Rain', 'Downpour'], 'How many drops land on the glass'],
+        ['rainSize', 'Drop size', [.7, 1, 1.4], 1, ['Small', 'Medium', 'Large']],
+        ['rainSlide', 'Sliding', [.5, 1, 2], 1, ['Slow', 'Normal', 'Fast'], 'How soon and how fast heavy drops run down'],
+        ['rainTrails', 'Trails', [0, 1, 2], 1, ['Off', 'Sparse', 'Beaded'], 'The small drops a sliding drop leaves behind'],
+        ['rainMerge', 'Merging', [0, 1], 1, ['Off', 'On'], 'A sliding drop swallows the drops it touches'],
+        ['rainFog', 'Fog', [0, .5, .9], .5, ['Off', 'Light', 'Heavy'], 'Mist on the glass\nSliding drops wipe clear lines through it'],
+        ['rainRefraction', 'Refraction', [0, .5, 1], .5, ['Off', 'Soft', 'Strong'], 'Each drop shows the lights behind it, upside down'],
+        ['rainFall', 'Falling rain', [0, .5, 1], .5, ['Off', 'Light', 'Heavy'], 'Rain falling beyond the window'],
+        ['rainLightning', 'Lightning', [0, 1, 2.5], 0, ['Off', 'Rare', 'Often']],
+    ] },
 };
 const AMBIENT_DEFAULTS = Object.fromEntries(Object.values(AMBIENT).flatMap(f => f.rows.map(([k, , , v]) => [k, v])));
 // the effects on, in order; settings saved before there could be several hold one in hex and effect
@@ -324,7 +541,7 @@ function ambientApply(layer, kind) {
     layer.style.setProperty('--eh-hex-mf', '1'); layer.style.setProperty('--eh-hex-fx', Math.max(0, Math.min(100, Number(S.ambientOpacity) || 0)) / 100);
     layer._ehPattern?.stop();
     const cv = document.createElement('canvas'); cv.className = 'hex-pattern'; layer.append(cv);
-    const w = layer.clientWidth, h = layer.clientHeight, dpr = kind === 'aurora' ? Math.min(.5, 480 / w, 320 / h) : Math.min(2, devicePixelRatio || 1);
+    const w = layer.clientWidth, h = layer.clientHeight, dpr = kind === 'aurora' ? Math.min(.5, 480 / w, 320 / h) : Math.min(kind === 'rain' ? 1.5 : 2, devicePixelRatio || 1);
     cv.width = w * dpr; cv.height = h * dpr; cv.style.width = w + 'px'; cv.style.height = h + 'px';
     const ctx = cv.getContext('2d'); if (!ctx) { cv.remove(); return; } ctx.scale(dpr, dpr);
     const css = getComputedStyle(layer), c1 = css.color, c2 = css.getPropertyValue('--accent2').trim() || c1;
@@ -356,11 +573,11 @@ for(const [key,f] of specs) {
   section.innerHTML = `<h3>${f.name}</h3><p class="desc">${f.tip}</p><div class="stage"><canvas aria-hidden="true"></canvas><div class="page"><header>EVENT HORIZON</header><strong>Random Access Memories</strong><small>Daft Punk · 2013</small><div class="tracks"><div class="track"><span>01 &nbsp; Give Life Back to Music</span><span>4:34</span></div><div class="track"><span>02 &nbsp; The Game of Love</span><span>5:21</span></div><div class="track"><span>03 &nbsp; Giorgio by Moroder</span><span>9:04</span></div></div></div></div><div class="params"></div>`;
   const params = section.querySelector('.params'), p = {};
   const rows = key==='hexagons' ? f.rows : [...f.rows.filter(([k])=>k==='tronOutlines'),['ambientOpacity','Opacity',[25,45,65,85,100],65],...f.rows.filter(([k])=>k!=='tronOutlines'),['glow','Glow',[0,.5,1,2],1],['colour','Colour',[0,1,2],1]];
-  for(const [k,label,values,def] of rows) {
+  for(const [k,label,values,def,labels] of rows) {
     p[k] = values.includes(saved.params?.[key]?.[k]) ? saved.params[key][k] : def;
     const l = document.createElement('label');l.textContent=label;
     const select=document.createElement('select');select.setAttribute('aria-label',f.name+' '+label);
-    values.forEach(v=>{const opt=document.createElement('option');opt.value=v;opt.textContent=k==='auroraStyle'?AURORA_STYLES[v]:k==='colour'?['One tone','Two-tone','All'][v]:k==='glow'?({0:'None',0.5:'Faint',1:'Normal',2:'Wide'})[v]:v+(['ambientOpacity','tronOutlines','auroraDiffuse'].includes(k)?'%':'');opt.selected=v===p[k];select.append(opt);});
+    values.forEach((v,i)=>{const opt=document.createElement('option');opt.value=v;opt.textContent=labels?labels[i]:k==='auroraStyle'?AURORA_STYLES[v]:k==='colour'?['One tone','Two-tone','All'][v]:k==='glow'?({0:'None',0.5:'Faint',1:'Normal',2:'Wide'})[v]:v+(['ambientOpacity','tronOutlines','auroraDiffuse'].includes(k)?'%':'');opt.selected=v===p[k];select.append(opt);});
     select.onchange=()=>{p[k]=Number(select.value);draw();persist();}; l.append(select);params.append(l);
   }
   const cv=section.querySelector('canvas'),ctx=cv.getContext('2d');root.querySelector('.sample-grid').append(section);items.push({key,p,cv,ctx});

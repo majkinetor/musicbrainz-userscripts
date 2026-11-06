@@ -9,7 +9,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 ## Features
 
 - **[The viewer](#the-viewer)** takes over a page, moves between pages without reloading, and keeps the page's identity and actions in reach while scrolling.
-- **[Background effects](#background-effects)**: Hexagons, Tron, Stars and Aurora, each with its own controls, over a background: the cover, a glow, generated artwork or any picture from the web.
+- **[Background effects](#background-effects)**: Hexagons, Tron, Stars, Aurora and Rain, each with its own controls, over a background: the cover, a glow, generated artwork or any picture from the web.
 - **[Sections](#sections)**: all data, an entity's facts and external links included, in cards that can be reordered, hidden and configured.
 - **[Starred entities](#starred-entities)** keeps favorite entities on the homepage.
 - **[Collections](#collections)** adds or removes an entity from your MusicBrainz collections.
@@ -43,6 +43,7 @@ Under **Settings → Effects**, add a **Background** and as many **Effects** as 
 | Tron     | Outlines, Grid size, Riders, Speed, Trail length                      |
 | Stars    | Density, Drift, Depth, Twinkle                                        |
 | Aurora   | Style, Diffuse, Ribbons, Speed, Height, Folds                         |
+| Rain     | Amount, Drop size, Sliding, Trails, Merging, Fog, Refraction, Falling rain, Lightning |
 | Hexagons | Motion, Outlines, Effect, Pace, Trail, How often, Glow, Colour, Depth |
 
 **Background** is **Cover aura** (the page's cover, blurred behind its head), **Glow** (the accent colour), **Artwork** or **Image**:
@@ -57,6 +58,8 @@ Both take the same image effects: **Opacity**, **Blur**, **Brightness**, **Satur
 **Stars**: Density sets the star count, Drift their movement, Depth the difference in size and pace, and Twinkle their shimmer.
 
 **Aurora**: Style chooses Rays, Velvet curtains, Polar haze or Wide veil. Diffuse softens any style, with 0% leaving its natural edges. Ribbons sets the curtain count, Speed their movement, Height their reach and Folds their ripples.
+
+**Rain**: rain on a window behind the page, with blurred city lights in the theme's colours beyond it. Each drop shows the lights behind it upside down, as real drops do. Amount sets how many drops land on the glass and Drop size how big they are. Sliding sets how soon and how fast heavy drops run down; Trails the small drops they leave behind (Off, Sparse or Beaded); Merging lets a sliding drop swallow the drops it touches. Fog mists the glass, and sliding drops wipe clear lines through it that slowly fog over again. Refraction sets how strongly drops bend the light, Falling rain adds rain beyond the window, and Lightning flashes now and then. Rain has no Glow.
 
 Motion pauses in a hidden tab and respects reduced motion.
 
