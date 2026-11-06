@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.150001
+// @version      2026.11.06.170000
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjI4Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMxNmNjZjgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjZmZhZTM4Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -505,8 +505,10 @@
   //   mbuCfgDrag(panel)
   function mbuCfgDrag(el) {
       el.classList.add('mbu-cfg-drag');
+      mbuCfgPhoneFit(el);
       el.addEventListener('pointerdown', function (e) {
           var h = e.target.closest('.mbu-cfg-h');
+          if (el.classList.contains('mbu-cfg-phone')) return;
           if (e.button || !h || !el.contains(h) || e.target.closest('button,a,input,select,label')) return;
           var b = el.getBoundingClientRect();
           if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
@@ -523,6 +525,21 @@
           var up = function () { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); };
           window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); e.preventDefault();
       });
+  }
+
+  // On a phone a settings window fills the screen: MusicBrainz's page is wider than the phone, so
+  // vw and 50% measure the page; the visual viewport is what the person sees.
+  function mbuCfgPhoneFit(el) {
+      var fit = function () {
+          var vv = window.visualViewport;
+          if (!vv || vv.width >= 700 || !el.isConnected) return;
+          el.classList.add('mbu-cfg-phone');
+          Object.assign(el.style, { position: 'fixed', left: vv.offsetLeft + 'px', top: vv.offsetTop + 'px', right: 'auto', bottom: 'auto',
+              transform: 'none', margin: '0', width: vv.width + 'px', height: vv.height + 'px', minWidth: '0', maxWidth: 'none', maxHeight: 'none',
+              borderRadius: '0', boxSizing: 'border-box', textSizeAdjust: '100%', webkitTextSizeAdjust: '100%' });
+          if (getComputedStyle(el).overflowY !== 'hidden') el.style.overflowY = 'auto';
+      };
+      requestAnimationFrame(fit); setTimeout(fit, 120);
   }
 
   function mbuCfgHeader(o) {
@@ -2787,6 +2804,8 @@
 .fl-sw button{font:inherit;border:0;background:none;color:var(--mbu-text-dim);padding:2px 10px;cursor:pointer}
 .fl-sw button.on{background:var(--mbu-accent-soft);color:var(--mbu-accent-deep-text)}
 .fl-chk{display:inline-flex;align-items:center;gap:4px;color:var(--mbu-text-dim);cursor:pointer}
+.fl-chk-ic{display:none}
+@media (max-width:700px){.fl-chk-ic{display:block}.fl-chk-t{display:none}}
 .fl-sp{flex:1 1 auto}
 .fl-list{overflow:auto;${SB};height:min(420px,50vh)}
 .fl-t{width:100%;border-collapse:collapse}
@@ -2911,7 +2930,7 @@
     let h = srcRow() + '<div class="fl-bar"><span class="fl-sw">'
       + '<button type="button" data-a="genres" class="' + (S.showAll ? '' : 'on') + '" data-tip="Only MusicBrainz genres">Genres ' + nG + '</button>'
       + '<button type="button" data-a="alltags" class="' + (S.showAll ? 'on' : '') + '" data-tip="Every collected tag">All ' + list.length + '</button></span><span class="fl-sp"></span>';
-    if (TYPE === 'release') h += '<label class="fl-chk" data-tip="Vote on its release group and every recording too"><input type="checkbox" data-a="prop"' + (S.prop ? ' checked' : '') + '>Release group + recordings</label>';
+    if (TYPE === 'release') h += '<label class="fl-chk" data-tip="Vote on its release group and every recording too"><input type="checkbox" data-a="prop"' + (S.prop ? ' checked' : '') + '><svg class="fl-chk-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 8l10 5 10-5z"/><path d="m2 13 10 5 10-5"/><path d="m2 18 10 5 10-5"/></svg><span class="fl-chk-t">Release group + recordings</span></label>';
     h += '</div><div class="fl-list">';
     if (!shown.length) {
       h += '<div class="fl-empty">' + (S.busy ? 'Collecting tags…' : !S.ran ? '' : list.length ? 'No genres among ' + plural(list.length, 'tag') + '.' : 'No tags in this ' + TYPE.replace('-', ' ') + "'s links.") + '</div>';

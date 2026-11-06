@@ -2079,8 +2079,10 @@ function mbuToast(msg, opts) {
 //   mbuCfgDrag(panel)
 function mbuCfgDrag(el) {
     el.classList.add('mbu-cfg-drag');
+    mbuCfgPhoneFit(el);
     el.addEventListener('pointerdown', function (e) {
         var h = e.target.closest('.mbu-cfg-h');
+        if (el.classList.contains('mbu-cfg-phone')) return;
         if (e.button || !h || !el.contains(h) || e.target.closest('button,a,input,select,label')) return;
         var b = el.getBoundingClientRect();
         if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
@@ -2097,6 +2099,21 @@ function mbuCfgDrag(el) {
         var up = function () { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); };
         window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); e.preventDefault();
     });
+}
+
+// On a phone a settings window fills the screen: MusicBrainz's page is wider than the phone, so
+// vw and 50% measure the page; the visual viewport is what the person sees.
+function mbuCfgPhoneFit(el) {
+    var fit = function () {
+        var vv = window.visualViewport;
+        if (!vv || vv.width >= 700 || !el.isConnected) return;
+        el.classList.add('mbu-cfg-phone');
+        Object.assign(el.style, { position: 'fixed', left: vv.offsetLeft + 'px', top: vv.offsetTop + 'px', right: 'auto', bottom: 'auto',
+            transform: 'none', margin: '0', width: vv.width + 'px', height: vv.height + 'px', minWidth: '0', maxWidth: 'none', maxHeight: 'none',
+            borderRadius: '0', boxSizing: 'border-box', textSizeAdjust: '100%', webkitTextSizeAdjust: '100%' });
+        if (getComputedStyle(el).overflowY !== 'hidden') el.style.overflowY = 'auto';
+    };
+    requestAnimationFrame(fit); setTimeout(fit, 120);
 }
 
 function mbuCfgHeader(o) {
