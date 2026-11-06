@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.210105
+// @version      2026.11.06.150000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -193,7 +193,7 @@ async function mbnFetch(url, init, o) {
     for (let attempt = 1; ; attempt++) {
         const slot = await mbnSlot(o);
         if (!slot.ok) return null;
-        const r = await fetch(url, init);
+        const r = await mbnWsFetch(url, init);
         const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
         if (!a.throttled || attempt >= tries) return r;
     }
@@ -202,6 +202,45 @@ function mbnHot() {
     let s;
     try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; } catch (e) { s = globalThis.__mbnGate || {}; }
     return Date.now() > (s.cool || 0) + 30000 ? 0 : (s.hot || 0);   // a throttle long gone is over
+}
+function mbnUA() {
+    let n = 'mb-userscripts', v = '';
+    try { const i = GM_info.script; n = String(i.name || n).replace(/\s+/g, ''); v = i.version || ''; } catch (e) {}
+    return n + (v ? '/' + v : '') + ' ( https://github.com/majkinetor/musicbrainz-userscripts )';
+}
+function mbnWsFetch(url, init) {
+    init = init || {};
+    const gm = typeof GM_xmlhttpRequest === 'function' ? GM_xmlhttpRequest
+        : (typeof GM !== 'undefined' && GM && typeof GM.xmlHttpRequest === 'function' ? GM.xmlHttpRequest : null);
+    if (!gm) return fetch(url, init);
+    const abs = new URL(String(url), typeof location !== 'undefined' ? location.href : 'https://musicbrainz.org/').href;
+    const headers = {};
+    try { new Headers(init.headers || {}).forEach((v, k) => { headers[k] = v; }); } catch (e) {}
+    headers['User-Agent'] = mbnUA();
+    return new Promise((resolve, reject) => {
+        const sig = init.signal;
+        if (sig && sig.aborted) { reject(new DOMException('Aborted', 'AbortError')); return; }
+        let req = null, done = false;
+        const onAbort = () => { if (done) return; done = true; try { req && req.abort && req.abort(); } catch (e) {} reject(new DOMException('Aborted', 'AbortError')); };
+        const fail = m => () => { if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort); reject(new TypeError(m)); };
+        if (sig) sig.addEventListener('abort', onAbort);
+        const res = gm({
+            method: String(init.method || 'GET').toUpperCase(), url: abs, headers, data: init.body,
+            timeout: 60000,
+            onload: x => {
+                if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort);
+                const h = new Headers();
+                for (const line of String(x.responseHeaders || '').split(/\r?\n/)) { const i = line.indexOf(':'); if (i > 0) try { h.append(line.slice(0, i).trim(), line.slice(i + 1).trim()); } catch (e) {} }
+                const st = x.status || 0;
+                if (st < 200 || st > 599) { reject(new TypeError('network error (status ' + st + ')')); return; }
+                const r = new Response(st === 204 || st === 304 ? null : (x.responseText != null ? x.responseText : ''), { status: st, statusText: x.statusText || '', headers: h });
+                try { Object.defineProperty(r, 'url', { value: x.finalUrl || abs }); } catch (e) {}
+                resolve(r);
+            },
+            onerror: fail('network error'), ontimeout: fail('timed out'), onabort: fail('aborted'),
+        });
+        req = res && typeof res.then === 'function' ? null : res;   // GM.xmlHttpRequest returns a promise in some managers
+    });
 }
 function mbnRawHeader(raw, name) {
     const want = String(name).toLowerCase();
@@ -305,7 +344,7 @@ async function wsGet(path, retries) {
             // no-store: MB's WS2 sends NO cache headers, so browsers cache these
             // heuristically and can serve a stale response — which silently fed
             // Fusion out-of-date ISRC data. #529
-            const r = await fetch(path, { headers: { Accept: 'application/json' }, cache: 'no-store' });
+            const r = await mbnWsFetch(path, { headers: { Accept: 'application/json' }, cache: 'no-store' });
             const ms = Date.now() - t0;
             const a = await mbnAnswer(r.status, n => r.headers.get(n), { log: gateLog });
             if (a.throttled) {

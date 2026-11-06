@@ -181,7 +181,7 @@ export async function mbnFetch(url, init, o) {
     for (let attempt = 1; ; attempt++) {
         const slot = await mbnSlot(o);
         if (!slot.ok) return null;
-        const r = await fetch(url, init);
+        const r = await mbnWsFetch(url, init);
         const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
         if (!a.throttled || attempt >= tries) return r;
     }
@@ -193,6 +193,55 @@ export function mbnHot() {
     let s;
     try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; } catch (e) { s = globalThis.__mbnGate || {}; }
     return Date.now() > (s.cool || 0) + 30000 ? 0 : (s.hot || 0);   // a throttle long gone is over
+}
+
+/** The User-Agent MusicBrainz asks API clients for (#932): the running script's name and version. */
+export function mbnUA() {
+    let n = 'mb-userscripts', v = '';
+    try { const i = GM_info.script; n = String(i.name || n).replace(/\s+/g, ''); v = i.version || ''; } catch (e) {}
+    return n + (v ? '/' + v : '') + ' ( https://github.com/majkinetor/musicbrainz-userscripts )';
+}
+
+/**
+ * fetch() for /ws/2 that MusicBrainz can tell apart (#932): a page fetch() carries the browser's
+ * User-Agent (Chrome ignores a User-Agent header there), so where the script may use
+ * GM_xmlhttpRequest the request goes through it with mbnUA(). Takes fetch's (url, init) —
+ * method, headers, body, signal — and resolves a Response; rejects like fetch on a network
+ * error or an abort. Without GM it is plain fetch(). Paces nothing: take mbnSlot first.
+ */
+export function mbnWsFetch(url, init) {
+    init = init || {};
+    const gm = typeof GM_xmlhttpRequest === 'function' ? GM_xmlhttpRequest
+        : (typeof GM !== 'undefined' && GM && typeof GM.xmlHttpRequest === 'function' ? GM.xmlHttpRequest : null);
+    if (!gm) return fetch(url, init);
+    const abs = new URL(String(url), typeof location !== 'undefined' ? location.href : 'https://musicbrainz.org/').href;
+    const headers = {};
+    try { new Headers(init.headers || {}).forEach((v, k) => { headers[k] = v; }); } catch (e) {}
+    headers['User-Agent'] = mbnUA();
+    return new Promise((resolve, reject) => {
+        const sig = init.signal;
+        if (sig && sig.aborted) { reject(new DOMException('Aborted', 'AbortError')); return; }
+        let req = null, done = false;
+        const onAbort = () => { if (done) return; done = true; try { req && req.abort && req.abort(); } catch (e) {} reject(new DOMException('Aborted', 'AbortError')); };
+        const fail = m => () => { if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort); reject(new TypeError(m)); };
+        if (sig) sig.addEventListener('abort', onAbort);
+        const res = gm({
+            method: String(init.method || 'GET').toUpperCase(), url: abs, headers, data: init.body,
+            timeout: 60000,
+            onload: x => {
+                if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort);
+                const h = new Headers();
+                for (const line of String(x.responseHeaders || '').split(/\r?\n/)) { const i = line.indexOf(':'); if (i > 0) try { h.append(line.slice(0, i).trim(), line.slice(i + 1).trim()); } catch (e) {} }
+                const st = x.status || 0;
+                if (st < 200 || st > 599) { reject(new TypeError('network error (status ' + st + ')')); return; }
+                const r = new Response(st === 204 || st === 304 ? null : (x.responseText != null ? x.responseText : ''), { status: st, statusText: x.statusText || '', headers: h });
+                try { Object.defineProperty(r, 'url', { value: x.finalUrl || abs }); } catch (e) {}
+                resolve(r);
+            },
+            onerror: fail('network error'), ontimeout: fail('timed out'), onabort: fail('aborted'),
+        });
+        req = res && typeof res.then === 'function' ? null : res;   // GM.xmlHttpRequest returns a promise in some managers
+    });
 }
 
 /** One header out of a GM_xmlhttpRequest response's raw `responseHeaders` text, or null. */
@@ -287,5 +336,5 @@ export function mbnReverify(url, init, o) {
 /** What sync-gate.mjs inlines, in order. */
 export const MBN_INLINE = {
     consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, MBN_MAX_LEAD },
-    fns: [mbnGated, mbnState, mbnSlot, mbnLead, mbnAnswer, mbnFetch, mbnHot, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
+    fns: [mbnGated, mbnState, mbnSlot, mbnLead, mbnAnswer, mbnFetch, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
 };

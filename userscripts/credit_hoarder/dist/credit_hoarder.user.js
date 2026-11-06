@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.11.06.101924
+// @version      2026.11.06.114247
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -37,6 +37,7 @@
 // @grant        GM_deleteValue
 // @grant        GM_addValueChangeListener
 // @grant        GM_removeValueChangeListener
+// @connect      musicbrainz.org
 // ==/UserScript==
 
 (() => {
@@ -380,10 +381,93 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     for (let attempt = 1; ; attempt++) {
       const slot = await mbnSlot(o);
       if (!slot.ok) return null;
-      const r = await fetch(url, init);
+      const r = await mbnWsFetch(url, init);
       const a = await mbnAnswer(r.status, (n) => r.headers.get(n), o);
       if (!a.throttled || attempt >= tries) return r;
     }
+  }
+  function mbnUA() {
+    let n = "mb-userscripts", v = "";
+    try {
+      const i = GM_info.script;
+      n = String(i.name || n).replace(/\s+/g, "");
+      v = i.version || "";
+    } catch (e) {
+    }
+    return n + (v ? "/" + v : "") + " ( https://github.com/majkinetor/musicbrainz-userscripts )";
+  }
+  function mbnWsFetch(url, init) {
+    init = init || {};
+    const gm = typeof GM_xmlhttpRequest === "function" ? GM_xmlhttpRequest : typeof GM !== "undefined" && GM && typeof GM.xmlHttpRequest === "function" ? GM.xmlHttpRequest : null;
+    if (!gm) return fetch(url, init);
+    const abs = new URL(String(url), typeof location !== "undefined" ? location.href : "https://musicbrainz.org/").href;
+    const headers = {};
+    try {
+      new Headers(init.headers || {}).forEach((v, k) => {
+        headers[k] = v;
+      });
+    } catch (e) {
+    }
+    headers["User-Agent"] = mbnUA();
+    return new Promise((resolve, reject) => {
+      const sig = init.signal;
+      if (sig && sig.aborted) {
+        reject(new DOMException("Aborted", "AbortError"));
+        return;
+      }
+      let req = null, done = false;
+      const onAbort = () => {
+        if (done) return;
+        done = true;
+        try {
+          req && req.abort && req.abort();
+        } catch (e) {
+        }
+        reject(new DOMException("Aborted", "AbortError"));
+      };
+      const fail = (m) => () => {
+        if (done) return;
+        done = true;
+        if (sig) sig.removeEventListener("abort", onAbort);
+        reject(new TypeError(m));
+      };
+      if (sig) sig.addEventListener("abort", onAbort);
+      const res = gm({
+        method: String(init.method || "GET").toUpperCase(),
+        url: abs,
+        headers,
+        data: init.body,
+        timeout: 6e4,
+        onload: (x) => {
+          if (done) return;
+          done = true;
+          if (sig) sig.removeEventListener("abort", onAbort);
+          const h = new Headers();
+          for (const line of String(x.responseHeaders || "").split(/\r?\n/)) {
+            const i = line.indexOf(":");
+            if (i > 0) try {
+              h.append(line.slice(0, i).trim(), line.slice(i + 1).trim());
+            } catch (e) {
+            }
+          }
+          const st = x.status || 0;
+          if (st < 200 || st > 599) {
+            reject(new TypeError("network error (status " + st + ")"));
+            return;
+          }
+          const r = new Response(st === 204 || st === 304 ? null : x.responseText != null ? x.responseText : "", { status: st, statusText: x.statusText || "", headers: h });
+          try {
+            Object.defineProperty(r, "url", { value: x.finalUrl || abs });
+          } catch (e) {
+          }
+          resolve(r);
+        },
+        onerror: fail("network error"),
+        ontimeout: fail("timed out"),
+        onabort: fail("aborted")
+      });
+      req = res && typeof res.then === "function" ? null : res;
+    });
   }
   function mbnWebsite(url) {
     const s = String(url || "");
@@ -517,7 +601,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         const ctrl = new AbortController();
         const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
         try {
-          const res = gated ? await fetch(item.url, { signal: ctrl.signal }) : await mbnFetch(item.url, { signal: ctrl.signal }, { log: gateLog });
+          const res = gated ? await mbnWsFetch(item.url, { signal: ctrl.signal }) : await mbnFetch(item.url, { signal: ctrl.signal }, { log: gateLog });
           const elapsed = Date.now() - t0;
           if (gated) {
             const a = await mbnAnswer(res.status, (n) => res.headers.get(n), { log: gateLog });

@@ -5,7 +5,7 @@
 
 import { MB, pageWindow }    from './constants.js';
 import { log, logDebug } from './log.js';
-import { mbnGated, mbnSlot, mbnAnswer, mbnFetch } from '../../../dev/net/mb-gate.mjs';
+import { mbnGated, mbnSlot, mbnAnswer, mbnFetch, mbnWsFetch } from '../../../dev/net/mb-gate.mjs';
 
 /**
  * Fetch a full MB entity from the internal `/ws/js/entity/{mbid}` endpoint.
@@ -104,7 +104,7 @@ export const mbThrottle = (() => {
             const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
             try {
                 // a /ws/js item goes through mbnFetch, which passes MusicBrainz's browser check if it answers (#733)
-                const res = gated ? await fetch(item.url, { signal: ctrl.signal }) : await mbnFetch(item.url, { signal: ctrl.signal }, { log: gateLog });
+                const res = gated ? await mbnWsFetch(item.url, { signal: ctrl.signal }) : await mbnFetch(item.url, { signal: ctrl.signal }, { log: gateLog });
                 const elapsed = Date.now() - t0;
                 if (gated) {
                     const a = await mbnAnswer(res.status, n => res.headers.get(n), { log: gateLog });

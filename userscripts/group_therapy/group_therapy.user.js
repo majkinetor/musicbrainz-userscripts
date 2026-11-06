@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.05.120222
+// @version      2026.11.06.150000
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -13,6 +13,8 @@
 // @grant        GM_setValue
 // @grant        GM_openInTab
 // @grant        unsafeWindow
+// @grant        GM_xmlhttpRequest
+// @connect      musicbrainz.org
 // @run-at       document-end
 // @noframes
 // ==/UserScript==
@@ -135,7 +137,7 @@
       for (let attempt = 1; ; attempt++) {
           const slot = await mbnSlot(o);
           if (!slot.ok) return null;
-          const r = await fetch(url, init);
+          const r = await mbnWsFetch(url, init);
           const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
           if (!a.throttled || attempt >= tries) return r;
       }
@@ -144,6 +146,45 @@
       let s;
       try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; } catch (e) { s = globalThis.__mbnGate || {}; }
       return Date.now() > (s.cool || 0) + 30000 ? 0 : (s.hot || 0);   // a throttle long gone is over
+  }
+  function mbnUA() {
+      let n = 'mb-userscripts', v = '';
+      try { const i = GM_info.script; n = String(i.name || n).replace(/\s+/g, ''); v = i.version || ''; } catch (e) {}
+      return n + (v ? '/' + v : '') + ' ( https://github.com/majkinetor/musicbrainz-userscripts )';
+  }
+  function mbnWsFetch(url, init) {
+      init = init || {};
+      const gm = typeof GM_xmlhttpRequest === 'function' ? GM_xmlhttpRequest
+          : (typeof GM !== 'undefined' && GM && typeof GM.xmlHttpRequest === 'function' ? GM.xmlHttpRequest : null);
+      if (!gm) return fetch(url, init);
+      const abs = new URL(String(url), typeof location !== 'undefined' ? location.href : 'https://musicbrainz.org/').href;
+      const headers = {};
+      try { new Headers(init.headers || {}).forEach((v, k) => { headers[k] = v; }); } catch (e) {}
+      headers['User-Agent'] = mbnUA();
+      return new Promise((resolve, reject) => {
+          const sig = init.signal;
+          if (sig && sig.aborted) { reject(new DOMException('Aborted', 'AbortError')); return; }
+          let req = null, done = false;
+          const onAbort = () => { if (done) return; done = true; try { req && req.abort && req.abort(); } catch (e) {} reject(new DOMException('Aborted', 'AbortError')); };
+          const fail = m => () => { if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort); reject(new TypeError(m)); };
+          if (sig) sig.addEventListener('abort', onAbort);
+          const res = gm({
+              method: String(init.method || 'GET').toUpperCase(), url: abs, headers, data: init.body,
+              timeout: 60000,
+              onload: x => {
+                  if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort);
+                  const h = new Headers();
+                  for (const line of String(x.responseHeaders || '').split(/\r?\n/)) { const i = line.indexOf(':'); if (i > 0) try { h.append(line.slice(0, i).trim(), line.slice(i + 1).trim()); } catch (e) {} }
+                  const st = x.status || 0;
+                  if (st < 200 || st > 599) { reject(new TypeError('network error (status ' + st + ')')); return; }
+                  const r = new Response(st === 204 || st === 304 ? null : (x.responseText != null ? x.responseText : ''), { status: st, statusText: x.statusText || '', headers: h });
+                  try { Object.defineProperty(r, 'url', { value: x.finalUrl || abs }); } catch (e) {}
+                  resolve(r);
+              },
+              onerror: fail('network error'), ontimeout: fail('timed out'), onabort: fail('aborted'),
+          });
+          req = res && typeof res.then === 'function' ? null : res;   // GM.xmlHttpRequest returns a promise in some managers
+      });
   }
   function mbnRawHeader(raw, name) {
       const want = String(name).toLowerCase();
@@ -3854,7 +3895,7 @@
     for (let i = 0; i < tries; i++) {
       await mbnSlot({ label: url, log: gtGateLog });   // the shared gate (#633): its pace, and any hold MusicBrainz asked for
       let r;
-      try { r = await fetch(url, { headers: { Accept: 'application/json' } }); }
+      try { r = await mbnWsFetch(url, { headers: { Accept: 'application/json' } }); }
       catch (e) { last = (e && e.message) || 'network error'; console.debug('[Group Therapy] consolidate:', url, 'failed:', last); await sleep(700 * (i + 1)); continue; }
       if ((await mbnAnswer(r.status, n => r.headers.get(n), { log: gtGateLog })).throttled) {
         last = 'MusicBrainz is rate-limiting (HTTP ' + r.status + ')';
@@ -4493,7 +4534,7 @@
       try {
         const gated = url.startsWith('/ws/2/');   // only the public API is rate-limited; /ws/js is the editor's own
         if (gated && !(await mbnSlot({ label: url, log: gtGateLog, cancelled: () => !!(sig && sig.aborted) })).ok) return null;
-        const r = await fetch(url, { credentials: 'include', headers: { Accept: 'application/json' }, signal: sig });
+        const r = await (gated ? mbnWsFetch : fetch)(url, { credentials: 'include', headers: { Accept: 'application/json' }, signal: sig });
         if (gated && (await mbnAnswer(r.status, n => r.headers.get(n), { log: gtGateLog })).throttled && i < 4) continue;   // the next slot waits out the shared hold
         if ((r.status === 429 || r.status === 503) && i < 4) { await sleep(900 * (i + 1)); continue; }
         if (!r.ok) return null; return await r.json();

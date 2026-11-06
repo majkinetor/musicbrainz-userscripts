@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.05.120222
+// @version      2026.11.06.150000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -174,7 +174,7 @@
       for (let attempt = 1; ; attempt++) {
           const slot = await mbnSlot(o);
           if (!slot.ok) return null;
-          const r = await fetch(url, init);
+          const r = await mbnWsFetch(url, init);
           const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
           if (!a.throttled || attempt >= tries) return r;
       }
@@ -183,6 +183,45 @@
       let s;
       try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; } catch (e) { s = globalThis.__mbnGate || {}; }
       return Date.now() > (s.cool || 0) + 30000 ? 0 : (s.hot || 0);   // a throttle long gone is over
+  }
+  function mbnUA() {
+      let n = 'mb-userscripts', v = '';
+      try { const i = GM_info.script; n = String(i.name || n).replace(/\s+/g, ''); v = i.version || ''; } catch (e) {}
+      return n + (v ? '/' + v : '') + ' ( https://github.com/majkinetor/musicbrainz-userscripts )';
+  }
+  function mbnWsFetch(url, init) {
+      init = init || {};
+      const gm = typeof GM_xmlhttpRequest === 'function' ? GM_xmlhttpRequest
+          : (typeof GM !== 'undefined' && GM && typeof GM.xmlHttpRequest === 'function' ? GM.xmlHttpRequest : null);
+      if (!gm) return fetch(url, init);
+      const abs = new URL(String(url), typeof location !== 'undefined' ? location.href : 'https://musicbrainz.org/').href;
+      const headers = {};
+      try { new Headers(init.headers || {}).forEach((v, k) => { headers[k] = v; }); } catch (e) {}
+      headers['User-Agent'] = mbnUA();
+      return new Promise((resolve, reject) => {
+          const sig = init.signal;
+          if (sig && sig.aborted) { reject(new DOMException('Aborted', 'AbortError')); return; }
+          let req = null, done = false;
+          const onAbort = () => { if (done) return; done = true; try { req && req.abort && req.abort(); } catch (e) {} reject(new DOMException('Aborted', 'AbortError')); };
+          const fail = m => () => { if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort); reject(new TypeError(m)); };
+          if (sig) sig.addEventListener('abort', onAbort);
+          const res = gm({
+              method: String(init.method || 'GET').toUpperCase(), url: abs, headers, data: init.body,
+              timeout: 60000,
+              onload: x => {
+                  if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort);
+                  const h = new Headers();
+                  for (const line of String(x.responseHeaders || '').split(/\r?\n/)) { const i = line.indexOf(':'); if (i > 0) try { h.append(line.slice(0, i).trim(), line.slice(i + 1).trim()); } catch (e) {} }
+                  const st = x.status || 0;
+                  if (st < 200 || st > 599) { reject(new TypeError('network error (status ' + st + ')')); return; }
+                  const r = new Response(st === 204 || st === 304 ? null : (x.responseText != null ? x.responseText : ''), { status: st, statusText: x.statusText || '', headers: h });
+                  try { Object.defineProperty(r, 'url', { value: x.finalUrl || abs }); } catch (e) {}
+                  resolve(r);
+              },
+              onerror: fail('network error'), ontimeout: fail('timed out'), onabort: fail('aborted'),
+          });
+          req = res && typeof res.then === 'function' ? null : res;   // GM.xmlHttpRequest returns a promise in some managers
+      });
   }
   function mbnRawHeader(raw, name) {
       const want = String(name).toLowerCase();
@@ -2789,7 +2828,7 @@ Click: open the label`;
     while (_wsInFlight >= wsLanes()) { if (_matchStop) return null; await _sleep(120); }
     if (o.stale && o.stale()) return null;
     _wsInFlight++;
-    try { return await fetch(url, { headers: { Accept: 'application/json' } }); }
+    try { return await mbnWsFetch(url, { headers: { Accept: 'application/json' } }); }
     finally { _wsInFlight--; }
   }
   // tell the gate how MusicBrainz answered: a 429/503 holds everybody, a clean answer earns room back
