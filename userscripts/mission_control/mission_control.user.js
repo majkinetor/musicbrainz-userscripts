@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.06.093404
+// @version      2026.11.06.120000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -582,7 +582,7 @@ function reviewIco(id, x) {
     return '';
 }
 // a link as its platform's name and the id at the end of its address, the whole address on hover
-function reviewUrlName(u) { const k = urlIcon(u); return k === 'globe' ? shortUrl(u).split('/')[0] : ccName(k); }
+function reviewUrlName(u) { return CC_NAMES[urlIcon(u)] || shortUrl(u).split('/')[0]; }
 function reviewUrlId(u) { try { const p = new URL(u).pathname.split('/').filter(Boolean); return p.slice(-1)[0] || ''; } catch (e) { return ''; } }
 // one selected finding as a line: what it is, and where it goes
 function reviewLine(id, x) {
@@ -1915,7 +1915,15 @@ const ORDER = { new: 0, withheld: 1, unsure: 2, blocked: 3, linked: 4, none: 5 }
 // a link's platform, as its ST-ICONS key (globe when MC has no icon for it)
 const HOST_ICON = [[/discogs\.com$/, 'discogs'], [/spotify\.com$/, 'spotify'], [/apple\.com$/, 'apple'], [/deezer\.com$/, 'deezer'], [/tidal\.com$/, 'tidal'], [/qobuz\.com$/, 'qobuz'],
     [/beatport\.com$/, 'beatport'], [/bandcamp\.com$/, 'bandcamp'], [/volumo\.com$/, 'volumo'], [/hdtracks\.com$/, 'hdtracks'], [/soundcloud\.com$/, 'soundcloud'], [/audiomack\.com$/, 'audiomack'],
-    [/7digital\.com$/, 'sevendigital'], [/music\.youtube\.com$/, 'ytmusic'], [/amazon\.[a-z.]+$/, 'amazonmusic'], [/musicbrainz\.org$/, 'musicbrainz']];
+    [/7digital\.com$/, 'sevendigital'], [/music\.youtube\.com$/, 'ytmusic'], [/amazon\.[a-z.]+$/, 'amazonmusic'], [/musicbrainz\.org$/, 'musicbrainz'],
+    // the rest of ST-ICONS, so a recording already linked to one shows its mark, not the globe
+    [/(^|\.)(youtube\.com|youtu\.be)$/, 'youtube'], [/prestomusic\.com$/, 'presto'], [/(^|\.)melon\.com$/, 'melon'], [/(^|\.)bugs\.co\.kr$/, 'bugs'],
+    [/allmusic\.com$/, 'allmusic'], [/(^|\.)mora\.jp$/, 'mora'], [/soundexchange\.com$/, 'soundexchange'], [/wikidata\.org$/, 'wikidata'],
+    [/commons\.wikimedia\.org$/, 'commons'], [/wikipedia\.org$/, 'wikipedia'], [/rateyourmusic\.com$/, 'rateyourmusic'], [/(^|\.)(twitter|x)\.com$/, 'twitter'],
+    [/(^|\.)facebook\.com$/, 'facebook'], [/(^|\.)last\.fm$|(^|\.)lastfm\.[a-z.]+$/, 'lastfm'], [/secondhandsongs\.com$/, 'secondhandsongs'], [/(^|\.)genius\.com$/, 'genius'],
+    [/(^|\.)viaf\.org$/, 'viaf'], [/instagram\.com$/, 'instagram'], [/(^|\.)imdb\.com$/, 'imdb'], [/songkick\.com$/, 'songkick'], [/bandsintown\.com$/, 'bandsintown'],
+    [/napster\.com$/, 'napster'], [/myspace\.com$/, 'myspace'], [/(^|\.)vk\.(com|ru)$/, 'vk'], [/(^|\.)weibo\.(com|cn)$/, 'weibo'], [/(^|\.)pandora\.com$/, 'pandora'],
+    [/(^|\.)ebay\.[a-z.]+$/, 'ebay'], [/creativecommons\.org$/, 'creativecommons'], [/(^|\.)play\.google\.com$/, 'googleplay']];
 function urlIcon(u) {
     let h = '';
     try { h = new URL(u, location.href).hostname; } catch (e) { return 'globe'; }
