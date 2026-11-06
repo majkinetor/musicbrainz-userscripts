@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.07.000500
+// @version      2026.11.07.000501
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3554,6 +3554,95 @@ function auroraLayer(ctx, w, h, p, t, c1, c2) {
     ctx.fillStyle = light; ctx.fillRect(0, 0, w, h); ctx.restore();
 }
 
+function rainBirth(s, p, initial = false) {
+    const rnd = (a, b) => a + s.random() * (b - a), fallChance = s.random(), falling = fallChance < p.rainFalling / 100;
+    const size = (.7 + rnd(0, 1) ** 2 * 7.5) * p.rainSize;
+    return { id: s.next++, x: rnd(5, s.w - 5), y: falling && !initial ? -20 : rnd(0, s.h),
+        r: size * (initial ? rnd(.5, 1) : .12), size, falling, age: 0, life: rnd(25, 80),
+        fallChance, speed: falling ? rnd(180, 450) : 0, fallTerminal: rnd(450, 1100), slideTerminal: rnd(18, 150),
+        grip: rnd(2, 7) * p.rainSize, pause: rnd(.2, 5), slip: rnd(.6, 2.5),
+        skew: rnd(-.3, .3), phase: rnd(0, Math.PI * 2), wobble: rnd(.4, 2.4), trail: [] };
+}
+function rainCreate(w, h, p, random = Math.random) {
+    const s = { w, h, random, next: 1, drops: [], last: 0, births: 0, size: p.rainSize };
+    const count = Math.min(360, Math.max(8, Math.round(w * h / 18000 * p.rainQuantity / 100)));
+    for (let i = 0; i < count; i++) s.drops.push(rainBirth(s, p, true));
+    return s;
+}
+function rainStep(s, dt, p) {
+    dt = Math.max(0, Math.min(.1, dt)) * p.rainSpeed;
+    const target = Math.min(360, Math.max(8, Math.round(s.w * s.h / 18000 * p.rainQuantity / 100)));
+    if (s.drops.length > target) s.drops.length = target;
+    s.births = Math.min(target, s.births + dt * target / 12 * p.rainIntensity / 100);
+    while (s.births >= 1 && s.drops.length < target) { s.drops.push(rainBirth(s, p)); s.births--; }
+    for (const d of s.drops) {
+        const scale = p.rainSize / s.size;
+        d.r *= scale; d.size *= scale; d.grip *= scale;
+        d.falling = d.fallChance < p.rainFalling / 100;
+        d.age += dt; d.pause -= dt;
+        d.r += (d.size - d.r) * Math.min(1, dt * (.25 + p.rainIntensity / 150));
+        if (d.falling) d.speed = Math.min(d.fallTerminal, d.speed + dt * 800);
+        else if (d.r > d.grip && d.pause <= 0) {
+            d.speed += (d.slideTerminal * Math.min(2, d.r / d.grip) - d.speed) * Math.min(1, dt * 3);
+            d.slip -= dt;
+            if (d.slip <= 0) { d.pause = .3 + s.random() * 4; d.slip = .3 + s.random() * 2; }
+        } else d.speed *= Math.exp(-dt * 9);
+        const ox = d.x, oy = d.y;
+        d.y += d.speed * dt;
+        d.x += Math.sin(d.y / (16 + d.wobble * 12) + d.phase) * Math.min(1, d.speed / 30) * dt * d.wobble * 4;
+        for (const point of d.trail) point.age += dt;
+        const life = d.falling ? .12 : 1.8 * p.rainTrail;
+        d.trail = d.trail.filter(point => point.age < life);
+        if (p.rainTrail > 0 && d.speed > 2 && Math.hypot(d.x - ox, d.y - oy) > .1) {
+            d.trail.push({ x: ox, y: oy, age: 0 });
+            if (d.trail.length > 70) d.trail.shift();
+        }
+    }
+    s.size = p.rainSize;
+    // Small beads caught by a sliding drop join it; the added weight breaks its grip.
+    for (let i = 0; i < s.drops.length; i++) {
+        const a = s.drops[i]; if (a.dead || a.falling) continue;
+        for (let j = i + 1; j < s.drops.length; j++) {
+            const b = s.drops[j]; if (b.dead || b.falling || Math.abs(a.y - b.y) > a.r + b.r) continue;
+            if (Math.hypot(a.x - b.x, a.y - b.y) < (a.r + b.r) * .8) {
+                const area = a.r * a.r + b.r * b.r;
+                a.x = (a.x * a.r * a.r + b.x * b.r * b.r) / area;
+                a.r = Math.min(13 * p.rainSize, Math.sqrt(area)); a.size = Math.max(a.size, a.r);
+                a.pause = 0; a.grip = Math.min(a.grip, a.r * .8); a.speed = Math.max(a.speed, b.speed, 8); b.dead = true;
+            }
+        }
+    }
+    s.drops = s.drops.filter(d => !d.dead && d.y < s.h + 40 && (d.falling || d.age < d.life));
+}
+function rainDraw(ctx, w, h, p, t, tone) {
+    const s = ctx._ehRain || (ctx._ehRain = rainCreate(w, h, p));
+    rainStep(s, t - s.last, p); s.last = t;
+    for (const d of s.drops) {
+        const col = tone(d.id), alpha = Math.min(1, d.age * 2 + .2, d.falling ? 1 : (d.life - d.age) / 2), r = d.r;
+        ctx.strokeStyle = col; ctx.lineCap = 'round';
+        for (let i = 0; i < d.trail.length; i++) {
+            const a = d.trail[i], b = d.trail[i + 1] || d, life = d.falling ? .12 : 1.8 * p.rainTrail;
+            ctx.globalAlpha = alpha * .22 * Math.max(0, 1 - a.age / life);
+            ctx.lineWidth = Math.max(.4, r * .45 * (1 - a.age / life));
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        }
+        const stretch = d.falling ? 1.4 + d.speed / 220 : 1 + Math.min(1.8, d.speed / 65);
+        const wobble = Math.sin(t * d.wobble * 3 + d.phase) * Math.min(.18, d.speed / 450);
+        ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.skew + wobble);
+        ctx.scale(r * (1 - wobble), r * stretch);
+        // Asymmetric water bead: a tapered shoulder and heavy, rounded lower edge.
+        ctx.beginPath(); ctx.moveTo(-.1, -1);
+        ctx.bezierCurveTo(.35 + wobble, -.85, .8, -.4, .9, .15);
+        ctx.bezierCurveTo(1.05, 1.15, -.85, 1.35, -.95, .25);
+        ctx.bezierCurveTo(-1.1, -.3, -.5 + wobble, -.8, -.1, -1);
+        ctx.fillStyle = col; ctx.globalAlpha = alpha * .13; ctx.fill();
+        ctx.lineWidth = .65 / Math.max(1, r); ctx.globalAlpha = alpha * .6; ctx.stroke();
+        if (p.glow > 0) { ctx.globalAlpha = alpha * .05; ctx.lineWidth = p.glow * 2 / Math.max(1, r); ctx.stroke(); }
+        ctx.beginPath(); ctx.ellipse(-.3, -.3, .17, .35, .4, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.globalAlpha = alpha * .75; ctx.fill(); ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+}
 function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
     const tau = Math.PI * 2, fract = x => x - Math.floor(x);
     const rand = n => fract(Math.sin(n * 127.1 + 311.7) * 43758.5453);
@@ -3603,33 +3692,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
             }
         }
     } else if (kind === 'rain') {
-        // Each drop follows the same winding track as its trail. A monotone slip curve
-        // alternates between clinging to the glass and sliding, without jumping backwards.
-        const count = Math.min(240, Math.round(w * h / 14000 * p.rainIntensity / 100));
-        for (let i = 1; i <= count; i++) {
-            const r = (1.8 + rand(i + 21) * 3.2) * p.rainSize;
-            const reach = (24 + r * 17) * p.rainTrail, span = h + reach + 40;
-            const phase = rand(i + 7) * 100 + t * p.rainSpeed * (.15 + r * .045);
-            const slip = phase - Math.sin(phase * tau) * .9 / tau;
-            const y = fract(slip * 38 / span + rand(i + 15)) * span - 20;
-            const xAt = yy => rand(i) * w + Math.sin(yy / 65 + i) * r * .6 + Math.sin(yy / 23 + i * 3) * r * .18;
-            const x = xAt(y), col = tone(i), alpha = .4 + rand(i + 5) * .45;
-            if (reach > 0) {
-                const n = 12;
-                for (let j = 0; j < n; j++) {
-                    const a = y - reach * (1 - j / n), b = y - reach * (1 - (j + 1) / n);
-                    line([[xAt(a), a], [xAt(b), b]], col, alpha * .2 * (j + 1) / n, r * .65 * (j + 1) / n);
-                }
-            }
-            // A translucent body, shaded rim and offset highlight read as water on glass.
-            ctx.beginPath(); ctx.ellipse(x, y, r, r * 1.45, -.08, 0, tau);
-            ctx.fillStyle = col; ctx.globalAlpha = alpha * .12; ctx.fill();
-            stroke(col, alpha * .65, .8);
-            ctx.beginPath(); ctx.ellipse(x + r * .2, y + r * .24, r * .75, r * 1.1, 0, 0, Math.PI);
-            ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.globalAlpha = alpha; ctx.lineWidth = .8; ctx.stroke();
-            ctx.beginPath(); ctx.ellipse(x - r * .25, y - r * .35, r * .28, r * .55, .3, 0, tau);
-            ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.globalAlpha = alpha; ctx.fill();
-        }
+        rainDraw(ctx, w, h, p, t, tone);
     } else if (kind === 'stars') {
         const count = Math.min(900, Math.round(w * h / 1100 * p.starDensity));
         for (let i = 1; i <= count; i++) {
@@ -3670,7 +3733,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
 
 const AMBIENT = {
     rain: { name: 'Rain', tip: 'Droplets cling to the window and slide down with fading trails', rows: [
-        ['rainIntensity', 'Intensity', [25, 50, 100, 175], 100], ['rainSize', 'Droplet size', [.6, 1, 1.6], 1], ['rainSpeed', 'Speed', [.4, 1, 2], 1], ['rainTrail', 'Trail length', [0, .5, 1, 2], 1],
+        ['rainIntensity', 'Intensity', [25, 50, 100, 175], 100], ['rainQuantity', 'Quantity', [25, 50, 100, 175], 100], ['rainSize', 'Droplet size', [.6, 1, 1.6], 1], ['rainSpeed', 'Speed', [.4, 1, 2], 1], ['rainFalling', 'Falling drops', [0, 10, 25, 50], 10], ['rainTrail', 'Trail length', [0, .5, 1, 2], 1],
     ] },
     tron: { name: 'Tron', tip: 'Light riders turn through a square circuit grid', rows: [
         ['tronOutlines', 'Outlines', [0, 10, 25, 50, 100], 25], ['tronGrid', 'Grid size', [24, 40, 64], 40], ['tronRiders', 'Riders', [8, 16, 28], 16], ['tronSpeed', 'Speed', [.4, 1, 2], 1], ['tronTrail', 'Trail length', [1, 3, 6], 3],
@@ -11260,7 +11323,7 @@ function effectColourRow(chip, row) { return row('Colour', chip('hexTwo', '0', !
 function ambientRows(kind, chip, row) {
     const fields = AMBIENT[kind].rows;
     const rainLabels = { rainSize: ['Small', 'Medium', 'Large'], rainSpeed: ['Slow', 'Normal', 'Fast'], rainTrail: ['None', 'Short', 'Normal', 'Long'] };
-    const field = ([key, label, values]) => row(label, values.map((v, i) => chip(key, v, S[key] === v, rainLabels[key] ? rainLabels[key][i] : key === 'auroraStyle' ? AURORA_STYLES[v] : ['tronOutlines', 'auroraDiffuse', 'rainIntensity'].includes(key) ? v + '%' : String(v))).join(''));
+    const field = ([key, label, values]) => row(label, values.map((v, i) => chip(key, v, S[key] === v, rainLabels[key] ? rainLabels[key][i] : key === 'auroraStyle' ? AURORA_STYLES[v] : ['tronOutlines', 'auroraDiffuse', 'rainIntensity', 'rainQuantity', 'rainFalling'].includes(key) ? v + '%' : String(v))).join(''));
     return fields.filter(([key]) => key === 'tronOutlines').map(field).join('')
         + row('Opacity', [25, 45, 65, 85, 100].map(v => chip('ambientOpacity', v, S.ambientOpacity === v, v + '%')).join(''), 'How strong the effect is')
         + fields.filter(([key]) => key !== 'tronOutlines').map(field).join('')

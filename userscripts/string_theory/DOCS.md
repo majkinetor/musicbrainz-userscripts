@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-06 21:15 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-06 21:18 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -809,7 +809,7 @@ Under **Settings → Effects**, add a **Background** and as many **Effects** as 
 | -------- | --------------------------------------------------------------------- |
 | Tron     | Outlines, Grid size, Riders, Speed, Trail length                      |
 | Stars    | Density, Drift, Depth, Twinkle                                        |
-| Rain     | Intensity, Droplet size, Speed, Trail length                          |
+| Rain     | Intensity, Quantity, Droplet size, Speed, Falling drops, Trail length |
 | Aurora   | Style, Diffuse, Ribbons, Speed, Height, Folds                         |
 | Hexagons | Motion, Outlines, Effect, Pace, Trail, How often, Glow, Colour, Depth |
 
@@ -817,7 +817,18 @@ Under **Settings → Effects**, add a **Background** and as many **Effects** as 
 
 **Stars**: Density sets the star count, Drift their movement, Depth the difference in size and pace, and Twinkle their shimmer.
 
-**Rain**: droplets cling to the window and slide down unevenly, leaving fading trails. Intensity sets how many droplets appear (100% by default), Droplet size their size (Medium), Speed their sliding pace (Normal), and Trail length how far their wet tracks reach (Normal; None hides them).
+**Rain**: beads form across the glass, grow, merge and slide in irregular bursts; a few fall freely. Their shapes stretch and wobble as they accelerate. Trails follow only where a drop has moved.
+
+| Control       | Default | What it changes                                   |
+| ------------- | ------- | ------------------------------------------------- |
+| Intensity     | 100%    | how quickly new beads form and grow               |
+| Quantity      | 100%    | how many droplets are kept on the glass           |
+| Droplet size  | Medium  | the scale of the mixed droplet sizes              |
+| Speed         | Normal  | the pace of growing, sliding and falling          |
+| Falling drops | 10%     | the share that falls freely; 0% leaves only beads |
+| Trail length  | Normal  | how long wet tracks linger; None hides them       |
+
+Rain also takes the shared **Opacity**, **Glow** and **Colour** controls.
 
 **Aurora**: Style chooses Rays, Velvet curtains, Polar haze or Wide veil. Diffuse softens any style, with 0% leaving its natural edges. Ribbons sets the curtain count, Speed their movement, Height their reach and Folds their ripples.
 
