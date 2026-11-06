@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.235002
+// @version      2026.11.07.000500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3725,13 +3725,14 @@ S.recOff = [];
 S.annoHover = true;
 S.named = {}; // filters and column choices saved by name, by 'flt-dg', 'cols-ed' and so on: [{ name, v }]
 S.fxTheme = ''; // the effect preset String Theory's theme last asked for: a new one is applied once, then the effect is the user's again
-S.fxCur = ''; // the effect preset being worked on: changes save into it when it is the user's own; none is an unsaved effect
+S.fxCur = ''; // the effect preset being worked on: Save writes a change into it, + into a new one; none is an unsaved effect
 S.colW = {}; // the widths dragged in a table, by section; the title takes what they leave, and none means the table fits itself
 S.colPick = {}; // the tables' column choice, by section: { order, off }; none is the usual table
 S.pending = false; // MusicBrainz's grey mark on what has edits open; takes one more request per page
 // the page's width; --eh-wn is the same as a length (the screen's for Full), for the launchers' column
 const ehWidth = () => { const s = document.documentElement.style; s.setProperty('--eh-w', S.width ? S.width + 'px' : 'none'); s.setProperty('--eh-wn', S.width ? S.width + 'px' : '100vw'); };
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
+const RESET_KEEP = ['named', 'stars', 'fxTheme'];   // the user's own things, which Reset to defaults leaves alone
 try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; if (v.hexFx == null && v.hexOpacity != null) S.hexFx = Math.min(100, Math.round(S.hexOpacity * 2.25)); } catch (e) {}
 // Preserve an existing hex background as an independent overlay over Flat.
 if (S.bg === 'hex') { S.bg = 'flat'; S.hex = true; S.hexMotion = 'drift'; }
@@ -11135,7 +11136,7 @@ const EFFECTS = [['hexagons', 'Hexagons', 'Hexagon outlines over any background,
 const BGS = [['aura', 'Cover aura', 'The page\'s cover or picture, blurred behind its head\nPages without one get the glow'], ['glow', 'Glow', 'A soft glow of the accent colour behind the page head']];
 // an effect with all its settings, saved by name: the built-in ones here ({ name, v }, v holding any of FX_KEYS, the
 // rest at their defaults), the user's own in S.named.fx; one of the user's shadows a built-in one of the same name.
-// S.fxCur names the one being worked on: changes save into it when it is the user's own; a built-in one stays as shipped
+// S.fxCur names the one being worked on: a change stays out of it until Save, + keeps it as a new one; a built-in one stays as shipped
 const FX_PRESETS = [];
 const FX_KEYS = ['bg', 'fx', ...AMBIENT_KEYS, 'hex', 'hexOpacity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth'];
 const FX_UNNAMED = 'Unnamed effect';
@@ -11155,8 +11156,6 @@ const fxSum = v => {
     return [bg && bg[1], ...fx].filter(Boolean).join(' · ') || 'Nothing';
 };
 function fxUse(name) { const p = fxFind(name); if (!p) return false; S.fxCur = p.name; Object.assign(S, fxFull(p)); save(); if (ehOn) bgApply(); else hexApply(); LOG.info('Effect preset: ' + p.name); return true; }
-// the effect changed: kept in the current preset when that is the user's own
-function fxKeep() { const p = fxOwn(S.fxCur); if (p) nmKeep('fx', nmList('fx').map(x => x === p ? { name: x.name, v: fxNow() } : x)); }
 // the names, for String Theory's theme settings
 const fxPublish = () => { const n = fxAll().map(x => x.name); if (JSON.stringify(mbuShared('ehFxPresets') || []) !== JSON.stringify(n)) mbuShared('ehFxPresets', n); };
 // a preset to share: { name, v } with only the settings it changes from the defaults, under the format's own key
@@ -11208,9 +11207,9 @@ function fxPane(chip, row) {
     const items = fxAll().map(p => `<button type="button" class="it" data-fx-item="${esc(p.name)}" aria-current="${p === cur}"><span class="t">${esc(p.name)}${nmList('fx').includes(p) ? '' : '<span class="fx-tag">Built in</span>'}</span><span class="s">${esc(fxSum(fxFull(p)))}</span></button>`).join('');
     const dd = `<div class="fx-dd" hidden>${items}${items ? '<div class="sep"></div>' : ''}<button type="button" class="it act" data-fx-copy>Copy as JSON</button><button type="button" class="it act" data-fx-paste>Import from JSON</button></div>`;
     const preset = row('Preset', `<span class="fx-combo"><input type="text" data-fx-name maxlength="60" autocomplete="off" spellcheck="false" placeholder="${FX_UNNAMED}" aria-label="Preset name" value="${cur ? esc(cur.name) : ''}"><button type="button" data-fx-dd aria-label="Show presets" aria-expanded="false">${fxSvg('dd')}</button>${dd}</span>`
-        + (built && !fxSame(cur) ? '<span class="fx-tag">Changed</span>' : '')
+        + (cur && !fxSame(cur) ? '<span class="fx-tag" data-fx-changed>Changed</span>' : '')
         + `<button type="button" class="chip" data-fx-new data-tip="New preset\nA copy of this effect, under the name typed">${fxSvg('plus')}</button>`
-        + `<button type="button" class="chip" data-fx-save${built ? off(false, 'Save\nA built-in preset can\'t be changed; + keeps a copy') : ` data-tip="${own ? 'Save\nKeeps the new name; changes save on their own' : 'Save\nThe effect as a preset'}"`}>${fxSvg('save')}</button>`
+        + `<button type="button" class="chip" data-fx-save${built ? off(false, 'Save\nA built-in preset can\'t be changed; + keeps a copy') : ` data-tip="${own ? 'Save\nThe changes into this preset, under the name typed' : 'Save\nThe effect as a preset'}"`}>${fxSvg('save')}</button>`
         + `<button type="button" class="chip del" data-fx-del${off(own, built ? 'Delete\nA built-in preset can\'t be deleted' : 'Delete\nNothing saved yet')}>${fxSvg('del')}</button>`);
     const paste = !fxPaste ? '' : row('Import', `<textarea class="fx-json" data-fx-json rows="3" spellcheck="false" aria-label="Preset JSON" placeholder="Paste a preset copied with Copy as JSON"></textarea><button type="button" class="chip" data-fx-import>Import</button><button type="button" class="chip" data-fx-cancel>Cancel</button>${fxErr ? `<span class="fx-err">${esc(fxErr)}</span>` : ''}`);
     const on = fxOf(S), bg = BGS.find(x => x[0] === S.bg);
@@ -11308,11 +11307,12 @@ function cfgWire(panel, b, body) {
     const fxSave = () => {
         const cur = fxFind(S.fxCur), own = fxOwn(S.fxCur);
         if (!cur || !own) return fxSaveAs();   // unsaved, or built in: a copy of its own
-        const want = fxTyped();
-        if (!want || want === own.name) return fxDone('[data-fx-save]', 'Saved');
-        const name = fxFree(want, own);
-        nmKeep('fx', nmList('fx').map(x => x === own ? { name, v: x.v } : x)); S.fxCur = name; save(); fxPublish();
-        LOG.info('Effect preset renamed: ' + own.name + ' → ' + name); fxRedraw(); fxDone('[data-fx-save]', 'Saved as ' + name);
+        // the user's own: the effect as it is now, under the name typed; a change stays out of the preset until saved
+        const want = fxTyped(), name = want && want !== own.name ? fxFree(want, own) : own.name;
+        if (name === own.name && fxSame(own)) return fxDone('[data-fx-save]', 'Saved');
+        nmKeep('fx', nmList('fx').map(x => x === own ? { name, v: fxNow() } : x)); S.fxCur = name; save(); fxPublish();
+        LOG.info('Effect preset saved: ' + (name === own.name ? name : own.name + ' → ' + name)); fxRedraw();
+        fxDone('[data-fx-save]', name === own.name ? 'Saved' : 'Saved as ' + name);
     };
     let ddOff = null;
     const ddClose = () => { const dd = b.querySelector('.fx-dd'), bt = b.querySelector('[data-fx-dd]'); if (dd) dd.hidden = true; if (bt) bt.setAttribute('aria-expanded', 'false'); if (ddOff) { ddOff(); ddOff = null; } };
@@ -11398,7 +11398,8 @@ function cfgWire(panel, b, body) {
         if (imgMoved && ev.target.closest('[data-g=imgP]')) { imgMoved = false; return; }
         const tb = ev.target.closest('[data-tab]');
         if (tb) { cfgTab = tb.dataset.tab; b.innerHTML = body(); return; }
-        if (ev.target.closest('.reset')) { Object.assign(S, JSON.parse(DEFAULTS)); }
+        // the settings only: what the user saved or starred stays
+        if (ev.target.closest('.reset')) { const d = JSON.parse(DEFAULTS); for (const k of RESET_KEEP) delete d[k]; Object.assign(S, d); }
         else {
             const t = ev.target.closest('[data-g]'); if (!t) return;
             const { g, k } = t.dataset;
@@ -11423,7 +11424,6 @@ function cfgWire(panel, b, body) {
             else if (g === 'hexMotion') { S.hexMotion = k; hexApply(); }
             else if (g === 'hexTwo') { S.hexTwo = k === '2' ? 2 : k === '1'; hexApply(); }
             else if (g === 'imgP') { S.imgOff = toggle(S.imgOff, k); imgResort(); }
-            if (FX_KEYS.includes(g) || g === 'fxKind' || g === 'fxRm' || g === 'fxAdd') fxKeep();
         }
         save();
         b.innerHTML = body();

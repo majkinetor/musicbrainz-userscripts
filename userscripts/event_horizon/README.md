@@ -36,7 +36,7 @@ When MB page has Event Horizon redesign available, EH dock button shows on the n
 
 ## Background effects
 
-Under **Settings → Effects**, add a **Background** and as many **Effects** as you like, stacked over it; each is a badge you select to show its settings, and its × removes it alone. Each effect keeps its own parameters when you switch effects. **Preset** saves the whole configuration by name: **+** saves a copy under a new name, changes save on their own, and a built-in preset is kept as shipped (**+** copies it). **Copy as JSON** and **Import from JSON** in the preset list share a preset. **Opacity** sets their strength. **Colour** is shared across effects: **One tone** uses the theme's accent, **Two-tone** adds its second accent, and **All** gives each light its own colour. **Glow**, also shared, sets how far the soft light spreads. Speed and the other controls stay specific to each effect.
+Under **Settings → Effects**, add a **Background** and as many **Effects** as you like, stacked over it; each is a badge you select to show its settings, and its × removes it alone. Each effect keeps its own parameters when you switch effects. **Preset** saves the whole configuration by name: **Save** keeps a change in the preset (and a new name typed over it), **+** saves it as a new preset and leaves the old one as it was, and a built-in preset is kept as shipped (**+** copies it). A preset with unsaved changes shows **Changed**. **Copy as JSON** and **Import from JSON** in the preset list share a preset. **Opacity** sets their strength. **Colour** is shared across effects: **One tone** uses the theme's accent, **Two-tone** adds its second accent, and **All** gives each light its own colour. **Glow**, also shared, sets how far the soft light spreads. Speed and the other controls stay specific to each effect.
 
 | Effect   | Controls                                                              |
 | -------- | --------------------------------------------------------------------- |
@@ -132,7 +132,7 @@ On an entity's page, in the viewer or on MusicBrainz's own page, a key opens one
 
 ## Settings
 
-Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes them all.
+Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes them all; your saved presets, filters and stars stay.
 
 | Setting                               | Default                                                             |                                                                                             |
 | ------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
@@ -154,7 +154,7 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 
 Motions: Static, Drift, Tide, Twinkle, Ripple, Lantern (follows the pointer), Electricity and Neural. Pick Hexagons in the Effects tab and its settings follow; the ones the motion doesn't take (Pace, Trail, How often, Glow, a two-tone Colour) are greyed out. **Depth** scrolls the hexagons slower than the page. All respect reduced motion.
 
-To keep an effect you like, type a name beside **Preset** and click **Save** (or press Enter); the same name replaces it. **Preset** then picks it back, and **Delete** removes the one shown. With [String Theory](../string_theory/README.md#theme), each theme can bring its own preset.
+To keep an effect you like, type a name beside **Preset** and click **Save** (or press Enter). Later changes go into it only when you click **Save** again; **+** keeps them as a new preset instead. **Preset** then picks it back, and **Delete** removes the one shown. With [String Theory](../string_theory/README.md#theme), each theme can bring its own preset.
 
 ## Shortcuts
 

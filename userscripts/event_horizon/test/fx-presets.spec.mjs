@@ -20,7 +20,7 @@ const css = (page, p) => page.evaluate(p => document.documentElement.style.getPr
 const names = page => page.evaluate(() => JSON.parse(localStorage.getItem('mbu.ehFxPresets') || 'null'));
 const items = async cfg => { await cfg.locator('[data-fx-dd]').click(); const v = await cfg.locator('[data-fx-item]').evaluateAll(a => a.map(x => x.dataset.fxItem)); await cfg.locator('[data-fx-dd]').click(); return v; };
 
-// Effects tab: a preset made with +, named and saved, its changes kept on their own, + a copy, Delete; String Theory's names follow
+// Effects tab: a preset made with +, named and saved, a change kept only by Save, + a copy that leaves the old one, Delete; String Theory's names follow
 test('effect presets save, load and delete by name', { tag: ['@prod', '@critical'] }, async ({ page, inject }) => {
   await page.goto('https://musicbrainz.org/artist/f27ec8db-af05-4f36-916e-3d57f91ecf5e');
   await inject('event_horizon');
@@ -36,14 +36,21 @@ test('effect presets save, load and delete by name', { tag: ['@prod', '@critical
   await cfg.locator('[data-fx-name]').fill('Strong');
   await cfg.locator('[data-fx-new]').click();
   check((await until(() => names(page), v => v?.length === 2)).join() === 'Soft,Strong', '+ keeps a copy');
-  await cfg.locator('[data-g=hexOpacity][data-k="40"]').click();
+  const pick = async n => { await cfg.locator('[data-fx-dd]').click(); await cfg.locator(`[data-fx-item="${n}"]`).click(); };
+  await pick('Soft');
+  check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.3') === '0.3', 'Soft stays as saved: the change went to Strong only');
+  await pick('Strong');
+  check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.6') === '0.6', 'and Strong has it');
 
-  await cfg.locator('[data-fx-dd]').click();
-  await cfg.locator('[data-fx-item="Soft"]').click();
-  check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.6') === '0.6', 'Soft kept the change made while it was current');
-  await cfg.locator('[data-fx-dd]').click();
-  await cfg.locator('[data-fx-item="Strong"]').click();
-  check(await until(() => css(page, '--eh-hex-opacity'), v => v === "0.4") === "0.4", 'and Strong its own');
+  await cfg.locator('[data-g=hexOpacity][data-k="40"]').click();
+  check(await until(() => cfg.locator('[data-fx-changed]').count(), n => n === 1), 'an unsaved change reads Changed');
+  await pick('Soft'); await pick('Strong');
+  check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.6') === '0.6', 'and stays out of the preset until saved');
+  await cfg.locator('[data-g=hexOpacity][data-k="40"]').click();
+  await cfg.locator('[data-fx-save]').click();
+  check(await until(() => cfg.locator('[data-fx-changed]').count(), n => n === 0), 'Save keeps it');
+  await pick('Soft'); await pick('Strong');
+  check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.4') === '0.4', 'in Strong');
 
   await cfg.locator('[data-fx-del]').click();
   check(JSON.stringify(await until(() => names(page), v => v?.length === 1)) === '["Soft"]', 'Delete removes it, from String Theory\'s list too');
