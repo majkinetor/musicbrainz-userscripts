@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.06.170000
+// @version      2026.11.06.171000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -1051,7 +1051,7 @@ function mcStyle() {
         + '.mc-tri{font-size:9px;color:var(--mbu-text-weak)}.mc-bcl-ic{display:flex;flex-wrap:wrap;gap:3px;min-width:0}.mc-bcl-no{font-size:11px;color:var(--mbu-text-weak)}'
         + '.mc-ti{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:6px;border:1px solid transparent;opacity:.55}.mc-ti.mc-pick{cursor:pointer}.mc-ti.mc-pick:hover{opacity:1;border-color:var(--mbu-border-strong)}.mc-ti.on{opacity:1;border-color:var(--mbu-accent);background:var(--mbu-accent-soft)}.mc-ti.linked{opacity:1;position:relative}.mc-ti.linked::after{content:"✓";position:absolute;right:-1px;bottom:-4px;font-size:10px;font-weight:700;color:var(--mbu-ok)}'
             + '.mc-ti.off{position:relative}.mc-ti.off::before{content:"";position:absolute;right:-2px;top:-2px;width:8px;height:8px;border-radius:50%;background:var(--mbu-warn);border:1.5px solid var(--mbu-bg)}#mc-root .mc-line .s .mc-off{color:var(--mbu-warn);font-weight:600}.mc-bcn{font-family:var(--mbu-font-mono);font-weight:600}'
-        + '#mc-root .mc-all{font:600 11px inherit;padding:2px 9px;border-radius:12px;border:1px solid var(--mbu-border-strong);background:var(--mbu-bg);color:var(--mbu-accent-text);cursor:pointer;white-space:nowrap}#mc-root .mc-all:hover{border-color:var(--mbu-accent)}'
+        + '#mc-root .mc-all{font:600 11px inherit;padding:2px 9px;border-radius:12px;border:1px solid var(--mbu-border-strong);background:var(--mbu-bg);color:var(--mbu-accent-text);cursor:pointer;white-space:nowrap}#mc-root .mc-all:hover{border-color:var(--mbu-accent)}#mc-root .mc-all-ic{display:none}'
         + '.mc-line.mc-in{padding-left:28px}.mc-bchint{padding:6px 10px;font-size:11px;color:var(--mbu-text-dim);background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-divider)}'
         + '#mc-root .mc-sect-h .mc-icsw{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:8px;min-width:0;cursor:pointer;padding:3px 8px 3px 3px;margin:-3px -8px -3px -3px;border-radius:8px;transition:background .12s}#mc-root .mc-icsw .ic{position:relative}'
         + '#mc-root .mc-sect-h .mc-icsw:hover{background:var(--mbu-bg-hover)}#mc-root .mc-sect-h .mc-icsw:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:1px}'
@@ -1179,6 +1179,9 @@ function mcStyle() {
         + '.mc-steps{order:4;flex:1 1 0;min-width:0;height:40px;justify-content:flex-start;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}'
         + '.mc-steps>*{flex-shrink:0}.mc-step .tx{flex:0 0 auto;width:auto;max-width:110px}'
         + '#mc-root .mc-act .mc-exec{order:5;min-width:0;flex:none}'
+        // Expand all: an icon pinned to the Tracks header's right, out of the flow
+        + '#mc-root .mc-sect-h:has(.mc-fxall){position:relative;padding-right:40px}#mc-root .mc-fxall{position:absolute;right:8px;top:8px}'
+        + '#mc-root .mc-all:has(.mc-all-ic){display:inline-grid;place-items:center;width:30px;height:30px;padding:0;border-radius:50%}#mc-root .mc-all-ic{display:block}#mc-root .mc-all-t{display:none}'
         // a barcode's lane: the barcode and its state on the first line, the platforms and "take all" under it
         + '.mc-bcl,.mc-bcl.mc-hascat{grid-template-columns:10px max-content minmax(0,1fr) auto;grid-template-areas:"t c k p" ". i i a";row-gap:4px}'
         + '.mc-bcl>.mc-tri{grid-area:t}.mc-bcl>.mc-bc{grid-area:c}.mc-bcl>.mc-cats{grid-area:k;width:auto!important}.mc-bcl>.mc-bcl-ic{grid-area:i}.mc-bcl>.mc-all{grid-area:a;justify-self:end}.mc-bcl>:last-child{grid-area:p;justify-self:end}.mc-bcl>span:empty:not(.mc-tri):not(:last-child){display:none}'
@@ -1683,7 +1686,7 @@ function fxAllBtn() {
     const ks = fxOpenable();
     if (!ks.length) return '';
     const all = ks.every(k => fxOpen.has(k));
-    return '<button type="button" class="mc-all" data-act="fx-all" data-tip="' + (all ? 'Fold every comparison under the tracks' : 'Open every comparison under the tracks\nFusion\'s, and the platforms\' where a title or a length differs. A click on a title or a length there takes it in: Platform Check sends it with the release, and Falcon writes it in the release editor.') + '">' + (all ? 'Collapse all' : 'Expand all') + '</button>';
+    return '<button type="button" class="mc-all" data-act="fx-all" data-tip="' + (all ? 'Fold every comparison under the tracks' : 'Open every comparison under the tracks\nFusion\'s, and the platforms\' where a title or a length differs. A click on a title or a length there takes it in: Platform Check sends it with the release, and Falcon writes it in the release editor.') + '"><svg class="mc-all-ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + (all ? 'M12 3v6M9 6l3 3 3-3M12 21v-6M9 18l3-3 3 3M4 12h16' : 'M12 9V3M9 6l3-3 3 3M12 15v6M9 18l3 3 3-3M4 12h16') + '"/></svg><span class="mc-all-t">' + (all ? 'Collapse all' : 'Expand all') + '</span></button>';
 }
 function fxAct(b) {
     const k = b.dataset.key;
