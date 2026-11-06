@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.173403
+// @version      2026.11.06.180940
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjI4Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMxNmNjZjgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjZmZhZTM4Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -995,7 +995,9 @@
   // paths (as data-mb-corner-paths), click. Outside the dock it is never shown, unless the script clears its
   // data-mb-corner-dock (the Interface setting's Dock icon, #851): then it is a launcher of its own. Returns the button,
   // with .status(text) to show a short state (a count) beside it. o.busyIcon: an animated image shown in place of
-  // the icon while busy with nothing counted yet, instead of the "···" dots.
+  // the icon while busy with nothing counted yet, instead of the "···" dots. o.busySpin: seconds a turn, for a busy icon
+  // that turns round its centre (a radar sweep): the dock turns the image itself, so when the work ends it eases to rest
+  // upright before the icon comes back, where an SVG's own animation can only snap
   function mbuDockItem(o) {
       var b = document.getElementById(o.id);
       if (!b) {
@@ -1007,13 +1009,33 @@
           b.onclick = o.click;
           document.documentElement.appendChild(b);   // outside the body, which Event Horizon swaps
       }
-      b.dataset.mbCornerLabel = o.label; b.mbuIcon = o.icon; b.mbuBusyIcon = o.busyIcon || '';
+      b.dataset.mbCornerLabel = o.label; b.mbuIcon = o.icon; b.mbuBusyIcon = o.busyIcon || ''; b.mbuSpin = o.busySpin || 0;
       // .status(t): the count beside it; .busy(on): while it works, a faint "···" where the count goes,
       // or the count so far, fading; .card(fn): a hover card, fn() → its HTML (mbuTipCard)
       var show = function () { var busy = b.hasAttribute('data-mbu-busy'), t = b.mbuSt || (busy && !b.mbuBusyIcon ? '···' : '');
-          var im = b.querySelector('img'), src = busy && !b.mbuSt && b.mbuBusyIcon || b.mbuIcon; if (im && src && im.getAttribute('src') !== src) im.src = src;
+          var im = b.querySelector('img'), src = busy && !b.mbuSt && b.mbuBusyIcon || b.mbuIcon; if (im && src) spin(im, src);
           if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus;
           var r = document.documentElement; if (r.hasAttribute('data-mbu-dock') && b.isConnected) mbRestackCorner('br'); };   // update the dock's loading state and any peek
+      // The busy icon turns by its rotate (never transform, which the hover's scale has), and on its way out it finishes
+      // the turn decelerating evenly from full speed, a whole extra turn when it is nearly up, so it never stops short
+      var spin = function (im, src) {
+          var on = src === b.mbuBusyIcon, deg = function () { return (parseFloat(getComputedStyle(im).rotate) || 0) % 360; };
+          if (!b.mbuSpin || !im.animate) { if (im.getAttribute('src') !== src) im.src = src; return; }
+          if (on) {
+              if (b.mbuSpinA) return;
+              var a = deg(); if (b.mbuSettleA) { b.mbuSettleA.cancel(); b.mbuSettleA = null; }   // back at work mid-settle: on from there
+              if (im.getAttribute('src') !== src) im.src = src;
+              b.mbuSpinA = im.animate([{ rotate: a + 'deg' }, { rotate: a + 360 + 'deg' }], { duration: b.mbuSpin * 1000, iterations: Infinity });
+              return;
+          }
+          if (b.mbuSettleA) return;
+          if (!b.mbuSpinA) { if (im.getAttribute('src') !== src) im.src = src; return; }
+          var from = deg(), left = 360 - from; if (left < 90) left += 360;
+          b.mbuSpinA.cancel(); b.mbuSpinA = null;
+          // even deceleration from full speed covers the rest in twice the time it would take at that speed
+          b.mbuSettleA = im.animate([{ rotate: from + 'deg' }, { rotate: from + left + 'deg' }], { duration: 2 * left / 360 * b.mbuSpin * 1000, easing: 'cubic-bezier(.333,.667,.667,1)' });
+          b.mbuSettleA.onfinish = function () { b.mbuSettleA = null; show(); };
+      };
       b.status = function (t) { b.mbuSt = t || ''; show(); };
       b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };
       b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };

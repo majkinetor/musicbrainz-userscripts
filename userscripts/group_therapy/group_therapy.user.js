@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.173403
+// @version      2026.11.06.180940
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -1411,7 +1411,9 @@
   // paths (as data-mb-corner-paths), click. Outside the dock it is never shown, unless the script clears its
   // data-mb-corner-dock (the Interface setting's Dock icon, #851): then it is a launcher of its own. Returns the button,
   // with .status(text) to show a short state (a count) beside it. o.busyIcon: an animated image shown in place of
-  // the icon while busy with nothing counted yet, instead of the "···" dots.
+  // the icon while busy with nothing counted yet, instead of the "···" dots. o.busySpin: seconds a turn, for a busy icon
+  // that turns round its centre (a radar sweep): the dock turns the image itself, so when the work ends it eases to rest
+  // upright before the icon comes back, where an SVG's own animation can only snap
   function mbuDockItem(o) {
       var b = document.getElementById(o.id);
       if (!b) {
@@ -1423,13 +1425,33 @@
           b.onclick = o.click;
           document.documentElement.appendChild(b);   // outside the body, which Event Horizon swaps
       }
-      b.dataset.mbCornerLabel = o.label; b.mbuIcon = o.icon; b.mbuBusyIcon = o.busyIcon || '';
+      b.dataset.mbCornerLabel = o.label; b.mbuIcon = o.icon; b.mbuBusyIcon = o.busyIcon || ''; b.mbuSpin = o.busySpin || 0;
       // .status(t): the count beside it; .busy(on): while it works, a faint "···" where the count goes,
       // or the count so far, fading; .card(fn): a hover card, fn() → its HTML (mbuTipCard)
       var show = function () { var busy = b.hasAttribute('data-mbu-busy'), t = b.mbuSt || (busy && !b.mbuBusyIcon ? '···' : '');
-          var im = b.querySelector('img'), src = busy && !b.mbuSt && b.mbuBusyIcon || b.mbuIcon; if (im && src && im.getAttribute('src') !== src) im.src = src;
+          var im = b.querySelector('img'), src = busy && !b.mbuSt && b.mbuBusyIcon || b.mbuIcon; if (im && src) spin(im, src);
           if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus;
           var r = document.documentElement; if (r.hasAttribute('data-mbu-dock') && b.isConnected) mbRestackCorner('br'); };   // update the dock's loading state and any peek
+      // The busy icon turns by its rotate (never transform, which the hover's scale has), and on its way out it finishes
+      // the turn decelerating evenly from full speed, a whole extra turn when it is nearly up, so it never stops short
+      var spin = function (im, src) {
+          var on = src === b.mbuBusyIcon, deg = function () { return (parseFloat(getComputedStyle(im).rotate) || 0) % 360; };
+          if (!b.mbuSpin || !im.animate) { if (im.getAttribute('src') !== src) im.src = src; return; }
+          if (on) {
+              if (b.mbuSpinA) return;
+              var a = deg(); if (b.mbuSettleA) { b.mbuSettleA.cancel(); b.mbuSettleA = null; }   // back at work mid-settle: on from there
+              if (im.getAttribute('src') !== src) im.src = src;
+              b.mbuSpinA = im.animate([{ rotate: a + 'deg' }, { rotate: a + 360 + 'deg' }], { duration: b.mbuSpin * 1000, iterations: Infinity });
+              return;
+          }
+          if (b.mbuSettleA) return;
+          if (!b.mbuSpinA) { if (im.getAttribute('src') !== src) im.src = src; return; }
+          var from = deg(), left = 360 - from; if (left < 90) left += 360;
+          b.mbuSpinA.cancel(); b.mbuSpinA = null;
+          // even deceleration from full speed covers the rest in twice the time it would take at that speed
+          b.mbuSettleA = im.animate([{ rotate: from + 'deg' }, { rotate: from + left + 'deg' }], { duration: 2 * left / 360 * b.mbuSpin * 1000, easing: 'cubic-bezier(.333,.667,.667,1)' });
+          b.mbuSettleA.onfinish = function () { b.mbuSettleA = null; show(); };
+      };
       b.status = function (t) { b.mbuSt = t || ''; show(); };
       b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };
       b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };

@@ -66,13 +66,13 @@ const DEMOS = demos(srcOf, iconOf).map(d => {
 console.log(DEMOS.map(d => `${(d.name + ' · ' + d.label).padEnd(48)} css ${d.css.length}`).join('\n'));
 // busy icons: shown in place of the icon while a dock entry works with nothing counted yet
 // not String Theory's: its file is the bundle, whose busy icons are its members'; its own busy state is the dock's dash
-const busy = icons.filter(ic => ic.key !== 'string_theory').map(ic => { const m = srcOf(ic.key).match(/(?:busyIcon\s*:|BUSY_URI\s*=)\s*'(data:[^']+)'/); return m && { ...ic, busy: m[1] }; }).filter(Boolean);
-const bfig = c => `<figure>${[48, 28].map(z => `<img data-i="${c.key}" width="${z}" height="${z}" alt="">`).join('')}<span class="arrow">→</span>${[48, 28].map(z => `<img src="${c.busy}" width="${z}" height="${z}" alt="">`).join('')}<figcaption><b>${c.name}</b><br><small>busy icon</small></figcaption></figure>`;
+const busy = icons.filter(ic => ic.key !== 'string_theory').map(ic => { const src = srcOf(ic.key), m = src.match(/(?:busyIcon\s*:|BUSY_URI\s*=)\s*'(data:[^']+)'/), sp = src.match(/busySpin:\s*([\d.]+)/); return m && { ...ic, busy: m[1], spin: sp ? +sp[1] : 0 }; }).filter(Boolean);
+const bfig = c => `<figure>${[48, 28].map(z => `<img data-i="${c.key}" width="${z}" height="${z}" alt="">`).join('')}<span class="arrow">→</span>${[48, 28].map(z => `<img src="${c.busy}" width="${z}" height="${z}" alt=""${c.spin ? ` style="animation:mbu-busy-spin ${c.spin}s linear infinite"` : ''}>`).join('')}<figcaption><b>${c.name}</b><br><small>busy icon</small></figcaption></figure>`;
 // the folded dock, live: entries peek out (a count, or actionable) and slide back; busy runs the dash, the dots or the busy icon
 const DOCK = ['isrc_scout', 'fuzzy_logic', 'platform_check', 'fusion'].filter(k => icons.some(c => c.key === k));
 const dockDoc = dark => `<!doctype html><html data-mbu-st data-mbu-dock${dark ? ' data-mbu-theme="dark"' : ''}><meta charset="utf-8"><style>${TOK}${UI_CSS}html,body{margin:0;height:100%;background:${dark ? '#000' : '#fff'}}</style><body><script>${UI_JS}
-var I = ${JSON.stringify(Object.fromEntries(DOCK.map(k => [k, icons.find(c => c.key === k).src])))}, B = ${JSON.stringify(Object.fromEntries(busy.map(c => [c.key, c.busy])))};
-var e = ${JSON.stringify(DOCK)}.map(function (k, n) { return mbuDockItem({ id: 'demo-' + k, label: k, icon: I[k], busyIcon: B[k], order: 50 + n }); });
+var I = ${JSON.stringify(Object.fromEntries(DOCK.map(k => [k, icons.find(c => c.key === k).src])))}, B = ${JSON.stringify(Object.fromEntries(busy.map(c => [c.key, c.busy])))}, P = ${JSON.stringify(Object.fromEntries(busy.map(c => [c.key, c.spin])))};
+var e = ${JSON.stringify(DOCK)}.map(function (k, n) { return mbuDockItem({ id: 'demo-' + k, label: k, icon: I[k], busyIcon: B[k], busySpin: P[k], order: 50 + n }); });
 var steps = [function () { e[0].status('3'); }, function () { e[1].busy(true); }, function () { e[3].setAttribute('data-mbu-actionable', ''); e[3].busy(true); },
   function () { e[0].status(''); }, function () { e[2].status('12'); e[1].busy(false); }, function () { e[3].removeAttribute('data-mbu-actionable'); e[3].busy(false); },
   function () { e[2].status(''); }], s = 0;
@@ -86,7 +86,7 @@ const DEMO_JS = `<script>(function(){var BASE=${JSON.stringify(TOK + UI_CSS).rep
 var L=${JSON.stringify([dockDoc(false), dockDoc(true)]).replace(/</g, '\\u003c')};document.querySelectorAll('iframe[data-live]').forEach(function(f){f.srcdoc=L[f.dataset.live]});
 document.querySelectorAll('iframe[data-demo]').forEach(function(f){var d=D[f.dataset.demo],dark=!!f.closest('.dark');
 f.srcdoc='<!doctype html><html data-mbu-st'+(dark?' data-mbu-theme="dark" data-eh-theme="dark"':'')+d.root+'><meta charset="utf-8"><style>'+BASE+d.css+'\\nhtml,body{margin:0;height:100%}body{background:'+(dark?'#000':'#fff')+';color:'+(dark?'#ddd':'#222')+';display:flex;align-items:center;justify-content:center;gap:10px;font:13px system-ui,sans-serif}</style><body class="'+d.body+'">'+d.html;});})();</script>`;
-const ANIM_CSS = `h2{grid-column:1/-1;margin:14px 0 0;font-size:15px}.arrow{opacity:.5;align-self:end;margin-bottom:14px}
+const ANIM_CSS = `@keyframes mbu-busy-spin{to{rotate:360deg}}h2{grid-column:1/-1;margin:14px 0 0;font-size:15px}.arrow{opacity:.5;align-self:end;margin-bottom:14px}
 .live{grid-column:span 2}.live iframe{width:100%;height:240px;border:1px solid rgba(127,127,127,.3);border-radius:10px}
 .demo iframe{width:100%;height:96px;border:1px solid rgba(127,127,127,.3);border-radius:10px}`;
 // the fitted icons ride in the page, once each, so preview.html is a single file that opens anywhere

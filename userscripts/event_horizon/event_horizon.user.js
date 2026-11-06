@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.180000
+// @version      2026.11.06.180940
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1015,7 +1015,9 @@ function mbuCornerRank(el, order) {
 // paths (as data-mb-corner-paths), click. Outside the dock it is never shown, unless the script clears its
 // data-mb-corner-dock (the Interface setting's Dock icon, #851): then it is a launcher of its own. Returns the button,
 // with .status(text) to show a short state (a count) beside it. o.busyIcon: an animated image shown in place of
-// the icon while busy with nothing counted yet, instead of the "···" dots.
+// the icon while busy with nothing counted yet, instead of the "···" dots. o.busySpin: seconds a turn, for a busy icon
+// that turns round its centre (a radar sweep): the dock turns the image itself, so when the work ends it eases to rest
+// upright before the icon comes back, where an SVG's own animation can only snap
 function mbuDockItem(o) {
     var b = document.getElementById(o.id);
     if (!b) {
@@ -1027,13 +1029,33 @@ function mbuDockItem(o) {
         b.onclick = o.click;
         document.documentElement.appendChild(b);   // outside the body, which Event Horizon swaps
     }
-    b.dataset.mbCornerLabel = o.label; b.mbuIcon = o.icon; b.mbuBusyIcon = o.busyIcon || '';
+    b.dataset.mbCornerLabel = o.label; b.mbuIcon = o.icon; b.mbuBusyIcon = o.busyIcon || ''; b.mbuSpin = o.busySpin || 0;
     // .status(t): the count beside it; .busy(on): while it works, a faint "···" where the count goes,
     // or the count so far, fading; .card(fn): a hover card, fn() → its HTML (mbuTipCard)
     var show = function () { var busy = b.hasAttribute('data-mbu-busy'), t = b.mbuSt || (busy && !b.mbuBusyIcon ? '···' : '');
-        var im = b.querySelector('img'), src = busy && !b.mbuSt && b.mbuBusyIcon || b.mbuIcon; if (im && src && im.getAttribute('src') !== src) im.src = src;
+        var im = b.querySelector('img'), src = busy && !b.mbuSt && b.mbuBusyIcon || b.mbuIcon; if (im && src) spin(im, src);
         if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus;
         var r = document.documentElement; if (r.hasAttribute('data-mbu-dock') && b.isConnected) mbRestackCorner('br'); };   // update the dock's loading state and any peek
+    // The busy icon turns by its rotate (never transform, which the hover's scale has), and on its way out it finishes
+    // the turn decelerating evenly from full speed, a whole extra turn when it is nearly up, so it never stops short
+    var spin = function (im, src) {
+        var on = src === b.mbuBusyIcon, deg = function () { return (parseFloat(getComputedStyle(im).rotate) || 0) % 360; };
+        if (!b.mbuSpin || !im.animate) { if (im.getAttribute('src') !== src) im.src = src; return; }
+        if (on) {
+            if (b.mbuSpinA) return;
+            var a = deg(); if (b.mbuSettleA) { b.mbuSettleA.cancel(); b.mbuSettleA = null; }   // back at work mid-settle: on from there
+            if (im.getAttribute('src') !== src) im.src = src;
+            b.mbuSpinA = im.animate([{ rotate: a + 'deg' }, { rotate: a + 360 + 'deg' }], { duration: b.mbuSpin * 1000, iterations: Infinity });
+            return;
+        }
+        if (b.mbuSettleA) return;
+        if (!b.mbuSpinA) { if (im.getAttribute('src') !== src) im.src = src; return; }
+        var from = deg(), left = 360 - from; if (left < 90) left += 360;
+        b.mbuSpinA.cancel(); b.mbuSpinA = null;
+        // even deceleration from full speed covers the rest in twice the time it would take at that speed
+        b.mbuSettleA = im.animate([{ rotate: from + 'deg' }, { rotate: from + left + 'deg' }], { duration: 2 * left / 360 * b.mbuSpin * 1000, easing: 'cubic-bezier(.333,.667,.667,1)' });
+        b.mbuSettleA.onfinish = function () { b.mbuSettleA = null; show(); };
+    };
     b.status = function (t) { b.mbuSt = t || ''; show(); };
     b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };
     b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };
@@ -3347,95 +3369,6 @@ document.addEventListener('load', e => { if (e.target instanceof HTMLImageElemen
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
 // Independent background geometries. The preview and userscript use this same renderer.
-// A rider chooses a new route at each junction. Trails are bounded by distance, not frame count.
-function tronCreate(w, h, p, random = Math.random) {
-    const grid = p.tronGrid;
-    const state = { grid, maxX: Math.max(grid, Math.floor(w / grid) * grid), maxY: Math.max(grid, Math.floor(h / grid) * grid), random, time: 0, effects: [], riders: [], dirs: [[1, 0], [0, 1], [-1, 0], [0, -1]] };
-    for (let i = 0; i < p.tronRiders; i++) {
-        const r = { id: i, alive: false, trail: [], distance: 0, remaining: 0, respawn: 0, died: -1 };
-        state.riders.push(r); tronSpawn(state, r);
-    }
-    return state;
-}
-function tronSpawn(state, r) {
-    for (let attempt = 0; attempt < 40; attempt++) {
-        const x = Math.floor(state.random() * (state.maxX / state.grid + 1)) * state.grid;
-        const y = Math.floor(state.random() * (state.maxY / state.grid + 1)) * state.grid;
-        const occupied = state.riders.some(other => other !== r && ((other.alive && Math.hypot(other.x - x, other.y - y) < state.grid * .5)
-            || other.trail.some(edge => tronHit(x, y, x, y, edge) === 0)));
-        if (occupied) continue;
-        Object.assign(r, { x, y, dir: Math.floor(state.random() * 4), alive: true, trail: [], distance: 0, remaining: 0, died: -1 });
-        return true;
-    }
-    r.alive = false; r.respawn = state.time + .3;
-    return false;
-}
-// Distance to the first crossing, including collinear trails and endpoints; Infinity means no hit.
-function tronHit(x, y, nx, ny, edge) {
-    const [ax, ay] = edge.a, [bx, by] = edge.b, eps = 1e-6;
-    const within = (v, a, b) => v >= Math.min(a, b) - eps && v <= Math.max(a, b) + eps;
-    if (Math.abs(y - ny) < eps) {
-        if (Math.abs(ax - bx) < eps) return within(ax, x, nx) && within(y, ay, by) ? Math.abs(ax - x) : Infinity;
-        if (Math.abs(y - ay) > eps) return Infinity;
-        const lo = Math.max(Math.min(x, nx), Math.min(ax, bx)), hi = Math.min(Math.max(x, nx), Math.max(ax, bx));
-        return lo <= hi + eps ? Math.abs((nx >= x ? lo : hi) - x) : Infinity;
-    }
-    if (Math.abs(ay - by) < eps) return within(ay, y, ny) && within(x, ax, bx) ? Math.abs(ay - y) : Infinity;
-    if (Math.abs(x - ax) > eps) return Infinity;
-    const lo = Math.max(Math.min(y, ny), Math.min(ay, by)), hi = Math.min(Math.max(y, ny), Math.max(ay, by));
-    return lo <= hi + eps ? Math.abs((ny >= y ? lo : hi) - y) : Infinity;
-}
-function tronStep(state, dt, p) {
-    dt = Math.max(0, Math.min(.1, dt)); state.time += dt;
-    state.effects = state.effects.filter(e => state.time - e.born < .6);
-    // Dead trails fade before a replacement can spawn, and cannot remain invisible collision hazards.
-    for (const r of state.riders) if (!r.alive && state.time - r.died >= .65) r.trail = [];
-    for (const r of state.riders) {
-        if (!r.alive) { if (state.time >= r.respawn) tronSpawn(state, r); continue; }
-        let travel = dt * p.tronSpeed * 35;
-        while (travel > 1e-6 && r.alive) {
-            if (r.remaining < 1e-6) {
-                r.x = Math.round(r.x / state.grid) * state.grid; r.y = Math.round(r.y / state.grid) * state.grid;
-                const choices = [r.dir, (r.dir + 1) % 4, (r.dir + 3) % 4].filter(d => {
-                    const [dx, dy] = state.dirs[d], x = r.x + dx * state.grid, y = r.y + dy * state.grid;
-                    return x >= 0 && y >= 0 && x <= state.maxX && y <= state.maxY;
-                });
-                // The only exit at a corner can be behind the rider.
-                if (!choices.length) choices.push((r.dir + 2) % 4);
-                r.dir = choices[Math.floor(state.random() * choices.length)]; r.remaining = state.grid;
-            }
-            const [dx, dy] = state.dirs[r.dir], planned = Math.min(travel, r.remaining);
-            let distance = planned, hit = false;
-            for (const other of state.riders) {
-                if (other === r) continue;
-                for (const edge of other.trail) {
-                    const d = tronHit(r.x, r.y, r.x + dx * planned, r.y + dy * planned, edge);
-                    if (d <= distance) { distance = d; hit = true; }
-                }
-            }
-            const a = [r.x, r.y], start = r.distance;
-            r.x += dx * distance; r.y += dy * distance; r.distance += distance;
-            const last = r.trail[r.trail.length - 1];
-            if (distance > 1e-6) {
-                if (last && last.dir === r.dir) { last.b = [r.x, r.y]; last.end = r.distance; }
-                else r.trail.push({ a, b: [r.x, r.y], start, end: r.distance, dir: r.dir });
-            }
-            r.remaining -= distance; travel -= distance;
-            const cut = r.distance - state.grid * p.tronTrail;
-            while (r.trail.length && r.trail[0].end <= cut) r.trail.shift();
-            const tail = r.trail[0];
-            if (tail && tail.start < cut) {
-                const f = (cut - tail.start) / (tail.end - tail.start);
-                tail.a = [tail.a[0] + (tail.b[0] - tail.a[0]) * f, tail.a[1] + (tail.b[1] - tail.a[1]) * f]; tail.start = cut;
-            }
-            if (hit) {
-                r.alive = false; r.died = state.time; r.respawn = state.time + .9 + state.random() * 1.2;
-                state.effects.push({ x: r.x, y: r.y, id: r.id, born: state.time });
-            }
-        }
-    }
-}
-
 function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
     const tau = Math.PI * 2, fract = x => x - Math.floor(x);
     const rand = n => fract(Math.sin(n * 127.1 + 311.7) * 43758.5453);
@@ -3452,37 +3385,30 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
     };
     ctx.clearRect(0, 0, w, h); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     if (kind === 'tron') {
-        const grid = p.tronGrid, key = [w, h, grid, p.tronRiders, p.tronTrail].join('|');
-        let state = ctx._ehTron;
-        if (!state || state.key !== key) {
-            state = ctx._ehTron = tronCreate(w, h, p); state.key = key; state.last = t;
-            for (let i = 0; i < 60; i++) tronStep(state, 1 / 30, p);
-        }
-        tronStep(state, t - state.last, p); state.last = t;
-        const outlines = Math.sqrt(Math.max(0, Math.min(100, p.tronOutlines ?? 25)) / 100) * .7;
-        if (outlines) {
-            for (let x = 0; x < w; x += grid) line([[x, 0], [x, h]], c1, outlines);
-            for (let y = 0; y < h; y += grid) line([[0, y], [w, y]], c1, outlines);
-        }
-        for (const r of state.riders) {
-            const col = tone(r.id), fade = r.alive ? 1 : Math.max(0, 1 - (state.time - r.died) / .65);
-            for (const edge of r.trail) {
-                const n = Math.max(1, Math.ceil((edge.end - edge.start) / 16));
-                for (let j = 0; j < n; j++) {
-                    const point = f => [edge.a[0] + (edge.b[0] - edge.a[0]) * f, edge.a[1] + (edge.b[1] - edge.a[1]) * f];
-                    const d = edge.start + (edge.end - edge.start) * (j + .5) / n;
-                    const alpha = Math.max(0, 1 - (r.distance - d) / (grid * p.tronTrail));
-                    line([point(j / n), point((j + 1) / n)], col, alpha * .9 * fade, 1.5);
-                }
+        const grid = p.tronGrid, count = p.tronRiders, speed = t * p.tronSpeed * 35;
+        // Dim square circuitry, with luminous riders making only right-angle turns.
+        for (let x = 0; x < w; x += grid) line([[x, 0], [x, h]], c1, .045);
+        for (let y = 0; y < h; y += grid) line([[0, y], [w, y]], c1, .045);
+        for (let i = 0; i < count; i++) {
+            const seed = i + 1, col = tone(i), length = grid * p.tronTrail;
+            const advance = speed + rand(seed) * (w + h), turn = grid * (2 + Math.floor(rand(seed + 23) * 5));
+            const x0 = Math.floor(rand(seed + 7) * w / grid) * grid;
+            const y0 = Math.floor(rand(seed + 17) * h / grid) * grid;
+            const pos = d => {
+                const v = ((advance - d) % (turn * 4) + turn * 4) % (turn * 4);
+                let x = 0, y = 0;
+                if (v < turn) x = v;
+                else if (v < turn * 2) { x = turn; y = v - turn; }
+                else if (v < turn * 3) { x = turn - (v - turn * 2); y = turn; }
+                else y = turn - (v - turn * 3);
+                return [(x0 + x) % (w + turn) - turn / 2, (y0 + y) % (h + turn) - turn / 2];
+            };
+            for (let d = length; d > 0; d -= 4) {
+                const a = pos(d), b = pos(Math.max(0, d - 4));
+                if (Math.hypot(a[0] - b[0], a[1] - b[1]) > 10) continue;
+                line([a, b], col, (1 - d / length) * .9, 1.5);
             }
-            if (r.alive) { ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.fillRect(r.x - 1.7, r.y - 1.7, 3.4, 3.4); }
-        }
-        for (const e of state.effects) {
-            const age = (state.time - e.born) / .6;
-            for (let i = 0; i < 8; i++) {
-                const angle = i * tau / 8 + rand(e.id) * tau, near = 1 + age * 7, far = near + (1 - age) * 6;
-                line([[e.x + Math.cos(angle) * near, e.y + Math.sin(angle) * near], [e.x + Math.cos(angle) * far, e.y + Math.sin(angle) * far]], tone(e.id), (1 - age) ** 2, 1);
-            }
+            const [x, y] = pos(0); ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.fillRect(x - 1.7, y - 1.7, 3.4, 3.4);
         }
     } else if (kind === 'stars') {
         const count = Math.min(900, Math.round(w * h / 1100 * p.starDensity));
@@ -3527,7 +3453,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
 
 const AMBIENT = {
     tron: { name: 'Tron', tip: 'Light riders turn through a square circuit grid', rows: [
-        ['tronOutlines', 'Outlines', [0, 10, 25, 50, 100], 25], ['tronGrid', 'Grid size', [24, 40, 64], 40], ['tronRiders', 'Riders', [8, 16, 28], 16], ['tronSpeed', 'Speed', [.4, 1, 2], 1], ['tronTrail', 'Trail length', [1, 3, 6], 3],
+        ['tronGrid', 'Grid size', [24, 40, 64], 40], ['tronRiders', 'Riders', [8, 16, 28], 16], ['tronSpeed', 'Speed', [.4, 1, 2], 1], ['tronTrail', 'Trail length', [1, 3, 6], 3],
     ] },
     stars: { name: 'Stars', tip: 'Layers of drifting stars with a quiet twinkle', rows: [
         ['starDensity', 'Density', [.4, 1, 2], 1], ['starDrift', 'Drift', [0, .4, 1], .4], ['starDepth', 'Depth', [.5, 1, 2], 1], ['starTwinkle', 'Twinkle', [0, .5, 1], .5],
@@ -4090,7 +4016,7 @@ function facts(r) {
         packaging: ['Packaging', r.packaging && esc(r.packaging)],
         lang: ['Language', r.langName && (q => `<div><span>${q('lang', (r.tr || {}).language, r.langName)}</span>${r.script ? ` <span class="sub">${q('script', (r.tr || {}).script, r.script)}</span>` : ''}</div>`)((k, c, n) => c ? `<a href="${MB}/search?query=${k}%3A${encodeURIComponent(c)}&type=release&method=advanced">${esc(n)}</a>` : esc(n))],
         quality: ['Data quality', esc(r.quality || 'normal')],
-        links: ['', (r.links.length || rgOnly(r).length) && rlQuiet(r, '', rgOnly(r))],
+        links: ['', r.links.length && rlQuiet(r)],
         aliases: [`Alias${r.aliases.length === 1 ? '' : 'es'}`, aliasList(r.aliases)],
     };
     // the aliases go before the links, so they can be added; none (only the pencil) take one cell, not a row
@@ -4206,13 +4132,10 @@ function hero(r) {
         </div>
     </section>`;
 }
-// the release group's links a release doesn't have itself: on a release they show as one more kind (majkinetor)
-const rgOnly = r => { if (!r.rg) return []; const own = new Set((r.urlCredits || []).map(u => u.url)); return urlsOf(r.rg.rels.filter(x => x['target-type'] === 'url' && !own.has(x.url.resource))); };
-function rlQuiet(r, scope = '', rgl = []) {
-    if (!r.links.length && !rgl.length) return '—';
-    const KS = rgl.length ? [...KINDS, ['rg', 'Release group']] : KINDS, pk = p => p.rgk ? 'rg' : primaryKind(p);
-    const ps = [...KINDS.flatMap(([k]) => sortP(r.links.filter(p => primaryKind(p) === k))), ...sortP(rgl).map(p => ({ ...p, rgk: true }))];
-    const kname = k => KS.find(x => x[0] === k)[1], kindOf = p => KINDS.map(x => x[0]).filter(k => p.kinds.includes(k)).map(kname).join(' · ');
+function rlQuiet(r, scope = '') {
+    if (!r.links.length) return '—';
+    const ps = KINDS.flatMap(([k]) => sortP(r.links.filter(p => primaryKind(p) === k)));
+    const kname = k => KINDS.find(x => x[0] === k)[1], kindOf = p => KINDS.map(x => x[0]).filter(k => p.kinds.includes(k)).map(kname).join(' · ');
     // the platform's link of a kind; its icon leads with its first kind's
     const urlOf = (p, k) => (p.urls.find(u => KIND(u.type) === k) || p.urls[0]).url;
     const lead = p => ({ ...p, urls: [...p.urls].sort((a, b) => (KIND(b.type) === primaryKind(p)) - (KIND(a.type) === primaryKind(p))) });
@@ -4220,7 +4143,7 @@ function rlQuiet(r, scope = '', rgl = []) {
     // a site with several links: a row per link, its address under the kind (majkinetor)
     const uRow = (p, u) => `<a class="row" href="${esc(u.url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${kname(KIND(u.type) || primaryKind(p))}${u.region ? ' · ' + esc(u.region.toUpperCase()) : ''}<br><small>${esc(u.url.replace(/^https?:\/\/(www\.)?/, ''))}</small></span></a>`;
     const qi = (p, i) => {
-        const a = plA(lead(p), S.plSize + 6, 'qi').replace('<a ', `<a data-i="${i}" `), rest = p.rgk ? [] : KINDS.map(x => x[0]).filter(k => k !== primaryKind(p) && p.kinds.includes(k));
+        const a = plA(lead(p), S.plSize + 6, 'qi').replace('<a ', `<a data-i="${i}" `), rest = KINDS.map(x => x[0]).filter(k => k !== primaryKind(p) && p.kinds.includes(k));
         const many = p.urls.length > 1;
         if (!rest.length && !many) return a;
         const ar = a.replace('" aria-label=', `&#10;Right-click: ${many ? 'its ' + p.urls.length + ' links' : 'its other kinds'}" aria-label=`);
@@ -4229,11 +4152,11 @@ function rlQuiet(r, scope = '', rgl = []) {
         const body = many ? lead(p).urls.map(u => uRow(p, u)).join('') : `${kRow(p, primaryKind(p))}<div class="h label also">Also</div>${rest.map(k => kRow(p, k)).join('')}`;
         return `<span class="qk" style="--qk-size:${S.plSize + 6}px">${ar}<span class="popwrap"><button class="kn" type="button" data-pop="kn-${scope}${i}" aria-expanded="false" aria-label="${lbl}" data-tip="${esc(tip)}">+${many ? p.urls.length : rest.length}</button><div class="pop" id="pop-kn-${scope}${i}" hidden><div class="h label">${esc(p.name)}</div>${body}</div></span></span>`;
     };
-    const icons = KS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => pk(p) === k); return g.length ? `<span class="kg"><span class="label">${name}</span><span class="ki">${g.map(([p, i]) => qi(p, i)).join('')}</span></span>` : ''; }).join('');
+    const icons = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k); return g.length ? `<span class="kg"><span class="label">${name}</span><span class="ki">${g.map(([p, i]) => qi(p, i)).join('')}</span></span>` : ''; }).join('');
     // the sites behind +N: a grid under their kind's heading, so the kind isn't repeated on every row;
     // A–Z (majkinetor), the bare hostnames after the named sites
     const az = ([a], [b]) => (a.key === 'globe') - (b.key === 'globe') || a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
-    const rows = KS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => pk(p) === k).sort(az); return g.length ? `<div class="mk"><div class="h label">${name}</div><div class="mg">${g.map(([p, i]) => `<a class="row" data-i="${i}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(p.name)}${p.kinds.length > 1 ? ': ' + kindOf(p) : ''}">${icon(p, 22)}<span>${esc(p.name)}</span></a>`).join('')}</div></div>` : ''; }).join('');
+    const rows = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k).sort(az); return g.length ? `<div class="mk"><div class="h label">${name}</div><div class="mg">${g.map(([p, i]) => `<a class="row" data-i="${i}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(p.name)}${p.kinds.length > 1 ? ': ' + kindOf(p) : ''}">${icon(p, 22)}<span>${esc(p.name)}</span></a>`).join('')}</div></div>` : ''; }).join('');
     return `<div class="rl-one quiet${S.plHover ? ' pl-hov' : ''}" style="--rl-size:${S.plSize + 6}px"><span class="icons">${icons}</span><span class="popwrap" hidden><button class="chip pn" type="button" data-pop="rlmore${scope}" aria-expanded="false"></button><div class="pop r more-sites" id="pop-rlmore${scope}" hidden><input class="mflt" type="search" placeholder="Filter sites" aria-label="Filter sites" hidden>${rows}</div></span></div>`;
 }
 
@@ -4603,16 +4526,16 @@ const rgAttrs = x => [...(x.attributes || []).map(a => (x['attribute-values'] ||
 function rgCard(r, own) {
     const groups = new Map(), add = (k, h) => { const l = groups.get(k) || []; l.push(h); groups.set(k, l); };
     const rels = r.rg.rels.filter(x => x['target-type'] !== 'url');
+    const links = own ? [] : urlsOf(r.rg.rels);
     for (const x of rels) {
         if (x['target-type'] === 'release_group') {
             const p = RG_PHRASE[x.type] || [x.type, x.type], g = x['release_group'];
             add(p[x.direction === 'backward' ? 1 : 0], `${entA('release-group', g.id, g.title)}${g.disambiguation ? ` <span class="rga">(${esc(g.disambiguation)})</span>` : ''} ${rgAttrs(x)}`);
         } else if (x['target-type'] === 'series') add('part of', `${entA('series', x.series.id, x.series.name)} ${rgAttrs(x)}`);
     }
-    // its links aren't here: a release shows them among its own, a group in its hero; links alone leave no card
-    if (!groups.size) return '';
-    const n = rels.length;
-    const body = `<dl class="rgc">${[...groups].map(([k, l]) => `<dt>${esc(k)}</dt><dd>${l.map(h => `<div>${h}</div>`).join('')}</dd>`).join('')}</dl>`;
+    if (!groups.size && !links.length) return '';
+    const n = rels.length + (own ? 0 : r.rg.rels.filter(x => x['target-type'] === 'url').length);
+    const body = (links.length ? rlQuiet({ links }, 'rg-') : '') + (groups.size ? `<dl class="rgc">${[...groups].map(([k, l]) => `<dt>${esc(k)}</dt><dd>${l.map(h => `<div>${h}</div>`).join('')}</dd>`).join('')}</dl>` : '');
     if (own) return sect('rg', `Relationships <span class="count">${n}</span>`, '', body, `<div class="folded-note">${n} relationship${n === 1 ? '' : 's'}</div>`);
     return sect('rg', 'Release group', `<a class="rgt" href="${MB}/release-group/${r.rgId}">${esc(r.rg.title)}</a><span class="aside">${n} relationship${n === 1 ? '' : 's'}</span>`, body, `<div class="folded-note">${n} relationship${n === 1 ? '' : 's'}</div>`);
 }
@@ -11029,11 +10952,8 @@ function fxRow(row) {
 }
 function effectColourRow(chip, row) { return row('Colour', chip('hexTwo', '0', !S.hexTwo, 'One tone') + chip('hexTwo', '1', S.hexTwo === true, 'Two-tone') + chip('hexTwo', '2', S.hexTwo === 2, 'All'), 'Two-tone mixes in the second accent colour\nAll: each light takes its own colour'); }
 function ambientRows(kind, chip, row) {
-    const fields = AMBIENT[kind].rows;
-    const field = ([key, label, values]) => row(label, values.map(v => chip(key, v, S[key] === v, key === 'tronOutlines' ? v + '%' : String(v))).join(''));
-    return fields.filter(([key]) => key === 'tronOutlines').map(field).join('')
-        + row('Opacity', [25, 45, 65, 85, 100].map(v => chip('ambientOpacity', v, S.ambientOpacity === v, v + '%')).join(''), 'How strong the effect is')
-        + fields.filter(([key]) => key !== 'tronOutlines').map(field).join('')
+    return row('Opacity', [25, 45, 65, 85, 100].map(v => chip('ambientOpacity', v, S.ambientOpacity === v, v + '%')).join(''), 'How strong the effect is')
+        + AMBIENT[kind].rows.map(([key, label, values]) => row(label, values.map(v => chip(key, v, S[key] === v, String(v))).join(''))).join('')
         + row('Glow', [[0, 'None'], [.5, 'Faint'], [1, 'Normal'], [2, 'Wide']].map(([v, l]) => chip('hexGlow', v, S.hexGlow === v, l)).join(''), 'How far the soft glow around the lights spreads')
         + effectColourRow(chip, row);
 }
