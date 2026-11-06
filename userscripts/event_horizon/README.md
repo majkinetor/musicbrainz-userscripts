@@ -9,7 +9,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 ## Features
 
 - **[The viewer](#the-viewer)** takes over a page, moves between pages without reloading, and keeps the page's identity and actions in reach while scrolling.
-- **[Background effects](#background-effects)**: Hexagons, Tron, Stars, Aurora, Contour and Orbit, each with its own controls.
+- **[Background effects](#background-effects)**: Hexagons, Tron, Stars, Aurora and Orbit, each with its own controls.
 - **[Sections](#sections)**: all data, an entity's facts and external links included, in cards that can be reordered, hidden and configured.
 - **[Starred entities](#starred-entities)** keeps favorite entities on the homepage.
 - **[Collections](#collections)** adds or removes an entity from your MusicBrainz collections.
@@ -43,7 +43,6 @@ Choose an effect under **Settings → Effects**. Each keeps its own parameters w
 | Tron     | Grid size, Riders, Speed, Trail length                                |
 | Stars    | Density, Drift, Depth, Twinkle                                        |
 | Aurora   | Ribbons, Speed, Height, Folds                                         |
-| Contour  | Line spacing, Wave height, Bends, Speed                               |
 | Orbit    | Rings, Satellites, Tilt, Speed                                        |
 | Hexagons | Motion, Outlines, Effect, Pace, Trail, How often, Glow, Colour, Depth |
 
@@ -53,9 +52,7 @@ Choose an effect under **Settings → Effects**. Each keeps its own parameters w
 
 **Aurora**: Ribbons sets the curtain count, Speed their movement, Height their reach and Folds their ripples.
 
-**Contour**: Line spacing sets the gaps, Wave height the displacement, Bends the broad curves and Speed their movement.
-
-**Orbit**: Rings sets the orbit count, Satellites the lights per ring, Tilt their angle and Speed their movement.
+**Orbit**: Rings sets the orbit count, Satellites the lights per ring, Tilt their angle and Speed their movement. Each ring moves at a different speed.
 
 Motion pauses in a hidden tab and respects reduced motion.
 

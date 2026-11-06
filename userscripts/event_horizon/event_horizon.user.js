@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.06.170002
+// @version      2026.11.06.170003
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3405,16 +3405,6 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
                 line(points, col, Math.sin(stripe / 22 * Math.PI) * .09, 3.5);
             }
         }
-    } else if (kind === 'contour') {
-        for (let y = -80, j = 0; y < h + 80; y += p.contourSpacing, j++) {
-            const points = [];
-            for (let x = -8; x <= w + 8; x += 8) {
-                const wave = Math.sin(x / w * p.contourBend + y / h * 3 + t * p.contourSpeed * .12)
-                    + .4 * Math.sin(x / w * 9 - y / h * 5 - t * p.contourSpeed * .08);
-                points.push([x, y + wave * p.contourHeight]);
-            }
-            line(points, tone(p.colour === 2 ? j : j % 5 ? 0 : 1), j % 5 ? .16 : .45, j % 5 ? .8 : 1.2);
-        }
     } else if (kind === 'orbit') {
         ctx.save(); ctx.translate(w * .52, h * .5); ctx.rotate(p.orbitTilt * Math.PI / 180);
         for (let i = 0; i < p.orbitRings; i++) {
@@ -3422,7 +3412,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
             ctx.globalAlpha = .18; ctx.strokeStyle = col; ctx.lineWidth = .8; ctx.beginPath();
             ctx.ellipse(0, 0, radius * 1.8, radius * .65, 0, 0, tau); stroke(col, .18, .8);
             for (let n = 0; n < p.orbitMoons; n++) {
-                const angle = t * p.orbitSpeed * .12 / (1 + i * .18) + i * 2 + n * tau / p.orbitMoons;
+                const angle = t * p.orbitSpeed * .12 * (.5 + rand(i + 57) * 1.1) + i * 2 + n * tau / p.orbitMoons;
                 ctx.globalAlpha = .65; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(0, 0, radius * 1.8, radius * .65, 0, angle - .22, angle); stroke(col, .65, 2);
                 ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(Math.cos(angle) * radius * 1.8, Math.sin(angle) * radius * .65, 2, 0, tau); ctx.fill();
             }
@@ -3441,9 +3431,6 @@ const AMBIENT = {
     ] },
     aurora: { name: 'Aurora', tip: 'Translucent curtains of light fold across the page', rows: [
         ['auroraRibbons', 'Ribbons', [1, 2, 3], 2], ['auroraSpeed', 'Speed', [.4, 1, 2], .4], ['auroraHeight', 'Height', [.1, .25, .4], .25], ['auroraFolds', 'Folds', [5, 10, 18], 10],
-    ] },
-    contour: { name: 'Contour', tip: 'Slowly shifting topographic lines', rows: [
-        ['contourSpacing', 'Line spacing', [12, 22, 36], 22], ['contourHeight', 'Wave height', [12, 32, 64], 32], ['contourBend', 'Bends', [3, 6, 10], 6], ['contourSpeed', 'Speed', [.4, 1, 2], .4],
     ] },
     orbit: { name: 'Orbit', tip: 'Tilted orbital rings carry small satellites', rows: [
         ['orbitRings', 'Rings', [3, 5, 8], 5], ['orbitMoons', 'Satellites', [1, 2, 3], 1], ['orbitTilt', 'Tilt', [-35, -15, 15], -15], ['orbitSpeed', 'Speed', [.4, 1, 2], .4],
