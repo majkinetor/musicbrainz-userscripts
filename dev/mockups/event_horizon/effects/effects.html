@@ -150,7 +150,7 @@ function auroraDiffuse(ctx, w, h, p, t, c1, c2) {
     const pace = t * p.auroraSpeed * .65, unit = w / 480, scale = 1 + p.auroraDiffuse / 100 * .75;
     const tone = i => {
         const n = Math.sin((i + 91) * 127.1 + 311.7) * 43758.5453, hue = Math.round((n - Math.floor(n)) * 360);
-        return p.colour === 2 ? `hsl(${hue},85%,65%)` : p.colour === 1 && i % 2 ? c2 : c1;
+        return p.colour === 3 ? (p.user?.length ? p.user[i % p.user.length] : c1) : p.colour === 2 ? `hsl(${hue},85%,65%)` : p.colour === 1 && i % 2 ? c2 : c1;
     };
     const glow = (x, y, rx, ry, col, alpha, lean = 0) => {
         const sprite = auroraSprite(ctx, col);
@@ -158,7 +158,7 @@ function auroraDiffuse(ctx, w, h, p, t, c1, c2) {
         ctx.drawImage(sprite, -rx, -ry, rx * 2, ry * 2); ctx.restore();
     };
     for (let band = 0; band < p.auroraRibbons; band++) {
-        const col = tone(band), upper = p.colour === 1 ? tone(band + 1) : col, wind = pace * (band % 2 ? -.7 : 1);
+        const col = tone(band), upper = p.colour === 1 || p.colour === 3 ? tone(band + 1) : col, wind = pace * (band % 2 ? -.7 : 1);
         for (let x = -20 * unit; x < w + 20 * unit; x += Math.max(3, settings.step * unit)) {
             const u = x / w, fold = u * settings.folds * p.auroraFolds / 10 + band * 1.8 - wind * .85 + Math.sin(pace * .5 + band) * .3;
             const envelope = Math.max(0, Math.sin(Math.PI * Math.max(0, Math.min(1, u)))) ** .7;
@@ -182,7 +182,7 @@ function auroraDiffuse(ctx, w, h, p, t, c1, c2) {
 // Cache two small surfaces per live Aurora canvas. Diffusion blurs at this resolution, then scales up.
 function auroraLayer(ctx, w, h, p, t, c1, c2) {
     const resolution = Math.min(.5, 480 / w, 320 / h), bw = Math.max(1, Math.ceil(w * resolution)), bh = Math.max(1, Math.ceil(h * resolution));
-    const key = [w, h, p.auroraStyle, p.auroraDiffuse, p.auroraRibbons, p.auroraHeight, p.auroraFolds, p.colour, p.glow, c1, c2].join('|');
+    const key = [w, h, p.auroraStyle, p.auroraDiffuse, p.auroraRibbons, p.auroraHeight, p.auroraFolds, p.colour, p.glow, c1, c2, (p.user || []).join()].join('|');
     let cache = ctx._ehAurora;
     if (!cache || cache.key !== key) {
         const make = phase => {
@@ -256,8 +256,8 @@ function rainSprite(doc, stretch) {
     return (RAIN_SPRITES[stretch] = c);
 }
 // The lights beyond the glass, out of focus: soft discs in the effect's colours on a clear canvas.
-function rainLights(doc, W, H, tone, c1) {
-    const c = rainCanvas(doc, W, H), x = c.getContext('2d'), n = Math.round(Math.min(160, Math.max(40, W * H / 9000)));
+function rainLights(doc, W, H, tone, c1, amount = 1) {
+    const c = rainCanvas(doc, W, H), x = c.getContext('2d'), n = Math.round(Math.min(160, Math.max(40, W * H / 9000)) * amount);
     for (let i = 0; i < n; i++) {
         const r = rainR(.006, .05) * Math.max(W, H * 1.4);
         x.globalAlpha = rainR(.08, .5); x.fillStyle = tone(i); x.beginPath(); x.arc(rainR(0, W), H * Math.random() ** .7, r, 0, 7); x.fill();
@@ -416,13 +416,13 @@ class RainFall {
     }
 }
 function rainDraw(ctx, w, h, p, t, c1, c2, tone) {
-    const d = ctx.canvas.width / w, key = [w, h, ctx.canvas.width, c1, c2, p.colour].join('|');
+    const d = ctx.canvas.width / w, key = [w, h, ctx.canvas.width, c1, c2, p.colour, p.rainLights, (p.user || []).join()].join('|');
     const glassP = { amount: p.rainAmount, size: p.rainSize, slide: p.rainSlide, trails: p.rainTrails, merge: p.rainMerge, fog: p.rainFog, refr: p.rainRefraction };
     const fallP = { intensity: p.rainFall * .7, lightning: p.rainLightning };
     let state = ctx._ehRain;
     if (!state || state.key !== key) {
         // A theme or colour change repaints the lights; the drops start over on the new glass.
-        const lights = rainLights(ctx.canvas.ownerDocument, w * d, h * d, tone, c1);
+        const lights = rainLights(ctx.canvas.ownerDocument, w * d, h * d, tone, c1, p.rainLights);
         state = ctx._ehRain = { key, last: t, lights, glass: new RainGlass(glassP, w, h, d, lights.sharp, lights.fog), fall: new RainFall(fallP, w, h) };
     }
     const refr = state.glass.P.refr; Object.assign(state.glass.P, glassP); Object.assign(state.fall.P, fallP);
@@ -439,7 +439,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
     const tau = Math.PI * 2, fract = x => x - Math.floor(x);
     const rand = n => fract(Math.sin(n * 127.1 + 311.7) * 43758.5453);
     // Stable colours per rider/star/ribbon/line/ring, so All does not flicker each frame.
-    const tone = i => p.colour === 2 ? `hsl(${Math.round(rand(i + 91) * 360)},85%,65%)` : p.colour === 1 && i % 2 ? c2 : c1;
+    const tone = i => p.colour === 3 ? (p.user?.length ? p.user[i % p.user.length] : c1) : p.colour === 2 ? `hsl(${Math.round(rand(i + 91) * 360)},85%,65%)` : p.colour === 1 && i % 2 ? c2 : c1;
     const stroke = (color, alpha, width = 1) => {
         ctx.strokeStyle = color;
         if (p.glow > 0) { ctx.globalAlpha = alpha * .16; ctx.lineWidth = width + p.glow * 5; ctx.stroke(); }
@@ -491,7 +491,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
             const y = fract(rand(i + 3) + t * p.starDrift * z / h) * h;
             ctx.globalAlpha = (.25 + .55 * rand(i + 4)) * (1 - p.starTwinkle * .35 + p.starTwinkle * .35 * Math.sin(t * .8 + i));
             const alpha = ctx.globalAlpha, radius = .45 + z * .7;
-            ctx.fillStyle = tone(p.colour === 2 ? i : i % 5 ? 0 : 1);
+            ctx.fillStyle = tone(p.colour >= 2 ? i : i % 5 ? 0 : 1);
             if (p.glow > 0) { ctx.globalAlpha = alpha * .12; ctx.beginPath(); ctx.arc(x, y, radius + p.glow * 2, 0, tau); ctx.fill(); }
             ctx.globalAlpha = alpha; ctx.beginPath(); ctx.arc(x, y, radius, 0, tau); ctx.fill();
         }
@@ -501,7 +501,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
         // Cap ray count rather than blurring a full-screen canvas every frame.
         const pace = t * p.auroraSpeed * .65, step = Math.max(2.5, w / 260);
         for (let band = 0; band < p.auroraRibbons; band++) {
-            const col = tone(band), upper = p.colour === 1 ? tone(band + 1) : col, wind = pace * (band % 2 ? -.7 : 1);
+            const col = tone(band), upper = p.colour === 1 || p.colour === 3 ? tone(band + 1) : col, wind = pace * (band % 2 ? -.7 : 1);
             for (let x = 0; x <= w; x += step) {
                 const u = x / w, fold = u * p.auroraFolds + band * 1.9 - wind * .85 + Math.sin(pace * .5 + band) * .3;
                 const pleat = (.5 + .5 * Math.sin(fold)) ** 4;
@@ -539,6 +539,7 @@ const AMBIENT = {
         ['rainMerge', 'Merging', [0, 1], 1, ['Off', 'On'], 'A sliding drop swallows the drops it touches'],
         ['rainFog', 'Fog', [0, .5, .9], .5, ['Off', 'Light', 'Heavy'], 'Mist on the glass\nSliding drops wipe clear lines through it'],
         ['rainRefraction', 'Refraction', [0, .5, 1], .5, ['Off', 'Soft', 'Strong'], 'Each drop shows the lights behind it, upside down'],
+        ['rainLights', 'Lights', [0, .25, .5, .75, 1], 1, ['Off', '25%', '50%', '75%', '100%'], 'The blurred lights beyond the glass'],
         ['rainFall', 'Falling rain', [0, .5, 1], .5, ['Off', 'Light', 'Heavy'], 'Rain falling beyond the window'],
         ['rainLightning', 'Lightning', [0, 1, 2.5], 0, ['Off', 'Rare', 'Often']],
     ] },
@@ -579,17 +580,17 @@ const saved = window.openai?.widgetState?.privateContent || {};
 const reduce = matchMedia('(prefers-reduced-motion:reduce)');
 let paused = typeof saved.paused === 'boolean' ? saved.paused : reduce.matches, explicitPlay = false, t = 12, last = 0, raf = 0;
 const specs = [['hexagons',{name:'Hexagons · current',tip:'Existing lattice with the Drift motion',rows:[['hexOpacity','Outlines',[20,40,60],40],['hexSpeed','Pace',[.6,1,1.6],.6],['hexStrength','Effect',[25,65,100],65]]}],...Object.entries(AMBIENT)];
-const items = [];
+const items = [], USER = ['#ff5e8a', '#ffc857', '#3ad1c6', '#7a6cff'];
 for(const [key,f] of specs) {
   const section = document.createElement('section');
   section.innerHTML = `<h3>${f.name}</h3><p class="desc">${f.tip}</p><div class="stage"><canvas aria-hidden="true"></canvas><div class="page"><header>EVENT HORIZON</header><strong>Random Access Memories</strong><small>Daft Punk · 2013</small><div class="tracks"><div class="track"><span>01 &nbsp; Give Life Back to Music</span><span>4:34</span></div><div class="track"><span>02 &nbsp; The Game of Love</span><span>5:21</span></div><div class="track"><span>03 &nbsp; Giorgio by Moroder</span><span>9:04</span></div></div></div></div><div class="params"></div>`;
-  const params = section.querySelector('.params'), p = {};
-  const rows = key==='hexagons' ? f.rows : [...f.rows.filter(([k])=>k==='tronOutlines'),['ambientOpacity','Opacity',[25,45,65,85,100],65],...f.rows.filter(([k])=>k!=='tronOutlines'),['glow','Glow',[0,.5,1,2],1],['colour','Colour',[0,1,2],1]];
+  const params = section.querySelector('.params'), p = { user: USER };
+  const rows = key==='hexagons' ? f.rows : [...f.rows.filter(([k])=>k==='tronOutlines'),['ambientOpacity','Opacity',[25,45,65,85,100],65],...f.rows.filter(([k])=>k!=='tronOutlines'),['glow','Glow',[0,.5,1,2],1],['colour','Colour',[0,1,2,3],1]];
   for(const [k,label,values,def,labels] of rows) {
     p[k] = values.includes(saved.params?.[key]?.[k]) ? saved.params[key][k] : def;
     const l = document.createElement('label');l.textContent=label;
     const select=document.createElement('select');select.setAttribute('aria-label',f.name+' '+label);
-    values.forEach((v,i)=>{const opt=document.createElement('option');opt.value=v;opt.textContent=labels?labels[i]:k==='auroraStyle'?AURORA_STYLES[v]:k==='colour'?['One tone','Two-tone','All'][v]:k==='glow'?({0:'None',0.5:'Faint',1:'Normal',2:'Wide'})[v]:v+(['ambientOpacity','tronOutlines','auroraDiffuse'].includes(k)?'%':'');opt.selected=v===p[k];select.append(opt);});
+    values.forEach((v,i)=>{const opt=document.createElement('option');opt.value=v;opt.textContent=labels?labels[i]:k==='auroraStyle'?AURORA_STYLES[v]:k==='colour'?['One tone','Two-tone','All','User'][v]:k==='glow'?({0:'None',0.5:'Faint',1:'Normal',2:'Wide'})[v]:v+(['ambientOpacity','tronOutlines','auroraDiffuse'].includes(k)?'%':'');opt.selected=v===p[k];select.append(opt);});
     select.onchange=()=>{p[k]=Number(select.value);draw();persist();}; l.append(select);params.append(l);
   }
   const cv=section.querySelector('canvas'),ctx=cv.getContext('2d');root.querySelector('.sample-grid').append(section);items.push({key,p,cv,ctx});

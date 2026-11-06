@@ -36,19 +36,19 @@ When MB page has Event Horizon redesign available, EH dock button shows on the n
 
 ## Background effects
 
-Under **Settings → Effects**, add a **Background** and as many **Effects** as you like, stacked over it; each is a badge you select to show its settings, and its × removes it alone. Each effect keeps its own parameters when you switch effects. **Preset** saves the whole configuration by name: **Save** keeps a change in the preset (and a new name typed over it), **+** saves it as a new preset and leaves the old one as it was, and a built-in preset is kept as shipped (**+** copies it). A preset with unsaved changes shows **Changed**. **Copy as JSON** and **Import from JSON** in the preset list share a preset. **Opacity** sets their strength. **Colour** is shared across effects: **One tone** uses the theme's accent, **Two-tone** adds its second accent, and **All** gives each light its own colour. **Glow**, also shared, sets how far the soft light spreads. Speed and the other controls stay specific to each effect.
+Under **Settings → Effects**, add a **Background** and as many **Effects** as you like, stacked over it; each is a badge you select to show its settings, and its × removes it alone. Each effect keeps its own parameters when you switch effects. **Preset** saves the whole configuration by name: **Save** keeps a change in the preset (and a new name typed over it), **+** saves it as a new preset and leaves the old one as it was, and a built-in preset is kept as shipped (**+** copies it). A preset with unsaved changes shows **Changed**. **Copy as JSON** and **Import from JSON** in the preset list share a preset. Every effect has its own **Opacity**, which sets its strength, **Glow**, which sets how far the soft light spreads, and **Colour**: **One tone** uses the theme's accent, **Two-tone** adds its second accent, **All** gives each light its own colour, and **User** uses colours you pick. With User, a **Colours** row lists them: click a swatch to change it, its × to remove it, and **Add** for another, as many as you like.
 
-| Effect   | Controls                                                              |
-| -------- | --------------------------------------------------------------------- |
-| Tron     | Outlines, Grid size, Riders, Speed, Trail length                      |
-| Stars    | Density, Drift, Depth, Twinkle                                        |
-| Aurora   | Style, Diffuse, Ribbons, Speed, Height, Folds                         |
-| Rain     | Amount, Drop size, Sliding, Trails, Merging, Fog, Refraction, Falling rain, Lightning |
-| Hexagons | Motion, Outlines, Effect, Pace, Trail, How often, Glow, Colour, Depth |
+| Effect   | Controls                                                                                      |
+| -------- | --------------------------------------------------------------------------------------------- |
+| Tron     | Outlines, Grid size, Riders, Speed, Trail length                                              |
+| Stars    | Density, Drift, Depth, Twinkle                                                                |
+| Aurora   | Style, Diffuse, Ribbons, Speed, Height, Folds                                                 |
+| Rain     | Amount, Drop size, Sliding, Trails, Merging, Fog, Refraction, Lights, Falling rain, Lightning |
+| Hexagons | Motion, Outlines, Effect, Pace, Trail, How often, Glow, Colour, Depth                         |
 
 **Background** is **Cover aura** (the page's cover, blurred behind its head), **Glow** (the accent colour), **Artwork** or **Image**:
 
-- **Artwork** is drawn by Event Horizon. **Scene** picks Chillwave (a city at sunset over a neon grid), Peaks, Aurora, Nebula, Ocean, Low poly or Bokeh, and **Shuffle** draws the same scene anew.
+- **Artwork** is drawn by Event Horizon. **Scene** picks Chillwave (a city at sunset over a neon grid), Nebula, Low poly or Bokeh, and **Shuffle** draws the same scene anew.
 - **Image** shows a picture from the web: paste its address (right-click a picture, *Copy image address*) and press Enter or the tick. An address that doesn't load says so.
 
 Both take the same image effects: **Opacity**, **Blur**, **Brightness**, **Saturation**, **Tone** (Natural, Mono, Sepia, or Accent in the theme's accent colour), **Fit** (Fill crops it to the page, Whole shows all of it, Tile repeats it) and **Vignette**, which fades the edges into the page. A preset saves the background with its effects.
@@ -59,7 +59,7 @@ Both take the same image effects: **Opacity**, **Blur**, **Brightness**, **Satur
 
 **Aurora**: Style chooses Rays, Velvet curtains, Polar haze or Wide veil. Diffuse softens any style, with 0% leaving its natural edges. Ribbons sets the curtain count, Speed their movement, Height their reach and Folds their ripples.
 
-**Rain**: rain on a window behind the page, with blurred city lights in the theme's colours beyond it. Each drop shows the lights behind it upside down, as real drops do. Amount sets how many drops land on the glass and Drop size how big they are. Sliding sets how soon and how fast heavy drops run down; Trails the small drops they leave behind (Off, Sparse or Beaded); Merging lets a sliding drop swallow the drops it touches. Fog mists the glass, and sliding drops wipe clear lines through it that slowly fog over again. Refraction sets how strongly drops bend the light, Falling rain adds rain beyond the window, and Lightning flashes now and then. Rain has no Glow.
+**Rain**: rain on a window behind the page, with blurred city lights in the theme's colours beyond it. Each drop shows the lights behind it upside down, as real drops do. Amount sets how many drops land on the glass and Drop size how big they are. Sliding sets how soon and how fast heavy drops run down; Trails the small drops they leave behind (Off, Sparse or Beaded); Merging lets a sliding drop swallow the drops it touches. Fog mists the glass, and sliding drops wipe clear lines through it that slowly fog over again. Refraction sets how strongly drops bend the light, Lights how many lights shine beyond the glass (Off leaves only the dark), Falling rain adds rain beyond the window, and Lightning flashes now and then. Rain has no Glow.
 
 Motion pauses in a hidden tab and respects reduced motion.
 

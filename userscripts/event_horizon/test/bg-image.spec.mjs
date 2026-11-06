@@ -25,11 +25,11 @@ test('the Artwork background draws a scene behind the page', { tag: ['@prod'] },
   await inject('event_horizon');
   const cfg = await openBg(page);
   await cfg.locator('[data-g=bg][data-k=art]').click();
-  await until(() => cfg.locator('[data-g=bgArt]').count(), n => n === 7);
+  await until(() => cfg.locator('[data-g=bgArt]').count(), n => n === 4);
   let l = await until(() => layer(page), v => v?.shown);
   check(l?.img.startsWith('url("data:image/jpeg'), 'the artwork shows: ' + JSON.stringify(l));
   const first = await page.evaluate(() => getComputedStyle(document.querySelector('#eh-bgimg i')).backgroundImage.length);
-  await cfg.locator('[data-g=bgArt][data-k=aurora]').click();
+  await cfg.locator('[data-g=bgArt][data-k=bokeh]').click();
   await cfg.locator('[data-g=bgBlur][data-k="10"]').click();
   await cfg.locator('[data-g=bgOpacity][data-k="45"]').click();
   l = await until(() => layer(page), v => /blur\(10px\)/.test(v?.filter) && v.op === '0.45');

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.07.225000
+// @version      2026.11.07.230000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3498,7 +3498,7 @@ function auroraDiffuse(ctx, w, h, p, t, c1, c2) {
     const pace = t * p.auroraSpeed * .65, unit = w / 480, scale = 1 + p.auroraDiffuse / 100 * .75;
     const tone = i => {
         const n = Math.sin((i + 91) * 127.1 + 311.7) * 43758.5453, hue = Math.round((n - Math.floor(n)) * 360);
-        return p.colour === 2 ? `hsl(${hue},85%,65%)` : p.colour === 1 && i % 2 ? c2 : c1;
+        return p.colour === 3 ? (p.user?.length ? p.user[i % p.user.length] : c1) : p.colour === 2 ? `hsl(${hue},85%,65%)` : p.colour === 1 && i % 2 ? c2 : c1;
     };
     const glow = (x, y, rx, ry, col, alpha, lean = 0) => {
         const sprite = auroraSprite(ctx, col);
@@ -3506,7 +3506,7 @@ function auroraDiffuse(ctx, w, h, p, t, c1, c2) {
         ctx.drawImage(sprite, -rx, -ry, rx * 2, ry * 2); ctx.restore();
     };
     for (let band = 0; band < p.auroraRibbons; band++) {
-        const col = tone(band), upper = p.colour === 1 ? tone(band + 1) : col, wind = pace * (band % 2 ? -.7 : 1);
+        const col = tone(band), upper = p.colour === 1 || p.colour === 3 ? tone(band + 1) : col, wind = pace * (band % 2 ? -.7 : 1);
         for (let x = -20 * unit; x < w + 20 * unit; x += Math.max(3, settings.step * unit)) {
             const u = x / w, fold = u * settings.folds * p.auroraFolds / 10 + band * 1.8 - wind * .85 + Math.sin(pace * .5 + band) * .3;
             const envelope = Math.max(0, Math.sin(Math.PI * Math.max(0, Math.min(1, u)))) ** .7;
@@ -3530,7 +3530,7 @@ function auroraDiffuse(ctx, w, h, p, t, c1, c2) {
 // Cache two small surfaces per live Aurora canvas. Diffusion blurs at this resolution, then scales up.
 function auroraLayer(ctx, w, h, p, t, c1, c2) {
     const resolution = Math.min(.5, 480 / w, 320 / h), bw = Math.max(1, Math.ceil(w * resolution)), bh = Math.max(1, Math.ceil(h * resolution));
-    const key = [w, h, p.auroraStyle, p.auroraDiffuse, p.auroraRibbons, p.auroraHeight, p.auroraFolds, p.colour, p.glow, c1, c2].join('|');
+    const key = [w, h, p.auroraStyle, p.auroraDiffuse, p.auroraRibbons, p.auroraHeight, p.auroraFolds, p.colour, p.glow, c1, c2, (p.user || []).join()].join('|');
     let cache = ctx._ehAurora;
     if (!cache || cache.key !== key) {
         const make = phase => {
@@ -3604,8 +3604,8 @@ function rainSprite(doc, stretch) {
     return (RAIN_SPRITES[stretch] = c);
 }
 // The lights beyond the glass, out of focus: soft discs in the effect's colours on a clear canvas.
-function rainLights(doc, W, H, tone, c1) {
-    const c = rainCanvas(doc, W, H), x = c.getContext('2d'), n = Math.round(Math.min(160, Math.max(40, W * H / 9000)));
+function rainLights(doc, W, H, tone, c1, amount = 1) {
+    const c = rainCanvas(doc, W, H), x = c.getContext('2d'), n = Math.round(Math.min(160, Math.max(40, W * H / 9000)) * amount);
     for (let i = 0; i < n; i++) {
         const r = rainR(.006, .05) * Math.max(W, H * 1.4);
         x.globalAlpha = rainR(.08, .5); x.fillStyle = tone(i); x.beginPath(); x.arc(rainR(0, W), H * Math.random() ** .7, r, 0, 7); x.fill();
@@ -3764,13 +3764,13 @@ class RainFall {
     }
 }
 function rainDraw(ctx, w, h, p, t, c1, c2, tone) {
-    const d = ctx.canvas.width / w, key = [w, h, ctx.canvas.width, c1, c2, p.colour].join('|');
+    const d = ctx.canvas.width / w, key = [w, h, ctx.canvas.width, c1, c2, p.colour, p.rainLights, (p.user || []).join()].join('|');
     const glassP = { amount: p.rainAmount, size: p.rainSize, slide: p.rainSlide, trails: p.rainTrails, merge: p.rainMerge, fog: p.rainFog, refr: p.rainRefraction };
     const fallP = { intensity: p.rainFall * .7, lightning: p.rainLightning };
     let state = ctx._ehRain;
     if (!state || state.key !== key) {
         // A theme or colour change repaints the lights; the drops start over on the new glass.
-        const lights = rainLights(ctx.canvas.ownerDocument, w * d, h * d, tone, c1);
+        const lights = rainLights(ctx.canvas.ownerDocument, w * d, h * d, tone, c1, p.rainLights);
         state = ctx._ehRain = { key, last: t, lights, glass: new RainGlass(glassP, w, h, d, lights.sharp, lights.fog), fall: new RainFall(fallP, w, h) };
     }
     const refr = state.glass.P.refr; Object.assign(state.glass.P, glassP); Object.assign(state.fall.P, fallP);
@@ -3787,7 +3787,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
     const tau = Math.PI * 2, fract = x => x - Math.floor(x);
     const rand = n => fract(Math.sin(n * 127.1 + 311.7) * 43758.5453);
     // Stable colours per rider/star/ribbon/line/ring, so All does not flicker each frame.
-    const tone = i => p.colour === 2 ? `hsl(${Math.round(rand(i + 91) * 360)},85%,65%)` : p.colour === 1 && i % 2 ? c2 : c1;
+    const tone = i => p.colour === 3 ? (p.user?.length ? p.user[i % p.user.length] : c1) : p.colour === 2 ? `hsl(${Math.round(rand(i + 91) * 360)},85%,65%)` : p.colour === 1 && i % 2 ? c2 : c1;
     const stroke = (color, alpha, width = 1) => {
         ctx.strokeStyle = color;
         if (p.glow > 0) { ctx.globalAlpha = alpha * .16; ctx.lineWidth = width + p.glow * 5; ctx.stroke(); }
@@ -3839,7 +3839,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
             const y = fract(rand(i + 3) + t * p.starDrift * z / h) * h;
             ctx.globalAlpha = (.25 + .55 * rand(i + 4)) * (1 - p.starTwinkle * .35 + p.starTwinkle * .35 * Math.sin(t * .8 + i));
             const alpha = ctx.globalAlpha, radius = .45 + z * .7;
-            ctx.fillStyle = tone(p.colour === 2 ? i : i % 5 ? 0 : 1);
+            ctx.fillStyle = tone(p.colour >= 2 ? i : i % 5 ? 0 : 1);
             if (p.glow > 0) { ctx.globalAlpha = alpha * .12; ctx.beginPath(); ctx.arc(x, y, radius + p.glow * 2, 0, tau); ctx.fill(); }
             ctx.globalAlpha = alpha; ctx.beginPath(); ctx.arc(x, y, radius, 0, tau); ctx.fill();
         }
@@ -3849,7 +3849,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
         // Cap ray count rather than blurring a full-screen canvas every frame.
         const pace = t * p.auroraSpeed * .65, step = Math.max(2.5, w / 260);
         for (let band = 0; band < p.auroraRibbons; band++) {
-            const col = tone(band), upper = p.colour === 1 ? tone(band + 1) : col, wind = pace * (band % 2 ? -.7 : 1);
+            const col = tone(band), upper = p.colour === 1 || p.colour === 3 ? tone(band + 1) : col, wind = pace * (band % 2 ? -.7 : 1);
             for (let x = 0; x <= w; x += step) {
                 const u = x / w, fold = u * p.auroraFolds + band * 1.9 - wind * .85 + Math.sin(pace * .5 + band) * .3;
                 const pleat = (.5 + .5 * Math.sin(fold)) ** 4;
@@ -3887,6 +3887,7 @@ const AMBIENT = {
         ['rainMerge', 'Merging', [0, 1], 1, ['Off', 'On'], 'A sliding drop swallows the drops it touches'],
         ['rainFog', 'Fog', [0, .5, .9], .5, ['Off', 'Light', 'Heavy'], 'Mist on the glass\nSliding drops wipe clear lines through it'],
         ['rainRefraction', 'Refraction', [0, .5, 1], .5, ['Off', 'Soft', 'Strong'], 'Each drop shows the lights behind it, upside down'],
+        ['rainLights', 'Lights', [0, .25, .5, .75, 1], 1, ['Off', '25%', '50%', '75%', '100%'], 'The blurred lights beyond the glass'],
         ['rainFall', 'Falling rain', [0, .5, 1], .5, ['Off', 'Light', 'Heavy'], 'Rain falling beyond the window'],
         ['rainLightning', 'Lightning', [0, 1, 2.5], 0, ['Off', 'Rare', 'Often']],
     ] },
@@ -3894,14 +3895,31 @@ const AMBIENT = {
 const AMBIENT_DEFAULTS = Object.fromEntries(Object.values(AMBIENT).flatMap(f => f.rows.map(([k, , , v]) => [k, v])));
 // the effects on, in order; settings saved before there could be several hold one in hex and effect
 const fxOf = v => Array.isArray(v.fx) ? [...new Set(v.fx.filter(k => k === 'hexagons' || AMBIENT[k]))] : v.hex ? [AMBIENT[v.effect] ? v.effect : 'hexagons'] : [];
-const AMBIENT_KEYS = ['effect', 'ambientOpacity', ...Object.keys(AMBIENT_DEFAULTS)];
+// each effect's own Opacity, Glow, Colour (0 one tone, 1 two-tone, 2 all, 3 the user's) and the user's colours
+const FX_OWN = Object.fromEntries(Object.keys(AMBIENT).flatMap(k => [[k + 'Opacity', 65], [k + 'Glow', 1], [k + 'Colour', 0], [k + 'Colours', []]]));
+const AMBIENT_KEYS = ['effect', 'ambientOpacity', ...Object.keys(AMBIENT_DEFAULTS), ...Object.keys(FX_OWN)];
+const FX_COLOURS = ['hexColours', ...Object.keys(FX_OWN).filter(k => k.endsWith('Colours'))];
+// settings saved when the effects shared Opacity, Glow and Colour: each effect starts from the shared ones
+const fxMigrate = v => {
+    if (!v || typeof v !== 'object') return v;
+    const two = v.hexTwo === 2 ? 2 : v.hexTwo === 3 ? 3 : v.hexTwo ? 1 : 0;
+    for (const k of Object.keys(AMBIENT)) {
+        if (v[k + 'Opacity'] == null && typeof v.ambientOpacity === 'number') v[k + 'Opacity'] = v.ambientOpacity;
+        if (v[k + 'Glow'] == null && typeof v.hexGlow === 'number') v[k + 'Glow'] = v.hexGlow;
+        if (v[k + 'Colour'] == null && v.hexTwo != null) v[k + 'Colour'] = two;
+    }
+    return v;
+};
+// the user's colours as #rrggbb, for the colour fields
+const ucolHex = c => { const x = document.createElement('canvas').getContext('2d'); if (!x) return '#888888'; x.fillStyle = '#888888'; x.fillStyle = c; return /^#[0-9a-f]{6}$/i.test(x.fillStyle) ? x.fillStyle : '#888888'; };
+const ucolOk = a => Array.isArray(a) ? a.filter(c => /^#[0-9a-f]{6}$/i.test(c)).slice(0, 64) : [];
 
 function ambientApply(layer, kind) {
     layer._ehDepthOff?.(); const svg = layer.querySelector('svg'); if (svg) svg.style.display = 'none';
-    layer.style.setProperty('--eh-hex-mf', '1'); layer.style.setProperty('--eh-hex-fx', Math.max(0, Math.min(100, Number(S.ambientOpacity) || 0)) / 100);
+    layer.style.setProperty('--eh-hex-mf', '1'); layer.style.setProperty('--eh-hex-fx', Math.max(0, Math.min(100, Number(S[kind + 'Opacity']) || 0)) / 100);
     const w = layer.clientWidth, h = layer.clientHeight, dpr = kind === 'aurora' ? Math.min(.5, 480 / w, 320 / h) : Math.min(kind === 'rain' ? 1.5 : 2, devicePixelRatio || 1);
     const css = getComputedStyle(layer), c1 = css.color, c2 = css.getPropertyValue('--accent2').trim() || c1;
-    const p = { colour: S.hexTwo === 2 ? 2 : S.hexTwo ? 1 : 0, glow: Math.max(0, Math.min(2, Number(S.hexGlow) || 0)), c1, c2 };
+    const p = { colour: [0, 1, 2, 3].includes(S[kind + 'Colour']) ? S[kind + 'Colour'] : 0, glow: Math.max(0, Math.min(2, Number(S[kind + 'Glow']) || 0)), user: ucolOk(S[kind + 'Colours']), c1, c2 };
     for (const [k, , values, fallback] of AMBIENT[kind].rows) p[k] = values.includes(Number(S[k])) ? Number(S[k]) : fallback;
     const key = [kind, w, h, dpr, hexReduce.matches].join('|');
     // Page redraws keep the canvas, simulation and clock; controls and theme colours update in place.
@@ -3950,8 +3968,8 @@ const S = {
     hgrp: 'burst', // the history page's grouping
     tagView: 'bars', etagView: 'chips', tagSort: 'count', tagScope: 'a', tgxView: 'row', // the tags pages' view (an editor's, an entity's), order and kind
 };
-VIEW.push(...AMBIENT_KEYS);
-Object.assign(S, { effect: 'hexagons', ambientOpacity: 65, ...AMBIENT_DEFAULTS });
+VIEW.push(...AMBIENT_KEYS, 'hexColours');
+Object.assign(S, { effect: 'hexagons', ambientOpacity: 65, ...AMBIENT_DEFAULTS, ...FX_OWN, hexColours: [] });
 VIEW.push('keysOn', 'keys', 'menuTitles', 'annoHover', 'pending', 'colPick', 'colW', 'named', 'fxTheme', 'fxCur', 'stars', 'starGroup', 'starView', 'starSort', 'recView', 'recSort', 'recMax', 'recOff', 'hmQs');
 S.keysOn = true; // #907: keyboard shortcuts, and the keys changed from their defaults by command
 S.keys = {};
@@ -3975,7 +3993,7 @@ S.pending = false; // MusicBrainz's grey mark on what has edits open; takes one 
 const ehWidth = () => { const s = document.documentElement.style; s.setProperty('--eh-w', S.width ? S.width + 'px' : 'none'); s.setProperty('--eh-wn', S.width ? S.width + 'px' : '100vw'); };
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
 const RESET_KEEP = ['named', 'stars', 'fxTheme'];   // the user's own things, which Reset to defaults leaves alone
-try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; if (v.hexFx == null && v.hexOpacity != null) S.hexFx = Math.min(100, Math.round(S.hexOpacity * 2.25)); } catch (e) {}
+try { const v = fxMigrate({ ...GM_getValue('view', {}) }); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; if (v.hexFx == null && v.hexOpacity != null) S.hexFx = Math.min(100, Math.round(S.hexOpacity * 2.25)); } catch (e) {}
 // Preserve an existing hex background as an independent overlay over Flat.
 if (S.bg === 'hex') { S.bg = 'flat'; S.hex = true; S.hexMotion = 'drift'; }
 if (S.bg === 'band') S.bg = 'flat'; // Header band is gone
@@ -8512,13 +8530,13 @@ function hexPattern(layer, mode) {
     // the layer's own size, not the window's: the window counts the scrollbar, and a canvas stretched to fit would drift off the outlines
     const w = layer.clientWidth || innerWidth + 96, h = layer.clientHeight || innerHeight + 96, cs = getComputedStyle(layer);
     const c1 = cs.color, c2 = cs.getPropertyValue('--accent2').trim() || c1;
-    const P = { pace: Number(S.hexPace) || 1, trail: Number(S.hexTrail) || 1, often: Number(S.hexOften) || 1, glow: Number(S.hexGlow ?? 1), two: S.hexTwo === 2 ? 2 : !!S.hexTwo, c1, c2 };
+    const P = { pace: Number(S.hexPace) || 1, trail: Number(S.hexTrail) || 1, often: Number(S.hexOften) || 1, glow: Number(S.hexGlow ?? 1), two: S.hexTwo === 2 || S.hexTwo === 3 ? S.hexTwo : !!S.hexTwo, user: ucolOk(S.hexColours), c1, c2 };
     const key = [mode, w, h].join('|');
     // the same motion keeps running and takes the new settings from its next frame
     if (layer._ehPattern?.key === key) { Object.assign(layer._ehPattern.P, P); return; }
     layer._ehPattern?.stop();
     const L = hexLattice(w, h), rnd = (a, b) => a + Math.random() * (b - a), pick = a => a[Math.random() * a.length | 0];
-    const tone = () => P.two === 2 ? `hsl(${Math.random() * 360 | 0},${70 + Math.random() * 25 | 0}%,${58 + Math.random() * 14 | 0}%)` : P.two && Math.random() < .5 ? P.c2 : P.c1;
+    const tone = () => P.two === 3 ? (P.user.length ? pick(P.user) : P.c1) : P.two === 2 ? `hsl(${Math.random() * 360 | 0},${70 + Math.random() * 25 | 0}%,${58 + Math.random() * 14 | 0}%)` : P.two && Math.random() < .5 ? P.c2 : P.c1;
     const rect = layer.querySelector('.hex-drift');
     let cv, ctx;
     if (mode !== 'ripple' && mode !== 'lantern') {
@@ -8765,16 +8783,11 @@ window.visualViewport?.addEventListener('resize', () => { if (document.getElemen
 // the Artwork background: a picture drawn here from a seed, the same one every time for the same scene and seed
 const BG_ARTS = [
     ['chillwave', 'Chillwave', 'A city skyline under a striped sunset, on a neon grid'],
-    ['peaks', 'Peaks', 'Mountain ridges fading into the haze at dusk'],
-    ['aurora', 'Aurora', 'Northern lights over a pine forest'],
     ['nebula', 'Nebula', 'Coloured gas clouds and stars in deep space'],
-    ['ocean', 'Ocean', 'Layered waves rolling towards the shore'],
     ['lowpoly', 'Low poly', 'A field of shaded triangles'],
     ['bokeh', 'Bokeh', 'Out-of-focus lights in the dark'],
 ];
 const bgRand = seed => { let a = (seed >>> 0) || 1; return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
-// one ridge line: midpoint displacement across the width
-const bgRidge = (r, n, rough) => { const p = new Array(n + 1).fill(0); let step = n, amp = 1; while (step > 1) { const h = step / 2; for (let i = h; i < n; i += step) p[i] = (p[i - h] + p[i + h]) / 2 + (r() * 2 - 1) * amp; step = h; amp *= rough; } return p; };
 const BG_DRAW = {
     chillwave(c, W, H, r) {
         const hz = H * .64, sky = c.createLinearGradient(0, 0, 0, hz);
@@ -8802,40 +8815,6 @@ const BG_DRAW = {
         c.globalAlpha = .8; for (let i = -24; i <= 24; i++) { c.beginPath(); c.moveTo(W / 2 + i * 6, hz); c.lineTo(W / 2 + i * W * .12, H); c.stroke(); }
         c.globalAlpha = 1; c.shadowBlur = 0; c.fillStyle = '#ffb3e6'; c.fillRect(0, hz - 1, W, 2);
     },
-    peaks(c, W, H, r) {
-        const hue = r() * 360, sky = c.createLinearGradient(0, 0, 0, H);
-        sky.addColorStop(0, `hsl(${hue + 220},45%,22%)`); sky.addColorStop(.55, `hsl(${hue + 260},40%,55%)`); sky.addColorStop(1, `hsl(${hue + 20},75%,75%)`);
-        c.fillStyle = sky; c.fillRect(0, 0, W, H);
-        c.fillStyle = `hsla(${hue + 40},90%,92%,.9)`; c.beginPath(); c.arc(W * (.2 + r() * .6), H * (.22 + r() * .15), H * .06, 0, Math.PI * 2); c.fill();
-        const n = 6;
-        for (let l = 0; l < n; l++) {
-            const p = bgRidge(r, 256, .55), base = H * (.42 + l * .1), amp = H * (.22 - l * .025), t = l / (n - 1);
-            c.fillStyle = `hsl(${hue + 250 - t * 20},${30 + t * 15}%,${62 - t * 54}%)`;
-            c.beginPath(); c.moveTo(0, H); for (let i = 0; i <= 256; i++) c.lineTo(i / 256 * W, base - p[i] * amp * .55); c.lineTo(W, H); c.fill();
-            const fog = c.createLinearGradient(0, base - amp * .3, 0, base + H * .12); fog.addColorStop(0, 'rgba(255,255,255,0)'); fog.addColorStop(1, `hsla(${hue + 260},40%,80%,${.25 - t * .04})`);
-            c.fillStyle = fog; c.fillRect(0, base - amp * .3, W, H * .2);
-        }
-    },
-    aurora(c, W, H, r) {
-        const sky = c.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, '#020615'); sky.addColorStop(.7, '#0a1f33'); sky.addColorStop(1, '#0d2a3a');
-        c.fillStyle = sky; c.fillRect(0, 0, W, H);
-        for (let i = 0; i < 260; i++) { c.fillStyle = `rgba(255,255,255,${.2 + r() * .7})`; c.fillRect(r() * W, r() * H * .8, r() < .08 ? 2 : 1, r() < .08 ? 2 : 1); }
-        c.globalCompositeOperation = 'lighter';
-        const bands = 2 + (r() * 2 | 0);
-        for (let b = 0; b < bands; b++) {
-            const ph = r() * 9, f1 = .002 + r() * .003, f2 = .007 + r() * .006, y0 = H * (.18 + b * .12 + r() * .08), hue = [140, 160, 120, 290][b + (r() * 2 | 0)] || 150;
-            for (let x = 0; x < W; x += 2) {
-                const y = y0 + Math.sin(x * f1 + ph) * H * .08 + Math.sin(x * f2 + ph * 2) * H * .03, len = H * (.12 + .2 * (.5 + .5 * Math.sin(x * f2 * 1.7 + ph)));
-                const a = .05 + .1 * (.5 + .5 * Math.sin(x * .03 + ph * 3)), g = c.createLinearGradient(0, y - len, 0, y);
-                g.addColorStop(0, `hsla(${hue + 120},80%,60%,0)`); g.addColorStop(.7, `hsla(${hue},85%,60%,${a})`); g.addColorStop(1, `hsla(${hue},90%,70%,${a * 1.6})`);
-                c.fillStyle = g; c.fillRect(x, y - len, 2, len + 4);
-            }
-        }
-        c.globalCompositeOperation = 'source-over';
-        const p = bgRidge(r, 128, .5); c.fillStyle = '#03080d'; c.beginPath(); c.moveTo(0, H);
-        for (let i = 0; i <= 128; i++) c.lineTo(i / 128 * W, H * .86 - p[i] * H * .04); c.lineTo(W, H); c.fill();
-        for (let x = -10; x < W; x += 8 + r() * 22) { const h = H * (.08 + r() * .14), w = h * .32, y = H * .87 + r() * H * .05; c.beginPath(); c.moveTo(x, y - h); c.lineTo(x + w / 2, y); c.lineTo(x - w / 2, y); c.fill(); c.fillRect(x - 1, y - 2, 2, H); }
-    },
     nebula(c, W, H, r) {
         c.fillStyle = '#04030c'; c.fillRect(0, 0, W, H);
         c.globalCompositeOperation = 'lighter';
@@ -8848,20 +8827,6 @@ const BG_DRAW = {
         for (let i = 0; i < 700; i++) { const s = r() < .03 ? 2.2 : r() * 1.3 + .3; c.fillStyle = `hsla(${r() < .5 ? 210 : 40},60%,${80 + r() * 20}%,${.3 + r() * .7})`; c.beginPath(); c.arc(r() * W, r() * H, s, 0, Math.PI * 2); c.fill(); }
         for (let i = 0; i < 5; i++) { const x = r() * W, y = r() * H, g = c.createRadialGradient(x, y, 0, x, y, 30); g.addColorStop(0, 'rgba(255,255,255,.9)'); g.addColorStop(.1, 'rgba(200,220,255,.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.fillRect(x - 30, y - 30, 60, 60); }
         c.globalCompositeOperation = 'source-over';
-    },
-    ocean(c, W, H, r) {
-        const hue = 180 + r() * 60, sky = c.createLinearGradient(0, 0, 0, H * .4);
-        sky.addColorStop(0, `hsl(${hue + 20},55%,82%)`); sky.addColorStop(1, `hsl(${hue - 170},80%,85%)`);
-        c.fillStyle = sky; c.fillRect(0, 0, W, H);
-        const n = 9;
-        for (let l = 0; l < n; l++) {
-            const t = l / (n - 1), base = H * (.38 + t * .62), f = [.004 + r() * .004, .011 + r() * .01, .027 + r() * .02], ph = [r() * 9, r() * 9, r() * 9], amp = 6 + t * 26;
-            c.fillStyle = `hsl(${hue + t * 20},${55 + t * 20}%,${66 - t * 46}%)`;
-            c.beginPath(); c.moveTo(0, H);
-            for (let x = 0; x <= W; x += 4) c.lineTo(x, base + amp * (Math.sin(x * f[0] + ph[0]) + .5 * Math.sin(x * f[1] + ph[1]) + .2 * Math.sin(x * f[2] + ph[2])));
-            c.lineTo(W, H); c.fill();
-            c.strokeStyle = `hsla(${hue},60%,92%,${.35 - t * .2})`; c.lineWidth = 1.5; c.stroke();
-        }
     },
     lowpoly(c, W, H, r) {
         const h1 = r() * 360, h2 = h1 + 60 + r() * 120, cols = 16, rows = 10, cw = W / cols, ch = H / rows, pt = [];
@@ -8886,6 +8851,8 @@ const BG_DRAW = {
         c.globalCompositeOperation = 'source-over';
     },
 };
+// an artwork that was removed falls back to the first
+if (!BG_DRAW[S.bgArt]) S.bgArt = 'chillwave';
 const bgArtCache = {};
 function bgArtUrl() {
     const k = BG_DRAW[S.bgArt] ? S.bgArt : 'chillwave', key = k + ':' + (S.bgSeed >>> 0);
@@ -11468,7 +11435,7 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '.eh-cfg .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .15s}'
     + '.eh-cfg .sw[aria-checked=true]{background:var(--mbu-accent)}.eh-cfg .sw[aria-checked=true]::after{left:16px}'
     + '.eh-cfg .hex-controls{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;min-width:0;max-width:100%}@media(max-width:400px){.eh-cfg .cr{grid-template-columns:76px minmax(0,1fr)}}'
-    + '.eh-cfg .chips{display:flex;flex-wrap:wrap;gap:3px;min-width:0}.eh-cfg label:has([data-hex-opacity],[data-hex-fx]){display:flex;align-items:center;gap:4px;color:var(--mbu-text-weak)}'
+    + '.eh-cfg .chips{display:flex;flex-wrap:wrap;gap:3px;min-width:0}.eh-cfg .eh-ucol{display:inline-flex;align-items:center;gap:1px;height:22px;box-sizing:border-box;padding:0 2px 0 3px;border:1px solid var(--mbu-border);border-radius:20px}.eh-cfg .eh-ucol input{all:unset;box-sizing:border-box;width:16px;height:16px;border-radius:50%;cursor:pointer;overflow:hidden}.eh-cfg .eh-ucol input::-webkit-color-swatch-wrapper{padding:0}.eh-cfg .eh-ucol input::-webkit-color-swatch{border:0;border-radius:50%}.eh-cfg .eh-ucol input::-moz-color-swatch{border:0;border-radius:50%}.eh-cfg .eh-ucol button{all:unset;display:grid;place-items:center;width:16px;height:16px;border-radius:50%;cursor:pointer;color:var(--mbu-text-dim)}.eh-cfg .eh-ucol button:hover{color:var(--mbu-text)}.eh-cfg .eh-ucol svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}.eh-cfg label:has([data-hex-opacity],[data-hex-fx]){display:flex;align-items:center;gap:4px;color:var(--mbu-text-weak)}'
     + '.eh-cfg .chip{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 7px;border-radius:20px;border:1px solid var(--mbu-border);background:var(--mbu-bg-raised);color:var(--mbu-text-dim);font:500 11.5px var(--mbu-font);cursor:pointer;user-select:none}'
     + '.eh-cfg .chip:hover{border-color:var(--mbu-accent)}.eh-cfg .chip[aria-pressed=true]{background:var(--mbu-accent-soft);border-color:var(--mbu-accent);color:var(--mbu-accent-text)}'
     + '.eh-cfg .chip svg{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}'
@@ -11550,10 +11517,10 @@ const BGS = [['aura', 'Cover aura', 'The page\'s cover or picture, blurred behin
 // rest at their defaults), the user's own in S.named.fx; one of the user's shadows a built-in one of the same name.
 // S.fxCur names the one being worked on: a change stays out of it until Save, + keeps it as a new one; a built-in one stays as shipped
 const FX_PRESETS = [];
-const FX_KEYS = ['bg', 'fx', ...AMBIENT_KEYS, 'hex', 'hexOpacity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone'];
+const FX_KEYS = ['bg', 'fx', ...AMBIENT_KEYS, 'hexColours', 'hex', 'hexOpacity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone'];
 const FX_UNNAMED = 'Unnamed effect';
 const fxNow = () => Object.fromEntries(FX_KEYS.map(k => [k, S[k]]));
-const fxFull = p => { const d = JSON.parse(DEFAULTS), f = Object.fromEntries(FX_KEYS.map(k => [k, k in p.v ? p.v[k] : d[k]])); f.fx = fxOf(f); f.hex = f.fx.length > 0; return f; };
+const fxFull = p => { const d = JSON.parse(DEFAULTS); fxMigrate(p.v = { ...p.v }); const f = Object.fromEntries(FX_KEYS.map(k => [k, k in p.v ? p.v[k] : d[k]])); f.fx = fxOf(f); f.hex = f.fx.length > 0; return f; };
 const fxLow = s => String(s).toLowerCase();
 const fxAll = () => { const own = nmList('fx'), low = new Set(own.map(x => fxLow(x.name))); return [...FX_PRESETS.filter(x => !low.has(fxLow(x.name))), ...own]; };
 const fxFind = name => name ? fxAll().find(x => fxLow(x.name) === fxLow(name)) : undefined;
@@ -11576,7 +11543,8 @@ const fxExport = () => { const d = JSON.parse(DEFAULTS), v = Object.fromEntries(
 function fxImport(text) {
     let o; try { o = JSON.parse(text); } catch (e) { return 'That isn\'t JSON'; }
     if (!o || typeof o !== 'object' || !o.v || typeof o.v !== 'object') return 'That isn\'t an effect preset';
-    const d = JSON.parse(DEFAULTS), v = Object.fromEntries(FX_KEYS.filter(k => k in o.v && typeof o.v[k] === typeof d[k] || k === 'hexTwo' && [true, false, 2].includes(o.v[k])).map(k => [k, o.v[k]]));
+    fxMigrate(o.v);
+    const d = JSON.parse(DEFAULTS), v = Object.fromEntries(FX_KEYS.filter(k => k in o.v && typeof o.v[k] === typeof d[k] || k === 'hexTwo' && [true, false, 2, 3].includes(o.v[k])).map(k => [k, FX_COLOURS.includes(k) ? ucolOk(o.v[k]) : o.v[k]]));
     const name = fxFree(o.name);
     nmKeep('fx', [...nmList('fx'), { name, v }]); fxPublish(); fxUse(name);
     LOG.info('Effect preset imported: ' + name);
@@ -11656,15 +11624,24 @@ function bgImgRows(chip, row) {
         + row('Fit', opts('bgFit', [['cover', 'Fill'], ['contain', 'Whole'], ['tile', 'Tile']]), 'Fill: covers the page, cropped\nWhole: all of it shows\nTile: repeated at its own size')
         + row('Vignette', opts('bgVig', [[0, 'None'], [50, 'Soft'], [100, 'Strong']]), 'Fade the edges into the page');
 }
-function effectColourRow(chip, row) { return row('Colour', chip('hexTwo', '0', !S.hexTwo, 'One tone') + chip('hexTwo', '1', S.hexTwo === true, 'Two-tone') + chip('hexTwo', '2', S.hexTwo === 2, 'All'), 'Two-tone mixes in the second accent colour\nAll: each light takes its own colour'); }
+// User with no colours yet starts from the theme's two
+const ucolSeed = () => { const cs = getComputedStyle(document.documentElement), a = cs.getPropertyValue('--accent').trim() || cs.color; return [...new Set([a, cs.getPropertyValue('--accent2').trim() || a].map(ucolHex))]; };
+const ucolStart = k => { if (!ucolOk(S[k]).length) S[k] = ucolSeed(); };
+function effectColourRow(chip, row, kind) {
+    const g = kind ? kind + 'Colour' : 'hexTwo', ck = kind ? kind + 'Colours' : 'hexColours';
+    const v = kind ? S[g] : S.hexTwo === 2 || S.hexTwo === 3 ? S.hexTwo : S.hexTwo ? 1 : 0;
+    const cols = ucolOk(S[ck]).map((c, i) => `<span class="eh-ucol"><input type="color" data-ehcol="${ck}" data-i="${i}" value="${c}" aria-label="Colour ${i + 1}"><button type="button" data-g="ucolRm" data-k="${ck}:${i}" aria-label="Remove colour ${i + 1}" data-tip="Remove this colour">${fxSvg('x')}</button></span>`).join('');
+    return row('Colour', [[0, 'One tone'], [1, 'Two-tone'], [2, 'All'], [3, 'User']].map(([n, l]) => chip(g, n, v === n, l)).join(''), 'Two-tone mixes in the second accent colour\nAll: each light takes its own colour\nUser: the colours you pick, in turn')
+        + (v === 3 ? row('Colours', cols + `<button type="button" class="chip" data-g="ucolAdd" data-k="${ck}" data-tip="Add a colour">${fxSvg('plus')}Add</button>`, 'Click a colour to change it') : '');
+}
 function ambientRows(kind, chip, row) {
     const fields = AMBIENT[kind].rows;
     const field = ([key, label, values, , labels, tip]) => row(label, values.map((v, i) => chip(key, v, S[key] === v, labels ? labels[i] : key === 'auroraStyle' ? AURORA_STYLES[v] : ['tronOutlines', 'auroraDiffuse'].includes(key) ? v + '%' : String(v))).join(''), tip);
     return fields.filter(([key]) => key === 'tronOutlines').map(field).join('')
-        + row('Opacity', [25, 45, 65, 85, 100].map(v => chip('ambientOpacity', v, S.ambientOpacity === v, v + '%')).join(''), 'How strong the effect is')
+        + row('Opacity', [25, 45, 65, 85, 100].map(v => chip(kind + 'Opacity', v, S[kind + 'Opacity'] === v, v + '%')).join(''), 'How strong the effect is')
         + fields.filter(([key]) => key !== 'tronOutlines').map(field).join('')
-        + (kind === 'rain' ? '' : row('Glow', [[0, 'None'], [.5, 'Faint'], [1, 'Normal'], [2, 'Wide']].map(([v, l]) => chip('hexGlow', v, S.hexGlow === v, l)).join(''), 'How far the soft glow around the lights spreads'))
-        + effectColourRow(chip, row);
+        + (kind === 'rain' ? '' : row('Glow', [[0, 'None'], [.5, 'Faint'], [1, 'Normal'], [2, 'Wide']].map(([v, l]) => chip(kind + 'Glow', v, S[kind + 'Glow'] === v, l)).join(''), 'How far the soft glow around the lights spreads'))
+        + effectColourRow(chip, row, kind);
 }
 function hexRows(chip, row) {
     const m = S.hexMotion, use = k => HEX_USES[k].includes(m);
@@ -11760,6 +11737,13 @@ function cfgWire(panel, b, body) {
     const bgUrlTake = () => { const i = b.querySelector('[data-eh-bgurl]'); if (!i) return; const u = i.value.trim(); if (u === S.bgUrl) return; S.bgUrl = u; save(); bgApply(); fxRedraw(); };
     panel.addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target.matches('[data-eh-bgurl]')) { ev.preventDefault(); bgUrlTake(); } });
     panel.addEventListener('change', ev => { if (ev.target.matches('[data-eh-bgurl]')) bgUrlTake(); });
+    const ucolTake = (ev, keep) => {
+        const t = ev.target; if (!t.matches('[data-ehcol]')) return;
+        const k = t.dataset.ehcol, a = ucolOk(S[k]), i = +t.dataset.i; if (!(i in a) || !/^#[0-9a-f]{6}$/i.test(t.value)) return;
+        a[i] = t.value.toLowerCase(); S[k] = a; hexApply(); if (keep) save();
+    };
+    panel.addEventListener('input', ev => ucolTake(ev, false));
+    panel.addEventListener('change', ev => ucolTake(ev, true));
     panel.addEventListener('click', ev => {
         const t = ev.target;
         const sel = t.closest('[data-fx-sel]'); if (sel) { fxSel = sel.dataset.fxSel; return fxRedraw(); }
@@ -11858,11 +11842,16 @@ function cfgWire(panel, b, body) {
             else if (g === 'fxKind') { const on = fxOf(S), i = on.indexOf(fxSel); if (!on.includes(k)) { if (i < 0) on.push(k); else on[i] = k; } S.fx = on; fxSel = k; hexApply(); }
             else if (g === 'fxRm') { if (k === 'bg') { S.bg = 'flat'; bgApply(); } else { S.fx = fxOf(S).filter(x => x !== k); hexApply(); } }
             else if (g === 'fxAdd') { if (k === 'bg') { S.bg = 'aura'; bgApply(); fxSel = k; } else { const on = fxOf(S), n = EFFECTS.find(([x]) => !on.includes(x)); if (n) { S.fx = [...on, n[0]]; fxSel = n[0]; } hexApply(); } }
-            else if (AMBIENT_KEYS.includes(g) && g !== 'effect') { S[g] = +k; hexApply(); }
+            else if (g === 'ucolAdd' || g === 'ucolRm') {
+                const [ck, i] = k.split(':'), a = ucolOk(S[ck]);
+                if (g === 'ucolRm') a.splice(+i, 1); else a.push(a.length ? ucolHex('hsl(' + (Math.random() * 360 | 0) + ',80%,62%)') : ucolSeed()[0]);
+                S[ck] = a; hexApply();
+            }
+            else if (AMBIENT_KEYS.includes(g) && g !== 'effect') { S[g] = +k; if (g.endsWith('Colour') && +k === 3) ucolStart(g + 's'); hexApply(); }
             else if (g === 'hex' || g === 'hexDepth') { S[g] = !S[g]; hexApply(); }
             else if (g === 'hexPace' || g === 'hexTrail' || g === 'hexOften' || g === 'hexGlow' || g === 'hexOpacity' || g === 'hexFx') { S[g] = +k; hexApply(); }
             else if (g === 'hexMotion') { S.hexMotion = k; hexApply(); }
-            else if (g === 'hexTwo') { S.hexTwo = k === '2' ? 2 : k === '1'; hexApply(); }
+            else if (g === 'hexTwo') { S.hexTwo = k === '3' ? 3 : k === '2' ? 2 : k === '1'; if (k === '3') ucolStart('hexColours'); hexApply(); }
             else if (g === 'imgP') { S.imgOff = toggle(S.imgOff, k); imgResort(); }
         }
         save();
