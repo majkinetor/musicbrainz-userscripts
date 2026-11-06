@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-06 17:19 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-06 17:20 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -807,13 +807,13 @@ Choose an effect under **Settings → Effects**. Each keeps its own parameters w
 
 | Effect   | Controls                                                              |
 | -------- | --------------------------------------------------------------------- |
-| Tron     | Grid size, Riders, Speed, Trail length                                |
+| Tron     | Outlines, Grid size, Riders, Speed, Trail length                      |
 | Stars    | Density, Drift, Depth, Twinkle                                        |
 | Aurora   | Ribbons, Speed, Height, Folds                                         |
 | Orbit    | Rings, Satellites, Tilt, Speed                                        |
 | Hexagons | Motion, Outlines, Effect, Pace, Trail, How often, Glow, Colour, Depth |
 
-**Tron**: Grid size sets the circuit spacing, Riders their count, Speed their pace and Trail length how far the light follows.
+**Tron**: Outlines sets the grid strength (0% hides it), Grid size the circuit spacing, Riders their count, Speed their pace and Trail length how far the light follows. Riders choose new turns at junctions. Hitting another rider’s trail destroys the rider in a small burst of sparks; a replacement appears elsewhere after a short pause.
 
 **Stars**: Density sets the star count, Drift their movement, Depth the difference in size and pace, and Twinkle their shimmer.
 
