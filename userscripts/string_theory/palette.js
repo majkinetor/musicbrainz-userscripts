@@ -610,7 +610,8 @@ function stThemeChooser() {
   var th = __stTheme.read(), cur = __stTheme.variant(), all = [], only = was && /^(light|dark)$/.test(was.only) ? was.only : 'all', i = 0;
   // Event Horizon's effect presets, when it's on and has any; eh: the preset each theme brings, by 'variant:name', as picked here
   var fx = __stReadOff().indexOf('event_horizon') < 0 && mbuShared('ehFxPresets') || [];
-  fx = Array.isArray(fx) ? fx.slice().sort(function (a, b) { return a.localeCompare(b, undefined, { sensitivity: 'base', numeric: true }); }) : [];
+  var fxSort = function (a) { return Array.isArray(a) ? a.slice().sort(function (x, y) { return x.localeCompare(y, undefined, { sensitivity: 'base', numeric: true }); }) : []; };
+  fx = fxSort(fx);
   var eh = {}, ehWas = was && was.eh && typeof was.eh === 'object' ? was.eh : th.eh || {};
   Object.keys(ehWas).forEach(function (k) { eh[k] = ehWas[k]; });
   // only: 'all', 'light' or 'dark', which themes the arrows step through
@@ -634,7 +635,7 @@ function stThemeChooser() {
   bar.innerHTML = '<button type="button" id="st-tc-f" aria-label="Themes to step through">' + { all: 'All', light: 'Light', dark: 'Dark' }[only] + '</button>'
     + '<span class="st-tc-n" aria-live="polite" data-tip="The theme on show&#10;Left: the previous theme&#10;Right: the next theme"></span><span class="st-tc-i"></span>'
     + (fx.length ? '<select id="st-tc-e" aria-label="Event Horizon effect this theme brings" data-tip="The Event Horizon effect this theme brings&#10;It stays as you step to other themes&#10;Up: the previous effect&#10;Down: the next effect"></select>'
-      + '<button type="button" id="st-tc-ed" aria-label="Edit the effects" data-tip="Edit the effects&#10;Opens Event Horizon&#39;s settings on Effects; the chooser goes back"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M11 2.5l2.5 2.5L6 12.5 3 13l.5-3z"/><path d="M9.5 4l2.5 2.5"/></svg></button>' : '')
+      + '<button type="button" id="st-tc-ed" aria-label="Edit the effects" data-tip="Edit the effects&#10;Opens Event Horizon&#39;s settings on Effects; the chooser stays"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M11 2.5l2.5 2.5L6 12.5 3 13l.5-3z"/><path d="M9.5 4l2.5 2.5"/></svg></button><span class="st-tc-i" data-fx-i></span>' : '')
     + '<button type="button" id="st-tc-k">Keep</button>'
     + '<button type="button" class="mbu-ov-x" id="st-tc-x" aria-label="Close">✕</button>';
   // a manual popover is in the top layer, above any z-index; a popup opened later goes over it, so it climbs back on top
@@ -664,10 +665,13 @@ function stThemeChooser() {
     __stTheme.chooserPut({ only: only, v: t[0], n: t[1], eh: eh, fx: last });
     var sel = bar.querySelector('#st-tc-e');
     if (sel) {
+      var now = fxSort(mbuShared('ehFxPresets'));
+      if (now.length) fx = now;
       // a preset deleted in Event Horizon still shows while it's picked, as in the settings
       var on = eh[t[0] + ':' + t[1]] || '';
       sel.innerHTML = '<option value="">Current effect</option><option value="-">No effect</option>' + fx.concat(on && on !== '-' && fx.indexOf(on) < 0 ? [on] : []).map(function (n) { return '<option>' + stEsc(n) + '</option>'; }).join('');
       sel.value = on;
+      bar.querySelector('[data-fx-i]').textContent = (sel.selectedIndex + 1) + '/' + sel.options.length;
     }
     bar.querySelector('.st-tc-n').innerHTML = stEsc(t[1]) + ' <span class="st-tc-v">' + t[0] + '</span>';
     bar.querySelector('.st-tc-i').textContent = (i + 1) + '/' + all.length;
@@ -708,6 +712,7 @@ function stThemeChooser() {
   var onKey = function (e) {
     var a = document.activeElement;
     if (a && a.id === 'st-tc-e' && e.key !== 'Escape') return;   // the effect's own keys while it's open
+    if (a && a.closest && a.closest('#eh-cfg')) return;   // Event Horizon's settings, opened by the pencil, keep their keys
     if (a && a !== document.body && !bar.contains(a) && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable)) return;
     // Enter and Esc focused elsewhere (a link, a popup's button) are theirs: Esc closes the popup, not the chooser
     var away = a && a !== document.body && a !== html && !bar.contains(a);
@@ -725,11 +730,11 @@ function stThemeChooser() {
   bar.querySelector('#st-tc-f').onclick = filter;
   bar.querySelector('#st-tc-k').onclick = function () { close(true); };
   bar.querySelector('#st-tc-x').onclick = function () { close(false); };
-  // the pencil: the chooser goes back, and Event Horizon's settings open on Effects (or switch to it, open already)
+  // the pencil: Event Horizon's settings open on Effects (or switch to it, open already); the chooser stays, and
+  // a preset saved there joins its list when it's next shown
   if (fx.length) bar.querySelector('#st-tc-ed').onclick = function () {
     // the effect on show stays on, so the tab opens on it
     var on = eh[all[i][0] + ':' + all[i][1]] || '';
-    close(false);
     if (on) html.setAttribute('data-st-eh-fx-edit', on);
     if (!document.getElementById('eh-cfg')) document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: 'event_horizon', cancelable: true }));
     var tab = document.querySelector('#eh-cfg [data-tab=effects]');
