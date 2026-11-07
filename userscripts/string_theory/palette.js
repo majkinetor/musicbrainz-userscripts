@@ -585,11 +585,11 @@ var ST_TC_CSS = ''
   + 'background:color-mix(in srgb,var(--mbu-bg) 80%,transparent);backdrop-filter:blur(6px);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);font:13px/1.4 var(--mbu-font);max-width:calc(100vw - 32px);box-sizing:border-box}'
   + '#st-tc button{margin:0;height:30px;border:0!important;background:none!important;box-shadow:none!important;color:inherit;cursor:pointer}'
   + '#st-tc button:hover,#st-tc button:focus-visible{color:var(--mbu-accent-text,var(--mbu-accent))}'
-  + '#st-tc .st-tc-n{min-width:170px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+  + '#st-tc .st-tc-n{min-width:170px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;user-select:none}#st-tc .st-tc-n:hover{color:var(--mbu-accent-text,var(--mbu-accent))}'
   + '#st-tc .st-tc-v{color:var(--mbu-text-weak)}'
   + '#st-tc .st-tc-i{color:var(--mbu-text-weak);font-size:12px;min-width:36px;text-align:center;cursor:pointer;user-select:none}#st-tc .st-tc-i:hover{color:var(--mbu-accent-text,var(--mbu-accent))}'
   // the effect: a flat dropdown, set off from the theme by a thin rule
-  + '#st-tc select{margin:0 0 0 2px;height:30px;max-width:180px;padding:0 4px 0 10px;border:0!important;border-left:1px solid var(--mbu-border)!important;border-radius:0;background:none!important;box-shadow:none!important;color:inherit;font:inherit;cursor:pointer}'
+  + '#st-tc select{margin:0 0 0 2px;height:30px;max-width:180px;padding:0 4px 0 10px;border:0!important;border-left:1px solid var(--mbu-border)!important;border-radius:0;background:none!important;box-shadow:none!important;color:inherit;font:inherit;cursor:pointer!important}'
   + '#st-tc select:hover,#st-tc select:focus-visible{color:var(--mbu-accent-text,var(--mbu-accent));outline:0}'
   + '#st-tc select option{background:var(--mbu-bg);color:var(--mbu-text)}'
   + '#st-tc #st-tc-ed{display:inline-flex;align-items:center;padding:0 6px}#st-tc #st-tc-ed svg{width:14px;height:14px}'
@@ -633,7 +633,7 @@ function stThemeChooser() {
   bar.setAttribute('role', 'toolbar');
   bar.setAttribute('aria-label', 'Theme chooser');
   bar.innerHTML = '<button type="button" id="st-tc-f" aria-label="Themes to step through">' + { all: 'All', light: 'Light', dark: 'Dark' }[only] + '</button>'
-    + '<span class="st-tc-n" aria-live="polite" data-tip="The theme on show&#10;Left: the previous theme&#10;Right: the next theme&#10;Click: the next theme, on its count&#10;Right-click: the previous theme, on its count"></span><span class="st-tc-i" data-th-i></span>'
+    + '<span class="st-tc-n" aria-live="polite" data-tip="The theme on show&#10;Left: the previous theme&#10;Right: the next theme&#10;Click: the next theme&#10;Right-click: the previous theme"></span><span class="st-tc-i" data-th-i></span>'
     + (fx.length ? '<select id="st-tc-e" aria-label="Event Horizon effect this theme brings" data-tip="The Event Horizon effect this theme brings&#10;It stays as you step to other themes&#10;Up: the previous effect&#10;Down: the next effect&#10;Click: the next effect, on its count&#10;Right-click: the previous effect, on its count"></select>'
       + '<button type="button" id="st-tc-ed" aria-label="Edit the effects" data-tip="Edit the effects&#10;Opens Event Horizon&#39;s settings on Effects; the chooser stays"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M11 2.5l2.5 2.5L6 12.5 3 13l.5-3z"/><path d="M9.5 4l2.5 2.5"/></svg></button><span class="st-tc-i" data-fx-i></span>' : '')
     + '<button type="button" id="st-tc-k">Keep</button>'
@@ -737,6 +737,7 @@ function stThemeChooser() {
     el.oncontextmenu = function (e) { e.preventDefault(); go(-1); };
   };
   count(bar.querySelector('[data-th-i]'), step);
+  count(bar.querySelector('.st-tc-n'), step);
   count(bar.querySelector('[data-fx-i]'), stepFx);
   bar.querySelector('#st-tc-k').onclick = function () { close(true); };
   bar.querySelector('#st-tc-x').onclick = function () { close(false); };
