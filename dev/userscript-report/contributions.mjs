@@ -1,9 +1,11 @@
+import { weightedVerdict } from './review-model.mjs';
+
 // Contributor identity comes from verified GitHub discussion metadata.
 export function applyContributions(entries,manifest,exportsByPath){
   const people=new Map(manifest.contributors.map(person=>[person.id,person]));
   const submissions=[...manifest.submissions].sort((a,b)=>a.updatedAt.localeCompare(b.updatedAt)||a.id.localeCompare(b.id));
   return entries.map(entry=>{
-    const history=[],acceptedNotes=[];let chosen;const features=(entry.features || []).map(f=>({...f}));
+    let acceptedNotes=[],chosen,weighted;const history=[],features=(entry.features || []).map(f=>({...f}));
     for(const submission of submissions){
       const item=exportsByPath.get(submission.exportPath)?.entries.find(item=>item.id===entry.id);
       if(!item)continue;
@@ -14,17 +16,30 @@ export function applyContributions(entries,manifest,exportsByPath){
       if(item.review.proposedVerdict)chosen=contribution;
       if(item.review.note)acceptedNotes.push({...contribution,text:item.review.note,kind:'Review note'});
       for(const comment of item.review.comments || [])acceptedNotes.push({...contribution,text:comment.text,kind:'Comment'});
+      let scored=false;
       for(const [id,change] of Object.entries(item.review.features || {})){
+        // A later accepted review of a capability supersedes earlier notes on it.
+        acceptedNotes=acceptedNotes.filter(note=>note.featureId!==id);
         const feature=features.find(f=>f.id===id);
-        if(feature)Object.assign(feature,{weight:change.weight,coverage:change.coverage,comment:change.comment || '',acceptedContribution:contribution});
-        else if(change.added)features.push({...change,id,acceptedContribution:contribution});
-        else if(change.comment || change.weight!==item.review.basis?.features?.find(f=>f.id===id)?.weight || change.coverage!==item.review.basis?.features?.find(f=>f.id===id)?.coverage){
+        if(feature){
+          if(change.weight!==(feature.weight ?? 5)||change.coverage!==feature.coverage)scored=true;
+          Object.assign(feature,{weight:change.weight,coverage:change.coverage,comment:change.comment || '',acceptedContribution:contribution});
+        }else if(change.added||change.coverage!=='Unknown'){
+          // An assessed capability the current analysis lacks is kept as an accepted addition.
+          scored=true;features.push({...change,id,added:true,acceptedContribution:contribution});
+        }else{
           const baseline=item.review.basis?.features?.find(f=>f.id===id);
           const changes=[change.comment&&'Note: '+change.comment,baseline&&change.weight!==baseline.weight&&'Weight: '+baseline.weight+' → '+change.weight,baseline&&change.coverage!==baseline.coverage&&'Coverage: '+baseline.coverage+' → '+change.coverage].filter(Boolean);
-          if(changes.length)acceptedNotes.push({...contribution,text:(change.name || baseline?.name || id)+' — '+changes.join('; '),kind:'Earlier capability review'});
+          if(changes.length)acceptedNotes.push({...contribution,featureId:id,text:(change.name || baseline?.name || id)+' — '+changes.join('; '),kind:'Earlier capability review'});
         }
       }
+      // Without an explicit verdict, accepted scoring changes take the weighted result.
+      if(!item.review.proposedVerdict&&scored){
+        const verdict=weightedVerdict(features).verdict;
+        if(verdict!=='Needs assessment'){weighted={...contribution,verdict};chosen=undefined;}
+      }else if(item.review.proposedVerdict)weighted=undefined;
     }
-    return {...entry,features,acceptedNotes,sourceVerdict:entry.verdict,verdict:chosen?.verdict || entry.verdict,contributions:history,acceptedReview:chosen || null};
+    const accepted=chosen || weighted || null;
+    return {...entry,features,acceptedNotes,sourceVerdict:entry.verdict,verdict:accepted?.verdict || entry.verdict,contributions:history,acceptedReview:accepted};
   });
 }

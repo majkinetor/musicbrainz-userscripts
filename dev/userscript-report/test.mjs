@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { validate, reviewState, userscriptText, wikiRevision } from './lib.mjs';
 import { parseCatalog } from './catalog.mjs';
 import { weightedVerdict, readReviewBundle, mergeReviewEntries } from './review-model.mjs';
-import { discussionDraft, changeSummary } from './share.mjs';
+import { discussionDraft, changeSummary, pastePrompt } from './share.mjs';
 import { applyContributions } from './contributions.mjs';
 import {sourceAnalysisState} from './source-analysis.mjs';
 
@@ -140,6 +140,24 @@ test('GitHub draft includes concise verdict changes, pinned report and the exact
 test('oversized exports require an attachment rather than truncating feedback',()=>{
   const value=sharingFixture();value.entries[0].review.comments=Array.from({length:4},(_,i)=>({id:String(i),at:'2026-11-07T10:00:00Z',text:'x'.repeat(18000)}));
   const draft=discussionDraft(value);assert.equal(draft.requiresAttachment,true);assert.ok(draft.body.includes('Attach the downloaded JSON'));assert.ok(JSON.stringify(value).length>50000);
+  assert.equal(draft.requiresPaste,true);assert.equal(new URL(draft.url).searchParams.get('body'),pastePrompt);
+  assert.equal(draft.body.split('x'.repeat(18000)).length,5,'every comment stays in the body to paste');
+});
+test('discussion text lists every change and leaves out unchanged scripts',()=>{
+  const value=sharingFixture(),base=value.entries[0];
+  value.entries=Array.from({length:60},(_,i)=>{const e=structuredClone(base);e.id='s'+i;e.name='Script '+i;return e;});
+  const same=structuredClone(base);same.id='same';same.name='Unchanged script';same.review.proposedVerdict='';same.review.note='';same.review.draft='';same.review.comments=[];same.review.features={};value.entries.push(same);
+  const draft=discussionDraft(value);
+  for(let i=0;i<60;i++)assert.ok(draft.body.includes('**Script '+i+'**'));
+  assert.ok(!draft.body.includes('Unchanged script'));assert.ok(!draft.body.includes('more changes'));assert.ok(!draft.body.includes('earlier report baseline'));
+});
+test('a later accepted review supersedes earlier notes on the same capability and scores an assessed addition',()=>{
+ const author={id:'one',login:'reviewer'};const sub=(id,at,path)=>({id,authorId:'one',updatedAt:at,exportPath:path,disposition:'accepted',acceptedBy:'majkinetor'});
+ const basis={features:[{id:'old',name:'Old workflow',weight:5,coverage:'Unknown'}]};
+ const files=new Map([['a',{entries:[{id:'script',review:{basis,features:{old:{name:'Old workflow',weight:5,coverage:'Unknown',comment:'Trivial feature'}}}}]}],
+  ['b',{entries:[{id:'script',review:{basis,features:{old:{name:'Old workflow',weight:5,coverage:'Covered'}}}}]}]]);
+ const [entry]=applyContributions([{id:'script',verdict:'Partial overlap',features:[{id:'new',name:'Actual capability',coverage:'Covered',weight:5}]}],{contributors:[author],submissions:[sub('1','2026-11-07T01','a'),sub('2','2026-11-07T02','b')]},files);
+ assert.equal(entry.acceptedNotes.length,0);assert.equal(entry.features.length,2);assert.equal(entry.verdict,'Replaceable');assert.equal(entry.acceptedReview.submissionId,'2');
 });
 test('comments alone do not invent a verdict change',()=>{
   const item=sharingFixture().entries[0];item.review.proposedVerdict='';item.review.features={};
@@ -197,9 +215,9 @@ test('every accepted verdict has an analysis or an explicit unavailable source',
  const html=readFileSync(new URL('./out/index.html',import.meta.url),'utf8');const data=JSON.parse(html.match(/<script type="application\/json" id="report-data">([\s\S]*?)<\/script>/)[1]);
  const accepted=data.entries.filter(e=>e.acceptedReview);assert.equal(accepted.length,185);
  assert.ok(accepted.every(e=>e.sourceAnalysis || e.assessment));
- const harmony=accepted.find(e=>e.name==='Harmony');assert.equal(harmony.features.length,7);
- assert.equal(harmony.verdict,'Replaceable');assert.equal(harmony.sourceVerdict,'Partial overlap');
- assert.ok(harmony.acceptedNotes.some(n=>n.text.includes('Trivial feature')&&n.discussionNumber===942));
+ const harmony=accepted.find(e=>e.name==='Harmony');assert.equal(harmony.features.length,8);
+ assert.equal(harmony.verdict,'Mostly replaceable');assert.equal(harmony.sourceVerdict,'Partial overlap');assert.equal(harmony.acceptedReview.discussionNumber,943);
+ assert.ok(!harmony.acceptedNotes.some(n=>n.text.includes('Trivial feature')),'#943 supersedes the #942 test note');
  const analyses=JSON.parse(readFileSync(new URL('./data/source-analyses.json',import.meta.url)));assert.equal(analyses.entries.filter(e=>e.status==='Source unavailable').length,3);
  for(const a of analyses.entries.filter(e=>e.status==='Code analyzed')){
   assert.match(a.sourceHash,/^[a-f0-9]{64}$/);assert.ok(a.capabilities.length);assert.ok(a.dependencies.length);

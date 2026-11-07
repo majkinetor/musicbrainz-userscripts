@@ -33,6 +33,19 @@
       "disposition": "accepted",
       "acceptedBy": "majkinetor",
       "decision": "Maintainer corrections and notes incorporated; source assessments remain separate. Publish and verify the report before replying with its immutable URL and closing this discussion."
+    },
+    {
+      "id": "D_kwDOSj7rds4Aq7Az",
+      "discussionNumber": 943,
+      "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/943",
+      "authorId": "MDQ6VXNlcjg1NzY3",
+      "createdAt": "2026-11-07T19:48:02Z",
+      "updatedAt": "2026-11-07T19:48:02Z",
+      "exportPath": "contributions/943.json",
+      "reportVersion": "fecc728cb7991ae323753018b8717b466bc7fea9910c2fe1ad90aa421bfdf7ba",
+      "disposition": "accepted",
+      "acceptedBy": "majkinetor",
+      "decision": "Maintainer verdicts, notes and capability assessments incorporated. The Harmony test note from #942 is removed; its capability was reassessed."
     }
   ]
 }

@@ -139,6 +139,13 @@ document.getElementById('github').onclick=()=>{
   mbuTipHide(true);
   const draft=discussionDraft(bundle());
   if(draft.requiresAttachment)downloadReview();
+  if(draft.requiresPaste){
+    const copied=navigator.clipboard?.writeText(draft.body) ?? Promise.reject(new Error('no clipboard'));
+    window.open(draft.url,'_blank','noopener,noreferrer');
+    message('GitHub opened with the title filled. The full summary is on your clipboard: paste it as the body and attach the downloaded JSON.');
+    copied.catch(()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([draft.body],{type:'text/markdown'}));a.download='musicbrainz-review-summary.md';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);message('GitHub opened with the title filled. Copying failed, so the full summary downloaded as a Markdown file: paste it as the body and attach the downloaded JSON.');});
+    return;
+  }
   window.open(draft.url,'_blank','noopener,noreferrer');
   message(draft.requiresAttachment?'GitHub opened with the title and body filled. Attach the downloaded JSON before publishing.':'GitHub opened with the title, body and review export filled.');
 };
