@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.07.190000
+// @version      2026.11.07.200000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -14894,6 +14894,127 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     _alHintObs.observe(ed, { childList: true, subtree: true });
     alApplyHint();
   }
+  // #930: a long drop-down (language, script, medium format, …) opens a list filtered as you type instead of
+  // the native one. The <select> stays and holds the value: a pick sets it and fires `change`, which is what
+  // Knockout listens to. Delegated, since the editor rebuilds its selects.
+  const SF_MIN = 15;
+  let _sfHooked = false, _sfPop = null;
+  const sfNorm = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+  const sfWants = s => s && s.tagName === 'SELECT' && !s.multiple && !(s.size > 1) && !s.disabled && !s.hidden
+    && s.options.length >= SF_MIN && !s.closest('.tc-gc-combo');
+  function sfStyle() {
+    if (document.getElementById('tc-sf-css')) return;
+    const st = document.createElement('style'); st.id = 'tc-sf-css';
+    st.textContent = '.tc-sf{position:fixed;z-index:100000;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.18);display:flex;flex-direction:column;font-size:13px;min-width:180px}'
+      + '.tc-sf input.tc-sf-q{margin:6px;padding:4px 6px;border:1px solid var(--mbu-border);border-radius:3px;background:var(--mbu-bg) !important;color:var(--mbu-text) !important;font:inherit}'
+      + '.tc-sf ul{list-style:none;margin:0;padding:0 0 4px;overflow-y:auto;max-height:320px;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}'
+      + '.tc-sf li{padding:3px 10px;cursor:pointer;white-space:nowrap}'
+      + '.tc-sf li.tc-sf-g{cursor:default;color:var(--mbu-text-weak);font-size:11px;padding-top:6px;text-transform:uppercase;letter-spacing:.03em}'
+      + '.tc-sf li.tc-sf-on{background:var(--mbu-bg-hover)}'
+      + '.tc-sf li.tc-sf-cur{font-weight:600;color:var(--mbu-accent-text)}'
+      + '.tc-sf li.tc-sf-none{cursor:default;color:var(--mbu-text-weak);font-style:italic}';
+    document.head.appendChild(st);
+  }
+  function sfClose(refocus) {
+    if (!_sfPop) return;
+    const p = _sfPop; _sfPop = null;
+    p.el.remove(); document.removeEventListener('mousedown', p.off, true); window.removeEventListener('resize', p.closeIt);
+    if (refocus) try { p.sel.focus({ preventScroll: true }); } catch (e) { /* gone */ }
+  }
+  function sfOpen(sel, seed) {
+    sfClose(false); sfStyle();
+    const el = document.createElement('div'); el.className = 'tc-sf';
+    const q = document.createElement('input'); q.className = 'tc-sf-q'; q.type = 'text'; q.placeholder = 'Filter'; q.setAttribute('autocomplete', 'off'); q.spellcheck = false;
+    const ul = document.createElement('ul'); ul.setAttribute('role', 'listbox');
+    el.append(q, ul);
+    const items = [];   // every option, with its group's label
+    Array.prototype.forEach.call(sel.options, o => {
+      if (o.disabled && !o.value) return;
+      const g = o.parentElement && o.parentElement.tagName === 'OPTGROUP' ? o.parentElement.label : '';
+      items.push({ o, g, t: sfNorm(o.textContent) });
+    });
+    let shown = [], at = -1;
+    const mark = i => {
+      if (at >= 0 && shown[at]) shown[at].li.classList.remove('tc-sf-on');
+      at = i;
+      if (at >= 0 && shown[at]) { shown[at].li.classList.add('tc-sf-on'); shown[at].li.scrollIntoView({ block: 'nearest' }); }
+    };
+    const render = () => {
+      const f = sfNorm(q.value);
+      let list = items.filter(it => !f || it.t.includes(f));
+      if (f) list = list.filter(it => it.t.startsWith(f)).concat(list.filter(it => !it.t.startsWith(f)));   // starts-with first
+      ul.textContent = ''; shown = []; at = -1;
+      let lastG = null;
+      list.forEach(it => {
+        if (!f && it.g !== lastG) { lastG = it.g; if (it.g) { const h = document.createElement('li'); h.className = 'tc-sf-g'; h.textContent = it.g; ul.appendChild(h); } }
+        const li = document.createElement('li'); li.setAttribute('role', 'option');
+        li.textContent = it.o.textContent.trim() || ' ';
+        if (f && it.g) li.title = it.g;
+        if (it.o.value === sel.value) li.classList.add('tc-sf-cur');
+        const idx = shown.length;
+        li.onmousedown = e => { e.preventDefault(); pick(idx); };
+        li.onmousemove = () => { if (at !== idx) mark(idx); };
+        ul.appendChild(li); shown.push({ o: it.o, li });
+      });
+      if (!shown.length) { const n = document.createElement('li'); n.className = 'tc-sf-none'; n.textContent = 'No match'; ul.appendChild(n); return; }
+      const cur = f ? 0 : shown.findIndex(s => s.o.value === sel.value);
+      mark(cur >= 0 ? cur : 0);
+      if (!f && cur >= 0) shown[cur].li.scrollIntoView({ block: 'center' });
+    };
+    const pick = i => {
+      const s = shown[i]; if (!s) return;
+      sfClose(true);
+      if (sel.value !== s.o.value) {
+        sel.value = s.o.value;
+        sel.dispatchEvent(new Event('input', { bubbles: true }));
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    };
+    q.addEventListener('input', render);
+    q.addEventListener('keydown', e => {
+      const k = e.key;
+      if (k === 'ArrowDown') { e.preventDefault(); mark(Math.min(shown.length - 1, at + 1)); }
+      else if (k === 'ArrowUp') { e.preventDefault(); mark(Math.max(0, at - 1)); }
+      else if (k === 'PageDown') { e.preventDefault(); mark(Math.min(shown.length - 1, at + 10)); }
+      else if (k === 'PageUp') { e.preventDefault(); mark(Math.max(0, at - 10)); }
+      else if (k === 'Enter') { e.preventDefault(); e.stopPropagation(); pick(at); }
+      else if (k === 'Escape') { e.preventDefault(); e.stopPropagation(); sfClose(true); }
+      else if (k === 'Tab') { sfClose(false); try { sel.focus({ preventScroll: true }); } catch (x) { /* gone */ } }
+    });
+    document.body.appendChild(el);
+    const r = sel.getBoundingClientRect();
+    el.style.minWidth = Math.max(180, r.width) + 'px';
+    q.value = seed || '';
+    render();
+    const below = window.innerHeight - r.bottom - 8, above = r.top - 8;
+    ul.style.maxHeight = Math.max(120, Math.min(320, (below >= 220 || below >= above ? below : above) - 44)) + 'px';
+    el.style.left = Math.max(8, Math.min(r.left, window.innerWidth - el.offsetWidth - 8)) + 'px';
+    el.style.top = (below >= 220 || below >= above ? r.bottom + 2 : Math.max(8, r.top - 2 - el.offsetHeight)) + 'px';
+    const off = e => { if (!el.contains(e.target)) sfClose(false); };
+    const closeIt = () => sfClose(false);
+    setTimeout(() => document.addEventListener('mousedown', off, true), 0);
+    window.addEventListener('resize', closeIt);
+    _sfPop = { el, sel, off, closeIt };
+    q.focus();
+  }
+  function installSelectFilter() {
+    if (_sfHooked) return; _sfHooked = true;
+    document.addEventListener('mousedown', e => {
+      if (e.button !== 0) return;
+      const s = e.target.closest && e.target.closest('select');
+      if (!sfWants(s)) return;
+      e.preventDefault();
+      if (_sfPop && _sfPop.sel === s) { sfClose(true); return; }
+      try { s.focus({ preventScroll: true }); } catch (x) { /* fine */ }
+      sfOpen(s, '');
+    }, true);
+    document.addEventListener('keydown', e => {
+      const s = e.target; if (!sfWants(s) || e.ctrlKey || e.metaKey) return;
+      const k = e.key;
+      if (k === ' ' || k === 'Enter' || k === 'F4' || (e.altKey && (k === 'ArrowDown' || k === 'ArrowUp'))) { e.preventDefault(); sfOpen(s, ''); }
+      else if (k.length === 1 && !e.altKey) { e.preventDefault(); sfOpen(s, k); }
+    }, true);
+  }
   // One delegated listener: the editor re-renders its rows constantly, so
   // binding to the input itself would not survive.
   let _alPasteHooked = false;
@@ -17248,6 +17369,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // that panel is showing. One delegated listener, self-guarded by the
     // #external-links-editor check inside it.
     installMultiLinkPaste();
+    installSelectFilter();          // #930 long drop-downs filter as you type
     hookNativeGuessCase(ed);        // #785 MusicBrainz's own guess-case buttons give Apollo's guess
     setTimeout(() => { try { Log.reopen(); } catch (e) {} }, 1200);   // #283 reopen the log if it was left open
     snapshotOriginals();
