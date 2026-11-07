@@ -155,3 +155,6 @@ document.getElementById('clear-verdicts').onclick=()=>{document.querySelectorAll
 
 document.getElementById('review-help').onclick=()=>document.getElementById('help-dialog').showModal();
 document.getElementById('help-close').onclick=()=>document.getElementById('help-dialog').close();
+// A click outside closes the report-verdict popup and any open dialog (a click on a modal's backdrop targets the dialog itself).
+document.addEventListener('pointerdown',e=>{const pop=document.querySelector('.verdict-filter[open]');if(pop&&!pop.contains(e.target))pop.open=false;});
+document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target!==d)return;const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}));

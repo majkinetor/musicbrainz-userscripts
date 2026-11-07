@@ -10975,19 +10975,18 @@
     {
       "id": "wiki-37ec5765efee6815485c",
       "name": "MusicBrainz: Auto click confirm form submission",
-      "verdict": "Mostly replaceable",
+      "verdict": "Replaceable",
       "tools": [
-        "first_contact",
-        "falcon"
+        "apollo_editor"
       ],
-      "summary": "Suite imports skip their own seed confirmation, but the source applies to arbitrary seeded forms.",
+      "summary": "Apollo's Auto confirm release submissions setting (on by default) clicks MusicBrainz's seed confirmation button and honours ?skip_confirmation, as this script does.",
       "capabilities": [
         {
           "id": "source.afc119acb239",
           "name": "Automatically confirm externally seeded native forms",
-          "coverage": "Partial",
+          "coverage": "Covered",
           "weight": 5,
-          "reason": "First Contact/Falcon use their own skip-confirmation/import paths; arbitrary third-party seeds are broader.",
+          "reason": "Apollo's autoConfirmSeed clicks the .confirm-seed submit button on seeded release and recording forms, skipped with ?skip_confirmation; chaban's script is built in (#267).",
           "evidence": [
             {
               "url": "https://update.greasyfork.org/scripts/536999/MusicBrainz%3A%20Auto%20click%20confirm%20form%20submission.user.js#L25",
@@ -11003,32 +11002,20 @@
       "suiteInventoryHash": "547167e9978b717e3c6d72197aa5cc1b4f26e8c7d0ae9981c5067cb02003d37d",
       "dependencies": [
         {
-          "path": "userscripts/falcon/DEVELOP.md",
-          "sha256": "a877fe99bb971bab7fce8b77b27cc9b262bc605ad756c486c8bd0ef2c5092cc5"
+          "path": "userscripts/apollo_editor/DEVELOP.md",
+          "sha256": "cf01184df82e9ff7ccecc2f0488c8c8a30ba9cf3320bb396c70a302288a3f32d"
         },
         {
-          "path": "userscripts/falcon/README.md",
-          "sha256": "3939937ec7d86bb60707356f3f88cdbb751b21ac2a1c77707666a2a040018f5b"
+          "path": "userscripts/apollo_editor/README.md",
+          "sha256": "bfb56123658f865eb495e7b944e0db1054ebcc4b1faa463fe758be0a28bae172"
         },
         {
-          "path": "userscripts/falcon/falcon.user.js",
-          "sha256": "291795e291724f94275e94549fe0e1344bdf6821167ffa2a67ea95003b58b887"
-        },
-        {
-          "path": "userscripts/first_contact/DEVELOP.md",
-          "sha256": "5b2e0c9e0f0513589c22362ac5b81db20deec8be8f0a63d7dbb205ba5674cc84"
-        },
-        {
-          "path": "userscripts/first_contact/README.md",
-          "sha256": "ce754795deb8ec7ab4478ae1e318c94b33c267b65f05fff08511ea8b658097ee"
-        },
-        {
-          "path": "userscripts/first_contact/first_contact.user.js",
-          "sha256": "1cf1a13bace01bbfb13a64b6a2c8a31360cbd115ad6c8a15ab1be5c3d057f68d"
+          "path": "userscripts/apollo_editor/apollo_editor.user.js",
+          "sha256": "d6ec8861508a5544e71137f30b51e775a063d953380d9456cb73170d0c1c5116"
         }
       ],
       "reviewedAt": "2026-11-07",
-      "reviewer": "GPT-6 (major capability source analysis)",
+      "reviewer": "Claude Opus 5.5 (maintainer correction)",
       "scope": "Important entry-point/implementation paths compared with the suite; no live edit submissions. Shared libraries are identified but not fully audited.",
       "status": "Code analyzed"
     },
