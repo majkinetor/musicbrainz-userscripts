@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08.050000
+// @version      2026.11.08.070000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3654,7 +3654,7 @@ class RainGlass {
         this.acc += dt * 9 * P.amount * area;
         while (this.acc > 1) {
             this.acc--;
-            if (this.drops.length < Math.min(500, 260 * area * P.amount)) {
+            if (this.drops.length < Math.min(1200, 260 * area * P.amount)) {
                 const n = { x: rainR(0, w), y: rainR(-10, h), r: rainR(2.2, 5.5) * size * (Math.random() < .12 ? 1.7 : 1), vy: 0, vx: 0, moving: false, trail: 0 };
                 this.drops.push(n); this.drop(this.lx, n.x, n.y, n.r, false);
             }
@@ -3790,7 +3790,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
     const tone = i => p.colour === 3 ? (p.user?.length ? p.user[i % p.user.length] : c1) : p.colour === 2 ? `hsl(${Math.round(rand(i + 91) * 360)},85%,65%)` : p.colour === 1 && i % 2 ? c2 : c1;
     const stroke = (color, alpha, width = 1) => {
         ctx.strokeStyle = color;
-        if (p.glow > 0) { ctx.globalAlpha = alpha * .16; ctx.lineWidth = width + p.glow * 5; ctx.stroke(); }
+        if (p.glow > 0) { const g = p.glow ** 1.5; ctx.globalAlpha = alpha * .07 * p.glow; ctx.lineWidth = width + g * 14; ctx.stroke(); ctx.globalAlpha = alpha * .16 * p.glow; ctx.lineWidth = width + g * 4; ctx.stroke(); }
         ctx.globalAlpha = alpha; ctx.lineWidth = width; ctx.stroke();
     };
     const line = (points, color, alpha, width = 1) => {
@@ -3832,7 +3832,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
             }
         }
     } else if (kind === 'stars') {
-        const count = Math.min(900, Math.round(w * h / 1100 * p.starDensity));
+        const count = Math.min(6000, Math.round(w * h / 1100 * p.starDensity));
         for (let i = 1; i <= count; i++) {
             const z = .25 + rand(i + 9) * p.starDepth;
             const x = fract(rand(i) + t * p.starDrift * z / w * 4) * w;
@@ -3840,7 +3840,7 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
             ctx.globalAlpha = (.25 + .55 * rand(i + 4)) * (1 - p.starTwinkle * .35 + p.starTwinkle * .35 * Math.sin(t * .8 + i));
             const alpha = ctx.globalAlpha, radius = .45 + z * .7;
             ctx.fillStyle = tone(p.colour >= 2 ? i : i % 5 ? 0 : 1);
-            if (p.glow > 0) { ctx.globalAlpha = alpha * .12; ctx.beginPath(); ctx.arc(x, y, radius + p.glow * 2, 0, tau); ctx.fill(); }
+            if (p.glow > 0) { const g = p.glow ** 1.5; ctx.globalAlpha = alpha * .05 * p.glow; ctx.beginPath(); ctx.arc(x, y, radius + g * 6, 0, tau); ctx.fill(); ctx.globalAlpha = alpha * .14 * p.glow; ctx.beginPath(); ctx.arc(x, y, radius + g * 2, 0, tau); ctx.fill(); }
             ctx.globalAlpha = alpha; ctx.beginPath(); ctx.arc(x, y, radius, 0, tau); ctx.fill();
         }
     } else if (kind === 'aurora') {
@@ -3898,6 +3898,7 @@ const fxOf = v => Array.isArray(v.fx) ? [...new Set(v.fx.filter(k => k === 'hexa
 // each effect's own Opacity, Glow, Colour (0 one tone, 1 two-tone, 2 all, 3 the user's) and the user's colours
 const FX_OWN = Object.fromEntries(Object.keys(AMBIENT).flatMap(k => [[k + 'Opacity', 65], [k + 'Glow', 1], [k + 'Colour', 0], [k + 'Colours', []]]));
 // the settings that take any value in a range, shown as a strip of buttons a 20% apart: [lowest %, highest %, stored value per %, shown in px]
+const fxSpan = (v, d) => d > 0 ? d * (v / d) ** 2 : v;
 const FX_STRIP = {
     tronOutlines: [0, 100, 1], tronSpeed: [20, 200, .01], tronTrail: [20, 200, .03],
     starDensity: [20, 200, .01], starDrift: [0, 100, .01], starDepth: [20, 200, .01], starTwinkle: [0, 100, .01],
@@ -3930,7 +3931,7 @@ function ambientApply(layer, kind) {
     const w = layer.clientWidth, h = layer.clientHeight, dpr = kind === 'aurora' ? Math.min(.5, 480 / w, 320 / h) : Math.min(kind === 'rain' ? 1.5 : 2, devicePixelRatio || 1);
     const css = getComputedStyle(layer), c1 = css.color, c2 = css.getPropertyValue('--accent2').trim() || c1;
     const p = { colour: [0, 1, 2, 3].includes(S[kind + 'Colour']) ? S[kind + 'Colour'] : 0, glow: Math.max(0, Math.min(2, Number(S[kind + 'Glow']) || 0)), user: ucolOk(S[kind + 'Colours']), c1, c2 };
-    for (const [k, , values, fallback] of AMBIENT[kind].rows) { const v = Number(S[k]), r = FX_STRIP[k]; p[k] = r ? (Number.isFinite(v) && S[k] !== null && S[k] !== '' ? Math.max(r[0] * r[2], Math.min(r[1] * r[2], v)) : fallback) : values.includes(v) ? v : fallback; }
+    for (const [k, , values, fallback] of AMBIENT[kind].rows) { const v = Number(S[k]), r = FX_STRIP[k]; p[k] = r ? (Number.isFinite(v) && S[k] !== null && S[k] !== '' ? Math.max(r[0] * r[2], Math.min(r[1] * r[2], v)) : fallback) : values.includes(v) ? v : fallback; if (r && r[0] === 20 && r[1] === 200) p[k] = fxSpan(p[k], fallback); }
     const key = [kind, w, h, dpr, hexReduce.matches].join('|');
     // Page redraws keep the canvas, simulation and clock; controls and theme colours update in place.
     if (layer._ehPattern?.key === key) { Object.assign(layer._ehPattern.P, p); return; }
@@ -8482,7 +8483,7 @@ function hexApply() {
     de.style.setProperty('--eh-hex-opacity', pct(S.hexOpacity));
     de.style.setProperty('--eh-hex-fx', pct(S.hexFx));
     de.style.setProperty('--eh-hex-mf', HEX_MF[mode] || 1);
-    de.style.setProperty('--eh-hex-pace', Number(S.hexPace) || 1);
+    de.style.setProperty('--eh-hex-pace', fxSpan(Number(S.hexPace) || .6, .6));
     if (!layer) {
         const tile = '<path d="M14 0l14 8v16L14 32 0 24V8zM14 32v16" fill="none" stroke="currentColor"/>';
         layer = document.createElement('div'); layer.id = 'eh-hex'; layer.setAttribute('aria-hidden', 'true');
@@ -8554,7 +8555,7 @@ function hexPattern(layer, mode) {
     // the layer's own size, not the window's: the window counts the scrollbar, and a canvas stretched to fit would drift off the outlines
     const w = layer.clientWidth || innerWidth + 96, h = layer.clientHeight || innerHeight + 96, cs = getComputedStyle(layer);
     const c1 = cs.color, c2 = cs.getPropertyValue('--accent2').trim() || c1;
-    const P = { pace: Number(S.hexPace) || 1, trail: Number(S.hexTrail) || 1, often: Number(S.hexOften) || 1, glow: Number(S.hexGlow ?? 1), two: S.hexTwo === 2 || S.hexTwo === 3 ? S.hexTwo : !!S.hexTwo, user: ucolOk(S.hexColours), c1, c2 };
+    const P = { pace: fxSpan(Number(S.hexPace) || .6, .6), trail: fxSpan(Number(S.hexTrail) || 1, 1), often: fxSpan(Number(S.hexOften) || 1, 1), glow: Number(S.hexGlow ?? 1), two: S.hexTwo === 2 || S.hexTwo === 3 ? S.hexTwo : !!S.hexTwo, user: ucolOk(S.hexColours), c1, c2 };
     const key = [mode, w, h].join('|');
     // the same motion keeps running and takes the new settings from its next frame
     if (layer._ehPattern?.key === key) { Object.assign(layer._ehPattern.P, P); return; }
@@ -8747,7 +8748,7 @@ const HEX_FX = {
                 front = next.slice(0, 400);
                 ctx.clearRect(0, 0, w, h); ctx.lineWidth = 1.2;
                 // squared, so the strip spans a short spark (20%) to a long glowing wake (200%)
-                const fade = 1.6 * P.trail ** 2;
+                const fade = 1.6 * P.trail;
                 lit = lit.filter(e => (e.age += dt) < fade);
                 const seg = (a, b, al, c) => { ctx.strokeStyle = ctx.shadowColor = c; for (const [lw, k] of P.glow ? [[7 * P.glow, .14 * P.glow], [1.2, 1]] : [[1.2, 1]]) { ctx.lineWidth = lw; ctx.globalAlpha = al * k; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke(); } };
                 ctx.shadowBlur = 8 * P.glow ** 1.5;
@@ -11495,7 +11496,7 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '#eh-cfg .th{display:block;width:64px;height:38px;border-radius:4px;background:radial-gradient(ellipse at 30% 20%,color-mix(in srgb,var(--mbu-accent) 45%,transparent),transparent 70%),#10131d;background-size:cover;background-position:center;overflow:hidden}#eh-cfg .th svg{display:block;width:100%;height:100%;fill:none;stroke:color-mix(in srgb,var(--mbu-accent) 60%,#fff);stroke-width:1.3;stroke-linecap:round}'
     + '#eh-cfg .th[data-th=aura]{background:radial-gradient(circle at 30% 40%,#c86a3c,transparent 55%),radial-gradient(circle at 75% 60%,#3c6ac8,transparent 55%),#141824;filter:blur(.3px)}#eh-cfg .th[data-th=glow]{background:radial-gradient(ellipse at 50% 0%,color-mix(in srgb,var(--mbu-accent) 70%,transparent),transparent 75%),#10131d}#eh-cfg .th[data-th=flat]{background:var(--mbu-bg);box-shadow:inset 0 0 0 1px var(--mbu-border)}'
     + '#eh-cfg .ib{display:grid;place-items:center;width:30px;height:30px;padding:0;border:0;border-radius:50%;background:none;color:var(--mbu-text-weak);cursor:pointer}#eh-cfg .ib svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}#eh-cfg .ib:hover{background:var(--mbu-bg-raised);color:var(--mbu-text)}#eh-cfg .ib[disabled]{opacity:.25;cursor:default;background:none}'
-    + '#eh-cfg .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:0 0 8px}#eh-cfg .gt{all:unset;display:flex;flex-direction:column;border:1px solid var(--mbu-border);border-radius:6px;overflow:hidden;cursor:pointer;box-sizing:border-box}#eh-cfg .gt:hover{border-color:var(--mbu-accent)}#eh-cfg .gt .th{width:100%;height:78px;border-radius:0}'
+    + '#eh-cfg .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:0 0 8px}#eh-cfg .gt{all:unset;display:flex;flex-direction:column;border:1px solid var(--mbu-border);border-radius:6px;overflow:hidden;cursor:pointer;box-sizing:border-box}#eh-cfg .gt:hover{border-color:var(--mbu-accent)}#eh-cfg .gt .th{width:100%;height:78px;border-radius:0}#eh-cfg .th.live{background:#10131d}#eh-cfg .th.live canvas{display:block;width:100%;height:100%}#eh-cfg .th.live svg{display:block;width:100%;height:100%;color:var(--mbu-accent);opacity:.6;stroke:none}'
     + '#eh-cfg .gt .gx{padding:6px 9px 8px}#eh-cfg .gt b{display:block;color:var(--mbu-text)}#eh-cfg .gt .gx span{color:var(--mbu-text-weak);font-size:12px}#eh-cfg .gt.on{border-color:var(--mbu-accent);box-shadow:0 0 0 1px var(--mbu-accent)}#eh-cfg .gt[disabled]{opacity:.45;cursor:default}#eh-cfg .gt[disabled]:hover{border-color:var(--mbu-border)}'
     + '#eh-cfg .btn.sm{height:26px;padding:0 9px;font-size:13px}#eh-cfg .btn.sm svg{width:13px;height:13px}#eh-cfg .pbar .ib{flex:none}'
     + '#eh-cfg .grp{margin-top:14px}#eh-cfg .grp-h{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mbu-text-weak);margin:0 0 4px}#eh-cfg .grp-h::after{content:"";flex:1;height:1px;background:var(--mbu-border-soft,var(--mbu-border))}'
@@ -11678,6 +11679,29 @@ const FX_TH = {
 const fxThumb = k => k === 'url' && bgUrlOk(S.bgUrl)
     ? `<span class="th" data-th="url" style="background-image:url(${esc(JSON.stringify(S.bgUrl))})"></span>`
     : `<span class="th" data-th="${k}"><svg viewBox="0 0 64 38" aria-hidden="true">${FX_TH[k] || ''}</svg></span>`;
+// a gallery tile: the effect at its defaults, hexagons as the page's own tile, the others drawn live on a canvas
+const fxLiveTh = k => k === 'hexagons'
+    ? '<span class="th live" data-th="hexagons"><svg aria-hidden="true"><defs><pattern id="eh-gal-hex" width="28" height="48" patternUnits="userSpaceOnUse"><path d="M14 0l14 8v16L14 32 0 24V8zM14 32v16" fill="none" stroke="currentColor"/></pattern></defs><rect width="100%" height="100%" fill="url(#eh-gal-hex)"/></svg></span>'
+    : AMBIENT[k] ? `<span class="th live" data-th="${k}"><canvas data-fx-live="${k}"></canvas></span>` : fxThumb(k);
+// starts the gallery's canvases; each stops once its tile is gone, and draws one still frame under reduced motion
+function fxLive(root) {
+    const css = getComputedStyle(document.documentElement), c1 = css.getPropertyValue('--accent').trim() || '#ba478f', c2 = css.getPropertyValue('--accent2').trim() || c1;
+    for (const cv of root.querySelectorAll('canvas[data-fx-live]')) {
+        if (cv._on) continue; cv._on = true;
+        const k = cv.dataset.fxLive, w = cv.clientWidth || 140, h = cv.clientHeight || 78, dpr = Math.min(k === 'aurora' ? .5 : 1.5, devicePixelRatio || 1);
+        cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+        const ctx = cv.getContext('2d'); if (!ctx) continue; ctx.scale(dpr, dpr);
+        const P = { colour: 0, glow: 1, user: [], c1, c2 }; for (const [r, , , d] of AMBIENT[k].rows) P[r] = d;
+        let time = 0, last = 0, lastPaint = -Infinity;
+        const draw = now => {
+            if (!cv.isConnected) return;
+            if (last) time += Math.min(.1, (now - last) / 1000); last = now;
+            if (k !== 'aurora' || now - lastPaint >= 48 || hexReduce.matches) { ambientDraw(ctx, w, h, k, P, time, c1, c2); lastPaint = now; }
+            if (!hexReduce.matches) requestAnimationFrame(draw);
+        };
+        requestAnimationFrame(draw);
+    }
+}
 const fxName = k => k === 'bg' ? 'Background' : k === 'hexagons' ? 'Hexagons' : AMBIENT[k].name;
 // the Effects tab: the preset bar, the layers top first with the background at the bottom, then the selected one's settings
 function fxPane(chip, row) {
@@ -11708,7 +11732,7 @@ function fxPane(chip, row) {
     };
     const free = EFFECTS.filter(([k]) => !on.includes(k));
     const hint = `<div class="lyhint"><span>Layers · top draws over bottom</span>${free.length ? `<button type="button" class="btn sm" data-fx-gal aria-expanded="${fxGal}" data-tip="Add an effect\nPick one in the gallery">${fxSvg('plus')}Add</button>` : ''}</div>`;
-    const gal = !fxGal || !free.length ? '' : `<div class="gal">${EFFECTS.map(([k, l, tip]) => { const have = on.includes(k); return `<button type="button" class="gt${have ? ' have' : ''}" data-fx-pick="${k}"${have ? ' disabled' : ''}>${fxThumb(k)}<span class="gx"><b>${l}</b><span>${have ? 'Already in the layers' : esc(tip.split('\n')[0])}</span></span></button>`; }).join('')}</div>`;
+    const gal = !fxGal || !free.length ? '' : `<div class="gal">${EFFECTS.map(([k, l, tip]) => { const have = on.includes(k); return `<button type="button" class="gt${have ? ' have' : ''}" data-fx-pick="${k}"${have ? ' disabled' : ''}>${fxLiveTh(k)}<span class="gx"><b>${l}</b><span>${have ? 'Already in the layers' : esc(tip.split('\n')[0])}</span></span></button>`; }).join('')}</div>`;
     const layers = `<div class="layers">${on.map((k, i) => [k, i]).reverse().map(([k, i]) => layer(k, i)).join('')}${layer('bg', -1)}</div>`;
     const [bgCommon, bgOwn] = bgImgRows(chip, row);
     const body = sel === 'bg'
@@ -11815,7 +11839,7 @@ function openPlCfg(btn, hd) {
 // clicks and drags in a settings body; body() redraws it
 function cfgWire(panel, b, body) {
     // a redraw keeps the pane's scroll and the page's: a new pane starts at its top
-    const redo = () => { const st = b.querySelector('.pane')?.scrollTop || 0, sy = scrollY; b.innerHTML = body(); const q = b.querySelector('.pane'); if (q) q.scrollTop = st; if (scrollY !== sy) scrollTo(scrollX, sy); };
+    const redo = () => { const st = b.querySelector('.pane')?.scrollTop || 0, sy = scrollY; b.innerHTML = body(); const q = b.querySelector('.pane'); if (q) q.scrollTop = st; if (scrollY !== sy) scrollTo(scrollX, sy); fxLive(b); };
     // the effect presets: the name field with its list, Save, Delete, + for a copy, and JSON to share one
     const fxRedraw = redo;
     const fxTyped = () => { const i = b.querySelector('[data-fx-name]'); return i ? i.value.trim() : ''; };
