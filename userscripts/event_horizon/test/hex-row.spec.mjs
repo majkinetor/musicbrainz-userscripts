@@ -3,38 +3,40 @@ import { test, check, until } from '../../../dev/test/harness.mjs';
 test.use({ gm: { name: 'Event Horizon' }, profile: 'fresh' });
 
 const openCfg = page => page.evaluate(() => document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: 'event_horizon', cancelable: true })));
-// the hexagons on: the effect badge added when missing, then Hexagons picked
+// an effect added from the gallery: + Add effect, its tile, then Add
+const fxAdd = async (cfg, k) => { await cfg.locator('[data-fx-gal]').click(); await cfg.locator(`[data-fx-pick=${k}]`).click(); await cfg.locator(`[data-fx-addgo=${k}]`).click(); };
+// the hexagons on: its layer picked, or added from the gallery when missing
 const hexOn = async cfg => {
   if (await cfg.locator('[data-fx-sel=hexagons]').count()) await cfg.locator('[data-fx-sel=hexagons]').click();
-  else { await cfg.locator('[data-g=fxAdd][data-k=fx]').click(); await cfg.locator('[data-g=fxKind][data-k=hexagons]').click(); }
+  else await fxAdd(cfg, 'hexagons');
 };
 const openFx = async page => {
   await openCfg(page);
   const cfg = page.locator('#eh-cfg');
   await until(() => cfg.locator('[data-tab=effects]').count(), n => n === 1);
   await cfg.locator('[data-tab=effects]').click();
-  await until(() => cfg.locator('.fx-b, .fx-add').count(), n => n > 0);
+  await until(() => cfg.locator('.layers').count(), n => n > 0);
   await hexOn(cfg);
   await until(() => cfg.locator('[data-g=hexMotion]').count(), n => n === 9);
   return cfg;
 };
 
-// Settings' Effects tab: the Effect select, then the hexagons' rows; the ones the motion doesn't take are dimmed
-test('the Effects tab shows the hexagons settings and dims what the motion does not take', { tag: ['@prod', '@cosmetic'] }, async ({ page, inject }) => {
+// Settings' Effects tab: the hexagons' layer, then its rows; the ones the motion doesn't take are hidden
+test('the Effects tab shows the hexagons settings and hides what the motion does not take', { tag: ['@prod', '@cosmetic'] }, async ({ page, inject }) => {
   await page.goto('https://musicbrainz.org/artist/f27ec8db-af05-4f36-916e-3d57f91ecf5e');
   await inject('event_horizon');
   const cfg = await openFx(page);
   await cfg.locator('[data-g=hexOpacity][data-k="30"]').click();
   check(await until(() => page.evaluate(() => document.documentElement.style.getPropertyValue('--eh-hex-opacity')), v => v === '0.3') === '0.3', 'Outlines 30% sets the opacity');
-  const dimmed = () => cfg.locator('.cr.dim .cl').allTextContents();
+  const shown = () => cfg.locator('.cr .cl').allTextContents();
   await cfg.locator('[data-g=hexMotion][data-k=static]').click();
-  check((await until(dimmed, v => v.includes('Pace'))).includes('Strength'), 'Static dims the effect rows');
+  check(!(await until(shown, v => !v.includes('Pace'))).includes('Strength'), 'Static hides the effect rows');
   await cfg.locator('[data-g=hexMotion][data-k=electricity]').click();
-  const d = await until(dimmed, v => v.length === 0);
-  check(d.length === 0, 'Electricity takes all of them: ' + d);
+  const d = await until(shown, v => v.includes('Pace') && v.includes('Strength'));
+  check(d.includes('Pace') && d.includes('Strength'), 'Electricity takes all of them: ' + d);
   await cfg.locator('[data-g=hexMotion][data-k=lantern]').click();
-  check((await until(dimmed, v => v.includes('Pace'))).includes('Pace'), 'Lantern takes no pace');
-  await cfg.locator('[data-g=fxRm][data-k=hexagons]').click();
+  check(!(await until(shown, v => !v.includes('Pace'))).includes('Pace'), 'Lantern takes no pace');
+  await cfg.locator('[data-fx-rm=hexagons]').click();
   check(await until(() => cfg.locator('[data-g=hexMotion]').count(), n => n === 0) === 0, 'Removing the effect hides the rows');
   await hexOn(cfg);
   await cfg.locator('.mbu-ov-panel').screenshot({ path: 'test-results/eh-hex-row.png' });

@@ -10,10 +10,12 @@ const openFx = async page => {
   await until(() => cfg.locator('[data-fx-name]').count(), n => n === 1);
   return cfg;
 };
-// the hexagons on: the effect badge added when missing, then Hexagons picked
+// an effect added from the gallery: + Add effect, its tile, then Add
+const fxAdd = async (cfg, k) => { await cfg.locator('[data-fx-gal]').click(); await cfg.locator(`[data-fx-pick=${k}]`).click(); await cfg.locator(`[data-fx-addgo=${k}]`).click(); };
+// the hexagons on: its layer picked, or added from the gallery when missing
 const hexOn = async cfg => {
   if (await cfg.locator('[data-fx-sel=hexagons]').count()) await cfg.locator('[data-fx-sel=hexagons]').click();
-  else { await cfg.locator('[data-g=fxAdd][data-k=fx]').click(); await cfg.locator('[data-g=fxKind][data-k=hexagons]').click(); }
+  else await fxAdd(cfg, 'hexagons');
   await until(() => cfg.locator('[data-g=hexOpacity]').count(), n => n > 0);
 };
 const css = (page, p) => page.evaluate(p => document.documentElement.style.getPropertyValue(p), p);
@@ -43,21 +45,21 @@ test('effect presets save, load and delete by name', { tag: ['@prod', '@critical
   check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.6') === '0.6', 'and Strong has it');
 
   await cfg.locator('[data-g=hexOpacity][data-k="40"]').click();
-  check(await until(() => cfg.locator('[data-fx-save].dirty').count(), n => n === 1), 'an unsaved change highlights Save');
+  check(await until(() => cfg.locator('[data-fx-save].pri').count(), n => n === 1), 'an unsaved change highlights Save');
   await pick('Soft'); await pick('Strong');
   check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.6') === '0.6', 'and stays out of the preset until saved');
   await cfg.locator('[data-g=hexOpacity][data-k="40"]').click();
   await cfg.locator('[data-fx-save]').click();
-  check(await until(() => cfg.locator('[data-fx-save].dirty').count(), n => n === 0) === 0, 'Save keeps it');
+  check(await until(() => cfg.locator('[data-fx-save].pri').count(), n => n === 0) === 0, 'Save keeps it');
   await pick('Soft'); await pick('Strong');
   check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.4') === '0.4', 'in Strong');
 
-  await cfg.locator('[data-fx-del]').click();
+  await cfg.locator('[data-fx-dd]').click(); await cfg.locator('[data-fx-del]').click();   // Delete is in the preset menu
   check(JSON.stringify(await until(() => names(page), v => v?.length === 1)) === '["Soft"]', 'Delete removes it, from String Theory\'s list too');
   check(JSON.stringify(await items(cfg)) === '["Soft"]', 'and from the list');
   check(await cfg.locator('[data-fx-name]').inputValue() === '', 'the effect stays, unsaved');
 
-  await cfg.locator('.chip[data-fx-new]').click();
+  await cfg.locator('[data-fx-new]').click();
   check(await until(() => cfg.locator('[data-fx-name]').inputValue(), v => v === 'Unnamed effect') === 'Unnamed effect', '+ copies the effect into a new preset');
   check(await until(() => names(page), v => v?.length === 2), 'saved at once');
 });
@@ -99,8 +101,8 @@ test('a theme\'s preset applies when String Theory names it', { tag: ['@prod'] }
   await cfg.locator('[data-fx-name]').fill('Night');
   await cfg.locator('[data-fx-save]').click();
   await cfg.locator('[data-fx-name]').fill('Day');
-  await cfg.locator('.chip[data-fx-new]').click();
-  await cfg.locator('[data-g=fxRm][data-k=hexagons]').click();
+  await cfg.locator('[data-fx-new]').click();
+  await cfg.locator('[data-fx-rm=hexagons]').click();
   check(await until(() => page.evaluate(() => document.documentElement.dataset.ehHex || ''), v => !v) === '', 'the effect removed');
   await page.evaluate(() => document.documentElement.setAttribute('data-st-eh-fx', 'Night'));
   check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.3') === '0.3', 'the theme\'s preset comes on');
@@ -110,18 +112,16 @@ test('a theme\'s preset applies when String Theory names it', { tag: ['@prod'] }
   check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.6') === '0.6', 'the same name again leaves the user\'s change');
 });
 
-// several effects at once: each added one gets its badge and its own layer, and goes on its own
+// several effects at once: each added one gets its row in the layers and its own layer on the page, and goes on its own
 test('effects stack', { tag: ['@prod'] }, async ({ page, inject }) => {
   await page.goto('https://musicbrainz.org/artist/f27ec8db-af05-4f36-916e-3d57f91ecf5e');
   await inject('event_horizon');
   const cfg = await openFx(page);
   await hexOn(cfg);
-  await cfg.locator('[data-g=fxAdd][data-k=fx]').click();
-  await cfg.locator('[data-g=fxKind][data-k=stars]').click();
-  await cfg.locator('[data-g=fxAdd][data-k=fx]').click();
-  await cfg.locator('[data-g=fxKind][data-k=aurora]').click();
-  check(await until(() => cfg.locator('.fx-b [data-fx-sel]:not([data-fx-sel=bg])').count(), n => n === 3) === 3, 'three effect badges');
+  await fxAdd(cfg, 'stars');
+  await fxAdd(cfg, 'aurora');
+  check(await until(() => cfg.locator('.layers [data-fx-sel]:not([data-fx-sel=bg])').count(), n => n === 3) === 3, 'three effect layers');
   check(await until(() => page.locator('.eh-amb').count(), n => n === 2) === 2 && await page.locator('#eh-hex').count() === 1, 'hexagons and two more layers');
-  await cfg.locator('[data-g=fxRm][data-k=stars]').click();
+  await cfg.locator('[data-fx-rm=stars]').click();
   check(await until(() => page.locator('.eh-amb').count(), n => n === 1) === 1 && await page.locator('#eh-hex').count() === 1, 'one removed, the others stay');
 });
