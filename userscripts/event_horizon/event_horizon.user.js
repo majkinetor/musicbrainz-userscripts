@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.07.200016
+// @version      2026.11.07.201732
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3853,15 +3853,47 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
         }
     } else if (kind === 'stars') {
         const count = Math.min(6000, Math.round(w * h / 1100 * p.starDensity));
-        for (let i = 1; i <= count; i++) {
-            const z = .25 + rand(i + 9) * p.starDepth;
-            const x = fract(rand(i) + t * p.starDrift * z / w * 4) * w;
-            const y = fract(rand(i + 3) + t * p.starDrift * z / h) * h;
-            ctx.globalAlpha = (.25 + .55 * rand(i + 4)) * (1 - p.starTwinkle * .35 + p.starTwinkle * .35 * Math.sin(t * .8 + i));
-            const alpha = ctx.globalAlpha, radius = .45 + z * .7;
-            ctx.fillStyle = tone(p.colour >= 2 ? i : i % 5 ? 0 : 1);
-            if (p.glow > 0) { const g = p.glow ** 1.5; ctx.globalAlpha = alpha * .05 * p.glow; ctx.beginPath(); ctx.arc(x, y, radius + g * 6, 0, tau); ctx.fill(); ctx.globalAlpha = alpha * .14 * p.glow; ctx.beginPath(); ctx.arc(x, y, radius + g * 2, 0, tau); ctx.fill(); }
-            ctx.globalAlpha = alpha; ctx.beginPath(); ctx.arc(x, y, radius, 0, tau); ctx.fill();
+        const star = (c, i, x, y, z, alpha) => {
+            const radius = .45 + z * .7;
+            c.fillStyle = tone(p.colour >= 2 ? i : i % 5 ? 0 : 1);
+            if (p.glow > 0) { const g = p.glow ** 1.5; c.globalAlpha = alpha * .05 * p.glow; c.beginPath(); c.arc(x, y, radius + g * 6, 0, tau); c.fill(); c.globalAlpha = alpha * .14 * p.glow; c.beginPath(); c.arc(x, y, radius + g * 2, 0, tau); c.fill(); }
+            c.globalAlpha = alpha; c.beginPath(); c.arc(x, y, radius, 0, tau); c.fill();
+        };
+        if (p.starTwinkle > 0) {
+            ctx._ehStars = null;
+            for (let i = 1; i <= count; i++) {
+                const z = .25 + rand(i + 9) * p.starDepth;
+                const x = fract(rand(i) + t * p.starDrift * z / w * 4) * w;
+                const y = fract(rand(i + 3) + t * p.starDrift * z / h) * h;
+                star(ctx, i, x, y, z, (.25 + .55 * rand(i + 4)) * (1 - p.starTwinkle * .35 + p.starTwinkle * .35 * Math.sin(t * .8 + i)));
+            }
+        } else {
+            // Without twinkle every star keeps its look, so thousands of glowing stars are painted once
+            // onto a few depth layers that slide past at their own speed: a handful of image copies a
+            // frame instead of up to three blended circles a star, which saturated the GPU and made the
+            // whole page stutter.
+            const layers = 4, key = [count, w, h, p.starDepth, p.colour, p.glow, p.user?.join(), c1, c2].join('|');
+            if (ctx._ehStars?.key !== key) {
+                const list = Array.from({ length: layers }, (_, n) => {
+                    const c = ctx.canvas.ownerDocument.createElement('canvas'); c.width = Math.ceil(w); c.height = Math.ceil(h);
+                    return { c, x: c.getContext('2d'), z: .25 + (n + .5) / layers * p.starDepth };
+                });
+                const reach = 2 + (p.glow > 0 ? p.glow ** 1.5 * 6 : 0);
+                for (let i = 1; i <= count; i++) {
+                    const z = .25 + rand(i + 9) * p.starDepth, layer = list[Math.min(layers - 1, Math.floor((z - .25) / p.starDepth * layers))];
+                    if (!layer.x) continue;
+                    const x = rand(i) * w, y = rand(i + 3) * h, alpha = .25 + .55 * rand(i + 4);
+                    // Stars near an edge are painted on the far side too, so the sliding layer wraps seamlessly.
+                    const xs = x < reach ? [x, x + w] : x > w - reach ? [x, x - w] : [x], ys = y < reach ? [y, y + h] : y > h - reach ? [y, y - h] : [y];
+                    for (const sx of xs) for (const sy of ys) star(layer.x, i, sx, sy, z, alpha);
+                }
+                ctx._ehStars = { key, list };
+            }
+            ctx.globalAlpha = 1;
+            for (const layer of ctx._ehStars.list) {
+                const ox = fract(t * p.starDrift * layer.z * 4 / w) * w, oy = fract(t * p.starDrift * layer.z / h) * h;
+                for (const dx of [ox - w, ox]) for (const dy of [oy - h, oy]) ctx.drawImage(layer.c, dx, dy, w, h);
+            }
         }
     } else if (kind === 'aurora') {
         if (!p.auroraDirect) { auroraLayer(ctx, w, h, p, t, c1, c2); ctx.globalAlpha = 1; return; }
@@ -3951,7 +3983,7 @@ const ucolOk = a => Array.isArray(a) ? a.filter(c => /^#[0-9a-f]{6}$/i.test(c)).
 function ambientApply(layer, kind) {
     layer._ehDepthOff?.(); const svg = layer.querySelector('svg'); if (svg) svg.style.display = 'none';
     layer.style.setProperty('--eh-hex-mf', '1'); layer.style.setProperty('--eh-hex-fx', Math.max(0, Math.min(100, Number(S[kind + 'Opacity']) || 0)) / 100);
-    const w = layer.clientWidth, h = layer.clientHeight, dpr = kind === 'aurora' ? Math.min(.5, 480 / w, 320 / h) : Math.min(kind === 'rain' ? 1.5 : 2, devicePixelRatio || 1);
+    const w = layer.clientWidth, h = layer.clientHeight, dpr = kind === 'aurora' ? Math.min(.5, 480 / w, 320 / h) : Math.min(kind === 'rain' || kind === 'stars' ? 1.5 : 2, devicePixelRatio || 1);
     const css = getComputedStyle(layer), c1 = css.color, c2 = css.getPropertyValue('--accent2').trim() || c1;
     const p = { colour: [0, 1, 2, 3].includes(S[kind + 'Colour']) ? S[kind + 'Colour'] : 0, glow: Math.max(0, Math.min(2, Number(S[kind + 'Glow']) || 0)), user: ucolOk(S[kind + 'Colours']), c1, c2 };
     for (const [k, , values, fallback] of AMBIENT[kind].rows) { const v = Number(S[k]), r = FX_STRIP[k]; p[k] = r ? (Number.isFinite(v) && S[k] !== null && S[k] !== '' ? Math.max(r[0] * r[2], Math.min(r[1] * r[2], v)) : fallback) : values.includes(v) ? v : fallback; if (r && r[0] === 20 && r[1] === 200) p[k] = fxSpan(p[k], fallback); }
@@ -3966,8 +3998,8 @@ function ambientApply(layer, kind) {
     const draw = now => {
         if (!layer.isConnected) { stop(); return; }
         if (last) time += Math.min(.1, (now - last) / 1000); last = now;
-        // Decorative Aurora paints at most 20 fps; animation time still follows the clock.
-        if (kind !== 'aurora' || now - lastPaint >= 48 || hexReduce.matches) {
+        // Decorative Aurora paints at most 20 fps and the slow Stars at most 30; animation time still follows the clock.
+        if ((kind !== 'aurora' && kind !== 'stars') || now - lastPaint >= (kind === 'stars' ? 32 : 48) || hexReduce.matches) {
             ambientDraw(ctx, w, h, kind, p, time, p.c1, p.c2); lastPaint = now;
         }
         if (!hexReduce.matches) raf = requestAnimationFrame(draw);
