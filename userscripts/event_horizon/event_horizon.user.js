@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.07.155526
+// @version      2026.11.07.160308
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -10696,7 +10696,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #page .rel-edit{background:color-mix(in srgb,#d9a400 22%,transparent)!important;border-radius:4px}
 :root[data-eh-rel] #page .rel-remove{background:color-mix(in srgb,#d64545 22%,transparent)!important;border-radius:4px}
 :root[data-eh-rel] #page :is(.rel-add,.rel-edit,.rel-remove){color:var(--text)!important}
-:root[data-eh-rel] #page :is(.rel-add,.rel-edit,.rel-remove) :is(span,bdi,.comment){color:inherit!important}
+:root[data-eh-rel] #page :is(.rel-add,.rel-edit,.rel-remove) :is(span:not(.comment),bdi){color:inherit!important}:root[data-eh-rel] #page :is(.rel-add,.rel-edit,.rel-remove) .comment{color:var(--muted)!important}
 :root[data-eh-rel] #page input[type=checkbox]{accent-color:var(--accent)}
 :root[data-eh-rel] .release-relationship-editor>h2{display:flex;align-items:center;gap:10px;margin:24px 0 0!important;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px 12px 0 0;font-size:17px!important;cursor:pointer;user-select:none}
 :root[data-eh-rel] .release-relationship-editor>h2:first-child{margin-top:8px!important}
