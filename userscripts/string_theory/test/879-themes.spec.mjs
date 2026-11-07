@@ -121,8 +121,12 @@ test.describe('Event Horizon effect', () => {
     await page.locator('#st-tab-g').click();
     const sel = page.locator('#st-th-eh-dark');
     check(await sel.count() === 1, 'a Dark effect select');
-    check((await sel.locator('option').allTextContents()).join() === 'No preset,Dim', 'it lists Event Horizon\'s presets');
+    check((await sel.locator('option').allTextContents()).join() === 'No preset,No effect,Dim', 'it lists Event Horizon\'s presets');
     await sel.selectOption('Dim');
+    // another dark theme brings the effect on show
+    const dark = page.locator('#st-th-dark'), was = await dark.inputValue();
+    await dark.selectOption((await dark.locator('option').evaluateAll(os => os.map(o => o.value))).find(v => v !== was));
+    check(await sel.inputValue() === 'Dim', 'another dark theme keeps the effect');
     check(await fx(page) === null, 'the light theme has none');
     await pick(page, 'dark');
     check(await until(fx, v => v === 'Dim') === 'Dim', 'dark names it');
