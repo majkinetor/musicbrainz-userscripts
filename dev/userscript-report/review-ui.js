@@ -5,8 +5,6 @@ const rows = new Map([...document.querySelectorAll('.script')].map(el=>[el.datas
 const storageKey = 'mb-userscripts:926:reviews:v1';
 let records = new Map(), storageBlocked = false;
 const openPanels = new Map();
-const statusHelp = 'Your review status\nIn progress: your review is still a draft\nConfirmed: your review is complete\nChanges requested: you want corrections in the next report\nThe status stays local until you send the review to GitHub';
-const statusMeaning = {'In progress':'Your review is still a draft','Confirmed':'Your review is complete','Changes requested':'You want corrections in the next report'};
 const escapeText = v=>String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
 const textList = values=>'<ul>'+values.map(v=>'<li>'+escapeText(v)+'</li>').join('')+'</ul>';
 const safeLink = (url,label)=>/^https?:\/\//i.test(url || '') ? '<a href="'+escapeText(url)+'" target="_blank" rel="noopener noreferrer">'+escapeText(label)+' ↗</a>' : escapeText(label);
@@ -23,24 +21,27 @@ try {
 function updateSaveStatus(){document.getElementById('save-status').textContent=records.size+' edited script(s) · '+(storageBlocked?'not saved in browser — export before closing':'saved in this browser');
   const orphans=[...records.keys()].filter(id=>!byId.has(id));const el=document.getElementById('orphans');el.hidden=!orphans.length;el.textContent=orphans.length+' review(s) refer to entries absent from this report. They are retained in every export.';}
 function save(){try {if(storageBlocked)throw new Error();localStorage.setItem(storageKey,JSON.stringify(bundle()));}catch{storageBlocked=true;}updateSaveStatus();}
-function recordFor(entry){if(!records.has(entry.id))records.set(entry.id,{status:'In progress',proposedVerdict:'',note:'',draft:'',features:{},comments:[],deletedComments:[],basis:structuredClone(entry.basis),reportAtReview:reportRef(),updatedAt:new Date().toISOString()});return records.get(entry.id);}
+function recordFor(entry){if(!records.has(entry.id))records.set(entry.id,{proposedVerdict:'',note:'',draft:'',features:{},comments:[],deletedComments:[],basis:structuredClone(entry.basis),reportAtReview:reportRef(),updatedAt:new Date().toISOString()});return records.get(entry.id);}
 function changed(entry,fn){const record=recordFor(entry);fn(record);record.updatedAt=new Date().toISOString();save();updateRow(entry);}
 function isStale(entry){return records.has(entry.id)&&records.get(entry.id).basis.hash!==entry.basis.hash;}
-function updateRow(entry){const el=rows.get(entry.id),r=records.get(entry.id),personal=el.querySelector('.personal'),marker=el.querySelector('.review-marker');personal.hidden=!r;marker.hidden=!r;
-  if(r){const score=weightedVerdict(effectiveFeatures(entry,r));personal.textContent='Yours: '+verdictLabel(r.proposedVerdict || (Object.keys(r.features).length?score.verdict:entry.verdict));marker.textContent=isStale(entry)?'Needs recheck':r.status;}
+function updateRow(entry){const el=rows.get(entry.id),r=records.get(entry.id),personal=el.querySelector('.personal'),marker=el.querySelector('.review-marker');personal.hidden=!r;marker.hidden=!r||!isStale(entry);
+  if(r){const score=weightedVerdict(effectiveFeatures(entry,r));personal.textContent='Yours: '+verdictLabel(r.proposedVerdict || (hasScoringChanges(entry,r)?score.verdict:entry.verdict));marker.textContent='Needs recheck';}
   const output=el.querySelector('.weighted');if(output){const result=weightedVerdict(effectiveFeatures(entry,r));output.textContent='Weighted: '+verdictLabel(result.verdict)+(result.score===null?'':result.unknown?' · '+result.score+'–'+result.ceiling+'%':' · '+result.score+'%');}}
 function featureChange(entry,id,field,value){const f=effectiveFeatures(entry,records.get(entry.id)).find(x=>x.id===id);changed(entry,r=>{r.features[id]={name:f.name,weight:f.weight,coverage:f.coverage,comment:f.comment || '',added:f.added===true,...r.features[id],[field]:value};});}
+function quickReviewHtml(review){
+ const source=review.source;
+ return '<section class="quick-review"><h3>Quick source review <small>'+escapeText(review.state)+'</small></h3><p><strong>'+escapeText(review.result)+'</strong>'+(review.suggestedVerdict?' · '+escapeText(verdictLabel(review.suggestedVerdict)):'')+'</p><p>'+escapeText(review.summary)+'</p><details><summary>Major workflow & versions</summary>'+textList(review.majorFeatures)+'<p>'+escapeText(review.level)+' · '+escapeText(review.reviewedAt.slice(0,10))+'</p><p>'+safeLink(source?.evidenceUrl || source?.sourceUrl,'Upstream source')+' · version '+escapeText(source?.version || 'not declared')+'</p><p class="fingerprint">SHA-256: '+escapeText(review.sourceHash || 'unavailable')+'</p><p>'+safeLink('https://github.com/majkinetor/musicbrainz-userscripts/tree/'+review.suiteCommit+'/userscripts','Suite '+review.suiteCommit.slice(0,12))+'</p>'+'<ul>'+review.evidence.map(e=>'<li>'+safeLink(e.url,e.label)+'</li>').join('')+'</ul>'+'<ul>'+review.tools.map(t=>'<li>'+safeLink('https://github.com/majkinetor/musicbrainz-userscripts/blob/'+review.suiteCommit+'/userscripts/'+t+'/README.md#features',t.replaceAll('_',' '))+'</li>').join('')+'</ul><p class="dim">This check does not replace the maintainer verdict. External shared requirements and live site behavior are not fully verified.</p></details></section>';
+}
 function renderDetails(entry){const row=rows.get(entry.id),panel=row.querySelector('.detail'),r=records.get(entry.id),features=effectiveFeatures(entry,r),a=entry.assessment;
   const sourceFreshness=a && Date.now()-Date.parse(a.reviewedAt)>90*86400000?'Needs review · evidence age':a?.freshness.status;
-  panel.innerHTML='<div class="meta"><span>'+escapeText(entry.author)+'</span><span>'+escapeText(entry.categories.join(' · '))+'</span><span>'+safeLink(entry.sourceUrl || entry.downloadUrl,'Original source')+'</span><span>'+safeLink(report.wiki.url,'Wiki revision '+report.wiki.revision)+'</span></div>'+
-    '<p class="summary-text">'+escapeText(entry.summary)+'</p><p class="dim">'+escapeText(entry.description)+'</p>'+
-    (entry.acceptedReview?'<p class="contribution-credit">Maintainer verdict: '+escapeText(verdictLabel(entry.verdict))+' · '+safeLink(entry.acceptedReview.author.url,entry.acceptedReview.author.login)+' · '+safeLink(entry.acceptedReview.url,'#'+entry.acceptedReview.discussionNumber)+' <button class="help" data-tip="Contributor evidence\nIdentity is verified from the GitHub discussion author. This is an accepted review; original source evidence is retained separately." aria-label="About contributor evidence">?</button></p>':'')+
-    (entry.acceptedReview&&entry.sourceVerdict!==entry.verdict?'<p class="dim compact">Original source finding: '+escapeText(entry.sourceVerdict)+'</p>':'')+
-    (entry.contributions?.length>1?'<details class="contribution-history"><summary>Review history ('+entry.contributions.length+')</summary><ul>'+entry.contributions.map(c=>'<li>'+safeLink(c.author.url,c.author.login)+' · '+safeLink(c.url,'#'+c.discussionNumber)+' · '+escapeText(c.disposition)+' · '+escapeText(verdictLabel(c.verdict || 'No verdict'))+'</li>').join('')+'</ul></details>':'')+
+  panel.innerHTML='<div class="entry-intro"><p class="description">'+escapeText(entry.description)+'</p><p class="summary-text dim">'+escapeText(!a&&entry.quickReview?'Quick source triage is available below; full feature parity remains unverified.':entry.summary)+'</p></div>'+
+    '<div class="meta"><span>By '+escapeText(entry.author)+'</span><span>'+escapeText(entry.categories.join(' · '))+'</span><span>'+safeLink(entry.sourceUrl || entry.downloadUrl,'Original source')+'</span><span>'+safeLink(report.wiki.url,'Wiki revision '+report.wiki.revision)+'</span></div>'+
+    (entry.acceptedReview?'<section class="maintainer-finding"><span class="finding-label">Maintainer verdict</span><strong>'+escapeText(verdictLabel(entry.verdict))+'</strong><span>'+safeLink(entry.acceptedReview.author.url,'@'+entry.acceptedReview.author.login)+' · '+safeLink(entry.acceptedReview.url,'#'+entry.acceptedReview.discussionNumber)+'</span><button class="help" data-tip="Maintainer review\nAccepted from the linked GitHub discussion. Original source evidence remains separate." aria-label="About maintainer verdict">?</button></section>':'')+
+    (entry.acceptedReview&&entry.sourceVerdict!==entry.verdict?'<p class="dim compact">Source finding: '+escapeText(verdictLabel(entry.sourceVerdict))+'</p>':'')+
     (entry.wikiStatus?'<p class="dim">Wiki status (not a replacement verdict): '+escapeText(entry.wikiStatus)+'</p>':'')+
-    (a?'<p class="dim compact">'+escapeText(a.confidence)+' confidence · '+escapeText(sourceFreshness)+' · @'+escapeText(entry.basis.sourceVersion || 'unknown')+'</p>':'<p class="dim compact">Source assessment pending</p>')+
+    (entry.quickReview?quickReviewHtml(entry.quickReview):(a?'<p class="dim compact">'+escapeText(a.confidence)+' confidence · '+escapeText(sourceFreshness)+' · @'+escapeText(entry.basis.sourceVersion || 'unknown')+'</p>':'<p class="dim compact">Source assessment pending</p>'))+
     (isStale(entry)?'<p class="warning">The source or assessment changed since your review. Export retains both versions. <button type="button" class="ack">Confirm against this snapshot</button></p>':'')+
-    '<div class="review-status"><label>My verdict <select class="my-verdict" data-tip="Your verdict\nChoose directly or keep the weighted suggestion. The report verdict stays unchanged."><option value="">Weighted</option>'+verdictOptions.map(v=>'<option value="'+escapeText(v)+'"'+(r?.proposedVerdict===v?' selected':'')+'>'+escapeText(verdictLabel(v))+'</option>').join('')+'</select></label><label>Status <button class="help" data-tip="'+escapeText(statusHelp)+'" aria-label="Explain review statuses">?</button><select class="status" data-tip="'+escapeText(statusHelp)+'">'+['In progress','Confirmed','Changes requested'].map(v=>'<option title="'+escapeText(statusMeaning[v])+'"'+(r?.status===v?' selected':'')+'>'+v+'</option>').join('')+'</select></label><span class="weighted" data-tip="Weighted suggestion\nCovered earns full weight; Partial half; Gap zero. Unknown needs assessment. Essential gaps prevent Mostly replaceable."></span><details class="action-menu"><summary>Actions ⋯</summary><div class="action-options"><button type="button" data-action="feature">Add feature</button><button type="button" data-action="note">'+(r?.note?'Edit note':'Add note')+'</button><button type="button" data-action="comments">Comments'+(r?.comments.length?' ('+r.comments.length+')':'')+'</button></div></details></div>'+
+    '<div class="review-status"><label>My verdict <select class="my-verdict" data-tip="Your verdict\nChoose directly or keep the weighted suggestion. The report verdict stays unchanged."><option value="">0 · Weighted</option>'+verdictOptions.map(v=>'<option value="'+escapeText(v)+'"'+(r?.proposedVerdict===v?' selected':'')+'>'+(verdictOptions.indexOf(v)+1)+' · '+escapeText(verdictLabel(v))+'</option>').join('')+'</select></label><span class="weighted" data-tip="Weighted suggestion\nCovered earns full weight; Partial half; Gap zero. Unknown needs assessment. Essential gaps prevent Mostly replaceable."></span><details class="action-menu"><summary>Actions ⋯</summary><div class="action-options"><button type="button" data-action="feature">Add feature</button><button type="button" data-action="note">'+(r?.note?'Edit note':'Add note')+'</button><button type="button" data-action="comments">Comments'+(r?.comments.length?' ('+r.comments.length+')':'')+'</button></div></details></div>'+
     '<h2>Capabilities <button class="help" data-tip="Feature weights\nIgnore (0), Minor (1), Normal (3), Important (5), Essential (10). Essential means you cannot lose this workflow." aria-label="About feature weights">?</button></h2><div class="caps-wrap"><table class="caps"><thead><tr><th>Feature</th><th>Weight</th><th>Coverage</th><th>Note</th></tr></thead><tbody>'+features.map(f=>'<tr data-feature="'+escapeText(f.id)+'"><td>'+escapeText(f.name)+' <button class="help" data-tip="'+escapeText((f.reason || 'Added in your review')+'\nOriginal: '+(entry.features.find(x=>x.id===f.id)?.coverage || 'User-added'))+'" aria-label="Feature evidence">?</button></td><td><select data-field="weight" aria-label="Importance: '+escapeText(f.name)+'">'+weightOptions.map(([value,label])=>'<option value="'+value+'"'+(f.weight===value?' selected':'')+'>'+label+'</option>').join('')+'</select></td><td><select data-field="coverage" aria-label="Coverage: '+escapeText(f.name)+'">'+coverageValues.map(value=>'<option'+(f.coverage===value?' selected':'')+'>'+value+'</option>').join('')+'</select></td><td><textarea data-field="comment" maxlength="20000" aria-label="Comment: '+escapeText(f.name)+'" placeholder="Note" data-tip="Feature note\nExplain a correction or preference. Clear this field to delete it.">'+escapeText(f.comment || '')+'</textarea></td></tr>').join('')+'</tbody></table></div>'+
     (a?'<h3>Important gaps / limitations</h3>'+textList(a.gaps)+'<h3>Switching route</h3><p>'+escapeText(a.migration)+'</p><h3>Pinned evidence</h3><ul class="evidence">'+a.evidence.map(e=>'<li>'+safeLink(e.url,e.label)+'</li>').join('')+'</ul>':'')+
     '<section class="review-drawer" hidden><div class="drawer-heading"><strong class="drawer-title"></strong><button class="close-drawer plain" type="button" aria-label="Close editor">✕</button></div><div data-drawer-panel="feature" hidden><div class="add-feature"><input class="feature-name" maxlength="2000" aria-label="New feature" placeholder="New feature" data-tip="Add a capability\nIt starts with unknown coverage"><button class="add" type="button">Add</button></div></div>'+
@@ -51,30 +52,56 @@ function renderDetails(entry){const row=rows.get(entry.id),panel=row.querySelect
     panel.querySelectorAll('[data-drawer-panel]').forEach(el=>{el.hidden=el.dataset.drawerPanel!==mode;});
     panel.querySelector('.drawer-title').textContent={feature:'Add feature',note:'Review note',comments:'Comments'}[mode];
     panel.querySelector('.action-menu').open=false;
+    panel.querySelectorAll('textarea').forEach(growNote);
     if(focus)panel.querySelector({feature:'.feature-name',note:'.note',comments:'.comment-draft'}[mode]).focus();
   }
   panel.querySelectorAll('[data-action]').forEach(button=>button.onclick=()=>showPanel(button.dataset.action,true));
   panel.querySelector('.close-drawer').onclick=()=>{openPanels.delete(entry.id);panel.querySelector('.review-drawer').hidden=true;panel.querySelector('.action-menu>summary').focus();};
   if(openPanels.has(entry.id))showPanel(openPanels.get(entry.id));
-  panel.querySelector('.status').onchange=e=>changed(entry,r=>{r.status=e.target.value;});
   panel.querySelector('.my-verdict').onchange=e=>changed(entry,r=>{r.proposedVerdict=e.target.value;});
-  panel.querySelector('.ack')?.addEventListener('click',()=>{changed(entry,r=>{r.basis=structuredClone(entry.basis);r.reportAtReview=reportRef();r.status='Confirmed';});renderDetails(entry);});
+  panel.querySelector('.ack')?.addEventListener('click',()=>{changed(entry,r=>{r.basis=structuredClone(entry.basis);r.reportAtReview=reportRef();});renderDetails(entry);});
   panel.querySelectorAll('[data-field]').forEach(control=>control.addEventListener(control.tagName==='TEXTAREA'?'input':'change',()=>featureChange(entry,control.closest('[data-feature]').dataset.feature,control.dataset.field,control.dataset.field==='weight'?Number(control.value):control.value)));
   panel.querySelector('.note').oninput=e=>changed(entry,r=>{r.note=e.target.value;});
-  panel.querySelector('.clear-note').onclick=()=>{changed(entry,r=>{r.note='';});panel.querySelector('.note').value='';};
+  panel.querySelector('.clear-note').onclick=()=>{changed(entry,r=>{r.note='';});panel.querySelector('.note').value='';growNote(panel.querySelector('.note'));};
   panel.querySelector('.comment-draft').oninput=e=>changed(entry,r=>{r.draft=e.target.value;});
   panel.querySelector('.post').onclick=()=>{const text=panel.querySelector('.comment-draft').value.trim();if(!text)return;const current=recordFor(entry);if(current.comments.length>=500){message('Comment limit reached; export before starting another review file.');return;}changed(entry,r=>{r.comments.push({id:crypto.randomUUID(),at:new Date().toISOString(),text});r.draft='';});renderDetails(entry);};
   panel.querySelectorAll('.delete-comment').forEach(button=>button.onclick=()=>{const id=button.closest('[data-comment]').dataset.comment;changed(entry,r=>{r.deletedComments=[...new Set([...(r.deletedComments || []),id])];r.comments=r.comments.filter(c=>c.id!==id);});renderDetails(entry);});
-  panel.querySelectorAll('.edit-comment').forEach(button=>button.onclick=()=>{const li=button.closest('[data-comment]'),id=li.dataset.comment,c=records.get(entry.id).comments.find(c=>c.id===id);li.innerHTML='<textarea class="comment-edit" aria-label="Edit comment" maxlength="20000">'+escapeText(c.text)+'</textarea><button class="save-comment" type="button">Save</button><button class="cancel-comment" type="button">Cancel</button>';li.querySelector('.save-comment').onclick=()=>{const text=li.querySelector('textarea').value.trim();if(!text){message('Use Delete to remove this comment.');return;}changed(entry,r=>{const comment=r.comments.find(c=>c.id===id);comment.text=text;comment.updatedAt=new Date().toISOString();});renderDetails(entry);};li.querySelector('.cancel-comment').onclick=()=>renderDetails(entry);li.querySelector('textarea').focus();});
+  panel.querySelectorAll('.edit-comment').forEach(button=>button.onclick=()=>{const li=button.closest('[data-comment]'),id=li.dataset.comment,c=records.get(entry.id).comments.find(c=>c.id===id);li.innerHTML='<textarea class="comment-edit" aria-label="Edit comment" maxlength="20000">'+escapeText(c.text)+'</textarea><button class="save-comment" type="button">Save</button><button class="cancel-comment" type="button">Cancel</button>';li.querySelector('.save-comment').onclick=()=>{const text=li.querySelector('textarea').value.trim();if(!text){message('Use Delete to remove this comment.');return;}changed(entry,r=>{const comment=r.comments.find(c=>c.id===id);comment.text=text;comment.updatedAt=new Date().toISOString();});renderDetails(entry);};li.querySelector('.cancel-comment').onclick=()=>renderDetails(entry);wireGrowingNote(li.querySelector('textarea'));li.querySelector('textarea').focus();});
   panel.querySelector('.add').onclick=()=>{const name=panel.querySelector('.feature-name').value.trim();if(!name)return;if(Object.keys(recordFor(entry).features).length>=200){message('Feature limit reached.');return;}changed(entry,r=>{r.features['custom:'+crypto.randomUUID()]={name,coverage:'Unknown',weight:5,comment:'',added:true};});renderDetails(entry);};
+  panel.querySelectorAll('textarea').forEach(wireGrowingNote);
   updateRow(entry);
 }
+function growNote(field){if(!field.getClientRects().length)return;field.style.height='auto';field.style.height=field.scrollHeight+'px';}
+function wireGrowingNote(field){field.rows=1;growNote(field);field.addEventListener('input',()=>growNote(field));}
+const resizeNotes=new ResizeObserver(()=>document.querySelectorAll('.script[open] textarea').forEach(growNote));
+resizeNotes.observe(document.querySelector('main'));
+function showContributors(entry){
+  const dialog=document.getElementById('people-dialog');
+  document.getElementById('people-title').textContent=entry.name+' · reviewers';
+  const people=[...new Map((entry.contributions || []).map(c=>[c.author.id,c.author])).values()];
+  document.getElementById('people-list').innerHTML=people.length?people.map(person=>'<li><div class="person"><img src="https://github.com/'+encodeURIComponent(person.login)+'.png?size=64" width="32" height="32" alt="" loading="lazy">'+safeLink(person.url,'@'+person.login)+'</div><ul>'+entry.contributions.filter(c=>c.author.id===person.id).map(c=>'<li>'+safeLink(c.url,'#'+c.discussionNumber)+' · '+escapeText(c.disposition)+' · '+escapeText(verdictLabel(c.verdict || 'No verdict'))+'<small>Report '+escapeText(c.reviewedReport.slice(0,12))+'</small></li>').join('')+'</ul></li>').join(''):'<li class="dim">No discussion reviews yet.</li>';
+  dialog.showModal();
+}
+document.getElementById('people-close').onclick=()=>document.getElementById('people-dialog').close();
+for(const entry of report.entries){
+  const row=rows.get(entry.id);
+  row.querySelector('.people-count').onclick=e=>{e.preventDefault();e.stopPropagation();showContributors(entry);};
+  row.addEventListener('keydown',e=>{
+    if(e.altKey||e.ctrlKey||e.metaKey||e.target.closest('input,textarea,select,button,[contenteditable="true"],.action-menu'))return;
+    const key=e.key.toLowerCase();
+    if(!/^[0-7n]$/.test(key))return;
+    e.preventDefault();e.stopPropagation();
+    if(key==='n'){row.open=true;renderDetails(entry);row.querySelector('[data-action="note"]').click();return;}
+    changed(entry,r=>{r.proposedVerdict=key==='0'?'':verdictOptions[Number(key)-1];});
+    const select=row.querySelector('.my-verdict');if(select)select.value=key==='0'?'':verdictOptions[Number(key)-1];
+  });
+}
 for(const entry of report.entries){const row=rows.get(entry.id);row.addEventListener('toggle',()=>{if(row.open&&!row.querySelector('.detail').hasChildNodes())renderDetails(entry);if(!row.open)filterRows();});updateRow(entry);}
-const controls=['name-filter','search','verdict','category','tool','review-filter'].map(id=>document.getElementById(id));
-function filterRows(){const [name,search,verdict,category,tool,reviewFilter]=controls.map(c=>c.value);let count=0;
+const controls=['name-filter','search','category','tool','review-filter'].map(id=>document.getElementById(id));
+function filterRows(){const [name,search,category,tool,reviewFilter]=controls.map(c=>c.value);const verdicts=[...document.querySelectorAll('[name="report-verdict"]:checked')].map(c=>c.value);document.getElementById('verdict-label').textContent='Report verdict · '+(verdicts.length?verdicts.length+' selected':'All');let count=0;
   for(const entry of report.entries){const r=records.get(entry.id);const text=[entry.name,entry.author,entry.description,...entry.tools,...entry.features.map(f=>f.name),r?.note || '',...(r?.comments || []).map(c=>c.text),...Object.values(r?.features || {}).map(f=>f.name+' '+f.comment)].join(' ').toLowerCase();
-    const reviewed=!reviewFilter || (reviewFilter==='Not reviewed'?!r:reviewFilter==='Edited'?!!r:reviewFilter==='Needs recheck'?isStale(entry):r?.status===reviewFilter);
-    const show=(!name||entry.name.toLowerCase().includes(name.toLowerCase()))&&(!search||text.includes(search.toLowerCase()))&&(!verdict||entry.verdict===verdict)&&(!category||entry.categories.includes(category))&&(!tool||entry.tools.includes(tool))&&reviewed;
+    const reviewed=!reviewFilter || (reviewFilter==='Not reviewed'?!r:reviewFilter==='Edited'?!!r:reviewFilter==='Needs recheck'?isStale(entry):false);
+    const show=(!name||entry.name.toLowerCase().includes(name.toLowerCase()))&&(!search||text.includes(search.toLowerCase()))&&(!verdicts.length||verdicts.includes(entry.verdict))&&(!category||entry.categories.includes(category))&&(!tool||entry.tools.includes(tool))&&reviewed;
     rows.get(entry.id).hidden=!show;if(show)count++;}
   document.getElementById('count').textContent=count+' of '+report.entries.length+' entries';document.getElementById('empty').hidden=count!==0;
 }
@@ -82,7 +109,7 @@ controls.forEach(c=>c.addEventListener(c.type==='search'?'input':'change',filter
 document.getElementById('toggle-search').onclick=()=>{const panel=document.getElementById('search-panel'),button=document.getElementById('toggle-search');panel.hidden=!panel.hidden;button.setAttribute('aria-expanded',String(!panel.hidden));if(!panel.hidden)document.getElementById('search').focus();};
 document.addEventListener('click',e=>document.querySelectorAll('.action-menu[open]').forEach(menu=>{if(!menu.contains(e.target))menu.open=false;}));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){for(const menu of document.querySelectorAll('.action-menu[open]')){menu.open=false;menu.querySelector('summary').focus();}}});
-document.getElementById('reset').onclick=()=>{controls.forEach(c=>c.value='');filterRows();};
+document.getElementById('reset').onclick=()=>{controls.forEach(c=>c.value='');document.querySelectorAll('[name="report-verdict"]').forEach(c=>c.checked=false);filterRows();};
 document.getElementById('collapse').onclick=()=>{for(const row of rows.values())row.open=false;};
 document.getElementById('export').onclick=()=>{const blob=new Blob([JSON.stringify(bundle(),null,2)+'\n'],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='musicbrainz-reviews-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);message('Exported '+records.size+' review(s), including comments, drafts and source references. Give the JSON file to the AI.');};
 document.getElementById('import').onclick=()=>document.getElementById('import-file').click();
@@ -100,3 +127,9 @@ document.getElementById('github').onclick=()=>{
   window.open(draft.url,'_blank','noopener,noreferrer');
   message(draft.requiresAttachment?'GitHub opened with the title and body filled. Attach the downloaded JSON before publishing.':'GitHub opened with the title, body and review export filled.');
 };
+
+document.querySelectorAll('[name="report-verdict"]').forEach(c=>c.onchange=filterRows);
+document.getElementById('clear-verdicts').onclick=()=>{document.querySelectorAll('[name="report-verdict"]').forEach(c=>c.checked=false);filterRows();};
+
+document.getElementById('review-help').onclick=()=>document.getElementById('help-dialog').showModal();
+document.getElementById('help-close').onclick=()=>document.getElementById('help-dialog').close();

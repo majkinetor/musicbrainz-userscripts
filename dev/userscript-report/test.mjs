@@ -163,3 +163,21 @@ test('one contributor can have multiple accepted discussions without losing hist
   assert.equal(entry.verdict,'Replaceable');assert.equal(entry.sourceVerdict,'Unassessed');assert.equal(entry.contributions.length,3);
   assert.equal(entry.acceptedReview.discussionNumber,2);assert.equal(entry.acceptedReview.author.id,author.id);
 });
+
+test('feature notes are visible in Markdown and do not change a verdict',()=>{
+ const basis={name:'Harmony',hash:'same',baselineVerdict:'Replaceable',features:[{id:'import',name:'Import release',coverage:'Unknown',weight:5}]};
+ const review={note:'',draft:'',features:{import:{name:'Import release',coverage:'Unknown',weight:5,comment:'Trivial feature'}},comments:[],basis};
+ const text=changeSummary({id:'example',name:'Harmony',currentBasis:basis,review});
+ assert.match(text,/Fully replaceable \(unchanged\)/);assert.match(text,/Capability \*\*Import release\*\*: note: Trivial feature/);assert.doesNotMatch(text,/Needs assessment/);
+ review.features.import.coverage='Gap';assert.match(changeSummary({name:'Harmony',currentBasis:basis,review}),/coverage Unknown → Gap/);
+});
+import { majorReviewState } from './major-review.mjs';
+test('quick review reuses identical hashes and invalidates changed source or suite inventory',()=>{
+ const review={sourceHash:'one',tools:[],suiteInventoryHash:'inventory',dependencies:[{path:'a.js',sha256:'a'}]};
+ const source={state:'captured',sha256:'one'},suite={inventoryHash:'inventory',files:[{path:'a.js',sha256:'a'}]};
+ assert.equal(majorReviewState(review,source,suite),'Pinned snapshot');
+ assert.equal(majorReviewState(review,{...source,sha256:'two'},suite),'Needs recheck');
+ assert.equal(majorReviewState(review,source,{...suite,inventoryHash:'new inventory'}),'Needs recheck');
+ assert.equal(majorReviewState(review,source,{...suite,files:[{path:'a.js',sha256:'b'}]}),'Needs recheck');
+ assert.equal(majorReviewState(review,{state:'unavailable'},suite),'Source unavailable');
+});

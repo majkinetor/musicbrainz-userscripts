@@ -6,6 +6,8 @@ import { validate, reviewState, evidenceUrl, hash, inputsFor } from './lib.mjs';
 import { parseCatalog, githubIdentity } from './catalog.mjs';
 import { tipJs } from '../ui/tooltip.mjs';
 import { applyContributions } from './contributions.mjs';
+import { majorReviewState } from './major-review.mjs';
+import { reviewHelpHtml } from './help.mjs';
 import { verdictLabel } from './review-model.mjs';
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const read = name => JSON.parse(readFileSync(path.join(dir,'data',name)));
@@ -46,12 +48,19 @@ entries=applyContributions(entries,contributions,exportsByPath).map(entry=>{
   if(entry.acceptedReview)entry.basis={...entry.basis,hash:hash(entry.basis.hash+JSON.stringify(entry.acceptedReview)),baselineVerdict:entry.verdict,acceptedReview:entry.acceptedReview};
   return entry;
 });
+const majorSources=read('major-sources.json'),majorReviews=read('major-reviews.json');
+entries=entries.map(entry=>{
+ const review=majorReviews.entries.find(r=>r.id===entry.id),source=majorSources.entries.find(s=>s.id===entry.id);
+ if(!review)return entry;
+ const state=majorReviewState(review,source,majorSources.toolset);
+ return {...entry,quickReview:{...review,state,source,suiteCommit:majorSources.toolset.commit},basis:{...entry.basis,hash:hash(entry.basis.hash+JSON.stringify({review,state})),quickReview:review}};
+});
 const data = {schemaVersion:2,reportId:'mb-userscripts-926',wiki:sources.wiki,collectedAt:sources.collectedAt,
   toolsetCommit:sources.toolset.commit,sourceManifestSha256:hash(JSON.stringify(sources)),contributors:contributions.contributors,submissions:contributions.submissions,entries};
 const esc = v => String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
 const options = values => [...new Set(values)].sort().map(v=>`<option value="${esc(v)}">${esc(verdictLabel(v))}</option>`).join('');
 const duplicateNames = new Set(entries.filter((e,i)=>entries.findIndex(x=>x.name===e.name)!==i).map(e=>e.name));
-const rows = entries.map(e=>`<details class="script" data-id="${esc(e.id)}"><summary><span class="name">${esc(e.name)}${duplicateNames.has(e.name)?` <small>(${esc(e.author)})</small>`:''}</span><span class="verdicts"><span class="baseline">${esc(verdictLabel(e.verdict))}</span><span class="personal" hidden></span><span class="review-marker" hidden></span></span></summary><div class="detail"></div></details>`).join('\n');
+const rows = entries.map(e=>`<details class="script" data-id="${esc(e.id)}"><summary><span class="name">${esc(e.name)}${duplicateNames.has(e.name)?` <small>(${esc(e.author)})</small>`:''}</span><button type="button" class="people-count plain" aria-label="Reviewers for ${esc(e.name)}" data-tip="Discussion reviewers\nOpen GitHub profiles and their discussions">${new Set(e.contributions.map(c=>c.author.id)).size} <span aria-hidden="true">${new Set(e.contributions.map(c=>c.author.id)).size===1?'reviewer':'reviewers'}</span></button><span class="verdicts"><span class="baseline">${esc(verdictLabel(e.verdict))}</span><span class="personal" hidden></span><span class="review-marker" hidden></span></span></summary><div class="detail"></div></details>`).join('\n');
 const model = readFileSync(path.join(dir,'review-model.mjs'),'utf8').replace(/^export /gm,'');
 const sharing = readFileSync(path.join(dir,'share.mjs'),'utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export /gm,'');
 const tooltips = tipJs(['main']);
@@ -64,9 +73,9 @@ data.siteUrl=site.site_url;
 data.reportVersion=hash(JSON.stringify(data)+html+model+sharing+tooltips+ui+css+theme);
 data.permanentUrl=site.site_url+'/reports/'+data.reportVersion+'.html';
 const tokens = {
-  '@@COUNT@@':String(entries.length),'@@REVIEWED@@':String(reviews.length),'@@ROWS@@':rows,
+  '@@HELP@@':reviewHelpHtml(),'@@COUNT@@':String(entries.length),'@@REVIEWED@@':String(reviews.length),'@@ROWS@@':rows,
   '@@MAINTAINER@@':String(entries.filter(e=>e.acceptedReview).length),
-  '@@VERDICTS@@':options(entries.map(e=>e.verdict)),'@@CATEGORIES@@':options(entries.flatMap(e=>e.categories)),
+  '@@VERDICTCHECKS@@':[...new Set(entries.map(e=>e.verdict))].sort().map(v=>`<label><input type="checkbox" name="report-verdict" value="${esc(v)}">${esc(verdictLabel(v))}</label>`).join(''),'@@CATEGORIES@@':options(entries.flatMap(e=>e.categories)),
   '@@TOOLS@@':options(entries.flatMap(e=>e.tools)),
   '@@DATA@@':JSON.stringify(data).replaceAll('<','\\u003c'),
   '@@CSS@@':css,'@@THEME@@':theme,'@@MODEL@@':model,'@@SHARING@@':sharing,'@@TOOLTIPS@@':tooltips,'@@UI@@':ui};

@@ -71,7 +71,7 @@ test('collapsed listing, weighted review, comments, reload and export/import rou
     await restoredRow.locator('.ack').waitFor();
     assert.match(await restoredRow.locator('.review-marker').textContent(),/Needs recheck/);
     await restoredRow.locator('.ack').click();
-    assert.equal(await restoredRow.locator('.review-marker').textContent(),'Confirmed');
+    assert.equal(await restoredRow.locator('.review-marker').isVisible(),false);
     assert.deepEqual(errors,[]);
   } finally {await browser.close();}
 });
@@ -142,4 +142,27 @@ test('main page, comparison and Stats share the saved theme choice',{skip:!proce
     if(process.env.REPORT_SCREENSHOT_DIR)await page.screenshot({path:process.env.REPORT_SCREENSHOT_DIR+'/926-actions-drawer.png'});
     await page.setViewportSize({width:390,height:844});if(process.env.REPORT_SCREENSHOT_DIR)await page.screenshot({path:process.env.REPORT_SCREENSHOT_DIR+'/926-compact-mobile.png'});
   }finally{await browser.close();}
+});
+
+test('row shortcuts ignore typing, reviewers do not expand rows, and verdict filters combine',async()=>{
+ const browser=await chromium.launch();try{
+ const page=await browser.newPage();await page.goto(url);
+ await page.locator('#name-filter').fill('Harmony');const row=page.locator('.script:visible').first();
+ await row.locator('.people-count').click();await page.locator('#people-dialog').waitFor({state:'visible'});
+ assert.equal(await row.getAttribute('open'),null);assert.match(await page.locator('#people-list').textContent(),/majkinetor/);await page.locator('#people-close').click();
+ await row.locator('summary').first().focus();await page.keyboard.press('3');assert.match(await row.locator('.personal').textContent(),/Partial overlap/);
+ await page.keyboard.press('n');await row.locator('.note').fill('123n');assert.equal(await row.locator('.my-verdict').inputValue(),'Partial overlap');
+ await page.locator('#toggle-search').click();await page.locator('.verdict-filter>summary').click();
+ await page.locator('[name="report-verdict"][value="Replaceable"]').check();await page.locator('[name="report-verdict"][value="No equivalent"]').check();
+ await page.locator('#name-filter').fill('');const count=await page.locator('.script:visible').count();
+ const expected=await page.evaluate(()=>JSON.parse(document.getElementById('report-data').textContent).entries.filter(e=>['Replaceable','No equivalent'].includes(e.verdict)).length);assert.equal(count,expected);
+ await page.locator('#clear-verdicts').click();assert.equal(await page.locator('.script:visible').count(),293);
+ }finally{await browser.close();}
+});
+import { reviewSteps } from './help.mjs';
+test('help uses the shared review process and old workflow status is absent',async()=>{
+ const browser=await chromium.launch();try{const page=await browser.newPage();await page.goto(url);await page.locator('#review-help').click();
+ assert.equal(await page.locator('#help-dialog li').count(),reviewSteps.length);assert.match(await page.locator('#help-dialog').textContent(),/maintainer decides/);await page.locator('#help-close').click();
+ await page.locator('#name-filter').fill('Harmony');await page.locator('.script:visible>summary').first().click();assert.equal(await page.locator('select.status').count(),0);
+ }finally{await browser.close();}
 });

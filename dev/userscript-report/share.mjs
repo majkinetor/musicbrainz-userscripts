@@ -1,4 +1,4 @@
-import { weightedVerdict, effectiveFeatures, verdictLabel } from './review-model.mjs';
+import { weightedVerdict, effectiveFeatures, hasScoringChanges, weightOptions, verdictLabel } from './review-model.mjs';
 
 export const discussionCategory = '3rd-party';
 export const discussionsBase = 'https://github.com/majkinetor/musicbrainz-userscripts/discussions/new';
@@ -7,16 +7,26 @@ export function changeSummary(item){
   const r=item.review,basis=item.currentBasis || r.basis;
   const weighted=weightedVerdict(effectiveFeatures({features:basis.features || []},r)).verdict;
   const before=basis.baselineVerdict || 'Unassessed';
-  const proposed=r.proposedVerdict || (Object.keys(r.features).length?weighted:before);
-  const reasons=[];
-  if(Object.keys(r.features).length)reasons.push(Object.keys(r.features).length+' feature edit(s)');
-  if(r.note)reasons.push('note');
-  if(r.comments.length)reasons.push(r.comments.length+' comment(s)');
-  if(r.draft)reasons.push('draft note');
-  if(r.deletedComments?.length)reasons.push(r.deletedComments.length+' deleted comment(s)');
-  if(r.basis.hash!==basis.hash)reasons.push('earlier review baseline');
-  const verdict=before===proposed?verdictLabel(proposed):verdictLabel(before)+' → '+verdictLabel(proposed);
-  return '- **'+md(item.name || basis.name)+'**: '+md(verdict)+(reasons.length?' · '+reasons.join(', '):'');
+  const proposed=r.proposedVerdict || (hasScoringChanges({features:basis.features || []},r)?weighted:before);
+  const details=[],weightLabel=n=>weightOptions.find(w=>w[0]===n)?.[1] || String(n);
+  for(const [id,f] of Object.entries(r.features)){
+    const original=(basis.features || r.basis.features || []).find(x=>x.id===id),changes=[];
+    if(!original || f.added)changes.push('added capability; weight '+weightLabel(f.weight)+', coverage '+f.coverage);
+    else{
+      if(f.weight!==(original.weight ?? 5))changes.push('weight '+weightLabel(original.weight ?? 5)+' → '+weightLabel(f.weight));
+      if(f.coverage!==original.coverage)changes.push('coverage '+original.coverage+' → '+f.coverage);
+    }
+    if(f.comment)changes.push('note: '+f.comment);
+    else if(original?.comment)changes.push('note removed');
+    if(changes.length)details.push('  - Capability **'+md(f.name)+'**: '+changes.map(md).join('; '));
+  }
+  if(r.note)details.push('  - Note: '+md(r.note));
+  for(const c of r.comments)details.push('  - Comment'+(c.updatedAt?' (edited)':'')+': '+md(c.text));
+  if(r.draft)details.push('  - Unposted comment: '+md(r.draft));
+  if(r.deletedComments?.length)details.push('  - Deleted '+r.deletedComments.length+' comment(s).');
+  if(r.basis.hash!==basis.hash)details.push('  - Reviewed an earlier report baseline; source references are in the export.');
+  const verdict=before===proposed?verdictLabel(proposed)+' (unchanged)':verdictLabel(before)+' → '+verdictLabel(proposed);
+  return '- **'+md(item.name || basis.name)+'**: '+md(verdict)+(details.length?'\n'+details.join('\n'):'');
 }
 export function discussionDraft(bundle){
   const version=bundle.report.reportVersion || bundle.report.sourceManifestSha256;

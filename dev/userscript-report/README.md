@@ -2,7 +2,7 @@
 
 The [public report](https://milic.info/musicbrainz-userscripts/third-party-comparison/) for [#926](https://github.com/majkinetor/musicbrainz-userscripts/issues/926) lists 293 tools, seven source-level assessments and 172 accepted maintainer verdicts from [#941](https://github.com/majkinetor/musicbrainz-userscripts/discussions/941). Other entries remain unassessed, suite entries or companion tools. The main site's footer links it as **3rd party comparison**. The [standalone HTML](out/index.html) also works offline.
 
-The compact header keeps a script-name filter visible. **Filters** expands broader search and advanced filters; **Collapse all** is beside the Script column heading. Each script's **Actions** menu opens only the requested feature, note or comment editor. Review status explanations are in the status tooltip. The report and Stats share the main site's palette, sun/moon switch and `theme` preference.
+The compact header keeps a script-name filter visible. **Filters** expands broader search and advanced filters, including a checkbox list for multiple report verdicts; **Collapse all** is beside the Script column heading. Each script's **Actions** menu opens only the requested feature, note or comment editor. Notes start at one line and grow as you type. A reviewer count on each row opens GitHub avatars, profiles and every linked discussion. Focus a row and use **1–7** for verdicts, **0** for Weighted, or **N** for its note; shortcuts stay off while typing. Expanded rows lead with the description and group the maintainer verdict with its attribution. The header **?** explains the concise review/share/incorporation process. GitHub summaries name edited capabilities and include their notes, weights and coverage changes. Text-only notes leave the verdict unchanged. The report and Stats share the main site's palette, sun/moon switch and `theme` preference.
 
 ## View or rebuild
 
@@ -21,8 +21,8 @@ The output combines [sources.json](data/sources.json), [reviews.json](data/revie
 
 ## Your review and AI handoff
 
-1. Expand a script. Choose **My verdict** directly or keep **Weighted**. Set capability weights, correct coverage where you have evidence, and add missing features. Short field labels use the suite's shared tooltips for explanations.
-2. Add a feature note, an overall note or timestamped comments. **Edit** and **Delete** manage comments; the note's **✕** clears it. Emptying a feature-note field deletes its text. Deleted comments stay deleted when an older export is imported. Use **In progress**, **Confirmed** or **Changes requested** to organize the work.
+1. Expand a script. Choose **My verdict** directly or keep **Weighted**. Set capability weights, correct coverage where you have evidence, and add missing features. Short field labels use the suite's shared tooltips for explanations. Old exports remain importable; workflow status is no longer collected.
+2. Add a feature note, an overall note or timestamped comments. **Edit** and **Delete** manage comments; the note's **✕** clears it. Emptying a feature-note field deletes its text. Deleted comments stay deleted when an older export is imported.
 3. **Send to GitHub** opens a new discussion directly in [3rd party](https://github.com/majkinetor/musicbrainz-userscripts/discussions/categories/3rd-party), with title and Markdown body filled in. It contains an immutable report link, concise verdict changes, and the JSON export. A compact export avoids repeating baseline evidence available in the linked snapshot. If the compose URL would exceed 7,500 characters, the full JSON downloads automatically and the filled body asks you to attach it; a long change list is explicitly continued in the attachment. Publish from your own GitHub account. No review data is silently truncated.
 4. **Export** downloads the same review as a JSON file, including your selected verdict, weights, corrections, notes, comments, drafts, report version and original source references. **Import** restores it. Review files can be supplied directly to the AI without a discussion.
 
@@ -93,3 +93,15 @@ Preserve each published Git commit for history. Git tracks source manifests, jud
 Confidence and freshness are independent of coverage. All pilot findings have medium confidence: entry implementations and suite code/docs were inspected, external shared requirements were not fully reviewed, and no end-to-end comparisons were run. The evidence panel makes this explicit before anyone relies on an uninstall recommendation.
 
 Periodic reconciliation must revisit prior gaps when the suite adds capabilities and when websites change without source updates. Full source assessment and scheduled collection remain later work. Review/export does not change userscripts.
+
+## Quick source pass
+
+[data/major-sources.json](data/major-sources.json) fingerprints the 172 submitted entries: 162 captured sources and 10 unavailable or invalid locations. [data/major-reviews.json](data/major-reviews.json) keeps 52 specific major-workflow comparisons alongside scoped triage and explicit unresolved results. A quick check never silently overrides a maintainer verdict. Application documentation, entry-script inspection and detailed assessments are labeled separately; shared requirements and live provider behavior remain verification limits.
+
+```powershell
+node dev/userscript-report/capture-major.mjs
+# Retry failed source locations while preserving successful snapshots:
+node dev/userscript-report/capture-major.mjs --retry-unavailable
+```
+
+The collector saves version, commit where available, SHA-256, dependency URLs and cache bytes under `.cache/major/`, with the suite's pinned code/docs inventory. An unchanged Git commit reuses cached bytes. Collection never refreshes review decisions. The builder queues a recheck when the captured entry or a recorded suite dependency changes; negative findings also depend on the suite inventory. Retain the cache archive with the review handoff, or retrieve the exact pinned URL and verify its hash when restoring it. Mutable non-GitHub URLs require the retained bytes to reproduce the old comparison.

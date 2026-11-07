@@ -27,6 +27,13 @@ export function effectiveFeatures(entry, record) {
   return features;
 }
 
+export function hasScoringChanges(entry,record){
+  return Object.entries(record?.features || {}).some(([id,f])=>{
+    const original=entry.features.find(x=>x.id===id);
+    return !original || f.added || f.weight!==(original.weight ?? 5) || f.coverage!==original.coverage;
+  });
+}
+
 export function readReviewBundle(value) {
   const fail = () => { throw new Error('Invalid review file. Expected a version 1 MusicBrainz review export.'); };
   if (!value || value.format !== 'mb-userscript-review' || value.schemaVersion !== 1 || !Array.isArray(value.entries) || value.entries.length > 2000) fail();
@@ -35,7 +42,7 @@ export function readReviewBundle(value) {
     if (!item || typeof item.id !== 'string' || item.id.length > 512 || ['__proto__','constructor','prototype'].includes(item.id) || seen.has(item.id)) fail();
     seen.add(item.id);
     const r = item.review;
-    if (!r || !['In progress','Confirmed','Changes requested'].includes(r.status) || typeof r.updatedAt !== 'string' || !Number.isFinite(Date.parse(r.updatedAt))) fail();
+    if (!r || (r.status !== undefined && !['In progress','Confirmed','Changes requested'].includes(r.status)) || typeof r.updatedAt !== 'string' || !Number.isFinite(Date.parse(r.updatedAt))) fail();
     if (!r.basis || typeof r.basis.hash !== 'string' || typeof r.basis.name !== 'string') fail();
     if (r.proposedVerdict !== undefined && r.proposedVerdict !== '' && !verdictOptions.includes(r.proposedVerdict)) fail();
     if (r.deletedComments !== undefined && (!Array.isArray(r.deletedComments) || r.deletedComments.some(id=>typeof id !== 'string'))) fail();
@@ -49,7 +56,7 @@ export function readReviewBundle(value) {
       if (c.updatedAt !== undefined && !Number.isFinite(Date.parse(c.updatedAt))) fail();
       return {id:c.id,text:c.text,at:c.at,...(c.updatedAt?{updatedAt:c.updatedAt}:{})};
     });
-    return {id:item.id,review:{status:r.status,proposedVerdict:r.proposedVerdict || '',note:r.note,draft:r.draft || '',features,comments,deletedComments:r.deletedComments || [],basis:r.basis,reportAtReview:r.reportAtReview || null,updatedAt:r.updatedAt}};
+    return {id:item.id,review:{proposedVerdict:r.proposedVerdict || '',note:r.note,draft:r.draft || '',features,comments,deletedComments:r.deletedComments || [],basis:r.basis,reportAtReview:r.reportAtReview || null,updatedAt:r.updatedAt}};
   });
   return entries;
 }
