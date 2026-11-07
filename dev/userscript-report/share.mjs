@@ -26,11 +26,22 @@ export function discussionDraft(bundle){
     '## Requested changes','',...bundle.entries.map(changeSummary),''];
   const json=JSON.stringify(bundle,null,2);
   const inline=lines.join('\n')+'\n<details>\n<summary>Review export (JSON)</summary>\n\n```json\n'+json+'\n```\n\n</details>\n';
-  const requiresAttachment=inline.length>50000;
-  const body=requiresAttachment?lines.join('\n')+'\n## Review export\n\nAttach the downloaded JSON review file before publishing this discussion. It contains the full review and original source references.\n':inline;
+  let requiresAttachment=inline.length>50000,body=inline;
   const title='Report '+version.slice(0,12)+': '+bundle.entries.length+' script review(s)';
   const url=new URL(discussionsBase);url.searchParams.set('category',discussionCategory);url.searchParams.set('title',title);
-  // Large JSON exports stay out of query strings. The visitor pastes the exact
-  // copied Markdown or attaches its downloaded JSON while signed in to GitHub.
+  url.searchParams.set('body',body);
+  if(url.href.length>7500){
+    // The referenced immutable report contains the original full findings.
+    // Avoid repeating those findings and fingerprints in the compose URL.
+    const compact={...bundle,entries:bundle.entries.map(item=>({...item,currentBasis:undefined,currentFinding:undefined,review:{...item.review,basis:{name:item.review.basis.name,hash:item.review.basis.hash,sourceIdentity:item.review.basis.sourceIdentity,baselineVerdict:item.review.basis.baselineVerdict}}}))};
+    body=lines.join('\n')+'\n<details>\n<summary>Review export (JSON)</summary>\n\n```json\n'+JSON.stringify(compact)+'\n```\n\n</details>\n';
+    url.searchParams.set('body',body);
+  }
+  if(url.href.length>7500){
+    requiresAttachment=true;
+    const summaries=bundle.entries.map(changeSummary),attachment='\n\n## Review export\n\nAttach the downloaded JSON review file before publishing. It contains every change, comment and source reference.\n';
+    let limit=summaries.length;
+    do{body=lines.slice(0,5).join('\n')+'\n'+summaries.slice(0,limit).join('\n')+(limit<summaries.length?'\n\n'+(summaries.length-limit)+' more changes are included in the attached export.':'')+attachment;url.searchParams.set('body',body);limit--;}while(url.href.length>7500&&limit>=0);
+  }else requiresAttachment=false;
   return {title,body,url:url.href,requiresAttachment};
 }

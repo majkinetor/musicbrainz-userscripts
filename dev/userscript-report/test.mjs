@@ -5,6 +5,7 @@ import { validate, reviewState, userscriptText, wikiRevision } from './lib.mjs';
 import { parseCatalog } from './catalog.mjs';
 import { weightedVerdict, readReviewBundle, mergeReviewEntries } from './review-model.mjs';
 import { discussionDraft, changeSummary } from './share.mjs';
+import { applyContributions } from './contributions.mjs';
 
 const sources = JSON.parse(readFileSync(new URL('./data/sources.json', import.meta.url)));
 const reviews = JSON.parse(readFileSync(new URL('./data/reviews.json', import.meta.url)));
@@ -131,6 +132,9 @@ test('GitHub draft includes concise verdict changes, pinned report and the exact
   assert.ok(draft.body.includes(value.report.permanentUrl));
   assert.equal(new URL(draft.url).searchParams.get('category'),'3rd-party');
   assert.deepEqual(JSON.parse(draft.body.match(/```json\n([\s\S]*?)\n```/)[1]),value);
+  assert.equal(new URL(draft.url).searchParams.get('body'),draft.body);
+  assert.equal(new URL(draft.url).searchParams.get('title'),draft.title);
+  assert.ok(draft.url.length<=7500);
 });
 test('oversized exports require an attachment rather than truncating feedback',()=>{
   const value=sharingFixture();value.entries[0].review.comments=Array.from({length:4},(_,i)=>({id:String(i),at:'2026-11-07T10:00:00Z',text:'x'.repeat(18000)}));
@@ -147,4 +151,15 @@ test('the permanent report URL identifies a byte-identical report snapshot',()=>
   const current=readFileSync(new URL('./out/index.html',import.meta.url));
   const archived=readFileSync(new URL('./out/reports/'+metadata.version+'.html',import.meta.url));
   assert.deepEqual(current,archived);assert.ok(metadata.url.endsWith('/reports/'+metadata.version+'.html'));
+});
+
+test('one contributor can have multiple accepted discussions without losing history',()=>{
+  const author={id:'account-1',login:'reviewer',url:'https://github.com/reviewer'};
+  const submissions=[{id:'discussion-1',discussionNumber:1,authorId:author.id,updatedAt:'2026-11-01',exportPath:'one.json',disposition:'accepted',acceptedBy:'majkinetor'},
+    {id:'discussion-2',discussionNumber:2,authorId:author.id,updatedAt:'2026-11-02',exportPath:'two.json',disposition:'accepted',acceptedBy:'majkinetor'},
+    {id:'discussion-3',discussionNumber:3,authorId:author.id,updatedAt:'2026-11-03',exportPath:'three.json',disposition:'proposed'}];
+  const files=new Map([['one.json',{entries:[{id:'script',review:{proposedVerdict:'Partial overlap'}}]}],['two.json',{entries:[{id:'script',review:{proposedVerdict:'Replaceable'}}]}],['three.json',{entries:[{id:'script',review:{proposedVerdict:'No equivalent'}}]}]]);
+  const [entry]=applyContributions([{id:'script',verdict:'Unassessed'}],{contributors:[author],submissions},files);
+  assert.equal(entry.verdict,'Replaceable');assert.equal(entry.sourceVerdict,'Unassessed');assert.equal(entry.contributions.length,3);
+  assert.equal(entry.acceptedReview.discussionNumber,2);assert.equal(entry.acceptedReview.author.id,author.id);
 });

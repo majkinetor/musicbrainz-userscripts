@@ -482,6 +482,8 @@ def render(connection: sqlite3.Connection, out_dir: Path, config: dict) -> None:
     md_path.write_text(_markdown(payload, connection), encoding='utf8')
 
     template = (ROOT / 'templates' / 'dashboard.html').read_text(encoding='utf8')
+    for extension in ('css', 'js'):
+        template = template.replace('/*__SITE_THEME_' + extension.upper() + '__*/', (ROOT / 'templates' / ('site-theme.' + extension)).read_text(encoding='utf8'))
     html = template.replace(
         '/*__DATA__*/null',
         json.dumps(payload, ensure_ascii=False, separators=(',', ':')),

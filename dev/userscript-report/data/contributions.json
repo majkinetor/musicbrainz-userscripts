@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "contributors": [
+    {
+      "id": "MDQ6VXNlcjg1NzY3",
+      "login": "majkinetor",
+      "url": "https://github.com/majkinetor"
+    }
+  ],
+  "submissions": [
+    {
+      "id": "D_kwDOSj7rds4Aq6q2",
+      "discussionNumber": 941,
+      "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/941",
+      "authorId": "MDQ6VXNlcjg1NzY3",
+      "createdAt": "2026-11-07T16:21:42Z",
+      "updatedAt": "2026-11-07T16:21:42Z",
+      "exportPath": "contributions/941.json",
+      "reportVersion": "0bbd5c4c064d6753e5e28f89e0deef382b850f5e95fed304c053e4ea56a2fb86",
+      "disposition": "accepted",
+      "acceptedBy": "majkinetor",
+      "decision": "Maintainer-submitted review accepted as maintainer verdicts; original code evidence remains separately available."
+    }
+  ]
+}

@@ -1,6 +1,8 @@
 # Userscript comparison and review
 
-The [public report](https://musicbrainz-userscript-review.tamerhubarb.chatgpt.site) for [#926](https://github.com/majkinetor/musicbrainz-userscripts/issues/926) lists 293 distinct tools from the wiki and preserves seven source-reviewed comparisons. Other entries are marked unassessed, suite entries or companion tools. Script names and verdicts start collapsed; expanding a row shows full-width capabilities, evidence and review controls. The [standalone HTML](out/index.html) also works offline.
+The [public report](https://milic.info/musicbrainz-userscripts/third-party-comparison/) for [#926](https://github.com/majkinetor/musicbrainz-userscripts/issues/926) lists 293 tools, seven source-level assessments and 172 accepted maintainer verdicts from [#941](https://github.com/majkinetor/musicbrainz-userscripts/discussions/941). Other entries remain unassessed, suite entries or companion tools. The main site's footer links it as **3rd party comparison**. The [standalone HTML](out/index.html) also works offline.
+
+The compact header keeps a script-name filter visible. **Filters** expands broader search and advanced filters; **Collapse all** is beside the Script column heading. Each script's **Actions** menu opens only the requested feature, note or comment editor. Review status explanations are in the status tooltip. The report and Stats share the main site's palette, sun/moon switch and `theme` preference.
 
 ## View or rebuild
 
@@ -21,10 +23,16 @@ The output combines [sources.json](data/sources.json), [reviews.json](data/revie
 
 1. Expand a script. Choose **My verdict** directly or keep **Weighted**. Set capability weights, correct coverage where you have evidence, and add missing features. Short field labels use the suite's shared tooltips for explanations.
 2. Add a feature note, an overall note or timestamped comments. **Edit** and **Delete** manage comments; the note's **✕** clears it. Emptying a feature-note field deletes its text. Deleted comments stay deleted when an older export is imported. Use **In progress**, **Confirmed** or **Changes requested** to organize the work.
-3. **Send to GitHub** prepares a discussion draft for [3rd party](https://github.com/majkinetor/musicbrainz-userscripts/discussions/categories/3rd-party). It contains an immutable report link, concise verdict changes (for example, `Harmony: Mostly replaceable → Fully replaceable`), feature/note counts and the complete JSON export in a collapsible section. Copy the draft, open GitHub, paste and publish from your own account. If the complete body exceeds the conservative size limit, the draft asks you to attach **Download JSON** instead; no feedback is truncated. GitHub supports JSON attachments ([documentation](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files#text-and-data-files)).
+3. **Send to GitHub** opens a new discussion directly in [3rd party](https://github.com/majkinetor/musicbrainz-userscripts/discussions/categories/3rd-party), with title and Markdown body filled in. It contains an immutable report link, concise verdict changes, and the JSON export. A compact export avoids repeating baseline evidence available in the linked snapshot. If the compose URL would exceed 7,500 characters, the full JSON downloads automatically and the filled body asks you to attach it; a long change list is explicitly continued in the attachment. Publish from your own GitHub account. No review data is silently truncated.
 4. **Export** downloads the same review as a JSON file, including your selected verdict, weights, corrections, notes, comments, drafts, report version and original source references. **Import** restores it. Review files can be supplied directly to the AI without a discussion.
 
-The public Site needs no account to read or draft reviews. Drafts are private to each visitor's browser; the report does not host a shared comment database, collect GitHub tokens, or post as the maintainer. GitHub signs in the visitor and handles publication. Nothing has been posted merely because the draft was prepared.
+The public page needs no account to read or draft reviews. Drafts stay in each visitor's browser until exported or submitted to GitHub. Each visitor's edits affect their personal result immediately; published outcomes change only when a submission is accepted into the report. Other users' submissions are proposals, not votes or automatic replacements. GitHub signs in the visitor and handles publication.
+
+## Contributors and accepted outcomes
+
+[contributions.json](data/contributions.json) stores contributors separately from discussion submissions. A contributor uses the stable GitHub account ID and verified discussion author metadata; one user can have many discussions. Each submission retains its own URL, reviewed report version, export and acceptance decision. The report shows contributor/profile links, per-entry review history and footer attribution.
+
+Accepted explicit verdicts update the shared report's outcome. Original code-level findings and evidence remain separate; a contributor assertion does not become a live-tested result. A later accepted submission can update the outcome while preserving earlier discussion history. The original [#941 export](data/contributions/941.json) is retained for future comparison. A self-declared name inside an export never supplies verified contributor identity.
 
 Changes save to browser `localStorage` under `mb-userscripts:926:reviews:v1`. A storage failure is shown explicitly; export still works from memory. Keep the same file path and browser, or use **Import reviews** after moving it. Browser storage is not a backup: the export is the portable copy.
 
@@ -46,7 +54,7 @@ The weighted result is personal to your workflow; **My verdict** can override it
 
 ## Publishing and report versions
 
-[site.json](site.json) records the existing Sites project ID and public URL. Reuse that identity; do not create another Site when updating this report. The deploy checkout uses `.openai/hosting.json` with that ID and `static.directory` set to `dist`. Copy only `out/` into `dist/`; never copy `.cache/`, browser data or credentials. The Sites skill's source helper pushes and packages this dedicated deploy checkout before the native save/deploy calls.
+[site.json](site.json) records the canonical GitHub Pages URL and the previous Sites deployment identity. The builder copies the generated page and immutable snapshots into `docs/third-party-comparison/`. The existing site publishes `docs/` from `main`; its main footer supplies the comparison link. Keep `.cache/` and local browser reviews out of the published tree. The older Sites origin remains available for existing snapshots and exporting old local drafts; use Export/Import when moving drafts between origins.
 
 Each build computes a SHA-256 report version from the report data, markup, styles, model, shared tooltip runtime and review/sharing code. `out/index.html` is the current report; `out/reports/<hash>.html` is its immutable snapshot; [report.json](out/report.json) records the version URL. Keep published snapshots in subsequent deployments. Discussion drafts and JSON exports reference the exact snapshot, wiki revision, toolset commit and source manifest. Each individual review also retains the report it was made against; confirming a changed snapshot explicitly advances that reference.
 

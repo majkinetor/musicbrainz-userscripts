@@ -156,7 +156,26 @@
   .empty { color: var(--ink-2); font-size: 13px; padding: 14px 0; }
   footer.page { color: var(--muted); font-size: 12px; margin-top: 26px; line-height: 1.7; }
   code { background: var(--plane); padding: 1px 5px; border-radius: 5px; font-size: 12px; }
+:root{--f:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;--bg:#ffffff;--ink:#141618;--dim:#5f6469;--faint:#9ba1a6;--rule:#ececef;--accent:#1f6feb;color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-t=light]){--bg:#0d0f11;--ink:#e8eaec;--dim:#98a0a6;--faint:#666d73;--rule:#1b1f23;--accent:#6ea8ff;color-scheme:dark}}
+:root[data-t=dark]{--bg:#0d0f11;--ink:#e8eaec;--dim:#98a0a6;--faint:#666d73;--rule:#1b1f23;--accent:#6ea8ff;color-scheme:dark}
+:root,:root[data-t],:root[data-theme]{--surface-1:var(--bg);--plane:var(--bg);--ink-2:var(--dim);--muted:var(--dim);--grid:var(--rule);--axis:var(--faint);--hairline:var(--rule);--line:var(--rule);--soft:color-mix(in srgb,var(--accent) 6%,var(--bg))}
+body{font-family:var(--f);-webkit-font-smoothing:antialiased}
+.site-theme-switch{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;flex:none;min-height:0;padding:4px;border:0;border-radius:0;background:none;color:var(--ink);cursor:pointer}
+.site-theme-switch:hover{color:var(--accent);background:none}.site-theme-switch svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.site-theme-switch .sun{display:none}.dark .site-theme-switch .sun{display:block}.dark .site-theme-switch .moon{display:none}
+header.page .site-theme-switch{margin-left:auto}
+
 </style>
+<script>// Same saved preference as the main site; no selection means system theme.
+(()=>{
+  const root=document.documentElement,system=matchMedia('(prefers-color-scheme: dark)');let preference;
+  try{const saved=localStorage.getItem('theme');if(saved==='light'||saved==='dark')preference=saved;}catch{}
+  function paint(){if(preference)root.dataset.t=preference;else delete root.dataset.t;const dark=preference?preference==='dark':system.matches;root.dataset.theme=dark?'dark':'light';root.classList.toggle('dark',dark);const button=document.getElementById('tt')||document.getElementById('themeToggle');if(button){button.setAttribute('aria-label',dark?'Switch to light theme':'Switch to dark theme');button.dataset.tip=dark?'Light theme':'Dark theme';}window.dispatchEvent(new Event('site-theme-change'));}
+  function setup(){const button=document.getElementById('tt')||document.getElementById('themeToggle');if(button)button.addEventListener('click',()=>{preference=root.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem('theme',preference);}catch{}paint();});paint();}
+  paint();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();system.addEventListener('change',paint);
+  window.addEventListener('storage',event=>{if(event.key==='theme'){preference=['light','dark'].includes(event.newValue)?event.newValue:undefined;paint();}});
+})();
+</script>
 </head>
 <body>
 <div class="wrap">
@@ -164,7 +183,7 @@
   <header class="page">
     <h1>Script metrics</h1>
     <span class="sub" id="provenance"></span>
-    <button class="theme-toggle" id="themeToggle" type="button">Theme</button>
+    <button class="site-theme-switch" id="themeToggle" type="button" aria-label="Switch light/dark theme"><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
   </header>
 
   <div class="filters">
@@ -788,12 +807,7 @@ function bindFilters() {
     minEdits.value = state.minEdits;
     renderAll();
   });
-  $('themeToggle').addEventListener('click', () => {
-    const root = document.documentElement;
-    const dark = getComputedStyle(root).getPropertyValue('--surface-1').trim() === '#1a1a19';
-    root.setAttribute('data-theme', dark ? 'light' : 'dark');
-    renderAll();
-  });
+  window.addEventListener('site-theme-change', () => renderAll());
 }
 
 $('provenance').textContent =
