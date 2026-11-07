@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.07.181405
+// @version      2026.11.07.183602
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3727,7 +3727,11 @@ class RainFall {
             if (p.y > p.ground) Object.assign(p, this.spawn(false));
             if (p.x > w * 1.35) p.x -= w * 1.6;
         }
-        if (P.lightning > 0 && (this.next -= dt) < 0) { this.fl = 0; this.bolt = this.makeBolt(); this.next = rainR(4, 11) / P.lightning; }
+        // Lightning is flashes a minute: the wait is a minute over the rate, give or take half; a higher rate cuts a long wait short.
+        if (P.lightning > 0) {
+            this.next = Math.min(this.next, 90 / P.lightning) - dt;
+            if (this.next < 0) { this.fl = 0; this.bolt = this.makeBolt(); this.next = rainR(.5, 1.5) * 60 / P.lightning; }
+        }
         if (this.fl >= 0) { this.fl += dt; if (this.fl > 1.4) this.fl = -1; }
     }
     makeBolt() {
@@ -3778,7 +3782,7 @@ function rainDraw(ctx, w, h, p, t, c1, c2, tone) {
     if (refr !== glassP.refr) state.glass.rebuild();
     const dt = Math.max(0, Math.min(.1, t - state.last)); state.last = t;
     if (dt) { state.glass.step(dt); state.fall.step(dt); }
-    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = .55; ctx.drawImage(state.lights.sharp, 0, 0); ctx.restore();
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = p.rainLightsOpacity; ctx.drawImage(state.lights.sharp, 0, 0); ctx.restore();
     state.fall.draw(ctx, i => tone(i));
     state.glass.draw(ctx);
     ctx.setTransform(d, 0, 0, d, 0, 0);
@@ -3888,9 +3892,10 @@ const AMBIENT = {
         ['rainMerge', 'Merging', [0, 1], 1, ['Off', 'On'], 'A sliding drop swallows the drops it touches'],
         ['rainFog', 'Fog', [0, .5, .9], .5, ['Off', 'Light', 'Heavy'], 'Mist on the glass\nSliding drops wipe clear lines through it'],
         ['rainRefraction', 'Refraction', [0, .5, 1], .5, ['Off', 'Soft', 'Strong'], 'Each drop shows the lights behind it, upside down'],
-        ['rainLights', 'Lights', [0, .25, .5, .75, 1], 1, ['Off', '25%', '50%', '75%', '100%'], 'The blurred lights beyond the glass'],
+        ['rainLights', 'Lights', [0, .25, .5, .75, 1], 1, ['Off', '25%', '50%', '75%', '100%'], 'How many blurred lights shine beyond the glass'],
+        ['rainLightsOpacity', 'Lights opacity', [0, .55, 1], .55, null, 'How bright the lights beyond the glass are'],
         ['rainFall', 'Falling rain', [0, .5, 1], .5, ['Off', 'Light', 'Heavy'], 'Rain falling beyond the window'],
-        ['rainLightning', 'Lightning', [0, 1, 2.5], 0, ['Off', 'Rare', 'Often']],
+        ['rainLightning', 'Lightning', [0, .2, .5, 1, 2, 3], 0, ['Off', '0.2', '0.5', '1', '2', '3'], 'Flashes a minute'],
     ] },
 };
 const AMBIENT_DEFAULTS = Object.fromEntries(Object.values(AMBIENT).flatMap(f => f.rows.map(([k, , , v]) => [k, v])));
@@ -3904,7 +3909,7 @@ const FX_STRIP = {
     tronOutlines: [0, 100, 1], tronSpeed: [20, 200, .01], tronTrail: [20, 200, .03],
     starDensity: [20, 200, .01], starDrift: [0, 100, .01], starDepth: [20, 200, .01], starTwinkle: [0, 100, .01],
     auroraDiffuse: [0, 100, 1], auroraSpeed: [20, 200, .01], auroraHeight: [40, 160, .0025],
-    rainAmount: [20, 200, .01], rainSlide: [20, 200, .01], rainFog: [0, 100, .01], rainRefraction: [0, 100, .01], rainLights: [0, 100, .01], rainFall: [0, 100, .01],
+    rainAmount: [20, 200, .01], rainSlide: [20, 200, .01], rainFog: [0, 100, .01], rainRefraction: [0, 100, .01], rainLights: [0, 100, .01], rainLightsOpacity: [0, 100, .01], rainFall: [0, 100, .01],
     ...Object.fromEntries(Object.keys(AMBIENT).flatMap(k => [[k + 'Opacity', [20, 100, 1]], [k + 'Glow', [0, 200, .01]]])),
     hexOpacity: [0, 100, 1], hexFx: [20, 100, 1], hexPace: [20, 200, .01], hexTrail: [20, 200, .01], hexOften: [20, 200, .01], hexGlow: [0, 200, .01],
     bgOpacity: [20, 100, 1], bgBlur: [0, 100, .4, 1], bgBright: [40, 140, 1], bgSat: [0, 200, 1], bgVig: [0, 100, 1], bgAmount: [20, 200, 1], bgSize: [40, 200, 1], bgGlow: [0, 200, 1],
@@ -3920,6 +3925,8 @@ const fxMigrate = v => {
         if (v[k + 'Glow'] == null && typeof v.hexGlow === 'number') v[k + 'Glow'] = v.hexGlow;
         if (v[k + 'Colour'] == null && v.hexTwo != null) v[k + 'Colour'] = two;
     }
+    // Lightning was Rare (1) or Often (2.5) before it counted flashes a minute
+    if (v.rainLightning === 2.5) v.rainLightning = 3;
     return v;
 };
 // the user's colours as #rrggbb, for the colour fields

@@ -38,18 +38,18 @@ When MB page has Event Horizon redesign available, EH dock button shows on the n
 
 Under **Settings → Effects**, add a **Background** and as many **Effects** as you like, stacked over it; each is a badge you select to show its settings, and its × removes it alone. Each effect keeps its own parameters when you switch effects. **Preset** saves the whole configuration by name: **Save** keeps a change in the preset (and a new name typed over it), **+** saves it as a new preset and leaves the old one as it was, and a built-in preset is kept as shipped (**+** copies it). A preset with unsaved changes lights up **Save** (**+** for a built-in one). **Copy as JSON** and **Import from JSON** in the preset list share a preset. Every effect has its own **Opacity**, which sets its strength, **Glow**, which sets how far the soft light spreads, and **Colour**: **One tone** uses the theme's accent, **Two-tone** adds its second accent, **All** gives each light its own colour, and **User** uses colours you pick. With User, a **Colours** row lists them: click a swatch to change it, its × to remove it, and **Add** for another, as many as you like.
 
-| Effect   | Controls                                                                                      |
-| -------- | --------------------------------------------------------------------------------------------- |
-| Tron     | Outlines, Grid size, Riders, Speed, Trail length                                              |
-| Stars    | Density, Drift, Depth, Twinkle                                                                |
-| Aurora   | Style, Diffuse, Ribbons, Speed, Height, Folds                                                 |
-| Rain     | Amount, Drop size, Sliding, Trails, Merging, Fog, Refraction, Lights, Falling rain, Lightning |
-| Hexagons | Motion, Outlines, Effect, Pace, Trail, How often, Glow, Colour, Depth                         |
+| Effect   | Controls                                                                                                                         |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Tron     | Outlines, Grid size, Riders, Speed, Trail length                                                                                 |
+| Stars    | Density, Drift, Depth, Twinkle                                                                                                   |
+| Aurora   | Style, Diffuse, Ribbons, Speed, Height, Folds                                                                                    |
+| Rain     | Amount, Drop size, Sliding, Trails, Merging, Fog, Refraction, Lights, Lights opacity, Falling rain, Lightning (flashes a minute) |
+| Hexagons | Motion, Outlines, Effect, Pace, Trail, How often, Glow, Colour, Depth                                                            |
 
 **Background** is **Cover aura** (the page's cover, blurred behind its head), **Glow** (the accent colour), **Artwork** or **Image**:
 
 - **Artwork** is drawn by Event Horizon. **Scene** picks Chillwave (a city at sunset over a neon grid), Nebula, Low poly or Bokeh, and **Shuffle** draws the same scene anew.
-- **Image** shows a picture from the web: paste its address (right-click a picture, *Copy image address*) and press Enter or the tick. An address that doesn't load says so.
+- **Image** shows a picture from the web: paste its address (right-click a picture, _Copy image address_) and press Enter or the tick. An address that doesn't load says so.
 
 Both take the same image effects: **Opacity**, **Blur**, **Brightness**, **Saturation**, **Tone** (Natural, Mono, Sepia, or Accent in the theme's accent colour), **Fit** (Fill crops it to the page, Whole shows all of it, Tile repeats it) and **Vignette**, which fades the edges into the page. A preset saves the background with its effects.
 
