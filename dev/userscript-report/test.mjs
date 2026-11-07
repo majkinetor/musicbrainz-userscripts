@@ -6,6 +6,7 @@ import { parseCatalog } from './catalog.mjs';
 import { weightedVerdict, readReviewBundle, mergeReviewEntries } from './review-model.mjs';
 import { discussionDraft, changeSummary } from './share.mjs';
 import { applyContributions } from './contributions.mjs';
+import {sourceAnalysisState} from './source-analysis.mjs';
 
 const sources = JSON.parse(readFileSync(new URL('./data/sources.json', import.meta.url)));
 const reviews = JSON.parse(readFileSync(new URL('./data/reviews.json', import.meta.url)));
@@ -180,4 +181,36 @@ test('quick review reuses identical hashes and invalidates changed source or sui
  assert.equal(majorReviewState(review,source,{...suite,inventoryHash:'new inventory'}),'Needs recheck');
  assert.equal(majorReviewState(review,source,{...suite,files:[{path:'a.js',sha256:'b'}]}),'Needs recheck');
  assert.equal(majorReviewState(review,{state:'unavailable'},suite),'Source unavailable');
+});
+
+test('analysis fingerprints include implementation parts and new relevant suite files',()=>{
+ const source={state:'captured',sha256:'readme',implementationHash:'modules'},suite={inventoryHash:'inventory',files:[{path:'userscripts/tool/main.user.js',sha256:'one'}]};
+ const analysis={status:'Code analyzed',sourceHash:'modules',tools:['tool'],verdict:'Partial overlap',dependencies:suite.files};
+ assert.equal(sourceAnalysisState(analysis,source,suite),'Code analyzed');
+ assert.equal(sourceAnalysisState(analysis,{...source,implementationHash:'changed'},suite),'Needs recheck');
+ assert.equal(sourceAnalysisState(analysis,source,{...suite,files:[...suite.files,{path:'userscripts/tool/new.user.js',sha256:'new'}]}),'Needs recheck');
+ assert.equal(sourceAnalysisState(null,source,suite),'Not analyzed');
+ assert.equal(sourceAnalysisState(analysis,{state:'unavailable'},suite),'Source unavailable');
+});
+
+test('every accepted verdict has an analysis or an explicit unavailable source',()=>{
+ const html=readFileSync(new URL('./out/index.html',import.meta.url),'utf8');const data=JSON.parse(html.match(/<script type="application\/json" id="report-data">([\s\S]*?)<\/script>/)[1]);
+ const accepted=data.entries.filter(e=>e.acceptedReview);assert.equal(accepted.length,185);
+ assert.ok(accepted.every(e=>e.sourceAnalysis || e.assessment));
+ const harmony=accepted.find(e=>e.name==='Harmony');assert.equal(harmony.features.length,7);
+ assert.equal(harmony.verdict,'Replaceable');assert.equal(harmony.sourceVerdict,'Partial overlap');
+ assert.ok(harmony.acceptedNotes.some(n=>n.text.includes('Trivial feature')&&n.discussionNumber===942));
+ const analyses=JSON.parse(readFileSync(new URL('./data/source-analyses.json',import.meta.url)));assert.equal(analyses.entries.filter(e=>e.status==='Source unavailable').length,3);
+ for(const a of analyses.entries.filter(e=>e.status==='Code analyzed')){
+  assert.match(a.sourceHash,/^[a-f0-9]{64}$/);assert.ok(a.capabilities.length);assert.ok(a.dependencies.length);
+  assert.ok(a.capabilities.every(f=>f.evidence?.some(e=>e.line>0&&e.sha256.length===64)));
+ }
+});
+
+test('accepted feature notes survive replacing an old aggregate capability',()=>{
+ const author={id:'one',login:'reviewer'};const submission={id:'d',authorId:'one',updatedAt:'2026-11-07',exportPath:'export',disposition:'accepted',acceptedBy:'majkinetor'};
+ const files=new Map([['export',{entries:[{id:'script',review:{proposedVerdict:'',note:'Overall note',basis:{features:[{id:'old',name:'Old workflow',weight:5,coverage:'Unknown'}]},features:{old:{name:'Old workflow',weight:5,coverage:'Unknown',comment:'Trivial feature'}}}}]}]]);
+ const [entry]=applyContributions([{id:'script',verdict:'Partial overlap',features:[{id:'new',name:'Actual capability',coverage:'Gap',weight:5}]}],{contributors:[author],submissions:[submission]},files);
+ assert.equal(entry.verdict,'Partial overlap');assert.equal(entry.acceptedReview,null);assert.equal(entry.acceptedNotes.length,2);
+ assert.match(entry.acceptedNotes[1].text,/Old workflow — Note: Trivial feature/);assert.equal(entry.features.length,1);
 });

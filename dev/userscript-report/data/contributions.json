@@ -20,6 +20,19 @@
       "disposition": "accepted",
       "acceptedBy": "majkinetor",
       "decision": "Maintainer-submitted review accepted as maintainer verdicts; original code evidence remains separately available."
+    },
+    {
+      "id": "D_kwDOSj7rds4Aq65L",
+      "discussionNumber": 942,
+      "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/942",
+      "authorId": "MDQ6VXNlcjg1NzY3",
+      "createdAt": "2026-11-07T18:09:40Z",
+      "updatedAt": "2026-11-07T18:09:40Z",
+      "exportPath": "contributions/942.json",
+      "reportVersion": "c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9",
+      "disposition": "accepted",
+      "acceptedBy": "majkinetor",
+      "decision": "Maintainer corrections and notes incorporated; source assessments remain separate. Publish and verify the report before replying with its immutable URL and closing this discussion."
     }
   ]
 }

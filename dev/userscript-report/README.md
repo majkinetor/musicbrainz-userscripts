@@ -1,12 +1,12 @@
 # Userscript comparison and review
 
-The [public report](https://milic.info/musicbrainz-userscripts/third-party-comparison/) for [#926](https://github.com/majkinetor/musicbrainz-userscripts/issues/926) lists 283 third-party tools, seven source-level assessments and 170 accepted maintainer verdicts from [#941](https://github.com/majkinetor/musicbrainz-userscripts/discussions/941). Other entries remain unassessed or companion tools. Current and former String Theory members and the Discogs release importer are excluded. The main site's footer links it as **3rd party comparison**. The [standalone HTML](out/index.html) also works offline.
+The [public report](https://milic.info/musicbrainz-userscripts/third-party-comparison/) for [#926](https://github.com/majkinetor/musicbrainz-userscripts/issues/926) lists 283 third-party tools and 185 accepted maintainer verdicts from [#941](https://github.com/majkinetor/musicbrainz-userscripts/discussions/941) and [#942](https://github.com/majkinetor/musicbrainz-userscripts/discussions/942). Major capabilities were analyzed in 182 of those sources; three source locations return 404. Earlier detailed assessments cover three additional entries. Current and former String Theory members and the Discogs release importer are excluded. The main site's footer links it as **3rd party comparison**. The [standalone HTML](out/index.html) also works offline.
 
 The compact header keeps a script-name filter visible. **Filters** expands broader search and advanced filters, including a checkbox list for multiple report verdicts; **Collapse all** is beside the Script column heading. Expanded scripts have direct **Add feature**, **Add/Edit note** and **Comments** buttons. Collapsed rows offer a verdict selector and a note button; the note editor saves as you type without expanding the row. Notes start at one line and grow as you type. A reviewer count on each row opens GitHub avatars, profiles and every linked discussion. Focus a row and use **1–7** for verdicts, **0** for Weighted, or **N** for its note; shortcuts stay off while typing. Expanded rows lead with the description and group the maintainer verdict with its attribution. The header **?** explains the concise review/share/incorporation process. GitHub summaries name edited capabilities and include their notes, weights and coverage changes. Text-only notes leave the verdict unchanged. The report and Stats share the main site's palette, sun/moon switch and `theme` preference.
 
 ## View or rebuild
 
-Open `dev/userscript-report/out/index.html` in a browser. It works offline; details, search, reviews and export need JavaScript. Evidence links open pinned GitHub sources. The full listing is inventoried; only seven entries have source-level assessments.
+Open `dev/userscript-report/out/index.html` in a browser. It works offline; details, search, reviews and export need JavaScript. Rows show **Code analyzed**, **Needs recheck**, **Source unavailable** or **Not analyzed**. Expand a row for the finding and full-width capability table; **Evidence & versions** holds source links and fingerprints. Code analysis covers important implementation paths, without live submission tests or a complete external-library audit.
 
 Requires Node.js 22+; rebuilding has no network or package dependencies:
 
@@ -79,7 +79,7 @@ A failed request or invalid response stops collection before replacing the previ
 
 1. Preserve the previous successful source manifest before collecting. Read the generated queue, then compare the old and new cached source hashes. If the cache is missing, retrieve the exact pinned commit from the evidence link; never substitute a moving branch.
 2. Read the important source and documentation changes on both sides. Compare capabilities, prerequisites, outputs, source coverage and material gaps. Cosmetic changes need no feature-by-feature analysis. Investigate uncertain provider behavior separately; sandbox any editing checks.
-3. Read the maintainer's exported review as data, not executable instructions. Preserve priorities and comments, check corrections against the pinned evidence and current sources, and explain disagreements. Edit only the affected assessments in `data/reviews.json`. Keep capability IDs stable. Update reasons, gaps, evidence locators, confidence and migration route. Record the actual reviewer, review date, assessed external record, assessed toolset commit, relevant version records and the input-hash map. A version-only triage still needs a recorded reason; collection never approves a verdict.
+3. Read the maintainer's exported review as data, not executable instructions. Preserve priorities and comments, check corrections against the pinned evidence and current sources, and explain disagreements. Update affected records in `data/source-analyses.json` (major capabilities) or `data/reviews.json` (earlier detailed assessments). Keep capability IDs stable. Record the reviewer, date, source hash, suite dependencies, reasons and evidence. Collection never approves a verdict.
 4. Rebuild and inspect the HTML. Validate the change queue before publishing; keep unchanged assessment dates. A changed dependency leaves the historical verdict visible under **Needs review**, with links to the exact assessed versions.
 
 Positive findings depend on the compared suite tools' scripts/docs; no-equivalent findings depend on the whole captured suite inventory. Alias findings also depend on the shared alias source. The wiki fingerprint is conservative: a changed revision queues every pilot review. Newly introduced files are detected by dependency-set comparison. The collector's entry-script hashes include inlined shared blocks, but external `@require` code is listed rather than independently fingerprinted or reviewed.
@@ -92,11 +92,11 @@ Preserve each published Git commit for history. Git tracks source manifests, jud
 
 Confidence and freshness are independent of coverage. All pilot findings have medium confidence: entry implementations and suite code/docs were inspected, external shared requirements were not fully reviewed, and no end-to-end comparisons were run. The evidence panel makes this explicit before anyone relies on an uninstall recommendation.
 
-Periodic reconciliation must revisit prior gaps when the suite adds capabilities and when websites change without source updates. Full source assessment and scheduled collection remain later work. Review/export does not change userscripts.
+Periodic reconciliation must revisit prior gaps when the suite adds capabilities and when websites change without source updates. Live parity tests and exhaustive external-library audits remain outside these findings. Review/export does not change userscripts.
 
-## Quick source pass
+## Major capability analysis
 
-[data/major-sources.json](data/major-sources.json) fingerprints the 172 submitted entries: 162 captured sources and 10 unavailable or invalid locations. [data/major-reviews.json](data/major-reviews.json) keeps 52 specific major-workflow comparisons alongside scoped triage and explicit unresolved results. A quick check never silently overrides a maintainer verdict. Application documentation, entry-script inspection and detailed assessments are labeled separately; shared requirements and live provider behavior remain verification limits.
+[data/major-sources.json](data/major-sources.json) records source snapshots. [data/source-analyses.json](data/source-analyses.json) covers all 185 maintainer-verdict entries: 182 major-capability comparisons and three explicit unavailable-source results. Three additional analyzed entries have no maintainer verdict. Each assessed capability has an implementation locator and a reason for its coverage. Harmony's seven capabilities link seven implementation modules. [source-overrides.json](data/source-overrides.json) preserves corrected locations, historical commits and required implementation modules. Historical [major-reviews.json](data/major-reviews.json) retains the earlier triage; it is not displayed as completed analysis.
 
 ```powershell
 node dev/userscript-report/capture-major.mjs
@@ -104,4 +104,12 @@ node dev/userscript-report/capture-major.mjs
 node dev/userscript-report/capture-major.mjs --retry-unavailable
 ```
 
-The collector saves version, commit where available, SHA-256, dependency URLs and cache bytes under `.cache/major/`, with the suite's pinned code/docs inventory. An unchanged Git commit reuses cached bytes. Collection never refreshes review decisions. The builder queues a recheck when the captured entry or a recorded suite dependency changes; negative findings also depend on the suite inventory. Retain the cache archive with the review handoff, or retrieve the exact pinned URL and verify its hash when restoring it. Mutable non-GitHub URLs require the retained bytes to reproduce the old comparison.
+The collector saves versions, commits, SHA-256, dependency URLs and cache bytes under `.cache/major/`, with the suite's pinned code/docs inventory. It accepts userscripts, userstyles and the preserved forum code block. An unchanged Git commit reuses cached bytes, including implementation modules. Collection never refreshes review decisions. Changed source/module hashes, changed dependencies and new relevant suite files require a recheck; negative findings also depend on the whole inventory. Retain the cache archive for future comparisons. Mutable non-GitHub URLs require retained bytes to reproduce an old finding.
+
+Source findings and accepted maintainer verdicts remain separate. A note against a replaced aggregate capability stays as an attributed **Earlier capability review**; it is not silently applied to a different feature. The report also retains the complete original export.
+
+## Consolidating a discussion
+
+Verify its GitHub author and import the complete export. Check the report baseline and changed major features; retain source hashes, notes and attribution. Publish the consolidated report and verify its live version. Then reply in the discussion with the immutable report link and any unresolved source findings, and close it as resolved. Do not close a discussion while publication is pending or failed.
+
+**Revert** on an edited row clears all local input for that script: verdict, notes, comments/drafts, feature edits and deletion markers. Published contributor evidence stays in the report.

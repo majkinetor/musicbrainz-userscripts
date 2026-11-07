@@ -1,0 +1,2117 @@
+{
+  "format": "mb-userscript-review",
+  "schemaVersion": 1,
+  "exportedAt": "2026-11-07T18:09:22.372Z",
+  "report": {
+    "reportId": "mb-userscripts-926",
+    "reportVersion": "c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9",
+    "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9.html",
+    "wikiRevision": 79510,
+    "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+    "sourceManifestSha256": "780cecbf88dbd23f9e739882a2460946d101a6e9b342f727d625b9f807ca3929",
+    "collectedAt": "2026-11-06T15:47:39.283Z"
+  },
+  "purpose": "User review data for AI incorporation. Preserve source provenance, distinguish user preferences from verified evidence, and investigate corrections before replacing original findings.",
+  "scoringPolicy": {
+    "weights": [
+      [
+        0,
+        "Ignore"
+      ],
+      [
+        1,
+        "Minor"
+      ],
+      [
+        3,
+        "Normal"
+      ],
+      [
+        5,
+        "Important"
+      ],
+      [
+        10,
+        "Essential"
+      ]
+    ],
+    "coverageCredit": {
+      "Covered": 1,
+      "Partial": 0.5,
+      "Gap": 0
+    },
+    "unknown": "Any active unknown coverage yields Needs assessment",
+    "essential": "An essential feature not fully covered caps the weighted verdict at Partial overlap",
+    "manualVerdict": "proposedVerdict is the visitor-selected verdict; retain the weighted suggestion separately"
+  },
+  "entries": [
+    {
+      "id": "wiki-79e1632755fa7fe99c38",
+      "name": "Harmony",
+      "currentBasis": {
+        "name": "Harmony",
+        "hash": "46ce5ace3dbba76d66c9e1d37137c04704ea0c4609ac07968a76d9299cfef76f",
+        "wikiRevision": 79510,
+        "wikiRowHash": "bf8b6e834ea626bcb7ffccf28fecd18cf858c827af66771432856b18a6f58abd",
+        "sourceIdentity": "https://harmony.pulsewidth.org.uk/",
+        "sourceUrl": "https://github.com/kellnerd/harmony",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "Replaceable",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Multi-source importer (not a userscript, but the recommended first port of call for imports)",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null,
+        "acceptedReview": {
+          "submissionId": "D_kwDOSj7rds4Aq6q2",
+          "discussionNumber": 941,
+          "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/941",
+          "author": {
+            "id": "MDQ6VXNlcjg1NzY3",
+            "login": "majkinetor",
+            "url": "https://github.com/majkinetor"
+          },
+          "disposition": "accepted",
+          "verdict": "Replaceable",
+          "reviewedReport": "0bbd5c4c064d6753e5e28f89e0deef382b850f5e95fed304c053e4ea56a2fb86"
+        },
+        "quickReview": {
+          "id": "wiki-79e1632755fa7fe99c38",
+          "name": "Harmony",
+          "reviewedAt": "2026-11-07T17:08:35.295673+00:00",
+          "reviewer": "GPT-6 (AI quick source triage)",
+          "level": "Application architecture/documentation triage; implementation parity unverified",
+          "sourceHash": "ea7eb90ce9aea87b413e80973aebfe15d943876fbf3825603caedea635217b21",
+          "sourceCommit": "094d904c3cbc15392d8042d8e6924e2478e8669d",
+          "suiteCommit": "4692d6c6dfee536b4523e3ffd7045cead1c4e9c6",
+          "suiteInventoryHash": "3165ab01b3d940abccf37d169e00d81f3c50f54f3e62d1c9047180fef40207e7",
+          "suggestedVerdict": "Complementary",
+          "tools": [
+            "first_contact",
+            "falcon",
+            "mission_control"
+          ],
+          "majorFeatures": [
+            "Lookup and merge multiple providers by URL/GTIN",
+            "MusicBrainz seeding and external identifier mapping",
+            "Timestamped provider snapshots and a standalone CLI"
+          ],
+          "evidence": [
+            {
+              "url": "https://github.com/kellnerd/harmony/blob/094d904c3cbc15392d8042d8e6924e2478e8669d/README.md#L5",
+              "label": "Captured entry point and declared workflow"
+            }
+          ],
+          "summary": "Standalone metadata aggregation, provider snapshots and a CLI remain outside the suite. First Contact and Falcon also hand off to Harmony; using the suite does not eliminate this dependency.",
+          "result": "Scope needs correction",
+          "dependencies": [
+            {
+              "path": "userscripts/falcon/DEVELOP.md",
+              "sha256": "a877fe99bb971bab7fce8b77b27cc9b262bc605ad756c486c8bd0ef2c5092cc5"
+            },
+            {
+              "path": "userscripts/falcon/README.md",
+              "sha256": "3939937ec7d86bb60707356f3f88cdbb751b21ac2a1c77707666a2a040018f5b"
+            },
+            {
+              "path": "userscripts/falcon/falcon.user.js",
+              "sha256": "417efcf569f059fcba4faa7e1994047e1a138325a47771d4ee1e251dfe39b5e5"
+            },
+            {
+              "path": "userscripts/first_contact/DEVELOP.md",
+              "sha256": "5b2e0c9e0f0513589c22362ac5b81db20deec8be8f0a63d7dbb205ba5674cc84"
+            },
+            {
+              "path": "userscripts/first_contact/README.md",
+              "sha256": "ce754795deb8ec7ab4478ae1e318c94b33c267b65f05fff08511ea8b658097ee"
+            },
+            {
+              "path": "userscripts/first_contact/first_contact.user.js",
+              "sha256": "2fea9cee61856158ff3198a9b4c39eb00334f2f1ed300504393d997d845eac69"
+            },
+            {
+              "path": "userscripts/mission_control/DEVELOP.md",
+              "sha256": "fd8d791f95b9a6e2678d3c09b4d70f976394dd49bd933ae72f7d3610fbe5125d"
+            },
+            {
+              "path": "userscripts/mission_control/README.md",
+              "sha256": "86517fbbe54cb9775ddf87868eea605782331ae70eee10652292d0873f5879c5"
+            },
+            {
+              "path": "userscripts/mission_control/mission_control.user.js",
+              "sha256": "ad01c84c1db3553ee012b42ead51646cdf18b0042b35e56ab94a81769f28eb16"
+            }
+          ]
+        }
+      },
+      "currentFinding": {
+        "summary": "Listed companion service; not treated as an obsolete userscript.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "",
+        "note": "",
+        "draft": "",
+        "features": {
+          "wiki.main-workflow": {
+            "name": "Multi-source importer (not a userscript, but the recommended first port of call for imports)",
+            "weight": 5,
+            "coverage": "Unknown",
+            "comment": "Trivial feature",
+            "added": false
+          }
+        },
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "Harmony",
+          "hash": "a0732d11220bc7a526fc7c1dfb1891dc9635a8bdaade25bb224520deacd45cdd",
+          "wikiRevision": 79510,
+          "wikiRowHash": "bf8b6e834ea626bcb7ffccf28fecd18cf858c827af66771432856b18a6f58abd",
+          "sourceIdentity": "https://harmony.pulsewidth.org.uk/",
+          "sourceUrl": "https://github.com/kellnerd/harmony",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "Replaceable",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Multi-source importer (not a userscript, but the recommended first port of call for imports)",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null,
+          "acceptedReview": {
+            "submissionId": "D_kwDOSj7rds4Aq6q2",
+            "discussionNumber": 941,
+            "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/941",
+            "author": {
+              "id": "MDQ6VXNlcjg1NzY3",
+              "login": "majkinetor",
+              "url": "https://github.com/majkinetor"
+            },
+            "disposition": "accepted",
+            "verdict": "Replaceable",
+            "reviewedReport": "0bbd5c4c064d6753e5e28f89e0deef382b850f5e95fed304c053e4ea56a2fb86"
+          }
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "8bc59018284ee146983cc27f16db490d4c190e581b55455fbf2aa741a98a74d1",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/8bc59018284ee146983cc27f16db490d4c190e581b55455fbf2aa741a98a74d1.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "sourceManifestSha256": "780cecbf88dbd23f9e739882a2460946d101a6e9b342f727d625b9f807ca3929",
+          "collectedAt": "2026-11-06T15:47:39.283Z"
+        },
+        "updatedAt": "2026-11-07T17:54:50.537Z"
+      }
+    },
+    {
+      "id": "wiki-a696a75bcccfe5f4291a",
+      "name": "Bulk Edit Release Events",
+      "currentBasis": {
+        "name": "Bulk Edit Release Events",
+        "hash": "5fbbefc13c97c4888288bc0e30a9ecc82858bf5efb5acc1b09674a726f5ac962",
+        "wikiRevision": 79510,
+        "wikiRowHash": "ee08299a8af1e64b848f753c62daf79c9fc036703e9d88a617d19a513fdbd66e",
+        "sourceIdentity": "github:texke/mb-userscripts/mb_bulk_edit_release_events.user.js",
+        "sourceUrl": "https://github.com/texke/mb-userscripts/blob/main/mb_bulk_edit_release_events.user.js",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "Unassessed",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Copy and input release events from atisket into MB.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Not applicable",
+        "note": "",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "Bulk Edit Release Events",
+          "hash": "5fbbefc13c97c4888288bc0e30a9ecc82858bf5efb5acc1b09674a726f5ac962",
+          "wikiRevision": 79510,
+          "wikiRowHash": "ee08299a8af1e64b848f753c62daf79c9fc036703e9d88a617d19a513fdbd66e",
+          "sourceIdentity": "github:texke/mb-userscripts/mb_bulk_edit_release_events.user.js",
+          "sourceUrl": "https://github.com/texke/mb-userscripts/blob/main/mb_bulk_edit_release_events.user.js",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "Unassessed",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Copy and input release events from atisket into MB.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "sourceManifestSha256": "780cecbf88dbd23f9e739882a2460946d101a6e9b342f727d625b9f807ca3929",
+          "collectedAt": "2026-11-06T15:47:39.283Z"
+        },
+        "updatedAt": "2026-11-07T17:59:29.216Z"
+      }
+    },
+    {
+      "id": "wiki-8b362580b84067bf211a",
+      "name": "Deezer: Hide Premium Upsell Popup",
+      "currentBasis": {
+        "name": "Deezer: Hide Premium Upsell Popup",
+        "hash": "6841204ccf28b1a741eacd75c5b48cdd2076a331d08f01ab2244856149c125ca",
+        "wikiRevision": 79510,
+        "wikiRowHash": "93bd7cdaac54c014fb8f878dbc4f5d1cd4404961e4afb0877d3cc55857624c10",
+        "sourceIdentity": "github:lotheric/metabrainz-userscripts/Deezer_Hide_Premium_Upsell_Popup.user.js",
+        "sourceUrl": "https://github.com/Lotheric/metabrainz-userscripts/blob/main/Deezer_Hide_Premium_Upsell_Popup.user.js",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "Unassessed",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Automatically dismisses the \"Try Deezer Premium\" nag popup on the free tier.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Not applicable",
+        "note": "",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "Deezer: Hide Premium Upsell Popup",
+          "hash": "6841204ccf28b1a741eacd75c5b48cdd2076a331d08f01ab2244856149c125ca",
+          "wikiRevision": 79510,
+          "wikiRowHash": "93bd7cdaac54c014fb8f878dbc4f5d1cd4404961e4afb0877d3cc55857624c10",
+          "sourceIdentity": "github:lotheric/metabrainz-userscripts/Deezer_Hide_Premium_Upsell_Popup.user.js",
+          "sourceUrl": "https://github.com/Lotheric/metabrainz-userscripts/blob/main/Deezer_Hide_Premium_Upsell_Popup.user.js",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "Unassessed",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Automatically dismisses the \"Try Deezer Premium\" nag popup on the free tier.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "sourceManifestSha256": "780cecbf88dbd23f9e739882a2460946d101a6e9b342f727d625b9f807ca3929",
+          "collectedAt": "2026-11-06T15:47:39.283Z"
+        },
+        "updatedAt": "2026-11-07T18:00:53.171Z"
+      }
+    },
+    {
+      "id": "wiki-19e7ddacc41ebc31b640",
+      "name": "MBz Copy URLs",
+      "currentBasis": {
+        "name": "MBz Copy URLs",
+        "hash": "8ed7d6071cd65efa8be88d6bfa1148841570ffd9c81bbc24ccaf52b661424ceb",
+        "wikiRevision": 79510,
+        "wikiRowHash": "1cbcb8eae843126dbdffc50fabef0050aba071ab624b0b32c206e909bb3f912f",
+        "sourceIdentity": "github:afrocatmusic/userscripts/RYM-Search-release-in-MusicBrainz.user.js",
+        "sourceUrl": "https://github.com/afrocatmusic/userscripts/blob/main/RYM-Search-release-in-MusicBrainz.user.js",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "No equivalent",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Adds a button to copy all URL relationships to clipboard, with your preferred separator.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null,
+        "acceptedReview": {
+          "submissionId": "D_kwDOSj7rds4Aq6q2",
+          "discussionNumber": 941,
+          "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/941",
+          "author": {
+            "id": "MDQ6VXNlcjg1NzY3",
+            "login": "majkinetor",
+            "url": "https://github.com/majkinetor"
+          },
+          "disposition": "accepted",
+          "verdict": "No equivalent",
+          "reviewedReport": "0bbd5c4c064d6753e5e28f89e0deef382b850f5e95fed304c053e4ea56a2fb86"
+        },
+        "quickReview": {
+          "id": "wiki-19e7ddacc41ebc31b640",
+          "name": "MBz Copy URLs",
+          "reviewedAt": "2026-11-07T17:08:35.295673+00:00",
+          "reviewer": "GPT-6 (AI quick source triage)",
+          "level": "Major workflow triage; no live submission tests",
+          "sourceHash": "16a57da508f1d2786ec053d47093749cc2478cd1167092d4a175536237156828",
+          "sourceCommit": "718e3ba1bc76206a64efb8db94bab8f9e1b06854",
+          "suiteCommit": "4692d6c6dfee536b4523e3ffd7045cead1c4e9c6",
+          "suiteInventoryHash": "3165ab01b3d940abccf37d169e00d81f3c50f54f3e62d1c9047180fef40207e7",
+          "suggestedVerdict": "No equivalent",
+          "tools": [],
+          "majorFeatures": [
+            "Adds a link to search the release in MusicBrainz"
+          ],
+          "evidence": [
+            {
+              "url": "https://github.com/afrocatmusic/userscripts/blob/718e3ba1bc76206a64efb8db94bab8f9e1b06854/RYM-Search-release-in-MusicBrainz.user.js#L9",
+              "label": "Captured entry point and declared workflow"
+            }
+          ],
+          "result": "No direct counterpart identified",
+          "summary": "The captured entry point establishes this workflow. The suite inventory and provider list inspected did not establish an equivalent at the same page/source scope. This is a scoped negative finding, not exhaustive proof.",
+          "dependencies": [
+            {
+              "path": "dev/aliases/alias-editor.mjs",
+              "sha256": "3b659e372590f94f7bb893a76f3b9c0792c96d53223fa31db58fa38756d5055c"
+            },
+            {
+              "path": "userscripts/apollo_editor/DEVELOP.md",
+              "sha256": "cf01184df82e9ff7ccecc2f0488c8c8a30ba9cf3320bb396c70a302288a3f32d"
+            },
+            {
+              "path": "userscripts/apollo_editor/README.md",
+              "sha256": "d0212a6b101859ebbf04c1204a0d28d04d72620065407ee16d29a0b06af150fa"
+            },
+            {
+              "path": "userscripts/apollo_editor/apollo_editor.user.js",
+              "sha256": "42fb0db760a592d034f386e9a05cf5bf7b28095098448d00637113d77d334104"
+            },
+            {
+              "path": "userscripts/art_station/DEVELOP.md",
+              "sha256": "b864d99ffc0dade55a55bf84edf72f08779c5e411a5d8b4707b335279af079fc"
+            },
+            {
+              "path": "userscripts/art_station/README.md",
+              "sha256": "9e09fdc09caf0e6be688225ae4cd013dda5529f192d973a3b56ea0d4b268e3ed"
+            },
+            {
+              "path": "userscripts/art_station/art_station.user.js",
+              "sha256": "b6279972e081f951e3c482eba1be512d23a37cae65254b534cae1a26ee8de1a8"
+            },
+            {
+              "path": "userscripts/art_station/as_picker/README.md",
+              "sha256": "13384e6ff06f6c28841961f07a0b4bbfc48eb26cb9e035d3ede577419842f688"
+            },
+            {
+              "path": "userscripts/art_station/as_picker/as_picker.user.js",
+              "sha256": "2f79164aebfaea2a91e49bb27bac3595a4ac776374852450faaa6c94565e5702"
+            },
+            {
+              "path": "userscripts/bandcamp_player_enhanced/README.md",
+              "sha256": "4ac9f1c9599b0da4a6e57ac12352ae8f25ba7cc526917b42582866609756b305"
+            },
+            {
+              "path": "userscripts/bandcamp_player_enhanced/bandcamp_player_enhanced.user.js",
+              "sha256": "d9048e1b8a4b2edcfbc739614ba80624601b105e727eeb578be111e99e300218"
+            },
+            {
+              "path": "userscripts/credit_hoarder/DEVELOP.md",
+              "sha256": "5afc665e0950eab607fc5319c4ecdf43e291c753daf8797bef6ce64d4f4751b3"
+            },
+            {
+              "path": "userscripts/credit_hoarder/README.md",
+              "sha256": "08af81786ca54447b3d562397e225b11829fd7202a06c03d1d4c9eeddb70a60e"
+            },
+            {
+              "path": "userscripts/credit_hoarder/dist/credit_hoarder.user.js",
+              "sha256": "ea341ef0ee72c777a5289bb1ac0e7451f6cfd39c319e356493bed04a64b39e9b"
+            },
+            {
+              "path": "userscripts/credit_hoarder/src/credit_hoarder.user.js",
+              "sha256": "bfc927260c4d18bbcc4ec4fd4fdc1950fa64f6b3747ba97f44949a3be758ce2b"
+            },
+            {
+              "path": "userscripts/discogs_credits/DEVELOP.md",
+              "sha256": "aae851925597a6f79cef72709c7e8a0389841324c09ceac002556832015fde6f"
+            },
+            {
+              "path": "userscripts/discogs_credits/README.md",
+              "sha256": "c883b8601699b479ae94fd339d11751fcb211f7e4168d5e9c6b61660563489df"
+            },
+            {
+              "path": "userscripts/discogs_credits/dist/discogs_credits.user.js",
+              "sha256": "2e1ee27d9228dcd2c75bc0f4673368b045dfccff2e0b52f688a5b5de8ac39fe3"
+            },
+            {
+              "path": "userscripts/discogs_credits/src/discogs_credits.user.js",
+              "sha256": "d204cf9e05a52698f08e05f73a8536dce09a24ad2f533ea3fddf4ae150337f36"
+            },
+            {
+              "path": "userscripts/event_horizon/DEVELOP.md",
+              "sha256": "c2df71ae389c785d6a419766e2b4680761cd28dce1bf43182598a024e083a6ad"
+            },
+            {
+              "path": "userscripts/event_horizon/README.md",
+              "sha256": "8ad44fc4e656bad8885919050d495c0d56086d0eb424fd94eb7e5feea97e289b"
+            },
+            {
+              "path": "userscripts/event_horizon/event_horizon.user.js",
+              "sha256": "2e0bfce08d46698a575816239961f6731d442fa1ba609283a6f44f62909f806c"
+            },
+            {
+              "path": "userscripts/falcon/DEVELOP.md",
+              "sha256": "a877fe99bb971bab7fce8b77b27cc9b262bc605ad756c486c8bd0ef2c5092cc5"
+            },
+            {
+              "path": "userscripts/falcon/README.md",
+              "sha256": "3939937ec7d86bb60707356f3f88cdbb751b21ac2a1c77707666a2a040018f5b"
+            },
+            {
+              "path": "userscripts/falcon/falcon.user.js",
+              "sha256": "417efcf569f059fcba4faa7e1994047e1a138325a47771d4ee1e251dfe39b5e5"
+            },
+            {
+              "path": "userscripts/first_contact/DEVELOP.md",
+              "sha256": "5b2e0c9e0f0513589c22362ac5b81db20deec8be8f0a63d7dbb205ba5674cc84"
+            },
+            {
+              "path": "userscripts/first_contact/README.md",
+              "sha256": "ce754795deb8ec7ab4478ae1e318c94b33c267b65f05fff08511ea8b658097ee"
+            },
+            {
+              "path": "userscripts/first_contact/first_contact.user.js",
+              "sha256": "2fea9cee61856158ff3198a9b4c39eb00334f2f1ed300504393d997d845eac69"
+            },
+            {
+              "path": "userscripts/fusion/DEVELOP.md",
+              "sha256": "2ae1c9a7ba8c6a73b4e83202232f714d256a781e4f615b6ed9d985163a6c5289"
+            },
+            {
+              "path": "userscripts/fusion/README.md",
+              "sha256": "eab10077a4c070968d033fbd9c8ce5a6c55a09082ff9d760782e9ccd6e758aea"
+            },
+            {
+              "path": "userscripts/fusion/fusion.user.js",
+              "sha256": "9315fa2288467884b00e29ffadbb10dbb71582546eeb59ee87d066b4a21b2492"
+            },
+            {
+              "path": "userscripts/fuzzy_logic/fuzzy_logic.user.js",
+              "sha256": "ec684549350b541c3686ff994d52f2a618f2b772fa66a07cb6e900aa99fe483b"
+            },
+            {
+              "path": "userscripts/group_therapy/DEVELOP.md",
+              "sha256": "9f00d14f8f446c8a6bad0195c594b610dbfd5de2126e1f9f06748a5029bbfff0"
+            },
+            {
+              "path": "userscripts/group_therapy/README.md",
+              "sha256": "2cca1d7da3fa2c2699bfc055113cd1aa13430928326e3bd6ed28c5ebf4a10c1e"
+            },
+            {
+              "path": "userscripts/group_therapy/group_therapy.user.js",
+              "sha256": "e8999d3abbd23e50b19beab10c88738038b56c5e5ff244b63f91eb723995ce15"
+            },
+            {
+              "path": "userscripts/isrc_scout/DEVELOP.md",
+              "sha256": "8916395048348b759f0ba69b83f6b0d9a4dc1b005738953ba141497da9d88f3b"
+            },
+            {
+              "path": "userscripts/isrc_scout/README.md",
+              "sha256": "42d9b02c34a13c8f43f1851d49c6bef9762653479cfd6ffb3d3b715d89ab9a51"
+            },
+            {
+              "path": "userscripts/isrc_scout/isrc_scout.user.js",
+              "sha256": "70d020b5d9ee45b48b16bcc710c4eade77d87f14f9efc998233c707b6133e929"
+            },
+            {
+              "path": "userscripts/mammoth/DEVELOP.md",
+              "sha256": "914f6954709c1788439bf375cfaa522fac70b4f68a34f237c46c3110b1ae8391"
+            },
+            {
+              "path": "userscripts/mammoth/README.md",
+              "sha256": "a1907b47052711c0490ecfb4d6b7b5f70d90fed2cf6df6530e42c96247e48df3"
+            },
+            {
+              "path": "userscripts/mammoth/mammoth.user.js",
+              "sha256": "cc33eb2ffc23ae82a10af53364d5a9fdb47b713623a6901ee02efa411b9d9d2d"
+            },
+            {
+              "path": "userscripts/mission_control/DEVELOP.md",
+              "sha256": "fd8d791f95b9a6e2678d3c09b4d70f976394dd49bd933ae72f7d3610fbe5125d"
+            },
+            {
+              "path": "userscripts/mission_control/README.md",
+              "sha256": "86517fbbe54cb9775ddf87868eea605782331ae70eee10652292d0873f5879c5"
+            },
+            {
+              "path": "userscripts/mission_control/mission_control.user.js",
+              "sha256": "ad01c84c1db3553ee012b42ead51646cdf18b0042b35e56ab94a81769f28eb16"
+            },
+            {
+              "path": "userscripts/platform_check/DEVELOP.md",
+              "sha256": "be6f4e8693e00aebf02edc61a4bbb25f4e7197159449572fade6fa8d93d96376"
+            },
+            {
+              "path": "userscripts/platform_check/README.md",
+              "sha256": "d2513813fb8ba2ab1537250c9abfa780bf80338b80c7184c2195c3a4d5ea1066"
+            },
+            {
+              "path": "userscripts/platform_check/platform_check.user.js",
+              "sha256": "a01a4aa7098fafeb0bc7835e39f1a41fa092b6f38179ad3040d50a21c030c1ec"
+            },
+            {
+              "path": "userscripts/scribe/DEVELOP.md",
+              "sha256": "e37772117b6dbe00b0e6a71c90cc406f86f7f15245a0b34ea188f1cbaaa0f643"
+            },
+            {
+              "path": "userscripts/scribe/README.md",
+              "sha256": "4f9f1232710d5b49ad7d5c969a87a55811365c7c98124fa3f31c3fb6cf537d5a"
+            },
+            {
+              "path": "userscripts/scribe/scribe.user.js",
+              "sha256": "e917396f8ed2f638a03d820100072d5a94b914c9e4bd2421ea28c3acd8edbbab"
+            },
+            {
+              "path": "userscripts/string_theory/DEVELOP.md",
+              "sha256": "30eb3cddfdea3cda3b0bf54cc8fbecf40d25426c836650c707c5d04800458ce7"
+            },
+            {
+              "path": "userscripts/string_theory/README.md",
+              "sha256": "94014423aaba4df38d03d2d6e39a40c7041df224b1c92db90a12aae9987dff32"
+            },
+            {
+              "path": "userscripts/string_theory/string_theory.user.js",
+              "sha256": "4bf676f2c10805ee8de2c14fbbe1daa65783db15b8d78e69499f5528d1a0ea7d"
+            },
+            {
+              "path": "userscripts/string_theory/themes/README.md",
+              "sha256": "f17a68d7f910d22d5f407641493635ec660ed7bde8b11f70b93691ae2f8e70f0"
+            }
+          ]
+        }
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Mostly replaceable",
+        "note": "Scribe can export them",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "MBz Copy URLs",
+          "hash": "8ed7d6071cd65efa8be88d6bfa1148841570ffd9c81bbc24ccaf52b661424ceb",
+          "wikiRevision": 79510,
+          "wikiRowHash": "1cbcb8eae843126dbdffc50fabef0050aba071ab624b0b32c206e909bb3f912f",
+          "sourceIdentity": "github:afrocatmusic/userscripts/RYM-Search-release-in-MusicBrainz.user.js",
+          "sourceUrl": "https://github.com/afrocatmusic/userscripts/blob/main/RYM-Search-release-in-MusicBrainz.user.js",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "No equivalent",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Adds a button to copy all URL relationships to clipboard, with your preferred separator.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null,
+          "acceptedReview": {
+            "submissionId": "D_kwDOSj7rds4Aq6q2",
+            "discussionNumber": 941,
+            "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/941",
+            "author": {
+              "id": "MDQ6VXNlcjg1NzY3",
+              "login": "majkinetor",
+              "url": "https://github.com/majkinetor"
+            },
+            "disposition": "accepted",
+            "verdict": "No equivalent",
+            "reviewedReport": "0bbd5c4c064d6753e5e28f89e0deef382b850f5e95fed304c053e4ea56a2fb86"
+          },
+          "quickReview": {
+            "id": "wiki-19e7ddacc41ebc31b640",
+            "name": "MBz Copy URLs",
+            "reviewedAt": "2026-11-07T17:08:35.295673+00:00",
+            "reviewer": "GPT-6 (AI quick source triage)",
+            "level": "Major workflow triage; no live submission tests",
+            "sourceHash": "16a57da508f1d2786ec053d47093749cc2478cd1167092d4a175536237156828",
+            "sourceCommit": "718e3ba1bc76206a64efb8db94bab8f9e1b06854",
+            "suiteCommit": "4692d6c6dfee536b4523e3ffd7045cead1c4e9c6",
+            "suiteInventoryHash": "3165ab01b3d940abccf37d169e00d81f3c50f54f3e62d1c9047180fef40207e7",
+            "suggestedVerdict": "No equivalent",
+            "tools": [],
+            "majorFeatures": [
+              "Adds a link to search the release in MusicBrainz"
+            ],
+            "evidence": [
+              {
+                "url": "https://github.com/afrocatmusic/userscripts/blob/718e3ba1bc76206a64efb8db94bab8f9e1b06854/RYM-Search-release-in-MusicBrainz.user.js#L9",
+                "label": "Captured entry point and declared workflow"
+              }
+            ],
+            "result": "No direct counterpart identified",
+            "summary": "The captured entry point establishes this workflow. The suite inventory and provider list inspected did not establish an equivalent at the same page/source scope. This is a scoped negative finding, not exhaustive proof.",
+            "dependencies": [
+              {
+                "path": "dev/aliases/alias-editor.mjs",
+                "sha256": "3b659e372590f94f7bb893a76f3b9c0792c96d53223fa31db58fa38756d5055c"
+              },
+              {
+                "path": "userscripts/apollo_editor/DEVELOP.md",
+                "sha256": "cf01184df82e9ff7ccecc2f0488c8c8a30ba9cf3320bb396c70a302288a3f32d"
+              },
+              {
+                "path": "userscripts/apollo_editor/README.md",
+                "sha256": "d0212a6b101859ebbf04c1204a0d28d04d72620065407ee16d29a0b06af150fa"
+              },
+              {
+                "path": "userscripts/apollo_editor/apollo_editor.user.js",
+                "sha256": "42fb0db760a592d034f386e9a05cf5bf7b28095098448d00637113d77d334104"
+              },
+              {
+                "path": "userscripts/art_station/DEVELOP.md",
+                "sha256": "b864d99ffc0dade55a55bf84edf72f08779c5e411a5d8b4707b335279af079fc"
+              },
+              {
+                "path": "userscripts/art_station/README.md",
+                "sha256": "9e09fdc09caf0e6be688225ae4cd013dda5529f192d973a3b56ea0d4b268e3ed"
+              },
+              {
+                "path": "userscripts/art_station/art_station.user.js",
+                "sha256": "b6279972e081f951e3c482eba1be512d23a37cae65254b534cae1a26ee8de1a8"
+              },
+              {
+                "path": "userscripts/art_station/as_picker/README.md",
+                "sha256": "13384e6ff06f6c28841961f07a0b4bbfc48eb26cb9e035d3ede577419842f688"
+              },
+              {
+                "path": "userscripts/art_station/as_picker/as_picker.user.js",
+                "sha256": "2f79164aebfaea2a91e49bb27bac3595a4ac776374852450faaa6c94565e5702"
+              },
+              {
+                "path": "userscripts/bandcamp_player_enhanced/README.md",
+                "sha256": "4ac9f1c9599b0da4a6e57ac12352ae8f25ba7cc526917b42582866609756b305"
+              },
+              {
+                "path": "userscripts/bandcamp_player_enhanced/bandcamp_player_enhanced.user.js",
+                "sha256": "d9048e1b8a4b2edcfbc739614ba80624601b105e727eeb578be111e99e300218"
+              },
+              {
+                "path": "userscripts/credit_hoarder/DEVELOP.md",
+                "sha256": "5afc665e0950eab607fc5319c4ecdf43e291c753daf8797bef6ce64d4f4751b3"
+              },
+              {
+                "path": "userscripts/credit_hoarder/README.md",
+                "sha256": "08af81786ca54447b3d562397e225b11829fd7202a06c03d1d4c9eeddb70a60e"
+              },
+              {
+                "path": "userscripts/credit_hoarder/dist/credit_hoarder.user.js",
+                "sha256": "ea341ef0ee72c777a5289bb1ac0e7451f6cfd39c319e356493bed04a64b39e9b"
+              },
+              {
+                "path": "userscripts/credit_hoarder/src/credit_hoarder.user.js",
+                "sha256": "bfc927260c4d18bbcc4ec4fd4fdc1950fa64f6b3747ba97f44949a3be758ce2b"
+              },
+              {
+                "path": "userscripts/discogs_credits/DEVELOP.md",
+                "sha256": "aae851925597a6f79cef72709c7e8a0389841324c09ceac002556832015fde6f"
+              },
+              {
+                "path": "userscripts/discogs_credits/README.md",
+                "sha256": "c883b8601699b479ae94fd339d11751fcb211f7e4168d5e9c6b61660563489df"
+              },
+              {
+                "path": "userscripts/discogs_credits/dist/discogs_credits.user.js",
+                "sha256": "2e1ee27d9228dcd2c75bc0f4673368b045dfccff2e0b52f688a5b5de8ac39fe3"
+              },
+              {
+                "path": "userscripts/discogs_credits/src/discogs_credits.user.js",
+                "sha256": "d204cf9e05a52698f08e05f73a8536dce09a24ad2f533ea3fddf4ae150337f36"
+              },
+              {
+                "path": "userscripts/event_horizon/DEVELOP.md",
+                "sha256": "c2df71ae389c785d6a419766e2b4680761cd28dce1bf43182598a024e083a6ad"
+              },
+              {
+                "path": "userscripts/event_horizon/README.md",
+                "sha256": "8ad44fc4e656bad8885919050d495c0d56086d0eb424fd94eb7e5feea97e289b"
+              },
+              {
+                "path": "userscripts/event_horizon/event_horizon.user.js",
+                "sha256": "2e0bfce08d46698a575816239961f6731d442fa1ba609283a6f44f62909f806c"
+              },
+              {
+                "path": "userscripts/falcon/DEVELOP.md",
+                "sha256": "a877fe99bb971bab7fce8b77b27cc9b262bc605ad756c486c8bd0ef2c5092cc5"
+              },
+              {
+                "path": "userscripts/falcon/README.md",
+                "sha256": "3939937ec7d86bb60707356f3f88cdbb751b21ac2a1c77707666a2a040018f5b"
+              },
+              {
+                "path": "userscripts/falcon/falcon.user.js",
+                "sha256": "417efcf569f059fcba4faa7e1994047e1a138325a47771d4ee1e251dfe39b5e5"
+              },
+              {
+                "path": "userscripts/first_contact/DEVELOP.md",
+                "sha256": "5b2e0c9e0f0513589c22362ac5b81db20deec8be8f0a63d7dbb205ba5674cc84"
+              },
+              {
+                "path": "userscripts/first_contact/README.md",
+                "sha256": "ce754795deb8ec7ab4478ae1e318c94b33c267b65f05fff08511ea8b658097ee"
+              },
+              {
+                "path": "userscripts/first_contact/first_contact.user.js",
+                "sha256": "2fea9cee61856158ff3198a9b4c39eb00334f2f1ed300504393d997d845eac69"
+              },
+              {
+                "path": "userscripts/fusion/DEVELOP.md",
+                "sha256": "2ae1c9a7ba8c6a73b4e83202232f714d256a781e4f615b6ed9d985163a6c5289"
+              },
+              {
+                "path": "userscripts/fusion/README.md",
+                "sha256": "eab10077a4c070968d033fbd9c8ce5a6c55a09082ff9d760782e9ccd6e758aea"
+              },
+              {
+                "path": "userscripts/fusion/fusion.user.js",
+                "sha256": "9315fa2288467884b00e29ffadbb10dbb71582546eeb59ee87d066b4a21b2492"
+              },
+              {
+                "path": "userscripts/fuzzy_logic/fuzzy_logic.user.js",
+                "sha256": "ec684549350b541c3686ff994d52f2a618f2b772fa66a07cb6e900aa99fe483b"
+              },
+              {
+                "path": "userscripts/group_therapy/DEVELOP.md",
+                "sha256": "9f00d14f8f446c8a6bad0195c594b610dbfd5de2126e1f9f06748a5029bbfff0"
+              },
+              {
+                "path": "userscripts/group_therapy/README.md",
+                "sha256": "2cca1d7da3fa2c2699bfc055113cd1aa13430928326e3bd6ed28c5ebf4a10c1e"
+              },
+              {
+                "path": "userscripts/group_therapy/group_therapy.user.js",
+                "sha256": "e8999d3abbd23e50b19beab10c88738038b56c5e5ff244b63f91eb723995ce15"
+              },
+              {
+                "path": "userscripts/isrc_scout/DEVELOP.md",
+                "sha256": "8916395048348b759f0ba69b83f6b0d9a4dc1b005738953ba141497da9d88f3b"
+              },
+              {
+                "path": "userscripts/isrc_scout/README.md",
+                "sha256": "42d9b02c34a13c8f43f1851d49c6bef9762653479cfd6ffb3d3b715d89ab9a51"
+              },
+              {
+                "path": "userscripts/isrc_scout/isrc_scout.user.js",
+                "sha256": "70d020b5d9ee45b48b16bcc710c4eade77d87f14f9efc998233c707b6133e929"
+              },
+              {
+                "path": "userscripts/mammoth/DEVELOP.md",
+                "sha256": "914f6954709c1788439bf375cfaa522fac70b4f68a34f237c46c3110b1ae8391"
+              },
+              {
+                "path": "userscripts/mammoth/README.md",
+                "sha256": "a1907b47052711c0490ecfb4d6b7b5f70d90fed2cf6df6530e42c96247e48df3"
+              },
+              {
+                "path": "userscripts/mammoth/mammoth.user.js",
+                "sha256": "cc33eb2ffc23ae82a10af53364d5a9fdb47b713623a6901ee02efa411b9d9d2d"
+              },
+              {
+                "path": "userscripts/mission_control/DEVELOP.md",
+                "sha256": "fd8d791f95b9a6e2678d3c09b4d70f976394dd49bd933ae72f7d3610fbe5125d"
+              },
+              {
+                "path": "userscripts/mission_control/README.md",
+                "sha256": "86517fbbe54cb9775ddf87868eea605782331ae70eee10652292d0873f5879c5"
+              },
+              {
+                "path": "userscripts/mission_control/mission_control.user.js",
+                "sha256": "ad01c84c1db3553ee012b42ead51646cdf18b0042b35e56ab94a81769f28eb16"
+              },
+              {
+                "path": "userscripts/platform_check/DEVELOP.md",
+                "sha256": "be6f4e8693e00aebf02edc61a4bbb25f4e7197159449572fade6fa8d93d96376"
+              },
+              {
+                "path": "userscripts/platform_check/README.md",
+                "sha256": "d2513813fb8ba2ab1537250c9abfa780bf80338b80c7184c2195c3a4d5ea1066"
+              },
+              {
+                "path": "userscripts/platform_check/platform_check.user.js",
+                "sha256": "a01a4aa7098fafeb0bc7835e39f1a41fa092b6f38179ad3040d50a21c030c1ec"
+              },
+              {
+                "path": "userscripts/scribe/DEVELOP.md",
+                "sha256": "e37772117b6dbe00b0e6a71c90cc406f86f7f15245a0b34ea188f1cbaaa0f643"
+              },
+              {
+                "path": "userscripts/scribe/README.md",
+                "sha256": "4f9f1232710d5b49ad7d5c969a87a55811365c7c98124fa3f31c3fb6cf537d5a"
+              },
+              {
+                "path": "userscripts/scribe/scribe.user.js",
+                "sha256": "e917396f8ed2f638a03d820100072d5a94b914c9e4bd2421ea28c3acd8edbbab"
+              },
+              {
+                "path": "userscripts/string_theory/DEVELOP.md",
+                "sha256": "30eb3cddfdea3cda3b0bf54cc8fbecf40d25426c836650c707c5d04800458ce7"
+              },
+              {
+                "path": "userscripts/string_theory/README.md",
+                "sha256": "94014423aaba4df38d03d2d6e39a40c7041df224b1c92db90a12aae9987dff32"
+              },
+              {
+                "path": "userscripts/string_theory/string_theory.user.js",
+                "sha256": "4bf676f2c10805ee8de2c14fbbe1daa65783db15b8d78e69499f5528d1a0ea7d"
+              },
+              {
+                "path": "userscripts/string_theory/themes/README.md",
+                "sha256": "f17a68d7f910d22d5f407641493635ec660ed7bde8b11f70b93691ae2f8e70f0"
+              }
+            ]
+          }
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "sourceManifestSha256": "780cecbf88dbd23f9e739882a2460946d101a6e9b342f727d625b9f807ca3929",
+          "collectedAt": "2026-11-06T15:47:39.283Z"
+        },
+        "updatedAt": "2026-11-07T18:02:09.839Z"
+      }
+    },
+    {
+      "id": "wiki-3daf20f0f889a01d4ab9",
+      "name": "MusicBrainz: Add search link for barcode",
+      "currentBasis": {
+        "name": "MusicBrainz: Add search link for barcode",
+        "hash": "f6d3ad9f2427b4ae0ef9218dce2c4f80e18fa47f40cd23a7ba5a4d9500115f38",
+        "wikiRevision": 79510,
+        "wikiRowHash": "8ea692b7f7aff7d8a3420e0bf75d2d00e5f499d5beb826816ec4401e76300ba7",
+        "sourceIdentity": "https://update.greasyfork.org/scripts/536878/MusicBrainz%3A%20Add%20search%20link%20for%20barcode.user.js",
+        "sourceUrl": "https://greasyfork.org/en/scripts/536878-musicbrainz-add-search-link-for-barcode/code",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "Unassessed",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Searches for existing releases in \"Add release\" edits by barcode, highlights and adds a search link on match.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Replaceable",
+        "note": "PC searches barcodes on all supported providers",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "MusicBrainz: Add search link for barcode",
+          "hash": "f6d3ad9f2427b4ae0ef9218dce2c4f80e18fa47f40cd23a7ba5a4d9500115f38",
+          "wikiRevision": 79510,
+          "wikiRowHash": "8ea692b7f7aff7d8a3420e0bf75d2d00e5f499d5beb826816ec4401e76300ba7",
+          "sourceIdentity": "https://update.greasyfork.org/scripts/536878/MusicBrainz%3A%20Add%20search%20link%20for%20barcode.user.js",
+          "sourceUrl": "https://greasyfork.org/en/scripts/536878-musicbrainz-add-search-link-for-barcode/code",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "Unassessed",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Searches for existing releases in \"Add release\" edits by barcode, highlights and adds a search link on match.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "sourceManifestSha256": "780cecbf88dbd23f9e739882a2460946d101a6e9b342f727d625b9f807ca3929",
+          "collectedAt": "2026-11-06T15:47:39.283Z"
+        },
+        "updatedAt": "2026-11-07T18:02:45.999Z"
+      }
+    },
+    {
+      "id": "wiki-3c39ef682f472c092bae",
+      "name": "MusicBrainz: Ajax Collection Links",
+      "currentBasis": {
+        "name": "MusicBrainz: Ajax Collection Links",
+        "hash": "766b7813267dc47fd395bc92b00af97e7851835fbd0182d40764ed62bebfbadf",
+        "wikiRevision": 79510,
+        "wikiRowHash": "5fd50a43e469b2de301f80220e7863b7ce76b095ef288b2c9cf2c0e8e3e9e928",
+        "sourceIdentity": "https://update.greasyfork.org/scripts/552597/MusicBrainz%3A%20Ajax%20Collection%20Links.user.js",
+        "sourceUrl": "https://greasyfork.org/en/scripts/552597-musicbrainz-ajax-collection-links/code",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "Unassessed",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Enhances entity sidebar collection links (Add/Remove from Collection) to use AJAX, preventing page reloads and toggling the link text on success.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Not applicable",
+        "note": "",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "MusicBrainz: Ajax Collection Links",
+          "hash": "766b7813267dc47fd395bc92b00af97e7851835fbd0182d40764ed62bebfbadf",
+          "wikiRevision": 79510,
+          "wikiRowHash": "5fd50a43e469b2de301f80220e7863b7ce76b095ef288b2c9cf2c0e8e3e9e928",
+          "sourceIdentity": "https://update.greasyfork.org/scripts/552597/MusicBrainz%3A%20Ajax%20Collection%20Links.user.js",
+          "sourceUrl": "https://greasyfork.org/en/scripts/552597-musicbrainz-ajax-collection-links/code",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "Unassessed",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Enhances entity sidebar collection links (Add/Remove from Collection) to use AJAX, preventing page reloads and toggling the link text on success.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "sourceManifestSha256": "780cecbf88dbd23f9e739882a2460946d101a6e9b342f727d625b9f807ca3929",
+          "collectedAt": "2026-11-06T15:47:39.283Z"
+        },
+        "updatedAt": "2026-11-07T18:02:55.689Z"
+      }
+    },
+    {
+      "id": "wiki-c48e5a9c6d9cd89dc177",
+      "name": "Musicbrainz DiscIds Detector",
+      "currentBasis": {
+        "name": "Musicbrainz DiscIds Detector",
+        "hash": "bc9516add17105b734e2970d8f70412a43cfbfd8d2c755c67c6aee645703942f",
+        "wikiRevision": 79510,
+        "wikiRowHash": "bbf30087453c408a364697faf016f94bb3acc21a448a9095b8d36a4bcebfccee",
+        "sourceIdentity": "github:murdos/musicbrainz-userscripts/mb_discids_detector.user.js",
+        "sourceUrl": "https://github.com/murdos/musicbrainz-userscripts/blob/dist/mb_discids_detector.user.js",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "No equivalent",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Generate MusicBrainz DiscIds from online EAC logs, and check existence in MusicBrainz database.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null,
+        "acceptedReview": {
+          "submissionId": "D_kwDOSj7rds4Aq6q2",
+          "discussionNumber": 941,
+          "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/941",
+          "author": {
+            "id": "MDQ6VXNlcjg1NzY3",
+            "login": "majkinetor",
+            "url": "https://github.com/majkinetor"
+          },
+          "disposition": "accepted",
+          "verdict": "No equivalent",
+          "reviewedReport": "0bbd5c4c064d6753e5e28f89e0deef382b850f5e95fed304c053e4ea56a2fb86"
+        },
+        "quickReview": {
+          "id": "wiki-c48e5a9c6d9cd89dc177",
+          "name": "Musicbrainz DiscIds Detector",
+          "reviewedAt": "2026-11-07T17:08:35.295673+00:00",
+          "reviewer": "GPT-6 (AI quick source triage)",
+          "level": "Major workflow triage; no live submission tests",
+          "sourceHash": "c2f7c0c8da4c673a1ca26d0379e576a785ca0c61ffd2a5860b6f243f0cc31902",
+          "sourceCommit": "23d4549cbb280fab73436203b58f511e7fc73775",
+          "suiteCommit": "4692d6c6dfee536b4523e3ffd7045cead1c4e9c6",
+          "suiteInventoryHash": "3165ab01b3d940abccf37d169e00d81f3c50f54f3e62d1c9047180fef40207e7",
+          "suggestedVerdict": "Partial overlap",
+          "tools": [
+            "apollo_editor"
+          ],
+          "majorFeatures": [
+            "Generate MusicBrainz DiscIds from online EAC logs, and check existence in MusicBrainz database."
+          ],
+          "evidence": [
+            {
+              "url": "https://github.com/murdos/musicbrainz-userscripts/blob/23d4549cbb280fab73436203b58f511e7fc73775/mb_discids_detector.user.js#L3",
+              "label": "Captured entry point and declared workflow"
+            }
+          ],
+          "summary": "Apollo parses EAC/XLD/whipper logs and submits Disc IDs. The external script also discovers online forum/torrent logs and checks existing IDs; the original No equivalent verdict is too broad for the shared log-parsing workflow.",
+          "result": "Scope needs correction",
+          "dependencies": [
+            {
+              "path": "userscripts/apollo_editor/DEVELOP.md",
+              "sha256": "cf01184df82e9ff7ccecc2f0488c8c8a30ba9cf3320bb396c70a302288a3f32d"
+            },
+            {
+              "path": "userscripts/apollo_editor/README.md",
+              "sha256": "d0212a6b101859ebbf04c1204a0d28d04d72620065407ee16d29a0b06af150fa"
+            },
+            {
+              "path": "userscripts/apollo_editor/apollo_editor.user.js",
+              "sha256": "42fb0db760a592d034f386e9a05cf5bf7b28095098448d00637113d77d334104"
+            }
+          ]
+        }
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Replaceable",
+        "note": "",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "Musicbrainz DiscIds Detector",
+          "hash": "bc9516add17105b734e2970d8f70412a43cfbfd8d2c755c67c6aee645703942f",
+          "wikiRevision": 79510,
+          "wikiRowHash": "bbf30087453c408a364697faf016f94bb3acc21a448a9095b8d36a4bcebfccee",
+          "sourceIdentity": "github:murdos/musicbrainz-userscripts/mb_discids_detector.user.js",
+          "sourceUrl": "https://github.com/murdos/musicbrainz-userscripts/blob/dist/mb_discids_detector.user.js",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "No equivalent",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Generate MusicBrainz DiscIds from online EAC logs, and check existence in MusicBrainz database.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null,
+          "acceptedReview": {
+            "submissionId": "D_kwDOSj7rds4Aq6q2",
+            "discussionNumber": 941,
+            "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/941",
+            "author": {
+              "id": "MDQ6VXNlcjg1NzY3",
+              "login": "majkinetor",
+              "url": "https://github.com/majkinetor"
+            },
+            "disposition": "accepted",
+            "verdict": "No equivalent",
+            "reviewedReport": "0bbd5c4c064d6753e5e28f89e0deef382b850f5e95fed304c053e4ea56a2fb86"
+          },
+          "quickReview": {
+            "id": "wiki-c48e5a9c6d9cd89dc177",
+            "name": "Musicbrainz DiscIds Detector",
+            "reviewedAt": "2026-11-07T17:08:35.295673+00:00",
+            "reviewer": "GPT-6 (AI quick source triage)",
+            "level": "Major workflow triage; no live submission tests",
+            "sourceHash": "c2f7c0c8da4c673a1ca26d0379e576a785ca0c61ffd2a5860b6f243f0cc31902",
+            "sourceCommit": "23d4549cbb280fab73436203b58f511e7fc73775",
+            "suiteCommit": "4692d6c6dfee536b4523e3ffd7045cead1c4e9c6",
+            "suiteInventoryHash": "3165ab01b3d940abccf37d169e00d81f3c50f54f3e62d1c9047180fef40207e7",
+            "suggestedVerdict": "Partial overlap",
+            "tools": [
+              "apollo_editor"
+            ],
+            "majorFeatures": [
+              "Generate MusicBrainz DiscIds from online EAC logs, and check existence in MusicBrainz database."
+            ],
+            "evidence": [
+              {
+                "url": "https://github.com/murdos/musicbrainz-userscripts/blob/23d4549cbb280fab73436203b58f511e7fc73775/mb_discids_detector.user.js#L3",
+                "label": "Captured entry point and declared workflow"
+              }
+            ],
+            "summary": "Apollo parses EAC/XLD/whipper logs and submits Disc IDs. The external script also discovers online forum/torrent logs and checks existing IDs; the original No equivalent verdict is too broad for the shared log-parsing workflow.",
+            "result": "Scope needs correction",
+            "dependencies": [
+              {
+                "path": "userscripts/apollo_editor/DEVELOP.md",
+                "sha256": "cf01184df82e9ff7ccecc2f0488c8c8a30ba9cf3320bb396c70a302288a3f32d"
+              },
+              {
+                "path": "userscripts/apollo_editor/README.md",
+                "sha256": "d0212a6b101859ebbf04c1204a0d28d04d72620065407ee16d29a0b06af150fa"
+              },
+              {
+                "path": "userscripts/apollo_editor/apollo_editor.user.js",
+                "sha256": "42fb0db760a592d034f386e9a05cf5bf7b28095098448d00637113d77d334104"
+              }
+            ]
+          }
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "sourceManifestSha256": "780cecbf88dbd23f9e739882a2460946d101a6e9b342f727d625b9f807ca3929",
+          "collectedAt": "2026-11-06T15:47:39.283Z"
+        },
+        "updatedAt": "2026-11-07T18:03:56.356Z"
+      }
+    },
+    {
+      "id": "wiki-d01e24b3d04763735ccb",
+      "name": "Guess related works",
+      "currentBasis": {
+        "name": "Guess related works",
+        "hash": "fdd601c33803b5899e9f94fd6064d394366058d8d0e853f66c9d8a336774f118",
+        "wikiRevision": 79510,
+        "wikiRowHash": "b0c234ab574e44c10cc23474fa93f823f23f0de79809c3fa852099f64c19369e",
+        "sourceIdentity": "github:loujine/musicbrainz-scripts/mb-reledit-guess_works.user.js",
+        "sourceUrl": "https://github.com/loujine/musicbrainz-scripts/blob/master/mb-reledit-guess_works.user.js",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "Unassessed",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Set best-guess related works.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Mostly replaceable",
+        "note": "",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "Guess related works",
+          "hash": "fdd601c33803b5899e9f94fd6064d394366058d8d0e853f66c9d8a336774f118",
+          "wikiRevision": 79510,
+          "wikiRowHash": "b0c234ab574e44c10cc23474fa93f823f23f0de79809c3fa852099f64c19369e",
+          "sourceIdentity": "github:loujine/musicbrainz-scripts/mb-reledit-guess_works.user.js",
+          "sourceUrl": "https://github.com/loujine/musicbrainz-scripts/blob/master/mb-reledit-guess_works.user.js",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "Unassessed",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Set best-guess related works.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "sourceManifestSha256": "780cecbf88dbd23f9e739882a2460946d101a6e9b342f727d625b9f807ca3929",
+          "collectedAt": "2026-11-06T15:47:39.283Z"
+        },
+        "updatedAt": "2026-11-07T18:05:09.303Z"
+      }
+    },
+    {
+      "id": "wiki-701bbc8829b287dcedb5",
+      "name": "MusicBrainz: Align Columns in \"Merge Recordings\"",
+      "currentBasis": {
+        "name": "MusicBrainz: Align Columns in \"Merge Recordings\"",
+        "hash": "f3c75dede58c4bb00d9216a87a1bc092b990127cb452775ce7b38406d86b1603",
+        "wikiRevision": 79510,
+        "wikiRowHash": "9902b816a2f5822f16cd7dd03b384e65b660e9f5fd9727161610f4c724f5b7bc",
+        "sourceIdentity": "https://update.greasyfork.org/scripts/546688/MusicBrainz%3A%20Align%20Columns%20in%20%22Merge%20Recordings%22.user.js",
+        "sourceUrl": "https://greasyfork.org/en/scripts/546688-musicbrainz-align-columns-in-merge-recordings/code",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "Unassessed",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Aligns the columns in \"Merge Recordings\" edits for easier comparison.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Not applicable",
+        "note": "",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "MusicBrainz: Align Columns in \"Merge Recordings\"",
+          "hash": "f3c75dede58c4bb00d9216a87a1bc092b990127cb452775ce7b38406d86b1603",
+          "wikiRevision": 79510,
+          "wikiRowHash": "9902b816a2f5822f16cd7dd03b384e65b660e9f5fd9727161610f4c724f5b7bc",
+          "sourceIdentity": "https://update.greasyfork.org/scripts/546688/MusicBrainz%3A%20Align%20Columns%20in%20%22Merge%20Recordings%22.user.js",
+          "sourceUrl": "https://greasyfork.org/en/scripts/546688-musicbrainz-align-columns-in-merge-recordings/code",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "Unassessed",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Aligns the columns in \"Merge Recordings\" edits for easier comparison.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "sourceManifestSha256": "780cecbf88dbd23f9e739882a2460946d101a6e9b342f727d625b9f807ca3929",
+          "collectedAt": "2026-11-06T15:47:39.283Z"
+        },
+        "updatedAt": "2026-11-07T18:05:43.641Z"
+      }
+    },
+    {
+      "id": "wiki-ee29ce970e26b246b41e",
+      "name": "Propagate recording dates",
+      "currentBasis": {
+        "name": "Propagate recording dates",
+        "hash": "e992f366baf870fccf202febb273f7f229fe0825aee704ffb04e18e7046bb0ca",
+        "wikiRevision": 79510,
+        "wikiRowHash": "20d433ffd38ef0be47ff278cd90e2e6eb0d340f5bb7296727850453f1e690e62",
+        "sourceIdentity": "github:loujine/musicbrainz-scripts/mb-reledit-copy_dates.user.js",
+        "sourceUrl": "https://github.com/loujine/musicbrainz-scripts/blob/master/mb-reledit-copy_dates.user.js",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "Unassessed",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Batch-propagate recording dates.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Replaceable",
+        "note": "",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "Propagate recording dates",
+          "hash": "e992f366baf870fccf202febb273f7f229fe0825aee704ffb04e18e7046bb0ca",
+          "wikiRevision": 79510,
+          "wikiRowHash": "20d433ffd38ef0be47ff278cd90e2e6eb0d340f5bb7296727850453f1e690e62",
+          "sourceIdentity": "github:loujine/musicbrainz-scripts/mb-reledit-copy_dates.user.js",
+          "sourceUrl": "https://github.com/loujine/musicbrainz-scripts/blob/master/mb-reledit-copy_dates.user.js",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "Unassessed",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Batch-propagate recording dates.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "sourceManifestSha256": "780cecbf88dbd23f9e739882a2460946d101a6e9b342f727d625b9f807ca3929",
+          "collectedAt": "2026-11-06T15:47:39.283Z"
+        },
+        "updatedAt": "2026-11-07T18:06:25.893Z"
+      }
+    },
+    {
+      "id": "wiki-8d6ac0cf95b875ace4f5",
+      "name": "Select All Update Recordings",
+      "currentBasis": {
+        "name": "Select All Update Recordings",
+        "hash": "50f523b151d1044ee4d01e87c7ef5a5a142c4396f435e0d567b6c6d34248c8a9",
+        "wikiRevision": 79510,
+        "wikiRowHash": "c378eb24712679036037a02da7f5ed921054abb4afaf612ce66a1f163391fd3c",
+        "sourceIdentity": "github:ropdebee/mb-userscripts/mb_qol_select_all_update_recordings.user.js",
+        "sourceUrl": "https://github.com/ROpdebee/mb-userscripts/blob/main/mb_qol_select_all_update_recordings.user.js",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "Unassessed",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Add buttons to release editor to select all \"Update recordings\" checkboxes. Differs from the built-in \"Select All\" checkboxes in that it doesn't lock the checkboxes to a given state, enabling you to deselect some checkboxes.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Replaceable",
+        "note": "",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "Select All Update Recordings",
+          "hash": "50f523b151d1044ee4d01e87c7ef5a5a142c4396f435e0d567b6c6d34248c8a9",
+          "wikiRevision": 79510,
+          "wikiRowHash": "c378eb24712679036037a02da7f5ed921054abb4afaf612ce66a1f163391fd3c",
+          "sourceIdentity": "github:ropdebee/mb-userscripts/mb_qol_select_all_update_recordings.user.js",
+          "sourceUrl": "https://github.com/ROpdebee/mb-userscripts/blob/main/mb_qol_select_all_update_recordings.user.js",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "Unassessed",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Add buttons to release editor to select all \"Update recordings\" checkboxes. Differs from the built-in \"Select All\" checkboxes in that it doesn't lock the checkboxes to a given state, enabling you to deselect some checkboxes.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "sourceManifestSha256": "780cecbf88dbd23f9e739882a2460946d101a6e9b342f727d625b9f807ca3929",
+          "collectedAt": "2026-11-06T15:47:39.283Z"
+        },
+        "updatedAt": "2026-11-07T18:06:45.444Z"
+      }
+    },
+    {
+      "id": "wiki-b88517e69ab248babfd3",
+      "name": "Set performer instrument",
+      "currentBasis": {
+        "name": "Set performer instrument",
+        "hash": "616b53d0b98d86ce1547f2f9e05e3eaf30c8ca6a9e988e4203af622c2d9b5d8e",
+        "wikiRevision": 79510,
+        "wikiRowHash": "545d227099a643d3230c1ae595e0afe59f9bce05ce8b2c5cc27f44773c4fd4bf",
+        "sourceIdentity": "github:loujine/musicbrainz-scripts/mb-reledit-set_instruments.user.js",
+        "sourceUrl": "https://github.com/loujine/musicbrainz-scripts/blob/master/mb-reledit-set_instruments.user.js",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "Unassessed",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Convert to \"string\" instrument AR on selected recordings.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Replaceable",
+        "note": "",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "Set performer instrument",
+          "hash": "616b53d0b98d86ce1547f2f9e05e3eaf30c8ca6a9e988e4203af622c2d9b5d8e",
+          "wikiRevision": 79510,
+          "wikiRowHash": "545d227099a643d3230c1ae595e0afe59f9bce05ce8b2c5cc27f44773c4fd4bf",
+          "sourceIdentity": "github:loujine/musicbrainz-scripts/mb-reledit-set_instruments.user.js",
+          "sourceUrl": "https://github.com/loujine/musicbrainz-scripts/blob/master/mb-reledit-set_instruments.user.js",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "Unassessed",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Convert to \"string\" instrument AR on selected recordings.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "sourceManifestSha256": "780cecbf88dbd23f9e739882a2460946d101a6e9b342f727d625b9f807ca3929",
+          "collectedAt": "2026-11-06T15:47:39.283Z"
+        },
+        "updatedAt": "2026-11-07T18:07:06.867Z"
+      }
+    },
+    {
+      "id": "wiki-1cd445a6f615b63bbc05",
+      "name": "Soundcloud track filler",
+      "currentBasis": {
+        "name": "Soundcloud track filler",
+        "hash": "501c5c2f2a7315d5dac972184d135f96f373a3a9d9b686f31d1ca44a65590f42",
+        "wikiRevision": 79510,
+        "wikiRowHash": "4578918f8be374e9ca13416c13de159146d193d6c4f0c2715cc2a9ee909a47c1",
+        "sourceIdentity": "https://git.unix.dog/yosh/musicbrainz-userscripts/raw/branch/main/soundcloud-track-filler.user.js",
+        "sourceUrl": "",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "Unassessed",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Add a button to release pages to match Soundcloud links to tracks.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Replaceable",
+        "note": "",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "Soundcloud track filler",
+          "hash": "501c5c2f2a7315d5dac972184d135f96f373a3a9d9b686f31d1ca44a65590f42",
+          "wikiRevision": 79510,
+          "wikiRowHash": "4578918f8be374e9ca13416c13de159146d193d6c4f0c2715cc2a9ee909a47c1",
+          "sourceIdentity": "https://git.unix.dog/yosh/musicbrainz-userscripts/raw/branch/main/soundcloud-track-filler.user.js",
+          "sourceUrl": "",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "Unassessed",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Add a button to release pages to match Soundcloud links to tracks.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "sourceManifestSha256": "780cecbf88dbd23f9e739882a2460946d101a6e9b342f727d625b9f807ca3929",
+          "collectedAt": "2026-11-06T15:47:39.283Z"
+        },
+        "updatedAt": "2026-11-07T18:07:25.071Z"
+      }
+    },
+    {
+      "id": "wiki-366b36e39192f0fb6d73",
+      "name": "Hyper Moulinette",
+      "currentBasis": {
+        "name": "Hyper Moulinette",
+        "hash": "fd50666dbfa76f1775fef718cd3add4594ddeb784562011667afc59c0f76bfbe",
+        "wikiRevision": 79510,
+        "wikiRowHash": "757073038c4935c6278adf5b0965eeac1df4052d8163de952378905f59db1b84",
+        "sourceIdentity": "github:jesus2099/konami-command/mb_HYPER-MOULINETTE.user.js",
+        "sourceUrl": "https://github.com/jesus2099/konami-command/blob/master/mb_HYPER-MOULINETTE.user.js",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "Unassessed",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Mass PUT or DELETE releases in a collection from an edit search or an other collection.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "No equivalent",
+        "note": "",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "Hyper Moulinette",
+          "hash": "fd50666dbfa76f1775fef718cd3add4594ddeb784562011667afc59c0f76bfbe",
+          "wikiRevision": 79510,
+          "wikiRowHash": "757073038c4935c6278adf5b0965eeac1df4052d8163de952378905f59db1b84",
+          "sourceIdentity": "github:jesus2099/konami-command/mb_HYPER-MOULINETTE.user.js",
+          "sourceUrl": "https://github.com/jesus2099/konami-command/blob/master/mb_HYPER-MOULINETTE.user.js",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "Unassessed",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Mass PUT or DELETE releases in a collection from an edit search or an other collection.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "sourceManifestSha256": "780cecbf88dbd23f9e739882a2460946d101a6e9b342f727d625b9f807ca3929",
+          "collectedAt": "2026-11-06T15:47:39.283Z"
+        },
+        "updatedAt": "2026-11-07T18:08:26.804Z"
+      }
+    },
+    {
+      "id": "wiki-a4e8084a9c69e8f1f96d",
+      "name": "Collection Highlighter",
+      "currentBasis": {
+        "name": "Collection Highlighter",
+        "hash": "9e1a86497e479a6a0aa40ca2e4b08070bb15fff890bcf76fa33b8bdc95cf68ad",
+        "wikiRevision": 79510,
+        "wikiRowHash": "b47427daa29eee5cc50ce0adde027e9ac95db09ddfdab1397098904347c00b73",
+        "sourceIdentity": "github:jesus2099/konami-command/mb_COLLECTION-HIGHLIGHTER.user.js",
+        "sourceUrl": "https://github.com/jesus2099/konami-command/blob/master/mb_COLLECTION-HIGHLIGHTER.user.js",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "Unassessed",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Highlights releases, release-groups, etc. that you have in your collections (anyone’s collection can be loaded) everywhere.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "No equivalent",
+        "note": "",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "Collection Highlighter",
+          "hash": "9e1a86497e479a6a0aa40ca2e4b08070bb15fff890bcf76fa33b8bdc95cf68ad",
+          "wikiRevision": 79510,
+          "wikiRowHash": "b47427daa29eee5cc50ce0adde027e9ac95db09ddfdab1397098904347c00b73",
+          "sourceIdentity": "github:jesus2099/konami-command/mb_COLLECTION-HIGHLIGHTER.user.js",
+          "sourceUrl": "https://github.com/jesus2099/konami-command/blob/master/mb_COLLECTION-HIGHLIGHTER.user.js",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "Unassessed",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Highlights releases, release-groups, etc. that you have in your collections (anyone’s collection can be loaded) everywhere.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "sourceManifestSha256": "780cecbf88dbd23f9e739882a2460946d101a6e9b342f727d625b9f807ca3929",
+          "collectedAt": "2026-11-06T15:47:39.283Z"
+        },
+        "updatedAt": "2026-11-07T18:08:31.519Z"
+      }
+    },
+    {
+      "id": "wiki-40c3ff78cf1da655ceff",
+      "name": "MB Release Collection to CSV",
+      "currentBasis": {
+        "name": "MB Release Collection to CSV",
+        "hash": "be5c6c0bee58e803855aa0af273ecee75eae0bf99577e06833269f9758295f9d",
+        "wikiRevision": 79510,
+        "wikiRowHash": "e85007ee375d56fa2128f5603eb186673b420bb93a1dd6096e6b93eef22bf2a0",
+        "sourceIdentity": "https://gist.github.com/defvs/b9f43a6549b22430ccc46b5625e6b8be/raw/1b96504ac31e2fe12266d7ae1a6c52bef5c7ee9e/MB-release-collection-to-csv.user.js",
+        "sourceUrl": "https://gist.github.com/defvs/b9f43a6549b22430ccc46b5625e6b8be",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "Unassessed",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Export MB Release Collections to a CSV file.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "No equivalent",
+        "note": "",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "MB Release Collection to CSV",
+          "hash": "be5c6c0bee58e803855aa0af273ecee75eae0bf99577e06833269f9758295f9d",
+          "wikiRevision": 79510,
+          "wikiRowHash": "e85007ee375d56fa2128f5603eb186673b420bb93a1dd6096e6b93eef22bf2a0",
+          "sourceIdentity": "https://gist.github.com/defvs/b9f43a6549b22430ccc46b5625e6b8be/raw/1b96504ac31e2fe12266d7ae1a6c52bef5c7ee9e/MB-release-collection-to-csv.user.js",
+          "sourceUrl": "https://gist.github.com/defvs/b9f43a6549b22430ccc46b5625e6b8be",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "Unassessed",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Export MB Release Collections to a CSV file.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "sourceManifestSha256": "780cecbf88dbd23f9e739882a2460946d101a6e9b342f727d625b9f807ca3929",
+          "collectedAt": "2026-11-06T15:47:39.283Z"
+        },
+        "updatedAt": "2026-11-07T18:08:57.264Z"
+      }
+    },
+    {
+      "id": "wiki-e6ff4f111473973d5bb6",
+      "name": "Print All Pages",
+      "currentBasis": {
+        "name": "Print All Pages",
+        "hash": "bb586b4d56063cf113df5f6b3b6e2c6e05842204c2102f1bb3fbe63fcaa66b8c",
+        "wikiRevision": 79510,
+        "wikiRowHash": "ce3959a2d14afcca803df5106c9763d3892273fc11a14d465335277e58104344",
+        "sourceIdentity": "github:jesus2099/konami-command/mb_PRINT-ALL-PAGES.user.js",
+        "sourceUrl": "https://github.com/jesus2099/konami-command/blob/master/mb_PRINT-ALL-PAGES.user.js",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "Unassessed",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Print your complete collections to make your shopping lists or check lists.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "No equivalent",
+        "note": "",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "Print All Pages",
+          "hash": "bb586b4d56063cf113df5f6b3b6e2c6e05842204c2102f1bb3fbe63fcaa66b8c",
+          "wikiRevision": 79510,
+          "wikiRowHash": "ce3959a2d14afcca803df5106c9763d3892273fc11a14d465335277e58104344",
+          "sourceIdentity": "github:jesus2099/konami-command/mb_PRINT-ALL-PAGES.user.js",
+          "sourceUrl": "https://github.com/jesus2099/konami-command/blob/master/mb_PRINT-ALL-PAGES.user.js",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "Unassessed",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Print your complete collections to make your shopping lists or check lists.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "sourceManifestSha256": "780cecbf88dbd23f9e739882a2460946d101a6e9b342f727d625b9f807ca3929",
+          "collectedAt": "2026-11-06T15:47:39.283Z"
+        },
+        "updatedAt": "2026-11-07T18:09:07.097Z"
+      }
+    },
+    {
+      "id": "wiki-7837ba4c41ddf9a01b94",
+      "name": "ListenBrainz: Center lengths and clip titles",
+      "currentBasis": {
+        "name": "ListenBrainz: Center lengths and clip titles",
+        "hash": "7d93d37ee2389fe09606cb0c6f1b73243ee08c4a172dadd09ca97a8da0e38f66",
+        "wikiRevision": 79510,
+        "wikiRowHash": "122be45d6526fd50a3b66f93c5eb7cb687d8b407015537c80a3761e71f8f960f",
+        "sourceIdentity": "https://update.greasyfork.org/scripts/560350/ListenBrainz%3A%20Center%20lengths%20and%20clip%20titles.user.js",
+        "sourceUrl": "https://greasyfork.org/en/scripts/560350-listenbrainz-center-lengths-and-clip-titles/code",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "Unassessed",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Moves track lengths to the center of the cards and clips titles instead of wrapping.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Not applicable",
+        "note": "",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "ListenBrainz: Center lengths and clip titles",
+          "hash": "7d93d37ee2389fe09606cb0c6f1b73243ee08c4a172dadd09ca97a8da0e38f66",
+          "wikiRevision": 79510,
+          "wikiRowHash": "122be45d6526fd50a3b66f93c5eb7cb687d8b407015537c80a3761e71f8f960f",
+          "sourceIdentity": "https://update.greasyfork.org/scripts/560350/ListenBrainz%3A%20Center%20lengths%20and%20clip%20titles.user.js",
+          "sourceUrl": "https://greasyfork.org/en/scripts/560350-listenbrainz-center-lengths-and-clip-titles/code",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "Unassessed",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Moves track lengths to the center of the cards and clips titles instead of wrapping.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/c92ef19a41297d797dbb95729a0230136a00b6151cd5a9ad276fbeb559ab57c9.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "sourceManifestSha256": "780cecbf88dbd23f9e739882a2460946d101a6e9b342f727d625b9f807ca3929",
+          "collectedAt": "2026-11-06T15:47:39.283Z"
+        },
+        "updatedAt": "2026-11-07T18:09:14.535Z"
+      }
+    }
+  ]
+}

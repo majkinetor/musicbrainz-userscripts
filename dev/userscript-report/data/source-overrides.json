@@ -1,0 +1,71 @@
+{
+  "wiki-79e1632755fa7fe99c38": {
+    "repo": "kellnerd/harmony",
+    "path": "README.md",
+    "kind": "application-source",
+    "ref": "HEAD",
+    "archivedSource": false,
+    "parts": [
+      "lookup.ts",
+      "harmonizer/merge.ts",
+      "musicbrainz/seeding.ts",
+      "musicbrainz/mbid_mapping.ts",
+      "providers/base.ts",
+      "providers/mod.ts",
+      "server/routes/release.tsx"
+    ]
+  },
+  "wiki-2ad96da51e4e590ed614": {
+    "repo": "murdos/musicbrainz-userscripts",
+    "path": "deezer_importer.user.js",
+    "ref": "dist",
+    "archivedSource": false,
+    "parts": []
+  },
+  "wiki-df942978318bc7b33474": {
+    "repo": "chaban-mb/userscripts",
+    "path": "src/Volumo MusicBrainz Importer.user.js",
+    "ref": "HEAD",
+    "archivedSource": false,
+    "parts": []
+  },
+  "wiki-b8fac2d4ec6c741c8773": {
+    "repo": "dvirtz/musicbrainz-scripts",
+    "path": "scripts/change-all-artists-default/src/index.ts",
+    "kind": "typescript-source",
+    "ref": "f2ec93e84fed8b5a9c9567d225fc09fec1ad1d59",
+    "archivedSource": true,
+    "parts": [
+      "scripts/change-all-artists-default/src/credit-bubble.ts",
+      "scripts/change-all-artists-default/src/ui.tsx"
+    ]
+  },
+  "wiki-19e7ddacc41ebc31b640": {
+    "repo": "afrocatmusic/userscripts",
+    "path": "MBz-Copy-URLs.user.js",
+    "ref": "HEAD",
+    "archivedSource": false,
+    "parts": []
+  },
+  "wiki-160e6f63582faf58e52a": {
+    "repo": "chaban-mb/userscripts",
+    "path": "src/MusicBrainz Add Spotify & SoundExchange search buttons on ISRC page.user.js",
+    "ref": "HEAD",
+    "archivedSource": false,
+    "parts": []
+  },
+  "wiki-4caa8e496e4aa2081cb4": {
+    "repo": "rinsuki/userscripts",
+    "path": "simple-scripts/mb-search-release-on-websites.user.js",
+    "ref": "9dbdee3dec0924a1448639caca91a66c2cf9cf79",
+    "archivedSource": true,
+    "parts": []
+  },
+  "wiki-2923652c983b4af7171b": {
+    "repo": "chaban-mb/userscripts",
+    "path": "src/MusicBrainz Artwork Uploader Thumbnails Accelerator.user.js",
+    "ref": "HEAD",
+    "archivedSource": false,
+    "parts": []
+  }
+}

@@ -6,9 +6,9 @@ import { validate, reviewState, evidenceUrl, hash, inputsFor } from './lib.mjs';
 import { parseCatalog, githubIdentity } from './catalog.mjs';
 import { tipJs } from '../ui/tooltip.mjs';
 import { applyContributions } from './contributions.mjs';
-import { majorReviewState } from './major-review.mjs';
+import { sourceAnalysisState } from './source-analysis.mjs';
 import { reviewHelpHtml } from './help.mjs';
-import { verdictLabel, verdictOptions } from './review-model.mjs';
+import { readReviewBundle, verdictLabel, verdictOptions } from './review-model.mjs';
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const read = name => JSON.parse(readFileSync(path.join(dir,'data',name)));
 const sources = read('sources.json'), reviews = read('reviews.json');
@@ -42,27 +42,30 @@ let entries = catalog.map(c => {
       evidence:review.evidence.map(e=>({label:e.label,url:evidenceUrl(review,e)})),freshness:reviewState(review,sources)} : null};
 });
 if (entries.filter(e=>e.assessment).length !== reviews.length) throw new Error('A reviewed pilot source was lost while parsing the full listing');
-const contributions=read('contributions.json');
-const exportsByPath=new Map(contributions.submissions.map(s=>[s.exportPath,read(s.exportPath)]));
-entries=applyContributions(entries,contributions,exportsByPath).map(entry=>{
-  if(entry.acceptedReview)entry.basis={...entry.basis,hash:hash(entry.basis.hash+JSON.stringify(entry.acceptedReview)),baselineVerdict:entry.verdict,acceptedReview:entry.acceptedReview};
-  return entry;
-});
-const majorSources=read('major-sources.json'),majorReviews=read('major-reviews.json');
+const majorSources=read('major-sources.json'),analyses=read('source-analyses.json');
 entries=entries.map(entry=>{
- const review=majorReviews.entries.find(r=>r.id===entry.id),source=majorSources.entries.find(s=>s.id===entry.id);
- if(!review)return entry;
- const state=majorReviewState(review,source,majorSources.toolset);
- return {...entry,quickReview:{...review,state,source,suiteCommit:majorSources.toolset.commit},basis:{...entry.basis,hash:hash(entry.basis.hash+JSON.stringify({review,state})),quickReview:review}};
+ const analysis=analyses.entries.find(a=>a.id===entry.id),source=majorSources.entries.find(s=>s.id===entry.id);
+ if(!analysis)return {...entry,analysisState:entry.assessment?(entry.assessment.freshness.status==='Needs review'?'Needs recheck':'Code analyzed'):'Not analyzed'};
+ const state=sourceAnalysisState(analysis,source,majorSources.toolset);
+ if(analysis.status!=='Code analyzed')return {...entry,analysisState:state,sourceAnalysis:{...analysis,state,source},summary:analysis.summary};
+ const features=analysis.capabilities;
+ return {...entry,verdict:analysis.verdict,features,summary:analysis.summary,tools:analysis.tools.map(t=>names[t]||t.replaceAll('_',' ')),analysisState:state,
+  sourceAnalysis:{...analysis,state,source},basis:{...entry.basis,hash:hash(entry.basis.hash+JSON.stringify({analysis,state})),features,baselineVerdict:analysis.verdict,sourceUrl:source.evidenceUrl,sourceVersion:source.version,sourceHash:analysis.sourceHash,sourceCommit:source.commit||null,toolsetCommit:analysis.suiteCommit}};
+});
+const contributions=read('contributions.json');
+const exportsByPath=new Map(contributions.submissions.map(s=>{const data=read(s.exportPath);readReviewBundle(data);return [s.exportPath,data];}));
+entries=applyContributions(entries,contributions,exportsByPath).map(entry=>{
+  if(entry.acceptedReview||entry.acceptedNotes.length||entry.features.some(f=>f.acceptedContribution))entry.basis={...entry.basis,features:entry.features,hash:hash(entry.basis.hash+JSON.stringify({acceptedReview:entry.acceptedReview,features:entry.features,acceptedNotes:entry.acceptedNotes})),baselineVerdict:entry.verdict,acceptedReview:entry.acceptedReview};
+  return entry;
 });
 // Retain the raw wiki and old exports, but compare third-party tools only.
 entries=entries.filter(e=>e.kind!=='Suite entry'&&!e.stableId.startsWith('github:majkinetor/')&&e.name!=='Import Discogs releases to MusicBrainz');
-const data = {schemaVersion:2,reportId:'mb-userscripts-926',wiki:sources.wiki,collectedAt:sources.collectedAt,
-  toolsetCommit:sources.toolset.commit,sourceManifestSha256:hash(JSON.stringify(sources)),contributors:contributions.contributors,submissions:contributions.submissions,entries};
+const data = {schemaVersion:2,reportId:'mb-userscripts-926',wiki:sources.wiki,collectedAt:majorSources.capturedAt,
+  toolsetCommit:majorSources.toolset.commit,sourceManifestSha256:hash(JSON.stringify({sources,majorSources})),contributors:contributions.contributors,submissions:contributions.submissions,entries};
 const esc = v => String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
 const options = values => [...new Set(values)].sort().map(v=>`<option value="${esc(v)}">${esc(verdictLabel(v))}</option>`).join('');
 const duplicateNames = new Set(entries.filter((e,i)=>entries.findIndex(x=>x.name===e.name)!==i).map(e=>e.name));
-const rows = entries.map(e=>`<details class="script" data-id="${esc(e.id)}"><summary><span class="name">${esc(e.name)}${duplicateNames.has(e.name)?` <small>(${esc(e.author)})</small>`:''}</span><button type="button" class="people-count plain" aria-label="Reviewers for ${esc(e.name)}" data-tip="Discussion reviewers\nOpen GitHub profiles and their discussions">${new Set(e.contributions.map(c=>c.author.id)).size} <span aria-hidden="true">${new Set(e.contributions.map(c=>c.author.id)).size===1?'reviewer':'reviewers'}</span></button><span class="summary-actions"><select class="row-verdict" aria-label="Quick verdict for ${esc(e.name)}" data-tip="Your verdict\nChoose without expanding the script"><option value="">My verdict</option>${verdictOptions.map((v,i)=>`<option value="${esc(v)}">${i+1} · ${esc(verdictLabel(v))}</option>`).join('')}</select><button type="button" class="row-note" aria-label="Note for ${esc(e.name)}" data-tip="Review note\nWrite or edit a note without expanding the script">Note</button></span><span class="verdicts"><span class="baseline">${esc(verdictLabel(e.verdict))}</span><span class="personal" hidden></span><span class="review-marker" hidden></span></span></summary><div class="detail"></div></details>`).join('\n');
+const rows = entries.map(e=>`<details class="script" data-id="${esc(e.id)}"><summary><span class="name">${esc(e.name)}${duplicateNames.has(e.name)?` <small>(${esc(e.author)})</small>`:''}</span><span class="analysis-badge" data-tip="Analysis coverage\nCode analyzed means important implementation paths were compared, not live tested. Source unavailable means no code-backed finding.">${esc(e.analysisState)}${e.analysisState==='Code analyzed'?' · '+e.features.length:''}</span><button type="button" class="people-count plain" aria-label="Reviewers for ${esc(e.name)}" data-tip="Discussion reviewers\nOpen GitHub profiles and their discussions">${new Set(e.contributions.map(c=>c.author.id)).size} <span aria-hidden="true">${new Set(e.contributions.map(c=>c.author.id)).size===1?'reviewer':'reviewers'}</span></button><span class="summary-actions"><select class="row-verdict" aria-label="Quick verdict for ${esc(e.name)}" data-tip="Your verdict\nChoose without expanding the script"><option value="">My verdict</option>${verdictOptions.map((v,i)=>`<option value="${esc(v)}">${i+1} · ${esc(verdictLabel(v))}</option>`).join('')}</select><button type="button" class="row-revert plain" aria-label="Revert input for ${esc(e.name)}" data-tip="Revert your changes\nClear this script's local verdict, notes, comments and feature edits" hidden>Revert</button><button type="button" class="row-note" aria-label="Note for ${esc(e.name)}" data-tip="Review note\nWrite or edit a note without expanding the script">Note</button></span><span class="verdicts"><span class="baseline">${esc(verdictLabel(e.verdict))}</span><span class="personal" hidden></span><span class="review-marker" hidden></span></span></summary><div class="detail"></div></details>`).join('\n');
 const model = readFileSync(path.join(dir,'review-model.mjs'),'utf8').replace(/^export /gm,'');
 const sharing = readFileSync(path.join(dir,'share.mjs'),'utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export /gm,'');
 const tooltips = tipJs(['main']);
@@ -75,7 +78,7 @@ data.siteUrl=site.site_url;
 data.reportVersion=hash(JSON.stringify(data)+html+model+sharing+tooltips+ui+css+theme);
 data.permanentUrl=site.site_url+'/reports/'+data.reportVersion+'.html';
 const tokens = {
-  '@@HELP@@':reviewHelpHtml(),'@@COUNT@@':String(entries.length),'@@REVIEWED@@':String(reviews.length),'@@ROWS@@':rows,
+  '@@HELP@@':reviewHelpHtml(),'@@COUNT@@':String(entries.length),'@@REVIEWED@@':String(entries.filter(e=>e.analysisState==='Code analyzed').length),'@@ROWS@@':rows,
   '@@MAINTAINER@@':String(entries.filter(e=>e.acceptedReview).length),
   '@@VERDICTCHECKS@@':[...new Set(entries.map(e=>e.verdict))].sort().map(v=>`<label><input type="checkbox" name="report-verdict" value="${esc(v)}">${esc(verdictLabel(v))}</label>`).join(''),'@@CATEGORIES@@':options(entries.flatMap(e=>e.categories)),
   '@@TOOLS@@':options(entries.flatMap(e=>e.tools)),
@@ -90,4 +93,4 @@ writeFileSync(path.join(dir,'out/report.json'),JSON.stringify({version:data.repo
 writeFileSync(path.join(dir,'data/catalog.json'),JSON.stringify({wikiRevision:sources.wiki.revision,wikiSha256:sources.wiki.sha256,entries:catalog},null,2)+'\n');
 writeFileSync(path.join(dir,'data/review-queue.json'),JSON.stringify(reviews.map(r=>({id:r.id,...reviewState(r,sources)})).filter(r=>r.reasons.length),null,2)+'\n');
 cpSync(path.join(dir,'out'),path.resolve(dir,'../../docs/third-party-comparison'),{recursive:true});
-console.log(`Built ${entries.length} tools, ${reviews.length} source assessments and ${entries.filter(e=>e.acceptedReview).length} accepted contributor verdicts.`);
+console.log(`Built ${entries.length} tools, ${entries.filter(e=>e.analysisState==='Code analyzed').length} code analyses and ${entries.filter(e=>e.acceptedReview).length} accepted contributor verdicts.`);

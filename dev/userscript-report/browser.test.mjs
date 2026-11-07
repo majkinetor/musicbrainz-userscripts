@@ -20,7 +20,7 @@ test('collapsed listing, weighted review, comments, reload and export/import rou
     await page.locator('#name-filter').fill('Elephant Editor');
     assert.equal(await page.locator('.script:visible').count(),1);
     const row=page.locator('.script:visible');
-    await row.locator('summary').first().click();
+    await row.locator('.name').first().click();
     await row.locator('.caps').waitFor();
     await row.locator('[data-feature="notes.autofill"] [data-field="weight"]').selectOption('0');
     await row.locator('[data-feature="notes.acoustid"] [data-field="weight"]').selectOption('0');
@@ -40,7 +40,7 @@ test('collapsed listing, weighted review, comments, reload and export/import rou
     assert.match(await row.locator('.personal').textContent(),/Partial overlap/);
     await page.reload();
     await page.locator('#name-filter').fill('Elephant Editor');
-    await row.locator('summary').first().click();
+    await row.locator('.name').first().click();
     assert.equal(await row.locator('.note').inputValue(),'Only need MusicBrainz.\nKeep my weights.');
     assert.equal(await row.locator('.comment-draft').inputValue(),'Unposted draft retained');
     const downloadPromise=page.waitForEvent('download');await page.locator('#export').click();
@@ -57,7 +57,7 @@ test('collapsed listing, weighted review, comments, reload and export/import rou
     await restored.locator('#import-file').setInputFiles(exportFile);
     await restored.waitForFunction(()=>document.getElementById('message').textContent.startsWith('Imported'));
     await restored.locator('#name-filter').fill('Elephant Editor');
-    const restoredRow=restored.locator('.script:visible');await restoredRow.locator('summary').first().click();
+    const restoredRow=restored.locator('.script:visible');await restoredRow.locator('.name').first().click();
     assert.equal(await restoredRow.locator('.note').inputValue(),'Only need MusicBrainz.\nKeep my weights.');
     assert.equal(await restoredRow.locator('.comments li').count(),1);
     assert.equal(await restoredRow.locator('[data-feature^="custom:"] [data-field="weight"]').inputValue(),'10');
@@ -81,7 +81,7 @@ test('blocked browser storage preserves in-memory edits for export',async()=>{
     const page=await browser.newPage();
     await page.addInitScript(()=>Object.defineProperty(window,'localStorage',{get(){throw new Error('Storage blocked');}}));
     await page.goto(url);await page.locator('#name-filter').fill('Elephant Editor');
-    const row=page.locator('.script:visible');await row.locator('summary').first().click();
+    const row=page.locator('.script:visible');await row.locator('.name').first().click();
     await openAction(row,'note');await row.locator('.note').fill('Survives storage failure through export');
     assert.match(await page.locator('#save-status').textContent(),/not saved in browser/);
     const wait=page.waitForEvent('download');await page.locator('#export').click();
@@ -95,7 +95,7 @@ test('visitor verdict, edited and deleted notes, and versioned GitHub draft',asy
   try{
     const page=await browser.newPage({viewport:{width:1500,height:1100}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(url);
     const entry=await page.evaluate(()=>JSON.parse(document.getElementById('report-data').textContent).entries.find(e=>e.name==='Harmony'));
-    await page.locator('#name-filter').fill('Harmony');const row=page.locator('.script[data-id="'+entry.id+'"]');await row.locator('summary').first().click();
+    await page.locator('#name-filter').fill('Harmony');const row=page.locator('.script[data-id="'+entry.id+'"]');await row.locator('.name').first().click();
     await row.locator('.my-verdict').selectOption('Replaceable');assert.match(await row.locator('.personal').textContent(),/Fully replaceable/);
     await openAction(row,'note');await row.locator('.note').fill('Remove this note');await row.locator('.clear-note').click();assert.equal(await row.locator('.note').inputValue(),'');
     await openAction(row,'comments');await row.locator('.comment-draft').fill('Original comment');await row.locator('.post').click();await row.locator('.edit-comment').click();
@@ -136,7 +136,7 @@ test('main page, comparison and Stats share the saved theme choice',{skip:!proce
     assert.equal(await page.locator('#search-panel').isVisible(),false);
     await page.locator('#toggle-search').click();assert.equal(await page.locator('#search-panel').isVisible(),true);await page.locator('#toggle-search').click();
     if(process.env.REPORT_SCREENSHOT_DIR)await page.screenshot({path:process.env.REPORT_SCREENSHOT_DIR+'/926-compact-header.png'});
-    await page.locator('#name-filter').fill('Elephant Editor');const row=page.locator('.script:visible');await row.locator('summary').first().click();
+    await page.locator('#name-filter').fill('Elephant Editor');const row=page.locator('.script:visible');await row.locator('.name').first().click();
     assert.equal(await row.locator('.review-drawer').isVisible(),false);
     await openAction(row,'comments');await row.locator('.comment-draft').fill('Drawer draft');await row.locator('.close-drawer').click();await openAction(row,'comments');assert.equal(await row.locator('.comment-draft').inputValue(),'Drawer draft');
     if(process.env.REPORT_SCREENSHOT_DIR)await page.screenshot({path:process.env.REPORT_SCREENSHOT_DIR+'/926-actions-drawer.png'});
@@ -163,7 +163,7 @@ import { reviewSteps } from './help.mjs';
 test('help uses the shared review process and old workflow status is absent',async()=>{
  const browser=await chromium.launch();try{const page=await browser.newPage();await page.goto(url);await page.locator('#review-help').click();
  assert.equal(await page.locator('#help-dialog li').count(),reviewSteps.length);assert.match(await page.locator('#help-dialog').textContent(),/maintainer decides/);await page.locator('#help-close').click();
- await page.locator('#name-filter').fill('Harmony');await page.locator('.script:visible>summary').first().click();assert.equal(await page.locator('select.status').count(),0);
+ await page.locator('#name-filter').fill('Harmony');await page.locator('.script:visible .name').first().click();assert.equal(await page.locator('select.status').count(),0);
  }finally{await browser.close();}
 });
 
@@ -172,7 +172,7 @@ test('collapsed-row verdict and note controls persist without opening details',a
  const page=await browser.newPage();await page.goto(url);await page.locator('#name-filter').fill('Elephant Editor');const row=page.locator('.script:visible');
  await row.locator('.row-verdict').selectOption('Partial overlap');assert.equal(await row.getAttribute('open'),null);assert.match(await row.locator('.personal').textContent(),/Partial overlap/);
  await row.locator('.row-note').click();await page.locator('#quick-note').fill('Quick note\nSecond line');await page.locator('#quick-note-close').click();assert.equal(await row.getAttribute('open'),null);
- await row.locator('summary').first().click();assert.equal(await row.locator('.my-verdict').inputValue(),'Partial overlap');await row.locator('[data-action="note"]').click();assert.equal(await row.locator('.note').inputValue(),'Quick note\nSecond line');assert.equal(await row.locator('.action-menu').count(),0);
+ await row.locator('.name').first().click();assert.equal(await row.locator('.my-verdict').inputValue(),'Partial overlap');await row.locator('[data-action="note"]').click();assert.equal(await row.locator('.note').inputValue(),'Quick note\nSecond line');assert.equal(await row.locator('.action-menu').count(),0);
  await page.reload();await page.locator('#name-filter').fill('Elephant Editor');await row.locator('.row-note').click();assert.equal(await page.locator('#quick-note').inputValue(),'Quick note\nSecond line');await page.locator('#quick-note-clear').click();await page.locator('#quick-note-close').click();assert.equal(await row.locator('.row-note').textContent(),'Note');
  const excluded=await page.evaluate(()=>JSON.parse(document.getElementById('report-data').textContent).entries.filter(e=>e.kind==='Suite entry'||e.stableId.startsWith('github:majkinetor/')||e.name==='Import Discogs releases to MusicBrainz'));assert.equal(excluded.length,0);
  }finally{await browser.close();}

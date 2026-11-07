@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "toolset": {
-    "commit": "4692d6c6dfee536b4523e3ffd7045cead1c4e9c6",
+    "commit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
     "files": [
       {
         "path": "dev/aliases/alias-editor.mjs",
@@ -13,11 +13,11 @@
       },
       {
         "path": "userscripts/apollo_editor/README.md",
-        "sha256": "d0212a6b101859ebbf04c1204a0d28d04d72620065407ee16d29a0b06af150fa"
+        "sha256": "bfb56123658f865eb495e7b944e0db1054ebcc4b1faa463fe758be0a28bae172"
       },
       {
         "path": "userscripts/apollo_editor/apollo_editor.user.js",
-        "sha256": "42fb0db760a592d034f386e9a05cf5bf7b28095098448d00637113d77d334104"
+        "sha256": "d6ec8861508a5544e71137f30b51e775a063d953380d9456cb73170d0c1c5116"
       },
       {
         "path": "userscripts/art_station/DEVELOP.md",
@@ -29,7 +29,7 @@
       },
       {
         "path": "userscripts/art_station/art_station.user.js",
-        "sha256": "b6279972e081f951e3c482eba1be512d23a37cae65254b534cae1a26ee8de1a8"
+        "sha256": "b16e8e9457a237f7f5d8c060f660e9c9b23194789f4f1683dedd5e4030492881"
       },
       {
         "path": "userscripts/art_station/as_picker/README.md",
@@ -57,7 +57,7 @@
       },
       {
         "path": "userscripts/credit_hoarder/dist/credit_hoarder.user.js",
-        "sha256": "ea341ef0ee72c777a5289bb1ac0e7451f6cfd39c319e356493bed04a64b39e9b"
+        "sha256": "69fa5722c046956c194b5e3bbd33c418b5fbecc8d7e27a4071e1953613a0390d"
       },
       {
         "path": "userscripts/credit_hoarder/src/credit_hoarder.user.js",
@@ -85,11 +85,11 @@
       },
       {
         "path": "userscripts/event_horizon/README.md",
-        "sha256": "8ad44fc4e656bad8885919050d495c0d56086d0eb424fd94eb7e5feea97e289b"
+        "sha256": "d1f4137417552c191c1477b83a861b085db4a9cc0e22c74114167f3701e747e8"
       },
       {
         "path": "userscripts/event_horizon/event_horizon.user.js",
-        "sha256": "2e0bfce08d46698a575816239961f6731d442fa1ba609283a6f44f62909f806c"
+        "sha256": "9367d8e9c5da0addcd53feae554083193ce568e6681d43df8352f57c486f6e14"
       },
       {
         "path": "userscripts/falcon/DEVELOP.md",
@@ -101,7 +101,7 @@
       },
       {
         "path": "userscripts/falcon/falcon.user.js",
-        "sha256": "417efcf569f059fcba4faa7e1994047e1a138325a47771d4ee1e251dfe39b5e5"
+        "sha256": "291795e291724f94275e94549fe0e1344bdf6821167ffa2a67ea95003b58b887"
       },
       {
         "path": "userscripts/first_contact/DEVELOP.md",
@@ -113,7 +113,7 @@
       },
       {
         "path": "userscripts/first_contact/first_contact.user.js",
-        "sha256": "2fea9cee61856158ff3198a9b4c39eb00334f2f1ed300504393d997d845eac69"
+        "sha256": "1cf1a13bace01bbfb13a64b6a2c8a31360cbd115ad6c8a15ab1be5c3d057f68d"
       },
       {
         "path": "userscripts/fusion/DEVELOP.md",
@@ -125,11 +125,11 @@
       },
       {
         "path": "userscripts/fusion/fusion.user.js",
-        "sha256": "9315fa2288467884b00e29ffadbb10dbb71582546eeb59ee87d066b4a21b2492"
+        "sha256": "2eea4b93c572b0bee3ad546b1c3e93a44107d5179185975be6c5504041ed2121"
       },
       {
         "path": "userscripts/fuzzy_logic/fuzzy_logic.user.js",
-        "sha256": "ec684549350b541c3686ff994d52f2a618f2b772fa66a07cb6e900aa99fe483b"
+        "sha256": "79377985546976066aef779ecaf42884fbcf931a26fcaf70b7e864ba64eadcb2"
       },
       {
         "path": "userscripts/group_therapy/DEVELOP.md",
@@ -141,7 +141,7 @@
       },
       {
         "path": "userscripts/group_therapy/group_therapy.user.js",
-        "sha256": "e8999d3abbd23e50b19beab10c88738038b56c5e5ff244b63f91eb723995ce15"
+        "sha256": "0c2a5d9b339274ad78fec35abbc8c6d00f86d7e919a11dbae1c6a2661ce9c9aa"
       },
       {
         "path": "userscripts/isrc_scout/DEVELOP.md",
@@ -153,7 +153,7 @@
       },
       {
         "path": "userscripts/isrc_scout/isrc_scout.user.js",
-        "sha256": "70d020b5d9ee45b48b16bcc710c4eade77d87f14f9efc998233c707b6133e929"
+        "sha256": "4b01111fc73a5f27cdb4eaf1c275caf239702387c469677c60208f823ab94c8d"
       },
       {
         "path": "userscripts/mammoth/DEVELOP.md",
@@ -161,11 +161,11 @@
       },
       {
         "path": "userscripts/mammoth/README.md",
-        "sha256": "a1907b47052711c0490ecfb4d6b7b5f70d90fed2cf6df6530e42c96247e48df3"
+        "sha256": "8e5e7023aa6005b06af6b3e433b2fe6d013f1201451e350416c6bef55695409d"
       },
       {
         "path": "userscripts/mammoth/mammoth.user.js",
-        "sha256": "cc33eb2ffc23ae82a10af53364d5a9fdb47b713623a6901ee02efa411b9d9d2d"
+        "sha256": "c9a1ee7e3706a573d1ab414fef2fbb4e71c7e203ee9c79a4e51dc4b265bc0e53"
       },
       {
         "path": "userscripts/mission_control/DEVELOP.md",
@@ -177,7 +177,7 @@
       },
       {
         "path": "userscripts/mission_control/mission_control.user.js",
-        "sha256": "ad01c84c1db3553ee012b42ead51646cdf18b0042b35e56ab94a81769f28eb16"
+        "sha256": "b0e96317187d3dfc5d7a2676f801d617c8a99d806fb1b69a17b71acb879410a5"
       },
       {
         "path": "userscripts/platform_check/DEVELOP.md",
@@ -189,7 +189,7 @@
       },
       {
         "path": "userscripts/platform_check/platform_check.user.js",
-        "sha256": "a01a4aa7098fafeb0bc7835e39f1a41fa092b6f38179ad3040d50a21c030c1ec"
+        "sha256": "9446f6cf035729ee101be8d91c9c87e0c2d8274527d9177ce710ff723053ec55"
       },
       {
         "path": "userscripts/scribe/DEVELOP.md",
@@ -209,20 +209,20 @@
       },
       {
         "path": "userscripts/string_theory/README.md",
-        "sha256": "94014423aaba4df38d03d2d6e39a40c7041df224b1c92db90a12aae9987dff32"
+        "sha256": "4ba198a29b0d46a318c81ddded7ccc0405674fe1dfa77d0213674a5bfd557890"
       },
       {
         "path": "userscripts/string_theory/string_theory.user.js",
-        "sha256": "4bf676f2c10805ee8de2c14fbbe1daa65783db15b8d78e69499f5528d1a0ea7d"
+        "sha256": "798586ef832099569dcd96f2ccb64fd9ad7174749c21d4f7cb0ca43fa9e2fd55"
       },
       {
         "path": "userscripts/string_theory/themes/README.md",
         "sha256": "f17a68d7f910d22d5f407641493635ec660ed7bde8b11f70b93691ae2f8e70f0"
       }
     ],
-    "inventoryHash": "3165ab01b3d940abccf37d169e00d81f3c50f54f3e62d1c9047180fef40207e7"
+    "inventoryHash": "547167e9978b717e3c6d72197aa5cc1b4f26e8c7d0ae9981c5067cb02003d37d"
   },
-  "capturedAt": "2026-11-07T17:05:25.960Z",
+  "capturedAt": "2026-11-07T18:55:51.247Z",
   "entries": [
     {
       "id": "wiki-79e1632755fa7fe99c38",
@@ -234,7 +234,7 @@
       "repo": "kellnerd/harmony",
       "path": "README.md",
       "commit": "094d904c3cbc15392d8042d8e6924e2478e8669d",
-      "kind": "application-readme",
+      "kind": "application-source",
       "sha256": "ea7eb90ce9aea87b413e80973aebfe15d943876fbf3825603caedea635217b21",
       "bytes": 5353,
       "version": null,
@@ -242,7 +242,45 @@
       "url": "https://raw.githubusercontent.com/kellnerd/harmony/094d904c3cbc15392d8042d8e6924e2478e8669d/README.md",
       "evidenceUrl": "https://github.com/kellnerd/harmony/blob/094d904c3cbc15392d8042d8e6924e2478e8669d/README.md",
       "state": "captured",
-      "changedSincePrevious": null
+      "changedSincePrevious": null,
+      "parts": [
+        {
+          "path": "lookup.ts",
+          "sha256": "e1ba23b998237e095435d79d78a38560d4ec81f418ca181d5bf7a705f49f8745",
+          "url": "https://github.com/kellnerd/harmony/blob/094d904c3cbc15392d8042d8e6924e2478e8669d/lookup.ts"
+        },
+        {
+          "path": "harmonizer/merge.ts",
+          "sha256": "60b7eb8ca66e2fc9be89b66e72c76ba2aec3eafb4a3c34e55639f1341f5a9e72",
+          "url": "https://github.com/kellnerd/harmony/blob/094d904c3cbc15392d8042d8e6924e2478e8669d/harmonizer/merge.ts"
+        },
+        {
+          "path": "musicbrainz/seeding.ts",
+          "sha256": "8b4692e214feafee4ad473c98c93c60aafc2e7f20c6e543b0c0241885c7d2f29",
+          "url": "https://github.com/kellnerd/harmony/blob/094d904c3cbc15392d8042d8e6924e2478e8669d/musicbrainz/seeding.ts"
+        },
+        {
+          "path": "musicbrainz/mbid_mapping.ts",
+          "sha256": "d6c122cb9b952118cd67376759e6c7979ba77a29f3412d9894e556195a7d05aa",
+          "url": "https://github.com/kellnerd/harmony/blob/094d904c3cbc15392d8042d8e6924e2478e8669d/musicbrainz/mbid_mapping.ts"
+        },
+        {
+          "path": "providers/base.ts",
+          "sha256": "4ad988821cfcb21a4e308abd0eb245e10524bea2ce2a50630021f3904a3e3b5e",
+          "url": "https://github.com/kellnerd/harmony/blob/094d904c3cbc15392d8042d8e6924e2478e8669d/providers/base.ts"
+        },
+        {
+          "path": "providers/mod.ts",
+          "sha256": "531dec4fd54dbe0e70a0e54021b5f84480b2e46c5fcdcc5b4df0b2d119d50e32",
+          "url": "https://github.com/kellnerd/harmony/blob/094d904c3cbc15392d8042d8e6924e2478e8669d/providers/mod.ts"
+        },
+        {
+          "path": "server/routes/release.tsx",
+          "sha256": "f7f48d34e4825638b18063ed0c760338f330dde19e25c93477e60f46d340eb31",
+          "url": "https://github.com/kellnerd/harmony/blob/094d904c3cbc15392d8042d8e6924e2478e8669d/server/routes/release.tsx"
+        }
+      ],
+      "implementationHash": "3052344a8243971efb7e0f3cf96e4d962486678d12d0946853bf81f88593986b"
     },
     {
       "id": "wiki-d60014fd4d27f0a46df0",
@@ -433,17 +471,18 @@
       "sourceUrl": "https://github.com/murdos/musicbrainz-userscripts/blob/master/deezer_importer.user.js",
       "downloadUrl": "https://github.com/murdos/musicbrainz-userscripts/raw/master/deezer_importer.user.js",
       "checkedAt": "2026-11-07T16:57:12.907Z",
-      "commit": "d5c2bcebe3fd9d650005c2e083d70e01d3ca3607",
+      "commit": "23d4549cbb280fab73436203b58f511e7fc73775",
       "repo": "murdos/musicbrainz-userscripts",
       "path": "deezer_importer.user.js",
-      "sha256": "aa3268030aa8964395f83f5dd39ede31bd10033143e72e6404b576e0cf4c8c5c",
+      "sha256": "32d30ac21646c952e18e6d856324657a85315d54cbb4203421a806eb4e3f3d05",
       "bytes": 1075,
-      "version": "2026.8.26.2",
+      "version": "2026.10.27.1",
       "requires": [],
-      "url": "https://raw.githubusercontent.com/murdos/musicbrainz-userscripts/d5c2bcebe3fd9d650005c2e083d70e01d3ca3607/deezer_importer.user.js",
-      "evidenceUrl": "https://github.com/murdos/musicbrainz-userscripts/blob/d5c2bcebe3fd9d650005c2e083d70e01d3ca3607/deezer_importer.user.js",
+      "url": "https://raw.githubusercontent.com/murdos/musicbrainz-userscripts/23d4549cbb280fab73436203b58f511e7fc73775/deezer_importer.user.js",
+      "evidenceUrl": "https://github.com/murdos/musicbrainz-userscripts/blob/23d4549cbb280fab73436203b58f511e7fc73775/deezer_importer.user.js",
       "state": "captured",
-      "changedSincePrevious": null
+      "changedSincePrevious": null,
+      "recoveredLocation": true
     },
     {
       "id": "wiki-bfadea5a83415ea46038",
@@ -651,8 +690,8 @@
       "bytes": 17655,
       "version": "2025.02.00.03",
       "requires": [
-        "https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js",
-        "https://gist.github.com/raw/2625891/waitForKeyElements.js"
+        "https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js\r",
+        "https://gist.github.com/raw/2625891/waitForKeyElements.js\r"
       ],
       "url": "https://raw.githubusercontent.com/Druidblack/MusicBrainz-UserScripts/6d78f1dd48b6c8951b6aac0dd5fd4a0b1c9f5833/jellyfin_import_album.user.js",
       "evidenceUrl": "https://github.com/Druidblack/MusicBrainz-UserScripts/blob/6d78f1dd48b6c8951b6aac0dd5fd4a0b1c9f5833/jellyfin_import_album.user.js",
@@ -832,9 +871,40 @@
       "maintainerVerdict": "Replaceable",
       "sourceUrl": "https://github.com/chaban-mb/userscripts/blob/volumo-importer/feat/add-volumo-importer/src/Volumo%20MusicBrainz%20Importer.user.js",
       "downloadUrl": "https://github.com/chaban-mb/userscripts/raw/volumo-importer/feat/add-volumo-importer/src/Volumo%20MusicBrainz%20Importer.user.js",
-      "checkedAt": "2026-11-07T17:05:14.403Z",
-      "state": "unavailable",
-      "reason": "gh: No commit found for SHA: volumo-importer (HTTP 422)\n"
+      "checkedAt": "2026-11-07T18:13:00.562Z",
+      "state": "captured",
+      "reason": "gh: No commit found for SHA: volumo-importer (HTTP 422)\n",
+      "repo": "chaban-mb/userscripts",
+      "path": "src/Volumo MusicBrainz Importer.user.js",
+      "commit": "4716398f15fd6349109cbdea3d99eff3304ea02e",
+      "url": "https://raw.githubusercontent.com/chaban-mb/userscripts/4716398f15fd6349109cbdea3d99eff3304ea02e/src/Volumo%20MusicBrainz%20Importer.user.js",
+      "evidenceUrl": "https://github.com/chaban-mb/userscripts/blob/4716398f15fd6349109cbdea3d99eff3304ea02e/src/Volumo%20MusicBrainz%20Importer.user.js",
+      "sha256": "ede80582848ea39a0c1e1d7665b131f3dc287066f39123a2a31d2e1fd6101433",
+      "bytes": 45564,
+      "recoveredLocation": true,
+      "version": "1.4.6",
+      "requires": [
+        "../lib/MusicBrainzAPI.js",
+        "https://raw.githubusercontent.com/murdos/musicbrainz-userscripts/master/lib/mbimport.js"
+      ]
+    },
+    {
+      "id": "wiki-d34be920dad34f7adac5",
+      "name": "JASRAC. work importer/editor into MusicBrainz + MB-JASRAC-音楽の森-NexTone links + MB back search links",
+      "repo": "jesus2099/konami-command",
+      "path": "jasrac-mb-minc_WORK-IMPORT-CROSS-LINKING.user.js",
+      "commit": "619bfdf520a5162abc5467af32d5b2a386745b5e",
+      "url": "https://raw.githubusercontent.com/jesus2099/konami-command/619bfdf520a5162abc5467af32d5b2a386745b5e/jasrac-mb-minc_WORK-IMPORT-CROSS-LINKING.user.js",
+      "evidenceUrl": "https://github.com/jesus2099/konami-command/blob/619bfdf520a5162abc5467af32d5b2a386745b5e/jasrac-mb-minc_WORK-IMPORT-CROSS-LINKING.user.js",
+      "sha256": "fa70485ce0e5cd1b0ccffc02363acc1b43b1974b26cdbb62802a9d8f82db6c2a",
+      "bytes": 68969,
+      "state": "captured",
+      "checkedAt": "2026-11-07",
+      "requires": [
+        "https://github.com/jesus2099/konami-command/raw/84cae2328f2dca0bc750e0961d669005771f16b8/lib/CONTROL-POMME.js?version=2024.3.14",
+        "https://github.com/jesus2099/konami-command/raw/1036cd5ccd35d404c3e9e197151f6cb22c52dd87/lib/SUPER.js?version=2024.12.3"
+      ],
+      "version": "2026.4.6"
     },
     {
       "id": "wiki-4da4b5c7c1c19953619e",
@@ -1067,18 +1137,58 @@
       "changedSincePrevious": true
     },
     {
+      "id": "wiki-a696a75bcccfe5f4291a",
+      "name": "Bulk Edit Release Events",
+      "maintainerVerdict": "Not applicable",
+      "sourceUrl": "https://github.com/texke/mb-userscripts/blob/main/mb_bulk_edit_release_events.user.js",
+      "downloadUrl": "https://github.com/texke/mb-userscripts/raw/main/mb_bulk_edit_release_events.user.js",
+      "checkedAt": "2026-11-07T18:13:01.282Z",
+      "commit": "fc86b7400b2eb940f4f016cb511fc9e91680ae2d",
+      "repo": "texke/mb-userscripts",
+      "path": "mb_bulk_edit_release_events.user.js",
+      "sha256": "6eb45cbede87da528b26e57e9ed3763e37fa22a7e0b12032ab01c90a6bdca099",
+      "bytes": 10104,
+      "version": "2024.09.24.1",
+      "requires": [],
+      "url": "https://raw.githubusercontent.com/texke/mb-userscripts/fc86b7400b2eb940f4f016cb511fc9e91680ae2d/mb_bulk_edit_release_events.user.js",
+      "evidenceUrl": "https://github.com/texke/mb-userscripts/blob/fc86b7400b2eb940f4f016cb511fc9e91680ae2d/mb_bulk_edit_release_events.user.js",
+      "state": "captured",
+      "changedSincePrevious": true
+    },
+    {
       "id": "wiki-b8fac2d4ec6c741c8773",
       "name": "Change All Artists Default",
       "maintainerVerdict": "Replaceable",
       "sourceUrl": "https://github.com/dvirtz/musicbrainz-scripts/blob/main/scripts/change-all-artists-default/src/index.ts",
       "downloadUrl": "https://github.com/dvirtz/musicbrainz-scripts/releases/latest/download/acum-work-import.user.js",
-      "checkedAt": "2026-11-07T17:05:14.860Z",
+      "checkedAt": "2026-11-07T18:13:02.178Z",
       "kind": "typescript-source",
-      "commit": "0a8ffce2411f6d95a1459cde6194bddc5e4ce1de",
+      "commit": "f2ec93e84fed8b5a9c9567d225fc09fec1ad1d59",
       "repo": "dvirtz/musicbrainz-scripts",
       "path": "scripts/change-all-artists-default/src/index.ts",
-      "state": "unavailable",
-      "reason": "curl: (22) The requested URL returned error: 404\r\n"
+      "state": "captured",
+      "reason": "curl: (22) The requested URL returned error: 404\r\n",
+      "url": "https://raw.githubusercontent.com/dvirtz/musicbrainz-scripts/f2ec93e84fed8b5a9c9567d225fc09fec1ad1d59/scripts/change-all-artists-default/src/index.ts",
+      "evidenceUrl": "https://github.com/dvirtz/musicbrainz-scripts/blob/f2ec93e84fed8b5a9c9567d225fc09fec1ad1d59/scripts/change-all-artists-default/src/index.ts",
+      "sha256": "136c3c0d4494fdc522262826f4c819c87532e0efce0a2fc983bce439fd608592",
+      "bytes": 604,
+      "recoveredLocation": true,
+      "version": null,
+      "archivedSource": true,
+      "parts": [
+        {
+          "path": "scripts/change-all-artists-default/src/credit-bubble.ts",
+          "sha256": "99d952bfc96058c070c4f2981d086bb513805d63e297a48ea57608556e86719c",
+          "url": "https://github.com/dvirtz/musicbrainz-scripts/blob/f2ec93e84fed8b5a9c9567d225fc09fec1ad1d59/scripts/change-all-artists-default/src/credit-bubble.ts"
+        },
+        {
+          "path": "scripts/change-all-artists-default/src/ui.tsx",
+          "sha256": "d80851400d4e01fcd0f038a211c75323145e3416d07506e663fe3eff0c35366d",
+          "url": "https://github.com/dvirtz/musicbrainz-scripts/blob/f2ec93e84fed8b5a9c9567d225fc09fec1ad1d59/scripts/change-all-artists-default/src/ui.tsx"
+        }
+      ],
+      "implementationHash": "701712967132e26e754662dafd78b60b0175da36e6b0ad8cbf9f652aeaeda66d",
+      "requires": []
     },
     {
       "id": "wiki-9e98ecda026164a906f8",
@@ -1232,6 +1342,25 @@
       "evidenceUrl": "https://github.com/loujine/musicbrainz-scripts/blob/37df091b3ddc3651a77291ff3a895c017e50750b/mb-edit-create_from_wikidata.user.js",
       "state": "captured",
       "changedSincePrevious": null
+    },
+    {
+      "id": "wiki-8b362580b84067bf211a",
+      "name": "Deezer: Hide Premium Upsell Popup",
+      "maintainerVerdict": "Not applicable",
+      "sourceUrl": "https://github.com/Lotheric/metabrainz-userscripts/blob/main/Deezer_Hide_Premium_Upsell_Popup.user.js",
+      "downloadUrl": "https://github.com/Lotheric/metabrainz-userscripts/raw/refs/heads/main/Deezer_Hide_Premium_Upsell_Popup.user.js",
+      "checkedAt": "2026-11-07T18:13:02.922Z",
+      "commit": "68f5abf2b504c77f5d0eb193353748712f6052e7",
+      "repo": "Lotheric/metabrainz-userscripts",
+      "path": "Deezer_Hide_Premium_Upsell_Popup.user.js",
+      "sha256": "ceff23a20080e4df1dcba42c76e1aba7f07febff8051e16bb24d914ef3486598",
+      "bytes": 5279,
+      "version": "2026-05-28.0802",
+      "requires": [],
+      "url": "https://raw.githubusercontent.com/Lotheric/metabrainz-userscripts/68f5abf2b504c77f5d0eb193353748712f6052e7/Deezer_Hide_Premium_Upsell_Popup.user.js",
+      "evidenceUrl": "https://github.com/Lotheric/metabrainz-userscripts/blob/68f5abf2b504c77f5d0eb193353748712f6052e7/Deezer_Hide_Premium_Upsell_Popup.user.js",
+      "state": "captured",
+      "changedSincePrevious": true
     },
     {
       "id": "wiki-52e9813ab61fff825e4e",
@@ -1438,6 +1567,23 @@
       "changedSincePrevious": null
     },
     {
+      "id": "wiki-a2bdc69e59afe6d8e94d",
+      "name": "Fill event setlist",
+      "repo": "loujine/musicbrainz-scripts",
+      "path": "mb-edit-fill_event_setlist.user.js",
+      "commit": "37df091b3ddc3651a77291ff3a895c017e50750b",
+      "url": "https://raw.githubusercontent.com/loujine/musicbrainz-scripts/37df091b3ddc3651a77291ff3a895c017e50750b/mb-edit-fill_event_setlist.user.js",
+      "evidenceUrl": "https://github.com/loujine/musicbrainz-scripts/blob/37df091b3ddc3651a77291ff3a895c017e50750b/mb-edit-fill_event_setlist.user.js",
+      "sha256": "506eadfbdff71dd22696e7119ef3a23d1c11bf5c7696673b3b3eff54b33f35c8",
+      "bytes": 3145,
+      "state": "captured",
+      "checkedAt": "2026-11-07",
+      "requires": [
+        "https://raw.githubusercontent.com/loujine/musicbrainz-scripts/master/mbz-loujine-common.js"
+      ],
+      "version": "2021.10.30"
+    },
+    {
       "id": "wiki-44782b43fa0c47b9d184",
       "name": "Guess Unicode Punctuation",
       "maintainerVerdict": "Partial overlap",
@@ -1484,7 +1630,7 @@
       "maintainerVerdict": "Replaceable",
       "sourceUrl": "https://greasyfork.org/en/scripts/536863-isrc-hunt-highlight-isrc-matches-and-differences/code",
       "downloadUrl": "https://update.greasyfork.org/scripts/536863/ISRC%20Hunt%3A%20Highlight%20ISRC%20matches%20and%20differences.user.js",
-      "checkedAt": "2026-11-07T17:05:15.622Z",
+      "checkedAt": "2026-11-07T18:55:47.932Z",
       "state": "unavailable",
       "reason": "curl: (22) The requested URL returned error: 404\r\n"
     },
@@ -1494,7 +1640,7 @@
       "maintainerVerdict": "Not applicable",
       "sourceUrl": "https://greasyfork.org/en/scripts/536861-isrc-hunt-rewrite-harmony-urls/code",
       "downloadUrl": "https://update.greasyfork.org/scripts/536861/ISRC%20Hunt%3A%20Rewrite%20Harmony%20URLs.user.js",
-      "checkedAt": "2026-11-07T17:05:16.709Z",
+      "checkedAt": "2026-11-07T18:55:49.650Z",
       "state": "unavailable",
       "reason": "curl: (22) The requested URL returned error: 404\r\n"
     },
@@ -1600,11 +1746,18 @@
       "maintainerVerdict": "Replaceable",
       "sourceUrl": "https://greasyfork.org/ja/scripts/525734-mb-make-some-headers-sticky-on-edit-release-relationships",
       "downloadUrl": "https://update.greasyfork.org/scripts/525734/MB%3A%20make%20some%20headers%20sticky%20on%20edit%20release%20relationships.user.js",
-      "checkedAt": "2026-11-07T17:05:17.961Z",
+      "checkedAt": "2026-11-07T18:13:06.120Z",
       "codeUpdatedAt": "2025-02-03T10:57:20.000Z",
       "serviceId": 525734,
-      "state": "unavailable",
-      "reason": "Response is not a userscript; needs source-location review"
+      "state": "captured",
+      "reason": "Response is not a userscript; needs source-location review",
+      "kind": "userstyle",
+      "url": "https://update.greasyfork.org/scripts/525734/MB%3A%20make%20some%20headers%20sticky%20on%20edit%20release%20relationships.user.css",
+      "evidenceUrl": "https://update.greasyfork.org/scripts/525734/MB%3A%20make%20some%20headers%20sticky%20on%20edit%20release%20relationships.user.css",
+      "sha256": "c3464af116372fd4cb463baddb7bddccaa2b0732f750c3c0efc5c7f7d22b5255",
+      "bytes": 1458,
+      "version": "1.0.0",
+      "requires": []
     },
     {
       "id": "wiki-98b3a782762b83c9e0e8",
@@ -1692,15 +1845,19 @@
       "checkedAt": "2026-11-07T16:57:51.260Z",
       "commit": "718e3ba1bc76206a64efb8db94bab8f9e1b06854",
       "repo": "afrocatmusic/userscripts",
-      "path": "RYM-Search-release-in-MusicBrainz.user.js",
-      "sha256": "16a57da508f1d2786ec053d47093749cc2478cd1167092d4a175536237156828",
-      "bytes": 1315,
-      "version": "1.0",
-      "requires": [],
-      "url": "https://raw.githubusercontent.com/afrocatmusic/userscripts/718e3ba1bc76206a64efb8db94bab8f9e1b06854/RYM-Search-release-in-MusicBrainz.user.js",
-      "evidenceUrl": "https://github.com/afrocatmusic/userscripts/blob/718e3ba1bc76206a64efb8db94bab8f9e1b06854/RYM-Search-release-in-MusicBrainz.user.js",
+      "path": "MBz-Copy-URLs.user.js",
+      "sha256": "166c4cb5ee0a93b7cb787c268ce1fba3263953b48809fdddcb0177c5618bb05a",
+      "bytes": 3881,
+      "version": "1.3.1",
+      "requires": [
+        "http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js",
+        "https://raw.githubusercontent.com/jpillora/notifyjs/refs/heads/master/dist/notify.js"
+      ],
+      "url": "https://raw.githubusercontent.com/afrocatmusic/userscripts/718e3ba1bc76206a64efb8db94bab8f9e1b06854/MBz-Copy-URLs.user.js",
+      "evidenceUrl": "https://github.com/afrocatmusic/userscripts/blob/718e3ba1bc76206a64efb8db94bab8f9e1b06854/MBz-Copy-URLs.user.js",
       "state": "captured",
-      "changedSincePrevious": null
+      "changedSincePrevious": null,
+      "recoveredLocation": true
     },
     {
       "id": "wiki-62aa112d7085a3d2e4fa",
@@ -1760,6 +1917,24 @@
       "changedSincePrevious": null
     },
     {
+      "id": "wiki-3daf20f0f889a01d4ab9",
+      "name": "MusicBrainz: Add search link for barcode",
+      "maintainerVerdict": "Replaceable",
+      "sourceUrl": "https://greasyfork.org/en/scripts/536878-musicbrainz-add-search-link-for-barcode/code",
+      "downloadUrl": "https://update.greasyfork.org/scripts/536878/MusicBrainz%3A%20Add%20search%20link%20for%20barcode.user.js",
+      "checkedAt": "2026-11-07T18:13:07.887Z",
+      "codeUpdatedAt": "2026-10-07T17:04:43.000Z",
+      "serviceId": 536878,
+      "sha256": "a85393433f4221615dd1188566b5679c9d45057d8ff905038573dc06c39601a7",
+      "bytes": 26455,
+      "version": "3.2.7",
+      "requires": [],
+      "url": "https://update.greasyfork.org/scripts/536878/MusicBrainz%3A%20Add%20search%20link%20for%20barcode.user.js",
+      "evidenceUrl": "https://update.greasyfork.org/scripts/536878/MusicBrainz%3A%20Add%20search%20link%20for%20barcode.user.js",
+      "state": "captured",
+      "changedSincePrevious": true
+    },
+    {
       "id": "wiki-a3349b8920acbfe27041",
       "name": "MusicBrainz: Add Spotify and Deezer ISRC link to release pages",
       "maintainerVerdict": "Replaceable",
@@ -1783,17 +1958,39 @@
       "maintainerVerdict": "Replaceable",
       "sourceUrl": "https://greasyfork.org/en/scripts/536854-musicbrainz-add-spotify-soundexchange-search-buttons-on-isrc-page/code",
       "downloadUrl": "https://update.greasyfork.org/scripts/536854/MusicBrainz%3A%20Add%20Spotify%20%20SoundExchange%20search%20buttons%20on%20ISRC%20page.user.js",
-      "checkedAt": "2026-11-07T17:05:20.011Z",
+      "checkedAt": "2026-11-07T18:13:09.907Z",
       "codeUpdatedAt": "2026-10-07T17:04:42.000Z",
       "serviceId": 536854,
-      "sha256": "1912e9ee77b6e8e1f53f4e57f79c78c278edc8929210831bff4e0cf5b60261d3",
-      "bytes": 2983,
-      "version": "1.3.3",
+      "sha256": "3f548eef93f32c4373ba4159b8d2b76c43b770cbf40827a42a97c9ca313ce458",
+      "bytes": 2683,
+      "version": "3.3.2",
       "requires": [],
-      "url": "https://update.greasyfork.org/scripts/536854/MusicBrainz%3A%20Add%20Spotify%20and%20Deezer%20ISRC%20link%20to%20release%20pages.user.js",
-      "evidenceUrl": "https://update.greasyfork.org/scripts/536854/MusicBrainz%3A%20Add%20Spotify%20and%20Deezer%20ISRC%20link%20to%20release%20pages.user.js",
+      "url": "https://raw.githubusercontent.com/chaban-mb/userscripts/4716398f15fd6349109cbdea3d99eff3304ea02e/src/MusicBrainz%20Add%20Spotify%20%26%20SoundExchange%20search%20buttons%20on%20ISRC%20page.user.js",
+      "evidenceUrl": "https://github.com/chaban-mb/userscripts/blob/4716398f15fd6349109cbdea3d99eff3304ea02e/src/MusicBrainz%20Add%20Spotify%20&%20SoundExchange%20search%20buttons%20on%20ISRC%20page.user.js",
       "state": "captured",
-      "changedSincePrevious": false
+      "changedSincePrevious": false,
+      "repo": "chaban-mb/userscripts",
+      "path": "src/MusicBrainz Add Spotify & SoundExchange search buttons on ISRC page.user.js",
+      "commit": "4716398f15fd6349109cbdea3d99eff3304ea02e",
+      "recoveredLocation": true
+    },
+    {
+      "id": "wiki-3c39ef682f472c092bae",
+      "name": "MusicBrainz: Ajax Collection Links",
+      "maintainerVerdict": "Not applicable",
+      "sourceUrl": "https://greasyfork.org/en/scripts/552597-musicbrainz-ajax-collection-links/code",
+      "downloadUrl": "https://update.greasyfork.org/scripts/552597/MusicBrainz%3A%20Ajax%20Collection%20Links.user.js",
+      "checkedAt": "2026-11-07T18:13:11.673Z",
+      "codeUpdatedAt": "2026-10-07T17:04:43.000Z",
+      "serviceId": 552597,
+      "sha256": "0a3e53f095b7f4c32fb7a827a0ac07b7028d06948a89efb284cad2f5bae6c1fb",
+      "bytes": 7107,
+      "version": "1.2.3",
+      "requires": [],
+      "url": "https://update.greasyfork.org/scripts/552597/MusicBrainz%3A%20Ajax%20Collection%20Links.user.js",
+      "evidenceUrl": "https://update.greasyfork.org/scripts/552597/MusicBrainz%3A%20Ajax%20Collection%20Links.user.js",
+      "state": "captured",
+      "changedSincePrevious": true
     },
     {
       "id": "wiki-38376501966c89d0a039",
@@ -2248,7 +2445,7 @@
       "maintainerVerdict": "No equivalent",
       "sourceUrl": "https://gitlab.com/Goldmaster/musicbrainz-collection-exporter/-/blob/main/MusicBrainz%20Collection%20Exporter.js",
       "downloadUrl": "https://gitlab.com/Goldmaster/musicbrainz-collection-exporter/-/raw/main/MusicBrainz%20Collection%20Exporter.js",
-      "checkedAt": "2026-11-07T17:05:21.795Z",
+      "checkedAt": "2026-11-07T18:55:50.783Z",
       "state": "unavailable",
       "reason": "curl: (22) The requested URL returned error: 404\r\n"
     },
@@ -2605,12 +2802,19 @@
       "maintainerVerdict": "Partial overlap",
       "sourceUrl": "https://github.com/rinsuki/userscripts/blob/master/simple-scripts/mb-search-release-on-websites.user.js",
       "downloadUrl": "https://github.com/rinsuki/userscripts/raw/master/simple-scripts/mb-search-release-on-websites.user.js",
-      "checkedAt": "2026-11-07T17:05:22.219Z",
-      "commit": "ffacb78f75b6ac540e52933a368a64d091210c33",
+      "checkedAt": "2026-11-07T18:13:13.925Z",
+      "commit": "9dbdee3dec0924a1448639caca91a66c2cf9cf79",
       "repo": "rinsuki/userscripts",
       "path": "simple-scripts/mb-search-release-on-websites.user.js",
-      "state": "unavailable",
-      "reason": "curl: (22) The requested URL returned error: 404\r\n"
+      "state": "captured",
+      "url": "https://raw.githubusercontent.com/rinsuki/userscripts/9dbdee3dec0924a1448639caca91a66c2cf9cf79/simple-scripts/mb-search-release-on-websites.user.js",
+      "evidenceUrl": "https://github.com/rinsuki/userscripts/blob/9dbdee3dec0924a1448639caca91a66c2cf9cf79/simple-scripts/mb-search-release-on-websites.user.js",
+      "sha256": "dad889e3511f09145709e3ff7cae160c3de4ed5d01992035431b8dbf8645e0f2",
+      "bytes": 5269,
+      "archivedSource": true,
+      "recoveredLocation": true,
+      "version": "1.1",
+      "requires": []
     },
     {
       "id": "wiki-2bdadae838e8bf233d72",
@@ -2852,6 +3056,27 @@
       "changedSincePrevious": null
     },
     {
+      "id": "wiki-d01e24b3d04763735ccb",
+      "name": "Guess related works",
+      "maintainerVerdict": "Mostly replaceable",
+      "sourceUrl": "https://github.com/loujine/musicbrainz-scripts/blob/master/mb-reledit-guess_works.user.js",
+      "downloadUrl": "https://github.com/loujine/musicbrainz-scripts/raw/master/mb-reledit-guess_works.user.js",
+      "checkedAt": "2026-11-07T18:13:14.649Z",
+      "commit": "37df091b3ddc3651a77291ff3a895c017e50750b",
+      "repo": "loujine/musicbrainz-scripts",
+      "path": "mb-reledit-guess_works.user.js",
+      "sha256": "f09c66698aa3605c300abaeaa14c00392b8e0c22ca4cfaddb4757ab599f83116",
+      "bytes": 9212,
+      "version": "2024.11.25",
+      "requires": [
+        "https://raw.githubusercontent.com/loujine/musicbrainz-scripts/master/mbz-loujine-common.js"
+      ],
+      "url": "https://raw.githubusercontent.com/loujine/musicbrainz-scripts/37df091b3ddc3651a77291ff3a895c017e50750b/mb-reledit-guess_works.user.js",
+      "evidenceUrl": "https://github.com/loujine/musicbrainz-scripts/blob/37df091b3ddc3651a77291ff3a895c017e50750b/mb-reledit-guess_works.user.js",
+      "state": "captured",
+      "changedSincePrevious": true
+    },
+    {
       "id": "wiki-788dac39e6c92aa66add",
       "name": "Replace subwork titles, disambiguations and attributes in Work edit page",
       "maintainerVerdict": "No equivalent",
@@ -3020,6 +3245,24 @@
       "changedSincePrevious": null
     },
     {
+      "id": "wiki-701bbc8829b287dcedb5",
+      "name": "MusicBrainz: Align Columns in \"Merge Recordings\"",
+      "maintainerVerdict": "Not applicable",
+      "sourceUrl": "https://greasyfork.org/en/scripts/546688-musicbrainz-align-columns-in-merge-recordings/code",
+      "downloadUrl": "https://update.greasyfork.org/scripts/546688/MusicBrainz%3A%20Align%20Columns%20in%20%22Merge%20Recordings%22.user.js",
+      "checkedAt": "2026-11-07T18:13:15.464Z",
+      "codeUpdatedAt": "2026-10-07T17:04:44.000Z",
+      "serviceId": 546688,
+      "sha256": "d817f1f296a3935b37ae2aec93c791b9e43b1ccd18c7e356fd162c2caf224376",
+      "bytes": 18449,
+      "version": "2.4.7",
+      "requires": [],
+      "url": "https://update.greasyfork.org/scripts/546688/MusicBrainz%3A%20Align%20Columns%20in%20Merge%20Edits.user.js",
+      "evidenceUrl": "https://update.greasyfork.org/scripts/546688/MusicBrainz%3A%20Align%20Columns%20in%20Merge%20Edits.user.js",
+      "state": "captured",
+      "changedSincePrevious": true
+    },
+    {
       "id": "wiki-9005382d893cf3a5475c",
       "name": "MusicBrainz: Easy-Add Recording Alias",
       "maintainerVerdict": "No equivalent",
@@ -3074,6 +3317,27 @@
       "changedSincePrevious": true
     },
     {
+      "id": "wiki-ee29ce970e26b246b41e",
+      "name": "Propagate recording dates",
+      "maintainerVerdict": "Replaceable",
+      "sourceUrl": "https://github.com/loujine/musicbrainz-scripts/blob/master/mb-reledit-copy_dates.user.js",
+      "downloadUrl": "https://github.com/loujine/musicbrainz-scripts/raw/master/mb-reledit-copy_dates.user.js",
+      "checkedAt": "2026-11-07T18:13:17.456Z",
+      "commit": "37df091b3ddc3651a77291ff3a895c017e50750b",
+      "repo": "loujine/musicbrainz-scripts",
+      "path": "mb-reledit-copy_dates.user.js",
+      "sha256": "221cb03b06c69fa2453a385f47bff91bcabc96027f469e465609a8d9af565a67",
+      "bytes": 5467,
+      "version": "2024.11.25",
+      "requires": [
+        "https://raw.githubusercontent.com/loujine/musicbrainz-scripts/master/mbz-loujine-common.js"
+      ],
+      "url": "https://raw.githubusercontent.com/loujine/musicbrainz-scripts/37df091b3ddc3651a77291ff3a895c017e50750b/mb-reledit-copy_dates.user.js",
+      "evidenceUrl": "https://github.com/loujine/musicbrainz-scripts/blob/37df091b3ddc3651a77291ff3a895c017e50750b/mb-reledit-copy_dates.user.js",
+      "state": "captured",
+      "changedSincePrevious": true
+    },
+    {
       "id": "wiki-dd62af41d6e25dc33fa9",
       "name": "Seed the batch recording comments script",
       "maintainerVerdict": "Replaceable",
@@ -3091,6 +3355,27 @@
       "evidenceUrl": "https://github.com/ROpdebee/mb-userscripts/blob/9e543935fb45d992d7035715b0916f27b7bda2fb/mb_qol_seed_recording_disambiguation.user.js",
       "state": "captured",
       "changedSincePrevious": null
+    },
+    {
+      "id": "wiki-8d6ac0cf95b875ace4f5",
+      "name": "Select All Update Recordings",
+      "maintainerVerdict": "Replaceable",
+      "sourceUrl": "https://github.com/ROpdebee/mb-userscripts/blob/main/mb_qol_select_all_update_recordings.user.js",
+      "downloadUrl": "https://github.com/ROpdebee/mb-userscripts/raw/main/mb_qol_select_all_update_recordings.user.js",
+      "checkedAt": "2026-11-07T18:13:17.763Z",
+      "commit": "9e543935fb45d992d7035715b0916f27b7bda2fb",
+      "repo": "ROpdebee/mb-userscripts",
+      "path": "mb_qol_select_all_update_recordings.user.js",
+      "sha256": "78605665f8732817414245cef6c190766c7bd897e252841d21e8c78882fc3cd2",
+      "bytes": 2525,
+      "version": "2021.10.24",
+      "requires": [
+        "https://code.jquery.com/jquery-3.6.0.min.js"
+      ],
+      "url": "https://raw.githubusercontent.com/ROpdebee/mb-userscripts/9e543935fb45d992d7035715b0916f27b7bda2fb/mb_qol_select_all_update_recordings.user.js",
+      "evidenceUrl": "https://github.com/ROpdebee/mb-userscripts/blob/9e543935fb45d992d7035715b0916f27b7bda2fb/mb_qol_select_all_update_recordings.user.js",
+      "state": "captured",
+      "changedSincePrevious": true
     },
     {
       "id": "wiki-6e286a6e4f4567371891",
@@ -3131,6 +3416,43 @@
       "evidenceUrl": "https://github.com/murdos/musicbrainz-userscripts/blob/d5c2bcebe3fd9d650005c2e083d70e01d3ca3607/set-recording-comments.user.js",
       "state": "captured",
       "changedSincePrevious": null
+    },
+    {
+      "id": "wiki-b88517e69ab248babfd3",
+      "name": "Set performer instrument",
+      "maintainerVerdict": "Replaceable",
+      "sourceUrl": "https://github.com/loujine/musicbrainz-scripts/blob/master/mb-reledit-set_instruments.user.js",
+      "downloadUrl": "https://github.com/loujine/musicbrainz-scripts/raw/master/mb-reledit-set_instruments.user.js",
+      "checkedAt": "2026-11-07T18:13:18.608Z",
+      "commit": "37df091b3ddc3651a77291ff3a895c017e50750b",
+      "repo": "loujine/musicbrainz-scripts",
+      "path": "mb-reledit-set_instruments.user.js",
+      "sha256": "3b013d0f1c47750639c35faae71480a4e89f4a46053ee4beca6dcfeabad0ce2e",
+      "bytes": 5812,
+      "version": "2024.11.25",
+      "requires": [
+        "https://raw.githubusercontent.com/loujine/musicbrainz-scripts/master/mbz-loujine-common.js"
+      ],
+      "url": "https://raw.githubusercontent.com/loujine/musicbrainz-scripts/37df091b3ddc3651a77291ff3a895c017e50750b/mb-reledit-set_instruments.user.js",
+      "evidenceUrl": "https://github.com/loujine/musicbrainz-scripts/blob/37df091b3ddc3651a77291ff3a895c017e50750b/mb-reledit-set_instruments.user.js",
+      "state": "captured",
+      "changedSincePrevious": true
+    },
+    {
+      "id": "wiki-1cd445a6f615b63bbc05",
+      "name": "Soundcloud track filler",
+      "maintainerVerdict": "Replaceable",
+      "sourceUrl": "",
+      "downloadUrl": "https://git.unix.dog/yosh/musicbrainz-userscripts/raw/branch/main/soundcloud-track-filler.user.js",
+      "checkedAt": "2026-11-07T18:13:18.904Z",
+      "sha256": "5ab1b131d9512a8d048d5fe957c511df52783c5f431e372b97dc52179346e979",
+      "bytes": 7145,
+      "version": "2026.9.7.3",
+      "requires": [],
+      "url": "https://git.unix.dog/yosh/musicbrainz-userscripts/raw/branch/main/soundcloud-track-filler.user.js",
+      "evidenceUrl": "https://git.unix.dog/yosh/musicbrainz-userscripts/raw/branch/main/soundcloud-track-filler.user.js",
+      "state": "captured",
+      "changedSincePrevious": true
     },
     {
       "id": "wiki-594c4eeedc174f610882",
@@ -3178,9 +3500,18 @@
       "maintainerVerdict": "Replaceable",
       "sourceUrl": "https://community.metabrainz.org/t/error-requesting-signature/755765/12",
       "downloadUrl": "",
-      "checkedAt": "2026-11-07T17:05:22.962Z",
-      "state": "unavailable",
-      "reason": "No downloadable source in preserved wiki row"
+      "checkedAt": "2026-11-07T18:13:20.274Z",
+      "state": "captured",
+      "kind": "forum-code",
+      "url": "https://community.metabrainz.org/t/error-requesting-signature/755765/12",
+      "evidenceUrl": "https://community.metabrainz.org/t/error-requesting-signature/755765/12",
+      "sha256": "0a216e89e65a54e9c799e1747fbfb1b2f5007e88b8875bc19365dffa0d0b9c04",
+      "bytes": 3123,
+      "version": "2025-7-19",
+      "forumPostId": 850218,
+      "forumPostVersion": 8,
+      "forumUpdatedAt": "2025-07-19T18:36:25.592Z",
+      "requires": []
     },
     {
       "id": "wiki-cf493e2b1f473e162389",
@@ -3322,9 +3653,19 @@
       "maintainerVerdict": "No equivalent",
       "sourceUrl": "https://greasyfork.org/en/scripts/544139-musicbrainz-artwork-uploader-thumbnails-accelerator/code",
       "downloadUrl": "https://update.greasyfork.org/scripts/544139/MusicBrainz%3A%20Artwork%20Uploader%20Thumbnails%20Accelerator.user.js",
-      "checkedAt": "2026-11-07T17:05:22.964Z",
-      "state": "unavailable",
-      "reason": "curl: (22) The requested URL returned error: 404\r\n"
+      "checkedAt": "2026-11-07T18:13:20.274Z",
+      "state": "captured",
+      "reason": "curl: (22) The requested URL returned error: 404\r\n",
+      "repo": "chaban-mb/userscripts",
+      "path": "src/MusicBrainz Artwork Uploader Thumbnails Accelerator.user.js",
+      "commit": "4716398f15fd6349109cbdea3d99eff3304ea02e",
+      "url": "https://raw.githubusercontent.com/chaban-mb/userscripts/4716398f15fd6349109cbdea3d99eff3304ea02e/src/MusicBrainz%20Artwork%20Uploader%20Thumbnails%20Accelerator.user.js",
+      "evidenceUrl": "https://github.com/chaban-mb/userscripts/blob/4716398f15fd6349109cbdea3d99eff3304ea02e/src/MusicBrainz%20Artwork%20Uploader%20Thumbnails%20Accelerator.user.js",
+      "sha256": "b20ea5c4556ffccd4dd2461b72add5c7f762d89a0490f606148bc882eae749e1",
+      "bytes": 1526,
+      "recoveredLocation": true,
+      "version": "1.0.8",
+      "requires": []
     },
     {
       "id": "wiki-fb06ea352963fee34053",
@@ -3408,6 +3749,100 @@
       "changedSincePrevious": null
     },
     {
+      "id": "wiki-837110b87d19fb4ae54e",
+      "name": "Merge recordings from AcoustID page",
+      "repo": "loujine/musicbrainz-scripts",
+      "path": "acoustid-merge-recordings.user.js",
+      "commit": "37df091b3ddc3651a77291ff3a895c017e50750b",
+      "url": "https://raw.githubusercontent.com/loujine/musicbrainz-scripts/37df091b3ddc3651a77291ff3a895c017e50750b/acoustid-merge-recordings.user.js",
+      "evidenceUrl": "https://github.com/loujine/musicbrainz-scripts/blob/37df091b3ddc3651a77291ff3a895c017e50750b/acoustid-merge-recordings.user.js",
+      "sha256": "0b9fe63b6324993f021db05259f8b0bdc4fd8993340ea7309625afde491a0891",
+      "bytes": 3404,
+      "state": "captured",
+      "checkedAt": "2026-11-07",
+      "requires": [],
+      "version": "2020.9.14"
+    },
+    {
+      "id": "wiki-a4e8084a9c69e8f1f96d",
+      "name": "Collection Highlighter",
+      "maintainerVerdict": "No equivalent",
+      "sourceUrl": "https://github.com/jesus2099/konami-command/blob/master/mb_COLLECTION-HIGHLIGHTER.user.js",
+      "downloadUrl": "https://github.com/jesus2099/konami-command/raw/master/mb_COLLECTION-HIGHLIGHTER.user.js",
+      "checkedAt": "2026-11-07T18:13:21.273Z",
+      "commit": "619bfdf520a5162abc5467af32d5b2a386745b5e",
+      "repo": "jesus2099/konami-command",
+      "path": "mb_COLLECTION-HIGHLIGHTER.user.js",
+      "sha256": "c443cb6d336c8fa9921ae931b01bed562252f9b65948c55466041253aa4f96ae",
+      "bytes": 55826,
+      "version": "2026.10.6",
+      "requires": [
+        "https://github.com/jesus2099/konami-command/raw/de88f870c0e6c633e02f32695e32c4f50329fc3e/lib/SUPER.js?version=2022.3.24.224"
+      ],
+      "url": "https://raw.githubusercontent.com/jesus2099/konami-command/619bfdf520a5162abc5467af32d5b2a386745b5e/mb_COLLECTION-HIGHLIGHTER.user.js",
+      "evidenceUrl": "https://github.com/jesus2099/konami-command/blob/619bfdf520a5162abc5467af32d5b2a386745b5e/mb_COLLECTION-HIGHLIGHTER.user.js",
+      "state": "captured",
+      "changedSincePrevious": true
+    },
+    {
+      "id": "wiki-366b36e39192f0fb6d73",
+      "name": "Hyper Moulinette",
+      "maintainerVerdict": "No equivalent",
+      "sourceUrl": "https://github.com/jesus2099/konami-command/blob/master/mb_HYPER-MOULINETTE.user.js",
+      "downloadUrl": "https://github.com/jesus2099/konami-command/raw/master/mb_HYPER-MOULINETTE.user.js",
+      "checkedAt": "2026-11-07T18:13:22.104Z",
+      "commit": "619bfdf520a5162abc5467af32d5b2a386745b5e",
+      "repo": "jesus2099/konami-command",
+      "path": "mb_HYPER-MOULINETTE.user.js",
+      "sha256": "e077e4f36e10a76142262133b266cbcb3e23818acd90b72e7e2572f62c9e989b",
+      "bytes": 11950,
+      "version": "2025.8.30",
+      "requires": [
+        "https://github.com/jesus2099/konami-command/raw/de88f870c0e6c633e02f32695e32c4f50329fc3e/lib/SUPER.js?version=2022.3.24.224"
+      ],
+      "url": "https://raw.githubusercontent.com/jesus2099/konami-command/619bfdf520a5162abc5467af32d5b2a386745b5e/mb_HYPER-MOULINETTE.user.js",
+      "evidenceUrl": "https://github.com/jesus2099/konami-command/blob/619bfdf520a5162abc5467af32d5b2a386745b5e/mb_HYPER-MOULINETTE.user.js",
+      "state": "captured",
+      "changedSincePrevious": true
+    },
+    {
+      "id": "wiki-40c3ff78cf1da655ceff",
+      "name": "MB Release Collection to CSV",
+      "maintainerVerdict": "No equivalent",
+      "sourceUrl": "https://gist.github.com/defvs/b9f43a6549b22430ccc46b5625e6b8be",
+      "downloadUrl": "https://gist.github.com/defvs/b9f43a6549b22430ccc46b5625e6b8be/raw/1b96504ac31e2fe12266d7ae1a6c52bef5c7ee9e/MB-release-collection-to-csv.user.js",
+      "checkedAt": "2026-11-07T18:13:22.406Z",
+      "sha256": "146d601b262c0f8bf668b2a7c1db3d525b91c3ecf69c18da98e607ebd1668717",
+      "bytes": 6114,
+      "version": "2024-08-23-5",
+      "requires": [],
+      "url": "https://gist.github.com/defvs/b9f43a6549b22430ccc46b5625e6b8be/raw/1b96504ac31e2fe12266d7ae1a6c52bef5c7ee9e/MB-release-collection-to-csv.user.js",
+      "evidenceUrl": "https://gist.github.com/defvs/b9f43a6549b22430ccc46b5625e6b8be/raw/1b96504ac31e2fe12266d7ae1a6c52bef5c7ee9e/MB-release-collection-to-csv.user.js",
+      "state": "captured",
+      "changedSincePrevious": true
+    },
+    {
+      "id": "wiki-e6ff4f111473973d5bb6",
+      "name": "Print All Pages",
+      "maintainerVerdict": "No equivalent",
+      "sourceUrl": "https://github.com/jesus2099/konami-command/blob/master/mb_PRINT-ALL-PAGES.user.js",
+      "downloadUrl": "https://github.com/jesus2099/konami-command/raw/master/mb_PRINT-ALL-PAGES.user.js",
+      "checkedAt": "2026-11-07T18:13:22.872Z",
+      "commit": "619bfdf520a5162abc5467af32d5b2a386745b5e",
+      "repo": "jesus2099/konami-command",
+      "path": "mb_PRINT-ALL-PAGES.user.js",
+      "sha256": "fab8ffb55702ea97d524c926f712591d0c497e80549be7e218e9710b7942fe31",
+      "bytes": 8953,
+      "version": "2026.4.6",
+      "requires": [
+        "https://github.com/jesus2099/konami-command/raw/de88f870c0e6c633e02f32695e32c4f50329fc3e/lib/SUPER.js?version=2022.3.24.224"
+      ],
+      "url": "https://raw.githubusercontent.com/jesus2099/konami-command/619bfdf520a5162abc5467af32d5b2a386745b5e/mb_PRINT-ALL-PAGES.user.js",
+      "evidenceUrl": "https://github.com/jesus2099/konami-command/blob/619bfdf520a5162abc5467af32d5b2a386745b5e/mb_PRINT-ALL-PAGES.user.js",
+      "state": "captured",
+      "changedSincePrevious": true
+    },
+    {
       "id": "wiki-c778073c6120c94d1ba7",
       "name": "Hide Love, Hate, and Play Buttons on ListenBrainz",
       "maintainerVerdict": "Not applicable",
@@ -3443,6 +3878,25 @@
       "changedSincePrevious": null
     },
     {
+      "id": "wiki-7837ba4c41ddf9a01b94",
+      "name": "ListenBrainz: Center lengths and clip titles",
+      "maintainerVerdict": "Not applicable",
+      "sourceUrl": "https://greasyfork.org/en/scripts/560350-listenbrainz-center-lengths-and-clip-titles/code",
+      "downloadUrl": "https://update.greasyfork.org/scripts/560350/ListenBrainz%3A%20Center%20lengths%20and%20clip%20titles.user.js",
+      "checkedAt": "2026-11-07T18:13:23.159Z",
+      "codeUpdatedAt": "2025-12-26T21:44:32.000Z",
+      "serviceId": 560350,
+      "state": "captured",
+      "reason": "Response is not a userscript; needs source-location review",
+      "kind": "userstyle",
+      "url": "https://update.greasyfork.org/scripts/560350/ListenBrainz%3A%20Center%20lengths%20and%20clip%20titles.user.css",
+      "evidenceUrl": "https://update.greasyfork.org/scripts/560350/ListenBrainz%3A%20Center%20lengths%20and%20clip%20titles.user.css",
+      "sha256": "6342c2ea5634975a25bba500cc993cf8c719c5425de71ec7b1aba2e844f59516",
+      "bytes": 980,
+      "version": "1.0.0",
+      "requires": []
+    },
+    {
       "id": "wiki-b1ab875c4eb9b625a5f6",
       "name": "ListenBrainz: Extended Controls",
       "maintainerVerdict": "Not applicable",
@@ -3466,11 +3920,18 @@
       "maintainerVerdict": "Not applicable",
       "sourceUrl": "https://greasyfork.org/en/scripts/567376-listenbrainz-simple-icons/code",
       "downloadUrl": "https://update.greasyfork.org/scripts/567376/ListenBrainz%20Simple%20Icons.user.js",
-      "checkedAt": "2026-11-07T17:05:23.943Z",
+      "checkedAt": "2026-11-07T18:13:24.961Z",
       "codeUpdatedAt": "2026-03-02T17:46:02.000Z",
       "serviceId": 567376,
-      "state": "unavailable",
-      "reason": "Response is not a userscript; needs source-location review"
+      "state": "captured",
+      "reason": "Response is not a userscript; needs source-location review",
+      "kind": "userstyle",
+      "url": "https://update.greasyfork.org/scripts/567376/ListenBrainz%20Simple%20Icons.user.css",
+      "evidenceUrl": "https://update.greasyfork.org/scripts/567376/ListenBrainz%20Simple%20Icons.user.css",
+      "sha256": "a420273d3f3bd937045c1a81fe23abf0a04aad9941564bfa2e00bbc3138be6a9",
+      "bytes": 4923,
+      "version": "1.1.4",
+      "requires": []
     },
     {
       "id": "wiki-f701d26f272577d544da",
