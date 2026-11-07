@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.06.180940
+// @version      2026.11.07.134500
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -4001,7 +4001,12 @@ pcSharedStyle.textContent = `${MBU_TOKENS}${MBU_UI_CSS}
     #mb-provider-modal-card { width: auto !important; left: 8px !important; right: 8px !important;
       transform: translateY(-50%) !important; max-height: 92vh !important; overflow-y: auto !important;
       padding: 18px !important; box-sizing: border-box !important; }
-  }`;
+  }
+  .mbu-cfg-phone { padding: 14px 16px !important; }
+  .mbu-cfg-phone .mbu-cfg-ver { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mbu-cfg-phone #mb-setup-main > div:first-child { flex-direction: column; }
+  .mbu-cfg-phone .pc-setup-nav { white-space: nowrap; }
+  .mbu-cfg-phone .pc-set-row > label { flex: 1; min-width: 0; }`;
 
 // Provider toggles
 const providerModal = document.createElement('div');
@@ -4445,14 +4450,14 @@ mbuCfgDrag(document.getElementById('mb-provider-modal-card'));
 function pcPinModal(overlay, card, maxW, fill) {
     pcSnapshotBase(overlay); pcSnapshotBase(card);
     const vv = window.visualViewport;
-    if (!vv || !window.matchMedia('(max-width: 640px)').matches) { pcUnpinModal(overlay, card); return; }
+    if (!vv || vv.width >= 700) { card.classList.remove('mbu-cfg-phone'); pcUnpinModal(overlay, card); return; }
     const imp = (el, o) => { for (const k in o) el.style.setProperty(k, o[k], 'important'); };
-    const w = Math.min(vv.width * 0.96, maxW), h = vv.height * 0.96;
+    // on a phone the window fills the screen, as every other settings window does (mbuCfgPhoneFit)
+    card.classList.add('mbu-cfg-phone');
     imp(overlay, { left: vv.offsetLeft + 'px', top: vv.offsetTop + 'px', width: vv.width + 'px', height: vv.height + 'px', padding: '0' });
-    const c = { position: 'fixed', left: (vv.offsetLeft + vv.width / 2) + 'px', top: (vv.offsetTop + vv.height / 2) + 'px',
-        transform: 'translate(-50%, -50%)', margin: '0', 'max-width': 'none', width: w + 'px', 'max-height': h + 'px' };
-    if (fill) c.height = h + 'px';
-    imp(card, c);
+    imp(card, { position: 'fixed', left: vv.offsetLeft + 'px', top: vv.offsetTop + 'px', right: 'auto', bottom: 'auto', transform: 'none', margin: '0',
+        width: vv.width + 'px', height: vv.height + 'px', 'min-width': '0', 'max-width': 'none', 'max-height': 'none', 'border-radius': '0', 'box-sizing': 'border-box',
+        'overflow-y': 'auto', 'text-size-adjust': '100%', '-webkit-text-size-adjust': '100%' });
 }
 function pcUnpinModal(overlay, card) {
     if (overlay && overlay._pcBaseCss != null) overlay.style.cssText = overlay._pcBaseCss;
@@ -4462,6 +4467,7 @@ function pcOpenModal(overlay, card, maxW, fill) {
     overlay.style.display = 'block';
     _pcActive = { overlay, card, maxW, fill };
     pcPinModal(overlay, card, maxW, fill);
+    requestAnimationFrame(() => requestAnimationFrame(() => { if (_pcActive) _pcVVSync && _pcVVSync(); }));
     if (window.visualViewport && !_pcVVSync) {
         _pcVVSync = () => { if (_pcActive) pcPinModal(_pcActive.overlay, _pcActive.card, _pcActive.maxW, _pcActive.fill); };
         window.visualViewport.addEventListener('resize', _pcVVSync);
