@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.07.161735
+// @version      2026.11.07.163138
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11460,7 +11460,7 @@ const CI = {
     tags: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
 };
 const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-panel{pointer-events:auto}.eh-cfg{width:min(460px,94vw);font:12px var(--mbu-font)}.eh-cfg .mbu-ov-body{padding:6px 10px 6px;overflow-x:hidden}.eh-cfg .mbu-cfg-h{margin-bottom:2px;padding-bottom:5px;gap:6px;font-size:13px}.eh-cfg .mbu-cfg-ic{width:18px;height:18px}.eh-cfg .mbu-cfg-log{padding:0 6px;font-size:11px}'
-    + '.eh-cfg .tabs{display:flex;gap:2px;border-bottom:1px solid var(--mbu-border-soft);margin:0 -10px;padding:0 6px}.eh-cfg .tabs .eh-st-th{margin-left:auto;align-self:center}'
+    + '.eh-cfg .tabs{display:flex;gap:2px;border-bottom:1px solid var(--mbu-border-soft);margin:0 -10px;padding:0 6px}.eh-cfg .tabs .eh-st-th{margin-left:auto;align-self:center;cursor:pointer}'
     + '.eh-cfg .tab{all:unset;padding:5px 9px;margin-bottom:-1px;border-bottom:2px solid transparent;color:var(--mbu-text-weak);font:500 13px var(--mbu-font);cursor:pointer}'
     + '.eh-cfg .tab:hover{color:var(--mbu-text)}.eh-cfg .tab[aria-selected=true]{color:var(--mbu-accent-text);border-bottom-color:var(--mbu-accent);font-weight:600}.eh-cfg .tab .n{font-size:10px;color:var(--mbu-text-weak)}'
     + '.eh-cfg .chip i.hue{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:-1px}.mbu-ov-panel.eh-cfg{height:min(820px,88vh)}.eh-cfg>.mbu-ov-body{display:flex;flex-direction:column;overflow-y:hidden;scrollbar-gutter:auto}.eh-cfg>.mbu-ov-body>*{flex:none}.eh-cfg>.mbu-ov-body>.eh-cfg-b{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.eh-cfg-b>*{flex:none}.eh-cfg .pane{flex:1 1 auto;min-height:min(250px,30vh);overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;overflow-x:hidden;padding-top:2px}.eh-cfg .mbu-cfg-ver{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}'
@@ -12006,7 +12006,7 @@ function cfgWire(panel, b, body) {
         if (imgMoved && ev.target.closest('[data-g=imgP]')) { imgMoved = false; return; }
         const tb = ev.target.closest('[data-tab]');
         if (tb) { cfgTab = tb.dataset.tab; b.innerHTML = body(); return; }
-        if (ev.target.closest('[data-st-themes]')) { document.dispatchEvent(new CustomEvent('mbu-st-themes')); return; }
+        if (ev.target.closest('[data-st-themes]')) { panel.closest('.mbu-ov')?.remove(); document.dispatchEvent(new CustomEvent('mbu-st-themes')); return; }   // the window steps aside, as String Theory's does
         // the settings only: what the user saved or starred stays
         if (ev.target.closest('.reset')) { const d = JSON.parse(DEFAULTS); for (const k of RESET_KEEP) delete d[k]; Object.assign(S, d); }
         else {
