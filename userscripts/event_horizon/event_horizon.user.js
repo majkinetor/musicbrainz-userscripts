@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08.020000
+// @version      2026.11.08.030000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3905,7 +3905,7 @@ const FX_STRIP = {
     rainAmount: [20, 200, .01], rainSlide: [20, 200, .01], rainFog: [0, 100, .01], rainRefraction: [0, 100, .01], rainLights: [0, 100, .01], rainFall: [0, 100, .01],
     ...Object.fromEntries(Object.keys(AMBIENT).flatMap(k => [[k + 'Opacity', [20, 100, 1]], [k + 'Glow', [0, 200, .01]]])),
     hexOpacity: [0, 100, 1], hexFx: [20, 100, 1], hexPace: [20, 200, .01], hexTrail: [20, 200, .01], hexOften: [20, 200, .01], hexGlow: [0, 200, .01],
-    bgOpacity: [20, 100, 1], bgBlur: [0, 100, .4, 1], bgBright: [40, 140, 1], bgSat: [0, 200, 1], bgVig: [0, 100, 1],
+    bgOpacity: [20, 100, 1], bgBlur: [0, 100, .4, 1], bgBright: [40, 140, 1], bgSat: [0, 200, 1], bgVig: [0, 100, 1], bgAmount: [20, 200, 1], bgSize: [40, 200, 1], bgGlow: [0, 200, 1],
 };
 const AMBIENT_KEYS = ['effect', 'ambientOpacity', ...Object.keys(AMBIENT_DEFAULTS), ...Object.keys(FX_OWN)];
 const FX_COLOURS = ['hexColours', ...Object.keys(FX_OWN).filter(k => k.endsWith('Colours'))];
@@ -3953,7 +3953,7 @@ function ambientApply(layer, kind) {
     layer._ehPattern = { key, P: p, stop, shift() {} }; document.addEventListener('visibilitychange', vis); vis();
 }
 
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'fx', 'fxOff', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'fx', 'fxOff', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'bgAmount', 'bgSize', 'bgGlow', 'bgHue', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -3961,7 +3961,7 @@ const S = {
     crTracks: true,
     byName: false, plNames: false, plHover: false, plSize: 18, trackStripe: true, dis: 'brackets', width: 1600, bg: 'aura', fx: null, fxOff: [], hex: false, hexOpacity: 60, hexIntensity: 100, hexMotion: 'static', hexFx: 100, hexPace: .6, hexTrail: 1, hexOften: 1, hexGlow: 1, hexTwo: false, hexDepth: false,
     // the Image background: its address, and the filters over it
-    bgUrl: '', bgArt: 'chillwave', bgSeed: 1, bgBlur: 0, bgBright: 100, bgSat: 100, bgOpacity: 65, bgFit: 'cover', bgVig: 0, bgTone: 'natural',
+    bgUrl: '', bgArt: 'chillwave', bgSeed: 1, bgBlur: 0, bgBright: 100, bgSat: 100, bgOpacity: 65, bgFit: 'cover', bgVig: 0, bgTone: 'natural', bgAmount: 100, bgSize: 100, bgGlow: 100, bgHue: 0,
     on: true, menuTitles: false,
     thumbs: true,
     factOff: { artist: [], label: [] }, // the artist's and label's header facts turned off
@@ -8813,62 +8813,63 @@ const BG_ARTS = [
 ];
 const bgRand = seed => { let a = (seed >>> 0) || 1; return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
 const BG_DRAW = {
-    chillwave(c, W, H, r) {
+    chillwave(c, W, H, r, o) {
         const hz = H * .64, sky = c.createLinearGradient(0, 0, 0, hz);
         sky.addColorStop(0, '#120726'); sky.addColorStop(.45, '#4a1d73'); sky.addColorStop(.8, '#c43d82'); sky.addColorStop(1, '#ff9a6b');
         c.fillStyle = sky; c.fillRect(0, 0, W, hz);
-        for (let i = 0; i < 140; i++) { c.fillStyle = `rgba(255,255,255,${.2 + r() * .6})`; const s = r() < .1 ? 2 : 1; c.fillRect(r() * W, r() * hz * .55, s, s); }
-        const sx = W * (.35 + r() * .3), sr = H * .2, sun = c.createLinearGradient(0, hz - sr * 1.7, 0, hz);
+        for (let i = 0; i < 140 * o.n; i++) { c.fillStyle = `rgba(255,255,255,${.2 + r() * .6})`; const s = r() < .1 ? 2 : 1; c.fillRect(r() * W, r() * hz * .55, s, s); }
+        const sx = W * (.35 + r() * .3), sr = H * .2 * o.s, sun = c.createLinearGradient(0, hz - sr * 1.7, 0, hz);
         sun.addColorStop(0, '#ffe66b'); sun.addColorStop(.6, '#ff8a5c'); sun.addColorStop(1, '#ff3d8b');
+        if (o.g) { const gl = c.createRadialGradient(sx, hz - sr * .55, sr * .8, sx, hz - sr * .55, sr * 2.6); gl.addColorStop(0, `rgba(255,120,150,${Math.min(.6, .3 * o.g)})`); gl.addColorStop(1, 'rgba(255,120,150,0)'); c.fillStyle = gl; c.fillRect(0, 0, W, hz); }
         c.fillStyle = sun; c.beginPath(); c.arc(sx, hz - sr * .55, sr, 0, Math.PI * 2); c.fill();
         c.fillStyle = sky; for (let k = 0, y = hz - sr * .7; y < hz; k++) { const h = 2 + k * 1.6; c.fillRect(sx - sr - 2, y, sr * 2 + 4, h); y += h + 9 - k * .5; }
         const city = (base, col, lo, hi, lit) => {
             for (let x = -20; x < W;) {
-                const w = 26 + r() * 70, h = lo + r() * (hi - lo);
+                const w = (26 + r() * 70) * o.s, h = (lo + r() * (hi - lo)) * Math.min(1.6, .6 + o.s * .4);
                 c.fillStyle = col; c.fillRect(x, base - h, w, h);
                 if (r() < .25) c.fillRect(x + w * .4, base - h - 18 - r() * 30, 2, 40);
-                for (let wy = base - h + 8; wy < base - 6; wy += 9) for (let wx = x + 5; wx < x + w - 6; wx += 8) if (r() < lit) { c.fillStyle = ['#ffd36b', '#ff7ad9', '#6be4ff'][r() * 3 | 0]; c.globalAlpha = .55 + r() * .45; c.fillRect(wx, wy, 3, 4); c.globalAlpha = 1; }
+                for (let wy = base - h + 8; wy < base - 6; wy += 9) for (let wx = x + 5; wx < x + w - 6; wx += 8) if (r() < lit * o.n) { c.fillStyle = ['#ffd36b', '#ff7ad9', '#6be4ff'][r() * 3 | 0]; c.globalAlpha = .55 + r() * .45; c.fillRect(wx, wy, 3, 4); c.globalAlpha = 1; }
                 x += w + r() * 6;
             }
         };
         city(hz, '#3a1a5c', 60, 260, .06); city(hz, '#1a0b2c', 30, 170, .14);
         const gr = c.createLinearGradient(0, hz, 0, H); gr.addColorStop(0, '#2a0b3d'); gr.addColorStop(1, '#07020f');
         c.fillStyle = gr; c.fillRect(0, hz, W, H - hz);
-        c.strokeStyle = '#ff3dc8'; c.shadowColor = '#ff3dc8'; c.shadowBlur = 8; c.lineWidth = 1.5;
+        c.strokeStyle = '#ff3dc8'; c.shadowColor = '#ff3dc8'; c.shadowBlur = 10 * o.g; c.lineWidth = 1.5;
         for (let i = 1; i < 18; i++) { const y = hz + (H - hz) * Math.pow(i / 17, 2.2); c.globalAlpha = .25 + .75 * i / 17; c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
         c.globalAlpha = .8; for (let i = -24; i <= 24; i++) { c.beginPath(); c.moveTo(W / 2 + i * 6, hz); c.lineTo(W / 2 + i * W * .12, H); c.stroke(); }
         c.globalAlpha = 1; c.shadowBlur = 0; c.fillStyle = '#ffb3e6'; c.fillRect(0, hz - 1, W, 2);
     },
-    nebula(c, W, H, r) {
+    nebula(c, W, H, r, o) {
         c.fillStyle = '#04030c'; c.fillRect(0, 0, W, H);
         c.globalCompositeOperation = 'lighter';
         const hue = r() * 360;
-        for (let i = 0; i < 18; i++) {
-            const x = W * (.15 + r() * .7), y = H * (.15 + r() * .7), rad = H * (.15 + r() * .45), h = hue + (r() * 2 - 1) * 70, g = c.createRadialGradient(x, y, 0, x, y, rad);
-            g.addColorStop(0, `hsla(${h},80%,55%,${.12 + r() * .14})`); g.addColorStop(.5, `hsla(${h + 30},70%,35%,.06)`); g.addColorStop(1, 'hsla(0,0%,0%,0)');
+        for (let i = 0; i < 18 * o.n; i++) {
+            const x = W * (.15 + r() * .7), y = H * (.15 + r() * .7), rad = H * (.15 + r() * .45) * o.s, h = hue + (r() * 2 - 1) * 70, g = c.createRadialGradient(x, y, 0, x, y, rad);
+            g.addColorStop(0, `hsla(${h},80%,55%,${(.12 + r() * .14) * o.g})`); g.addColorStop(.5, `hsla(${h + 30},70%,35%,${.06 * o.g})`); g.addColorStop(1, 'hsla(0,0%,0%,0)');
             c.fillStyle = g; c.fillRect(0, 0, W, H);
         }
-        for (let i = 0; i < 700; i++) { const s = r() < .03 ? 2.2 : r() * 1.3 + .3; c.fillStyle = `hsla(${r() < .5 ? 210 : 40},60%,${80 + r() * 20}%,${.3 + r() * .7})`; c.beginPath(); c.arc(r() * W, r() * H, s, 0, Math.PI * 2); c.fill(); }
-        for (let i = 0; i < 5; i++) { const x = r() * W, y = r() * H, g = c.createRadialGradient(x, y, 0, x, y, 30); g.addColorStop(0, 'rgba(255,255,255,.9)'); g.addColorStop(.1, 'rgba(200,220,255,.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.fillRect(x - 30, y - 30, 60, 60); }
+        for (let i = 0; i < 700 * o.n; i++) { const s = r() < .03 ? 2.2 : r() * 1.3 + .3; c.fillStyle = `hsla(${r() < .5 ? 210 : 40},60%,${80 + r() * 20}%,${.3 + r() * .7})`; c.beginPath(); c.arc(r() * W, r() * H, s, 0, Math.PI * 2); c.fill(); }
+        for (let i = 0; i < 5 * o.n; i++) { const x = r() * W, y = r() * H, g = c.createRadialGradient(x, y, 0, x, y, 30 * o.s); g.addColorStop(0, 'rgba(255,255,255,.9)'); g.addColorStop(.1, 'rgba(200,220,255,.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.fillRect(x - 30 * o.s, y - 30 * o.s, 60 * o.s, 60 * o.s); }
         c.globalCompositeOperation = 'source-over';
     },
-    lowpoly(c, W, H, r) {
-        const h1 = r() * 360, h2 = h1 + 60 + r() * 120, cols = 16, rows = 10, cw = W / cols, ch = H / rows, pt = [];
+    lowpoly(c, W, H, r, o) {
+        const h1 = r() * 360, h2 = h1 + 60 + r() * 120, cols = Math.max(3, Math.round(16 * o.n / o.s)), rows = Math.max(2, Math.round(10 * o.n / o.s)), cw = W / cols, ch = H / rows, pt = [];
         for (let j = 0; j <= rows; j++) { pt[j] = []; for (let i = 0; i <= cols; i++) pt[j][i] = [i * cw + (i && i < cols ? (r() - .5) * cw * .8 : 0), j * ch + (j && j < rows ? (r() - .5) * ch * .8 : 0)]; }
         const tri = (a, b, d) => {
             const cx = (a[0] + b[0] + d[0]) / 3, cy = (a[1] + b[1] + d[1]) / 3, t = (cx / W * .6 + cy / H * .4);
-            c.fillStyle = `hsl(${h1 + (h2 - h1) * t},${50 + r() * 15}%,${26 + (1 - cy / H) * 30 + r() * 8}%)`; c.strokeStyle = c.fillStyle;
+            c.fillStyle = `hsl(${h1 + (h2 - h1) * t},${50 + r() * 15}%,${Math.min(80, 40 + ((1 - cy / H) * 30 - 14) * o.g + r() * 8 * o.g)}%)`; c.strokeStyle = c.fillStyle;
             c.beginPath(); c.moveTo(...a); c.lineTo(...b); c.lineTo(...d); c.closePath(); c.fill(); c.stroke();
         };
         for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) { const a = pt[j][i], b = pt[j][i + 1], d = pt[j + 1][i], e = pt[j + 1][i + 1]; if (r() < .5) { tri(a, b, e); tri(a, e, d); } else { tri(a, b, d); tri(b, e, d); } }
     },
-    bokeh(c, W, H, r) {
+    bokeh(c, W, H, r, o) {
         const hue = r() * 360, g = c.createLinearGradient(0, 0, W, H);
         g.addColorStop(0, `hsl(${hue},45%,8%)`); g.addColorStop(1, `hsl(${hue + 60},45%,14%)`);
         c.fillStyle = g; c.fillRect(0, 0, W, H);
         c.globalCompositeOperation = 'lighter';
-        for (let i = 0; i < 90; i++) {
-            const x = r() * W, y = r() * H, rad = 12 + Math.pow(r(), 2) * 110, h = hue + (r() * 2 - 1) * 50, a = .05 + r() * .18, d = c.createRadialGradient(x, y, 0, x, y, rad);
+        for (let i = 0; i < 90 * o.n; i++) {
+            const x = r() * W, y = r() * H, rad = (12 + Math.pow(r(), 2) * 110) * o.s, h = hue + (r() * 2 - 1) * 50, a = Math.min(.5, (.05 + r() * .18) * o.g), d = c.createRadialGradient(x, y, 0, x, y, rad);
             d.addColorStop(0, `hsla(${h},80%,65%,${a * .6})`); d.addColorStop(.85, `hsla(${h},80%,65%,${a})`); d.addColorStop(1, `hsla(${h},80%,65%,0)`);
             c.fillStyle = d; c.beginPath(); c.arc(x, y, rad, 0, Math.PI * 2); c.fill();
         }
@@ -8878,12 +8879,18 @@ const BG_DRAW = {
 // an artwork that was removed falls back to the first
 if (!BG_DRAW[S.bgArt]) S.bgArt = 'chillwave';
 const bgArtCache = {};
+// the scene's own settings: how many things (Amount), how big (Size), how much they glow, and a turn of all its colours
+const bgArtPct = (k, lo, hi) => { const v = Number(S[k]); return S[k] != null && S[k] !== '' && Number.isFinite(v) ? Math.max(lo, Math.min(hi, v)) / 100 : 1; };
 function bgArtUrl() {
-    const k = BG_DRAW[S.bgArt] ? S.bgArt : 'chillwave', key = k + ':' + (S.bgSeed >>> 0);
+    const k = BG_DRAW[S.bgArt] ? S.bgArt : 'chillwave', o = { n: bgArtPct('bgAmount', 20, 200), s: bgArtPct('bgSize', 40, 200), g: bgArtPct('bgGlow', 0, 200) }, hue = ((+S.bgHue || 0) % 360 + 360) % 360;
+    const key = [k, S.bgSeed >>> 0, o.n, o.s, o.g, hue].join(':');
     if (!bgArtCache[key]) {
         const cv = document.createElement('canvas'); cv.width = 1600; cv.height = 1000;
-        BG_DRAW[k](cv.getContext('2d'), cv.width, cv.height, bgRand(S.bgSeed));
-        bgArtCache[key] = cv.toDataURL('image/jpeg', .92);
+        BG_DRAW[k](cv.getContext('2d'), cv.width, cv.height, bgRand(S.bgSeed), o);
+        let out = cv;
+        if (hue) { out = document.createElement('canvas'); out.width = cv.width; out.height = cv.height; const c = out.getContext('2d'); c.filter = `hue-rotate(${hue}deg)`; c.drawImage(cv, 0, 0); }
+        const ks = Object.keys(bgArtCache); if (ks.length > 8) delete bgArtCache[ks[0]];
+        bgArtCache[key] = out.toDataURL('image/jpeg', .92);
     }
     return bgArtCache[key];
 }
@@ -11447,7 +11454,7 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '.eh-cfg .tabs{display:flex;gap:2px;border-bottom:1px solid var(--mbu-border-soft);margin:0 -10px;padding:0 6px}'
     + '.eh-cfg .tab{all:unset;padding:5px 9px;margin-bottom:-1px;border-bottom:2px solid transparent;color:var(--mbu-text-weak);font:500 13px var(--mbu-font);cursor:pointer}'
     + '.eh-cfg .tab:hover{color:var(--mbu-text)}.eh-cfg .tab[aria-selected=true]{color:var(--mbu-accent-text);border-bottom-color:var(--mbu-accent);font-weight:600}.eh-cfg .tab .n{font-size:10px;color:var(--mbu-text-weak)}'
-    + '.eh-cfg .pane{min-height:250px;max-height:85vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;overflow-x:hidden;padding-top:2px}.eh-cfg .mbu-cfg-ver{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}'
+    + '.eh-cfg .chip i.hue{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:-1px}.eh-cfg .pane{min-height:250px;max-height:85vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;overflow-x:hidden;padding-top:2px}.eh-cfg .mbu-cfg-ver{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}'
     + '.eh-plpop .plh{margin:6px 0 2px;padding-bottom:4px;border-bottom:1px solid var(--mbu-border-soft);font:700 11px var(--mbu-font);letter-spacing:.08em;text-transform:uppercase;color:var(--mbu-accent-text)}'
     + '.eh-cfg .cr.ckr{display:block;border-bottom:0}.eh-cfg .ck{white-space:nowrap}.eh-cfg .ck{display:inline-flex;align-items:center;gap:8px;padding:6px 2px;border:0;background:none;color:var(--mbu-text);font:inherit;cursor:pointer}.eh-cfg .ck svg{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2}.eh-cfg .ck[aria-checked=true] svg{color:var(--mbu-accent-text)}'
     + '.eh-cfg.eh-plpop .cr{border-bottom:0}'
@@ -11518,7 +11525,7 @@ function cfgProviders() {
 const cfgChip = (g, k, on, label, tip) => `<button type="button" class="chip" data-g="${g}" data-k="${k}" aria-pressed="${on}"${tip ? ` data-tip="${esc(tip)}"` : ''}>${CI[k] ? `<svg viewBox="0 0 24 24" aria-hidden="true">${CI[k]}</svg>` : ''}${label}</button>`;
 // a setting that is on or off, as a check box with its label
 const ckRow = (k, label, tip) => `<div class="cr ckr"><button type="button" class="ck" data-g="${k}" data-k="${k}" role="checkbox" aria-checked="${!!S[k]}"${tip ? ` data-tip="${esc(tip)}"` : ''}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/>${S[k] ? '<path d="M7.5 12.5l3 3 6-7"/>' : ''}</svg>${label}</button></div>`;
-// a continuous setting: a button a 20% apart, the chosen one filled, the ones under it tinted, a dot under the default; the wheel moves along it
+// a continuous setting: a button a 20% apart, the chosen one filled, the ones under it tinted, a dot under the default
 let cfgDefs;
 const cfgStrip = (key, label, tip) => {
     const [lo, hi, f, px] = FX_STRIP[key], grid = [], d = (cfgDefs ??= JSON.parse(DEFAULTS))[key];
@@ -11583,7 +11590,7 @@ const BGS = [['aura', 'Cover aura', 'The page\'s cover or picture, blurred behin
 // rest at their defaults), the user's own in S.named.fx; one of the user's shadows a built-in one of the same name.
 // S.fxCur names the one being worked on: a change stays out of it until Save, + keeps it as a new one; a built-in one stays as shipped
 const FX_PRESETS = [];
-const FX_KEYS = ['bg', 'fx', 'fxOff', ...AMBIENT_KEYS, 'hexColours', 'hex', 'hexOpacity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone'];
+const FX_KEYS = ['bg', 'fx', 'fxOff', ...AMBIENT_KEYS, 'hexColours', 'hex', 'hexOpacity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'bgAmount', 'bgSize', 'bgGlow', 'bgHue'];
 const FX_UNNAMED = 'Unnamed effect';
 const fxNow = () => Object.fromEntries(FX_KEYS.map(k => [k, S[k]]));
 const fxFull = p => { const d = JSON.parse(DEFAULTS); fxMigrate(p.v = { ...p.v }); const f = Object.fromEntries(FX_KEYS.map(k => [k, k in p.v ? p.v[k] : d[k]])); f.fx = fxOf(f); f.hex = f.fx.length > 0; return f; };
@@ -11716,6 +11723,10 @@ function bgImgRows(chip, row) {
     const src = S.bg === 'art'
         ? row('Scene', BG_ARTS.map(([k, l, tip]) => chip('bgArt', k, S.bgArt === k, l, tip)).join('')
             + `<button type="button" class="chip" data-g="bgSeed" data-k="new" data-tip="Shuffle\nThe same scene, drawn anew">${fxSvg('shuffle')}Shuffle</button>`, 'What the artwork shows')
+            + cfgStrip('bgAmount', 'Amount', 'How many things the scene has: stars, lit windows, clouds, lights, triangles')
+            + cfgStrip('bgSize', 'Size', 'How big they are: the sun and the buildings, the clouds, the lights, the triangles')
+            + cfgStrip('bgGlow', 'Glow', 'How brightly they shine: the neon and the sun, the gas, the lights, the shading')
+            + row('Hue', [0, 60, 120, 180, 240, 300].map(v => chip('bgHue', v, (+S.bgHue || 0) === v, v ? `<i class="hue" style="background:hsl(${v},70%,55%)"></i>${v}°` : 'Own')).join(''), 'Turn every colour of the scene round the colour wheel\nOwn: its own colours')
         : row('Address', `<span class="fx-combo"><input type="url" data-eh-bgurl autocomplete="off" spellcheck="false" placeholder="https://… an image address" aria-label="Image address" value="${esc(S.bgUrl)}"></span><button type="button" class="chip" data-eh-bgurl-ok data-tip="Show\nThe picture at this address">${fxSvg('ok')}</button>`
             + (S.bgUrl && !bgUrlOk(S.bgUrl) ? '<span class="fx-err">Not an image address: it starts with https://</span>' : bgImgErr && bgImgErr === S.bgUrl ? '<span class="fx-err">The image didn\'t load: check the address</span>' : ''), 'Right-click a picture on the web and copy its image address');
     return [cfgStrip('bgOpacity', 'Opacity', 'How strongly the picture shows through'), src
@@ -11802,8 +11813,10 @@ function openPlCfg(btn, hd) {
 }
 // clicks and drags in a settings body; body() redraws it
 function cfgWire(panel, b, body) {
+    // a redraw keeps the pane's scroll and the page's: a new pane starts at its top
+    const redo = () => { const st = b.querySelector('.pane')?.scrollTop || 0, sy = scrollY; b.innerHTML = body(); const q = b.querySelector('.pane'); if (q) q.scrollTop = st; if (scrollY !== sy) scrollTo(scrollX, sy); };
     // the effect presets: the name field with its list, Save, Delete, + for a copy, and JSON to share one
-    const fxRedraw = () => { b.innerHTML = body(); };
+    const fxRedraw = redo;
     const fxTyped = () => { const i = b.querySelector('[data-fx-name]'); return i ? i.value.trim() : ''; };
     const fxDone = (sel, word) => {
         const bt = b.querySelector(sel); if (!bt) return;
@@ -11923,7 +11936,7 @@ function cfgWire(panel, b, body) {
         const t = overOf(ev); if (!dragK || !t) return; ev.preventDefault();
         const vis = plSorted(cfgProviders()).map(p => p.key).filter(k => k !== dragK); vis.splice(vis.indexOf(t.dataset.k), 0, dragK);
         S.plOrder = [...vis, ...S.plOrder.filter(k => !vis.includes(k))]; plFollow(); dragK = null;
-        save(); b.innerHTML = body();
+        save(); redo();
         if (ehOn) { const sy = scrollY; render(); scrollTo(0, sy); }
     });
     // an image provider moves with the pointer: dropped on another, it goes before that one; a click without moving toggles it
@@ -11943,17 +11956,11 @@ function cfgWire(panel, b, body) {
             if (!imgMoved) return;
             const t = at(e);
             if (t && t !== c) { const o = imgOrder().filter(k => k !== c.dataset.k); o.splice(o.indexOf(t.dataset.k), 0, c.dataset.k); S.imgOrder = o; imgResort(); save(); if (ehOn) { const sy = scrollY; render(); scrollTo(0, sy); } }
-            b.innerHTML = body();
+            redo();
         };
         addEventListener('pointermove', move); addEventListener('pointerup', up);
         ev.preventDefault();
     });
-    panel.addEventListener('wheel', ev => {
-        const sg = ev.target.closest('.seg'); if (!sg) return;
-        ev.preventDefault();
-        const o = sg.querySelector('.on'), n = ev.deltaY < 0 ? o?.nextElementSibling : o?.previousElementSibling;
-        n?.click();
-    }, { passive: false });
     panel.addEventListener('click', ev => {
         if (imgMoved && ev.target.closest('[data-g=imgP]')) { imgMoved = false; return; }
         const tb = ev.target.closest('[data-tab]');
@@ -11963,7 +11970,7 @@ function cfgWire(panel, b, body) {
         else {
             const t = ev.target.closest('[data-g]'); if (!t) return;
             const { g, k } = t.dataset;
-            if (g === 'all') { cfgAll = !cfgAll; b.innerHTML = body(); return; }
+            if (g === 'all') { cfgAll = !cfgAll; redo(); return; }
             else if (g === 'fact') S.facts = toggle(S.facts, k);
             else if (g === 'thumbs') S.thumbs = !S.thumbs;
             else if (g === 'pending') S.pending = !S.pending;
@@ -11977,7 +11984,7 @@ function cfgWire(panel, b, body) {
             else if (g === 'bg') { S.bg = k; bgApply(); }
             else if (g === 'bgArt') { S.bgArt = k; bgApply(); }
             else if (g === 'bgSeed') { S.bgSeed = 1 + (Math.random() * 1e9 | 0); bgApply(); }
-            else if (g === 'bgBlur' || g === 'bgBright' || g === 'bgSat' || g === 'bgOpacity' || g === 'bgVig') { S[g] = +k; bgApply(); }
+            else if (g === 'bgBlur' || g === 'bgBright' || g === 'bgSat' || g === 'bgOpacity' || g === 'bgVig' || g === 'bgAmount' || g === 'bgSize' || g === 'bgGlow' || g === 'bgHue') { S[g] = +k; bgApply(); }
             else if (g === 'bgFit' || g === 'bgTone') { S[g] = k; bgApply(); }
             else if (g === 'fxKind') { const on = fxOf(S), i = on.indexOf(fxSel); if (!on.includes(k)) { if (i < 0) on.push(k); else on[i] = k; } S.fx = on; fxSel = k; hexApply(); }
             else if (g === 'fxRm') { if (k === 'bg') { S.bg = 'flat'; bgApply(); } else { S.fx = fxOf(S).filter(x => x !== k); hexApply(); } }
@@ -11995,7 +12002,7 @@ function cfgWire(panel, b, body) {
             else if (g === 'imgP') { S.imgOff = toggle(S.imgOff, k); imgResort(); }
         }
         save();
-        b.innerHTML = body();
+        redo();
         if (ehOn) { const sy = scrollY; render(); scrollTo(0, sy); }
     });
 }
