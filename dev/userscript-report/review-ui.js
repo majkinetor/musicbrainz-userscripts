@@ -26,6 +26,9 @@ function changed(entry,fn){const record=recordFor(entry);fn(record);record.updat
 function isStale(entry){return records.has(entry.id)&&records.get(entry.id).basis.hash!==entry.basis.hash;}
 function updateRow(entry){const el=rows.get(entry.id),r=records.get(entry.id),personal=el.querySelector('.personal'),marker=el.querySelector('.review-marker');personal.hidden=!r;marker.hidden=!r||!isStale(entry);
   if(r){const score=weightedVerdict(effectiveFeatures(entry,r));personal.textContent='Yours: '+verdictLabel(r.proposedVerdict || (hasScoringChanges(entry,r)?score.verdict:entry.verdict));marker.textContent='Needs recheck';}
+  el.querySelectorAll('.my-verdict,.row-verdict').forEach(select=>select.value=r?.proposedVerdict || '');
+  el.querySelector('.row-note').textContent=r?.note?'Edit note':'Note';
+  const note=el.querySelector('.note');if(note&&document.activeElement!==note){note.value=r?.note || '';growNote(note);}
   const output=el.querySelector('.weighted');if(output){const result=weightedVerdict(effectiveFeatures(entry,r));output.textContent='Weighted: '+verdictLabel(result.verdict)+(result.score===null?'':result.unknown?' · '+result.score+'–'+result.ceiling+'%':' · '+result.score+'%');}}
 function featureChange(entry,id,field,value){const f=effectiveFeatures(entry,records.get(entry.id)).find(x=>x.id===id);changed(entry,r=>{r.features[id]={name:f.name,weight:f.weight,coverage:f.coverage,comment:f.comment || '',added:f.added===true,...r.features[id],[field]:value};});}
 function quickReviewHtml(review){
@@ -41,7 +44,7 @@ function renderDetails(entry){const row=rows.get(entry.id),panel=row.querySelect
     (entry.wikiStatus?'<p class="dim">Wiki status (not a replacement verdict): '+escapeText(entry.wikiStatus)+'</p>':'')+
     (entry.quickReview?quickReviewHtml(entry.quickReview):(a?'<p class="dim compact">'+escapeText(a.confidence)+' confidence · '+escapeText(sourceFreshness)+' · @'+escapeText(entry.basis.sourceVersion || 'unknown')+'</p>':'<p class="dim compact">Source assessment pending</p>'))+
     (isStale(entry)?'<p class="warning">The source or assessment changed since your review. Export retains both versions. <button type="button" class="ack">Confirm against this snapshot</button></p>':'')+
-    '<div class="review-status"><label>My verdict <select class="my-verdict" data-tip="Your verdict\nChoose directly or keep the weighted suggestion. The report verdict stays unchanged."><option value="">0 · Weighted</option>'+verdictOptions.map(v=>'<option value="'+escapeText(v)+'"'+(r?.proposedVerdict===v?' selected':'')+'>'+(verdictOptions.indexOf(v)+1)+' · '+escapeText(verdictLabel(v))+'</option>').join('')+'</select></label><span class="weighted" data-tip="Weighted suggestion\nCovered earns full weight; Partial half; Gap zero. Unknown needs assessment. Essential gaps prevent Mostly replaceable."></span><details class="action-menu"><summary>Actions ⋯</summary><div class="action-options"><button type="button" data-action="feature">Add feature</button><button type="button" data-action="note">'+(r?.note?'Edit note':'Add note')+'</button><button type="button" data-action="comments">Comments'+(r?.comments.length?' ('+r.comments.length+')':'')+'</button></div></details></div>'+
+    '<div class="review-status"><label>My verdict <select class="my-verdict" data-tip="Your verdict\nChoose directly or keep the weighted suggestion. The report verdict stays unchanged."><option value="">0 · Weighted</option>'+verdictOptions.map(v=>'<option value="'+escapeText(v)+'"'+(r?.proposedVerdict===v?' selected':'')+'>'+(verdictOptions.indexOf(v)+1)+' · '+escapeText(verdictLabel(v))+'</option>').join('')+'</select></label><span class="weighted" data-tip="Weighted suggestion\nCovered earns full weight; Partial half; Gap zero. Unknown needs assessment. Essential gaps prevent Mostly replaceable."></span><div class="review-actions"><button type="button" data-action="feature">Add feature</button><button type="button" data-action="note">'+(r?.note?'Edit note':'Add note')+'</button><button type="button" data-action="comments">Comments'+(r?.comments.length?' ('+r.comments.length+')':'')+'</button></div></div>'+
     '<h2>Capabilities <button class="help" data-tip="Feature weights\nIgnore (0), Minor (1), Normal (3), Important (5), Essential (10). Essential means you cannot lose this workflow." aria-label="About feature weights">?</button></h2><div class="caps-wrap"><table class="caps"><thead><tr><th>Feature</th><th>Weight</th><th>Coverage</th><th>Note</th></tr></thead><tbody>'+features.map(f=>'<tr data-feature="'+escapeText(f.id)+'"><td>'+escapeText(f.name)+' <button class="help" data-tip="'+escapeText((f.reason || 'Added in your review')+'\nOriginal: '+(entry.features.find(x=>x.id===f.id)?.coverage || 'User-added'))+'" aria-label="Feature evidence">?</button></td><td><select data-field="weight" aria-label="Importance: '+escapeText(f.name)+'">'+weightOptions.map(([value,label])=>'<option value="'+value+'"'+(f.weight===value?' selected':'')+'>'+label+'</option>').join('')+'</select></td><td><select data-field="coverage" aria-label="Coverage: '+escapeText(f.name)+'">'+coverageValues.map(value=>'<option'+(f.coverage===value?' selected':'')+'>'+value+'</option>').join('')+'</select></td><td><textarea data-field="comment" maxlength="20000" aria-label="Comment: '+escapeText(f.name)+'" placeholder="Note" data-tip="Feature note\nExplain a correction or preference. Clear this field to delete it.">'+escapeText(f.comment || '')+'</textarea></td></tr>').join('')+'</tbody></table></div>'+
     (a?'<h3>Important gaps / limitations</h3>'+textList(a.gaps)+'<h3>Switching route</h3><p>'+escapeText(a.migration)+'</p><h3>Pinned evidence</h3><ul class="evidence">'+a.evidence.map(e=>'<li>'+safeLink(e.url,e.label)+'</li>').join('')+'</ul>':'')+
     '<section class="review-drawer" hidden><div class="drawer-heading"><strong class="drawer-title"></strong><button class="close-drawer plain" type="button" aria-label="Close editor">✕</button></div><div data-drawer-panel="feature" hidden><div class="add-feature"><input class="feature-name" maxlength="2000" aria-label="New feature" placeholder="New feature" data-tip="Add a capability\nIt starts with unknown coverage"><button class="add" type="button">Add</button></div></div>'+
@@ -51,12 +54,11 @@ function renderDetails(entry){const row=rows.get(entry.id),panel=row.querySelect
     openPanels.set(entry.id,mode);panel.querySelector('.review-drawer').hidden=false;
     panel.querySelectorAll('[data-drawer-panel]').forEach(el=>{el.hidden=el.dataset.drawerPanel!==mode;});
     panel.querySelector('.drawer-title').textContent={feature:'Add feature',note:'Review note',comments:'Comments'}[mode];
-    panel.querySelector('.action-menu').open=false;
     panel.querySelectorAll('textarea').forEach(growNote);
     if(focus)panel.querySelector({feature:'.feature-name',note:'.note',comments:'.comment-draft'}[mode]).focus();
   }
   panel.querySelectorAll('[data-action]').forEach(button=>button.onclick=()=>showPanel(button.dataset.action,true));
-  panel.querySelector('.close-drawer').onclick=()=>{openPanels.delete(entry.id);panel.querySelector('.review-drawer').hidden=true;panel.querySelector('.action-menu>summary').focus();};
+  panel.querySelector('.close-drawer').onclick=()=>{const mode=openPanels.get(entry.id);openPanels.delete(entry.id);panel.querySelector('.review-drawer').hidden=true;panel.querySelector('[data-action="'+mode+'"]').focus();};
   if(openPanels.has(entry.id))showPanel(openPanels.get(entry.id));
   panel.querySelector('.my-verdict').onchange=e=>changed(entry,r=>{r.proposedVerdict=e.target.value;});
   panel.querySelector('.ack')?.addEventListener('click',()=>{changed(entry,r=>{r.basis=structuredClone(entry.basis);r.reportAtReview=reportRef();});renderDetails(entry);});
@@ -75,6 +77,17 @@ function growNote(field){if(!field.getClientRects().length)return;field.style.he
 function wireGrowingNote(field){field.rows=1;growNote(field);field.addEventListener('input',()=>growNote(field));}
 const resizeNotes=new ResizeObserver(()=>document.querySelectorAll('.script[open] textarea').forEach(growNote));
 resizeNotes.observe(document.querySelector('main'));
+let quickNoteEntry;
+function openQuickNote(entry){
+  quickNoteEntry=entry;
+  document.getElementById('quick-note-title').textContent=entry.name+' · note';
+  const field=document.getElementById('quick-note');field.value=records.get(entry.id)?.note || '';
+  document.getElementById('quick-note-dialog').showModal();growNote(field);field.focus();
+}
+document.getElementById('quick-note').oninput=e=>{if(quickNoteEntry)changed(quickNoteEntry,r=>{r.note=e.target.value;});growNote(e.target);};
+document.getElementById('quick-note-clear').onclick=()=>{if(quickNoteEntry)changed(quickNoteEntry,r=>{r.note='';});const field=document.getElementById('quick-note');field.value='';growNote(field);field.focus();};
+document.getElementById('quick-note-close').onclick=()=>document.getElementById('quick-note-dialog').close();
+document.getElementById('quick-note-dialog').addEventListener('close',()=>{rows.get(quickNoteEntry?.id)?.querySelector('.row-note').focus();quickNoteEntry=null;});
 function showContributors(entry){
   const dialog=document.getElementById('people-dialog');
   document.getElementById('people-title').textContent=entry.name+' · reviewers';
@@ -85,9 +98,13 @@ function showContributors(entry){
 document.getElementById('people-close').onclick=()=>document.getElementById('people-dialog').close();
 for(const entry of report.entries){
   const row=rows.get(entry.id);
+  const verdict=row.querySelector('.row-verdict');
+  verdict.addEventListener('click',e=>e.stopPropagation());
+  verdict.onchange=e=>changed(entry,r=>{r.proposedVerdict=e.target.value;});
+  row.querySelector('.row-note').onclick=e=>{e.preventDefault();e.stopPropagation();openQuickNote(entry);};
   row.querySelector('.people-count').onclick=e=>{e.preventDefault();e.stopPropagation();showContributors(entry);};
   row.addEventListener('keydown',e=>{
-    if(e.altKey||e.ctrlKey||e.metaKey||e.target.closest('input,textarea,select,button,[contenteditable="true"],.action-menu'))return;
+    if(e.altKey||e.ctrlKey||e.metaKey||e.target.closest('input,textarea,select,button,[contenteditable="true"]'))return;
     const key=e.key.toLowerCase();
     if(!/^[0-7n]$/.test(key))return;
     e.preventDefault();e.stopPropagation();
@@ -107,8 +124,6 @@ function filterRows(){const [name,search,category,tool,reviewFilter]=controls.ma
 }
 controls.forEach(c=>c.addEventListener(c.type==='search'?'input':'change',filterRows));
 document.getElementById('toggle-search').onclick=()=>{const panel=document.getElementById('search-panel'),button=document.getElementById('toggle-search');panel.hidden=!panel.hidden;button.setAttribute('aria-expanded',String(!panel.hidden));if(!panel.hidden)document.getElementById('search').focus();};
-document.addEventListener('click',e=>document.querySelectorAll('.action-menu[open]').forEach(menu=>{if(!menu.contains(e.target))menu.open=false;}));
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){for(const menu of document.querySelectorAll('.action-menu[open]')){menu.open=false;menu.querySelector('summary').focus();}}});
 document.getElementById('reset').onclick=()=>{controls.forEach(c=>c.value='');document.querySelectorAll('[name="report-verdict"]').forEach(c=>c.checked=false);filterRows();};
 document.getElementById('collapse').onclick=()=>{for(const row of rows.values())row.open=false;};
 document.getElementById('export').onclick=()=>{const blob=new Blob([JSON.stringify(bundle(),null,2)+'\n'],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='musicbrainz-reviews-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);message('Exported '+records.size+' review(s), including comments, drafts and source references. Give the JSON file to the AI.');};

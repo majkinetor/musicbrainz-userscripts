@@ -8,7 +8,7 @@ import { tipJs } from '../ui/tooltip.mjs';
 import { applyContributions } from './contributions.mjs';
 import { majorReviewState } from './major-review.mjs';
 import { reviewHelpHtml } from './help.mjs';
-import { verdictLabel } from './review-model.mjs';
+import { verdictLabel, verdictOptions } from './review-model.mjs';
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const read = name => JSON.parse(readFileSync(path.join(dir,'data',name)));
 const sources = read('sources.json'), reviews = read('reviews.json');
@@ -55,12 +55,14 @@ entries=entries.map(entry=>{
  const state=majorReviewState(review,source,majorSources.toolset);
  return {...entry,quickReview:{...review,state,source,suiteCommit:majorSources.toolset.commit},basis:{...entry.basis,hash:hash(entry.basis.hash+JSON.stringify({review,state})),quickReview:review}};
 });
+// Retain the raw wiki and old exports, but compare third-party tools only.
+entries=entries.filter(e=>e.kind!=='Suite entry'&&!e.stableId.startsWith('github:majkinetor/')&&e.name!=='Import Discogs releases to MusicBrainz');
 const data = {schemaVersion:2,reportId:'mb-userscripts-926',wiki:sources.wiki,collectedAt:sources.collectedAt,
   toolsetCommit:sources.toolset.commit,sourceManifestSha256:hash(JSON.stringify(sources)),contributors:contributions.contributors,submissions:contributions.submissions,entries};
 const esc = v => String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
 const options = values => [...new Set(values)].sort().map(v=>`<option value="${esc(v)}">${esc(verdictLabel(v))}</option>`).join('');
 const duplicateNames = new Set(entries.filter((e,i)=>entries.findIndex(x=>x.name===e.name)!==i).map(e=>e.name));
-const rows = entries.map(e=>`<details class="script" data-id="${esc(e.id)}"><summary><span class="name">${esc(e.name)}${duplicateNames.has(e.name)?` <small>(${esc(e.author)})</small>`:''}</span><button type="button" class="people-count plain" aria-label="Reviewers for ${esc(e.name)}" data-tip="Discussion reviewers\nOpen GitHub profiles and their discussions">${new Set(e.contributions.map(c=>c.author.id)).size} <span aria-hidden="true">${new Set(e.contributions.map(c=>c.author.id)).size===1?'reviewer':'reviewers'}</span></button><span class="verdicts"><span class="baseline">${esc(verdictLabel(e.verdict))}</span><span class="personal" hidden></span><span class="review-marker" hidden></span></span></summary><div class="detail"></div></details>`).join('\n');
+const rows = entries.map(e=>`<details class="script" data-id="${esc(e.id)}"><summary><span class="name">${esc(e.name)}${duplicateNames.has(e.name)?` <small>(${esc(e.author)})</small>`:''}</span><button type="button" class="people-count plain" aria-label="Reviewers for ${esc(e.name)}" data-tip="Discussion reviewers\nOpen GitHub profiles and their discussions">${new Set(e.contributions.map(c=>c.author.id)).size} <span aria-hidden="true">${new Set(e.contributions.map(c=>c.author.id)).size===1?'reviewer':'reviewers'}</span></button><span class="summary-actions"><select class="row-verdict" aria-label="Quick verdict for ${esc(e.name)}" data-tip="Your verdict\nChoose without expanding the script"><option value="">My verdict</option>${verdictOptions.map((v,i)=>`<option value="${esc(v)}">${i+1} · ${esc(verdictLabel(v))}</option>`).join('')}</select><button type="button" class="row-note" aria-label="Note for ${esc(e.name)}" data-tip="Review note\nWrite or edit a note without expanding the script">Note</button></span><span class="verdicts"><span class="baseline">${esc(verdictLabel(e.verdict))}</span><span class="personal" hidden></span><span class="review-marker" hidden></span></span></summary><div class="detail"></div></details>`).join('\n');
 const model = readFileSync(path.join(dir,'review-model.mjs'),'utf8').replace(/^export /gm,'');
 const sharing = readFileSync(path.join(dir,'share.mjs'),'utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export /gm,'');
 const tooltips = tipJs(['main']);

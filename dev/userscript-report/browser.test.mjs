@@ -8,14 +8,14 @@ import { fileURLToPath } from 'node:url';
 const url = process.env.REPORT_TEST_URL || new URL('./out/index.html',import.meta.url).href;
 const cache = fileURLToPath(new URL('./.cache/',import.meta.url));
 mkdirSync(cache,{recursive:true});
-async function openAction(row,action){await row.locator('.action-menu>summary').click();await row.locator('[data-action="'+action+'"]').click();}
+async function openAction(row,action){await row.locator('[data-action="'+action+'"]').click();}
 test('collapsed listing, weighted review, comments, reload and export/import round trip',async()=>{
   const browser=await chromium.launch({headless:true});
   try {
     const context=await browser.newContext({viewport:{width:1500,height:1000}});
     const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
     await page.goto(url);
-    assert.equal(await page.locator('.script').count(),293);
+    assert.equal(await page.locator('.script').count(),283);
     assert.equal(await page.locator('.script[open]').count(),0);
     await page.locator('#name-filter').fill('Elephant Editor');
     assert.equal(await page.locator('.script:visible').count(),1);
@@ -156,7 +156,7 @@ test('row shortcuts ignore typing, reviewers do not expand rows, and verdict fil
  await page.locator('[name="report-verdict"][value="Replaceable"]').check();await page.locator('[name="report-verdict"][value="No equivalent"]').check();
  await page.locator('#name-filter').fill('');const count=await page.locator('.script:visible').count();
  const expected=await page.evaluate(()=>JSON.parse(document.getElementById('report-data').textContent).entries.filter(e=>['Replaceable','No equivalent'].includes(e.verdict)).length);assert.equal(count,expected);
- await page.locator('#clear-verdicts').click();assert.equal(await page.locator('.script:visible').count(),293);
+ await page.locator('#clear-verdicts').click();assert.equal(await page.locator('.script:visible').count(),283);
  }finally{await browser.close();}
 });
 import { reviewSteps } from './help.mjs';
@@ -164,5 +164,16 @@ test('help uses the shared review process and old workflow status is absent',asy
  const browser=await chromium.launch();try{const page=await browser.newPage();await page.goto(url);await page.locator('#review-help').click();
  assert.equal(await page.locator('#help-dialog li').count(),reviewSteps.length);assert.match(await page.locator('#help-dialog').textContent(),/maintainer decides/);await page.locator('#help-close').click();
  await page.locator('#name-filter').fill('Harmony');await page.locator('.script:visible>summary').first().click();assert.equal(await page.locator('select.status').count(),0);
+ }finally{await browser.close();}
+});
+
+test('collapsed-row verdict and note controls persist without opening details',async()=>{
+ const browser=await chromium.launch();try{
+ const page=await browser.newPage();await page.goto(url);await page.locator('#name-filter').fill('Elephant Editor');const row=page.locator('.script:visible');
+ await row.locator('.row-verdict').selectOption('Partial overlap');assert.equal(await row.getAttribute('open'),null);assert.match(await row.locator('.personal').textContent(),/Partial overlap/);
+ await row.locator('.row-note').click();await page.locator('#quick-note').fill('Quick note\nSecond line');await page.locator('#quick-note-close').click();assert.equal(await row.getAttribute('open'),null);
+ await row.locator('summary').first().click();assert.equal(await row.locator('.my-verdict').inputValue(),'Partial overlap');await row.locator('[data-action="note"]').click();assert.equal(await row.locator('.note').inputValue(),'Quick note\nSecond line');assert.equal(await row.locator('.action-menu').count(),0);
+ await page.reload();await page.locator('#name-filter').fill('Elephant Editor');await row.locator('.row-note').click();assert.equal(await page.locator('#quick-note').inputValue(),'Quick note\nSecond line');await page.locator('#quick-note-clear').click();await page.locator('#quick-note-close').click();assert.equal(await row.locator('.row-note').textContent(),'Note');
+ const excluded=await page.evaluate(()=>JSON.parse(document.getElementById('report-data').textContent).entries.filter(e=>e.kind==='Suite entry'||e.stableId.startsWith('github:majkinetor/')||e.name==='Import Discogs releases to MusicBrainz'));assert.equal(excluded.length,0);
  }finally{await browser.close();}
 });
