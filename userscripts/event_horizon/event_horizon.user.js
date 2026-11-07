@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08.012000
+// @version      2026.11.08.020000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11492,8 +11492,8 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '#eh-cfg .btn.sm{height:26px;padding:0 9px;font-size:13px}#eh-cfg .btn.sm svg{width:13px;height:13px}#eh-cfg .pbar .ib{flex:none}'
     + '#eh-cfg .grp{margin-top:14px}#eh-cfg .grp-h{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mbu-text-weak);margin:0 0 4px}#eh-cfg .grp-h::after{content:"";flex:1;height:1px;background:var(--mbu-border-soft,var(--mbu-border))}'
     + '#eh-cfg .grp.own{padding:8px 10px 6px;background:var(--mbu-bg-sunken,var(--mbu-bg-raised));border-radius:8px}#eh-cfg .grp.own .grp-h{color:var(--mbu-text)}'
-    + '#eh-cfg .seg{display:inline-flex;justify-self:start;border:1px solid var(--mbu-border);border-radius:6px;overflow:hidden;max-width:100%}'
-    + '#eh-cfg .seg button{position:relative;flex:0 1 auto;width:36px;min-width:26px;height:28px;padding:0 2px;border:0;border-right:1px solid var(--mbu-border);background:transparent;color:var(--mbu-text-weak);font:inherit;font-size:12px;font-variant-numeric:tabular-nums;cursor:pointer}#eh-cfg .seg button:last-child{border-right:0}'
+    + '#eh-cfg .seg{display:inline-flex;justify-self:start;border:1px solid var(--mbu-border);border-radius:6px;overflow:hidden;max-width:100%;flex-wrap:nowrap;background:none}'
+    + '#eh-cfg .seg button{position:relative;flex:0 1 auto;width:36px;min-width:26px;height:28px;padding:0 2px;border:0;border-right:1px solid var(--mbu-border);background:transparent;color:var(--mbu-text-weak);font:inherit;font-size:12px;font-variant-numeric:tabular-nums;cursor:pointer;border-left:0}#eh-cfg .seg button:last-child{border-right:0}'
     + '#eh-cfg .seg button:hover{color:var(--mbu-text);background:var(--mbu-bg-raised)}#eh-cfg .seg button.lo{background:color-mix(in srgb,var(--mbu-accent) 14%,transparent);color:var(--mbu-text)}#eh-cfg .seg button.on{background:var(--mbu-accent);color:#fff;font-weight:600}'
     + '#eh-cfg .seg button.df::after{content:"";position:absolute;left:50%;bottom:3px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:currentColor;opacity:.55}#eh-cfg .cl small{font-size:10px;opacity:.7;margin-left:3px;text-transform:none}'
     + '#eh-cfg .keys{display:flex;align-items:center;flex-wrap:wrap;gap:10px}';
