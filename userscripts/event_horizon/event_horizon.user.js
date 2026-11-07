@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.07.183718
+// @version      2026.11.07.184421
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4011,7 +4011,6 @@ S.pending = false; // MusicBrainz's grey mark on what has edits open; takes one 
 // the page's width; --eh-wn is the same as a length (the screen's for Full), for the launchers' column
 const ehWidth = () => { const s = document.documentElement.style; s.setProperty('--eh-w', S.width ? S.width + 'px' : 'none'); s.setProperty('--eh-wn', S.width ? S.width + 'px' : '100vw'); };
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
-const RESET_KEEP = ['named', 'stars', 'fxTheme'];   // the user's own things, which Reset to defaults leaves alone
 try { const v = fxMigrate({ ...GM_getValue('view', {}) }); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; if (v.hexFx == null && v.hexOpacity != null) S.hexFx = Math.min(100, Math.round(S.hexOpacity * 2.25)); } catch (e) {}
 // Preserve an existing hex background as an independent overlay over Flat.
 if (S.bg === 'hex') { S.bg = 'flat'; S.hex = true; S.hexMotion = 'drift'; }
@@ -11487,7 +11486,6 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '.eh-cfg .chip:hover{border-color:var(--mbu-accent)}.eh-cfg .chip[aria-pressed=true]{background:var(--mbu-accent-soft);border-color:var(--mbu-accent);color:var(--mbu-accent-text)}'
     + '.eh-cfg .chip svg{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}'
     + '.eh-cfg .chip.p{padding-left:3px}.eh-cfg .chip.p svg,.eh-cfg .chip.p .mgram{width:16px;height:16px;stroke:none;fill:revert}.eh-cfg .ord{font-size:10px;font-weight:700}.eh-cfg .chip[draggable=true]{cursor:grab}.eh-cfg .chip.drag{opacity:.4}.eh-cfg .chip.over{box-shadow:-3px 0 0 var(--mbu-accent)}'
-    + '.eh-cfg .foot{display:flex;justify-content:space-between;align-items:center;padding:4px 10px;border-top:1px solid var(--mbu-border-soft);background:var(--mbu-bg-raised);font-size:12px;color:var(--mbu-text-weak)}'
     + '.eh-cfg .mgram{display:inline-grid;place-items:center;border-radius:50%;background:var(--mbu-bg-sunken);color:var(--mbu-text-dim);font-weight:800;text-transform:uppercase}'
     + '.eh-cfg .chip.fx-ok{color:var(--mbu-ok)!important;border-color:var(--mbu-ok)!important}.eh-cfg .fx-done{position:absolute;right:26px;top:50%;transform:translateY(-50%);padding-left:6px;background:inherit;color:var(--mbu-ok);font-size:12px;white-space:nowrap;pointer-events:none;transition:opacity .4s}.eh-cfg .fx-done.out{opacity:0}'
     + '.eh-cfg :has(>.fx-combo){display:flex;align-items:center;flex-wrap:nowrap}.eh-cfg .fx-combo{position:relative;display:inline-flex;align-items:center;flex:1;min-width:0;width:auto;height:24px;box-sizing:border-box;border:1px solid var(--mbu-border);border-radius:20px;background:var(--mbu-bg-raised);padding:0 2px 0 9px}.eh-cfg .fx-combo:focus-within{border-color:var(--mbu-accent)}.eh-cfg .fx-combo input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--mbu-text);font:600 12px var(--mbu-font);padding:0}.eh-cfg .fx-combo [data-fx-dd]{border:0;background:transparent;color:var(--mbu-text-muted);padding:3px 6px;cursor:pointer;display:inline-flex}.eh-cfg .fx-combo svg,.eh-cfg .chip svg,.eh-cfg .fx-b svg,.eh-cfg .fx-dd svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.eh-cfg .fx-dd{position:absolute;z-index:5;left:-1px;top:calc(100% + 4px);min-width:240px;max-height:280px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:4px}.eh-cfg .fx-dd .it{display:flex;flex-direction:column;align-items:flex-start;gap:1px;width:100%;border:0;border-radius:7px;background:transparent;color:var(--mbu-text);font:13px var(--mbu-font);text-align:left;padding:6px 9px;cursor:pointer}.eh-cfg .fx-dd .it:hover{background:var(--mbu-bg-raised)}.eh-cfg .fx-dd .ir{display:flex;align-items:center;gap:2px}.eh-cfg .fx-dd .ir .it{flex:1;min-width:0}.eh-cfg .fx-dd .dx{flex:none;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:7px;background:transparent;color:var(--mbu-text-muted);cursor:pointer}.eh-cfg .fx-dd .dx:hover{color:var(--mbu-error);background:var(--mbu-bg-raised)}.eh-cfg .fx-dd .it[aria-current=true]{background:var(--mbu-accent-soft);color:var(--mbu-accent-text)}.eh-cfg .fx-dd .it .t{font-weight:600;display:flex;gap:6px;align-items:center}.eh-cfg .fx-dd .it .s{font-size:11.5px;color:var(--mbu-text-muted)}.eh-cfg .fx-dd .it.act{flex-direction:row;align-items:center;gap:6px;color:var(--mbu-accent)}.eh-cfg .fx-dd .sep{height:1px;background:var(--mbu-border);margin:4px 2px}.eh-cfg .fx-tag{font:600 10px var(--mbu-font);letter-spacing:.04em;text-transform:uppercase;color:var(--mbu-text-muted);border:1px solid var(--mbu-border);border-radius:20px;padding:1px 6px}.eh-cfg .chip.del{color:var(--mbu-error)}.eh-cfg .chip[aria-disabled=true]{opacity:.45;cursor:default}.eh-cfg .fx-b{display:inline-flex;align-items:center;border:1px solid var(--mbu-border);border-radius:20px;overflow:hidden}.eh-cfg .fx-b[aria-current=true]{background:var(--mbu-accent-soft);border-color:var(--mbu-accent);color:var(--mbu-accent-text)}.eh-cfg .fx-b button{border:0;background:transparent;color:inherit;font:12px var(--mbu-font);cursor:pointer;display:inline-flex;align-items:center}.eh-cfg .fx-b .n{padding:3px 4px 3px 10px}.eh-cfg .fx-b .x{padding:3px 8px 3px 4px;opacity:.7}.eh-cfg .fx-b .x:hover{opacity:1}.eh-cfg .chip.fx-add{border-style:dashed;color:var(--mbu-accent)}.eh-cfg .fx-json{box-sizing:border-box;width:100%;min-height:54px;resize:vertical;border:1px solid var(--mbu-border);border-radius:8px;background:var(--mbu-bg-raised);color:var(--mbu-text);font:11.5px ui-monospace,monospace;padding:5px 7px;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.eh-cfg .fx-err{color:var(--mbu-error);font-size:12px}'
@@ -11495,7 +11493,6 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '@keyframes eh-dirty{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--mbu-accent) 0%,transparent)}50%{box-shadow:0 0 0 3px color-mix(in srgb,var(--mbu-accent) 22%,transparent)}}'
     + '@media (prefers-reduced-motion:reduce){.eh-cfg .chip.dirty{animation:none}}'
     + '@supports selector(::-webkit-scrollbar){.eh-cfg .pane,.eh-cfg .fx-dd{scrollbar-width:auto;scrollbar-color:auto}.eh-cfg .pane::-webkit-scrollbar,.eh-cfg .fx-dd::-webkit-scrollbar{width:6px;height:6px;background:transparent}.eh-cfg .pane::-webkit-scrollbar-thumb,.eh-cfg .fx-dd::-webkit-scrollbar-thumb{background:var(--mbu-border);border-radius:3px}.eh-cfg .pane::-webkit-scrollbar-button,.eh-cfg .fx-dd::-webkit-scrollbar-button{display:none}}'
-    + '.eh-cfg .reset{all:unset;color:var(--mbu-accent-text);cursor:pointer}.eh-cfg .reset:hover{text-decoration:underline}'
     // the settings window's sections, buttons, the effect layers and the gallery
     + '#eh-cfg .eh-cfg{width:min(520px,94vw)}'
     + '#eh-cfg .m-sec{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mbu-text-weak);border-bottom:1px solid var(--mbu-border-soft,var(--mbu-border));padding-bottom:3px;margin:14px 0 6px}#eh-cfg .pane>.m-sec:first-child{margin-top:4px}'
@@ -11832,7 +11829,7 @@ let cfgTab = 'general';
 function openCfg() {
     if (document.getElementById('eh-cfg')) return;
     const ov = document.createElement('div'); ov.className = 'mbu-ov'; ov.id = 'eh-cfg';
-    ov.innerHTML = `<div class="mbu-ov-panel eh-cfg mbu-ui" role="dialog" aria-label="Event Horizon settings"><div class="mbu-ov-body">${mbuCfgHeader({ script: 'event_horizon', name: 'Event Horizon', version: VERSION, icon: LOGO, log: true })}<div class="eh-cfg-b">${cfgBody()}</div></div><div class="foot"><span>Applies at once</span><button type="button" class="reset">Reset to defaults</button></div></div>`;
+    ov.innerHTML = `<div class="mbu-ov-panel eh-cfg mbu-ui" role="dialog" aria-label="Event Horizon settings"><div class="mbu-ov-body">${mbuCfgHeader({ script: 'event_horizon', name: 'Event Horizon', version: VERSION, icon: LOGO, log: true })}<div class="eh-cfg-b">${cfgBody()}</div></div></div>`;
     document.documentElement.append(ov);
     const panel = ov.firstChild, b = panel.querySelector('.eh-cfg-b');
     mbuDismissOn(panel, () => ov.remove());
@@ -12028,9 +12025,7 @@ function cfgWire(panel, b, body) {
         const tb = ev.target.closest('[data-tab]');
         if (tb) { cfgTab = tb.dataset.tab; b.innerHTML = body(); return; }
         if (ev.target.closest('[data-st-themes]')) { panel.closest('.mbu-ov')?.remove(); document.dispatchEvent(new CustomEvent('mbu-st-themes')); return; }   // the window steps aside, as String Theory's does
-        // the settings only: what the user saved or starred stays
-        if (ev.target.closest('.reset')) { const d = JSON.parse(DEFAULTS); for (const k of RESET_KEEP) delete d[k]; Object.assign(S, d); }
-        else {
+        {
             const t = ev.target.closest('[data-g]'); if (!t) return;
             const { g, k } = t.dataset;
             if (g === 'all') { cfgAll = !cfgAll; redo(); return; }
