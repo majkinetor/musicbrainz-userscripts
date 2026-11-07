@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.07.183602
+// @version      2026.11.07.183718
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3912,7 +3912,7 @@ const FX_STRIP = {
     rainAmount: [20, 200, .01], rainSlide: [20, 200, .01], rainFog: [0, 100, .01], rainRefraction: [0, 100, .01], rainLights: [0, 100, .01], rainLightsOpacity: [0, 100, .01], rainFall: [0, 100, .01],
     ...Object.fromEntries(Object.keys(AMBIENT).flatMap(k => [[k + 'Opacity', [20, 100, 1]], [k + 'Glow', [0, 200, .01]]])),
     hexOpacity: [0, 100, 1], hexFx: [20, 100, 1], hexPace: [20, 200, .01], hexTrail: [20, 200, .01], hexOften: [20, 200, .01], hexGlow: [0, 200, .01],
-    bgOpacity: [20, 100, 1], bgBlur: [0, 100, .4, 1], bgBright: [40, 140, 1], bgSat: [0, 200, 1], bgVig: [0, 100, 1], bgAmount: [20, 200, 1], bgSize: [40, 200, 1], bgGlow: [0, 200, 1],
+    bgOpacity: [20, 100, 1], bgBlur: [0, 100, .1, 1], bgBright: [40, 140, 1], bgSat: [0, 200, 1], bgVig: [0, 100, 1], bgAmount: [20, 200, 1], bgSize: [40, 200, 1], bgGlow: [0, 200, 1],
 };
 const AMBIENT_KEYS = ['effect', 'ambientOpacity', ...Object.keys(AMBIENT_DEFAULTS), ...Object.keys(FX_OWN)];
 const FX_COLOURS = ['hexColours', ...Object.keys(FX_OWN).filter(k => k.endsWith('Colours'))];
@@ -8915,7 +8915,7 @@ function bgImgApply() {
     if (!u || !ehBody) { de.removeAttribute('data-eh-bgimg'); return; }
     if (!box) { box = document.createElement('div'); box.id = 'eh-bgimg'; box.setAttribute('aria-hidden', 'true'); box.append(document.createElement('i')); }
     if (box.parentNode !== ehBody) ehBody.prepend(box);   // ours, never MusicBrainz's page
-    const blur = Math.max(0, +S.bgBlur || 0);
+    const blur = Math.max(0, Math.min(10, +S.bgBlur || 0));   // 0-10px; up to 40px before, which washed the picture out
     box.dataset.fit = ['cover', 'contain', 'tile'].includes(S.bgFit) ? S.bgFit : 'cover';
     box.dataset.tone = S.bgTone in BG_TONES ? S.bgTone : 'natural';
     box.style.setProperty('--eh-bgimg-o', String((+S.bgOpacity || 0) / 100));
