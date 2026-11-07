@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.06.180940
+// @version      2026.11.07.135500
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -4068,7 +4068,7 @@ mbuTipStart();
 function fsStyle() {
     if (document.getElementById('fs-style')) return;
     const s = el('style'); s.id = 'fs-style';
-    s.textContent = MBU_TOKENS + MBU_UI_CSS
+    s.textContent = MBU_TOKENS + MBU_UI_CSS + FS_PHONE_CSS
         // majkinetor: "Make fusion icon be without text so it naturaly stack
         // over other icons" … "make it more like Falcon icon in appearance".
         // A wide labelled pill sat awkwardly beside the round icon-only
@@ -5773,7 +5773,7 @@ function buildShell() {
         + '<div class="fs-ftr"><div class="fs-sum" id="fs-summary"></div><div class="fs-sp"></div>'
         + '<div class="fs-note">Merges submit directly in the background — no MB merge page involved</div>'
         + '<button type="button" id="fs-mergeall" class="fs-btn fs-primary">Merge All →</button></div></div>';
-    document.body.appendChild(overlay);
+    document.body.appendChild(overlay); fsPhoneFit(overlay);
     overlay.addEventListener('mousedown', e => { if (e.target === overlay) closeFusion(); });
     document.addEventListener('keydown', _fsEscHandler);
     document.getElementById('fs-close').onclick = closeFusion;
@@ -5926,6 +5926,29 @@ function enterScope(next) {
         resumeBackground('page changed');
     }
 }
+// On a phone a Fusion window fills the screen: MusicBrainz's page is wider than the phone, so the
+// overlay is pinned to the visual viewport (what the person sees), and .fs-phone stacks what a
+// desktop row can't hold. Re-pinned on zoom and scroll until the overlay leaves the page.
+function fsPhoneFit(ov) {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const fit = () => {
+        if (!ov.isConnected) { vv.removeEventListener('resize', fit); vv.removeEventListener('scroll', fit); return; }
+        const on = vv.width < 700;
+        ov.classList.toggle('fs-phone', on);
+        if (!on) { ['left', 'top', 'width', 'height', 'inset'].forEach(k => ov.style.removeProperty(k)); return; }
+        Object.entries({ inset: 'auto', left: vv.offsetLeft + 'px', top: vv.offsetTop + 'px', width: vv.width + 'px', height: vv.height + 'px' })
+            .forEach(([k, v]) => ov.style.setProperty(k, v, 'important'));
+    };
+    fit(); requestAnimationFrame(() => requestAnimationFrame(fit)); [150, 400, 1000].forEach(t => setTimeout(fit, t));
+    vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit);
+}
+const FS_PHONE_CSS = '.fs-overlay.fs-phone{-webkit-text-size-adjust:100%;text-size-adjust:100%}'
+    + '.fs-phone .fs-cons{position:absolute!important;inset:0!important;width:auto!important;height:auto!important;max-width:none!important;max-height:none!important;margin:0!important;border:0!important;border-radius:0!important;transform:none!important}'
+    + '.fs-phone .fs-hdr{flex-wrap:wrap;cursor:default;padding:8px 10px}.fs-phone .fs-hl{flex-basis:100%}'
+    + '.fs-phone .fs-colhdr{flex-wrap:wrap;padding:8px 10px}.fs-phone .fs-poolsort{flex-wrap:wrap;padding:6px 10px}'
+    + '.fs-phone .fs-pool{width:auto;right:0}.fs-phone .fs-poolfilter{max-width:none}'
+    + '.fs-phone .fs-note,.fs-phone #fs-max,.fs-phone #fs-em-max{display:none}.fs-phone .fs-ftr{flex-wrap:wrap;padding:8px 10px}';
 async function openFusion() {
     if (scopeLoad) await scopeLoad;
     const next = detectScope();
@@ -6466,7 +6489,7 @@ function openEntities(type) {
         + '<div class="fs-poolrail" data-tip="Show the pool again"><span class="fs-railarrow">▶</span><span class="fs-raillabel">POOL <span id="fs-em-rail-cnt">0</span></span></div>'
         + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-em-groups-cnt">0</span><span class="fs-sp"></span><button type="button" class="fs-btn fs-clearbtn" data-act="clearmenu" data-tip="Clear the pool, the groups or the merged groups">Clear ▾</button></div><div class="fs-colbody" id="fs-em-groups"></div></div></div>'
         + '<div class="fs-ftr"><div class="fs-sum" id="fs-em-sum"></div><div class="fs-sp"></div><div class="fs-note">Merges submit directly in the background — no MB merge page involved</div><button type="button" id="fs-em-mergeall" class="fs-btn fs-primary">' + MERGE_MARK + ' Merge All (0) →</button></div></div>';
-    document.body.appendChild(ov);
+    document.body.appendChild(ov); fsPhoneFit(ov);
     const cons = ov.querySelector('#fs-em-cons'), hdr = ov.querySelector('#fs-em-hdr');
     wireWindowChrome(cons, hdr, ov.querySelector('#fs-em-max'));
     emCountersWire(hdr);
