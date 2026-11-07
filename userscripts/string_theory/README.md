@@ -144,11 +144,6 @@ Right-click String Theory's icon to open its settings, or any dock icon for that
 - Every script follows the launcher settings, standalone ones too.
 - About checks for updates each time you open it.
 
-## Other recommended userscripts
-
-- [Scribe](../scribe/README.md) and [Bandcamp Player Enhanced](../bandcamp_player_enhanced/README.md), from this repo, are not in the bundle
-- [Art Station Picker](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/art_station/as_picker/README.md)
-- [Uncheck checkboxes with Esc](https://github.com/chaban-mb/userscripts/blob/main/docs/USERSCRIPTS.md#musicbrainz-uncheck-checkboxes-with-esc)
 
 ## Automated mode
 
