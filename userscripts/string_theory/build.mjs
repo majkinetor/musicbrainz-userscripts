@@ -112,7 +112,7 @@ for (const p of parts) for (const [k, v] of p.meta) {
   out.push([k, v]);
 }
 // the bundle's own grants: the on/off list and the settings window below (#693, #851)
-for (const g of ['GM_getValue', 'GM_setValue', 'GM_deleteValue', 'GM_listValues', 'GM_xmlhttpRequest', 'GM_openInTab', 'GM_addValueChangeListener', 'GM_registerMenuCommand', 'GM_unregisterMenuCommand', 'GM_setClipboard']) {
+for (const g of ['GM_getValue', 'GM_setValue', 'GM_deleteValue', 'GM_listValues', 'GM_xmlhttpRequest', 'GM_openInTab', 'GM_addValueChangeListener', 'GM_setClipboard']) {
   if (!seen.has(`grant\t${g}`)) { seen.add(`grant\t${g}`); out.push(['grant', g]); }
 }
 for (const host of ['api.dropbox.com', 'api.dropboxapi.com', 'content.dropboxapi.com', 'www.googleapis.com', 'oauth2.googleapis.com']) {
@@ -155,6 +155,9 @@ const bodies = parts.map(p => {
     + `(function(__stGM){ var __stSO = 0; var __stGo = function(so){\n`
     + `  var MBU_SETTINGS_ONLY = !!so; if (so) __stSO = 1;\n`
     + `  var __stStorage = __stSyncGuard(); var GM_getValue = __stStorage.get, GM_setValue = __stStorage.set;\n`
+    // no entries in the manager's menu from the bundle: settings open from the dock and the palette
+    + `  var GM_registerMenuCommand = function(){}, GM_unregisterMenuCommand = function(){};
+`
     + `  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, ${shadow}) }) : { script: ${shadow} };\n`
     // A member that throws while starting must not stop the members after it: ISRC Scout's
     // "Cannot access 'btnStatus' before initialization" kept Platform Check's panel away until
@@ -259,7 +262,6 @@ var __stStarters = {};   // #851: per member folder, how String Theory's setting
   ${NEWS.replace(/\n/g, '\n  ').trimEnd()}
   stPalListen();
   var open = function () { try { stSettings(); } catch (e) { try { console.error('[String Theory] settings failed:', e); } catch (x) {} } };
-  try { if (typeof GM_registerMenuCommand === 'function') GM_registerMenuCommand('⚙ Settings', open, { id: 'st-settings', autoClose: true, title: 'Launchers, the scripts on and off, versions and updates' }); } catch (e) {}
   document.addEventListener('mbu-st-settings', open);
   var palette = function () { try { stPalette(); } catch (e) { try { console.error('[String Theory] command palette failed:', e); } catch (x) {} } };
   document.addEventListener('mbu-st-palette', palette);
