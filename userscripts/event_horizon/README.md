@@ -142,7 +142,7 @@ On an entity's page, in the viewer or on MusicBrainz's own page, a key opens one
 
 ## Settings
 
-Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes them all; your saved presets, filters and stars stay.
+Right-click the corner icon. Changes apply at once.
 
 | Setting                               | Default                                                             |                                                                                             |
 | ------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
