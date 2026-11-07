@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.07.200000
+// @version      2026.11.07.201000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -2324,6 +2324,35 @@ Click: open the label`;
     }
     const pr = Math.ceil(host.getBoundingClientRect().right - b.getBoundingClientRect().left) + 4;
     if (pr > 4 && inp.style.getPropertyValue('padding-right') !== pr + 'px') { inp.style.setProperty('box-sizing', 'border-box', 'important'); inp.style.setProperty('padding-right', pr + 'px', 'important'); }
+  }
+  /* #929: the barcode's help bubble is hidden under Apollo (#652, no bubbles), but it is where
+     MusicBrainz lists the releases already carrying the barcode and warns that digital releases
+     usually have one. Show both as a flat note under the field, from the field's own observables. */
+  function renderRiBarcode() {
+    const inp = document.getElementById('barcode'); if (!inp) return;
+    const td = inp.closest('td') || inp.parentElement;
+    let n = td.querySelector(':scope > .tc-ri-bc');
+    const rel = !RG_PAGE && release(), bc = rel && rel.barcode;
+    let html = '';
+    if (riWant() && bc) {
+      const msg = typeof bc.message === 'function' ? bc.message() : '';
+      const ex = typeof bc.existing === 'function' ? bc.existing() : '';
+      if (msg && !u(bc.none)) html += `<div>${esc(msg)}</div>`;
+      if (ex) {
+        const items = [...new DOMParser().parseFromString(ex, 'text/html').querySelectorAll('li')].map(li => {
+          li.querySelectorAll('a[href]').forEach(a => { a.href = new URL(a.getAttribute('href'), ORIGIN).href; a.target = '_blank'; a.rel = 'noopener'; });
+          return `<li>${li.innerHTML}</li>`;
+        });
+        if (items.length) html += `<div class="tc-ri-bc-dup">Already in MusicBrainz with this barcode; make sure this isn't a duplicate:</div><ul>${items.join('')}</ul>`;
+      }
+      if (u(bc.none)) html += '<div>Most digital platforms use barcodes even when they don\'t show them. Mark <i>no barcode</i> only if you know the platform.</div>';
+    }
+    if (!html) { n?.remove(); return; }
+    if (!n) {
+      n = document.createElement('div'); n.className = 'tc-ri-bc mbu-ui'; td.appendChild(n);
+      n.style.cssText = 'font-size:12px;color:var(--mbu-text-dim);margin:3px 0 2px;line-height:1.4';
+    }
+    if (n._tcHtml !== html) { n._tcHtml = html; n.innerHTML = html; n.querySelectorAll('ul').forEach(ul => { ul.style.cssText = 'margin:2px 0 0;padding-left:18px;max-height:9em;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent'; }); }
   }
   /* ── the Label field's search: Apollo's picker in place of MusicBrainz's ─────────────────
      majkinetor: "replace native label search with ours, like artist … along with + on the
@@ -16339,7 +16368,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       mbuCls(document.body, 'tc-ri-on', true);   // #569: guarded — re-added 2x/s otherwise
       relocateLinks(true);
       tidyLinkTypeOptions();
-      renderRiArtist(); renderRiLabels(); renderRiReleaseGroup();   // #652: badges and offers by the artist and label fields
+      renderRiArtist(); renderRiLabels(); renderRiReleaseGroup(); renderRiBarcode();   // #652: badges and offers by the artist and label fields
       annotateLinkEditHints();
       if (annoWant()) ensureAnnotationToolbar(); else unmountAnnotation();
       // #569: 170 redundant class writes in a 5s idle window — the single
@@ -16348,7 +16377,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       _riPrevOn = true;
     } else {
       relocateLinks(false);
-      renderRiArtist(); renderRiLabels(); renderRiReleaseGroup();   // #652: removed in the Original view
+      renderRiArtist(); renderRiLabels(); renderRiReleaseGroup(); renderRiBarcode();   // #652: removed in the Original view
       unmountAnnotation();   // Apollo off → tear the annotation editor down too, so the field reverts to native (the toolbar must not linger)
       mbuCls(document.body, 'tc-ri-on', false);
       document.querySelectorAll('.tc-ri-helphidden').forEach(e => e.classList.remove('tc-ri-helphidden'));

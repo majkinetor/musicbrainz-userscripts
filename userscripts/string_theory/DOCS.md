@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-07 19:57 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-07 19:59 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -58,7 +58,6 @@ Each part is optional, and Apollo's corner icon switches to MusicBrainz's own ed
 - A **front-cover thumbnail** under the links opens the cover-art page.
 - Right-click a date's or label's ✕ to remove all of them.
 - The help bubbles are gone; the badges say what is linked.
-- Long drop-downs (**Language**, **Script**, a medium's **Format**, …) open a list filtered as you type: click one, or type on it, then pick with the arrows and Enter. Esc closes it.
 - The release **Artist** field is the Tracklist's artist cell, in place of MusicBrainz's box and its Edit popup. One line per artist, with its credited-as name, search, join phrase and match badge. **↵** adds an artist, **⋔** splits a combined name, **⠿** reorders, **✕** removes, and **＋** / **🔗** / **⚠** offer to create the artist or add its link.
 - The release **Artist** is [matched](#artist-matching) on load like a track artist, and a confident match is linked. Click an uncertain **LOW** badge to link its candidate.
 - The release **Label** is linked on load by its Discogs or platform link when exactly one label has it, else when exactly one label has its name or alias, else when the similar releases on the **Duplicates** tab credit exactly one label of that name. A badge by the field says how (**set**: already on the release, **user**: picked by you); click it to open the label.

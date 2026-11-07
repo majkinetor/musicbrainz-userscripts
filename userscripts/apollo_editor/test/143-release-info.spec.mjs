@@ -39,6 +39,21 @@ test('a focused field shows no help bubble, an entity field included', { tag: ['
   }
 });
 
+// #929: the hidden barcode bubble's content shows as a note under the field instead
+test('the barcode lists releases that already have it, and warns about no barcode', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  const submitted = await openApollo(page, inject, { release: '51bdb849-5dfc-40c0-9fcb-f49fe7395cc7' });
+  await releaseInfo(page);
+  await page.fill('#barcode', '751937415022');   // the sandbox's Saigon Rock & Soul
+  const note = () => page.evaluate(() => document.querySelector('#information .tc-ri-bc')?.innerText || '');
+  await until(note, t => /Saigon Rock/.test(t), { timeout: 15000 }).catch(() => {});
+  check(/Saigon Rock/.test(await note()), `the note lists the release with that barcode (${JSON.stringify(await note())})`);
+  await page.fill('#barcode', '');
+  await page.locator('#information input[type=checkbox][data-bind*="barcode.none"]').check();
+  await until(note, t => /digital platforms/.test(t), { timeout: 8000 }).catch(() => {});
+  check(/digital platforms/.test(await note()), `ticking "no barcode" shows the digital advice (${JSON.stringify(await note())})`);
+  check(submitted.length === 0, 'nothing submitted');
+});
+
 test("the favicon fits, checkbox labels aren't bold, and switching leaves no stray bubble", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ page, inject }) => {
   await openApollo(page, inject, { release: 'ce9529d6-b490-4010-b8ff-5e1fb0f8441e' });   // Shelflife 8, with its Discogs link
   await releaseInfo(page);
