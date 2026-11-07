@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08.080000
+// @version      2026.11.07.153335
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -9879,7 +9879,13 @@ function searchParse(html, base) {
     // #933: MB's flags are its stylesheet's sprite (span.flag.flag-GB), which isn't loaded here: each gets the image the rest of the page uses
     const cell = td => {
         td.querySelectorAll('script,.artwork-icon,.blank-icon,a[href$="/cover-art"]').forEach(x => x.remove());
-        td.querySelectorAll('.flag').forEach(x => { const m = x.className.match(/flag-([A-Z]{2})/); if (m) x.insertAdjacentHTML('afterbegin', flagI(m[1])); });
+        // built with DOM calls: insertAdjacentHTML into the parsed document left no image (2026-11-07)
+        td.querySelectorAll('.flag').forEach(x => {
+            const m = x.className.match(/flag-([A-Z]{2})/);
+            if (!m || !flagI(m[1])) return;
+            const im = d.createElement('img'); im.className = 'flagi'; im.alt = ''; im.loading = 'lazy'; im.src = `https://flagcdn.com/w40/${m[1].toLowerCase()}.png`;
+            x.prepend(im);
+        });
         return td.innerHTML.trim();
     };
     const head = t ? [...t.querySelectorAll('thead th')].map(tx) : [];
