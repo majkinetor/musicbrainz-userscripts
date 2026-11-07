@@ -532,7 +532,17 @@ function stSettings(tab) {
       showTheme();
     };
     ['dark', 'light'].forEach(function (v) {
-      q('#st-th-' + v).onchange = function (e) { var p = {}; p[v] = e.target.value; __stTheme.set(p); showTheme(); };
+      // the new theme brings the effect on show, as stepping in the theme chooser does, so a theme pick never changes it
+      q('#st-th-' + v).onchange = function (e) {
+        var th = __stTheme.read(), p = {}, on = th.eh[v + ':' + th[v]], map = {};
+        p[v] = e.target.value;
+        if (ehFx.length) {
+          Object.keys(th.eh).forEach(function (k) { map[k] = th.eh[k]; });
+          if (on) map[v + ':' + p[v]] = on; else delete map[v + ':' + p[v]];
+          p.eh = map;
+        }
+        __stTheme.set(p); showTheme();
+      };
       if (ehFx.length) q('#st-th-eh-' + v).onchange = function (e) {
         var th = __stTheme.read(), map = {};
         Object.keys(th.eh).forEach(function (k) { map[k] = th.eh[k]; });
