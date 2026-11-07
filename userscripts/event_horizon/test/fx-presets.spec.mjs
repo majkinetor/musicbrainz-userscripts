@@ -62,6 +62,17 @@ test('effect presets save, load and delete by name', { tag: ['@prod', '@critical
   await cfg.locator('[data-fx-new]').click();
   check(await until(() => cfg.locator('[data-fx-name]').inputValue(), v => v === 'Unnamed effect') === 'Unnamed effect', '+ copies the effect into a new preset');
   check(await until(() => names(page), v => v?.length === 2), 'saved at once');
+
+  // Save as on a name ending in a number counts on: "Soft 2" taken gives "Soft 3", not "Soft 2 2"
+  await cfg.locator('[data-fx-name]').fill('Soft'); await cfg.locator('[data-fx-new]').click();
+  check(await until(() => cfg.locator('[data-fx-name]').inputValue(), v => v === 'Soft 2') === 'Soft 2', 'a taken name gets 2');
+  await cfg.locator('[data-fx-new]').click();
+  check(await until(() => cfg.locator('[data-fx-name]').inputValue(), v => v === 'Soft 3') === 'Soft 3', 'and Save as on Soft 2 gives Soft 3');
+
+  // each own preset in the list has its own delete, current or not
+  await cfg.locator('[data-fx-dd]').click(); await cfg.locator('[data-fx-delname="Soft"]').click();
+  check(!(await until(() => names(page), v => v && !v.includes('Soft'))).includes('Soft'), 'the row\'s trash deletes that preset');
+  check(await cfg.locator('[data-fx-name]').inputValue() === 'Soft 3', 'and leaves the current one picked');
 });
 
 // Copy as JSON gives a preset to share; Import from JSON adds it under a free name and applies it
