@@ -24,7 +24,7 @@ test('collapsed listing, weighted review, comments, reload and export/import rou
     await row.locator('.caps').waitFor();
     await row.locator('[data-feature="notes.autofill"] [data-field="weight"]').selectOption('0');
     await row.locator('[data-feature="notes.acoustid"] [data-field="weight"]').selectOption('0');
-    assert.match(await row.locator('.personal').textContent(),/Fully replaceable/);
+    assert.match(await row.locator('.row-verdict option:checked').textContent(),/Fully replaceable/);
     await openAction(row,'note');await row.locator('.note').fill('Only need MusicBrainz.\nKeep my weights.');
     const comment='<img src=x onerror="window.reviewXss=true"> Important gap';
     await openAction(row,'comments');await row.locator('.comment-draft').fill(comment);
@@ -37,7 +37,7 @@ test('collapsed listing, weighted review, comments, reload and export/import rou
     const extra=row.locator('[data-feature^="custom:"]');
     await extra.locator('[data-field="coverage"]').selectOption('Gap');
     await extra.locator('[data-field="weight"]').selectOption('10');
-    assert.match(await row.locator('.personal').textContent(),/Partial overlap/);
+    assert.match(await row.locator('.row-verdict option:checked').textContent(),/Partial overlap/);
     await page.reload();
     await page.locator('#name-filter').fill('Elephant Editor');
     await row.locator('.name').first().click();
@@ -96,7 +96,7 @@ test('visitor verdict, edited and deleted notes, and versioned GitHub draft',asy
     const page=await browser.newPage({viewport:{width:1500,height:1100}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(url);
     const entry=await page.evaluate(()=>JSON.parse(document.getElementById('report-data').textContent).entries.find(e=>e.name==='Harmony'));
     await page.locator('#name-filter').fill('Harmony');const row=page.locator('.script[data-id="'+entry.id+'"]');await row.locator('.name').first().click();
-    await row.locator('.my-verdict').selectOption('Replaceable');assert.match(await row.locator('.personal').textContent(),/Fully replaceable/);
+    await row.locator('.my-verdict').selectOption('Replaceable');assert.match(await row.locator('.row-verdict option:checked').textContent(),/Fully replaceable/);
     await openAction(row,'note');await row.locator('.note').fill('Remove this note');await row.locator('.clear-note').click();assert.equal(await row.locator('.note').inputValue(),'');
     await openAction(row,'comments');await row.locator('.comment-draft').fill('Original comment');await row.locator('.post').click();await row.locator('.edit-comment').click();
     await row.locator('.comment-edit').fill('Edited comment');await row.locator('.save-comment').click();assert.match(await row.locator('.comments').textContent(),/Edited comment/);
@@ -109,7 +109,7 @@ test('visitor verdict, edited and deleted notes, and versioned GitHub draft',asy
     await page.evaluate(()=>{window.open=url=>{window.composedDiscussion=url;};});
     await page.locator('#github').click();
     const discussionUrl=await page.evaluate(()=>window.composedDiscussion);
-    const body=new URL(discussionUrl).searchParams.get('body');assert.ok(body.includes('**Harmony**: Fully replaceable'));
+    const body=new URL(discussionUrl).searchParams.get('body');assert.match(body,/\*\*Harmony\*\*: (.* → )?Fully replaceable/);
     const exported=JSON.parse(body.match(/```json\n([\s\S]*?)\n```/)[1]);
     assert.equal(exported.entries[0].review.proposedVerdict,'Replaceable');assert.equal(exported.entries[0].review.comments.length,0);
     assert.equal(exported.entries[0].review.deletedComments.length,1);assert.equal(exported.entries[0].review.note,'Please use my verdict in the next report');
@@ -150,7 +150,7 @@ test('row shortcuts ignore typing, reviewers do not expand rows, and verdict fil
  await page.locator('#name-filter').fill('Harmony');const row=page.locator('.script:visible').first();
  await row.locator('.people-count').click();await page.locator('#people-dialog').waitFor({state:'visible'});
  assert.equal(await row.getAttribute('open'),null);assert.match(await page.locator('#people-list').textContent(),/majkinetor/);await page.locator('#people-close').click();
- await row.locator('summary').first().focus();await page.keyboard.press('3');assert.match(await row.locator('.personal').textContent(),/Partial overlap/);
+ await row.locator('summary').first().focus();await page.keyboard.press('3');assert.match(await row.locator('.row-verdict option:checked').textContent(),/Partial overlap/);
  await page.keyboard.press('n');await row.locator('.note').fill('123n');assert.equal(await row.locator('.my-verdict').inputValue(),'Partial overlap');
  await page.locator('#toggle-search').click();await page.locator('.verdict-filter>summary').click();
  await page.locator('[name="report-verdict"][value="Replaceable"]').check();await page.locator('[name="report-verdict"][value="No equivalent"]').check();
@@ -170,7 +170,7 @@ test('help uses the shared review process and old workflow status is absent',asy
 test('collapsed-row verdict and note controls persist without opening details',async()=>{
  const browser=await chromium.launch();try{
  const page=await browser.newPage();await page.goto(url);await page.locator('#name-filter').fill('Elephant Editor');const row=page.locator('.script:visible');
- await row.locator('.row-verdict').selectOption('Partial overlap');assert.equal(await row.getAttribute('open'),null);assert.match(await row.locator('.personal').textContent(),/Partial overlap/);
+ await row.locator('.row-verdict').selectOption('Partial overlap');assert.equal(await row.getAttribute('open'),null);assert.match(await row.locator('.row-verdict option:checked').textContent(),/Partial overlap/);
  await row.locator('.row-note').click();await page.locator('#quick-note').fill('Quick note\nSecond line');await page.locator('#quick-note-close').click();assert.equal(await row.getAttribute('open'),null);
  await row.locator('.name').first().click();assert.equal(await row.locator('.my-verdict').inputValue(),'Partial overlap');await row.locator('[data-action="note"]').click();assert.equal(await row.locator('.note').inputValue(),'Quick note\nSecond line');assert.equal(await row.locator('.action-menu').count(),0);
  await page.reload();await page.locator('#name-filter').fill('Elephant Editor');await row.locator('.row-note').click();assert.equal(await page.locator('#quick-note').inputValue(),'Quick note\nSecond line');await page.locator('#quick-note-clear').click();await page.locator('#quick-note-close').click();assert.equal(await row.locator('.row-note').textContent(),'Note');

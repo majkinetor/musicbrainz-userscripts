@@ -24,9 +24,12 @@ function save(){try {if(storageBlocked)throw new Error();localStorage.setItem(st
 function recordFor(entry){if(!records.has(entry.id))records.set(entry.id,{proposedVerdict:'',note:'',draft:'',features:{},comments:[],deletedComments:[],basis:structuredClone(entry.basis),reportAtReview:reportRef(),updatedAt:new Date().toISOString()});return records.get(entry.id);}
 function changed(entry,fn){const record=recordFor(entry);fn(record);record.updatedAt=new Date().toISOString();save();updateRow(entry);}
 function isStale(entry){return records.has(entry.id)&&records.get(entry.id).basis.hash!==entry.basis.hash;}
-function updateRow(entry){const el=rows.get(entry.id),r=records.get(entry.id),personal=el.querySelector('.personal'),marker=el.querySelector('.review-marker');personal.hidden=!r;marker.hidden=!r||!isStale(entry);
-  if(r){const score=weightedVerdict(effectiveFeatures(entry,r));personal.textContent='Yours: '+verdictLabel(r.proposedVerdict || (hasScoringChanges(entry,r)?score.verdict:entry.verdict));marker.textContent='Needs recheck';}
+// The row's select shows the verdict in effect; "yours" and the report's verdict struck through appear only when the two differ.
+function updateRow(entry){const el=rows.get(entry.id),r=records.get(entry.id),personal=el.querySelector('.personal'),marker=el.querySelector('.review-marker');
+  const effective=r?(r.proposedVerdict || (hasScoringChanges(entry,r)?weightedVerdict(effectiveFeatures(entry,r)).verdict:entry.verdict)):entry.verdict;
+  personal.hidden=effective===entry.verdict;marker.hidden=!r||!isStale(entry);
   el.querySelectorAll('.my-verdict,.row-verdict').forEach(select=>select.value=r?.proposedVerdict || '');
+  const first=el.querySelector('.row-verdict option[value=""]'),n=verdictOptions.indexOf(effective)+1;first.textContent=(n?n+' · ':'')+verdictLabel(effective);
   el.querySelector('.row-note').textContent=r?.note?'Edit note':'Note';el.querySelector('.row-revert').hidden=!r;
   const note=el.querySelector('.note');if(note&&document.activeElement!==note){note.value=r?.note || '';growNote(note);}
   const output=el.querySelector('.weighted');if(output){const result=weightedVerdict(effectiveFeatures(entry,r));output.textContent='Weighted: '+verdictLabel(result.verdict)+(result.score===null?'':result.unknown?' · '+result.score+'–'+result.ceiling+'%':' · '+result.score+'%');}}
@@ -102,7 +105,7 @@ for(const entry of report.entries){
   verdict.onchange=e=>changed(entry,r=>{r.proposedVerdict=e.target.value;});
   row.querySelector('.row-revert').onclick=e=>{e.preventDefault();e.stopPropagation();records.delete(entry.id);openPanels.delete(entry.id);save();updateRow(entry);if(row.open)renderDetails(entry);else row.querySelector('.detail').replaceChildren();filterRows();row.querySelector('summary').focus();};
   row.querySelector('.row-note').onclick=e=>{e.preventDefault();e.stopPropagation();openQuickNote(entry);};
-  row.querySelector('.people-count').onclick=e=>{e.preventDefault();e.stopPropagation();showContributors(entry);};
+  const people=row.querySelector('.people-count');if(people)people.onclick=e=>{e.preventDefault();e.stopPropagation();showContributors(entry);};
   row.addEventListener('keydown',e=>{
     if(e.altKey||e.ctrlKey||e.metaKey||e.target.closest('input,textarea,select,button,[contenteditable="true"]'))return;
     const key=e.key.toLowerCase();
