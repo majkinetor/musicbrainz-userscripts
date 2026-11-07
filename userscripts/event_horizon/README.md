@@ -63,6 +63,8 @@ Both take the same image effects: **Opacity**, **Blur**, **Brightness**, **Satur
 
 Motion pauses in a hidden tab and respects reduced motion.
 
+While you tune an effect, move the mouse off the settings window to see the whole page: the window fades out and comes back when the mouse returns to it. **Fade this window when the mouse leaves it**, at the bottom of the Effects tab, turns this off.
+
 ## Sections
 
 All data is arranged in sections that can be collapsed, hidden or reordered using main menu item. Card state is remembered for given entity. Specific cards have additional options at the right side.
@@ -158,6 +160,7 @@ Right-click the corner icon. Changes apply at once.
 | Effects → Preset                      | none                                                                | an effect with its settings, saved by name; shared as JSON from its list                    |
 | Effects → Effects                     | Background: Cover aura                                              | a **Background** (none is flat) and an **Effect** over it; select one for its settings      |
 | Effects → Effect                      | None                                                                | [background effects](#background-effects), each with its own settings                       |
+| Effects → Fade this window            | on                                                                  | the window fades while the mouse is away from it                                            |
 | General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                                      |
 | General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
 | General → Keyboard shortcuts          | on                                                                  | the keys below; [keyboard shortcuts](#keyboard-shortcuts); **Change keys** opens their list |

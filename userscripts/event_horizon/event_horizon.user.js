@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.07.220000
+// @version      2026.11.07.221800
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4036,7 +4036,7 @@ const S = {
 };
 VIEW.push(...AMBIENT_KEYS, 'hexColours');
 Object.assign(S, { effect: 'hexagons', ambientOpacity: 65, ...AMBIENT_DEFAULTS, ...FX_OWN, hexColours: [] });
-VIEW.push('keysOn', 'keys', 'menuTitles', 'annoHover', 'pending', 'colPick', 'colW', 'named', 'fxTheme', 'fxCur', 'stars', 'starGroup', 'starView', 'starSort', 'recView', 'recSort', 'recMax', 'recOff', 'hmQs');
+VIEW.push('keysOn', 'keys', 'menuTitles', 'annoHover', 'cfgFade','pending', 'colPick', 'colW', 'named', 'fxTheme', 'fxCur', 'stars', 'starGroup', 'starView', 'starSort', 'recView', 'recSort', 'recMax', 'recOff', 'hmQs');
 S.keysOn = true; // #907: keyboard shortcuts, and the keys changed from their defaults by command
 S.keys = {};
 S.stars = []; // starred entities travel with the manager's settings
@@ -4049,6 +4049,7 @@ S.recSort = '';
 S.recMax = 12;
 S.recOff = [];
 S.annoHover = true;
+S.cfgFade = true; // on the Effects tab, the settings window fades while the mouse is away from it
 S.named = {}; // filters and column choices saved by name, by 'flt-dg', 'cols-ed' and so on: [{ name, v }]
 S.fxTheme = ''; // the effect preset String Theory's theme last asked for: a new one is applied once, then the effect is the user's again
 S.fxCur = ''; // the effect preset being worked on: Save writes a change into it, + into a new one; none is an unsaved effect
@@ -11512,7 +11513,7 @@ const CI = {
     aliases: '<path d="M4 7h10M4 12h7M4 17h10"/><path d="M17 10l3 3-3 3"/>',
     tags: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
 };
-const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-panel{pointer-events:auto}.eh-cfg{width:min(460px,94vw);font:12px var(--mbu-font)}.eh-cfg .mbu-ov-body{padding:6px 10px 6px;overflow-x:hidden}.eh-cfg .mbu-cfg-h{margin-bottom:2px;padding-bottom:5px;gap:6px;font-size:13px}.eh-cfg .mbu-cfg-ic{width:18px;height:18px}.eh-cfg .mbu-cfg-log{padding:0 6px;font-size:11px}'
+const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-panel{pointer-events:auto;transition:opacity .2s}#eh-cfg>.mbu-ov-panel.eh-fade{opacity:.08;transition:opacity .4s}.eh-cfg{width:min(460px,94vw);font:12px var(--mbu-font)}.eh-cfg .mbu-ov-body{padding:6px 10px 6px;overflow-x:hidden}.eh-cfg .mbu-cfg-h{margin-bottom:2px;padding-bottom:5px;gap:6px;font-size:13px}.eh-cfg .mbu-cfg-ic{width:18px;height:18px}.eh-cfg .mbu-cfg-log{padding:0 6px;font-size:11px}'
     + '.eh-cfg .tabs{display:flex;gap:2px;border-bottom:1px solid var(--mbu-border-soft);margin:0 -10px;padding:0 6px}.eh-cfg .tabs .eh-st-th{margin-left:auto;align-self:center;cursor:pointer}'
     + '.eh-cfg .tab{all:unset;padding:5px 9px;margin-bottom:-1px;border-bottom:2px solid transparent;color:var(--mbu-text-weak);font:500 13px var(--mbu-font);cursor:pointer}'
     + '.eh-cfg .tab:hover{color:var(--mbu-text)}.eh-cfg .tab[aria-selected=true]{color:var(--mbu-accent-text);border-bottom-color:var(--mbu-accent);font-weight:600}.eh-cfg .tab .n{font-size:10px;color:var(--mbu-text-weak)}'
@@ -11813,7 +11814,8 @@ function fxPane(chip, row) {
     const body = sel === 'bg'
         ? cfgGrp('Common', bgCommon) + cfgGrp(fxName(sel), row('Kind', [['flat', 'Plain', 'No background: the page as it is'], ...BGS].map(([k, l, tip]) => chip('bg', k, (bg ? S.bg : 'flat') === k, l, tip)).join('')) + bgOwn, true)
         : sel === 'hexagons' ? hexRows(chip, row) : ambientRows(sel, chip, row);
-    return preset + paste + hint + gal + layers + body;
+    const fade = ckRow('cfgFade', 'Fade this window when the mouse leaves it', 'See the effect over the whole page\nOn: the window fades while the mouse is away and comes back when it returns\nOff: the window stays as it is');
+    return preset + paste + hint + gal + layers + body + fade;
 }
 // the Artwork's scene, or the Image's address, then the filters both share
 function bgImgRows(chip, row) {
@@ -11898,6 +11900,14 @@ function openCfg() {
     const panel = ov.firstChild, b = panel.querySelector('.eh-cfg-b');
     mbuDismissOn(panel, () => ov.remove());
     mbuCfgDrag(panel);   // the page behind stays usable
+    // on the Effects tab, the window fades while the mouse is away, so the effect shows over the whole page, and comes
+    // back when the mouse returns; not while a slider is dragged out, nor for a step into a popup or tooltip of its own
+    panel.addEventListener('mouseleave', ev => {
+        if (!S.cfgFade || cfgTab !== 'effects' || ev.buttons) return;
+        const to = ev.relatedTarget; if (to && to.closest && to.closest('.mbu-ui,[role=dialog],[role=tooltip],.mbu-tip')) return;
+        panel.classList.add('eh-fade');
+    });
+    panel.addEventListener('mouseenter', () => panel.classList.remove('eh-fade'));
     panel.querySelector('.mbu-cfg-log').onclick = () => { ov.remove(); LOG.open(); };
     cfgWire(panel, b, cfgBody);
 }
@@ -12100,7 +12110,7 @@ function cfgWire(panel, b, body) {
             else if (g === 'factOff') { const [kd, fk] = k.split(':'); S.factOff = { ...S.factOff, [kd]: toggle(S.factOff[kd] || [], fk) }; }
             else if (g === 'extra') S.extras = toggle(S.extras, k);
             else if (g === 'prov') { S.prov = toggle(S.prov, k); plFollow(); }
-            else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'menuTitles' || g === 'keysOn') S[g] = !S[g];
+            else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'menuTitles' || g === 'keysOn' || g === 'cfgFade') S[g] = !S[g];
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
             else if (g === 'bg') { S.bg = k; bgApply(); }
