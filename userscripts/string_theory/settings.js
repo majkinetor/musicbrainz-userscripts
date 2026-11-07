@@ -210,7 +210,8 @@ var ST_CSS = ''
   + '#st-cfg a{color:var(--mbu-accent-text)}'
   + '#st-cfg .st-upd{margin:4px 0 12px;padding:6px 10px;border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken);font-size:12px}'
   + '#st-cfg .st-upd>div{display:flex;align-items:center;gap:8px;min-height:24px}#st-cfg .st-upd b{flex:0 0 auto;min-width:64px;font-weight:600;white-space:nowrap}#st-cfg .st-upd span{white-space:nowrap}'
-  + '#st-cfg .st-upd .st-newer{color:var(--mbu-ok);font-weight:600}'
+  + '#st-cfg .st-upd .st-newer{color:var(--mbu-ok);font-weight:600}#st-cfg .st-upd>div.st-upd-new{background:color-mix(in srgb,var(--mbu-ok) 14%,transparent);border-radius:var(--mbu-radius);margin:0 -6px;padding:0 6px}#st-cfg .st-upd>div.st-upd-new>span:first-of-type{color:var(--mbu-ok);font-weight:600}'
+  + '#st-cfg #st-tc-open{cursor:pointer}'
   + '#st-cfg .st-lbl{flex:0 0 auto;color:var(--mbu-text-weak)!important;font:600 11px/1.4 var(--mbu-font, system-ui, sans-serif);text-transform:uppercase;letter-spacing:.06em}'
   + '#st-cfg .st-seg{display:inline-flex;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden;margin-right:10px}'
   + '#st-cfg .st-seg button{font:inherit;font-size:12px;border:0;margin:0;border-radius:0;background:none;color:inherit;padding:2px 10px;min-height:22px;line-height:18px;cursor:pointer}'
@@ -674,7 +675,7 @@ function stSettings(tab) {
           var state = checking ? 'checking…' : !v2 ? 'couldn’t be read'
             : stCmpVer(v2, ST_VERSION) === 0 ? 'the one you have'
             : stCmpVer(v2, ST_VERSION) > 0 ? '<span class="st-newer">newer</span>' : 'older';
-          return '<div data-channel="' + stEsc(r) + '"><b>' + stEsc(name) + '</b><span>' + (v2 ? 'v' + stEsc(v2) : '') + '</span><span class="st-channel-state">' + state
+          return '<div data-channel="' + stEsc(r) + '"' + (v2 && stCmpVer(v2, ST_VERSION) > 0 ? ' class="st-upd-new"' : '') + '><b>' + stEsc(name) + '</b><span>' + (v2 ? 'v' + stEsc(v2) : '') + '</span><span class="st-channel-state">' + state
             + '</span>'
             + (v2 && stCmpVer(v2, ST_VERSION) !== 0 ? '<span class="st-upd-links"><a href="' + stEsc(stInstallUrl(r)) + '" target="_blank" rel="noopener">Install</a>'
               + (r === 'main' ? '<a href="#" data-st-pinned="' + stEsc(r) + '" data-tip="Install the newest commit by its own link&#10;Skips GitHub\u2019s cache, which can serve the build before for a few minutes">Pinned</a>' : '') + '</span>' : '') + '</div>';

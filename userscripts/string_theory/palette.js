@@ -633,8 +633,8 @@ function stThemeChooser() {
   bar.setAttribute('role', 'toolbar');
   bar.setAttribute('aria-label', 'Theme chooser');
   bar.innerHTML = '<button type="button" id="st-tc-f" aria-label="Themes to step through">' + { all: 'All', light: 'Light', dark: 'Dark' }[only] + '</button>'
-    + '<span class="st-tc-n" aria-live="polite" data-tip="The theme on show&#10;Left: the previous theme&#10;Right: the next theme&#10;Click on its count: the next theme&#10;Right-click on its count: the previous theme"></span><span class="st-tc-i" data-th-i></span>'
-    + (fx.length ? '<select id="st-tc-e" aria-label="Event Horizon effect this theme brings" data-tip="The Event Horizon effect this theme brings&#10;It stays as you step to other themes&#10;Up: the previous effect&#10;Down: the next effect&#10;Click on its count: the next effect&#10;Right-click on its count: the previous effect"></select>'
+    + '<span class="st-tc-n" aria-live="polite" data-tip="The theme on show&#10;Left: the previous theme&#10;Right: the next theme&#10;Click: the next theme, on its count&#10;Right-click: the previous theme, on its count"></span><span class="st-tc-i" data-th-i></span>'
+    + (fx.length ? '<select id="st-tc-e" aria-label="Event Horizon effect this theme brings" data-tip="The Event Horizon effect this theme brings&#10;It stays as you step to other themes&#10;Up: the previous effect&#10;Down: the next effect&#10;Click: the next effect, on its count&#10;Right-click: the previous effect, on its count"></select>'
       + '<button type="button" id="st-tc-ed" aria-label="Edit the effects" data-tip="Edit the effects&#10;Opens Event Horizon&#39;s settings on Effects; the chooser stays"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M11 2.5l2.5 2.5L6 12.5 3 13l.5-3z"/><path d="M9.5 4l2.5 2.5"/></svg></button><span class="st-tc-i" data-fx-i></span>' : '')
     + '<button type="button" id="st-tc-k">Keep</button>'
     + '<button type="button" class="mbu-ov-x" id="st-tc-x" aria-label="Close">✕</button>';
@@ -662,7 +662,7 @@ function stThemeChooser() {
   var show = function () {
     var t = all[i], p = { mode: t[0], eh: eh }; p[t[0]] = t[1];
     __stTheme.preview(p);
-    __stTheme.chooserPut({ only: only, v: t[0], n: t[1], eh: eh, fx: last });
+    __stTheme.chooserPut({ only: only, v: t[0], n: t[1], eh: eh, fx: last, ft: touched });
     var sel = bar.querySelector('#st-tc-e');
     if (sel) {
       var now = fxSort(mbuShared('ehFxPresets'));
@@ -678,13 +678,15 @@ function stThemeChooser() {
   };
   var ONLY = { all: ['light', 'Light'], light: ['dark', 'Dark'], dark: ['all', 'All'] };
   var filter = function () { var n = ONLY[only]; only = n[0]; bar.querySelector('#st-tc-f').textContent = n[1]; list(); bring(); show(); };
-  // last: the effect on show, the one the chooser opened with until another is picked; the themes stepped to bring it
-  // too, so stepping never changes the effect
-  var last = was && typeof was.fx === 'string' ? was.fx : eh[all[i][0] + ':' + all[i][1]] || '';
+  // last: the effect on show; opening it is Event Horizon's preset on show when unchanged, else "Current effect", so opening
+  // changes nothing; the themes stepped to bring it too, so stepping never changes the effect
+  var k0 = all[i][0] + ':' + all[i][1], touched = !!(was && was.ft);
+  var last = was && typeof was.fx === 'string' ? was.fx : html.getAttribute('data-eh-fx-cur') || '';
+  if (!was) { if (last && fx.indexOf(last) >= 0) eh[k0] = last; else { last = ''; delete eh[k0]; } }
   var bring = function () { var t = all[i], k = t[0] + ':' + t[1]; if (last) eh[k] = last; else delete eh[k]; };
   var step = function (d) { i = (i + d + all.length) % all.length; bring(); show(); };
   // the effect: "Current effect" (none brought), "No effect", then the presets, round
-  var pick = function (k, n) { last = n || ''; if (n) eh[k] = n; else delete eh[k]; show(); };
+  var pick = function (k, n) { touched = true; last = n || ''; if (n) eh[k] = n; else delete eh[k]; show(); };
   var stepFx = function (d) {
     var t = all[i], k = t[0] + ':' + t[1], on = eh[k] || '', ns = ['', '-'].concat(fx);
     if (on && ns.indexOf(on) < 0) ns.push(on);
@@ -697,11 +699,11 @@ function stThemeChooser() {
     bar.remove();
     if (!keep) { __stTheme.preview(null); return; }
     var t = all[i], p = {}; p[t[0]] = t[1];
-    // the kept theme's effect only; what was picked for the others is dropped
+    // the kept theme's effect only, and only once one was picked or the theme is another; what was picked for the others is dropped
     if (fx.length) {
       var map = {}, k = t[0] + ':' + t[1];
       Object.keys(th.eh || {}).forEach(function (x) { map[x] = th.eh[x]; });
-      if (eh[k]) map[k] = eh[k]; else delete map[k];
+      if (touched || k !== k0) { if (eh[k]) map[k] = eh[k]; else delete map[k]; }
       p.eh = map;
     }
     // the mode follows the kept theme only when it was fixed light or dark

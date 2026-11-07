@@ -79,6 +79,7 @@ test.describe('theme chooser effect', () => {
     const sel = page.locator('#st-tc-e');
     const opts = (await sel.locator('option').allTextContents()).join();
     check(opts === 'Current effect,No effect,Bright,Dim', `the chooser lists Event Horizon's presets, by name (${opts})`);
+    check(await sel.inputValue() === 'Bright' && await op() === '0.6', `it opens on the preset on show, and nothing changes (${await sel.inputValue()})`);
     await sel.selectOption('Dim');
     check(await until(op, v => v === '0.3') === '0.3', 'the picked effect shows at once');
     check(await attr('data-st-eh-fx-try') === 'Dim' && await attr('data-st-eh-fx') === null, 'tried, not saved');

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08.001000
+// @version      2026.11.08.002000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4002,7 +4002,7 @@ if (!['static', 'drift', 'tide', 'twinkle', 'ripple', 'lantern', 'electricity', 
 if (!S.starView) S.starView = S.starGroup === 'none' ? 'row' : 'group';
 const menuTitlesApply = () => document.documentElement.style.setProperty('--eh-menu-titles', S.menuTitles ? 'inline' : 'none');
 menuTitlesApply();
-const save = () => { menuTitlesApply(); try { GM_setValue('view', Object.fromEntries(VIEW.map(k => [k, S[k]]))); } catch (e) {} };
+const save = () => { menuTitlesApply(); try { fxMark(); } catch (e) {} try { GM_setValue('view', Object.fromEntries(VIEW.map(k => [k, S[k]]))); } catch (e) {} };
 const toggle = (arr, v) => arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v];
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -11542,6 +11542,8 @@ const FX_NONE = '-';
 const fxGet = name => name === FX_NONE ? { name: FX_NONE, v: { bg: 'flat', fx: [] } } : fxFind(name);
 function fxUse(name) { const p = fxGet(name); if (!p) return false; S.fxCur = p.name === FX_NONE ? '' : p.name; Object.assign(S, fxFull(p)); save(); if (ehOn) bgApply(); else hexApply(); LOG.info('Effect preset: ' + p.name); return true; }
 // the names, for String Theory's theme settings
+// <html data-eh-fx-cur>: the preset on show when it has no unsaved changes, for String Theory's theme chooser to open on
+function fxMark() { const c = fxFind(S.fxCur), de = document.documentElement; if (c && fxSame(c)) de.setAttribute('data-eh-fx-cur', c.name); else de.removeAttribute('data-eh-fx-cur'); }
 const fxPublish = () => { const n = fxAll().map(x => x.name); if (JSON.stringify(mbuShared('ehFxPresets') || []) !== JSON.stringify(n)) mbuShared('ehFxPresets', n); };
 // a preset to share: { name, v } with only the settings it changes from the defaults, under the format's own key
 const fxExport = () => { const d = JSON.parse(DEFAULTS), v = Object.fromEntries(FX_KEYS.filter(k => JSON.stringify(S[k]) !== JSON.stringify(d[k])).map(k => [k, S[k]])); return JSON.stringify({ ehFxPreset: 1, name: S.fxCur || FX_UNNAMED, v }, null, 1); };
@@ -11909,7 +11911,7 @@ function start() {
     // EH) read MusicBrainz's page first, its sidebar and tracklist, before EH swaps the body for its own
     setTimeout(() => setOn(S.on && !off), 0);
     // the effect presets for String Theory's theme settings, and the one its theme names
-    fxPublish(); fxTheme();
+    fxPublish(); fxTheme(); fxMark();
     new MutationObserver(fxTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-st-eh-fx', 'data-st-eh-fx-try', 'data-st-eh-fx-edit'] });
 }
 let showing = 0;
