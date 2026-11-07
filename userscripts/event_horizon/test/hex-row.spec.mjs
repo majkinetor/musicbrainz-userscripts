@@ -3,8 +3,8 @@ import { test, check, until } from '../../../dev/test/harness.mjs';
 test.use({ gm: { name: 'Event Horizon' }, profile: 'fresh' });
 
 const openCfg = page => page.evaluate(() => document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: 'event_horizon', cancelable: true })));
-// an effect added from the gallery: + Add effect, its tile, then Add
-const fxAdd = async (cfg, k) => { await cfg.locator('[data-fx-gal]').click(); await cfg.locator(`[data-fx-pick=${k}]`).click(); await cfg.locator(`[data-fx-addgo=${k}]`).click(); };
+// an effect added from the gallery: Add, then its tile
+const fxAdd = async (cfg, k) => { await cfg.locator('[data-fx-gal]').click(); await cfg.locator(`[data-fx-pick=${k}]`).click(); };
 // the hexagons on: its layer picked, or added from the gallery when missing
 const hexOn = async cfg => {
   if (await cfg.locator('[data-fx-sel=hexagons]').count()) await cfg.locator('[data-fx-sel=hexagons]').click();
@@ -26,8 +26,8 @@ test('the Effects tab shows the hexagons settings and hides what the motion does
   await page.goto('https://musicbrainz.org/artist/f27ec8db-af05-4f36-916e-3d57f91ecf5e');
   await inject('event_horizon');
   const cfg = await openFx(page);
-  await cfg.locator('[data-g=hexOpacity][data-k="30"]').click();
-  check(await until(() => page.evaluate(() => document.documentElement.style.getPropertyValue('--eh-hex-opacity')), v => v === '0.3') === '0.3', 'Outlines 30% sets the opacity');
+  await cfg.locator('[data-g=hexOpacity][data-k="20"]').click();
+  check(await until(() => page.evaluate(() => document.documentElement.style.getPropertyValue('--eh-hex-opacity')), v => v === '0.2') === '0.2', 'Outlines 20% sets the opacity');
   const shown = () => cfg.locator('.cr .cl').allTextContents();
   await cfg.locator('[data-g=hexMotion][data-k=static]').click();
   check(!(await until(shown, v => !v.includes('Pace'))).includes('Strength'), 'Static hides the effect rows');

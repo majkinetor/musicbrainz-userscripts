@@ -30,10 +30,10 @@ test('the Artwork background draws a scene behind the page', { tag: ['@prod'] },
   check(l?.img.startsWith('url("data:image/jpeg'), 'the artwork shows: ' + JSON.stringify(l));
   const first = await page.evaluate(() => getComputedStyle(document.querySelector('#eh-bgimg i')).backgroundImage.length);
   await cfg.locator('[data-g=bgArt][data-k=bokeh]').click();
-  await cfg.locator('[data-g=bgBlur][data-k="10"]').click();
-  await cfg.locator('[data-g=bgOpacity][data-k="45"]').click();
-  l = await until(() => layer(page), v => /blur\(10px\)/.test(v?.filter) && v.op === '0.45');
-  check(/blur\(10px\)/.test(l?.filter) && l.op === '0.45', 'blur and opacity apply: ' + JSON.stringify(l));
+  await cfg.locator('[data-g=bgBlur][data-k="8"]').click();
+  await cfg.locator('[data-g=bgOpacity][data-k="40"]').click();
+  l = await until(() => layer(page), v => /blur\(8px\)/.test(v?.filter) && v.op === '0.4');
+  check(/blur\(8px\)/.test(l?.filter) && l.op === '0.4', 'blur and opacity apply: ' + JSON.stringify(l));
   const before = await page.evaluate(() => getComputedStyle(document.querySelector('#eh-bgimg i')).backgroundImage);
   await cfg.locator('[data-g=bgSeed]').click();
   check(await until(() => page.evaluate(() => getComputedStyle(document.querySelector('#eh-bgimg i')).backgroundImage), v => v !== before) !== before, 'Shuffle draws it anew');
@@ -41,7 +41,7 @@ test('the Artwork background draws a scene behind the page', { tag: ['@prod'] },
   await page.reload();
   await inject('event_horizon');
   l = await until(() => layer(page), v => v?.shown);
-  check(l?.shown && /blur\(10px\)/.test(l.filter), 'kept across a reload: ' + JSON.stringify(l));
+  check(l?.shown && /blur\(8px\)/.test(l.filter), 'kept across a reload: ' + JSON.stringify(l));
 });
 
 // Image: an address taken on Enter; a broken one says so; a non-address too

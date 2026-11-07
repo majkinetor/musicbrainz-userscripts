@@ -10,8 +10,8 @@ const openFx = async page => {
   await until(() => cfg.locator('[data-fx-name]').count(), n => n === 1);
   return cfg;
 };
-// an effect added from the gallery: + Add effect, its tile, then Add
-const fxAdd = async (cfg, k) => { await cfg.locator('[data-fx-gal]').click(); await cfg.locator(`[data-fx-pick=${k}]`).click(); await cfg.locator(`[data-fx-addgo=${k}]`).click(); };
+// an effect added from the gallery: Add, then its tile
+const fxAdd = async (cfg, k) => { await cfg.locator('[data-fx-gal]').click(); await cfg.locator(`[data-fx-pick=${k}]`).click(); };
 // the hexagons on: its layer picked, or added from the gallery when missing
 const hexOn = async cfg => {
   if (await cfg.locator('[data-fx-sel=hexagons]').count()) await cfg.locator('[data-fx-sel=hexagons]').click();
@@ -29,7 +29,7 @@ test('effect presets save, load and delete by name', { tag: ['@prod', '@critical
   const cfg = await openFx(page);
   check(await cfg.locator('[data-fx-del][aria-disabled=true]').count() === 1, 'nothing saved to delete yet');
   await hexOn(cfg);
-  await cfg.locator('[data-g=hexOpacity][data-k="30"]').click();
+  await cfg.locator('[data-g=hexOpacity][data-k="20"]').click();
   await cfg.locator('[data-fx-name]').fill('Soft');
   await cfg.locator('[data-fx-save]').click();
   check(await until(() => names(page), v => v?.[0] === 'Soft'), 'saved, and the name goes to String Theory');
@@ -71,7 +71,7 @@ test('an effect preset goes out and back as JSON', { tag: ['@prod'] }, async ({ 
   await inject('event_horizon');
   const cfg = await openFx(page);
   await hexOn(cfg);
-  await cfg.locator('[data-g=hexOpacity][data-k="30"]').click();
+  await cfg.locator('[data-g=hexOpacity][data-k="20"]').click();
   await cfg.locator('[data-fx-name]').fill('Share');
   await cfg.locator('[data-fx-save]').click();
   await cfg.locator('[data-fx-dd]').click();
@@ -97,7 +97,7 @@ test('a theme\'s preset applies when String Theory names it', { tag: ['@prod'] }
   await inject('event_horizon');
   const cfg = await openFx(page);
   await hexOn(cfg);
-  await cfg.locator('[data-g=hexOpacity][data-k="30"]').click();
+  await cfg.locator('[data-g=hexOpacity][data-k="20"]').click();
   await cfg.locator('[data-fx-name]').fill('Night');
   await cfg.locator('[data-fx-save]').click();
   await cfg.locator('[data-fx-name]').fill('Day');
