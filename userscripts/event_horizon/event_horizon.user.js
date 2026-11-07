@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.07.163138
+// @version      2026.11.07.181405
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11863,17 +11863,20 @@ function cfgWire(panel, b, body) {
         setTimeout(() => { w.remove(); if (bt.isConnected) { bt.classList.remove('fx-ok'); bt.innerHTML = was; } }, 1800);
     };
     const fxAddOwn = name => { nmKeep('fx', [...nmList('fx'), { name, v: fxNow() }]); S.fxCur = name; save(); fxPublish(); LOG.info('Effect preset saved: ' + name); fxRedraw(); };
-    const fxSaveAs = (sel = '[data-fx-save]') => { const cur = fxFind(S.fxCur), n = fxFree(fxTyped() || (cur ? cur.name : '')); fxAddOwn(n); fxDone(sel, 'Saved as ' + n); };
-    const fxSave = () => {
+    const fxSaveAs = (sel = '[data-fx-save]', short) => { const cur = fxFind(S.fxCur), n = fxFree(fxTyped() || (cur ? cur.name : '')); fxAddOwn(n); fxDone(sel, short ? 'Saved' : 'Saved as ' + n); };
+    // short: Enter in the name field, where the name is in sight, so the note says only Saved
+    const fxSave = short => {
         const cur = fxFind(S.fxCur), own = fxOwn(S.fxCur);
-        if (!cur || !own) return fxSaveAs();   // unsaved, or built in: a copy of its own
+        if (!cur || !own) return fxSaveAs(undefined, short);   // unsaved, or built in: a copy of its own
         // the user's own: the effect as it is now, under the name typed; a change stays out of the preset until saved
         const want = fxTyped(), name = want && want !== own.name ? fxFree(want, own) : own.name;
         if (name === own.name && fxSame(own)) return fxDone('[data-fx-save]', 'Saved');
         nmKeep('fx', nmList('fx').map(x => x === own ? { name, v: fxNow() } : x)); S.fxCur = name; save(); fxPublish();
         LOG.info('Effect preset saved: ' + (name === own.name ? name : own.name + ' → ' + name)); fxRedraw();
-        fxDone('[data-fx-save]', name === own.name ? 'Saved' : 'Saved as ' + name);
+        fxDone('[data-fx-save]', name === own.name || short ? 'Saved' : 'Saved as ' + name);
     };
+    // the name field keeps the focus through a redraw, its caret at the end
+    const fxNameFocus = () => { const i = b.querySelector('[data-fx-name]'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } };
     let ddOff = null;
     const ddClose = () => { const dd = b.querySelector('.fx-dd'), bt = b.querySelector('[data-fx-dd]'); if (dd) dd.hidden = true; if (bt) bt.setAttribute('aria-expanded', 'false'); if (ddOff) { ddOff(); ddOff = null; } };
     const ddOpen = () => {
@@ -11887,7 +11890,18 @@ function cfgWire(panel, b, body) {
         addEventListener('keydown', esc, true);
         ddOff = () => { if (typeof off1 === 'function') off1(); removeEventListener('keydown', esc, true); };
     };
-    panel.addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target.matches('[data-fx-name]')) { ev.preventDefault(); fxSave(); } });
+    panel.addEventListener('keydown', ev => {
+        if (!ev.target.matches('[data-fx-name]')) return;
+        if (ev.key === 'Enter') { ev.preventDefault(); fxSave(true); fxNameFocus(); return; }
+        // Up and Down load the list's previous and next preset, round at the ends; an unsaved change is dropped
+        if ((ev.key === 'ArrowUp' || ev.key === 'ArrowDown') && !ev.altKey && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey) {
+            const l = fxAll(); if (!l.length) return;
+            ev.preventDefault();
+            const i = S.fxCur ? l.findIndex(x => fxLow(x.name) === fxLow(S.fxCur)) : -1, d = ev.key === 'ArrowDown' ? 1 : -1;
+            const n = i < 0 ? (d > 0 ? 0 : l.length - 1) : (i + d + l.length) % l.length;
+            ddClose(); fxUse(l[n].name); fxRedraw(); fxNameFocus();
+        }
+    });
     // a name typed is a change too: it lights Save (+ on a built-in preset), as a changed effect does
     panel.addEventListener('input', ev => {
         if (!ev.target.matches('[data-fx-name]')) return;
