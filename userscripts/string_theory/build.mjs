@@ -263,6 +263,8 @@ var __stStarters = {};   // #851: per member folder, how String Theory's setting
   document.addEventListener('mbu-st-settings', open);
   var palette = function () { try { stPalette(); } catch (e) { try { console.error('[String Theory] command palette failed:', e); } catch (x) {} } };
   document.addEventListener('mbu-st-palette', palette);
+  // another script's way to the theme chooser, as Event Horizon's Effects tab has
+  document.addEventListener('mbu-st-themes', function () { setTimeout(function () { try { stThemeChooser(); } catch (e) { try { console.error('[String Theory] theme chooser failed:', e); } catch (x) {} } }, 0); });
   // String Theory's icon shows even on a page none of its scripts puts a launcher on
   if (ST_ON_MB) {
     stSyncListenAuth();
