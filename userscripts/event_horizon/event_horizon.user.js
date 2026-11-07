@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08.030000
+// @version      2026.11.08.040000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8619,7 +8619,7 @@ const HEX_FX = {
                     ctx.shadowColor = p.c; ctx.shadowBlur = 0;
                     ctx.globalAlpha = a * .22; ctx.fillStyle = p.c; ctx.fill();
                     // a soft halo around the cell, as wide as the Glow setting says
-                    if (P.glow) { ctx.shadowBlur = 18 * P.glow; ctx.globalAlpha = a * .12 * Math.min(1.5, P.glow); ctx.lineWidth = 6 * P.glow; ctx.strokeStyle = p.c; ctx.stroke(); }
+                    if (P.glow) { ctx.shadowBlur = 18 * P.glow ** 1.5; ctx.globalAlpha = a * .12 * P.glow; ctx.lineWidth = 6 * P.glow; ctx.strokeStyle = p.c; ctx.stroke(); }
                     ctx.shadowBlur = 10 * P.glow; ctx.globalAlpha = a; ctx.strokeStyle = p.c; ctx.lineWidth = 1; ctx.stroke();
                 }
                 ctx.globalAlpha = 1; ctx.shadowBlur = 0;
@@ -8698,7 +8698,7 @@ const HEX_FX = {
                 slow = slow.filter(s => (s.age += dt) < s.life);
                 for (const s of slow) {
                     const a = s.v * Math.sin(Math.PI * s.age / s.life) ** 2 * (.85 + .15 * Math.sin(s.age * 3.1)) * (Math.random() < .07 ? rnd(.15, .6) : 1);
-                    ctx.shadowBlur = (10 + 18 * s.v) * P.glow; ctx.shadowColor = s.c;
+                    ctx.shadowBlur = (10 + 18 * s.v) * P.glow ** 1.5; ctx.shadowColor = s.c;
                     for (const [lw, al, core] of [[10 * P.glow, .05 * P.glow], [4, .1], [1, .45, 1]]) {
                         ctx.lineWidth = lw; ctx.globalAlpha = a * al; ctx.strokeStyle = core ? grad(s.pts, s.rgb, .55, .25) : s.c;
                         line(s.pts, s.pts.length);
@@ -8709,7 +8709,7 @@ const HEX_FX = {
                     const grown = Math.min(1, b.age / b.grow), fade = b.age < b.grow ? 1 : 1 - (b.age - b.grow) / (b.life - b.grow);
                     // it flickers hard while it strikes, then now and then as it fades
                     const a = b.v * fade * fade * (Math.random() < (b.age < b.grow * 1.5 ? .25 : .12) ? rnd(.3, .65) : 1);
-                    ctx.shadowColor = b.c; ctx.shadowBlur = (12 + 20 * b.v) * P.glow;
+                    ctx.shadowColor = b.c; ctx.shadowBlur = (12 + 20 * b.v) * P.glow ** 1.5;
                     for (const [lw, al, core] of [[9 * P.glow, .07 * P.glow], [3.5, .22], [1.2, 1, 1]]) {
                         ctx.lineWidth = lw * (.6 + b.v * .5); ctx.globalAlpha = a * al;
                         // the core is hotter the higher the voltage, and the forks run cooler than the main arc
@@ -8746,13 +8746,14 @@ const HEX_FX = {
                 }
                 front = next.slice(0, 400);
                 ctx.clearRect(0, 0, w, h); ctx.lineWidth = 1.2;
-                const fade = 1.6 * P.trail;
+                // squared, so the strip spans a short spark (20%) to a long glowing wake (200%)
+                const fade = 1.6 * P.trail ** 2;
                 lit = lit.filter(e => (e.age += dt) < fade);
-                const seg = (a, b, al, c) => { ctx.strokeStyle = ctx.shadowColor = c; for (const [lw, k] of P.glow ? [[6 * P.glow, .1 * Math.min(1.5, P.glow)], [1.2, 1]] : [[1.2, 1]]) { ctx.lineWidth = lw; ctx.globalAlpha = al * k; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke(); } };
-                ctx.shadowBlur = 8 * P.glow;
+                const seg = (a, b, al, c) => { ctx.strokeStyle = ctx.shadowColor = c; for (const [lw, k] of P.glow ? [[7 * P.glow, .14 * P.glow], [1.2, 1]] : [[1.2, 1]]) { ctx.lineWidth = lw; ctx.globalAlpha = al * k; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke(); } };
+                ctx.shadowBlur = 8 * P.glow ** 1.5;
                 for (const e of lit) seg(e.a, e.b, (1 - e.age / fade) ** 1.5, e.c);
                 // the signal's head burns brighter than its trail
-                ctx.shadowBlur = 16 * P.glow;
+                ctx.shadowBlur = 16 * P.glow ** 1.5;
                 for (const f of front) if (f.j >= 0) {
                     const x = L.xs[f.i] + (L.xs[f.j] - L.xs[f.i]) * f.p, y = L.ys[f.i] + (L.ys[f.j] - L.ys[f.i]) * f.p;
                     seg([L.xs[f.i], L.ys[f.i]], [x, y], 1, f.c);
