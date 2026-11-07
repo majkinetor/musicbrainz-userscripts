@@ -1,5 +1,7 @@
 export const coverageValues = ['Covered', 'Partial', 'Gap', 'Unknown'];
 export const weightOptions = [[0,'Ignore'],[1,'Minor'],[3,'Normal'],[5,'Important'],[10,'Essential']];
+export const verdictOptions = ['Replaceable','Mostly replaceable','Partial overlap','Complementary','No equivalent','Unassessed','Not applicable'];
+export const verdictLabel = value => value === 'Replaceable' ? 'Fully replaceable' : value;
 
 export function weightedVerdict(features) {
   const active = features.filter(f => f.weight > 0);
@@ -35,6 +37,8 @@ export function readReviewBundle(value) {
     const r = item.review;
     if (!r || !['In progress','Confirmed','Changes requested'].includes(r.status) || typeof r.updatedAt !== 'string' || !Number.isFinite(Date.parse(r.updatedAt))) fail();
     if (!r.basis || typeof r.basis.hash !== 'string' || typeof r.basis.name !== 'string') fail();
+    if (r.proposedVerdict !== undefined && r.proposedVerdict !== '' && !verdictOptions.includes(r.proposedVerdict)) fail();
+    if (r.deletedComments !== undefined && (!Array.isArray(r.deletedComments) || r.deletedComments.some(id=>typeof id !== 'string'))) fail();
     if (typeof r.note !== 'string' || r.note.length > 20000 || (r.draft !== undefined && (typeof r.draft !== 'string' || r.draft.length > 20000)) || !r.features || typeof r.features !== 'object' || Array.isArray(r.features) || Object.keys(r.features).length > 200 || !Array.isArray(r.comments)) fail();
     const features = Object.fromEntries(Object.entries(r.features).map(([id,f]) => {
       if (['__proto__','constructor','prototype'].includes(id) || !f || typeof f.name !== 'string' || f.name.length > 2000 || !weightOptions.some(w => w[0] === f.weight) || !coverageValues.includes(f.coverage) || typeof f.comment !== 'string' || f.comment.length > 20000) fail();
@@ -42,9 +46,10 @@ export function readReviewBundle(value) {
     }));
     const comments = r.comments.map(c => {
       if (!c || typeof c.id !== 'string' || typeof c.text !== 'string' || c.text.length > 20000 || !Number.isFinite(Date.parse(c.at))) fail();
-      return {id:c.id,text:c.text,at:c.at};
+      if (c.updatedAt !== undefined && !Number.isFinite(Date.parse(c.updatedAt))) fail();
+      return {id:c.id,text:c.text,at:c.at,...(c.updatedAt?{updatedAt:c.updatedAt}:{})};
     });
-    return {id:item.id,review:{status:r.status,note:r.note,draft:r.draft || '',features,comments,basis:r.basis,updatedAt:r.updatedAt}};
+    return {id:item.id,review:{status:r.status,proposedVerdict:r.proposedVerdict || '',note:r.note,draft:r.draft || '',features,comments,deletedComments:r.deletedComments || [],basis:r.basis,reportAtReview:r.reportAtReview || null,updatedAt:r.updatedAt}};
   });
   return entries;
 }
@@ -56,8 +61,13 @@ export function mergeReviewEntries(existing, incoming) {
     const old = next.get(id);
     if (!old) { next.set(id,review); continue; }
     const winner = Date.parse(review.updatedAt) > Date.parse(old.updatedAt) ? review : old;
-    const comments = new Map([...old.comments,...review.comments].map(c => [c.id,c]));
-    next.set(id,{...winner,comments:[...comments.values()].sort((a,b) => a.at.localeCompare(b.at))});
+    const deletedComments=[...new Set([...(old.deletedComments || []),...(review.deletedComments || [])])];
+    const comments = new Map();
+    for(const c of [...old.comments,...review.comments]){
+      const previous=comments.get(c.id);
+      if(!deletedComments.includes(c.id)&&(!previous || Date.parse(c.updatedAt || c.at)>=Date.parse(previous.updatedAt || previous.at)))comments.set(c.id,c);
+    }
+    next.set(id,{...winner,deletedComments,comments:[...comments.values()].sort((a,b) => a.at.localeCompare(b.at))});
   }
   return next;
 }

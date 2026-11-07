@@ -1,6 +1,6 @@
 # Userscript comparison and review
 
-The [standalone report](out/index.html) for [#926](https://github.com/majkinetor/musicbrainz-userscripts/issues/926) lists 293 distinct tools from the wiki and preserves seven source-reviewed comparisons. Other entries are marked unassessed, suite entries or companion tools. Script names and verdicts start collapsed; expanding a row shows full-width capabilities, evidence and review controls. The original [plan and baseline](../reports/926-userscript-comparison/PLAN.md#delivery-sequence-and-acceptance) remain available.
+The [public report](https://musicbrainz-userscript-review.tamerhubarb.chatgpt.site) for [#926](https://github.com/majkinetor/musicbrainz-userscripts/issues/926) lists 293 distinct tools from the wiki and preserves seven source-reviewed comparisons. Other entries are marked unassessed, suite entries or companion tools. Script names and verdicts start collapsed; expanding a row shows full-width capabilities, evidence and review controls. The [standalone HTML](out/index.html) also works offline.
 
 ## View or rebuild
 
@@ -19,9 +19,12 @@ The output combines [sources.json](data/sources.json), [reviews.json](data/revie
 
 ## Your review and AI handoff
 
-1. Expand a script. Set each important capability's weight and correct coverage where you have evidence. Add missing capabilities; ignore the broad wiki description if you replace it with separate features.
-2. Leave feature-specific comments, an overall correction, or timestamped comments with **Post comment**. Posting adds a local comment; nothing is sent to GitHub. Use **In progress**, **Confirmed** or **Changes requested** to organize the work.
-3. **Export reviews for AI** downloads a JSON file with weights, coverage corrections, notes, posted comments, drafts, original capabilities/verdict, stable script identity, wiki revision and assessed/observed source fingerprints. Give that file to the AI to incorporate into the next assessment.
+1. Expand a script. Choose **My verdict** directly or keep **Weighted**. Set capability weights, correct coverage where you have evidence, and add missing features. Short field labels use the suite's shared tooltips for explanations.
+2. Add a feature note, an overall note or timestamped comments. **Edit** and **Delete** manage comments; the note's **✕** clears it. Emptying a feature-note field deletes its text. Deleted comments stay deleted when an older export is imported. Use **In progress**, **Confirmed** or **Changes requested** to organize the work.
+3. **Send to GitHub** prepares a discussion draft for [3rd party](https://github.com/majkinetor/musicbrainz-userscripts/discussions/categories/3rd-party). It contains an immutable report link, concise verdict changes (for example, `Harmony: Mostly replaceable → Fully replaceable`), feature/note counts and the complete JSON export in a collapsible section. Copy the draft, open GitHub, paste and publish from your own account. If the complete body exceeds the conservative size limit, the draft asks you to attach **Download JSON** instead; no feedback is truncated. GitHub supports JSON attachments ([documentation](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files#text-and-data-files)).
+4. **Export** downloads the same review as a JSON file, including your selected verdict, weights, corrections, notes, comments, drafts, report version and original source references. **Import** restores it. Review files can be supplied directly to the AI without a discussion.
+
+The public Site needs no account to read or draft reviews. Drafts are private to each visitor's browser; the report does not host a shared comment database, collect GitHub tokens, or post as the maintainer. GitHub signs in the visitor and handles publication. Nothing has been posted merely because the draft was prepared.
 
 Changes save to browser `localStorage` under `mb-userscripts:926:reviews:v1`. A storage failure is shown explicitly; export still works from memory. Keep the same file path and browser, or use **Import reviews** after moving it. Browser storage is not a backup: the export is the portable copy.
 
@@ -39,7 +42,13 @@ Import validates the format before modifying data. Newer script-level edits win 
 
 Covered earns the full weight, Partial half and Gap zero. Unknown active coverage yields **Needs assessment** with a possible coverage range. All active weight covered means **Replaceable**; at least 75% means **Mostly replaceable**; other positive coverage means **Partial overlap**; no covered weight means **No equivalent**. An uncovered essential feature caps the result at Partial overlap. Ignoring every feature yields Not applicable. Rounding a percentage never hides an uncovered feature.
 
-The weighted result is personal to your workflow and appears beside the original AI verdict; it does not overwrite the assessment or increase its confidence. These weighting rules are the maintainer-requested review layer, separate from the evidence-based comparison policy below.
+The weighted result is personal to your workflow; **My verdict** can override it explicitly. The selected verdict appears beside the original finding and is preserved in exports and discussion summaries. Neither selection overwrites the report's assessment or increases its confidence.
+
+## Publishing and report versions
+
+[site.json](site.json) records the existing Sites project ID and public URL. Reuse that identity; do not create another Site when updating this report. The deploy checkout uses `.openai/hosting.json` with that ID and `static.directory` set to `dist`. Copy only `out/` into `dist/`; never copy `.cache/`, browser data or credentials. The Sites skill's source helper pushes and packages this dedicated deploy checkout before the native save/deploy calls.
+
+Each build computes a SHA-256 report version from the report data, markup, styles, model, shared tooltip runtime and review/sharing code. `out/index.html` is the current report; `out/reports/<hash>.html` is its immutable snapshot; [report.json](out/report.json) records the version URL. Keep published snapshots in subsequent deployments. Discussion drafts and JSON exports reference the exact snapshot, wiki revision, toolset commit and source manifest. Each individual review also retains the report it was made against; confirming a changed snapshot explicitly advances that reference.
 
 ## Collect changed sources
 
@@ -75,4 +84,4 @@ Preserve each published Git commit for history. Git tracks source manifests, jud
 
 Confidence and freshness are independent of coverage. All pilot findings have medium confidence: entry implementations and suite code/docs were inspected, external shared requirements were not fully reviewed, and no end-to-end comparisons were run. The evidence panel makes this explicit before anyone relies on an uninstall recommendation.
 
-Periodic reconciliation must revisit prior gaps when the suite adds capabilities and when websites change without source updates. Full source assessment, scheduled collection and hosting remain later work. Local review/export does not publish comments or change userscripts.
+Periodic reconciliation must revisit prior gaps when the suite adds capabilities and when websites change without source updates. Full source assessment and scheduled collection remain later work. Review/export does not change userscripts.

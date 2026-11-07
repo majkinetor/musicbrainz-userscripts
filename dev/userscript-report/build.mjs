@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { validate, reviewState, evidenceUrl, hash, inputsFor } from './lib.mjs';
 import { parseCatalog, githubIdentity } from './catalog.mjs';
+import { tipJs } from '../ui/tooltip.mjs';
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const read = name => JSON.parse(readFileSync(path.join(dir,'data',name)));
 const sources = read('sources.json'), reviews = read('reviews.json');
@@ -44,17 +45,27 @@ const options = values => [...new Set(values)].sort().map(v=>`<option>${esc(v)}<
 const duplicateNames = new Set(entries.filter((e,i)=>entries.findIndex(x=>x.name===e.name)!==i).map(e=>e.name));
 const rows = entries.map(e=>`<details class="script" data-id="${esc(e.id)}"><summary><span class="name">${esc(e.name)}${duplicateNames.has(e.name)?` <small>(${esc(e.author)})</small>`:''}</span><span class="verdicts"><span class="baseline">${esc(e.verdict)}</span><span class="personal" hidden></span><span class="review-marker" hidden></span></span></summary><div class="detail"></div></details>`).join('\n');
 const model = readFileSync(path.join(dir,'review-model.mjs'),'utf8').replace(/^export /gm,'');
+const sharing = readFileSync(path.join(dir,'share.mjs'),'utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export /gm,'');
+const tooltips = tipJs(['main']);
+const ui = readFileSync(path.join(dir,'review-ui.js'),'utf8');
+const css = readFileSync(path.join(dir,'style.css'),'utf8');
 let html = readFileSync(path.join(dir,'template.html'),'utf8');
+const site = JSON.parse(readFileSync(path.join(dir,'site.json'),'utf8'));
+data.siteUrl=site.site_url;
+data.reportVersion=hash(JSON.stringify(data)+html+model+sharing+tooltips+ui+css);
+data.permanentUrl=site.site_url+'/reports/'+data.reportVersion+'.html';
 const tokens = {
   '@@COUNT@@':String(entries.length),'@@REVIEWED@@':String(reviews.length),'@@ROWS@@':rows,
   '@@VERDICTS@@':options(entries.map(e=>e.verdict)),'@@CATEGORIES@@':options(entries.flatMap(e=>e.categories)),
   '@@TOOLS@@':options(entries.flatMap(e=>e.tools)),
   '@@DATA@@':JSON.stringify(data).replaceAll('<','\\u003c'),
-  '@@CSS@@':readFileSync(path.join(dir,'style.css'),'utf8'),
-  '@@MODEL@@':model,'@@UI@@':readFileSync(path.join(dir,'review-ui.js'),'utf8')};
+  '@@CSS@@':css,'@@MODEL@@':model,'@@SHARING@@':sharing,'@@TOOLTIPS@@':tooltips,'@@UI@@':ui};
 html = html.replace(/@@[A-Z]+@@/g,token=>tokens[token] ?? token);
 mkdirSync(path.join(dir,'out'),{recursive:true});
 writeFileSync(path.join(dir,'out/index.html'),html);
+mkdirSync(path.join(dir,'out/reports'),{recursive:true});
+writeFileSync(path.join(dir,'out/reports',data.reportVersion+'.html'),html);
+writeFileSync(path.join(dir,'out/report.json'),JSON.stringify({version:data.reportVersion,url:data.permanentUrl,wikiRevision:data.wiki.revision},null,2)+'\n');
 writeFileSync(path.join(dir,'data/catalog.json'),JSON.stringify({wikiRevision:sources.wiki.revision,wikiSha256:sources.wiki.sha256,entries:catalog},null,2)+'\n');
 writeFileSync(path.join(dir,'data/review-queue.json'),JSON.stringify(reviews.map(r=>({id:r.id,...reviewState(r,sources)})).filter(r=>r.reasons.length),null,2)+'\n');
 console.log(`Built ${entries.length} unique listed tools; ${reviews.length} source-reviewed. Other entries remain explicitly unassessed or self/companion entries.`);
