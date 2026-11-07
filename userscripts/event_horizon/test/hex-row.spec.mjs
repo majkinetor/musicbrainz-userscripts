@@ -28,7 +28,7 @@ test('the Effects tab shows the hexagons settings and hides what the motion does
   const cfg = await openFx(page);
   await cfg.locator('[data-g=hexOpacity][data-k="20"]').click();
   check(await until(() => page.evaluate(() => document.documentElement.style.getPropertyValue('--eh-hex-opacity')), v => v === '0.2') === '0.2', 'Outlines 20% sets the opacity');
-  const shown = () => cfg.locator('.cr .cl').allTextContents();
+  const shown = () => cfg.locator('.cr .cl').evaluateAll(a => a.map(e => e.firstChild.textContent));   // the label without its unit
   await cfg.locator('[data-g=hexMotion][data-k=static]').click();
   check(!(await until(shown, v => !v.includes('Pace'))).includes('Strength'), 'Static hides the effect rows');
   await cfg.locator('[data-g=hexMotion][data-k=electricity]').click();

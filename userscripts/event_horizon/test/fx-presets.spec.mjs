@@ -40,7 +40,7 @@ test('effect presets save, load and delete by name', { tag: ['@prod', '@critical
   check((await until(() => names(page), v => v?.length === 2)).join() === 'Soft,Strong', '+ keeps a copy');
   const pick = async n => { await cfg.locator('[data-fx-dd]').click(); await cfg.locator(`[data-fx-item="${n}"]`).click(); };
   await pick('Soft');
-  check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.3') === '0.3', 'Soft stays as saved: the change went to Strong only');
+  check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.2') === '0.2', 'Soft stays as saved: the change went to Strong only');
   await pick('Strong');
   check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.6') === '0.6', 'and Strong has it');
 
@@ -88,7 +88,7 @@ test('an effect preset goes out and back as JSON', { tag: ['@prod'] }, async ({ 
   await cfg.locator('[data-fx-json]').fill(json);
   await cfg.locator('[data-fx-import]').click();
   check(await until(() => cfg.locator('[data-fx-name]').inputValue(), v => v === 'Share 2') === 'Share 2', 'imported under a free name');
-  check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.3') === '0.3', 'and applied');
+  check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.2') === '0.2', 'and applied');
 });
 
 // String Theory's theme names a preset on <html data-st-eh-fx>: applied when the name changes, not again over the user's own changes
@@ -105,7 +105,7 @@ test('a theme\'s preset applies when String Theory names it', { tag: ['@prod'] }
   await cfg.locator('[data-fx-rm=hexagons]').click();
   check(await until(() => page.evaluate(() => document.documentElement.dataset.ehHex || ''), v => !v) === '', 'the effect removed');
   await page.evaluate(() => document.documentElement.setAttribute('data-st-eh-fx', 'Night'));
-  check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.3') === '0.3', 'the theme\'s preset comes on');
+  check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.2') === '0.2', 'the theme\'s preset comes on');
   check(await until(() => cfg.locator('[data-fx-name]').inputValue(), v => v === 'Night') === 'Night', 'the open window shows it');
   await cfg.locator('[data-g=hexOpacity][data-k="60"]').click();
   await page.evaluate(() => document.documentElement.setAttribute('data-st-eh-fx', 'Night'));
