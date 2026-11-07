@@ -92,6 +92,19 @@ test.describe('theme chooser effect', () => {
     check(await sel.inputValue() === '' && await until(op, v => v === '0.6') === '0.6', 'up the one before');
     await page.keyboard.press('ArrowLeft');
     check(await sel.inputValue() === '', 'and the themes stepped to bring that');
+    // the counts: a click steps on, a right-click back
+    const fxI = page.locator('#st-tc [data-fx-i]'), thI = page.locator('#st-tc [data-th-i]');
+    check(await fxI.textContent() === '1/4', `the effect shows its place (${await fxI.textContent()})`);
+    await fxI.click();
+    check(await sel.inputValue() === '-' && await fxI.textContent() === '2/4', 'a click on its count picks the next effect');
+    await fxI.click({ button: 'right' });
+    check(await sel.inputValue() === '' && await fxI.textContent() === '1/4', 'a right-click the one before');
+    const n = await thI.textContent();
+    await thI.click();
+    const m = await thI.textContent();
+    check(parseInt(m) === parseInt(n) % parseInt(n.split('/')[1]) + 1, `a click on the theme's count steps to the next (${n} → ${m})`);
+    await thI.click({ button: 'right' });
+    check(await thI.textContent() === n, 'a right-click back');
     await page.screenshot({ path: 'test-results/theme-chooser-effect.png' });
     await page.keyboard.press('Escape');
     check(await until(op, v => v === '0.6') === '0.6', 'Escape puts the effect back');
@@ -108,7 +121,7 @@ test.describe('theme chooser effect', () => {
     await sel.selectOption('Bright');
     await page.click('#st-tc-ed');
     await page.waitForSelector('#eh-cfg [data-tab=effects][aria-selected=true]', { timeout: 5000 });
-    check(!(await page.$('#st-tc')), 'the pencil opens Event Horizon on Effects, and the chooser goes');
+    check(!!(await page.$('#st-tc')), 'the pencil opens Event Horizon on Effects, and the chooser stays');
     check(await until(() => page.locator('#eh-cfg [data-fx-name]').inputValue(), v => v === 'Bright') === 'Bright' && await until(op, v => v === '0.6') === '0.6', 'on the effect that was on show');
     await page.screenshot({ path: 'test-results/theme-chooser-edit.png' });
   });
