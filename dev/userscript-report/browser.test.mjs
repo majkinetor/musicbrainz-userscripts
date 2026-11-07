@@ -5,7 +5,7 @@ import { chromium } from '@playwright/test';
 import { readFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const url = new URL('./out/index.html',import.meta.url).href;
+const url = process.env.REPORT_TEST_URL || new URL('./out/index.html',import.meta.url).href;
 const cache = fileURLToPath(new URL('./.cache/',import.meta.url));
 mkdirSync(cache,{recursive:true});
 test('collapsed listing, weighted review, comments, reload and export/import round trip',async()=>{
@@ -23,7 +23,7 @@ test('collapsed listing, weighted review, comments, reload and export/import rou
     await row.locator('.caps').waitFor();
     await row.locator('[data-feature="notes.autofill"] [data-field="weight"]').selectOption('0');
     await row.locator('[data-feature="notes.acoustid"] [data-field="weight"]').selectOption('0');
-    assert.match(await row.locator('.personal').textContent(),/Replaceable/);
+    assert.match(await row.locator('.personal').textContent(),/Fully replaceable/);
     await row.locator('.note').fill('Only need MusicBrainz.\nKeep my weights.');
     const comment='<img src=x onerror="window.reviewXss=true"> Important gap';
     await row.locator('.comment-draft').fill(comment);
@@ -87,4 +87,32 @@ test('blocked browser storage preserves in-memory edits for export',async()=>{
     const download=await wait;const file=cache+'storage-fallback.json';await download.saveAs(file);
     assert.equal(JSON.parse(readFileSync(file,'utf8')).entries[0].review.note,'Survives storage failure through export');
   } finally {await browser.close();}
+});
+
+test('visitor verdict, edited and deleted notes, and versioned GitHub draft',async()=>{
+  const browser=await chromium.launch({headless:true});
+  try{
+    const page=await browser.newPage({viewport:{width:1500,height:1100}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(url);
+    const entry=await page.evaluate(()=>JSON.parse(document.getElementById('report-data').textContent).entries.find(e=>e.name==='Harmony'));
+    await page.locator('#search').fill('Harmony');const row=page.locator('.script[data-id="'+entry.id+'"]');await row.locator('summary').first().click();
+    await row.locator('.my-verdict').selectOption('Replaceable');assert.match(await row.locator('.personal').textContent(),/Fully replaceable/);
+    await row.locator('.note').fill('Remove this note');await row.locator('.clear-note').click();assert.equal(await row.locator('.note').inputValue(),'');
+    await row.locator('.comment-draft').fill('Original comment');await row.locator('.post').click();await row.locator('.edit-comment').click();
+    await row.locator('.comment-edit').fill('Edited comment');await row.locator('.save-comment').click();assert.match(await row.locator('.comments').textContent(),/Edited comment/);
+    const wait=page.waitForEvent('download');await page.locator('#export').click();const previous=await wait;const oldFile=cache+'before-delete.json';await previous.saveAs(oldFile);
+    await row.locator('.delete-comment').click();assert.equal(await row.locator('.comments li').count(),0);
+    await page.locator('#import-file').setInputFiles(oldFile);await page.waitForFunction(()=>document.getElementById('message').textContent.startsWith('Imported'));
+    assert.equal(await row.locator('.comments li').count(),0);assert.equal(await row.locator('.my-verdict').inputValue(),'Replaceable');
+    await row.locator('.note').fill('Please use my verdict in the next report');
+    await row.locator('.my-verdict').hover();await page.locator('#mbu-tip.mbu-tip-on').waitFor();
+    await page.locator('#github').click();await page.locator('#share-dialog').waitFor();
+    const body=await page.locator('#share-body').inputValue();assert.ok(body.includes('**Harmony**: Companion tool → Fully replaceable'));
+    const exported=JSON.parse(body.match(/```json\n([\s\S]*?)\n```/)[1]);
+    assert.equal(exported.entries[0].review.proposedVerdict,'Replaceable');assert.equal(exported.entries[0].review.comments.length,0);
+    assert.equal(exported.entries[0].review.deletedComments.length,1);assert.equal(exported.entries[0].review.note,'Please use my verdict in the next report');
+    assert.ok(exported.report.permanentUrl.endsWith('/reports/'+exported.report.reportVersion+'.html'));
+    assert.equal(new URL(await page.locator('#share-open').getAttribute('href')).searchParams.get('category'),'3rd-party');
+    if(process.env.REPORT_SCREENSHOT_DIR){await page.screenshot({path:process.env.REPORT_SCREENSHOT_DIR+'/926-site-share.png'});await page.locator('#share-dialog form button').click();await row.scrollIntoViewIfNeeded();await page.screenshot({path:process.env.REPORT_SCREENSHOT_DIR+'/926-site-review.png'});}
+    assert.deepEqual(errors,[]);
+  }finally{await browser.close();}
 });

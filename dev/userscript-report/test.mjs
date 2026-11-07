@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { validate, reviewState, userscriptText, wikiRevision } from './lib.mjs';
 import { parseCatalog } from './catalog.mjs';
 import { weightedVerdict, readReviewBundle, mergeReviewEntries } from './review-model.mjs';
+import { discussionDraft, changeSummary } from './share.mjs';
 
 const sources = JSON.parse(readFileSync(new URL('./data/sources.json', import.meta.url)));
 const reviews = JSON.parse(readFileSync(new URL('./data/reviews.json', import.meta.url)));
@@ -101,4 +102,49 @@ test('malformed imports cannot apply out-of-range weights or prototype keys', ()
   assert.throws(()=>readReviewBundle(value));
   value.entries[0].review.features['example.feature'].weight=5;
   value.entries[0].id='__proto__';assert.throws(()=>readReviewBundle(value));
+});
+
+test('explicit visitor verdict and report version survive export import',()=>{
+  const review=makeReview('2026-11-07T10:00:00Z','Comment');
+  review.proposedVerdict='Replaceable';review.reportAtReview={reportVersion:'a'.repeat(64),permanentUrl:'https://example.com/reports/a.html'};
+  const entries=readReviewBundle({format:'mb-userscript-review',schemaVersion:1,entries:[{id:'example',review}]});
+  assert.equal(entries[0].review.proposedVerdict,'Replaceable');assert.equal(entries[0].review.reportAtReview.reportVersion,'a'.repeat(64));
+});
+test('deleted comments stay deleted when an older export is imported',()=>{
+  const old=makeReview('2026-11-07T10:00:00Z','Deleted note');
+  const recent={...old,updatedAt:'2026-11-07T11:00:00Z',comments:[],deletedComments:['Deleted note']};
+  for(const [existing,incoming] of [[recent,old],[old,recent]]){
+    const r=mergeReviewEntries(new Map([['example',existing]]),[{id:'example',review:incoming}]).get('example');
+    assert.equal(r.comments.length,0);assert.deepEqual(r.deletedComments,['Deleted note']);
+  }
+});
+test('edited comment text wins over an older copy of the same comment',()=>{
+  const old=makeReview('2026-11-07T10:00:00Z','Note');
+  const recent=structuredClone(old);recent.comments[0].text='Corrected note';recent.comments[0].updatedAt='2026-11-07T11:00:00Z';
+  const r=mergeReviewEntries(new Map([['example',recent]]),[{id:'example',review:old}]).get('example');
+  assert.equal(r.comments[0].text,'Corrected note');
+});
+const sharingFixture=()=>{const review=makeReview('2026-11-07T10:00:00Z','Comment');review.proposedVerdict='Replaceable';review.basis={...review.basis,baselineVerdict:'Mostly replaceable',features:[]};return {format:'mb-userscript-review',schemaVersion:1,report:{reportVersion:'a'.repeat(64),permanentUrl:'https://example.com/reports/a.html',wikiRevision:79510,toolsetCommit:'b'.repeat(40)},entries:[{id:'example',name:'Harmony',currentBasis:review.basis,review}]};};
+test('GitHub draft includes concise verdict changes, pinned report and the exact export',()=>{
+  const value=sharingFixture(),draft=discussionDraft(value);
+  assert.ok(draft.body.includes('**Harmony**: Mostly replaceable → Fully replaceable'));
+  assert.ok(draft.body.includes(value.report.permanentUrl));
+  assert.equal(new URL(draft.url).searchParams.get('category'),'3rd-party');
+  assert.deepEqual(JSON.parse(draft.body.match(/```json\n([\s\S]*?)\n```/)[1]),value);
+});
+test('oversized exports require an attachment rather than truncating feedback',()=>{
+  const value=sharingFixture();value.entries[0].review.comments=Array.from({length:4},(_,i)=>({id:String(i),at:'2026-11-07T10:00:00Z',text:'x'.repeat(18000)}));
+  const draft=discussionDraft(value);assert.equal(draft.requiresAttachment,true);assert.ok(draft.body.includes('Attach the downloaded JSON'));assert.ok(JSON.stringify(value).length>50000);
+});
+test('comments alone do not invent a verdict change',()=>{
+  const item=sharingFixture().entries[0];item.review.proposedVerdict='';item.review.features={};
+  assert.ok(!changeSummary(item).includes('→'));
+});
+
+test('the permanent report URL identifies a byte-identical report snapshot',()=>{
+  const metadata=JSON.parse(readFileSync(new URL('./out/report.json',import.meta.url),'utf8'));
+  assert.match(metadata.version,/^[a-f0-9]{64}$/);
+  const current=readFileSync(new URL('./out/index.html',import.meta.url));
+  const archived=readFileSync(new URL('./out/reports/'+metadata.version+'.html',import.meta.url));
+  assert.deepEqual(current,archived);assert.ok(metadata.url.endsWith('/reports/'+metadata.version+'.html'));
 });
