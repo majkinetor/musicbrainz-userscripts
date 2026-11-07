@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-07 18:44 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-07 19:48 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -453,6 +453,8 @@ Right-click Apollo's corner icon.
 | Aliases       | Alt+↓, then ↓ ↑, Enter                 | open the locale or type list, move, pick        |
 
 ### Notes
+
+- When another script drives the editor, as Falcon does, Apollo runs nothing on its own: see [String Theory → Automated mode](../string_theory/README.md#automated-mode).
 
 #### Log history
 
@@ -2295,6 +2297,8 @@ On a saved note or a pinned button:
 In a baby field, **Ctrl + ,** opens its panel with the filter focused; ↑ / ↓ and Enter pick a value. (Ctrl is ⌘ on a Mac.)
 
 ### Notes
+
+- When another script drives the page, as Falcon does, Mammoth fills in no defaults: see [String Theory → Automated mode](../string_theory/README.md#automated-mode).
 
 Mammoth's panel joins every edit-note field, other userscripts' included. How a script hosts it or adds a baby to its fields is in [DEVELOP.md](../mammoth/DEVELOP.md).
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.06.180940
+// @version      2026.11.07.190000
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg==
@@ -37,6 +37,7 @@
   const SETTINGS_ONLY = typeof MBU_SETTINGS_ONLY !== 'undefined' && !!MBU_SETTINGS_ONLY;   // #851: String Theory started this copy only to open its settings
   if (!SETTINGS_ONLY && !mbuClaim('mammoth', 'Mammoth')) return;
   try { console.info('[Mammoth] ' + mbuStartupInfo('Mammoth')); } catch (e) { /* no console */ }   // Mammoth keeps no session log
+  try { if (mbuAutomated()) console.info('[Mammoth] automated mode: defaults are not filled in (#936)'); } catch (e) { /* no console */ }
 
   const KEY = 'mammoth:data';
   const SKEY = 'mammoth:settings';
@@ -348,6 +349,21 @@
           }
       } catch (e) { /* no document */ }
       return line;
+  }
+
+  // Automated mode (#936): true when another script drives this page and nobody watches it,
+  // so a script does only what it is asked: no auto-match, no detection, no defaults, no
+  // searches whose result nobody sees, no archiving. Two signals:
+  //   - a Falcon worker: a same-origin iframe with the class falcon-worker;
+  //   - any other orchestrator: mbu-auto=0 in the query or the hash (#mbu-auto=0 where
+  //     MusicBrainz rejects an unknown parameter).
+  //   if (mbuAutomated()) { ...skip what runs on its own... }
+  function mbuAutomated() {
+      if (mbuAutomated._v !== undefined) return mbuAutomated._v;
+      var v = false;
+      try { var fe = window.frameElement; v = !!(fe && fe.classList && fe.classList.contains('falcon-worker')); } catch (e) { /* cross-origin parent */ }
+      try { if (!v) v = /(?:[?&#])mbu-auto=0(?:[&#]|$)/.test(location.search + location.hash); } catch (e) { /* no location */ }
+      return (mbuAutomated._v = v);
   }
 
   // One copy per page (#653). With String Theory and a standalone install of the same script
@@ -3665,7 +3681,8 @@
       items.forEach(it => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmthf-segb'; b.textContent = captionOf(it); b.style.maxWidth = (btnChars() + 1) + 'ch'; b.dataset.tip = `${cleanLabel(it.label || it.v)}\nClick: set the field to it`; b.addEventListener('click', e => { e.preventDefault(); recallInto(p, it); }); seg.appendChild(b); });
       p.bar.appendChild(seg);
     }
-    function applyDefault(p) { const d = defaultOf(p.key); if (d && !readField(p.el).v) recallInto(p, d); }
+    function applyDefault(p) { if (mbuAutomated()) return; const d = defaultOf(p.key);   // #936: no defaults when another script fills the form
+      if (d && !readField(p.el).v) recallInto(p, d); }
 
     function fieldOnTop(el, r) {
       const x = r.left + r.width / 2, y = r.top + r.height / 2;

@@ -150,6 +150,17 @@ Right-click String Theory's icon to open its settings, or any dock icon for that
 - [Art Station Picker](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/art_station/as_picker/README.md)
 - [Uncheck checkboxes with Esc](https://github.com/chaban-mb/userscripts/blob/main/docs/USERSCRIPTS.md#musicbrainz-uncheck-checkboxes-with-esc)
 
+## Automated mode
+
+When a script fills a page for you without showing it, as Falcon does in its workers, the suite's scripts do only what they are asked: nothing that would run on its own when the page opens. Apollo skips its auto-match, language and script detection, default Guess case and Search and Replace, duplicate scores and archiving; Mammoth fills in no defaults. Your settings stay as they are.
+
+A page is automated when:
+
+- it is a Falcon worker, or
+- its address carries `mbu-auto=0`, in the query or after `#` (`#mbu-auto=0`) where MusicBrainz rejects an unknown parameter. Any other script that opens a page to fill it can add this.
+
+Each script notes it in its log.
+
 ## Notes
 
 - **Each MusicBrainz server keeps its own launcher settings**: musicbrainz.org, beta and test are set apart.

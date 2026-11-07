@@ -103,7 +103,7 @@ Code several scripts need is written once and copied into each between marker co
 | Marker | Source |  |
 | --- | --- | --- |
 | `// <ST-TOKENS>` | `dev/tokens/design-tokens.mjs` | colours, fonts, radii, shadows, z-indexes as `var(--mbu-…)` |
-| `// <ST-UI>` | `dev/ui/ui-components.mjs` | components (`mbu-` classes): help link, toast, log window and its startup line (`mbuStartupInfo`), corner stacking, the tooltip, the settings' drop-downs and steppers (`mbuControls`), … |
+| `// <ST-UI>` | `dev/ui/ui-components.mjs` | components (`mbu-` classes): help link, toast, log window and its startup line (`mbuStartupInfo`), automated mode (`mbuAutomated`, [#936](https://github.com/majkinetor/musicbrainz-userscripts/issues/936)), corner stacking, the tooltip, the settings' drop-downs and steppers (`mbuControls`), … |
 | `// <ST-TIP>` | `dev/ui/tooltip.mjs` | the tooltip alone, for a script off the ST-UI block (Scribe, Bandcamp Player Enhanced); never beside ST-UI |
 | `// <ST-ICONS>` | `dev/ui/platform-icons.mjs` | platform icons and brand colours |
 | `// <ST-MATCH>` | `dev/match/artist-match.mjs` | the artist matcher and sort-name guess |

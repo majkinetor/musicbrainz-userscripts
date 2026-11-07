@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.06.180940
+// @version      2026.11.07.190000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -319,6 +319,7 @@
   // first log line: the script + version. The MB release line is logged once the
   // editor is ready (so it carries the real title) — see init().
   Log.cat('System').info(mbuStartupInfo('Apollo Editor'));
+  if (mbuAutomated()) Log.cat('System').info('automated mode: driven by another script, nothing runs on its own (#936)');
 
   const W = (typeof unsafeWindow !== 'undefined' && unsafeWindow) || window;
   const ORIGIN = location.origin;
@@ -1637,8 +1638,12 @@
   // MusicBrainz's own guess-case options seed Apollo's once (#785); a page without cookies (about:blank) throws
   function pageCookies() { try { return document.cookie || ''; } catch (e) { return ''; } }
   function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: true, autoMatchRec: true, autoMatchOnV: 1, autoMatchLabel: true, autoMatchArtist: true, autoMatchRG: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: true, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '', srHistoryOpen: false, archive: true, archiveMenu: true, gcMode: 'auto', gcDefault: '', gcSep: '/', gcKeepUC: !/(?:^|;\s*)guesscase_keepuppercase=(?:false|0)(?:;|$)/.test(pageCookies()), gcRoman: /(?:^|;\s*)guesscase_roman=(?:true|1)(?:;|$)/.test(pageCookies()) }; try { const stored = JSON.parse(gmLoad(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; if (stored.autoMatchOnV === undefined) { s.autoMatch = true; s.autoMatchRec = true; }   /* tracklist + recordings auto-match became on by default; the whole object is saved, so an existing install has the old false stored and needs flipping once (autoMatchOnV, from the defaults, marks it done on the next save) */ return s; } catch (e) { return d; } }
-  function saveSettings() { try { gmSave(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
+  // #936: driven by another script (a Falcon worker, or mbu-auto=0), Apollo does only what it is asked:
+  // everything that runs on its own is off for this page, and nothing is saved, so the user's settings stay.
+  const AUTOMATED = mbuAutomated();
+  function saveSettings() { if (AUTOMATED) return; try { gmSave(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
+  if (AUTOMATED) Object.assign(SETTINGS, { autoMatch: false, autoMatchRec: false, autoMatchLabel: false, autoMatchArtist: false, autoMatchRG: false, discogsUrlMatch: false, autoLangScript: false, srDefault: '', gcDefault: '', modifyDuplicates: false, archive: false });
   try { srSeedTemplates(); } catch (e) {}   // #375 seed the default S&R templates once
   let _cfgTab = 'general';   // remembered settings tab (#294), per session
   // measure a name's pixel width so an artist input can shrink-wrap to its text (so the
@@ -4675,6 +4680,21 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           }
       } catch (e) { /* no document */ }
       return line;
+  }
+
+  // Automated mode (#936): true when another script drives this page and nobody watches it,
+  // so a script does only what it is asked: no auto-match, no detection, no defaults, no
+  // searches whose result nobody sees, no archiving. Two signals:
+  //   - a Falcon worker: a same-origin iframe with the class falcon-worker;
+  //   - any other orchestrator: mbu-auto=0 in the query or the hash (#mbu-auto=0 where
+  //     MusicBrainz rejects an unknown parameter).
+  //   if (mbuAutomated()) { ...skip what runs on its own... }
+  function mbuAutomated() {
+      if (mbuAutomated._v !== undefined) return mbuAutomated._v;
+      var v = false;
+      try { var fe = window.frameElement; v = !!(fe && fe.classList && fe.classList.contains('falcon-worker')); } catch (e) { /* cross-origin parent */ }
+      try { if (!v) v = /(?:[?&#])mbu-auto=0(?:[&#]|$)/.test(location.search + location.hash); } catch (e) { /* no location */ }
+      return (mbuAutomated._v = v);
   }
 
   // One copy per page (#653). With String Theory and a standalone install of the same script

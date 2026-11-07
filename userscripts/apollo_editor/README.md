@@ -433,6 +433,8 @@ Right-click Apollo's corner icon.
 
 ## Notes
 
+- When another script drives the editor, as Falcon does, Apollo runs nothing on its own: see [String Theory → Automated mode](../string_theory/README.md#automated-mode).
+
 ### Log history
 
 The log of a page where you entered edits, or where something went wrong, is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and page. **Clear history** deletes Apollo's.

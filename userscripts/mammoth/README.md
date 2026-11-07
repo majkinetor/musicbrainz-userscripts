@@ -117,4 +117,6 @@ In a baby field, **Ctrl + ,** opens its panel with the filter focused; ↑ / ↓
 
 ## Notes
 
+- When another script drives the page, as Falcon does, Mammoth fills in no defaults: see [String Theory → Automated mode](../string_theory/README.md#automated-mode).
+
 Mammoth's panel joins every edit-note field, other userscripts' included. How a script hosts it or adds a baby to its fields is in [DEVELOP.md](DEVELOP.md).

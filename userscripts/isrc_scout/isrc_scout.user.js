@@ -844,6 +844,21 @@
       return line;
   }
 
+  // Automated mode (#936): true when another script drives this page and nobody watches it,
+  // so a script does only what it is asked: no auto-match, no detection, no defaults, no
+  // searches whose result nobody sees, no archiving. Two signals:
+  //   - a Falcon worker: a same-origin iframe with the class falcon-worker;
+  //   - any other orchestrator: mbu-auto=0 in the query or the hash (#mbu-auto=0 where
+  //     MusicBrainz rejects an unknown parameter).
+  //   if (mbuAutomated()) { ...skip what runs on its own... }
+  function mbuAutomated() {
+      if (mbuAutomated._v !== undefined) return mbuAutomated._v;
+      var v = false;
+      try { var fe = window.frameElement; v = !!(fe && fe.classList && fe.classList.contains('falcon-worker')); } catch (e) { /* cross-origin parent */ }
+      try { if (!v) v = /(?:[?&#])mbu-auto=0(?:[&#]|$)/.test(location.search + location.hash); } catch (e) { /* no location */ }
+      return (mbuAutomated._v = v);
+  }
+
   // One copy per page (#653). With String Theory and a standalone install of the same script
   // both on, two copies build the same element ids and fight over them: each settings window
   // fills in the other's checkboxes, rows flip between two rule sets. So one copy runs, the
