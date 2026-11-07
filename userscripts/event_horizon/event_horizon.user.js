@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08.011000
+// @version      2026.11.08.012000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3897,6 +3897,16 @@ const AMBIENT_DEFAULTS = Object.fromEntries(Object.values(AMBIENT).flatMap(f => 
 const fxOf = v => Array.isArray(v.fx) ? [...new Set(v.fx.filter(k => k === 'hexagons' || AMBIENT[k]))] : v.hex ? [AMBIENT[v.effect] ? v.effect : 'hexagons'] : [];
 // each effect's own Opacity, Glow, Colour (0 one tone, 1 two-tone, 2 all, 3 the user's) and the user's colours
 const FX_OWN = Object.fromEntries(Object.keys(AMBIENT).flatMap(k => [[k + 'Opacity', 65], [k + 'Glow', 1], [k + 'Colour', 0], [k + 'Colours', []]]));
+// the settings that take any value in a range, shown as a strip of buttons a 20% apart: [lowest %, highest %, stored value per %, shown in px]
+const FX_STRIP = {
+    tronOutlines: [0, 100, 1], tronSpeed: [20, 200, .01], tronTrail: [20, 200, .03],
+    starDensity: [20, 200, .01], starDrift: [0, 100, .01], starDepth: [20, 200, .01], starTwinkle: [0, 100, .01],
+    auroraDiffuse: [0, 100, 1], auroraSpeed: [20, 200, .01], auroraHeight: [40, 160, .0025],
+    rainAmount: [20, 200, .01], rainSlide: [20, 200, .01], rainFog: [0, 100, .01], rainRefraction: [0, 100, .01], rainLights: [0, 100, .01], rainFall: [0, 100, .01],
+    ...Object.fromEntries(Object.keys(AMBIENT).flatMap(k => [[k + 'Opacity', [20, 100, 1]], [k + 'Glow', [0, 200, .01]]])),
+    hexOpacity: [0, 100, 1], hexFx: [20, 100, 1], hexPace: [20, 200, .01], hexTrail: [20, 200, .01], hexOften: [20, 200, .01], hexGlow: [0, 200, .01],
+    bgOpacity: [20, 100, 1], bgBlur: [0, 100, .4, 1], bgBright: [40, 140, 1], bgSat: [0, 200, 1], bgVig: [0, 100, 1],
+};
 const AMBIENT_KEYS = ['effect', 'ambientOpacity', ...Object.keys(AMBIENT_DEFAULTS), ...Object.keys(FX_OWN)];
 const FX_COLOURS = ['hexColours', ...Object.keys(FX_OWN).filter(k => k.endsWith('Colours'))];
 // settings saved when the effects shared Opacity, Glow and Colour: each effect starts from the shared ones
@@ -3920,7 +3930,7 @@ function ambientApply(layer, kind) {
     const w = layer.clientWidth, h = layer.clientHeight, dpr = kind === 'aurora' ? Math.min(.5, 480 / w, 320 / h) : Math.min(kind === 'rain' ? 1.5 : 2, devicePixelRatio || 1);
     const css = getComputedStyle(layer), c1 = css.color, c2 = css.getPropertyValue('--accent2').trim() || c1;
     const p = { colour: [0, 1, 2, 3].includes(S[kind + 'Colour']) ? S[kind + 'Colour'] : 0, glow: Math.max(0, Math.min(2, Number(S[kind + 'Glow']) || 0)), user: ucolOk(S[kind + 'Colours']), c1, c2 };
-    for (const [k, , values, fallback] of AMBIENT[kind].rows) p[k] = values.includes(Number(S[k])) ? Number(S[k]) : fallback;
+    for (const [k, , values, fallback] of AMBIENT[kind].rows) { const v = Number(S[k]), r = FX_STRIP[k]; p[k] = r ? (Number.isFinite(v) && S[k] !== null && S[k] !== '' ? Math.max(r[0] * r[2], Math.min(r[1] * r[2], v)) : fallback) : values.includes(v) ? v : fallback; }
     const key = [kind, w, h, dpr, hexReduce.matches].join('|');
     // Page redraws keep the canvas, simulation and clock; controls and theme colours update in place.
     if (layer._ehPattern?.key === key) { Object.assign(layer._ehPattern.P, p); return; }
@@ -11469,7 +11479,6 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '#eh-cfg .btn{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:15px;border:1px solid var(--mbu-border);background:var(--mbu-bg-raised);color:var(--mbu-text);font:inherit;cursor:pointer;white-space:nowrap;box-sizing:border-box}#eh-cfg .btn:hover{border-color:var(--mbu-accent)}#eh-cfg .btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;flex:none}'
     + '#eh-cfg .btn.pri{background:var(--mbu-accent);border-color:var(--mbu-accent);color:#fff}#eh-cfg .btn.ghost{background:transparent;border-color:transparent}#eh-cfg .btn.ghost:hover{border-color:var(--mbu-border)}#eh-cfg .btn[disabled],#eh-cfg .btn[aria-disabled=true]{opacity:.45;cursor:default}#eh-cfg .btn[disabled]:hover{border-color:transparent}'
     + '#eh-cfg .pbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 10px;margin:4px 0 2px;background:var(--mbu-bg-sunken,var(--mbu-bg-raised));border-radius:6px}#eh-cfg .pbar .fx-combo{flex:1 1 120px;height:30px}#eh-cfg .pbar .btn{padding:0 10px}'
-    + '#eh-cfg .pstate{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--mbu-text-weak);margin-right:auto}#eh-cfg .pstate i{width:7px;height:7px;border-radius:50%;background:var(--mbu-warn,#d90)}#eh-cfg .pstate.saved i{background:var(--mbu-ok,#3a3)}#eh-cfg .pstate.none i{background:var(--mbu-text-dim,#888)}'
     + '#eh-cfg .lyhint{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--mbu-text-weak);font-size:12px;margin:10px 0 6px}'
     + '#eh-cfg .layers{display:flex;flex-direction:column;border:1px solid var(--mbu-border);border-radius:6px;overflow:hidden}'
     + '#eh-cfg .ly{display:grid;grid-template-columns:64px 1fr auto;gap:10px;align-items:center;padding:6px 8px;border-bottom:1px solid var(--mbu-border-soft,var(--mbu-border));cursor:pointer;outline-offset:-2px}#eh-cfg .ly:last-child{border-bottom:0}#eh-cfg .ly:hover{background:var(--mbu-bg-raised)}'
@@ -11479,7 +11488,14 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '#eh-cfg .th[data-th=aura]{background:radial-gradient(circle at 30% 40%,#c86a3c,transparent 55%),radial-gradient(circle at 75% 60%,#3c6ac8,transparent 55%),#141824;filter:blur(.3px)}#eh-cfg .th[data-th=glow]{background:radial-gradient(ellipse at 50% 0%,color-mix(in srgb,var(--mbu-accent) 70%,transparent),transparent 75%),#10131d}#eh-cfg .th[data-th=flat]{background:var(--mbu-bg);box-shadow:inset 0 0 0 1px var(--mbu-border)}'
     + '#eh-cfg .ib{display:grid;place-items:center;width:30px;height:30px;padding:0;border:0;border-radius:50%;background:none;color:var(--mbu-text-weak);cursor:pointer}#eh-cfg .ib svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}#eh-cfg .ib:hover{background:var(--mbu-bg-raised);color:var(--mbu-text)}#eh-cfg .ib[disabled]{opacity:.25;cursor:default;background:none}'
     + '#eh-cfg .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:0 0 8px}#eh-cfg .gt{all:unset;display:flex;flex-direction:column;border:1px solid var(--mbu-border);border-radius:6px;overflow:hidden;cursor:pointer;box-sizing:border-box}#eh-cfg .gt:hover{border-color:var(--mbu-accent)}#eh-cfg .gt .th{width:100%;height:78px;border-radius:0}'
-    + '#eh-cfg .gt .gx{padding:6px 9px 8px}#eh-cfg .gt b{display:block;color:var(--mbu-text)}#eh-cfg .gt .gx span{color:var(--mbu-text-weak);font-size:12px}#eh-cfg .gt.on{border-color:var(--mbu-accent);box-shadow:0 0 0 1px var(--mbu-accent)}#eh-cfg .galb{display:flex;justify-content:flex-end;gap:8px;margin:0 0 10px}'
+    + '#eh-cfg .gt .gx{padding:6px 9px 8px}#eh-cfg .gt b{display:block;color:var(--mbu-text)}#eh-cfg .gt .gx span{color:var(--mbu-text-weak);font-size:12px}#eh-cfg .gt.on{border-color:var(--mbu-accent);box-shadow:0 0 0 1px var(--mbu-accent)}#eh-cfg .gt[disabled]{opacity:.45;cursor:default}#eh-cfg .gt[disabled]:hover{border-color:var(--mbu-border)}'
+    + '#eh-cfg .btn.sm{height:26px;padding:0 9px;font-size:13px}#eh-cfg .btn.sm svg{width:13px;height:13px}#eh-cfg .pbar .ib{flex:none}'
+    + '#eh-cfg .grp{margin-top:14px}#eh-cfg .grp-h{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mbu-text-weak);margin:0 0 4px}#eh-cfg .grp-h::after{content:"";flex:1;height:1px;background:var(--mbu-border-soft,var(--mbu-border))}'
+    + '#eh-cfg .grp.own{padding:8px 10px 6px;background:var(--mbu-bg-sunken,var(--mbu-bg-raised));border-radius:8px}#eh-cfg .grp.own .grp-h{color:var(--mbu-text)}'
+    + '#eh-cfg .seg{display:inline-flex;justify-self:start;border:1px solid var(--mbu-border);border-radius:6px;overflow:hidden;max-width:100%}'
+    + '#eh-cfg .seg button{position:relative;flex:0 1 auto;width:36px;min-width:26px;height:28px;padding:0 2px;border:0;border-right:1px solid var(--mbu-border);background:transparent;color:var(--mbu-text-weak);font:inherit;font-size:12px;font-variant-numeric:tabular-nums;cursor:pointer}#eh-cfg .seg button:last-child{border-right:0}'
+    + '#eh-cfg .seg button:hover{color:var(--mbu-text);background:var(--mbu-bg-raised)}#eh-cfg .seg button.lo{background:color-mix(in srgb,var(--mbu-accent) 14%,transparent);color:var(--mbu-text)}#eh-cfg .seg button.on{background:var(--mbu-accent);color:#fff;font-weight:600}'
+    + '#eh-cfg .seg button.df::after{content:"";position:absolute;left:50%;bottom:3px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:currentColor;opacity:.55}#eh-cfg .cl small{font-size:10px;opacity:.7;margin-left:3px;text-transform:none}'
     + '#eh-cfg .keys{display:flex;align-items:center;flex-wrap:wrap;gap:10px}';
 // the settings' order: plOrder first (seeded by the picks), then the usual order
 function plSorted(ps) {
@@ -11502,6 +11518,18 @@ function cfgProviders() {
 const cfgChip = (g, k, on, label, tip) => `<button type="button" class="chip" data-g="${g}" data-k="${k}" aria-pressed="${on}"${tip ? ` data-tip="${esc(tip)}"` : ''}>${CI[k] ? `<svg viewBox="0 0 24 24" aria-hidden="true">${CI[k]}</svg>` : ''}${label}</button>`;
 // a setting that is on or off, as a check box with its label
 const ckRow = (k, label, tip) => `<div class="cr ckr"><button type="button" class="ck" data-g="${k}" data-k="${k}" role="checkbox" aria-checked="${!!S[k]}"${tip ? ` data-tip="${esc(tip)}"` : ''}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/>${S[k] ? '<path d="M7.5 12.5l3 3 6-7"/>' : ''}</svg>${label}</button></div>`;
+// a continuous setting: a button a 20% apart, the chosen one filled, the ones under it tinted, a dot under the default; the wheel moves along it
+let cfgDefs;
+const cfgStrip = (key, label, tip) => {
+    const [lo, hi, f, px] = FX_STRIP[key], grid = [], d = (cfgDefs ??= JSON.parse(DEFAULTS))[key];
+    for (let x = Math.ceil(lo / 20) * 20; x <= hi; x += 20) grid.push(x);
+    const near = v => grid.reduce((a, b) => Math.abs(b - v) < Math.abs(a - v) ? b : a), n = Number(S[key]);
+    const v = near((S[key] != null && Number.isFinite(n) ? n : d) / f), df = near(d / f);
+    const cells = grid.map(x => `<button type="button" class="${x === v ? 'on' : x < v ? 'lo' : ''}${x === df ? ' df' : ''}" data-g="${key}" data-k="${Math.round(x * f * 1000) / 1000}" aria-pressed="${x === v}">${px ? Math.round(x * f) : x}</button>`).join('');
+    return `<div class="cr"><div class="cl">${label}<small>${px ? 'px' : '%'}</small></div><div class="seg"${tip ? ` data-tip="${esc(tip)}"` : ''}>${cells}</div></div>`;
+};
+// the effect's settings in groups: Common, then its own in a tinted panel under its name
+const cfgGrp = (title, html, own) => html ? `<div class="grp${own ? ' own' : ''}"><div class="grp-h">${title}</div>${html}</div>` : '';
 const cfgRow = (label, html, tip) => `<div class="cr"><div class="cl">${label}</div><div class="chips"${tip ? ` data-tip="${esc(tip)}"` : ''}>${html}</div></div>`;
 // the tracklist's platform icons, set in the popover beside its SHOW toggles
 function plBody() {
@@ -11622,7 +11650,7 @@ function fxTheme() {
 }
 const FX_SVG = { dd: '<path d="M6 9l6 6 6-6"/>', plus: '<path d="M12 5v14M5 12h14"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>',
     ok: '<path d="M5 12l5 5 9-10"/>', shuffle: '<path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>',
-    save: '<path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7V3M8 21v-7h8v7"/>',
+    save: '<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 15v4a2 2 0 002 2h12a2 2 0 002-2v-4"/>',
     del: '<path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/>',
     eye: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
     eyeoff: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/>',
@@ -11650,11 +11678,9 @@ function fxPane(chip, row) {
     const items = fxAll().map(p => `<button type="button" class="it" data-fx-item="${esc(p.name)}" aria-current="${p === cur}"><span class="t">${esc(p.name)}${nmList('fx').includes(p) ? '' : '<span class="fx-tag">Built in</span>'}</span><span class="s">${esc(fxSum(fxFull(p)))}</span></button>`).join('');
     const dd = `<div class="fx-dd" hidden>${items}${items ? '<div class="sep"></div>' : ''}<button type="button" class="it act" data-fx-copy>Copy as JSON</button><button type="button" class="it act" data-fx-paste>Import from JSON</button>`
         + `<button type="button" class="it act" data-fx-del${off(own, built ? 'A built-in preset can\'t be deleted' : 'Nothing saved yet')}>Delete this preset</button></div>`;
-    const state = !cur ? ['none', 'Not saved'] : dirty ? ['', 'Changed'] : ['saved', 'Saved'];
     const preset = `<div class="pbar"><span class="fx-combo"><input type="text" data-fx-name maxlength="60" autocomplete="off" spellcheck="false" placeholder="${FX_UNNAMED}" aria-label="Preset name" value="${cur ? esc(cur.name) : ''}"><button type="button" data-fx-dd aria-label="Show presets" aria-expanded="false">${fxSvg('dd')}</button>${dd}</span>`
-        + `<span class="pstate ${state[0]}"><i></i>${state[1]}</span>`
+        + `<button type="button" class="ib" data-fx-revert${dirty ? ' data-tip="Revert\nBack to the preset as saved" aria-label="Revert"' : ' disabled aria-label="Revert"'}>${fxSvg('revert')}</button>`
         + `<button type="button" class="btn${own && dirty || !cur ? ' pri' : ''}" data-fx-save${built ? off(false, 'Save\nA built-in preset can\'t be changed: Save as keeps a copy') : ` data-tip="${own ? 'Save\nThe changes into this preset, under the name typed' : 'Save\nThe effect as a preset'}"`}>${fxSvg('save')}Save</button>`
-        + `<button type="button" class="btn ghost" data-fx-revert${dirty ? ' data-tip="Revert\nBack to the preset as saved"' : ' disabled'}>${fxSvg('revert')}Revert</button>`
         + `<button type="button" class="btn ghost${built && dirty ? ' pri' : ''}" data-fx-new data-tip="Save as\nA new preset, under the name typed">${fxSvg('plus')}Save as</button></div>`;
     const paste = !fxPaste ? '' : row('Import', `<textarea class="fx-json" data-fx-json rows="3" spellcheck="false" aria-label="Preset JSON" placeholder="Paste a preset copied with Copy as JSON"></textarea><button type="button" class="chip" data-fx-import>Import</button><button type="button" class="chip" data-fx-cancel>Cancel</button>${fxErr ? `<span class="fx-err">${esc(fxErr)}</span>` : ''}`);
     const on = fxOf(S), hid = Array.isArray(S.fxOff) ? S.fxOff : [], bg = BGS.find(x => x[0] === S.bg);
@@ -11672,19 +11698,19 @@ function fxPane(chip, row) {
             + ib('data-fx-rm', k, 'del', isBg ? 'Remove\nThe page goes plain' : 'Remove\nTake this effect out of the preset', !isBg || !!bg)
             + '</span></div>';
     };
-    const free = EFFECTS.filter(([k]) => !on.includes(k)), pick = free.find(([k]) => k === fxPick) || free[0];
-    const hint = `<div class="lyhint"><span>Layers · top is drawn over bottom</span>${free.length ? `<button type="button" class="btn" data-fx-gal aria-expanded="${fxGal}">${fxSvg('plus')}Add effect</button>` : ''}</div>`;
-    const gal = !fxGal || !pick ? '' : `<div class="gal">${free.map(([k, l, tip]) => `<button type="button" class="gt${k === pick[0] ? ' on' : ''}" data-fx-pick="${k}" aria-pressed="${k === pick[0]}">${fxThumb(k)}<span class="gx"><b>${l}</b><span>${esc(tip.split('\n')[0])}</span></span></button>`).join('')}</div>`
-        + `<div class="galb"><button type="button" class="btn ghost" data-fx-galx>Cancel</button><button type="button" class="btn pri" data-fx-addgo="${pick[0]}">${fxSvg('plus')}Add ${pick[1]}</button></div>`;
+    const free = EFFECTS.filter(([k]) => !on.includes(k));
+    const hint = `<div class="lyhint"><span>Layers · top draws over bottom</span>${free.length ? `<button type="button" class="btn sm" data-fx-gal aria-expanded="${fxGal}" data-tip="Add an effect\nPick one in the gallery">${fxSvg('plus')}Add</button>` : ''}</div>`;
+    const gal = !fxGal || !free.length ? '' : `<div class="gal">${EFFECTS.map(([k, l, tip]) => { const have = on.includes(k); return `<button type="button" class="gt${have ? ' have' : ''}" data-fx-pick="${k}"${have ? ' disabled' : ''}>${fxThumb(k)}<span class="gx"><b>${l}</b><span>${have ? 'Already in the layers' : esc(tip.split('\n')[0])}</span></span></button>`; }).join('')}</div>`;
     const layers = `<div class="layers">${on.map((k, i) => [k, i]).reverse().map(([k, i]) => layer(k, i)).join('')}${layer('bg', -1)}</div>`;
-    const body = `<div class="m-sec">${fxName(sel)}</div>` + (sel === 'bg'
-        ? row('Kind', [['flat', 'Plain', 'No background: the page as it is'], ...BGS].map(([k, l, tip]) => chip('bg', k, (bg ? S.bg : 'flat') === k, l, tip)).join('')) + bgImgRows(chip, row)
-        : sel === 'hexagons' ? hexRows(chip, row) : ambientRows(sel, chip, row));
+    const [bgCommon, bgOwn] = bgImgRows(chip, row);
+    const body = sel === 'bg'
+        ? cfgGrp('Common', bgCommon) + cfgGrp(fxName(sel), row('Kind', [['flat', 'Plain', 'No background: the page as it is'], ...BGS].map(([k, l, tip]) => chip('bg', k, (bg ? S.bg : 'flat') === k, l, tip)).join('')) + bgOwn, true)
+        : sel === 'hexagons' ? hexRows(chip, row) : ambientRows(sel, chip, row);
     return preset + paste + hint + gal + layers + body;
 }
 // the Artwork's scene, or the Image's address, then the filters both share
 function bgImgRows(chip, row) {
-    if (S.bg !== 'url' && S.bg !== 'art') return '';
+    if (S.bg !== 'url' && S.bg !== 'art') return ['', ''];
     const opts = (g, list, tip) => list.map(([v, l]) => chip(g, v, S[g] === v, l)).join('');
     const pct = list => list.map(v => [v, v + '%']);
     const src = S.bg === 'art'
@@ -11692,14 +11718,13 @@ function bgImgRows(chip, row) {
             + `<button type="button" class="chip" data-g="bgSeed" data-k="new" data-tip="Shuffle\nThe same scene, drawn anew">${fxSvg('shuffle')}Shuffle</button>`, 'What the artwork shows')
         : row('Address', `<span class="fx-combo"><input type="url" data-eh-bgurl autocomplete="off" spellcheck="false" placeholder="https://… an image address" aria-label="Image address" value="${esc(S.bgUrl)}"></span><button type="button" class="chip" data-eh-bgurl-ok data-tip="Show\nThe picture at this address">${fxSvg('ok')}</button>`
             + (S.bgUrl && !bgUrlOk(S.bgUrl) ? '<span class="fx-err">Not an image address: it starts with https://</span>' : bgImgErr && bgImgErr === S.bgUrl ? '<span class="fx-err">The image didn\'t load: check the address</span>' : ''), 'Right-click a picture on the web and copy its image address');
-    return src
-        + row('Opacity', opts('bgOpacity', pct([25, 45, 65, 85, 100])), 'How strongly the picture shows through')
-        + row('Blur', opts('bgBlur', [[0, 'None'], [4, 'Slight'], [10, 'Soft'], [20, 'Strong'], [40, 'Heavy']]), 'How blurred the picture is')
-        + row('Brightness', opts('bgBright', pct([50, 70, 85, 100, 115])), 'Darker or lighter')
-        + row('Saturation', opts('bgSat', pct([0, 50, 100, 150])), 'How vivid the colours are')
+    return [cfgStrip('bgOpacity', 'Opacity', 'How strongly the picture shows through'), src
+        + cfgStrip('bgBlur', 'Blur', 'How blurred the picture is')
+        + cfgStrip('bgBright', 'Brightness', 'Darker or lighter')
+        + cfgStrip('bgSat', 'Saturation', 'How vivid the colours are')
         + row('Tone', opts('bgTone', [['natural', 'Natural'], ['mono', 'Mono'], ['sepia', 'Sepia'], ['accent', 'Accent']]), 'Recolour the picture\nAccent: in the theme\'s accent colour')
         + row('Fit', opts('bgFit', [['cover', 'Fill'], ['contain', 'Whole'], ['tile', 'Tile']]), 'Fill: covers the page, cropped\nWhole: all of it shows\nTile: repeated at its own size')
-        + row('Vignette', opts('bgVig', [[0, 'None'], [50, 'Soft'], [100, 'Strong']]), 'Fade the edges into the page');
+        + cfgStrip('bgVig', 'Vignette', 'Fade the edges into the page')];
 }
 // User with no colours yet starts from the theme's two
 const ucolSeed = () => { const cs = getComputedStyle(document.documentElement), a = cs.getPropertyValue('--accent').trim() || cs.color; return [...new Set([a, cs.getPropertyValue('--accent2').trim() || a].map(ucolHex))]; };
@@ -11713,27 +11738,27 @@ function effectColourRow(chip, row, kind) {
 }
 function ambientRows(kind, chip, row) {
     const fields = AMBIENT[kind].rows;
-    const field = ([key, label, values, , labels, tip]) => row(label, values.map((v, i) => chip(key, v, S[key] === v, labels ? labels[i] : key === 'auroraStyle' ? AURORA_STYLES[v] : ['tronOutlines', 'auroraDiffuse'].includes(key) ? v + '%' : String(v))).join(''), tip);
-    return fields.filter(([key]) => key === 'tronOutlines').map(field).join('')
-        + row('Opacity', [25, 45, 65, 85, 100].map(v => chip(kind + 'Opacity', v, S[kind + 'Opacity'] === v, v + '%')).join(''), 'How strong the effect is')
-        + fields.filter(([key]) => key !== 'tronOutlines').map(field).join('')
-        + (kind === 'rain' ? '' : row('Glow', [[0, 'None'], [.5, 'Faint'], [1, 'Normal'], [2, 'Wide']].map(([v, l]) => chip(kind + 'Glow', v, S[kind + 'Glow'] === v, l)).join(''), 'How far the soft glow around the lights spreads'))
-        + effectColourRow(chip, row, kind);
+    const field = ([key, label, values, , labels, tip]) => FX_STRIP[key] ? cfgStrip(key, label, tip) : row(label, values.map((v, i) => chip(key, v, S[key] === v, labels ? labels[i] : key === 'auroraStyle' ? AURORA_STYLES[v] : String(v))).join(''), tip);
+    const common = ['tronOutlines', 'tronSpeed', 'auroraSpeed'], pick = c => fields.filter(([key]) => common.includes(key) === c).map(field).join('');
+    return cfgGrp('Common', cfgStrip(kind + 'Opacity', 'Opacity', 'How strong the effect is')
+        + pick(true)
+        + (kind === 'rain' ? '' : cfgStrip(kind + 'Glow', 'Glow', 'How far the soft glow around the lights spreads'))
+        + effectColourRow(chip, row, kind))
+        + cfgGrp(fxName(kind), pick(false), true);
 }
 function hexRows(chip, row) {
     const m = S.hexMotion, use = k => HEX_USES[k].includes(m);
     const dim = (on, html) => on ? html : '';   // what the motion doesn't use isn't shown
     const opts = (g, list) => list.map(([v, l, tip]) => chip(g, v, S[g] === v, l, tip)).join('');
-    const pct = g => list => list.map(v => [v, v + '%']);
-    return row('Motion', opts('hexMotion', HEX_MOTIONS), 'How the hexagons move')
-        + row('Outlines', opts('hexOpacity', pct()([10, 20, 30, 40, 60])), 'How strong the hexagon outlines are')
-        + dim(m !== 'static', row('Strength', opts('hexFx', pct()([25, 45, 65, 85, 100])), 'How strong the effect over the outlines is'))
-        + dim(use('pace'), row('Pace', opts('hexPace', [[.6, 'Slow'], [1, 'Normal'], [1.6, 'Fast']]), 'How fast the effect moves'))
-        + dim(use('trail'), row('Trail', opts('hexTrail', [[.5, 'Short'], [1, 'Normal'], [2, 'Long']]), 'How long what lights up takes to fade'))
-        + dim(use('often'), row('How often', opts('hexOften', [[.5, 'Rarely'], [1, 'Normal'], [2, 'Often']]), 'How often something new lights up'))
-        + dim(use('glow'), row('Glow', opts('hexGlow', [[0, 'None'], [.5, 'Faint'], [1, 'Normal'], [2, 'Wide']]), 'How far the soft glow around the lines spreads'))
-        + dim(use('two'), effectColourRow(chip, row))
-        + row('Depth', chip('hexDepth', 'hexDepth', S.hexDepth, 'On', 'The hexagons scroll slower than the page\nOn: they sit deeper, behind the page\nOff: they stay still'));
+    return cfgGrp('Common', cfgStrip('hexOpacity', 'Outlines', 'How strong the hexagon outlines are')
+        + dim(m !== 'static', cfgStrip('hexFx', 'Strength', 'How strong the effect over the outlines is'))
+        + dim(use('pace'), cfgStrip('hexPace', 'Pace', 'How fast the effect moves'))
+        + dim(use('glow'), cfgStrip('hexGlow', 'Glow', 'How far the soft glow around the lines spreads'))
+        + dim(use('two'), effectColourRow(chip, row)))
+        + cfgGrp('Hexagons', row('Motion', opts('hexMotion', HEX_MOTIONS), 'How the hexagons move')
+        + dim(use('trail'), cfgStrip('hexTrail', 'Trail', 'How long what lights up takes to fade'))
+        + dim(use('often'), cfgStrip('hexOften', 'How often', 'How often something new lights up'))
+        + row('Depth', chip('hexDepth', 'hexDepth', S.hexDepth, 'On', 'The hexagons scroll slower than the page\nOn: they sit deeper, behind the page\nOff: they stay still')), true);
 }
 function cfgBody() {
     const chip = cfgChip, row = cfgRow;
@@ -11852,10 +11877,8 @@ function cfgWire(panel, b, body) {
             save(); bgApply(); return fxRedraw();
         }
         if (t.closest('[data-fx-gal]')) { fxGal = !fxGal; fxPick = ''; return fxRedraw(); }
-        const pk = t.closest('[data-fx-pick]'); if (pk) { fxPick = pk.dataset.fxPick; return fxRedraw(); }
-        if (t.closest('[data-fx-galx]')) { fxGal = false; return fxRedraw(); }
-        const ag = t.closest('[data-fx-addgo]');
-        if (ag) { const k = ag.dataset.fxAddgo, on = fxOf(S); if (!on.includes(k)) S.fx = [...on, k]; fxSel = k; fxGal = false; fxPick = ''; save(); bgApply(); return fxRedraw(); }
+        const ag = t.closest('[data-fx-pick]');
+        if (ag) { if (ag.disabled) return; const k = ag.dataset.fxPick, on = fxOf(S); if (!on.includes(k)) S.fx = [...on, k]; fxSel = k; fxGal = false; fxPick = ''; save(); bgApply(); return fxRedraw(); }
         if (t.closest('[data-fx-revert]')) { if (t.closest('[data-fx-revert]').disabled || !S.fxCur) return; fxUse(S.fxCur); return fxRedraw(); }
         const sel = t.closest('[data-fx-sel]'); if (sel) { fxSel = sel.dataset.fxSel; return fxRedraw(); }
         if (t.closest('[data-fx-dd]')) { const dd = b.querySelector('.fx-dd'); return dd && dd.hidden ? ddOpen() : ddClose(); }
@@ -11925,6 +11948,12 @@ function cfgWire(panel, b, body) {
         addEventListener('pointermove', move); addEventListener('pointerup', up);
         ev.preventDefault();
     });
+    panel.addEventListener('wheel', ev => {
+        const sg = ev.target.closest('.seg'); if (!sg) return;
+        ev.preventDefault();
+        const o = sg.querySelector('.on'), n = ev.deltaY < 0 ? o?.nextElementSibling : o?.previousElementSibling;
+        n?.click();
+    }, { passive: false });
     panel.addEventListener('click', ev => {
         if (imgMoved && ev.target.closest('[data-g=imgP]')) { imgMoved = false; return; }
         const tb = ev.target.closest('[data-tab]');
