@@ -14935,7 +14935,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (document.getElementById('tc-sf-css')) return;
     const st = document.createElement('style'); st.id = 'tc-sf-css';
     st.textContent = '.tc-sf{position:fixed;z-index:100000;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.18);display:flex;flex-direction:column;font-size:13px;min-width:180px}'
-      + '.tc-sf input.tc-sf-q{margin:6px;padding:4px 6px;border:1px solid var(--mbu-border);border-radius:3px;background:var(--mbu-bg) !important;color:var(--mbu-text) !important;font:inherit}'
+      + '.tc-sf input.tc-sf-q{margin:6px;padding:4px 6px;border:0 !important;outline:0 !important;box-shadow:none !important;border-radius:3px;background:var(--mbu-bg) !important;color:var(--mbu-text) !important;font:inherit}'
       + '.tc-sf ul{list-style:none;margin:0;padding:0 0 4px;overflow-y:auto;max-height:320px;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}'
       + '.tc-sf li{padding:3px 10px;cursor:pointer;white-space:nowrap}'
       + '.tc-sf li.tc-sf-g{cursor:default;color:var(--mbu-text-weak);font-size:11px;padding-top:6px;text-transform:uppercase;letter-spacing:.03em}'
