@@ -112,7 +112,15 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
       window.GM_setValue = (k, v) => store.set(k, v);
       window.GM_deleteValue = k => store.delete(k);
       window.GM_info = { script: { name: 'Apollo Editor', version: 't' } };
-      window.GM_xmlhttpRequest = () => {};
+      // the gate reads ws/2 through GM_xmlhttpRequest (#932): answer it from the page's fetch, so the routes below serve it
+    window.GM_xmlhttpRequest = o => {
+      fetch(o.url, { method: o.method || 'GET', headers: o.headers || {}, body: o.data }).then(async r => {
+        const text = await r.text();
+        const headers = [...r.headers].map(([k, v]) => k + ': ' + v).join('\r\n');
+        o.onload?.({ status: r.status, statusText: r.statusText, finalUrl: r.url, responseHeaders: headers, responseText: text, response: o.responseType === 'json' ? JSON.parse(text) : text });
+      }, e => o.onerror?.(e));
+      return { abort() {} };
+    };
       window.__opened = [];
       window.GM_openInTab = u => { window.__opened.push(u); return { close() {}, closed: false }; };
       window.open = u => { window.__opened.push(u); return { closed: false }; };
@@ -319,7 +327,15 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
     window.GM_getValue = (k, d) => (store.has(k) ? store.get(k) : d);
     window.GM_setValue = (k, v) => store.set(k, v);
     window.GM_info = { script: { name: 'Apollo Editor', version: 't' } };
-    window.GM_xmlhttpRequest = () => {};
+    // the gate reads ws/2 through GM_xmlhttpRequest (#932): answer it from the page's fetch, so the routes below serve it
+    window.GM_xmlhttpRequest = o => {
+      fetch(o.url, { method: o.method || 'GET', headers: o.headers || {}, body: o.data }).then(async r => {
+        const text = await r.text();
+        const headers = [...r.headers].map(([k, v]) => k + ': ' + v).join('\r\n');
+        o.onload?.({ status: r.status, statusText: r.statusText, finalUrl: r.url, responseHeaders: headers, responseText: text, response: o.responseType === 'json' ? JSON.parse(text) : text });
+      }, e => o.onerror?.(e));
+      return { abort() {} };
+    };
     window.__log = [];
     const ci = console.info.bind(console);
     console.info = (...a) => { window.__log.push(a.join(' ')); ci(...a); };
