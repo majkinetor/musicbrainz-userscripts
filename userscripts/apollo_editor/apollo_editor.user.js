@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.135213
+// @version      2026.11.08.141339
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -16042,6 +16042,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     riStyle(); rgStyle();
     form.id = 'information';   // Release information's rules and helpers find the panel by this id
     form.classList.add('tc-ent-form');
+    entWatchLinkRemoval(form);
     mbuCls(document.body, 'tc-ri-on', on);
     if (RG_PAGE) {
       if (!_rgAC) rgReadCredit();
@@ -16071,6 +16072,30 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       _rgObs = new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => { relocateLinks(riWant()); remarkDeadLinks(); if (riWant()) { annotateLinkEditHints(); if (!_riOptObs) tidyLinkTypeOptions(); } if (ENT_PLAIN) entCards(riWant()); rgNav(form); }, 120); });
       _rgObs.observe(form, { childList: true, subtree: true });
     }
+  }
+  // #950: MB skips invalid URLs before serializing their removals (e.g. an old Linktree
+  // homepage). At formdata time its handlers have finished: add only missing, explicitly
+  // removed original relationships. No request or validation bypass for added/changed links.
+  function entWatchLinkRemoval(form) {
+    if (form._tcLinkRemoval) return; form._tcLinkRemoval = true;
+    form.addEventListener('formdata', e => {
+      const source = W.__MB__?.$c?.stash?.source_entity;
+      if (!source || source.entityType?.replace('_', '-') !== ENT_KIND) return;
+      const removed = new Set([...form.querySelectorAll('#external-links-editor tr.external-link-item a.url.rel-remove')].map(a => a.getAttribute('href')));
+      if (!removed.size) return;
+      const pre = 'edit-' + ENT_KIND + '.url.', sent = new Set(); let next = 0;
+      for (const [key, value] of e.formData) {
+        if (!key.startsWith(pre)) continue;
+        const m = key.slice(pre.length).match(/^(\d+)\./); if (m) next = Math.max(next, Number(m[1]) + 1);
+        if (key.endsWith('.relationship_id')) sent.add(String(value));
+      }
+      for (const r of source.relationships || []) {
+        if (r.target_type !== 'url' || !(r.id > 0) || sent.has(String(r.id)) || !removed.has(r.target?.name)) continue;
+        const p = pre + next++ + '.';
+        for (const [key, value] of Object.entries({ relationship_id: r.id, removed: '1', text: r.target.name, link_type_id: r.linkTypeID, backward: r.backward ? '1' : '0', 'period.ended': r.ended ? '1' : '0' })) e.formData.set(p + key, String(value));
+        sent.add(String(r.id));
+      }
+    });
   }
   // Header and footer, Zen editing: the release editor's bar (title, Enter edit, Cancel) in place of MusicBrainz's chrome and the form's own button
   function rgSubmitBtn(form) { return form.querySelector('.row.no-label button[type=submit], button[type=submit].submit') || form.querySelector('button[type=submit]'); }
