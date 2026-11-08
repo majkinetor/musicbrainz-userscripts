@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08.120200
+// @version      2026.11.08.120300
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4706,6 +4706,22 @@ function rlQuiet(r, scope = '', rgl = []) {
     const rows = KS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => pk(p) === k).sort(az); return g.length ? `<div class="mk"><div class="h label">${name}</div><div class="mg">${g.map(([p, i]) => `<a class="row" data-i="${i}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(p.name)}${p.kinds.length > 1 ? ': ' + kindOf(p) : ''}">${icon(p, 22)}<span>${esc(p.name)}</span></a>`).join('')}</div></div>` : ''; }).join('');
     return `<div class="rl-one quiet${S.plHover ? ' pl-hov' : ''}" style="--rl-size:${S.plSize + 6}px"><span class="icons">${icons}</span><span class="popwrap" hidden><button class="chip pn" type="button" data-pop="rlmore${scope}" aria-expanded="false"></button><div class="pop r more-sites" id="pop-rlmore${scope}" hidden><input class="mflt" type="search" placeholder="Filter sites" aria-label="Filter sites" hidden>${rows}</div></span></div>`;
 }
+
+// a menu that would run off the window's side is moved back inside it (a narrow phone screen)
+function popFit(p) {
+    p.style.translate = '';
+    if (p.hidden) return;
+    const r = p.getBoundingClientRect(), w = document.documentElement.clientWidth, m = 8;
+    const dx = r.right > w - m ? Math.max(m - r.left, w - m - r.right) : r.left < m ? m - r.left : 0;
+    if (dx) p.style.translate = dx + 'px 0';
+}
+// a long press on a phone is a right-click: it opens the element's menu, never its tooltip as well
+window.addEventListener('contextmenu', ev => {
+    if (typeof _mbuTip === 'undefined' || !ev.target.closest) return;
+    clearTimeout(_mbuTip.showT); _mbuTip.pend = null;
+    const f = mbuTipFind(ev.target); _mbuTip.quiet = f ? f.el : null;
+    if (_mbuTip.cur) mbuTipHide(true);
+}, true);
 
 /* ── editions ──────────────────────────────────────── */
 // a cover just added has no thumbnail until the archive makes it: its tile shows the placeholder instead of an empty frame
@@ -10336,7 +10352,7 @@ function onClick(ev) {
     if ('srch' in d) { const fm = b.form; if (fm.classList.toggle('open')) fm.query.focus(); return; }
     if (d.collchange) { collectionChange(d.collkey, d.collchange); return; }
     if (d.collrefresh) { collectionLoad(d.collrefresh, true); return; }
-    if (d.pop) { const p = document.getElementById('pop-' + d.pop); p.hidden = !p.hidden; b.setAttribute('aria-expanded', String(!p.hidden)); return; }
+    if (d.pop) { const p = document.getElementById('pop-' + d.pop); p.hidden = !p.hidden; b.setAttribute('aria-expanded', String(!p.hidden)); popFit(p); return; }
     if (d.nmuse) {
         const [key, i] = d.nmuse.split('\t'), [kind, sc] = key.split('-'), x = nmList(key)[i]; if (!x) return;
         const y = scrollY;
