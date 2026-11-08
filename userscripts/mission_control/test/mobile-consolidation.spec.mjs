@@ -20,12 +20,17 @@ for (const width of [360, 248]) {
       const url = 'https://www.deezer.com/album/12345';
       cc.sources.push({ key: 'deezer', url, role: 'found', take: true, tracks: null, barcode: null, read: { state: 'reading' } });
       send('mc:read-result', { run: cc.run, url, ok: true, ms: 1, rel: { ...rel, title: 'Black Sabbath Vol. 4 (Remastered)' } });
+      // MusicBrainz already has it, linked to many platforms: its row and "This album" carry a dozen icons
+      const keys = ['apple', 'spotify', 'deezer', 'tidal', 'qobuz', 'amazon', 'youtube', 'bandcamp', 'beatport', 'napster', 'soundcloud', 'audiomack'];
+      keys.slice(2).forEach(k => cc.sources.push({ key: k, url: 'https://example.com/' + k, role: 'found', take: true, tracks: 6, barcode: '894231248122', read: { state: 'done', rel } }));
+      cc.inMb = { state: 'done', releases: [{ id: '11111111-2222-3333-4444-555555555555', title: 'Black Savage', disamb: '', date: '2018-06-13', format: 'Digital Media', tracks: 6, barcode: '894231248122', urls: cc.sources.map(s => s.url), same: true }] };
+      window.__mccTest.paint();
     });
     await page.waitForSelector('#mcc-root .mcc-f');
     await attachShot(testInfo, page, 'top');
     const r = await page.evaluate(() => {
       const vv = visualViewport, root = document.querySelector('#mcc-root').getBoundingClientRect();
-      const sel = '#mcc-root .mcc-hdr > *, #mcc-root .mcc-side, #mcc-root .mcc-center, #mcc-root .mcc-insp, #mcc-root .mcc-sect, #mcc-root .mcc-f';
+      const sel = '#mcc-root .mcc-inmb *, #mcc-root .mcc-hdr > *, #mcc-root .mcc-side, #mcc-root .mcc-center, #mcc-root .mcc-insp, #mcc-root .mcc-sect, #mcc-root .mcc-f, #mcc-root .mcc-f .i';
       const out = [...document.querySelectorAll(sel)].filter(e => e.getClientRects().length).map(e => [e.className, e.getBoundingClientRect()])
         .filter(([, b]) => b.width && (b.left < vv.offsetLeft - 1 || b.right > vv.offsetLeft + vv.width + 1)).map(([c, b]) => c + ' ' + Math.round(b.left) + '..' + Math.round(b.right));
       const box = s => { const b = document.querySelector(s).getBoundingClientRect(); return [Math.round(b.top), Math.round(b.width)]; };
