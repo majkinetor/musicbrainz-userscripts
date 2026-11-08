@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.181000
+// @version      2026.11.08.193000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -4210,6 +4210,7 @@ function fsStyle() {
         + '.fs-hint{text-transform:none;font-weight:400;color:var(--fs-muted)}'
         + '.fs-poolfilter{flex:1;min-width:0;max-width:210px;box-sizing:border-box;background:var(--fs-panel);border:1px solid var(--fs-border);color:var(--fs-text);border-radius:var(--mbu-radius);padding:3px 8px;font:400 11.5px -apple-system,Segoe UI,Arial,sans-serif;text-transform:none;letter-spacing:0}'
         + '.fs-poolfilter:focus{outline:none;border-color:var(--fs-purple)}'
+        + '.fs-poolsort .fs-addpage{margin-left:auto}.fs-pool:has(.fs-addpage-e) .fs-poolsort .fs-addpage{display:none}.fs-addpage-w{margin:12px 0 8px}.fs-addpage-e{min-height:30px;padding:0 14px;font-weight:600}'
         + '.fs-poolsort{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:1px solid var(--fs-border);background:var(--fs-panel2);color:var(--fs-muted);font-size:11.5px}'
         + '.fs-seg{display:inline-flex;border:1px solid var(--fs-border);border-radius:var(--mbu-radius);overflow:hidden}'
         + '.fs-seg button{border:0;border-left:1px solid var(--fs-border);background:var(--fs-panel);color:var(--fs-text);padding:4px 11px;font:400 12px -apple-system,Segoe UI,Arial,sans-serif;cursor:pointer}'
@@ -5117,7 +5118,7 @@ function renderPool() {
     if (cnt) { cnt.textContent = q ? recs.length + ' / ' + all.length : String(all.length); cnt.classList.toggle('fs-cnt-filtered', !!q); }
     body.innerHTML = recs.length
         ? sortPool(recs, SETTINGS.poolSort).map(({ rec, run }) => poolCardHtml(rec, run)).join('')
-        : '<div class="fs-empty">' + (q ? 'No pool recording matches “' + escapeHtml(q) + '”.' : 'Pool is empty — add a recording by MBID/URL above, or Ctrl+click Fusion’s icon to add this page’s.') + '</div>';
+        : '<div class="fs-empty">' + (q ? 'No pool recording matches “' + escapeHtml(q) + '”.' : 'Pool is empty.' + emptyAddHint('Add a recording by MBID/URL above, or Ctrl+click Fusion’s icon to add this page’s.')) + '</div>';
     if (STATE.selected) { const c = body.querySelector('[data-gid="' + STATE.selected + '"]'); if (c) c.classList.add('fs-selected'); }
     renderPoolCount();
 }
@@ -5783,7 +5784,7 @@ function buildShell() {
         + '<div class="fs-hdr" id="fs-hdr"><div class="fs-hl"><div class="fs-title">' + fsTitle('recording') + '</div><span class="fs-busy" id="fs-busy" style="display:none" data-tip="Open the activity log"></span><span class="fs-bgtask" id="fs-bgtask" style="display:none" data-tip="Open the activity log"></span><span class="fs-netbanner" id="fs-netbanner" style="display:none"></span><div class="fs-scope" id="fs-scope" data-tip="Open the activity log">…</div></div>' + emCounters('recording') + '<div class="fs-hr">' + CLEAR_ALL_BTN
         + '<button class="fs-cons-x" id="fs-max" type="button" data-tip="Maximize or restore">⛶</button><button class="fs-cons-x" id="fs-cfg" type="button" data-tip="Fusion\nOptions, the log, help">' + MBU_CFG_ICON + '</button><button class="fs-cons-x" id="fs-close" type="button" data-tip="Close">✕</button></div></div>'
         + '<div class="fs-body" id="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr" id="fs-pool-hdr"><span>Pool</span><span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" data-tip="Filter by title, artist, release, ISRC or AcoustID\nMatch still looks at the whole pool.">' + fsAddField('fs-add-input', 'paste a recording, release, or release-group MBID|URL…', 'Add recordings\nPaste a recording’s, release’s or release group’s MBID or MusicBrainz URL; its recordings come in at once.') + fsGroupAllBtn('fs-groupall', 'Group all\nThe selected recording, or the pool as filtered, in one new group') + '<span class="fs-pooltog" id="fs-pooltog" data-tip="Fold the pool away\nThe groups get the full width.">◀</span></div>'
-        + '<div class="fs-poolsort">Sort ' + POOL_SORT_HTML.replace('<span class="fs-seg">', '<span class="fs-seg" id="fs-pool-sort">') + '<select id="fs-rg-editions" style="display:none;"><option value="">+ Load recordings from RG edition ▾</option></select></div>'
+        + '<div class="fs-poolsort">Sort ' + POOL_SORT_HTML.replace('<span class="fs-seg">', '<span class="fs-seg" id="fs-pool-sort">') + '<select id="fs-rg-editions" style="display:none;"><option value="">+ Load recordings from RG edition ▾</option></select>' + addPageBtn() + '</div>'
         + '<div class="fs-colbody" id="fs-pool-body"></div></div>'
         + '<div class="fs-poolrail" id="fs-poolrail" data-tip="Show the pool again"><span class="fs-railarrow">▶</span><span class="fs-raillabel">POOL <span id="fs-rail-cnt">0</span></span></div>'
         + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-subcnt" id="fs-groups-recs"></span><button type="button" id="fs-expandall-deep" class="fs-btn" data-tip="Expand every group and every release table\nAgain: collapse it all">⇲ All details</button><button type="button" id="fs-collapseall" class="fs-btn" data-tip="Collapse or expand every group card">▼ Collapse all</button><span class="fs-matchmsg" id="fs-matchmsg" style="display:none"></span><span class="fs-sp"></span>' + '<div class="fs-legend">'
@@ -6266,6 +6267,18 @@ function addMenuOptions() {
     if (m) { const t = m[1].toLowerCase(); return { gid: m[2].toLowerCase(), o: [[t, 'This ' + emOne(t), 1]] }; }
     return { gid: null, o: [] };
 }
+// the button that opens the add menu: a phone has no Ctrl+click on the icon; only when the page has something to add
+function addPageBtn(empty) {
+    if (!addMenuOptions().o.length) return '';
+    return '<button type="button" class="fs-btn fs-addpage' + (empty ? ' fs-addpage-e' : '') + '" data-tip="Add from this page\nWhat Ctrl+click on Fusion’s icon offers: this page’s entity and what it lists">＋ Add from this page</button>';
+}
+// an empty pool's hint: the button when the page has something to add, and no Ctrl+click on touch
+function emptyAddHint(desk) {
+    const b = addPageBtn(true);
+    if (b) return '<div class="fs-addpage-w">' + b + '</div>or paste a URL above.';
+    return matchMedia('(pointer:coarse)').matches ? '<br>Paste a URL above, or open Fusion on a page that has one to add.' : '<br>' + desk;
+}
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('.fs-addpage'); if (!b) return; e.preventDefault(); e.stopPropagation(); openAddMenu(b); });
 function openAddMenu(anchor) {
     const old = document.getElementById('fs-addmenu'); if (old) { old.remove(); return; }
     const { o, gid } = addMenuOptions();
@@ -6277,8 +6290,10 @@ function openAddMenu(anchor) {
         + o.map(([k, l, on], i) => { const n = poolCount(k); return '<label><input type="checkbox" data-i="' + i + '">' + entSvg(k, 15) + '<span>' + l + '</span>' + (n ? '<i>' + n + ' in pool</i>' : '') + '</label>'; }).join('')
         + '<div class="fs-am-b"><button type="button" data-a="cancel">Cancel</button><button type="button" class="fs-am-go" data-a="add">Add</button></div>';
     const r = (anchor || document.body).getBoundingClientRect();
-    m.style.right = Math.max(4, innerWidth - r.right) + 'px'; m.style.bottom = Math.max(4, innerHeight - r.top + 4) + 'px';
+    m.style.right = Math.max(4, innerWidth - r.right) + 'px';
+    if (anchor && r.top < innerHeight / 2) m.style.top = (r.bottom + 4) + 'px'; else m.style.bottom = Math.max(4, innerHeight - r.top + 4) + 'px';
     document.body.appendChild(m);
+    const mr = m.getBoundingClientRect(); if (mr.left < 4) m.style.right = Math.max(4, innerWidth - mr.width - 4) + 'px';
     const close = () => { m.remove(); document.removeEventListener('mousedown', out, true); document.removeEventListener('keydown', key, true); };
     const go = () => { const sel = [...m.querySelectorAll('input:checked')].map(x => o[+x.dataset.i][0]); close(); if (sel.length) addFromPage(sel, gid); };
     const out = e => { if (!m.contains(e.target) && !(anchor && anchor.contains(e.target))) close(); };
@@ -6352,7 +6367,7 @@ async function addFromPage(sel, gid) {
         const added = Object.entries(res).filter(([, c]) => c.ok).map(([k, c]) => c.ok + ' ' + (c.ok === 1 ? emOne(k) : emLabel(k).toLowerCase()));
         Log.info('Add menu: ' + JSON.stringify(res));
         mbuToast(added.length ? 'Added ' + added.join(', ') + ' to Fusion' : 'Already in Fusion');
-        if (!want('recording')) { const first = Object.keys(res).find(k => res[k].ok) || Object.keys(res)[0]; if (document.getElementById('fs-em-overlay') && first) openEntities(first); }
+        if (!want('recording')) { const first = Object.keys(res).find(k => res[k].ok) || Object.keys(res)[0]; if ((document.getElementById('fs-em-overlay') || document.getElementById('fs-overlay')) && first) openEntities(first); }
     }
     if (want('recording')) loadScopeRecordings();
 }
@@ -6443,7 +6458,7 @@ function emRender() {
         return '<div class="fs-pcard' + (EM_SEL.has(x.gid) ? ' fs-selected' : '') + (run != null ? ' fs-run' + run : '') + '" draggable="true" data-gid="' + x.gid + '" data-tip="' + escapeHtml(x.name) + '\nClick: select · double-click or drag: into a group">'
             + '<span class="fs-grip">⠿</span><div class="fs-info"><div class="fs-t">' + link(x) + (x.dis ? '<span class="fs-dis">(' + escapeHtml(x.dis) + ')</span>' : '') + '</div><div class="fs-m">' + escapeHtml(meta) + '</div></div>'
             + '<span class="fs-rm" data-act="pool-remove" data-tip="Remove from the pool">✕</span></div>';
-    }).join('') : '<div class="fs-empty">No ' + label.toLowerCase() + ' yet.<br>Add them with Ctrl+click or middle-click on Fusion’s icon, or paste a URL above.</div>';
+    }).join('') : '<div class="fs-empty">No ' + label.toLowerCase() + ' yet.' + emptyAddHint('Add them with Ctrl+click or middle-click on Fusion’s icon, or paste a URL above.') + '</div>';
     // groups
     const open = t.groups.filter(g => g.state !== 'done');
     ov.querySelector('#fs-em-groups-cnt').textContent = open.length;
@@ -6521,7 +6536,7 @@ function openEntities(type) {
         + '<button class="fs-cons-x" id="fs-em-max" type="button" data-tip="Maximize or restore">⛶</button>'
         + '<button class="fs-cons-x" id="fs-em-cfg" type="button" data-tip="Fusion\nOptions, the log, help">' + MBU_CFG_ICON + '</button><button class="fs-cons-x" id="fs-em-close" type="button" data-tip="Close">✕</button></div></div>'
         + '<div class="fs-body" id="fs-em-body"><div class="fs-col fs-pool"><div class="fs-colhdr" id="fs-em-pool-hdr"><span>Pool</span><span class="fs-cnt" id="fs-em-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-em-filter" class="fs-poolfilter" placeholder="filter the pool…" data-tip="Filter by name or any column">' + fsAddField('fs-em-input', 'paste an entity URL or MBID…', 'Add to the pool\nPaste a MusicBrainz URL of any mergeable entity, or an MBID of this board’s type.') + '' + fsGroupAllBtn('', 'Group all\nThe selected entries, or the pool as filtered, in one new group') + '<span class="fs-pooltog" data-tip="Fold the pool away\nThe groups get the full width.">◀</span></div>'
-        + '<div class="fs-poolsort">Sort ' + POOL_SORT_HTML + '</div><div class="fs-colbody" id="fs-em-pool"></div></div>'
+        + '<div class="fs-poolsort">Sort ' + POOL_SORT_HTML + addPageBtn() + '</div><div class="fs-colbody" id="fs-em-pool"></div></div>'
         + '<div class="fs-poolrail" data-tip="Show the pool again"><span class="fs-railarrow">▶</span><span class="fs-raillabel">POOL <span id="fs-em-rail-cnt">0</span></span></div>'
         + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-em-groups-cnt">0</span><span class="fs-sp"></span><button type="button" class="fs-btn fs-clearbtn" data-act="clearmenu" data-tip="Clear the pool, the groups or the merged groups">Clear ▾</button></div><div class="fs-colbody" id="fs-em-groups"></div></div></div>'
         + '<div class="fs-ftr"><div class="fs-sum" id="fs-em-sum"></div><div class="fs-sp"></div><div class="fs-note">Merges submit directly in the background — no MB merge page involved</div><button type="button" id="fs-em-mergeall" class="fs-btn fs-primary">' + MERGE_MARK + ' Merge All (0) →</button></div></div>';
