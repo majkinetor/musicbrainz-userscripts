@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.223000
+// @version      2026.11.08.215043
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -4111,7 +4111,22 @@ function ccStyle() {
         + '.mcc-menu{position:absolute;right:0;top:calc(100% + 4px);z-index:2;min-width:180px;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);box-shadow:0 6px 18px rgba(0,0,0,.25);padding:4px}'
         + '.mcc-menu button{all:unset;box-sizing:border-box;display:block;width:100%;padding:7px 10px;border-radius:5px;cursor:pointer;color:var(--mbu-text);white-space:nowrap}.mcc-menu button:hover{background:var(--mbu-bg-hover)}'
         + '.mcc-err{margin:40px auto;max-width:520px;background:var(--mbu-bg);border:1px solid var(--mbu-error-border);border-radius:var(--mbu-radius-lg);padding:16px 18px}'
-        + '.mcc-spin{display:inline-block;width:10px;height:10px;border:2px solid var(--mbu-border);border-top-color:var(--mbu-info);border-radius:50%;animation:mcc-spin .8s linear infinite;vertical-align:-1px}@keyframes mcc-spin{to{transform:rotate(360deg)}}';
+        + '.mcc-spin{display:inline-block;width:10px;height:10px;border:2px solid var(--mbu-border);border-top-color:var(--mbu-info);border-radius:50%;animation:mcc-spin .8s linear infinite;vertical-align:-1px}@keyframes mcc-spin{to{transform:rotate(360deg)}}'
+        // a phone, as Mission Control's (its sheet pins the page's body under html.mc-open): one column, the comparison
+        // on top, the sources and the inspector under it; the header in two rows, the release with ⚙ and ✕, then the
+        // steps (scrolling sideways) with Add release
+        + '@media (max-width: 760px){'
+        + '#mcc-root,#mcc-root *{-webkit-text-size-adjust:100%;text-size-adjust:100%}'
+        + '.mcc-hdr{flex-wrap:wrap;gap:6px 8px;padding:6px 8px}'
+        + '.mcc-fmt-slot{order:1}.mcc-rel{order:2;flex:1 1 0}.mcc-hdr [data-cc=cfg]{order:3}.mcc-hdr [data-cc=close]{order:4}'
+        + '.mcc-steps{order:5;flex:1 1 0;justify-content:flex-start;overflow-x:auto;scrollbar-width:none}.mcc-steps>*{flex-shrink:0}.mcc-split{order:6}'
+        + '.mcc-hdr::after{content:"";order:4;flex-basis:100%;height:0}'
+        + '.mcc-main{flex-direction:column;overflow:auto}'
+        + '.mcc-center{order:-1;flex:none;overflow:visible;padding:8px}'
+        + '.mcc-side,.mcc-insp{width:auto;flex:none;overflow:visible;border:0;border-top:1px solid var(--mbu-border)}'
+        + '.mcc-fields{grid-template-columns:minmax(0,1fr);padding:8px}'
+        + '.mcc-sect{overflow-x:auto}.mcc-sect-h{flex-wrap:wrap;row-gap:2px}.mcc-sect-h .hint{order:9;flex-basis:100%;padding-left:24px}'
+        + '}';
     document.head.appendChild(s);
 }
 
@@ -4871,6 +4886,8 @@ function ccClose() {
     CC.ui.remove(); CC.ui = null;
     ccLeaveQuiet(false);
     document.documentElement.style.overflow = '';
+    document.documentElement.classList.remove('mc-open');
+    if (CC.scroll) { scrollTo(CC.scroll[0], CC.scroll[1]); CC.scroll = null; }
     ccLauncher();
     Log.cat('Consolidation').info('consolidation closed (the launcher opens it again)');
 }
@@ -4918,7 +4935,10 @@ function ccOpen() {
         + '<div class="mcc-main"><aside class="mcc-side"></aside><main class="mcc-center"></main><aside class="mcc-insp"></aside></div>');
     document.body.appendChild(ui);
     CC.ui = ui;
+    // on a phone mc-open pins the page's body (as for Mission Control), which scrolls it to the top: put it back on close
+    CC.scroll = [scrollX, scrollY];
     document.documentElement.style.overflow = 'hidden';
+    document.documentElement.classList.add('mc-open');
     ui.addEventListener('click', ccOnClick);
     ui.addEventListener('contextmenu', e => { const p = e.target.closest('[data-pk]'); if (p) { e.preventDefault(); ccTakeAll(p.dataset.pk); return; } const a = e.target.closest('[data-cc="sect"]'); if (!a) return; e.preventDefault(); ccToggleSect(a.dataset.s, true); });
     clearInterval(ccClock);
