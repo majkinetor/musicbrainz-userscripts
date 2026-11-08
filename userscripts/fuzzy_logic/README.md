@@ -31,7 +31,7 @@ Event Horizon's tag editor gets a small Fuzzy Logic button beside its close butt
 
 Genres you haven't voted for yet start out selected. Click a row to select or unselect it, or use **Select all**. Tags you already voted for are marked.
 
-**Vote N** upvotes the selected tags and **Withdraw** takes your votes back. Both need you to be logged in. Reload the page to see the result, unless you use Event Horizon.
+**Vote N** upvotes the selected tags and **Withdraw** takes your votes back. Both need you to be logged in. Reload the page to see the result. With Event Horizon, a vote shows right away, but after **Withdraw** you still need to reload.
 
 On a release, the checkbox next to the switch votes on its release group and every recording too.
 
