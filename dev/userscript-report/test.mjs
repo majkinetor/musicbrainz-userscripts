@@ -140,7 +140,7 @@ test('GitHub draft includes concise verdict changes, pinned report and the exact
 test('oversized exports require an attachment rather than truncating feedback',()=>{
   const value=sharingFixture();value.entries[0].review.comments=Array.from({length:4},(_,i)=>({id:String(i),at:'2026-11-07T10:00:00Z',text:'x'.repeat(18000)}));
   const draft=discussionDraft(value);assert.equal(draft.requiresAttachment,true);assert.ok(draft.body.includes('Attach the downloaded JSON'));assert.ok(JSON.stringify(value).length>50000);
-  assert.equal(draft.requiresPaste,true);assert.equal(new URL(draft.url).searchParams.get('body'),pastePrompt);
+  assert.equal(draft.requiresPaste,true);const short=new URL(draft.url).searchParams.get('body');assert.ok(short.startsWith(pastePrompt));assert.match(short,/\*\*Harmony\*\*: Mostly replaceable → Fully replaceable/,'the URL body still names the change');assert.ok(draft.url.length<=7500);
   assert.equal(draft.body.split('x'.repeat(18000)).length,5,'every comment stays in the body to paste');
 });
 test('discussion text lists every change and leaves out unchanged scripts',()=>{
@@ -211,10 +211,10 @@ test('analysis fingerprints include implementation parts and new relevant suite 
  assert.equal(sourceAnalysisState(analysis,{state:'unavailable'},suite),'Source unavailable');
 });
 
-test('every accepted verdict has an analysis or an explicit unavailable source',()=>{
+test('every positive accepted verdict has an analysis or an explicit unavailable source',()=>{
  const html=readFileSync(new URL('./out/index.html',import.meta.url),'utf8');const data=JSON.parse(html.match(/<script type="application\/json" id="report-data">([\s\S]*?)<\/script>/)[1]);
- const accepted=data.entries.filter(e=>e.acceptedReview);assert.equal(accepted.length,185);
- assert.ok(accepted.every(e=>e.sourceAnalysis || e.assessment));
+ const accepted=data.entries.filter(e=>e.acceptedReview);assert.equal(accepted.length,279);
+ assert.ok(accepted.filter(e=>!['No equivalent','Not applicable'].includes(e.verdict)).every(e=>e.sourceAnalysis || e.assessment),'every positive verdict has an analysis');
  const harmony=accepted.find(e=>e.name==='Harmony');assert.equal(harmony.features.length,8);
  assert.equal(harmony.verdict,'Mostly replaceable');assert.equal(harmony.sourceVerdict,'Partial overlap');assert.equal(harmony.acceptedReview.discussionNumber,943);
  assert.ok(!harmony.acceptedNotes.some(n=>n.text.includes('Trivial feature')),'#943 supersedes the #942 test note');

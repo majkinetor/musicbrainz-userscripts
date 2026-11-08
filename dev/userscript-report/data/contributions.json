@@ -46,6 +46,19 @@
       "disposition": "accepted",
       "acceptedBy": "majkinetor",
       "decision": "Maintainer verdicts, notes and capability assessments incorporated. The Harmony test note from #942 is removed; its capability was reassessed."
+    },
+    {
+      "id": "D_kwDOSj7rds4Aq7xW",
+      "discussionNumber": 945,
+      "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/945",
+      "authorId": "MDQ6VXNlcjg1NzY3",
+      "createdAt": "2026-11-08T09:00:32Z",
+      "updatedAt": "2026-11-08T09:00:32Z",
+      "exportPath": "contributions/945.json",
+      "reportVersion": "d5079ea591c46c4be942bc5ca0c1a8887485bce3daa5bedbea26edc0f83fffee",
+      "disposition": "accepted",
+      "acceptedBy": "majkinetor",
+      "decision": "Maintainer verdicts for 94 wiki-listed scripts that had no assessment yet."
     }
   ]
 }

@@ -23824,6 +23824,682 @@
       "reviewedAt": "2026-11-07",
       "reviewer": "GPT-6 (source recheck)",
       "scope": "Extracting Japanese rights-database work metadata and seeding a MusicBrainz work with identifiers and cross-links. Unchanged upstream bytes verified; suite changes rechecked. No live submission tests."
+    },
+    {
+      "id": "wiki-3dccffb72b0df8a389b3",
+      "name": "MBz YouTube Music Lookup",
+      "verdict": "Replaceable",
+      "tools": [
+        "platform_check"
+      ],
+      "summary": "A YouTube Music search button on release pages; Platform Check finds the release on YouTube Music (barcode first, then search) and adds the match.",
+      "capabilities": [
+        {
+          "id": "source.5aceb5d36780",
+          "name": "YouTube Music lookup button on the release page",
+          "coverage": "Covered",
+          "weight": 5,
+          "reason": "Platform Check searches YouTube Music among its platforms from the release page.",
+          "evidence": [
+            {
+              "url": "https://github.com/afrocatmusic/userscripts/blob/718e3ba1bc76206a64efb8db94bab8f9e1b06854/MBz-YouTube-Music-Lookup.user.js#L27",
+              "label": "Source implementation",
+              "sha256": "f7c7f4d387f9bd0085db671ef5a0b44d5b42319bebac41fd57f68a5c1cd41869",
+              "line": 27
+            }
+          ]
+        },
+        {
+          "id": "source.826d86384433",
+          "name": "Search by barcode, else artist and title",
+          "coverage": "Covered",
+          "weight": 5,
+          "reason": "Platform Check searches by barcode first, then the platform’s own search.",
+          "evidence": [
+            {
+              "url": "https://github.com/afrocatmusic/userscripts/blob/718e3ba1bc76206a64efb8db94bab8f9e1b06854/MBz-YouTube-Music-Lookup.user.js#L38",
+              "label": "Source implementation",
+              "sha256": "f7c7f4d387f9bd0085db671ef5a0b44d5b42319bebac41fd57f68a5c1cd41869",
+              "line": 38
+            }
+          ]
+        }
+      ],
+      "sourceHash": "f7c7f4d387f9bd0085db671ef5a0b44d5b42319bebac41fd57f68a5c1cd41869",
+      "suiteCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+      "suiteInventoryHash": "547167e9978b717e3c6d72197aa5cc1b4f26e8c7d0ae9981c5067cb02003d37d",
+      "dependencies": [
+        {
+          "path": "userscripts/platform_check/DEVELOP.md",
+          "sha256": "be6f4e8693e00aebf02edc61a4bbb25f4e7197159449572fade6fa8d93d96376"
+        },
+        {
+          "path": "userscripts/platform_check/README.md",
+          "sha256": "d2513813fb8ba2ab1537250c9abfa780bf80338b80c7184c2195c3a4d5ea1066"
+        },
+        {
+          "path": "userscripts/platform_check/platform_check.user.js",
+          "sha256": "9446f6cf035729ee101be8d91c9c87e0c2d8274527d9177ce710ff723053ec55"
+        }
+      ],
+      "status": "Code analyzed"
+    },
+    {
+      "id": "wiki-0ab7639f89847f0421b3",
+      "name": "CAA Links (Cover Art Archive Links)",
+      "verdict": "Replaceable",
+      "tools": [
+        "art_station"
+      ],
+      "summary": "Links and fallback thumbnails for Cover Art Archive images; Art Station shows and manages a release’s covers with its own thumbnails and archive links.",
+      "capabilities": [
+        {
+          "id": "source.aa648f6c7c7d",
+          "name": "Link cover-art edit filenames to archive.org",
+          "coverage": "Partial",
+          "weight": 5,
+          "reason": "Art Station links each cover to its archive files; edit pages are not rewritten.",
+          "evidence": [
+            {
+              "url": "https://github.com/jesus2099/konami-command/blob/619bfdf520a5162abc5467af32d5b2a386745b5e/mb_CAA-LINKS.user.js#L32",
+              "label": "Source implementation",
+              "sha256": "3bf1bf573f0d8a71ad7844d7061883c63addbef3b54df3a628fda9a29896d147",
+              "line": 32
+            }
+          ]
+        },
+        {
+          "id": "source.82a9e5d97bfb",
+          "name": "Fallback thumbnails for broken CAA images",
+          "coverage": "Covered",
+          "weight": 5,
+          "reason": "Art Station loads its own thumbnails for every cover.",
+          "evidence": [
+            {
+              "url": "https://github.com/jesus2099/konami-command/blob/619bfdf520a5162abc5467af32d5b2a386745b5e/mb_CAA-LINKS.user.js#L52",
+              "label": "Source implementation",
+              "sha256": "3bf1bf573f0d8a71ad7844d7061883c63addbef3b54df3a628fda9a29896d147",
+              "line": 52
+            }
+          ]
+        },
+        {
+          "id": "source.6d5faff89b8f",
+          "name": "Cover Art tab / Archive release / file list links on edits",
+          "coverage": "Partial",
+          "weight": 5,
+          "reason": "Art Station opens a release’s archive item; cover-art edit pages get no extra links.",
+          "evidence": [
+            {
+              "url": "https://github.com/jesus2099/konami-command/blob/619bfdf520a5162abc5467af32d5b2a386745b5e/mb_CAA-LINKS.user.js#L111",
+              "label": "Source implementation",
+              "sha256": "3bf1bf573f0d8a71ad7844d7061883c63addbef3b54df3a628fda9a29896d147",
+              "line": 111
+            }
+          ]
+        }
+      ],
+      "sourceHash": "3bf1bf573f0d8a71ad7844d7061883c63addbef3b54df3a628fda9a29896d147",
+      "suiteCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+      "suiteInventoryHash": "547167e9978b717e3c6d72197aa5cc1b4f26e8c7d0ae9981c5067cb02003d37d",
+      "dependencies": [
+        {
+          "path": "userscripts/art_station/DEVELOP.md",
+          "sha256": "b864d99ffc0dade55a55bf84edf72f08779c5e411a5d8b4707b335279af079fc"
+        },
+        {
+          "path": "userscripts/art_station/README.md",
+          "sha256": "9e09fdc09caf0e6be688225ae4cd013dda5529f192d973a3b56ea0d4b268e3ed"
+        },
+        {
+          "path": "userscripts/art_station/art_station.user.js",
+          "sha256": "b16e8e9457a237f7f5d8c060f660e9c9b23194789f4f1683dedd5e4030492881"
+        },
+        {
+          "path": "userscripts/art_station/as_picker/README.md",
+          "sha256": "13384e6ff06f6c28841961f07a0b4bbfc48eb26cb9e035d3ede577419842f688"
+        },
+        {
+          "path": "userscripts/art_station/as_picker/as_picker.user.js",
+          "sha256": "2f79164aebfaea2a91e49bb27bac3595a4ac776374852450faaa6c94565e5702"
+        }
+      ],
+      "status": "Code analyzed"
+    },
+    {
+      "id": "wiki-a0fc1f566de0b1d3d438",
+      "name": "Show duplicate recordings on MusicBrainz",
+      "verdict": "Replaceable",
+      "tools": [
+        "fusion"
+      ],
+      "summary": "Marks recordings whose AcoustID is shared with another recording; Fusion groups likely duplicates by ISRC and AcoustID and merges them.",
+      "capabilities": [
+        {
+          "id": "source.e22942cab32a",
+          "name": "Look up AcoustIDs of the listed recordings",
+          "coverage": "Covered",
+          "weight": 5,
+          "reason": "Fusion fetches the pool’s AcoustIDs from acoustid.org.",
+          "evidence": [
+            {
+              "url": "https://update.greasyfork.org/scripts/549561/Show%20duplicate%20recordings%20on%20Musicbrainz.user.js#L79",
+              "label": "Source implementation",
+              "sha256": "4d84a5a29ccb3edaaa771c3b834f636f2f3fa828e28c8f535ab54067a1aa9b64",
+              "line": 79
+            }
+          ]
+        },
+        {
+          "id": "source.965701cbd4bf",
+          "name": "Mark recordings sharing an AcoustID",
+          "coverage": "Covered",
+          "weight": 5,
+          "reason": "Fusion tints a shared AcoustID, one colour per value, and groups the duplicates.",
+          "evidence": [
+            {
+              "url": "https://update.greasyfork.org/scripts/549561/Show%20duplicate%20recordings%20on%20Musicbrainz.user.js#L110",
+              "label": "Source implementation",
+              "sha256": "4d84a5a29ccb3edaaa771c3b834f636f2f3fa828e28c8f535ab54067a1aa9b64",
+              "line": 110
+            }
+          ]
+        }
+      ],
+      "sourceHash": "4d84a5a29ccb3edaaa771c3b834f636f2f3fa828e28c8f535ab54067a1aa9b64",
+      "suiteCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+      "suiteInventoryHash": "547167e9978b717e3c6d72197aa5cc1b4f26e8c7d0ae9981c5067cb02003d37d",
+      "dependencies": [
+        {
+          "path": "userscripts/fusion/DEVELOP.md",
+          "sha256": "2ae1c9a7ba8c6a73b4e83202232f714d256a781e4f615b6ed9d985163a6c5289"
+        },
+        {
+          "path": "userscripts/fusion/README.md",
+          "sha256": "eab10077a4c070968d033fbd9c8ce5a6c55a09082ff9d760782e9ccd6e758aea"
+        },
+        {
+          "path": "userscripts/fusion/fusion.user.js",
+          "sha256": "2eea4b93c572b0bee3ad546b1c3e93a44107d5179185975be6c5504041ed2121"
+        }
+      ],
+      "status": "Code analyzed"
+    },
+    {
+      "id": "wiki-3970ba1eb70a1d14583b",
+      "name": "Display AcoustIDs and merge recordings with common AcoustID",
+      "verdict": "Replaceable",
+      "tools": [
+        "fusion"
+      ],
+      "summary": "An AcoustID column and a merge of recordings sharing an AcoustID; Fusion’s Match groups and merges recordings by shared AcoustID or ISRC.",
+      "capabilities": [
+        {
+          "id": "source.9ba4ce27f6e2",
+          "name": "AcoustID column on work and artist recording lists",
+          "coverage": "Covered",
+          "weight": 5,
+          "reason": "Fusion looks up and shows each recording’s AcoustIDs.",
+          "evidence": [
+            {
+              "url": "https://github.com/loujine/musicbrainz-scripts/blob/37df091b3ddc3651a77291ff3a895c017e50750b/mb-edit-merge_from_acoustid.user.js#L26",
+              "label": "Source implementation",
+              "sha256": "3d4ec60744324cfbbfd2246d49266f999cb0ede630cd3ce3af8ee1a63d4c736e",
+              "line": 26
+            }
+          ]
+        },
+        {
+          "id": "source.291b1054a1d5",
+          "name": "Merge recordings that share an AcoustID",
+          "coverage": "Covered",
+          "weight": 5,
+          "reason": "Fusion merges a matched group; MusicBrainz’s merge queue is not needed.",
+          "evidence": [
+            {
+              "url": "https://github.com/loujine/musicbrainz-scripts/blob/37df091b3ddc3651a77291ff3a895c017e50750b/mb-edit-merge_from_acoustid.user.js#L93",
+              "label": "Source implementation",
+              "sha256": "3d4ec60744324cfbbfd2246d49266f999cb0ede630cd3ce3af8ee1a63d4c736e",
+              "line": 93
+            }
+          ]
+        }
+      ],
+      "sourceHash": "3d4ec60744324cfbbfd2246d49266f999cb0ede630cd3ce3af8ee1a63d4c736e",
+      "suiteCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+      "suiteInventoryHash": "547167e9978b717e3c6d72197aa5cc1b4f26e8c7d0ae9981c5067cb02003d37d",
+      "dependencies": [
+        {
+          "path": "userscripts/fusion/DEVELOP.md",
+          "sha256": "2ae1c9a7ba8c6a73b4e83202232f714d256a781e4f615b6ed9d985163a6c5289"
+        },
+        {
+          "path": "userscripts/fusion/README.md",
+          "sha256": "eab10077a4c070968d033fbd9c8ce5a6c55a09082ff9d760782e9ccd6e758aea"
+        },
+        {
+          "path": "userscripts/fusion/fusion.user.js",
+          "sha256": "2eea4b93c572b0bee3ad546b1c3e93a44107d5179185975be6c5504041ed2121"
+        }
+      ],
+      "status": "Code analyzed"
+    },
+    {
+      "id": "wiki-a37b21162bcb37552b31",
+      "name": "MusicBrainz Quick Recording Match",
+      "verdict": "Replaceable",
+      "tools": [
+        "apollo_editor"
+      ],
+      "summary": "Auto-selects recording matches in the release editor’s Recordings tab; Apollo links recordings by ISRC first, then its picker’s suggestions.",
+      "capabilities": [
+        {
+          "id": "source.a05277e75daa",
+          "name": "Auto-select the first recommended or searched recording",
+          "coverage": "Covered",
+          "weight": 5,
+          "reason": "Apollo’s recording matching links the best candidate per track.",
+          "evidence": [
+            {
+              "url": "https://github.com/Aerozol/metabrainz-userscripts/blob/8f9930058b40ec96c6dbec24fc3d41959eb28812/MusicBrainz%20Quick%20Recording%20Match.user.js#L487",
+              "label": "Source implementation",
+              "sha256": "f6af551beb21ba32e196de27598a4f3afc0b3cc0705d052f326f864b9cf9eee1",
+              "line": 487
+            }
+          ]
+        },
+        {
+          "id": "source.98870584300c",
+          "name": "Match recordings by pasted ISRCs",
+          "coverage": "Covered",
+          "weight": 5,
+          "reason": "Apollo looks up the release’s ISRCs first and accepts a pasted ISRC in its picker.",
+          "evidence": [
+            {
+              "url": "https://github.com/Aerozol/metabrainz-userscripts/blob/8f9930058b40ec96c6dbec24fc3d41959eb28812/MusicBrainz%20Quick%20Recording%20Match.user.js#L664",
+              "label": "Source implementation",
+              "sha256": "f6af551beb21ba32e196de27598a4f3afc0b3cc0705d052f326f864b9cf9eee1",
+              "line": 664
+            }
+          ]
+        },
+        {
+          "id": "source.fcc95b79f14b",
+          "name": "Confidence highlighting and threshold",
+          "coverage": "Partial",
+          "weight": 5,
+          "reason": "Apollo checks title and artist before linking an ISRC match; it has no adjustable confidence threshold.",
+          "evidence": [
+            {
+              "url": "https://github.com/Aerozol/metabrainz-userscripts/blob/8f9930058b40ec96c6dbec24fc3d41959eb28812/MusicBrainz%20Quick%20Recording%20Match.user.js#L49",
+              "label": "Source implementation",
+              "sha256": "f6af551beb21ba32e196de27598a4f3afc0b3cc0705d052f326f864b9cf9eee1",
+              "line": 49
+            }
+          ]
+        },
+        {
+          "id": "source.1cb653a0d0d6",
+          "name": "Unlink all recordings",
+          "coverage": "Gap",
+          "weight": 5,
+          "reason": "No bulk unlink.",
+          "evidence": [
+            {
+              "url": "https://github.com/Aerozol/metabrainz-userscripts/blob/8f9930058b40ec96c6dbec24fc3d41959eb28812/MusicBrainz%20Quick%20Recording%20Match.user.js#L801",
+              "label": "Source implementation",
+              "sha256": "f6af551beb21ba32e196de27598a4f3afc0b3cc0705d052f326f864b9cf9eee1",
+              "line": 801
+            }
+          ]
+        }
+      ],
+      "sourceHash": "f6af551beb21ba32e196de27598a4f3afc0b3cc0705d052f326f864b9cf9eee1",
+      "suiteCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+      "suiteInventoryHash": "547167e9978b717e3c6d72197aa5cc1b4f26e8c7d0ae9981c5067cb02003d37d",
+      "dependencies": [
+        {
+          "path": "userscripts/apollo_editor/DEVELOP.md",
+          "sha256": "cf01184df82e9ff7ccecc2f0488c8c8a30ba9cf3320bb396c70a302288a3f32d"
+        },
+        {
+          "path": "userscripts/apollo_editor/README.md",
+          "sha256": "bfb56123658f865eb495e7b944e0db1054ebcc4b1faa463fe758be0a28bae172"
+        },
+        {
+          "path": "userscripts/apollo_editor/apollo_editor.user.js",
+          "sha256": "d6ec8861508a5544e71137f30b51e775a063d953380d9456cb73170d0c1c5116"
+        }
+      ],
+      "status": "Code analyzed"
+    },
+    {
+      "id": "wiki-70a942c53bcc1a73a29c",
+      "name": "Apple Music Barcodes/ISRCs",
+      "verdict": "Partial overlap",
+      "tools": [
+        "first_contact",
+        "isrc_scout"
+      ],
+      "summary": "Shows an Apple Music album’s barcode, label, ISRCs and dates in an overlay; First Contact imports the same data and ISRC Scout submits the ISRCs.",
+      "capabilities": [
+        {
+          "id": "source.2d80e08e49da",
+          "name": "Read barcode, label, dates and ISRCs of an Apple Music album",
+          "coverage": "Covered",
+          "weight": 5,
+          "reason": "First Contact reads the album, every track’s ISRC included, when importing.",
+          "evidence": [
+            {
+              "url": "https://github.com/ToadKing/apple-music-barcode-isrc/blob/502468da5df51fd87beaf37fea0c0f625463dd34/apple-music-barcode-isrc.user.js#L58",
+              "label": "Source implementation",
+              "sha256": "b5d643ba81609776c7c6fd301c261632f52e93335376f43d7768e1ae6e871e63",
+              "line": 58
+            }
+          ]
+        },
+        {
+          "id": "source.b05ac5710909",
+          "name": "Show them in an overlay on music.apple.com",
+          "coverage": "Gap",
+          "weight": 5,
+          "reason": "The suite imports the data instead of showing it on Apple’s page.",
+          "evidence": [
+            {
+              "url": "https://github.com/ToadKing/apple-music-barcode-isrc/blob/502468da5df51fd87beaf37fea0c0f625463dd34/apple-music-barcode-isrc.user.js#L170",
+              "label": "Source implementation",
+              "sha256": "b5d643ba81609776c7c6fd301c261632f52e93335376f43d7768e1ae6e871e63",
+              "line": 170
+            }
+          ]
+        },
+        {
+          "id": "source.ae2c4be9cd9a",
+          "name": "Submit the ISRCs to MagicISRC",
+          "coverage": "Covered",
+          "weight": 5,
+          "reason": "ISRC Scout imports Apple Music ISRCs to the release directly.",
+          "evidence": [
+            {
+              "url": "https://github.com/ToadKing/apple-music-barcode-isrc/blob/502468da5df51fd87beaf37fea0c0f625463dd34/apple-music-barcode-isrc.user.js#L196",
+              "label": "Source implementation",
+              "sha256": "b5d643ba81609776c7c6fd301c261632f52e93335376f43d7768e1ae6e871e63",
+              "line": 196
+            }
+          ]
+        }
+      ],
+      "sourceHash": "b5d643ba81609776c7c6fd301c261632f52e93335376f43d7768e1ae6e871e63",
+      "suiteCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+      "suiteInventoryHash": "547167e9978b717e3c6d72197aa5cc1b4f26e8c7d0ae9981c5067cb02003d37d",
+      "dependencies": [
+        {
+          "path": "userscripts/first_contact/DEVELOP.md",
+          "sha256": "5b2e0c9e0f0513589c22362ac5b81db20deec8be8f0a63d7dbb205ba5674cc84"
+        },
+        {
+          "path": "userscripts/first_contact/README.md",
+          "sha256": "ce754795deb8ec7ab4478ae1e318c94b33c267b65f05fff08511ea8b658097ee"
+        },
+        {
+          "path": "userscripts/first_contact/first_contact.user.js",
+          "sha256": "1cf1a13bace01bbfb13a64b6a2c8a31360cbd115ad6c8a15ab1be5c3d057f68d"
+        },
+        {
+          "path": "userscripts/isrc_scout/DEVELOP.md",
+          "sha256": "8916395048348b759f0ba69b83f6b0d9a4dc1b005738953ba141497da9d88f3b"
+        },
+        {
+          "path": "userscripts/isrc_scout/README.md",
+          "sha256": "42d9b02c34a13c8f43f1851d49c6bef9762653479cfd6ffb3d3b715d89ab9a51"
+        },
+        {
+          "path": "userscripts/isrc_scout/isrc_scout.user.js",
+          "sha256": "4b01111fc73a5f27cdb4eaf1c275caf239702387c469677c60208f823ab94c8d"
+        }
+      ],
+      "status": "Code analyzed"
+    },
+    {
+      "id": "wiki-72794458cc4720e95ce7",
+      "name": "Batch Add to Collection",
+      "verdict": "Partial overlap",
+      "tools": [
+        "event_horizon"
+      ],
+      "summary": "Batch-adds checked entities to a collection and copies MBIDs; Event Horizon adds or removes one entity at a time.",
+      "capabilities": [
+        {
+          "id": "source.5d83508d0652",
+          "name": "Add an entity to your collections",
+          "coverage": "Covered",
+          "weight": 5,
+          "reason": "Event Horizon’s Collections menu adds or removes the entity.",
+          "evidence": [
+            {
+              "url": "https://github.com/y-young/userscripts/blob/3085ae3e632375cdf50c2fbe10e9ffce15678062/musicbrainz-batch-add-to-collection.user.js#L188",
+              "label": "Source implementation",
+              "sha256": "e6317da72804ff9ada8ade7ae2a463124d9462cbe30252edf8dd344ef6d7a0a9",
+              "line": 188
+            }
+          ]
+        },
+        {
+          "id": "source.cba2208f1fe5",
+          "name": "Checkbox selection on lists and search results for batch add",
+          "coverage": "Gap",
+          "weight": 5,
+          "reason": "No batch selection.",
+          "evidence": [
+            {
+              "url": "https://github.com/y-young/userscripts/blob/3085ae3e632375cdf50c2fbe10e9ffce15678062/musicbrainz-batch-add-to-collection.user.js#L374",
+              "label": "Source implementation",
+              "sha256": "e6317da72804ff9ada8ade7ae2a463124d9462cbe30252edf8dd344ef6d7a0a9",
+              "line": 374
+            }
+          ]
+        },
+        {
+          "id": "source.828763413d24",
+          "name": "Copy MBIDs and add MBIDs from the clipboard",
+          "coverage": "Gap",
+          "weight": 5,
+          "reason": "Not in the suite.",
+          "evidence": [
+            {
+              "url": "https://github.com/y-young/userscripts/blob/3085ae3e632375cdf50c2fbe10e9ffce15678062/musicbrainz-batch-add-to-collection.user.js#L454",
+              "label": "Source implementation",
+              "sha256": "e6317da72804ff9ada8ade7ae2a463124d9462cbe30252edf8dd344ef6d7a0a9",
+              "line": 454
+            }
+          ]
+        }
+      ],
+      "sourceHash": "e6317da72804ff9ada8ade7ae2a463124d9462cbe30252edf8dd344ef6d7a0a9",
+      "suiteCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+      "suiteInventoryHash": "547167e9978b717e3c6d72197aa5cc1b4f26e8c7d0ae9981c5067cb02003d37d",
+      "dependencies": [
+        {
+          "path": "userscripts/event_horizon/DEVELOP.md",
+          "sha256": "c2df71ae389c785d6a419766e2b4680761cd28dce1bf43182598a024e083a6ad"
+        },
+        {
+          "path": "userscripts/event_horizon/README.md",
+          "sha256": "d1f4137417552c191c1477b83a861b085db4a9cc0e22c74114167f3701e747e8"
+        },
+        {
+          "path": "userscripts/event_horizon/event_horizon.user.js",
+          "sha256": "9367d8e9c5da0addcd53feae554083193ce568e6681d43df8352f57c486f6e14"
+        }
+      ],
+      "status": "Code analyzed"
+    },
+    {
+      "id": "wiki-0862c619563afc3fc5c4",
+      "name": "MusicBrainz: Right Side Flags Everywhere",
+      "verdict": "Partial overlap",
+      "tools": [
+        "event_horizon"
+      ],
+      "summary": "Replaces MusicBrainz’s country flags with Wikimedia SVGs everywhere; Event Horizon shows flags only in its own views.",
+      "capabilities": [
+        {
+          "id": "source.0b24c179884a",
+          "name": "High-quality flags on every MusicBrainz page",
+          "coverage": "Gap",
+          "weight": 5,
+          "reason": "The suite leaves MusicBrainz’s flags as they are.",
+          "evidence": [
+            {
+              "url": "https://github.com/Lotheric/metabrainz-userscripts/blob/68f5abf2b504c77f5d0eb193353748712f6052e7/MusicBrainz_Right_Side_Flags_Everywhere.user.js#L2882",
+              "label": "Source implementation",
+              "sha256": "91b161f43a6c2afa7e8ed6a4059fc3bd67df7e93e5a0d0fdde852c49bd071901",
+              "line": 2882
+            }
+          ]
+        },
+        {
+          "id": "source.a04371bb3490",
+          "name": "Flags for areas",
+          "coverage": "Partial",
+          "weight": 5,
+          "reason": "Event Horizon shows an area’s flag in its own viewer.",
+          "evidence": [
+            {
+              "url": "https://github.com/Lotheric/metabrainz-userscripts/blob/68f5abf2b504c77f5d0eb193353748712f6052e7/MusicBrainz_Right_Side_Flags_Everywhere.user.js#L2786",
+              "label": "Source implementation",
+              "sha256": "91b161f43a6c2afa7e8ed6a4059fc3bd67df7e93e5a0d0fdde852c49bd071901",
+              "line": 2786
+            }
+          ]
+        }
+      ],
+      "sourceHash": "91b161f43a6c2afa7e8ed6a4059fc3bd67df7e93e5a0d0fdde852c49bd071901",
+      "suiteCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+      "suiteInventoryHash": "547167e9978b717e3c6d72197aa5cc1b4f26e8c7d0ae9981c5067cb02003d37d",
+      "dependencies": [
+        {
+          "path": "userscripts/event_horizon/DEVELOP.md",
+          "sha256": "c2df71ae389c785d6a419766e2b4680761cd28dce1bf43182598a024e083a6ad"
+        },
+        {
+          "path": "userscripts/event_horizon/README.md",
+          "sha256": "d1f4137417552c191c1477b83a861b085db4a9cc0e22c74114167f3701e747e8"
+        },
+        {
+          "path": "userscripts/event_horizon/event_horizon.user.js",
+          "sha256": "9367d8e9c5da0addcd53feae554083193ce568e6681d43df8352f57c486f6e14"
+        }
+      ],
+      "status": "Code analyzed"
+    },
+    {
+      "id": "wiki-12ceee74914f4cd5653f",
+      "name": "Ame (Apple Music)",
+      "verdict": "Partial overlap",
+      "tools": [
+        "art_station",
+        "first_contact",
+        "platform_check"
+      ],
+      "summary": "Enhances music.apple.com pages; the suite overlaps only on storefront availability, full-size covers and release info used for import.",
+      "capabilities": [
+        {
+          "id": "source.04681c4eea4c",
+          "name": "Storefront availability and extended release info",
+          "coverage": "Partial",
+          "weight": 5,
+          "reason": "Platform Check and First Contact read Apple’s storefronts and release data for MusicBrainz; not shown on Apple’s page.",
+          "evidence": [
+            {
+              "url": "https://gitlab.com/SuperSaltyGamer/ame/-/blob/1262c665114cfa1d1ba0adf7f8925960107771fd/dist/applemusic.user.js#L41",
+              "label": "Source implementation",
+              "sha256": "581ed4c06d38302ef2f288dfa9ea9b70efaf394b00abcf0cb9ef993df12e7850",
+              "line": 41
+            }
+          ]
+        },
+        {
+          "id": "source.709558ea9f5e",
+          "name": "Full-resolution cover link",
+          "coverage": "Covered",
+          "weight": 5,
+          "reason": "Art Station fetches Apple Music covers at full size.",
+          "evidence": [
+            {
+              "url": "https://gitlab.com/SuperSaltyGamer/ame/-/blob/1262c665114cfa1d1ba0adf7f8925960107771fd/dist/applemusic.user.js#L67",
+              "label": "Source implementation",
+              "sha256": "581ed4c06d38302ef2f288dfa9ea9b70efaf394b00abcf0cb9ef993df12e7850",
+              "line": 67
+            }
+          ]
+        },
+        {
+          "id": "source.50cc8462f343",
+          "name": "Lyrics, quality badges, token copy, UI fixes",
+          "coverage": "Gap",
+          "weight": 5,
+          "reason": "Apple Music player features are out of scope.",
+          "evidence": [
+            {
+              "url": "https://gitlab.com/SuperSaltyGamer/ame/-/blob/1262c665114cfa1d1ba0adf7f8925960107771fd/dist/applemusic.user.js#L143",
+              "label": "Source implementation",
+              "sha256": "581ed4c06d38302ef2f288dfa9ea9b70efaf394b00abcf0cb9ef993df12e7850",
+              "line": 143
+            }
+          ]
+        }
+      ],
+      "sourceHash": "581ed4c06d38302ef2f288dfa9ea9b70efaf394b00abcf0cb9ef993df12e7850",
+      "suiteCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+      "suiteInventoryHash": "547167e9978b717e3c6d72197aa5cc1b4f26e8c7d0ae9981c5067cb02003d37d",
+      "dependencies": [
+        {
+          "path": "userscripts/art_station/DEVELOP.md",
+          "sha256": "b864d99ffc0dade55a55bf84edf72f08779c5e411a5d8b4707b335279af079fc"
+        },
+        {
+          "path": "userscripts/art_station/README.md",
+          "sha256": "9e09fdc09caf0e6be688225ae4cd013dda5529f192d973a3b56ea0d4b268e3ed"
+        },
+        {
+          "path": "userscripts/art_station/art_station.user.js",
+          "sha256": "b16e8e9457a237f7f5d8c060f660e9c9b23194789f4f1683dedd5e4030492881"
+        },
+        {
+          "path": "userscripts/art_station/as_picker/README.md",
+          "sha256": "13384e6ff06f6c28841961f07a0b4bbfc48eb26cb9e035d3ede577419842f688"
+        },
+        {
+          "path": "userscripts/art_station/as_picker/as_picker.user.js",
+          "sha256": "2f79164aebfaea2a91e49bb27bac3595a4ac776374852450faaa6c94565e5702"
+        },
+        {
+          "path": "userscripts/first_contact/DEVELOP.md",
+          "sha256": "5b2e0c9e0f0513589c22362ac5b81db20deec8be8f0a63d7dbb205ba5674cc84"
+        },
+        {
+          "path": "userscripts/first_contact/README.md",
+          "sha256": "ce754795deb8ec7ab4478ae1e318c94b33c267b65f05fff08511ea8b658097ee"
+        },
+        {
+          "path": "userscripts/first_contact/first_contact.user.js",
+          "sha256": "1cf1a13bace01bbfb13a64b6a2c8a31360cbd115ad6c8a15ab1be5c3d057f68d"
+        },
+        {
+          "path": "userscripts/platform_check/DEVELOP.md",
+          "sha256": "be6f4e8693e00aebf02edc61a4bbb25f4e7197159449572fade6fa8d93d96376"
+        },
+        {
+          "path": "userscripts/platform_check/README.md",
+          "sha256": "d2513813fb8ba2ab1537250c9abfa780bf80338b80c7184c2195c3a4d5ea1066"
+        },
+        {
+          "path": "userscripts/platform_check/platform_check.user.js",
+          "sha256": "9446f6cf035729ee101be8d91c9c87e0c2d8274527d9177ce710ff723053ec55"
+        }
+      ],
+      "status": "Code analyzed"
     }
   ]
 }

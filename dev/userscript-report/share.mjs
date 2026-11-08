@@ -29,7 +29,7 @@ export function changeSummary(item){
   const verdict=before===proposed?verdictLabel(proposed)+' (unchanged)':verdictLabel(before)+' → '+verdictLabel(proposed);
   return '- **'+md(item.name || basis.name)+'**: '+md(verdict)+(details.length?'\n'+details.join('\n'):'');
 }
-export const pastePrompt='Replace this line with the review summary copied to your clipboard (Ctrl+V), then attach the downloaded JSON review file.';
+export const pastePrompt='The full review summary is on your clipboard: select all of this text and paste over it (Ctrl+A, Ctrl+V), then attach the downloaded JSON review file. Until then, the short list below says what changed.';
 export function discussionDraft(bundle){
   const version=bundle.report.reportVersion || bundle.report.sourceManifestSha256;
   const reportLink=bundle.report.permanentUrl;
@@ -57,7 +57,14 @@ export function discussionDraft(bundle){
     requiresAttachment=true;
     body=lines.join('\n')+'\n## Review export\n\nAttach the downloaded JSON review file before publishing. It contains every change, comment and source reference.\n';
     url.searchParams.set('body',body);
-    if(url.href.length>7500){requiresPaste=true;url.searchParams.set('body',pastePrompt);}
+    if(url.href.length>7500){
+      // Never an empty post: the URL keeps each script's first line (its verdict) while it fits.
+      requiresPaste=true;
+      const short=bundle.entries.map(changeSummary).filter(Boolean).map(line=>line.split('\n')[0]),kept=[];
+      const draft=more=>pastePrompt+'\n\n'+lines.slice(0,2).join('\n')+'\n\n## Requested changes (short)\n\n'+kept.join('\n')+(more?'\n- … and '+more+' more in the JSON export':'')+'\n';
+      for(const line of short){kept.push(line);url.searchParams.set('body',draft(short.length-kept.length));if(url.href.length>7500){kept.pop();break;}}
+      url.searchParams.set('body',draft(short.length-kept.length));
+    }
   }else requiresAttachment=false;
   return {title,body,url:url.href,requiresAttachment,requiresPaste};
 }
