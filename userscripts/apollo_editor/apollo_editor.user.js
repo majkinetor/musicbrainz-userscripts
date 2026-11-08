@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.135213
+// @version      2026.11.08.151117
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -7655,12 +7655,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       body:has(#release-editor){min-width:0}
       /* MusicBrainz's release form: a label column beside the fields (Date and Country side by side)
          is wider than a phone; each label goes above its field instead */
-      #release-editor #information :is(table,tbody,tr,th,td){display:block;width:auto;text-align:left}
-      #release-editor #information :is(th,td){padding:2px 0;text-align:left!important}
-      #release-editor #information tr{margin-bottom:4px}
+      #release-editor #information :is(table,tbody,tr,th,td):where(:not(#external-links-editor,#external-links-editor *)){display:block;width:auto;text-align:left}
+      #release-editor #information :is(th,td):where(:not(#external-links-editor *)){padding:2px 0;text-align:left!important}
+      #release-editor #information tr:where(:not(#external-links-editor *)){margin-bottom:4px}
       /* MusicBrainz right-aligns its labels (they sat at the far right of their own line, off it when narrow):
          a small caption at the left, right above the field */
-      #release-editor #information label{display:inline;float:none;width:auto;text-align:left!important;margin:0}
+      #release-editor #information label:where(:not(#external-links-editor *)){display:inline;float:none;width:auto;text-align:left!important;margin:0}
       #release-editor #information table.row-form > tbody > tr > td:first-child:has(> label){padding:0 0 1px}
       /* the empty error rows (shown only on a missing field) no longer leave a gap each */
       #release-editor #information tr.error:not(:has(> td.error:not([style*="none"]))){display:none}
@@ -7690,9 +7690,32 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       /* a long title wraps (spaces still kept as typed) rather than being cut; a block, not a flex row,
          so the text and its marks (a highlighted apostrophe) wrap as one run, not as separate pieces */
       .tc-mirror .t-title-disp{white-space:pre-wrap;display:block}
-      /* tools bar: wrap so "⚡ Match" never gets pushed off the edge */
-      #tc-bar{flex-wrap:wrap;gap:6px 8px}
-      #tc-bar > .sp{flex-basis:100%;height:0}   /* the spacer forces the Match cluster onto its own line */
+      /* no tools bar on a phone: too many controls for the width */
+      #tc-bar{display:none!important}
+      /* a medium's header (collapse · format · ▼ ▲ ✕) stays one line */
+      #release-editor fieldset.advanced-medium > table.advanced-format,
+      #release-editor fieldset.advanced-medium > table.advanced-format > tbody{display:block}
+      #release-editor fieldset.advanced-medium > table.advanced-format > tbody > tr:first-child{display:flex;align-items:center;gap:4px}
+      #release-editor fieldset.advanced-medium > table.advanced-format > tbody > tr:first-child > td{display:block;padding:0;width:auto}
+      #release-editor fieldset.advanced-medium > table.advanced-format td.format{flex:1 1 0;min-width:0}
+      #release-editor fieldset.advanced-medium > table.advanced-format td.format select{width:100%}
+      #release-editor fieldset.advanced-medium > table.advanced-format td.align-right{flex:none;white-space:nowrap}
+      #release-editor fieldset.advanced-medium > table.advanced-format td.align-right button.remove-item{margin-left:6px!important}
+      /* a release event's or label's (x) sits beside the (+) below it, which shows its icon only */
+      #release-editor #information tr:has(> td > :is(button.remove-release-event,button.remove-release-label)){position:relative}
+      #release-editor #information td:has(> :is(button.remove-release-event,button.remove-release-label)){position:absolute;top:0;right:0;padding:0}
+      #release-editor #information tr:nth-last-child(1 of :has(> td > button.remove-release-event)) > td:has(> button.remove-release-event),
+      #release-editor #information tr:nth-last-child(1 of :has(> td > button.remove-release-label)) > td:has(> button.remove-release-label){top:calc(100% + 7px);left:0;right:auto}
+      #release-editor #information td.add-item{padding:0 0 0 28px}
+      #release-editor #information td.add-item > button.with-label.add-item{font-size:0;padding:0;width:20px;height:20px;min-width:0;background-position:center;margin:0}
+      /* external links: small favicons, no indent */
+      html body.tc-ri-on #external-links-editor > tbody{padding-left:0;column-gap:8px}
+      html body.tc-ri-on #external-links-editor tr.external-link-item{margin-left:0;padding:2px 2px 0;gap:6px}
+      html body.tc-ri-on #external-links-editor tr.external-link-item > td:first-child{width:18px;height:18px;top:0}
+      html body.tc-ri-on #external-links-editor .favicon{transform:none}
+      html body.tc-ri-on #external-links-editor tr.external-link-item td.link-actions > button.remove-item{opacity:.5}
+      html body.tc-ri-on #external-links-editor tr.relationship-item{padding-left:24px}
+      html body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions > button[class*="remove"]{left:2px}
       .tc-am-lbl{white-space:normal}
 
       .tc-tablewrap{overflow-x:visible}
@@ -14027,6 +14050,21 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       #tc-nav-left{flex:1 1 auto}
       #tc-nav-pager{order:2}
       .tc-nav-step,.tc-nav-wbtn{padding:3px 8px;font-size:12px}
+      /* the release editor's nav: one line, icons only (the name stays in the tooltip) */
+      body:has(#release-editor) #tc-nav-left{flex-wrap:nowrap;gap:4px}
+      body:has(#release-editor) .tc-nav-step{font-size:0;display:inline-flex;align-items:center;padding:4px 7px}
+      body:has(#release-editor) .tc-nav-step:not(.tc-nav-diff)::after{content:"";width:15px;height:15px;background:currentColor;-webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
+      body:has(#release-editor) .tc-nav-step.tc-nav-warn::before{font-size:12px;margin-right:2px}
+      .tc-nav-step[data-step="information"]{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='6.5' fill='none' stroke='black' stroke-width='2'/><circle cx='8' cy='8' r='2'/></svg>")}
+      .tc-nav-step[data-step="duplicates-tab"]{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect x='1' y='5' width='10' height='10' rx='1' fill='none' stroke='black' stroke-width='1.8'/><path d='M5 2.5V1h10v10h-1.5' fill='none' stroke='black' stroke-width='1.8'/></svg>")}
+      .tc-nav-step[data-step="tracklist"]{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M1 3h14M1 8h14M1 13h14' stroke='black' stroke-width='2'/></svg>")}
+      .tc-nav-step[data-step="recordings"]{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M6 2h9v9.5a2.5 2.5 0 1 1-2-2.45V5H8v8.5a2.5 2.5 0 1 1-2-2.45z'/></svg>")}
+      body:has(#release-editor) .tc-nav-wbtn{font-size:0;padding:2px 8px;align-items:center}
+      body:has(#release-editor) .tc-nav-wbtn::before{font-size:15px;line-height:19px}
+      body:has(#release-editor) :is(.tc-wiz-enter,.tc-wiz-finish)::before{content:"✓"}
+      body:has(#release-editor) .tc-wiz-cancel::before{content:"✕"}
+      body:has(#release-editor) .tc-wiz-prev::before{content:"‹"}
+      body:has(#release-editor) .tc-wiz-next::before{content:"›"}
       body.tc-zen-on #tc-nav-title{order:3;flex:1 1 100%;text-align:left;padding:1px 2px 0}
       body.tc-zen-on #tc-nav-title .tc-nav-title-album,
       body.tc-zen-on #tc-nav-title .tc-nav-title-artist{white-space:normal}
