@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.104441
+// @version      2026.11.08.121500
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -1425,7 +1425,7 @@
   function selBox() {
     const sel = MODEL.filter(it => it._sel && !it._del), kept = MODEL.filter(it => it._sel && it._del && !it._mcOffer);   // #787 marked ones can be selected, to keep them
     const all = sel.length + kept.length;
-    return `${all ? '<button class="as-ic as-selback" aria-label="Clear selection">←</button>' : ''}${all ? `<b class="as-selcnt">${all} selected</b>` : '<span class="as-selcnt none">none selected</span>'}
+    return `${all ? '<button class="as-ic as-selback" aria-label="Clear selection">←</button>' : ''}${all ? `<b class="as-selcnt">${all}<span class="as-selw"> selected</span></b>` : '<span class="as-selcnt none">none selected</span>'}
       <button class="as-ic as-selall" data-tip="Select all ${ITEMS}">✳</button>
       <button class="as-ic as-selclr" data-tip="Clear selection"${all ? '' : ' disabled'}>✕</button>
       ${kept.length ? `<button class="as-btn as-bk-keep" data-tip="Keep the selected ${ITEMS} marked for removal"><span class="as-bi">↺</span><span class="mbu-bt">Keep${sel.length ? ` (${kept.length})` : ''}</span></button>` : ''}
@@ -2038,7 +2038,7 @@
   function openSelMore(btn) {
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop as-more-pop';
-    pop.innerHTML = '<button data-a="all">Select all</button><button data-a="inv">Invert selection</button><button data-a="clr">Clear selection</button>';
+    pop.innerHTML = (root.querySelector('.as-bk-report') ? '<button data-a="rep" class="as-more-rep">Report</button>' : '') + '<button data-a="all">Select all</button><button data-a="inv">Invert selection</button><button data-a="clr">Clear selection</button>';
     document.body.appendChild(pop);
     placePop(pop, btn.getBoundingClientRect());
     const close = () => { pop.remove(); document.removeEventListener('mousedown', off); };
@@ -2047,6 +2047,7 @@
       const a = e.target.closest('button') && e.target.dataset.a; if (!a) return;
       close();
       if (a === 'clr') return clearSel();
+      if (a === 'rep') { const r = root.querySelector('.as-bk-report'); if (r) r.click(); return; }
       selectable().forEach(it => it._sel = a === 'all' ? true : !it._sel);
       asLog.debug('Selection: ' + (a === 'all' ? 'select all' : 'invert'));
       render();
@@ -8180,7 +8181,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
   .as-search-pop .as-search-foot a:hover{text-decoration:underline}
   /* grow to fit all providers when the screen allows; no horizontal bar, and hide the
      vertical scrollbar chrome (still wheel-scrollable on a very short screen) */
-  .as-src-pop{min-width:340px;max-width:90vw;width:max-content;max-height:calc(100vh - 20px);overflow-x:hidden;scrollbar-width:none}
+  .as-src-pop{min-width:min(340px,calc(100vw - 16px));max-width:calc(100vw - 16px);width:max-content;max-height:calc(100vh - 20px);overflow-x:hidden;scrollbar-width:none}
   .as-src-pop::-webkit-scrollbar{display:none}
   .as-src-prov{display:flex;flex-direction:column;gap:5px;margin:6px 0 2px}
   .as-src-custom{display:flex;flex-direction:column;gap:5px}   /* #250 stacked custom-provider buttons */
@@ -8340,6 +8341,12 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
     #as-root .as-bar:not(:has(.as-selback)) .as-selbox{display:none}
     #as-root .as-bar .as-selback,#as-root .as-bar .as-selmore{display:inline-flex}
     #as-root .as-bar .as-selmore{margin-left:auto}
+    #as-root .as-bar .as-selw,#as-root .as-bar .as-bk-report{display:none}
+    #as-root .as-bar:has(.as-selback) .as-selbox{gap:2px;min-width:0}
+    #as-root .as-bar:has(.as-selback) .as-selbox>*{padding-left:5px;padding-right:5px}
+  }
+  @media (min-width: 761px) {
+    .as-more-rep{display:none}
   }
   /* commit panel */
   #as-commit,#as-report{position:fixed;inset:0;z-index:var(--mbu-z-modal);background:rgba(15,12,28,.45);display:flex;align-items:center;justify-content:center;padding:24px}
