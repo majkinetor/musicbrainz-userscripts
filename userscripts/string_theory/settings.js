@@ -335,6 +335,12 @@ function stSettings(tab) {
       + (ehFx.length ? '<div class="st-row">' + ['light', 'dark'].map(function (v) {
         return '<label class="st-lbl" for="st-th-eh-' + v + '" data-tip="Event Horizon’s effect preset for the ' + v + ' theme&#10;Applied each time that theme comes on; changes in Event Horizon after it stay">' + (v === 'dark' ? 'Dark effect' : 'Light effect') + '</label><select id="st-th-eh-' + v + '"></select>';
       }).join('') + '</div>' : '')
+      + '<h3 class="st-h">Idle</h3>'
+      + '<div class="st-row">' + seg('st-idle-on', 'Idle', [['on', 'On'], ['off', 'Off']])
+      + '<label class="st-lbl" for="st-idle-minutes">After (minutes)</label><input id="st-idle-minutes" type="number" min="1" max="1440" step="1"></div>'
+      + '<div class="st-row"><label class="st-lbl" for="st-idle-theme">Idle theme</label><select id="st-idle-theme"><option value="">Current theme</option>'
+      + ['light', 'dark'].map(function (v) { return '<optgroup label="' + (v === 'light' ? 'Light' : 'Dark') + '">' + __stTheme.names(v).map(function (n) { return '<option value="' + stEsc(v + ':' + n) + '">' + stEsc(n) + '</option>'; }).join('') + '</optgroup>'; }).join('') + '</select>'
+      + (ehFx.length ? '<label class="st-lbl" for="st-idle-effect">Idle effect</label><select id="st-idle-effect"><option value="">Current effect</option><option value="-">No effect</option>' + ehFx.map(function (n) { return '<option>' + stEsc(n) + '</option>'; }).join('') + '</select>' : '') + '</div>'
       + '<h3 class="st-h" id="st-dock">Dock</h3>'
       + '<div class="st-row">' + seg('st-side', 'Side', [['left', 'Left'], ['right', 'Right']]) + seg('st-flow', 'Orientation', [['column', 'Column'], ['row', 'Row']])
       + '<span class="st-lbl">Size</span><span class="st-step"><button type="button" id="st-size-dn" aria-label="Smaller">−</button>'
@@ -444,6 +450,7 @@ function stSettings(tab) {
     };
     q('#st-th-mode-l').classList.add('st-mode-label');
     pairRow(q('#st-th-light').parentElement); pairRow(q('#st-side').parentElement); pairRow(q('#st-hover').parentElement); pairRow(q('#st-count').parentElement); pairRow(q('#st-pal-on').parentElement);
+    pairRow(q('#st-idle-on').parentElement); pairRow(q('#st-idle-theme').parentElement);
     if (ehFx.length) { var ehRow = q('#st-th-eh-light').parentElement, thGrid = q('#st-th-light').closest('.st-field-grid'); pairRow(ehRow); while (ehRow.firstChild) thGrid.appendChild(ehRow.firstChild); ehRow.remove(); }
     var dockGrid = q('#st-side').closest('.st-field-grid'), hoverGrid = q('#st-hover').closest('.st-field-grid');
     while (hoverGrid.firstChild) dockGrid.appendChild(hoverGrid.firstChild); hoverGrid.remove();
@@ -458,11 +465,11 @@ function stSettings(tab) {
       var heading = section.querySelector('h3'), lead = document.createElement('div');
       lead.className = 'st-section-lead'; section.insertBefore(lead, heading); lead.appendChild(heading); lead.appendChild(control);
     };
-    inlineLead(sections[0], q('#st-th-mode').parentElement);
+    inlineLead(q('#st-th-mode').closest('.st-group'), q('#st-th-mode').parentElement);
     var sideField = q('#st-side').closest('.st-field'); sideField.classList.add('st-inline-side');
-    inlineLead(sections[1], sideField);
+    inlineLead(sideField.closest('.st-group'), sideField);
     var flowField = q('#st-flow').closest('.st-field'); flowField.classList.add('st-inline-side'); sideField.parentElement.appendChild(flowField);
-    var paletteField = q('#st-pal-on').closest('.st-field'), paletteHeading = sections[2].querySelector('h3');
+    var paletteField = q('#st-pal-on').closest('.st-field'), paletteHeading = paletteField.closest('.st-group').querySelector('h3');
     paletteHeading.textContent = 'Palette'; paletteField.classList.add('st-palette-enabled');
     q('#st-pal-on-l').classList.add('st-mode-label'); paletteField.insertBefore(paletteHeading, paletteField.firstChild);
     fitTabs();
@@ -561,6 +568,18 @@ function stSettings(tab) {
       q('#st-th-' + k).onchange = showTheme;   // tidies what was typed, or restores it
     });
     showTheme();
+    var showIdle = function () {
+      var i = __stTheme.read().idle;
+      Array.prototype.forEach.call(q('#st-idle-on').children, function (b) { b.setAttribute('aria-checked', String((b.dataset.v === 'on') === i.on)); });
+      q('#st-idle-minutes').value = i.minutes; q('#st-idle-theme').value = i.theme;
+      if (q('#st-idle-effect')) q('#st-idle-effect').value = i.effect;
+    };
+    function setIdle(k, v) { var i = __stTheme.read().idle; i[k] = v; __stTheme.set({ idle: i }); showIdle(); }
+    q('#st-idle-on').onclick = function (e) { var b = e.target.closest('button'); if (b) setIdle('on', b.dataset.v === 'on'); };
+    q('#st-idle-minutes').onchange = function (e) { setIdle('minutes', Math.max(1, Math.min(1440, Math.round(Number(e.target.value) || 5)))); };
+    q('#st-idle-theme').onchange = function (e) { setIdle('theme', e.target.value); };
+    if (q('#st-idle-effect')) q('#st-idle-effect').onchange = function (e) { setIdle('effect', e.target.value); };
+    showIdle();
     var showPal = function () {
       var p = stPalRead();
       Array.prototype.forEach.call(q('#st-pal-on').children, function (b) { b.setAttribute('aria-checked', String(b.dataset.v === (p.on ? 'on' : 'off'))); });

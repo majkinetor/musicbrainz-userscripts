@@ -38,6 +38,12 @@ The settings title bar uses `mbuCfgHeader`, retaining its icon, name, version an
 - The launchers' layout is `mbu.cornerFlow` (column or row) and `mbu.cornerSide` (right or left) in MusicBrainz's `localStorage`, read by every script's `mbRestackCorner` ([shared storage](../../DEVELOP.md#shared-storage)).
 - All members share **one** userscript-manager storage namespace (one each when installed separately). Each script prefixes its keys, but it's a shared surface.
 
+## Idle appearance
+
+[`themes/runtime.js`](themes/runtime.js) stores `{ on, minutes, theme, effect }` in `string_theory.theme.idle`. Theme values are `variant:name`; an empty theme or effect keeps the current one, and effect `-` means none. A top-frame timer resets on pointer, keyboard, touch and scroll activity, focus and return to a visible tab. Idle theme changes are temporary; normal theme scheduling and effect mapping remain active underneath. Theme previews take priority.
+
+`data-st-eh-fx-idle` asks Event Horizon to display a temporary preset even outside its supported entity pages. Removing it restores the exact prior effect, including unsaved changes, even if the idle preset matches the normal theme's mapping. Event Horizon excludes the idle values from any concurrent settings save. No network requests are added.
+
 ## External storage
 
 The backup browser is an absolute subview of the Sync pane, so listing and loading do not contribute to the window's grid height. Other Sync controls are inert while it is open. The list uses an adaptive grid; selection is stored by file ID in memory. Apply and Delete in the header target that entry's listed revision; Delete acts immediately. Escape or Back restores Browse focus; successful Apply returns to the main pane with Reload available. Reopening Browse fetches the current list. Busy state uses a spinner in the relevant section heading instead of a status paragraph.

@@ -7,6 +7,7 @@ var __stTheme = (function () {
   var onMb = /(^|\.)musicbrainz\.org$/.test(location.hostname);
   var style = null, wasDark = false, over = null;   // over: a theme shown but not saved (the command palette's preview)
   var sys = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+  var idle = false, idleTimer = null;
   // The theme chooser stays open across pages until it is closed: { only, v, n } in this tab's sessionStorage,
   // read here at document-start so the next page opens in the theme it shows, not the saved one first.
   var TC = 'st-tc';
@@ -20,7 +21,9 @@ var __stTheme = (function () {
     var fx = null; try { fx = JSON.parse(localStorage.getItem('mbu.ehFxPresets')); } catch (e) {}
     if (Array.isArray(fx) && v.eh && typeof v.eh === 'object') { var eh = {}; Object.keys(v.eh).forEach(function (k) { if (v.eh[k] === '-' || fx.indexOf(v.eh[k]) >= 0) eh[k] = v.eh[k]; }); v.eh = eh; }
     // light is the start: its Default is MusicBrainz untouched, so nothing changes until it's asked for
-    return { mode: MODES.indexOf(v.mode) < 0 ? 'light' : v.mode, dark: v.dark || 'Default', light: v.light || 'Default', lat: v.lat, lon: v.lon, from: v.from || '20:00', to: v.to || '07:00', eh: v.eh && typeof v.eh === 'object' ? v.eh : {} };
+    var i = v.idle && typeof v.idle === 'object' ? v.idle : {};
+    var parts = typeof i.theme === 'string' ? i.theme.split(':') : [];
+    return { mode: MODES.indexOf(v.mode) < 0 ? 'light' : v.mode, dark: v.dark || 'Default', light: v.light || 'Default', lat: v.lat, lon: v.lon, from: v.from || '20:00', to: v.to || '07:00', eh: v.eh && typeof v.eh === 'object' ? v.eh : {}, idle: { on: i.on === true, minutes: Math.max(1, Math.min(1440, Number(i.minutes) || 5)), theme: THEMES[parts[0]] && THEMES[parts[0]][parts[1]] != null ? i.theme : '', effect: typeof i.effect === 'string' && (i.effect === '-' || !Array.isArray(fx) || fx.indexOf(i.effect) >= 0) ? i.effect : '' } };
   }
   function save(s) { try { GM_setValue(KEY, s); } catch (e) {} }
 
@@ -57,7 +60,11 @@ var __stTheme = (function () {
   }
   function apply() {
     if (!onMb) return;
-    var s = over || read(), v = variant(s);
+    var saved = read(), s = over || saved, v = variant(s);
+    if (idle && !over && saved.idle.theme) {
+      var pick = saved.idle.theme.split(':');
+      s = Object.assign({}, saved); v = pick[0]; s[v] = pick[1];
+    }
     var css = THEMES[v][s[v]] || THEMES[v].Default;
     // Say which variant this is: a page's own background can't, Event Horizon paints over ours.
     // Not before dark was ever used here, so a dark userstyle over the light start keeps being measured.
@@ -72,14 +79,29 @@ var __stTheme = (function () {
     // the saved theme's preset on data-st-eh-fx ('-': no effect); a preview names its own on data-st-eh-fx-try,
     // which Event Horizon shows without saving and drops when it goes
     var de = document.documentElement, attr = function (k, x) { if (x) de.setAttribute(k, x); else de.removeAttribute(k); };
-    var sv = over ? read() : s, svv = over ? variant(sv) : v;
+    var sv = saved, svv = variant(saved);
     attr('data-st-eh-fx', sv.eh[svv + ':' + sv[svv]]);
     attr('data-st-eh-fx-try', over ? s.eh[v + ':' + s[v]] : '');
+    attr('data-st-eh-fx-idle', idle && !over ? saved.idle.effect : '');
+    de.toggleAttribute('data-st-idle', idle && !over);
+  }
+  function activity() {
+    clearTimeout(idleTimer);
+    if (idle) { idle = false; apply(); }
+    var s = read().idle;
+    if (!onMb || window.top !== window || !s.on || (!s.theme && !s.effect)) return;
+    idleTimer = setTimeout(function () { idle = true; apply(); }, s.minutes * 60000);
   }
   var tc = onMb && tcRead();
   if (tc) { over = read(); over.mode = tc.v; over[tc.v] = tc.n; if (tc.eh && typeof tc.eh === 'object') over.eh = tc.eh; }
   if (onMb) {
     apply();
+    activity();
+    ['pointermove', 'pointerdown', 'keydown', 'wheel', 'touchstart', 'scroll'].forEach(function (name) {
+      window.addEventListener(name, activity, { capture: true, passive: true });
+    });
+    window.addEventListener('focus', activity);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) activity(); });
     // last in the page, or MusicBrainz's stylesheet, loaded after it, wins every tie
     var last = function () { if (style) document.documentElement.appendChild(style); apply(); };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', last, { once: true }); else last();
@@ -87,7 +109,7 @@ var __stTheme = (function () {
     setInterval(function () { var m = read().mode; if (m === 'sun' || m === 'time') apply(); }, 60000);
   }
 
-  function set(patch) { var s = read(); Object.keys(patch).forEach(function (k) { s[k] = patch[k]; }); over = null; save(s); apply(); }
+  function set(patch) { var s = read(); Object.keys(patch).forEach(function (k) { s[k] = patch[k]; }); over = null; save(s); activity(); apply(); }
   // shows the settings with patch on top, saving nothing; no patch goes back to what is saved
   function preview(patch) {
     over = null;

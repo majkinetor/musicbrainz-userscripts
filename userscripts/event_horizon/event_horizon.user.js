@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08.160834
+// @version      2026.11.08.164809
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
 // @match        https://*.musicbrainz.org/
+// @match        https://*.musicbrainz.org/*
 // @match        https://*.musicbrainz.org/release/*
 // @match        https://*.musicbrainz.org/release-group/*
 // @match        https://*.musicbrainz.org/artist/*
@@ -4075,7 +4076,7 @@ if (!['static', 'drift', 'tide', 'twinkle', 'ripple', 'lantern', 'electricity', 
 if (!S.starView) S.starView = S.starGroup === 'none' ? 'row' : 'group';
 const menuTitlesApply = () => document.documentElement.style.setProperty('--eh-menu-titles', S.menuTitles ? 'inline' : 'none');
 menuTitlesApply();
-const save = () => { menuTitlesApply(); try { fxMark(); } catch (e) {} try { GM_setValue('view', Object.fromEntries(VIEW.map(k => [k, S[k]]))); } catch (e) {} };
+const save = () => { menuTitlesApply(); try { fxMark(); } catch (e) {} try { GM_setValue('view', Object.fromEntries(VIEW.map(k => [k, fxTry && fxTry.idle ? (k === 'fxCur' ? fxTry.cur : k in fxTry.v ? fxTry.v[k] : S[k]) : S[k]]))); } catch (e) {} };
 const toggle = (arr, v) => arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v];
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -8586,10 +8587,18 @@ hexReduce.addEventListener?.('change', () => hexApply());
 const hexMode = () => hexReduce.matches ? 'static' : S.hexMotion || 'static';
 function hexApply() {
     const de = document.documentElement;
+    // MusicBrainz pages outside the viewer need only the effect's sheet, never the viewer's global CSS.
+    if (de.hasAttribute('data-st-eh-fx-idle') && !ehOn && !document.getElementById('eh-idle-css')) {
+        const st = document.createElement('style'); st.id = 'eh-idle-css';
+        st.textContent = MBU_TOKENS + CSS.slice(CSS.indexOf(':is(#eh-hex,.eh-amb){'), CSS.indexOf(':root[data-eh-hex] :is(.tl'))
+            + ':root:not([data-eh-theme]) :is(#eh-hex,.eh-amb){z-index:1;--accent:var(--mbu-accent);--accent2:var(--mbu-accent-text)}';
+        de.append(st);
+    }
+    if (!de.hasAttribute('data-st-eh-fx-idle')) document.getElementById('eh-idle-css')?.remove();
     let layer = document.getElementById('eh-hex');
     S.fx = fxOf(S); S.hex = S.fx.length > 0; S.effect = S.fx.find(k => AMBIENT[k]) || S.effect;
     const off = Array.isArray(S.fxOff) ? S.fxOff : (S.fxOff = []);
-    const on = ehOn ? S.fx.filter(k => !off.includes(k)) : [];
+    const on = ehOn || de.hasAttribute('data-st-eh-fx-idle') ? S.fx.filter(k => !off.includes(k)) : [];
     for (const a of document.querySelectorAll('.eh-amb')) if (!on.includes(a.dataset.kind)) { a._ehPattern?.stop(); a.remove(); }
     for (const k of on) if (AMBIENT[k]) {
         let a = document.querySelector('.eh-amb[data-kind="' + k + '"]');
@@ -11787,27 +11796,33 @@ function fxImport(text) {
 // String Theory's theme chooser names one to try on data-st-eh-fx-try: shown, not saved; gone, the effect is back to
 // what it was, unless the theme kept brings that same preset; the chooser's pencil names one on data-st-eh-fx-edit,
 // applied and kept, for the Effects tab it opens
-let fxTry = null;   // { cur, v, name } while one is tried: the preset and the effect from before
+var fxTry = null;   // { cur, v, name, idle } while one is tried: the preset and the effect from before; hoisted for save()
 function fxTheme() {
-    const de = document.documentElement, n = de.dataset.stEhFx || '', t = de.dataset.stEhFxTry || '', e = de.dataset.stEhFxEdit || '';
+    const de = document.documentElement, n = de.dataset.stEhFx || '', idle = !de.dataset.stEhFxTry && !!de.dataset.stEhFxIdle, t = de.dataset.stEhFxTry || de.dataset.stEhFxIdle || '', e = de.dataset.stEhFxEdit || '';
     const redraw = () => { const b = document.querySelector('#eh-cfg .eh-cfg-b'); if (b) b.innerHTML = cfgBody(); };
     const show = () => { if (ehOn) bgApply(); else hexApply(); redraw(); };
     if (e) { de.removeAttribute('data-st-eh-fx-edit'); if (!t) { fxTry = null; if (fxUse(e)) show(); } }
     const p = t && fxGet(t);
     if (p) {
-        if (!fxTry) fxTry = { cur: S.fxCur, v: fxNow(), name: '' };
+        if (!fxTry) fxTry = { cur: S.fxCur, v: fxNow(), name: '', idle };
         if (fxTry.name !== p.name) { fxTry.name = p.name; S.fxCur = p.name === FX_NONE ? '' : p.name; Object.assign(S, fxFull(p)); show(); LOG.info('Effect preset tried: ' + p.name); }
         return;
     }
     let kept = false;
     if (fxTry) {
         const was = fxTry; fxTry = null;
-        kept = !!n && fxLow(n) === fxLow(was.name);
+        kept = !was.idle && !!n && fxLow(n) === fxLow(was.name);
         if (!kept) { S.fxCur = was.cur; Object.assign(S, was.v); show(); LOG.info('Effect preset tried, back to: ' + (was.cur || 'unnamed')); }
     }
     if (n === S.fxTheme && !kept) return;
     S.fxTheme = n; save();
     if (n && fxUse(n)) redraw();
+}
+let fxWatching = false;
+function fxWatch() {
+    if (fxWatching) return; fxWatching = true;
+    fxPublish(); fxTheme(); fxMark();
+    new MutationObserver(fxTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-st-eh-fx', 'data-st-eh-fx-try', 'data-st-eh-fx-idle', 'data-st-eh-fx-edit'] });
 }
 const FX_SVG = { dd: '<path d="M6 9l6 6 6-6"/>', plus: '<path d="M12 5v14M5 12h14"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>',
     ok: '<path d="M5 12l5 5 9-10"/>', shuffle: '<path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>',
@@ -12255,8 +12270,7 @@ function start() {
     // EH) read MusicBrainz's page first, its sidebar and tracklist, before EH swaps the body for its own
     setTimeout(() => setOn(S.on && !off), 0);
     // the effect presets for String Theory's theme settings, and the one its theme names
-    fxPublish(); fxTheme(); fxMark();
-    new MutationObserver(fxTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-st-eh-fx', 'data-st-eh-fx-try', 'data-st-eh-fx-edit'] });
+    fxWatch();
 }
 let showing = 0;
 // the page's shape while it loads, so nothing jumps when the data lands
@@ -12583,5 +12597,8 @@ if (PAGE_ID) {
     let off = !S.on; try { off = off || !!sessionStorage.getItem('eh-off') || !!sessionStorage.getItem('mc.after'); } catch (e) {}
     if (!off && !/[#&]fc-update=/.test(location.hash)) prefetch(PAGE_ID);
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+} else {
+    // Idle effects work on every MusicBrainz page; no entity fetch or viewer starts here.
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fxWatch); else fxWatch();
 }
 })();

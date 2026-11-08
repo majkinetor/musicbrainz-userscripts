@@ -15,10 +15,11 @@
 - **[What's included](#whats-included)**: the scripts in the bundle.
 - **[Dock](#dock)**: one icon for all the launchers.
 - **[Theme](#theme)**: light or dark, for MusicBrainz and every script.
+- **[Idle appearance](#idle-appearance)**: a theme and effect while the page is idle.
 - **[What's new](#whats-new)**: String Theory's icon turns golden when there is news.
 - **[Command palette](#command-palette)**: Ctrl+K lists every command, filtered as you type.
 - **[Sync and backup](#sync-and-backup)**: sync devices with Dropbox, Google Drive or your own WebDAV server, save backups there, or export a file.
-- **[Other recommended userscripts](#other-recommended-userscripts)**: scripts that go well with the bundle.
+- **[Automated mode](#automated-mode)**: scripts follow the requested task in worker pages.
 
 ## What's included
 
@@ -58,6 +59,12 @@ In String Theory's settings, on the **General** tab, **Mode** picks one of:
 **Light theme** and **Dark theme** pick which theme each one uses. To add or tweak a theme, see [themes](themes/README.md).
 
 With Event Horizon on and an effect preset saved in its settings, **Light effect** and **Dark effect** pick the preset each theme brings, by name; **No effect** turns the effects off, and **No preset** leaves yours as it is. It is applied each time that theme comes on; what you change in Event Horizon after that stays until the theme changes again. The [theme chooser](#command-palette) picks it too, as you try the themes.
+
+## Idle appearance
+
+In **General → Idle**, turn **Idle** on and set **After (minutes)**. **Idle theme** and **Idle effect** choose what appears after that much inactivity, on every MusicBrainz page including the homepage. **Current theme** or **Current effect** keeps that part unchanged; **No effect** hides effects. Effects use Event Horizon's presets and need that script enabled.
+
+Moving the pointer, typing, touching or scrolling restores your normal appearance. Idle choices leave your normal settings unchanged.
 
 ## What's new
 
@@ -124,6 +131,10 @@ Right-click String Theory's icon to open its settings, or any dock icon for that
 
 | Setting          | Default           | What it does                                                                                                                              |
 | ---------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Idle             | Off               | Enables the idle appearance                                                                                                               |
+| After (minutes)  | 5                 | Inactivity before the idle appearance, from 1 minute to 1 day                                                                             |
+| Idle theme       | Current theme     | Theme shown while idle                                                                                                                    |
+| Idle effect      | Current effect    | Event Horizon effect shown while idle                                                                                                     |
 | Side             | Right             | The launchers' side of the page                                                                                                           |
 | Orientation      | Column            | A column, or a row along the bottom edge                                                                                                  |
 | Size             | 100 %             | The launchers' size, 60 to 160 %                                                                                                          |
