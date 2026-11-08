@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08.191947
+// @version      2026.11.08.193000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4017,13 +4017,13 @@ function ambientApply(layer, kind) {
     layer._ehPattern = { key, P: p, stop, shift() {} }; document.addEventListener('visibilitychange', vis); vis();
 }
 
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'fx', 'fxOff', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'bgAmount', 'bgSize', 'bgGlow', 'bgHue', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'arAuto', 'arCol', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'fx', 'fxOff', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'bgAmount', 'bgSize', 'bgGlow', 'bgHue', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
     plOrder: [], // the settings' platform order, shown or not; prov follows it
     crTracks: true,
-    byName: false, plNames: false, plHover: false, plSize: 18, trackStripe: true, dis: 'brackets', width: 1600, bg: 'aura', fx: null, fxOff: [], hex: false, hexOpacity: 60, hexIntensity: 100, hexMotion: 'static', hexFx: 100, hexPace: .6, hexTrail: 1, hexOften: 1, hexGlow: 1, hexTwo: false, hexDepth: false,
+    byName: false, plNames: false, plHover: false, plSize: 18, trackStripe: true, arAuto: true, arCol: false, dis: 'brackets', width: 1600, bg: 'aura', fx: null, fxOff: [], hex: false, hexOpacity: 60, hexIntensity: 100, hexMotion: 'static', hexFx: 100, hexPace: .6, hexTrail: 1, hexOften: 1, hexGlow: 1, hexTwo: false, hexDepth: false,
     // the Image background: its address, and the filters over it
     bgUrl: '', bgArt: 'chillwave', bgSeed: 1, bgBlur: 0, bgBright: 100, bgSat: 100, bgOpacity: 65, bgFit: 'cover', bgVig: 0, bgTone: 'natural', bgAmount: 100, bgSize: 100, bgGlow: 100, bgHue: 0,
     on: true, menuTitles: false,
@@ -5053,8 +5053,9 @@ function tracklist(r) {
     const cls = Object.entries(S.cols).filter(([, v]) => v === false).map(([k]) => 'hide-' + k).join(' ');
     // a Various Artists release names each track's artist in a column of its own (majkinetor, as MusicBrainz's page does)
     // Show › Artist turns it on or off by hand, for this release only
+    // with Tracklist settings › Artist column by itself off, none of that: Show › Artist is a saved choice like the other columns
     const vaAuto = r.ac.some(a => a.artist.id === '89ad4ac3-39f7-470e-963a-56509c546377') || tracks.filter(t => t.feat.length).length > tracks.length / 2;
-    const va = arCol.has(r.id) ? arCol.get(r.id) : vaAuto;
+    const va = !S.arAuto ? S.arCol : arCol.has(r.id) ? arCol.get(r.id) : vaAuto;
     const row = (t, i) => {
         const sub = !va && t.feat.length ? 'with ' + t.feat.join(', ') : '';
         return `<div class="tr${i % 2 ? ' alt' : ''}" data-row="${esc(t.key)}" aria-expanded="${S.open.has(t.key)}"><span class="n mono">${esc(t.n)}</span>
@@ -5069,7 +5070,7 @@ function tracklist(r) {
         rows += `<button class="disc" type="button" data-disc="${mi}" aria-expanded="${!shut}" data-tip="${shut ? 'Open' : 'Fold'} this disc&#10;Right-click: ${shut ? 'open' : 'fold'} every disc">${CHEV}<span class="fi">${fmtSvg(fmtKind(m.format), 18)}</span>${esc(fmtName(m.format))}${multi ? ' ' + m.position : ''}${m.title ? ' · ' + esc(m.title) : ''}<span class="count">${m.tracks.length}</span><span class="tot">${total(ts)}</span></button>`;
         if (!shut) rows += ts.map(row).join('');
     });
-    const toggles = `<button class="tx" type="button" data-arcol="${esc(r.id)}" data-va="${va}" aria-pressed="${va}" data-tip="Each track's artist in a column\n${vaAuto ? 'On by itself' : 'Off by itself'} for this release" aria-label="Artist">${TX_ICON.ar}<span class="txl">Artist</span></button>` + [['mk', 'Markers', 'Markers on tracks'], ['isrc', 'ISRCs', "Each track's ISRCs"], ['links', 'Platforms', 'Platform icons on tracks'], ['len', 'Lengths', 'Track lengths']].map(([k, n, tip]) => `<button class="tx" type="button" data-col="${k}" aria-pressed="${S.cols[k] !== false}" aria-label="${n}" data-tip="${tip}">${TX_ICON[k]}<span class="txl">${n}</span></button>`).join('');
+    const toggles = `<button class="tx" type="button" data-arcol="${esc(r.id)}" data-va="${va}" aria-pressed="${va}" data-tip="Each track's artist in a column${S.arAuto ? `\n${vaAuto ? 'On by itself' : 'Off by itself'} for this release` : ''}" aria-label="Artist">${TX_ICON.ar}<span class="txl">Artist</span></button>` + [['mk', 'Markers', 'Markers on tracks'], ['isrc', 'ISRCs', "Each track's ISRCs"], ['links', 'Platforms', 'Platform icons on tracks'], ['len', 'Lengths', 'Track lengths']].map(([k, n, tip]) => `<button class="tx" type="button" data-col="${k}" aria-pressed="${S.cols[k] !== false}" aria-label="${n}" data-tip="${tip}">${TX_ICON[k]}<span class="txl">${n}</span></button>`).join('');
     rowKeys = tracks.map(t => t.key);
     const plB = `<button class="tx plcfg" type="button" data-plcfg="1" aria-label="Tracklist settings" data-tip="Tracklist settings\nTrack colors and platform icons">${MBU_CFG_ICON}</button>`;
     const tools = `<span class="label" style="margin-right:2px">Show</span>${toggles}${plB}`;
@@ -10431,7 +10432,7 @@ function onClick(ev) {
     if ('imgretry' in d) { imgRetry(); return; }
     if (d.tsort) { const sid = b.closest('section').id.slice(2), i = +d.tsort, t = tsGet(sid) || []; tsSet(sid, t[0] !== i ? [i, 1] : t[1] > 0 ? [i, -1] : []); const y = scrollY; render(); scrollTo(0, y); return; }
     if (d.plcfg) { openPlCfg(b, d.plcfg === '1' ? '' : d.plcfg); return; }
-    if (d.arcol) arCol.set(d.arcol, d.va !== 'true');
+    if (d.arcol) { if (S.arAuto) arCol.set(d.arcol, d.va !== 'true'); else S.arCol = d.va !== 'true'; }
     else if (d.col) S.cols[d.col] = S.cols[d.col] === false; // a column added since the view was saved is on
     else if ('goart' in d) { if (S.fold.includes('art')) { S.fold = toggle(S.fold, 'art'); render(); } const a = $('#s-art'); if (a) a.scrollIntoView({ behavior: 'smooth' }); return; }
     else if (d.fold) S.fold = toggle(S.fold, d.fold);
@@ -11707,7 +11708,7 @@ function plBody() {
     if (cfgAll) all = [...all.filter(p => S.prov.includes(p.key)), ...all.filter(p => !S.prov.includes(p.key)).sort((a, b) => a.name.localeCompare(b.name))];
     const shown = all.map(p => p.key).filter(k => S.prov.includes(k));
     const pchip = p => { const i = shown.indexOf(p.key); return `<button type="button" class="chip p" data-g="prov" data-k="${p.key}" aria-pressed="${i >= 0}" draggable="true" data-tip="${i >= 0 ? 'Shown: column ' + (i + 1) : 'Hidden: behind +N'}\nClick to ${i >= 0 ? 'hide' : 'show'}, drag to reorder">${icon(p, 16)}${esc(p.name)}${i >= 0 ? `<span class="ord">${i + 1}</span>` : ''}</button>`; };
-    return row('Tracks', chip('trackStripe', 'trackStripe', S.trackStripe, 'Alternating colors'))
+    return row('Tracks', chip('trackStripe', 'trackStripe', S.trackStripe, 'Alternating colors') + chip('arAuto', 'arAuto', S.arAuto, 'Artist column by itself', 'Set the Artist column for each release\nOn: shown on Various Artists releases and where most tracks have guests; Show › Artist changes one release\nOff: Show › Artist is one choice for every release'))
             + '<h3 class="plh">Platforms</h3>'
             + row('Show', chip('plNames', 'plNames', S.plNames, 'Names', 'Platform names beside the icons in an open track') + chip('plHover', 'plHover', S.plHover, 'Gray icons', 'Platform icons stay grey until you point at them'))
             + row('Icon size', [18, 22, 28].map(n => chip('plSize', n, S.plSize === n, n + 'px')).join(''))
@@ -12215,7 +12216,7 @@ function cfgWire(panel, b, body) {
             else if (g === 'factOff') { const [kd, fk] = k.split(':'); S.factOff = { ...S.factOff, [kd]: toggle(S.factOff[kd] || [], fk) }; }
             else if (g === 'extra') S.extras = toggle(S.extras, k);
             else if (g === 'prov') { S.prov = toggle(S.prov, k); plFollow(); }
-            else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'menuTitles' || g === 'keysOn' || g === 'cfgFade') S[g] = !S[g];
+            else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'arAuto' || g === 'menuTitles' || g === 'keysOn' || g === 'cfgFade') S[g] = !S[g];
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
             else if (g === 'bg') { S.bg = k; bgApply(); }
