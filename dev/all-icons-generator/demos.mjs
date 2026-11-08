@@ -71,6 +71,9 @@ export function demos(srcOf, iconOf) {
     { key: 'mission_control', label: 'Header and step, busy', want: s => /\.mc-hdr\.mc-busy|\.mc-step|\.mc-ring|\.mc-steps/.test(s) && !/\.mc-step\.(?!busy)|:hover|:focus/.test(s),
       extra: '.mc-hdr{position:relative;padding:8px 12px}',
       html: `<div class="mc-hdr mc-busy"><div class="mc-steps"><span class="mc-step busy"><span class="mc-ring"><img src="${iconOf('isrc_scout')}" width="20" height="20"><sup>3</sup></span><span class="tx"><b>Recordings</b><i>matching…</i></span></span></div></div>` },
+    { key: 'mission_control', label: 'Launcher, reading the release', want: re(/^\.mc-launch(\.mc-busy)?( \.h|$| svg)/),
+      extra: '.mc-launch{position:static!important}',
+      html: `<button class="mc-launch mc-busy">${(srcOf('mission_control').match(/const LAUNCH_SVG = '([^']+)'/) || [, ''])[1]}</button>` },
     { key: 'mission_control', label: 'Spinners', want: re(/^\.mcc?-spin$/), html: '<span class="mc-spin"></span><span class="mcc-spin"></span>' },
 
     { key: 'platform_check', label: 'Row, rising', want: s => /#mb-pc-panel \.pc-row(?![\w-])|^\.pc-(cell-ico|cell-name|meta|rows)(?![\w-])/.test(s) && !/pc-layout/.test(s),

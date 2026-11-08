@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.235500
+// @version      2026.11.09.003000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -863,7 +863,16 @@ let mcApi = null;   // { id, rel }: the release shown, read from the API
 // the release Event Horizon shows, when it isn't MC's: switched to while MC is shut and idle; false while it can't
 // one read at a time: the launcher starts it on hover, so the click usually finds it done
 let mcFollowing = null;
-function mcFollow() { return mcFollowing || (mcFollowing = mcFollowRun().finally(() => { mcFollowing = null; })); }
+// the launcher's icon, inline: while a read runs its rows of hexes light up in turn, top down (mc-busy)
+const LAUNCH_SVG = '<svg viewBox="0 0 128 128" aria-hidden="true"><defs><filter id="mc-launch-h" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="#fff" flood-opacity=".7"/><feComposite in2="d" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#mc-launch-h)"><path class="hx h1" d="M77 35.5 L64 43 L51 35.5 L51 20.5 L64 13 L77 20.5Z" fill="#7a57e8" stroke="#22223b" stroke-width="4" stroke-linejoin="round"/><path class="hx h2" d="M59.7 77.5 L46.7 85 L33.7 77.5 L33.7 62.5 L46.7 55 L59.7 62.5Z" fill="#ffc94a" stroke="#22223b" stroke-width="4" stroke-linejoin="round"/><path class="hx h3" d="M94.3 77.5 L81.3 85 L68.3 77.5 L68.3 62.5 L81.3 55 L94.3 62.5Z" fill="#ffc94a" stroke="#22223b" stroke-width="4" stroke-linejoin="round"/><path class="hx h4" d="M42.3 107.5 L29.4 115 L16.4 107.5 L16.4 92.5 L29.4 85 L42.3 92.5Z" fill="#ffc94a" stroke="#22223b" stroke-width="4" stroke-linejoin="round"/><path class="hx h5" d="M77 107.5 L64 115 L51 107.5 L51 92.5 L64 85 L77 92.5Z" fill="#ffc94a" stroke="#22223b" stroke-width="4" stroke-linejoin="round"/><path class="hx h6" d="M111.6 107.5 L98.6 115 L85.7 107.5 L85.7 92.5 L98.6 85 L111.6 92.5Z" fill="#ffc94a" stroke="#22223b" stroke-width="4" stroke-linejoin="round"/></g></svg>';
+function mcFollow() {
+    if (mcFollowing) return mcFollowing;
+    const busy = setTimeout(() => { const b = document.getElementById('mc-launch'); if (b) b.classList.add('mc-busy'); }, 120);
+    return (mcFollowing = mcFollowRun().finally(() => {
+        mcFollowing = null; clearTimeout(busy);
+        const b = document.getElementById('mc-launch'); if (b) b.classList.remove('mc-busy');
+    }));
+}
 async function mcFollowRun() {
     if (CONS) return true;
     const r = mcShown();
@@ -982,7 +991,10 @@ function mcStyle() {
     const s = document.createElement('style'); s.id = 'mc-style';
     s.textContent = MBU_TOKENS + MBU_UI_CSS
         + '.mc-launch{position:fixed;z-index:2147483000;width:40px;height:40px;border-radius:50%;border:none;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;'
-        + 'background:transparent;box-shadow:none;opacity:.85;transition:opacity .15s,transform .1s}.mc-launch img{width:34px;height:34px;display:block;pointer-events:none}'
+        + 'background:transparent;box-shadow:none;opacity:.85;transition:opacity .15s,transform .1s}.mc-launch svg{width:34px;height:34px;display:block;pointer-events:none}'
+        + '.mc-launch.mc-busy .hx{animation:mcLaunchFlash 1.2s ease-in-out infinite}.mc-launch.mc-busy .h2,.mc-launch.mc-busy .h3{animation-delay:.15s}.mc-launch.mc-busy .h4,.mc-launch.mc-busy .h5,.mc-launch.mc-busy .h6{animation-delay:.3s}'
+        + '@keyframes mcLaunchFlash{0%,60%,100%{filter:none}30%{filter:brightness(1.6) saturate(.4)}}'
+        + '@media (prefers-reduced-motion: reduce){.mc-launch.mc-busy .hx{animation:none}.mc-launch.mc-busy{opacity:.45}}'
         + '.mc-launch:hover{opacity:1;transform:scale(1.08)}'
         + '#mc-root{position:fixed;inset:0;z-index:var(--mbu-z-modal);display:flex;flex-direction:column;background:var(--mbu-bg-sunken);color:var(--mbu-text);font:13px/1.4 var(--mbu-font)}'
         + '#mc-root *{box-sizing:border-box}'
@@ -4908,7 +4920,7 @@ function launchButton(tip, click) {
     if (document.getElementById('mc-launch')) return;
     mcStyle();
     const b = el('button', 'mc-launch'); b.id = 'mc-launch'; b.type = 'button';
-    const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.dataset.tip = tip;
+    b.innerHTML = LAUNCH_SVG; b.dataset.tip = tip;
     b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '5'; b.dataset.mbCornerLabel = 'Mission Control'; b.dataset.mbCornerPaths = '^/release/([0-9a-fA-F-]{36}|add)/?$';   // its @match, subpages left out   // highest priority: closest to the corner
     b.onclick = () => click(b);
     b.onpointerenter = () => { if (!CONS && !ui && (mcShown() || RELEASE) !== PAGE_REL) mcFollow(); };   // the shown release's read starts before the click
