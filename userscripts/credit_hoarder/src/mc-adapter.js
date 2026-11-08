@@ -108,22 +108,35 @@ async function readSources(links) {
     return out.filter(Boolean);
 }
 
+// The release shown: Event Horizon (#847) moves to other pages without loading them and names the one
+// it shows in <html data-mbu-release>; the tab's own page is the release only while nothing else is shown.
+const PAGE_REL = ((location.pathname.match(/^\/release\/([0-9a-f-]{36})\/?$/i) || [])[1] || '').toLowerCase() || null;
+function shownRelease() {
+    const r = document.documentElement.getAttribute('data-mbu-release');
+    return r && /^[0-9a-f-]{36}$/i.test(r) ? r.toLowerCase() : PAGE_REL;
+}
+
+// Starts on every MusicBrainz page CH runs on: Event Horizon can show a release in a tab loaded on an
+// artist. Off the tab's own release page, the release's links and tracks come in MC's probe (MC read them).
 export function startMcAdapter() {
-    const m = location.pathname.match(/^\/release\/([0-9a-f-]{36})\/?$/i);
-    if (!m) return false;
-    const rel = m[1].toLowerCase();
-    const hello = () => send('mc:provider', { id: 'ch', name: 'Credit Hoarder', version: version(), release: rel, capabilities: ['probe'], open: openLinks(rel, releaseLinks()) });
+    let sent = null;   // { rel, links }: what MC sent for a release that isn't the page's own
+    const linksOf = rel => rel === PAGE_REL ? releaseLinks() : (sent && sent.rel === rel ? sent.links : []);
+    const hello = () => { const rel = shownRelease(); if (rel) send('mc:provider', { id: 'ch', name: 'Credit Hoarder', version: version(), release: rel, capabilities: ['probe'], open: openLinks(rel, linksOf(rel)) }); };
     document.addEventListener('mc:discover', () => { log.info('Mission Control asked — answering as provider ch'); hello(); });
     document.addEventListener('mc:probe', async e => {
         let d = {};
         try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
-        if ((d.release && d.release !== rel) || (d.only && !d.only.includes('ch'))) return;
-        const done = (findings, summary) => send('mc:findings', { id: 'ch', run: d.run, release: rel, findings, summary, open: openLinks(rel, releaseLinks()) });
+        const rel = shownRelease();
+        if (!rel || (d.release && d.release !== rel) || (d.only && !d.only.includes('ch'))) return;
+        const own = rel === PAGE_REL || !Array.isArray(d.tracks);
+        if (!own) sent = { rel, links: Array.isArray(d.relLinks) ? d.relLinks : [] };
+        const links = own ? releaseLinks() : sent.links;
+        const done = (findings, summary) => send('mc:findings', { id: 'ch', run: d.run, release: rel, findings, summary, open: openLinks(rel, links) });
         try {
             send('mc:progress', { id: 'ch', run: d.run, state: 'busy', note: 'reading credits' });
-            const all = await readSources(releaseLinks());
+            const all = await readSources(links);
             if (!all.length) { log.info('Mission Control probe: no credit source linked or readable (Discogs, Qobuz, Deezer, Apple)'); done([], 'No credit source linked (Discogs, Qobuz, Deezer, Apple)'); return; }
-            const tracks = pageTracks();
+            const tracks = own ? pageTracks() : d.tracks;
             const names = all.map(g => g.source);
             // each track's credits from every source, merged: one per name and role, naming the sources that give it
             const findings = tracks.map((t, i) => {

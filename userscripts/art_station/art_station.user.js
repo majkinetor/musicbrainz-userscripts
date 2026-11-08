@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.184714
+// @version      2026.11.08.223000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -345,13 +345,17 @@
      cover (as middle-click on its URL button does), for you to review and enter. */
   const MC_OV = !SETTINGS_ONLY && location.pathname.match(/^\/release\/([0-9a-f-]{36})\/?$/i);
   if (MC_OV) {
-    const rel = MC_OV[1].toLowerCase();
+    const PAGE_REL = MC_OV[1].toLowerCase();
+    // Event Horizon shows another release without loading its page and names it in <html data-mbu-release>:
+    // Mission Control asks about that one, and the page's DOM still belongs to the loaded release
+    const shown = () => { const r = document.documentElement.getAttribute('data-mbu-release'); return r && /^[0-9a-f-]{36}$/i.test(r) ? r.toLowerCase() : PAGE_REL; };
+    let rel = PAGE_REL, relLinks = [];   // relLinks: the shown release's links, as Mission Control sent them
     const log = mbuLog({ name: 'Art Station', version: () => (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?', key: 'artstation:logwin' });
     const send = (type, detail) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
     const ver = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?';
-    const hello = () => send('mc:provider', { id: 'as', name: 'Art Station', version: ver, release: rel, capabilities: ['probe', 'apply'] });
+    const hello = () => { rel = shown(); send('mc:provider', { id: 'as', name: 'Art Station', version: ver, release: rel, capabilities: ['probe', 'apply'] }); };
     let last = [], mcPlan = { replace: false };   // mcPlan: what the last probe decided for Enter
-    const releaseLinks = () => mbpReleaseLinks();   // #722 the release's own list, in any language
+    const releaseLinks = () => rel === PAGE_REL ? mbpReleaseLinks() : relLinks;   // #722 the release's own list, in any language
     const caa = () => new Promise(res => {
       try {
         GM_xmlhttpRequest({ method: 'GET', url: 'https://coverartarchive.org/release/' + rel, timeout: 20000,
@@ -374,12 +378,14 @@
     document.addEventListener('mc:probe', async e => {
       let d = {};
       try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
-      if ((d.release && d.release !== rel) || (d.only && !d.only.includes('as'))) return;
+      if ((d.release && d.release !== shown()) || (d.only && !d.only.includes('as'))) return;
+      rel = shown();
+      if (rel !== PAGE_REL) relLinks = Array.isArray(d.relLinks) ? d.relLinks : [];
       send('mc:progress', { id: 'as', run: d.run, state: 'busy', note: 'reading the Cover Art Archive' });
       const j = await caa();
       const imgs = (j && j.images) || [];
       // the page's own "Cover art (N)" tab as well: the archive's listing can lag behind (#680)
-      const tabN = +((([...document.querySelectorAll('.tabs a, ul.tabs a')].find(a => /\/cover-art$/.test(a.getAttribute('href') || '')) || {}).textContent || '').match(/\((\d+)\)/) || [])[1] || 0;
+      const tabN = rel !== PAGE_REL ? 0 : +((([...document.querySelectorAll('.tabs a, ul.tabs a')].find(a => /\/cover-art$/.test(a.getAttribute('href') || '')) || {}).textContent || '').match(/\((\d+)\)/) || [])[1] || 0;
       let front = imgs.some(i => i.front || (i.types || []).includes('Front'));
       const seen = new Set();
       // #724: the album links taken in Platform Check's card count too: Execute adds them before
@@ -511,7 +517,7 @@
     // #784: a probe keeps the frame, and what was arranged in its gallery, while its sources are the same and
     // nothing was entered from it
     async function mcSource(urls, onTick) {
-      const key = urls.slice().sort().join(' ');
+      const key = rel + ' ' + urls.slice().sort().join(' ');   // a gallery is one release's
       if (frame && frame.best && !frame.used && frame.urls === key) {
         log.info('Mission Control: keeping the gallery, its sources are the same: ' + urls.join(' '));
         return { best: frame.best, existing: frame.existing };

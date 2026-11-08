@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.210000
+// @version      2026.11.08.223000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -262,7 +262,7 @@ function probe() {
     probeAt = Date.now(); probeTook = 0;
     LINK_READERS.forEach(id => { linksAsked[id] = '[]'; });   // nothing is selected yet
     Log.cat('Probe').info('probe run ' + run + ' · asking ' + (ask.join(', ') || 'nobody') + '');
-    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: ask.filter(id => id !== 'fc'), links: [], isrcs: isrcsNow(), cons: CMP.cons || undefined }) }));
+    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify(Object.assign({ release: RELEASE, run, only: ask.filter(id => id !== 'fc'), links: [], isrcs: isrcsNow(), cons: CMP.cons || undefined }, shownRel())) }));
     // #782: the comparison starts once Platform Check has answered; Update this release runs it whatever its mode
     if (found.fc && (ask.includes('fc') || (AFTER && AFTER.compare && !AFTER.compared))) { if (AFTER && AFTER.compare) AFTER.compared = true; cmpStart(); }
     paintAll();
@@ -281,7 +281,7 @@ function probeOne(id, why) {
     const links = pcAlbumLinks();
     if (LINK_READERS.includes(id)) linksAsked[id] = JSON.stringify(links);
     Log.cat('Probe').info('probe ' + id + ' ' + (why || 'on request') + ' · run ' + run + (links.length ? ' · selected album links ' + links.join(' ') : ''));
-    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify({ release: RELEASE, run, only: [id], links, isrcs: isrcsNow(), cons: CMP.cons || undefined }) }));
+    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify(Object.assign({ release: RELEASE, run, only: [id], links, isrcs: isrcsNow(), cons: CMP.cons || undefined }, shownRel())) }));
     paintAll();
 }
 // A probe that got no word back in STALL_MS (lost on the way, or turned down without a word) is
@@ -861,7 +861,10 @@ function mcOwnPage() { return !!RELEASE && RELEASE === PAGE_REL && !!mcPage().qu
 function mcShown() { const r = document.documentElement.getAttribute('data-mbu-release'); return r && /^[0-9a-f-]{36}$/i.test(r) ? r.toLowerCase() : null; }
 let mcApi = null;   // { id, rel }: the release shown, read from the API
 // the release Event Horizon shows, when it isn't MC's: switched to while MC is shut and idle; false while it can't
-async function mcFollow() {
+// one read at a time: the launcher starts it on hover, so the click usually finds it done
+let mcFollowing = null;
+function mcFollow() { return mcFollowing || (mcFollowing = mcFollowRun().finally(() => { mcFollowing = null; })); }
+async function mcFollowRun() {
     if (CONS) return true;
     const r = mcShown();
     if (r && r !== RELEASE) {
@@ -877,7 +880,7 @@ async function mcFollow() {
     return true;
 }
 async function mcApiRelease(id) {
-    const r = await mbnFetch('/ws/2/release/' + id + '?inc=recordings+artist-credits+release-groups&fmt=json', { headers: { Accept: 'application/json' } });
+    const r = await mbnFetch('/ws/2/release/' + id + '?inc=recordings+artist-credits+release-groups+url-rels&fmt=json', { headers: { Accept: 'application/json' } });
     if (!r || !r.ok) throw new Error(r ? 'HTTP ' + r.status : 'cancelled');
     const d = await r.json();
     const len = ms => { if (!ms) return ''; const t = Math.round(ms / 1000), h = Math.floor(t / 3600), m = Math.floor(t / 60) % 60, sec = String(t % 60).padStart(2, '0'); return h ? h + ':' + String(m).padStart(2, '0') + ':' + sec : m + ':' + sec; };
@@ -894,9 +897,17 @@ async function mcApiRelease(id) {
         tracks, media: (d.media || []).length, format: fmts.map(x => (x.n > 1 ? x.n + '\u00d7' : '') + x.f).join(' + '),
         versions: rg ? { href: location.origin + '/release-group/' + rg.id, text: 'all versions' } : null,
         events: (d['release-events'] || []).length, language: (d['text-representation'] || {}).language || null,
+        // the release's own links, for the providers that read them off the page MC isn't on (Credit Hoarder)
+        links: (d.relations || []).filter(x => x.url && x.url.resource).map(x => x.url.resource),
     };
     Log.cat('Release').info('release: "' + out.title + '" by ' + (out.artist || '?') + ' · ' + location.origin + '/release/' + id + ' · ' + tracks.length + ' tracks on ' + out.media + ' medium(s) · format ' + (out.format || '?') + ' (from the API)');
     return out;
+}
+// off its own page MC tells the providers the shown release's tracks and links: the page under Event Horizon is another release's
+function shownRel() {
+    if (mcOwnPage() || !mcApi || mcApi.id !== RELEASE) return {};
+    const at = {};   // pos: the track's place on its medium (a track number can be "A1")
+    return { tracks: mcApi.rel.tracks.map(t => ({ medium: t.medium, pos: (at[t.medium] = (at[t.medium] || 0) + 1), rec: t.rec })), relLinks: mcApi.rel.links || [] };
 }
 function readRelease() {
     if (!mcOwnPage() && mcApi && mcApi.id === RELEASE) return mcApi.rel;
@@ -4871,6 +4882,7 @@ function launchButton(tip, click) {
     const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.dataset.tip = tip;
     b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '5'; b.dataset.mbCornerLabel = 'Mission Control'; b.dataset.mbCornerPaths = '^/release/([0-9a-fA-F-]{36}|add)/?$';   // its @match, subpages left out   // highest priority: closest to the corner
     b.onclick = () => click(b);
+    b.onpointerenter = () => { if (!CONS && !ui && (mcShown() || RELEASE) !== PAGE_REL) mcFollow(); };   // the shown release's read starts before the click
     b.oncontextmenu = e => { e.preventDefault(); settingsWindow(); };
     document.body.appendChild(b);
     mbRestackCorner('br');
