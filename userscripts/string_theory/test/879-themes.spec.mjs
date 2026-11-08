@@ -111,9 +111,10 @@ test.describe('Event Horizon effect', () => {
     await until(() => page.evaluate(() => document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: 'event_horizon', cancelable: true })) || document.getElementById('eh-cfg') !== null), v => v);
     const cfg = page.locator('#eh-cfg');
     await cfg.locator('[data-tab=effects]').click();
-    await cfg.locator('[data-g=fxAdd][data-k=fx]').click();
-    await cfg.locator('[data-g=fxKind][data-k=hexagons]').click();
-    await cfg.locator('[data-g=hexOpacity][data-k="30"]').click();
+    await cfg.locator('[data-fx-gal]').click();   // the gallery adds an effect (32268b2e)
+    await cfg.locator('[data-fx-pick=hexagons]').click();
+    await until(() => cfg.locator('[data-g=hexOpacity]').count(), n => n > 0);
+    await cfg.locator('[data-g=hexOpacity][data-k="40"]').click();   // the strip steps by 20
     await cfg.locator('[data-fx-name]').fill('Dim');
     await cfg.locator('[data-fx-save]').click();
     await page.keyboard.press('Escape');
@@ -121,7 +122,8 @@ test.describe('Event Horizon effect', () => {
     await page.locator('#st-tab-g').click();
     const sel = page.locator('#st-th-eh-dark');
     check(await sel.count() === 1, 'a Dark effect select');
-    check((await sel.locator('option').allTextContents()).join() === 'No preset,No effect,Dim', 'it lists Event Horizon\'s presets');
+    const names = await sel.locator('option').allTextContents();   // the built-in presets too (1c4c0f45)
+    check(names.slice(0, 2).join() === 'No preset,No effect' && names.includes('Dim') && names.length > 3, `it lists Event Horizon's presets (${names.join()})`);
     await sel.selectOption('Dim');
     // another dark theme brings the effect on show
     const dark = page.locator('#st-th-dark'), was = await dark.inputValue();
@@ -130,7 +132,7 @@ test.describe('Event Horizon effect', () => {
     check(await fx(page) === null, 'the light theme has none');
     await pick(page, 'dark');
     check(await until(fx, v => v === 'Dim') === 'Dim', 'dark names it');
-    check(await until(op, v => v === '0.3') === '0.3', 'and Event Horizon applies it');
+    check(await until(op, v => v === '0.4') === '0.4', 'and Event Horizon applies it');
     await pick(page, 'light');
     check(await until(fx, v => v === null) === null, 'back to light drops the name');
   });

@@ -64,9 +64,10 @@ test.describe('theme chooser effect', () => {
     await until(() => page.evaluate(() => document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: 'event_horizon', cancelable: true })) || document.getElementById('eh-cfg') !== null), v => v);
     const cfg = page.locator('#eh-cfg');
     await cfg.locator('[data-tab=effects]').click();
-    await cfg.locator('[data-g=fxAdd][data-k=fx]').click();
-    await cfg.locator('[data-g=fxKind][data-k=hexagons]').click();
-    await cfg.locator('[data-g=hexOpacity][data-k="30"]').click();
+    await cfg.locator('[data-fx-gal]').click();   // the gallery adds an effect (32268b2e)
+    await cfg.locator('[data-fx-pick=hexagons]').click();
+    await until(() => cfg.locator('[data-g=hexOpacity]').count(), n => n > 0);
+    await cfg.locator('[data-g=hexOpacity][data-k="40"]').click();   // the strip steps by 20
     await cfg.locator('[data-fx-name]').fill('Dim');
     await cfg.locator('[data-fx-save]').click();
     await cfg.locator('[data-fx-name]').fill('Bright');
@@ -77,16 +78,18 @@ test.describe('theme chooser effect', () => {
     check(await until(op, v => v === '0.6') === '0.6', 'the effect starts at 0.6');
     await open(page);
     const sel = page.locator('#st-tc-e');
-    const opts = (await sel.locator('option').allTextContents()).join();
-    check(opts === 'Current effect,No effect,Bright,Dim', `the chooser lists Event Horizon's presets, by name (${opts})`);
+    const names = await sel.locator('option').allTextContents(), vals = await sel.locator('option').evaluateAll(os => os.map(o => o.value));
+    const own = names.slice(2), az = [...own].sort((a, b) => a.localeCompare(b));   // the built-in presets too (1c4c0f45)
+    check(names.slice(0, 2).join() === 'Current effect,No effect' && own.includes('Bright') && own.includes('Dim') && own.join() === az.join(), `the chooser lists Event Horizon's presets, by name (${names.join()})`);
     check(await sel.inputValue() === 'Bright' && await op() === '0.6', `it opens on the preset on show, and nothing changes (${await sel.inputValue()})`);
     await sel.selectOption('Dim');
-    check(await until(op, v => v === '0.3') === '0.3', 'the picked effect shows at once');
+    check(await until(op, v => v === '0.4') === '0.4', 'the picked effect shows at once');
     check(await attr('data-st-eh-fx-try') === 'Dim' && await attr('data-st-eh-fx') === null, 'tried, not saved');
     await page.keyboard.press('ArrowRight');
-    check(await sel.inputValue() === 'Dim' && await until(op, v => v === '0.3') === '0.3', 'the next theme keeps the picked effect');
+    check(await sel.inputValue() === 'Dim' && await until(op, v => v === '0.4') === '0.4', 'the next theme keeps the picked effect');
     await page.keyboard.press('ArrowUp');
-    check(await sel.inputValue() === 'Bright', 'up picks the effect before');
+    check(await sel.inputValue() === vals[vals.indexOf('Dim') - 1], `up picks the effect before (${await sel.inputValue()})`);
+    await sel.selectOption(vals[2]);
     await page.keyboard.press('ArrowUp');
     check(await sel.inputValue() === '-' && await until(() => attr('data-eh-hex'), v => v === null) === null, 'No effect shows none');
     await page.keyboard.press('ArrowUp');
@@ -95,11 +98,11 @@ test.describe('theme chooser effect', () => {
     check(await sel.inputValue() === '', 'and the themes stepped to bring that');
     // the counts: a click steps on, a right-click back
     const fxI = page.locator('#st-tc [data-fx-i]'), thI = page.locator('#st-tc [data-th-i]');
-    check(await fxI.textContent() === '1/4', `the effect shows its place (${await fxI.textContent()})`);
+    check(await fxI.textContent() === '1/' + vals.length, `the effect shows its place (${await fxI.textContent()})`);
     await fxI.click();
-    check(await sel.inputValue() === '-' && await fxI.textContent() === '2/4', 'a click on its count picks the next effect');
+    check(await sel.inputValue() === '-' && await fxI.textContent() === '2/' + vals.length, 'a click on its count picks the next effect');
     await fxI.click({ button: 'right' });
-    check(await sel.inputValue() === '' && await fxI.textContent() === '1/4', 'a right-click the one before');
+    check(await sel.inputValue() === '' && await fxI.textContent() === '1/' + vals.length, 'a right-click the one before');
     const n = await thI.textContent();
     await thI.click();
     const m = await thI.textContent();
@@ -117,7 +120,7 @@ test.describe('theme chooser effect', () => {
     const saved = await page.evaluate(() => GM_getValue('string_theory.theme', {}));
     check(saved.eh && saved.eh['light:' + saved.light] === 'Dim', `Enter keeps the theme's effect (${JSON.stringify(saved)})`);
     check(await until(() => attr('data-st-eh-fx'), v => v === 'Dim') === 'Dim' && await attr('data-st-eh-fx-try') === null, 'the theme names it now');
-    check(await until(op, v => v === '0.3') === '0.3', 'and Event Horizon keeps it');
+    check(await until(op, v => v === '0.4') === '0.4', 'and Event Horizon keeps it');
     await open(page);
     await sel.selectOption('Bright');
     await page.click('#st-tc-ed');

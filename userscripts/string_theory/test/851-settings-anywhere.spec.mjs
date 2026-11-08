@@ -11,7 +11,7 @@ const fakeMenu = () => {
   window.GM_unregisterMenuCommand = id => menu.delete(id);
 };
 const openAbout = async page => {
-  await page.evaluate(() => [...window.__menu.values()].find(e => /Settings/.test(e.caption)).fn());
+  await page.evaluate(() => document.dispatchEvent(new Event('mbu-st-settings')));   // the dock's way in: no menu entry since 688151a9
   await page.waitForSelector('#st-cfg', { timeout: 10000 });
   await page.locator('#st-tab-a').click();
 };

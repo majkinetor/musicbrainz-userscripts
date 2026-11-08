@@ -25,13 +25,14 @@ async function load(page, inject, { open = false } = {}) {
   await page.goto(`${SANDBOX}/release/${RELEASE}`, { waitUntil: 'load', timeout: 60000 });
   await page.evaluate(([keys, open]) => {
     keys.forEach(k => localStorage.removeItem('mbu.' + k));
+    localStorage.removeItem('st-cfg-tab');   // the window reopens on the last tab: start on General
     if (open) localStorage.setItem('mbu.dockOpen', 'true');
   }, [SHARED, open]);
   await page.evaluate(fakeMenu);
   await inject('string_theory');
 }
 const openSettings = async page => {
-  await page.evaluate(() => [...window.__menu.values()].find(e => /Settings/.test(e.caption)).fn());
+  await page.evaluate(() => document.dispatchEvent(new Event('mbu-st-settings')));   // the dock's way in: no menu entry since 688151a9
   await page.waitForSelector('#st-cfg', { timeout: 10000 });
 };
 // String Theory's settings, opened afresh: a script's settings leave them open behind (#851)
@@ -60,11 +61,11 @@ test.describe('Platform Check turned off', () => {
   });
 });
 
-test('one menu entry opens the settings, which turn a script off and on', { tag: ['@sandbox', '@critical'] }, async ({ page, inject }, info) => {
+test('no menu entry; the settings turn a script off and on', { tag: ['@sandbox', '@critical'] }, async ({ page, inject }, info) => {
   await page.setViewportSize({ width: 1400, height: 900 });
   await load(page, inject);
   const captions = await page.evaluate(() => [...window.__menu.values()].map(e => e.caption));
-  check(captions.length === 1 && captions[0] === '⚙ Settings', `one entry (${captions.join(' · ')})`);
+  check(captions.length === 0, `no entry in the manager's menu, Fuzzy Logic's neither (${captions.join(' · ')})`);
   await openSettings(page);
   check(await page.evaluate(() => document.getElementById('st-p-a').hidden), 'About is its own tab, closed at first');
   await page.locator('#st-tab-a').click();
@@ -269,6 +270,7 @@ test.describe('Event Horizon turned off', () => {
     await page.evaluate(() => document.getElementById('fs-settings')?.remove());
     await reopenSettings(page);
 
+    await page.locator('#st-tab-g').click();   // the window reopened on About, the last tab
     await page.locator('#st-order [data-name="Fusion"]').click({ button: 'right' });
     check(await until(() => page.evaluate(() => !!document.getElementById('fs-settings')), Boolean, { timeout: 5000 }), 'a right-click on Fusion opens Fusion\'s settings');
     check(await page.evaluate(() => !!document.getElementById('st-cfg-ov')), 'and String Theory\'s stay open');

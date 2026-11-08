@@ -13,8 +13,7 @@ test('About checks on each entry and keeps the newest response', { tag: '@sandbo
       ? window.__updates.push(opts) : original(opts);
   });
   await inject('string_theory');
-  await expect.poll(() => page.evaluate(() => [...window.__menu.keys()].some(k => /Settings/.test(k)))).toBe(true);
-  await page.evaluate(() => [...window.__menu.entries()].find(([k]) => /Settings/.test(k))[1]());
+  await expect.poll(() => page.evaluate(() => { if (!document.getElementById('st-cfg')) document.dispatchEvent(new Event('mbu-st-settings')); return !!document.getElementById('st-cfg'); })).toBe(true);   // no menu entry since 688151a9
   await page.locator('#st-tab-a').click();
   const channels = await page.locator('#st-upd > [data-channel]').count(); // Installed describes the local build, without a network request.
   expect(channels).toBeGreaterThanOrEqual(2);
@@ -45,8 +44,7 @@ test('Pinned installs the newest commit of main by its own link', { tag: '@sandb
     window.open = url => { const w = { url, location: {} }; window.__opened.push(w); return w; };
   });
   await inject('string_theory');
-  await expect.poll(() => page.evaluate(() => [...window.__menu.keys()].some(k => /Settings/.test(k)))).toBe(true);
-  await page.evaluate(() => [...window.__menu.entries()].find(([k]) => /Settings/.test(k))[1]());
+  await expect.poll(() => page.evaluate(() => { if (!document.getElementById('st-cfg')) document.dispatchEvent(new Event('mbu-st-settings')); return !!document.getElementById('st-cfg'); })).toBe(true);   // no menu entry since 688151a9
   await page.locator('#st-tab-a').click();
   const pinned = page.locator('#st-upd [data-channel="main"] [data-st-pinned]');
   await expect(pinned).toHaveText('Pinned');

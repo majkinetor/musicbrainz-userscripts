@@ -14,7 +14,7 @@ for (const path of ['/', '/search/edits']) test(`Platform Check settings open on
   await page.evaluate(fakeMenu);
   await inject('string_theory');
   await page.waitForTimeout(3000);
-  await page.evaluate(() => [...window.__menu.values()].find(e => /Settings/.test(e.caption)).fn());
+  await page.evaluate(() => document.dispatchEvent(new Event('mbu-st-settings')));   // the dock's way in: no menu entry since 688151a9
   await page.waitForSelector('#st-cfg');
   await page.locator('#st-tab-a').click();
   await page.locator('#st-cfg .st-scripts [data-name="Platform Check"]').click({ button: 'right' });
