@@ -13,7 +13,8 @@
 // The text form (mbuTipText) is plain text with a little structure read out of it, so the
 // strings stay readable in the source:
 //   · a line `Right-click: …`, `Ctrl+click: …`, `Esc: …` is a key row: a mouse action drawn as
-//     its modifier keys and a mouse with its button filled in, any other key as a chip
+//     its modifier keys and a mouse with its button filled in, any other key as a chip;
+//     `Click the status: …` is the mouse, then where it goes; `Click or hover` is drawn as `Click / Hover`
 //   · a level row `{#2f6fd6} Exact: …` has a dot in that colour; `{#… on}` marks the chosen
 //     level, `{#… off}` dims one (a cutoff's table)
 //   · two or more lines `On: …` / `Off: …` (≤ 3 words before the colon) are an option list
@@ -90,6 +91,8 @@ const CSS = [
     '#mbu-tip .mbu-tip-mouse{display:block;flex:none;position:relative}',
     '#mbu-tip .mbu-tip-mouse rect[fill=none],#mbu-tip .mbu-tip-mouse path[stroke]{stroke:var(--mbu-text-weak,#888);stroke-width:1}',
     '#mbu-tip .mbu-tip-kx{font:600 10px/1 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);color:var(--mbu-text-weak,#888)}',
+    // where a click goes, "Click the status" → the mouse, then "the status" in the key's grey
+    '#mbu-tip .mbu-tip-kq{font:600 11.5px/1 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);color:var(--mbu-text-weak,#888)}',
     '#mbu-tip .mbu-tip-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}',
     '#mbu-tip .mbu-tip-o{display:inline-block;padding:0 7px;border-radius:999px;background:var(--mbu-accent-soft,#ece4ff);',
     'color:var(--mbu-accent-text,#5f3ec0);font:600 11px/1.6 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}',
@@ -139,9 +142,12 @@ function mbuTipCap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 // button it takes filled in (×2 for a double click) — with the words kept for a screen reader;
 // any other label (Esc, Ctrl+V, Hover) is a key chip with its text.
 function mbuTipKey(label) {
-    // two ways to do the same, "Middle-click / Alt+click": each drawn, a grey slash between
-    var alts = String(label).split(/\s+\/\s+/);
+    // two ways to do the same, "Middle-click / Alt+click" or "Click or hover": each drawn, a grey slash between
+    var alts = String(label).split(/\s+(?:\/|or)\s+/i);
     if (alts.length > 1) return '<span class="mbu-tip-kk">' + alts.map(mbuTipKey).join('<span class="mbu-tip-kx">/</span>') + '</span>';
+    // a mouse action with where or how it goes, "Click the status", "Click again": the mouse, then the words
+    var q = /^((?:(?:ctrl|alt|shift|cmd|meta)\s*[+-]\s*)*(?:left|right|middle|double)?[- ]?(?:click|drag|wheel|scroll))\s+([^+/]+)$/i.exec(String(label).trim());
+    if (q) return '<span class="mbu-tip-kk">' + mbuTipKey(q[1]) + '<span class="mbu-tip-kq">' + mbuTipEsc(q[2]) + '</span></span>';
     // two mouse actions at once, "Right-click + wheel": each drawn, a grey plus between
     var both = /^(.*?(?:click|drag|wheel|scroll))\s+\+\s+(.+)$/i.exec(String(label).trim());
     if (both) return '<span class="mbu-tip-kk">' + mbuTipKey(both[1]) + '<span class="mbu-tip-kx">+</span>' + mbuTipKey(both[2]) + '</span>';
