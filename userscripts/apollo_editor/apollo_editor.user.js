@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.151117
+// @version      2026.11.08.153439
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -7669,6 +7669,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       #information .tc-ri-art .tc-aslot{display:flex;flex-wrap:wrap}
       .tc-ri-art .tc-ri-leadrow{position:static;flex:1 0 100%;width:auto;justify-content:flex-start;margin:0 0 4px}
       .tc-ri-art .tc-ri-leadrow:not(:has(input,svg,img,.tc-ico)){display:none}
+      /* credited-as reads left to right: the artist's icon, then the name; no grid line through the wrapped row */
+      #information .tc-ri-art input.tc-cred{text-align:left}
+      #information .tc-ri-art .tc-ri-leadrow > .tc-tic{order:-1}
+      #information .tc-ri-art .tc-aslot{height:auto;min-height:0}
+      #information .tc-ri-art .tc-mirror tr{border-bottom:0!important}
       #release-editor #information :is(input[type=text],select,textarea,.ui-autocomplete-input){max-width:100%;box-sizing:border-box}
       /* the fields that fill the column stay inside it on a narrow phone (MusicBrainz sizes them by characters) */
       #release-editor #information :is(span.autocomplete,select,input#name,input#comment,#release-group input,#barcode){max-width:100%!important;min-width:0!important;box-sizing:border-box}
@@ -7690,23 +7695,36 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       /* a long title wraps (spaces still kept as typed) rather than being cut; a block, not a flex row,
          so the text and its marks (a highlighted apostrophe) wrap as one run, not as separate pieces */
       .tc-mirror .t-title-disp{white-space:pre-wrap;display:block}
-      /* no tools bar on a phone: too many controls for the width */
-      #tc-bar{display:none!important}
+      /* the tools bar on a phone: "Tools ▾" lists every tool; only the one picked shows its controls */
+      #tc-bar{flex-wrap:wrap;gap:4px 8px;padding:4px 0}
+      #tc-bar .tc-tools{flex-wrap:wrap;gap:4px 6px;min-width:0;max-width:100%}
+      #tc-bar .tc-toolbtns{flex-wrap:wrap;gap:4px 6px;min-width:0;max-width:100%}
+      #tc-bar .tc-toolbtns > :not(.tc-temp){display:none!important}
+      #tc-bar .tc-toolbtns .tc-sro{flex-wrap:wrap;gap:4px}
+      #tc-bar .tc-toolbtns .tc-sro input{width:110px;min-width:0}
       /* a medium's header (collapse · format · ▼ ▲ ✕) stays one line */
       #release-editor fieldset.advanced-medium > table.advanced-format,
       #release-editor fieldset.advanced-medium > table.advanced-format > tbody{display:block}
       #release-editor fieldset.advanced-medium > table.advanced-format > tbody > tr:first-child{display:flex;align-items:center;gap:4px}
       #release-editor fieldset.advanced-medium > table.advanced-format > tbody > tr:first-child > td{display:block;padding:0;width:auto}
-      #release-editor fieldset.advanced-medium > table.advanced-format td.format{flex:1 1 0;min-width:0}
-      #release-editor fieldset.advanced-medium > table.advanced-format td.format select{width:100%}
+      #release-editor fieldset.advanced-medium > table.advanced-format td.format{flex:1 1 0;min-width:0;display:flex!important;flex-wrap:nowrap;align-items:center;gap:4px}
+      #release-editor fieldset.advanced-medium > table.advanced-format td.format select{flex:0 1 auto;width:auto;max-width:100%;min-width:0;font-size:13px;padding:2px 3px}
+      #release-editor fieldset.advanced-medium > table.advanced-format td.format > label{display:none}
+      #release-editor fieldset.advanced-medium input[id^="medium-title-"]{flex:1 1 0;min-width:0;width:auto;padding:2px 5px}
+      #release-editor fieldset.advanced-medium button.icon.guesscase-title{flex:none}
+      #release-editor fieldset.advanced-medium > legend{display:none}
+      #release-editor fieldset.advanced-medium{padding:4px 6px 6px}
+      #release-editor fieldset.advanced-medium button.icon:is(.expand-medium,.collapse-medium,.medium-up,.medium-down,.remove-item){width:24px}
+      #release-editor fieldset.advanced-medium > table.advanced-format td.align-right button.remove-item{margin-left:2px!important}
       #release-editor fieldset.advanced-medium > table.advanced-format td.align-right{flex:none;white-space:nowrap}
       #release-editor fieldset.advanced-medium > table.advanced-format td.align-right button.remove-item{margin-left:6px!important}
       /* a release event's or label's (x) sits beside the (+) below it, which shows its icon only */
       #release-editor #information tr:has(> td > :is(button.remove-release-event,button.remove-release-label)){position:relative}
       #release-editor #information td:has(> :is(button.remove-release-event,button.remove-release-label)){position:absolute;top:0;right:0;padding:0}
       #release-editor #information tr:nth-last-child(1 of :has(> td > button.remove-release-event)) > td:has(> button.remove-release-event),
-      #release-editor #information tr:nth-last-child(1 of :has(> td > button.remove-release-label)) > td:has(> button.remove-release-label){top:calc(100% + 7px);left:0;right:auto}
-      #release-editor #information td.add-item{padding:0 0 0 28px}
+      #release-editor #information tr:nth-last-child(1 of :has(> td > button.remove-release-label)) > td:has(> button.remove-release-label){top:calc(100% + 9px);left:0;right:auto}
+      #release-editor #information td:has(> :is(button.remove-release-event,button.remove-release-label)) > button{width:20px;height:20px;padding:0;background-position:center;vertical-align:top}
+      #release-editor #information td.add-item{padding:0 0 0 26px}
       #release-editor #information td.add-item > button.with-label.add-item{font-size:0;padding:0;width:20px;height:20px;min-width:0;background-position:center;margin:0}
       /* external links: small favicons, no indent */
       html body.tc-ri-on #external-links-editor > tbody{padding-left:0;column-gap:8px}
@@ -7714,7 +7732,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       html body.tc-ri-on #external-links-editor tr.external-link-item > td:first-child{width:18px;height:18px;top:0}
       html body.tc-ri-on #external-links-editor .favicon{transform:none}
       html body.tc-ri-on #external-links-editor tr.external-link-item td.link-actions > button.remove-item{opacity:.5}
-      html body.tc-ri-on #external-links-editor tr.relationship-item{padding-left:24px}
+      html body.tc-ri-on #external-links-editor tr.relationship-item{padding-left:38px}
       html body.tc-ri-on #external-links-editor tr.relationship-item td.link-actions > button[class*="remove"]{left:2px}
       .tc-am-lbl{white-space:normal}
 
@@ -10195,6 +10213,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // tools surfaced on the bar for THIS session only (picked from the Tools menu) —
   // never persisted; they fall back to the menu next session (#280).
   const TEMP_BAR = new Set();
+  const isPhoneWidth = () => matchMedia('(max-width: 820px)').matches;
 
   // hovering the "Guess case" tool button previews the guessed form on every differing title
   function previewAllGuess(on) {
@@ -10218,7 +10237,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function renderToolbar() {
     const host = document.querySelector('.tc-toolbtns'); if (!host) return;
     host.innerHTML = '';
-    getToolCfg().filter(t => t.onBar || TEMP_BAR.has(t.act)).forEach(t => host.appendChild(hasInlineParams(t.act) ? makeToolGroup(t) : makeToolButton(t)));
+    getToolCfg().filter(t => t.onBar || TEMP_BAR.has(t.act)).forEach(t => { const el = hasInlineParams(t.act) ? makeToolGroup(t) : makeToolButton(t); if (TEMP_BAR.has(t.act)) el.classList.add('tc-temp'); host.appendChild(el); });
   }
   function makeToolButton(t) {
     const m = TD(t.act);
@@ -10238,7 +10257,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // unless it's on the bar — so surface it there for THIS session (not persisted;
     // it returns to the menu next session). Customize is where you make it permanent.
     if (hasInlineParams(act)) {
-      if (!cfgOf(act).onBar) { TEMP_BAR.add(act); renderToolbar(); }
+      // a phone's bar shows only picked tools, so an on-bar tool is surfaced the same way
+      if (!cfgOf(act).onBar || isPhoneWidth()) { if (isPhoneWidth()) TEMP_BAR.clear(); TEMP_BAR.add(act); renderToolbar(); }
       // #615: Merge / Split restructure the release — picking them only SHOWS their params
       // (which mediums / which track); they run on their icon/name click, never on the pick.
       if (PICK_SHOWS_ONLY.has(act)) { Log.cat('Tool').info(TD(act).label, '— set it up in the toolbar, then click its name to run'); return; }
@@ -10257,7 +10277,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // the "Tools" label menu: the tools NOT on the bar, then Customize…
   function openToolsMenu(anchor) {
     let m = document.getElementById('tc-menu'); if (m) { m.remove(); return; }
-    const off = getToolCfg().filter(t => !t.onBar && !TEMP_BAR.has(t.act));   // includes off-bar bridges (#322)
+    // on a phone the bar holds no tools, so the menu lists them all
+    const off = getToolCfg().filter(t => isPhoneWidth() || (!t.onBar && !TEMP_BAR.has(t.act)));   // includes off-bar bridges (#322)
     m = document.createElement('div'); m.id = 'tc-menu'; m.className = 'tc-menu';
     m.innerHTML = off.map(t => `<div class="tc-mi" data-act="${t.act}"><span class="tc-mi-ic">${iconHtml(TD(t.act).icon)}</span>${esc(TD(t.act).label)}</div>`).join('')
       + (off.length ? '<div class="tc-sep"></div>' : '')
@@ -12293,7 +12314,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       '  .tc-rectbl > colgroup,.tc-rectbl > thead{display:none}',
       '  .tc-rectbl > tbody{display:block}',
       '  .tc-rectbl > tbody > tr.tc-recrow{display:grid;grid-template-columns:20px 1fr auto;column-gap:7px;row-gap:1px;padding:8px 8px}',
-      '  .tc-rectbl.gridrows > tbody > tr.tc-recrow{border-bottom:1px solid var(--mbu-border)}',
+      '  .tc-rectbl > tbody > tr.tc-recrow{border-bottom:2px solid var(--mbu-border)}',   // one line per track, none inside it
       '  .tc-rectbl > tbody > tr.tc-recrow > td{display:block;padding:0;border:none!important;background:transparent}',
       '  .tc-rectbl > tbody > tr.tc-recrow > td:nth-child(1){grid-column:1;grid-row:1;text-align:left}',   // #
       '  .tc-rectbl > tbody > tr.tc-recrow > td:nth-child(2){grid-column:2;grid-row:1;font-weight:600}',   // track title
@@ -12303,7 +12324,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       '  .tc-rectbl > tbody > tr.tc-recrow > td:nth-child(6){grid-column:2;grid-row:3}',   // recording title
       '  .tc-rectbl > tbody > tr.tc-recrow > td:nth-child(7){grid-column:2;grid-row:4;color:var(--mbu-text-dim);font-size:12px}',   // recording artist
       '  .tc-rectbl > tbody > tr.tc-recrow > td:nth-child(8){grid-column:3;grid-row:3;width:auto}',   // recording length
-      '  .tc-rectbl > tbody > tr.tc-recrow > td:nth-child(5),.tc-rectbl > tbody > tr.tc-recrow > td:nth-child(6),.tc-rectbl > tbody > tr.tc-recrow > td:nth-child(8){margin-top:3px;padding-top:4px;border-top:1px solid var(--mbu-border)!important}',
+      '  .tc-rectbl > tbody > tr.tc-recrow > td:nth-child(5),.tc-rectbl > tbody > tr.tc-recrow > td:nth-child(6),.tc-rectbl > tbody > tr.tc-recrow > td:nth-child(8){margin-top:3px;padding-top:4px}',
       '  .tc-rectbl td.c-sep{border-left:none;border-right:none}',
       '  .tc-rectbl tr.tc-recmed td,.tc-rectbl tr.tc-recmed-coll td{display:block}',
       '  .tc-rectbl .tc-rec-rev,.tc-rectbl .tc-rec-new-btn{visibility:visible}',   // touch: no hover
