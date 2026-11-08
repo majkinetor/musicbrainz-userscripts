@@ -110,7 +110,7 @@ test('the Columns menu works on a list of releases that stays MusicBrainz\'s pag
   await page.locator('#pop-cols-ed [data-colk="status"] label').click();
   await until(shown, h => !h.includes('status'));
   // a click outside the menu, on MusicBrainz's own page, closes it
-  await page.locator('#footer, footer').first().click({ force: true });
+  await page.mouse.click(3, 400);   // the page's margin: MB's footer is hidden on a dressed page
   await until(() => page.locator('#pop-cols-ed').isHidden(), v => v);
   check(await page.locator('[data-pop="cols-ed"]').getAttribute('aria-expanded') === 'false', 'its button says it is closed');
   // and a click on a row, outside its links, opens its release

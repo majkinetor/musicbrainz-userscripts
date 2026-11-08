@@ -28,16 +28,19 @@ test('effect presets save, load and delete by name', { tag: ['@prod', '@critical
   await inject('event_horizon');
   const cfg = await openFx(page);
   check(await cfg.locator('[data-fx-del][aria-disabled=true]').count() === 1, 'nothing saved to delete yet');
+  // String Theory's list holds the built-in presets too (1c4c0f45); the checks look at the user's own
+  const built = await until(() => names(page), v => v?.length > 0) || [];
+  const own = async () => ((await names(page)) || []).filter(n => !built.includes(n));
   await hexOn(cfg);
   await cfg.locator('[data-g=hexOpacity][data-k="20"]').click();
   await cfg.locator('[data-fx-name]').fill('Soft');
   await cfg.locator('[data-fx-save]').click();
-  check(await until(() => names(page), v => v?.[0] === 'Soft'), 'saved, and the name goes to String Theory');
+  check((await until(own, v => v.join() === 'Soft')).join() === 'Soft', 'saved, and the name goes to String Theory');
 
   await cfg.locator('[data-g=hexOpacity][data-k="60"]').click();
   await cfg.locator('[data-fx-name]').fill('Strong');
   await cfg.locator('[data-fx-new]').click();
-  check((await until(() => names(page), v => v?.length === 2)).join() === 'Soft,Strong', '+ keeps a copy');
+  check((await until(own, v => v?.length === 2)).join() === 'Soft,Strong', '+ keeps a copy');
   const pick = async n => { await cfg.locator('[data-fx-dd]').click(); await cfg.locator(`[data-fx-item="${n}"]`).click(); };
   await pick('Soft');
   check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.2') === '0.2', 'Soft stays as saved: the change went to Strong only');
@@ -55,13 +58,13 @@ test('effect presets save, load and delete by name', { tag: ['@prod', '@critical
   check(await until(() => css(page, '--eh-hex-opacity'), v => v === '0.4') === '0.4', 'in Strong');
 
   await cfg.locator('[data-fx-dd]').click(); await cfg.locator('[data-fx-del]').click();   // Delete is in the preset menu
-  check(JSON.stringify(await until(() => names(page), v => v?.length === 1)) === '["Soft"]', 'Delete removes it, from String Theory\'s list too');
-  check(JSON.stringify(await items(cfg)) === '["Soft"]', 'and from the list');
+  check(JSON.stringify(await until(own, v => v?.length === 1)) === '["Soft"]', 'Delete removes it, from String Theory\'s list too');
+  check(JSON.stringify((await items(cfg)).filter(n => !built.includes(n))) === '["Soft"]', 'and from the list');
   check(await cfg.locator('[data-fx-name]').inputValue() === '', 'the effect stays, unsaved');
 
   await cfg.locator('[data-fx-new]').click();
   check(await until(() => cfg.locator('[data-fx-name]').inputValue(), v => v === 'Unnamed effect') === 'Unnamed effect', '+ copies the effect into a new preset');
-  check(await until(() => names(page), v => v?.length === 2), 'saved at once');
+  check((await until(own, v => v?.length === 2)).length === 2, 'saved at once');
 
   // Save as on a name ending in a number counts on: "Soft 2" taken gives "Soft 3", not "Soft 2 2"
   await cfg.locator('[data-fx-name]').fill('Soft'); await cfg.locator('[data-fx-new]').click();
@@ -71,7 +74,7 @@ test('effect presets save, load and delete by name', { tag: ['@prod', '@critical
 
   // each own preset in the list has its own delete, current or not
   await cfg.locator('[data-fx-dd]').click(); await cfg.locator('[data-fx-delname="Soft"]').click();
-  check(!(await until(() => names(page), v => v && !v.includes('Soft'))).includes('Soft'), 'the row\'s trash deletes that preset');
+  check(!(await until(own, v => v && !v.includes('Soft'))).includes('Soft'), 'the row\'s trash deletes that preset');
   check(await cfg.locator('[data-fx-name]').inputValue() === 'Soft 3', 'and leaves the current one picked');
 });
 

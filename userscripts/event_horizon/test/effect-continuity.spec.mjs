@@ -3,7 +3,7 @@ import { test, expect, functionSource } from '../../../dev/test/harness.mjs';
 test.use({ profile: 'fresh', gm: { name: 'Event Horizon', values: { view: { on: true, fx: ['tron', 'stars', 'aurora'], tronSpeed: 2, starDrift: 1, auroraSpeed: 2 } } } });
 
 test('ambient redraws retain the canvas, simulation and clock while taking new parameters', { tag: '@unit' }, async ({ page }) => {
-  const src = await functionSource('event_horizon', ['AMBIENT', 'AMBIENT_DEFAULTS', 'FX_OWN', 'ucolOk', 'ambientApply', 'ambientDraw', 'tronHit', 'tronSpawn', 'tronCreate', 'tronStep']);
+  const src = await functionSource('event_horizon', ['AMBIENT', 'AMBIENT_DEFAULTS', 'FX_OWN', 'fxSpan', 'FX_STRIP', 'ucolOk', 'ambientApply', 'ambientDraw', 'tronHit', 'tronSpawn', 'tronCreate', 'tronStep']);
   const result = await page.evaluate(async src => {
     const S = {}, hexReduce = { matches: false };
     const apply = new Function('S', 'hexReduce', src + '; Object.assign(S, AMBIENT_DEFAULTS, FX_OWN); return ambientApply;')(S, hexReduce);
@@ -19,7 +19,8 @@ test('ambient redraws retain the canvas, simulation and clock while taking new p
     const kept = canvas === layer.querySelector('canvas') && state === ctx._ehTron;
     const advanced = state.time > before;
     const params = layer._ehPattern.P;
-    const updated = params?.tronSpeed === 2 && params?.glow === 2;
+    // a 20–200% strip squares its value around the default (fxSpan, 0ac1db96): tron's 2 over 1 runs at 4
+    const updated = params?.tronSpeed === 4 && params?.glow === 2;
     layer.style.width = '500px'; apply(layer, 'tron');
     const resized = layer.querySelector('canvas') !== canvas && layer.querySelector('canvas').style.width === '500px';
     layer._ehPattern.stop();
@@ -44,6 +45,6 @@ test('navigation keeps all ambient effects running with the selected parameters'
   expect(await page.evaluate(() => window.effectLayers.map(({ layer }) => {
     const p = layer._ehPattern.P;
     return p?.tronSpeed ?? p?.starDrift ?? p?.auroraSpeed;
-  }))).toEqual([2, 1, 2]);
+  }))).toEqual([4, 1, 10]);   // fxSpan (0ac1db96): tron 2 over its default 1, aurora 2 over 0.4; starDrift's 0–100 strip is linear
   await page.screenshot({ path: 'test-results/eh-effect-continuity.png' });
 });
