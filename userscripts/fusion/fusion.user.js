@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.133000
+// @version      2026.11.08.170000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -4201,10 +4201,10 @@ function fsStyle() {
         + '.fs-pooltog:hover{background:rgba(0,0,0,.05);color:var(--fs-muted)}'
         + '.fs-groups{flex:1;background:var(--fs-panel)}'
         // a phone: the pool sits above the groups and folds to a one-line bar; the groups scroll sideways
-        + '@media (max-width:700px){.fs-body{flex-direction:column}.fs-pool{width:auto;flex:0 1 45%;border-right:0;border-bottom:1px solid var(--fs-border)}'
+        + '@media (max-width:700px){.fs-body{flex-direction:column}.fs-pool{width:auto;flex:0 1 auto;max-height:60%;min-height:0;border-right:0;border-bottom:1px solid var(--fs-border)}'
         + '.fs-colhdr{flex-wrap:wrap;row-gap:6px}.fs-poolfilter{max-width:none;flex:1 1 90px}.fs-poolsort{flex-wrap:wrap}'
         + '.fs-poolrail{flex-direction:row;width:auto;padding:6px 12px;border-right:0;border-bottom:1px solid var(--fs-border)}.fs-raillabel{writing-mode:horizontal-tb}.fs-railarrow{transform:rotate(90deg)}'
-        + '.fs-body.fs-poolhidden.fs-peek .fs-pool{display:none}.fs-groups{flex:1 1 55%;min-height:0}#fs-groups-body,#fs-em-body .fs-groups>.fs-colbody{overflow-x:auto}}'
+        + '.fs-body.fs-poolhidden.fs-peek .fs-pool{display:none}.fs-groups{flex:1 1 0;min-height:30%}#fs-groups-body,#fs-em-body .fs-groups>.fs-colbody{overflow-x:auto}.fs-gcard{min-width:max-content}.fs-grow .fs-t,.fs-emh .fs-emh-n{min-width:130px}.fs-ghdr-grid{display:flex}.fs-ghdr-grid .fs-sig{flex:1}}'
         + '.fs-colhdr{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid var(--fs-border);font-weight:700;font-size:12px;letter-spacing:.3px;color:var(--fs-muted);text-transform:uppercase;background:var(--fs-panel2)}'
         + '.fs-cnt{background:var(--fs-panel);border:1px solid var(--fs-border);border-radius:var(--mbu-radius-lg);padding:1px 7px;color:var(--fs-text);font-weight:600}'
         + '.fs-hint{text-transform:none;font-weight:400;color:var(--fs-muted)}'
@@ -5967,7 +5967,7 @@ function fsPhoneFit(ov) {
     vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit);
 }
 const FS_PHONE_CSS = '.fs-overlay.fs-phone{-webkit-text-size-adjust:100%;text-size-adjust:100%}'
-    + '.fs-phone .fs-cons{position:absolute!important;inset:0!important;width:auto!important;height:auto!important;max-width:none!important;max-height:none!important;margin:0!important;border:0!important;border-radius:0!important;transform:none!important}'
+    + '.fs-phone .fs-cons{position:absolute!important;inset:0!important;width:auto!important;height:auto!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;margin:0!important;border:0!important;border-radius:0!important;transform:none!important}'
     + '.fs-phone .fs-hdr{flex-wrap:wrap;cursor:default;padding:8px 10px}.fs-phone .fs-hl{flex-basis:100%}'
     + '.fs-phone .fs-colhdr{flex-wrap:wrap;padding:8px 10px}.fs-phone .fs-poolsort{flex-wrap:wrap;padding:6px 10px}'
     + '.fs-phone .fs-pool{width:auto;right:0}.fs-phone .fs-poolfilter{max-width:none}'
