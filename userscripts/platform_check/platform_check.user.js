@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.08.122700
+// @version      2026.11.08.164133
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -5793,7 +5793,7 @@ function pcUrlKey(u) {
         [/(?:www\.)?beatport\.com\/release\/[^/]+\/(\d+)/i,                   'beatport'],
         // #639: the id is in the query string, which the normalisation below drops, so
         // without this every YouTube Music album would count as the same link
-        [/(?:(?:music|www|m)\.)?youtube\.com\/(?:playlist\?(?:[^#]*&)?list=|browse\/)(OLAK5uy_[\w-]+|MPREb_[\w-]+)/i, 'ytmusic'],
+        [/(?:(?:music|www|m)\.)?youtube\.com\/(?:playlist\?(?:[^#]*&)?list=|browse\/)(OLAK5uy_[\w-]+|PL[\w-]+|MPREb_[\w-]+)/i, 'ytmusic'],
         [/allmusic\.com\/album\/release\/(?:[^/?#]*-)?(mr\d{10})/i,                 'allmusic'],   // #814
         [/music\.amazon\.[a-z.]+\/albums\/([A-Z0-9]{10})/i,              'amazonmusic'],   // #644: any country's domain, one album
         [/(?:7digital\.com|zdigital\.com\.au)\/artist\/[^/?#]+\/release\/(?:[^/?#]*-)?(\d{3,})/i, 'sevendigital'],   // #669: any country's store, one release
@@ -7305,7 +7305,8 @@ function ytmNoteOtherVersions(v, label = 'YouTube Music') {
     if (a && a.href && /music\.youtube\.com/.test(a.href)) a.dataset.tip = (a.dataset.tip ? a.dataset.tip + '\n' : '') + `⚠ Also on YouTube Music as ${v.length} other version${v.length === 1 ? '' : 's'}: ${names}\nThey can share the title and tracks: check it's this one.`;
 }
 // The album behind a YouTube Music link: …/browse/MPREb_… directly, …/playlist?list=OLAK5uy_…
-// through the playlist's page, which names its album.
+// through the playlist's page, which names its album. Existing PL… user playlists
+// count as linked (#952), but have no album identity and make no metadata request.
 async function ytmAlbumIdOf(url, label = 'YouTube Music') {
     const b = String(url).match(/music\.youtube\.com\/browse\/(MPREb_[\w-]+)/i);
     if (b) return b[1];
@@ -8700,7 +8701,7 @@ function parseMbFromDom() {
             allmusic:      externalHrefs.find(u => /^https?:\/\/(?:www\.)?allmusic\.com\/album\/release\//i.test(u)) || null,
             volumo:        externalHrefs.find(u => /^https?:\/\/(?:www\.)?volumo\.com\/album\//i.test(u)) || null,
             hdtracks:      externalHrefs.find(u => /^https?:\/\/(?:www\.)?hdtracks\.com\//i.test(u)) || null,
-            ytmusic:       externalHrefs.find(u => /^https?:\/\/(?:(?:music|www|m)\.)?youtube\.com\/(?:playlist\?(?:[^#]*&)?list=OLAK5uy_|browse\/MPREb_)/i.test(u)) || null,
+            ytmusic:       externalHrefs.find(u => /^https?:\/\/(?:(?:music|www|m)\.)?youtube\.com\/(?:playlist\?(?:[^#]*&)?list=(?:OLAK5uy_|PL)[\w-]+(?:[&#]|$)|browse\/MPREb_)/i.test(u)) || null,
             amazonmusic:   externalHrefs.find(u => /^https?:\/\/music\.amazon\.[a-z.]+\/albums\/[A-Z0-9]{10}/i.test(u)) || null,
             soundcloud:    externalHrefs.find(u => /^https?:\/\/(?:www\.|m\.)?soundcloud\.com\/[^/?#]+\/(?:sets\/)?[^/?#]+/i.test(u)) || null,
             audiomack:     externalHrefs.find(u => /^https?:\/\/(?:www\.)?audiomack\.com\/[^/?#]+\/(?:album|song)\/[^/?#]+/i.test(u)) || null,
@@ -8939,7 +8940,7 @@ function parseMbData(data) {
         allmusic:      relUrls.find(u => /^https?:\/\/(?:www\.)?allmusic\.com\/album\/release\//i.test(u)) || null,
         volumo:        relUrls.find(u => /^https?:\/\/(?:www\.)?volumo\.com\/album\//i.test(u)) || null,
         hdtracks:      relUrls.find(u => /^https?:\/\/(?:www\.)?hdtracks\.com\//i.test(u)) || null,
-        ytmusic:       relUrls.find(u => /^https?:\/\/(?:(?:music|www|m)\.)?youtube\.com\/(?:playlist\?(?:[^#]*&)?list=OLAK5uy_|browse\/MPREb_)/i.test(u)) || null,
+        ytmusic:       relUrls.find(u => /^https?:\/\/(?:(?:music|www|m)\.)?youtube\.com\/(?:playlist\?(?:[^#]*&)?list=(?:OLAK5uy_|PL)[\w-]+(?:[&#]|$)|browse\/MPREb_)/i.test(u)) || null,
         amazonmusic:   relUrls.find(u => /^https?:\/\/music\.amazon\.[a-z.]+\/albums\/[A-Z0-9]{10}/i.test(u)) || null,
         soundcloud:    relUrls.find(u => /^https?:\/\/(?:www\.|m\.)?soundcloud\.com\/[^/?#]+\/(?:sets\/)?[^/?#]+/i.test(u)) || null,
         audiomack:     relUrls.find(u => /^https?:\/\/(?:www\.)?audiomack\.com\/[^/?#]+\/(?:album|song)\/[^/?#]+/i.test(u)) || null,
