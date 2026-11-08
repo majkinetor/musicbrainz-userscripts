@@ -1,4 +1,4 @@
-import { test, check, until } from '../../../dev/test/harness.mjs';
+import { test, check, until, mbJson } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Event Horizon', persist: true } });
 
@@ -6,7 +6,7 @@ test.use({ gm: { name: 'Event Horizon', persist: true } });
 // too when that script started first: Mammoth's panel in Art Station's commit dialog came up unstyled
 test('a script\'s style without an id stays on while Event Horizon shows', { tag: ['@sandbox', '@cosmetic'] }, async ({ page, inject }) => {
   await page.goto('https://test.musicbrainz.org/');
-  const id = await page.evaluate(async () => (await (await fetch('/ws/2/release?query=tracks:%5B5%20TO%2020%5D&limit=1&fmt=json')).json()).releases[0].id);
+  const id = (await mbJson('https://test.musicbrainz.org/ws/2/release?query=tracks:%5B5%20TO%2020%5D&limit=1&fmt=json')).releases[0].id;   // retried: a throttled answer has no releases
   await page.goto('https://test.musicbrainz.org/release/' + id);
   await page.evaluate(() => { const s = document.createElement('style'); s.className = 'spec-script-style'; s.textContent = '.spec-x{color:red}'; document.head.append(s); });
   await inject('event_horizon');
