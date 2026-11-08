@@ -15,7 +15,7 @@ Everyone has an opinion on genre: collect them from linked pages and cast yours 
 
 ## Collecting
 
-Open **Fuzzy Logic** from String Theory's dock. It reads the entity's links, up to 10 per source, and lists what it finds with the original names and the sources that gave each tag.
+Open **Fuzzy Logic** from String Theory's dock. It reads the entity's links, up to 20 per source, and lists what it finds with the original names and the sources that gave each tag.
 
 Sources: Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB and Last.fm.
 
