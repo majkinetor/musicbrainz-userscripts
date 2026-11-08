@@ -39,7 +39,7 @@ test('idle timeout resets on activity, restores appearance, never saves the idle
 });
 
 test('idle theme and effect are independent, normal effect mapping stays untouched @unit', () => {
-  const r = runtime({ on: true, minutes: 1, theme: 'Other' }, { eh: { 'light:Default': 'Night', 'dark:Default': '-' } });
+  const r = runtime({ on: true, minutes: 1, theme: 'Other', effect: '' }, { eh: { 'light:Default': 'Night', 'dark:Default': '-' } });
   r.advance(60000); expect(r.style.textContent).toBe('other');
   expect(r.attrs.get('data-st-eh-fx')).toBe('Night'); expect(r.attrs.has('data-st-eh-fx-idle')).toBe(false);
   r.api.set({ idle: { on: true, minutes: 1, effect: '-' } }); r.advance(60000);
@@ -47,8 +47,14 @@ test('idle theme and effect are independent, normal effect mapping stays untouch
   r.event('touchstart'); expect(r.attrs.has('data-st-eh-fx-idle')).toBe(false);
 });
 
-test('idle is off by default and preview has priority @unit', () => {
-  const r = runtime(undefined); r.advance(86400000); expect(r.attrs.has('data-st-idle')).toBe(false);
+test('idle is on by default with a random theme and effect, preview has priority @unit', () => {
+  const r = runtime(undefined);
+  expect(r.api.read().idle).toEqual({ on: true, minutes: 5, theme: '*', effect: '*' });
+  r.advance(299000); expect(r.attrs.has('data-st-idle')).toBe(false);
+  r.advance(1000); expect(r.attrs.has('data-st-idle')).toBe(true); expect(r.attrs.get('data-st-eh-fx-idle')).toBe('Night');
+  r.event('keydown'); expect(r.attrs.has('data-st-idle')).toBe(false);
+  const off = runtime({ on: false, theme: '', effect: '' }); off.advance(86400000); expect(off.attrs.has('data-st-idle')).toBe(false);
+  expect(off.api.read().idle).toEqual({ on: false, minutes: 5, theme: '', effect: '' });
   r.api.set({ idle: { on: true, minutes: 1, theme: 'Other' } });
   r.api.preview({ mode: 'dark' }); r.advance(60000);
   expect(r.style['data-variant']).toBe('dark');

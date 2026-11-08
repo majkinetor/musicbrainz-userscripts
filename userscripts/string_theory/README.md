@@ -62,7 +62,7 @@ With Event Horizon on and an effect preset saved in its settings, **Light effect
 
 ## Idle appearance
 
-In **General → Idle**, turn **Idle** on and set **After (minutes)**. **Idle theme** and **Idle effect** choose what appears after that much inactivity, on every MusicBrainz page including the homepage. **Current theme** or **Current effect** keeps that part unchanged; **No effect** hides effects. Effects use Event Horizon's presets and need that script enabled.
+Idle is on by default, with a random theme and effect after 5 minutes. In **General → Idle**, turn **Idle** on or off and set **After (minutes)**. **Idle theme** and **Idle effect** choose what appears after that much inactivity, on every MusicBrainz page including the homepage. **Current theme** or **Current effect** keeps that part unchanged; **No effect** hides effects. Effects use Event Horizon's presets and need that script enabled.
 
 Moving the pointer, typing, touching or scrolling restores your normal appearance. Idle choices leave your normal settings unchanged.
 
@@ -133,10 +133,10 @@ Right-click String Theory's icon to open its settings, or any dock icon for that
 
 | Setting          | Default           | What it does                                                                                                                              |
 | ---------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Idle             | Off               | Enables the idle appearance                                                                                                               |
+| Idle             | On                | Enables the idle appearance                                                                                                               |
 | After (minutes)  | 5                 | Inactivity before the idle appearance, from 1 minute to 1 day                                                                             |
-| Idle theme       | Current theme     | Theme shown while idle                                                                                                                    |
-| Idle effect      | Current effect    | Event Horizon effect shown while idle                                                                                                     |
+| Idle theme       | Random            | Theme shown while idle                                                                                                                    |
+| Idle effect      | Random            | Event Horizon effect shown while idle                                                                                                     |
 | Side             | Right             | The launchers' side of the page                                                                                                           |
 | Orientation      | Column            | A column, or a row along the bottom edge                                                                                                  |
 | Size             | 100 %             | The launchers' size, 60 to 160 %                                                                                                          |
