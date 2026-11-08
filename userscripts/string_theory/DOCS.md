@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-08 23:45 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-08 23:58 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -789,6 +789,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 - **[Releases and discography](#releases-and-discography)** as a grid or a table whose columns you choose, order and resize, grouped by type, with a filter, and with filters and columns saved by name.
 - **[Pending changes](#pending-changes)** marks what has edits open.
 - **[Keyboard shortcuts](#keyboard-shortcuts)**: single keys open an entity's edit, relationships, history and other pages, on MusicBrainz's page and in the viewer; **Ctrl+/** lists them and changes them.
+- **[Other scripts](#other-scripts)** can put their launchers in the header's **More (⋯)** menu.
 
 Also on board: artist, label, release, release group and area images, a configurable homepage, inline tag and alias editing, an Aliases page with an artist's credits, infinite scroll, advanced filtering and grouped edit history.
 
@@ -912,6 +913,13 @@ On an entity's page, in the viewer or on MusicBrainz's own page, a key opens one
 | .      | MusicBrainz's home page                      |
 | ,      | the settings (String Theory's, with it)      |
 | Ctrl+/ | this list                                    |
+
+### Other scripts
+
+Compatible scripts appear under **More (⋯)** in the page header and pinned bar. Select an item to launch its script. A script working on its own table can temporarily suspend Event Horizon's shortcuts and hide the corner launchers until its window closes.
+
+> [!NOTE]
+> Authors can use the [menu-item protocol](../event_horizon/DEVELOP.md#external-menu-items) and [coexistence conventions](../../DEVELOP.md#interoperability).
 
 ### Settings
 

@@ -936,6 +936,11 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         }
     }
     function mbRestackCorner(corner) {
+        if (!document.getElementById('mbu-quiet-css')) {
+            var quiet = document.createElement('style'); quiet.id = 'mbu-quiet-css';
+            quiet.textContent = ':root[data-mbu-quiet] :is([data-mb-corner],#mbu-dock-shelf){visibility:hidden!important;pointer-events:none!important}';
+            document.documentElement.appendChild(quiet);
+        }
         if (corner === 'br') mbuDock();
         var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
         var row = mbuShared('cornerFlow') === 'row';
@@ -2171,6 +2176,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         return t;
     }
     function mbuTipFind(node) {
+        var target = node && (node.nodeType === 1 ? node : node.parentElement);
+        if (target && target.closest('[data-mbu-foreign]')) return null;
         var _mbuTip = mbuTipS();
         var tip = document.getElementById('mbu-tip');
         for (var el = node && node.nodeType === 1 ? node : node && node.parentElement; el && el !== document.documentElement; el = el.parentElement) {

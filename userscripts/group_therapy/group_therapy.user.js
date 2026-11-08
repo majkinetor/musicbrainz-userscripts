@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08
+// @version      2026.11.08.235840
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -30,6 +30,7 @@
   const MBN_GAP = 1000;
   const MBN_BURST = 3;
   const MBN_KEY = "mbu:mb-gate";
+  const MBN_VERSION = 1;
   const MBN_LOCK = "mbu-mb-gate";
   const MBN_MAX_HOLD = 60000;
   const MBN_MAX_LEAD = 10000;
@@ -44,9 +45,11 @@
           const g = globalThis.__mbnGate || (globalThis.__mbnGate = { tat: 0, cool: 0, hot: 0 });
           if (!stored) s = g;                                                        // no storage: this page's copy only
           else if (!s || typeof s !== 'object') s = { tat: 0, cool: 0, hot: 0 };   // none yet (or cleared): a fresh schedule
+          if (s.version != null && s.version !== MBN_VERSION) throw new Error('Unsupported MusicBrainz gate version: ' + s.version);
+          s.version = MBN_VERSION;
           const out = fn(s);
           Object.assign(g, s);
-          try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
+          try { localStorage.setItem(MBN_KEY, JSON.stringify({ ...s, tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
           return out;
       };
       // The lock is held only for rw()'s synchronous moment, so a wait of seconds means it is
@@ -1506,6 +1509,11 @@
       }
   }
   function mbRestackCorner(corner) {
+      if (!document.getElementById('mbu-quiet-css')) {
+          var quiet = document.createElement('style'); quiet.id = 'mbu-quiet-css';
+          quiet.textContent = ':root[data-mbu-quiet] :is([data-mb-corner],#mbu-dock-shelf){visibility:hidden!important;pointer-events:none!important}';
+          document.documentElement.appendChild(quiet);
+      }
       if (corner === 'br') mbuDock();
       var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
       var row = mbuShared('cornerFlow') === 'row';
@@ -2741,6 +2749,8 @@
       return t;
   }
   function mbuTipFind(node) {
+      var target = node && (node.nodeType === 1 ? node : node.parentElement);
+      if (target && target.closest('[data-mbu-foreign]')) return null;
       var _mbuTip = mbuTipS();
       var tip = document.getElementById('mbu-tip');
       for (var el = node && node.nodeType === 1 ? node : node && node.parentElement; el && el !== document.documentElement; el = el.parentElement) {

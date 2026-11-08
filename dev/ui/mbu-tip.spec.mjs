@@ -28,6 +28,16 @@ test.beforeEach(async ({ page }) => {
     mbuTipOn('#card', function () { return mbuTipCard({ title: 'A card', aside: 'aside', body: '<a href="#" id="inlink">a link</a>', foot: 'foot' }); }, { interactive: true, card: true });` });
 });
 
+test('foreign regions keep their tooltips and titles under their own control', { tag: '@unit' }, async ({ page }) => {
+  const result = await page.evaluate(() => {
+    const box = document.createElement('section'); box.dataset.mbuForeign = 'saed'; box.className = 'mbu-ui';
+    box.innerHTML = '<button data-tip="Foreign tip" title="Foreign title"><span>child</span></button>';
+    document.body.append(box);
+    return { found: mbuTipFind(box.querySelector('span')), title: box.querySelector('button').getAttribute('title') };
+  });
+  check(result.found === null && result.title === 'Foreign title', 'neither a foreign tip nor its title is claimed');
+});
+
 test('the text form: key rows, option rows, the lead, a shortcut', { tag: ['@unit'] }, async () => {
   const keys = mbuTipText('Use it as if it were pasted · right-click: add it in the background · Ctrl+click: copy it');
   check(/mbu-tip-lead">Use it as if it were pasted</.test(keys) && (keys.match(/class="mbu-tip-mouse"/g) || []).length === 2 && /aria-hidden="true">C<\/kbd><svg/.test(keys), `" · Right-click: …" become key rows under a lead (${keys})`);

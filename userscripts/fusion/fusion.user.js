@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08
+// @version      2026.11.08.235840
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -86,6 +86,7 @@ const gmPost = (url, data, headers) => http({ method: 'POST', url, data, headers
 const MBN_GAP = 1000;
 const MBN_BURST = 3;
 const MBN_KEY = "mbu:mb-gate";
+const MBN_VERSION = 1;
 const MBN_LOCK = "mbu-mb-gate";
 const MBN_MAX_HOLD = 60000;
 const MBN_MAX_LEAD = 10000;
@@ -100,9 +101,11 @@ async function mbnState(fn) {
         const g = globalThis.__mbnGate || (globalThis.__mbnGate = { tat: 0, cool: 0, hot: 0 });
         if (!stored) s = g;                                                        // no storage: this page's copy only
         else if (!s || typeof s !== 'object') s = { tat: 0, cool: 0, hot: 0 };   // none yet (or cleared): a fresh schedule
+        if (s.version != null && s.version !== MBN_VERSION) throw new Error('Unsupported MusicBrainz gate version: ' + s.version);
+        s.version = MBN_VERSION;
         const out = fn(s);
         Object.assign(g, s);
-        try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
+        try { localStorage.setItem(MBN_KEY, JSON.stringify({ ...s, tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
         return out;
     };
     // The lock is held only for rw()'s synchronous moment, so a wait of seconds means it is
@@ -2664,6 +2667,11 @@ function mbuPeekMove(el, dx, dy) {
     }
 }
 function mbRestackCorner(corner) {
+    if (!document.getElementById('mbu-quiet-css')) {
+        var quiet = document.createElement('style'); quiet.id = 'mbu-quiet-css';
+        quiet.textContent = ':root[data-mbu-quiet] :is([data-mb-corner],#mbu-dock-shelf){visibility:hidden!important;pointer-events:none!important}';
+        document.documentElement.appendChild(quiet);
+    }
     if (corner === 'br') mbuDock();
     var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
     var row = mbuShared('cornerFlow') === 'row';
@@ -3899,6 +3907,8 @@ function mbuTipEl() {
     return t;
 }
 function mbuTipFind(node) {
+    var target = node && (node.nodeType === 1 ? node : node.parentElement);
+    if (target && target.closest('[data-mbu-foreign]')) return null;
     var _mbuTip = mbuTipS();
     var tip = document.getElementById('mbu-tip');
     for (var el = node && node.nodeType === 1 ? node : node && node.parentElement; el && el !== document.documentElement; el = el.parentElement) {

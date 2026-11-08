@@ -169,6 +169,41 @@ Most settings belong to one script and live in its GM storage, which no other sc
 
 A new shared setting gets a row here.
 
+## Interoperability
+
+Other userscripts can opt into these conventions. No marker means the usual behaviour. These are DOM signals, not saved settings; keep page-wide markers on `document.documentElement`, which survives Event Horizon's body swaps.
+
+| Signal                        | Scope                     | Effect                                                                                                                                         |
+| ----------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data-mbu-foreign="<owner>"`  | rendered section or table | ISRC Scout leaves its columns and colspans alone; the shared tooltip handler ignores the region, including copied `data-tip` attributes        |
+| `data-mbu-keys-off="<owner>"` | `<html>`                  | suspends Event Horizon's command shortcuts, bare keys and modified keys alike, including V and Ctrl+L; ordinary controls and Escape still work |
+| `data-mbu-quiet="<owner>"`    | `<html>`                  | temporarily hides corner launchers, the dock and its shelf; scans, counts and the saved dock state continue                                    |
+
+The foreign marker protects a rendered copy, not its native source. Keep ISRC Scout's original rows outside it. A script can listen for `is:counts-changed` and update its own copy; ISRC Scout does not push changes into a foreign region. This is a contract for the consumers named above, not a promise that every script ignores the region.
+
+Set the page-wide flags only while your interface needs them, and remove them on close or navigation. Use your script's name as the value and remove a flag only if its value is still yours; each flag has one owner at a time. They do not open or close Event Horizon. When keys and dock are suppressed, your interface must provide its own way to close and restore them.
+
+Event Horizon accepts [external menu launchers](userscripts/event_horizon/DEVELOP.md#external-menu-items). ISRC Scout exposes [platform metadata](userscripts/isrc_scout/DEVELOP.md#track-link-metadata) separately from tooltip text.
+
+### Shared request-gate protocol
+
+[`dev/net/mb-gate.mjs`](dev/net/mb-gate.mjs) is the reference implementation. Other scripts should bundle its `mbnFetch`, or inline `MBN_INLINE` as our sync tool does, rather than maintain a second scheduler. It books ws/2 starts, reports 429/503 answers and retries through the same budget. Call `mbnSlot` and `mbnAnswer` around a custom transport if `fetch` cannot be used; report every answer. Bulk reads use the default background mode and respect an active lead; reserve `background: false` for an immediate user action.
+
+Version **1** uses origin-local `localStorage['mbu:mb-gate']`, changed under the Web Lock **`mbu-mb-gate`**. The lock covers only synchronous read/modify/write, never the wait or the request. Production and test origins have separate schedules; this is not a coordinator across origins or all clients sharing an IP.
+
+| Field       | Meaning                                                         |
+| ----------- | --------------------------------------------------------------- |
+| `version`   | protocol version, `1`; absent means legacy version 1            |
+| `tat`       | next theoretical arrival time, Unix milliseconds                |
+| `cool`      | no request starts before this Unix millisecond timestamp        |
+| `hot`       | throttle level, 0–6                                             |
+| `lead`      | opaque token for the page currently drawing; empty when idle    |
+| `leadUntil` | lease expiry, Unix milliseconds; at most 10 seconds per renewal |
+
+The sustained gap is 1,000 ms, with a burst of three after idle. Default background booking uses `at = max(now, tat - 2000, cool)` and advances `tat = max(tat, at) + 1000`. Existing bookings still check a newer `cool` before starting. A background caller waits out another caller's lead before booking. Throttling and lease renewal should use the reference functions so every participant follows the same rules.
+
+Readers accept an absent version as version 1; writers stamp `version: 1`, preserve unknown fields and never reset the schedule merely because a version was absent. Old installed copies can remove the version field on their next write, so its absence must remain supported. An explicit unknown version is rejected without changing the stored schedule. Incompatible changes require a new protocol version; these field meanings, storage key and lock name are the version-1 contract. When storage or Web Locks are unavailable, the reference code's fallback cannot guarantee cross-tab coordination.
+
 ## Bot identity
 
 Assistant commits, comments and releases use the **`milic-bot`** account ([Standard 7](dev/agents/STANDARDS.general.md#standard-7) says how). Its commit identity: `-c user.name=milic-bot -c user.email=bot@milic.info`.

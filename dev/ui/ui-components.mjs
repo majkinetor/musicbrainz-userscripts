@@ -1211,6 +1211,11 @@ function mbuPeekMove(el, dx, dy) {
     }
 }
 function mbRestackCorner(corner) {
+    if (!document.getElementById('mbu-quiet-css')) {
+        var quiet = document.createElement('style'); quiet.id = 'mbu-quiet-css';
+        quiet.textContent = ':root[data-mbu-quiet] :is([data-mb-corner],#mbu-dock-shelf){visibility:hidden!important;pointer-events:none!important}';
+        document.documentElement.appendChild(quiet);
+    }
     if (corner === 'br') mbuDock();
     var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
     var row = mbuShared('cornerFlow') === 'row';

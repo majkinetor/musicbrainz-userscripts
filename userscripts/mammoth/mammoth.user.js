@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08
+// @version      2026.11.08.235840
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg==
@@ -1077,6 +1077,11 @@
       }
   }
   function mbRestackCorner(corner) {
+      if (!document.getElementById('mbu-quiet-css')) {
+          var quiet = document.createElement('style'); quiet.id = 'mbu-quiet-css';
+          quiet.textContent = ':root[data-mbu-quiet] :is([data-mb-corner],#mbu-dock-shelf){visibility:hidden!important;pointer-events:none!important}';
+          document.documentElement.appendChild(quiet);
+      }
       if (corner === 'br') mbuDock();
       var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
       var row = mbuShared('cornerFlow') === 'row';
@@ -2312,6 +2317,8 @@
       return t;
   }
   function mbuTipFind(node) {
+      var target = node && (node.nodeType === 1 ? node : node.parentElement);
+      if (target && target.closest('[data-mbu-foreign]')) return null;
       var _mbuTip = mbuTipS();
       var tip = document.getElementById('mbu-tip');
       for (var el = node && node.nodeType === 1 ? node : node && node.parentElement; el && el !== document.documentElement; el = el.parentElement) {

@@ -2,6 +2,12 @@
 
 *Reference for maintainers and other scripts' authors*. The repo-wide procedure is in the root [DEVELOP.md](../../DEVELOP.md).
 
+## Track-link metadata
+
+Every native-tracklist `a.ii-trk-ln` exposes `data-ii-platform`, the displayed platform name, and `data-ii-ended`, the string `"true"` or `"false"`. The anchor represents one platform group: ended is true only when **all** its links ended; a mixed group opens its first live URL. Tooltip wording is presentation, not a data format.
+
+Other scripts can copy these anchors into their own tables. Mark the rendered copy with `data-mbu-foreign` ([interoperability](../../DEVELOP.md#interoperability)); ISRC Scout then skips insertion, removal and colspan restoration there. Keep the native source outside that region. `is:counts-changed` tells a consumer to re-read the source and refresh its own copy; it is not a new-data payload.
+
 ## Providers
 
 ISRC Scout has two independent provider systems, and a provider can support one without the other: **ISRC import** fills the release's missing ISRCs, and **track links** resolve a per-track URL for the Links tab's **Add** column.
@@ -28,13 +34,13 @@ A Platform Check link withheld for a barcode or format mismatch isn't used by de
 
 ### Track links
 
-| Provider              | Resolved by                                                                                                                        | MusicBrainz link type      |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| Deezer, Tidal         | ISRC: a global by-ISRC lookup, on any release whose tracks have ISRCs                                                              | free streaming / streaming |
-| Beatport, Volumo      | album: it carries every track's ISRC and id, so the track URL is matched by ISRC                                                   | purchase for download      |
-| Qobuz                 | album: `album/get` carries every track's ISRC and id; the link is the id-only `open.qobuz.com/track/<id>`, matched by ISRC         | purchase for download      |
+| Provider | Resolved by | MusicBrainz link type |
+| --- | --- | --- |
+| Deezer, Tidal | ISRC: a global by-ISRC lookup, on any release whose tracks have ISRCs | free streaming / streaming |
+| Beatport, Volumo | album: it carries every track's ISRC and id, so the track URL is matched by ISRC | purchase for download |
+| Qobuz | album: `album/get` carries every track's ISRC and id; the link is the id-only `open.qobuz.com/track/<id>`, matched by ISRC | purchase for download |
 | Bandcamp, Apple Music | album page (or Bandcamp standalone track page): every track URL (Apple's from the page's `ld+json`), by position and title; a title mismatch is skipped, never guessed | free streaming / streaming |
-| SoundCloud            | set: every track's permalink, by position and title                                                                                | free streaming             |
+| SoundCloud | set: every track's permalink, by position and title | free streaming |
 
 A provider is offered for a track only when it can be resolved (Deezer and Tidal need the track's ISRC, the others the release's album link) or the recording already links it.
 

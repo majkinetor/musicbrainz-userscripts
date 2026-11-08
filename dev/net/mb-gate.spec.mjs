@@ -26,6 +26,20 @@ test.beforeEach(async ({ context }) => {
   await context.route(ORIGIN + '/**', r => r.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><title>gate</title>' }));
 });
 
+test('version 1 upgrades a legacy schedule without resetting holds or extension fields', { tag: '@unit' }, async ({ context }) => {
+  const a = await tab(context);
+  const got = await a.evaluate(async () => {
+    localStorage.setItem('mbu:mb-gate', JSON.stringify({ tat: 123, cool: 456, hot: 2, extension: 'kept' }));
+    await mbnState(() => {});
+    const legacy = JSON.parse(localStorage.getItem('mbu:mb-gate'));
+    const future = JSON.stringify({ version: 2, tat: 789 }); localStorage.setItem('mbu:mb-gate', future);
+    let refused = false; try { await mbnState(() => {}); } catch (e) { refused = /Unsupported/.test(e.message); }
+    return { legacy, refused, unchanged: localStorage.getItem('mbu:mb-gate') === future };
+  });
+  check(got.legacy.version === 1 && got.legacy.tat === 123 && got.legacy.cool === 456 && got.legacy.hot === 2 && got.legacy.extension === 'kept', 'legacy schedule is stamped, preserving budget, hold and unknown fields');
+  check(got.refused && got.unchanged, 'an unknown version is rejected without overwriting its schedule');
+});
+
 test('the gate paces starts, a burst first, then one a second', { tag: ['@unit'] }, async ({ context }) => {
   const a = await tab(context);
   const starts = await a.evaluate(async () => {

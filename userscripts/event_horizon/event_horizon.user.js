@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08.221500
+// @version      2026.11.08.235840
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -61,6 +61,7 @@ const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && 
 const MBN_GAP = 1000;
 const MBN_BURST = 3;
 const MBN_KEY = "mbu:mb-gate";
+const MBN_VERSION = 1;
 const MBN_LOCK = "mbu-mb-gate";
 const MBN_MAX_HOLD = 60000;
 const MBN_MAX_LEAD = 10000;
@@ -75,9 +76,11 @@ async function mbnState(fn) {
         const g = globalThis.__mbnGate || (globalThis.__mbnGate = { tat: 0, cool: 0, hot: 0 });
         if (!stored) s = g;                                                        // no storage: this page's copy only
         else if (!s || typeof s !== 'object') s = { tat: 0, cool: 0, hot: 0 };   // none yet (or cleared): a fresh schedule
+        if (s.version != null && s.version !== MBN_VERSION) throw new Error('Unsupported MusicBrainz gate version: ' + s.version);
+        s.version = MBN_VERSION;
         const out = fn(s);
         Object.assign(g, s);
-        try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
+        try { localStorage.setItem(MBN_KEY, JSON.stringify({ ...s, tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
         return out;
     };
     // The lock is held only for rw()'s synchronous moment, so a wait of seconds means it is
@@ -1111,6 +1114,11 @@ function mbuPeekMove(el, dx, dy) {
     }
 }
 function mbRestackCorner(corner) {
+    if (!document.getElementById('mbu-quiet-css')) {
+        var quiet = document.createElement('style'); quiet.id = 'mbu-quiet-css';
+        quiet.textContent = ':root[data-mbu-quiet] :is([data-mb-corner],#mbu-dock-shelf){visibility:hidden!important;pointer-events:none!important}';
+        document.documentElement.appendChild(quiet);
+    }
     if (corner === 'br') mbuDock();
     var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
     var row = mbuShared('cornerFlow') === 'row';
@@ -2346,6 +2354,8 @@ function mbuTipEl() {
     return t;
 }
 function mbuTipFind(node) {
+    var target = node && (node.nodeType === 1 ? node : node.parentElement);
+    if (target && target.closest('[data-mbu-foreign]')) return null;
     var _mbuTip = mbuTipS();
     var tip = document.getElementById('mbu-tip');
     for (var el = node && node.nodeType === 1 ? node : node && node.parentElement; el && el !== document.documentElement; el = el.parentElement) {
@@ -2888,6 +2898,8 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .kicker .acts{margin-left:auto;display:flex;gap:2px;align-items:center}
 .kicker .ab{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 8px;border-radius:8px;border:1px solid transparent;font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--chip-text)}
 .kicker .ab:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+.kicker button[data-eh-menu-item]{background:none!important;box-shadow:none;font-family:inherit;cursor:pointer;filter:none!important;text-align:left}
+.kicker .eh-more>.abm{max-height:70vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
 .kicker .abx{position:relative;display:inline-flex}.kicker .abm{display:none;position:absolute;top:100%;left:0;z-index:30;flex-direction:column;gap:2px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px var(--shadow)}.kicker .abx:is(:hover,:focus-within)>.abm{display:flex}.kicker .abm .ab{white-space:nowrap}
 .kicker .eh-more{margin:0}.kicker .eh-more>summary{list-style:none;cursor:pointer}.kicker .eh-more>summary::-webkit-details-marker{display:none}.kicker .eh-more:not([open])>.abm{display:none}.kicker .eh-more[open]>.abm{display:flex}.kicker .eh-more>.abm{left:auto;right:0}.kicker .eh-more .abm .ab{justify-content:flex-start}.kicker .eh-more .abm .ab .abt{display:inline}
 .art .cvact{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:8px;background:rgba(0,0,0,.66);color:#fff!important;font-size:13px;font-weight:600;text-decoration:none!important;opacity:0;transition:opacity .15s;white-space:nowrap}.art .picw:hover>.cvact,.art .cvact:focus-visible{opacity:1}.art .cvact:hover{background:var(--accent)}
@@ -4494,6 +4506,56 @@ function actionRow(actions, type, id, active = '') {
     // Relationships sits third in the row
     { const r = main.findIndex(a => a[0] === 'relationships'); if (r >= 0) main.splice(2, 0, ...main.splice(r, 1)); }
     return main.map(link).join('') + (less.length ? `<details class="abx eh-more"><summary class="ab" aria-label="More">${SVG('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>')}</summary><span class="abm">${less.map(link).join('')}</span></details>` : '');
+}
+// #938: persistent launcher buttons owned by other scripts, projected into More.
+// DOM clicks cross userscript sandboxes; no callback globals or JavaScript strings.
+function foreignMenuSync() {
+    const seen = new Set(), items = [...document.querySelectorAll('button[data-mbu-menu-item]')].filter(b => {
+        const id = b.getAttribute('data-mbu-menu-item');
+        if (!id || seen.has(id) || !b.getAttribute('data-mbu-menu-title')?.trim() || b.disabled) return false;
+        seen.add(id); return true;
+    });
+    document.querySelectorAll('#app .kicker .acts,#eh-pin .acts,#eh-relhd .acts').forEach(acts => {
+        acts.querySelectorAll('[data-eh-menu-item]').forEach(b => b.remove());
+        let more = acts.querySelector(':scope>.eh-more');
+        if (!items.length) {
+            if (more?.hasAttribute('data-foreign-made') && !more.querySelector('.abm')?.children.length) more.remove();
+            return;
+        }
+        if (!more) {
+            more = document.createElement('details'); more.className = 'abx eh-more'; more.dataset.foreignMade = '';
+            more.innerHTML = `<summary class="ab" aria-label="More">${SVG('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>')}</summary><span class="abm"></span>`;
+            acts.append(more);
+        }
+        const menu = more.querySelector(':scope>.abm');
+        for (const source of items) {
+            const b = document.createElement('button'); b.type = 'button'; b.className = 'ab';
+            b.dataset.ehMenuItem = source.getAttribute('data-mbu-menu-item');
+            const icon = source.getAttribute('data-mbu-menu-icon');
+            if (icon) {
+                try {
+                    const url = new URL(icon, location.href);
+                    if (/^https?:$/.test(url.protocol) || /^data:image\/(?:png|gif|jpeg|webp|svg\+xml)[;,]/i.test(url.href)) {
+                        const img = document.createElement('img'); img.src = url.href; img.alt = ''; img.width = img.height = 16; b.append(img);
+                    }
+                } catch (e) { /* an invalid optional icon does not disable the launcher */ }
+            }
+            const label = document.createElement('span'); label.textContent = source.getAttribute('data-mbu-menu-title'); b.append(label);
+            b.onclick = e => {
+                e.preventDefault(); e.stopPropagation(); more.open = false;
+                if (source.isConnected && !source.disabled) source.click();
+            };
+            menu.append(b);
+        }
+        if (typeof actsFit === 'function') actsFit(acts);
+    });
+}
+{
+    const relevant = n => n.nodeType === 1 && (n.matches('button[data-mbu-menu-item],.acts') || n.querySelector('button[data-mbu-menu-item],.acts'));
+    new MutationObserver(records => {
+        if (records.some(r => r.type === 'attributes' ? r.attributeName !== 'disabled' || r.target.matches('button[data-mbu-menu-item]') : [...r.addedNodes, ...r.removedNodes].some(relevant))) foreignMenuSync();
+    }).observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-mbu-menu-item', 'data-mbu-menu-title', 'data-mbu-menu-icon', 'disabled'] });
+    foreignMenuSync();
 }
 document.addEventListener('toggle', e => {
     const m = e.target; if (!m.classList?.contains('eh-more')) return;
@@ -10281,7 +10343,7 @@ function pinBar(app) {
 const PIN_NARROW = matchMedia('(max-width:700px)');
 function pinFold(acts, pin) {
     const fold = pin && PIN_NARROW.matches, moved = [...acts.querySelectorAll('a.ab[data-pinfold]')];
-    if (!fold) { for (const a of moved) { a.removeAttribute('data-pinfold'); acts.querySelector('[data-pinhome="' + a.dataset.pinidx + '"]')?.replaceWith(a); } acts.querySelector('.eh-more[data-pinmade]')?.remove(); actsFit(acts); return; }
+    if (!fold) { for (const a of moved) { a.removeAttribute('data-pinfold'); acts.querySelector('[data-pinhome="' + a.dataset.pinidx + '"]')?.replaceWith(a); } const more = acts.querySelector('.eh-more[data-pinmade]'); if (more && !more.querySelector('.abm>*')) more.remove(); actsFit(acts); return; }
     if (moved.length) return;
     const links = [...acts.querySelectorAll(':scope>a.ab:has(>span)')]; if (!links.length) return;
     let more = acts.querySelector(':scope>.eh-more');
@@ -12571,7 +12633,7 @@ function keysOpen() {
 }
 if (!SETTINGS_ONLY) {
     document.addEventListener('keydown', ev => {
-        if (!S.keysOn || ev.defaultPrevented || ev.repeat || document.getElementById('eh-keys')) return;
+        if (!S.keysOn || document.documentElement.hasAttribute('data-mbu-keys-off') || ev.defaultPrevented || ev.repeat || document.getElementById('eh-keys')) return;
         const t = ev.target;
         if (t && (t.isContentEditable || /^(input|textarea|select)$/i.test(t.tagName))) return;
         const k = keyCombo(ev); if (!k) return;

@@ -36,6 +36,8 @@ export const MBN_GAP = 1000;
 export const MBN_BURST = 3;
 /** The shared schedule, in the origin's localStorage. */
 export const MBN_KEY = 'mbu:mb-gate';
+/** Shared schedule protocol; a legacy schedule without a version is version 1. */
+export const MBN_VERSION = 1;
 /** The Web Lock that serialises reading and writing it. */
 export const MBN_LOCK = 'mbu-mb-gate';
 /** The longest one throttle holds everyone. */
@@ -57,9 +59,11 @@ export async function mbnState(fn) {
         const g = globalThis.__mbnGate || (globalThis.__mbnGate = { tat: 0, cool: 0, hot: 0 });
         if (!stored) s = g;                                                        // no storage: this page's copy only
         else if (!s || typeof s !== 'object') s = { tat: 0, cool: 0, hot: 0 };   // none yet (or cleared): a fresh schedule
+        if (s.version != null && s.version !== MBN_VERSION) throw new Error('Unsupported MusicBrainz gate version: ' + s.version);
+        s.version = MBN_VERSION;
         const out = fn(s);
         Object.assign(g, s);
-        try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
+        try { localStorage.setItem(MBN_KEY, JSON.stringify({ ...s, tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
         return out;
     };
     // The lock is held only for rw()'s synchronous moment, so a wait of seconds means it is
@@ -335,6 +339,6 @@ export function mbnReverify(url, init, o) {
 
 /** What sync-gate.mjs inlines, in order. */
 export const MBN_INLINE = {
-    consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, MBN_MAX_LEAD },
+    consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_MAX_HOLD, MBN_MAX_LEAD },
     fns: [mbnGated, mbnState, mbnSlot, mbnLead, mbnAnswer, mbnFetch, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
 };

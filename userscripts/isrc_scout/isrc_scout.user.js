@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08
+// @version      2026.11.08.235840
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -77,6 +77,7 @@
   const MBN_GAP = 1000;
   const MBN_BURST = 3;
   const MBN_KEY = "mbu:mb-gate";
+  const MBN_VERSION = 1;
   const MBN_LOCK = "mbu-mb-gate";
   const MBN_MAX_HOLD = 60000;
   const MBN_MAX_LEAD = 10000;
@@ -91,9 +92,11 @@
           const g = globalThis.__mbnGate || (globalThis.__mbnGate = { tat: 0, cool: 0, hot: 0 });
           if (!stored) s = g;                                                        // no storage: this page's copy only
           else if (!s || typeof s !== 'object') s = { tat: 0, cool: 0, hot: 0 };   // none yet (or cleared): a fresh schedule
+          if (s.version != null && s.version !== MBN_VERSION) throw new Error('Unsupported MusicBrainz gate version: ' + s.version);
+          s.version = MBN_VERSION;
           const out = fn(s);
           Object.assign(g, s);
-          try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
+          try { localStorage.setItem(MBN_KEY, JSON.stringify({ ...s, tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
           return out;
       };
       // The lock is held only for rw()'s synchronous moment, so a wait of seconds means it is
@@ -1570,6 +1573,11 @@
       }
   }
   function mbRestackCorner(corner) {
+      if (!document.getElementById('mbu-quiet-css')) {
+          var quiet = document.createElement('style'); quiet.id = 'mbu-quiet-css';
+          quiet.textContent = ':root[data-mbu-quiet] :is([data-mb-corner],#mbu-dock-shelf){visibility:hidden!important;pointer-events:none!important}';
+          document.documentElement.appendChild(quiet);
+      }
       if (corner === 'br') mbuDock();
       var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
       var row = mbuShared('cornerFlow') === 'row';
@@ -2805,6 +2813,8 @@
       return t;
   }
   function mbuTipFind(node) {
+      var target = node && (node.nodeType === 1 ? node : node.parentElement);
+      if (target && target.closest('[data-mbu-foreign]')) return null;
       var _mbuTip = mbuTipS();
       var tip = document.getElementById('mbu-tip');
       for (var el = node && node.nodeType === 1 ? node : node && node.parentElement; el && el !== document.documentElement; el = el.parentElement) {
@@ -10132,7 +10142,7 @@
       const tip = g.length === 1 ? l.name + (l.ended ? ' (ended)' : '') + '\n' + l.url
         : l.name + ' — ' + g.length + ' links\n' + g.map(x => '- ' + x.url + (x.ended ? ' (ended)' : '')).join('\n');
       return '<a class="ii-trk-ln' + (ended ? ' ended' : '') + '" href="' + esc(l.url) + '" target="_blank" rel="noopener" style="color:' + l.color + '" data-tip="' +
-        esc(tip) + '">' + l.icon + (g.length > 1 ? '<sup class="ii-trk-n">' + g.length + '</sup>' : '') + '</a>';
+        esc(tip) + '" data-ii-platform="' + esc(l.name) + '" data-ii-ended="' + ended + '">' + l.icon + (g.length > 1 ? '<sup class="ii-trk-n">' + g.length + '</sup>' : '') + '</a>';
     }).join('');
     return [isrcs, links && '<div class="ii-trk-lns">' + links + '</div>'];
   }
@@ -10164,6 +10174,7 @@
     const tables = new Set();
     byId.forEach((t, id) => { const tr = document.getElementById(id); const tb = tr && tr.closest('table'); if (tb) tables.add(tb); });
     tables.forEach(tb => {
+      if (tb.closest('[data-mbu-foreign]')) return;
       tb.querySelectorAll('tr.subh').forEach(tr => { if (!tr.querySelector(':scope > .ii-col')) addCols(tr, 'th', pick(['ISRC', 'Links']), pick(['ii-col-isrc', 'ii-col-links'])); });
       tb.querySelectorAll('thead th[colspan]').forEach(th => { if (!th.dataset.iiColspan) { th.dataset.iiColspan = th.colSpan; th.colSpan = th.colSpan + pick([1, 1]).length; } });
       tb.querySelectorAll('tbody > tr:not(.subh)').forEach(tr => {
@@ -10174,8 +10185,8 @@
   }
   function showTrackData() {
     paintColToggles();
-    document.querySelectorAll('.ii-col').forEach(el => el.remove());
-    document.querySelectorAll('th[data-ii-colspan]').forEach(th => { th.colSpan = +th.dataset.iiColspan; delete th.dataset.iiColspan; });
+    document.querySelectorAll('.ii-col').forEach(el => { if (!el.closest('[data-mbu-foreign]')) el.remove(); });
+    document.querySelectorAll('th[data-ii-colspan]').forEach(th => { if (!th.closest('[data-mbu-foreign]')) { th.colSpan = +th.dataset.iiColspan; delete th.dataset.iiColspan; } });
     if (!IS_OVERVIEW || !RELEASE || !(trackDataEnabled() || colTogglesOn())) { if (_tdObs) { _tdObs.disconnect(); _tdObs = null; } return; }
     if (trackDataEnabled()) fillTrackData();
     if (!_tdObs) {

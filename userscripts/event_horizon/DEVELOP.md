@@ -20,6 +20,44 @@ While Event Horizon shows, `<html>` carries `data-mbu-page` with the page's path
 
 String Theory reads it ([its DEVELOP.md](../string_theory/DEVELOP.md#runtime)): a tab loaded on a page a script isn't for never starts that script, so a release reached inside Event Horizon from the home page had no Platform Check, ISRC Scout or Mission Control at all, though all three can read the release from the API. String Theory starts them there. Falcon, which runs on every page, watches it to put its icon on a release, release group or series.
 
+## External menu items
+
+Any userscript can add an item to **More (⋯)** in the page header and pinned header. Registration is a hidden, connected `button`, owned by the launching script. Event Horizon projects its title and optional icon into its menus and calls the original button's `.click()` when selected. No function crosses a userscript sandbox and no JavaScript string is evaluated.
+
+| Attribute or property | Contract                                                                                                               |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `data-mbu-menu-item`  | required, nonempty unique ID, namespaced by the registering script; first eligible registration in document order wins |
+| `data-mbu-menu-title` | required, nonempty plain text; never HTML or a browser tooltip                                                         |
+| `data-mbu-menu-icon`  | optional image URL: HTTP(S), relative URL, or PNG/GIF/JPEG/WebP/SVG image data URL; invalid schemes are ignored        |
+| `disabled`            | hides the item until enabled again                                                                                     |
+| `hidden`              | keeps the source button out of the page; it does not hide the projected menu item                                      |
+| click handler         | the launcher's code, installed by its own userscript; called once per selection, with the menu closed first            |
+
+```js
+const launcher = document.createElement('button');
+launcher.type = 'button';
+launcher.hidden = true;
+launcher.dataset.mbuMenuItem = 'my-script:analyse';
+launcher.dataset.mbuMenuTitle = 'Analyse this page';
+launcher.dataset.mbuMenuIcon = 'https://example.org/my-script.png'; // optional
+launcher.addEventListener('click', () => {
+    // Your script launches here. Read the current path, not a captured page ID.
+    analysePage(location.pathname + location.search);
+});
+document.documentElement.append(launcher);
+
+// Change the label or availability in place; remove to unregister.
+launcher.dataset.mbuMenuTitle = 'Analyse tracks';
+launcher.disabled = false;
+// launcher.remove();
+```
+
+Registration works before or after Event Horizon starts. Attribute changes, disable/enable, removal, redraws and pinned-header moves are observed. Add the source button directly under `<html>` so it survives body swaps. It stays the same element and keeps its listener; do not bind a handler to the projected copy. The launcher receives a synthetic click, so code requiring a trusted browser event must use its own interaction.
+
+Each registration is available in every header with an action row until disabled or removed. The registering script owns page support: observe `data-mbu-page` ([the page shown](#the-page-shown)) and enable, disable or replace its registration when the current page changes. Do not scrape the hidden native body after EH navigation. A menu item runs the launcher only; it does not implicitly toggle EH, reload a page, or appear in the command palette. A native-page tool such as SAED owns its handoff and any restart after a reload. The protocol has no SAED-specific detection.
+
+For temporary keyboard and corner suppression, see [interoperability](../../DEVELOP.md#interoperability).
+
 ## The header's tag editor
 
 While the pencil's editor is open, every redraw fires `mbu-tags-edit` on `document` with `{path, box}`: the entity's path and the editor's element. Closing fires it with `box: null`. An `mbu-tags-add` event with `{names}` upvotes those tags through the editor; names sent before its tags load wait, as typed ones do. Fuzzy Logic uses both: a button under the box opens its window, whose votes go through the editor. Anything placed there must sit outside the box, since each redraw replaces the box's contents.

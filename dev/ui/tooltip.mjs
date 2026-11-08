@@ -378,6 +378,8 @@ function mbuTipEl() {
 // what to show for the element under the pointer: the nearest of this copy's registrations,
 // and — for the copy that leads — data-tip, or a title inside one of our containers
 function mbuTipFind(node) {
+    var target = node && (node.nodeType === 1 ? node : node.parentElement);
+    if (target && target.closest('[data-mbu-foreign]')) return null;
     var _mbuTip = mbuTipS();
     var tip = document.getElementById('mbu-tip');
     for (var el = node && node.nodeType === 1 ? node : node && node.parentElement; el && el !== document.documentElement; el = el.parentElement) {
