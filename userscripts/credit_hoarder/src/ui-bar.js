@@ -2378,6 +2378,15 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         /* MB's margins on labels, selects and buttons pushed the row's content up, leaving more room below */
         .discogs-bar-row1 > *, .discogs-bar-row1 > * > :is(label, select, button, input, span, img) { margin-top: 0 !important; margin-bottom: 0 !important; }
         .discogs-bar-row2:empty { display: none; }
+        /* a phone: the bar is one row that swipes left and right, like Group Therapy's toolbar */
+        @media (max-width: 700px) {
+            .discogs-bar-row1, .discogs-bar-opts { flex-wrap: nowrap; }
+            .discogs-bar-row1 { overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+            .discogs-bar-row1::-webkit-scrollbar { display: none; }
+            .discogs-bar-row1 > *, .discogs-bar-opts > * { flex: none !important; white-space: nowrap; }
+            .ch-review-hd { flex-wrap: wrap; }
+            .ch-review-panel { padding: 0.6rem !important; }
+        }
         /* review table: flat ✕ that clears a row's MB pick */
         .discogs-clear-btn { margin-left: auto; flex: 0 0 auto; font-size: 0.85rem; line-height: 1; padding: 0.15rem 0.35rem; cursor: pointer; color: var(--mbu-text-weak); background: none !important; border: none; border-radius: var(--mbu-radius); }
         .discogs-clear-btn:hover { color: var(--mbu-error); background: var(--mbu-bg-hover) !important; }

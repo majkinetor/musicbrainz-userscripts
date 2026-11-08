@@ -403,6 +403,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
         // ── Panel shell ────────────────────────────────────────────────────────
         const panel = document.createElement('div');
+        panel.className = 'ch-review-panel';
         panel.style.cssText = 'border:2px solid var(--mbu-warn);border-radius:0.5rem;background:var(--mbu-bg);padding:1rem 1.5rem;margin:0.5rem 0;';
         // Hover-highlight (issue #63) lives in `src/hover-highlight.js` and
         // installs once at script load, scoped to the whole page — see that
@@ -418,6 +419,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         }
 
         const heading = document.createElement('div');
+        heading.className = 'ch-review-hd';
         heading.style.cssText = 'display:flex;align-items:center;gap:0.6rem;margin:0 0 0.5rem;padding:0.4rem 0.6rem;border-radius:0.3rem;background:var(--mbu-warn-bg);border:1px solid var(--mbu-warn);';
         // Refresh button on the LEFT side of the heading (#77 follow-up)
         // so the action lives on the same edge as the rest of the
@@ -447,7 +449,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             heading.appendChild(refreshBtn);
         }
         const headingText = document.createElement('span');
-        headingText.style.cssText = 'font-weight:bold;font-size:1rem;color:var(--mbu-warn);flex:1;';
+        headingText.style.cssText = 'font-weight:bold;font-size:1rem;color:var(--mbu-warn);flex:1 1 auto;min-width:max-content;';
         headingText.textContent = `Review — ${allResults.length} entit${allResults.length === 1 ? 'y' : 'ies'}`;
         heading.appendChild(headingText);
         heading.appendChild(buildCutoffChip());   // #771
