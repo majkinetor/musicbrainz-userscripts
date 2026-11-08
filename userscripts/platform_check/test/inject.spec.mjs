@@ -79,7 +79,7 @@ const state = page => page.evaluate(rel => ({
   submits: window.__submits,
   closeMarker: sessionStorage.getItem('pc:autocommit-close'),
   queued: JSON.parse(localStorage.getItem('pc:pending:' + rel) || 'null'),
-  banner: (document.documentElement.innerText.match(/Platform Check:[^\n]*/) || [null])[0],
+  banner: (document.documentElement.innerText.match(/Platform Check:[^\n]*/g) || []).join(' | ') || null,   // every notice: the inline summary (2cf57e95) can come before the banner
 }), REL);
 const said = (run, re) => run.console.find(l => re.test(l)) || null;
 

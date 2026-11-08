@@ -20,7 +20,7 @@ test('#642: six in-MB markers to choose from, and a stored glow becomes the ring
   const read = () => page.evaluate(sel => {
     const el = document.querySelector(sel), cs = getComputedStyle(el), af = getComputedStyle(el, '::after');
     const box = el.getBoundingClientRect(), row = el.closest('.pc-row').getBoundingClientRect();
-    return { border: cs.borderTopStyle, bw: cs.borderTopWidth, pad: cs.paddingTop, outline: cs.outlineStyle, radius: cs.borderTopLeftRadius, rowBg: getComputedStyle(el.closest('.pc-row')).backgroundColor, after: af.content, afterW: af.width, afterH: af.height, w: box.width, inRow: box.top >= row.top - 0.5 && box.bottom <= row.bottom + 0.5 };
+    return { border: cs.borderTopStyle, bw: cs.borderTopWidth, pad: cs.paddingTop, outline: cs.outlineStyle, radius: cs.borderTopLeftRadius, rowBg: getComputedStyle(el.closest('.pc-row'), '::before').backgroundColor, after: af.content, afterW: af.width, afterH: af.height, w: box.width, inRow: box.top >= row.top - 0.5 && box.bottom <= row.bottom + 0.5 };
   }, ico);
   const want = {
     circle: r => r.border === 'solid' && r.outline === 'none',
