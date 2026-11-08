@@ -114,9 +114,9 @@ export function pageInit(cfg) {
     else if (rt === 'blob') response = new Blob([r.bytes], { type: (r.headers.match(/^content-type:\s*(.+)$/im) || [])[1] || '' });
     return { status: r.status, statusText: r.statusText, responseText: r.text, response, responseHeaders: r.headers, finalUrl: r.url, readyState: 4 };
   };
-  const viaFetch = async (opts, method) => {
+  const viaFetch = async (opts, method, f = origFetch) => {
     const same = new URL(opts.url, location.href).origin === location.origin;
-    const r = await origFetch(opts.url, { method, headers: opts.headers || {}, body: opts.data, redirect: 'follow', credentials: same ? 'include' : 'omit' });
+    const r = await f(opts.url, { method, headers: opts.headers || {}, body: opts.data, redirect: 'follow', credentials: same ? 'include' : 'omit' });
     const bytes = new Uint8Array(await r.arrayBuffer());
     return { status: r.status, statusText: r.statusText, url: r.url, headers: [...r.headers].map(([k, v]) => k + ': ' + v).join('\r\n'), bytes, text: new TextDecoder().decode(bytes) };
   };
@@ -129,8 +129,18 @@ export function pageInit(cfg) {
   // goes through the page's fetch in every mode, 'none' included, as it did before: so page
   // routes (replayWs, a spec's own) answer it and page.on('request') still counts it. The
   // User-Agent stays behind: a page fetch can't set it, and cross-origin it would ask a preflight.
+  // It is the page's fetch at call time, not the one the guard found: a spec that stubs window.fetch
+  // (Fusion 529's 503, 581's answers) still answers it, as it did before #932.
   const mbApi = url => { try { const u = new URL(url, location.href); return /(^|\.)musicbrainz\.org$/.test(u.hostname) && /^\/ws\//.test(u.pathname); } catch (e) { return false; } };
   const noUa = opts => { const h = {}; for (const [k, v] of Object.entries(opts.headers || {})) if (!/^user-agent$/i.test(k)) h[k] = v; return { ...opts, headers: h }; };
+  // answerGm() handlers answer it first, as they did when every GM call went through Node
+  const viaAnswer = async (opts, method) => {
+    if (!window.__harnessGmAsk) return null;
+    const r = await window.__harnessGmAsk({ url: new URL(opts.url, location.href).href, method, headers: opts.headers || {}, data: typeof opts.data === 'string' ? opts.data : null });
+    if (!r) return null;
+    const bytes = Uint8Array.from(atob(r.b64), c => c.charCodeAt(0));
+    return { ...r, bytes, text: new TextDecoder().decode(bytes) };
+  };
   window.GM_xmlhttpRequest = (opts) => {
     const method = opts.method || 'GET';
     const api = mbApi(opts.url);
@@ -140,7 +150,7 @@ export function pageInit(cfg) {
         if (refuse(method, opts.url, 'GM_xmlhttpRequest')) throw refusal();
         // a FormData or Blob body can't cross into Node: those go through the page
         const node = !api && cfg.gm.xhr !== 'fetch' && (opts.data == null || typeof opts.data === 'string');
-        const res = response(opts, node ? await viaNode(opts, method) : await viaFetch(api ? noUa(opts) : opts, method));
+        const res = response(opts, node ? await viaNode(opts, method) : await (api ? (await viaAnswer(opts, method)) || await viaFetch(noUa(opts), method, (...a) => window.fetch(...a)) : viaFetch(opts, method)));
         opts.onload && opts.onload(res);
         opts.onloadend && opts.onloadend(res);
       } catch (e) {
@@ -161,6 +171,18 @@ export async function installProdGuard(ctx, { allow = [], gm = null, onRefused =
   await ctx.exposeBinding('__harnessProdWrite', (_src, w) => onRefused(w));
   // a namespace for gm.persist: 'tabs', one per context
   if (gm) gm = { ...gm, run: Date.now().toString(36) + Math.random().toString(36).slice(2, 6) };
+  // page routes don't see a request made from Node; answerGm() and replayWs() register
+  // here: ({ url, method, headers, data }) => { status, body, headers? } or nothing.
+  // The latest registration is asked first, as page routes are.
+  const ask = async o => {
+    for (const answer of [...(ctx.__harnessGmAnswers || [])].reverse()) {
+      const a = await answer({ ...o, method: String(o.method).toUpperCase() });
+      if (a) return { status: a.status || 200, statusText: a.statusText || '', url: a.url || o.url, headers: a.headers || 'content-type: application/json', b64: Buffer.from(a.body == null ? '' : a.body).toString('base64') };
+    }
+    return null;
+  };
+  // MusicBrainz's API goes through the page's fetch (pageInit), but answerGm() still answers it
+  if (gm) await ctx.exposeBinding('__harnessGmAsk', (_src, o) => ask(o));
   // the GM_xmlhttpRequest bridge: the request is made by Node, through the context
   if (gm && gm.xhr !== 'fetch' && gm.xhr !== 'none') {
     await ctx.exposeBinding('__harnessGmXhr', async (_src, o) => {
@@ -168,13 +190,8 @@ export async function installProdGuard(ctx, { allow = [], gm = null, onRefused =
         onRefused({ method: o.method, url: o.url, via: 'GM_xmlhttpRequest (node)' });
         throw new Error('test harness: a write to production MusicBrainz was refused');
       }
-      // page routes don't see a request made from Node; answerGm() and replayWs() register
-      // here: ({ url, method, headers, data }) => { status, body, headers? } or nothing.
-      // The latest registration is asked first, as page routes are.
-      for (const answer of [...(ctx.__harnessGmAnswers || [])].reverse()) {
-        const a = await answer({ ...o, method: String(o.method).toUpperCase() });
-        if (a) return { status: a.status || 200, statusText: a.statusText || '', url: a.url || o.url, headers: a.headers || 'content-type: application/json', b64: Buffer.from(a.body == null ? '' : a.body).toString('base64') };
-      }
+      const a = await ask(o);
+      if (a) return a;
       const r = await ctx.request.fetch(o.url, { method: o.method, headers: withUa(o.headers), data: o.data, maxRedirects: 20, failOnStatusCode: false, timeout: o.timeout || 60000 });
       const body = await r.body();
       return { status: r.status(), statusText: r.statusText(), url: r.url(), headers: r.headersArray().map(h => h.name + ': ' + h.value).join('\r\n'), b64: body.toString('base64') };

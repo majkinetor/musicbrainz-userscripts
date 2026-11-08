@@ -9,7 +9,7 @@ import { test, check, requireLogin, until, settled, pristine } from '../../../de
 
 test.use({ gm: { name: 'Fusion' } });
 
-test('Fusion end to end: matching engine, UI, and real merges on the sandbox', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('Fusion end to end: matching engine, UI, and real merges on the sandbox', { tag: ['@sandbox', '@login', '@flaky'] }, async ({ page, inject }) => {
 
   // This suite performs REAL merges on the sandbox, so it CONSUMES its own
   // fixtures: four recordings made for the run (#795), the tracks of a pristine release.

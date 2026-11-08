@@ -48,13 +48,10 @@ test('the release backfill fills the cell as well as the tooltip', { tag: '@sand
     window.fetch = async (url) => {
       const m = String(url).match(/\/ws\/2\/recording\/([0-9a-f-]{36})/);
       const a = m && answers[m[1]];
-      return {
-        ok: true, status: 200,
-        headers: { get: () => null },
-        json: async () => a
-          ? { id: m[1], title: 'Maratona', video: a.video, releases: a.releases.map(r => ({ id: r.gid, title: r.title, date: r.date, media: [{ track: [{ number: r.trackNumber }], 'track-count': r.trackCount }] })) }
-          : { id: 'x', releases: [] },
-      };
+      // a real Response: the ws/2 call reaches it through GM_xmlhttpRequest (#932), which reads the bytes
+      return new Response(JSON.stringify(a
+        ? { id: m[1], title: 'Maratona', video: a.video, releases: a.releases.map(r => ({ id: r.gid, title: r.title, date: r.date, media: [{ track: [{ number: r.trackNumber }], 'track-count': r.trackCount }] })) }
+        : { id: 'x', releases: [] }), { status: 200, headers: { 'content-type': 'application/json' } });
     };
     await F.enrichAllReleases([missed, seeded], 2);
     window.fetch = realWsGet;
