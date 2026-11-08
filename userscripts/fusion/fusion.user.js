@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.124000
+// @version      2026.11.08.133000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -4200,6 +4200,11 @@ function fsStyle() {
         + '.fs-pooltog{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:2px 5px;border-radius:3px;cursor:pointer;color:var(--mbu-info);font-size:12px;line-height:1;flex-shrink:0}'
         + '.fs-pooltog:hover{background:rgba(0,0,0,.05);color:var(--fs-muted)}'
         + '.fs-groups{flex:1;background:var(--fs-panel)}'
+        // a phone: the pool sits above the groups and folds to a one-line bar; the groups scroll sideways
+        + '@media (max-width:700px){.fs-body{flex-direction:column}.fs-pool{width:auto;flex:0 1 45%;border-right:0;border-bottom:1px solid var(--fs-border)}'
+        + '.fs-colhdr{flex-wrap:wrap;row-gap:6px}.fs-poolfilter{max-width:none;flex:1 1 90px}.fs-poolsort{flex-wrap:wrap}'
+        + '.fs-poolrail{flex-direction:row;width:auto;padding:6px 12px;border-right:0;border-bottom:1px solid var(--fs-border)}.fs-raillabel{writing-mode:horizontal-tb}.fs-railarrow{transform:rotate(90deg)}'
+        + '.fs-body.fs-poolhidden.fs-peek .fs-pool{display:none}.fs-groups{flex:1 1 55%;min-height:0}#fs-groups-body,#fs-em-body .fs-groups>.fs-colbody{overflow-x:auto}}'
         + '.fs-colhdr{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid var(--fs-border);font-weight:700;font-size:12px;letter-spacing:.3px;color:var(--fs-muted);text-transform:uppercase;background:var(--fs-panel2)}'
         + '.fs-cnt{background:var(--fs-panel);border:1px solid var(--fs-border);border-radius:var(--mbu-radius-lg);padding:1px 7px;color:var(--fs-text);font-weight:600}'
         + '.fs-hint{text-transform:none;font-weight:400;color:var(--fs-muted)}'
