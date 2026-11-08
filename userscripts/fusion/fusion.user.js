@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.193000
+// @version      2026.11.08.203000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -6700,7 +6700,9 @@ function boot() {
 document.addEventListener('mbu-open-settings', e => { if (e.detail === 'fusion' && !e.defaultPrevented) { e.preventDefault(); fsStyle(); const fsS = document.getElementById('fs-settings'); if (fsS) fsS.remove(); else openSettings(null); } });
 if (SETTINGS_ONLY) { fsStyle(); const fsS = document.getElementById('fs-settings'); if (fsS) fsS.remove(); else openSettings(null); return; }
 boot();
-new MutationObserver(() => { closeFusion(); document.getElementById('fs-em-overlay')?.remove(); document.getElementById('fs-addmenu')?.remove(); refreshFsMax(); ensureLauncher(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-page'] });
+// Event Horizon writes <html data-mbu-page> on every redraw, the same page included: only a new value is a new page
+const pageMoved = muts => muts.some(m => m.oldValue !== document.documentElement.getAttribute('data-mbu-page'));
+new MutationObserver(muts => { if (!pageMoved(muts)) return; closeFusion(); document.getElementById('fs-em-overlay')?.remove(); document.getElementById('fs-addmenu')?.remove(); refreshFsMax(); ensureLauncher(); }).observe(document.documentElement, { attributes: true, attributeOldValue: true, attributeFilter: ['data-mbu-page'] });
 
 /* ── Mission Control adapter (#680) ──────────────────────────────────────────
    Mission Control asks over document events with JSON-string details (see
@@ -6728,11 +6730,12 @@ new MutationObserver(() => { closeFusion(); document.getElementById('fs-em-overl
     let mcByGid = new Map();    // the release group's recordings, from the last probe
     const rgOfPage = () => { const a = document.querySelector('.releaseheader a[href*="/release-group/"]'); return a ? (a.getAttribute('href').match(/[0-9a-f-]{36}/) || [])[0] : null; };
     const parse = (e, what) => { if (SCOPE?.type !== 'release') return null; try { return JSON.parse(e.detail) || {}; } catch (x) { Log.warn('Mission Control ' + what + ' with unreadable detail: ' + x.message); return null; } };
-    new MutationObserver(() => {
+    new MutationObserver(muts => {
+        if (!pageMoved(muts)) return;   // a redraw of the same page keeps the probe's groups (MC's track cards read them)
         SCOPE = detectScope();
         mcGroups.clear(); mcOwn = []; mcByGid.clear(); mcCards.clear();
         mcHello();
-    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-page'] });
+    }).observe(document.documentElement, { attributes: true, attributeOldValue: true, attributeFilter: ['data-mbu-page'] });
     // the recordings the window knows are the ones its card, merge and AcoustID refresh read (STATE.recordings)
     const membersOf = hit => hit.g.memberGids.map(x => STATE.recordings.get(x) || hit.byGid.get(x)).filter(Boolean);
     const mcKnow = hit => hit.g.memberGids.forEach(gid => { if (!STATE.recordings.has(gid) && hit.byGid.has(gid)) STATE.recordings.set(gid, hit.byGid.get(gid)); });
