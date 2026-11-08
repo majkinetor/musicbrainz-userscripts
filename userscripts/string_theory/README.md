@@ -31,6 +31,7 @@
 | [Falcon](../falcon)                   | Batch import entity fields from Harmony or by hand                          |
 | [First Contact](../first_contact)     | Import a release from a platform's album page                               |
 | [Fusion](../fusion)                   | Find and merge duplicate recordings from one window                         |
+| [Fuzzy Logic](../fuzzy_logic)         | Vote on genres collected from linked pages, all in one batch                |
 | [Group Therapy](../group_therapy)     | Batch operations and various helpers for editing relationships              |
 | [ISRC Scout](../isrc_scout)           | Fill in a release's missing ISRCs and streaming links                       |
 | [Mammoth](../mammoth)                 | Reusable edit notes on every edit form, and remembered field values         |

@@ -33,6 +33,9 @@ Import a release from a platform's album page. This one alone replaces tens of o
 [Fusion](./userscripts/fusion/README.md) <img src="./userscripts/fusion/icon.svg" align="left" width="32"><br>
 Cold fusion for duplicate recordings: find them, merge them, all from one window.
 
+[Fuzzy Logic](./userscripts/fuzzy_logic/README.md) <img src="./userscripts/fuzzy_logic/icon.svg" align="left" width="32"><br>
+Everyone has an opinion on genre: collect them from linked pages and cast yours in one batch.
+
 [Group Therapy](./userscripts/group_therapy/README.md) <img src="./userscripts/group_therapy/icon.svg" align="left" width="32"><br>
 Therapy for messy relationships: delete, copy, move and re-date credits in bulk, and turn liner notes into relationships.
 
