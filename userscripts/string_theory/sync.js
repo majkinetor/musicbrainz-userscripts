@@ -237,15 +237,17 @@ function stSyncError(e, provider) {
   // Never show a provider response body: it may contain tokens or copied credentials.
   return status ? name + ' request failed (HTTP ' + status + ')' : e && e.message || 'Sync failed';
 }
-async function stSyncConnect() {
+async function stSyncConnect(provider, redirectHere) {
   if (stSyncBusy) return;
-  var provider = stSyncProvider(), authorizer = stSyncAuthorizer(false, provider);
+  provider = provider || stSyncProvider();
+  var authorizer = stSyncAuthorizer(false, provider);
   var url = await authorizer.buildAuthUrl();
   // The callback runs in the same userscript namespace, including when this tab was reloaded.
   var pending = { provider: provider, state: authorizer.session.state, codeVerifier: authorizer.session.codeVerifier, at: Date.now() };
   GM_setValue('string_theory.sync.oauth', pending);
   stSyncAuthPending = { provider: provider, state: pending.state, at: pending.at };
-  if (typeof GM_openInTab === 'function') GM_openInTab(url, { active: true, insert: true });
+  if (redirectHere) location.assign(url);
+  else if (typeof GM_openInTab === 'function') GM_openInTab(url, { active: true, insert: true });
   else window.open(url, '_blank', 'noopener');
   stSyncPaint();
 }
@@ -279,6 +281,12 @@ function stSyncListenAuth() {
   var pending = GM_getValue('string_theory.sync.oauth');
   if (pending && Date.now() - pending.at <= 10 * 60e3) stSyncAuthPending = { provider: pending.provider || 'dropbox', state: pending.state, at: pending.at };
   if (typeof GM_addValueChangeListener !== 'function') return;
+  // A retry from the callback tab replaces the attempt the settings tab was watching.
+  GM_addValueChangeListener('string_theory.sync.oauth', function (key, old, next) {
+    if (!next || Date.now() - next.at > 10 * 60e3) return;
+    stSyncAuthPending = { provider: next.provider || 'dropbox', state: next.state, at: next.at };
+    stSyncPaint();
+  });
   GM_addValueChangeListener('string_theory.sync.oauth.result', function (key, old, result) {
     if (!result || !stSyncAuthPending || result.state !== stSyncAuthPending.state) return;
     stSyncAuthPending = null;
@@ -291,8 +299,8 @@ async function stSyncCallback() {
   // Scrub the single-use authorization code before the rest of MusicBrainz draws its links.
   var url = location.href, state = new URL(url).searchParams.get('state'), provider = new URL(url).searchParams.has('st-google') ? 'google' : 'dropbox';
   history.replaceState(null, '', provider === 'google' ? ST_GOOGLE_REDIRECT : ST_DROPBOX_REDIRECT);
-  var message;
-  try { await stSyncFinish(url); message = 'Connected to ' + stSyncName(provider) + '. You can close this tab.'; }
+  var message, connected = false;
+  try { await stSyncFinish(url); connected = true; message = 'Connected to ' + stSyncName(provider) + '. You can close this tab.'; }
   catch (e) {
     message = stSyncError(e, provider);
     var pending = GM_getValue('string_theory.sync.oauth');
@@ -307,7 +315,15 @@ async function stSyncCallback() {
     var h = document.createElement('h1'); h.textContent = 'String Theory';
     var p = document.createElement('p'); p.textContent = message;
     box.append(h, p); document.body.replaceChildren(box);
-    if (message.indexOf('Connected') === 0) window.close();
+    if (connected) { window.close(); return; }
+    var retry = document.createElement('button'); retry.type = 'button'; retry.textContent = 'Try again';
+    retry.style.cssText = 'font:inherit;color:inherit;background:none;border:0;padding:0;text-decoration:underline;cursor:pointer';
+    retry.onclick = async function () {
+      retry.disabled = true;
+      try { await stSyncConnect(provider, true); }
+      catch (e) { p.textContent = stSyncError(e, provider); retry.disabled = false; }
+    };
+    box.append(retry);
   }
   if (document.body) show(); else document.addEventListener('DOMContentLoaded', show, { once: true });
 }
