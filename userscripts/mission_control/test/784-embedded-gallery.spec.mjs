@@ -36,7 +36,7 @@ test('#784: the gallery shows in the card, scrolls with it and goes full screen'
   const g = await until(geo, v => v.op === '1' && v.frame.join() === v.slot.join());
   console.log(JSON.stringify(g));
   check(g.op === '1' && g.frame.join() === g.slot.join() && g.slot[3] > 150, `the frame lies over the slot, the slot as tall as the gallery (${JSON.stringify(g)})`);
-  const inFrame = await fr.evaluate(() => ({ embed: document.documentElement.classList.contains('as-embed'), header: !!(document.querySelector('.header, #header') || {}).offsetParent, more: document.querySelectorAll('.as-sec-more + .as-grid .as-card').length }));
+  const inFrame = await fr.evaluate(() => ({ embed: document.documentElement.classList.contains('as-embed'), header: !!(document.querySelector('.header, #header') || {}).offsetParent, more: document.querySelectorAll('.as-sec-more + .as-sec-hint + .as-grid .as-card').length }));
   check(inFrame.embed && !inFrame.header && inFrame.more > 0, `the gallery alone, the store's other images left out in it (${JSON.stringify(inFrame)})`);
   // the whole gallery fits the frame: the last cards and the type pills hanging below them; the take-in button clear of NEW
   const fit = await until(() => fr.evaluate(() => {
@@ -58,7 +58,7 @@ test('#784: the gallery shows in the card, scrolls with it and goes full screen'
   // left out, with no take in and no type
   await until(() => fr.evaluate(() => !!document.querySelector('.as-more-all:not([disabled])')));
   const all = await fr.evaluate(async () => {
-    const more = () => [...document.querySelectorAll('.as-sec-more + .as-grid .as-card')];
+    const more = () => [...document.querySelectorAll('.as-sec-more + .as-sec-hint + .as-grid .as-card')];
     const b = document.querySelector('.as-more-all:not([disabled])'), p = b && b.dataset.prov;
     const n = more().filter(c => !c.querySelector('.as-mcdup')).length;
     b.click();

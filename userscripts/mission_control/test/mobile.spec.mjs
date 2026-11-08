@@ -50,7 +50,8 @@ test('MC fits a phone screen', { tag: ['@sandbox', '@cosmetic'] }, async ({ page
   });
   console.log(JSON.stringify(r));
   check(r.lanes.length && r.lanes.every(([w, h]) => h < 40 && w > 100), `a lane's platform icons sit on one line (${JSON.stringify(r.lanes)})`);
-  check(r.ttl > 200, `the release title has room (${r.ttl}px)`);
+  // the release row also holds Execute since c59fbd7a: on a 360px screen the title gets what the icons leave
+  check(r.ttl > 175, `the release title has room (${r.ttl}px)`);
   await page.evaluate(() => document.querySelector('#mc-root [data-card="pc"]').scrollIntoView());
   check(r.out.length === 0, `nothing in the header or the cards sticks out of the screen (${r.out.slice(0, 8).join(' · ')})`);
   check(r.root[1] <= r.vv[1] + 1 && r.root[2] <= r.vv[2] + 1, `MC is the screen's size (${r.root} on ${r.vv})`);
