@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.132748
+// @version      2026.11.08.135213
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -16109,6 +16109,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       form.before(bar);
     }
     rgTrackForm(form);
+    if (!form._tcSaveWatch) {   // #412 on an entity page: MB posts a plain form, so pulse the bar from its submit until the next page loads
+      form._tcSaveWatch = true;
+      form.addEventListener('submit', e => setTimeout(() => { if (!e.defaultPrevented) document.body.classList.add('tc-saving'); }));
+      window.addEventListener('pageshow', () => document.body.classList.remove('tc-saving'));   // back from the next page (bfcache)
+    }
     const t = document.getElementById('tc-nav-title'), name = (document.getElementById('id-edit-' + ENT_KIND + '.name') || {}).value || '';
     const sig = name + '\x01' + rgKey();
     if (t && t.dataset.sig !== sig) {
@@ -16124,6 +16129,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (_rgStyled) return; _rgStyled = true;
     const s = document.createElement('style'); s.id = 'tc-rg-style';
     s.textContent = `
+    @keyframes tc-saving-pulse{0%,100%{box-shadow:inset 0 0 0 9999px rgba(28,111,214,0)}50%{box-shadow:inset 0 0 0 9999px rgba(28,111,214,.18)}}
+    body.tc-saving #tc-nav-bar{animation:tc-saving-pulse 1.1s ease-in-out infinite}
     body:not(.tc-ri-on) form.tc-ent-form .tc-rg-arttbl{display:none!important}
     body.tc-ri-on form.tc-ent-form:not(.tc-ent-plain) #artist-credit-editor{display:none!important}
     body.tc-ri-on p:has(> a[href*="/doc/"]):has(~ form.tc-ent-plain){display:none!important}
