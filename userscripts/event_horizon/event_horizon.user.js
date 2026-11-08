@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08.120100
+// @version      2026.11.08.120200
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4109,12 +4109,23 @@ async function wsText(path, bg) {
     fetchLog('ws/2 ' + path, t0, r);
     if (!r) throw new Error('cancelled');
     if (r.status === 404) throw new Error('MusicBrainz has no such ' + path.split('/')[0].replace('-', ' ') + '.');
-    if (!r.ok) throw new Error('MusicBrainz answered ' + r.status + '.');
+    if (!r.ok) throw Object.assign(new Error('MusicBrainz answered ' + r.status + '.'), { status: r.status });
     return r.text();
 }
 const ws = path => wsText(path).then(JSON.parse);
 // a page loader's request: drawn from its kept answer when there is one (kept)
-const wsk = path => kept('ws:' + path, bg => wsText(path, bg)).then(JSON.parse);
+const wskAs = path => kept('ws:' + path, bg => wsText(path, bg)).then(JSON.parse);
+// Your own votes ride along an entity's lookup (user-tags, user-genres: no request of their own) once you're known to be
+// signed in: eh.in, from the last start(), since the page's first lookup goes before MusicBrainz's header is read. Signed out
+// they answer 401, and the lookup goes again without them. MINE: the names you voted for, by type/mbid, for Fuzzy Logic
+const MINE = new Map(), OWN_INC = '+user-tags+user-genres';
+let ehIn = false; try { ehIn = localStorage.getItem('eh.in') === '1'; } catch (e) { /* storage blocked */ }
+const wsk = path => {
+    const m = ehIn && path.match(/^([a-z-]+)\/([0-9a-f-]{36})\?inc=[^&]*\bgenres\b/);
+    if (!m) return wskAs(path);
+    return wskAs(path + OWN_INC).then(j => { MINE.set(m[1] + '/' + m[2], new Set([...(j['user-tags'] || []), ...(j['user-genres'] || [])].map(t => String(t.name).trim().toLowerCase()))); return j; },
+        e => { if (e.status !== 401) throw e; ehIn = false; try { localStorage.removeItem('eh.in'); } catch (x) { /* storage blocked */ } return wskAs(path); });
+};
 
 // Kept answers (#847): every answer the page loaders get (API, Wikipedia extract, MusicBrainz's tabs, covers) is kept, in
 // memory for the tab and in IndexedDB across tabs, so the next visit draws at once. Once a page is all in, each kept answer
@@ -4572,6 +4583,12 @@ function heroFacts(app) {
     if (k && id) {
         const pc = PICARD_OPEN[pm[1]];
         k.outerHTML = `<button type="button" class="kmk" data-copy="${id}" data-copylabel="the MBID"${pc ? ` data-picard="${pc}?id=${id}"` : ''} ${pc ? '' : ` data-tip="Copy the MBID&#10;${id}"`} aria-label="Copy the MBID">${k.outerHTML}</button>`;
+    }
+    // your own votes, marked for Fuzzy Logic (data-eh-mine, newline-separated; absent when not known), and told it
+    if (id) {
+        const ek = pm[1].toLowerCase() + '/' + id, mine = MINE.get(ek);
+        h.dataset.ehPath = '/' + ek; if (mine) h.dataset.ehMine = [...mine].join('\n'); else delete h.dataset.ehMine;
+        document.dispatchEvent(new CustomEvent('mbu-tags-mine', { detail: { path: '/' + ek, names: mine ? [...mine] : null } }));
     }
     const u = h.querySelector('.art .under'); if (!u) return;
     // the rating is one more fact, before the aliases and the full-width rows; the tags go last, before the links
@@ -5153,7 +5170,7 @@ async function tgInSend(names, v) {
     } catch (e) { LOG.err('Tagging failed: ' + e.message); toast('Tagging failed: ' + e.message); }
     if (tgIn === d) tgInDraw(true);
 }
-function tgInClose() { const dirty = tgIn && tgIn.dirty && tgIn.t.tags; tgIn = null; tgInTell(null); if (dirty && data && data.g) { const ts = dirty.filter(t => t.c > 0); data.g.genres = ts.filter(t => t.g).map(t => t.n); data.g.tags = ts.filter(t => !t.g).map(t => t.n); } render(); }
+function tgInClose() { const dirty = tgIn && tgIn.dirty && tgIn.t.tags; if (dirty) MINE.set(tgIn.path.slice(1), new Set(dirty.filter(t => t.v > 0).map(t => t.n.toLowerCase()))); tgIn = null; tgInTell(null); if (dirty && data && data.g) { const ts = dirty.filter(t => t.c > 0); data.g.genres = ts.filter(t => t.g).map(t => t.n); data.g.tags = ts.filter(t => !t.g).map(t => t.n); } render(); }
 function tgInWire() {
     if (tgInWired) return; tgInWired = true;
     // Fuzzy Logic voted itself (the editor shut): show its tags in the header without a reload, and drop the kept answers
@@ -12172,6 +12189,7 @@ function start() {
     // the signed-in editor, off MusicBrainz's header: the home page's own links go to their pages
     const ua = mbBody.querySelector('.header a[href*="/user/"], header a[href*="/user/"]');
     if (ua) ME = decodeURIComponent(ua.getAttribute('href').split('/user/')[1].split('/')[0]);
+    ehIn = !!ME; try { if (ME) localStorage.setItem('eh.in', '1'); else localStorage.removeItem('eh.in'); } catch (e) { /* storage blocked */ }
     launcher();
     // Mission Control opening on a release it just consolidated (its mc.after note) needs MusicBrainz's page
     let off = false; try { off = !!sessionStorage.getItem('eh-off'); sessionStorage.removeItem('eh-off'); } catch (e) {}
