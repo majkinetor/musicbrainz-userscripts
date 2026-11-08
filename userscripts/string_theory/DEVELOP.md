@@ -40,7 +40,7 @@ The settings title bar uses `mbuCfgHeader`, retaining its icon, name, version an
 
 ## Idle appearance
 
-[`themes/runtime.js`](themes/runtime.js) stores `{ on, minutes, theme, effect }` in `string_theory.theme.idle`. Theme values are `variant:name`; an empty theme or effect keeps the current one, and effect `-` means none. A top-frame timer resets on pointer, keyboard, touch and scroll activity, focus and return to a visible tab. Idle theme changes are temporary; normal theme scheduling and effect mapping remain active underneath. Theme previews take priority.
+[`themes/runtime.js`](themes/runtime.js) stores `{ on, minutes, theme, effect }` in `string_theory.theme.idle`. Themes are stored by name and always use the normal mode's current variant; older `variant:name` values are read as names. An empty theme or effect keeps the current one, effect `-` means none, and `*` means Random. Random choices are resolved in memory once per idle period; a light/dark transition during idle picks a new random theme in that variant. Effects draw from the published preset names. A top-frame timer resets on pointer, keyboard, touch and scroll activity, focus and return to a visible tab. Idle theme changes are temporary; normal theme scheduling and effect mapping remain active underneath. Theme previews take priority.
 
 `data-st-eh-fx-idle` asks Event Horizon to display a temporary preset even outside its supported entity pages. Removing it restores the exact prior effect, including unsaved changes, even if the idle preset matches the normal theme's mapping. Event Horizon excludes the idle values from any concurrent settings save. No network requests are added.
 

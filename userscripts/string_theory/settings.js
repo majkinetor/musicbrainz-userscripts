@@ -338,9 +338,9 @@ function stSettings(tab) {
       + '<h3 class="st-h">Idle</h3>'
       + '<div class="st-row">' + seg('st-idle-on', 'Idle', [['on', 'On'], ['off', 'Off']])
       + '<label class="st-lbl" for="st-idle-minutes">After (minutes)</label><input id="st-idle-minutes" type="number" min="1" max="1440" step="1"></div>'
-      + '<div class="st-row"><label class="st-lbl" for="st-idle-theme">Idle theme</label><select id="st-idle-theme"><option value="">Current theme</option>'
-      + ['light', 'dark'].map(function (v) { return '<optgroup label="' + (v === 'light' ? 'Light' : 'Dark') + '">' + __stTheme.names(v).map(function (n) { return '<option value="' + stEsc(v + ':' + n) + '">' + stEsc(n) + '</option>'; }).join('') + '</optgroup>'; }).join('') + '</select>'
-      + (ehFx.length ? '<label class="st-lbl" for="st-idle-effect">Idle effect</label><select id="st-idle-effect"><option value="">Current effect</option><option value="-">No effect</option>' + ehFx.map(function (n) { return '<option>' + stEsc(n) + '</option>'; }).join('') + '</select>' : '') + '</div>'
+      + '<div class="st-row"><label class="st-lbl" for="st-idle-theme">Idle theme</label><select id="st-idle-theme"><option value="">Current theme</option><option value="*">Random</option>'
+      + __stTheme.names().map(function (n) { return '<option>' + stEsc(n) + '</option>'; }).join('') + '</select>'
+      + (ehFx.length ? '<label class="st-lbl" for="st-idle-effect">Idle effect</label><select id="st-idle-effect"><option value="">Current effect</option><option value="*">Random</option><option value="-">No effect</option>' + ehFx.map(function (n) { return '<option>' + stEsc(n) + '</option>'; }).join('') + '</select>' : '') + '</div>'
       + '<h3 class="st-h" id="st-dock">Dock</h3>'
       + '<div class="st-row">' + seg('st-side', 'Side', [['left', 'Left'], ['right', 'Right']]) + seg('st-flow', 'Orientation', [['column', 'Column'], ['row', 'Row']])
       + '<span class="st-lbl">Size</span><span class="st-step"><button type="button" id="st-size-dn" aria-label="Smaller">−</button>'

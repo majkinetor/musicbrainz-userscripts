@@ -66,6 +66,8 @@ In **General → Idle**, turn **Idle** on and set **After (minutes)**. **Idle th
 
 Moving the pointer, typing, touching or scrolling restores your normal appearance. Idle choices leave your normal settings unchanged.
 
+Idle themes always follow **Mode**: the chosen theme's light or dark version appears as appropriate. **Random** picks a theme or effect each time idle begins; a random theme also follows light/dark changes while idle.
+
 ## What's new
 
 String Theory checks the project's [announcements](https://github.com/majkinetor/musicbrainz-userscripts/discussions/categories/announcements) once a day. While some are unread, its icon is golden, and clicking it opens **What's new** instead of the dock.

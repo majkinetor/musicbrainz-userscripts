@@ -7,7 +7,7 @@ var __stTheme = (function () {
   var onMb = /(^|\.)musicbrainz\.org$/.test(location.hostname);
   var style = null, wasDark = false, over = null;   // over: a theme shown but not saved (the command palette's preview)
   var sys = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
-  var idle = false, idleTimer = null;
+  var idle = false, idleTimer = null, idleChoice = null;
   // The theme chooser stays open across pages until it is closed: { only, v, n } in this tab's sessionStorage,
   // read here at document-start so the next page opens in the theme it shows, not the saved one first.
   var TC = 'st-tc';
@@ -22,8 +22,9 @@ var __stTheme = (function () {
     if (Array.isArray(fx) && v.eh && typeof v.eh === 'object') { var eh = {}; Object.keys(v.eh).forEach(function (k) { if (v.eh[k] === '-' || fx.indexOf(v.eh[k]) >= 0) eh[k] = v.eh[k]; }); v.eh = eh; }
     // light is the start: its Default is MusicBrainz untouched, so nothing changes until it's asked for
     var i = v.idle && typeof v.idle === 'object' ? v.idle : {};
-    var parts = typeof i.theme === 'string' ? i.theme.split(':') : [];
-    return { mode: MODES.indexOf(v.mode) < 0 ? 'light' : v.mode, dark: v.dark || 'Default', light: v.light || 'Default', lat: v.lat, lon: v.lon, from: v.from || '20:00', to: v.to || '07:00', eh: v.eh && typeof v.eh === 'object' ? v.eh : {}, idle: { on: i.on === true, minutes: Math.max(1, Math.min(1440, Number(i.minutes) || 5)), theme: THEMES[parts[0]] && THEMES[parts[0]][parts[1]] != null ? i.theme : '', effect: typeof i.effect === 'string' && (i.effect === '-' || !Array.isArray(fx) || fx.indexOf(i.effect) >= 0) ? i.effect : '' } };
+    // Older idle settings included a variant; only the theme name is kept now.
+    var name = typeof i.theme === 'string' ? i.theme.replace(/^(light|dark):/, '') : '';
+    return { mode: MODES.indexOf(v.mode) < 0 ? 'light' : v.mode, dark: v.dark || 'Default', light: v.light || 'Default', lat: v.lat, lon: v.lon, from: v.from || '20:00', to: v.to || '07:00', eh: v.eh && typeof v.eh === 'object' ? v.eh : {}, idle: { on: i.on === true, minutes: Math.max(1, Math.min(1440, Number(i.minutes) || 5)), theme: name === '*' || THEMES.light[name] != null || THEMES.dark[name] != null ? name : '', effect: typeof i.effect === 'string' && (i.effect === '*' || i.effect === '-' || !Array.isArray(fx) || fx.indexOf(i.effect) >= 0) ? i.effect : '' } };
   }
   function save(s) { try { GM_setValue(KEY, s); } catch (e) {} }
 
@@ -61,9 +62,10 @@ var __stTheme = (function () {
   function apply() {
     if (!onMb) return;
     var saved = read(), s = over || saved, v = variant(s);
-    if (idle && !over && saved.idle.theme) {
-      var pick = saved.idle.theme.split(':');
-      s = Object.assign({}, saved); v = pick[0]; s[v] = pick[1];
+    // A scheduled light/dark change may happen during idle; keep the random theme in that variant.
+    if (idle && saved.idle.theme === '*' && idleChoice.variant !== variant(saved)) randomTheme(saved);
+    if (idle && !over && idleChoice.theme) {
+      s = Object.assign({}, saved); s[v] = idleChoice.theme;
     }
     var css = THEMES[v][s[v]] || THEMES[v].Default;
     // Say which variant this is: a page's own background can't, Event Horizon paints over ours.
@@ -82,15 +84,31 @@ var __stTheme = (function () {
     var sv = saved, svv = variant(saved);
     attr('data-st-eh-fx', sv.eh[svv + ':' + sv[svv]]);
     attr('data-st-eh-fx-try', over ? s.eh[v + ':' + s[v]] : '');
-    attr('data-st-eh-fx-idle', idle && !over ? saved.idle.effect : '');
+    attr('data-st-eh-fx-idle', idle && !over ? idleChoice.effect : '');
     de.toggleAttribute('data-st-idle', idle && !over);
+  }
+  function randomPick(list) { return list.length ? list[Math.floor(Math.random() * list.length)] : ''; }
+  function randomTheme(s) {
+    var v = variant(s);
+    idleChoice.variant = v;
+    idleChoice.theme = randomPick(Object.keys(THEMES[v]));
+  }
+  function beginIdle() {
+    var s = read();
+    idleChoice = { theme: s.idle.theme, effect: s.idle.effect };
+    if (s.idle.theme === '*') randomTheme(s);
+    if (s.idle.effect === '*') {
+      var fx = []; try { fx = JSON.parse(localStorage.getItem('mbu.ehFxPresets')) || []; } catch (e) {}
+      idleChoice.effect = randomPick(Array.isArray(fx) ? fx : []);
+    }
+    idle = true; apply();
   }
   function activity() {
     clearTimeout(idleTimer);
-    if (idle) { idle = false; apply(); }
+    if (idle) { idle = false; idleChoice = null; apply(); }
     var s = read().idle;
     if (!onMb || window.top !== window || !s.on || (!s.theme && !s.effect)) return;
-    idleTimer = setTimeout(function () { idle = true; apply(); }, s.minutes * 60000);
+    idleTimer = setTimeout(beginIdle, s.minutes * 60000);
   }
   var tc = onMb && tcRead();
   if (tc) { over = read(); over.mode = tc.v; over[tc.v] = tc.n; if (tc.eh && typeof tc.eh === 'object') over.eh = tc.eh; }
@@ -118,7 +136,7 @@ var __stTheme = (function () {
   }
   return {
     read: read, set: set, preview: preview, variant: function () { return variant(read()); }, isDay: isDay, isDarkAt: isDarkAt,
-    names: function (v) { return Object.keys(THEMES[v]); },
+    names: function (v) { return v ? Object.keys(THEMES[v]) : Object.keys(Object.assign({}, THEMES.light, THEMES.dark)).sort(); },
     chooser: tcRead, chooserPut: tcPut,
     // the location mode asks the browser where we are, once, and keeps it coarse
     setMode: function (mode, done) {
