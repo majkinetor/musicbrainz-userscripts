@@ -232,3 +232,10 @@ test('accepted feature notes survive replacing an old aggregate capability',()=>
  assert.equal(entry.verdict,'Partial overlap');assert.equal(entry.acceptedReview,null);assert.equal(entry.acceptedNotes.length,2);
  assert.match(entry.acceptedNotes[1].text,/Old workflow — Note: Trivial feature/);assert.equal(entry.features.length,1);
 });
+
+test('the same note accepted from two submissions shows once, at the latest',()=>{
+ const author={id:'one',login:'reviewer'};const sub=(id,at,path)=>({id,discussionNumber:Number(id),authorId:'one',updatedAt:at,exportPath:path,disposition:'accepted',acceptedBy:'majkinetor'});
+ const files=new Map([['a',{entries:[{id:'script',review:{note:'Same words'}}]}],['b',{entries:[{id:'script',review:{note:'Same words',comments:[{text:'Other words'}]}}]}]]);
+ const [entry]=applyContributions([{id:'script',verdict:'Partial overlap',features:[]}],{contributors:[author],submissions:[sub('1','2026-01-01','a'),sub('2','2026-01-02','b')]},files);
+ assert.deepEqual(entry.acceptedNotes.map(n=>[n.text,n.discussionNumber]),[['Same words',2],['Other words',2]]);
+});
