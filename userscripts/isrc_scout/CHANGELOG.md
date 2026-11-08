@@ -1,5 +1,11 @@
 # ISRC Scout Changelog
 
+## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
+
+### Features
+
+1. HUD locking ([#921](https://github.com/majkinetor/musicbrainz-userscripts/issues/921))
+
 ## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
 
 ### Features

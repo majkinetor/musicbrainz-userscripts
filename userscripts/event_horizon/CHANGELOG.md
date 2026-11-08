@@ -1,5 +1,19 @@
 # Event Horizon Changelog
 
+## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
+
+### Features
+
+1. Automatically set artist column (option) ([#956](https://github.com/majkinetor/musicbrainz-userscripts/issues/956))
+1. Rain background effect with sliding droplets ([#940](https://github.com/majkinetor/musicbrainz-userscripts/issues/940))
+1. Effect presets ([#937](https://github.com/majkinetor/musicbrainz-userscripts/issues/937))
+1. Area flags in search results ([#933](https://github.com/majkinetor/musicbrainz-userscripts/issues/933))
+
+### Fixes
+
+1. Document search doesn't work ([#922](https://github.com/majkinetor/musicbrainz-userscripts/issues/922))
+1. A literal U+FFFF crashes the String Theory bundle in Yandex browser ([#880](https://github.com/majkinetor/musicbrainz-userscripts/issues/880))
+
 ## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
 
 ### Features

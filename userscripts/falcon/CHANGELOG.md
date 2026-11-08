@@ -1,5 +1,9 @@
 # Falcon 
 
+## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
+
+- Small improvements
+
 ## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
 
 ### Features

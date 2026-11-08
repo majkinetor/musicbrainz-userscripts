@@ -1,5 +1,11 @@
 # Credit Hoarder Changelog
 
+## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
+
+### Features
+
+1. Drop redundant writer when composer or lyricist is known ([#928](https://github.com/majkinetor/musicbrainz-userscripts/issues/928))
+
 ## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
 
 ### Features

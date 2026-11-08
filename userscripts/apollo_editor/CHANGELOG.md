@@ -1,5 +1,17 @@
 # Apollo Editor Changelog
 
+## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
+
+### Features
+
+1. Filtering in language, script and format menu ([#930](https://github.com/majkinetor/musicbrainz-userscripts/issues/930))
+1. Release editor barcode duplicates ([#929](https://github.com/majkinetor/musicbrainz-userscripts/issues/929))
+
+### Fixes
+
+1. Artist links cannot be removed ([#950](https://github.com/majkinetor/musicbrainz-userscripts/issues/950))
+1. Tracklist not immediately visible ([#917](https://github.com/majkinetor/musicbrainz-userscripts/issues/917))
+
 ## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
 
 ### Features

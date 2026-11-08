@@ -1,5 +1,11 @@
 # Art Station Changelog
 
+## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
+
+### Fixes
+
+1. Native artwork drag'n'drop fails when AS is disabled ([#916](https://github.com/majkinetor/musicbrainz-userscripts/issues/916))
+
 ## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
 
 ### Features

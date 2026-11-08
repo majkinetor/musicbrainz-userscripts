@@ -1,5 +1,112 @@
 # String Theory Changelog
 
+## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
+
+### Features
+
+1. Idle theme and effect ([#953](https://github.com/majkinetor/musicbrainz-userscripts/issues/953))
+1. Disable automation in non interactive use ([#936](https://github.com/majkinetor/musicbrainz-userscripts/issues/936))
+1. User agent for API requests ([#932](https://github.com/majkinetor/musicbrainz-userscripts/issues/932))
+1. Responsive interface improvements ([#927](https://github.com/majkinetor/musicbrainz-userscripts/issues/927))
+1. Feature comparison with 3rd party tools report ([#926](https://github.com/majkinetor/musicbrainz-userscripts/issues/926))
+
+### Fixes
+
+1. Google Drive OAuth connect expired ([#946](https://github.com/majkinetor/musicbrainz-userscripts/issues/946))
+
+### [Apollo Editor](../apollo_editor/README.md)
+
+#### Features
+
+1. Filtering in language, script and format menu ([#930](https://github.com/majkinetor/musicbrainz-userscripts/issues/930))
+1. Release editor barcode duplicates ([#929](https://github.com/majkinetor/musicbrainz-userscripts/issues/929))
+
+#### Fixes
+
+1. Artist links cannot be removed ([#950](https://github.com/majkinetor/musicbrainz-userscripts/issues/950))
+1. Tracklist not immediately visible ([#917](https://github.com/majkinetor/musicbrainz-userscripts/issues/917))
+
+### [Art Station](../art_station/README.md)
+
+#### Fixes
+
+1. Native artwork drag'n'drop fails when AS is disabled ([#916](https://github.com/majkinetor/musicbrainz-userscripts/issues/916))
+
+### [Credit Hoarder](../credit_hoarder/README.md)
+
+#### Features
+
+1. Drop redundant writer when composer or lyricist is known ([#928](https://github.com/majkinetor/musicbrainz-userscripts/issues/928))
+
+### [Event Horizon](../event_horizon/README.md)
+
+#### Features
+
+1. Automatically set artist column (option) ([#956](https://github.com/majkinetor/musicbrainz-userscripts/issues/956))
+1. Rain background effect with sliding droplets ([#940](https://github.com/majkinetor/musicbrainz-userscripts/issues/940))
+1. Effect presets ([#937](https://github.com/majkinetor/musicbrainz-userscripts/issues/937))
+1. Area flags in search results ([#933](https://github.com/majkinetor/musicbrainz-userscripts/issues/933))
+
+#### Fixes
+
+1. Document search doesn't work ([#922](https://github.com/majkinetor/musicbrainz-userscripts/issues/922))
+1. A literal U+FFFF crashes the String Theory bundle in Yandex browser ([#880](https://github.com/majkinetor/musicbrainz-userscripts/issues/880))
+
+### [Falcon](../falcon/README.md)
+
+1. Small improvements
+
+### [First Contact](../first_contact/README.md)
+
+#### Features
+
+1. Import Soundcloud label ([#925](https://github.com/majkinetor/musicbrainz-userscripts/issues/925))
+
+### [Fusion](../fusion/README.md)
+
+#### Features
+
+1. General merge interface ([#908](https://github.com/majkinetor/musicbrainz-userscripts/issues/908))
+
+### [Fuzzy Logic](../fuzzy_logic/README.md)
+
+#### Features
+
+1. Fuzzy Logic initialization ([#852](https://github.com/majkinetor/musicbrainz-userscripts/issues/852))
+
+### [Group Therapy](../group_therapy/README.md)
+
+#### Features
+
+1. Detailed roles in highlight tooltip ([#924](https://github.com/majkinetor/musicbrainz-userscripts/issues/924))
+
+### [ISRC Scout](../isrc_scout/README.md)
+
+#### Features
+
+1. HUD locking ([#921](https://github.com/majkinetor/musicbrainz-userscripts/issues/921))
+
+### [Mammoth](../mammoth/README.md)
+
+1. Small improvements
+
+### [Mission Control](../mission_control/README.md)
+
+#### Features
+
+1. Right click platform icon to set all tracks from that provider ([#951](https://github.com/majkinetor/musicbrainz-userscripts/issues/951))
+
+#### Fixes
+
+1. Missing track count mismatch warning ([#918](https://github.com/majkinetor/musicbrainz-userscripts/issues/918))
+
+### [Platform Check](../platform_check/README.md)
+
+#### Fixes
+
+1. Release group API request when PC is disabled ([#931](https://github.com/majkinetor/musicbrainz-userscripts/issues/931))
+1. Invalid barcode 000000000000 set ([#919](https://github.com/majkinetor/musicbrainz-userscripts/issues/919))
+
 ## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
 
 ### [Apollo Editor](../apollo_editor/README.md)

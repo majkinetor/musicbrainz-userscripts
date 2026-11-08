@@ -1,5 +1,11 @@
 # Fusion Changelog
 
+## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
+
+### Features
+
+1. General merge interface ([#908](https://github.com/majkinetor/musicbrainz-userscripts/issues/908))
+
 ## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
 
 ### Features

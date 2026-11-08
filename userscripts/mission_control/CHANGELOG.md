@@ -1,5 +1,15 @@
 # Mission Control Changelog
 
+## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
+
+### Features
+
+1. Right click platform icon to set all tracks from that provider ([#951](https://github.com/majkinetor/musicbrainz-userscripts/issues/951))
+
+### Fixes
+
+1. Missing track count mismatch warning ([#918](https://github.com/majkinetor/musicbrainz-userscripts/issues/918))
+
 ## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
 
 ### Features

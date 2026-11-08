@@ -1,5 +1,12 @@
 # Platform Check Changelog
 
+## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
+
+### Fixes
+
+1. Release group API request when PC is disabled ([#931](https://github.com/majkinetor/musicbrainz-userscripts/issues/931))
+1. Invalid barcode 000000000000 set ([#919](https://github.com/majkinetor/musicbrainz-userscripts/issues/919))
+
 ## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
 
 ### Features

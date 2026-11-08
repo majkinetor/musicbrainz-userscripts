@@ -1,5 +1,11 @@
 # First Contact Changelog
 
+## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
+
+### Features
+
+1. Import Soundcloud label ([#925](https://github.com/majkinetor/musicbrainz-userscripts/issues/925))
+
 ## [2026.11.04](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.04)
 
 ### Features
