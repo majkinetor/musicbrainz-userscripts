@@ -234,7 +234,8 @@ function main() {
   if (hasBundle) {
     changed.add(BUNDLE);
     const path = userJsPath(BUNDLE);
-    groups[BUNDLE] = { dir: BUNDLE, name: scriptDisplayName(path), path, features: [], fixes: [], bundle: true };
+    const own = groups[BUNDLE] || { features: [], fixes: [] };   // keep its own `area | string theory` issues
+    groups[BUNDLE] = { dir: BUNDLE, name: scriptDisplayName(path), path, features: own.features, fixes: own.fixes, bundle: true };
   }
   // members that actually changed this release → the bundle's changelog links to each of their changelogs
   const bundleMembers = hasBundle ? readFileSync(resolve(ROOT, `userscripts/${BUNDLE}/members.txt`), 'utf8').split(/\r?\n/).map(l => l.replace(/#.*/, '').trim()).filter(Boolean) : [];
