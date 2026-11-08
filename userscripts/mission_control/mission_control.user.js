@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.112701
+// @version      2026.11.08.130000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -2617,7 +2617,17 @@ const CC_NAMES = { discogs: 'Discogs', bandcamp: 'Bandcamp', spotify: 'Spotify',
 const ccName = k => CC_NAMES[k] || k;
 const CC_UNREAD = { spotify: 'Spotify is read through its web player only: its link is added, its data is not compared' };
 const ccIco = (k, size) => stIcon(k, size || 14) || '<span class="mcc-abbr">' + esc(String(k).slice(0, 2).toUpperCase()) + '</span>';
-const ccIcons = keys => '<span class="mcc-icos">' + keys.map(k => '<span data-tip="' + esc(ccName(k)) + '">' + ccIco(k, 13) + '</span>').join('') + '</span>';
+// `click` (a Tracks row's icons): each icon also takes its platform's version on every track on a right-click; the string is the tip's click line
+const ccIcons = (keys, click) => '<span class="mcc-icos">' + keys.map(k => click == null ? '<span data-tip="' + esc(ccName(k)) + '">' + ccIco(k, 13) + '</span>'
+    : '<span data-pk="' + esc(k) + '" data-tip="' + esc(ccName(k) + (click ? '\nClick: ' + click : '') + '\nRight-click: take ' + ccName(k) + '\'s version on every track') + '">' + ccIco(k, 13) + '</span>').join('') + '</span>';
+// a right-click on a platform's icon: on every track, the version that platform has is taken
+function ccTakeAll(k) {
+    let n = 0;
+    ccModel().tracks.rows.forEach(r => { const v = r.versions.find(x => x.keys.includes(k)); if (!v || r.versions.length < 2) return; if (ccRowWin(r) !== v) n++; CC.rowPick[r.id] = k; });
+    Log.cat('Consolidation').info(ccName(k) + '\'s version taken on every track (' + n + ' changed)');
+    mbuToast(ccName(k) + '\'s version taken on every track' + (n ? ' (' + n + ' changed)' : ': nothing changed'), { kind: 'ok' });
+    ccPaint();
+}
 const ccBc = b => String(b || '').replace(/\D/g, '').replace(/^0+/, '');
 const ccNorm = s => String(s || '').normalize('NFKC').toLowerCase().replace(/[\s.,'’"“”!?()[\]\-–—:;/&+]+/g, ' ').trim();
 const ccLen = ms => { if (!ms) return ''; const s = Math.round(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
@@ -4688,11 +4698,11 @@ function ccTracksHtml(m) {
     t.rows.forEach((r, i) => {
         const w = r.win, many = r.versions.length > 1, op = CC.open.has(r.id);
         h += '<tr class="row' + (CC.sel === r.id ? ' sel' : '') + '" data-cc="row" data-r="' + r.id + '"><td class="pos">' + (nM > 1 ? (r.mi + 1) + '.' + (r.ti + 1) : i + 1) + '</td><td class="ttl">' + esc(w.title) + '</td><td class="len">' + ccLen(w.len) + '</td><td class="isrc">' + (w.isrc ? isrcHtml(w.isrc) : '—') + '</td>'
-            + '<td>' + ccIcons(w.keys) + '</td><td class="vers">' + (many ? '<span class="mcc-chip warn">' + r.versions.length + ' versions</span>' : '') + '</td></tr>';
+            + '<td>' + ccIcons(w.keys, '') + '</td><td class="vers">' + (many ? '<span class="mcc-chip warn">' + r.versions.length + ' versions</span>' : '') + '</td></tr>';
         if (many && op) r.versions.forEach(v => {
             const d = v === w ? [] : ccDiff(v, w);
             h += '<tr class="ver' + (v === w ? ' on' : '') + '" data-cc="ver" data-r="' + r.id + '" data-k="' + esc(v.keys[0]) + '"><td></td><td><span class="r"></span>' + ccTitleDiff(v.title, w.title) + (d.length ? ' <span class="why">· ' + esc(d.join(', ')) + '</span>' : '') + '</td>'
-                + '<td class="len">' + (v.len && w.len && Math.abs(v.len - w.len) > 1000 ? '<span class="hl">' + ccLen(v.len) + '</span>' : ccLen(v.len)) + '</td><td class="isrc">' + (v.isrc && w.isrc && v.isrc !== w.isrc ? '<span class="hl">' + isrcHtml(v.isrc) + '</span>' : v.isrc ? isrcHtml(v.isrc) : 'none') + '</td><td>' + ccIcons(v.keys) + '</td><td></td></tr>';
+                + '<td class="len">' + (v.len && w.len && Math.abs(v.len - w.len) > 1000 ? '<span class="hl">' + ccLen(v.len) + '</span>' : ccLen(v.len)) + '</td><td class="isrc">' + (v.isrc && w.isrc && v.isrc !== w.isrc ? '<span class="hl">' + isrcHtml(v.isrc) + '</span>' : v.isrc ? isrcHtml(v.isrc) : 'none') + '</td><td>' + ccIcons(v.keys, 'take this version') + '</td><td></td></tr>';
         });
     });
     t.extras.forEach(x => {
@@ -4892,7 +4902,7 @@ function ccOpen() {
     CC.ui = ui;
     document.documentElement.style.overflow = 'hidden';
     ui.addEventListener('click', ccOnClick);
-    ui.addEventListener('contextmenu', e => { const a = e.target.closest('[data-cc="sect"]'); if (!a) return; e.preventDefault(); ccToggleSect(a.dataset.s, true); });
+    ui.addEventListener('contextmenu', e => { const p = e.target.closest('[data-pk]'); if (p) { e.preventDefault(); ccTakeAll(p.dataset.pk); return; } const a = e.target.closest('[data-cc="sect"]'); if (!a) return; e.preventDefault(); ccToggleSect(a.dataset.s, true); });
     clearInterval(ccClock);
     ccClock = setInterval(() => {
         if (!CC.ui) return;
