@@ -125,14 +125,22 @@ export function pageInit(cfg) {
     const bytes = Uint8Array.from(atob(r.b64), c => c.charCodeAt(0));
     return { ...r, bytes, text: new TextDecoder().decode(bytes) };
   };
-  window.GM_xmlhttpRequest = cfg.gm.xhr === 'none' ? () => ({ abort() {} }) : (opts) => {
+  // MusicBrainz's API, which the gate sends through GM_xmlhttpRequest for its User-Agent (#932),
+  // goes through the page's fetch in every mode, 'none' included, as it did before: so page
+  // routes (replayWs, a spec's own) answer it and page.on('request') still counts it. The
+  // User-Agent stays behind: a page fetch can't set it, and cross-origin it would ask a preflight.
+  const mbApi = url => { try { const u = new URL(url, location.href); return /(^|\.)musicbrainz\.org$/.test(u.hostname) && /^\/ws\//.test(u.pathname); } catch (e) { return false; } };
+  const noUa = opts => { const h = {}; for (const [k, v] of Object.entries(opts.headers || {})) if (!/^user-agent$/i.test(k)) h[k] = v; return { ...opts, headers: h }; };
+  window.GM_xmlhttpRequest = (opts) => {
     const method = opts.method || 'GET';
+    const api = mbApi(opts.url);
+    if (cfg.gm.xhr === 'none' && !api) return { abort() {} };
     (async () => {
       try {
         if (refuse(method, opts.url, 'GM_xmlhttpRequest')) throw refusal();
         // a FormData or Blob body can't cross into Node: those go through the page
-        const node = cfg.gm.xhr !== 'fetch' && (opts.data == null || typeof opts.data === 'string');
-        const res = response(opts, node ? await viaNode(opts, method) : await viaFetch(opts, method));
+        const node = !api && cfg.gm.xhr !== 'fetch' && (opts.data == null || typeof opts.data === 'string');
+        const res = response(opts, node ? await viaNode(opts, method) : await viaFetch(api ? noUa(opts) : opts, method));
         opts.onload && opts.onload(res);
         opts.onloadend && opts.onloadend(res);
       } catch (e) {
