@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.162209
+// @version      2026.11.08.181624
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -3934,7 +3934,18 @@ Click: open the label`;
   }
   let _badgeLossToasted = false;   // #638: the toast once per page; every loss is still logged
   // match the _pending slots, updating the table row-by-row as results come in
-  async function matchModel(onProgress) {
+  /* One pass at a time. A tracklist resync that landed while Release information was still
+     matching (before _matching holds resyncs back) started a second pass beside the first:
+     both took the same pending slots, looked them up twice, and logged each match twice
+     (the suite's 651, "also on tracks 1, 2, 2"). A pass that starts while another runs now
+     waits for it, then matches only what is still pending. */
+  let _passChain = Promise.resolve();
+  function matchModel(onProgress) {
+    const run = _passChain.then(() => matchModelPass(onProgress));
+    _passChain = run.catch(() => {});
+    return run;
+  }
+  async function matchModelPass(onProgress) {
     const isEditing = isEditingNow;   // don't rebuild rows (and orphan the search popup) while the user is in a field
     /* #917: a pass with no slot to match still awaited the release group's editions
        (loadSiblingMap) and the Discogs map first, and the MusicBrainz gate can hold that
@@ -15053,7 +15064,6 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const f = sfNorm(q.value);
       let list = items.filter(it => !f || it.t.includes(f));
       if (f) list = list.filter(it => it.t.startsWith(f)).concat(list.filter(it => !it.t.startsWith(f)));   // starts-with first
-      if (f) { const seen = new Set(); list = list.filter(it => !seen.has(it.o.value) && seen.add(it.o.value)); }   // MB lists a frequent language twice, in its group and in the full list
       ul.textContent = ''; shown = []; at = -1;
       let lastG = null;
       list.forEach(it => {
