@@ -174,7 +174,7 @@ test.describe('round 4: Stop answers at once', () => {
 
   test('the Recordings pane', { tag: ['@sandbox', '@login', '@timing'] }, async ({ page, inject }) => {
     const submitted = await importAndHold(page, inject);
-    await page.locator('a, button', { hasText: /^Recordings$/ }).first().click().catch(() => {});
+    await page.locator('#tc-nav-bar button, #tc-nav-bar a', { hasText: /^Recordings/i }).first().click();   // Apollo's own tab bar, not MB's links; no toTab: it waits for a quiet network, and the pass is held busy
     await page.waitForSelector(REC, { state: 'visible', timeout: 30000 }).catch(() => {});
     check(!!await waitLabel(page, REC, /Stop/), 'its pass runs by itself, offering Stop');
     await page.click(REC);
