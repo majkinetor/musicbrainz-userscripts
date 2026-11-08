@@ -72,3 +72,30 @@ test('Mission Control and ISRC Scout follow another release EH shows', { tag: ['
   check(await page.evaluate(() => window.__noReload) === 1, 'the page did not reload');
   await attachShot(testInfo, page, 'follow');
 });
+
+// A tab loaded on a release's subpage (tags, aliases…): Mission Control isn't for it, so it starts only once EH shows
+// the release itself (started there, it quit and was never started again); it leaves the dock on the subpage and comes back
+test('Mission Control starts on the release EH moves to from its tags', { tag: ['@sandbox'] }, async ({ page, inject }, testInfo) => {
+  await page.goto(`https://test.musicbrainz.org/release/${REL}/tags`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await settled(page);
+  await page.evaluate(() => localStorage.setItem('mbu.dockOpen', 'true'));
+  await inject('string_theory');
+  const on = () => page.evaluate(() => document.documentElement.hasAttribute('data-mbu-dock'));
+  if (!(await until(on, v => v, 8000))) await page.locator('#eh-launch').click();
+  check(await until(on, v => v) === true, 'EH shows');
+  check(!(await page.locator('#mc-launch').count()), 'no Mission Control on the tags');
+  await page.evaluate(() => { window.__noReload = 1; });
+  const path = () => page.evaluate(() => location.pathname);
+  const overview = p => /^\/release\/[0-9a-f-]{36}$/.test(p);
+  await page.locator(`#app a[href$="/release/${REL}"]`).first().click();
+  check(overview(await until(path, overview)), 'on the release');
+  check(await until(() => page.locator('#mc-launch').isVisible(), v => v) === true, 'Mission Control is in the dock');
+  await page.goBack();
+  check((await until(path, p => p.endsWith('/tags'))).endsWith('/tags'), 'back on the tags');
+  check(await until(() => page.locator('#mc-launch').isVisible(), v => !v) === false, 'Mission Control leaves the dock there');
+  await page.goForward();
+  check(overview(await until(path, overview)), 'on the release again');
+  check(await until(() => page.locator('#mc-launch').isVisible(), v => v) === true, 'Mission Control is back in the dock');
+  check(await page.evaluate(() => window.__noReload) === 1, 'the page did not reload');
+  await attachShot(testInfo, page, 'from-tags');
+});
