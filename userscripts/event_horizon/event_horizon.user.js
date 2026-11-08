@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08.141849
+// @version      2026.11.08.142408
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11113,7 +11113,14 @@ function histParse(html) {
     const edits = (one ? [doc.querySelector('#content')] : [...doc.querySelectorAll('.edit-list')]).map(el => {
         const h = el.querySelector('.edit-header'); if (!h) { LOG.debug('History: an edit without a header, skipped'); return null; }
         const c = h.className.split(/\s+/);
-        const ed = h.querySelector('.subheader a[href*="/user/"]'), det = one ? (t => { const w = doc.createElement('div'); if (t) w.append(t); return w; })(el.querySelector('table.details')) : el.querySelector('.edit-details');
+        const ed = h.querySelector('.subheader a[href*="/user/"]'), det = one ? doc.createElement('div') : el.querySelector('.edit-details');
+        if (one) {
+            // Changes is the section after the edit header. Merge comparisons and explanations can sit
+            // outside table.details; keep the whole section, ending before Votes, in any interface language.
+            let n = h.nextElementSibling;
+            if (n && n.tagName === 'H2') n = n.nextElementSibling;
+            for (; n && n.tagName !== 'H2' && n.tagName !== 'FORM'; n = n.nextElementSibling) det.append(n.cloneNode(true));
+        }
         if (det) {
             // MusicBrainz's page draws a cover's thumbnail itself: the fetched page carries only its address
             det.querySelectorAll('span.artwork-image').forEach(x => { if (!x.querySelector('img') && x.dataset.smallThumbnail) x.innerHTML = `<img src="${x.dataset.smallThumbnail}" alt="${esc(x.dataset.title || '')}" loading="lazy">`; });
