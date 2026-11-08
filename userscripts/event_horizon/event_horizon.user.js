@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.07.221800
+// @version      2026.11.08.120000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3090,9 +3090,9 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .dg-sort{all:unset;cursor:pointer;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit}.dg-sort i{font-style:normal;margin-left:5px;opacity:0}.dg-sort:hover{color:var(--text)}.dg-sort:hover i{opacity:.5}.dg-sort.on{color:var(--accent)}.dg-sort.on i{opacity:1}
 .ed-t td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
 .ed-t tr.gh th{padding-top:18px;font-size:12px;color:var(--soft)}
-.ed-t tbody tr:not(.gh):hover{background:var(--hover)}
+.ed-t tbody tr:not(.gh):hover{background:color-mix(in srgb,var(--hover) 60%,transparent)}
 .ra-pop{width:320px;max-height:360px;overflow:auto;line-height:1.6;color:var(--text);font-weight:400}.ev-pop{max-width:340px;max-height:360px;overflow:auto}.ev-pop .evs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}.chip.pn{height:22px;padding:0 9px;font-size:12px;cursor:pointer;vertical-align:middle}.chip.pn:hover,.chip.pn[aria-expanded="true"]{border-color:var(--accent)}.ed-t caption{text-align:left;padding:4px 0 8px}
-.ed-t tr.cur td{background:var(--chip)}
+.ed-t tr.cur td{background:color-mix(in srgb,var(--chip) 60%,transparent)}
 .ed-t .ed-tr{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;font:inherit}
 .ed-t .ed-tr:hover{background:var(--chip)}
 .ed-t .ed-tr svg{transition:transform .15s}
