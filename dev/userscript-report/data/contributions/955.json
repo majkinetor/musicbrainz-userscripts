@@ -1,0 +1,1146 @@
+{
+  "format": "mb-userscript-review",
+  "schemaVersion": 1,
+  "exportedAt": "2026-11-08T18:48:54.712Z",
+  "report": {
+    "reportId": "mb-userscripts-926",
+    "reportVersion": "f748a7e4bc975f70ef950391146650c321f7a11a8357bb3e371f8ba3976d829d",
+    "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/f748a7e4bc975f70ef950391146650c321f7a11a8357bb3e371f8ba3976d829d.html",
+    "wikiRevision": 79510,
+    "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+    "sourceManifestSha256": "dfe48854716f3ecb535f9e232f3fe0ad1bcee0e43ff5c49e482f699b52af9473",
+    "collectedAt": "2026-11-07T18:55:51.247Z"
+  },
+  "purpose": "User review data for AI incorporation. Preserve source provenance, distinguish user preferences from verified evidence, and investigate corrections before replacing original findings.",
+  "scoringPolicy": {
+    "weights": [
+      [
+        0,
+        "Ignore"
+      ],
+      [
+        1,
+        "Minor"
+      ],
+      [
+        3,
+        "Normal"
+      ],
+      [
+        5,
+        "Important"
+      ],
+      [
+        10,
+        "Essential"
+      ]
+    ],
+    "coverageCredit": {
+      "Covered": 1,
+      "Partial": 0.5,
+      "Gap": 0
+    },
+    "unknown": "Any active unknown coverage yields Needs assessment",
+    "essential": "An essential feature not fully covered caps the weighted verdict at Partial overlap",
+    "manualVerdict": "proposedVerdict is the visitor-selected verdict; retain the weighted suggestion separately"
+  },
+  "entries": [
+    {
+      "id": "wiki-5fe8302e89031b0451c2",
+      "name": "Open in PlayMB",
+      "currentBasis": {
+        "name": "Open in PlayMB",
+        "hash": "2f12d0fef891e868cfc0953c8445a7e2e9dfeb1f91cbb9f03085abe3bbf41047",
+        "wikiRevision": 79510,
+        "wikiRowHash": "1ed48940c73a836d5e047d6f84e2e1f6f3a8303bf803741b92868f698360f712",
+        "sourceIdentity": "https://greasyfork.org/scripts/456933/Open%20in%20PlayMB.user.js",
+        "sourceUrl": "https://update.greasyfork.org/scripts/456933/Open%20in%20PlayMB.user.js",
+        "sourceVersion": "1.0.1",
+        "sourceHash": "1d4333a399a83fbfbca648addec9ac3a718aa2fc38fe8f54c0cfa29dd79ec776",
+        "sourceCommit": null,
+        "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+        "baselineVerdict": "No equivalent",
+        "features": [
+          {
+            "id": "source.a377bc2c1a59",
+            "name": "Open the current recording in PlayMB",
+            "coverage": "Gap",
+            "weight": 5,
+            "reason": "Picard/streaming actions are different destinations.",
+            "evidence": [
+              {
+                "url": "https://update.greasyfork.org/scripts/456933/Open%20in%20PlayMB.user.js#L25",
+                "label": "Source implementation",
+                "sha256": "1d4333a399a83fbfbca648addec9ac3a718aa2fc38fe8f54c0cfa29dd79ec776",
+                "line": 25
+              }
+            ]
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null,
+        "acceptedReview": {
+          "submissionId": "D_kwDOSj7rds4Aq6q2",
+          "discussionNumber": 941,
+          "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/941",
+          "author": {
+            "id": "MDQ6VXNlcjg1NzY3",
+            "login": "majkinetor",
+            "url": "https://github.com/majkinetor"
+          },
+          "disposition": "accepted",
+          "verdict": "No equivalent",
+          "reviewedReport": "0bbd5c4c064d6753e5e28f89e0deef382b850f5e95fed304c053e4ea56a2fb86"
+        },
+        "earlierHashes": [
+          "dd769230f6a882f29a70b37420c431a35bd8f857d484e5d0eb7e32402604aeb3"
+        ]
+      },
+      "currentFinding": {
+        "summary": "The suite does not supply the same PlayMB recording-page handoff.",
+        "tools": [
+          "event horizon"
+        ],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Not applicable",
+        "note": "The service is suspended at 2026-08-11",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "Open in PlayMB",
+          "hash": "2f12d0fef891e868cfc0953c8445a7e2e9dfeb1f91cbb9f03085abe3bbf41047",
+          "wikiRevision": 79510,
+          "wikiRowHash": "1ed48940c73a836d5e047d6f84e2e1f6f3a8303bf803741b92868f698360f712",
+          "sourceIdentity": "https://greasyfork.org/scripts/456933/Open%20in%20PlayMB.user.js",
+          "sourceUrl": "https://update.greasyfork.org/scripts/456933/Open%20in%20PlayMB.user.js",
+          "sourceVersion": "1.0.1",
+          "sourceHash": "1d4333a399a83fbfbca648addec9ac3a718aa2fc38fe8f54c0cfa29dd79ec776",
+          "sourceCommit": null,
+          "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+          "baselineVerdict": "No equivalent",
+          "features": [
+            {
+              "id": "source.a377bc2c1a59",
+              "name": "Open the current recording in PlayMB",
+              "coverage": "Gap",
+              "weight": 5,
+              "reason": "Picard/streaming actions are different destinations.",
+              "evidence": [
+                {
+                  "url": "https://update.greasyfork.org/scripts/456933/Open%20in%20PlayMB.user.js#L25",
+                  "label": "Source implementation",
+                  "sha256": "1d4333a399a83fbfbca648addec9ac3a718aa2fc38fe8f54c0cfa29dd79ec776",
+                  "line": 25
+                }
+              ]
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null,
+          "acceptedReview": {
+            "submissionId": "D_kwDOSj7rds4Aq6q2",
+            "discussionNumber": 941,
+            "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/941",
+            "author": {
+              "id": "MDQ6VXNlcjg1NzY3",
+              "login": "majkinetor",
+              "url": "https://github.com/majkinetor"
+            },
+            "disposition": "accepted",
+            "verdict": "No equivalent",
+            "reviewedReport": "0bbd5c4c064d6753e5e28f89e0deef382b850f5e95fed304c053e4ea56a2fb86"
+          },
+          "earlierHashes": [
+            "dd769230f6a882f29a70b37420c431a35bd8f857d484e5d0eb7e32402604aeb3"
+          ]
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "f748a7e4bc975f70ef950391146650c321f7a11a8357bb3e371f8ba3976d829d",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/f748a7e4bc975f70ef950391146650c321f7a11a8357bb3e371f8ba3976d829d.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+          "sourceManifestSha256": "dfe48854716f3ecb535f9e232f3fe0ad1bcee0e43ff5c49e482f699b52af9473",
+          "collectedAt": "2026-11-07T18:55:51.247Z"
+        },
+        "updatedAt": "2026-11-08T18:34:35.101Z"
+      }
+    },
+    {
+      "id": "wiki-2bdadae838e8bf233d72",
+      "name": "Show alias count",
+      "currentBasis": {
+        "name": "Show alias count",
+        "hash": "57692828b55a3675fef376e1e93f438e427c443f5cbebbbce3c9c2f1cd844053",
+        "wikiRevision": 79510,
+        "wikiRowHash": "4a730180c28519748455cf0214e0e3ebdbbca2c69d1537078e2eb8f1d513271c",
+        "sourceIdentity": "github:loujine/musicbrainz-scripts/mb-display_count_alias.user.js",
+        "sourceUrl": "https://github.com/loujine/musicbrainz-scripts/blob/37df091b3ddc3651a77291ff3a895c017e50750b/mb-display_count_alias.user.js",
+        "sourceVersion": "2024.11.25",
+        "sourceHash": "7af515c1ba577bae7019a7bd7df5dc8b6c26e0b5c8d2b3cffca68eff171db5a5",
+        "sourceCommit": "37df091b3ddc3651a77291ff3a895c017e50750b",
+        "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+        "baselineVerdict": "Mostly replaceable",
+        "features": [
+          {
+            "id": "source.9505a3913121",
+            "name": "Show alias count in the native Aliases tab",
+            "coverage": "Covered",
+            "weight": 5,
+            "reason": "Apollo displays aliases inside its editor, not necessarily a count on every native entity tab.",
+            "evidence": [
+              {
+                "url": "https://github.com/loujine/musicbrainz-scripts/blob/37df091b3ddc3651a77291ff3a895c017e50750b/mb-display_count_alias.user.js#L43",
+                "label": "Source implementation",
+                "sha256": "7af515c1ba577bae7019a7bd7df5dc8b6c26e0b5c8d2b3cffca68eff171db5a5",
+                "line": 43
+              }
+            ],
+            "comment": "",
+            "acceptedContribution": {
+              "submissionId": "D_kwDOSj7rds4Aq7Az",
+              "discussionNumber": 943,
+              "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/943",
+              "author": {
+                "id": "MDQ6VXNlcjg1NzY3",
+                "login": "majkinetor",
+                "url": "https://github.com/majkinetor"
+              },
+              "disposition": "accepted",
+              "verdict": null,
+              "reviewedReport": "fecc728cb7991ae323753018b8717b466bc7fea9910c2fe1ad90aa421bfdf7ba"
+            }
+          },
+          {
+            "id": "source.940590b5dcb4",
+            "name": "List the languages/locales represented by aliases",
+            "coverage": "Partial",
+            "weight": 1,
+            "reason": "The suite exposes alias locale data, with a different display scope.",
+            "evidence": [
+              {
+                "url": "https://github.com/loujine/musicbrainz-scripts/blob/37df091b3ddc3651a77291ff3a895c017e50750b/mb-display_count_alias.user.js#L49",
+                "label": "Source implementation",
+                "sha256": "7af515c1ba577bae7019a7bd7df5dc8b6c26e0b5c8d2b3cffca68eff171db5a5",
+                "line": 49
+              }
+            ],
+            "comment": "",
+            "acceptedContribution": {
+              "submissionId": "D_kwDOSj7rds4Aq7Az",
+              "discussionNumber": 943,
+              "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/943",
+              "author": {
+                "id": "MDQ6VXNlcjg1NzY3",
+                "login": "majkinetor",
+                "url": "https://github.com/majkinetor"
+              },
+              "disposition": "accepted",
+              "verdict": null,
+              "reviewedReport": "fecc728cb7991ae323753018b8717b466bc7fea9910c2fe1ad90aa421bfdf7ba"
+            }
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null,
+        "acceptedReview": {
+          "submissionId": "D_kwDOSj7rds4Aq7Az",
+          "discussionNumber": 943,
+          "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/943",
+          "author": {
+            "id": "MDQ6VXNlcjg1NzY3",
+            "login": "majkinetor",
+            "url": "https://github.com/majkinetor"
+          },
+          "disposition": "accepted",
+          "verdict": "Mostly replaceable",
+          "reviewedReport": "fecc728cb7991ae323753018b8717b466bc7fea9910c2fe1ad90aa421bfdf7ba"
+        },
+        "earlierHashes": [
+          "204d4bd70423d438ba4f120c66487ac0ae311a77829d70ebd579689f45cd879b",
+          "9c8e9e6c5178bbeb58b4ac86232f03035c34cf40deb23301ccad5917b5b624fc"
+        ]
+      },
+      "currentFinding": {
+        "summary": "Alias viewing/editing overlaps, but native tab counts/locales are a specific display feature.",
+        "tools": [
+          "Apollo Editor",
+          "event horizon"
+        ],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "",
+        "note": "",
+        "draft": "",
+        "features": {
+          "source.940590b5dcb4": {
+            "name": "List the languages/locales represented by aliases",
+            "weight": 10,
+            "coverage": "Covered",
+            "comment": "",
+            "added": false
+          }
+        },
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "Show alias count",
+          "hash": "57692828b55a3675fef376e1e93f438e427c443f5cbebbbce3c9c2f1cd844053",
+          "wikiRevision": 79510,
+          "wikiRowHash": "4a730180c28519748455cf0214e0e3ebdbbca2c69d1537078e2eb8f1d513271c",
+          "sourceIdentity": "github:loujine/musicbrainz-scripts/mb-display_count_alias.user.js",
+          "sourceUrl": "https://github.com/loujine/musicbrainz-scripts/blob/37df091b3ddc3651a77291ff3a895c017e50750b/mb-display_count_alias.user.js",
+          "sourceVersion": "2024.11.25",
+          "sourceHash": "7af515c1ba577bae7019a7bd7df5dc8b6c26e0b5c8d2b3cffca68eff171db5a5",
+          "sourceCommit": "37df091b3ddc3651a77291ff3a895c017e50750b",
+          "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+          "baselineVerdict": "Mostly replaceable",
+          "features": [
+            {
+              "id": "source.9505a3913121",
+              "name": "Show alias count in the native Aliases tab",
+              "coverage": "Covered",
+              "weight": 5,
+              "reason": "Apollo displays aliases inside its editor, not necessarily a count on every native entity tab.",
+              "evidence": [
+                {
+                  "url": "https://github.com/loujine/musicbrainz-scripts/blob/37df091b3ddc3651a77291ff3a895c017e50750b/mb-display_count_alias.user.js#L43",
+                  "label": "Source implementation",
+                  "sha256": "7af515c1ba577bae7019a7bd7df5dc8b6c26e0b5c8d2b3cffca68eff171db5a5",
+                  "line": 43
+                }
+              ],
+              "comment": "",
+              "acceptedContribution": {
+                "submissionId": "D_kwDOSj7rds4Aq7Az",
+                "discussionNumber": 943,
+                "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/943",
+                "author": {
+                  "id": "MDQ6VXNlcjg1NzY3",
+                  "login": "majkinetor",
+                  "url": "https://github.com/majkinetor"
+                },
+                "disposition": "accepted",
+                "verdict": null,
+                "reviewedReport": "fecc728cb7991ae323753018b8717b466bc7fea9910c2fe1ad90aa421bfdf7ba"
+              }
+            },
+            {
+              "id": "source.940590b5dcb4",
+              "name": "List the languages/locales represented by aliases",
+              "coverage": "Partial",
+              "weight": 1,
+              "reason": "The suite exposes alias locale data, with a different display scope.",
+              "evidence": [
+                {
+                  "url": "https://github.com/loujine/musicbrainz-scripts/blob/37df091b3ddc3651a77291ff3a895c017e50750b/mb-display_count_alias.user.js#L49",
+                  "label": "Source implementation",
+                  "sha256": "7af515c1ba577bae7019a7bd7df5dc8b6c26e0b5c8d2b3cffca68eff171db5a5",
+                  "line": 49
+                }
+              ],
+              "comment": "",
+              "acceptedContribution": {
+                "submissionId": "D_kwDOSj7rds4Aq7Az",
+                "discussionNumber": 943,
+                "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/943",
+                "author": {
+                  "id": "MDQ6VXNlcjg1NzY3",
+                  "login": "majkinetor",
+                  "url": "https://github.com/majkinetor"
+                },
+                "disposition": "accepted",
+                "verdict": null,
+                "reviewedReport": "fecc728cb7991ae323753018b8717b466bc7fea9910c2fe1ad90aa421bfdf7ba"
+              }
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null,
+          "acceptedReview": {
+            "submissionId": "D_kwDOSj7rds4Aq7Az",
+            "discussionNumber": 943,
+            "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/943",
+            "author": {
+              "id": "MDQ6VXNlcjg1NzY3",
+              "login": "majkinetor",
+              "url": "https://github.com/majkinetor"
+            },
+            "disposition": "accepted",
+            "verdict": "Mostly replaceable",
+            "reviewedReport": "fecc728cb7991ae323753018b8717b466bc7fea9910c2fe1ad90aa421bfdf7ba"
+          },
+          "earlierHashes": [
+            "204d4bd70423d438ba4f120c66487ac0ae311a77829d70ebd579689f45cd879b",
+            "9c8e9e6c5178bbeb58b4ac86232f03035c34cf40deb23301ccad5917b5b624fc"
+          ]
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "f748a7e4bc975f70ef950391146650c321f7a11a8357bb3e371f8ba3976d829d",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/f748a7e4bc975f70ef950391146650c321f7a11a8357bb3e371f8ba3976d829d.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+          "sourceManifestSha256": "dfe48854716f3ecb535f9e232f3fe0ad1bcee0e43ff5c49e482f699b52af9473",
+          "collectedAt": "2026-11-07T18:55:51.247Z"
+        },
+        "updatedAt": "2026-11-08T18:36:26.408Z"
+      }
+    },
+    {
+      "id": "wiki-eb8f3d46491756a2abe6",
+      "name": "Spotify MusicBrainz Helper",
+      "currentBasis": {
+        "name": "Spotify MusicBrainz Helper",
+        "hash": "65d91236e987dc13ee9daeb5b77fd7cff2e22f3189e58373f5b65ae769022e54",
+        "wikiRevision": 79510,
+        "wikiRowHash": "fcb1988014477e6f49ad8a4a0aefcd2dfc6b84f22a6f8902dd95c7f4b101e527",
+        "sourceIdentity": "github:dr-blank/userscripts/musicbrainz/SpotifyMusicBrainzHelper.user.js",
+        "sourceUrl": "https://github.com/Dr-Blank/userscripts/blob/7d978f4c34f311723c55273bfbe9e070b7aba3cc/musicbrainz/SpotifyMusicBrainzHelper.user.js",
+        "sourceVersion": "1.3.2",
+        "sourceHash": "4c90863f4811a783701360fb111db86507321163445971325692838f9ab33c43",
+        "sourceCommit": "7d978f4c34f311723c55273bfbe9e070b7aba3cc",
+        "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+        "baselineVerdict": "Partial overlap",
+        "features": [
+          {
+            "id": "source.5ddf1084283b",
+            "name": "Open Harmony for Spotify album/artist context",
+            "coverage": "Covered",
+            "weight": 5,
+            "reason": "First Contact provides Spotify-to-Harmony handoff.",
+            "evidence": [
+              {
+                "url": "https://github.com/Dr-Blank/userscripts/blob/7d978f4c34f311723c55273bfbe9e070b7aba3cc/musicbrainz/SpotifyMusicBrainzHelper.user.js#L66",
+                "label": "Source implementation",
+                "sha256": "4c90863f4811a783701360fb111db86507321163445971325692838f9ab33c43",
+                "line": 66
+              }
+            ]
+          },
+          {
+            "id": "source.0927584dfaae",
+            "name": "Open ISRCHunt or ATisket",
+            "coverage": "Gap",
+            "weight": 5,
+            "reason": "The suite replaces much of the import workflow but not every external destination.",
+            "evidence": [
+              {
+                "url": "https://github.com/Dr-Blank/userscripts/blob/7d978f4c34f311723c55273bfbe9e070b7aba3cc/musicbrainz/SpotifyMusicBrainzHelper.user.js#L81",
+                "label": "Source implementation",
+                "sha256": "4c90863f4811a783701360fb111db86507321163445971325692838f9ab33c43",
+                "line": 81
+              }
+            ],
+            "comment": "",
+            "acceptedContribution": {
+              "submissionId": "D_kwDOSj7rds4Aq7Az",
+              "discussionNumber": 943,
+              "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/943",
+              "author": {
+                "id": "MDQ6VXNlcjg1NzY3",
+                "login": "majkinetor",
+                "url": "https://github.com/majkinetor"
+              },
+              "disposition": "accepted",
+              "verdict": null,
+              "reviewedReport": "fecc728cb7991ae323753018b8717b466bc7fea9910c2fe1ad90aa421bfdf7ba"
+            }
+          },
+          {
+            "id": "source.52e3103acae6",
+            "name": "Add launch buttons to Spotify discographies",
+            "coverage": "Gap",
+            "weight": 5,
+            "reason": "Full artist-discography button placement is not established in First Contact.",
+            "evidence": [
+              {
+                "url": "https://github.com/Dr-Blank/userscripts/blob/7d978f4c34f311723c55273bfbe9e070b7aba3cc/musicbrainz/SpotifyMusicBrainzHelper.user.js#L137",
+                "label": "Source implementation",
+                "sha256": "4c90863f4811a783701360fb111db86507321163445971325692838f9ab33c43",
+                "line": 137
+              }
+            ],
+            "comment": "",
+            "acceptedContribution": {
+              "submissionId": "D_kwDOSj7rds4Aq7Az",
+              "discussionNumber": 943,
+              "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/943",
+              "author": {
+                "id": "MDQ6VXNlcjg1NzY3",
+                "login": "majkinetor",
+                "url": "https://github.com/majkinetor"
+              },
+              "disposition": "accepted",
+              "verdict": null,
+              "reviewedReport": "fecc728cb7991ae323753018b8717b466bc7fea9910c2fe1ad90aa421bfdf7ba"
+            }
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null,
+        "acceptedReview": {
+          "submissionId": "D_kwDOSj7rds4Aq7Az",
+          "discussionNumber": 943,
+          "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/943",
+          "author": {
+            "id": "MDQ6VXNlcjg1NzY3",
+            "login": "majkinetor",
+            "url": "https://github.com/majkinetor"
+          },
+          "disposition": "accepted",
+          "verdict": "Partial overlap",
+          "reviewedReport": "fecc728cb7991ae323753018b8717b466bc7fea9910c2fe1ad90aa421bfdf7ba"
+        },
+        "earlierHashes": [
+          "2decca556d14a740e1355d5676a87a5462da8093e9306b552d6422fd33f36915",
+          "54aba65dcd62ef2dd51c1ec30ce7eeb58ca721eeb755996183ae8262af36676e"
+        ]
+      },
+      "currentFinding": {
+        "summary": "Spotify-to-Harmony/import is covered; the helper’s other destinations and discography buttons are additional.",
+        "tools": [
+          "First Contact"
+        ],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "",
+        "note": "",
+        "draft": "",
+        "features": {
+          "source.0927584dfaae": {
+            "name": "Open ISRCHunt or ATisket",
+            "weight": 0,
+            "coverage": "Gap",
+            "comment": "",
+            "added": false
+          },
+          "source.52e3103acae6": {
+            "name": "Add launch buttons to Spotify discographies",
+            "weight": 0,
+            "coverage": "Gap",
+            "comment": "",
+            "added": false
+          }
+        },
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "Spotify MusicBrainz Helper",
+          "hash": "65d91236e987dc13ee9daeb5b77fd7cff2e22f3189e58373f5b65ae769022e54",
+          "wikiRevision": 79510,
+          "wikiRowHash": "fcb1988014477e6f49ad8a4a0aefcd2dfc6b84f22a6f8902dd95c7f4b101e527",
+          "sourceIdentity": "github:dr-blank/userscripts/musicbrainz/SpotifyMusicBrainzHelper.user.js",
+          "sourceUrl": "https://github.com/Dr-Blank/userscripts/blob/7d978f4c34f311723c55273bfbe9e070b7aba3cc/musicbrainz/SpotifyMusicBrainzHelper.user.js",
+          "sourceVersion": "1.3.2",
+          "sourceHash": "4c90863f4811a783701360fb111db86507321163445971325692838f9ab33c43",
+          "sourceCommit": "7d978f4c34f311723c55273bfbe9e070b7aba3cc",
+          "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+          "baselineVerdict": "Partial overlap",
+          "features": [
+            {
+              "id": "source.5ddf1084283b",
+              "name": "Open Harmony for Spotify album/artist context",
+              "coverage": "Covered",
+              "weight": 5,
+              "reason": "First Contact provides Spotify-to-Harmony handoff.",
+              "evidence": [
+                {
+                  "url": "https://github.com/Dr-Blank/userscripts/blob/7d978f4c34f311723c55273bfbe9e070b7aba3cc/musicbrainz/SpotifyMusicBrainzHelper.user.js#L66",
+                  "label": "Source implementation",
+                  "sha256": "4c90863f4811a783701360fb111db86507321163445971325692838f9ab33c43",
+                  "line": 66
+                }
+              ]
+            },
+            {
+              "id": "source.0927584dfaae",
+              "name": "Open ISRCHunt or ATisket",
+              "coverage": "Gap",
+              "weight": 5,
+              "reason": "The suite replaces much of the import workflow but not every external destination.",
+              "evidence": [
+                {
+                  "url": "https://github.com/Dr-Blank/userscripts/blob/7d978f4c34f311723c55273bfbe9e070b7aba3cc/musicbrainz/SpotifyMusicBrainzHelper.user.js#L81",
+                  "label": "Source implementation",
+                  "sha256": "4c90863f4811a783701360fb111db86507321163445971325692838f9ab33c43",
+                  "line": 81
+                }
+              ],
+              "comment": "",
+              "acceptedContribution": {
+                "submissionId": "D_kwDOSj7rds4Aq7Az",
+                "discussionNumber": 943,
+                "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/943",
+                "author": {
+                  "id": "MDQ6VXNlcjg1NzY3",
+                  "login": "majkinetor",
+                  "url": "https://github.com/majkinetor"
+                },
+                "disposition": "accepted",
+                "verdict": null,
+                "reviewedReport": "fecc728cb7991ae323753018b8717b466bc7fea9910c2fe1ad90aa421bfdf7ba"
+              }
+            },
+            {
+              "id": "source.52e3103acae6",
+              "name": "Add launch buttons to Spotify discographies",
+              "coverage": "Gap",
+              "weight": 5,
+              "reason": "Full artist-discography button placement is not established in First Contact.",
+              "evidence": [
+                {
+                  "url": "https://github.com/Dr-Blank/userscripts/blob/7d978f4c34f311723c55273bfbe9e070b7aba3cc/musicbrainz/SpotifyMusicBrainzHelper.user.js#L137",
+                  "label": "Source implementation",
+                  "sha256": "4c90863f4811a783701360fb111db86507321163445971325692838f9ab33c43",
+                  "line": 137
+                }
+              ],
+              "comment": "",
+              "acceptedContribution": {
+                "submissionId": "D_kwDOSj7rds4Aq7Az",
+                "discussionNumber": 943,
+                "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/943",
+                "author": {
+                  "id": "MDQ6VXNlcjg1NzY3",
+                  "login": "majkinetor",
+                  "url": "https://github.com/majkinetor"
+                },
+                "disposition": "accepted",
+                "verdict": null,
+                "reviewedReport": "fecc728cb7991ae323753018b8717b466bc7fea9910c2fe1ad90aa421bfdf7ba"
+              }
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null,
+          "acceptedReview": {
+            "submissionId": "D_kwDOSj7rds4Aq7Az",
+            "discussionNumber": 943,
+            "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/943",
+            "author": {
+              "id": "MDQ6VXNlcjg1NzY3",
+              "login": "majkinetor",
+              "url": "https://github.com/majkinetor"
+            },
+            "disposition": "accepted",
+            "verdict": "Partial overlap",
+            "reviewedReport": "fecc728cb7991ae323753018b8717b466bc7fea9910c2fe1ad90aa421bfdf7ba"
+          },
+          "earlierHashes": [
+            "2decca556d14a740e1355d5676a87a5462da8093e9306b552d6422fd33f36915",
+            "54aba65dcd62ef2dd51c1ec30ce7eeb58ca721eeb755996183ae8262af36676e"
+          ]
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "f748a7e4bc975f70ef950391146650c321f7a11a8357bb3e371f8ba3976d829d",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/f748a7e4bc975f70ef950391146650c321f7a11a8357bb3e371f8ba3976d829d.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+          "sourceManifestSha256": "dfe48854716f3ecb535f9e232f3fe0ad1bcee0e43ff5c49e482f699b52af9473",
+          "collectedAt": "2026-11-07T18:55:51.247Z"
+        },
+        "updatedAt": "2026-11-08T18:37:37.428Z"
+      }
+    },
+    {
+      "id": "wiki-c075029dff1a983ddc64",
+      "name": "Taiwan ISRC to MusicBrainz",
+      "currentBasis": {
+        "name": "Taiwan ISRC to MusicBrainz",
+        "hash": "4f3e27d56977798374fda3db268ac5f991320ecf32f6b03d813a52d4fb903770",
+        "wikiRevision": 79510,
+        "wikiRowHash": "9009c29fcfdab8fe2f30e895ef0d4659063ad567ac82f8696a8cf0beaca26cbc",
+        "sourceIdentity": "github:agj/agj-userscripts/Taiwan ISRC to MusicBrainz/taiwan-isrc-to-musicbrainz.user.js",
+        "sourceUrl": "https://github.com/agj/agj-userscripts/blob/master/Taiwan%20ISRC%20to%20MusicBrainz/taiwan-isrc-to-musicbrainz.user.js",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "No equivalent",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Places a link on every Taiwan ISRC record page, which will open the MusicBrainz “add release” editor with many fields prefilled with that record's data.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null,
+        "acceptedReview": {
+          "submissionId": "D_kwDOSj7rds4Aq7xW",
+          "discussionNumber": 945,
+          "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/945",
+          "author": {
+            "id": "MDQ6VXNlcjg1NzY3",
+            "login": "majkinetor",
+            "url": "https://github.com/majkinetor"
+          },
+          "disposition": "accepted",
+          "verdict": "No equivalent",
+          "reviewedReport": "d5079ea591c46c4be942bc5ca0c1a8887485bce3daa5bedbea26edc0f83fffee"
+        },
+        "earlierHashes": [
+          "45aee7b2b36d8dd4279dc901f46c5785705f09154ad34649b5f9d8bed50afb81"
+        ]
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Not applicable",
+        "note": "",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "Taiwan ISRC to MusicBrainz",
+          "hash": "4f3e27d56977798374fda3db268ac5f991320ecf32f6b03d813a52d4fb903770",
+          "wikiRevision": 79510,
+          "wikiRowHash": "9009c29fcfdab8fe2f30e895ef0d4659063ad567ac82f8696a8cf0beaca26cbc",
+          "sourceIdentity": "github:agj/agj-userscripts/Taiwan ISRC to MusicBrainz/taiwan-isrc-to-musicbrainz.user.js",
+          "sourceUrl": "https://github.com/agj/agj-userscripts/blob/master/Taiwan%20ISRC%20to%20MusicBrainz/taiwan-isrc-to-musicbrainz.user.js",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "No equivalent",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Places a link on every Taiwan ISRC record page, which will open the MusicBrainz “add release” editor with many fields prefilled with that record's data.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null,
+          "acceptedReview": {
+            "submissionId": "D_kwDOSj7rds4Aq7xW",
+            "discussionNumber": 945,
+            "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/945",
+            "author": {
+              "id": "MDQ6VXNlcjg1NzY3",
+              "login": "majkinetor",
+              "url": "https://github.com/majkinetor"
+            },
+            "disposition": "accepted",
+            "verdict": "No equivalent",
+            "reviewedReport": "d5079ea591c46c4be942bc5ca0c1a8887485bce3daa5bedbea26edc0f83fffee"
+          },
+          "earlierHashes": [
+            "45aee7b2b36d8dd4279dc901f46c5785705f09154ad34649b5f9d8bed50afb81"
+          ]
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "f748a7e4bc975f70ef950391146650c321f7a11a8357bb3e371f8ba3976d829d",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/f748a7e4bc975f70ef950391146650c321f7a11a8357bb3e371f8ba3976d829d.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+          "sourceManifestSha256": "dfe48854716f3ecb535f9e232f3fe0ad1bcee0e43ff5c49e482f699b52af9473",
+          "collectedAt": "2026-11-07T18:55:51.247Z"
+        },
+        "updatedAt": "2026-11-08T18:38:26.843Z"
+      }
+    },
+    {
+      "id": "wiki-b01149720ce1b61f8f78",
+      "name": "VGMdb Musicbrainz Links",
+      "currentBasis": {
+        "name": "VGMdb Musicbrainz Links",
+        "hash": "ee4b36be70533460ee1a0af9b70d5c961c468aa3900e99b685fd583a6142a46a",
+        "wikiRevision": 79510,
+        "wikiRowHash": "70df8712b6d6853fd1b94623fa1c3d196df29031e089ac28218975a9ac275d72",
+        "sourceIdentity": "github:toadking/vgmdb-userscripts/vgmdb-musicbrainz-links.user.js",
+        "sourceUrl": "https://github.com/ToadKing/vgmdb-userscripts/blob/main/vgmdb-musicbrainz-links.user.js",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "No equivalent",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Add MusicBrainz links to VGMdb album pages.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null,
+        "acceptedReview": {
+          "submissionId": "D_kwDOSj7rds4Aq7xW",
+          "discussionNumber": 945,
+          "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/945",
+          "author": {
+            "id": "MDQ6VXNlcjg1NzY3",
+            "login": "majkinetor",
+            "url": "https://github.com/majkinetor"
+          },
+          "disposition": "accepted",
+          "verdict": "No equivalent",
+          "reviewedReport": "d5079ea591c46c4be942bc5ca0c1a8887485bce3daa5bedbea26edc0f83fffee"
+        },
+        "earlierHashes": [
+          "e022e9bfe1d48d1eaaf1502ccd312b45324b3c4643a50a7acc9f1ced8e4addd3"
+        ]
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Not applicable",
+        "note": "",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "VGMdb Musicbrainz Links",
+          "hash": "ee4b36be70533460ee1a0af9b70d5c961c468aa3900e99b685fd583a6142a46a",
+          "wikiRevision": 79510,
+          "wikiRowHash": "70df8712b6d6853fd1b94623fa1c3d196df29031e089ac28218975a9ac275d72",
+          "sourceIdentity": "github:toadking/vgmdb-userscripts/vgmdb-musicbrainz-links.user.js",
+          "sourceUrl": "https://github.com/ToadKing/vgmdb-userscripts/blob/main/vgmdb-musicbrainz-links.user.js",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "No equivalent",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Add MusicBrainz links to VGMdb album pages.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null,
+          "acceptedReview": {
+            "submissionId": "D_kwDOSj7rds4Aq7xW",
+            "discussionNumber": 945,
+            "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/945",
+            "author": {
+              "id": "MDQ6VXNlcjg1NzY3",
+              "login": "majkinetor",
+              "url": "https://github.com/majkinetor"
+            },
+            "disposition": "accepted",
+            "verdict": "No equivalent",
+            "reviewedReport": "d5079ea591c46c4be942bc5ca0c1a8887485bce3daa5bedbea26edc0f83fffee"
+          },
+          "earlierHashes": [
+            "e022e9bfe1d48d1eaaf1502ccd312b45324b3c4643a50a7acc9f1ced8e4addd3"
+          ]
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "f748a7e4bc975f70ef950391146650c321f7a11a8357bb3e371f8ba3976d829d",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/f748a7e4bc975f70ef950391146650c321f7a11a8357bb3e371f8ba3976d829d.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+          "sourceManifestSha256": "dfe48854716f3ecb535f9e232f3fe0ad1bcee0e43ff5c49e482f699b52af9473",
+          "collectedAt": "2026-11-07T18:55:51.247Z"
+        },
+        "updatedAt": "2026-11-08T18:38:41.994Z"
+      }
+    },
+    {
+      "id": "wiki-2923652c983b4af7171b",
+      "name": "MusicBrainz: Artwork Uploader Thumbnails Accelerator",
+      "currentBasis": {
+        "name": "MusicBrainz: Artwork Uploader Thumbnails Accelerator",
+        "hash": "940e546ab59c6230f5264b54b11d684d001699f38b72ee5ade5e96bc787d545c",
+        "wikiRevision": 79510,
+        "wikiRowHash": "01e7096732380a7db358c5709824aaea60225b272db460937d140f46f30b0c91",
+        "sourceIdentity": "https://update.greasyfork.org/scripts/544139/MusicBrainz%3A%20Artwork%20Uploader%20Thumbnails%20Accelerator.user.js",
+        "sourceUrl": "https://github.com/chaban-mb/userscripts/blob/4716398f15fd6349109cbdea3d99eff3304ea02e/src/MusicBrainz%20Artwork%20Uploader%20Thumbnails%20Accelerator.user.js",
+        "sourceVersion": "1.0.8",
+        "sourceHash": "b20ea5c4556ffccd4dd2461b72add5c7f762d89a0490f606148bc882eae749e1",
+        "sourceCommit": "4716398f15fd6349109cbdea3d99eff3304ea02e",
+        "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+        "baselineVerdict": "No equivalent",
+        "features": [
+          {
+            "id": "source.170722ddd4bc",
+            "name": "Notify users that the old thumbnail optimization is deprecated",
+            "coverage": "Gap",
+            "weight": 0,
+            "reason": "Current source contains no active thumbnail accelerator to replace.",
+            "evidence": [
+              {
+                "url": "https://github.com/chaban-mb/userscripts/blob/4716398f15fd6349109cbdea3d99eff3304ea02e/src/MusicBrainz%20Artwork%20Uploader%20Thumbnails%20Accelerator.user.js#L30",
+                "label": "Source implementation",
+                "sha256": "b20ea5c4556ffccd4dd2461b72add5c7f762d89a0490f606148bc882eae749e1",
+                "line": 30
+              }
+            ]
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null,
+        "acceptedReview": {
+          "submissionId": "D_kwDOSj7rds4Aq6q2",
+          "discussionNumber": 941,
+          "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/941",
+          "author": {
+            "id": "MDQ6VXNlcjg1NzY3",
+            "login": "majkinetor",
+            "url": "https://github.com/majkinetor"
+          },
+          "disposition": "accepted",
+          "verdict": "No equivalent",
+          "reviewedReport": "0bbd5c4c064d6753e5e28f89e0deef382b850f5e95fed304c053e4ea56a2fb86"
+        },
+        "earlierHashes": [
+          "b86523a2ead1417d4ad8a20ce7a10bddbba35a69ab31b6a3d7c6d0954c386504"
+        ]
+      },
+      "currentFinding": {
+        "summary": "The current upstream implementation only displays a deprecation message; its former optimization is reported as built into MusicBrainz by its author.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Not applicable",
+        "note": "",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "MusicBrainz: Artwork Uploader Thumbnails Accelerator",
+          "hash": "940e546ab59c6230f5264b54b11d684d001699f38b72ee5ade5e96bc787d545c",
+          "wikiRevision": 79510,
+          "wikiRowHash": "01e7096732380a7db358c5709824aaea60225b272db460937d140f46f30b0c91",
+          "sourceIdentity": "https://update.greasyfork.org/scripts/544139/MusicBrainz%3A%20Artwork%20Uploader%20Thumbnails%20Accelerator.user.js",
+          "sourceUrl": "https://github.com/chaban-mb/userscripts/blob/4716398f15fd6349109cbdea3d99eff3304ea02e/src/MusicBrainz%20Artwork%20Uploader%20Thumbnails%20Accelerator.user.js",
+          "sourceVersion": "1.0.8",
+          "sourceHash": "b20ea5c4556ffccd4dd2461b72add5c7f762d89a0490f606148bc882eae749e1",
+          "sourceCommit": "4716398f15fd6349109cbdea3d99eff3304ea02e",
+          "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+          "baselineVerdict": "No equivalent",
+          "features": [
+            {
+              "id": "source.170722ddd4bc",
+              "name": "Notify users that the old thumbnail optimization is deprecated",
+              "coverage": "Gap",
+              "weight": 0,
+              "reason": "Current source contains no active thumbnail accelerator to replace.",
+              "evidence": [
+                {
+                  "url": "https://github.com/chaban-mb/userscripts/blob/4716398f15fd6349109cbdea3d99eff3304ea02e/src/MusicBrainz%20Artwork%20Uploader%20Thumbnails%20Accelerator.user.js#L30",
+                  "label": "Source implementation",
+                  "sha256": "b20ea5c4556ffccd4dd2461b72add5c7f762d89a0490f606148bc882eae749e1",
+                  "line": 30
+                }
+              ]
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null,
+          "acceptedReview": {
+            "submissionId": "D_kwDOSj7rds4Aq6q2",
+            "discussionNumber": 941,
+            "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/941",
+            "author": {
+              "id": "MDQ6VXNlcjg1NzY3",
+              "login": "majkinetor",
+              "url": "https://github.com/majkinetor"
+            },
+            "disposition": "accepted",
+            "verdict": "No equivalent",
+            "reviewedReport": "0bbd5c4c064d6753e5e28f89e0deef382b850f5e95fed304c053e4ea56a2fb86"
+          },
+          "earlierHashes": [
+            "b86523a2ead1417d4ad8a20ce7a10bddbba35a69ab31b6a3d7c6d0954c386504"
+          ]
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "f748a7e4bc975f70ef950391146650c321f7a11a8357bb3e371f8ba3976d829d",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/f748a7e4bc975f70ef950391146650c321f7a11a8357bb3e371f8ba3976d829d.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+          "sourceManifestSha256": "dfe48854716f3ecb535f9e232f3fe0ad1bcee0e43ff5c49e482f699b52af9473",
+          "collectedAt": "2026-11-07T18:55:51.247Z"
+        },
+        "updatedAt": "2026-11-08T18:43:12.760Z"
+      }
+    },
+    {
+      "id": "wiki-be5b580068ca2e783a04",
+      "name": "Stig's Art Grabr",
+      "currentBasis": {
+        "name": "Stig's Art Grabr",
+        "hash": "a01e8cad10fba337a5e68f9fbab9c46d6e13587929675c0a74dc3bf0bd48f816",
+        "wikiRevision": 79510,
+        "wikiRowHash": "4872101ead4aa7fd1d62a8634866c52fbaab88d34b13b517b80b08ef1ab13d98",
+        "sourceIdentity": "github:stignygaard/stigs_art_grabr/Stigs_Art_Grabr.user.js",
+        "sourceUrl": "https://github.com/StigNygaard/Stigs_Art_Grabr/blob/539d461d3cd6435cc8cf871720d0698adc5407a5/Stigs_Art_Grabr.user.js",
+        "sourceVersion": "2026.07.22.1",
+        "sourceHash": "0164c2f805b30a373e556211bed87cd47e8a09cb000faca499a2f8550fa47d3e",
+        "sourceCommit": "539d461d3cd6435cc8cf871720d0698adc5407a5",
+        "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+        "baselineVerdict": "Replaceable",
+        "features": [
+          {
+            "id": "source.f1d28d2db8ee",
+            "name": "Rewrite supported provider image URLs to larger originals",
+            "coverage": "Covered",
+            "weight": 5,
+            "reason": "Art Station resolves original artwork for supported music providers.",
+            "evidence": [
+              {
+                "url": "https://github.com/StigNygaard/Stigs_Art_Grabr/blob/539d461d3cd6435cc8cf871720d0698adc5407a5/Stigs_Art_Grabr.user.js#L145",
+                "label": "Source implementation",
+                "sha256": "0164c2f805b30a373e556211bed87cd47e8a09cb000faca499a2f8550fa47d3e",
+                "line": 145
+              }
+            ]
+          },
+          {
+            "id": "source.84f57c6836da",
+            "name": "Show loaded image dimensions and open an original",
+            "coverage": "Covered",
+            "weight": 5,
+            "reason": "Art Station displays artwork metadata and original-image links.",
+            "evidence": [
+              {
+                "url": "https://github.com/StigNygaard/Stigs_Art_Grabr/blob/539d461d3cd6435cc8cf871720d0698adc5407a5/Stigs_Art_Grabr.user.js#L243",
+                "label": "Source implementation",
+                "sha256": "0164c2f805b30a373e556211bed87cd47e8a09cb000faca499a2f8550fa47d3e",
+                "line": 243
+              }
+            ]
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null,
+        "acceptedReview": {
+          "submissionId": "D_kwDOSj7rds4Aq6q2",
+          "discussionNumber": 941,
+          "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/941",
+          "author": {
+            "id": "MDQ6VXNlcjg1NzY3",
+            "login": "majkinetor",
+            "url": "https://github.com/majkinetor"
+          },
+          "disposition": "accepted",
+          "verdict": "Replaceable",
+          "reviewedReport": "0bbd5c4c064d6753e5e28f89e0deef382b850f5e95fed304c053e4ea56a2fb86"
+        },
+        "earlierHashes": [
+          "a67fd5c9e802a76dc5ae9f6ee0365dc29c5b96c9a3da43a90c32406a672cf7da"
+        ]
+      },
+      "currentFinding": {
+        "summary": "Art Station resolves original music artwork and displays dimensions; exact upstream site rules differ.",
+        "tools": [
+          "Art Station"
+        ],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "",
+        "note": "",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "Stig's Art Grabr",
+          "hash": "a01e8cad10fba337a5e68f9fbab9c46d6e13587929675c0a74dc3bf0bd48f816",
+          "wikiRevision": 79510,
+          "wikiRowHash": "4872101ead4aa7fd1d62a8634866c52fbaab88d34b13b517b80b08ef1ab13d98",
+          "sourceIdentity": "github:stignygaard/stigs_art_grabr/Stigs_Art_Grabr.user.js",
+          "sourceUrl": "https://github.com/StigNygaard/Stigs_Art_Grabr/blob/539d461d3cd6435cc8cf871720d0698adc5407a5/Stigs_Art_Grabr.user.js",
+          "sourceVersion": "2026.07.22.1",
+          "sourceHash": "0164c2f805b30a373e556211bed87cd47e8a09cb000faca499a2f8550fa47d3e",
+          "sourceCommit": "539d461d3cd6435cc8cf871720d0698adc5407a5",
+          "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+          "baselineVerdict": "Replaceable",
+          "features": [
+            {
+              "id": "source.f1d28d2db8ee",
+              "name": "Rewrite supported provider image URLs to larger originals",
+              "coverage": "Covered",
+              "weight": 5,
+              "reason": "Art Station resolves original artwork for supported music providers.",
+              "evidence": [
+                {
+                  "url": "https://github.com/StigNygaard/Stigs_Art_Grabr/blob/539d461d3cd6435cc8cf871720d0698adc5407a5/Stigs_Art_Grabr.user.js#L145",
+                  "label": "Source implementation",
+                  "sha256": "0164c2f805b30a373e556211bed87cd47e8a09cb000faca499a2f8550fa47d3e",
+                  "line": 145
+                }
+              ]
+            },
+            {
+              "id": "source.84f57c6836da",
+              "name": "Show loaded image dimensions and open an original",
+              "coverage": "Covered",
+              "weight": 5,
+              "reason": "Art Station displays artwork metadata and original-image links.",
+              "evidence": [
+                {
+                  "url": "https://github.com/StigNygaard/Stigs_Art_Grabr/blob/539d461d3cd6435cc8cf871720d0698adc5407a5/Stigs_Art_Grabr.user.js#L243",
+                  "label": "Source implementation",
+                  "sha256": "0164c2f805b30a373e556211bed87cd47e8a09cb000faca499a2f8550fa47d3e",
+                  "line": 243
+                }
+              ]
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null,
+          "acceptedReview": {
+            "submissionId": "D_kwDOSj7rds4Aq6q2",
+            "discussionNumber": 941,
+            "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/941",
+            "author": {
+              "id": "MDQ6VXNlcjg1NzY3",
+              "login": "majkinetor",
+              "url": "https://github.com/majkinetor"
+            },
+            "disposition": "accepted",
+            "verdict": "Replaceable",
+            "reviewedReport": "0bbd5c4c064d6753e5e28f89e0deef382b850f5e95fed304c053e4ea56a2fb86"
+          },
+          "earlierHashes": [
+            "a67fd5c9e802a76dc5ae9f6ee0365dc29c5b96c9a3da43a90c32406a672cf7da"
+          ]
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "f748a7e4bc975f70ef950391146650c321f7a11a8357bb3e371f8ba3976d829d",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/f748a7e4bc975f70ef950391146650c321f7a11a8357bb3e371f8ba3976d829d.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+          "sourceManifestSha256": "dfe48854716f3ecb535f9e232f3fe0ad1bcee0e43ff5c49e482f699b52af9473",
+          "collectedAt": "2026-11-07T18:55:51.247Z"
+        },
+        "updatedAt": "2026-11-08T18:44:16.553Z"
+      }
+    }
+  ]
+}

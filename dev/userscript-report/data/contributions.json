@@ -59,6 +59,19 @@
       "disposition": "accepted",
       "acceptedBy": "majkinetor",
       "decision": "Maintainer verdicts for 94 wiki-listed scripts that had no assessment yet."
+    },
+    {
+      "id": "D_kwDOSj7rds4Aq8dv",
+      "discussionNumber": 955,
+      "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/955",
+      "authorId": "MDQ6VXNlcjg1NzY3",
+      "createdAt": "2026-11-08T18:49:13Z",
+      "updatedAt": "2026-11-08T18:49:13Z",
+      "exportPath": "contributions/955.json",
+      "reportVersion": "f748a7e4bc975f70ef950391146650c321f7a11a8357bb3e371f8ba3976d829d",
+      "disposition": "accepted",
+      "acceptedBy": "majkinetor",
+      "decision": "Maintainer verdicts and capability assessments for seven script reviews incorporated."
     }
   ]
 }
