@@ -8,12 +8,14 @@ function runtime(idle, extra = {}, effects = ['Night']) {
   const timers = new Map(), listeners = new Map(), attrs = new Map();
   const saved = { mode: 'light', light: 'Default', dark: 'Default', idle, ...extra };
   const style = { setAttribute(k, v) { this[k] = v; }, isConnected: true };
+  const fade = { isConnected: false, textContent: '' };
+  let styles = 0;
   const pill = { setAttribute(k, v) { this[k] = v; }, remove() { this.isConnected = false; }, isConnected: false, innerHTML: '' };
   const root = { classList: { toggle() {} }, appendChild(n) { n.isConnected = true; }, setAttribute(k, v) { attrs.set(k, v); }, removeAttribute(k) { attrs.delete(k); }, toggleAttribute(k, v) { if (v) attrs.set(k, ''); else attrs.delete(k); } };
   const on = (name, fn) => listeners.set(name, fn);
   const context = vm.createContext({
     location: { hostname: 'test.musicbrainz.org' },
-    document: { documentElement: root, readyState: 'complete', createElement: tag => tag === 'div' ? pill : style, addEventListener: on },
+    document: { documentElement: root, readyState: 'complete', createElement: tag => tag === 'div' ? pill : styles++ ? fade : style, addEventListener: on },
     localStorage: { getItem: () => JSON.stringify(effects) }, sessionStorage: { getItem: () => null },
     GM_getValue: () => structuredClone(saved), GM_setValue: (k, v) => Object.assign(saved, v),
     setTimeout: (fn, ms) => { timers.set(++next, { at: now + ms, fn }); return next; },
@@ -21,7 +23,7 @@ function runtime(idle, extra = {}, effects = ['Night']) {
   });
   context.window = context; context.top = context; context.addEventListener = on;
   vm.runInContext(source.replace('__ST_THEMES__', JSON.stringify({ light: { Default: 'light', Other: 'other' }, dark: { Default: 'dark', Other: 'other-dark' } })), context);
-  return { saved, attrs, style, pill, api: context.__stTheme,
+  return { saved, attrs, style, pill, api: context.__stTheme, doc: context.document, fadeCss: () => fade.textContent,
     random(value) { context.Math = Object.create(Math); context.Math.random = () => value; },
     event: name => listeners.get(name)?.(),
     advance(ms) { now += ms; for (const [id, t] of timers) if (t.at <= now) { timers.delete(id); t.fn(); } },
@@ -111,4 +113,13 @@ test('theme info names the idle theme and effect, only while idle and not previe
   r.event('pointermove'); expect(r.pill.isConnected).toBe(false);
   r.api.set({ idle: { on: true, minutes: 1, theme: 'Other', effect: 'Night', info: false } }); r.advance(60000);
   expect(r.attrs.has('data-st-idle')).toBe(true); expect(r.pill.isConnected).toBe(false);
+});
+
+test('idle changes cross-fade through a view transition: slow in, quick out @unit', () => {
+  const r = runtime({ on: true, minutes: 1, theme: 'Other', effect: '' });
+  const fades = [];
+  r.doc.startViewTransition = fn => { fades.push(r.fadeCss()); fn(); };
+  r.advance(60000); expect(r.style.textContent).toBe('other'); expect(fades[0]).toContain('animation-duration:1500ms');
+  r.event('keydown'); expect(r.style.textContent).toBe('light'); expect(fades[1]).toContain('animation-duration:300ms');
+  r.event('keydown'); expect(fades.length).toBe(2);
 });

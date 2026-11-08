@@ -116,6 +116,18 @@ var __stTheme = (function () {
     idleChoice.variant = v;
     idleChoice.theme = randomPick(Object.keys(THEMES[v]), not);
   }
+  // Idle changes cross-fade: a view transition snapshots the page and fades it into the new theme.
+  // Without the API (or with reduced motion) the change is instant. Clicks land on the snapshot
+  // while it runs, so waking up gets a short fade.
+  var fadeStyle = null;
+  function fade(ms) {
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!document.startViewTransition || reduce || document.hidden) { apply(); return; }
+    if (!fadeStyle) { fadeStyle = document.createElement('style'); fadeStyle.id = 'st-fade'; }
+    fadeStyle.textContent = '::view-transition-group(root),::view-transition-old(root),::view-transition-new(root){animation-duration:' + ms + 'ms}';
+    if (!fadeStyle.isConnected) (document.head || document.documentElement).appendChild(fadeStyle);
+    try { document.startViewTransition(apply); } catch (e) { apply(); }
+  }
   function beginIdle() {
     var s = read(), was = idleChoice;
     idleChoice = { theme: s.idle.theme, effect: s.idle.effect };
@@ -124,13 +136,13 @@ var __stTheme = (function () {
       var fx = []; try { fx = JSON.parse(localStorage.getItem('mbu.ehFxPresets')) || []; } catch (e) {}
       idleChoice.effect = randomPick(Array.isArray(fx) ? fx : [], was && was.effect);
     }
-    idle = true; apply();
+    idle = true; fade(1500);
     // Continuous: each further idle period picks the Random parts again
     if (s.idle.cont && (s.idle.theme === '*' || s.idle.effect === '*')) idleTimer = setTimeout(beginIdle, s.idle.minutes * 60000);
   }
   function activity() {
     clearTimeout(idleTimer);
-    if (idle) { idle = false; idleChoice = null; apply(); }
+    if (idle) { idle = false; idleChoice = null; fade(300); }
     var s = read().idle;
     if (!onMb || window.top !== window || !s.on || (!s.theme && !s.effect)) return;
     idleTimer = setTimeout(beginIdle, s.minutes * 60000);

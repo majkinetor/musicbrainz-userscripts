@@ -64,7 +64,7 @@ With Event Horizon on and an effect preset saved in its settings, **Light effect
 
 Idle is on by default, with a random theme and effect after 5 minutes. In **General → Idle**, turn **Idle** on or off and set **After (minutes)**. **Idle theme** and **Idle effect** choose what appears after that much inactivity, on every MusicBrainz page including the homepage. **Current theme** or **Current effect** keeps that part unchanged; **No effect** hides effects. Effects use Event Horizon's presets and need that script enabled.
 
-Moving the pointer, typing, touching or scrolling restores your normal appearance. Idle choices leave your normal settings unchanged.
+The idle theme fades in slowly. Moving the pointer, typing, touching or scrolling fades your normal appearance back quickly. With reduced motion turned on in your system, changes are instant. Idle choices leave your normal settings unchanged.
 
 Idle themes always follow **Mode**: the chosen theme's light or dark version appears as appropriate. **Random** picks a theme or effect each time idle begins; a random theme also follows light/dark changes while idle.
 
