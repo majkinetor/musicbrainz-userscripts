@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08.193000
+// @version      2026.11.08.202626
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8708,9 +8708,12 @@ function hexPattern(layer, mode) {
     const toLayer = (x, y) => { const r = layer.getBoundingClientRect(); return [x - r.left, y - r.top]; };
     const fx = HEX_FX[mode]({ L, w, h, ctx, rnd, pick, tone, setMask, toLayer, P, c1 });
     let raf = 0, last = performance.now(), t = 0;
+    // an effect may ask for fewer frames than the screen's rate (Electricity: 30), which halves its cost on a 60 Hz screen and more on a faster one
+    const step = fx.fps ? 1000 / fx.fps - 2 : 0;
     const frame = now => {
         if (!layer.isConnected) { stop(); return; }
         raf = requestAnimationFrame(frame);
+        if (now - last < step) return;
         const dt = Math.min(.25, (now - last) / 1000); last = now; t += dt;
         fx.tick(dt, t);
     };
@@ -8805,7 +8808,9 @@ const HEX_FX = {
         const rgbOf = c => { ctx.fillStyle = '#000'; ctx.fillStyle = c; const v = ctx.fillStyle; return v[0] === '#' ? [1, 3, 5].map(k => parseInt(v.slice(k, k + 2), 16)) : v.match(/\d+/g).slice(0, 3).map(Number); };
         const mix = ([r, g, b], t, al) => `rgba(${r + (255 - r) * t | 0},${g + (255 - g) * t | 0},${b + (255 - b) * t | 0},${al})`;
         // a gradient along a path: hot where it starts, cooling toward the tip, with a few random hot knots
-        const grad = (p, rgb, hot, tip) => {
+        // made once per path and kept: building gradients every frame was a fifth of the effect's time
+        const grad = (p, rgb, hot, tip) => p.g || (p.g = gradNew(p, rgb, hot, tip));
+        const gradNew = (p, rgb, hot, tip) => {
             const [x0, y0] = p[0], [x1, y1] = p[p.length - 1];
             const g = ctx.createLinearGradient(x0, y0, x1 === x0 && y1 === y0 ? x1 + 1 : x1, y1);
             g.addColorStop(0, mix(rgb, hot, 1));
@@ -8821,11 +8826,18 @@ const HEX_FX = {
             const c = tone();
             return { pts: paths.map(p => knots(p.map(i => [L.xs[i], L.ys[i]]))), v, c, rgb: rgbOf(c), age: 0, grow: .18 / P.pace, life: rnd(.5, .9) * P.trail + .18 / P.pace };
         };
-        const line = (p, m) => { ctx.beginPath(); p.slice(0, m).forEach(([x, y], k) => ctx[k ? 'lineTo' : 'moveTo'](x, y)); ctx.stroke(); };
+        const line = (p, m) => { ctx.beginPath(); for (let k = 0; k < m && k < p.length; k++) ctx[k ? 'lineTo' : 'moveTo'](p[k][0], p[k][1]); ctx.stroke(); };
+        // the shadow blur is most of the cost, so only the bright core casts it; the faint halo strokes' shadows hardly showed
+        const blur = (on, b) => { ctx.shadowBlur = on ? b : 0; };
+        let blank = false;
         return {
+            fps: 30,
             tick(dt) {
                 due -= dt;
                 if (due <= 0) { const n = Math.random() < .35 ? 2 + (Math.random() < .3) : 1; for (let k = 0; k < n; k++) bolts.push(bolt()); due = rnd(.6, 3.2) / P.often; }
+                // nothing to draw: clear once, then leave the canvas alone
+                if (!bolts.length && !slow.length && slowDue > dt) { slowDue -= dt; if (!blank) { ctx.clearRect(0, 0, w, h); blank = true; } return; }
+                blank = false;
                 ctx.clearRect(0, 0, w, h);
                 // slow currents: long dim lines that fade in and out over several seconds, under the sparks
                 slowDue -= dt;
@@ -8833,9 +8845,9 @@ const HEX_FX = {
                 slow = slow.filter(s => (s.age += dt) < s.life);
                 for (const s of slow) {
                     const a = s.v * Math.sin(Math.PI * s.age / s.life) ** 2 * (.85 + .15 * Math.sin(s.age * 3.1)) * (Math.random() < .07 ? rnd(.15, .6) : 1);
-                    ctx.shadowBlur = (10 + 18 * s.v) * P.glow ** 1.5; ctx.shadowColor = s.c;
-                    for (const [lw, al, core] of [[10 * P.glow, .05 * P.glow], [4, .1], [1, .45, 1]]) {
-                        ctx.lineWidth = lw; ctx.globalAlpha = a * al; ctx.strokeStyle = core ? grad(s.pts, s.rgb, .55, .25) : s.c;
+                    const sb = (10 + 18 * s.v) * P.glow ** 1.5; ctx.shadowColor = s.c;
+                    for (const [lw, al, core] of [[10 * P.glow, .06 * P.glow], [4, .12], [1, .45, 1]]) {
+                        blur(core, sb); ctx.lineWidth = lw; ctx.globalAlpha = a * al; ctx.strokeStyle = core ? grad(s.pts, s.rgb, .55, .25) : s.c;
                         line(s.pts, s.pts.length);
                     }
                 }
@@ -8844,16 +8856,16 @@ const HEX_FX = {
                     const grown = Math.min(1, b.age / b.grow), fade = b.age < b.grow ? 1 : 1 - (b.age - b.grow) / (b.life - b.grow);
                     // it flickers hard while it strikes, then now and then as it fades
                     const a = b.v * fade * fade * (Math.random() < (b.age < b.grow * 1.5 ? .25 : .12) ? rnd(.3, .65) : 1);
-                    ctx.shadowColor = b.c; ctx.shadowBlur = (12 + 20 * b.v) * P.glow ** 1.5;
-                    for (const [lw, al, core] of [[9 * P.glow, .07 * P.glow], [3.5, .22], [1.2, 1, 1]]) {
-                        ctx.lineWidth = lw * (.6 + b.v * .5); ctx.globalAlpha = a * al;
+                    const sb = (12 + 20 * b.v) * P.glow ** 1.5; ctx.shadowColor = b.c;
+                    for (const [lw, al, core] of [[9 * P.glow, .08 * P.glow], [3.5, .26], [1.2, 1, 1]]) {
+                        blur(core, sb); ctx.lineWidth = lw * (.6 + b.v * .5); ctx.globalAlpha = a * al;
                         // the core is hotter the higher the voltage, and the forks run cooler than the main arc
                         b.pts.forEach((p, k) => { ctx.strokeStyle = core ? grad(p, b.rgb, Math.min(1, .55 + .35 * b.v) * (k ? .7 : 1), .35) : b.c; line(p, Math.max(2, Math.ceil(p.length * grown))); });
                     }
                 }
                 ctx.globalAlpha = 1; ctx.shadowBlur = 0;
             },
-            shift(d) { for (const b of bolts) for (const p of b.pts) for (const q of p) q[1] -= 48 * d; for (const s of slow) for (const q of s.pts) q[1] -= 48 * d; },
+            shift(d) { for (const b of bolts) for (const p of b.pts) { p.g = null; for (const q of p) q[1] -= 48 * d; } for (const s of slow) { s.pts.g = null; for (const q of s.pts) q[1] -= 48 * d; } },
         };
     },
     // a signal starts at one corner and spreads, branching, along the sides; what it passed glows and fades
