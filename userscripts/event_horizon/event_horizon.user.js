@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08.131500
+// @version      2026.11.08.141849
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4077,11 +4077,24 @@ const toggle = (arr, v) => arr.includes(v) ? arr.filter(x => x !== v) : [...arr,
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const MB = location.origin;
-// a page's h1: a subtitle after ": " or " - " (any dash) goes small on its own line, a long title shrinks, a very long one clamps to four lines
+// Only separators outside brackets introduce a subtitle.
+const heroTitleParts = t => {
+    const stack = [], pairs = { '(': ')', '[': ']', '{': '}' };
+    for (const m of t.matchAll(/[()[\]{}]|:\s+|\s+[-\u2010-\u2015\u2212]\s+/g)) {
+        const token = m[0];
+        if (pairs[token]) stack.push(pairs[token]);
+        else if (token === stack[stack.length - 1]) stack.pop();
+        else if (token.length > 1 && !stack.length && m.index > 0 && m.index + token.length < t.length) {
+            return [t.slice(0, m.index), t.slice(m.index + token.length)];
+        }
+    }
+    return [t];
+};
+// a page's h1: a subtitle goes small on its own line, a long title shrinks, a very long one clamps to four lines
 const heroH1 = (title, disambig, href) => {
-    const t = String(title == null ? '' : title), m = /^(.+?)(?::\s+|\s+[-\u2010-\u2015\u2212]\s+)(.+)$/s.exec(t), main = m ? m[1] : t, n = main.length;
+    const [main, sub] = heroTitleParts(String(title == null ? '' : title)), n = main.length;
     const cls = [n > 120 ? 'eh-l3' : n > 60 ? 'eh-l2' : '', n > 200 ? 'eh-tc' : ''].filter(Boolean).join(' ');
-    return `<h1${cls ? ` class="${cls}"` : ''}><span class="eh-tm">${href ? `<a href="${esc(href)}">${esc(main)}</a>` : esc(main)}</span>${m ? `<span class="eh-ts">${esc(m[2])}</span>` : ''}${disambig ? `<span class="disamb">(${esc(disambig)})</span>` : ''}${n > 200 ? '<button type="button" class="eh-tx">Show full title</button>' : ''}</h1>`;
+    return `<h1${cls ? ` class="${cls}"` : ''}><span class="eh-tm">${href ? `<a href="${esc(href)}">${esc(main)}</a>` : esc(main)}</span>${sub ? `<span class="eh-ts">${esc(sub)}</span>` : ''}${disambig ? `<span class="disamb">(${esc(disambig)})</span>` : ''}${n > 200 ? '<button type="button" class="eh-tx">Show full title</button>' : ''}</h1>`;
 };
 // a long title in a list: three lines, the whole of it in the tooltip
 const longT = t => String(t || '').length > 120 ? ` data-tip="${esc(t)}"` : '';
