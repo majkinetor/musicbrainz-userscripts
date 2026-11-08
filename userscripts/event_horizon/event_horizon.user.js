@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08.142408
+// @version      2026.11.08.144940
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4731,7 +4731,8 @@ function popFit(p) {
 }
 // a long press on a phone is a right-click: it opens the element's menu, never its tooltip as well
 window.addEventListener('contextmenu', ev => {
-    if (typeof _mbuTip === 'undefined' || !ev.target.closest) return;
+    if (!ev.target.closest) return;
+    const _mbuTip = mbuTipS();
     clearTimeout(_mbuTip.showT); _mbuTip.pend = null;
     const f = mbuTipFind(ev.target); _mbuTip.quiet = f ? f.el : null;
     if (_mbuTip.cur) mbuTipHide(true);
@@ -11136,8 +11137,8 @@ function histParse(html) {
         return {
             id: +((one ? a.textContent : a.getAttribute('href')).match(/\d+/) || [0])[0], type: a.textContent.replace(/^.*?#\d+\s*[-–]\s*/, '').trim(), tk: c[c.length - 1],
             st: histSt(h.className), ed: ed ? ed.textContent.trim() : '', t: histTime(el) || histNoteTime(notes),
-            can: !!vo, my: my ? my.value : vo ? '-2' : '', myt: mvt,
-            notes, votes: vc ? vc.textContent.replace(/\s+/g, ' ').replace(/^.*?:\s*/, '').trim() : '', det: det ? det.innerHTML : '',
+            can: !!vo, canNote: !!el.querySelector('textarea[name$=".edit_note"]'), cancel: h.querySelector('.cancel-edit a[href]')?.getAttribute('href') || '', my: my ? my.value : vo ? '-2' : '', myt: mvt,
+            notes, votes: vc ? (one ? vc.textContent : vc.textContent.replace(/^.*?:\s*/, '')).replace(/\s+/g, ' ').trim() : '', det: det ? det.innerHTML : '',
         };
     }).filter(Boolean);
     // still undated: an edit's number orders it in time, so it takes the date of the nearest older edit with one
@@ -11235,14 +11236,16 @@ const histShared = es => { if (es.length < 2) return null; const n = es[0].notes
 // your vote on an open edit: MusicBrainz's own vote form, one edit at a time
 const H_VOTES = [['1', 'Yes'], ['0', 'No'], ['-1', 'Abstain'], ['-2', 'None']];
 const histVote = e => `<div class="hvote" role="radiogroup" aria-label="Your vote"><span class="lb">Your vote</span>${H_VOTES.map(([v, t]) => `<button type="button" class="v${v}${e.my === v ? ' on' : ''}" role="radio" aria-checked="${e.my === v}" data-hvote="${e.id}:${v}">${t}</button>`).join('')}</div>`;
-// a note on an open edit goes through the same form, your vote kept
+// A note has its own permission: your own and closed edits have no vote controls. Keep a vote only when present.
 const histNoteForm = e => `<form class="hnadd" data-hnote="${e.id}"><textarea rows="3" placeholder="Add an edit note" aria-label="Edit note"></textarea><button type="submit">Add note</button></form>`;
 async function histNoteSend(fm) {
     const id = fm.dataset.hnote, e = data && data.edits && data.edits.find(x => String(x.id) === id), ta = fm.querySelector('textarea'), t = ta.value.trim(); if (!e || !t) return;
     const bt = fm.querySelector('button'); bt.disabled = ta.disabled = true;
+    const fields = { 'enter-vote.vote.0.edit_id': id, 'enter-vote.vote.0.edit_note': t, url: `${MB}/edit/${id}` };
+    if (e.can) fields['enter-vote.vote.0.vote'] = e.my || '-2';
     try {
         LOG.keep();
-        const r = await mbnFetch(`${MB}/edit/enter_votes`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ 'enter-vote.vote.0.edit_id': id, 'enter-vote.vote.0.vote': e.my || '-2', 'enter-vote.vote.0.edit_note': t, url: `${MB}/edit/${id}` }) });
+        const r = await mbnFetch(`${MB}/edit/enter_votes`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(fields) });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         const n = { by: ME, date: 'just now', text: t, html: esc(t).replace(/\n/g, '<br>') };
         e.notes.push(n); fm.insertAdjacentHTML('beforebegin', histNote(n)); ta.value = ''; LOG.info('Added a note to edit #' + id);
@@ -11271,7 +11274,7 @@ document.addEventListener('click', ev => {
 });
 function histEdit(e, sh) {
     const ns = sh ? e.notes.filter(n => hnKey(n) !== sh) : e.notes;
-    return `<details class="hed"><summary><span class="d">${histTm(e.t)}</span>${histIco(e.tk)}<span class="hty">${esc(e.type)}</span>${data.grp !== 'burst' && data.grp !== 'editor' ? `<span class="hwho">${e.ed ? `<a href="${MB}/user/${encodeURIComponent(e.ed)}">${esc(e.ed)}</a>` : 'Editor hidden'}</span>` : ''}<span class="hst ${e.st}"${e.votes ? ` data-tip="${esc(e.votes[0].toUpperCase() + e.votes.slice(1))}"` : ''}>${H_ST[e.st]}</span>${ns.length ? `<span class="hnc" data-tip="${ns.length} edit note${ns.length > 1 ? 's' : ''}">💬 ${ns.length}</span><span class="hnp">${esc(ns[0].text.slice(0, 140))}</span>` : ''}${!e.can && e.myt && !/^none$/i.test(e.myt) ? `<span class="hmy" data-tip="Your vote">${esc(e.myt)}</span>` : ''}<a class="id" href="${MB}/edit/${e.id}">#${e.id}</a></summary><div class="hdt">${e.can ? histVote(e) : ''}${e.det}${ns.map(histNote).join('')}${e.can ? histNoteForm(e) : ''}</div></details>`;
+    return `<details class="hed"><summary><span class="d">${histTm(e.t)}</span>${histIco(e.tk)}<span class="hty">${esc(e.type)}</span>${histOne(data.id) || (data.grp !== 'burst' && data.grp !== 'editor') ? `<span class="hwho">${e.ed ? `<a href="${MB}/user/${encodeURIComponent(e.ed)}">${esc(e.ed)}</a>` : 'Editor hidden'}</span>` : ''}<span class="hst ${e.st}"${e.votes ? ` data-tip="${esc(e.votes[0].toUpperCase() + e.votes.slice(1))}"` : ''}>${H_ST[e.st]}</span>${ns.length ? `<span class="hnc" data-tip="${ns.length} edit note${ns.length > 1 ? 's' : ''}">💬 ${ns.length}</span><span class="hnp">${esc(ns[0].text.slice(0, 140))}</span>` : ''}${!e.can && e.myt && !/^none$/i.test(e.myt) ? `<span class="hmy" data-tip="Your vote">${esc(e.myt)}</span>` : ''}<a class="id" href="${MB}/edit/${e.id}">#${e.id}</a></summary><div class="hdt">${e.can ? histVote(e) : ''}${histOne(data.id) ? `<div class="hql">${e.votes ? `<span>Vote tally: ${esc(e.votes)}</span>` : ''}${e.cancel ? `<a href="${esc(e.cancel)}">Cancel edit</a>` : ''}</div>` : ''}${e.det}${ns.map(histNote).join('')}${e.canNote ? histNoteForm(e) : ''}</div></details>`;
 }
 // a group's edits, a run of one type folded into one line
 function histRuns(es) {
