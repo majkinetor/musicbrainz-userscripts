@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.104441
+// @version      2026.11.08.124000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -4447,7 +4447,7 @@ function fsStyle() {
         + '.fs-note{color:var(--fs-muted);font-size:11px}'
         + '.fs-settings{position:fixed;z-index:2147483001;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:8px;padding:10px 14px;width:max-content;min-width:300px;max-width:min(460px,calc(100vw - 28px));box-sizing:border-box;box-shadow:0 8px 26px rgba(0,0,0,.25);font:13px -apple-system,Segoe UI,Arial,sans-serif}'
         + '.fs-settings .fs-ver{font-size:11px;color:var(--mbu-text-weak);font-weight:normal}'
-        + '.fs-opt{display:block;margin:8px 0;font-size:12px}'
+        + '.fs-opt{display:block;margin:8px 0;font-size:12px}#fs-settings .mbu-cfg-ver{flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis}'
         + '.fs-opt textarea{width:100%;box-sizing:border-box;margin-top:4px;font-size:12px;font-family:inherit}'
         // log viewer — ported from apollo_editor's #283 window (wider, centred,
         // minimize/restore, badge, per-severity colouring), in Fusion's light palette.
