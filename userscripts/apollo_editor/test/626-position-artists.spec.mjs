@@ -47,7 +47,8 @@ test('track artists matched by their position on other editions', { tag: ['@sand
   const ed = await mbJson(`https://test.musicbrainz.org/ws/2/release/${EDITION}?inc=recordings+artist-credits&fmt=json`);
   const T = n => { const t = ed.media[0].tracks.find(x => x.position === n); return { title: t.title, length: t.length, gids: t['artist-credit'].map(a => a.artist.id), names: t['artist-credit'].map(a => a.artist.name) }; };
   const reqs = [];
-  page.on('request', q => { const u = q.url(); if (/\/ws\/2\/release\b/.test(u)) reqs.push(u.replace('https://test.musicbrainz.org', '')); });
+  // answered reads only: a throttled read isn't cached, and the retry that follows is the same read
+  page.on('response', r => { const u = r.url(); if (r.ok() && /\/ws\/2\/release\b/.test(u)) reqs.push(u.replace('https://test.musicbrainz.org', '')); });
   const logText = () => page.evaluate(() => window.__apolloEditor.logMarkdown ? window.__apolloEditor.logMarkdown() : '');
 
   async function seedAndMatch(withRg) {

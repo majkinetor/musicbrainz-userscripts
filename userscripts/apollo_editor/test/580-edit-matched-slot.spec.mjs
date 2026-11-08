@@ -10,7 +10,7 @@
 //
 // A seeded release whose artist auto-matches; MusicBrainz's search answers replayed from
 // production (RECORD_WS=1), so the match is the same every run. Nothing is submitted.
-import { test, check, replayWs, until } from '../../../dev/test/harness.mjs';
+import { test, check, replayWs, until, answerGm } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
@@ -19,7 +19,8 @@ test('a matched slot being edited is left alone until it loses focus', { tag: ['
   const ws = await replayWs(page, new URL('./fixtures/ws-580.json.gz', import.meta.url));
   // #652: the release artist goes through every stage now, and the batched alias read for the
   // candidates holds a different set of artists from run to run; aliases only label the picker
-  await page.route(/\/ws\/2\/artist\?query=arid%3A/, r => r.fulfill({ status: 200, contentType: 'application/json', body: '{"count":0,"artists":[]}' }));
+  // (through answerGm: replayWs answers MusicBrainz there, before any page route sees the call)
+  answerGm(page.context(), ({ url }) => (/\/ws\/2\/artist\?query=arid%3A/.test(url) ? { status: 200, body: '{"count":0,"artists":[]}' } : null));
   const seed = { name: 'Apollo 580 fixture', 'artist_credit.names.0.name': 'Miles Davis', 'mediums.0.format': 'CD' };
   ['So What', 'Blue in Green'].forEach((t, i) => { seed[`mediums.0.track.${i}.name`] = t; seed[`mediums.0.track.${i}.artist_credit.names.0.name`] = 'Miles Davis'; });
   await page.clock.install();   // "well past the 400 ms rebuild" is run out on it, below
