@@ -35,7 +35,8 @@ test('the cover-art page fits a phone screen', { tag: ['@sandbox', '@cosmetic'] 
   if (process.env.SHOTS) await page.screenshot({ path: process.env.SHOTS + '/as-mobile-sel.png' });
   check(sb.h <= 50 && sb.back && sb.more && !sb.add && sb.right <= sb.vw, `the selection bar is one row with ← and ⋯ (${JSON.stringify(sb)})`);
   await page.click('#as-root .as-selmore');
-  check(await page.locator('.as-more-pop button').count() === 3, 'the ⋯ menu holds select all, invert and clear');
+  const acts = await page.locator('.as-more-pop button').evaluateAll(a => a.map(b => b.dataset.a).filter(a => a !== 'rep').join());   // a phone's ⋯ also takes Report (30b9eb29)
+  check(acts === 'all,inv,clr', `the ⋯ menu holds select all, invert and clear (${acts})`);
   await page.click('.as-more-pop [data-a=inv]');
   check(await page.locator('#as-root .as-selback').count() === 0, 'inverting a full selection empties it');
   await page.evaluate(() => document.querySelector('#as-root .as-selall').click());

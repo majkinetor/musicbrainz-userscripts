@@ -54,17 +54,17 @@ test('#784: the stores with one image each share a row of the other images', { t
   });
   const tagOf = () => frame.evaluate(() => {
     const tag = c => (window.__asTest.mc.model().find(x => String(x.id) === c.dataset.id) || {})._tag;
-    return [...document.querySelectorAll('.as-sec-more')].map(h => ({ t: h.querySelector('h3').textContent, cards: [...h.nextElementSibling.querySelectorAll('.as-card')].map(tag).join() }));
+    return [...document.querySelectorAll('.as-sec-more')].map(h => ({ t: h.querySelector('h3').textContent, hint: h.nextElementSibling.textContent, cards: [...h.nextElementSibling.nextElementSibling.querySelectorAll('.as-card')].map(tag).join() }));
   });
   const rows = await until(tagOf, v => v.length === 2 && !/checking/.test(JSON.stringify(v)));
   console.log(JSON.stringify(rows));
   check(rows.length === 2, `two rows: the shared one and Discogs' (${JSON.stringify(rows)})`);
-  check(/one from each store/.test(rows[0].t) && rows[0].cards === 'q1,t1', `the one-image stores share the first row, the largest first (${JSON.stringify(rows[0])})`);
+  check(rows[0].t === 'More images' && /One from each store/.test(rows[0].hint) && rows[0].cards === 'q1,t1', `the one-image stores share the first row, the largest first (${JSON.stringify(rows[0])})`);
   check(/Discogs/.test(rows[1].t) && rows[1].cards === 'd1,d2', `Discogs keeps its own row (${JSON.stringify(rows[1])})`);
   await until(() => frame.evaluate(() => !!document.querySelector('.as-sec-more .as-more-all:not([disabled])')));
   const alls = await frame.evaluate(() => [...document.querySelectorAll('.as-sec-more')].map(h => !!h.querySelector('.as-more-all')).join());
   check(alls === 'true,true', `take all in on both rows, the shared one too (${alls})`);
-  const card = frame.locator('.as-sec-more + .as-grid .as-card').first();
+  const card = frame.locator('.as-sec-more + .as-sec-hint + .as-grid .as-card').first();
   const look = () => card.evaluate(c => ({ img: getComputedStyle(c.querySelector('.as-thumb img')).opacity, take: getComputedStyle(c.querySelector('.as-undo')).opacity }));
   await page.mouse.move(5, 5);
   const off = await until(look, v => v.take === '0');
@@ -81,7 +81,7 @@ test('#784: the stores with one image each share a row of the other images', { t
   check(seen[1] !== seen[0] && seen[2] === seen[0], `full screen goes through the row's two only (${seen.map(x => x.slice(-12))})`);
   await frame.locator('body').press('Escape');
   const took = await frame.evaluate(async () => {
-    document.querySelector('.as-sec-more + .as-grid .as-card .as-undo').click();
+    document.querySelector('.as-sec-more + .as-sec-hint + .as-grid .as-card .as-undo').click();
     await new Promise(r => setTimeout(r, 300));
     return window.__asTest.mc.model().filter(x => x._tag && x._mcOffer && !x._del).map(x => x._tag).sort().join();
   });
