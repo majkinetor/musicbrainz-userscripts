@@ -106,6 +106,9 @@ const out = [
 const seen = new Set();
 for (const p of parts) for (const [k, v] of p.meta) {
   if (!MULTI.has(k)) continue;
+  // a member's @exclude is its own, kept by its URL gate: in the bundle's header it would keep every member
+  // off those pages (Mission Control's left out every release subpage, Art Station's and Apollo's included)
+  if (k === 'exclude') continue;
   const id = `${k}\t${v}`;
   if (seen.has(id)) continue;
   seen.add(id);
