@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.104441
+// @version      2026.11.08.132748
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -7657,8 +7657,26 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
          is wider than a phone; each label goes above its field instead */
       #release-editor #information :is(table,tbody,tr,th,td){display:block;width:auto;text-align:left}
       #release-editor #information :is(th,td){padding:2px 0;text-align:left!important}
-      #release-editor #information tr{margin-bottom:6px}
+      #release-editor #information tr{margin-bottom:4px}
+      /* MusicBrainz right-aligns its labels (they sat at the far right of their own line, off it when narrow):
+         a small caption at the left, right above the field */
+      #release-editor #information label{display:inline;float:none;width:auto;text-align:left!important;margin:0}
+      #release-editor #information table.row-form > tbody > tr > td:first-child:has(> label){padding:0 0 1px}
+      /* the empty error rows (shown only on a missing field) no longer leave a gap each */
+      #release-editor #information tr.error:not(:has(> td.error:not([style*="none"]))){display:none}
+      /* the Artist caption shows, and the credited-as box goes on its own line above the artist, not out into a label column there isn't */
+      body.tc-ri-on #information td.tc-ri-artlbl > label[for]{display:inline!important}
+      #information .tc-ri-art .tc-aslot{display:flex;flex-wrap:wrap}
+      .tc-ri-art .tc-ri-leadrow{position:static;flex:1 0 100%;width:auto;justify-content:flex-start;margin:0 0 4px}
+      .tc-ri-art .tc-ri-leadrow:not(:has(input,svg,img,.tc-ico)){display:none}
       #release-editor #information :is(input[type=text],select,textarea,.ui-autocomplete-input){max-width:100%;box-sizing:border-box}
+      /* the fields that fill the column stay inside it on a narrow phone (MusicBrainz sizes them by characters) */
+      #release-editor #information :is(span.autocomplete,select,input#name,input#comment,#release-group input,#barcode){max-width:100%!important;min-width:0!important;box-sizing:border-box}
+      #release-editor #information .tc-rg-seg{flex-wrap:wrap;max-width:100%}
+    #release-editor #information fieldset{min-width:0}
+    #release-editor #information #tc-ri-rightcol{min-width:0!important;max-width:100%;box-sizing:border-box}
+    #release-editor #information td:has(> input#name){display:flex;align-items:center;gap:2px}
+    #release-editor #information input#name{flex:1 1 0;width:auto!important}
       #release-editor .documentation{display:none}
       /* search & replace: the fields share the row and wrap rather than run off it under large text */
       .tc-opt{flex:0 1 auto;min-width:0;max-width:100%;flex-wrap:wrap}
@@ -16194,7 +16212,17 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       body.tc-ri-on form.tc-ent-form table.rel-editor-table td{display:block;width:auto!important;padding:2px 0 0 14px!important}
       /* Enter edit and Cancel stay on screen */
       body.tc-ri-on:has(form.tc-ent-form) #tc-nav-bar{position:fixed!important;top:0;left:0;right:0;z-index:50;padding:5px 8px 6px!important;margin:0!important}
-      body.tc-ri-on:has(form.tc-ent-form):has(#tc-nav-bar) #content{padding-top:46px}
+      body.tc-ri-on:has(form.tc-ent-form):has(#tc-nav-bar) #content{padding-top:44px}
+      /* one low row: Enter edit · the type's icon and the name, cut to … · Cancel (two rows hid the form's top under it) */
+      body.tc-ri-on:has(form.tc-ent-form) #tc-nav-bar{flex-wrap:nowrap!important;gap:6px!important;height:38px;box-sizing:border-box;overflow:hidden}
+      body.tc-ri-on:has(form.tc-ent-form) :is(#tc-nav-left,#tc-nav-pager){flex:none;order:0}
+      body.tc-ri-on:has(form.tc-ent-form) .tc-nav-wbtn{padding:3px 4px}
+      body.tc-ri-on.tc-zen-on:has(form.tc-ent-form) #tc-nav-title{order:0;flex:1 1 0;min-width:0;padding:0;text-align:left}
+      body.tc-ri-on:has(form.tc-ent-form) #tc-nav-title .tc-nav-split{gap:6px;justify-content:flex-start}
+      body.tc-ri-on:has(form.tc-ent-form) #tc-nav-title .tc-nav-kind{font-size:0;letter-spacing:0;gap:0;padding-right:6px}
+      body.tc-ri-on:has(form.tc-ent-form) #tc-nav-title :is(.tc-nav-title-album,.tc-nav-title-artist){white-space:nowrap!important}
+      body.tc-ri-on:has(form.tc-ent-form) #tc-nav-title .tc-nav-title-album{font-size:13px}
+      body.tc-ri-on:has(form.tc-ent-form) #tc-nav-title .tc-nav-title-artist{font-size:11px}
     }`;
     document.head.appendChild(s);
   }
