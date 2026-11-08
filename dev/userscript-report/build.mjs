@@ -54,8 +54,18 @@ entries=entries.map(entry=>{
 });
 const contributions=read('contributions.json');
 const exportsByPath=new Map(contributions.submissions.map(s=>{const data=read(s.exportPath);readReviewBundle(data);return [s.exportPath,data];}));
-entries=applyContributions(entries,contributions,exportsByPath).map(entry=>{
+const withContributions=manifest=>applyContributions(entries,manifest,exportsByPath).map(entry=>{
   if(entry.acceptedReview||entry.acceptedNotes.length||entry.features.some(f=>f.acceptedContribution))entry.basis={...entry.basis,features:entry.features,hash:hash(entry.basis.hash+JSON.stringify({acceptedReview:entry.acceptedReview,features:entry.features,acceptedNotes:entry.acceptedNotes})),baselineVerdict:entry.verdict,acceptedReview:entry.acceptedReview};
+  return entry;
+});
+// A review made before some accepted submissions still holds when only those
+// submissions changed the row: earlierHashes lists the row's fingerprint after
+// each earlier set of accepted submissions, under the current source analysis.
+const accepted=[...contributions.submissions].filter(s=>s.disposition==='accepted').sort((a,b)=>a.updatedAt.localeCompare(b.updatedAt)||a.id.localeCompare(b.id));
+const earlier=accepted.map((_,n)=>withContributions({...contributions,submissions:accepted.slice(0,n)}));
+entries=withContributions(contributions).map((entry,i)=>{
+  const hashes=[...new Set(earlier.map(list=>list[i].basis.hash))].filter(h=>h!==entry.basis.hash);
+  if(hashes.length)entry.basis={...entry.basis,earlierHashes:hashes};
   return entry;
 });
 // Retain the raw wiki and old exports, but compare third-party tools only.

@@ -36,7 +36,7 @@ Accepted explicit verdicts update the shared report's outcome. Original code-lev
 
 Changes save to browser `localStorage` under `mb-userscripts:926:reviews:v1`. A storage failure is shown explicitly; export still works from memory. Keep the same file path and browser, or use **Import reviews** after moving it. Browser storage is not a backup: the export is the portable copy.
 
-Import validates the format before modifying data. Newer script-level edits win on conflict and posted comments are combined. Reviews for missing entries remain in exports. A changed baseline marks your review **Needs recheck**, preserving both old and current source context; **Confirm against this snapshot** explicitly advances its baseline. Feature notes for removed capabilities remain available rather than being discarded.
+Import validates the format before modifying data. Newer script-level edits win on conflict and posted comments are combined. Reviews for missing entries remain in exports. A changed source or analysis marks your review **Needs recheck**, and so does an accepted verdict that differs from yours; your own review being accepted does not. The export keeps both the reviewed and the current version; **Keep my review for this version** moves the review onto the current one. **Revert** on a row clears that script's review, and **Start over** clears them all. Feature notes for removed capabilities remain available rather than being discarded.
 
 ## Feature weights
 
