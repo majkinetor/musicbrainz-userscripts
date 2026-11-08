@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08.145755
+// @version      2026.11.08.160834
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3024,6 +3024,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .popwrap{position:relative;display:inline-flex}
 .pop{position:absolute;top:calc(100% + 6px);left:0;z-index:15;min-width:280px;max-width:min(360px,calc(100vw - 32px));max-height:440px;overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 16px 40px var(--shadow);padding:8px}
 .pop.r{left:auto;right:0}
+.secthead:has(.pop.pop-fx:not([hidden])){clip-path:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}.secthead>.tools:has(.pop.pop-fx:not([hidden])){-webkit-mask-image:none!important;mask-image:none!important}
 .pop.more-sites{width:max-content;max-width:min(980px,calc(100vw - 32px));max-height:min(640px,calc(100vh - 120px));padding:10px 12px}
 .more-sites .mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0 6px;width:min(940px,calc(100vw - 56px))}
 .more-sites .mg .row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -4725,12 +4726,23 @@ function rlQuiet(r, scope = '', rgl = []) {
 
 // a menu that would run off the window's side is moved back inside it (a narrow phone screen)
 function popFit(p) {
-    p.style.translate = '';
+    p.style.translate = p.style.position = p.style.top = p.style.left = p.style.right = '';
+    p.classList.remove('pop-fx');
     if (p.hidden) return;
-    const r = p.getBoundingClientRect(), w = document.documentElement.clientWidth, m = 8;
+    const w = document.documentElement.clientWidth, m = 8, bar = p.closest('.tools');
+    // a toolbar that scrolls sideways (a phone) clips what opens inside it, so the menu is placed against the window
+    if (bar && getComputedStyle(bar).overflowX !== 'visible') {
+        const t = p.parentElement.querySelector('[data-pop]').getBoundingClientRect();
+        p.classList.add('pop-fx');
+        const pw = p.offsetWidth, ph = p.offsetHeight;
+        Object.assign(p.style, { position: 'fixed', right: 'auto', left: Math.max(m, Math.min(t.right - pw, w - m - pw)) + 'px', top: Math.max(m, Math.min(t.bottom + 6, innerHeight - m - ph)) + 'px' });
+        return;
+    }
+    const r = p.getBoundingClientRect();
     const dx = r.right > w - m ? Math.max(m - r.left, w - m - r.right) : r.left < m ? m - r.left : 0;
     if (dx) p.style.translate = dx + 'px 0';
 }
+window.addEventListener('scroll', () => { const p = document.querySelector('.pop.pop-fx:not([hidden])'); if (p) popFit(p); }, { capture: true, passive: true });
 // a long press on a phone is a right-click: it opens the element's menu, never its tooltip as well
 window.addEventListener('contextmenu', ev => {
     if (!ev.target.closest) return;
@@ -9382,7 +9394,7 @@ function render(keepPop) {
         const lks = [...tl.querySelectorAll('.tr .lk')], w = Math.max(0, ...lks.map(e => e.offsetWidth));
         if (w) for (const e of lks) e.style.minWidth = w + 'px';
     }
-    if (keepPop) { const p = document.getElementById('pop-' + keepPop); if (p) { p.hidden = false; p.scrollTop = popTop || 0; const t = $(`[data-pop="${keepPop}"]`); if (t) t.setAttribute('aria-expanded', 'true'); } }
+    if (keepPop) { const p = document.getElementById('pop-' + keepPop); if (p) { p.hidden = false; popFit(p); p.scrollTop = popTop || 0; const t = $(`[data-pop="${keepPop}"]`); if (t) t.setAttribute('aria-expanded', 'true'); } }
     secRail(app);
     if (keepPop === 'collections') { const p = $('#pop-collections'); if (p) { p.hidden = false; $('[data-pop="collections"]').setAttribute('aria-expanded', 'true'); popFit(p); } }
     fitQuiet();
