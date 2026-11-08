@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.190707
+// @version      2026.11.08.210524
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15998,7 +15998,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   // Primary and secondary type as segmented bars; the selects stay the form's fields, the bars only set them.
   // Called again it repaints: Knockout sets the release editor's selects without a change event, and disables them under an existing release group
-  // defKey: right-clicking a button makes it the default (toggles it among several on a multi bar), stored under that key as comma-joined values and applied to a new release
+  // defKey: right-clicking a button makes it the default (toggles it among several on a multi bar), stored under that key as comma-joined values and applied to a new release, and on an existing one to a field left empty
+  //   (types under an existing release group are disabled there, so they keep theirs)
   // fit: a wide row of its own, Pseudo-Release (status 4, by value: its label is translated) cut to its first word
   // fold: { common, rare } option values; only the common ones show, the rest sit behind a "+N" button that opens them in a row below.
   //   A selected rare one joins the main row, so a closed bar stays one line; while open, nothing moves out from under the pointer
@@ -16071,7 +16072,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         if (f) f.focus();
       };
     }
-    if (defKey && /\/release\/add/.test(location.pathname) && !sel.value.trim()) {
+    if (defKey && /\/release\/(add|[0-9a-f-]{36}\/edit)/.test(location.pathname) && !sel.disabled && !sel.value.trim()) {
       const d = [...sel.options].filter(x => defs().includes(x.value));
       if (d.length) { d.forEach(x => { x.selected = true; }); sel.dispatchEvent(new Event('change', { bubbles: true })); }
     }
