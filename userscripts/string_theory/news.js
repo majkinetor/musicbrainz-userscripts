@@ -276,7 +276,7 @@ function stNewsOpen() {
     if (page) return moreFill();
     stNewsGet(ST_NEWS_API + '&page=1', ST_NEWS_FULL, function (t, head) {
       if (t === null) { busy = false; failed = true; if (ov.isConnected) draw(); return; }
-      var last = /[?&]page=(d+)>;s*rel="last"/.exec(head);
+      var last = /[?&]page=(\d+)>;\s*rel="last"/.exec(head);
       page = last ? +last[1] : 0;
       if (!page) moreGot(t);
       moreFill();

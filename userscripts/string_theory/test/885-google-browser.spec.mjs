@@ -7,22 +7,15 @@ test.use({ gm: { name: 'String Theory', persist: true, values: {
   'string_theory.sync.auth': { refreshToken: { token: 'dropbox-retained' } },
 } } });
 
-test('Google provider connects for backups only and retains Dropbox when disconnected', { tag: '@sandbox' }, async ({ page, context, inject }, info) => {
-  const server = googleCloud();
+test('Google provider connects and retains Dropbox when disconnected', { tag: '@sandbox' }, async ({ page, context, inject }, info) => {
+  const server = googleCloud(), refreshed = [];
   await answerGm(context, async opts => {
+    if (opts.url === 'https://oauth2.googleapis.com/token') { refreshed.push(String(opts.data)); return { status: 200, body: JSON.stringify({ access_token: 'google-token', expires_in: 3600, token_type: 'Bearer' }), headers: 'content-type: application/json' }; }
     if (!opts.url.startsWith('https://www.googleapis.com/')) return null;
     const r = await server.request(opts); return { status: r.status, body: r.text, headers: r.headers };
   });
-  await page.route('https://accounts.google.com/gsi/client', route => route.fulfill({ contentType: 'text/javascript', body: `
-    window.google = { accounts: { oauth2: {
-      hasGrantedAllScopes: (r,s) => r.scope === s,
-      initTokenClient: config => ({ requestAccessToken: () => {
-        window.__googleRequest = {clientId:config.client_id,scope:config.scope,include:config.include_granted_scopes};
-        config.callback({ access_token:'google-token', expires_in:3600, token_type:'Bearer', scope:config.scope });
-      } })
-    } } };
-  ` }));
   const prepare = () => {
+    window.GM_openInTab = url => { window.__authorize = url; };   // the redirect code flow (dc4a1f9b) opens Google's page
     const xhr = window.GM_xmlhttpRequest;
     window.GM_xmlhttpRequest = opts => xhr({ ...opts, data: opts.data instanceof ArrayBuffer ? new TextDecoder().decode(opts.data) : opts.data });
   };
@@ -31,12 +24,17 @@ test('Google provider connects for backups only and retains Dropbox when disconn
   await open(); await page.locator('#st-sync-provider').selectOption('google');
   await expect(page.locator('#st-sync-connect')).toHaveText('Connect');
   await page.locator('#st-sync-connect').click();
+  await expect.poll(() => page.evaluate(() => window.__authorize || '')).toContain('code_challenge=');
+  const auth = new URL(await page.evaluate(() => window.__authorize)).searchParams;
+  expect({ clientId: auth.get('client_id'), scope: auth.get('scope'), access: auth.get('access_type') }).toEqual({ clientId: '762250056217-8uip1j2fusc9npm4fievee31btjqf02o.apps.googleusercontent.com', scope: 'https://www.googleapis.com/auth/drive.file', access: 'offline' });
+  // the callback's token exchange is 946-oauth-retry's; here the tokens it leaves behind
+  await page.evaluate(() => { GM_setValue('string_theory.sync.google.auth', { accessToken: { token: 'google-token', expiresAt: Date.now() + 3600e3 }, refreshToken: { token: 'google-refresh' } }); GM_deleteValue('string_theory.sync.oauth'); });
+  await page.reload(); await page.evaluate(prepare); await inject('string_theory');
+  await open();
   await expect(page.locator('#st-sync-connect')).toHaveText('Reconnect');
   await expect(page.locator('#st-sync-status')).toBeHidden();
-  expect(await page.evaluate(() => window.__googleRequest)).toEqual({ clientId: '762250056217-8uip1j2fusc9npm4fievee31btjqf02o.apps.googleusercontent.com', scope: 'https://www.googleapis.com/auth/drive.file', include: false });
-  await expect(page.locator('#st-sync-google-message')).toContainText('Sync is disabled');
-  await expect(page.locator('#st-sync-controls')).toBeHidden();
-  for (const id of ['now', 'push', 'pull', 'auto']) await expect(page.locator('#st-sync-' + id)).toBeDisabled();
+  await expect(page.locator('#st-sync-controls')).toBeVisible();   // Google syncs again since dc4a1f9b
+  for (const id of ['now', 'push', 'pull']) await expect(page.locator('#st-sync-' + id)).toBeEnabled();
   await page.locator('#st-sync-remote-backup').click();
   await expect(page.locator('#st-sync-backup-status')).toHaveText('Backup saved to Google Drive.');
   await page.locator('#st-sync-remote-import').click();
@@ -56,12 +54,12 @@ test('Google provider connects for backups only and retains Dropbox when disconn
   await expect(page.locator('#st-sync-backups')).toHaveText('No remote backups yet.');
   await page.locator('#st-sync-backup-close').click();
   expect([...server.files.values()].filter(f => f.trashed)).toHaveLength(1);
-  const before = server.calls.length;
+  // an expired access token is renewed with the refresh token (dc4a1f9b), not a new connection
   await page.evaluate(() => { const a = GM_getValue('string_theory.sync.google.auth'); a.accessToken.expiresAt = 1; GM_setValue('string_theory.sync.google.auth', a); });
   await page.locator('#st-sync-remote-backup').click();
-  await expect(page.locator('#st-sync-status')).toContainText('Reconnect to continue');
-  expect(server.calls).toHaveLength(before);
-  expect([...server.files.values()].filter(f => f.appProperties?.stKind === 'sync')).toHaveLength(0);
+  await expect(page.locator('#st-sync-backup-status')).toHaveText('Backup saved to Google Drive.');
+  expect(refreshed.join()).toContain('refresh_token=google-refresh');
+  expect(await page.evaluate(() => GM_getValue('string_theory.sync.google.auth').accessToken.expiresAt > Date.now())).toBe(true);
   await page.locator('#st-sync-disconnect').click();
   expect(await page.evaluate(() => GM_getValue('string_theory.sync.auth').refreshToken.token)).toBe('dropbox-retained');
   expect(await page.evaluate(() => GM_getValue('string_theory.sync.google.auth'))).toBeUndefined();
