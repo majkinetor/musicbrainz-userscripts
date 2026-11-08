@@ -25,7 +25,7 @@ var __stTheme = (function () {
     // Idle is on by default, Random theme and effect; a saved '' still means Current.
     // Older idle settings included a variant; only the theme name is kept now.
     var name = typeof i.theme === 'string' ? i.theme.replace(/^(light|dark):/, '') : '';
-    return { mode: MODES.indexOf(v.mode) < 0 ? 'light' : v.mode, dark: v.dark || 'Default', light: v.light || 'Default', lat: v.lat, lon: v.lon, from: v.from || '20:00', to: v.to || '07:00', eh: v.eh && typeof v.eh === 'object' ? v.eh : {}, idle: { on: i.on !== false, minutes: Math.max(1, Math.min(1440, Number(i.minutes) || 5)), theme: typeof i.theme !== 'string' ? '*' : name === '*' || THEMES.light[name] != null || THEMES.dark[name] != null ? name : '', effect: typeof i.effect !== 'string' ? '*' : i.effect === '*' || i.effect === '-' || !Array.isArray(fx) || fx.indexOf(i.effect) >= 0 ? i.effect : '' } };
+    return { mode: MODES.indexOf(v.mode) < 0 ? 'light' : v.mode, dark: v.dark || 'Default', light: v.light || 'Default', lat: v.lat, lon: v.lon, from: v.from || '20:00', to: v.to || '07:00', eh: v.eh && typeof v.eh === 'object' ? v.eh : {}, idle: { on: i.on !== false, minutes: Math.max(1, Math.min(1440, Number(i.minutes) || 5)), theme: typeof i.theme !== 'string' ? '*' : name === '*' || THEMES.light[name] != null || THEMES.dark[name] != null ? name : '', effect: typeof i.effect !== 'string' ? '*' : i.effect === '*' || i.effect === '-' || !Array.isArray(fx) || fx.indexOf(i.effect) >= 0 ? i.effect : '', info: i.info === true, cont: i.cont === true } };
   }
   function save(s) { try { GM_setValue(KEY, s); } catch (e) {} }
 
@@ -87,22 +87,46 @@ var __stTheme = (function () {
     attr('data-st-eh-fx-try', over ? s.eh[v + ':' + s[v]] : '');
     attr('data-st-eh-fx-idle', idle && !over ? idleChoice.effect : '');
     de.toggleAttribute('data-st-idle', idle && !over);
+    showInfo(idle && !over && saved.idle.info ? { theme: s[v] || 'Default', effect: idleChoice.effect || sv.eh[svv + ':' + sv[svv]] || '' } : null);
   }
-  function randomPick(list) { return list.length ? list[Math.floor(Math.random() * list.length)] : ''; }
-  function randomTheme(s) {
+  // Show theme info: a pill at the bottom centre naming what idle shows; click-through, gone on activity
+  var info = null;
+  function showInfo(what) {
+    if (!what) { if (info) info.remove(); return; }
+    if (!info) {
+      info = document.createElement('div'); info.id = 'st-idle-info';
+      info.setAttribute('style', 'position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:2147483646;pointer-events:none;display:flex;align-items:center;gap:8px;max-width:calc(100vw - 32px);white-space:nowrap;overflow:hidden;padding:5px 12px;border-radius:999px;'
+        // the theme's own colours, see-through over the page and its effect, so it fits any theme
+        + 'background:color-mix(in srgb,var(--background,#fff) 65%,transparent);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);'
+        + 'border:1px solid color-mix(in srgb,var(--border,#ccc) 70%,transparent);color:var(--text,#222);font:12px/1.2 -apple-system,Segoe UI,Roboto,Arial,sans-serif;animation:st-idle-info .6s ease-out');
+    }
+    var part = function (k, v) { return '<span style="color:var(--text-weak,#777);text-transform:uppercase;font-size:10px;letter-spacing:.06em">' + k + '</span><span>' + String(v).replace(/[&<>"]/g, function (c) { return '&#' + c.charCodeAt(0) + ';'; }) + '</span>'; };
+    var html = '<style>@keyframes st-idle-info{from{opacity:0}}</style>' + part('Theme', what.theme)
+      + (what.effect ? '<span style="color:var(--text-weak,#777)">·</span>' + part('Effect', what.effect === '-' ? 'None' : what.effect) : '');
+    if (info.innerHTML !== html) info.innerHTML = html;
+    if (!info.isConnected) document.documentElement.appendChild(info);
+  }
+  // a different one when there is a choice, so a continuous idle always changes
+  function randomPick(list, not) {
+    if (not != null && list.length > 1) list = list.filter(function (x) { return x !== not; });
+    return list.length ? list[Math.floor(Math.random() * list.length)] : '';
+  }
+  function randomTheme(s, not) {
     var v = variant(s);
     idleChoice.variant = v;
-    idleChoice.theme = randomPick(Object.keys(THEMES[v]));
+    idleChoice.theme = randomPick(Object.keys(THEMES[v]), not);
   }
   function beginIdle() {
-    var s = read();
+    var s = read(), was = idleChoice;
     idleChoice = { theme: s.idle.theme, effect: s.idle.effect };
-    if (s.idle.theme === '*') randomTheme(s);
+    if (s.idle.theme === '*') randomTheme(s, was && was.theme);
     if (s.idle.effect === '*') {
       var fx = []; try { fx = JSON.parse(localStorage.getItem('mbu.ehFxPresets')) || []; } catch (e) {}
-      idleChoice.effect = randomPick(Array.isArray(fx) ? fx : []);
+      idleChoice.effect = randomPick(Array.isArray(fx) ? fx : [], was && was.effect);
     }
     idle = true; apply();
+    // Continuous: each further idle period picks the Random parts again
+    if (s.idle.cont && (s.idle.theme === '*' || s.idle.effect === '*')) idleTimer = setTimeout(beginIdle, s.idle.minutes * 60000);
   }
   function activity() {
     clearTimeout(idleTimer);

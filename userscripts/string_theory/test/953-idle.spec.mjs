@@ -8,11 +8,12 @@ function runtime(idle, extra = {}, effects = ['Night']) {
   const timers = new Map(), listeners = new Map(), attrs = new Map();
   const saved = { mode: 'light', light: 'Default', dark: 'Default', idle, ...extra };
   const style = { setAttribute(k, v) { this[k] = v; }, isConnected: true };
-  const root = { classList: { toggle() {} }, appendChild() {}, setAttribute(k, v) { attrs.set(k, v); }, removeAttribute(k) { attrs.delete(k); }, toggleAttribute(k, v) { if (v) attrs.set(k, ''); else attrs.delete(k); } };
+  const pill = { setAttribute(k, v) { this[k] = v; }, remove() { this.isConnected = false; }, isConnected: false, innerHTML: '' };
+  const root = { classList: { toggle() {} }, appendChild(n) { n.isConnected = true; }, setAttribute(k, v) { attrs.set(k, v); }, removeAttribute(k) { attrs.delete(k); }, toggleAttribute(k, v) { if (v) attrs.set(k, ''); else attrs.delete(k); } };
   const on = (name, fn) => listeners.set(name, fn);
   const context = vm.createContext({
     location: { hostname: 'test.musicbrainz.org' },
-    document: { documentElement: root, readyState: 'complete', createElement: () => style, addEventListener: on },
+    document: { documentElement: root, readyState: 'complete', createElement: tag => tag === 'div' ? pill : style, addEventListener: on },
     localStorage: { getItem: () => JSON.stringify(effects) }, sessionStorage: { getItem: () => null },
     GM_getValue: () => structuredClone(saved), GM_setValue: (k, v) => Object.assign(saved, v),
     setTimeout: (fn, ms) => { timers.set(++next, { at: now + ms, fn }); return next; },
@@ -20,7 +21,7 @@ function runtime(idle, extra = {}, effects = ['Night']) {
   });
   context.window = context; context.top = context; context.addEventListener = on;
   vm.runInContext(source.replace('__ST_THEMES__', JSON.stringify({ light: { Default: 'light', Other: 'other' }, dark: { Default: 'dark', Other: 'other-dark' } })), context);
-  return { saved, attrs, style, api: context.__stTheme,
+  return { saved, attrs, style, pill, api: context.__stTheme,
     random(value) { context.Math = Object.create(Math); context.Math.random = () => value; },
     event: name => listeners.get(name)?.(),
     advance(ms) { now += ms; for (const [id, t] of timers) if (t.at <= now) { timers.delete(id); t.fn(); } },
@@ -49,12 +50,12 @@ test('idle theme and effect are independent, normal effect mapping stays untouch
 
 test('idle is on by default with a random theme and effect, preview has priority @unit', () => {
   const r = runtime(undefined);
-  expect(r.api.read().idle).toEqual({ on: true, minutes: 5, theme: '*', effect: '*' });
+  expect(r.api.read().idle).toEqual({ on: true, minutes: 5, theme: '*', effect: '*', info: false, cont: false });
   r.advance(299000); expect(r.attrs.has('data-st-idle')).toBe(false);
   r.advance(1000); expect(r.attrs.has('data-st-idle')).toBe(true); expect(r.attrs.get('data-st-eh-fx-idle')).toBe('Night');
   r.event('keydown'); expect(r.attrs.has('data-st-idle')).toBe(false);
   const off = runtime({ on: false, theme: '', effect: '' }); off.advance(86400000); expect(off.attrs.has('data-st-idle')).toBe(false);
-  expect(off.api.read().idle).toEqual({ on: false, minutes: 5, theme: '', effect: '' });
+  expect(off.api.read().idle).toEqual({ on: false, minutes: 5, theme: '', effect: '', info: false, cont: false });
   r.api.set({ idle: { on: true, minutes: 1, theme: 'Other' } });
   r.api.preview({ mode: 'dark' }); r.advance(60000);
   expect(r.style['data-variant']).toBe('dark');
@@ -82,4 +83,32 @@ for (const theme of ['Other', '*', 'light:Other']) test('idle theme ' + theme + 
   expect(r.api.read().idle.theme).toBe(theme === '*' ? '*' : 'Other');
   r.saved.mode = 'light'; r.api.preview();
   expect(r.style['data-variant']).toBe('light'); expect(r.style.textContent.startsWith('other\n')).toBe(true);
+});
+
+test('continuous re-picks the random parts after each further idle period, never the same @unit', () => {
+  const r = runtime({ on: true, minutes: 1, theme: '*', effect: '*', cont: true }, {}, ['Day', 'Night']);
+  r.random(0); r.advance(60000);
+  expect(r.style.textContent).toBe('light'); expect(r.attrs.get('data-st-eh-fx-idle')).toBe('Day');
+  r.advance(60000); expect(r.style.textContent).toBe('other'); expect(r.attrs.get('data-st-eh-fx-idle')).toBe('Night');
+  r.advance(60000); expect(r.style.textContent).toBe('light'); expect(r.attrs.get('data-st-eh-fx-idle')).toBe('Day');
+  r.event('keydown'); expect(r.attrs.has('data-st-idle')).toBe(false);
+  r.advance(59000); expect(r.attrs.has('data-st-idle')).toBe(false);
+  // only the Random part changes; without continuous the pick holds
+  r.api.set({ idle: { on: true, minutes: 1, theme: 'Other', effect: '*', cont: true } });
+  r.advance(60000); r.advance(60000); expect(r.style.textContent).toBe('other'); expect(r.attrs.get('data-st-eh-fx-idle')).toBe('Night');
+  r.api.set({ idle: { on: true, minutes: 1, theme: '*', effect: '*' } });
+  r.advance(60000); const fx = r.attrs.get('data-st-eh-fx-idle'); r.advance(300000); expect(r.attrs.get('data-st-eh-fx-idle')).toBe(fx);
+});
+
+test('theme info names the idle theme and effect, only while idle and not previewing @unit', () => {
+  const r = runtime({ on: true, minutes: 1, theme: 'Other', effect: '-', info: true });
+  r.advance(59000); expect(r.pill.isConnected).toBe(false);
+  r.advance(1000); expect(r.pill.isConnected).toBe(true);
+  expect(r.pill.innerHTML).toContain('<span>Other</span>'); expect(r.pill.innerHTML).toContain('<span>None</span>');
+  expect(r.pill.style).toContain('pointer-events:none');
+  r.api.preview({ mode: 'dark' }); expect(r.pill.isConnected).toBe(false);
+  r.api.preview(); expect(r.pill.isConnected).toBe(true);
+  r.event('pointermove'); expect(r.pill.isConnected).toBe(false);
+  r.api.set({ idle: { on: true, minutes: 1, theme: 'Other', effect: 'Night', info: false } }); r.advance(60000);
+  expect(r.attrs.has('data-st-idle')).toBe(true); expect(r.pill.isConnected).toBe(false);
 });
