@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08.120400
+// @version      2026.11.08.120500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -9367,7 +9367,7 @@ function render(keepPop) {
     }
     if (keepPop) { const p = document.getElementById('pop-' + keepPop); if (p) { p.hidden = false; p.scrollTop = popTop || 0; const t = $(`[data-pop="${keepPop}"]`); if (t) t.setAttribute('aria-expanded', 'true'); } }
     secRail(app);
-    if (keepPop === 'collections') { const p = $('#pop-collections'); if (p) { p.hidden = false; $('[data-pop="collections"]').setAttribute('aria-expanded', 'true'); } }
+    if (keepPop === 'collections') { const p = $('#pop-collections'); if (p) { p.hidden = false; $('[data-pop="collections"]').setAttribute('aria-expanded', 'true'); popFit(p); } }
     fitQuiet();
     lmWatch(app);
     shWatch(app);
@@ -9527,6 +9527,7 @@ function collectionPaint(key) {
     }).join('') + (!x.rows ? '<div class="h">Loading collections…</div>' : !x.rows.some(r => r.id) ? '<div class="h">No collections of this type</div>' : '')
         + (x.error ? '<div class="h" role="alert">' + esc(x.error) + '</div>' : '')
         + '<button type="button" class="row opt" data-collrefresh="' + key + '"' + (x.loading || x.busy ? ' disabled' : '') + '>Refresh collections</button>';
+    popFit(p);
 }
 async function collectionLoad(key, force = false) {
     let x = COLLECTIONS.get(key);
