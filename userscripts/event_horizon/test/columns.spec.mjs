@@ -11,6 +11,8 @@ async function open(page, inject) {
   await until(() => page.locator('#s-dg [data-dgview="table"]').count(), n => n === 1);
   await page.locator('#s-dg [data-dgview="table"]').click();
   await until(() => page.locator('#s-dg table.ed-t tbody tr:not(.gh)').count(), n => n > 2);
+  // late data (ratings, cover art) redraws the table and its menu now and then: wait until it has held for a while
+  await until(() => page.evaluate(() => new Promise(r => { const t = document.querySelector('#s-dg table.ed-t'); setTimeout(() => r(document.querySelector('#s-dg table.ed-t') === t), 1500); })), v => v);
   await page.locator('[data-pop="cols-dg"]').click();
   await until(() => page.locator('#pop-cols-dg').isVisible(), v => v);
 }
@@ -29,7 +31,8 @@ async function drag(page, key, rows) {
 
 test('a column turns off in place and stays off after a redraw', { tag: '@sandbox' }, async ({ page, inject }) => {
   await open(page, inject);
-  const mark = await page.$eval('#s-dg table.ed-t', t => { t.dataset.same = '1'; return true; });
+  // late data (ratings, cover art) still redraws the page now and then: mark the table once it has held for a while
+  const mark = await until(() => page.evaluate(() => new Promise(r => { const t = document.querySelector('#s-dg table.ed-t'); t.dataset.same = '1'; setTimeout(() => r(document.querySelector('#s-dg table.ed-t') === t), 1500); })), v => v);
   check(mark && await heads(page) === 'title,artist,date,rating,releases,links', 'the usual columns');
   check(await span(page) === 7, 'a group heading spans them all');
   await page.locator('#pop-cols-dg [data-colk="rating"] input').click();

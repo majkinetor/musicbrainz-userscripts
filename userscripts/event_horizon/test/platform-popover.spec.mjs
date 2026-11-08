@@ -1,14 +1,16 @@
-import { test, check, until } from '../../../dev/test/harness.mjs';
+import { test, check, until, mbJson } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Event Horizon', persist: true } });
 
 // the gear beside the tracklist's SHOW toggles opens the platform settings; Settings no longer has a Platforms tab
 test('the tracklist gear opens the platform icon settings', { tag: '@sandbox' }, async ({ page, inject }) => {
   await page.goto('https://test.musicbrainz.org/');
-  const id = await page.evaluate(async () => (await (await fetch('/ws/2/release?query=release:Thriller%20AND%20artist:%22Michael%20Jackson%22%20AND%20status:official&limit=1&fmt=json')).json()).releases[0].id);
+  const id = (await mbJson('https://test.musicbrainz.org/ws/2/release?query=release:Thriller%20AND%20artist:%22Michael%20Jackson%22%20AND%20status:official&limit=1&fmt=json')).releases[0].id;   // retried: a throttled answer has no releases
   await page.goto('https://test.musicbrainz.org/release/' + id);
   await inject('event_horizon');
   await until(() => page.locator('.tr[data-row]').count(), n => n >= 2);
+  // late data redraws the tracklist, gear included, now and then: wait until it has held for a while
+  await until(() => page.evaluate(() => new Promise(r => { const g = document.querySelector('[data-plcfg="1"]'); setTimeout(() => r(!!g && document.querySelector('[data-plcfg="1"]') === g), 1500); })), v => v);
   const gear = page.locator('[data-plcfg="1"]');
   check(await gear.count() === 1, 'the tracklist has one platform gear');
   await gear.click();
