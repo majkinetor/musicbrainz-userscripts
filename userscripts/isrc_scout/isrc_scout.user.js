@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.104441
+// @version      2026.11.08.122500
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -3386,6 +3386,13 @@
     .ii-cfgwin .ii-set-inline input[type=checkbox] { margin: 0; }
     .ii-cfgwin .ii-set-k { min-width: 120px; color: var(--mbu-text-dim); }
     .ii-cfgwin .ii-set-inline select { font-size: 12px; }
+    @media (max-width: 700px) {
+      .ii-cfgwin .ii-set-inline { flex-wrap: wrap; gap: 6px 12px; }
+      .ii-cfgwin .ii-set-inline > * { white-space: nowrap; }
+      .ii-cfgwin .ii-set-inline select { max-width: 100%; }
+      .ii-cfgwin .ii-cfg-nav { flex: 1 1 0; min-width: 0; gap: 4px; padding: 8px; }
+      .ii-cfgwin .ii-cfg-nav > span { white-space: nowrap; }
+    }
     .ii-cfgwin .ii-set-help { display: block; margin-top: 2px; font-size: 11px; line-height: 1.4; color: var(--mbu-text-weak); }
     .ii-cfgwin .ii-set-under { margin: -2px 2px 6px; }
     .ii-cfgwin .ii-plat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 6px; margin-top: 6px; }
