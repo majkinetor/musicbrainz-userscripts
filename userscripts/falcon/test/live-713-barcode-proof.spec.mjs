@@ -13,7 +13,7 @@ test.use({ gm: false });
 const HOST = 'https://test.musicbrainz.org';
 const BARCODE = '826194657451';
 
-test('#713: Falcon adds a barcode to a release saved without one', { tag: ['@sandbox', '@login', '@flaky'] }, async ({ context, page }) => {
+test('#713: Falcon adds a barcode to a release saved without one', { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
   test.setTimeout(600_000);
   if (!/test\.musicbrainz\.org$/.test(new URL(HOST).hostname)) throw new Error('sandbox only');
   const code = await readFile(sourceOf('falcon'), 'utf8');
