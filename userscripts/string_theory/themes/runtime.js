@@ -25,7 +25,7 @@ var __stTheme = (function () {
     // Idle is on by default, Random theme and effect; a saved '' still means Current.
     // Older idle settings included a variant; only the theme name is kept now.
     var name = typeof i.theme === 'string' ? i.theme.replace(/^(light|dark):/, '') : '';
-    return { mode: MODES.indexOf(v.mode) < 0 ? 'light' : v.mode, dark: v.dark || 'Default', light: v.light || 'Default', lat: v.lat, lon: v.lon, from: v.from || '20:00', to: v.to || '07:00', eh: v.eh && typeof v.eh === 'object' ? v.eh : {}, idle: { on: i.on !== false, minutes: Math.max(1, Math.min(1440, Number(i.minutes) || 5)), theme: typeof i.theme !== 'string' ? '*' : name === '*' || THEMES.light[name] != null || THEMES.dark[name] != null ? name : '', effect: typeof i.effect !== 'string' ? '*' : i.effect === '*' || i.effect === '-' || !Array.isArray(fx) || fx.indexOf(i.effect) >= 0 ? i.effect : '', info: i.info === true, cont: i.cont === true } };
+    return { mode: MODES.indexOf(v.mode) < 0 ? 'light' : v.mode, dark: v.dark || 'Default', light: v.light || 'Default', lat: v.lat, lon: v.lon, from: v.from || '20:00', to: v.to || '07:00', eh: v.eh && typeof v.eh === 'object' ? v.eh : {}, idle: { on: i.on !== false, minutes: Math.max(1, Math.min(1440, Number(i.minutes) || 5)), theme: typeof i.theme !== 'string' ? '*' : name === '*' || THEMES.light[name] != null || THEMES.dark[name] != null ? name : '', effect: typeof i.effect !== 'string' ? '*' : i.effect === '*' || i.effect === '-' || !Array.isArray(fx) || fx.indexOf(i.effect) >= 0 ? i.effect : '', info: i.info !== false, cont: i.cont !== false } };
   }
   function save(s) { try { GM_setValue(KEY, s); } catch (e) {} }
 

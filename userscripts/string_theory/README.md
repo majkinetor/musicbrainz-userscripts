@@ -68,7 +68,7 @@ Moving the pointer, typing, touching or scrolling restores your normal appearanc
 
 Idle themes always follow **Mode**: the chosen theme's light or dark version appears as appropriate. **Random** picks a theme or effect each time idle begins; a random theme also follows light/dark changes while idle.
 
-**Show theme info** puts a small see-through pill at the bottom of the page while idle, naming the theme and effect on show in the theme's own colours. **Continuous** picks a new random theme and effect after each further **After (minutes)** of inactivity, never the one on show; only the parts set to **Random** change, so it is greyed out when neither is. Both are off by default.
+**Show theme info** puts a small see-through pill at the bottom of the page while idle, naming the theme and effect on show in the theme's own colours. **Continuous** picks a new random theme and effect after each further **After (minutes)** of inactivity, never the one on show; only the parts set to **Random** change, so it is greyed out when neither is. Both are on by default.
 
 ## What's new
 
@@ -139,8 +139,8 @@ Right-click String Theory's icon to open its settings, or any dock icon for that
 | After (minutes)  | 5                 | Inactivity before the idle appearance, from 1 minute to 1 day                                                                             |
 | Idle theme       | Random            | Theme shown while idle                                                                                                                    |
 | Idle effect      | Random            | Event Horizon effect shown while idle                                                                                                     |
-| Show theme info  | Off               | Names the idle theme and effect at the bottom of the page                                                                                 |
-| Continuous       | Off               | Picks a new random theme and effect after each further idle period                                                                        |
+| Show theme info  | On                | Names the idle theme and effect at the bottom of the page                                                                                 |
+| Continuous       | On                | Picks a new random theme and effect after each further idle period                                                                        |
 | Side             | Right             | The launchers' side of the page                                                                                                           |
 | Orientation      | Column            | A column, or a row along the bottom edge                                                                                                  |
 | Size             | 100 %             | The launchers' size, 60 to 160 %                                                                                                          |

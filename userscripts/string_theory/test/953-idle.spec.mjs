@@ -50,12 +50,12 @@ test('idle theme and effect are independent, normal effect mapping stays untouch
 
 test('idle is on by default with a random theme and effect, preview has priority @unit', () => {
   const r = runtime(undefined);
-  expect(r.api.read().idle).toEqual({ on: true, minutes: 5, theme: '*', effect: '*', info: false, cont: false });
+  expect(r.api.read().idle).toEqual({ on: true, minutes: 5, theme: '*', effect: '*', info: true, cont: true });
   r.advance(299000); expect(r.attrs.has('data-st-idle')).toBe(false);
   r.advance(1000); expect(r.attrs.has('data-st-idle')).toBe(true); expect(r.attrs.get('data-st-eh-fx-idle')).toBe('Night');
   r.event('keydown'); expect(r.attrs.has('data-st-idle')).toBe(false);
   const off = runtime({ on: false, theme: '', effect: '' }); off.advance(86400000); expect(off.attrs.has('data-st-idle')).toBe(false);
-  expect(off.api.read().idle).toEqual({ on: false, minutes: 5, theme: '', effect: '', info: false, cont: false });
+  expect(off.api.read().idle).toEqual({ on: false, minutes: 5, theme: '', effect: '', info: true, cont: true });
   r.api.set({ idle: { on: true, minutes: 1, theme: 'Other' } });
   r.api.preview({ mode: 'dark' }); r.advance(60000);
   expect(r.style['data-variant']).toBe('dark');
@@ -96,7 +96,7 @@ test('continuous re-picks the random parts after each further idle period, never
   // only the Random part changes; without continuous the pick holds
   r.api.set({ idle: { on: true, minutes: 1, theme: 'Other', effect: '*', cont: true } });
   r.advance(60000); r.advance(60000); expect(r.style.textContent).toBe('other'); expect(r.attrs.get('data-st-eh-fx-idle')).toBe('Night');
-  r.api.set({ idle: { on: true, minutes: 1, theme: '*', effect: '*' } });
+  r.api.set({ idle: { on: true, minutes: 1, theme: '*', effect: '*', cont: false } });
   r.advance(60000); const fx = r.attrs.get('data-st-eh-fx-idle'); r.advance(300000); expect(r.attrs.get('data-st-eh-fx-idle')).toBe(fx);
 });
 
