@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.170000
+// @version      2026.11.08.180000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -5968,7 +5968,11 @@ function fsPhoneFit(ov) {
 }
 const FS_PHONE_CSS = '.fs-overlay.fs-phone{-webkit-text-size-adjust:100%;text-size-adjust:100%}'
     + '.fs-phone .fs-cons{position:absolute!important;inset:0!important;width:auto!important;height:auto!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;margin:0!important;border:0!important;border-radius:0!important;transform:none!important}'
-    + '.fs-phone .fs-hdr{flex-wrap:wrap;cursor:default;padding:8px 10px}.fs-phone .fs-hl{flex-basis:100%}'
+    + '.fs-phone .fs-hdr{flex-wrap:wrap;cursor:default;padding:8px 10px;position:relative}.fs-phone .fs-hl{flex-basis:100%;padding-right:38px;box-sizing:border-box;min-height:24px}'
+    + '.fs-phone .fs-ctr:not(.fs-on){display:none}.fs-phone .fs-ctr.fs-on{width:auto;height:30px;padding:0 6px;gap:4px;grid-auto-flow:column;border:1px solid var(--mbu-border);border-radius:6px}'
+    + '.fs-phone .fs-ctr.fs-on::after{content:"\\25BE";font-size:11px;color:var(--mbu-text-weak)}.fs-phone .fs-ctr b{right:-6px;top:-6px}'
+    + '.fs-clear-menu .fs-mn{min-width:16px;text-align:right;font-weight:700;color:var(--mbu-accent,#7b4fa0)}.fs-clear-menu .mi svg{flex:none}.fs-phone .fs-hr .fs-cons-x{width:32px;height:30px;font-size:15px}'
+    + '.fs-phone #fs-close,.fs-phone #fs-em-close{position:absolute;top:4px;right:6px;width:34px;height:34px;font-size:20px;color:var(--mbu-text,inherit);opacity:1}'
     + '.fs-phone .fs-colhdr{flex-wrap:wrap;padding:8px 10px}.fs-phone .fs-poolsort{flex-wrap:wrap;padding:6px 10px}'
     + '.fs-phone .fs-pool{width:auto;right:0}.fs-phone .fs-poolfilter{max-width:none}'
     + '.fs-phone .fs-note,.fs-phone #fs-max,.fs-phone #fs-em-max{display:none}.fs-phone .fs-ftr{flex-wrap:wrap;padding:8px 10px}';
@@ -6197,7 +6201,16 @@ function emCounters(cur) {
 }
 function emCountersWire(hdr) {
     if (!hdr) return;
-    const go = e => { const c = e.target.closest('.fs-ctr'); if (!c) return; e.stopPropagation(); e.preventDefault(); openPool(c.dataset.type); };
+    const go = e => {
+        const c = e.target.closest('.fs-ctr'); if (!c) return; e.stopPropagation(); e.preventDefault();
+        // on a phone only the current type shows; it opens a menu of every type
+        if (c.closest('.fs-phone')) {
+            const ks = [...c.parentNode.querySelectorAll('.fs-ctr')].map(x => x.dataset.type);
+            openClearMenu(c, ks.map(k => { const n = poolCount(k); return [entSvg(k, 16) + '<span style="flex:1">' + emLabel(k) + '</span><b class="fs-mn">' + (n || '') + '</b>', '', () => openPool(k)]; }));
+            return;
+        }
+        openPool(c.dataset.type);
+    };
     hdr.addEventListener('click', go);
     hdr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') go(e); });
 }
