@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.09.203002
+// @version      2026.11.09.193423
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -9373,21 +9373,24 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const tracks = u(m.tracks);
     if (!(at > 0 && at < tracks.length)) { toast('Split: pick a track after the first one'); Log.cat('Tool').warn('split: bad split index', at, 'of', tracks.length); return; }
     const moving = tracks.slice(at);
+    // #975 — side numbering (vinyl/cassette: A1, B2…) is kept on both halves; plain 1, 2, 3… restarts
+    const keepNums = tracks.some(t => !/^\d+$/.test(String(u(t.number) || '').trim()));
     Log.cat('Tool').info('split: medium', mi + 1, 'at track', u(tracks[at].number), '"' + (u(tracks[at].name) || '') + '" —', moving.length, 'of', tracks.length, 'track(s) to a new medium', mi + 2);
     _selfEdit = true;
     try {
       const nm = new F.Medium({ position: u(m.position) + 1, format_id: u(m.formatID), name: '', tracks: [] }, rel);
-      nm.tracks(moving.map((t, i) => new F.Track(Object.assign(trackCopyData(t), { position: i + 1, number: String(i + 1) }), nm)));
+      nm.tracks(moving.map((t, i) => new F.Track(Object.assign(trackCopyData(t), { position: i + 1, number: keepNums ? u(t.number) : String(i + 1) }), nm)));
       m.tracks.removeAll(moving);
       const list = u(rel.mediums), idx = list.indexOf(m);
       list.slice(idx + 1).forEach(x => x.position(u(x.position) + 1));   // make room right after the split medium
       rel.mediums.splice(idx + 1, 0, nm);
-      ed.resetTrackNumbers(m); ed.resetTrackNumbers(nm);
+      if (keepNums) { u(m.tracks).forEach((t, i) => { if (typeof t.position === "function") t.position(i + 1); }); }
+      else { ed.resetTrackNumbers(m); ed.resetTrackNumbers(nm); }
       try { m.toc(null); } catch (e) {}
       try { if (typeof nm.loaded === 'function') nm.loaded(true); if (typeof nm.collapsed === 'function') nm.collapsed(false); } catch (e) {}
     } catch (e) { Log.cat('Tool').err('split failed:', e.message); toast('Split failed — see Log'); }
     finally { _selfEdit = false; }
-    Log.cat('Tool').ok('split medium', mi + 1, '→ new medium', mi + 2, 'with', moving.length, 'track(s), recordings kept, numbers reset on both');
+    Log.cat('Tool').ok('split medium', mi + 1, '→ new medium', mi + 2, 'with', moving.length, 'track(s), recordings kept, ' + (keepNums ? 'side numbers kept' : 'numbers reset on both'));
     toast('Split medium ' + (mi + 1) + ': ' + moving.length + ' tracks moved to new medium ' + (mi + 2));
     await loadAndRender(); renderToolbar();
   }
