@@ -58,3 +58,31 @@ test('the cover-art page fits a phone screen', { tag: ['@sandbox', '@cosmetic'] 
   await page.keyboard.press('Escape');
   check(await page.evaluate(() => Math.round(scrollY)) === 400, 'closing it puts the page back where it was');
 });
+
+// the detailed view on a phone: the types go under the image, two or three to a line, not one long column beside it
+test('the detailed view fits a phone screen', { tag: ['@sandbox', '@cosmetic'] }, async ({ page, inject }, testInfo) => {
+  await page.goto(`${SANDBOX}/release/${RELEASE}/cover-art`, { waitUntil: 'domcontentloaded' });
+  await idle(page);
+  await inject('art_station');
+  await page.waitForSelector('#as-root .as-bar');
+  await artLoaded(page);
+  await page.evaluate(() => document.querySelector('#as-root .as-view').click());
+  await page.click('.as-view-pop input[value=detailed]');
+  await page.waitForSelector('#as-root .as-drow .as-dtypes');
+  await page.evaluate(() => document.querySelectorAll('.as-pop').forEach(p => p.remove()));
+  await idle(page);
+  await attachShot(testInfo, page, 'detailed');
+  if (process.env.SHOTS) await page.screenshot({ path: process.env.SHOTS + '/as-mobile-detailed.png' });
+  const r = await page.evaluate(() => {
+    const row = document.querySelector('#as-root .as-drow:not(.del)'), th = row.querySelector('.as-dthumb').getBoundingClientRect(), ty = row.querySelector('.as-dtypes').getBoundingClientRect();
+    const tops = new Set([...row.querySelectorAll('.as-dtypes label')].map(l => Math.round(l.getBoundingClientRect().top)));
+    return { under: ty.top >= th.bottom, lines: tops.size, n: row.querySelectorAll('.as-dtypes label').length, right: Math.round(row.getBoundingClientRect().right), vw: document.documentElement.clientWidth };
+  });
+  console.log(JSON.stringify(r));
+  check(r.under, 'the types sit under the image');
+  check(r.lines <= Math.ceil(r.n / 2), `the types take two or more to a line (${r.lines} lines for ${r.n})`);
+  check(r.right <= r.vw, `the row stays on the screen (${r.right} ≤ ${r.vw})`);
+  // the view is a saved setting: put the grid back for the specs after this one
+  await page.evaluate(() => document.querySelector('#as-root .as-view').click());
+  await page.click('.as-view-pop input[value=grid]');
+});
