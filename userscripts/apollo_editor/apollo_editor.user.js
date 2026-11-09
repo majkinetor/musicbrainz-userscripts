@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.09.095133
+// @version      2026.11.09.104259
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -14379,6 +14379,95 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     m.addEventListener('click', e => { if (e.target.closest('a')) close(); });
     _wbMenu = { btn, close };
   }
+
+  // #959: right-click a release's Edit (MusicBrainz's tab, Event Horizon's button) opens a copy of
+  // it in a new Add release, through MusicBrainz's release-editor seeding (a POST to /release/add).
+  // One ws/2 read per right-click; the release itself is never touched.
+  const CLONE_EDIT_RE = new RegExp('^/release/(' + MBID_RE.source + ')/edit/?$', 'i');
+  function cloneEditLink(ev) {
+    for (const n of (ev.composedPath ? ev.composedPath() : [ev.target])) {
+      if (!n || n.nodeType !== 1 || n.tagName !== 'A' || !n.href) continue;
+      let p; try { const u = new URL(n.href); if (u.origin !== ORIGIN) return null; p = u.pathname; } catch (e) { return null; }
+      const m = p.match(CLONE_EDIT_RE);
+      // MusicBrainz's Edit tab, or Event Horizon's Edit button; a plain link elsewhere keeps its menu
+      return m && (n.closest('ul.tabs') || n.matches('a.ab')) ? m[1] : null;
+    }
+    return null;
+  }
+  function cloneSeed(r) {
+    const f = [], add = (k, v) => { if (v != null && v !== '') f.push([k, String(v)]); };
+    const credit = (pre, ac) => (ac || []).forEach((c, i) => {
+      add(pre + '.names.' + i + '.mbid', c.artist && c.artist.id);
+      add(pre + '.names.' + i + '.artist.name', c.artist && c.artist.name);
+      add(pre + '.names.' + i + '.name', c.name);
+      add(pre + '.names.' + i + '.join_phrase', c.joinphrase);
+    });
+    add('name', r.title);
+    add('comment', r.disambiguation);
+    add('release_group', r['release-group'] && r['release-group'].id);
+    credit('artist_credit', r['artist-credit']);
+    add('status', r.status && r.status.toLowerCase());
+    add('packaging', r.packaging);
+    add('barcode', r.barcode);
+    const tr = r['text-representation'] || {};
+    add('language', tr.language);
+    add('script', tr.script);
+    (r['release-events'] || []).forEach((e, i) => {
+      const [y, mo, d] = (e.date || '').split('-');
+      add('events.' + i + '.date.year', y); add('events.' + i + '.date.month', mo); add('events.' + i + '.date.day', d);
+      add('events.' + i + '.country', e.area && (e.area['iso-3166-1-codes'] || [])[0]);
+    });
+    (r['label-info'] || []).forEach((l, i) => {
+      add('labels.' + i + '.mbid', l.label && l.label.id);
+      add('labels.' + i + '.name', l.label && l.label.name);
+      add('labels.' + i + '.catalog_number', l['catalog-number']);
+    });
+    (r.media || []).forEach((m, i) => {
+      const pre = 'mediums.' + i;
+      add(pre + '.format', m.format);
+      add(pre + '.name', m.title);
+      [...(m.tracks || []), ...(m['data-tracks'] || [])].forEach((t, j) => {
+        const tp = pre + '.track.' + j;
+        add(tp + '.name', t.title);
+        add(tp + '.number', t.number);
+        add(tp + '.length', t.length);
+        add(tp + '.recording', t.recording && t.recording.id);
+        credit(tp + '.artist_credit', t['artist-credit']);
+      });
+    });
+    (r.relations || []).forEach((x, i) => add('urls.' + i + '.url', x.url && x.url.resource));
+    add('edit_note', 'Cloned from ' + ORIGIN + '/release/' + r.id);
+    return f;
+  }
+  // The new tab opens on Add release at once, inside the click (no popup blocker holds it), with
+  // the release to copy in its hash; Apollo there reads the release and posts the seed to itself.
+  const CLONE_HASH_RE = new RegExp('^#mbu-clone=(' + MBID_RE.source + ')$', 'i');
+  async function handleCloneSeed() {
+    if (!/^\/release\/add\/?$/.test(location.pathname)) return false;
+    const m = location.hash.match(CLONE_HASH_RE); if (!m) return false;
+    history.replaceState(null, '', location.pathname + location.search);   // a reload is a plain Add release
+    document.title = 'Cloning release…';
+    Log.cat('Release').info('clone: reading', ORIGIN + '/release/' + m[1]);
+    const res = await wsJson(`${ORIGIN}/ws/2/release/${m[1]}?inc=artist-credits+labels+recordings+release-groups+url-rels&fmt=json`, { label: 'release to clone' });
+    await whenDomReady();
+    if (!res.json) { mbuToast('⚠ Couldn’t read the release to clone it.', { kind: 'warn' }); return false; }
+    const form = document.createElement('form');
+    form.method = 'post'; form.action = ORIGIN + '/release/add'; form.acceptCharset = 'UTF-8'; form.hidden = true;
+    for (const [k, v] of cloneSeed(res.json)) { const i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = v; form.appendChild(i); }
+    document.body.appendChild(form);
+    Log.cat('Release').info('clone: seeding Add release with', form.elements.length, 'fields');
+    form.submit();
+    return true;
+  }
+  function installCloneRelease() {
+    document.addEventListener('contextmenu', ev => {
+      if (ev.defaultPrevented || ev.shiftKey) return;   // Shift+right-click keeps the browser's menu
+      const mbid = cloneEditLink(ev); if (!mbid) return;
+      ev.preventDefault(); ev.stopPropagation();
+      window.open(ORIGIN + '/release/add#mbu-clone=' + mbid, '_blank');
+    }, true);
+  }
+
   function mountArchiveMenus() {
     if (SETTINGS.archiveMenu === false) return;
     const mark = () => {
@@ -17495,6 +17584,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (handleAutoCommit()) { Log.cat('Create').info('auto-commit (background create/link) — submitting the seeded form'); return; }
     if (handleArtistPageCallback()) { Log.cat('Create').info('artist/label-create callback — posting MBID back and closing'); return; }
     if (handleEditLinkClose()) { Log.cat('Create').info('Discogs-link edit committed — closing tab'); return; }
+    if (await handleCloneSeed()) return;   // #959 a clone's new tab: read the release, post the seed
     if (await autoConfirmSeed()) return;   // handled the seed-confirmation interstitial (clicked, or option off) — no editor here
     if (ANNO_PAGE_RE.test(location.pathname)) {   // #394 standalone Edit annotation page for ANY entity (no releaseEditor)
       const tryMount = () => { if (document.querySelector('textarea[name="edit-annotation.text"]')) { applyAnnotationPage(); return true; } return false; };
@@ -17523,7 +17613,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     }
     // #591 #808 a release's Disc IDs tab and MusicBrainz's attach page; each checks its own path
     if (!/^\/release\/(add|.+\/edit)\/?$/.test(location.pathname)) { whenDomReady().then(() => { ensureDiscIdUi(); autoPickAttachMedium(); }); }
-    if (!/^\/release\/(add|.+\/edit)\/?$/.test(location.pathname)) { mountArchiveMenus(); whenDomReady().then(aliasTabBadge); return; }   // /artist/* and /label/* (non-callback) just load the channel listener; entity pages get the archive menu (#736)
+    if (!/^\/release\/(add|.+\/edit)\/?$/.test(location.pathname)) { mountArchiveMenus(); installCloneRelease(); whenDomReady().then(aliasTabBadge); return; }   // /artist/* and /label/* (non-callback) just load the channel listener; entity pages get the archive menu (#736)
     const ed = await waitFor(() => { const e = getEditor(); try { return e && u(e.rootField.release) && u(u(e.rootField.release).mediums) ? e : null; } catch (x) { return null; } });
     if (!ed) { Log.cat('System').err('MB.releaseEditor never became ready'); return; }
     try {   // line 2: the MB release, as a full link (real title now the editor is up)

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-09 09:52 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-09 10:44 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -47,6 +47,7 @@ A faster release editor for MusicBrainz: artists and recordings auto-matched, cl
 - **[Highlighting](#highlighting)**: confusable punctuation, invisible characters and missing spaces made visible.
 - **[Archive](#archive)**: the release's links saved on the Internet Archive, and a menu by each external link to its copies there.
 - **[Disc IDs from a rip log](#disc-ids-from-a-rip-log)**, computed in the browser.
+- **[Clone a release](#clone-a-release)**: a copy of a release in a new Add release.
 
 Each part is optional, and Apollo's corner icon switches to MusicBrainz's own editor and back.
 
@@ -406,6 +407,13 @@ On a release's **Disc IDs** tab, each medium gets a drop zone for a rip log. Apo
 
 Like Picard, whose parsers these are, it refuses a partial rip, a non-standard track sequence or an unknown file, and drops a trailing data track. A log whose track count doesn't match the medium asks before continuing.
 
+### Clone a release
+
+Right-click a release's **Edit** tab, or the **Edit** button on [Event Horizon](../event_horizon/README.md), to open a copy of the release in a new tab's Add release. The release itself isn't changed.
+
+- The copy has the release's title, artist, release group, status, packaging, language and script, events, labels and catalog numbers, barcode, links, and every medium with its tracks, track artists and recordings. The edit note says which release it was cloned from.
+- Shift+right-click opens the browser's own menu.
+
 ### Settings
 
 Right-click Apollo's corner icon.
@@ -453,6 +461,7 @@ Right-click Apollo's corner icon.
 | Guess case    | right-click the release title's **Aa** | the options                                     |
 | Aliases       | ↓ ↑                                    | the same column in the next, previous row       |
 | Aliases       | Alt+↓, then ↓ ↑, Enter                 | open the locale or type list, move, pick        |
+| Release page  | right-click **Edit**                   | [clone the release](#clone-a-release)           |
 
 ### Notes
 
