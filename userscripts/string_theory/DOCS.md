@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-09 18:16 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-09 18:45 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -2576,7 +2576,9 @@ Everyone has an opinion on genre: collect them from linked pages and cast yours 
 
 Open **Fuzzy Logic** from String Theory's dock. It reads the entity's links, up to 20 per source, and lists what it finds with the original names and the sources that gave each tag.
 
-Sources: Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB and Last.fm.
+Sources: Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm, RateYourMusic and Album of the Year.
+
+RateYourMusic and Album of the Year block automated reads, so their genres are read when you open a linked RYM or AOTY page yourself and kept for the next collect. A link you never opened shows "not read yet" in the source list.
 
 The row of source buttons shows what each one gave. Click a source to leave its tags out, click again to bring them back.
 
