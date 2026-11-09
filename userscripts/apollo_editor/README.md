@@ -197,6 +197,8 @@ The platform badges: **DZ** Deezer, **SP** Spotify, **TD** Tidal, **AM** Apple M
 
 Then the release group's recordings are matched by title, artist and length, and the other tracks looked up one by one. When a title is worded differently (*Part 1* / *Pt. 1*), the same position on other editions, and then on releases of the same title and artist in other groups, is used if the title is similar and the length agrees. A title in another script (*Kalimba Night* for *カリンバナイト*) can't be compared, so its position is used when that edition's whole medium lines up: as many tracks, and every length within the tolerance.
 
+A track still unset at the end gets the picker's own search (title, artist and length). Its result is linked when it is the only hit, by the track's artist, and clears the cutoff.
+
 | Colour | Confidence |                                               |
 | :----: | ---------- | --------------------------------------------- |
 |   🔵    | Exact      | every field the same                          |

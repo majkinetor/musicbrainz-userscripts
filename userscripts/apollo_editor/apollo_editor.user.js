@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.09.114507
+// @version      2026.11.09.121500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -13262,6 +13262,18 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           }
           for (let s = 0; s < sugg.length; s++) { consider(suggData(sugg[s])); if (bestLevel === 0) break; }   // 0 = exact, can't do better
         }
+        // #963 — last tier: the picker's own narrow search (title + artist name + length).
+        // MB's suggestions can miss a recording that search finds; a single hit is
+        // as sure as the one the user would pick by hand. Several hits: left alone.
+        if ((!best || bestLevel > maxLevel) && !_matchStop) {
+          const qy = recNarrowQuery(ko);
+          if (qy) {
+            setStatus('auto-matching ' + (i + 1) + '/' + todo.length + '… (search)');
+            const hits = ((await searchRecordings(qy)) || []).filter(d => !(videoBlocked && d.video));
+            if (hits.length === 1) consider(hits[0]);
+            Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' search tier → ' + hits.length + ' hit(s)' + (hits.length === 1 ? ': "' + hits[0].name + '" [' + (hits[0].gid || '').slice(0, 8) + '] level=' + recComboLevel(hits[0], ctx) : hits.length ? ', not used (more than one)' : ''));
+          }
+        }
         // #540: settle the winner on evidence, and refuse to guess between equals.
         const pk2 = posKeyOf(r, ko);
         const posGids = pk2 ? (posIndex.get(pk2) || []).map(c => c.gid).filter(Boolean) : [];
@@ -13573,6 +13585,16 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // Returns an array of hits, or NULL when the lookup itself failed (throttled /
   // network / superseded). A failure must never masquerade as "0 results" — that
   // was #555: an intermittent 503 rendered a silent "no matches".
+  // the picker's narrow search for a track: title + artist + length ±10 s. Auto-match's last tier runs it too. #963
+  function recNarrowQuery(ko) {
+    const esq = s => String(s || '').replace(/(["\\])/g, '\\$1');
+    const title = u(ko.name), artist = acText(u(ko.artistCredit)), len = u(ko.length);
+    if (!title) return '';
+    let qy = 'recording:"' + esq(title) + '"';
+    if (artist) qy += ' AND artist:"' + esq(artist) + '"';
+    if (len) qy += ' AND dur:[' + Math.max(0, len - 10000) + ' TO ' + (len + 10000) + ']';
+    return qy;
+  }
   async function searchRecordings(q, opts) {
     q = (q || '').trim(); if (!q) return [];
     Log.cat('Recording').debug('recording search:', JSON.stringify(q));
@@ -13924,15 +13946,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // ("show all") = title only, ignoring artist & length — for classical, covers, re-recordings. #119
     // the relaxed/narrow choice is remembered (SETTINGS) so it carries across picker opens and reloads.
     let relax = !!SETTINGS.recRelax;
-    const esq = s => String(s || '').replace(/(["\\])/g, '\\$1');
-    const autoQuery = () => {
-      const title = u(ko.name), artist = acText(u(ko.artistCredit)), len = u(ko.length);
-      if (relax) return title;   // broad title search (covers / loose matches), identical to typing the title — NOT an exact phrase
-      let qy = 'recording:"' + esq(title) + '"';
-      if (artist) qy += ' AND artist:"' + esq(artist) + '"';
-      if (len) qy += ' AND dur:[' + Math.max(0, len - 10000) + ' TO ' + (len + 10000) + ']';
-      return qy;
-    };
+    // relaxed: broad title search (covers / loose matches), identical to typing the title — NOT an exact phrase
+    const autoQuery = () => relax ? u(ko.name) : recNarrowQuery(ko);
     let seq = 0, tmr = null;
     const runSearch = async (query, fallbackTitle) => {
       const my = ++seq;
