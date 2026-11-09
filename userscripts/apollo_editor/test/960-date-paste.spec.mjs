@@ -25,7 +25,7 @@ test('the parser reads whole dates and refuses ambiguous ones', { tag: '@unit' }
   check(r('31.02.2025') === null, 'an impossible day: nothing');
 });
 
-test('a pasted date fills all three boxes, Alt+C copies it, Alt+X clears it', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('a pasted date fills all three boxes, Alt+C copies it, the x clears it', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   await page.goto(SANDBOX + '/', { waitUntil: 'domcontentloaded' });
   await requireLogin(page);
   await page.goto(AR, { waitUntil: 'domcontentloaded' });
@@ -36,13 +36,12 @@ test('a pasted date fills all three boxes, Alt+C copies it, Alt+X clears it', { 
   await page.locator(Y).focus();
   await page.keyboard.press('Alt+KeyC');
   check(await until(() => date(page, 'end_date'), v => v === '1998-2-25') === '1998-2-25', 'Alt+C copies begin to end');
-  await page.locator(EY).focus();
-  await page.keyboard.press('Alt+KeyX');
-  check(await until(() => date(page, 'end_date'), v => v === '--') === '--', 'Alt+X clears the end date');
+  await page.locator(EY).locator('xpath=ancestor::*[.//input[contains(@class,"partial-date-day")]][1]').locator('.tc-dp-x').click();
+  check(await until(() => date(page, 'end_date'), v => v === '--') === '--', 'the x clears the end date');
   await paste(page, EY, '03/04/2025');
   check(await date(page, 'end_date') === '--', 'an ambiguous paste fills nothing');
   check(await page.locator(EY).evaluate(el => el.classList.contains('tc-dp-bad')), 'and marks the box');
   await page.locator(EY).fill('');
-  await page.locator(EY).pressSequentially('20011');
-  check(await until(() => date(page, 'end_date'), v => v === '2001-1-') === '2001-1-', 'a full year box moves on to the month as you type');
+  await page.locator(EY).pressSequentially('20010215');
+  check(await until(() => date(page, 'end_date'), v => v === '2001-2-15') === '2001-2-15', 'typing goes through all three boxes without losing a digit');
 });

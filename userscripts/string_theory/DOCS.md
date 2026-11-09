@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-09 11:23 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-09 11:32 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -112,9 +112,9 @@ Everywhere MusicBrainz splits a date into year, month and day boxes: relationshi
 - A day comes before the month, never after: `03/04/2025` could be either and fills nothing. A two-digit year above 28 is 19xx, any other 20xx.
 - Boxes filled turn green for a moment. A paste that isn't one valid date fills nothing and turns the box red.
 - **Typing goes on**: a full year box moves on to the month, a full month box to the day, and `-`, `/` or `.` jumps to the next box.
-- **Alt+C** copies the date to the other end of its range, begin to end or end to begin. **Alt+X** clears the date. Clearing the last date of a range unticks *This relationship has ended*.
+- **Alt+C** copies the date to the other end of its range, begin to end or end to begin. The **×** after a date's boxes clears it. Clearing the last date of a range unticks *This relationship has ended*.
 
-Modifier keys, because a bare letter in a date box would be easy to press while typing. Alt+D was not taken: it selects the browser's address bar.
+A modifier key, because a bare letter in a date box would be easy to press while typing. Alt+D was not taken: it selects the browser's address bar.
 
 ### Tracklist
 
@@ -439,7 +439,7 @@ Right-click Apollo's corner icon.
 | Modify header and footer                                      | on      | a compact step switcher instead of the tabs and footer                                  |
 | Zen editing                                                   | on      | hide the site header, title and footer; the title moves into Apollo's bar               |
 | Auto confirm release submissions                              | on      | skip the confirmation page when a site seeds a release                                  |
-| Whole-date paste in date fields                               | on      | [dates](#dates): paste, type-through, Alt+C and Alt+X                                   |
+| Whole-date paste in date fields                               | on      | [dates](#dates): paste, type-through, Alt+C and the ×                                   |
 | Archive links on the Internet Archive                         | on      | save the release's links at **Enter edit**; see [Archive](#archive)                     |
 | Archive menu on external links                                | on      | the [archive menu](#archive-menu) by each link on entity pages                          |
 | archive.org keys                                              | none    | your access key and secret, shared with First Contact: higher limits, plus a screenshot |
@@ -475,7 +475,6 @@ Right-click Apollo's corner icon.
 | Guess case    | right-click a track's **Aa**           | every track                                     |
 | Guess case    | right-click the release title's **Aa** | the options                                     |
 | Date box      | Alt+C                                  | copy the date to the other end of its range     |
-| Date box      | Alt+X                                  | clear the date                                  |
 | Date box      | `-` `/` `.`                            | next box                                        |
 | Aliases       | ↓ ↑                                    | the same column in the next, previous row       |
 | Aliases       | Alt+↓, then ↓ ↑, Enter                 | open the locale or type list, move, pick        |

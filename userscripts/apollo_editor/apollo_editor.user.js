@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.09.110610
+// @version      2026.11.09.113211
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -7833,7 +7833,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           <label data-tip="A compact header and footer\nThe step tabs and the footer give way to a small step switcher, the wizard buttons by the title, and Add medium at the table's right."><input type="checkbox" id="tc-s-compactnav"> <span>Modify header and footer</span></label>
           <label data-tip="Zen: just the editor\nEverything above Apollo's nav bar (the site header, the release title, the entity tabs) and the page footer are hidden; the title and artist, with the version count, move into the nav bar.\nIt needs the compact header."><input type="checkbox" id="tc-s-zen"> <span>Zen editing</span></label>
           <label data-tip="Skip the confirmation page of a seeded release\nWhen another site seeds the release form, MusicBrainz asks first; Apollo clicks its submit button for you (chaban's auto-confirm script, built in).\nOnce, without this: add \`?skip_confirmation\` to the seed URL."><input type="checkbox" id="tc-s-autoconfirm"> <span>Auto confirm release submissions</span></label>
-          <label data-tip="Paste a whole date into a date box\nIn any year, month or day box: 2025-02-25, 25.2.2025, 25 February 2025 and more fill all three. Typing moves on from a full box, Alt+C copies begin to end or back, Alt+X clears."><input type="checkbox" id="tc-s-datepaste"> <span>Whole-date paste in date fields</span></label>
+          <label data-tip="Paste a whole date into a date box\nIn any year, month or day box: 2025-02-25, 25.2.2025, 25 February 2025 and more fill all three. Typing moves on from a full box, Alt+C copies begin to end or back, the x after a date clears it."><input type="checkbox" id="tc-s-datepaste"> <span>Whole-date paste in date fields</span></label>
           <div class="tc-s-sub tc-s-gap">Archive</div>
           <label data-tip="Save the external links on the Wayback Machine at Enter edit\nThe archive menu by each link on the release's page finds the snapshots. First Contact saves the album page of its own import itself.\n⚠ This sends those URLs to archive.org"><input type="checkbox" id="tc-s-archive"> <span>Archive links on the Internet Archive</span></label>
           ${mbaKeysHtml(SETTINGS.archive === false)}
@@ -7929,7 +7929,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const aconf = s.querySelector('#tc-s-autoconfirm'); if (aconf) { aconf.checked = SETTINGS.autoConfirmSeed !== false; aconf.onchange = () => { SETTINGS.autoConfirmSeed = aconf.checked; saveSettings(); }; }
     const arch = s.querySelector('#tc-s-archive'); if (arch) { arch.checked = SETTINGS.archive !== false; arch.onchange = () => { SETTINGS.archive = arch.checked; saveSettings(); const ia = s.querySelector('.mbu-ia'); if (ia) ia.classList.toggle('mbu-ia-off', !arch.checked); Log.cat('Archive').info('archive links on the Internet Archive:', arch.checked ? 'on' : 'off'); }; }   // #736
     mbaKeysWire(s, Log.cat('Archive'));
-    const dpaste = s.querySelector('#tc-s-datepaste'); if (dpaste) { dpaste.checked = SETTINGS.datePaste !== false; dpaste.onchange = () => { SETTINGS.datePaste = dpaste.checked; saveSettings(); }; }
+    const dpaste = s.querySelector('#tc-s-datepaste'); if (dpaste) { dpaste.checked = SETTINGS.datePaste !== false; dpaste.onchange = () => { SETTINGS.datePaste = dpaste.checked; saveSettings(); try { dpAddClear(); } catch (e) { /* not on this page */ } }; }
     const amenu = s.querySelector('#tc-s-archivemenu'); if (amenu) { amenu.checked = SETTINGS.archiveMenu !== false; amenu.onchange = () => { SETTINGS.archiveMenu = amenu.checked; saveSettings(); }; }
     const kcaret = s.querySelector('#tc-s-keepcaret'); if (kcaret) { kcaret.checked = SETTINGS.keepCaretColumn !== false; kcaret.onchange = () => { SETTINGS.keepCaretColumn = kcaret.checked; saveSettings(); }; }   // #279
     // Esc or a click outside closes it (a click on the ⚙ too, which the shared dismiss swallows)
@@ -15275,7 +15275,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     }, true);
   }
   // #960 Dates: paste a whole date into any of MB's year/month/day boxes, type straight through them,
-  // Alt+C copies begin <-> end, Alt+X clears. Delegated on document: dialogs and forms re-render.
+  // Alt+C copies begin <-> end; the x after a date clears it. Delegated on document: dialogs and forms re-render.
   let _dpHooked = false;
   const DP_BOX = 'input.partial-date-year, input.partial-date-month, input.partial-date-day';
   function dpMonths() {
@@ -15355,6 +15355,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // re-render if the framework put the old value back.
   const _dpSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
   function dpSet(inp, v) {
+    const old = inp.value;
     const put = () => {
       if (!inp.isConnected || inp.value === v) return;
       _dpSetter.call(inp, v);
@@ -15362,7 +15363,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       inp.dispatchEvent(new Event('change', { bubbles: true }));
     };
     put();
-    setTimeout(put, 150);
+    setTimeout(() => { if (inp.value === old) put(); }, 150);
   }
   // The three boxes of one date
   function dpGroup(box) {
@@ -15403,6 +15404,31 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function dpUntick(cb) {
     if (cb && cb.checked) cb.click();
   }
+  // Clears one date; clearing the last date of a range unticks "ended"
+  function dpClear(g) {
+    for (const b of [g.y, g.m, g.d]) if (b) dpSet(b, '');
+    const r = dpRange(g);
+    if (r && ![r.begin, r.end].some(x => [x.y, x.m, x.d].some(b => b && b !== g.y && b !== g.m && b !== g.d && b.value))) dpUntick(r.ended);
+  }
+  // An x after each date's boxes clears it
+  function dpAddClear() {
+    document.documentElement.classList.toggle('tc-dp-on', SETTINGS.datePaste !== false);
+    if (SETTINGS.datePaste === false) return;
+    for (const y of document.querySelectorAll('input.partial-date-year')) {
+      const g = dpGroup(y); if (!g) continue;
+      const last = g.d || g.m || g.y;
+      if (last.nextElementSibling && last.nextElementSibling.classList.contains('tc-dp-x')) continue;
+      const x = document.createElement('button');
+      x.type = 'button';
+      x.className = 'mbu-ov-x tc-dp-x';
+      x.textContent = '\u00d7';
+      x.setAttribute('aria-label', 'Clear this date');
+      x.dataset.tip = 'Clear this date';
+      x.tabIndex = -1;
+      x.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); const gg = dpGroup(y.isConnected ? y : x.parentElement.querySelector('input.partial-date-year')); if (gg) { dpClear(gg); try { gg.y.focus(); } catch (er) { /* fine */ } } });
+      last.insertAdjacentElement('afterend', x);
+    }
+  }
   function installDatePaste() {
     if (_dpHooked) return;
     _dpHooked = true;
@@ -15411,7 +15437,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       st.id = 'tc-dp-css';
       st.textContent = `
         input.tc-dp-ok{background:var(--mbu-ok-bg,#e6f4ea)!important;box-shadow:inset 0 0 0 1px var(--mbu-ok,#2e7d32)!important;transition:background .3s}
-        input.tc-dp-bad{background:var(--mbu-error-bg,#fdecea)!important;box-shadow:inset 0 0 0 1px var(--mbu-error,#c62828)!important}`;
+        input.tc-dp-bad{background:var(--mbu-error-bg,#fdecea)!important;box-shadow:inset 0 0 0 1px var(--mbu-error,#c62828)!important}
+        .tc-dp-x.mbu-ov-x{width:24px;height:24px;margin:0 0 0 2px;padding:0;vertical-align:middle;font-size:16px}
+        html:not(.tc-dp-on) .tc-dp-x{display:none}`;
       (document.head || document.documentElement).appendChild(st);
     }
     const on = () => SETTINGS.datePaste !== false;
@@ -15433,15 +15461,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     document.addEventListener('keydown', e => {
       const box = e.target;
       if (!on() || !(box instanceof HTMLInputElement) || !box.matches(DP_BOX)) return;
-      if (e.altKey && !e.ctrlKey && !e.metaKey && (e.code === 'KeyC' || e.code === 'KeyX')) {
+      if (e.altKey && !e.ctrlKey && !e.metaKey && e.code === 'KeyC') {
         const g = dpGroup(box); if (!g) return;
         const r = dpRange(g);
         e.preventDefault();
-        if (e.code === 'KeyX') {
-          for (const b of [g.y, g.m, g.d]) if (b) dpSet(b, '');
-          if (r && ![r.begin, r.end].some(x => [x.y, x.m, x.d].some(b => b && b !== g.y && b !== g.m && b !== g.d && b.value))) dpUntick(r.ended);
-          return;
-        }
         if (!r) { dpFlash([box], false); return; }
         const [from, to] = g.y === r.begin.y ? [r.begin, r.end] : [r.end, r.begin];
         for (const p of ['y', 'm', 'd']) if (from[p] && to[p]) dpSet(to[p], from[p].value);
@@ -15464,21 +15487,27 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const full = box.value.length >= (box === g.y ? 4 : 2);
       if (/^\d$/.test(k) && full && box.selectionStart === box.value.length && box.selectionEnd === box.value.length) {
         e.preventDefault();
+        _dpNoSel = next;
         next.focus();
+        _dpNoSel = null;
         dpSet(next, k);
         try { next.setSelectionRange(1, 1); } catch (x) { /* fine */ }
       }
     }, true);
+    let _dpNoSel = null;
     document.addEventListener('focusin', e => {
       const box = e.target;
-      if (on() && box instanceof HTMLInputElement && box.matches(DP_BOX) && box.value) setTimeout(() => { try { if (document.activeElement === box) box.select(); } catch (x) { /* fine */ } }, 0);
+      if (on() && box !== _dpNoSel && box instanceof HTMLInputElement && box.matches(DP_BOX) && box.value) setTimeout(() => { try { if (document.activeElement === box) box.select(); } catch (x) { /* fine */ } }, 0);
     }, true);
     mbuTipOn(DP_BOX, el => {
       if (!on()) return null;
       const g = dpGroup(el); const r = g && dpRange(g);
       return 'Paste a whole date\n2025-02-25, 25.2.2025, 25 February 2025, 20250225: Apollo splits it into the boxes.\nA full box moves on as you type, and - / . jump to the next one.'
-        + (r ? `\nAlt+C copies this date to the ${g.y === r.begin.y ? 'end' : 'begin'} date. Alt+X clears it.` : '\nAlt+X clears it.');
+        + (r ? `\nAlt+C copies this date to the ${g.y === r.begin.y ? 'end' : 'begin'} date.` : '') + '\nThe x after the boxes clears it.';
     });
+    let _dpT = 0;
+    new MutationObserver(() => { if (!_dpT) _dpT = setTimeout(() => { _dpT = 0; dpAddClear(); }, 200); }).observe(document.documentElement, { childList: true, subtree: true });
+    dpAddClear();
   }
   // One delegated listener: the editor re-renders its rows constantly, so
   // binding to the input itself would not survive.
