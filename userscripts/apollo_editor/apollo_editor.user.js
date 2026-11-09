@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.09.170500
+// @version      2026.11.09.183000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15,6 +15,19 @@
 // @match        https://*.musicbrainz.org/release/*
 // @match        https://*.musicbrainz.org/release-group/*
 // @match        https://*.musicbrainz.org/cdtoc/attach*
+// @match        https://*.musicbrainz.org/
+// @match        https://*.musicbrainz.org/recording/*
+// @match        https://*.musicbrainz.org/work/*
+// @match        https://*.musicbrainz.org/area/*
+// @match        https://*.musicbrainz.org/instrument/*
+// @match        https://*.musicbrainz.org/series/*
+// @match        https://*.musicbrainz.org/collection/*
+// @match        https://*.musicbrainz.org/event/*
+// @match        https://*.musicbrainz.org/user/*
+// @match        https://*.musicbrainz.org/tag/*
+// @match        https://*.musicbrainz.org/search*
+// @match        https://*.musicbrainz.org/edit/*
+// @match        https://*.musicbrainz.org/cdtoc/*
 // @match        https://*.musicbrainz.org/work/create*
 // @match        https://*.musicbrainz.org/work/*/edit
 // @match        https://*.musicbrainz.org/recording/create*
@@ -14525,6 +14538,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     form.submit();
     form.remove();
   }
+  // the pages Apollo works on; it's also matched on the rest of Event Horizon's, for the clone alone
+  const APOLLO_PAGE_RE = /^\/(?:(?:release|release-group|artist|label|place)\/|cdtoc\/attach|[a-z-]+\/[0-9a-f-]{36}\/(?:edit_annotation|edit|add-alias|aliases)\/?$|(?:work|recording|event|series)\/create)/i;
   function installCloneRelease() {
     document.addEventListener('contextmenu', ev => {
       if (ev.defaultPrevented || ev.shiftKey) return;   // Shift+right-click keeps the browser's menu
@@ -17891,6 +17906,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // #851: String Theory's settings open these settings on any page, whether this script runs here or not
     document.addEventListener('mbu-open-settings', e => { if (e.detail === 'apollo_editor' && !e.defaultPrevented) { e.preventDefault(); openSettings(null); } });
     if (SETTINGS_ONLY) { openSettings(null); return; }
+    // #959: Event Horizon moves between pages without loading them, so a release it shows may sit on a
+    // page Apollo was started on for nothing else: the clone listener goes on every page, and on the
+    // ones matched only for it (search, a recording, a collection, home…) Apollo does nothing more
+    installCloneRelease();
+    if (!APOLLO_PAGE_RE.test(location.pathname)) return;
     installDatePaste();             // #960 whole-date paste and type-through, on every page Apollo runs
     if (handleAutoCommit()) { Log.cat('Create').info('auto-commit (background create/link) — submitting the seeded form'); return; }
     if (handleArtistPageCallback()) { Log.cat('Create').info('artist/label-create callback — posting MBID back and closing'); return; }
@@ -17923,7 +17943,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     }
     // #591 #808 a release's Disc IDs tab and MusicBrainz's attach page; each checks its own path
     if (!/^\/release\/(add|.+\/edit)\/?$/.test(location.pathname)) { whenDomReady().then(() => { ensureDiscIdUi(); autoPickAttachMedium(); }); }
-    if (!/^\/release\/(add|.+\/edit)\/?$/.test(location.pathname)) { mountArchiveMenus(); installCloneRelease(); whenDomReady().then(aliasTabBadge); return; }   // /artist/* and /label/* (non-callback) just load the channel listener; entity pages get the archive menu (#736)
+    if (!/^\/release\/(add|.+\/edit)\/?$/.test(location.pathname)) { mountArchiveMenus(); whenDomReady().then(aliasTabBadge); return; }   // /artist/* and /label/* (non-callback) just load the channel listener; entity pages get the archive menu (#736)
     const ed = await waitFor(() => { const e = getEditor(); try { return e && u(e.rootField.release) && u(u(e.rootField.release).mediums) ? e : null; } catch (x) { return null; } });
     if (!ed) { Log.cat('System').err('MB.releaseEditor never became ready'); return; }
     try {   // line 2: the MB release, as a full link (real title now the editor is up)
