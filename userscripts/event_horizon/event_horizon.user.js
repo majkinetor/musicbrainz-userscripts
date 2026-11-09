@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.09.165937
+// @version      2026.11.09.171548
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2749,7 +2749,7 @@ body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;poin
 #eh-bgimg::before{content:none;position:absolute;inset:0;z-index:1;background:var(--accent);mix-blend-mode:color}
 #eh-bgimg[data-tone=accent]::before{content:''}
 #eh-bgimg::after{content:'';position:absolute;inset:0;z-index:2;background:radial-gradient(ellipse at 50% 40%,transparent 35%,var(--eh-page) 100%);opacity:var(--eh-bgimg-v,0)}
-:root:is([data-eh-bg=glow],[data-eh-bg=aura]:not([data-eh-aura])) body{background:radial-gradient(900px 520px at 100% 0,color-mix(in srgb,var(--accent2) 18%,transparent),transparent 70%) no-repeat,radial-gradient(800px 480px at 72% 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%) no-repeat,var(--eh-page)}
+:root:is([data-eh-bg=glow],[data-eh-bg=aura]:not([data-eh-aura])) body{background:radial-gradient(calc(900px * var(--eh-glow-z,1)) calc(520px * var(--eh-glow-z,1)) at var(--eh-glow-x1,100%) 0,color-mix(in srgb,var(--accent2) calc(18% * var(--eh-glow-s,1)),transparent),transparent 70%) no-repeat,radial-gradient(calc(800px * var(--eh-glow-z,1)) calc(480px * var(--eh-glow-z,1)) at var(--eh-glow-x2,72%) 0,color-mix(in srgb,var(--accent) calc(16% * var(--eh-glow-s,1)),transparent),transparent 70%) no-repeat,var(--eh-page)}
 /* light pages show the same lines far stronger than dark ones: one slider value reads alike on both */
 :is(#eh-hex,.eh-amb){position:fixed;inset:-48px;z-index:-1;pointer-events:none;color:var(--accent);--eh-hex-k:.5}
 :root[data-eh-theme=dark] :is(#eh-hex,.eh-amb){--eh-hex-k:1}
@@ -3987,6 +3987,7 @@ const FX_STRIP = {
     hexOpacity: [0, 100, 1], hexFx: [20, 100, 1], hexPace: [20, 200, .01], hexTrail: [20, 200, .01], hexOften: [20, 200, .01], hexGlow: [0, 200, .01],
     bgOpacity: [20, 100, 1], bgBlur: [0, 100, .1, 1], bgBright: [40, 140, 1], bgSat: [0, 200, 1], bgVig: [0, 100, 1], bgAmount: [20, 200, 1], bgSize: [40, 200, 1], bgGlow: [0, 200, 1],
     auraOpacity: [20, 100, 1], auraBlur: [20, 200, 1], auraSat: [0, 200, 1], auraHeight: [60, 200, 1],
+    glowStrength: [20, 200, 1], glowSize: [40, 200, 1],
 };
 const AMBIENT_KEYS = ['effect', 'ambientOpacity', ...Object.keys(AMBIENT_DEFAULTS), ...Object.keys(FX_OWN)];
 const FX_COLOURS = ['hexColours', ...Object.keys(FX_OWN).filter(k => k.endsWith('Colours'))];
@@ -4036,7 +4037,7 @@ function ambientApply(layer, kind) {
     layer._ehPattern = { key, P: p, stop, shift() {} }; document.addEventListener('visibilitychange', vis); vis();
 }
 
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'arAuto', 'arCol', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'fx', 'fxOff', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'bgAmount', 'bgSize', 'bgGlow', 'bgHue', 'auraOpacity', 'auraBlur', 'auraSat', 'auraHeight', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'arAuto', 'arCol', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'fx', 'fxOff', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'bgAmount', 'bgSize', 'bgGlow', 'bgHue', 'auraOpacity', 'auraBlur', 'auraSat', 'auraHeight', 'glowStrength', 'glowSize', 'glowPlace', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -4044,7 +4045,7 @@ const S = {
     crTracks: true,
     byName: false, plNames: false, plHover: false, plSize: 18, trackStripe: true, arAuto: true, arCol: false, dis: 'brackets', width: 1600, bg: 'aura', fx: null, fxOff: [], hex: false, hexOpacity: 60, hexIntensity: 100, hexMotion: 'static', hexFx: 100, hexPace: .6, hexTrail: 1, hexOften: 1, hexGlow: 1, hexTwo: false, hexDepth: false,
     // the Image background: its address, and the filters over it
-    bgUrl: '', bgArt: 'chillwave', bgSeed: 1, bgBlur: 0, bgBright: 100, bgSat: 100, bgOpacity: 65, bgFit: 'cover', bgVig: 0, bgTone: 'natural', bgAmount: 100, bgSize: 100, bgGlow: 100, bgHue: 0, auraOpacity: 40, auraBlur: 100, auraSat: 160, auraHeight: 100,
+    bgUrl: '', bgArt: 'chillwave', bgSeed: 1, bgBlur: 0, bgBright: 100, bgSat: 100, bgOpacity: 65, bgFit: 'cover', bgVig: 0, bgTone: 'natural', bgAmount: 100, bgSize: 100, bgGlow: 100, bgHue: 0, auraOpacity: 40, auraBlur: 100, auraSat: 160, auraHeight: 100, glowStrength: 100, glowSize: 100, glowPlace: 'right',
     on: true, menuTitles: false,
     thumbs: true,
     factOff: { artist: [], label: [] }, // the artist's and label's header facts turned off
@@ -9011,6 +9012,10 @@ function bgApply() {
     hexApply();
     const de = document.documentElement;
     de.setAttribute('data-eh-bg', bgShown());
+    const gx = { left: ['0%', '28%'], centre: ['62%', '38%'] }[S.glowPlace] || ['100%', '72%'];
+    de.style.setProperty('--eh-glow-s', String(Math.min(5, (+S.glowStrength || 100) / 100)));
+    de.style.setProperty('--eh-glow-z', String((+S.glowSize || 100) / 100));
+    de.style.setProperty('--eh-glow-x1', gx[0]); de.style.setProperty('--eh-glow-x2', gx[1]);
     bgImgApply();
     requestAnimationFrame(() => {
         const im = bgShown() === 'aura' && document.querySelector('#app img.cover, #app .picw img');
@@ -11866,7 +11871,7 @@ const FX_PRESETS = [
     { name: 'Hexagon slow drift', v: { fx: ['hexagons'], tronGlow: 0, tronColour: 2, starsGlow: 0, starsColour: 2, auroraGlow: 0, auroraColour: 2, rainGlow: 0, rainColour: 2, hex: true, hexOpacity: 40, hexMotion: 'drift', hexOften: 0.6 } },
     { name: 'Nebula with stars', v: { bg: 'art', fx: ['stars'], effect: 'stars', tronOutlines: 60, tronRiders: 8, tronSpeed: 0.4, tronTrail: 6, starDrift: 0.2, starDepth: 2, starTwinkle: 0, rainSlide: 0.4, rainTrails: 2, rainMerge: 0, rainFog: 0.2, rainRefraction: 0, rainLights: 0, rainFall: 0, rainLightning: 1, tronOpacity: 60, tronColour: 2, starsOpacity: 20, starsGlow: 2, starsColour: 2, auroraColour: 2, rainOpacity: 80, rainColour: 2, hex: true, hexMotion: 'electricity', hexFx: 25, hexTrail: 2, hexTwo: 2, bgArt: 'nebula', bgSeed: 537878797, bgBright: 80, bgSat: 80, bgOpacity: 60, bgVig: 60, bgTone: 'mono', bgAmount: 140, bgGlow: 140 } },
 ];
-const FX_KEYS = ['bg', 'fx', 'fxOff', ...AMBIENT_KEYS, 'hexColours', 'hex', 'hexOpacity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'bgAmount', 'bgSize', 'bgGlow', 'bgHue', 'auraOpacity', 'auraBlur', 'auraSat', 'auraHeight'];
+const FX_KEYS = ['bg', 'fx', 'fxOff', ...AMBIENT_KEYS, 'hexColours', 'hex', 'hexOpacity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'bgAmount', 'bgSize', 'bgGlow', 'bgHue', 'auraOpacity', 'auraBlur', 'auraSat', 'auraHeight', 'glowStrength', 'glowSize', 'glowPlace'];
 const FX_UNNAMED = 'Unnamed effect';
 const fxNow = () => Object.fromEntries(FX_KEYS.map(k => [k, S[k]]));
 const fxFull = p => { const d = JSON.parse(DEFAULTS); fxMigrate(p.v = { ...p.v }); const f = Object.fromEntries(FX_KEYS.map(k => [k, k in p.v ? p.v[k] : d[k]])); f.fx = fxOf(f); f.hex = f.fx.length > 0; return f; };
@@ -12023,6 +12028,9 @@ function fxPane(chip, row) {
 }
 // the Artwork's scene, or the Image's address, then the filters both share
 function bgImgRows(chip, row) {
+    if (S.bg === 'glow') return [cfgStrip('glowStrength', 'Strength', 'How strong the glow is'),
+        cfgStrip('glowSize', 'Size', 'How far the glow spreads')
+        + row('Place', [['left', 'Left'], ['centre', 'Centre'], ['right', 'Right']].map(([v, l]) => chip('glowPlace', v, (S.glowPlace || 'right') === v, l)).join(''), 'Where along the top the glow sits')];
     if (S.bg === 'aura') return [cfgStrip('auraOpacity', 'Opacity', 'How strongly the cover shows through'),
         cfgStrip('auraBlur', 'Blur', 'How blurred the cover is\nLess: its shapes show; more: only its colours')
         + cfgStrip('auraSat', 'Saturation', 'How vivid its colours are')
@@ -12324,7 +12332,8 @@ function cfgWire(panel, b, body) {
             else if (g === 'bg') { S.bg = k; bgApply(); }
             else if (g === 'bgArt') { S.bgArt = k; bgApply(); }
             else if (g === 'bgSeed') { S.bgSeed = 1 + (Math.random() * 1e9 | 0); bgApply(); }
-            else if (g === 'bgBlur' || g === 'bgBright' || g === 'bgSat' || g === 'bgOpacity' || g === 'bgVig' || g === 'bgAmount' || g === 'bgSize' || g === 'bgGlow' || g === 'bgHue' || g.startsWith('aura') && FX_STRIP[g]) { S[g] = +k; bgApply(); }
+            else if (g === 'bgBlur' || g === 'bgBright' || g === 'bgSat' || g === 'bgOpacity' || g === 'bgVig' || g === 'bgAmount' || g === 'bgSize' || g === 'bgGlow' || g === 'bgHue' || /^(aura|glow)[A-Z]/.test(g) && FX_STRIP[g]) { S[g] = +k; bgApply(); }
+            else if (g === 'glowPlace') { S[g] = k; bgApply(); }
             else if (g === 'bgFit' || g === 'bgTone') { S[g] = k; bgApply(); }
             else if (g === 'fxKind') { const on = fxOf(S), i = on.indexOf(fxSel); if (!on.includes(k)) { if (i < 0) on.push(k); else on[i] = k; } S.fx = on; fxSel = k; hexApply(); }
             else if (g === 'fxRm') { if (k === 'bg') { S.bg = 'flat'; bgApply(); } else { S.fx = fxOf(S).filter(x => x !== k); hexApply(); } }

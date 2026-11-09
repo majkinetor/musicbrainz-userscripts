@@ -50,6 +50,7 @@ Under **Settings → Effects**, add a **Background** and as many **Effects** as 
 **Background** is **Cover aura** (the page's cover, blurred behind its head), **Glow** (the accent colour), **Artwork** or **Image**:
 
 - **Cover aura** sets its **Opacity**, **Blur** (less shows the cover's shapes, more only its colours), **Saturation** and **Height**, how far down the page it reaches before it fades.
+- **Glow** sets its **Strength**, **Size** and **Place** (Left, Centre or Right along the top).
 - **Artwork** is drawn by Event Horizon. **Scene** picks Chillwave (a city at sunset over a neon grid), Nebula, Low poly or Bokeh, and **Shuffle** draws the same scene anew.
 - **Image** shows a picture from the web: paste its address (right-click a picture, _Copy image address_) and press Enter or the tick. An address that doesn't load says so.
 
