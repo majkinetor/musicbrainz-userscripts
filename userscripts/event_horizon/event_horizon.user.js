@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.09.214602
+// @version      2026.11.09.225120
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2900,6 +2900,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .kicker{display:flex;align-items:center;gap:10px;min-width:0;font-size:18px}
 .kicker>span:not(.acts){white-space:nowrap}
 .kicker .ab .abt{display:var(--eh-menu-titles,none)}
+.kicker .eh-more .abm .abt{display:inline}
 .kicker svg{color:var(--accent)}
 .kicker .acts{margin-left:auto;display:flex;gap:2px;align-items:center}
 .kicker .ab{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 8px;border-radius:8px;border:1px solid transparent;font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--chip-text)}
@@ -4046,7 +4047,7 @@ const S = {
     byName: false, plNames: false, plHover: false, plSize: 18, trackStripe: true, arAuto: true, arCol: false, dis: 'brackets', width: 1600, bg: 'aura', fx: null, fxOff: [], hex: false, hexOpacity: 60, hexIntensity: 100, hexMotion: 'static', hexFx: 100, hexPace: .6, hexTrail: 1, hexOften: 1, hexGlow: 1, hexTwo: false, hexDepth: false,
     // the Image background: its address, and the filters over it
     bgUrl: '', bgArt: 'chillwave', bgSeed: 1, bgBlur: 0, bgBright: 100, bgSat: 100, bgOpacity: 65, bgFit: 'cover', bgVig: 0, bgTone: 'natural', bgAmount: 100, bgSize: 100, bgGlow: 100, bgHue: 0, auraOpacity: 40, auraBlur: 100, auraSat: 160, auraHeight: 100, glowStrength: 100, glowSize: 100, glowPlace: 'right',
-    on: true, menuTitles: false,
+    on: true, menuTitles: false, menuResponsive: false, menuOrder: [], menuOff: [], menuPlaces: {},
     thumbs: true,
     factOff: { artist: [], label: [] }, // the artist's and label's header facts turned off
     noAliases: false, // the release header's aliases, shown unless turned off
@@ -4064,7 +4065,7 @@ const S = {
 };
 VIEW.push(...AMBIENT_KEYS, 'hexColours');
 Object.assign(S, { effect: 'hexagons', ambientOpacity: 65, ...AMBIENT_DEFAULTS, ...FX_OWN, hexColours: [] });
-VIEW.push('keysOn', 'keys', 'menuTitles', 'annoHover', 'cfgFade','pending', 'colPick', 'colW', 'named', 'fxTheme', 'fxCur', 'stars', 'starGroup', 'starView', 'starSort', 'recView', 'recSort', 'recMax', 'recOff', 'hmQs');
+VIEW.push('keysOn', 'keys', 'menuTitles', 'menuResponsive', 'menuOrder', 'menuOff', 'menuPlaces', 'annoHover', 'cfgFade','pending', 'colPick', 'colW', 'named', 'fxTheme', 'fxCur', 'stars', 'starGroup', 'starView', 'starSort', 'recView', 'recSort', 'recMax', 'recOff', 'hmQs');
 S.keysOn = true; // #907: keyboard shortcuts, and the keys changed from their defaults by command
 S.keys = {};
 S.stars = []; // starred entities travel with the manager's settings
@@ -4496,6 +4497,83 @@ const DISC_FMT = /(^|\b)(cd|cd-r|8cm cd|8cm cd\+g|enhanced cd|hdcd|copy control 
 const discOk = f => !f || DISC_FMT.test(f);
 // a release's actions: Disc IDs only when one of its media can have them
 const relActs = r => r && r.media && r.media.length && !r.media.some(m => discOk(m.format)) ? ACTS.filter(a => a[0] !== 'discids') : ACTS;
+// One identity per action across entity types; the URL and availability still come from that page.
+function menuKey(p) {
+    if (['cover-art', 'set-cover-art', 'event-art'].includes(p)) return 'cover-art';
+    if (p === 'edit-relationships') return 'relationships';
+    if (p === 'own_collection/edit') return 'edit';
+    if (p === '/release/add?release-group=') return 'add-release';
+    return p;
+}
+const MENU_MORE = ['details', 'aliases', 'tags', 'recordings', 'works', 'events', 'discids', 'edit_annotation'];
+function menuCatalog() {
+    const labels = [['edit', 'Edit'], ['cover-art', 'Art'], ['artists', 'Artists'], ['labels', 'Labels'], ['releases', 'Releases'], ['relationships', 'Relationships'], ['add-release', 'Add release'], ['edits', 'History'], ['details', 'Details'], ['aliases', 'Aliases'], ['tags', 'Tags'], ['recordings', 'Recordings'], ['works', 'Works'], ['events', 'Events'], ['discids', 'Disc IDs'], ['edit_annotation', 'Annotation']];
+    const seen = new Set(labels.map(x => x[0]));
+    document.querySelectorAll('button[data-mbu-menu-item]').forEach(b => {
+        const id = 'external:' + b.dataset.mbuMenuItem, name = b.dataset.mbuMenuTitle?.trim();
+        if (name && !seen.has(id)) { seen.add(id); labels.push([id, name]); }
+    });
+    return labels;
+}
+function menuSort(ids, order) {
+    const rank = new Map([...new Set(Array.isArray(order) ? order : [])].map((id, i) => [id, i]));
+    return [...ids].sort((a, b) => (rank.get(a) ?? 1e6) - (rank.get(b) ?? 1e6));
+}
+function menuPlace(id) {
+    const p = S.menuPlaces && S.menuPlaces[id];
+    return p === 'main' || p === 'more' ? p : MENU_MORE.includes(id) || id.startsWith('external:') ? 'more' : 'main';
+}
+function menuIds(ids) {
+    const base = menuCatalog().map(x => x[0]);
+    return menuSort(menuSort(ids, base), S.menuOrder);
+}
+function menuMore(acts) {
+    let more = acts.querySelector(':scope>.eh-more');
+    if (!more) {
+        more = document.createElement('details'); more.className = 'abx eh-more';
+        more.innerHTML = `<summary class="ab" aria-label="More">${SVG('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>')}</summary><span class="abm"></span>`;
+        const util = acts.querySelector(':scope>.srch,:scope>.eh-home'); acts.insertBefore(more, util);
+    }
+    return more;
+}
+function menuLayout(acts, fold = false) {
+    const nodes = [...acts.querySelectorAll('[data-menu-key]')]; if (!nodes.length) return;
+    const byId = new Map(nodes.map(n => [n.dataset.menuKey, n])), ordered = menuIds([...byId.keys()]).map(id => byId.get(id));
+    let more = menuMore(acts), list = more.querySelector('.abm');
+    const off = Array.isArray(S.menuOff) ? S.menuOff : [];
+    const place = (n, main) => {
+        n.querySelector('span')?.classList.add('abt');
+        if (main) { n.dataset.tip = n.dataset.menuTip || n.textContent; acts.insertBefore(n, more); }
+        else { n.removeAttribute('data-tip'); list.append(n); }
+    };
+    ordered.forEach(n => { n.hidden = off.includes(n.dataset.menuKey); place(n, !fold && menuPlace(n.dataset.menuKey) === 'main'); });
+    const visible = ordered.filter(n => !n.hidden);
+    const mark = () => { more.hidden = ![...list.children].some(n => !n.hidden); if (more.hidden) more.open = false; };
+    mark();
+    const kick = acts.parentElement, wrap = acts.closest('#app') || document.documentElement;
+    const over = () => {
+        const r = wrap.getBoundingClientRect(), edge = Math.min(r.right - parseFloat(getComputedStyle(wrap).paddingRight || 0), innerWidth, screen.width || 1e9, kick.getBoundingClientRect().right);
+        return acts.getBoundingClientRect().right > edge + 1;
+    };
+    if (acts.offsetWidth) {
+        for (const n of [...visible].reverse()) { if (!over()) break; if (n.parentElement === acts) { place(n, false); mark(); } }
+        if (S.menuResponsive && !fold) for (const n of visible) {
+            if (n.parentElement === acts || menuPlace(n.dataset.menuKey) !== 'more') continue;
+            place(n, true); mark();
+            if (over()) { place(n, false); mark(); break; }
+        }
+    }
+    // Promotion and overflow never change the configured relative order in either destination.
+    ordered.filter(n => n.parentElement === acts).forEach(n => acts.insertBefore(n, more));
+    ordered.filter(n => n.parentElement === list).forEach(n => list.append(n));
+    mark();
+}
+function menuRefresh() {
+    document.querySelectorAll('#app .kicker .acts,#eh-pin .acts,#eh-relhd .acts').forEach(a => {
+        if (a.querySelector('[data-menu-key]')) menuLayout(a, !!a.closest('#eh-pin.on') && PIN_NARROW.matches);
+        else actsFit(a);
+    });
+}
 // The same action row on overviews, subpages and pinned headers. Less-used
 // actions keep their labels in More even when header menu titles are off.
 function actionRow(actions, type, id, active = '') {
@@ -4507,7 +4585,7 @@ function actionRow(actions, type, id, active = '') {
     if (RECS_TYPES.includes(type) && !actions.some(a => a[0] === 'recordings')) actions = [...actions, ['recordings', 'Recordings', 'Recordings', '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/>']];
     if (RELS_TYPES.includes(type) && !actions.some(a => a[0] === 'relationships')) actions = [...actions, ['relationships', 'Relationships', 'Relationships', '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M9 6h6M8.1 8.1l7.8 7.8"/>']];
     if (ALIASES_TYPES.includes(type) && !actions.some(a => a[0] === 'aliases')) actions = [...actions, ['aliases', 'Aliases', 'Aliases', '<path d="M4 7h16M4 12h11M4 17h7"/>']];
-    const link = ([p, n, tip, ic]) => { const inMore = ['details', 'aliases', 'tags', 'recordings', 'works', 'events', 'discids', 'edit_annotation'].includes(p); return `<a class="ab${p === active ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === active ? ' aria-current="page"' : ''}${inMore ? '' : ` data-tip="${esc(tip.replace('artist', type.replace('-', ' ')))}"`}>${SVG(ic)}<span class="${inMore ? '' : 'abt'}">${n}</span></a>`; };
+    const link = ([p, n, tip, ic]) => { const inMore = MENU_MORE.includes(p), title = tip.replace('artist', type.replace('-', ' ')); return `<a class="ab${p === active ? ' on' : ''}" data-menu-key="${menuKey(p)}" data-menu-tip="${esc(title)}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === active ? ' aria-current="page"' : ''}${inMore ? '' : ` data-tip="${esc(title)}"`}>${SVG(ic)}<span class="${inMore ? '' : 'abt'}">${n}</span></a>`; };
     const less = actions.filter(a => ['details', 'aliases', 'tags', 'recordings', 'works', 'events', 'discids'].includes(a[0]));
     if (less.length) less.push(['edit_annotation', 'Annotation', 'Edit annotation', '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>']);
     const main = actions.filter(a => !less.includes(a));
@@ -4543,6 +4621,8 @@ function foreignMenuSync() {
         for (const source of items) {
             const b = document.createElement('button'); b.type = 'button'; b.className = 'ab';
             b.dataset.ehMenuItem = source.getAttribute('data-mbu-menu-item');
+            b.dataset.menuKey = 'external:' + b.dataset.ehMenuItem;
+            b.dataset.menuTip = source.getAttribute('data-mbu-menu-title');
             const icon = source.getAttribute('data-mbu-menu-icon');
             if (icon) {
                 try {
@@ -10371,6 +10451,7 @@ function pinBar(app) {
 // on a phone the pinned bar has no room for the action row, so its links go into More (and back once the bar hides)
 const PIN_NARROW = matchMedia('(max-width:700px)');
 function pinFold(acts, pin) {
+    if (acts.querySelector('[data-menu-key]')) { menuLayout(acts, pin && PIN_NARROW.matches); return; }
     const fold = pin && PIN_NARROW.matches, moved = [...acts.querySelectorAll('a.ab[data-pinfold]')];
     if (!fold) { for (const a of moved) { a.removeAttribute('data-pinfold'); acts.querySelector('[data-pinhome="' + a.dataset.pinidx + '"]')?.replaceWith(a); } const more = acts.querySelector('.eh-more[data-pinmade]'); if (more && !more.querySelector('.abm>*')) more.remove(); actsFit(acts); return; }
     if (moved.length) return;
@@ -10384,6 +10465,7 @@ function pinFold(acts, pin) {
 // a narrow screen: the action row's links that don't fit go into More, the last first, so search, the star and home stay in view (majkinetor)
 // (a row wider than a phone made Firefox widen the whole page and zoom out, leaving an empty column on the right)
 function actsFit(acts) {
+    if (acts?.querySelector('[data-menu-key]')) { menuLayout(acts, !!acts.closest('#eh-pin.on') && PIN_NARROW.matches); return; }
     if (!acts || !acts.isConnected || acts.closest('#eh-pin.on')) return;
     for (const ph of [...acts.querySelectorAll('[data-fithome]')]) { const a = acts.querySelector('a.ab[data-fitidx="' + ph.dataset.fithome + '"]'); if (a) a.removeAttribute('data-fitidx'); ph.replaceWith(...(a ? [a] : [])); }
     const made = acts.querySelector(':scope>.eh-more[data-fitmade]'); if (made && !made.querySelector('.abm>*')) made.remove();
@@ -10399,7 +10481,7 @@ function actsFit(acts) {
         more.querySelector('.abm').prepend(a);
     }
 }
-{ let t = 0; const refit = () => { clearTimeout(t); t = setTimeout(() => document.querySelectorAll('#app .kicker .acts').forEach(actsFit), 150); }; addEventListener('resize', refit); addEventListener('load', refit); document.fonts?.ready.then(refit); }
+{ let t = 0; const refit = () => { clearTimeout(t); t = setTimeout(menuRefresh, 150); }; addEventListener('resize', refit); addEventListener('load', refit); document.fonts?.ready.then(refit); }
 PIN_NARROW.addEventListener('change', () => { const bar = document.getElementById('eh-pin'), acts = bar && bar.querySelector('.acts'); if (acts) pinFold(acts, bar.classList.contains('on')); });
 // lights the section at the top of the window
 // and gives a stuck section header its background, MusicBrainz's releases page's too, which has no rail
@@ -12093,16 +12175,51 @@ function hexRows(chip, row) {
         + dim(use('often'), cfgStrip('hexOften', 'How often', 'How often something new lights up'))
         + row('Depth', chip('hexDepth', 'hexDepth', S.hexDepth, 'On', 'The hexagons scroll slower than the page\nOn: they sit deeper, behind the page\nOff: they stay still')), true);
 }
+const MENU_CFG_CSS = `
+#eh-cfg .menu-options{display:flex;flex-wrap:wrap;gap:6px 18px;margin:8px 0 14px}
+#eh-cfg .menu-options .ckr{margin:0}
+#eh-cfg .menu-table{width:100%;border-collapse:collapse;table-layout:auto;font:inherit;color:var(--mbu-text)}
+#eh-cfg .menu-table th{font:400 11px var(--mbu-font);color:var(--mbu-text-dim);text-align:left;padding:6px}
+#eh-cfg .menu-table td{border-bottom:1px solid var(--mbu-border-soft);padding:3px 6px;vertical-align:middle}
+#eh-cfg .menu-table th:first-child,#eh-cfg .menu-table td:first-child{width:26px;padding-left:0}
+#eh-cfg .menu-table th:nth-child(3){width:48px}
+#eh-cfg .menu-table th:last-child{width:112px}
+#eh-cfg .menu-table button{font:inherit;border:0;box-shadow:none;background:none;filter:none!important;cursor:pointer;color:var(--mbu-text-dim);border-radius:3px;min-height:32px;padding:6px 8px}
+#eh-cfg .menu-table button:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}
+#eh-cfg .menu-table button[aria-pressed=true]{background:var(--mbu-accent-soft);color:var(--mbu-accent-text)}
+#eh-cfg .menu-table button[data-menu-visible]{display:grid;place-items:center;width:38px;min-height:34px}
+#eh-cfg .menu-table button svg{width:17px;height:17px}
+#eh-cfg .menu-table button[data-menu-drag]{padding:4px;cursor:grab;touch-action:none;min-width:24px}
+#eh-cfg .menu-table .menu-place{display:flex;gap:2px}
+#eh-cfg .menu-table .menu-off{color:var(--mbu-text-dim)}
+#eh-cfg .menu-table .menu-off .menu-name{text-decoration:line-through}
+#eh-cfg .menu-table .menu-dragging{opacity:.5}
+#eh-cfg .menu-hint{margin:10px 0 0;color:var(--mbu-text-dim);font:11px/1.5 var(--mbu-font)}
+@media(pointer:coarse){#eh-cfg .menu-table button{min-height:44px}#eh-cfg .menu-table button[data-menu-visible]{min-height:44px}}
+@media(max-width:420px){#eh-cfg .menu-table td,#eh-cfg .menu-table th{padding-left:3px;padding-right:3px}#eh-cfg .menu-table .menu-name{overflow-wrap:anywhere}#eh-cfg .menu-table th:last-child{width:100px}}
+`;
+function menuPane() {
+    const eye = '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
+    const catalog = new Map(menuCatalog()), off = Array.isArray(S.menuOff) ? S.menuOff : [];
+    return '<div class="menu-options">'
+        + ckRow('menuTitles', 'Show menu titles', 'Show text beside header menu icons\nOn: icons and titles\nOff: icons only')
+        + ckRow('menuResponsive', 'Responsive', 'Bring items from More into the main menu when they fit\nTheir configured order stays the same') + '</div>'
+        + '<table class="menu-table" aria-label="Header menu items"><thead><tr><th></th><th>Item</th><th>Visible</th><th>Place</th></tr></thead><tbody>'
+        + menuIds([...catalog.keys()]).map(id => {
+            const name = catalog.get(id), on = !off.includes(id), place = menuPlace(id);
+            return `<tr data-menu-row="${esc(id)}" class="${on ? '' : 'menu-off'}"><td><button type="button" data-menu-drag="${esc(id)}" aria-label="Reorder ${esc(name)}" data-tip="Drag to reorder&#10;Arrow keys: move up or down">${SVG('<path d="M9 5h.01M15 5h.01M9 12h.01M15 12h.01M9 19h.01M15 19h.01"/>')}</button></td><td class="menu-name">${esc(name)}</td><td><button type="button" data-menu-visible="${esc(id)}" aria-label="Show ${esc(name)}" aria-pressed="${on}" data-tip="${on ? 'Hide' : 'Show'} ${esc(name)}">${SVG(eye + (on ? '' : '<path d="M3 3l18 18"/>'))}</button></td><td><span class="menu-place" role="group" aria-label="Place ${esc(name)}">${['main', 'more'].map(p => `<button type="button" data-menu-place="${esc(id)}" data-place="${p}" aria-pressed="${place === p}">${p === 'main' ? 'Main' : 'More'}</button>`).join('')}</span></td></tr>`;
+        }).join('') + '</tbody></table><p class="menu-hint">Drag to reorder. Only actions available on the page appear. Search, Star and Home stay in the header.</p>';
+}
 function cfgBody() {
     const chip = cfgChip, row = cfgRow;
-    const tabs = [['general', 'General'], ['effects', 'Effects']];
+    const tabs = [['general', 'General'], ['menu', 'Menu'], ['effects', 'Effects']];
     const panes = {
         general: '<div class="m-sec">Page</div>'
             + row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen')
-            + ckRow('menuTitles', 'Show menu titles', 'Show text beside header menu icons\nOn: icons and titles\nOff: icons only')
             + ckRow('pending', 'Show pending changes', 'Mark what has edits open, as MusicBrainz does\nTakes one extra MusicBrainz request per page, sent last')
             + '<div class="m-sec">Keyboard</div>'
             + `<div class="keys">${ckRow('keysOn', 'Keyboard shortcuts', 'Single keys open the page\'s edit, relationships, history and more\nCtrl+/ lists them\nOn MusicBrainz\'s pages and in Event Horizon alike')}<button type="button" class="btn" data-keys-open>Change keys…</button></div>`,
+        menu: menuPane(),
         effects: fxPane(chip, row),
     };
     if (!panes[cfgTab]) cfgTab = 'general';
@@ -12114,6 +12231,7 @@ function cfgBody() {
 let cfgTab = 'general';
 function openCfg() {
     if (document.getElementById('eh-cfg')) return;
+    if (!document.getElementById('eh-menu-cfg-css')) { const s = document.createElement('style'); s.id = 'eh-menu-cfg-css'; s.textContent = MBU_TOKENS + MENU_CFG_CSS; document.documentElement.append(s); }
     const ov = document.createElement('div'); ov.className = 'mbu-ov'; ov.id = 'eh-cfg';
     ov.innerHTML = `<div class="mbu-ov-panel eh-cfg mbu-ui" role="dialog" aria-label="Event Horizon settings"><div class="mbu-ov-body">${mbuCfgHeader({ script: 'event_horizon', name: 'Event Horizon', version: VERSION, icon: LOGO, log: true })}<div class="eh-cfg-b">${cfgBody()}</div></div></div>`;
     document.documentElement.append(ov);
@@ -12148,6 +12266,45 @@ function openPlCfg(btn, hd) {
 function cfgWire(panel, b, body) {
     // a redraw keeps the pane's scroll and the page's: a new pane starts at its top
     const redo = () => { const st = b.querySelector('.pane')?.scrollTop || 0, sy = scrollY; b.innerHTML = body(); const q = b.querySelector('.pane'); if (q) q.scrollTop = st; if (scrollY !== sy) scrollTo(scrollX, sy); fxLive(b); };
+    const menuKeepOrder = table => {
+        const ids = [...table.querySelectorAll('[data-menu-row]')].map(r => r.dataset.menuRow);
+        S.menuOrder = ids.concat((Array.isArray(S.menuOrder) ? S.menuOrder : []).filter(id => !ids.includes(id)));
+        save(); menuRefresh();
+    };
+    panel.addEventListener('keydown', ev => {
+        const grip = ev.target.closest('[data-menu-drag]'); if (!grip || !['ArrowUp', 'ArrowDown'].includes(ev.key)) return;
+        const row = grip.closest('tr'), to = ev.key === 'ArrowUp' ? row.previousElementSibling : row.nextElementSibling;
+        if (to) { if (ev.key === 'ArrowUp') to.before(row); else to.after(row); menuKeepOrder(row.closest('tbody')); }
+        ev.preventDefault(); ev.stopPropagation();
+    });
+    panel.addEventListener('pointerdown', ev => {
+        const grip = ev.target.closest('[data-menu-drag]'); if (!grip || ev.button !== 0) return;
+        const row = grip.closest('tr'), table = row.closest('tbody'), original = [...table.children], start = ev.clientY;
+        let moved = false;
+        const move = e => {
+            if (!moved && Math.abs(e.clientY - start) < 4) return;
+            moved = true; row.classList.add('menu-dragging');
+            const target = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-menu-row]');
+            if (!target || target === row || target.parentElement !== table) return;
+            if (e.clientY < target.getBoundingClientRect().top + target.offsetHeight / 2) target.before(row); else target.after(row);
+        };
+        const done = cancel => {
+            removeEventListener('pointermove', move); removeEventListener('pointerup', up); removeEventListener('pointercancel', cancelDrag); removeEventListener('keydown', key, true);
+            row.classList.remove('menu-dragging');
+            if (cancel) table.append(...original); else if (moved) menuKeepOrder(table);
+        };
+        const up = () => done(false), cancelDrag = () => done(true), key = e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); done(true); } };
+        addEventListener('pointermove', move); addEventListener('pointerup', up); addEventListener('pointercancel', cancelDrag); addEventListener('keydown', key, true);
+        ev.preventDefault();
+    });
+    panel.addEventListener('click', ev => {
+        const control = ev.target.closest('[data-menu-visible],[data-menu-place],[data-g="menuTitles"],[data-g="menuResponsive"]');
+        if (!control) return;
+        if (control.dataset.menuVisible) S.menuOff = toggle(Array.isArray(S.menuOff) ? S.menuOff : [], control.dataset.menuVisible);
+        else if (control.dataset.menuPlace) S.menuPlaces = { ...(S.menuPlaces || {}), [control.dataset.menuPlace]: control.dataset.place };
+        else S[control.dataset.g] = !S[control.dataset.g];
+        save(); menuRefresh(); redo(); ev.stopImmediatePropagation();
+    });
     // the effect presets: the name field with its list, Save, Delete, + for a copy, and JSON to share one
     const fxRedraw = redo;
     const fxTyped = () => { const i = b.querySelector('[data-fx-name]'); return i ? i.value.trim() : ''; };

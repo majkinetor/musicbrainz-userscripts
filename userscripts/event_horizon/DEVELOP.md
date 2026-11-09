@@ -20,6 +20,12 @@ While Event Horizon shows, `<html>` carries `data-mbu-page` with the page's path
 
 String Theory reads it ([its DEVELOP.md](../string_theory/DEVELOP.md#runtime)): a tab loaded on a page a script isn't for never starts that script, so a release reached inside Event Horizon from the home page had no Platform Check, ISRC Scout or Mission Control at all, though all three can read the release from the API. String Theory starts them there. Falcon, which runs on every page, watches it to put its icon on a release, release group or series.
 
+## Header menu configuration
+
+The Menu settings live in the manager's `view` value: `menuTitles`, `menuResponsive`, `menuOrder` (action IDs), `menuOff` (hidden IDs), and `menuPlaces` (ID to `main` or `more`). Empty collections retain the shipped defaults. `menuKey` unifies Art, Relationships and collection Edit across entity types; page renderers still decide which actions and URLs are available. External launchers use `external:<registration ID>` and default to More.
+
+`actionRow` marks links with `data-menu-key`; `menuLayout` moves the existing nodes between the row and More without recreating handlers or URLs. It hides configured actions, fits Main first, then promotes More items when Responsive is enabled. Both destinations are sorted by the configured order after fitting. Narrow pinned bars put all actions in More. Search, Star, Home and page-specific utility controls stay outside this configuration. Settings changes refit every live header; redraws, launcher updates, fonts and resizing refit again. Dragging and keyboard operation on the row handles persist order without redrawing the page.
+
 ## External menu items
 
 Any userscript can add an item to **More (⋯)** in the page header and pinned header. Registration is a hidden, connected `button`, owned by the launching script. Event Horizon projects its title and optional icon into its menus and calls the original button's `.click()` when selected. No function crosses a userscript sandbox and no JavaScript string is evaluated.

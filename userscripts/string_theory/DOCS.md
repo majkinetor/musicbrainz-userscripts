@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-09 22:47 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-09 22:53 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -813,6 +813,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 ### Features
 
 - **[The viewer](#the-viewer)** takes over a page, moves between pages without reloading, and keeps the page's identity and actions in reach while scrolling.
+- **[Header menu](#header-menu)**: choose the actions, their order and which belong in More.
 - **[Background effects](#background-effects)**: Hexagons, Tron, Stars, Aurora and Rain, each with its own controls, over a background: the cover, a glow, generated artwork or any picture from the web.
 - **[Sections](#sections)**: all data, an entity's facts and external links included, in cards that can be reordered, hidden and configured.
 - **[Starred entities](#starred-entities)** keeps favorite entities on the homepage.
@@ -838,6 +839,12 @@ When MB page has Event Horizon redesign available, EH dock button shows on the n
 - **Long titles**: a subtitle after a colon or dash sits smaller on its own line, long titles shrink, and very long ones stop at four lines with **Show full title**. Every page header follows this, and titles in grids, tables and track lists stop at three lines.
 - **Search**: start a search with a type's letter and a space to search that type: `w yesterday` searches works for "yesterday". On the homepage the type switches as soon as you type the space, and the letter leaves the box. The letters are **a** artist, **g** release group, **r** release, **w** work, **s** series, **p** place and **e** editor; the homepage's type list shows them beside the types. An empty search shows them in a tip instead of searching. Recent searches in the search field's list show only the chosen type's.
 - **Pinned headers**: once the page's header scrolls away, a single bar keeps its cover, title and artist in reach; section headers are pinned to as you scroll.
+
+### Header menu
+
+Open **Settings → Menu**. Drag an item's handle to reorder it, use its eye icon to show or hide it, and choose **Main** or **More**. Both lists follow that order, including items brought out of More. Only actions available on the current page appear; Search, Star and Home stay in the header.
+
+**Show menu titles** displays text beside the icons. **Responsive** brings items from More into the main menu when they fit. Items that no longer fit return to More; narrow pinned bars keep the actions there too. Compatible scripts registered on the page appear in the same settings table.
 
 ### Background effects
 
@@ -975,7 +982,9 @@ Right-click the corner icon. Changes apply at once.
 | Effects → Effects                     | Background: Cover aura                                              | a **Background** (none is flat) and an **Effect** over it; select one for its settings      |
 | Effects → Effect                      | None                                                                | [background effects](#background-effects), each with its own settings                       |
 | Effects → Fade this window            | on                                                                  | the window fades while the mouse is away from it                                            |
-| General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                                      |
+| Menu → Show menu titles               | off                                                                 | text beside icons in the main menu                                                          |
+| Menu → Responsive                     | off                                                                 | brings items from More into the main menu when space allows                                 |
+| Menu → Items                          | all visible                                                         | drag to order, use the eye to show or hide, choose Main or More                             |
 | General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
 | General → Keyboard shortcuts          | on                                                                  | the keys below; [keyboard shortcuts](#keyboard-shortcuts); **Change keys** opens their list |
 
