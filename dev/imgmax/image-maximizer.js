@@ -263,6 +263,15 @@ class ImageMaximizer {
             const asin = (u.pathname.match(/\/(?:gp\/product|dp|albums|hz\/audible\/mlp\/mfpdp)\/([A-Z\d]{10})(?:[/?]|$)/i) || [])[1];
             if (!asin) throw new Error('no product id in the URL');
             const tld = u.host.replace(/^.*?amazon\./, '');
+            // Amazon Music: an album's /dp page now opens the web player, built in JS with no cover in its HTML;
+            // the embed widget is built on the server and shows the cover (500 px stored), which the Amazon rule takes full size
+            const music = /(^|\.)music\.amazon\./.test(u.host);
+            if (music || /^\/albums\//.test(u.pathname)) {
+                const em = await this._text(`https://music.amazon.${tld}/embed/${asin}`);
+                const img = (em.match(/https:\/\/m\.media-amazon\.com\/images\/I\/[^"'\s<>]+?\.(?:jpe?g|png)/) || [])[0];
+                if (img) return [{ url: img, types: ['Front'] }];
+                if (music) throw new Error('Amazon Music shows no cover for this album; it may be gone or not sold in this region');
+            }
             const html = await this._text(`https://www.amazon.${tld}/dp/${asin}`);
             if (/validateCaptcha|\/errors\/validateCaptcha/.test(html)) throw new Error('Amazon answered with a captcha; open the page once, then retry');
             const m = html.match(/'colorImages':\s*\{\s*'initial':\s*(\[[\s\S]*?\])\s*\},?\s*\n/);

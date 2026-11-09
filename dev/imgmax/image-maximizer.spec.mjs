@@ -95,6 +95,9 @@ test('resolvers: each store page gives its cover, maximised and downloaded', { t
     'https://music.youtube.com/playlist?list=OLAK5uy_abc': { text: '<meta property="og:image" content="https://yt3.googleusercontent.com/xyz=w544-h544-l90-rj">' },
     'https://music.youtube.com/browse/MPREb_abc': { text: '<meta property="og:image" content="https://yt3.googleusercontent.com/xyz=w544-h544-l90-rj">' },
     'https://yt3.googleusercontent.com/xyz=s0': { image: [1440, 1440] },
+    // Amazon Music: the album's embed player shows the cover
+    'https://music.amazon.com/embed/B07HNQ6YX1': { text: '<img class="albumArt" src="https://m.media-amazon.com/images/I/319iEPySeqL._SY240_.jpg">' },
+    'https://m.media-amazon.com/images/I/319iEPySeqL.jpg': { image: [500, 500] },
     // any other page: its og:image
     'https://label.example/releases/42': { text: '<meta content="/img/42-front.jpg" property="og:image">' },
     'https://label.example/img/42-front.jpg': { image: [900, 900] },
@@ -123,6 +126,8 @@ test('resolvers: each store page gives its cover, maximised and downloaded', { t
   check(v && v[1].types[0] === 'Back' && v[2].types[0] === 'Medium' && v[2].comment === 'Disc 2', 'VGMdb: captions become types, the caption stays as the comment where it says more');
   for (const y of ['https://music.youtube.com/playlist?list=OLAK5uy_abc', 'https://www.youtube.com/playlist?list=OLAK5uy_abc', 'https://music.youtube.com/watch?v=dQw4w9WgXcQ&list=OLAK5uy_abc', 'https://music.youtube.com/browse/MPREb_abc'])
     await one(y, 'https://yt3.googleusercontent.com/xyz=s0', 1440, ['Front']);
+  for (const a of ['https://music.amazon.com/albums/B07HNQ6YX1', 'https://www.amazon.com/albums/B07HNQ6YX1'])
+    await one(a, 'https://m.media-amazon.com/images/I/319iEPySeqL.jpg', 500, ['Front']);
   await one('https://label.example/releases/42', 'https://label.example/img/42-front.jpg', 900);
 });
 
@@ -170,6 +175,7 @@ test('live: the stores still answer as the rules expect', { tag: ['@web'] }, asy
     ['https://www.qobuz.com/us-en/album/random-access-memories-daft-punk/0886443927087', 1400],
     ['https://www.discogs.com/release/1-The-Persuader-Stockholm', 590],
     ['https://www.youtube.com/playlist?list=OLAK5uy_nfz69o2a5XmMSj8QEzp2JMIcXxfbaTjSc', 1400],
+    ['https://music.amazon.com/albums/B07HNQ6YX1', 500],
   ]) {
     try { const r = await m.fetchImages(url); check(r[0].width >= minW, `${url}: ${r[0].width} px from ${r[0].url}`); }
     catch (e) { check(false, `${url}: ${e.message}`); }
