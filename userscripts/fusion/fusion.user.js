@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.235840
+// @version      2026.11.09.163051
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -223,15 +223,19 @@ function mbnWsFetch(url, init) {
     return new Promise((resolve, reject) => {
         const sig = init.signal;
         if (sig && sig.aborted) { reject(new DOMException('Aborted', 'AbortError')); return; }
-        let req = null, done = false;
-        const onAbort = () => { if (done) return; done = true; try { req && req.abort && req.abort(); } catch (e) {} reject(new DOMException('Aborted', 'AbortError')); };
-        const fail = m => () => { if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort); reject(new TypeError(m)); };
+        let req = null, done = false, guard = 0;
+        const onAbort = () => { if (done) return; done = true; clearTimeout(guard); try { req && req.abort && req.abort(); } catch (e) {} reject(new DOMException('Aborted', 'AbortError')); };
+        const fail = m => () => { if (done) return; done = true; clearTimeout(guard); if (sig) sig.removeEventListener('abort', onAbort); reject(new TypeError(m)); };
+        // A request the manager never answers, not even with its own timeout (seen in
+        // Violentmonkey on Firefox): give up on it here, or whoever awaits it, a matching
+        // pass that was told to stop included, waits forever.
+        guard = setTimeout(() => { if (done) return; fail('no answer')(); try { req && req.abort && req.abort(); } catch (e) {} }, 65000);
         if (sig) sig.addEventListener('abort', onAbort);
         const res = gm({
             method: String(init.method || 'GET').toUpperCase(), url: abs, headers, data: init.body,
             timeout: 60000,
             onload: x => {
-                if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort);
+                if (done) return; done = true; clearTimeout(guard); if (sig) sig.removeEventListener('abort', onAbort);
                 const h = new Headers();
                 for (const line of String(x.responseHeaders || '').split(/\r?\n/)) { const i = line.indexOf(':'); if (i > 0) try { h.append(line.slice(0, i).trim(), line.slice(i + 1).trim()); } catch (e) {} }
                 const st = x.status || 0;

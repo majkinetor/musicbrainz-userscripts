@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.235840
+// @version      2026.11.09.163051
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -214,15 +214,19 @@
       return new Promise((resolve, reject) => {
           const sig = init.signal;
           if (sig && sig.aborted) { reject(new DOMException('Aborted', 'AbortError')); return; }
-          let req = null, done = false;
-          const onAbort = () => { if (done) return; done = true; try { req && req.abort && req.abort(); } catch (e) {} reject(new DOMException('Aborted', 'AbortError')); };
-          const fail = m => () => { if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort); reject(new TypeError(m)); };
+          let req = null, done = false, guard = 0;
+          const onAbort = () => { if (done) return; done = true; clearTimeout(guard); try { req && req.abort && req.abort(); } catch (e) {} reject(new DOMException('Aborted', 'AbortError')); };
+          const fail = m => () => { if (done) return; done = true; clearTimeout(guard); if (sig) sig.removeEventListener('abort', onAbort); reject(new TypeError(m)); };
+          // A request the manager never answers, not even with its own timeout (seen in
+          // Violentmonkey on Firefox): give up on it here, or whoever awaits it, a matching
+          // pass that was told to stop included, waits forever.
+          guard = setTimeout(() => { if (done) return; fail('no answer')(); try { req && req.abort && req.abort(); } catch (e) {} }, 65000);
           if (sig) sig.addEventListener('abort', onAbort);
           const res = gm({
               method: String(init.method || 'GET').toUpperCase(), url: abs, headers, data: init.body,
               timeout: 60000,
               onload: x => {
-                  if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort);
+                  if (done) return; done = true; clearTimeout(guard); if (sig) sig.removeEventListener('abort', onAbort);
                   const h = new Headers();
                   for (const line of String(x.responseHeaders || '').split(/\r?\n/)) { const i = line.indexOf(':'); if (i > 0) try { h.append(line.slice(0, i).trim(), line.slice(i + 1).trim()); } catch (e) {} }
                   const st = x.status || 0;

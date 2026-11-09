@@ -225,15 +225,19 @@ export function mbnWsFetch(url, init) {
     return new Promise((resolve, reject) => {
         const sig = init.signal;
         if (sig && sig.aborted) { reject(new DOMException('Aborted', 'AbortError')); return; }
-        let req = null, done = false;
-        const onAbort = () => { if (done) return; done = true; try { req && req.abort && req.abort(); } catch (e) {} reject(new DOMException('Aborted', 'AbortError')); };
-        const fail = m => () => { if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort); reject(new TypeError(m)); };
+        let req = null, done = false, guard = 0;
+        const onAbort = () => { if (done) return; done = true; clearTimeout(guard); try { req && req.abort && req.abort(); } catch (e) {} reject(new DOMException('Aborted', 'AbortError')); };
+        const fail = m => () => { if (done) return; done = true; clearTimeout(guard); if (sig) sig.removeEventListener('abort', onAbort); reject(new TypeError(m)); };
+        // A request the manager never answers, not even with its own timeout (seen in
+        // Violentmonkey on Firefox): give up on it here, or whoever awaits it, a matching
+        // pass that was told to stop included, waits forever.
+        guard = setTimeout(() => { if (done) return; fail('no answer')(); try { req && req.abort && req.abort(); } catch (e) {} }, 65000);
         if (sig) sig.addEventListener('abort', onAbort);
         const res = gm({
             method: String(init.method || 'GET').toUpperCase(), url: abs, headers, data: init.body,
             timeout: 60000,
             onload: x => {
-                if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort);
+                if (done) return; done = true; clearTimeout(guard); if (sig) sig.removeEventListener('abort', onAbort);
                 const h = new Headers();
                 for (const line of String(x.responseHeaders || '').split(/\r?\n/)) { const i = line.indexOf(':'); if (i > 0) try { h.append(line.slice(0, i).trim(), line.slice(i + 1).trim()); } catch (e) {} }
                 const st = x.status || 0;

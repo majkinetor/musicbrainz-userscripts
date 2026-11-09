@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.09.140000
+// @version      2026.11.09.163051
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -204,15 +204,19 @@
       return new Promise((resolve, reject) => {
           const sig = init.signal;
           if (sig && sig.aborted) { reject(new DOMException('Aborted', 'AbortError')); return; }
-          let req = null, done = false;
-          const onAbort = () => { if (done) return; done = true; try { req && req.abort && req.abort(); } catch (e) {} reject(new DOMException('Aborted', 'AbortError')); };
-          const fail = m => () => { if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort); reject(new TypeError(m)); };
+          let req = null, done = false, guard = 0;
+          const onAbort = () => { if (done) return; done = true; clearTimeout(guard); try { req && req.abort && req.abort(); } catch (e) {} reject(new DOMException('Aborted', 'AbortError')); };
+          const fail = m => () => { if (done) return; done = true; clearTimeout(guard); if (sig) sig.removeEventListener('abort', onAbort); reject(new TypeError(m)); };
+          // A request the manager never answers, not even with its own timeout (seen in
+          // Violentmonkey on Firefox): give up on it here, or whoever awaits it, a matching
+          // pass that was told to stop included, waits forever.
+          guard = setTimeout(() => { if (done) return; fail('no answer')(); try { req && req.abort && req.abort(); } catch (e) {} }, 65000);
           if (sig) sig.addEventListener('abort', onAbort);
           const res = gm({
               method: String(init.method || 'GET').toUpperCase(), url: abs, headers, data: init.body,
               timeout: 60000,
               onload: x => {
-                  if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort);
+                  if (done) return; done = true; clearTimeout(guard); if (sig) sig.removeEventListener('abort', onAbort);
                   const h = new Headers();
                   for (const line of String(x.responseHeaders || '').split(/\r?\n/)) { const i = line.indexOf(':'); if (i > 0) try { h.append(line.slice(0, i).trim(), line.slice(i + 1).trim()); } catch (e) {} }
                   const st = x.status || 0;
@@ -2865,8 +2869,18 @@ Click: open the label`;
     while (_wsInFlight >= wsLanes()) { if (_matchStop) return null; await _sleep(120); }
     if (o.stale && o.stale()) return null;
     _wsInFlight++;
-    try { return await mbnWsFetch(url, { headers: { Accept: 'application/json' } }); }
-    finally { _wsInFlight--; }
+    const p = mbnWsFetch(url, { headers: { Accept: 'application/json' } });
+    p.then(() => { _wsInFlight--; }, () => { _wsInFlight--; });
+    if (o.stale) return p;
+    // A background request in flight stops being waited for at a Stop (it isn't aborted:
+    // it lands on its own and frees its lane). Every caller sharing it is background too,
+    // and the gate drops those at a Stop anyway. Waiting for it used to be the bargain,
+    // until a request the manager never answered held "⏳ Stopping…" for good, with every
+    // background lookup, the pickers' included, dropped behind the stuck stop.
+    return new Promise((resolve, reject) => {
+      const t = setInterval(() => { if (_matchStop) { clearInterval(t); resolve(null); } }, 120);
+      p.then(r => { clearInterval(t); resolve(r); }, e => { clearInterval(t); reject(e); });
+    });
   }
   // tell the gate how MusicBrainz answered: a 429/503 holds everybody, a clean answer earns room back
   const wsAnswer = r => mbnAnswer(r.status, n => (r.headers && r.headers.get ? r.headers.get(n) : null), { log: wsGateLog });
