@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.235840
+// @version      2026.11.09.095133
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -9652,10 +9652,20 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // Apply captured fields (only the ones each row's pattern produced) to tracks in line order.
     // #733: the full Apply also syncs the track count to the non-empty lines, like the native
     // parser: missing tracks are added, extra ones removed from the end. "Only …" keeps the count.
-    function apply(which) {
+    // MB mounts each new track row's artist-credit editor a frame or two after the track is
+    // added, and that editor writes its initial (empty) credit back into the track: an artist
+    // written before then is lost in MB while Apollo still shows it, until the next re-read
+    // (Reset #, a resync) blanks every unmatched artist. Wait for the rows first.
+    async function newRowsMounted() {
+      const want = mediums().reduce((n, m) => n + (u(m.tracks) || []).length, 0), t0 = Date.now();
+      const frame = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 30)));
+      while (Date.now() - t0 < 3000 && document.querySelectorAll('tr.track').length < want) await frame();
+      await frame(); await frame();
+    }
+    async function apply(which) {
       const s = stats();
       if (which === 'all' && !s.locked) {
-        if (s.n > s.nT) addTracks(curMi, s.n - s.nT);
+        if (s.n > s.nT) { addTracks(curMi, s.n - s.nT); await newRowsMounted(); }
         else if (s.n < s.nT) {
           for (let ti = s.nT - 1; ti >= s.n; ti--) removeTrack({ mi: curMi, ti, number: ti + 1 });
           Log.cat('Tool').info('track parser: removed', s.nT - s.n, 'track(s) from the end of medium', curMi + 1, 'to match', s.n, 'line(s)');
@@ -17011,7 +17021,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     } catch (e) { Log.cat('Disc IDs').info(`could not sign the edit note — ${e.message}`); }
   }
 
-  W.__apolloEditor = { lsDetectScript, lsByScript, lsCandidates, lsDetectLanguage, LS_LANDE, lsClean, detectLangScript, matchCardHtml, readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, platformOf, platformUrlForms, resolvePlatformUrls, resolveByPlatformUrl, fcHandoff, fcPlatformUrl, tagPlatformAddable, tagPlatformForAll, addOrCreatePlatformLink, matchReleaseArtist, matchReleaseLabels, searchLabel, createLabel, riPickLabel, riEditionArtists, riPick, get riArt() { return _riArt; }, get rgAuto() { return _rgAuto; }, autoSelectReleaseGroup, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, recSharesArtist, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, mergeMediums, splitMedium, pickTool, runAction, slotContextGids, releaseArtistGids, positionArtists, posNameMatch, tallyPosArtists, artistPosRgIndex, artistPosDupIndex, rgReleases, duplicateReleases, enteredTracklist, buildDupDetail, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { lsDetectScript, lsByScript, lsCandidates, lsDetectLanguage, LS_LANDE, lsClean, detectLangScript, matchCardHtml, readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, platformOf, platformUrlForms, resolvePlatformUrls, resolveByPlatformUrl, fcHandoff, fcPlatformUrl, tagPlatformAddable, tagPlatformForAll, addOrCreatePlatformLink, matchReleaseArtist, matchReleaseLabels, searchLabel, createLabel, riPickLabel, riEditionArtists, riPick, get riArt() { return _riArt; }, get rgAuto() { return _rgAuto; }, autoSelectReleaseGroup, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, recSharesArtist, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, mergeMediums, splitMedium, runMediumTool, pickTool, runAction, slotContextGids, releaseArtistGids, positionArtists, posNameMatch, tallyPosArtists, artistPosRgIndex, artistPosDupIndex, rgReleases, duplicateReleases, enteredTracklist, buildDupDetail, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
   Object.assign(W.__apolloEditor, {   // #591 #808 disc IDs from a rip log
     parseRipLog, parseEacLog, parseWhipperLog, parseDbPowerampLog, parseCyanripLog,
     calcMbToc, mbDiscId, tocParam, readLogText, discIdFromLog,
