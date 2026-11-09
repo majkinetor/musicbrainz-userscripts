@@ -91,6 +91,10 @@ test('resolvers: each store page gives its cover, maximised and downloaded', { t
     'https://media.vgm.io/albums/97/79/79-1.jpg': { image: [1000, 1000] },
     'https://media.vgm.io/albums/97/79/79-2.jpg': { image: [1000, 1000] },
     'https://media.vgm.io/albums/97/79/79-3.jpg': { image: [800, 800] },
+    // YouTube Music: an album playlist on any YouTube host reads YouTube Music's page of it
+    'https://music.youtube.com/playlist?list=OLAK5uy_abc': { text: '<meta property="og:image" content="https://yt3.googleusercontent.com/xyz=w544-h544-l90-rj">' },
+    'https://music.youtube.com/browse/MPREb_abc': { text: '<meta property="og:image" content="https://yt3.googleusercontent.com/xyz=w544-h544-l90-rj">' },
+    'https://yt3.googleusercontent.com/xyz=s0': { image: [1440, 1440] },
     // any other page: its og:image
     'https://label.example/releases/42': { text: '<meta content="/img/42-front.jpg" property="og:image">' },
     'https://label.example/img/42-front.jpg': { image: [900, 900] },
@@ -117,6 +121,8 @@ test('resolvers: each store page gives its cover, maximised and downloaded', { t
   const v = await one('https://vgmdb.net/album/79', 'https://media.vgm.io/albums/97/79/79-1.jpg', 1000, ['Front']);
   check(v && v.length === 3, `VGMdb: the gallery's three scans, the main cover not repeated (got ${v && v.length})`);
   check(v && v[1].types[0] === 'Back' && v[2].types[0] === 'Medium' && v[2].comment === 'Disc 2', 'VGMdb: captions become types, the caption stays as the comment where it says more');
+  for (const y of ['https://music.youtube.com/playlist?list=OLAK5uy_abc', 'https://www.youtube.com/playlist?list=OLAK5uy_abc', 'https://music.youtube.com/watch?v=dQw4w9WgXcQ&list=OLAK5uy_abc', 'https://music.youtube.com/browse/MPREb_abc'])
+    await one(y, 'https://yt3.googleusercontent.com/xyz=s0', 1440, ['Front']);
   await one('https://label.example/releases/42', 'https://label.example/img/42-front.jpg', 900);
 });
 
@@ -163,6 +169,7 @@ test('live: the stores still answer as the rules expect', { tag: ['@web'] }, asy
     ['https://tidal.com/browse/album/20115556', 1400],
     ['https://www.qobuz.com/us-en/album/random-access-memories-daft-punk/0886443927087', 1400],
     ['https://www.discogs.com/release/1-The-Persuader-Stockholm', 590],
+    ['https://www.youtube.com/playlist?list=OLAK5uy_nfz69o2a5XmMSj8QEzp2JMIcXxfbaTjSc', 1400],
   ]) {
     try { const r = await m.fetchImages(url); check(r[0].width >= minW, `${url}: ${r[0].width} px from ${r[0].url}`); }
     catch (e) { check(false, `${url}: ${e.message}`); }

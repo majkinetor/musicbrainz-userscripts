@@ -280,6 +280,15 @@ class ImageMaximizer {
             if (main && !/album-(nocover|nsfw)-medium\.gif$/.test(main) && !out.some(i => base(i.url) === base(main))) out.unshift({ url: new URL(ImageMaximizer.decode(main), u.origin).href, types: ['Front'] });
             return out;
         } },
+        // YouTube Music (#957): an album is a playlist OLAK5uy_…, and only YouTube Music's page of it has the
+        // square cover as og:image (plain YouTube's is a 180 px thumbnail, a track's watch page the video frame);
+        // the Google rule takes it to =s0, the stored size
+        { id: 'youtubemusic', name: 'YouTube Music', host: /^((music|www|m)\.)?youtube\.com$|^youtu\.be$/, async find(u) {
+            const list = u.searchParams.get('list');
+            if (list && /^OLAK5uy_/.test(list)) return this._metaImage('https://music.youtube.com/playlist?list=' + encodeURIComponent(list), ['Front']);
+            if (/^\/browse\/MPREb_/.test(u.pathname)) return this._metaImage(u.href, ['Front']);
+            return this._metaImage(u.href);
+        } },
         { id: '7digital', name: '7digital', host: /(^|\.)7digital\.com$/, async find(u) { return this._metaImage(u.href, ['Front']); } },
         { id: 'juno', name: 'Juno', host: /(^|\.)(junodownload\.com|juno\.co\.uk)$/, async find(u) { return this._metaImage(u.href, ['Front']); } },
     ];
