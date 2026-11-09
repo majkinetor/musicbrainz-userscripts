@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.08.235840
+// @version      2026.11.09.111000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4816,15 +4816,37 @@ window.addEventListener('contextmenu', ev => {
 }, true);
 
 /* ── editions ──────────────────────────────────────── */
-// a cover just added has no thumbnail until the archive makes it: its tile shows the placeholder instead of an empty frame
-document.addEventListener('error', ev => { const im = ev.target; if (im.matches && im.matches('.ed-t a.tt img')) { im.remove(); return; } if (!im.matches || !im.matches('img[data-edimg]')) return; const c = im.parentNode; im.remove(); if (!c) return; const fb = c.querySelector('.fb'); if (fb) fb.remove(); const nc = c.querySelector('.nc'); if (nc) nc.hidden = false; }, true);
+// a cover just added has no thumbnail until the archive makes it (often not before its edit is approved):
+// the full image stands in, found once per release in the archive's listing, and later redraws start from it;
+// a cover with no image at all shows the placeholder instead of an empty frame
+const ED_FULL = new Map(), ED_FULL_URL = new Map();
+const edThumb = e => ED_FULL_URL.get(e.id) || e.thumb;
+const edFull = id => {
+    if (!ED_FULL.has(id)) ED_FULL.set(id, fetch(`https://coverartarchive.org/release/${id}`).then(r => r.ok ? r.json() : null)
+        .then(j => { const im = j && j.images && (j.images.find(i => i.front) || j.images[0]); return im && im.image ? im.image.replace(/^http:/, 'https:') : ''; })
+        .catch(() => ''));
+    return ED_FULL.get(id);
+};
+const edCoverGone = im => {
+    if (!im.matches('img[data-edimg]')) { im.remove(); return; }
+    const c = im.parentNode; im.remove(); if (!c) return; const fb = c.querySelector('.fb'); if (fb) fb.remove(); const nc = c.querySelector('.nc'); if (nc) nc.hidden = false;
+};
+document.addEventListener('error', ev => {
+    const im = ev.target;
+    if (!im.matches || !im.matches('.ed-t a.tt img, img[data-edimg], .ed-folded img[data-edid]')) return;
+    const host = im.closest('[data-ed]'), id = im.dataset.edid || (host && host.dataset.ed);
+    if (!id || im.dataset.fullTried) { edCoverGone(im); return; }
+    im.dataset.fullTried = 1;
+    const failed = im.src;
+    edFull(id).then(u => { if (!im.isConnected) return; if (!u || u === failed) { edCoverGone(im); return; } ED_FULL_URL.set(id, u); im.src = u; });
+}, true);
 function edTile(e, curId, titled = false) {
     const k = fmtKind(e.formats[0]);
     const st = e.status && e.status !== 'Official' ? `<span class="st">${esc((e.status || 'No status').replace('Pseudo-Release', 'Pseudo'))}</span>` : '';
     const where = e.where.length > 2 ? e.where.slice(0, 2).join(' ') + ` +${e.where.length - 2}` : e.where.join(' ');
     ED_TIP.set(e.id, { e, cur: e.id === curId });
     return `<a class="tile${e.id === curId ? ' cur' : ''}" href="${esc(relUrl(e.id))}" data-ed="${e.id}">
-        <span class="c">${e.thumb ? `<img src="${e.thumb}" alt="" loading="lazy" data-edimg>` : ''}<span class="nc"${e.thumb ? ' hidden' : ''}>${fmtSvg(k, 40, 1.8)}${e.thumb ? 'cover pending' : 'no cover'}</span>${e.thumb ? `<span class="fb">${fmtSvg(k, 15, 2.6)}</span>` : ''}${st}</span>
+        <span class="c">${e.thumb ? `<img src="${edThumb(e)}" alt="" loading="lazy" data-edimg>` : ''}<span class="nc"${e.thumb ? ' hidden' : ''}>${fmtSvg(k, 40, 1.8)}${e.thumb ? 'cover pending' : 'no cover'}</span>${e.thumb ? `<span class="fb">${fmtSvg(k, 15, 2.6)}</span>` : ''}${st}</span>
         ${titled ? `<span class="dt">${esc(e.title)}</span>` : `<span class="t1">${esc(fmtSummary(e.formats))}</span>`}
         <span class="cap">${esc([titled && fmtSummary(e.formats), where, (e.date || '').slice(0, 4)].filter(Boolean).join(' · ') || '—')}${e.id === curId ? ' · you are here' : ''}${e.disambig ? `<i>${esc(e.disambig)}</i>` : ''}</span>
     </a>`;
@@ -4942,7 +4964,7 @@ function edTable(es, curId, flat, part) {
         ED_TIP.set(e.id, { e, cur: e.id === curId });
         const k = fmtKind(e.formats[0]);
         return `<tr class="ed-r${e.id === curId ? ' cur' : ''}" data-edhref="${esc(relUrl(e.id))}">
-            <td class="tc"><a href="${esc(relUrl(e.id))}" data-ed="${e.id}" class="tt">${e.thumb ? `<img src="${e.thumb}" alt="" loading="lazy">` : fmtSvg(k, 20, 2)}</a></td>
+            <td class="tc"><a href="${esc(relUrl(e.id))}" data-ed="${e.id}" class="tt">${e.thumb ? `<img src="${edThumb(e)}" alt="" loading="lazy">` : fmtSvg(k, 20, 2)}</a></td>
             ${colTds(st, {
                 title: [`<a class="${longC(e.title)}"${longT(e.title)} href="${esc(relUrl(e.id))}">${esc(e.title)}</a>${e.disambig ? ` <span class="sub">(${esc(e.disambig)})</span>` : ''}`],
                 artist: [acHtml(e.ac)],
@@ -4987,7 +5009,7 @@ function edHtml(r, eds, count) {
     const covers = all.filter(e => e.thumb).length, unofficial = all.filter(e => e.status !== 'Official').length;
     const views = '<span class="ed-div"></span>' + viewBs(['grid', 'row', 'format', 'table'], view, 'edview', 'Editions view');
     // folded: a format opens the section filtered to it
-    const folded = `<div class="ed-folded"><span class="stack">${all.filter(e => e.thumb).slice(0, 7).map(e => `<img src="${e.thumb}" alt="">`).join('')}</span>
+    const folded = `<div class="ed-folded"><span class="stack">${all.filter(e => e.thumb).slice(0, 7).map(e => `<img src="${edThumb(e)}" alt="" data-edid="${e.id}">`).join('')}</span>
         <span style="display:flex;flex-wrap:wrap;gap:8px">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edjump="${k}" data-tip="Show the ${KIND_NAME[k]} editions">${fmtSvg(k, 14)}${KIND_NAME[k]} ${n}</button>`).join('')}</span>
         <span style="font-size:13px;color:var(--muted)">${covers} with covers · ${unofficial} unofficial</span></div>`;
     let filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}" data-tip="Show only official releases, hiding bootlegs, promotions and other unofficial ones"><i></i>Official</button><span class="ed-div"></span>${fltBtn('ed', all)}${views.replace('<span class="ed-div"></span>', '')}</div>` + fltBar('ed', all);
