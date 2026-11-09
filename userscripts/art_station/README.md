@@ -58,7 +58,7 @@ The Cover Art Archive takes JPEG, PNG, GIF and PDF, so a WebP, AVIF, BMP or TIFF
 
 The **URL (N)** panel has an import for each source the release links, plus any [registered providers](DEVELOP.md#plugin-api). A middle-click imports from all and keeps the best cover: the largest front (each source's first image), then the smallest file.
 
-Each other link the release has, such as a label's or a blog's page, gets **All images from &lt;site&gt;**: every image that page shows, each at its largest, leaving out those under 250 px and banners. These stay out of the import from all.
+Each other link the release has, such as a label's or a blog's page, gets **All images from &lt;site&gt;**: every image that page shows, each at its largest, leaving out those under 250 px and banners. These stay out of the import from all; the **URL** button counts them in a second, outlined marker.
 
 A URL can be a store's release page or an image. Art Station takes the store's largest version; the edit note names the page, the image and the smaller one offered:
 
