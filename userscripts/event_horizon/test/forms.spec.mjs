@@ -32,16 +32,14 @@ test('an artist\'s annotation form wears the entity header', { tag: ['@sandbox',
   await attachShot(testInfo, page, 'artist-annotation');
 });
 
-// Annotation lives in More; the release group's Edit and cover offer Set cover art.
+// Annotation lives in More; Set cover art is an action of its own beside Edit, and on the cover.
 test('the release group page leads to its forms', { tag: ['@sandbox'] }, async ({ page, inject }) => {
   await page.goto(`https://test.musicbrainz.org/release-group/${RG}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await settled(page);
   await inject('event_horizon');
-  check(await until(() => page.locator('.hero .kicker .abx > a.ab[href$="/edit"]').count(), n => n === 1) === 1, 'Edit has a menu');
+  check(await until(() => page.locator('.hero .kicker .acts > a.ab[href$="/edit"] + a.ab[href$="/set-cover-art"]').count(), n => n === 1) === 1, 'Set cover art sits beside Edit');
   await page.locator('.hero .kicker .eh-more > summary').click();
   check(await page.locator(`.eh-more .abm a[href$="/release-group/${RG}/edit_annotation"]`).isVisible(), 'More offers the annotation');
-  await page.locator('.hero .kicker .abx > a.ab').hover();
-  check(await page.locator(`.abm a[href$="/release-group/${RG}/set-cover-art"]`).isVisible(), 'and the cover art');
   await page.locator('.hero .picw').hover();
   check(await until(() => page.locator('.hero .cvact').evaluate(e => getComputedStyle(e).opacity), o => o === '1') === '1', 'hovering the cover shows Set cover art');
 });

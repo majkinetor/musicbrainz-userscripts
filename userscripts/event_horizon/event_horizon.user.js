@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.09.111000
+// @version      2026.11.09.120000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5224,6 +5224,7 @@ function rgCard(r, own) {
 /* ── release group page ────────────────────────────── */
 const RG_ACTS = [
     ['edit', 'Edit', 'Edit release group', ACTS[0][3]],
+    ['set-cover-art', 'Art', 'Set cover art', ACTS[1][3]],
     ['/release/add?release-group=', 'Add', 'Add a release to this group', '<path d="M12 5v14M5 12h14"/>'],
     ['tags', 'Tags', 'Tags', CI_TAG],
     ['edits', 'History', 'Edit history', ACTS[3][3]],
@@ -9192,17 +9193,6 @@ const openGallery = (r, im, e) => {
     if (a) a.scrollIntoView({ behavior: 'smooth' }); else if (shown) window.open(shown.image, '_blank', 'noopener');
 };
 const imgKeyOf = im => im.dataset.relcover ? 'relcover:' + im.dataset.relcover : im.outerHTML;
-// A release group's Edit still offers its cover selection; Annotation lives in More.
-function editMenu(app) {
-    const e = app.querySelector('.kicker .acts > a.ab[href$="/edit"]'); if (!e) return;
-    const base = e.getAttribute('href').replace(/\/edit$/, ''), rg = /\/release-group\/[^/]+$/.test(base);
-    if (!rg) return;
-    const it = [['set-cover-art', 'Cover art', '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>']];
-    const w = document.createElement('span'); w.className = 'abx';
-    e.replaceWith(w); w.append(e);
-    e.removeAttribute("data-tip"); e.removeAttribute("title");    // the menu opening under it says enough; a tip would cover it
-    w.insertAdjacentHTML('beforeend', `<span class="abm">${it.map(([p, n, ic]) => `<a class="ab" href="${base}/${p}">${SVG(ic)}<span>${n}</span></a>`).join('')}</span>`);
-}
 var releasePageDraw, secDrag = null, secRedraw = false, colDrag = false;
 // Pending edits, MusicBrainz's grey mark: ws/2 doesn't carry them, /ws/js does. This is the page's last request: it starts
 // once everything else is in, after a pause, waits for the tab to be in view and idle, and takes the gate's next free slot
@@ -9470,7 +9460,6 @@ function render(keepPop) {
     // a redraw keeps the images already loaded, so the covers don't blink
     for (const im of app.querySelectorAll('img')) { const k = imgKeyOf(im), o = oldImgs.get(k); if (o) { im.replaceWith(o); oldImgs.delete(k); } else imgKey.set(im, k); }
     heroFacts(app);
-    editMenu(app);
     const gc = app.querySelector('[data-rgcover]');
     if (gc) gc.onerror = () => { const e = data.editions.find(x => x.thumb); if (e && !gc.dataset.tried) { gc.dataset.tried = 1; gc.src = `https://coverartarchive.org/release/${e.id}/front-500`; } else gc.outerHTML = `<div class="nocover">${LAYERS(96, 1)}</div>`; };
     // a fresh upload has no thumbnails yet: the full image stands in
