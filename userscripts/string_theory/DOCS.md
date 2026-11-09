@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-09 22:53 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-09 23:01 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -845,6 +845,8 @@ When MB page has Event Horizon redesign available, EH dock button shows on the n
 Open **Settings → Menu**. Drag an item's handle to reorder it, use its eye icon to show or hide it, and choose **Main** or **More**. Both lists follow that order, including items brought out of More. Only actions available on the current page appear; Search, Star and Home stay in the header.
 
 **Show menu titles** displays text beside the icons. **Responsive** brings items from More into the main menu when they fit. Items that no longer fit return to More; narrow pinned bars keep the actions there too. Compatible scripts registered on the page appear in the same settings table.
+
+**Restore defaults** resets the menu order, visibility, placement, titles and Responsive setting.
 
 ### Background effects
 

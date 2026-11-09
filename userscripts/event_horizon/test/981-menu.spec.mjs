@@ -38,6 +38,16 @@ test('Menu settings reorder, hide and place actions immediately and survive relo
   await page.reload(); await inject('event_horizon');
   await expect(page.locator('#app .kicker [data-menu-key=edit]')).toBeHidden();
   await expect.poll(() => topIds(page)).toEqual(['edits', 'tags', 'relationships', 'releases']);
+  await page.evaluate(() => document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: 'event_horizon', cancelable: true })));
+  await page.locator('#eh-cfg [data-tab=menu]').click();
+  expect(await page.locator('#eh-cfg [data-menu-reset]').count()).toBe(1);
+  const width = await page.evaluate(() => GM_getValue('view').width);
+  await page.locator('#eh-cfg [data-menu-reset]').click();
+  expect(await page.evaluate(() => {
+    const s = GM_getValue('view'); return [s.menuTitles, s.menuResponsive, s.menuOrder, s.menuOff, s.menuPlaces, s.width];
+  })).toEqual([false, false, [], [], {}, width]);
+  expect(await topIds(page)).toEqual(['edit', 'releases', 'relationships', 'edits']);
+  await page.screenshot({ path: 'dev/_981-menu-reset.png' });
 });
 
 test('responsive promotion preserves ordering through resize and pinned headers', { tag: '@sandbox' }, async ({ page, inject }) => {

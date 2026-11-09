@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.09.225120
+// @version      2026.11.09.230030
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12176,25 +12176,30 @@ function hexRows(chip, row) {
         + row('Depth', chip('hexDepth', 'hexDepth', S.hexDepth, 'On', 'The hexagons scroll slower than the page\nOn: they sit deeper, behind the page\nOff: they stay still')), true);
 }
 const MENU_CFG_CSS = `
-#eh-cfg .menu-options{display:flex;flex-wrap:wrap;gap:6px 18px;margin:8px 0 14px}
-#eh-cfg .menu-options .ckr{margin:0}
+#eh-cfg .mbu-ov-panel.eh-cfg:has([data-tab=menu][aria-selected=true]){height:min(600px,88vh)}
+#eh-cfg .menu-options{display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px;margin:2px 0 6px}
+#eh-cfg .menu-options .ckr{margin:0;padding:0;min-height:0}
+#eh-cfg .menu-options .ck{padding:3px 2px}
+#eh-cfg .menu-reset{margin-left:auto;padding:3px 6px;min-height:24px;border:0;box-shadow:none;background:none;color:var(--mbu-accent-text);font:inherit;cursor:pointer;filter:none!important}
+#eh-cfg .menu-reset:hover{background:var(--mbu-bg-hover)}
 #eh-cfg .menu-table{width:100%;border-collapse:collapse;table-layout:auto;font:inherit;color:var(--mbu-text)}
-#eh-cfg .menu-table th{font:400 11px var(--mbu-font);color:var(--mbu-text-dim);text-align:left;padding:6px}
-#eh-cfg .menu-table td{border-bottom:1px solid var(--mbu-border-soft);padding:3px 6px;vertical-align:middle}
-#eh-cfg .menu-table th:first-child,#eh-cfg .menu-table td:first-child{width:26px;padding-left:0}
-#eh-cfg .menu-table th:nth-child(3){width:48px}
-#eh-cfg .menu-table th:last-child{width:112px}
-#eh-cfg .menu-table button{font:inherit;border:0;box-shadow:none;background:none;filter:none!important;cursor:pointer;color:var(--mbu-text-dim);border-radius:3px;min-height:32px;padding:6px 8px}
+#eh-cfg .menu-table th{font:400 11px var(--mbu-font);color:var(--mbu-text-dim);text-align:left;padding:3px 4px}
+#eh-cfg .menu-table td{border-bottom:1px solid var(--mbu-border-soft);padding:1px 4px;vertical-align:middle}
+#eh-cfg .menu-table th:first-child,#eh-cfg .menu-table td:first-child{width:22px;padding-left:0}
+#eh-cfg .menu-table th:nth-child(3){width:38px}
+#eh-cfg .menu-table th:last-child{width:94px}
+#eh-cfg .menu-table button{font:inherit;border:0;box-shadow:none;background:none;filter:none!important;cursor:pointer;color:var(--mbu-text-dim);border-radius:3px;min-height:24px;padding:2px 6px}
 #eh-cfg .menu-table button:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}
 #eh-cfg .menu-table button[aria-pressed=true]{background:var(--mbu-accent-soft);color:var(--mbu-accent-text)}
-#eh-cfg .menu-table button[data-menu-visible]{display:grid;place-items:center;width:38px;min-height:34px}
-#eh-cfg .menu-table button svg{width:17px;height:17px}
-#eh-cfg .menu-table button[data-menu-drag]{padding:4px;cursor:grab;touch-action:none;min-width:24px}
+#eh-cfg .menu-table button[data-menu-visible]{display:grid;place-items:center;width:30px;min-height:24px}
+#eh-cfg .menu-table button svg{width:16px;height:16px}
+#eh-cfg .menu-table button[data-menu-drag]{padding:2px;cursor:grab;touch-action:none;min-width:20px}
 #eh-cfg .menu-table .menu-place{display:flex;gap:2px}
 #eh-cfg .menu-table .menu-off{color:var(--mbu-text-dim)}
 #eh-cfg .menu-table .menu-off .menu-name{text-decoration:line-through}
 #eh-cfg .menu-table .menu-dragging{opacity:.5}
-#eh-cfg .menu-hint{margin:10px 0 0;color:var(--mbu-text-dim);font:11px/1.5 var(--mbu-font)}
+#eh-cfg .pane{scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
+#eh-cfg .pane::-webkit-scrollbar-button{display:none;width:0;height:0}
 @media(pointer:coarse){#eh-cfg .menu-table button{min-height:44px}#eh-cfg .menu-table button[data-menu-visible]{min-height:44px}}
 @media(max-width:420px){#eh-cfg .menu-table td,#eh-cfg .menu-table th{padding-left:3px;padding-right:3px}#eh-cfg .menu-table .menu-name{overflow-wrap:anywhere}#eh-cfg .menu-table th:last-child{width:100px}}
 `;
@@ -12203,12 +12208,13 @@ function menuPane() {
     const catalog = new Map(menuCatalog()), off = Array.isArray(S.menuOff) ? S.menuOff : [];
     return '<div class="menu-options">'
         + ckRow('menuTitles', 'Show menu titles', 'Show text beside header menu icons\nOn: icons and titles\nOff: icons only')
-        + ckRow('menuResponsive', 'Responsive', 'Bring items from More into the main menu when they fit\nTheir configured order stays the same') + '</div>'
+        + ckRow('menuResponsive', 'Responsive', 'Bring items from More into the main menu when they fit\nTheir configured order stays the same')
+        + '<button type="button" class="menu-reset" data-menu-reset data-tip="Restore the default menu order, visibility, placement, titles and Responsive setting">Restore defaults</button></div>'
         + '<table class="menu-table" aria-label="Header menu items"><thead><tr><th></th><th>Item</th><th>Visible</th><th>Place</th></tr></thead><tbody>'
         + menuIds([...catalog.keys()]).map(id => {
             const name = catalog.get(id), on = !off.includes(id), place = menuPlace(id);
             return `<tr data-menu-row="${esc(id)}" class="${on ? '' : 'menu-off'}"><td><button type="button" data-menu-drag="${esc(id)}" aria-label="Reorder ${esc(name)}" data-tip="Drag to reorder&#10;Arrow keys: move up or down">${SVG('<path d="M9 5h.01M15 5h.01M9 12h.01M15 12h.01M9 19h.01M15 19h.01"/>')}</button></td><td class="menu-name">${esc(name)}</td><td><button type="button" data-menu-visible="${esc(id)}" aria-label="Show ${esc(name)}" aria-pressed="${on}" data-tip="${on ? 'Hide' : 'Show'} ${esc(name)}">${SVG(eye + (on ? '' : '<path d="M3 3l18 18"/>'))}</button></td><td><span class="menu-place" role="group" aria-label="Place ${esc(name)}">${['main', 'more'].map(p => `<button type="button" data-menu-place="${esc(id)}" data-place="${p}" aria-pressed="${place === p}">${p === 'main' ? 'Main' : 'More'}</button>`).join('')}</span></td></tr>`;
-        }).join('') + '</tbody></table><p class="menu-hint">Drag to reorder. Only actions available on the page appear. Search, Star and Home stay in the header.</p>';
+        }).join('') + '</tbody></table>';
 }
 function cfgBody() {
     const chip = cfgChip, row = cfgRow;
@@ -12298,9 +12304,13 @@ function cfgWire(panel, b, body) {
         ev.preventDefault();
     });
     panel.addEventListener('click', ev => {
-        const control = ev.target.closest('[data-menu-visible],[data-menu-place],[data-g="menuTitles"],[data-g="menuResponsive"]');
+        const control = ev.target.closest('[data-menu-visible],[data-menu-place],[data-menu-reset],[data-g="menuTitles"],[data-g="menuResponsive"]');
         if (!control) return;
-        if (control.dataset.menuVisible) S.menuOff = toggle(Array.isArray(S.menuOff) ? S.menuOff : [], control.dataset.menuVisible);
+        if (control.hasAttribute('data-menu-reset')) {
+            const defaults = JSON.parse(DEFAULTS);
+            for (const k of ['menuOrder', 'menuOff', 'menuPlaces', 'menuTitles', 'menuResponsive']) S[k] = defaults[k];
+        }
+        else if (control.dataset.menuVisible) S.menuOff = toggle(Array.isArray(S.menuOff) ? S.menuOff : [], control.dataset.menuVisible);
         else if (control.dataset.menuPlace) S.menuPlaces = { ...(S.menuPlaces || {}), [control.dataset.menuPlace]: control.dataset.place };
         else S[control.dataset.g] = !S[control.dataset.g];
         save(); menuRefresh(); redo(); ev.stopImmediatePropagation();

@@ -42,6 +42,8 @@ Open **Settings → Menu**. Drag an item's handle to reorder it, use its eye ico
 
 **Show menu titles** displays text beside the icons. **Responsive** brings items from More into the main menu when they fit. Items that no longer fit return to More; narrow pinned bars keep the actions there too. Compatible scripts registered on the page appear in the same settings table.
 
+**Restore defaults** resets the menu order, visibility, placement, titles and Responsive setting.
+
 ## Background effects
 
 Under **Settings → Effects**, add a **Background** and as many **Effects** as you like, stacked over it; each is a badge you select to show its settings, and its × removes it alone. Each effect keeps its own parameters when you switch effects. **Preset** saves the whole configuration by name: **Save** keeps a change in the preset (and a new name typed over it), **+** saves it as a new preset and leaves the old one as it was, and a built-in preset is kept as shipped (**+** copies it). A preset with unsaved changes lights up **Save** (**+** for a built-in one). **Copy as JSON** and **Import from JSON** in the preset list share a preset. Every effect has its own **Opacity**, which sets its strength, **Glow**, which sets how far the soft light spreads, and **Colour**: **One tone** uses the theme's accent, **Two-tone** adds its second accent, **All** gives each light its own colour, and **User** uses colours you pick. With User, a **Colours** row lists them: click a swatch to change it, its × to remove it, and **Add** for another, as many as you like.
