@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.09.174410
+// @version      2026.11.09.165937
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2733,11 +2733,11 @@ body{margin:0;background:var(--eh-page);color:var(--text);font-family:Manrope,sy
 /* no isolation: it made <body> its own layer, so every window in it (Fusion, Mission Control, What is new) sat under the launchers on <html>; the backgrounds behind (z-index:-1) paint the same without it, since <html> has no background */
 body{position:relative;overflow-x:clip}
 body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;pointer-events:none}
-#eh-aura{display:none;position:absolute;left:-210px;top:-210px;width:calc(100% + 420px);max-width:none;height:1040px;z-index:-1;pointer-events:none;opacity:.4;transform:scale(1.15);-webkit-mask-image:linear-gradient(#000 41%,transparent 80%);mask-image:linear-gradient(#000 41%,transparent 80%)}
+#eh-aura{display:none;position:absolute;left:-210px;top:-210px;width:calc(100% + 420px);max-width:none;height:calc(1040px * var(--eh-aura-h,1));z-index:-1;pointer-events:none;opacity:var(--eh-aura-o,.4);transform:scale(1.15);-webkit-mask-image:linear-gradient(#000 41%,transparent 80%);mask-image:linear-gradient(#000 41%,transparent 80%)}
 :root[data-eh-bg=aura][data-eh-aura] #eh-aura{display:block}
 @media (max-width:700px){#eh-aura{left:0;width:var(--eh-aura-w,100%);transform:none}}
 @media (max-width:700px){html main#app.wrap{padding-top:12px}:is(#app,#eh-pin) .kicker{gap:4px}:is(#app,#eh-pin) .kicker .acts{gap:0}:is(#app,#eh-pin) .kicker .ab{padding:0 5px}:is(#app,#eh-pin) .kicker :is(.srch,.acts>*+.ab[data-star]){margin-left:0}:is(#app,#eh-pin) .kicker .abm{max-width:calc(100vw - 16px)}:is(#app,#eh-pin) .kicker .abm .ab{white-space:normal}#app .detail .grp h4{flex-wrap:wrap;row-gap:4px}#app .hm-hi{display:none}#app .hm-hero{padding-bottom:2px}#app .hm-srch{gap:4px;padding:3px 3px 3px 12px;border-radius:22px}#app .hm-srch>.hm-go{flex:none;width:24px;height:30px}#app .hm-srch>.hm-go svg{width:16px;height:16px}#app .hm-srch>input[name=query]{flex:1 1 0;min-width:0;font-size:15px;padding:6px 0}#app .hm-srch>.hm-ty{flex:none;max-width:84px;padding:4px;font-size:12px}#app .hm-srch>button.hm-tg{width:30px;height:30px}#app .hm-qr{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:6px;margin-top:10px;padding-right:40px;-webkit-mask-image:linear-gradient(90deg,#000 80%,transparent);mask-image:linear-gradient(90deg,#000 80%,transparent)}#app .hm-qr::-webkit-scrollbar{display:none}#app .hm-qr a{flex:none;white-space:nowrap}#app .hm-add{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:2px;margin-top:10px;padding-right:40px;-webkit-mask-image:linear-gradient(90deg,#000 80%,transparent);mask-image:linear-gradient(90deg,#000 80%,transparent)}#app .hm-add::-webkit-scrollbar{display:none}#app .hm-add span{flex:none;font-size:11px;margin-right:2px}#app .hm-add a{flex:none;width:34px;height:34px}#app .hm-add a svg{width:18px;height:18px}#app #s-tl>.secthead>.tools>.label{display:none}}   /* past the edges it widened a phone's page by 270px */
-:root[data-eh-bg=aura][data-eh-theme=dark] #eh-aura{opacity:.28}
+:root[data-eh-bg=aura][data-eh-theme=dark] #eh-aura{opacity:calc(var(--eh-aura-o,.4) * .7)}
 /* the Image background: a picture from the web, fixed behind the page and below the effects; the filters go on the picture
    (oversized by the blur, so its soft edges stay off screen), the tint and vignette over it, blended inside it alone */
 #eh-bgimg{display:none;position:fixed;inset:0;z-index:-2;pointer-events:none;overflow:hidden;isolation:isolate;opacity:var(--eh-bgimg-o,.65)}
@@ -3986,6 +3986,7 @@ const FX_STRIP = {
     ...Object.fromEntries(Object.keys(AMBIENT).flatMap(k => [[k + 'Opacity', [20, 100, 1]], [k + 'Glow', [0, 200, .01]]])),
     hexOpacity: [0, 100, 1], hexFx: [20, 100, 1], hexPace: [20, 200, .01], hexTrail: [20, 200, .01], hexOften: [20, 200, .01], hexGlow: [0, 200, .01],
     bgOpacity: [20, 100, 1], bgBlur: [0, 100, .1, 1], bgBright: [40, 140, 1], bgSat: [0, 200, 1], bgVig: [0, 100, 1], bgAmount: [20, 200, 1], bgSize: [40, 200, 1], bgGlow: [0, 200, 1],
+    auraOpacity: [20, 100, 1], auraBlur: [20, 200, 1], auraSat: [0, 200, 1], auraHeight: [60, 200, 1],
 };
 const AMBIENT_KEYS = ['effect', 'ambientOpacity', ...Object.keys(AMBIENT_DEFAULTS), ...Object.keys(FX_OWN)];
 const FX_COLOURS = ['hexColours', ...Object.keys(FX_OWN).filter(k => k.endsWith('Colours'))];
@@ -4035,7 +4036,7 @@ function ambientApply(layer, kind) {
     layer._ehPattern = { key, P: p, stop, shift() {} }; document.addEventListener('visibilitychange', vis); vis();
 }
 
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'arAuto', 'arCol', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'fx', 'fxOff', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'bgAmount', 'bgSize', 'bgGlow', 'bgHue', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'arAuto', 'arCol', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'fx', 'fxOff', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'bgAmount', 'bgSize', 'bgGlow', 'bgHue', 'auraOpacity', 'auraBlur', 'auraSat', 'auraHeight', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -4043,7 +4044,7 @@ const S = {
     crTracks: true,
     byName: false, plNames: false, plHover: false, plSize: 18, trackStripe: true, arAuto: true, arCol: false, dis: 'brackets', width: 1600, bg: 'aura', fx: null, fxOff: [], hex: false, hexOpacity: 60, hexIntensity: 100, hexMotion: 'static', hexFx: 100, hexPace: .6, hexTrail: 1, hexOften: 1, hexGlow: 1, hexTwo: false, hexDepth: false,
     // the Image background: its address, and the filters over it
-    bgUrl: '', bgArt: 'chillwave', bgSeed: 1, bgBlur: 0, bgBright: 100, bgSat: 100, bgOpacity: 65, bgFit: 'cover', bgVig: 0, bgTone: 'natural', bgAmount: 100, bgSize: 100, bgGlow: 100, bgHue: 0,
+    bgUrl: '', bgArt: 'chillwave', bgSeed: 1, bgBlur: 0, bgBright: 100, bgSat: 100, bgOpacity: 65, bgFit: 'cover', bgVig: 0, bgTone: 'natural', bgAmount: 100, bgSize: 100, bgGlow: 100, bgHue: 0, auraOpacity: 40, auraBlur: 100, auraSat: 160, auraHeight: 100,
     on: true, menuTitles: false,
     thumbs: true,
     factOff: { artist: [], label: [] }, // the artist's and label's header facts turned off
@@ -9019,18 +9020,21 @@ function bgApply() {
             return;
         }
         const src = im.currentSrc || im.src, width = document.body.clientWidth;
+        const blur = 17.5 * (+S.auraBlur || 100) / 100, sat = (S.auraSat ?? 160) / 100, look = blur + '/' + sat;
+        de.style.setProperty('--eh-aura-o', String((+S.auraOpacity || 40) / 100));
+        de.style.setProperty('--eh-aura-h', String((+S.auraHeight || 100) / 100));
         let cv = document.getElementById('eh-aura');
         if (!cv) { cv = document.createElement('canvas'); cv.id = 'eh-aura'; cv.setAttribute('aria-hidden', 'true'); document.body.prepend(cv); }
-        if (cv.dataset.src !== src || cv.dataset.width !== String(width)) {
+        if (cv.dataset.src !== src || cv.dataset.width !== String(width) || cv.dataset.look !== look) {
             // Quarter-size is plenty for a 70px blur. Padding keeps its edges outside the visible area.
             // Draw the existing image directly: no extra request, CORS readback or image export needed.
-            const w = width / 4, h = 155, pad = 52.5;
+            const w = width / 4, h = 155, pad = Math.max(52.5, blur * 3);
             cv.width = Math.ceil(w + 2 * pad); cv.height = h + 2 * pad;
             const ctx = cv.getContext('2d'), scale = Math.max(w / im.naturalWidth, h / im.naturalHeight);
             const iw = im.naturalWidth * scale, ih = im.naturalHeight * scale;
-            ctx.filter = 'blur(17.5px) saturate(1.5)';
+            ctx.filter = `blur(${blur}px) saturate(${sat})`;
             ctx.drawImage(im, pad + (w - iw) / 2, pad + (h - ih) * .3, iw, ih);
-            cv.dataset.src = src; cv.dataset.width = String(width);
+            cv.dataset.src = src; cv.dataset.width = String(width); cv.dataset.look = look;
         }
         de.setAttribute('data-eh-aura', '');
         auraWidth();
@@ -11862,7 +11866,7 @@ const FX_PRESETS = [
     { name: 'Hexagon slow drift', v: { fx: ['hexagons'], tronGlow: 0, tronColour: 2, starsGlow: 0, starsColour: 2, auroraGlow: 0, auroraColour: 2, rainGlow: 0, rainColour: 2, hex: true, hexOpacity: 40, hexMotion: 'drift', hexOften: 0.6 } },
     { name: 'Nebula with stars', v: { bg: 'art', fx: ['stars'], effect: 'stars', tronOutlines: 60, tronRiders: 8, tronSpeed: 0.4, tronTrail: 6, starDrift: 0.2, starDepth: 2, starTwinkle: 0, rainSlide: 0.4, rainTrails: 2, rainMerge: 0, rainFog: 0.2, rainRefraction: 0, rainLights: 0, rainFall: 0, rainLightning: 1, tronOpacity: 60, tronColour: 2, starsOpacity: 20, starsGlow: 2, starsColour: 2, auroraColour: 2, rainOpacity: 80, rainColour: 2, hex: true, hexMotion: 'electricity', hexFx: 25, hexTrail: 2, hexTwo: 2, bgArt: 'nebula', bgSeed: 537878797, bgBright: 80, bgSat: 80, bgOpacity: 60, bgVig: 60, bgTone: 'mono', bgAmount: 140, bgGlow: 140 } },
 ];
-const FX_KEYS = ['bg', 'fx', 'fxOff', ...AMBIENT_KEYS, 'hexColours', 'hex', 'hexOpacity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'bgAmount', 'bgSize', 'bgGlow', 'bgHue'];
+const FX_KEYS = ['bg', 'fx', 'fxOff', ...AMBIENT_KEYS, 'hexColours', 'hex', 'hexOpacity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'bgAmount', 'bgSize', 'bgGlow', 'bgHue', 'auraOpacity', 'auraBlur', 'auraSat', 'auraHeight'];
 const FX_UNNAMED = 'Unnamed effect';
 const fxNow = () => Object.fromEntries(FX_KEYS.map(k => [k, S[k]]));
 const fxFull = p => { const d = JSON.parse(DEFAULTS); fxMigrate(p.v = { ...p.v }); const f = Object.fromEntries(FX_KEYS.map(k => [k, k in p.v ? p.v[k] : d[k]])); f.fx = fxOf(f); f.hex = f.fx.length > 0; return f; };
@@ -12019,6 +12023,10 @@ function fxPane(chip, row) {
 }
 // the Artwork's scene, or the Image's address, then the filters both share
 function bgImgRows(chip, row) {
+    if (S.bg === 'aura') return [cfgStrip('auraOpacity', 'Opacity', 'How strongly the cover shows through'),
+        cfgStrip('auraBlur', 'Blur', 'How blurred the cover is\nLess: its shapes show; more: only its colours')
+        + cfgStrip('auraSat', 'Saturation', 'How vivid its colours are')
+        + cfgStrip('auraHeight', 'Height', 'How far down the page it reaches before it fades')];
     if (S.bg !== 'url' && S.bg !== 'art') return ['', ''];
     const opts = (g, list, tip) => list.map(([v, l]) => chip(g, v, S[g] === v, l)).join('');
     const pct = list => list.map(v => [v, v + '%']);
@@ -12316,7 +12324,7 @@ function cfgWire(panel, b, body) {
             else if (g === 'bg') { S.bg = k; bgApply(); }
             else if (g === 'bgArt') { S.bgArt = k; bgApply(); }
             else if (g === 'bgSeed') { S.bgSeed = 1 + (Math.random() * 1e9 | 0); bgApply(); }
-            else if (g === 'bgBlur' || g === 'bgBright' || g === 'bgSat' || g === 'bgOpacity' || g === 'bgVig' || g === 'bgAmount' || g === 'bgSize' || g === 'bgGlow' || g === 'bgHue') { S[g] = +k; bgApply(); }
+            else if (g === 'bgBlur' || g === 'bgBright' || g === 'bgSat' || g === 'bgOpacity' || g === 'bgVig' || g === 'bgAmount' || g === 'bgSize' || g === 'bgGlow' || g === 'bgHue' || g.startsWith('aura') && FX_STRIP[g]) { S[g] = +k; bgApply(); }
             else if (g === 'bgFit' || g === 'bgTone') { S[g] = k; bgApply(); }
             else if (g === 'fxKind') { const on = fxOf(S), i = on.indexOf(fxSel); if (!on.includes(k)) { if (i < 0) on.push(k); else on[i] = k; } S.fx = on; fxSel = k; hexApply(); }
             else if (g === 'fxRm') { if (k === 'bg') { S.bg = 'flat'; bgApply(); } else { S.fx = fxOf(S).filter(x => x !== k); hexApply(); } }
