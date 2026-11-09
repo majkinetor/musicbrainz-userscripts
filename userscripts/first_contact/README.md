@@ -105,35 +105,37 @@ The _Harmony_ setting picks which Harmony opens: [harmony.pulsewidth.org.uk](htt
 | ------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
 | Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy, mora, Melon, Bugs, AllMusic | the album link, at once             |
 | Volumo, HDtracks, SoundCloud, Audiomack, 7digital, Presto Music                                              | the barcode, once the album is read |
-| YouTube Music, Amazon Music                                                                                  | nothing; the button is greyed out   |
+| YouTube Music, Amazon Music, RateYourMusic, Album of the Year                                                | nothing; the button is greyed out   |
 
 Harmony can't read the last two rows' platforms, so for the middle row First Contact sends the barcode; an album without one (a SoundCloud set that isn't a label's) sends nothing. YouTube Music and Amazon Music show no barcode.
 
 ## Platforms
 
-| Platform                        |      ISRCs      |  Barcode   | Label                 | Notes                      |
-| ------------------------------- | :-------------: | :--------: | --------------------- | -------------------------- |
-| [Deezer](#deezer)               |        ✓        |     ✓      | ✓                     |                            |
-| [Bandcamp](#bandcamp)           |                 |     ✓      | on a label's page     | about, credits             |
-| [Discogs](#discogs)             |                 |     ✓      | ✓ with catalog number | notes                      |
-| [Apple Music](#apple-music)     |        ✓        |     ✓      | ✓                     | review                     |
-| [Tidal](#tidal)                 |        ✓        |     ✓      | from the ℗ line       |                            |
-| [Qobuz](#qobuz)                 |                 |     ✓      | ✓                     | review                     |
-| [Beatport](#beatport)           |        ✓        |     ✓      | ✓ with catalog number | description                |
-| [Spotify](#spotify)             |                 |     ✓      | ✓                     |                            |
-| [YouTube Music](#youtube-music) |                 |            |                       | description                |
-| [Volumo](#volumo)               |        ✓        |     ✓      | ✓ with catalog number | description                |
-| [HDtracks](#hdtracks)           |        ✓        |     ✓      | ✓                     | description                |
-| [SoundCloud](#soundcloud)       |   label sets    | label sets | ✓                     | description, ℗ and © lines |
-| [Amazon Music](#amazon-music)   |                 |            | from the ℗ line       | ℗ line                     |
-| [Audiomack](#audiomack)         |        ✓        |     ✓      | from the ℗ line       | description                |
-| [7digital](#7digital)           |        ✓        |     ✓      | ✓                     | ℗ and © lines              |
-| [Ototoy](#ototoy)               |                 |            | ✓                     | album info                 |
-| [mora](#mora)                   |                 |    some    | ✓                     |                            |
-| [Melon](#melon)                 |                 |            | ✓                     |                            |
-| [Bugs](#bugs)                   |                 |            | ✓                     |                            |
-| [AllMusic](#allmusic)           |        ✓        |     ✓      | ✓ with catalog number |                            |
-| [Presto Music](#presto-music)   | streamed albums |     ✓      | ✓ with catalog number | about                      |
+| Platform                                |      ISRCs      |  Barcode   | Label                           | Notes                      |
+| --------------------------------------- | :-------------: | :--------: | ------------------------------- | -------------------------- |
+| [Deezer](#deezer)                       |        ✓        |     ✓      | ✓                               |                            |
+| [Bandcamp](#bandcamp)                   |                 |     ✓      | on a label's page               | about, credits             |
+| [Discogs](#discogs)                     |                 |     ✓      | ✓ with catalog number           | notes                      |
+| [Apple Music](#apple-music)             |        ✓        |     ✓      | ✓                               | review                     |
+| [Tidal](#tidal)                         |        ✓        |     ✓      | from the ℗ line                 |                            |
+| [Qobuz](#qobuz)                         |                 |     ✓      | ✓                               | review                     |
+| [Beatport](#beatport)                   |        ✓        |     ✓      | ✓ with catalog number           | description                |
+| [Spotify](#spotify)                     |                 |     ✓      | ✓                               |                            |
+| [YouTube Music](#youtube-music)         |                 |            |                                 | description                |
+| [Volumo](#volumo)                       |        ✓        |     ✓      | ✓ with catalog number           | description                |
+| [HDtracks](#hdtracks)                   |        ✓        |     ✓      | ✓                               | description                |
+| [SoundCloud](#soundcloud)               |   label sets    | label sets | ✓                               | description, ℗ and © lines |
+| [Amazon Music](#amazon-music)           |                 |            | from the ℗ line                 | ℗ line                     |
+| [Audiomack](#audiomack)                 |        ✓        |     ✓      | from the ℗ line                 | description                |
+| [7digital](#7digital)                   |        ✓        |     ✓      | ✓                               | ℗ and © lines              |
+| [Ototoy](#ototoy)                       |                 |            | ✓                               | album info                 |
+| [mora](#mora)                           |                 |    some    | ✓                               |                            |
+| [Melon](#melon)                         |                 |            | ✓                               |                            |
+| [Bugs](#bugs)                           |                 |            | ✓                               |                            |
+| [AllMusic](#allmusic)                   |        ✓        |     ✓      | ✓ with catalog number           |                            |
+| [Presto Music](#presto-music)           | streamed albums |     ✓      | ✓ with catalog number           | about                      |
+| [RateYourMusic](#rateyourmusic)         |                 |            | an issue's, with catalog number |                            |
+| [Album of the Year](#album-of-the-year) |                 |            | ✓                               |                            |
 
 ### Deezer
 
@@ -318,6 +320,22 @@ Pages: `www.allmusic.com/album/release/<slug>-mr<id>`
 - The data comes from TiVo's music API, which AllMusic is built on. A first call can take 20 seconds, and when the API is down the import stops with an error.
 - The type is Compilation or Live when AllMusic flags it so; the country is left empty.
 - Every artist has its AllMusic link.
+
+### RateYourMusic
+
+Pages: `rateyourmusic.com/release/<type>/<artist>/<album>/`
+
+- RYM is behind a browser check, so First Contact reads the page you have open and never fetches it; it stays out of Mission Control.
+- An album's main page is all its issues together: it gives the title, artists, type, date and tracklist, but no label. An issue's page also gives its label and catalog number.
+- The link is added as _other databases_. No barcode, no ISRCs, no country.
+
+### Album of the Year
+
+Pages: `www.albumoftheyear.org/album/<id>-<slug>.php`
+
+- Like RYM, it's behind a browser check: the open page is read, never fetched, and it stays out of Mission Control.
+- Title, artists, date, label and the tracklist with lengths; the type is Compilation, Mixtape, Live, Remix or Soundtrack when AOTY's format says so.
+- The link is added as _other databases_. No barcode, no catalog number, no ISRCs.
 
 ### Presto Music
 

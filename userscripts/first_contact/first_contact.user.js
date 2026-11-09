@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.08.235840
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Presto Music.
+// @version      2026.11.09.120000
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Presto Music, RateYourMusic, Album of the Year.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
@@ -28,6 +28,8 @@
 // @match        https://www.melon.com/album/detail.htm*
 // @match        https://music.bugs.co.kr/album/*
 // @match        https://www.allmusic.com/album/release/*
+// @match        https://rateyourmusic.com/release/*
+// @match        https://www.albumoftheyear.org/album/*
 // @match        https://music.amazon.com/*
 // @match        https://music.amazon.co.uk/*
 // @match        https://music.amazon.de/*
@@ -2598,6 +2600,133 @@ const ALLMUSIC = {
     },
 };
 
+// RateYourMusic (#974): behind Cloudflare's browser check, so only the page the user has open is read,
+// never fetched. A release page has the title, an info table (Artist, Type, Released), the tracklist with
+// lengths in seconds, and the issues list, whose current entry names the label and catalog number. No
+// barcode, no ISRCs. Harmony can't read RYM. Out of Mission Control (it would need a background fetch).
+const RYM = {
+    id: 'rym',
+    name: 'RateYourMusic',
+    abbr: 'rym',
+    host: /^rateyourmusic\.com$/,
+    consolidate: false,
+    albumId(loc) { const m = loc.pathname.match(/^\/release\/([\w-]+)\/([^/]+)\/([^/]+)\/?$/); return m ? `${m[1]}/${m[2]}/${m[3]}` : null; },
+    TYPES: { album: [], ep: [], single: [], compilation: ['Compilation'], mixtape: ['Mixtape/Street'], djmix: ['DJ-mix'], bootleg: [], video: [] },
+    MONTHS: ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'],
+
+    async fetchRelease(id, progress, doc) {
+        doc = doc || document;
+        const titleEl = doc.querySelector('.album_title');
+        if (!titleEl) throw new Error('RateYourMusic: no release on this page');
+        const title = [...titleEl.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim();
+        const info = {};
+        for (const tr of doc.querySelectorAll('table.album_info tr')) {
+            const th = tr.querySelector('th'), td = tr.querySelector('td');
+            if (th && td) info[th.textContent.trim().toLowerCase()] = td;
+        }
+        const artistTd = info.artist;
+        const artists = artistTd ? [...artistTd.querySelectorAll('a.artist')].map(a => ({ name: a.textContent.trim(), url: a.href.replace(/\/$/, '') + '/' })) : [];
+        const typeText = info.type ? info.type.textContent.trim() : '';
+        const primary = (typeText.match(/^(album|ep|single|compilation|mixtape|dj mix|bootleg|video)/i) || [])[1] || '';
+        const types = [].concat(this.TYPES[primary.toLowerCase().replace(/\s/g, '')] || [], /live/i.test(typeText) ? ['Live'] : []);
+        const rel = info.released ? info.released.textContent.trim() : '';
+        const dm = rel.match(/^(?:(\d{1,2})\s+)?(?:([a-z]+)\s+)?(\d{4})/i) || [];
+        const mi = dm[2] ? this.MONTHS.indexOf(dm[2].toLowerCase()) + 1 : 0;
+        const issue = doc.querySelector('li.issue_info.current .issue_label, li.issue_info.release_view .issue_label');
+        const [labelName, catno] = (issue ? (issue.getAttribute('title') || issue.textContent) : '').split(' / ').map(s => (s || '').trim());
+        const list = doc.querySelector('ul#tracks') || doc.querySelector('ul.tracks');
+        const mediums = [], byDisc = new Map();
+        for (const li of list ? list.querySelectorAll('li.track') : []) {
+            const a = li.querySelector('.tracklist_title a.song') || li.querySelector('.tracklist_title .rendered_text') || li.querySelector('.tracklist_title');
+            if (!a || !a.textContent.trim()) continue;   // a total-length row
+            const num = (li.querySelector('.tracklist_num') || {}).textContent || '';
+            const disc = +((num.trim().match(/^(\d+)[.-]\d+$/) || [])[1] || 1);
+            if (!byDisc.has(disc)) { const m = { format: '', name: '', tracks: [] }; byDisc.set(disc, m); mediums.push(m); }
+            const secs = +((li.querySelector('[data-inseconds]') || { getAttribute: () => 0 }).getAttribute('data-inseconds')) || 0;
+            const tf = splitFeat(a.textContent.trim());
+            byDisc.get(disc).tracks.push({ title: tf.title, lengthMs: secs ? secs * 1000 : null, isrc: null, url: null, credit: creditFromTitle(artists, tf.feat) });
+        }
+        progress && progress(1, 1);
+        const various = !artists.length || (artists.length === 1 && /^various artists$/i.test(artists[0].name));
+        const url = `https://rateyourmusic.com/release/${id}/`;
+        Log.info(`RateYourMusic ${id}: "${title}" by ${artists.map(a => a.name).join(', ') || '—'} · ${typeText || '—'} · ${rel || '—'} · ${labelName || '—'} · ${catno || '—'} · ${mediums.reduce((n, m) => n + m.tracks.length, 0)} tracks`);
+        return {
+            source: this.id,
+            url,
+            title,
+            credit: various ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }] : creditFromTitle(artists, []),
+            types,
+            status: 'official',
+            packaging: null,
+            date: { year: +dm[3] || null, month: mi || null, day: mi && dm[1] ? +dm[1] : null },
+            country: null,
+            barcode: null,
+            labels: labelName ? [{ name: labelName, catno: catno || '', url: null }] : [],
+            urls: [{ url, linkType: 82 }],   // 82 = other databases
+            mediums,
+        };
+    },
+};
+
+// Album of the Year (#974): behind Cloudflare too, so the open page is read. Its ld+json has the title,
+// artist and date; the detail rows have the format (LP, EP, Single, Mixtape, Compilation, Live) and the
+// label; the tracklist table has titles and m:ss lengths. No barcode, no catalog number, no ISRCs.
+const AOTY = {
+    id: 'aoty',
+    name: 'Album of the Year',
+    abbr: 'aoty',
+    host: /^www\.albumoftheyear\.org$/,
+    consolidate: false,
+    albumId(loc) { const m = loc.pathname.match(/^\/album\/(\d+)-[^/]*?(?:\.php)?\/?$/); return m ? m[1] : null; },
+    TYPES: { compilation: ['Compilation'], mixtape: ['Mixtape/Street'], live: ['Live'], remix: ['Remix'], soundtrack: ['Soundtrack'] },
+
+    async fetchRelease(id, progress, doc) {
+        doc = doc || document;
+        let ld = {};
+        for (const s of doc.querySelectorAll('script[type="application/ld+json"]')) { try { const j = JSON.parse(s.textContent); if (j['@type'] === 'MusicAlbum') ld = j; } catch (e) { /* next */ } }
+        const titleEl = doc.querySelector('h1.albumTitle');
+        const title = (ld.name || (titleEl && titleEl.textContent) || '').trim();
+        if (!title) throw new Error('Album of the Year: no album on this page');
+        const artists = [...doc.querySelectorAll('.albumHeadline .artist a')].map(a => ({ name: a.textContent.trim(), url: a.href }));
+        const rows = {};
+        for (const r of doc.querySelectorAll('.detailRow')) {
+            const k = r.querySelector(':scope > span');
+            if (k) rows[k.textContent.replace(/[\s/\u00a0]+/g, ' ').trim().toLowerCase()] = r;
+        }
+        const fmt = rows.format ? rows.format.firstChild.textContent.trim() : '';
+        const labelA = rows.label && rows.label.querySelector('a');
+        const [y, m, d] = String(ld.datePublished || '').split('-').map(x => parseInt(x, 10));
+        const mediums = [{ format: '', name: '', tracks: [] }];
+        for (const tr of doc.querySelectorAll('table.trackListTable tr')) {
+            const a = tr.querySelector('td.trackTitle a');
+            if (!a) continue;
+            const len = ((tr.querySelector('.length') || {}).textContent || '').trim().split(':').map(Number);
+            const ms = len.length > 1 && len.every(n => !isNaN(n)) ? len.reduce((t, n) => t * 60 + n, 0) * 1000 : null;
+            const tf = splitFeat(a.textContent.trim());
+            mediums[0].tracks.push({ title: tf.title, lengthMs: ms, isrc: null, url: null, credit: creditFromTitle(artists, tf.feat) });
+        }
+        progress && progress(1, 1);
+        const various = !artists.length || (artists.length === 1 && /^various artists$/i.test(artists[0].name));
+        const url = (ld.url || `https://www.albumoftheyear.org/album/${id}.php`).replace(/^http:/, 'https:');
+        Log.info(`Album of the Year ${id}: "${title}" by ${artists.map(a => a.name).join(', ') || '—'} · ${fmt || '—'} · ${ld.datePublished || '—'} · ${labelA ? labelA.textContent.trim() : '—'} · ${mediums[0].tracks.length} tracks`);
+        return {
+            source: this.id,
+            url,
+            title,
+            credit: various ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }] : creditFromTitle(artists, []),
+            types: this.TYPES[fmt.toLowerCase()] || [],
+            status: 'official',
+            packaging: null,
+            date: { year: y || null, month: m || null, day: d || null },
+            country: null,
+            barcode: null,
+            labels: labelA ? [{ name: labelA.textContent.trim(), catno: '', url: null }] : [],
+            urls: [{ url, linkType: 82 }],   // 82 = other databases
+            mediums,
+        };
+    },
+};
+
 // Presto Music (#779): a UK shop for classical and jazz, CDs, SACDs, vinyl and downloads. Everything is
 // on the product page, server-rendered behind Cloudflare: the title, the artist line (plain text, roles
 // in brackets), the format bought here, Release date / Label / Catalogue number, the barcode in the
@@ -2888,7 +3017,7 @@ const PRESTO = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY, MORA, MELON, BUGS, ALLMUSIC, PRESTO];
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY, MORA, MELON, BUGS, ALLMUSIC, PRESTO, RYM, AOTY];
 
 /* ── Harmony (#687): the album sent to Harmony's release lookup instead of the editor ── */
 // The album link in the form Harmony reads, for the platforms Harmony looks up by URL; Harmony then
@@ -2909,7 +3038,7 @@ const HARMONY_URLS = {
     bugs: id => `https://music.bugs.co.kr/album/${id}`,
 };
 // Platforms Harmony doesn't know and whose albums never carry a barcode: nothing to send
-const HARMONY_NONE = new Set(['ytmusic', 'amazonmusic']);
+const HARMONY_NONE = new Set(['ytmusic', 'amazonmusic', 'rym', 'aoty']);
 // spoonkuh: "it does not follow my harmony settings". A link names its providers itself, and one that
 // names none looks the album up on its own platform only (a barcode alone, on none). category=preferred
 // is the providers ticked in Harmony's settings (its cookies), and with no region in the link Harmony
