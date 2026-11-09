@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.10.020000
+// @version      2026.11.10.030000
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm, RateYourMusic and Album of the Year, read when you open their pages), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjI4Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMxNmNjZjgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjZmZhZTM4Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -12,6 +12,8 @@
 // @match        *://*.musicbrainz.org/recording/*
 // @match        *://rateyourmusic.com/release/*
 // @match        *://www.albumoftheyear.org/album/*
+// @match        *://rateyourmusic.com/artist/*
+// @match        *://www.albumoftheyear.org/artist/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -43,18 +45,18 @@
   const EXT_KEY = u => {
     let s = String(u); try { s = decodeURI(s); } catch (e) { /* keep as is */ }
     s = s.replace(/^https?:\/\/(www\.)?/i, '').replace(/[?#].*$/, '').replace(/\/+$/, '').toLowerCase();
-    const m = s.match(/^albumoftheyear\.org\/album\/(\d+)/);
-    return 'fuzzy_logic:ext:' + (m ? 'albumoftheyear.org/album/' + m[1] : s);
+    const m = s.match(/^albumoftheyear\.org\/(album|artist)\/(\d+)/);
+    return 'fuzzy_logic:ext:' + (m ? 'albumoftheyear.org/' + m[1] + '/' + m[2] : s);
   };
   if (!/musicbrainz\.org$/.test(location.hostname)) {
     const read = () => {
       const txt = el => el.textContent.replace(/\s+/g, ' ').trim();
       let tags = [];
       if (/rateyourmusic/.test(location.hostname)) {
-        tags = [...document.querySelectorAll('.release_pri_genres a.genre, .release_sec_genres a.genre')].map(txt);
+        tags = [...document.querySelectorAll('.release_pri_genres a.genre, .release_sec_genres a.genre, .artist_info a.genre')].map(txt);
       } else {
         tags = [...document.querySelectorAll('a[href^="/genre/"], a[href*="albumoftheyear.org/genre/"]')]
-          .filter(a => a.closest('.detailRow, .albumTopBox, [itemprop="genre"]')).map(txt);
+          .filter(a => a.closest('.detailRow, .albumTopBox, .artistTopBox, .artistHeadline, [itemprop="genre"]')).map(txt);
         if (!tags.length) tags = [...document.querySelectorAll('meta[itemprop="genre"]')].map(m => m.content.trim());
       }
       tags = [...new Set(tags.filter(Boolean))];
@@ -2760,8 +2762,8 @@
     { src: 'lastfm', test: u => /last\.fm\/(?:[a-z]{2}\/)?music\//.test(u),
       run: async u => all(await gm(lastSeg(u) + '/+tags'), /<a[^>]+href="\/(?:[a-z]{2}\/)?tag\/[^"]+"[^>]*class="link-block-target"[^>]*>([^<]+)<\/a>/g) },
     // read on their own pages (top of the script); a link never opened has nothing yet
-    { src: 'rym', test: u => /rateyourmusic\.com\/release\//.test(u), run: async u => ext(u) },
-    { src: 'aoty', test: u => /albumoftheyear\.org\/album\//.test(u), run: async u => ext(u) },
+    { src: 'rym', test: u => /rateyourmusic\.com\/(release|artist)\//.test(u), run: async u => ext(u) },
+    { src: 'aoty', test: u => /albumoftheyear\.org\/(album|artist)\//.test(u), run: async u => ext(u) },
   ];
   function ext(u) {
     let v = null;
