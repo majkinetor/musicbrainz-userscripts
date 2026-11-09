@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.09.113211
+// @version      2026.11.09.114507
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -13252,9 +13252,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         }
         // only fall back to MB's per-track lookup (network) when the pool had nothing good enough
         if (!best || bestLevel > maxLevel) {
-          let sugg = (typeof ko.suggestedRecordings === 'function' ? (u(ko.suggestedRecordings) || []) : []);
-          if (!sugg.length) {
-            try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) {}
+          let sugg = suggList(ko);
+          const stale = suggStale(ko, ctx);   // a clone's or a retitled track's old suggestions
+          if (stale) Log.cat('Recording').debug('track', r.number, ': suggestions are stale (no shared artist), asking MB again');
+          if (!sugg.length || stale) {
+            if (stale) refetchSuggestions(ko);
+            else { try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) {} }
             for (let t = 0; t < 28; t++) { await new Promise(z => setTimeout(z, 250)); const loading = typeof ko.loadingSuggestedRecordings === 'function' ? u(ko.loadingSuggestedRecordings) : false; sugg = u(ko.suggestedRecordings) || []; if (!loading && sugg.length) break; if (!loading && t >= 3) break; }
           }
           for (let s = 0; s < sugg.length; s++) { consider(suggData(sugg[s])); if (bestLevel === 0) break; }   // 0 = exact, can't do better
@@ -13684,6 +13687,20 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     catch (e) { Log.cat('Recording').warn('hasNewRecording failed', e.message); }
     closeRecPop(); rerenderRec();
   }
+  /* MB keeps a track's suggestedRecordings until something asks again. After a clone, or once the
+     track parser has retitled a track, that list still holds the OLD track's recordings, and asking
+     only when it is empty never looks up the current title and artist. A list in which no recording
+     shares an artist with the track is taken as stale. */
+  const suggList = ko => (typeof ko.suggestedRecordings === 'function' ? (u(ko.suggestedRecordings) || []) : []);
+  function suggStale(ko, ctx) {
+    const l = suggList(ko);
+    return l.length > 0 && !l.some(s => { try { return recSharesArtist(suggData(s), ctx); } catch (e) { return true; } });
+  }
+  // empty the list so a poll sees MB's fresh answer, not the stale one, then ask MB again
+  function refetchSuggestions(ko) {
+    try { if (ko.suggestedRecordings.removeAll) ko.suggestedRecordings.removeAll(); else ko.suggestedRecordings([]); } catch (e) {}
+    try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) { Log.cat('Recording').warn('findRecordingSuggestions failed', e.message); }
+  }
   // pull display data off a suggestion entity (releases live in appearsOn.results; isrcs may be objects)
   function suggData(s) {
     const e = u(s); const ap = u(e.appearsOn);
@@ -13887,8 +13904,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         renderSugg();
       });
     }
-    if (!renderSugg()) {
-      try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) { Log.cat('Recording').warn('findRecordingSuggestions failed', e.message); }
+    const staleSugg = suggStale(ko, ctx);
+    if (staleSugg) refetchSuggestions(ko);   // the old track's suggestions: show the current track's instead
+    if (staleSugg || !renderSugg()) {
+      if (!staleSugg) { try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) { Log.cat('Recording').warn('findRecordingSuggestions failed', e.message); } }
       let tries = 0;
       const poll = () => {
         if (!_recPop) return;
