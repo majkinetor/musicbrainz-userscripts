@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.09.200000
+// @version      2026.11.09.203000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -13118,7 +13118,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
      #575 fix that re-adopts the running Match/Stop state on rebuild. */
   let _recLastStatus = '';
   // Tracks the last auto-match left unset on purpose ("left for you" in the status),
-  // keyed mi:ti → { kind: 'ambiguous' | 'artist', why }; the recordings table marks them with a small dot, one colour per kind.
+  // keyed mi:ti → { kind: 'ambiguous' | 'artist', why, cands }; the recordings table marks them with a small dot, one colour per kind,
+  // and the picker lists cands (the tied or other-artist recordings) under suggestions straight away.
   const _recLeftForYou = new Map();
   async function autoMatchRecordings() {
     if (_autoMatching) return; _autoMatching = true;   // #577
@@ -13329,7 +13330,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         best = pick.best; bestLevel = pick.level;
         if (pick.ambiguous && bestLevel <= maxLevel) {
           ambiguous++;
-          _recLeftForYou.set(r.mi + ':' + r.ti, { kind: 'ambiguous', why: pick.tied.length + ' recordings match equally well, pick one' });
+          _recLeftForYou.set(r.mi + ':' + r.ti, { kind: 'ambiguous', why: pick.tied.length + ' recordings match equally well, pick one', cands: pick.tied.slice() });
           Log.cat('Recording').warn('track ' + (r.number || (r.ti + 1)) + ' AMBIGUOUS — ' + pick.tied.length + ' recordings tie at level ' + bestLevel
             + ': ' + pick.tied.map(c => '"' + c.name + '" [' + (c.gid || '').slice(0, 8) + ']' + (c.length ? ' ' + Math.round(c.length / 1000) + 's' : '')).join(', ')
             + ' — left unset, pick one by hand (the release group disagrees about which belongs here)');
@@ -13346,7 +13347,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           const refused = otherArtist.filter(d => d._level <= maxLevel);   // #857: would have linked before
           if (refused.length) {
             diffArtist++;
-            _recLeftForYou.set(r.mi + ':' + r.ti, { kind: 'artist', why: 'the matching recording' + (refused.length > 1 ? 's are' : ' is') + ' by another artist' });
+            _recLeftForYou.set(r.mi + ':' + r.ti, { kind: 'artist', why: 'the matching recording' + (refused.length > 1 ? 's are' : ' is') + ' by another artist', cands: refused.slice() });
             Log.cat('Recording').warn('track ' + (r.number || (r.ti + 1)) + ' "' + r.title + '" by "' + (r.trackArtist || '') + '" left unset — ' + refused.length + ' matching recording(s) by another artist refused: '
               + refused.map(d => '"' + d.name + '" by "' + (d.artist || '?') + '" [' + (d.gid || '').slice(0, 8) + '] level=' + d._level).join(', '));
           }
@@ -13645,14 +13646,20 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (len) qy += ' AND dur:[' + Math.max(0, len - 10000) + ' TO ' + (len + 10000) + ']';
     return qy;
   }
+  // A successful search, kept for 10 minutes per query: the picker's first search for a
+  // track is the same narrow query the auto-match's last tier already ran.
+  const _recSearchCache = new Map();   // query → { at, out }
   async function searchRecordings(q, opts) {
     q = (q || '').trim(); if (!q) return [];
+    const hit = _recSearchCache.get(q);
+    if (hit && Date.now() - hit.at < 600000) { Log.cat('Recording').debug('recording search:', JSON.stringify(q), '→', hit.out.length, 'hit(s), from this session'); return hit.out.slice(); }
     Log.cat('Recording').debug('recording search:', JSON.stringify(q));
     const url = `${ORIGIN}/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=15&inc=artist-credits+releases+release-groups+isrcs`;
     const res = await wsJson(url, Object.assign({ label: 'recording search' }, opts || {}));
     if (!res.json) { Log.cat('Recording').warn('recording search:', JSON.stringify(q), '→ no result (' + (res.stale ? 'superseded' : 'lookup failed') + ')'); return null; }
     const out = (res.json.recordings || []).map(mapWsRec);
     Log.cat('Recording').debug('recording search:', JSON.stringify(q), '→', out.length, 'hit(s) of', res.json.count != null ? res.json.count : out.length);
+    _recSearchCache.set(q, { at: Date.now(), out: out.slice() });
     return out;
   }
   // direct lookup of one recording by MBID — backs pasting a recording MBID / URL
@@ -13955,10 +13962,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const setSuggCount = n => { if (suggN) suggN.textContent = n > 0 ? ' (' + n + ')' : ''; };
     // suggestions are lazy in MB — render what's there, else trigger findRecordingSuggestions and poll
     let isrcList = [];   // #662: recordings holding the track's ISRC, listed first
+    const leftFor = _recLeftForYou.get(entry.mi + ':' + entry.ti);
+    const amList = ((leftFor && leftFor.cands) || []).filter(d => d && d.gid);   // what the auto-match left for you, no new lookup
     const renderSugg = () => {
       const mbList = (typeof ko.suggestedRecordings === 'function' ? (u(ko.suggestedRecordings) || []) : []).map(suggData);
-      const isrcGids = new Set(isrcList.map(d => d.gid));
-      const list = isrcList.concat(mbList.filter(d => !isrcGids.has(d.gid)));
+      const list = [];
+      const have = new Set();
+      isrcList.concat(amList, mbList).forEach(d => { if (d.gid && !have.has(d.gid)) { have.add(d.gid); list.push(d); } });
       list.forEach(s => { data[s.gid] = s; });
       if (!list.length) return false;
       suggGids.clear(); list.forEach(s => suggGids.add(s.gid));
@@ -13966,7 +13976,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       setSuggCount(list.length);
       Log.cat('Recording').debug('picker suggestions for track', entry.number, '→', list.length);
       if (lastResults.length) paintResults();   // suggestions arrived after a search → drop any now-duplicate rows
-      return mbList.length > 0;   // keep waiting for MB's own when only the ISRC holders are in
+      return mbList.length > 0 || amList.length > 0;   // keep waiting for MB's own when only the ISRC holders are in; the auto-match's are enough
     };
     {
       const isrc = fcIsrcFor(entry.mi, entry.ti, u(ko.name));
