@@ -226,6 +226,7 @@ const factoryWith = name => {
 const UI_FACTORY = factoryWith('mbuCfgHeader'), TOKENS_FACTORY = factoryWith('MBU_TOKENS');
 const SETTINGS = readFileSync(resolve(HERE, 'settings.js'), 'utf8').replace(/\r\n/g, '\n');
 const PALETTE = readFileSync(resolve(HERE, 'palette.js'), 'utf8').replace(/\r\n/g, '\n');   // #890
+const CSP_STYLES = readFileSync(resolve(HERE, 'csp-styles.js'), 'utf8').replace(/\r\n/g, '\n');   // #977
 const NEWS = readFileSync(resolve(HERE, 'news.js'), 'utf8').replace(/\r\n/g, '\n');   // #896
 const SYNC_DATA = ['sync-data.js', 'sync-policy.js', 'sync-storage.js'].map(f => readFileSync(resolve(HERE, f), 'utf8').replace(/\r\n/g, '\n')).join('\n');
 const SYNC = ['providers.js', 'sync.js', 'sync-google.js', 'sync-webdav.js'].map(f => readFileSync(resolve(HERE, f), 'utf8').replace(/\r\n/g, '\n')).join('\n');
@@ -314,7 +315,7 @@ function __stLater(name, rules, go) {
   setTimeout(check, 0);
 }`;
 const skippedLog = `try { if (__stSkipped.length) console.debug('String Theory: not for this page (their own @match' + (__stInFrame ? ' or @noframes' : '') + ') — ' + __stSkipped.join(', ')); } catch (e) {}`;
-writeFileSync(OUT, `${metaBlock}\n\n${banner}\n${startupLog}\n\n${toggles}\n\n${sharedCode}\n\n${bodies}\n\n${skippedLog}\n`);
+writeFileSync(OUT, `${metaBlock}\n\n${banner}\n${startupLog}\n\n${CSP_STYLES}\n${toggles}\n\n${sharedCode}\n\n${bodies}\n\n${skippedLog}\n`);
 console.log(`✓ ${NAME} v${version} → ${OUT}`);
 const sizeAfter = parts.reduce((s, p) => s + Buffer.byteLength(p.body), 0) + Buffer.byteLength(sharedCode);
 console.log(`  shared blocks: ${shared.factories.length} written once, ${(Math.max(0, sizeBefore - sizeAfter) / 1024).toFixed(0)} KB saved (#786)`);
