@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.09.190000
+// @version      2026.11.09.200000
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm, RateYourMusic and Album of the Year, read when you open their pages), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjI4Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMxNmNjZjgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjZmZhZTM4Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -16,6 +16,9 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_registerMenuCommand
+// @grant        GM_openInTab
+// @grant        GM_addValueChangeListener
+// @grant        GM_removeValueChangeListener
 // @connect      bandcamp.com
 // @connect      api.discogs.com
 // @connect      api.deezer.com
@@ -48,13 +51,16 @@
         if (!tags.length) tags = [...document.querySelectorAll('meta[itemprop="genre"]')].map(m => m.content.trim());
       }
       tags = [...new Set(tags.filter(Boolean))];
-      if (!tags.length) return false;
+      if (!tags.length && !last) return false;
       GM_setValue(EXT_KEY(location.href), JSON.stringify({ tags, at: Date.now() }));
       return true;
     };
-    // the page may fill in late; stop at the first read that finds genres
-    let n = 0; const t = setInterval(() => { if (read() || ++n > 10) clearInterval(t); }, 1000);
-    read() && clearInterval(t);
+    // the page may fill in late: stop at the first read that finds genres, or say "none" after 8 s on a real page
+    // (never on the browser check's page, which keeps the tab open until it is passed and the page reloads)
+    const isCheck = () => /just a moment|attention required|verify/i.test(document.title) || !!document.querySelector('#challenge-form, #cf-challenge-running, .cf-turnstile');
+    let n = 0, last = false;
+    const t = setInterval(() => { if (isCheck()) return; last = ++n >= 8; if (read() || last) clearInterval(t); }, 1000);
+    if (!isCheck() && read()) clearInterval(t);
     return;
   }
   if (!mbuClaim('fuzzy_logic', 'Fuzzy Logic')) return;
@@ -2752,8 +2758,30 @@
   function ext(u) {
     let v = null;
     try { v = JSON.parse(GM_getValue(EXT_KEY(u), 'null')); } catch (e) { /* none */ }
-    if (!v || !Array.isArray(v.tags)) throw new Error('not read yet: open the page once, then collect again');
+    if (!v || !Array.isArray(v.tags)) throw Object.assign(new Error('not read yet, click to read it'), { unread: true });
     return v.tags;
+  }
+  // a click on an unread source opens its pages in background tabs; each closes once read (after a browser check you
+  // pass in it, if one shows), and its genres join the list
+  function readExt(k) {
+    const st = S.status[k], gen = S.gen;
+    if (!st || !st.unread || !st.unread.length || st.opening) return;
+    st.opening = true; st.err = 'opening its page…'; draw();
+    for (const u of st.unread) {
+      const tab = GM_openInTab(u, { active: false, insert: true, setParent: true });
+      const id = GM_addValueChangeListener(EXT_KEY(u), () => {
+        GM_removeValueChangeListener(id);
+        try { tab && tab.close && tab.close(); } catch (e) { /* closed already */ }
+        if (gen !== S.gen) return;
+        let tags = [];
+        try { tags = ext(u); } catch (e) { return; }
+        tags.forEach(tag => S.raw.push({ src: k, tag, url: u }));
+        st.n += tags.length; st.ok++; st.unread = st.unread.filter(x => x !== u);
+        LOG.info(SOURCES[k] + ' ' + u + ': ' + (tags.join(', ') || 'none'));
+        if (!st.unread.length) { st.state = 'ok'; st.opening = false; delete st.err; }
+        rebuild(); draw();
+      });
+    }
   }
 
   // ── voting via ws/2 (one batched POST per 200 entities) ───────────────────
@@ -2896,6 +2924,7 @@
             LOG.info(SOURCES[f.src] + ' ' + u + ': ' + (tags.join(', ') || 'none'));
           } catch (err) {
             st.err = err.message;
+            if (err.unread) (st.unread = st.unread || []).push(u);
             LOG.warn(SOURCES[f.src] + ' ' + u + ': ' + err.message);
             if (/\b429\b/.test(err.message)) break;
           }
@@ -3150,6 +3179,7 @@
       const act = a.dataset.a;
       if (act === 'src') {
         const k = a.dataset.s; S.off = S.off || new Set();
+        if (S.status[k] && S.status[k].unread && S.status[k].unread.length) { readExt(k); return; }
         if (S.off.has(k)) S.off.delete(k); else S.off.add(k);
         const keep = new Set(sorted().map(e => e.name));
         for (const t of [...S.sel]) if (!keep.has(t)) S.sel.delete(t);
