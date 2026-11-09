@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.09.092318
+// @version      2026.11.09.110240
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -2564,6 +2564,17 @@
               const m = u.href.match(/^(.+\/\d+)-(?:250|500|1200)\.jpg$/);
               return m ? [`${m[1]}.jpg`, `${m[1]}.png`] : [];
           } },
+          // Blogger: a size segment (/s320/, /w400-h400/, /s1600-h/) or suffix (=s320) → /s0/, the original
+          { host: /^(blogger\.googleusercontent\.com|\d\.bp\.blogspot\.com)$/, max: u => {
+              const p = u.pathname.replace(/\/(s\d+|w\d+-h\d+)(-[a-z0-9-]*)?\/(?=[^/]+$)/, '/s0/');
+              const q = u.href.replace(/=[swh]\d+[^/]*$/, '=s0');
+              return [p !== u.pathname ? `https://${u.host}${p}` : '', q !== u.href ? q : ''].filter(Boolean);
+          } },
+          // any other host: WordPress's resized copy name-300x300.jpg → name.jpg
+          { host: /./, max: u => {
+              const m = u.pathname.match(/^(.+)-\d{2,4}x\d{2,4}(\.(?:jpe?g|png|gif|webp))$/i);
+              return m ? [`${u.origin}${m[1]}${m[2]}`] : [];
+          } },
       ];
 
       // Images a store shows when it has none.
@@ -2809,8 +2820,10 @@
       }
 
       /** Images behind a URL, unmaximised: [{ url, types, comment, page }]. A store page goes to its
-       *  resolver; any other page to its og:image; an image URL is itself. */
-      async find(url) {
+       *  resolver; any other page to its og:image, or with opts.all to every image it shows; an
+       *  image URL is itself. */
+      async find(url, opts) {
+          opts = opts || {};
           const u = new URL(url);
           const p = ImageMaximizer.PLATFORMS.find(x => x.host.test(u.hostname));
           // an image URL is an image even on a store's host (Beatport's geo-media, say), not a page
@@ -2818,7 +2831,7 @@
               return [{ url: u.href, types: [], comment: '', page: '' }];
           }
           let list;
-          if (p) {
+          if (p && !opts.all) {
               this._log('debug', `${p.name}: reading ${u.href}`);
               list = await p.find.call(this, u);
           } else {
@@ -2826,25 +2839,30 @@
               const r = await this._get(u.href, 'text');
               if (/^image\//i.test(r.contentType || '')) return [{ url: u.href, types: [], comment: '', page: '' }];
               const og = ImageMaximizer.metaImage(r.text || '', u.href);
-              list = og ? [{ url: og }] : [];
+              list = opts.all ? ImageMaximizer.pageImages(r.text || '', r.url || u.href, og) : (og ? [{ url: og }] : []);
           }
           list = (list || []).filter(i => i && i.url && !ImageMaximizer.PLACEHOLDERS.some(re => re.test(i.url)));
-          this._log('debug', `${p ? p.name : u.hostname}: ${list.length} image(s)${list.length ? ' — ' + list.map(i => i.url).join(', ') : ''}`);
+          this._log('debug', `${p && !opts.all ? p.name : u.hostname}: ${list.length} image(s)${list.length ? ' — ' + list.map(i => i.url).join(', ') : ''}`);
           return list.map(i => ({ url: i.url, types: i.types || [], comment: i.comment || '', page: u.href }));
       }
 
       /** Download the largest version of each image behind a URL.
        *  → [{ blob, url, original, page, types, comment, width, height }]; throws when there is none.
-       *  opts.minSize drops images whose longer side is smaller (a store's logo). */
+       *  opts.minSize drops images whose longer side is smaller (a store's logo).
+       *  opts.all reads every image a page shows (find); opts.maxRatio then drops a banner, one
+       *  whose long side is more than that many times its short side. */
       async fetchImages(url, opts) {
           opts = opts || {};
-          const found = await this.find(url);
+          const found = await this.find(url, { all: opts.all });
           if (!found.length) throw new Error('no image found');
-          const got = [];
+          const got = [], seen = new Set();
           for (const img of found) {
               const r = await this.fetchLargest(img.url);
               if (!r) { this._log('warn', `no candidate of ${img.url} answered with an image`); continue; }
+              if (seen.has(r.url)) { this._log('debug', `skipped ${img.url}: the same image as ${r.url}`); continue; }
+              seen.add(r.url);
               if (opts.minSize && r.width && Math.max(r.width, r.height) < opts.minSize) { this._log('debug', `skipped ${r.url}: ${r.width}×${r.height} is under ${opts.minSize} px`); continue; }
+              if (opts.maxRatio && r.width && r.height && Math.max(r.width, r.height) > opts.maxRatio * Math.min(r.width, r.height)) { this._log('debug', `skipped ${r.url}: ${r.width}×${r.height} is a banner`); continue; }
               got.push(Object.assign(r, { original: img.url, page: img.page, types: img.types, comment: img.comment }));
           }
           if (!got.length) throw new Error('no image could be downloaded');
@@ -2886,6 +2904,47 @@
               }
           }
           return null;
+      }
+      /** Every image an HTML page shows, resolved, in page order, og:image first: [{ url }].
+       *  A link to an image around a thumbnail stands for it (a blog's full-size copy); an <img>
+       *  takes its widest srcset entry, else its lazy-load or plain src. Icons, SVGs and images
+       *  the page draws under 100 px are left out; at most `max` (60). */
+      static pageImages(html, base, og, max) {
+          max = max || 60;
+          const out = [], seen = new Set();
+          const attr = (tag, name) => { const m = tag.match(new RegExp(`\\s${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i')); return m ? ImageMaximizer.decode(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]) : ''; };
+          const add = v => {
+              if (!v || /^data:/i.test(v)) return;
+              let href; try { href = new URL(v.trim(), base).href; } catch (e) { return; }
+              if (!/^https?:/i.test(href) || /\.svg(\?|$)|favicon|\/emoji\/|gravatar\.com|\/pixel\.|spacer\.gif/i.test(href) || seen.has(href) || out.length >= max) return;
+              seen.add(href); out.push({ url: href });
+          };
+          if (og) add(og);
+          const body = String(html).replace(/<!--[\s\S]*?-->/g, '').replace(/<(script|style|noscript)\b[\s\S]*?<\/\1>/gi, '');
+          const re = /<a\b[^>]*>(?:(?!<\/a>)[\s\S])*?<\/a>|<img\b[^>]*>/gi;
+          let m;
+          while ((m = re.exec(body))) {
+              const tag = m[0];
+              if (/^<a\b/i.test(tag)) {
+                  const href = attr(tag.match(/^<a\b[^>]*>/i)[0], 'href');
+                  const imgs = tag.match(/<img\b[^>]*>/gi) || [];
+                  if (imgs.length && href && ImageMaximizer.looksLikeImage(new URL(href, base).href)) { add(href); continue; }
+                  imgs.forEach(t => add(ImageMaximizer._imgSrc(t, attr)));
+                  continue;
+              }
+              add(ImageMaximizer._imgSrc(tag, attr));
+          }
+          return out;
+      }
+      static _imgSrc(tag, attr) {
+          const w = +attr(tag, 'width'), h = +attr(tag, 'height');
+          if ((w && w < 100) || (h && h < 100)) return '';
+          const set = attr(tag, 'data-srcset') || attr(tag, 'srcset');
+          if (set) {
+              const best = set.split(/,\s+(?=\S)/).map(s => s.trim().split(/\s+/)).map(([u, d]) => ({ u, n: parseFloat(d) || 1 })).sort((a, b) => b.n - a.n)[0];
+              if (best && best.u) return best.u;
+          }
+          return attr(tag, 'data-orig-file') || attr(tag, 'data-lazy-src') || attr(tag, 'data-src') || attr(tag, 'data-original') || attr(tag, 'src');
       }
       static decode(s) {
           return String(s).replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;|&#x27;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>');
@@ -2944,6 +3003,19 @@
   // Some stores (notably Amazon) list their site logo alongside the real covers.
   // Those are tiny; real cover art is never this small. #242
   const MIN_ART_PX = 200;
+  const MIN_PAGE_ART_PX = 250;   // "All images from" a page: also skips its buttons and badges
+  // a release's links that are never artwork pages: no "All images from" for them
+  const NO_PAGE_ART = /(^|\.)(wikidata\.org|wikipedia\.org|viaf\.org|isni\.org|musicbrainz\.org|metabrainz\.org|imdb\.com|loc\.gov|d-nb\.info|catalogue\.bnf\.fr|worldcat\.org|rateyourmusic\.com|secondhandsongs\.com|setlist\.fm|whosampled\.com|songkick\.com|lyrics\.com|genius\.com)$/i;
+  async function otherPageLinks() {
+    const urls = await releaseUrls(), seen = new Set(), out = [];
+    for (const u of urls) {
+      if (providerOf(u)) continue;
+      let h; try { h = new URL(u).hostname.replace(/^www\./, ''); } catch (e) { continue; }
+      if (NO_PAGE_ART.test(h) || seen.has(u)) continue;
+      seen.add(u); out.push({ name: h, url: u, icon: provIconUrl(h) });
+    }
+    return out;
+  }
   // the image types the Cover Art Archive takes; WebP / AVIF / BMP / TIFF are converted when staged (#781)
   const CAA_MIME = { jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', pdf: 'application/pdf' };
   const IMGMAX = new ImageMaximizer({
@@ -3085,8 +3157,11 @@
   // prov (optional) = { name, icon } the cover is being sourced from — passed by the
   // "Import from <provider>" buttons, else derived from the URL. Stamped on each new
   // cover so the gallery shows where it came from until commit (#249).
-  function sourceFromUrl(rawUrl, prov, seed) {
+  // opts.all: read every image the page shows, not only its og:image — the "All images from"
+  // buttons for a release's links that aren't art providers (a label's or a blog's page)
+  function sourceFromUrl(rawUrl, prov, seed, opts) {
     const url = (rawUrl || '').trim();
+    opts = opts || {};
     // test breadcrumb, same idea as window.__asAutoRepeat: an import leaves no
     // other trace a test can read (asLog is in-memory, nothing reaches console),
     // and "did one actually start" is the check #554 turns on.
@@ -3103,7 +3178,7 @@
     asLog.info(`Source: ${(prov && prov.name) || 'URL'} — ${url}`);   // name the source attempted (mirrors tooltip)
     const slot = addSourcingSlot(prov ? `Sourcing ${prov.name}…` : 'Sourcing…');
     // #717 the maximizer reads the page, picks each image's largest version and downloads it
-    return IMGMAX.fetchImages(url, { minSize: MIN_ART_PX }).then(async got => {
+    return IMGMAX.fetchImages(url, opts.all ? { minSize: MIN_PAGE_ART_PX, maxRatio: 2, all: true } : { minSize: MIN_ART_PX }).then(async got => {
       const files = [], metas = [];
       for (const g of got) {
         let kind = '';
@@ -3689,6 +3764,7 @@
       + `<input class="as-src-url-inp" type="text" placeholder="https://… provider page or image URL" autocomplete="off" spellcheck="false"></span></div>`
       + `<div class="as-src-prov as-pop-note">Looking for linked platforms…</div>`
       + `<div class="as-src-custom"></div>`
+      + `<div class="as-src-other"></div>`
       + `<div class="as-src-allwrap"></div>`;   // #558: "Import all" now spans platforms AND registered providers, so it lives below both
     document.body.appendChild(pop); placePop(pop, btn.getBoundingClientRect());
     // #250 custom providers registered by other userscripts — one stacked "Import from …"
@@ -3741,6 +3817,16 @@
       box.innerHTML = provs.map((p, i) => `<button class="as-btn as-src-prov-b" data-i="${i}"><img class="as-src-ic" src="${esc(p.icon)}" alt="">⬇ Import from ${esc(p.name)}</button>`).join('');
       box.querySelectorAll('.as-src-prov-b').forEach(b => b.onclick = () => { const p = provs[+b.dataset.i]; pop.remove(); sourceFromUrl(p.url, { name: p.name, icon: p.icon }); });
       box.querySelectorAll('.as-src-ic').forEach(img => img.onerror = () => { img.style.visibility = 'hidden'; });   // hide a missing favicon (no inline handler — CSP)
+      placePop(pop, btn.getBoundingClientRect());
+    });
+    // a release's other links (a label's or a blog's page): every big image the page shows.
+    // Kept out of "Import all" and the toolbar count — a page can hold anything.
+    const obox = pop.querySelector('.as-src-other');
+    if (obox) otherPageLinks().then(others => {
+      if (!obox.isConnected || !others.length) return;
+      obox.innerHTML = others.map((p, i) => `<button class="as-btn as-src-prov-b as-src-other-b" data-i="${i}" data-tip="${esc(`All images from ${p.name}\nEvery image the linked page shows, ${MIN_PAGE_ART_PX} px or bigger, each at its largest\n${p.url}`)}"><img class="as-src-ic" src="${esc(p.icon)}" alt="">⬇ All images from ${esc(p.name)}</button>`).join('');
+      obox.querySelectorAll('.as-src-prov-b').forEach(b => b.onclick = () => { const p = others[+b.dataset.i]; pop.remove(); sourceFromUrl(p.url, { name: p.name, icon: p.icon }, null, { all: true }); });
+      obox.querySelectorAll('.as-src-ic').forEach(img => img.onerror = () => { img.style.visibility = 'hidden'; });
       placePop(pop, btn.getBoundingClientRect());
     });
     // #558: ONE "Import all" covering both lists. It used to live inside the
@@ -8217,6 +8303,9 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
   .as-src-custom{display:flex;flex-direction:column;gap:5px}   /* #250 stacked custom-provider buttons */
   .as-src-allwrap{display:flex;flex-direction:column;gap:5px}   /* #558 "Import all" moved out of .as-src-prov so it can span both lists */
   .as-src-custom:not(:empty){margin:6px 0 2px}
+  .as-src-other{display:flex;flex-direction:column;gap:5px}
+  .as-src-other:not(:empty){margin:6px 0 2px}
+  .as-src-other .as-src-other-b{font-weight:400}
   .as-src-prov-b{justify-content:flex-start;font-weight:600;color:var(--mbu-accent-deep-text);gap:8px}
   .as-src-all{justify-content:center;font-weight:700;color:var(--mbu-text-on-accent);background:var(--as-acc);border-color:var(--as-acc);margin-top:3px}
   /* #502 (chaban-mb): the generic .as-btn:hover:not(:disabled) rule (#493) has

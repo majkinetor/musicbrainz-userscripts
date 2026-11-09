@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-09 11:06 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-09 11:23 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -554,6 +554,8 @@ An Art Station download, added back as a zip, restores each cover's types and co
 The Cover Art Archive takes JPEG, PNG, GIF and PDF, so a WebP, AVIF, BMP or TIFF is converted as it's added: to JPEG when lossy, to PNG when lossless or transparent (`WEBP→JPEG` with the file type shown). TIFF converts only where the browser shows it (Safari); elsewhere it's skipped.
 
 The **URL (N)** panel has an import for each source the release links, plus any [registered providers](../art_station/DEVELOP.md#plugin-api). A middle-click imports from all and keeps the best cover: the largest front (each source's first image), then the smallest file.
+
+Each other link the release has, such as a label's or a blog's page, gets **All images from &lt;site&gt;**: every image that page shows, each at its largest, leaving out those under 250 px and banners. These stay out of the import from all.
 
 A URL can be a store's release page or an image. Art Station takes the store's largest version; the edit note names the page, the image and the smaller one offered:
 

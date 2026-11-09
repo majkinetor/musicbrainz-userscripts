@@ -12,27 +12,31 @@
 
 ```js
 const max = new ImageMaximizer({
-  request: ImageMaximizer.gmRequest(GM_xmlhttpRequest),   // omit for global fetch
-  log: (level, message) => console.log(level, message),   // optional: 'debug' | 'info' | 'warn'
+  request: ImageMaximizer.gmRequest(GM_xmlhttpRequest), // omit for global fetch
+  log: (level, message) => console.log(level, message), // optional: 'debug' | 'info' | 'warn'
 });
-const images = await max.fetchImages('https://www.deezer.com/en/album/6575789', { minSize: 200 });
+const images = await max.fetchImages(
+  "https://www.deezer.com/en/album/6575789",
+  { minSize: 200 },
+);
 // [{ blob, url, original, page, types: ['Front'], comment: '', width: 1200, height: 1200 }]
 ```
 
 ## API
 
-| Member                                     |                                                                                           |
-| ------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| `new ImageMaximizer({ request, log })`     | both optional                                                                             |
-| `candidates(imageUrl)`                     | bigger versions of an image, largest first, the URL itself last; synchronous, no network  |
-| `platform(url)`                            | `{ id, name }` of the store a page belongs to, or `null`                                  |
-| `find(url)`                                | the images behind a URL, unmaximised: `[{ url, types, comment, page }]`                   |
-| `fetchImages(url, { minSize })`            | downloads the largest version of each; throws when there is none                          |
-| `fetchLargest(imageUrl)`                   | the first candidate that answers with an image: `{ blob, url, width, height }`, or `null` |
-| `ImageMaximizer.metaImage(html, base)`     | a page's `og:image` (then `twitter:image`, `image_src`)                                   |
-| `ImageMaximizer.dimensions(arrayBuffer)`   | `{ type, width, height }` from a JPEG, PNG, GIF or WebP header                            |
-| `ImageMaximizer.gmRequest(gmXhr, timeout)` | a `request` made from `GM_xmlhttpRequest` / `GM.xmlHttpRequest`                           |
-| `ImageMaximizer.fetchRequest`              | the default `request`, on global `fetch`                                                  |
+| Member                                         |                                                                                                                                               |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `new ImageMaximizer({ request, log })`         | both optional                                                                                                                                 |
+| `candidates(imageUrl)`                         | bigger versions of an image, largest first, the URL itself last; synchronous, no network                                                      |
+| `platform(url)`                                | `{ id, name }` of the store a page belongs to, or `null`                                                                                      |
+| `find(url, { all })`                           | the images behind a URL, unmaximised: `[{ url, types, comment, page }]`; `all` reads every image an unknown page shows, not only its og:image |
+| `fetchImages(url, { minSize, maxRatio, all })` | downloads the largest version of each, once; `maxRatio` drops banners; throws when there is none                                              |
+| `ImageMaximizer.pageImages(html, base, og)`    | every image a page shows: a link to an image around a thumbnail, else the widest `srcset` entry or the `src`                                  |
+| `fetchLargest(imageUrl)`                       | the first candidate that answers with an image: `{ blob, url, width, height }`, or `null`                                                     |
+| `ImageMaximizer.metaImage(html, base)`         | a page's `og:image` (then `twitter:image`, `image_src`)                                                                                       |
+| `ImageMaximizer.dimensions(arrayBuffer)`       | `{ type, width, height }` from a JPEG, PNG, GIF or WebP header                                                                                |
+| `ImageMaximizer.gmRequest(gmXhr, timeout)`     | a `request` made from `GM_xmlhttpRequest` / `GM.xmlHttpRequest`                                                                               |
+| `ImageMaximizer.fetchRequest`                  | the default `request`, on global `fetch`                                                                                                      |
 
 `types` uses MusicBrainz's cover art type names (`Front`, `Back`, `Booklet`, `Medium`, …) where the store tells.
 
@@ -44,26 +48,26 @@ const images = await max.fetchImages('https://www.deezer.com/en/album/6575789', 
 
 A store page goes to its resolver; any other page to its `og:image`; an image URL is downloaded as it is, after its bigger versions.
 
-| Store          | Read from                                                         | Largest version                            |
-| -------------- | ----------------------------------------------------------------- | ------------------------------------------ |
-| Apple Music    | iTunes lookup API                                                 | the stored size (`9999x9999bb` request)    |
-| Deezer         | public album API                                                  | the stored size (`4000x0` request)         |
-| Spotify        | oEmbed                                                            | the `82c1` size code                       |
-| Bandcamp       | the page                                                          | `_0`, the original                         |
-| Tidal          | the web player's API, in your country and then others             | `origin.jpg`                               |
-| Qobuz          | the API when it answers (adds booklets), else the cover's address | `_org`                                     |
-| Beatport       | the page's data                                                   | `0x0`, the stored size                     |
-| Discogs        | the site's own API, else the public API (max 600 px)      | as given                                   |
-| Amazon         | the product page                                                  | the image without size modifiers           |
-| VGMdb          | the scan gallery, captions as types                               | `media.vgm.io`                             |
-| Melon          | the app's album API                                               | `_org`, the original                       |
-| Bugs           | the page's cover                                                  | `original`, the upload                     |
-| YouTube Music  | the album playlist's YouTube Music page, from any YouTube link   | `=s0`, the stored size                     |
-| 7digital, Juno | the page's `og:image`                                             | `_800`, `/full/…-BIG`                      |
+| Store          | Read from                                                         | Largest version                         |
+| -------------- | ----------------------------------------------------------------- | --------------------------------------- |
+| Apple Music    | iTunes lookup API                                                 | the stored size (`9999x9999bb` request) |
+| Deezer         | public album API                                                  | the stored size (`4000x0` request)      |
+| Spotify        | oEmbed                                                            | the `82c1` size code                    |
+| Bandcamp       | the page                                                          | `_0`, the original                      |
+| Tidal          | the web player's API, in your country and then others             | `origin.jpg`                            |
+| Qobuz          | the API when it answers (adds booklets), else the cover's address | `_org`                                  |
+| Beatport       | the page's data                                                   | `0x0`, the stored size                  |
+| Discogs        | the site's own API, else the public API (max 600 px)              | as given                                |
+| Amazon         | the product page                                                  | the image without size modifiers        |
+| VGMdb          | the scan gallery, captions as types                               | `media.vgm.io`                          |
+| Melon          | the app's album API                                               | `_org`, the original                    |
+| Bugs           | the page's cover                                                  | `original`, the upload                  |
+| YouTube Music  | the album playlist's YouTube Music page, from any YouTube link    | `=s0`, the stored size                  |
+| 7digital, Juno | the page's `og:image`                                             | `_800`, `/full/…-BIG`                   |
 
 Image URLs on SoundCloud, YouTube, Google and Cover Art Archive thumbnails are maximised too.
 
-Discogs' full size, Amazon, VGMdb, Juno and 7digital sit behind bot checks: they answer a browser that has passed them, which is where a userscript's requests come from. A Cloudflare check comes back as the error *Cloudflare check; open the page once in this browser, then retry*.
+Discogs' full size, Amazon, VGMdb, Juno and 7digital sit behind bot checks: they answer a browser that has passed them, which is where a userscript's requests come from. A Cloudflare check comes back as the error _Cloudflare check; open the page once in this browser, then retry_.
 
 ## Tests
 

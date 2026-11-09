@@ -110,6 +110,17 @@ class ImageMaximizer {
             const m = u.href.match(/^(.+\/\d+)-(?:250|500|1200)\.jpg$/);
             return m ? [`${m[1]}.jpg`, `${m[1]}.png`] : [];
         } },
+        // Blogger: a size segment (/s320/, /w400-h400/, /s1600-h/) or suffix (=s320) → /s0/, the original
+        { host: /^(blogger\.googleusercontent\.com|\d\.bp\.blogspot\.com)$/, max: u => {
+            const p = u.pathname.replace(/\/(s\d+|w\d+-h\d+)(-[a-z0-9-]*)?\/(?=[^/]+$)/, '/s0/');
+            const q = u.href.replace(/=[swh]\d+[^/]*$/, '=s0');
+            return [p !== u.pathname ? `https://${u.host}${p}` : '', q !== u.href ? q : ''].filter(Boolean);
+        } },
+        // any other host: WordPress's resized copy name-300x300.jpg → name.jpg
+        { host: /./, max: u => {
+            const m = u.pathname.match(/^(.+)-\d{2,4}x\d{2,4}(\.(?:jpe?g|png|gif|webp))$/i);
+            return m ? [`${u.origin}${m[1]}${m[2]}`] : [];
+        } },
     ];
 
     // Images a store shows when it has none.
@@ -355,8 +366,10 @@ class ImageMaximizer {
     }
 
     /** Images behind a URL, unmaximised: [{ url, types, comment, page }]. A store page goes to its
-     *  resolver; any other page to its og:image; an image URL is itself. */
-    async find(url) {
+     *  resolver; any other page to its og:image, or with opts.all to every image it shows; an
+     *  image URL is itself. */
+    async find(url, opts) {
+        opts = opts || {};
         const u = new URL(url);
         const p = ImageMaximizer.PLATFORMS.find(x => x.host.test(u.hostname));
         // an image URL is an image even on a store's host (Beatport's geo-media, say), not a page
@@ -364,7 +377,7 @@ class ImageMaximizer {
             return [{ url: u.href, types: [], comment: '', page: '' }];
         }
         let list;
-        if (p) {
+        if (p && !opts.all) {
             this._log('debug', `${p.name}: reading ${u.href}`);
             list = await p.find.call(this, u);
         } else {
@@ -372,25 +385,30 @@ class ImageMaximizer {
             const r = await this._get(u.href, 'text');
             if (/^image\//i.test(r.contentType || '')) return [{ url: u.href, types: [], comment: '', page: '' }];
             const og = ImageMaximizer.metaImage(r.text || '', u.href);
-            list = og ? [{ url: og }] : [];
+            list = opts.all ? ImageMaximizer.pageImages(r.text || '', r.url || u.href, og) : (og ? [{ url: og }] : []);
         }
         list = (list || []).filter(i => i && i.url && !ImageMaximizer.PLACEHOLDERS.some(re => re.test(i.url)));
-        this._log('debug', `${p ? p.name : u.hostname}: ${list.length} image(s)${list.length ? ' — ' + list.map(i => i.url).join(', ') : ''}`);
+        this._log('debug', `${p && !opts.all ? p.name : u.hostname}: ${list.length} image(s)${list.length ? ' — ' + list.map(i => i.url).join(', ') : ''}`);
         return list.map(i => ({ url: i.url, types: i.types || [], comment: i.comment || '', page: u.href }));
     }
 
     /** Download the largest version of each image behind a URL.
      *  → [{ blob, url, original, page, types, comment, width, height }]; throws when there is none.
-     *  opts.minSize drops images whose longer side is smaller (a store's logo). */
+     *  opts.minSize drops images whose longer side is smaller (a store's logo).
+     *  opts.all reads every image a page shows (find); opts.maxRatio then drops a banner, one
+     *  whose long side is more than that many times its short side. */
     async fetchImages(url, opts) {
         opts = opts || {};
-        const found = await this.find(url);
+        const found = await this.find(url, { all: opts.all });
         if (!found.length) throw new Error('no image found');
-        const got = [];
+        const got = [], seen = new Set();
         for (const img of found) {
             const r = await this.fetchLargest(img.url);
             if (!r) { this._log('warn', `no candidate of ${img.url} answered with an image`); continue; }
+            if (seen.has(r.url)) { this._log('debug', `skipped ${img.url}: the same image as ${r.url}`); continue; }
+            seen.add(r.url);
             if (opts.minSize && r.width && Math.max(r.width, r.height) < opts.minSize) { this._log('debug', `skipped ${r.url}: ${r.width}×${r.height} is under ${opts.minSize} px`); continue; }
+            if (opts.maxRatio && r.width && r.height && Math.max(r.width, r.height) > opts.maxRatio * Math.min(r.width, r.height)) { this._log('debug', `skipped ${r.url}: ${r.width}×${r.height} is a banner`); continue; }
             got.push(Object.assign(r, { original: img.url, page: img.page, types: img.types, comment: img.comment }));
         }
         if (!got.length) throw new Error('no image could be downloaded');
@@ -432,6 +450,47 @@ class ImageMaximizer {
             }
         }
         return null;
+    }
+    /** Every image an HTML page shows, resolved, in page order, og:image first: [{ url }].
+     *  A link to an image around a thumbnail stands for it (a blog's full-size copy); an <img>
+     *  takes its widest srcset entry, else its lazy-load or plain src. Icons, SVGs and images
+     *  the page draws under 100 px are left out; at most `max` (60). */
+    static pageImages(html, base, og, max) {
+        max = max || 60;
+        const out = [], seen = new Set();
+        const attr = (tag, name) => { const m = tag.match(new RegExp(`\\s${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i')); return m ? ImageMaximizer.decode(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]) : ''; };
+        const add = v => {
+            if (!v || /^data:/i.test(v)) return;
+            let href; try { href = new URL(v.trim(), base).href; } catch (e) { return; }
+            if (!/^https?:/i.test(href) || /\.svg(\?|$)|favicon|\/emoji\/|gravatar\.com|\/pixel\.|spacer\.gif/i.test(href) || seen.has(href) || out.length >= max) return;
+            seen.add(href); out.push({ url: href });
+        };
+        if (og) add(og);
+        const body = String(html).replace(/<!--[\s\S]*?-->/g, '').replace(/<(script|style|noscript)\b[\s\S]*?<\/\1>/gi, '');
+        const re = /<a\b[^>]*>(?:(?!<\/a>)[\s\S])*?<\/a>|<img\b[^>]*>/gi;
+        let m;
+        while ((m = re.exec(body))) {
+            const tag = m[0];
+            if (/^<a\b/i.test(tag)) {
+                const href = attr(tag.match(/^<a\b[^>]*>/i)[0], 'href');
+                const imgs = tag.match(/<img\b[^>]*>/gi) || [];
+                if (imgs.length && href && ImageMaximizer.looksLikeImage(new URL(href, base).href)) { add(href); continue; }
+                imgs.forEach(t => add(ImageMaximizer._imgSrc(t, attr)));
+                continue;
+            }
+            add(ImageMaximizer._imgSrc(tag, attr));
+        }
+        return out;
+    }
+    static _imgSrc(tag, attr) {
+        const w = +attr(tag, 'width'), h = +attr(tag, 'height');
+        if ((w && w < 100) || (h && h < 100)) return '';
+        const set = attr(tag, 'data-srcset') || attr(tag, 'srcset');
+        if (set) {
+            const best = set.split(/,\s+(?=\S)/).map(s => s.trim().split(/\s+/)).map(([u, d]) => ({ u, n: parseFloat(d) || 1 })).sort((a, b) => b.n - a.n)[0];
+            if (best && best.u) return best.u;
+        }
+        return attr(tag, 'data-orig-file') || attr(tag, 'data-lazy-src') || attr(tag, 'data-src') || attr(tag, 'data-original') || attr(tag, 'src');
     }
     static decode(s) {
         return String(s).replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;|&#x27;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>');
