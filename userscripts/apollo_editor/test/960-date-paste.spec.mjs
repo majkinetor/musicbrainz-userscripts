@@ -43,5 +43,5 @@ test('a pasted date fills all three boxes, Alt+C copies it, the x clears it', { 
   check(await page.locator(EY).evaluate(el => el.classList.contains('tc-dp-bad')), 'and marks the box');
   await page.locator(EY).fill('');
   await page.locator(EY).pressSequentially('20010215');
-  check(await until(() => date(page, 'end_date'), v => v === '2001-2-15') === '2001-2-15', 'typing goes through all three boxes without losing a digit');
+  check(await until(() => date(page, 'end_date'), v => v === '2001-02-15') === '2001-02-15', 'typing goes through all three boxes without losing a digit');
 });
