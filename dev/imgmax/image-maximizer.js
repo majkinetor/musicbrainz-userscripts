@@ -83,6 +83,8 @@ class ImageMaximizer {
             const m = u.pathname.match(/^\/album\/images\/(?:\d+|original)\/(\d+\/\d+\.(?:jpg|png))$/);
             return m ? [`https://${u.host}/album/images/original/${m[1]}`, `https://${u.host}/album/images/1000/${m[1]}`] : [];
         } },
+        // Audiomack (#664): ?width= resizes; without it, the upload (WebP)
+        { host: /^i.audiomack.com$/, max: u => u.search ? [`https://${u.host}${u.pathname}`] : [] },
         // Juno: /full/…-BIG
         { host: /(^|\.)(juno\.co\.uk|junostatic\.com)$/, max: u => {
             const m = u.pathname.match(/^\/(?:\d+|full)\/(.+?)(?:-(?:TN|MED|BIG))?\.(jpg|png)$/i);
@@ -310,6 +312,7 @@ class ImageMaximizer {
             return this._metaImage(u.href);
         } },
         { id: '7digital', name: '7digital', host: /(^|\.)7digital\.com$/, async find(u) { return this._metaImage(u.href, ['Front']); } },
+        { id: 'audiomack', name: 'Audiomack', host: /(^|.)audiomack.com$/, async find(u) { return this._metaImage(u.href, ['Front']); } },
         { id: 'juno', name: 'Juno', host: /(^|\.)(junodownload\.com|juno\.co\.uk)$/, async find(u) { return this._metaImage(u.href, ['Front']); } },
     ];
 

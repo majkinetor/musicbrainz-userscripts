@@ -60,6 +60,7 @@ A store page goes to its resolver; any other page to its `og:image`; an image UR
 | Discogs        | the site's own API, else the public API (max 600 px)              | as given                                |
 | Amazon         | the product page                                                  | the image without size modifiers        |
 | Amazon Music   | the album's embed player                                          | the image without size modifiers        |
+| Audiomack      | the page's `og:image`                                             | without `?width=`, the upload           |
 | VGMdb          | the scan gallery, captions as types                               | `media.vgm.io`                          |
 | Melon          | the app's album API                                               | `_org`, the original                    |
 | Bugs           | the page's cover                                                  | `original`, the upload                  |

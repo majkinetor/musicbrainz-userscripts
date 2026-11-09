@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-09 15:24 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-09 15:27 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -567,6 +567,7 @@ A URL can be a store's release page or an image. Art Station takes the store's l
 | Discogs, Amazon                                           | every image                                               |
 | YouTube Music, from any YouTube link to an album          | the cover                                                 |
 | Amazon Music                                              | the cover, which Amazon keeps at 500 px                   |
+| Audiomack                                                 | the cover as uploaded, converted from WebP                |
 | VGMdb                                                     | every scan, typed by its caption                          |
 | any other page                                            | its preview image                                         |
 

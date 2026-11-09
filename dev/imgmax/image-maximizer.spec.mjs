@@ -175,6 +175,7 @@ test('live: the stores still answer as the rules expect', { tag: ['@web'] }, asy
     ['https://www.qobuz.com/us-en/album/random-access-memories-daft-punk/0886443927087', 1400],
     ['https://www.discogs.com/release/1-The-Persuader-Stockholm', 590],
     ['https://www.youtube.com/playlist?list=OLAK5uy_nfz69o2a5XmMSj8QEzp2JMIcXxfbaTjSc', 1400],
+    ['https://audiomack.com/black-savage-40/album/black-savage-1884457', 1600],
     ['https://music.amazon.com/albums/B07HNQ6YX1', 500],
   ]) {
     try { const r = await m.fetchImages(url); check(r[0].width >= minW, `${url}: ${r[0].width} px from ${r[0].url}`); }
