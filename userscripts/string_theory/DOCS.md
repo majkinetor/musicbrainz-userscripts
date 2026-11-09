@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-09 10:44 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-09 10:50 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -411,7 +411,7 @@ Like Picard, whose parsers these are, it refuses a partial rip, a non-standard t
 
 Right-click a release's **Edit** tab, or the **Edit** button on [Event Horizon](../event_horizon/README.md), to open a copy of the release in a new tab's Add release. The release itself isn't changed.
 
-- The copy has the release's title, artist, release group, status, packaging, language and script, events, labels and catalog numbers, barcode, links, and every medium with its tracks, track artists and recordings. The edit note says which release it was cloned from.
+- The copy has the release's title, artist, release group, status, packaging, language and script, events, labels and catalog numbers, barcode, links with their types, and every medium with its tracks, track artists and recordings. The edit note says which release it was cloned from.
 - Shift+right-click opens the browser's own menu.
 
 ### Settings

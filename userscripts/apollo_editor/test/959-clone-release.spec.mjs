@@ -39,3 +39,22 @@ test('right-click Edit opens Add release seeded with a copy', { tag: ['@sandbox'
   const want = src.media.flatMap(m => m.tracks.map(t => t.recording.id));
   check(JSON.stringify(rows?.recs) === JSON.stringify(want), `each track keeps its recording (${JSON.stringify(rows?.recs)})`);
 });
+
+test('the copy keeps each link with its type; the Edit tooltip names the right-click', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  const REL2 = 'ecd965f4-f75f-4360-9dde-26f31dc44f46';   // Abbey Road on test: an Amazon and a Discogs link
+  await page.goto(`${SANDBOX}/release/${REL2}`, { waitUntil: 'domcontentloaded' });
+  await requireLogin(page);
+  await inject('apollo_editor', { waitFor: '__apolloEditor' });
+  const edit = page.locator('ul.tabs a[href$="/edit"]').first();
+  await edit.hover();
+  const tip = await edit.getAttribute('data-tip');
+  check(/Right-click: clone/.test(tip || ''), `the Edit tab's tooltip names the right-click (${tip})`);
+
+  const seeded = new Promise(res => page.on('request', r => { if (r.method() === 'POST' && /\/release\/add$/.test(r.url())) res(new URLSearchParams(r.postData() || '')); }));
+  await page.goto(`${SANDBOX}/release/add#mbu-clone=${REL2}`, { waitUntil: 'domcontentloaded' });
+  await inject('apollo_editor');
+  const form = await Promise.race([seeded, new Promise(r => setTimeout(() => r(null), 60_000))]);
+  const urls = form ? [...form.keys()].filter(k => /^urls\.\d+\.url$/.test(k)).map(k => [form.get(k), form.get(k.replace('.url', '.link_type'))]) : [];
+  check(urls.length === 2, `both links copied (${JSON.stringify(urls)})`);
+  check(urls.every(([u, t]) => (/amazon\./.test(u) ? t === '77' : /discogs\./.test(u) ? t === '76' : false)), `each link has its type: Amazon 77, Discogs 76 (${JSON.stringify(urls)})`);
+});

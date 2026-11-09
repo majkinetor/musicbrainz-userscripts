@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.09.104259
+// @version      2026.11.09.104847
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -14394,7 +14394,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     }
     return null;
   }
-  function cloneSeed(r) {
+  function cloneSeed(r, linkTypeId) {
     const f = [], add = (k, v) => { if (v != null && v !== '') f.push([k, String(v)]); };
     const credit = (pre, ac) => (ac || []).forEach((c, i) => {
       add(pre + '.names.' + i + '.mbid', c.artist && c.artist.id);
@@ -14435,7 +14435,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         credit(tp + '.artist_credit', t['artist-credit']);
       });
     });
-    (r.relations || []).forEach((x, i) => add('urls.' + i + '.url', x.url && x.url.resource));
+    (r.relations || []).forEach((x, i) => {
+      add('urls.' + i + '.url', x.url && x.url.resource);
+      add('urls.' + i + '.link_type', linkTypeId && linkTypeId(x['type-id']));   // the seed wants the type's number, ws/2 gives its MBID
+    });
     add('edit_note', 'Cloned from ' + ORIGIN + '/release/' + r.id);
     return f;
   }
@@ -14453,7 +14456,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (!res.json) { mbuToast('⚠ Couldn’t read the release to clone it.', { kind: 'warn' }); return false; }
     const form = document.createElement('form');
     form.method = 'post'; form.action = ORIGIN + '/release/add'; form.acceptCharset = 'UTF-8'; form.hidden = true;
-    for (const [k, v] of cloneSeed(res.json)) { const i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = v; form.appendChild(i); }
+    // Add release holds MusicBrainz's link types (MB.linkedEntities), each with its number and MBID
+    const types = await waitFor(() => { const t = W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type; return t && Object.keys(t).length ? t : null; }, { tries: 20, every: 250 });
+    const byGid = new Map(Object.values(types || {}).map(t => [t.gid, t.id]));
+    for (const [k, v] of cloneSeed(res.json, gid => byGid.get(gid))) { const i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = v; form.appendChild(i); }
     document.body.appendChild(form);
     Log.cat('Release').info('clone: seeding Add release with', form.elements.length, 'fields');
     form.submit();
@@ -14465,6 +14471,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const mbid = cloneEditLink(ev); if (!mbid) return;
       ev.preventDefault(); ev.stopPropagation();
       window.open(ORIGIN + '/release/add#mbu-clone=' + mbid, '_blank');
+    }, true);
+    // the Edit tab's (or Event Horizon's Edit button's) tooltip names the right-click; set on the way in,
+    // since Event Horizon redraws its buttons
+    const CLONE_TIP = 'Right-click: clone it into Add release\nShift+right-click: the browser menu';
+    document.addEventListener('pointerover', ev => {
+      if (!cloneEditLink(ev)) return;
+      const a = ev.target.closest('a'); if (!a) return;
+      const tip = a.getAttribute('data-tip') || 'Edit the release';
+      if (!tip.includes(CLONE_TIP)) a.setAttribute('data-tip', tip + '\n' + CLONE_TIP);
     }, true);
   }
 
