@@ -65,6 +65,7 @@ A URL can be a store's release page or an image. Art Station takes the store's l
 | Apple Music, Deezer, Spotify, Tidal, Qobuz                | the cover; Qobuz adds its digital booklet when it has one |
 | Bandcamp, Beatport, 7digital, Juno, Melon, Bugs, AllMusic | the cover                                                 |
 | Discogs, Amazon                                           | every image                                               |
+| YouTube Music, from any YouTube link to an album          | the cover                                                 |
 | VGMdb                                                     | every scan, typed by its caption                          |
 | any other page                                            | its preview image                                         |
 
