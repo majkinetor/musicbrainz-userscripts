@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.09.105835
+// @version      2026.11.09.110610
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -1640,7 +1640,7 @@
   const SKEY = 'apolloEditor.settings.v1';
   // MusicBrainz's own guess-case options seed Apollo's once (#785); a page without cookies (about:blank) throws
   function pageCookies() { try { return document.cookie || ''; } catch (e) { return ''; } }
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: true, autoMatchRec: true, autoMatchOnV: 1, autoMatchLabel: true, autoMatchArtist: true, autoMatchRG: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: true, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '', srHistoryOpen: false, archive: true, archiveMenu: true, gcMode: 'auto', gcDefault: '', gcSep: '/', gcKeepUC: !/(?:^|;\s*)guesscase_keepuppercase=(?:false|0)(?:;|$)/.test(pageCookies()), gcRoman: /(?:^|;\s*)guesscase_roman=(?:true|1)(?:;|$)/.test(pageCookies()) }; try { const stored = JSON.parse(gmLoad(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; if (stored.autoMatchOnV === undefined) { s.autoMatch = true; s.autoMatchRec = true; }   /* tracklist + recordings auto-match became on by default; the whole object is saved, so an existing install has the old false stored and needs flipping once (autoMatchOnV, from the defaults, marks it done on the next save) */ return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, datePaste: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: true, autoMatchRec: true, autoMatchOnV: 1, autoMatchLabel: true, autoMatchArtist: true, autoMatchRG: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: true, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '', srHistoryOpen: false, archive: true, archiveMenu: true, gcMode: 'auto', gcDefault: '', gcSep: '/', gcKeepUC: !/(?:^|;\s*)guesscase_keepuppercase=(?:false|0)(?:;|$)/.test(pageCookies()), gcRoman: /(?:^|;\s*)guesscase_roman=(?:true|1)(?:;|$)/.test(pageCookies()) }; try { const stored = JSON.parse(gmLoad(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; if (stored.autoMatchOnV === undefined) { s.autoMatch = true; s.autoMatchRec = true; }   /* tracklist + recordings auto-match became on by default; the whole object is saved, so an existing install has the old false stored and needs flipping once (autoMatchOnV, from the defaults, marks it done on the next save) */ return s; } catch (e) { return d; } }
   // #936: driven by another script (a Falcon worker, or mbu-auto=0), Apollo does only what it is asked:
   // everything that runs on its own is off for this page, and nothing is saved, so the user's settings stay.
   const AUTOMATED = mbuAutomated();
@@ -7833,6 +7833,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           <label data-tip="A compact header and footer\nThe step tabs and the footer give way to a small step switcher, the wizard buttons by the title, and Add medium at the table's right."><input type="checkbox" id="tc-s-compactnav"> <span>Modify header and footer</span></label>
           <label data-tip="Zen: just the editor\nEverything above Apollo's nav bar (the site header, the release title, the entity tabs) and the page footer are hidden; the title and artist, with the version count, move into the nav bar.\nIt needs the compact header."><input type="checkbox" id="tc-s-zen"> <span>Zen editing</span></label>
           <label data-tip="Skip the confirmation page of a seeded release\nWhen another site seeds the release form, MusicBrainz asks first; Apollo clicks its submit button for you (chaban's auto-confirm script, built in).\nOnce, without this: add \`?skip_confirmation\` to the seed URL."><input type="checkbox" id="tc-s-autoconfirm"> <span>Auto confirm release submissions</span></label>
+          <label data-tip="Paste a whole date into a date box\nIn any year, month or day box: 2025-02-25, 25.2.2025, 25 February 2025 and more fill all three. Typing moves on from a full box, Alt+C copies begin to end or back, Alt+X clears."><input type="checkbox" id="tc-s-datepaste"> <span>Whole-date paste in date fields</span></label>
           <div class="tc-s-sub tc-s-gap">Archive</div>
           <label data-tip="Save the external links on the Wayback Machine at Enter edit\nThe archive menu by each link on the release's page finds the snapshots. First Contact saves the album page of its own import itself.\n⚠ This sends those URLs to archive.org"><input type="checkbox" id="tc-s-archive"> <span>Archive links on the Internet Archive</span></label>
           ${mbaKeysHtml(SETTINGS.archive === false)}
@@ -7928,6 +7929,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const aconf = s.querySelector('#tc-s-autoconfirm'); if (aconf) { aconf.checked = SETTINGS.autoConfirmSeed !== false; aconf.onchange = () => { SETTINGS.autoConfirmSeed = aconf.checked; saveSettings(); }; }
     const arch = s.querySelector('#tc-s-archive'); if (arch) { arch.checked = SETTINGS.archive !== false; arch.onchange = () => { SETTINGS.archive = arch.checked; saveSettings(); const ia = s.querySelector('.mbu-ia'); if (ia) ia.classList.toggle('mbu-ia-off', !arch.checked); Log.cat('Archive').info('archive links on the Internet Archive:', arch.checked ? 'on' : 'off'); }; }   // #736
     mbaKeysWire(s, Log.cat('Archive'));
+    const dpaste = s.querySelector('#tc-s-datepaste'); if (dpaste) { dpaste.checked = SETTINGS.datePaste !== false; dpaste.onchange = () => { SETTINGS.datePaste = dpaste.checked; saveSettings(); }; }
     const amenu = s.querySelector('#tc-s-archivemenu'); if (amenu) { amenu.checked = SETTINGS.archiveMenu !== false; amenu.onchange = () => { SETTINGS.archiveMenu = amenu.checked; saveSettings(); }; }
     const kcaret = s.querySelector('#tc-s-keepcaret'); if (kcaret) { kcaret.checked = SETTINGS.keepCaretColumn !== false; kcaret.onchange = () => { SETTINGS.keepCaretColumn = kcaret.checked; saveSettings(); }; }   // #279
     // Esc or a click outside closes it (a click on the ⚙ too, which the shared dismiss swallows)
@@ -15272,6 +15274,212 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       else if (k.length === 1 && !e.altKey) { e.preventDefault(); sfOpen(s, k); }
     }, true);
   }
+  // #960 Dates: paste a whole date into any of MB's year/month/day boxes, type straight through them,
+  // Alt+C copies begin <-> end, Alt+X clears. Delegated on document: dialogs and forms re-render.
+  let _dpHooked = false;
+  const DP_BOX = 'input.partial-date-year, input.partial-date-month, input.partial-date-day';
+  function dpMonths() {
+    if (dpMonths.map) return dpMonths.map;
+    const map = new Map();
+    const langs = [];
+    try { const l = document.documentElement.lang; if (l) langs.push(l); } catch (e) { /* none */ }
+    langs.push('en');
+    for (const lang of langs) {
+      for (const style of ['long', 'short']) {
+        for (const ctx of ['format', 'stand-alone']) {
+          let f;
+          try { f = new Intl.DateTimeFormat(lang, ctx === 'format' ? { month: style, day: 'numeric' } : { month: style, timeZone: 'UTC' }); } catch (e) { continue; }
+          for (let m = 1; m <= 12; m++) {
+            let name;
+            try {
+              const d = new Date(Date.UTC(2001, m - 1, 15));
+              name = ctx === 'format' ? (f.formatToParts(d).find(p => p.type === 'month') || {}).value : f.format(d);
+            } catch (e) { continue; }
+            const k = sfNorm(name || '').replace(/\./g, '');
+            if (k && /^\p{L}+$/u.test(k) && !map.has(k)) map.set(k, m);
+          }
+        }
+      }
+    }
+    for (const [k, m] of [['sept', 9], ['june', 6], ['july', 7]]) if (!map.has(k)) map.set(k, m);
+    dpMonths.map = map;
+    return map;
+  }
+  const dpYear = s => s.length === 2 ? String(+s > 28 ? 1900 + +s : 2000 + +s) : s;
+  function dpValid(y, m, d) {
+    if (!/^\d{4}$/.test(y) || +y < 1) return null;
+    if (m !== '' && (+m < 1 || +m > 12)) return null;
+    if (d !== '') {
+      if (m === '' || +d < 1 || +d > 31) return null;
+      if (+d > new Date(Date.UTC(+y, +m, 0)).getUTCDate()) return null;
+    }
+    return { y: String(+y), m: m === '' ? '' : String(+m), d: d === '' ? '' : String(+d) };
+  }
+  // A date in pasted text: { y, m, d } (strings, '' for a missing part), or null when it holds no
+  // date, or two readings, or an impossible one. Day first or year first; never month/day/year.
+  function dpParse(text) {
+    let s = String(text || '').normalize('NFKC').trim();
+    if (!s) return null;
+    s = s.replace(/(\d{4}-\d{1,2}-\d{1,2})[T ]\d{1,2}:\d{2}\S*/, '$1');   // ISO with a time part
+    const months = dpMonths();
+    const words = sfNorm(s).match(/\p{L}+/gu) || [];
+    const named = [...new Set(words.map(w => months.get(w)).filter(Boolean))];
+    if (named.length > 1) return null;
+    if (named.length === 1) {
+      const nums = (sfNorm(s).match(/\d+/g) || []);
+      const years = nums.filter(n => n.length === 4);
+      const small = nums.filter(n => n.length <= 2);
+      if (years.length > 1 || nums.length > 2 || nums.some(n => n.length === 3 || n.length > 4)) return null;
+      if (years.length === 1) return small.length > 1 ? null : dpValid(years[0], String(named[0]), small[0] || '');
+      if (small.length === 2) {   // "25 Feb 98": the one that can't be a day is the year
+        const a = +small[0], b = +small[1];
+        if (a > 31 && b <= 31) return dpValid(dpYear(small[0]), String(named[0]), small[1]);
+        if (b > 31 && a <= 31) return dpValid(dpYear(small[1]), String(named[0]), small[0]);
+      }
+      return null;
+    }
+    const sep = '\\s*[-./]\\s*';
+    const all = s.match(/\d+/g) || [];
+    let r;
+    if ((r = s.match(new RegExp(`(?<!\\d)(\\d{4})${sep}(\\d{1,2})(?:${sep}(\\d{1,2}))?(?![\\d.\\-/]*\\d)`)))) return dpValid(r[1], r[2], r[3] || '');
+    if ((r = s.match(new RegExp(`(?<![\\d.\\-/])(\\d{1,2})(${sep})(\\d{1,2})${sep}(\\d{4}|\\d{2})(?!\\d)`)))) {
+      if (r[2].trim() === '/' && +r[1] <= 12 && +r[3] <= 12 && r[1] !== r[3]) return null;   // 03/04/2025: either way round
+      return dpValid(dpYear(r[4]), r[3], r[1]);
+    }
+    if ((r = s.match(new RegExp(`(?<![\\d.\\-/])(\\d{1,2})${sep}(\\d{4})(?!\\d)`)))) return dpValid(r[2], r[1], '');
+    if ((r = s.match(/(?<!\d)(\d{4})(\d{2})(\d{2})(?!\d)/))) return dpValid(r[1], r[2], r[3]);
+    if (all.length === 1 && all[0].length === 4) return dpValid(all[0], '', '');
+    return null;
+  }
+  // Writes past React and Knockout: the prototype's setter, then input and change; once more after a
+  // re-render if the framework put the old value back.
+  const _dpSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+  function dpSet(inp, v) {
+    const put = () => {
+      if (!inp.isConnected || inp.value === v) return;
+      _dpSetter.call(inp, v);
+      inp.dispatchEvent(new Event('input', { bubbles: true }));
+      inp.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    put();
+    setTimeout(put, 150);
+  }
+  // The three boxes of one date
+  function dpGroup(box) {
+    let g = box.closest('.partial-date') || box.parentElement;
+    while (g && g !== document.body && !g.querySelector('input.partial-date-year')) g = g.parentElement;
+    if (!g || g === document.body) return null;
+    return { el: g, y: g.querySelector('input.partial-date-year'), m: g.querySelector('input.partial-date-month'), d: g.querySelector('input.partial-date-day') };
+  }
+  // A begin/end pair: the nearest ancestor holding exactly two dates
+  function dpRange(group) {
+    let n = group.el.parentElement;
+    for (let i = 0; n && n !== document.body && i < 8; i++, n = n.parentElement) {
+      const ys = n.querySelectorAll('input.partial-date-year');
+      if (ys.length > 2) return null;
+      if (ys.length === 2) {
+        const [b, e] = [dpGroup(ys[0]), dpGroup(ys[1])];
+        if (!b || !e) return null;
+        const ended = n.querySelector("input[type='checkbox'][name$='ended'], input[type='checkbox'][id*='ended' i]");
+        return { root: n, begin: b, end: e, ended };
+      }
+    }
+    return null;
+  }
+  function dpFlash(boxes, ok) {
+    for (const b of boxes) {
+      if (!b) continue;
+      b.classList.remove('tc-dp-ok', 'tc-dp-bad');
+      void b.offsetWidth;
+      b.classList.add(ok ? 'tc-dp-ok' : 'tc-dp-bad');
+      clearTimeout(b._tcDpT);
+      b._tcDpT = setTimeout(() => b.classList.remove('tc-dp-ok', 'tc-dp-bad'), ok ? 1500 : 2500);
+    }
+  }
+  function dpFill(g, v) {
+    dpSet(g.y, v.y); if (g.m) dpSet(g.m, v.m); if (g.d) dpSet(g.d, v.d);
+    dpFlash([g.y, v.m ? g.m : null, v.d ? g.d : null], true);
+  }
+  function dpUntick(cb) {
+    if (cb && cb.checked) cb.click();
+  }
+  function installDatePaste() {
+    if (_dpHooked) return;
+    _dpHooked = true;
+    if (!document.getElementById('tc-dp-css')) {
+      const st = document.createElement('style');
+      st.id = 'tc-dp-css';
+      st.textContent = `
+        input.tc-dp-ok{background:var(--mbu-ok-bg,#e6f4ea)!important;box-shadow:inset 0 0 0 1px var(--mbu-ok,#2e7d32)!important;transition:background .3s}
+        input.tc-dp-bad{background:var(--mbu-error-bg,#fdecea)!important;box-shadow:inset 0 0 0 1px var(--mbu-error,#c62828)!important}`;
+      (document.head || document.documentElement).appendChild(st);
+    }
+    const on = () => SETTINGS.datePaste !== false;
+    document.addEventListener('paste', e => {
+      const box = e.target;
+      if (!on() || !(box instanceof HTMLInputElement) || !box.matches(DP_BOX)) return;
+      const text = (e.clipboardData && e.clipboardData.getData('text')) || '';
+      const t = text.normalize('NFKC').trim();
+      if (!t || (/^\d+$/.test(t) && t.length <= (box.maxLength > 0 ? box.maxLength : 4) && !/^\d{8}$/.test(t))) return;   // one part: the box takes it
+      const g = dpGroup(box);
+      if (!g || !g.y) return;
+      e.preventDefault();
+      const v = dpParse(text);
+      if (!v) { dpFlash([box], false); Log.cat('Dates').info(`paste not read as a date: ${JSON.stringify(text.slice(0, 80))}`); return; }
+      dpFill(g, v);
+      const last = (v.d && g.d) || (v.m && g.m) || g.y;
+      try { last.focus(); last.select(); } catch (x) { /* fine */ }
+    }, true);
+    document.addEventListener('keydown', e => {
+      const box = e.target;
+      if (!on() || !(box instanceof HTMLInputElement) || !box.matches(DP_BOX)) return;
+      if (e.altKey && !e.ctrlKey && !e.metaKey && (e.code === 'KeyC' || e.code === 'KeyX')) {
+        const g = dpGroup(box); if (!g) return;
+        const r = dpRange(g);
+        e.preventDefault();
+        if (e.code === 'KeyX') {
+          for (const b of [g.y, g.m, g.d]) if (b) dpSet(b, '');
+          if (r && ![r.begin, r.end].some(x => [x.y, x.m, x.d].some(b => b && b !== g.y && b !== g.m && b !== g.d && b.value))) dpUntick(r.ended);
+          return;
+        }
+        if (!r) { dpFlash([box], false); return; }
+        const [from, to] = g.y === r.begin.y ? [r.begin, r.end] : [r.end, r.begin];
+        for (const p of ['y', 'm', 'd']) if (from[p] && to[p]) dpSet(to[p], from[p].value);
+        dpFlash([to.y, to.m, to.d].filter(b => b && b.value), true);
+        if (![from.y, from.m, from.d].some(b => b && b.value)) dpUntick(r.ended);
+        const pos = box === g.y ? 'y' : box === g.m ? 'm' : 'd';
+        try { to[pos].focus(); to[pos].select(); } catch (x) { /* fine */ }
+        return;
+      }
+      if (e.altKey || e.ctrlKey || e.metaKey || box.matches('input.partial-date-day')) return;
+      const g = dpGroup(box); if (!g) return;
+      const next = box === g.y ? g.m : g.d;
+      if (!next) return;
+      const k = e.key;
+      if (k === '-' || k === '/' || k === '.') {
+        e.preventDefault();
+        next.focus(); next.select();
+        return;
+      }
+      const full = box.value.length >= (box === g.y ? 4 : 2);
+      if (/^\d$/.test(k) && full && box.selectionStart === box.value.length && box.selectionEnd === box.value.length) {
+        e.preventDefault();
+        next.focus();
+        dpSet(next, k);
+        try { next.setSelectionRange(1, 1); } catch (x) { /* fine */ }
+      }
+    }, true);
+    document.addEventListener('focusin', e => {
+      const box = e.target;
+      if (on() && box instanceof HTMLInputElement && box.matches(DP_BOX) && box.value) setTimeout(() => { try { if (document.activeElement === box) box.select(); } catch (x) { /* fine */ } }, 0);
+    }, true);
+    mbuTipOn(DP_BOX, el => {
+      if (!on()) return null;
+      const g = dpGroup(el); const r = g && dpRange(g);
+      return 'Paste a whole date\n2025-02-25, 25.2.2025, 25 February 2025, 20250225: Apollo splits it into the boxes.\nA full box moves on as you type, and - / . jump to the next one.'
+        + (r ? `\nAlt+C copies this date to the ${g.y === r.begin.y ? 'end' : 'begin'} date. Alt+X clears it.` : '\nAlt+X clears it.');
+    });
+  }
   // One delegated listener: the editor re-renders its rows constantly, so
   // binding to the input itself would not survive.
   let _alPasteHooked = false;
@@ -17597,6 +17805,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // #851: String Theory's settings open these settings on any page, whether this script runs here or not
     document.addEventListener('mbu-open-settings', e => { if (e.detail === 'apollo_editor' && !e.defaultPrevented) { e.preventDefault(); openSettings(null); } });
     if (SETTINGS_ONLY) { openSettings(null); return; }
+    installDatePaste();             // #960 whole-date paste and type-through, on every page Apollo runs
     if (handleAutoCommit()) { Log.cat('Create').info('auto-commit (background create/link) — submitting the seeded form'); return; }
     if (handleArtistPageCallback()) { Log.cat('Create').info('artist/label-create callback — posting MBID back and closing'); return; }
     if (handleEditLinkClose()) { Log.cat('Create').info('Discogs-link edit committed — closing tab'); return; }
