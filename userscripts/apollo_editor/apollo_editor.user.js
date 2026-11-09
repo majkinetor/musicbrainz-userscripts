@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.09.121500
+// @version      2026.11.09.140000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -12275,6 +12275,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       '.tc-recpop .tc-rpk-row.tc-conf-low{border-left-color:var(--mbu-warn)}',
       '.tc-recpop .tc-rpk-row.tc-conf-vlow{border-left-color:var(--mbu-error)}',
       '.tc-rectbl .tc-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}',
+      '.tc-rectbl .tc-dot.tc-dot-left{width:6px;height:6px;border:0;background:var(--mbu-accent-text)}',   // a track the matcher left for you
       '.tc-rectbl tr.tc-recrow:hover td:not(.tc-diff):not(.tc-copy){background:var(--mbu-bg)}',
       /* #583 — the ＋ row action sits in the FIRST position on the right and the
          ↺ revert moves in beside it, so ＋ is at the same x on every row whether
@@ -12843,6 +12844,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const dot = tr.querySelector('.tc-dot');
       if (r.conf) { dot.style.background = r.conf.color; dot.dataset.tip = r.conf.label + '\nDiffers: ' + r.conf.diffs.join(', '); }
       else if (r.recGid) { dot.style.background = r.exact ? CONF_COLOR.exact : CONF_COLOR.tolerance; dot.dataset.tip = r.exact ? 'An exact match' : 'A match within the tolerances' + (r.tolDiffs && r.tolDiffs.length ? '\nDiffers: ' + r.tolDiffs.join(', ') : ''); }
+      else if (_recLeftForYou.has(r.mi + ':' + r.ti)) { dot.classList.add('tc-dot-left'); dot.dataset.tip = 'Left for you: ' + _recLeftForYou.get(r.mi + ':' + r.ti); }
       else dot.style.visibility = 'hidden';
       const nameCell = tr.querySelector('.tc-recname');
       nameCell.classList.add('tc-clickable');
@@ -13073,8 +13075,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
      being wiped by the very click that went to look at it. Same shape as the
      #575 fix that re-adopts the running Match/Stop state on rebuild. */
   let _recLastStatus = '';
+  // Tracks the last auto-match left unset on purpose ("left for you" in the status),
+  // keyed mi:ti → why; the recordings table marks them with a small dot.
+  const _recLeftForYou = new Map();
   async function autoMatchRecordings() {
     if (_autoMatching) return; _autoMatching = true;   // #577
+    _recLeftForYou.clear();
     if (!_matching) _matchStop = false;   // #575: don't clear a stop the tracklist pass has not acted on yet
     // #545: the status text alone was easy to miss while MusicBrainz was slow —
     // and the button stayed enabled and unchanged, so it read as "nothing
@@ -13281,6 +13287,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         best = pick.best; bestLevel = pick.level;
         if (pick.ambiguous && bestLevel <= maxLevel) {
           ambiguous++;
+          _recLeftForYou.set(r.mi + ':' + r.ti, pick.tied.length + ' recordings match equally well, pick one');
           Log.cat('Recording').warn('track ' + (r.number || (r.ti + 1)) + ' AMBIGUOUS — ' + pick.tied.length + ' recordings tie at level ' + bestLevel
             + ': ' + pick.tied.map(c => '"' + c.name + '" [' + (c.gid || '').slice(0, 8) + ']' + (c.length ? ' ' + Math.round(c.length / 1000) + 's' : '')).join(', ')
             + ' — left unset, pick one by hand (the release group disagrees about which belongs here)');
@@ -13297,6 +13304,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           const refused = otherArtist.filter(d => d._level <= maxLevel);   // #857: would have linked before
           if (refused.length) {
             diffArtist++;
+            _recLeftForYou.set(r.mi + ':' + r.ti, 'the matching recording' + (refused.length > 1 ? 's are' : ' is') + ' by another artist');
             Log.cat('Recording').warn('track ' + (r.number || (r.ti + 1)) + ' "' + r.title + '" by "' + (r.trackArtist || '') + '" left unset — ' + refused.length + ' matching recording(s) by another artist refused: '
               + refused.map(d => '"' + d.name + '" by "' + (d.artist || '?') + '" [' + (d.gid || '').slice(0, 8) + '] level=' + d._level).join(', '));
           }
