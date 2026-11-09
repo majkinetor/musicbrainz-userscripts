@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-09 19:47 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-09 19:53 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -2578,7 +2578,7 @@ Open **Fuzzy Logic** from String Theory's dock. It reads the entity's links, up 
 
 Sources: Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm, RateYourMusic and Album of the Year.
 
-RateYourMusic and Album of the Year block automated reads, so their genres are read when you open a linked RYM or AOTY page yourself and kept for the next collect. A link you never opened shows "not read yet" in the source list.
+RateYourMusic and Album of the Year block automated reads, so their genres are read from a release or artist page you open in your browser, and kept for the next collect. Any visit counts, with or without Fuzzy Logic open. A link not read yet shows "not read yet, click to read it" in the source list: click the source and Fuzzy Logic opens its pages in your browser. The tab closes once its genres are read; if the site shows its browser check first, pass it in that tab. A RateYourMusic page opens through the site's home page, since RYM often refuses a page opened directly.
 
 The row of source buttons shows what each one gave. Click a source to leave its tags out, click again to bring them back.
 
