@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-09 20:07 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-09 20:15 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1558,7 +1558,7 @@ Pages: `rateyourmusic.com/release/<type>/<artist>/<album>/`
 Pages: `www.albumoftheyear.org/album/<id>-<slug>.php`
 
 - Like RYM, it's behind a browser check: the open page is read, never fetched, and it stays out of Mission Control.
-- Title, artists, date, label and the tracklist with lengths; the type is Compilation, Mixtape, Live, Remix or Soundtrack when AOTY's format says so.
+- Title, artists, date, label and the tracklist (with lengths when AOTY has them); the type comes from AOTY's format (LP, EP, Single, Compilation, Mixtape, Live, Remix, Soundtrack).
 - The link is added as _other databases_. No barcode, no catalog number, no ISRCs.
 
 #### Presto Music
