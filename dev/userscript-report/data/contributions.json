@@ -72,6 +72,19 @@
       "disposition": "accepted",
       "acceptedBy": "majkinetor",
       "decision": "Maintainer verdicts and capability assessments for seven script reviews incorporated."
+    },
+    {
+      "id": "D_kwDOSj7rds4Aq9gx",
+      "discussionNumber": 961,
+      "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/961",
+      "authorId": "MDQ6VXNlcjg1NzY3",
+      "createdAt": "2026-11-09T09:55:37Z",
+      "updatedAt": "2026-11-09T09:55:37Z",
+      "exportPath": "contributions/961.json",
+      "reportVersion": "769ce18adac833429fa9af531dd3761f73d91fbaa98a19a0ac610c04a0c34abd",
+      "disposition": "accepted",
+      "acceptedBy": "majkinetor",
+      "decision": "Maintainer verdicts, notes and capability assessments for two script reviews incorporated."
     }
   ]
 }
