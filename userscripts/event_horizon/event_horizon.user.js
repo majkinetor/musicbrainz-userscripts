@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.09.165932
+// @version      2026.11.09.173253
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11480,6 +11480,7 @@ function histPage(app, d) {
     // right-click on a row: it and its siblings all open, or all close when it is open
     app.oncontextmenu = ev => {
         if (data !== d) return;
+        if (ev.target.closest && ev.target.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"])')) return;   // #967
         const t = ev.target, item = t.closest('details.hed,details.hrun'), group = t.closest('.hgrp');
         const h = !item && group && group.querySelector('.hgh');
         if (!h && !item) return;
@@ -11553,6 +11554,8 @@ function build() {
     // right-click on a section's chevron: fold every section, or open them all when that one is folded
     document.addEventListener('contextmenu', ev => {
         if (!ehOn || ev.defaultPrevented || !ev.target.closest) return;
+        // a text field keeps the browser's own menu (spell check, paste), never a fold (#967)
+        if (ev.target.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"])')) return;
         // the entity icon sends to Picard
         const km = ev.target.closest('.kmk[data-picard]');
         if (km) { ev.preventDefault(); picardSend(km.dataset.picard); return; }
