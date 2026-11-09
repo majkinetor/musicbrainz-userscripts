@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-09 10:59 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-09 11:06 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -37,6 +37,7 @@ A faster release editor for MusicBrainz: artists and recordings auto-matched, cl
 - **[Release group editor](#release-group-editor)**: the release group's edit page laid out like Release information.
 - **[Entity editors](#entity-editors)**: the edit pages of artists, labels, places, series, works, recordings and events laid out the same way.
 - **[Aliases](#aliases)**: every alias of an entity in one table, added, changed and removed together.
+- **[Dates](#dates)**: a whole date pasted into a date box, typed straight through, copied from begin to end.
 - **[Tracklist](#tracklist)**: an artist table with confidence colours, splitting, reordering and keyboard navigation.
 - **[Pinned and recent](#pinned-and-recent)** artists and labels at the top of their pickers.
 - **[Recordings](#recordings)**: track and recording side by side, with the differing characters highlighted.
@@ -101,6 +102,19 @@ An entity's **Add alias** page becomes a table of all its aliases, so several ar
 Elsewhere:
 
 - An entity's **Aliases** tab shows how many aliases it has, and opens the same editor in place of MusicBrainz's list.
+
+### Dates
+
+Everywhere MusicBrainz splits a date into year, month and day boxes: relationship dialogs, entity edit pages, release events.
+
+- **Paste a whole date** into any of the three boxes and Apollo splits it: `2025-02-25`, `2025.2.25`, `25.2.2025`, `25.02.98`, `2025-02`, `02.2025`, `20250225`, `25 February 2025`, `Feb 25th, 2025`. Text around the date and a time after it are ignored; full-width digits work too.
+- Month names are read in English and in the language MusicBrainz is shown in.
+- A day comes before the month, never after: `03/04/2025` could be either and fills nothing. A two-digit year above 28 is 19xx, any other 20xx.
+- Boxes filled turn green for a moment. A paste that isn't one valid date fills nothing and turns the box red.
+- **Typing goes on**: a full year box moves on to the month, a full month box to the day, and `-`, `/` or `.` jumps to the next box.
+- **Alt+C** copies the date to the other end of its range, begin to end or end to begin. **Alt+X** clears the date. Clearing the last date of a range unticks *This relationship has ended*.
+
+Modifier keys, because a bare letter in a date box would be easy to press while typing. Alt+D was not taken: it selects the browser's address bar.
 
 ### Tracklist
 
@@ -425,6 +439,7 @@ Right-click Apollo's corner icon.
 | Modify header and footer                                      | on      | a compact step switcher instead of the tabs and footer                                  |
 | Zen editing                                                   | on      | hide the site header, title and footer; the title moves into Apollo's bar               |
 | Auto confirm release submissions                              | on      | skip the confirmation page when a site seeds a release                                  |
+| Whole-date paste in date fields                               | on      | [dates](#dates): paste, type-through, Alt+C and Alt+X                                   |
 | Archive links on the Internet Archive                         | on      | save the release's links at **Enter edit**; see [Archive](#archive)                     |
 | Archive menu on external links                                | on      | the [archive menu](#archive-menu) by each link on entity pages                          |
 | archive.org keys                                              | none    | your access key and secret, shared with First Contact: higher limits, plus a screenshot |
@@ -459,6 +474,9 @@ Right-click Apollo's corner icon.
 | Annotation    | Tab, Shift+Tab                         | make or change a list, remove it                |
 | Guess case    | right-click a track's **Aa**           | every track                                     |
 | Guess case    | right-click the release title's **Aa** | the options                                     |
+| Date box      | Alt+C                                  | copy the date to the other end of its range     |
+| Date box      | Alt+X                                  | clear the date                                  |
+| Date box      | `-` `/` `.`                            | next box                                        |
 | Aliases       | ↓ ↑                                    | the same column in the next, previous row       |
 | Aliases       | Alt+↓, then ↓ ↑, Enter                 | open the locale or type list, move, pick        |
 | Release page  | right-click **Edit**                   | [clone the release](#clone-a-release)           |
