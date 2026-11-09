@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.09.173253
+// @version      2026.11.09.174410
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -9796,9 +9796,9 @@ function hmFront() {
     const blog = [...doc.querySelectorAll('#blog-feed li a[href]')].map(a => ({ href: a.href, t: a.textContent.trim() }));
     return (hmFr = { rel: art.release.slice(0, 12), ev: art.event.slice(0, 12), blog });
 }
-// Your profile card: the one request the home page makes (your /user page), fetched once a browser session (kept up to 6 hours across sessions).
+// Your profile card: the one request the home page makes (your /user page). The cached card shows at once and is read again once it is 10 minutes old, so the counts follow a busy day.
 // The page's labels are translated, so rows are read by position and shape, not by their text.
-const PROF_TTL = 6 * 3600e3;
+const PROF_TTL = 10 * 60e3;
 function profParse(html) {
     const d = new DOMParser().parseFromString(html, 'text/html'), num = x => x ? +x.textContent.replace(/[^\d]/g, '') || 0 : 0;
     const info = d.querySelector('table.profileinfo'), tds = info ? [...info.querySelectorAll('td')] : [];
@@ -9818,16 +9818,15 @@ function profParse(html) {
 }
 async function profLoad(app) {
     let p = null; try { p = GM_getValue('profile', null); } catch (e) {}
-    let fresh = false; try { fresh = sessionStorage.getItem('eh.prof') === ME; } catch (e) {}
     // one cache serves every MusicBrainz server, and the same name can be a different editor on each (test's majkinetor
     // isn't production's): a profile counts only on the server it came from
     if (p && (p.me !== ME || p.site !== MB)) p = null;
-    if (p && 'gh' in p && 'dayHref' in p && (fresh || Date.now() - p.at < PROF_TTL)) return profFill(app, p);
+    if (p && 'gh' in p && 'dayHref' in p && Date.now() - p.at < PROF_TTL) return profFill(app, p);
     if (p) profFill(app, p);
     try {
         const r = await mbnFetch(`${MB}/user/${encodeURIComponent(ME)}`); if (!r.ok) throw new Error('HTTP ' + r.status);
         const n = profParse(await r.text()); n.me = ME; n.site = MB; n.gh = n.mail ? await sha256(n.mail) : ''; delete n.mail; console.info('[Event Horizon] profile', n);
-        try { GM_setValue('profile', n); sessionStorage.setItem('eh.prof', ME); } catch (e) {}
+        try { GM_setValue('profile', n); } catch (e) {}
         profFill(app, n);
     } catch (e) { console.warn('[Event Horizon] profile fetch failed', e); }
 }
