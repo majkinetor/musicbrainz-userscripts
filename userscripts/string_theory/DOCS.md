@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-09 20:17 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-09 20:25 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1550,7 +1550,7 @@ Pages: `www.allmusic.com/album/release/<slug>-mr<id>`
 Pages: `rateyourmusic.com/release/<type>/<artist>/<album>/`
 
 - RYM is behind a browser check, so First Contact reads the page you have open and never fetches it; it stays out of Mission Control.
-- An album's main page is all its issues together: it gives the title, artists, type, date and tracklist, but no label. An issue's page also gives its label and catalog number.
+- An album's main page is all its issues together: it gives the title, artists, type, date and tracklist, but no label. An issue's page also gives its label and catalog number; RYM's "No Label" becomes MusicBrainz's `[no label]`.
 - No link is added: MusicBrainz takes these sites only on release groups and artists (the edit note names the page). No barcode, no ISRCs, no country.
 
 #### Album of the Year
@@ -1558,7 +1558,7 @@ Pages: `rateyourmusic.com/release/<type>/<artist>/<album>/`
 Pages: `www.albumoftheyear.org/album/<id>-<slug>.php`
 
 - Like RYM, it's behind a browser check: the open page is read, never fetched, and it stays out of Mission Control.
-- Title, artists, date, label and the tracklist (with lengths when AOTY has them); the type comes from AOTY's format (LP, EP, Single, Compilation, Mixtape, Live, Remix, Soundtrack).
+- Title, artists, date, label and the tracklist (with lengths when AOTY has them); AOTY's "No Label" becomes MusicBrainz's `[no label]`; the type comes from AOTY's format (LP, EP, Single, Compilation, Mixtape, Live, Remix, Soundtrack).
 - No link is added: MusicBrainz takes these sites only on release groups and artists (the edit note names the page). No barcode, no catalog number, no ISRCs.
 
 #### Presto Music
