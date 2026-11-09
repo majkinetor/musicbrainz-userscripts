@@ -1,7 +1,11 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
+<<<<<<< HEAD
 // @version      2026.11.09.190000
+=======
+// @version      2026.11.09.183001
+>>>>>>> 05496b92 (Apollo: Stop also ends the passes queued behind the running one)
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -222,12 +226,14 @@
           const fail = m => () => { if (done) return; done = true; clearTimeout(guard); if (sig) sig.removeEventListener('abort', onAbort); reject(new TypeError(m)); };
           // A request the manager never answers, not even with its own timeout (seen in
           // Violentmonkey on Firefox): give up on it here, or whoever awaits it, a matching
-          // pass that was told to stop included, waits forever.
-          guard = setTimeout(() => { if (done) return; fail('no answer')(); try { req && req.abort && req.abort(); } catch (e) {} }, 65000);
+          // pass that was told to stop included, waits forever. MusicBrainz answers a search in
+          // seconds even on a slow day; one that took a minute held every lane behind it while
+          // the shared throttle allowed a single one, so the gate stops waiting after half that.
+          guard = setTimeout(() => { if (done) return; fail('no answer in 35s')(); try { req && req.abort && req.abort(); } catch (e) {} }, 35000);
           if (sig) sig.addEventListener('abort', onAbort);
           const res = gm({
               method: String(init.method || 'GET').toUpperCase(), url: abs, headers, data: init.body,
-              timeout: 60000,
+              timeout: 30000,
               onload: x => {
                   if (done) return; done = true; clearTimeout(guard); if (sig) sig.removeEventListener('abort', onAbort);
                   const h = new Headers();
@@ -3970,8 +3976,18 @@ Click: open the label`;
      (the suite's 651, "also on tracks 1, 2, 2"). A pass that starts while another runs now
      waits for it, then matches only what is still pending. */
   let _passChain = Promise.resolve();
+  /* A Stop ends the passes already queued too. Every split, pick and resync queues a pass
+     here; Stop ended the one running, its finally cleared the flag, and the next queued
+     pass started at once with the button reading Stop again, so the press looked ignored
+     (majkinetor, "again won't stop", after splitting a credit mid-match). A pass queued
+     before the last Stop now skips; its slots stay unmatched, as the Stop promised. */
+  let _stopGen = 0;
   function matchModel(onProgress) {
-    const run = _passChain.then(() => matchModelPass(onProgress));
+    const gen = _stopGen;
+    const run = _passChain.then(() => {
+      if (gen !== _stopGen) { Log.cat('Artist').info('tracklist match: a pass queued before Stop was skipped'); refreshStatus(); return; }
+      return matchModelPass(onProgress);
+    });
     _passChain = run.catch(() => {});
     return run;
   }
@@ -8106,6 +8122,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
      flight before it exits — cancelling it would cancel a flight other callers
      may be sharing — but that wait is now visible rather than silent. */
   const stopMatching = () => {
+    _stopGen++;   // passes queued behind this one skip (matchModel)
+    Log.cat('Artist').info('Stop pressed' + (_matchStop ? ' again' : '') + ' — ' + _wsInFlight + ' MusicBrainz request(s) on their way, tracklist pass ' + (_matching ? 'running' : 'idle') + ', recordings pass ' + (_autoMatching ? 'running' : 'idle'));
     if (_matchStop) return;
     _matchStop = true;
     // Driven off each pass's own running flag, not off what its button happens

@@ -230,12 +230,14 @@ export function mbnWsFetch(url, init) {
         const fail = m => () => { if (done) return; done = true; clearTimeout(guard); if (sig) sig.removeEventListener('abort', onAbort); reject(new TypeError(m)); };
         // A request the manager never answers, not even with its own timeout (seen in
         // Violentmonkey on Firefox): give up on it here, or whoever awaits it, a matching
-        // pass that was told to stop included, waits forever.
-        guard = setTimeout(() => { if (done) return; fail('no answer')(); try { req && req.abort && req.abort(); } catch (e) {} }, 65000);
+        // pass that was told to stop included, waits forever. MusicBrainz answers a search in
+        // seconds even on a slow day; one that took a minute held every lane behind it while
+        // the shared throttle allowed a single one, so the gate stops waiting after half that.
+        guard = setTimeout(() => { if (done) return; fail('no answer in 35s')(); try { req && req.abort && req.abort(); } catch (e) {} }, 35000);
         if (sig) sig.addEventListener('abort', onAbort);
         const res = gm({
             method: String(init.method || 'GET').toUpperCase(), url: abs, headers, data: init.body,
-            timeout: 60000,
+            timeout: 30000,
             onload: x => {
                 if (done) return; done = true; clearTimeout(guard); if (sig) sig.removeEventListener('abort', onAbort);
                 const h = new Headers();
