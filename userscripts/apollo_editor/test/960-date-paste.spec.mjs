@@ -1,4 +1,4 @@
-import { test, check, requireLogin, idle, until, loadFunctions } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, idle, until, loadFunctions, SANDBOX } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Apollo Editor' } });
 
@@ -26,7 +26,9 @@ test('the parser reads whole dates and refuses ambiguous ones', { tag: '@unit' }
 });
 
 test('a pasted date fills all three boxes, Alt+C copies it, Alt+X clears it', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
-  await page.goto(AR);
+  await page.goto(SANDBOX + '/', { waitUntil: 'domcontentloaded' });
+  await requireLogin(page);
+  await page.goto(AR, { waitUntil: 'domcontentloaded' });
   await requireLogin(page); await idle(page);
   await inject('apollo_editor');
   await paste(page, Y, '25 February 1998');
