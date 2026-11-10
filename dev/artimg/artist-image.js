@@ -98,6 +98,34 @@ class ArtistImage {
     static tidalImage(src) {
         return src && !/^https?:\/\/(?:www\.)?tidal\.com\/img\//i.test(src) ? src : null;
     }
+    // Compare several central crops so a portrait and its square avatar can share a tile.
+    static fingerprint(image) {
+        const canvas = document.createElement('canvas'); canvas.width = canvas.height = 16;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const side = Math.min(image.width, image.height);
+        return [1, .85, .7, .55, .4].flatMap(scale => (scale === 1 ? [[.5, .5]] : [.25, .5, .75].flatMap(x => [.25, .5, .75].map(y => [x, y]))).map(([x, y]) => {
+            const size = side * scale;
+            ctx.drawImage(image, (image.width - size) * x, (image.height - size) * y, size, size, 0, 0, 16, 16);
+            const p = ctx.getImageData(0, 0, 16, 16).data, gray = [], rgb = [0, 0, 0];
+            for (let i = 0; i < p.length; i += 4) { gray.push((p[i] * .299 + p[i + 1] * .587 + p[i + 2] * .114) / 255); for (let c = 0; c < 3; c++) rgb[c] += p[i + c] / (255 * 256); }
+            const mean = gray.reduce((a, b) => a + b, 0) / gray.length;
+            const sd = Math.sqrt(gray.reduce((n, v) => n + (v - mean) ** 2, 0) / gray.length);
+            return { rgb, sd, values: gray.map(v => (v - mean) / Math.max(sd, .01)) };
+        }));
+    }
+    static sameImage(a, b) {
+        return !!a && !!b && a.some(x => b.some(y => x.sd > .04 && y.sd > .04
+            && x.rgb.every((v, i) => Math.abs(v - y.rgb[i]) < .16)
+            && x.values.reduce((n, v, i) => n + (v - y.values[i]) ** 2, 0) / x.values.length < .4));
+    }
+    static groups(images, signatures) {
+        const groups = [];
+        images.forEach((image, i) => {
+            const group = groups.find(g => g.some(j => images[j].src === image.src || ArtistImage.sameImage(signatures[i], signatures[j])));
+            if (group) group.push(i); else groups.push([i]);
+        });
+        return groups;
+    }
     save(c) {
         const ks = Object.keys(c);
         if (ks.length > this.max) ks.sort((a, b) => c[a].t - c[b].t).slice(0, ks.length - this.max).forEach(k => delete c[k]);

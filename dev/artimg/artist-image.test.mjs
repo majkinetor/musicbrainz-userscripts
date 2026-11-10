@@ -8,6 +8,16 @@ const urls = ['https://mocky.bandcamp.com/', 'https://music.youtube.com/channel/
 const html = '<meta property="og:image" content="https://f4.bcbits.com/img/a2873093934_5.jpg"><img src="' + photo + '" class="band-photo" alt="Mocky image">';
 const response = body => ({ ok: true, text: async () => body });
 
+test('matching photo groups retain every provider and keep distinct photos separate', () => {
+    const sample = values => [{ rgb: [.4, .4, .4], sd: .2, values }];
+    const a = sample([-1, 1, -1, 1]), resized = sample([-.98, .98, -1.02, 1.02]), other = sample([1, -1, 1, -1]);
+    const images = [{ src: 'discogs' }, { src: 'bandcamp' }, { src: 'deezer' }, { src: 'youtube' }];
+    assert.deepEqual(ArtistImage.groups(images, [a, resized, other, a]), [[0, 1, 3], [2]]);
+    assert.deepEqual(ArtistImage.groups(images, [null, null, other, null]), [[0], [1], [2], [3]]);
+    assert.deepEqual(ArtistImage.groups([{ src: 'same' }, { src: 'same' }], []), [[0, 1]]);
+    assert.equal(ArtistImage.sameImage(sample([0, 0, 0, 0]).map(x => ({ ...x, sd: 0 })), sample([0, 0, 0, 0])), false);
+});
+
 test('Tidal branding is rejected while real artist photos remain', async () => {
     let src = 'https://tidal.com/img/FB_1200x627.png';
     const ai = new ArtistImage({}, { http: async () => response('<meta property="og:image" content="' + src + '">') });

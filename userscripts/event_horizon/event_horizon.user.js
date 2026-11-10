@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.10.190249
+// @version      2026.11.10.190918
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -42,6 +42,16 @@
 // @connect      open.spotify.com
 // @connect      bandcamp.com
 // @connect      music.youtube.com
+// @connect      discogs.com
+// @connect      dzcdn.net
+// @connect      mzstatic.com
+// @connect      bcbits.com
+// @connect      googleusercontent.com
+// @connect      ggpht.com
+// @connect      scdn.co
+// @connect      sndcdn.com
+// @connect      resources.tidal.com
+// @connect      wikimedia.org
 // @connect      127.0.0.1
 // @connect      musicbrainz.org
 // ==/UserScript==
@@ -2887,7 +2897,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .hero{display:flex;flex-wrap:wrap;gap:24px 44px;align-items:flex-start}.hero .label{font-size:10.5px}
 .art{flex:0 1 clamp(220px,30vw,380px);min-width:0;display:flex;flex-direction:column;gap:12px}
 .art .picw{position:relative}.chip[data-g=imgP]{cursor:grab;touch-action:none;user-select:none}.art .cover.rot,.art .cover[data-relcover],.art .thumbs img{cursor:pointer}
-.art .imgsrc{position:absolute;right:10px;bottom:10px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--surface);box-shadow:0 2px 8px var(--shadow);opacity:.92}.eh-images{width:min(540px,calc(100vw - 32px));min-width:0;max-height:80vh}.eh-image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:20px 16px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.eh-image-option{min-width:0}.eh-image-choice{display:block;position:relative;width:100%;padding:0;border:0;background:transparent;cursor:pointer}.eh-image-choice img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover}.eh-image-choice[aria-pressed="true"]{outline:2px solid var(--mbu-accent);outline-offset:3px}.eh-image-choice:hover{background:var(--mbu-bg)}.eh-image-badge{position:absolute;right:6px;bottom:6px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--mbu-bg);opacity:0;pointer-events:none}.eh-image-choice:hover .eh-image-badge,.eh-image-choice:focus-visible .eh-image-badge{opacity:.92}.eh-image-option>a{display:block;margin-top:8px;font-size:12px;color:var(--mbu-text);text-decoration:none}.eh-image-option>a:hover{text-decoration:underline}
+.art .imgsrc{position:absolute;right:10px;bottom:10px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--surface);box-shadow:0 2px 8px var(--shadow);opacity:.92}.eh-images{width:min(540px,calc(100vw - 32px));min-width:0;max-height:80vh}.eh-image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:20px 16px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.eh-image-option{min-width:0}.eh-image-choice{display:block;position:relative;width:100%;padding:0;border:0;background:transparent;cursor:pointer}.eh-image-choice img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover}.eh-image-choice[aria-pressed="true"]{outline:2px solid var(--mbu-accent);outline-offset:3px}.eh-image-choice:hover{background:var(--mbu-bg)}.eh-image-badges{position:absolute;right:6px;bottom:6px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;max-width:calc(100% - 12px);opacity:0;pointer-events:none}.eh-image-badge{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--mbu-bg)}.eh-image-choice:hover .eh-image-badges,.eh-image-choice:focus-visible .eh-image-badges{opacity:.92}.eh-image-status{font-size:12px;font-weight:400}.eh-image-links{display:flex;flex-wrap:wrap;gap:4px 10px}.eh-image-links>a{display:block;margin-top:8px;font-size:12px;color:var(--mbu-text);text-decoration:none}.eh-image-links>a:hover{text-decoration:underline}
 .art .imgsrc:hover{opacity:1;outline:2px solid var(--accent)}
 .art .cover{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px;box-shadow:0 18px 40px var(--shadow);display:block;color:transparent;background:var(--chip)}
 .art .cover.ipic{object-fit:contain;padding:8px;box-sizing:border-box;background:#fff}
@@ -5606,6 +5616,34 @@ class ArtistImage {
     static tidalImage(src) {
         return src && !/^https?:\/\/(?:www\.)?tidal\.com\/img\//i.test(src) ? src : null;
     }
+    // Compare several central crops so a portrait and its square avatar can share a tile.
+    static fingerprint(image) {
+        const canvas = document.createElement('canvas'); canvas.width = canvas.height = 16;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const side = Math.min(image.width, image.height);
+        return [1, .85, .7, .55, .4].flatMap(scale => (scale === 1 ? [[.5, .5]] : [.25, .5, .75].flatMap(x => [.25, .5, .75].map(y => [x, y]))).map(([x, y]) => {
+            const size = side * scale;
+            ctx.drawImage(image, (image.width - size) * x, (image.height - size) * y, size, size, 0, 0, 16, 16);
+            const p = ctx.getImageData(0, 0, 16, 16).data, gray = [], rgb = [0, 0, 0];
+            for (let i = 0; i < p.length; i += 4) { gray.push((p[i] * .299 + p[i + 1] * .587 + p[i + 2] * .114) / 255); for (let c = 0; c < 3; c++) rgb[c] += p[i + c] / (255 * 256); }
+            const mean = gray.reduce((a, b) => a + b, 0) / gray.length;
+            const sd = Math.sqrt(gray.reduce((n, v) => n + (v - mean) ** 2, 0) / gray.length);
+            return { rgb, sd, values: gray.map(v => (v - mean) / Math.max(sd, .01)) };
+        }));
+    }
+    static sameImage(a, b) {
+        return !!a && !!b && a.some(x => b.some(y => x.sd > .04 && y.sd > .04
+            && x.rgb.every((v, i) => Math.abs(v - y.rgb[i]) < .16)
+            && x.values.reduce((n, v, i) => n + (v - y.values[i]) ** 2, 0) / x.values.length < .4));
+    }
+    static groups(images, signatures) {
+        const groups = [];
+        images.forEach((image, i) => {
+            const group = groups.find(g => g.some(j => images[j].src === image.src || ArtistImage.sameImage(signatures[i], signatures[j])));
+            if (group) group.push(i); else groups.push([i]);
+        });
+        return groups;
+    }
     save(c) {
         const ks = Object.keys(c);
         if (ks.length > this.max) ks.sort((a, b) => c[a].t - c[b].t).slice(0, ks.length - this.max).forEach(k => delete c[k]);
@@ -7485,12 +7523,45 @@ function picHtml(g, cls, none) {
     const more = xs.length > 1;
     return `<div class="picw"><img class="cover ${cls}${more ? ' rot' : ''}" src="${esc(x.src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer"${more ? ` data-rot data-tip="${i + 1} of ${xs.length}: click for ${esc(xs[(i + 1) % xs.length].from)}"` : ''}>${x.badge ? `<img class="imgflag" src="${esc(x.badge)}" alt="" referrerpolicy="no-referrer">` : ''}<a class="imgsrc" href="${esc(x.url)}" target="_blank" rel="noopener" data-tip="${['artist', 'label'].includes(data.kind) ? `Choose image&#10;From ${esc(x.from)}` : `From ${esc(x.from)}`}">${stIcon(x.key, 18)}</a></div>`;
 }
+const imageFingerprints = new Map();
+function imageFingerprint(src) {
+    if (!imageFingerprints.has(src)) {
+        if (imageFingerprints.size >= 100) imageFingerprints.delete(imageFingerprints.keys().next().value);
+        imageFingerprints.set(src, new Promise(resolve => {
+            GM_xmlhttpRequest({ method: 'GET', url: src, responseType: 'blob', timeout: 15000,
+                onload: async r => {
+                    let bitmap;
+                    try {
+                        if (r.status < 200 || r.status >= 300) return resolve(null);
+                        bitmap = await createImageBitmap(r.response);
+                        resolve(ArtistImage.fingerprint(bitmap));
+                    } catch (e) { resolve(null); }
+                    finally { if (bitmap) bitmap.close(); }
+                }, onerror: () => resolve(null), ontimeout: () => resolve(null), onabort: () => resolve(null) });
+        }));
+    }
+    return imageFingerprints.get(src);
+}
 function openImageGallery() {
     const d = data, g = d.g, xs = g.imgs || [];
     if (!xs.length || document.getElementById('eh-image-gallery')) return;
     const previous = document.activeElement, ov = document.createElement('div');
     ov.className = 'mbu-ov'; ov.id = 'eh-image-gallery';
-    ov.innerHTML = `<div class="mbu-ov-panel mbu-ui eh-images" role="dialog" aria-modal="true" aria-label="Choose image"><div class="mbu-ov-h"><span class="mbu-ov-title">Choose image</span><button type="button" class="mbu-ov-x" aria-label="Close">✕</button></div><div class="mbu-ov-body eh-image-grid">${xs.map((x, i) => `<div class="eh-image-option"><button type="button" class="eh-image-choice" data-image-index="${i}" aria-label="Use image from ${esc(x.from)}" aria-pressed="${i === (g.imgI || 0) % xs.length}"><img src="${esc(x.src)}" alt="${esc(x.from)}" referrerpolicy="no-referrer"><span class="eh-image-badge">${stIcon(x.key, 18)}</span></button><a href="${esc(x.url)}" target="_blank" rel="noopener" data-tip="Open ${esc(x.from)}">${esc(x.from)} ↗</a></div>`).join('')}</div></div>`;
+    ov.innerHTML = '<div class="mbu-ov-panel mbu-ui eh-images" role="dialog" aria-modal="true" aria-label="Choose image"><div class="mbu-ov-h"><span class="mbu-ov-title">Choose image <small class="eh-image-status">Comparing…</small></span><button type="button" class="mbu-ov-x" aria-label="Close">✕</button></div><div class="mbu-ov-body eh-image-grid"></div></div>';
+    const draw = groups => {
+        const grid = ov.querySelector('.eh-image-grid'), focus = grid.contains(document.activeElement);
+        grid.innerHTML = groups.map(indices => {
+            const i = indices[0], x = xs[i], providers = indices.map(j => xs[j]);
+            return `<div class="eh-image-option"><button type="button" class="eh-image-choice" data-image-index="${i}" aria-label="Use image from ${esc(providers.map(p => p.from).join(', '))}" aria-pressed="${indices.includes((g.imgI || 0) % xs.length)}"><img src="${esc(x.src)}" alt="${esc(x.from)}" referrerpolicy="no-referrer"><span class="eh-image-badges">${providers.map(p => `<span class="eh-image-badge" data-tip="${esc(p.from)}">${stIcon(p.key, 18)}</span>`).join('')}</span></button><div class="eh-image-links">${providers.map(p => `<a href="${esc(p.url)}" target="_blank" rel="noopener" data-tip="Open ${esc(p.from)}">${esc(p.from)} ↗</a>`).join('')}</div></div>`;
+        }).join('');
+        if (focus) ov.querySelector('[aria-pressed="true"]').focus();
+    };
+    draw(ArtistImage.groups(xs, []));
+    Promise.all(xs.map(x => imageFingerprint(x.src).catch(() => null))).then(signatures => {
+        if (!ov.isConnected || data !== d) return;
+        draw(ArtistImage.groups(xs, signatures));
+        ov.querySelector('.eh-image-status').textContent = '';
+    });
     const close = () => { ov.remove(); removeEventListener('keydown', key, true); if (previous && previous.isConnected) previous.focus(); };
     const key = e => {
         if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
