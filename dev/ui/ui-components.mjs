@@ -184,6 +184,16 @@ const CSS = [
     '#mbu-logpop.min .mbu-log-dbg{display:none}',
     '.mbu-log-past .mbu-logpop-clear{display:none}',
     '#mbu-logpop.min .mbu-log-ses,#mbu-logpop.min .mbu-logpop-hclear{display:none}',
+    // a phone: the window takes the whole screen whatever size or place was saved, the toolbar
+    // wraps onto a second line (filter and session list), and Close sits fixed in its top corner
+    '@media (max-width:600px){#mbu-logpop,#mbu-logpop.full{top:0!important;left:0!important;right:0!important;bottom:0!important;',
+    'width:auto!important;height:auto!important;max-height:none;transform:none!important;border-radius:0;border:0}',
+    '#mbu-logpop .mbu-logpop-full,#mbu-logpop .mbu-logpop-min,#mbu-logpop .mbu-logpop-grip,.mbu-logpop-h>.mbu-logpop-sp{display:none}',
+    '.mbu-logpop-h{flex-wrap:wrap;gap:8px;cursor:default}',
+    '#mbu-logpop .mbu-logpop-h{position:relative;padding-right:52px}',
+    '.mbu-logpop-h>.mbu-log-q,.mbu-logpop-h>.mbu-log-ses{order:5;flex:1 1 120px;margin-left:0;min-height:30px;box-sizing:border-box}',
+    '.mbu-logpop-h>button{min-height:30px}',
+    '#mbu-logpop .mbu-logpop-x{position:absolute;top:8px;right:10px;min-width:34px;min-height:30px;font-size:15px}}',
     // the text filter beside the counts: lines without the text are hidden
     '.mbu-logpop .mbu-log-q{flex:0 1 200px;min-width:80px;margin-left:6px;font:12px var(--mbu-font);padding:2px 8px;',
     'border:1px solid var(--mbu-border);border-radius:5px;cursor:text}',
@@ -1765,7 +1775,9 @@ function mbuLog(o) {
         });
         // a size the user gave it, from the corner grip
         if (st.w && st.h) { pop.style.width = st.w; pop.style.height = st.h; pop.classList.add('sized'); }
-        if (st.min) { pop.classList.add('min'); setMin(true); }
+        // a phone shows the window full screen: a minimised or moved one from a wider screen would hide it
+        var phone = window.matchMedia && window.matchMedia('(max-width:600px)').matches;
+        if (st.min && !phone) { pop.classList.add('min'); setMin(true); }
         else if (st.full) setFull(true);
         pop.querySelector('.mbu-logpop-grip').addEventListener('mousedown', function (e) {
             e.preventDefault(); e.stopPropagation();
