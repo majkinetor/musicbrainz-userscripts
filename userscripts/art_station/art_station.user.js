@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.10.120002
+// @version      2026.11.10.130000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -1545,8 +1545,13 @@
   // newly-sourced image came from (a store / MH Covers), shown until commit.
   function provBadge(it) {
     if (!(it._new && it._provIcon)) return '';
-    const tip = `Sourced from ${it._provider || 'provider'}` + (it._provUrl ? `\n${it._provUrl}` : '');   // #249 URL on a second line
+    const tip = `Sourced from ${it._provider || 'provider'}` + (it._provUrl ? `\n${it._provUrl}\nClick: copy the link` : '');   // #249 URL on a second line
     return `<span class="as-prov" data-tip="${esc(tip)}"><img src="${esc(it._provIcon)}" alt=""></span>`;
+  }
+  // a click on the source icon copies the image's source link
+  async function copyProvUrl(it) {
+    try { await navigator.clipboard.writeText(it._provUrl); toast('Link copied'); }
+    catch (e) { asLog.warn(`Copy source link: clipboard refused (${e.message})`); toast('The browser refused the clipboard'); }
   }
   // #248 (vzell) tooltip for a locally-uploaded cover — its original file name.
   const uploadTip = it => (it._new && it._uploadName) ? ` data-tip="${esc(it._uploadName)}"` : '';
@@ -1800,6 +1805,7 @@
     }
     const mhIc = root.querySelector('.as-mh-ic'); if (mhIc) mhIc.onerror = () => mhIc.replaceWith(document.createTextNode('🔍'));
     root.querySelectorAll('.as-prov img').forEach(img => img.onerror = () => { const s = img.closest('.as-prov'); if (s) s.style.display = 'none'; });   // #249 hide a missing provider favicon
+    root.querySelectorAll('.as-prov').forEach(p => p.onclick = e => { const it = byId(cardId(p)); if (!it?._provUrl) return; e.stopPropagation(); copyProvUrl(it); });   // the source icon copies its image link
     // #503 (majkinetor, live: a plain left click "immediately entered edit" —
     // same as right-click, un-distinguishable in his own log): `onclick`
     // always calls its handler with the click Event as the first argument.
@@ -5242,13 +5248,15 @@
     // type is a clickable chip (same picker as the grid pills) so it can be set full-screen
     // the store it came from, as on the card (#249)
     const prov = it._new && it._provIcon ? `<span class="as-lb-prov" data-tip="${esc(`Sourced from ${it._provider || 'provider'}` + (it._provUrl ? `
-${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ? esc(it._provider) : ''}</span>` : '';
+${it._provUrl}
+Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ? esc(it._provider) : ''}</span>` : '';
     cap.innerHTML = `${prov}${VIEW_ONLY ? (it.types.length ? `<span class="as-lb-dim">${esc(it.types.join(', '))}</span>` : '') : `<button class="as-lb-type${it.types.length ? '' : ' as-type-add'}" data-tip="Set the ${ITEM} type">${it.types.length ? esc(it.types.join(', ')) : '＋ type'}</button>`}${dims ? `<span class="as-lb-dim">${esc(dims)}</span>` : ''}${rmOpenChip(it)}`;   // #787: its removal open for votes, as on the card
     if (!VIEW_ONLY) cap.querySelector('.as-lb-type').onclick = e => {
       e.stopPropagation();
       openTypePopFor(byId(_lb), e.currentTarget, () => { _lbDirty = true; paintLightbox(); });
     };
     const pimg = cap.querySelector('.as-lb-prov img'); if (pimg) pimg.onerror = () => pimg.remove();   // a missing favicon: the name alone
+    const pchip = cap.querySelector('.as-lb-prov'); if (pchip && it._provUrl) pchip.onclick = e => { e.stopPropagation(); copyProvUrl(it); };
     paintCmtArea(ov, it);
   }
   let _lbEditCmt = false;
@@ -8192,9 +8200,9 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
   .as-pdfban{position:absolute;right:6px;top:6px;z-index:4;background:#7a3a8f;color:var(--mbu-text-on-accent);font:700 10px/1 Arial;letter-spacing:.5px;padding:3px 7px;border-radius:var(--mbu-radius);box-shadow:0 1px 3px rgba(0,0,0,.25);pointer-events:none}
   .as-newban{position:absolute;top:8px;right:-26px;transform:rotate(45deg);background:#1f9d6b;color:var(--mbu-text-on-accent);font:700 10px Arial;letter-spacing:1px;padding:2px 26px;z-index:5;box-shadow:0 1px 3px rgba(0,0,0,.3);pointer-events:none}
   /* #249 provider favicon chip, bottom-left of a newly-sourced cover */
-  .as-prov{position:absolute;left:8px;bottom:8px;z-index:5;width:28px;height:28px;background:none;opacity:.9;filter:drop-shadow(0 1px 3px rgba(0,0,0,.6));transition:opacity .15s,transform .15s;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:zoom-in}
+  .as-prov{position:absolute;left:8px;bottom:8px;z-index:5;width:28px;height:28px;background:none;opacity:.9;filter:drop-shadow(0 1px 3px rgba(0,0,0,.6));transition:opacity .15s,transform .15s;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:copy}
   .as-prov img{width:26px;height:26px;display:block;object-fit:contain;border-radius:4px}.as-prov:hover{opacity:1;transform:scale(1.1)}
-  .as-lb-prov{display:inline-flex;align-items:center;gap:7px;color:#eee}
+  .as-lb-prov{display:inline-flex;align-items:center;gap:7px;color:#eee;cursor:copy}
   .as-lb-prov img{width:26px;height:26px;border-radius:4px;object-fit:contain}
   .as-dthumb .as-prov{left:5px;bottom:5px;width:22px;height:22px}
   .as-dthumb .as-prov img{width:20px;height:20px}
