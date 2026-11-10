@@ -25,7 +25,7 @@ test('automated edits keep the driving script note without an Apollo signature',
 for (const automated of [true, false]) {
   test(`real editor attribution, automated=${automated}`, { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
     await openApollo(page, inject, {
-      release: 'b6ddb7ec-5431-443c-8362-9b936c3b8a3f',
+      release: 'aba74013-0e72-4ab9-87ee-7dc82193dc35',
       before: async () => {
         if (automated) await page.evaluate(() => history.replaceState(null, '', location.pathname + '?mbu-auto=0'));
       },
