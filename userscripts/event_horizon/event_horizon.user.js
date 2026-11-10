@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.10.000349
+// @version      2026.11.10.095806
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11565,7 +11565,8 @@ function histPage(app, d) {
         const t = ev.target, g = t.closest('[data-hgrp]'), s = t.closest('[data-hst]'), h = t.closest('.hgh');
         if (g) { d.grp = S.hgrp = g.dataset.hgrp; d.open.clear(); save(); render(); }
         else if (s) { d.st = d.st === s.dataset.hst ? '' : s.dataset.hst; render(); }
-        else if (t.closest('[data-lmmenu]')) { const m = t.closest('[data-lmmenu]').nextElementSibling; m.classList.toggle('open'); }
+        // Load more's caret opens its menu in the page-wide click handler, as on every list: a second toggle here shut it again
+        else if (t.closest('[data-lmmenu]')) return;
         else if (t.closest('[data-hmore]')) { d.err = ''; histLoad(showing, +t.closest('[data-hmore]').dataset.hmore || 0); }
         else if (h && !t.closest('a')) { const k = h.parentNode.dataset.hg; d.open.has(k) ? d.open.delete(k) : d.open.add(k);
             // the render redraws every group: the other groups keep the edits and runs open in them
