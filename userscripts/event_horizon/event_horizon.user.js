@@ -4777,7 +4777,7 @@ function heroFacts(app) {
     const add = (lbl, node, wide) => { const c = document.createElement('div'); if (wide) c.className = 'wide'; c.innerHTML = `<div class="label">${lbl}</div><div class="v"></div>`; c.lastChild.append(node); f.insertBefore(c, f.querySelector((wide ? '' : ':scope>div.wide, :scope>div:has(>.v>.als), ') + ':scope>div:has(>.label:empty), :scope>div:not(:has(>.label))')); return c; };
     const st = u.querySelector('.meta'), tg = u.querySelector('.gtags');
     if (st) add('Rating', st);
-    if (tg && ME) { tg.dataset.tgin = ''; if (tgIn && tgIn.path === tgPath()) tg.innerHTML = tgInHtml(); else tg.insertAdjacentHTML('beforeend', `<button type="button" class="eh-edit" data-tgin="open" aria-label="Edit the tags" data-tip="Edit the tags">${MBU_EDIT_ICON}</button>`); tgInWire(); }
+    if (tg && ME) { tg.dataset.tgin = ''; if (tgIn && tgIn.path === tgPath()) tg.innerHTML = tgInHtml(); else tg.insertAdjacentHTML('beforeend', `<button type="button" class="eh-edit" data-tgin="open" aria-label="Edit the tags" data-tip="Edit the tags&#10;Right-click: open the Tags page">${MBU_EDIT_ICON}</button>`); tgInWire(); }
     if (tg) {
         // few tags stay a fact beside the others; ones that don't fit on one line take the whole row (and so does the edit box, by CSS)
         const c = add('Tags', tg, true), fit = () => { c.classList.remove('wide'); tg.style.width = 'max-content'; const over = tg.offsetWidth > c.clientWidth; tg.style.width = ''; c.classList.toggle('wide', over); };
@@ -5446,7 +5446,7 @@ const aliasName = x => {
 };
 const aliasSpan = (a, tag) => { const loc = (ALIAS_LOC.get(a) || []).join(', '); return ALIAS_ENDED.has(a) && !ALIAS_LIVE.has(a) ? `<${tag} class="als-end" data-tip="No longer current${loc ? ' (' + esc(loc) + ')' : ''}">${esc(a)}</${tag}>` : loc ? `<${tag} data-tip="${esc(loc)}">${esc(a)}</${tag}>` : `<${tag}>${esc(a)}</${tag}>`; };
 const aliasesHref = () => { const m = location.pathname.match(/^\/[a-z-]+\/[0-9a-f-]{36}/i); return m ? MB + m[0] + '/aliases' : ''; };
-const aliasList = as => { const n = 4, h = aliasesHref(), go = h ? `<button type="button" class="eh-edit als-go" data-aliases="1" aria-label="${as.length ? 'Edit the aliases' : 'Add aliases'}" data-tip="${as.length ? 'Edit the aliases' : 'Add aliases'}">${MBU_EDIT_ICON}</button>` : ''; if (!as.length && !go) return ''; return `<div class="als">${as.slice(0, n).map(a => aliasSpan(a, 'span')).join('')}${as.length > n ? `<span class="popwrap"><button class="chip pn" type="button" data-pop="als" aria-expanded="false" data-tip="${as.length - n} more aliases">+${as.length - n}</button><div class="pop ra-pop" id="pop-als" hidden><div class="h label">${as.length} aliases</div>${as.map(a => aliasSpan(a, 'div')).join('')}</div></span>` : ''}${go}</div>`; };
+const aliasList = as => { const n = 4, h = aliasesHref(), go = h ? `<button type="button" class="eh-edit als-go" data-aliases="1" aria-label="${as.length ? 'Edit the aliases' : 'Add aliases'}" data-tip="${as.length ? 'Edit the aliases' : 'Add aliases'}&#10;Right-click: open the Aliases page">${MBU_EDIT_ICON}</button>` : ''; if (!as.length && !go) return ''; return `<div class="als">${as.slice(0, n).map(a => aliasSpan(a, 'span')).join('')}${as.length > n ? `<span class="popwrap"><button class="chip pn" type="button" data-pop="als" aria-expanded="false" data-tip="${as.length - n} more aliases">+${as.length - n}</button><div class="pop ra-pop" id="pop-als" hidden><div class="h label">${as.length} aliases</div>${as.map(a => aliasSpan(a, 'div')).join('')}</div></span>` : ''}${go}</div>`; };
 function rgHero(d) {
     const g = d.g, on = k => S.extras.includes(k);
     const F = [
@@ -11661,6 +11661,13 @@ function build() {
         if (!ehOn || ev.defaultPrevented || !ev.target.closest) return;
         // a text field keeps the browser's own menu (spell check, paste), never a fold (#967)
         if (ev.target.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"])')) return;
+        const edit = ev.target.closest('button[data-aliases],button[data-tgin="open"]');
+        if (edit) {
+            const base = aliasesHref(); if (!base) return;
+            const href = edit.hasAttribute('data-aliases') ? base : base.replace(/\/aliases$/, '/tags');
+            const key = navTo(href); if (!key) return;
+            ev.preventDefault(); ehPush(href); show(key); return;
+        }
         // the entity icon sends to Picard
         const km = ev.target.closest('.kmk[data-picard]');
         if (km) { ev.preventDefault(); picardSend(km.dataset.picard); return; }

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-10 12:52 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-10 13:00 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1000,6 +1000,7 @@ To keep an effect you like, type a name beside **Preset** and click **Save** (or
 | ----------- | ------------------------------- | ------------------- |
 | Esc         | filter                          | clear it            |
 | Esc         | a menu                          | close it            |
+| Right-click | alias or tag pencil             | open its page       |
 | Right-click | corner icon                     | open the settings   |
 | Right-click | a card, group or row            | toggle its siblings |
 | Right-click | a platform icon with more links | open its links      |
