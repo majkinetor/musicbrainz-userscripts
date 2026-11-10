@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.10.134200
+// @version      2026.11.10.135748
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7474,12 +7474,18 @@ const AR_ACTS = [
     ['edits', 'History', 'Edit history', ACTS[3][3]],
     ACTS[4],
 ];
-// MB's switch between an artist's own release groups and the various-artists ones it appears on (?va=1)
+// MB's switch between an artist's own release groups and the various-artists ones it appears on (?va=1);
+// ?va=2, EH's own, lists both together (majkinetor)
 function vaSwitch(x) {
     if (!x.aid || (x.va && !x.vaAsked)) return '';
-    const u = new URL(`${MB}/artist/${x.aid}`);
-    if (!x.va) u.searchParams.set('va', '1');
-    return `<span class="aside"><a href="${esc(u.href)}" data-tip="${x.va ? "The artist's own release groups" : 'Release groups by various artists this artist appears on'}">${x.va ? 'Own release groups' : 'Various artists'}</a></span>`;
+    const cur = x.both ? 2 : x.va ? 1 : 0;
+    const modes = [[0, 'Own', "The artist's own release groups"], [1, 'Various artists', 'Release groups by various artists this artist appears on'], [2, 'Both', 'Its own release groups and the various-artists ones together']];
+    return `<span class="aside vasw">${modes.map(([v, t, tip]) => {
+        if (v === cur) return `<b>${t}</b>`;
+        const u = new URL(`${MB}/artist/${x.aid}`);
+        if (v) u.searchParams.set('va', v);
+        return `<a href="${esc(u.href)}" data-tip="${tip}">${t}</a>`;
+    }).join(' · ')}</span>`;
 }
 function artist(a) {
     const genres = (a.genres || []).sort((x, y) => y.count - x.count), gn = new Set(genres.map(x => x.name)), ls = a['life-span'] || {};
@@ -7496,7 +7502,8 @@ async function loadArtist(id, step = () => {}) {
     // an artist credited only on tracks (a Various Artists compilation) has no release groups of its own:
     // then, as MB's own page does, show the groups of the releases it appears on;
     // MB's ?va=1 asks for those even when it has groups of its own, and EH follows the link (majkinetor)
-    const vaAsked = keyOf(location.href) === 'artist/' + id && /[?&]va=1(?:[&#]|$)/.test(location.search);
+    const vaMode = keyOf(location.href) === 'artist/' + id ? +((location.search.match(/[?&]va=([12])(?:[&#]|$)/) || [])[1] || 0) : 0, vaAsked = vaMode === 1;
+    const ownQ = `release-group?artist=${id}&inc=artist-credits+ratings+url-rels&limit=100`;
     const vaDisc = () => wsk(`release?track_artist=${id}&inc=release-groups+artist-credits&limit=100`).then(x => {
         const m = new Map();
         for (const r of x.releases || []) if (r['release-group'] && !m.has(r['release-group'].id)) m.set(r['release-group'].id, { ...r['release-group'], 'artist-credit': r['release-group']['artist-credit'] || r['artist-credit'] || [] });
@@ -7504,7 +7511,13 @@ async function loadArtist(id, step = () => {}) {
         return { 'release-groups': [...m.values()], 'release-group-count': m.size, va: true, vaAsked, aid: id };
     }, noSec(`release?track_artist=${id}`));
     // ratings and links ride along for the table's columns
-    const disc = (vaAsked ? vaDisc() : wsk(`release-group?artist=${id}&inc=artist-credits+ratings+url-rels&limit=100`).then(x => x && !(x['release-groups'] || []).length ? vaDisc() : x)).then(x => { step('discography'); if (x && !x.va) { x.aid = id; x.q = `release-group?artist=${id}&inc=artist-credits+ratings+url-rels&limit=100`; } return x; }, noSec(`release-group?artist=${id}&inc=artist-credits+ratings+url-rels&limit=100`));
+    // ?va=2: its own groups and the various-artists ones not among them, in one list; paging goes on with its own
+    // (the various-artists ones are all fetched at once), so wsMore's offset leaves them out (vaN)
+    const both = () => Promise.all([wsk(ownQ), vaDisc()]).then(([o, v]) => {
+        const own = (o && o['release-groups']) || [], ids = new Set(own.map(g => g.id)), extra = ((v && v['release-groups']) || []).filter(g => !ids.has(g.id));
+        return { ...(o || {}), 'release-groups': own.concat(extra), 'release-group-count': ((o && o['release-group-count']) || own.length) + extra.length, vaN: extra.length, both: true };
+    });
+    const disc = (vaMode === 1 ? vaDisc() : vaMode === 2 ? both() : wsk(ownQ).then(x => x && !(x['release-groups'] || []).length ? vaDisc() : x)).then(x => { step('discography'); if (x && !x.va) { x.aid = id; x.q = ownQ; } return x; }, noSec(ownQ));
     // how many releases each group has, as MB's table shows: a browse can't tell, the search can (its "count");
     // asked beside the browse and filled in when it comes, so it holds nothing up (majkinetor)
     // the search answers 100 a page, so an artist with more groups takes a few pages (at most 5), or the rest show no count
@@ -9001,7 +9014,7 @@ function discoHtml(d) {
     const paged = x.q && total0(x) > allRgs.length;
     if (paged) WSX.dg = { x, key: 'release-groups', q: x.q };
     const total = x['release-group-count'] || allRgs.length, n = `${total} release group${total === 1 ? '' : 's'}${total > allRgs.length ? ` · first ${allRgs.length} shown` : ''}`;
-    return sect('dg', `Discography <span class="count">${total}</span>`, (x.va ? `<span class="aside">for various artists</span>` : '') + vaSwitch(x) + (total > allRgs.length && !paged ? `<span class="aside">first ${allRgs.length} shown</span>` : '') + fltBtn('dg', allRgs) + (S.dgView === 'table' ? colBtn('dg') : '') + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view'), fltBar('dg', allRgs) + body + (paged ? lmFoot('ws:dg', allRgs.length, total) : ''), `<div class="folded-note">${n}</div>`);
+    return sect('dg', `Discography <span class="count">${total}</span>`, (x.va && !x.vaAsked ? `<span class="aside">for various artists</span>` : '') + vaSwitch(x) + (total > allRgs.length && !paged ? `<span class="aside">first ${allRgs.length} shown</span>` : '') + fltBtn('dg', allRgs) + (S.dgView === 'table' ? colBtn('dg') : '') + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view'), fltBar('dg', allRgs) + body + (paged ? lmFoot('ws:dg', allRgs.length, total) : ''), `<div class="folded-note">${n}</div>`);
 }
 
 /* ── artwork ───────────────────────────────────────── */
@@ -9940,7 +9953,7 @@ async function tabMore(d, sid) {
 async function wsMore(d, sid) {
     const w = WSX[sid];
     if (!w) return;
-    const y = await ws(`${w.q}&offset=${w.x[w.key].length}`);
+    const y = await ws(`${w.q}&offset=${w.x[w.key].length - (w.x.vaN || 0)}`);
     if (data !== d) return;
     const seen = new Set(w.x[w.key].map(e => e.id)), add = (y[w.key] || []).filter(e => !seen.has(e.id));
     w.x[w.key] = w.x[w.key].concat(add);
