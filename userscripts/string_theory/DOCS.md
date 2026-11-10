@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-10 10:10 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-10 10:17 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -2520,7 +2520,7 @@ An upload that fails is repeated as Art Station's [auto-repeat](../art_station/R
 
 ### Release credits
 
-Credit Hoarder's count of credits for each track, from every credit source the release links (Discogs, Qobuz, Deezer, Apple Music). Mission Control only shows them: **Import credits** opens Credit Hoarder on the release's relationship editor with that source, or with all of them, to review and add them there.
+Credit Hoarder's count of credits for each track, from every credit source the release links (Discogs, Qobuz, Deezer, Apple Music). Mission Control only shows them: **Import credits** opens Credit Hoarder in a new tab, on the release's relationship editor with that source, or with all of them, to review and add them there.
 
 ### Inspector
 
