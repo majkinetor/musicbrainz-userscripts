@@ -23,6 +23,10 @@ test('Menu settings reorder, hide and place actions immediately and survive relo
   expect(top.indexOf('tags')).toBeLessThan(top.indexOf('edits'));
   await page.locator('#eh-cfg [data-g=menuResponsive]').click();
   expect(await topIds(page)).not.toContain('tags');
+  await page.locator('#eh-cfg [data-menu-title=edits]').click();
+  expect(await page.evaluate(() => GM_getValue('view').menuTitleOff)).toEqual(['edits']);
+  await expect(page.locator('#app .kicker [data-menu-key=edits] > span')).toBeHidden();
+  await expect(page.locator('#app .kicker [data-menu-key=edit] > span')).toBeVisible();
   await page.locator('#eh-cfg [data-menu-place=tags][data-place=main]').click();
   expect((await topIds(page))[0]).toBe('tags');
   await page.locator('#eh-cfg [data-menu-visible=edit]').click();
@@ -37,6 +41,8 @@ test('Menu settings reorder, hide and place actions immediately and survive relo
   await page.keyboard.press('Escape');
   await page.reload(); await inject('event_horizon');
   await expect(page.locator('#app .kicker [data-menu-key=edit]')).toBeHidden();
+  await expect(page.locator('#app .kicker [data-menu-key=edits] > span')).toBeHidden();
+  expect(await page.evaluate(() => GM_getValue('view').menuTitleOff)).toEqual(['edits']);
   await expect.poll(() => topIds(page)).toEqual(['edits', 'tags', 'relationships', 'releases']);
   await page.evaluate(() => document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: 'event_horizon', cancelable: true })));
   await page.locator('#eh-cfg [data-tab=menu]').click();
@@ -44,8 +50,8 @@ test('Menu settings reorder, hide and place actions immediately and survive relo
   const width = await page.evaluate(() => GM_getValue('view').width);
   await page.locator('#eh-cfg [data-menu-reset]').click();
   expect(await page.evaluate(() => {
-    const s = GM_getValue('view'); return [s.menuTitles, s.menuResponsive, s.menuOrder, s.menuOff, s.menuPlaces, s.width];
-  })).toEqual([false, false, [], [], {}, width]);
+    const s = GM_getValue('view'); return [s.menuTitles, s.menuResponsive, s.menuOrder, s.menuOff, s.menuTitleOff, s.menuPlaces, s.width];
+  })).toEqual([false, false, [], [], [], {}, width]);
   expect(await topIds(page)).toEqual(['edit', 'releases', 'relationships', 'edits']);
   await page.screenshot({ path: 'dev/_981-menu-reset.png' });
 });

@@ -40,7 +40,7 @@ When MB page has Event Horizon redesign available, EH dock button shows on the n
 
 Open **Settings → Menu**. Drag an item's handle to reorder it, use its eye icon to show or hide it, and choose **Main** or **More**. Both lists follow that order, including items brought out of More. Only actions available on the current page appear; Search, Star and Home stay in the header.
 
-**Show menu titles** displays text beside the icons. **Responsive** brings items from More into the main menu when they fit. Items that no longer fit return to More; narrow pinned bars keep the actions there too. Compatible scripts registered on the page appear in the same settings table.
+**Show menu titles** displays text beside the icons. Turn off an item’s **Title** toggle to keep only its icon, including in More and pinned headers. **Responsive** brings items from More into the main menu when they fit. Items that no longer fit return to More; narrow pinned bars keep the actions there too. Compatible scripts registered on the page appear in the same settings table.
 
 **Restore defaults** resets the menu order, visibility, placement, titles and Responsive setting.
 
@@ -182,7 +182,7 @@ Right-click the corner icon. Changes apply at once.
 | Effects → Fade this window            | on                                                                  | the window fades while the mouse is away from it                                            |
 | Menu → Show menu titles               | off                                                                 | text beside icons in the main menu                                                          |
 | Menu → Responsive                     | off                                                                 | brings items from More into the main menu when space allows                                 |
-| Menu → Items                          | all visible                                                         | drag to order, use the eye to show or hide, choose Main or More                             |
+| Menu → Items                          | all visible                                                         | drag to order, use the eye to show or hide, toggle Title, choose Main or More               |
 | General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
 | General → Keyboard shortcuts          | on                                                                  | the keys below; [keyboard shortcuts](#keyboard-shortcuts); **Change keys** opens their list |
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.10.103502
+// @version      2026.11.10.124719
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2902,6 +2902,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .kicker{display:flex;align-items:center;gap:10px;min-width:0;font-size:18px}
 .kicker>span:not(.acts){white-space:nowrap}
 .kicker .ab .abt{display:var(--eh-menu-titles,none)}
+.kicker .ab.menu-no-title>.abt{display:none!important}
 .kicker .eh-more .abm .abt{display:inline}
 .kicker svg{color:var(--accent)}
 .kicker .acts{margin-left:auto;display:flex;gap:2px;align-items:center;flex:none}
@@ -4051,7 +4052,7 @@ const S = {
     byName: false, plNames: false, plHover: false, plSize: 18, trackStripe: true, arAuto: true, arCol: false, dis: 'brackets', width: 1600, bg: 'aura', fx: null, fxOff: [], hex: false, hexOpacity: 60, hexIntensity: 100, hexMotion: 'static', hexFx: 100, hexPace: .6, hexTrail: 1, hexOften: 1, hexGlow: 1, hexTwo: false, hexDepth: false,
     // the Image background: its address, and the filters over it
     bgUrl: '', bgArt: 'chillwave', bgSeed: 1, bgBlur: 0, bgBright: 100, bgSat: 100, bgOpacity: 65, bgFit: 'cover', bgVig: 0, bgTone: 'natural', bgAmount: 100, bgSize: 100, bgGlow: 100, bgHue: 0, auraOpacity: 40, auraBlur: 100, auraSat: 160, auraHeight: 100, glowStrength: 100, glowSize: 100, glowPlace: 'right',
-    on: true, menuTitles: false, menuResponsive: false, menuOrder: [], menuOff: [], menuPlaces: {},
+    on: true, menuTitles: false, menuResponsive: false, menuOrder: [], menuOff: [], menuTitleOff: [], menuPlaces: {},
     thumbs: true,
     factOff: { artist: [], label: [] }, // the artist's and label's header facts turned off
     noAliases: false, // the release header's aliases, shown unless turned off
@@ -4069,7 +4070,7 @@ const S = {
 };
 VIEW.push(...AMBIENT_KEYS, 'hexColours');
 Object.assign(S, { effect: 'hexagons', ambientOpacity: 65, ...AMBIENT_DEFAULTS, ...FX_OWN, hexColours: [] });
-VIEW.push('keysOn', 'keys', 'menuTitles', 'menuResponsive', 'menuOrder', 'menuOff', 'menuPlaces', 'annoHover', 'cfgFade','pending', 'colPick', 'colW', 'named', 'fxTheme', 'fxCur', 'stars', 'starGroup', 'starView', 'starSort', 'recView', 'recSort', 'recMax', 'recOff', 'hmQs');
+VIEW.push('keysOn', 'keys', 'menuTitles', 'menuResponsive', 'menuOrder', 'menuOff', 'menuTitleOff', 'menuPlaces', 'annoHover', 'cfgFade','pending', 'colPick', 'colW', 'named', 'fxTheme', 'fxCur', 'stars', 'starGroup', 'starView', 'starSort', 'recView', 'recSort', 'recMax', 'recOff', 'hmQs');
 S.keysOn = true; // #907: keyboard shortcuts, and the keys changed from their defaults by command
 S.keys = {};
 S.stars = []; // starred entities travel with the manager's settings
@@ -4545,10 +4546,14 @@ function menuLayout(acts, fold = false) {
     const byId = new Map(nodes.map(n => [n.dataset.menuKey, n])), ordered = menuIds([...byId.keys()]).map(id => byId.get(id));
     let more = menuMore(acts), list = more.querySelector('.abm');
     const off = Array.isArray(S.menuOff) ? S.menuOff : [];
+    const titleOff = Array.isArray(S.menuTitleOff) ? S.menuTitleOff : [];
     const place = (n, main) => {
+        const noTitle = titleOff.includes(n.dataset.menuKey);
+        n.classList.toggle('menu-no-title', noTitle);
+        n.setAttribute('aria-label', n.dataset.menuTip || n.textContent);
         n.querySelector('span')?.classList.add('abt');
         if (main) { n.dataset.tip = n.dataset.menuTip || n.textContent; acts.insertBefore(n, more); }
-        else { n.removeAttribute('data-tip'); list.append(n); }
+        else { if (noTitle) n.dataset.tip = n.dataset.menuTip || n.textContent; else n.removeAttribute('data-tip'); list.append(n); }
     };
     ordered.forEach(n => { n.hidden = off.includes(n.dataset.menuKey); place(n, !fold && menuPlace(n.dataset.menuKey) === 'main'); });
     const visible = ordered.filter(n => !n.hidden);
@@ -12192,7 +12197,7 @@ const MENU_CFG_CSS = `
 #eh-cfg .menu-table th{font:400 11px var(--mbu-font);color:var(--mbu-text-dim);text-align:left;padding:3px 4px}
 #eh-cfg .menu-table td{border-bottom:1px solid var(--mbu-border-soft);padding:1px 4px;vertical-align:middle}
 #eh-cfg .menu-table th:first-child,#eh-cfg .menu-table td:first-child{width:22px;padding-left:0}
-#eh-cfg .menu-table th:nth-child(3){width:38px}
+#eh-cfg .menu-table th:nth-child(3),#eh-cfg .menu-table th:nth-child(4){width:38px}
 #eh-cfg .menu-table th:last-child{width:94px}
 #eh-cfg .menu-table button{font:inherit;border:0;box-shadow:none;background:none;filter:none!important;cursor:pointer;color:var(--mbu-text-dim);border-radius:3px;min-height:24px;padding:2px 6px}
 #eh-cfg .menu-table button:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}
@@ -12216,10 +12221,10 @@ function menuPane() {
         + ckRow('menuTitles', 'Show menu titles', 'Show text beside header menu icons\nOn: icons and titles\nOff: icons only')
         + ckRow('menuResponsive', 'Responsive', 'Bring items from More into the main menu when they fit\nTheir configured order stays the same')
         + '<button type="button" class="menu-reset" data-menu-reset data-tip="Restore the default menu order, visibility, placement, titles and Responsive setting">Restore defaults</button></div>'
-        + '<table class="menu-table" aria-label="Header menu items"><thead><tr><th></th><th>Item</th><th>Visible</th><th>Place</th></tr></thead><tbody>'
+        + '<table class="menu-table" aria-label="Header menu items"><thead><tr><th></th><th>Item</th><th>Visible</th><th>Title</th><th>Place</th></tr></thead><tbody>'
         + menuIds([...catalog.keys()]).map(id => {
-            const name = catalog.get(id), on = !off.includes(id), place = menuPlace(id);
-            return `<tr data-menu-row="${esc(id)}" class="${on ? '' : 'menu-off'}"><td><button type="button" data-menu-drag="${esc(id)}" aria-label="Reorder ${esc(name)}" data-tip="Drag to reorder&#10;Arrow keys: move up or down">${SVG('<path d="M9 5h.01M15 5h.01M9 12h.01M15 12h.01M9 19h.01M15 19h.01"/>')}</button></td><td class="menu-name">${esc(name)}</td><td><button type="button" data-menu-visible="${esc(id)}" aria-label="Show ${esc(name)}" aria-pressed="${on}" data-tip="${on ? 'Hide' : 'Show'} ${esc(name)}">${SVG(eye + (on ? '' : '<path d="M3 3l18 18"/>'))}</button></td><td><span class="menu-place" role="group" aria-label="Place ${esc(name)}">${['main', 'more'].map(p => `<button type="button" data-menu-place="${esc(id)}" data-place="${p}" aria-pressed="${place === p}">${p === 'main' ? 'Main' : 'More'}</button>`).join('')}</span></td></tr>`;
+            const name = catalog.get(id), on = !off.includes(id), title = !(Array.isArray(S.menuTitleOff) ? S.menuTitleOff : []).includes(id), place = menuPlace(id);
+            return `<tr data-menu-row="${esc(id)}" class="${on ? '' : 'menu-off'}"><td><button type="button" data-menu-drag="${esc(id)}" aria-label="Reorder ${esc(name)}" data-tip="Drag to reorder&#10;Arrow keys: move up or down">${SVG('<path d="M9 5h.01M15 5h.01M9 12h.01M15 12h.01M9 19h.01M15 19h.01"/>')}</button></td><td class="menu-name">${esc(name)}</td><td><button type="button" data-menu-visible="${esc(id)}" aria-label="Show ${esc(name)}" aria-pressed="${on}" data-tip="${on ? 'Hide' : 'Show'} ${esc(name)}">${SVG(eye + (on ? '' : '<path d="M3 3l18 18"/>'))}</button></td><td><button type="button" data-menu-title="${esc(id)}" aria-label="Show ${esc(name)} title" aria-pressed="${title}" data-tip="${title ? 'Hide' : 'Show'} ${esc(name)} title">Aa</button></td><td><span class="menu-place" role="group" aria-label="Place ${esc(name)}">${['main', 'more'].map(p => `<button type="button" data-menu-place="${esc(id)}" data-place="${p}" aria-pressed="${place === p}">${p === 'main' ? 'Main' : 'More'}</button>`).join('')}</span></td></tr>`;
         }).join('') + '</tbody></table>';
 }
 function cfgBody() {
@@ -12310,13 +12315,14 @@ function cfgWire(panel, b, body) {
         ev.preventDefault();
     });
     panel.addEventListener('click', ev => {
-        const control = ev.target.closest('[data-menu-visible],[data-menu-place],[data-menu-reset],[data-g="menuTitles"],[data-g="menuResponsive"]');
+        const control = ev.target.closest('[data-menu-visible],[data-menu-title],[data-menu-place],[data-menu-reset],[data-g="menuTitles"],[data-g="menuResponsive"]');
         if (!control) return;
         if (control.hasAttribute('data-menu-reset')) {
             const defaults = JSON.parse(DEFAULTS);
-            for (const k of ['menuOrder', 'menuOff', 'menuPlaces', 'menuTitles', 'menuResponsive']) S[k] = defaults[k];
+            for (const k of ['menuOrder', 'menuOff', 'menuTitleOff', 'menuPlaces', 'menuTitles', 'menuResponsive']) S[k] = defaults[k];
         }
         else if (control.dataset.menuVisible) S.menuOff = toggle(Array.isArray(S.menuOff) ? S.menuOff : [], control.dataset.menuVisible);
+        else if (control.dataset.menuTitle) S.menuTitleOff = toggle(Array.isArray(S.menuTitleOff) ? S.menuTitleOff : [], control.dataset.menuTitle);
         else if (control.dataset.menuPlace) S.menuPlaces = { ...(S.menuPlaces || {}), [control.dataset.menuPlace]: control.dataset.place };
         else S[control.dataset.g] = !S[control.dataset.g];
         save(); menuRefresh(); redo(); ev.stopImmediatePropagation();
