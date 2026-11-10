@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.09.193423
+// @version      2026.11.10.080746
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -1783,7 +1783,8 @@
 
   // MusicBrainz's website-side JSON (/ws/js/*) through the shared gate, which passes MusicBrainz's
   // "Verifying your browser" check again when it answers mid-session (#733; dev/net/mb-gate.mjs)
-  const mbWebFetch = (url, init) => mbnFetch(url, init, { log: (lvl, m) => Log.cat('MusicBrainz')[lvl](m), notify: m => toast(m, 'warn') });
+  let _webInFlight = 0;   // /ws/js requests on their way, for the Stop log line (wsGet counts /ws/2)
+  const mbWebFetch = (url, init) => { _webInFlight++; return Promise.resolve(mbnFetch(url, init, { log: (lvl, m) => Log.cat('MusicBrainz')[lvl](m), notify: m => toast(m, 'warn') })).finally(() => { _webInFlight--; }); };
 
   // #735: place a dropdown under its input, or above it when the window has more room there
   // (an artist picker on the last tracks ran off the bottom); its height is capped to the room.
@@ -4032,6 +4033,21 @@ Click: open the label`;
          pacer already allows from sitting idle. Slots within a track stay
          sequential, so a track's artists still commit together. */
       const MATCH_LANES = 4;   // == WS_MAX_INFLIGHT; the pacer is what bounds the rate
+      /* Stop not ending the pass (majkinetor, 2026-11-10: "cant stop apollo again"):
+         his log read "0 MusicBrainz request(s) on their way, tracklist pass running"
+         on both presses, and the pass never ended. Every /ws/2 wait gives up on Stop
+         (wsGet), but a slot also waits on /ws/js searches and entity loads, which go
+         through the browser-check gate as a plain fetch: no timeout and no Stop. A
+         lane parked in one of those never got back to its _matchStop check, and the
+         pass ends only when every lane has. So each slot's wait now also ends on
+         Stop; whatever it was waiting for still finishes in the background and its
+         answer is dropped. */
+      const STOPPED = {};
+      const untilStop = p => new Promise((resolve, reject) => {
+        if (_matchStop) { p.catch(() => {}); return resolve(STOPPED); }
+        const iv = setInterval(() => { if (_matchStop) { clearInterval(iv); p.catch(() => {}); resolve(STOPPED); } }, 120);
+        p.then(r => { clearInterval(iv); resolve(r); }, e => { clearInterval(iv); reject(e); });
+      });
       let nextIdx = 0;
       const lane = async () => {
         for (;;) {
@@ -4045,9 +4061,10 @@ Click: open the label`;
             const s = t.slots[i]; if (!s._pending) continue;
             if (s._editing) { Log.cat('Artist').debug('slot skipped — the user is editing it'); continue; }   // #580: stays _pending, so leaving the field lets a later pass have it
             const dUrl = (durls && durls[i]) || discogsFeatUrlFor(dmap, t.title, ti, total, s.creditedAs);   // #442 fall back to the Discogs "Featuring" credit for a feat slot
-            const m = await matchSlot(s.creditedAs, sib && pickSibArtist(sib, s.creditedAs, i), dUrl, slotContextGids(t, i), () => positionArtists(t, s.creditedAs), fcPlatformUrl(t, i, s.creditedAs), trackWhere(t));   // #437, #626, #651
+            const m = await untilStop(matchSlot(s.creditedAs, sib && pickSibArtist(sib, s.creditedAs, i), dUrl, slotContextGids(t, i), () => positionArtists(t, s.creditedAs), fcPlatformUrl(t, i, s.creditedAs), trackWhere(t)));   // #437, #626, #651
+            if (m === STOPPED) { stopped = true; break; }   // the slot stays _pending, so a later pass picks it up
             Object.assign(s, { status: slotStatusOf(m), entity: m.entity, gid: m.entity ? m.entity.gid : null, name: m.entity ? m.entity.name : '', candidates: m.candidates, _pos: m.pos || null, _why: m.why || null }); delete s._pending;
-            await tagDiscogsAddable(s, dUrl);   // #227
+            await untilStop(tagDiscogsAddable(s, dUrl));   // #227
           }
           autoCommitTrack(t); if (!isEditing()) rerender();
           done++;
@@ -8119,7 +8136,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
      may be sharing — but that wait is now visible rather than silent. */
   const stopMatching = () => {
     _stopGen++;   // passes queued behind this one skip (matchModel)
-    Log.cat('Artist').info('Stop pressed' + (_matchStop ? ' again' : '') + ' — ' + _wsInFlight + ' MusicBrainz request(s) on their way, tracklist pass ' + (_matching ? 'running' : 'idle') + ', recordings pass ' + (_autoMatching ? 'running' : 'idle'));
+    Log.cat('Artist').info('Stop pressed' + (_matchStop ? ' again' : '') + ' — ' + _wsInFlight + ' MusicBrainz request(s) and ' + _webInFlight + ' search/entity load(s) on their way, tracklist pass ' + (_matching ? 'running' : 'idle') + ', recordings pass ' + (_autoMatching ? 'running' : 'idle'));
     if (_matchStop) return;
     _matchStop = true;
     // Driven off each pass's own running flag, not off what its button happens
