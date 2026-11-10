@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.10.181509
+// @version      2026.11.10.182720
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -40,6 +40,8 @@
 // @connect      wikipedia.org
 // @connect      soundcloud.com
 // @connect      open.spotify.com
+// @connect      bandcamp.com
+// @connect      music.youtube.com
 // @connect      127.0.0.1
 // @connect      musicbrainz.org
 // ==/UserScript==
@@ -5549,8 +5551,7 @@ class ArtistImage {
         { key: 'tidal', name: 'Tidal', re: /^https?:\/\/(?:listen\.|www\.)?tidal\.com\/(?:browse\/)?artist\/(\d+)/, get: async (m, http) => {
             const r = await http('https://tidal.com/artist/' + m[1]);
             if (!r.ok) return null;
-            const u = ArtistImage.og(await r.text());
-            return u && /\/img\/FB_/.test(u) ? null : u;   // Tidal's generic share card, not the artist
+            return ArtistImage.og(await r.text());
         } },
         { key: 'apple', name: 'Apple Music', re: /^https?:\/\/(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?artist\/(?:[^/?#]+\/)?(?:id)?(\d+)/, get: async (m, http) => {
             const r = await http('https://music.apple.com/us/artist/' + m[1]);
@@ -5563,6 +5564,20 @@ class ArtistImage {
             if (!r.ok) return null;
             const s = ArtistImage.og(await r.text());
             return s && !/default_avatar/.test(s) ? s : null;
+        } },
+        { key: 'bandcamp', name: 'Bandcamp', re: /^https?:\/\/([a-z0-9-]+)\.bandcamp\.com(?:\/(?:music\/?)?)?(?:[?#].*)?$/i, get: async (m, http) => {
+            const r = await http('https://' + m[1] + '.bandcamp.com/');
+            if (!r.ok) return null;
+            // The homepage can redirect to an album: og:image would be its cover.
+            const html = await r.text(), tag = (html.match(/<img\b[^>]*>/gi) || []).find(t => /\bclass\s*=\s*["'][^"']*\bband-photo\b[^"']*["']/i.test(t));
+            const src = tag && tag.match(/\bsrc\s*=\s*["']([^"']+)["']/i);
+            return src && /^https:\/\/f\d+\.bcbits\.com\/img\/\d+_\d+\.(?:jpg|png)/i.test(src[1]) ? src[1].replace(/&amp;/g, '&').replace(/_\d+\.(jpg|png)/i, '_10.$1') : null;
+        } },
+        { key: 'ytmusic', name: 'YouTube Music', re: /^https?:\/\/music\.youtube\.com\/(?:channel|browse)\/(UC[\w-]+)(?:[/?#]|$)/, get: async (m, http) => {
+            const r = await http('https://music.youtube.com/channel/' + m[1]);
+            if (!r.ok) return null;
+            const src = ArtistImage.og(await r.text());
+            return src && /^https:\/\/yt3\.(?:googleusercontent\.com|ggpht\.com)\//.test(src) ? src : null;
         } },
         // the entity's own Commons image first, else its Wikidata item's (P18), else its Wikipedia article's
         { key: 'wikipedia', name: 'Wikipedia', re: [/^https?:\/\/commons\.wikimedia\.org\/wiki\/(File:[^?#]+)/, /^https?:\/\/(?:www\.)?wikidata\.org\/wiki\/(Q\d+)/, /^https?:\/\/([a-z-]+)\.wikipedia\.org\/wiki\/([^?#]+)/], get: async (m, http) => {
@@ -5608,7 +5623,10 @@ class ArtistImage {
 
     async findAll(mbid, urls) {
         const hit = this.cachedAll(mbid);
-        if (hit !== undefined) return hit;
+        // Existing installs should discover newly supported sources without waiting 30 days.
+        const added = this.providers.filter(p => ['bandcamp', 'ytmusic'].includes(p.key) && [].concat(p.re).some(re => urls.some(u => re.test(u))));
+        const entry = mbid && this.load()[mbid];
+        if (hit !== undefined && added.every(p => (entry.sources || []).includes(p.key))) return hit;
         let failed = false;
         const got = await Promise.all(this.providers.map(async p => {
             let m = null, url = '';
@@ -5619,7 +5637,7 @@ class ArtistImage {
         }));
         const all = got.filter(Boolean);
         // a failed request isn't a miss: ask again next time
-        if (mbid && (all.length || !failed)) { const c = this.load(); c[mbid] = { all, t: Date.now() }; this.save(c); }
+        if (mbid && (all.length || !failed)) { const c = this.load(); c[mbid] = { all, t: Date.now(), sources: this.providers.map(p => p.key) }; this.save(c); }
         return this.sorted(all);
     }
     async find(mbid, urls) { return (await this.findAll(mbid, urls))[0] || null; }

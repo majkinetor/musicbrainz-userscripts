@@ -58,6 +58,20 @@ class ArtistImage {
             const s = ArtistImage.og(await r.text());
             return s && !/default_avatar/.test(s) ? s : null;
         } },
+        { key: 'bandcamp', name: 'Bandcamp', re: /^https?:\/\/([a-z0-9-]+)\.bandcamp\.com(?:\/(?:music\/?)?)?(?:[?#].*)?$/i, get: async (m, http) => {
+            const r = await http('https://' + m[1] + '.bandcamp.com/');
+            if (!r.ok) return null;
+            // The homepage can redirect to an album: og:image would be its cover.
+            const html = await r.text(), tag = (html.match(/<img\b[^>]*>/gi) || []).find(t => /\bclass\s*=\s*["'][^"']*\bband-photo\b[^"']*["']/i.test(t));
+            const src = tag && tag.match(/\bsrc\s*=\s*["']([^"']+)["']/i);
+            return src && /^https:\/\/f\d+\.bcbits\.com\/img\/\d+_\d+\.(?:jpg|png)/i.test(src[1]) ? src[1].replace(/&amp;/g, '&').replace(/_\d+\.(jpg|png)/i, '_10.$1') : null;
+        } },
+        { key: 'ytmusic', name: 'YouTube Music', re: /^https?:\/\/music\.youtube\.com\/(?:channel|browse)\/(UC[\w-]+)(?:[/?#]|$)/, get: async (m, http) => {
+            const r = await http('https://music.youtube.com/channel/' + m[1]);
+            if (!r.ok) return null;
+            const src = ArtistImage.og(await r.text());
+            return src && /^https:\/\/yt3\.(?:googleusercontent\.com|ggpht\.com)\//.test(src) ? src : null;
+        } },
         // the entity's own Commons image first, else its Wikidata item's (P18), else its Wikipedia article's
         { key: 'wikipedia', name: 'Wikipedia', re: [/^https?:\/\/commons\.wikimedia\.org\/wiki\/(File:[^?#]+)/, /^https?:\/\/(?:www\.)?wikidata\.org\/wiki\/(Q\d+)/, /^https?:\/\/([a-z-]+)\.wikipedia\.org\/wiki\/([^?#]+)/], get: async (m, http) => {
             const fp = f => 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(decodeURIComponent(f).replace(/^File:/, '').replace(/ /g, '_')) + '?width=500';
@@ -102,7 +116,10 @@ class ArtistImage {
 
     async findAll(mbid, urls) {
         const hit = this.cachedAll(mbid);
-        if (hit !== undefined) return hit;
+        // Existing installs should discover newly supported sources without waiting 30 days.
+        const added = this.providers.filter(p => ['bandcamp', 'ytmusic'].includes(p.key) && [].concat(p.re).some(re => urls.some(u => re.test(u))));
+        const entry = mbid && this.load()[mbid];
+        if (hit !== undefined && added.every(p => (entry.sources || []).includes(p.key))) return hit;
         let failed = false;
         const got = await Promise.all(this.providers.map(async p => {
             let m = null, url = '';
@@ -113,7 +130,7 @@ class ArtistImage {
         }));
         const all = got.filter(Boolean);
         // a failed request isn't a miss: ask again next time
-        if (mbid && (all.length || !failed)) { const c = this.load(); c[mbid] = { all, t: Date.now() }; this.save(c); }
+        if (mbid && (all.length || !failed)) { const c = this.load(); c[mbid] = { all, t: Date.now(), sources: this.providers.map(p => p.key) }; this.save(c); }
         return this.sorted(all);
     }
     async find(mbid, urls) { return (await this.findAll(mbid, urls))[0] || null; }

@@ -50,14 +50,16 @@ Every provider with a matching URL is asked, and every image found is kept, so a
 
 ## Platforms
 
-| Platform    | Matches                                                                                    | Image                                                                               |
-| ----------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| Discogs     | `discogs.com/artist/<id>`, `/label/<id>`                                                   | the primary image from `api.discogs.com`, else the first                            |
-| Deezer      | `deezer.com/artist/<id>`                                                                   | `picture_big` (500×500) from `api.deezer.com`                                       |
-| Wikipedia   | `commons.wikimedia.org/wiki/File:…`, `wikidata.org/wiki/Q…`, `<lang>.wikipedia.org/wiki/…` | the Commons file itself, else the item's P18, else the article's page image (500px) |
-| Tidal       | `tidal.com/artist/<id>`                                                                    | the artist page's `og:image` (750×750)                                              |
-| Apple Music | `music.apple.com/artist/<id>`                                                              | the artist page's `og:image`, as a 500×500 square                                   |
-| SoundCloud  | `soundcloud.com/<user>`                                                                    | the profile page's `og:image` (500×500), not the default avatar                     |
+| Platform      | Matches                                                                                    | Image                                                                               |
+| ------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| Discogs       | `discogs.com/artist/<id>`, `/label/<id>`                                                   | the primary image from `api.discogs.com`, else the first                            |
+| Deezer        | `deezer.com/artist/<id>`                                                                   | `picture_big` (500×500) from `api.deezer.com`                                       |
+| Wikipedia     | `commons.wikimedia.org/wiki/File:…`, `wikidata.org/wiki/Q…`, `<lang>.wikipedia.org/wiki/…` | the Commons file itself, else the item's P18, else the article's page image (500px) |
+| Tidal         | `tidal.com/artist/<id>`                                                                    | the artist page's `og:image` (750×750)                                              |
+| Apple Music   | `music.apple.com/artist/<id>`                                                              | the artist page's `og:image`, as a 500×500 square                                   |
+| SoundCloud    | `soundcloud.com/<user>`                                                                    | the profile page's `og:image` (500×500), not the default avatar                     |
+| Bandcamp      | `<artist>.bandcamp.com`, `/music`                                                          | the profile's `band-photo`, including when the homepage opens an album              |
+| YouTube Music | `music.youtube.com/channel/UC…`, `/browse/UC…`                                             | the channel's `og:image` avatar (544×544), never a video thumbnail                  |
 
 Deezer's API and Tidal's, Apple Music's and SoundCloud's pages send no CORS headers: in a userscript, pass a `GM_xmlhttpRequest`-based `http` and `@connect` their hosts.
 

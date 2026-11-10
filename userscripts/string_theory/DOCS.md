@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-10 18:15 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-10 18:29 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -846,7 +846,7 @@ Also on board: artist, label, release, release group and area images, a configur
 
 When MB page has Event Horizon redesign available, EH dock button shows on the native page and clicking it replaces native interface. A link to another EH page opens in place without native navigation. **Already visited page** shows at once with the last data Event Horizon kept of it, then is checked with MusicBrainz in the background, and redrawn if anything changed (while this happens EH icon at top,right is animated). While a page loads, the other scripts' background requests to MusicBrainz wait, so the page comes first.
 
-- **Pictures**: an artist's or label's comes from its linked sites (click for the next, the badge opens its source), and when none was found, Retry image asks them again; an area's is its Wikidata map with the flag; a place's its Commons or Wikidata image; an event's its front from the Event Art Archive.
+- **Pictures**: an artist's or label's comes from its linked sites, including Bandcamp and YouTube Music (click for the next, the badge opens its source), and when none was found, Retry image asks them again; an area's is its Wikidata map with the flag; a place's its Commons or Wikidata image; an event's its front from the Event Art Archive.
 - **History** groups a release's edits, and MusicBrainz's other edit lists, into bursts; **a single edit** opens with its changes under the release it touches.
 - **Art**, the cover-art page and the add-cover-art page alike, holds Art Station's gallery under the release's title; an event's event-art and add-event-art pages hold it under the event's.
 - **Covers**: click a release's cover, thumbnail or Artwork image to view all its covers full screen in Art Station gallery.
@@ -1004,26 +1004,26 @@ Compatible scripts appear under **More (⋯)** in the page header and pinned bar
 
 Right-click the corner icon. Changes apply at once.
 
-| Setting                               | Default                                                             |                                                                                             |
-| ------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Release → Info                        | released, labels, barcode, length, links                            | the facts shown beside the cover                                                            |
-| Release → Under the cover             | Other covers, Rating, Genres                                        | what shows under the cover                                                                  |
-| Tracklist → Tracks                    | Alternating colors, Artist column by itself                         | shade every other track; the [Artist column](#tracklist-1) per release                        |
-| Platforms → Show                      | off                                                                 | **Names** beside the icons; **Gray icons** until pointed at                                 |
-| Platforms → Icon size                 | 22px                                                                | the size of a platform icon                                                                 |
-| Platforms → Platforms                 | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music           | click to show or hide, drag to reorder; the rest go behind +N                               |
-| Artist → Artist images                | Discogs, Wikipedia, Deezer, Spotify, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown                  |
-| Annotation → Show annotation on hover | on                                                                  | preview a folded annotation                                                                 |
-| General → Page width                  | Wide                                                                | how wide the page grows on a big screen                                                     |
-| Effects → Preset                      | none                                                                | an effect with its settings, saved by name; shared as JSON from its list                    |
-| Effects → Effects                     | Background: Cover aura                                              | a **Background** (none is flat) and an **Effect** over it; select one for its settings      |
-| Effects → Effect                      | None                                                                | [background effects](#background-effects), each with its own settings                       |
-| Effects → Fade this window            | on                                                                  | the window fades while the mouse is away from it                                            |
-| Menu → Show menu titles               | off                                                                 | text beside icons in the main menu                                                          |
-| Menu → Responsive                     | off                                                                 | brings items from More into the main menu when space allows                                 |
-| Menu → Items                          | all visible                                                         | drag to order, use the eye to show or hide, toggle Title, choose Main or More               |
-| General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
-| General → Keyboard shortcuts          | on                                                                  | the keys below; [keyboard shortcuts](#keyboard-shortcuts); **Change keys** opens their list |
+| Setting                               | Default                                                   |                                                                                             |
+| ------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Release → Info                        | released, labels, barcode, length, links                  | the facts shown beside the cover                                                            |
+| Release → Under the cover             | Other covers, Rating, Genres                              | what shows under the cover                                                                  |
+| Tracklist → Tracks                    | Alternating colors, Artist column by itself               | shade every other track; the [Artist column](#tracklist-1) per release                        |
+| Platforms → Show                      | off                                                       | **Names** beside the icons; **Gray icons** until pointed at                                 |
+| Platforms → Icon size                 | 22px                                                      | the size of a platform icon                                                                 |
+| Platforms → Platforms                 | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music | click to show or hide, drag to reorder; the rest go behind +N                               |
+| Artist → Artist images                | all sources                                               | click to turn one off or on, drag to reorder; the first one found is shown                  |
+| Annotation → Show annotation on hover | on                                                        | preview a folded annotation                                                                 |
+| General → Page width                  | Wide                                                      | how wide the page grows on a big screen                                                     |
+| Effects → Preset                      | none                                                      | an effect with its settings, saved by name; shared as JSON from its list                    |
+| Effects → Effects                     | Background: Cover aura                                    | a **Background** (none is flat) and an **Effect** over it; select one for its settings      |
+| Effects → Effect                      | None                                                      | [background effects](#background-effects), each with its own settings                       |
+| Effects → Fade this window            | on                                                        | the window fades while the mouse is away from it                                            |
+| Menu → Show menu titles               | off                                                       | text beside icons in the main menu                                                          |
+| Menu → Responsive                     | off                                                       | brings items from More into the main menu when space allows                                 |
+| Menu → Items                          | all visible                                               | drag to order, use the eye to show or hide, toggle Title, choose Main or More               |
+| General → Pending changes             | off                                                       | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
+| General → Keyboard shortcuts          | on                                                        | the keys below; [keyboard shortcuts](#keyboard-shortcuts); **Change keys** opens their list |
 
 Motions: Static, Drift, Tide, Twinkle, Ripple, Lantern (follows the pointer), Electricity and Neural. Pick Hexagons in the Effects tab and its settings follow; the ones the motion doesn't take (Pace, Trail, How often, Glow, a two-tone Colour) are greyed out. **Depth** scrolls the hexagons slower than the page. All respect reduced motion.
 
