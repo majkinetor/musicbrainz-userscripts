@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.10.124719
+// @version      2026.11.10.125153
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4548,12 +4548,12 @@ function menuLayout(acts, fold = false) {
     const off = Array.isArray(S.menuOff) ? S.menuOff : [];
     const titleOff = Array.isArray(S.menuTitleOff) ? S.menuTitleOff : [];
     const place = (n, main) => {
-        const noTitle = titleOff.includes(n.dataset.menuKey);
+        const noTitle = main && titleOff.includes(n.dataset.menuKey);
         n.classList.toggle('menu-no-title', noTitle);
         n.setAttribute('aria-label', n.dataset.menuTip || n.textContent);
         n.querySelector('span')?.classList.add('abt');
         if (main) { n.dataset.tip = n.dataset.menuTip || n.textContent; acts.insertBefore(n, more); }
-        else { if (noTitle) n.dataset.tip = n.dataset.menuTip || n.textContent; else n.removeAttribute('data-tip'); list.append(n); }
+        else { n.removeAttribute('data-tip'); list.append(n); }
     };
     ordered.forEach(n => { n.hidden = off.includes(n.dataset.menuKey); place(n, !fold && menuPlace(n.dataset.menuKey) === 'main'); });
     const visible = ordered.filter(n => !n.hidden);
@@ -12218,7 +12218,7 @@ function menuPane() {
     const eye = '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
     const catalog = new Map(menuCatalog()), off = Array.isArray(S.menuOff) ? S.menuOff : [];
     return '<div class="menu-options">'
-        + ckRow('menuTitles', 'Show menu titles', 'Show text beside header menu icons\nOn: icons and titles\nOff: icons only')
+        + ckRow('menuTitles', 'Show menu titles', 'Show text beside main menu icons\nOn: icons and enabled titles\nOff: icons only\nMore always shows titles')
         + ckRow('menuResponsive', 'Responsive', 'Bring items from More into the main menu when they fit\nTheir configured order stays the same')
         + '<button type="button" class="menu-reset" data-menu-reset data-tip="Restore the default menu order, visibility, placement, titles and Responsive setting">Restore defaults</button></div>'
         + '<table class="menu-table" aria-label="Header menu items"><thead><tr><th></th><th>Item</th><th>Visible</th><th>Title</th><th>Place</th></tr></thead><tbody>'
