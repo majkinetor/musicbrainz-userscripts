@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.10.061805
+// @version      2026.11.10.081558
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -1025,10 +1025,55 @@ const STATE = { recordings: new Map(), poolOrder: [], groups: [], poolFilter: ''
 // A row shows this many identifiers of a kind before folding the unshared rest.
 const ID_FOLD = 3;
 
+// The recording board (recordings, pool order, groups) lives in the GM key fusion.recordings,
+// like every other type's in fusion.merge: every tab shows the same board and a reload keeps it.
+// What a card shows (selection, folds, the note being typed) stays per tab.
+const REC_KEY = 'fusion.recordings';
+let recSaved = '', recSaveT = 0;
+function recSnapshot() {
+    return JSON.stringify({
+        recs: STATE.poolOrder.map(g => STATE.recordings.get(g)).filter(Boolean),
+        groups: STATE.groups.map(g => Object.assign({}, g, { editing: false })),
+    });
+}
+function recApply(raw, fresh) {
+    let s; try { s = JSON.parse(raw || '{}'); } catch (e) { s = {}; }
+    const recs = Array.isArray(s && s.recs) ? s.recs.filter(r => r && r.gid) : [];
+    const editing = new Set(STATE.groups.filter(g => g.editing).map(g => g.id));
+    STATE.recordings = new Map(recs.map(r => [r.gid, r]));
+    STATE.poolOrder = recs.map(r => r.gid);
+    STATE.groups = (Array.isArray(s && s.groups) ? s.groups : []).filter(g => g && Array.isArray(g.memberGids)).map(g => {
+        g.memberGids = g.memberGids.filter(x => STATE.recordings.has(x));
+        g.editing = editing.has(g.id);
+        if (fresh && g.state === 'busy') g.state = 'pending';   // a merge the closed page never finished
+        return g;
+    }).filter(g => g.memberGids.length);
+    if (STATE.selected && !STATE.recordings.has(STATE.selected)) STATE.selected = null;
+    if (STATE.activeGroupId && !findGroup(STATE.activeGroupId)) STATE.activeGroupId = null;
+}
+function recSaveNow() {
+    clearTimeout(recSaveT); recSaveT = 0;
+    if (typeof GM_setValue !== 'function') return;
+    const v = recSnapshot();
+    if (v === recSaved) return;
+    recSaved = v;
+    GM_setValue(REC_KEY, v);
+}
+function recSaveSoon() { if (!recSaveT) recSaveT = setTimeout(recSaveNow, 150); }
+if (typeof GM_getValue === 'function') { recSaved = GM_getValue(REC_KEY, '') || ''; recApply(recSaved, true); }
+if (typeof GM_addValueChangeListener === 'function') GM_addValueChangeListener(REC_KEY, (k, o, n, remote) => {
+    if (!remote) return;
+    if (recSaveT) recSaveNow();   // this tab's unsaved change goes out first, then the other tab's wins
+    recSaved = n || ''; recApply(recSaved, false);
+    renderAll(); ensureLauncher();
+});
+window.addEventListener('pagehide', () => { if (recSaveT) recSaveNow(); });
+
 function addToPool(rec) {
     if (STATE.recordings.has(rec.gid)) return false;
     STATE.recordings.set(rec.gid, rec);
     STATE.poolOrder.push(rec.gid);
+    recSaveSoon();
     return true;
 }
 function findGroup(id) { return STATE.groups.find(g => g.id === id); }
@@ -5126,6 +5171,7 @@ function setPoolSort(mode) {
     if (document.getElementById('fs-em-overlay')) emRender();
 }
 function renderPool() {
+    recSaveSoon();
     const body = document.getElementById('fs-pool-body'); if (!body) return;
     const q = STATE.poolFilter || '';
     const all = STATE.poolOrder.map(g => STATE.recordings.get(g)).filter(Boolean);
@@ -5140,6 +5186,7 @@ function renderPool() {
 }
 let renderEmbeds = () => {};   // #790: Mission Control's adapter sets it
 function renderGroups() {
+    recSaveSoon();
     renderEmbeds();
     const body = document.getElementById('fs-groups-body'); if (!body) return;
     document.getElementById('fs-groups-cnt').textContent = String(STATE.groups.length);
@@ -5951,7 +5998,9 @@ async function seedFromScope() {
 }
 let scopeLoad = null;
 const scopeBoards = new Map();
-// switch the recording board to this page's scope, keeping the one left behind
+// switch the recording board to this page's scope: the board is shared (fusion.recordings), only
+// what this page shows of it (its release, folds, filter, selection) is kept per scope
+const SHARED_KEYS = new Set(['recordings', 'poolOrder', 'groups']);
 function enterScope(next) {
     if (!SCOPE || next.type !== SCOPE.type || next.mbid !== SCOPE.mbid) {
         closeFusion();
@@ -5959,6 +6008,7 @@ function enterScope(next) {
         if (SCOPE) scopeBoards.set(SCOPE.type + ':' + SCOPE.mbid, { ...STATE });
         const saved = scopeBoards.get(next.type + ':' + next.mbid);
         for (const key of Object.keys(STATE)) {
+            if (SHARED_KEYS.has(key)) continue;
             const val = STATE[key];
             STATE[key] = saved ? saved[key] : val instanceof Map ? new Map() : val instanceof Set ? new Set() : Array.isArray(val) ? [] : typeof val === 'string' ? '' : null;
         }
@@ -6273,7 +6323,7 @@ function ensureLauncher() {
     }
     refreshCounters();
 }
-// what the add menu offers on this page: [type, label, ticked]; #908: nothing starts selected, so the flag is unused
+// what the add menu offers on this page: [type, label, ticked]; the page's own entity starts ticked
 function addMenuOptions() {
     const sc = detectScope(), m = location.pathname.match(EM_TYPE_RE);
     if (sc && sc.type === 'release') return { gid: sc.mbid, o: [['release', 'This release', 1], ['recording', 'Its recordings', 0], ['release-group', 'Its release group', 0], ['artist', 'Its album artists', 0]] };
@@ -6303,7 +6353,7 @@ function openAddMenu(anchor) {
     const m = el('div', 'fs-addmenu'); m.id = 'fs-addmenu';
     m.style.cssText = 'position:fixed;z-index:2147483647;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.2);padding:8px 10px;font-size:12px;color:var(--mbu-text);min-width:210px';
     m.innerHTML = '<div class="fs-am-t">Add to Fusion</div>'
-        + o.map(([k, l, on], i) => { const n = poolCount(k); return '<label><input type="checkbox" data-i="' + i + '">' + entSvg(k, 15) + '<span>' + l + '</span>' + (n ? '<i>' + n + ' in pool</i>' : '') + '</label>'; }).join('')
+        + o.map(([k, l, on], i) => { const n = poolCount(k); return '<label><input type="checkbox" data-i="' + i + '"' + (on ? ' checked' : '') + '>' + entSvg(k, 15) + '<span>' + l + '</span>' + (n ? '<i>' + n + ' in pool</i>' : '') + '</label>'; }).join('')
         + '<div class="fs-am-b"><button type="button" data-a="cancel">Cancel</button><button type="button" class="fs-am-go" data-a="add">Add</button></div>';
     const r = (anchor || document.body).getBoundingClientRect();
     m.style.right = Math.max(4, innerWidth - r.right) + 'px';

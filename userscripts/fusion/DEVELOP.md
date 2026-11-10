@@ -6,6 +6,8 @@
 
 Fusion queues a group with `GET /recording/merge_queue?add-to-merge=…` and posts MusicBrainz's own `/recording/merge` form with the target and the note. MusicBrainz keeps one merge queue per session, so **Merge All** prepares several groups in parallel but submits them one at a time. If MusicBrainz bounces the form instead of creating the edit, the group is marked failed, not done.
 
+The recording board (recordings in pool order, and the groups) is the GM key `fusion.recordings`: `{recs, groups}`. `addToPool`, `renderPool` and `renderGroups` save it 150 ms later (`recSaveSoon`), and `GM_addValueChangeListener` repaints other tabs; the last write wins. A group left `busy` by a closed page loads back as `pending`. `enterScope` keeps `recordings`, `poolOrder` and `groups` shared (`SHARED_KEYS`) and swaps only the page's view of them per scope.
+
 ## Merging other entities
 
 - The store is the GM key `fusion.merge`: `{types:{<type>:{pool, groups, current}}}`. Every write re-reads it first (`emEdit`) and `GM_addValueChangeListener` repaints other tabs; only the in-flight state (`EM_BUSY`) stays in memory.

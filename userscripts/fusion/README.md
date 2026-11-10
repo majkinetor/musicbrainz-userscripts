@@ -41,7 +41,7 @@ In a group:
 
 ## Adding
 
-Fusion opens empty. **Ctrl+click** or **middle-click** its corner icon for the add menu, which offers what this page has to merge; select what you want (nothing is preselected) and **Add**. The pool fills without opening the window:
+Fusion opens empty. **Ctrl+click** or **middle-click** its corner icon for the add menu, which offers what this page has to merge; the page's own entity starts ticked; select what else you want and **Add**. The pool fills without opening the window:
 
 | Page             | Offers                                                                  |
 | ---------------- | ----------------------------------------------------------------------- |
@@ -117,7 +117,7 @@ Artists, releases, release groups, works, labels, places, events and series are 
 - A group's chips show the fields all its members share, and a value shared by some is tinted alike in the rows. A release group of releases needs a merge strategy before it can merge: append mediums or merge them. None is preselected.
 - **Merge** submits one group, **Merge All** every group in turn; **Clear ▾** clears all of this type, empties the pool, returns the groups to the pool, or removes the merged ones.
 
-What you collect is kept in your userscript manager and shows in every open tab.
+What you collect, recordings included, is kept in your userscript manager and shows in every open tab.
 
 ## Settings
 
