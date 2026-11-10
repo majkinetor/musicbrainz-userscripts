@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.10.125153
+// @version      2026.11.10.130054
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2949,7 +2949,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .art .under{display:flex;flex-direction:column;gap:14px;padding-top:6px}.gtags{display:flex;flex-wrap:wrap;gap:8px}.gtags.wide{margin:18px 0 0}
 .kmk{all:unset;flex:none;cursor:pointer;display:inline-flex;border-radius:6px}.kmk:hover{color:var(--accent);background:var(--chip)}
 .tgi{display:inline-flex;align-items:center;gap:8px}.tgi.mine{color:var(--accent)}.tgi-n{opacity:.6;font-size:.85em;font-variant-numeric:tabular-nums;min-width:2ch;text-align:center}.tgi button{border:0;background:none;color:inherit;opacity:.6;cursor:pointer;padding:0 2px;font:inherit}.tgi button>svg{display:block}.tgi button,.tgi .tgi-ph:not(.tgi-n){min-width:18px;display:inline-grid;place-items:center;padding:0 2px}.tgi-ph{visibility:hidden}.tgi.mine button{padding:4px 2px;margin:-4px 0;border-radius:50%}.tgi button:hover{opacity:1;color:var(--accent)}.tgi-in{border:1px dashed var(--muted, currentColor);background:transparent;color:inherit;border-radius:999px;padding:6px 14px;font:inherit;width:150px;outline:none}.tgi-row{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}.tgi-w{position:relative;display:inline-flex}.tgi-spin{position:absolute;right:12px;top:50%;width:12px;height:12px;margin-top:-6px;border:2px solid var(--muted, currentColor);border-top-color:var(--accent);border-radius:50%;animation:ldspin .8s linear infinite;pointer-events:none}.tgi-w .tg-ac{text-align:left}.tgi-in:focus{border-style:solid;border-color:var(--accent)}
-.gtags a.chip{color:inherit;text-decoration:none;cursor:pointer;border:1px solid transparent}.gtags a.chip:hover{color:var(--accent);border-color:var(--accent)}.facts .gtags{align-items:center}
+.gtags a.chip{color:inherit;text-decoration:none;cursor:pointer;border:1px solid transparent}.gtags a.chip:hover{color:var(--accent);border-color:var(--accent)}.facts .gtags{align-items:center}.tags-toggle{display:inline-flex;align-items:center;align-self:center;min-height:28px;margin-left:6px;padding:0 4px;background:none!important;border:0;border-radius:0;box-shadow:none;font:500 12px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap;cursor:pointer;filter:none!important}.tags-toggle:hover{color:var(--mbu-text)}
 .meta{display:flex;flex-wrap:wrap;gap:20px;font-size:14px;color:var(--soft);align-items:center}
 .stars{position:relative;color:var(--accent);font-size:18px;letter-spacing:2px;cursor:default}
 .stars .off{color:color-mix(in srgb,var(--muted) 45%,transparent)}
@@ -5358,8 +5358,7 @@ async function loadRg(id, step = () => {}) {
 const GENRES_SHOWN = 8;
 let tagsOpen = false;
 const genreChip = g => `<a class="chip" href="${MB}/tag/${encodeURIComponent(g)}">${esc(g)}</a>`;
-const nOf = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
-const tagsMore = (ts, gs = []) => !ts.length && !gs.length ? '' : `${tagsOpen ? gs.map(genreChip).join('') + ts.map(t => `<a class="chip tag" href="${MB}/tag/${encodeURIComponent(t)}">${esc(t)}</a>`).join('') : ''}<button class="chip tag" type="button" data-tagsmore aria-expanded="${tagsOpen}" data-tgg="${esc(gs.join('\n'))}" data-tgn="${esc(ts.join('\n'))}">${tagsOpen ? 'Fewer' : '+' + [gs.length && nOf(gs.length, 'genre'), ts.length && nOf(ts.length, 'tag')].filter(Boolean).join(', ')}</button>`;
+const tagsMore = (ts, gs = []) => !ts.length && !gs.length ? '' : `${tagsOpen ? gs.map(genreChip).join('') + ts.map(t => `<a class="chip tag" href="${MB}/tag/${encodeURIComponent(t)}">${esc(t)}</a>`).join('') : ''}<button class="tags-toggle" type="button" data-tagsmore aria-expanded="${tagsOpen}" data-tgg="${esc(gs.join('\n'))}" data-tgn="${esc(ts.join('\n'))}">${tagsOpen ? '&lt; less' : '&gt; ' + (gs.length + ts.length) + ' more'}</button>`;
 // the header's tags edited in place: the pencil loads the entity's tags page (all tags, your votes), then
 // your tags get × (withdraw), the others ▲ (upvote), and an input adds; ✓ or Esc closes and redraws the page
 let tgIn = null, tgInWired = false;
