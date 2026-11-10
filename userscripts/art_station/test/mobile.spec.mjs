@@ -26,6 +26,9 @@ test('the cover-art page fits a phone screen', { tag: ['@sandbox', '@cosmetic'] 
   });
   console.log(JSON.stringify(r));
   check(r.tops.length < 2 || r.tops[0] === r.tops[1], `two covers to a row (${r.tops})`);
+  // a touch screen's bigger tap padding once squeezed the card's round trash icon to nothing
+  const rm = await page.evaluate(() => { const b = document.querySelector('#as-root .as-rmone'), i = b && b.querySelector('svg'); return b && { b: Math.round(b.getBoundingClientRect().width), i: Math.round(i.getBoundingClientRect().width), op: getComputedStyle(b).opacity }; });
+  check(rm && rm.i >= 14 && rm.b >= 34 && rm.op === '1', `each card shows its trash icon (${JSON.stringify(rm)})`);
   const barH = await page.evaluate(() => Math.round(document.querySelector('#as-root .as-bar').getBoundingClientRect().height));
   check(barH <= 50, `the toolbar is one row (${barH}px)`);
   // a selection turns the whole bar into the selection bar, still one row; ← brings the normal bar back
