@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-10 09:18 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-10 09:37 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1702,6 +1702,7 @@ Type in the pool's filter to show only the candidates that match it.
 In a group:
 
 - the **target**, the recording that survives, is on top with a gold ★; another row's ☆ makes it the target;
+- ▶ on a row shows every release the recording is on; right-click it for every recording in the group;
 - ↩ returns a recording to the pool, ✕ drops it altogether;
 - 🗑 deletes the group and returns its members to the pool;
 - **Clear ▾** in the groups' header clears all of this type, or one part: it empties the pool, returns every group to the pool, or removes the merged groups;
@@ -1780,6 +1781,8 @@ Each merge gets an edit note listing what matched ("Same ISRC …", "Length diff
 
 A merge always goes to a vote, even an auto-editor's, as a [destructive edit](https://musicbrainz.org/doc/Destructive_Edit). A refused merge is marked failed.
 
+With **Auto clear merged** on (the default), a merged group leaves the board a few seconds after it merges, with its recordings.
+
 ### Other entities
 
 Artists, releases, release groups, works, labels, places, events and series are merged in a window like the recordings' one, a window per type. Every type with something waiting shows as an icon with its count, beside Fusion's corner icon and in the window's title; click one to open that type. The title shows every type, so an empty one can be opened too. The trash button in the window's header clears every type's pool and groups, recordings included, after asking. Each row shows what MusicBrainz's own merge page does: for a release its artist, format, tracks, country and date, label, catalog number and barcode; for other types their type, area, dates, ISWCs and the like.
@@ -1798,6 +1801,7 @@ The ⚙ window (or right-click Fusion's corner icon), which also holds the activ
 | Setting                                           | Default |                                                            |
 | ------------------------------------------------- | ------- | ---------------------------------------------------------- |
 | Look up AcoustIDs                                 | on      | fetch the pool's AcoustIDs from acoustid.org               |
+| Auto clear merged                                 | on      | a merged group leaves the board a few seconds after        |
 | Preload group release details                     | off     | fetch every grouped recording's releases in the background |
 | Length tolerance                                  | 5 s     | lengths this close count as the same                       |
 | Match never groups if lengths differ by more than | 30 s    | whatever else matches; grouping by hand still can          |

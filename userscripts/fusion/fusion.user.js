@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.10.081558
+// @version      2026.11.10.093637
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -380,7 +380,7 @@ async function wsGet(path, retries) {
 
 // ── settings (GM-persisted) ──────────────────────────────────────────────
 const SETTINGS_KEY = 'fusion.settings';
-const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, prefetchGroupReleases: false, releasePrefetchCap: 200, poolCollapsed: false, matchCutoff: 'strict', poolSort: 'added' };
+const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, prefetchGroupReleases: false, releasePrefetchCap: 200, poolCollapsed: false, matchCutoff: 'strict', poolSort: 'added', autoClearMerged: true };
 function loadSettings() {
     // (#623: the one-time #529 migrations of the old AcoustID cap and prefetch default are retired)
     try { return Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(GM_getValue(SETTINGS_KEY, '{}'))); }
@@ -1296,6 +1296,15 @@ function clearMerged() {
     Log.info('Clear merged: removed ' + done.length + ' merged group(s) and ' + dropped + ' recording(s) from the board');
     return done.length;
 }
+// #982: Auto clear merged — a merged group leaves the board a few seconds later, so its ✓ is still seen;
+// it waits while a merge runs (Merge all reads the board for its summary)
+function autoClearSoon() {
+    if (SETTINGS.autoClearMerged === false) return;
+    setTimeout(() => {
+        if (_busyCount) { autoClearSoon(); return; }
+        if (STATE.groups.some(g => g.state === 'done') && clearMerged()) renderAll();
+    }, 3000);
+}
 // #908: the pool's recordings leave the board; grouped ones stay
 function clearPool() {
     const inG = new Set(STATE.groups.flatMap(g => g.memberGids)), gone = STATE.poolOrder.filter(g => !inG.has(g));
@@ -1805,6 +1814,7 @@ async function mergeGroup(group) {
         group.state = 'done';
         group.mergedUrl = finalUrl || null;
         Log.ok('✓ Merged group ' + group.id + ' → ' + finalUrl);
+        autoClearSoon();
     } catch (e) {
         group.state = 'error'; group.error = e.message;
         Log.error('✗ Merge failed for group ' + group.id + ': ' + e.message);
@@ -5043,7 +5053,7 @@ function groupCardHtml(group, embed) {
         const expanded = STATE.expandedReleases.has(m.gid);
         return '<div class="fs-growwrap">'
             + '<div class="fs-grow' + (isTarget ? ' fs-target-row' : '') + '"' + (embed ? '' : ' draggable="true"') + ' data-gid="' + m.gid + '">'
-            + '<span class="fs-exp' + (expanded ? ' fs-exp-on' : '') + '" data-act="toggle-releases" data-tip="' + (expanded ? 'Hide' : 'Show') + ' every release this recording is on">' + (expanded ? '▼' : '▶') + '</span>'
+            + '<span class="fs-exp' + (expanded ? ' fs-exp-on' : '') + '" data-act="toggle-releases" data-tip="' + (expanded ? 'Hide' : 'Show') + ' every release this recording is on\nRight-click: every recording in this group">' + (expanded ? '▼' : '▶') + '</span>'
             + star
             + '<span class="fs-t" data-tip="' + recTip(m) + '">' + pendingBadge(m) + videoBadge(m) + liveBadge(m) + recLink(m.gid, m.title) + recPlace(m) + recDis(m) + albumDisHtml(m, members) + '</span>'
             + '<span class="fs-artistcol" data-tip="' + escapeHtml(m.artistCredit || '') + '">' + artistLink(m) + '</span>'
@@ -5653,6 +5663,12 @@ function wireDelegatedEvents() {
         STATE._dragSrc = { gid: row.dataset.gid, groupId: card.dataset.gid };
         try { e.dataTransfer.setData('text/plain', row.dataset.gid); e.dataTransfer.effectAllowed = 'move'; } catch (ex) {}
     });
+    // right-click on a row's ▶ opens (or closes) the releases of every recording in its group
+    groupsBody.addEventListener('contextmenu', e => {
+        const t = e.target.closest('[data-act="toggle-releases"]'), card = t && t.closest('.fs-gcard');
+        if (!card) return;
+        e.preventDefault(); toggleAllDetails(card.dataset.gid);
+    });
     groupsBody.addEventListener('click', e => {
         if (e.target.closest('#fs-newgroup')) {
             if (STATE.selected && STATE.poolOrder.includes(STATE.selected)) { const g = createGroupWithMember(STATE.selected); if (g) STATE.activeGroupId = g.id; STATE.selected = null; renderAll(); }
@@ -5737,7 +5753,8 @@ function openSettings(anchor) {
         + '<label class="fs-opt"><input type="checkbox" id="fs-opt-acoustid"> Look up AcoustIDs (acoustid.org, batched)</label>'
         + '<label class="fs-opt" data-tip="Read the releases of every grouped recording at once\nAs soon as a group forms, so opening a row is instant. It runs in the background, and the stop button in the header halts it.\n⚠ One request per grouped recording: off by default, as seeding already makes many"><input type="checkbox" id="fs-opt-prefetch"> Preload group release details in the background</label>'
         + '<label class="fs-opt">Length tolerance <input type="number" id="fs-opt-tol" min="0" max="60"> s</label>'
-        + '<label class="fs-opt" data-tip="Match never groups two recordings whose known lengths differ more than this\nWhatever else matches. Grouping by hand is not affected.">Match never groups if lengths differ by more than <input type="number" id="fs-opt-gross" min="5" max="600"> s</label>';
+        + '<label class="fs-opt" data-tip="Match never groups two recordings whose known lengths differ more than this\nWhatever else matches. Grouping by hand is not affected.">Match never groups if lengths differ by more than <input type="number" id="fs-opt-gross" min="5" max="600"> s</label>'
+        + '<label class="fs-opt" data-tip="Remove a group from the board once it has merged\nA few seconds after it merges, so its ✓ is still seen. Its recordings or entities go with it, as with Clear merged.\nOn: the board keeps only what is left to do\nOff: merged groups stay until Clear → Clear merged"><input type="checkbox" id="fs-opt-autoclear"> Auto clear merged</label>';
     document.body.appendChild(s);
     mbuControls(s);   // the shared − n + steppers
     Object.assign(s.style, { left: '50%', top: '50%', transform: 'translate(-50%, -50%)' });   // in the middle of the screen, moved by its header (#847)
@@ -5750,6 +5767,8 @@ function openSettings(anchor) {
     s.querySelector('#fs-opt-tol').value = Math.round(SETTINGS.lengthToleranceMs / 1000);
     s.querySelector('#fs-opt-gross').value = Math.round((SETTINGS.grossLengthMs != null ? SETTINGS.grossLengthMs : 30000) / 1000);
     s.querySelector('#fs-opt-prefetch').checked = !!SETTINGS.prefetchGroupReleases;
+    s.querySelector('#fs-opt-autoclear').checked = SETTINGS.autoClearMerged !== false;
+    s.querySelector('#fs-opt-autoclear').onchange = e => { SETTINGS.autoClearMerged = e.target.checked; saveSettings(); if (e.target.checked) autoClearSoon(); };
     s.querySelector('#fs-opt-acoustid').onchange = e => { SETTINGS.acoustidEnrich = e.target.checked; saveSettings(); };
     s.querySelector('#fs-opt-prefetch').onchange = e => { SETTINGS.prefetchGroupReleases = e.target.checked; saveSettings(); Log.info('Background release prefetch: ' + (SETTINGS.prefetchGroupReleases ? 'on' : 'off')); if (SETTINGS.prefetchGroupReleases) prefetchGroupReleases(); };
     s.querySelector('#fs-opt-tol').onchange = e => { SETTINGS.lengthToleranceMs = Math.max(0, Number(e.target.value) || 0) * 1000; saveSettings(); };
@@ -6197,7 +6216,9 @@ function emMerge(type, gid) {
             }
             return landed;
         });
-    })().then(url => { Log.ok('✓ Merged ' + type + ' group → ' + url); set({ state: 'done', error: null, mergedUrl: url }); },
+    })().then(url => { Log.ok('✓ Merged ' + type + ' group → ' + url); set({ state: 'done', error: null, mergedUrl: url });
+        // #982: Auto clear merged, as on the recording board
+        if (SETTINGS.autoClearMerged !== false) setTimeout(() => emEdit(() => { const t = emT(type); t.groups = t.groups.filter(x => !(x.id === g.id && x.state === 'done')); }), 3000); },
         e => { Log.error('✗ Merge failed for ' + type + ' group: ' + e.message); set({ state: 'error', error: e.message }); })
         .finally(() => { EM_BUSY.delete(g.id); emRender(); });
 }
@@ -6928,6 +6949,11 @@ new MutationObserver(muts => { if (!pageMoved(muts)) return; closeFusion(); docu
     function mcCard(key, hit) {
         const wrap = el('div', 'fs-embed'); wrap.dataset.key = key;
         wrap.addEventListener('keydown', e => e.stopPropagation());   // the edit note is typed here, not into MC's keys
+        wrap.addEventListener('contextmenu', e => {   // right-click on a row's ▶: every recording in the group, as the header's toggle
+            if (!e.target.closest('[data-act="toggle-releases"]')) return;
+            const all = wrap.querySelector('[data-act="toggle-all-details"]');
+            if (all) { e.preventDefault(); all.click(); }
+        });
         wrap.addEventListener('click', e => {
             const t = e.target.closest('[data-act]'), act = t && t.dataset.act;
             const h = mcGroups.get(key), g = h && h.g;

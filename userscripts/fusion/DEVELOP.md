@@ -8,6 +8,8 @@ Fusion queues a group with `GET /recording/merge_queue?add-to-merge=…` and pos
 
 The recording board (recordings in pool order, and the groups) is the GM key `fusion.recordings`: `{recs, groups}`. `addToPool`, `renderPool` and `renderGroups` save it 150 ms later (`recSaveSoon`), and `GM_addValueChangeListener` repaints other tabs; the last write wins. A group left `busy` by a closed page loads back as `pending`. `enterScope` keeps `recordings`, `poolOrder` and `groups` shared (`SHARED_KEYS`) and swaps only the page's view of them per scope.
 
+**Auto clear merged** (`SETTINGS.autoClearMerged`, default on) runs `clearMerged` 3 s after a group merges, and waits while `_busyCount` is up: **Merge All** reads the board for its summary after the last merge. Other types drop the one merged group from their store the same 3 s later.
+
 ## Merging other entities
 
 - The store is the GM key `fusion.merge`: `{types:{<type>:{pool, groups, current}}}`. Every write re-reads it first (`emEdit`) and `GM_addValueChangeListener` repaints other tabs; only the in-flight state (`EM_BUSY`) stays in memory.
