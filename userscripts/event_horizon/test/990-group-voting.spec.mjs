@@ -2,6 +2,30 @@ import { test, expect, functionSource, requireLogin, idle } from '../../../dev/t
 
 test.use({ gm: { name: 'Event Horizon' } });
 
+test('group votes over twenty require confirmation and cancel sends nothing', { tag: '@unit' }, async ({ page }) => {
+  const src = await functionSource('event_horizon', ['H_VOTES', 'histVoteSend']);
+  const result = await page.evaluate(async src => {
+    const prompts = [], sent = [];
+    let allow = false;
+    const data = { id: 'list', edits: [] };
+    const send = new Function('data', 'MB', 'histSrc', 'histVotePaint', 'LOG', 'mbnFetch', 'kpWrote', 'toast', 'confirm', src + '; return histVoteSend;')(data, 'https://test.musicbrainz.org', () => '/edit/open', () => {}, { keep() {}, info() {}, err() {} }, async (_, o) => { sent.push([...o.body].filter(([k]) => k.endsWith('.edit_id')).length); return { ok: true }; }, () => {}, () => {}, t => { prompts.push(t); return allow; });
+    const pick = async n => {
+      data.edits = Array.from({ length: n }, (_, id) => ({ id, can: true, my: '-2' }));
+      await send({ closest: () => ({ dataset: { hids: data.edits.map(e => e.id).join(',') } }), dataset: { hgvote: '1' } });
+    };
+    await pick(20);
+    await pick(21);
+    const cancelled = data.edits.every(e => e.my === '-2' && !e.voting);
+    allow = true; await pick(21);
+    return { prompts, sent, cancelled };
+  }, src);
+  expect(result.prompts).toHaveLength(2);
+  expect(result.prompts[0]).toContain('21');
+  expect(result.prompts[0]).toContain('Yes');
+  expect(result.sent).toEqual([20, 21]);
+  expect(result.cancelled).toBe(true);
+});
+
 test('collection history defaults to others and preserves an explicit all choice', { tag: '@unit' }, async ({ page }) => {
   const src = await functionSource('event_horizon', ['MBID', 'H_LISTS', 'histKey']);
   const keys = await page.evaluate(src => {
@@ -92,9 +116,12 @@ test('an empty collection retains its quick links and loads others by default', 
   const id = response.url().match(/\/collection\/([0-9a-f-]{36})/)[1];
   try {
     const path = `/collection/${id}/open_edits`;
-    await page.goto(mb + path);
-    const load = page.waitForRequest(r => r.method() === 'GET' && r.url().includes(path + '?hide_own=1'));
+    await page.goto(`${mb}/collection/${id}`);
     await inject('event_horizon');
+    const open = page.locator('#app .u-tabs a[href*="/open_edits"]');
+    await expect(open).toHaveAttribute('href', mb + path + '?hide_own=1');
+    const load = page.waitForRequest(r => r.method() === 'GET' && r.url().includes(path + '?hide_own=1'));
+    await open.click();
     await load;
     const all = page.locator('#app .hql a', { hasText: 'All edits for this collection' });
     const others = page.locator('#app .hql a', { hasText: 'Others’ edits for this collection' });

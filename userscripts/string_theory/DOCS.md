@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-10 18:07 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-10 18:15 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -960,7 +960,7 @@ The arrow at the end of the filter box does the same for a filter: name it and s
 
 ### Edit history
 
-Choose **Bursts**, **Day**, **Editor**, **Type** or **Status** to group edits. Each group’s **Yes**, **No**, **Abstain** and **None** buttons apply to its loaded edits you can vote on; **None** withdraws your votes. The number beside **Vote** counts eligible edits. A status filter limits the group vote to the edits shown. You can still vote on individual edits.
+Choose **Bursts**, **Day**, **Editor**, **Type** or **Status** to group edits. Each group’s **Yes**, **No**, **Abstain** and **None** buttons apply to its loaded edits you can vote on; **None** withdraws your votes. The number beside **Vote** counts eligible edits. A status filter limits the group vote to the edits shown. Changing votes on more than 20 edits asks for confirmation. You can still vote on individual edits.
 
 A collection’s edit list starts with other editors’ edits. **All edits for this collection** includes your own; **Others’ edits for this collection** hides them.
 

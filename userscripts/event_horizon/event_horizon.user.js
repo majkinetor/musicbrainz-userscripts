@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.10.180611
+// @version      2026.11.10.181509
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2974,10 +2974,10 @@ h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25
 .hchip{font:500 12px Manrope,system-ui,sans-serif;padding:3px 9px;border-radius:99px;border:1px solid var(--border);background:var(--chip);color:var(--chip-text);cursor:pointer}.hchip.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .hday{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
 .hql{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin:-2px 2px 12px;font-size:13px}.hql a{color:var(--soft)}.hql a:hover{color:var(--accent)}.hql a.hcx{box-sizing:border-box;display:inline-flex;align-items:center;min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--border);color:#d64535;font-size:14px;font-weight:600;text-decoration:none}.hql a.hcx:hover{border-color:#d64535;color:#d64535}.hgrp{border:1px solid var(--border);border-radius:11px;background:var(--surface);margin-bottom:8px;overflow:hidden}
-.hgh{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:9px 12px;cursor:pointer}.hgh .t{font-weight:700}.hgh .m{color:var(--muted);font-size:12px}.hgh .sp{flex:1}.hgh .cv{transition:transform .15s;color:var(--muted)}.hgrp.open .hgh .cv{transform:rotate(90deg)}
+.hgh{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:9px 12px;cursor:pointer}.hgi{display:flex;flex:1 1 280px;min-width:0;flex-wrap:wrap;align-items:center;gap:8px}.hga{display:flex;flex:none;align-items:center;gap:12px;margin-left:auto}.hgh .t{font-weight:700}.hgh .m{color:var(--muted);font-size:12px}.hgh .sp{flex:1}.hgh .cv{transition:transform .15s;color:var(--muted)}.hgrp.open .hgh .cv{transform:rotate(90deg)}
 .hav{width:26px;height:26px;border-radius:50%;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
 .htc{font-size:11px;padding:1px 8px;border-radius:99px;background:var(--chip);color:var(--chip-text)}
-.hvote{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 10px}.hgh .hgv{margin:0 8px;gap:4px}.hgh .hgv button{min-height:26px;padding:2px 8px;border-radius:4px}.hvote .lb{color:var(--muted);font-weight:600;margin-right:4px}.hvote button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;font-weight:600;cursor:pointer}.hvote button:hover{border-color:var(--accent)}.hvote button[disabled]{opacity:.5;cursor:default}.hvote button.on{color:#fff;border-color:transparent}.hvote .v1.on{background:#2e8b57}.hvote .v0.on{background:#c0392b}.hvote .v-1.on{background:#888}.hvote .v-2.on{background:var(--accent)}
+.hvote{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 10px}.hgh .hgv{margin:0;gap:4px;flex-wrap:nowrap;white-space:nowrap}.hgh .hgv button{min-height:26px;padding:2px 8px;border-radius:4px}.hvote .lb{color:var(--muted);font-weight:600;margin-right:4px}.hvote button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;font-weight:600;cursor:pointer}.hvote button:hover{border-color:var(--accent)}.hvote button[disabled]{opacity:.5;cursor:default}.hvote button.on{color:#fff;border-color:transparent}.hvote .v1.on{background:#2e8b57}.hvote .v0.on{background:#c0392b}.hvote .v-1.on{background:#888}.hvote .v-2.on{background:var(--accent)}
 .hdt a:has(>img),.hdt a:has(>span>img){font-size:0}
 .hnadd{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:10px 0 4px}.hnadd textarea{width:100%;box-sizing:border-box;min-height:70px;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;resize:vertical}.hnadd textarea:focus{outline:none;border-color:var(--accent)}.hnadd button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--accent);background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer}.hnadd button[disabled]{opacity:.5}
 .hmy{font-size:11px;font-weight:600;padding:1px 8px;border-radius:99px;border:1px solid var(--border);color:var(--muted)}
@@ -8236,13 +8236,18 @@ async function loadCollection(id, step = () => {}) {
     const gP = lists.then(x => { if (!x || !x[0].col) throw new Error('MusicBrainz shows no such collection'); step('collection'); return x[0].col; });
     return { kind: 'collection', g: null, gP, lists, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
 }
+function colActionHref(href, id) {
+    const u = new URL(href, MB);
+    if (u.origin === MB && u.pathname === `/collection/${id}/open_edits`) u.searchParams.set('hide_own', '1');
+    return u.href;
+}
 function colHero(d) {
     const g = d.g;
     return pgHero(g, 'collection', MK_COL, g.type || 'Collection', [
         ['', g.desc && `<div class="col-desc">${g.desc}</div>`, 'wide'],
         ...g.facts.map(([l, v]) => [l, v, 'wide']),
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
-        ['', g.side.length && `<nav class="u-tabs">${g.side.map(([t, h]) => `<a class="u-tab" href="${esc(h.startsWith('/') ? MB + h : h)}">${esc(t)}</a>`).join('')}</nav>`, 'wide'],
+        ['', g.side.length && `<nav class="u-tabs">${g.side.map(([t, h]) => `<a class="u-tab" href="${esc(colActionHref(h, g.id))}">${esc(t)}</a>`).join('')}</nav>`, 'wide'],
     ], g.by);
 }
 const colItems = d => { const g = d.g || {}, x = d.listsX && d.listsX[0], ent = g.ent || ''; return tabSect('cp', COL_NAME[ent] || 'Items', x, `${MB}/collection/${d.id}`, ART_URL[ent] ? ent : undefined); };
@@ -11784,6 +11789,7 @@ async function histVoteSend(b) {
     const eligible = d && d.edits && d.edits.filter(e => e.can && ids.includes(String(e.id)));
     if (!eligible || eligible.some(e => e.voting) || !H_VOTES.some(x => x[0] === v)) return;
     const es = eligible.filter(e => e.my !== v); if (!es.length) return;
+    if (group && es.length > 20 && !confirm(v === '-2' ? `Withdraw your votes on ${es.length} edits?` : `Vote ${H_VOTES.find(x => x[0] === v)[1]} on ${es.length} edits?`)) return;
     es.forEach(e => { e.voting = true; }); histVotePaint(d);
     try {
         LOG.keep();
@@ -11817,7 +11823,7 @@ function histRuns(es) {
 function histGroup(key, title, es, av, nm) {
     const d = data, ents = {}; es.forEach(e => { const k = histEnt(e.tk); ents[k] = (ents[k] || 0) + 1; });
     const when = histSpan(es[es.length - 1].t, es[0].t);
-    return `<div class="hgrp${d.open.has(key) ? ' open' : ''}" data-hg="${esc(key)}"><div class="hgh">${av ? `<span class="hav" style="background:hsl(${histHue(nm || '')} 45% 45%)">${esc((nm || '?')[0].toUpperCase())}</span>` : ''}<span class="t">${title}</span><span class="m">${es.length} edit${es.length > 1 ? 's' : ''}${d.grp === 'burst' ? ' · ' + when : ''}</span><span class="sp"></span>${Object.entries(ents).map(([k, c]) => `<span class="htc">${c > 1 ? c + ' ' : ''}${esc(k)}</span>`).join('')}${histPills(es)}${histGroupVote(es)}<span class="cv">▸</span></div><div class="hgb">${d.open.has(key) ? histRuns(es) : ''}</div></div>`;
+    return `<div class="hgrp${d.open.has(key) ? ' open' : ''}" data-hg="${esc(key)}"><div class="hgh"><div class="hgi">${av ? `<span class="hav" style="background:hsl(${histHue(nm || '')} 45% 45%)">${esc((nm || '?')[0].toUpperCase())}</span>` : ''}<span class="t">${title}</span><span class="m">${es.length} edit${es.length > 1 ? 's' : ''}${d.grp === 'burst' ? ' · ' + when : ''}</span><span class="sp"></span>${Object.entries(ents).map(([k, c]) => `<span class="htc">${c > 1 ? c + ' ' : ''}${esc(k)}</span>`).join('')}${histPills(es)}</div><div class="hga">${histGroupVote(es)}<span class="cv">▸</span></div></div><div class="hgb">${d.open.has(key) ? histRuns(es) : ''}</div></div>`;
 }
 function histPage(app, d) {
     const r = d.rel, rid = histRid(d.id), src = histSrc(d.id), acts = (rid ? backA(rid) + actionRow(relActs(r), 'release', rid, 'edits') : '') + SRCH();
