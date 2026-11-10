@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.10.130356
+// @version      2026.11.10.140500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -1633,8 +1633,16 @@
   const PENDING_KEY = 'apolloEditor.pendingArtist';
   const CLOSE_KEY   = 'apolloEditor.closeAfterEdit';   // tab opened just to add a Discogs link → self-close after submit
   const _pendingCreates = new Map(); let _createSeq = 0;
+  // #986: the create tab logs each step here too, so the editor's log (the one a report carries) shows
+  // how far a create got; the tab's own log closes with it
+  const createTabLog = (token, level, ...msg) => {
+    Log.cat('Create')[level](...msg);
+    if (ART_CHANNEL && token) { try { ART_CHANNEL.postMessage({ type: 'tc-create-log', token, level, msg: msg.join(' ') }); } catch (e) {} }
+  };
   if (ART_CHANNEL) ART_CHANNEL.addEventListener('message', e => {
-    const d = e.data; if (!d || d.type !== 'tc-artist-created') return;
+    const d = e.data;
+    if (d && d.type === 'tc-create-log') { if (_pendingCreates.has(d.token) && Log.cat('Create')[d.level]) Log.cat('Create')[d.level]('create tab:', d.msg); return; }
+    if (!d || d.type !== 'tc-artist-created') return;
     const pend = _pendingCreates.get(d.token); if (!pend) return;
     _pendingCreates.delete(d.token);
     if (!d.gid) { Log.cat('Create').warn('artist created but no gid came back'); return; }
@@ -1811,16 +1819,31 @@
     catch (e) { Log.cat(kind === 'label' ? 'Label' : 'Artist').warn('fetch entity failed', gid, e.message); }
     return null;
   }
-  async function searchArtist(name, limit) {
-    limit = limit || 8;
+  // the name searches behind the artist and label pickers and the matching (/ws/js/<kind>?q=). #986: an
+  // empty answer is never cached, as a name created a moment ago reaches MusicBrainz's search index only
+  // later, and a cached miss kept saying "no matches" until a reload; nor is a throttled or failed one,
+  // which is logged with its HTTP status instead of passing for an empty list
+  async function wsjsSearch(kind, name, limit, cache) {
+    const cat = Log.cat(kind === 'label' ? 'Label' : 'Artist');
     const k = fold(name) + '|' + limit; if (!fold(name)) return [];
-    if (_cache.has(k)) return _cache.get(k);
-    let list = [];
-    try { const j = await mbWebFetch(`${ORIGIN}/ws/js/artist?q=${encodeURIComponent(name)}&limit=${limit}&direct=false`, { headers: { Accept: 'application/json' } }).then(r => r.json()); list = Array.isArray(j) ? j : (j.results || []); }
-    catch (e) { Log.cat('Artist').warn('search failed:', name, e.message); }
-    list = list.filter(c => c && (c.name || '').trim());   // drop the trailing empty placeholder entry
+    if (cache.has(k)) return cache.get(k);
+    let list;
+    try {
+      const r = await mbWebFetch(`${ORIGIN}/ws/js/${kind}?q=${encodeURIComponent(name)}&limit=${limit}&direct=false`, { headers: { Accept: 'application/json' } });
+      if (!r.ok) { cat.warn(kind, 'search', JSON.stringify(name), 'failed: HTTP', r.status, '— not cached, the next search asks again'); return []; }
+      const j = await r.json();
+      if (!Array.isArray(j) && !Array.isArray(j && j.results)) { cat.warn(kind, 'search', JSON.stringify(name), 'failed:', (j && j.error) || 'no results in the answer', '— not cached'); return []; }
+      list = Array.isArray(j) ? j : j.results;
+    } catch (e) { cat.warn(kind, 'search', JSON.stringify(name), 'failed:', e.message, '— not cached'); return []; }
+    list = list.filter(c => c && c.gid && (c.name || '').trim());   // drop the trailing paging entry
+    if (!list.length) { cat.info(kind, 'search', JSON.stringify(name), '→ no matches (not cached: a new', kind, 'shows only once MusicBrainz has indexed it)'); return list; }
+    cat.debug(kind, 'search', JSON.stringify(name), '→', list.length, 'match(es)');
+    cache.set(k, list); return list;
+  }
+  async function searchArtist(name, limit) {
+    const list = await wsjsSearch('artist', name, limit || 8, _cache);
     list.forEach(c => noteDisamb(c.gid || c.id, c.comment));   // cache disambiguations for the table after a pick (#195)
-    _cache.set(k, list); return list;
+    return list;
   }
   // #442/#445: the UNIFIED exact-identity resolver — the single source of truth for a
   // confident exact match in matchSlot. Resolves a credited name to the unique MB artist
@@ -2391,16 +2414,7 @@ Click: open the label`;
     const m = v.match(new RegExp('^(' + MBID_RE.source + ')$', 'i')); return m ? m[1].toLowerCase() : null;
   }
   const _labCache = new Map();
-  async function searchLabel(name, limit) {
-    limit = limit || 8;
-    const k = fold(name) + '|' + limit; if (!fold(name)) return [];
-    if (_labCache.has(k)) return _labCache.get(k);
-    let list = [];
-    try { const j = await mbWebFetch(`${ORIGIN}/ws/js/label?q=${encodeURIComponent(name)}&limit=${limit}&direct=false`, { headers: { Accept: 'application/json' } }).then(r => r.json()); list = Array.isArray(j) ? j : (j.results || []); }
-    catch (e) { Log.cat('Label').warn('label search failed:', name, e.message); return []; }
-    list = list.filter(c => c && c.gid && (c.name || '').trim());   // drop the trailing paging entry
-    _labCache.set(k, list); return list;
-  }
+  const searchLabel = (name, limit) => wsjsSearch('label', name, limit || 8, _labCache);
   // type · area · label code · years, as MusicBrainz's own popup lists them
   function labelMeta(c) {
     const y = d => (d && (d.year || String(d).slice(0, 4))) || '';
@@ -4584,7 +4598,26 @@ Click: open the label`;
     let token = null; try { token = sessionStorage.getItem(PENDING_KEY); } catch (e) {} if (!token) return false;
     try { sessionStorage.removeItem(PENDING_KEY); } catch (e) {}
     const gid = m[1].toLowerCase();
-    fetchEntity(gid).then(ent => { if (ART_CHANNEL) ART_CHANNEL.postMessage({ type: 'tc-artist-created', token, gid, id: ent ? ent.id : null, name: ent ? ent.name : '' }); setTimeout(() => { try { W.close(); } catch (e) {} }, 80); });
+    if (!ART_CHANNEL) { Log.cat('Create').warn('saved', gid, 'but this browser has no BroadcastChannel: the editor is not told; pick it there by hand'); return true; }
+    createTabLog(token, 'info', 'saved, page of', gid, 'reached; sending it to the editor');
+    fetchEntity(gid).then(ent => {
+      if (!ent) createTabLog(token, 'warn', 'could not load', gid, 'here; sending the MBID alone');
+      try { ART_CHANNEL.postMessage({ type: 'tc-artist-created', token, gid, id: ent ? ent.id : null, name: ent ? ent.name : '' }); }
+      catch (e) { createTabLog(token, 'warn', 'sending', gid, 'to the editor failed:', e.message); }
+      setTimeout(() => { try { W.close(); } catch (e) {} }, 80);
+    });
+    return true;
+  }
+  // #986: a create tab whose form came back instead of saving (MusicBrainz's duplicate check, a field
+  // error): the hash flag is gone after the POST, but the token stays in sessionStorage, so say why
+  function handleCreateFormBack() {
+    if (!/\/(artist|label)\/create\b/i.test(location.pathname) || /tc-autocommit/.test(location.hash)) return false;
+    let token = null; try { token = sessionStorage.getItem(PENDING_KEY); } catch (e) {} if (!token) return false;
+    const report = () => {
+      const errs = [...document.querySelectorAll('.error, .errors li, .duplicate-check, #possible-duplicates')].map(x => (x.textContent || '').replace(/\s+/g, ' ').trim()).filter(Boolean);
+      createTabLog(token, 'warn', 'MusicBrainz showed the form again instead of saving' + (errs.length ? ': ' + [...new Set(errs)].join(' · ').slice(0, 300) : '') + ' — left open for you');
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(report, 1500)); else setTimeout(report, 1500);
     return true;
   }
   // a tab opened just to ADD a Discogs link to an existing artist closes itself
@@ -4612,7 +4645,8 @@ Click: open the label`;
     const onEdit   = new RegExp('/(artist|label|place)/' + MBID_RE.source + '/edit\\b', 'i').test(location.pathname);
     if (!onCreate && !onEdit) return false;
     const hm = location.hash.match(/tc-autocommit(?:=([^&]+))?/); if (!hm) return false;
-    if (onCreate) { let tok = ''; try { tok = decodeURIComponent(hm[1] || ''); } catch (e) { tok = hm[1] || ''; } try { sessionStorage.setItem(PENDING_KEY, tok); } catch (e) {} }
+    let tok = '';
+    if (onCreate) { try { tok = decodeURIComponent(hm[1] || ''); } catch (e) { tok = hm[1] || ''; } try { sessionStorage.setItem(PENDING_KEY, tok); } catch (e) {} if (!tok) Log.cat('Create').warn('create tab opened without its token: the editor will not hear back'); else createTabLog(tok, 'info', 'opened, waiting for the form'); }
     else { try { sessionStorage.setItem(CLOSE_KEY, '1'); } catch (e) {} }
     const et = (location.pathname.match(/\/(artist|label|place)\//) || [])[1] || 'artist';
     const seedUrl = new URLSearchParams(location.search).get(`edit-${et}.url.0.text`) || '';
@@ -4634,8 +4668,9 @@ Click: open the label`;
       const seedReady = !seedKey || seeded();
       const btn = document.querySelector('button.submit.positive')
         || [...document.querySelectorAll('button[type="submit"]')].find(b => /enter edit/i.test(b.textContent || ''));
-      if (seedReady && btn && !btn.disabled) { btn.click(); return; }
+      if (seedReady && btn && !btn.disabled) { if (tok) createTabLog(tok, 'info', 'form ready, submitting'); btn.click(); return; }
       if (tries++ < 100) setTimeout(submit, 200);   // ~20s grace (background tabs are slower)
+      else if (tok) createTabLog(tok, 'warn', 'auto-submit gave up:', seedUrl ? 'the seeded link ' + seedUrl + ' never showed on the form' : 'the form never got ready', btn ? '' : '(no Enter edit button)', '— left for you to submit');
       else Log.cat('Links').warn('auto-submit: the seeded link', seedUrl, 'never showed on the form' + (btn ? '' : ', and no Enter edit button') + ' — left for you to submit');
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', submit); else submit();
@@ -18187,6 +18222,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (!APOLLO_PAGE_RE.test(location.pathname)) return;
     installDatePaste();             // #960 whole-date paste and type-through, on every page Apollo runs
     if (handleAutoCommit()) { Log.cat('Create').info('auto-commit (background create/link) — submitting the seeded form'); return; }
+    if (handleCreateFormBack()) return;
     if (handleArtistPageCallback()) { Log.cat('Create').info('artist/label-create callback — posting MBID back and closing'); return; }
     if (handleEditLinkClose()) { Log.cat('Create').info('Discogs-link edit committed — closing tab'); return; }
     if (await autoConfirmSeed()) return;   // handled the seed-confirmation interstitial (clicked, or option off) — no editor here
