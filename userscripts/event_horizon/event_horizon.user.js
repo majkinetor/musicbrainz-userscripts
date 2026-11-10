@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.10.190918
+// @version      2026.11.10.195119
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2897,7 +2897,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .hero{display:flex;flex-wrap:wrap;gap:24px 44px;align-items:flex-start}.hero .label{font-size:10.5px}
 .art{flex:0 1 clamp(220px,30vw,380px);min-width:0;display:flex;flex-direction:column;gap:12px}
 .art .picw{position:relative}.chip[data-g=imgP]{cursor:grab;touch-action:none;user-select:none}.art .cover.rot,.art .cover[data-relcover],.art .thumbs img{cursor:pointer}
-.art .imgsrc{position:absolute;right:10px;bottom:10px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--surface);box-shadow:0 2px 8px var(--shadow);opacity:.92}.eh-images{width:min(540px,calc(100vw - 32px));min-width:0;max-height:80vh}.eh-image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:20px 16px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.eh-image-option{min-width:0}.eh-image-choice{display:block;position:relative;width:100%;padding:0;border:0;background:transparent;cursor:pointer}.eh-image-choice img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover}.eh-image-choice[aria-pressed="true"]{outline:2px solid var(--mbu-accent);outline-offset:3px}.eh-image-choice:hover{background:var(--mbu-bg)}.eh-image-badges{position:absolute;right:6px;bottom:6px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;max-width:calc(100% - 12px);opacity:0;pointer-events:none}.eh-image-badge{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--mbu-bg)}.eh-image-choice:hover .eh-image-badges,.eh-image-choice:focus-visible .eh-image-badges{opacity:.92}.eh-image-status{font-size:12px;font-weight:400}.eh-image-links{display:flex;flex-wrap:wrap;gap:4px 10px}.eh-image-links>a{display:block;margin-top:8px;font-size:12px;color:var(--mbu-text);text-decoration:none}.eh-image-links>a:hover{text-decoration:underline}
+.art .imgsrc{position:absolute;right:10px;bottom:10px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--surface);box-shadow:0 2px 8px var(--shadow);opacity:.92}.eh-images{width:min(540px,calc(100vw - 32px));min-width:0;max-height:80vh}.eh-image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:20px 16px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.eh-image-option{min-width:0}.eh-image-choice{display:block;position:relative;width:100%;padding:0;border:0;background:transparent;cursor:pointer}.eh-image-choice img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover}.eh-image-choice[aria-pressed="true"]{outline:2px solid var(--mbu-accent);outline-offset:3px}.eh-image-choice:hover{background:var(--mbu-bg)}.eh-image-links{display:flex;flex-wrap:wrap;gap:4px 10px}.eh-image-links>a{display:inline-grid;place-items:center;width:30px;height:30px;margin-top:6px;color:var(--mbu-text);text-decoration:none}.eh-image-links>a:hover{background:var(--mbu-bg-hover)}
 .art .imgsrc:hover{opacity:1;outline:2px solid var(--accent)}
 .art .cover{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px;box-shadow:0 18px 40px var(--shadow);display:block;color:transparent;background:var(--chip)}
 .art .cover.ipic{object-fit:contain;padding:8px;box-sizing:border-box;background:#fff}
@@ -7542,26 +7542,20 @@ function imageFingerprint(src) {
     }
     return imageFingerprints.get(src);
 }
+async function dedupArtistImages(images) {
+    const signatures = await Promise.all(images.map(x => imageFingerprint(x.src).catch(() => null)));
+    return ArtistImage.groups(images, signatures).map(indices => ({ ...images[indices[0]], providers: indices.map(i => images[i]) }));
+}
 function openImageGallery() {
     const d = data, g = d.g, xs = g.imgs || [];
     if (!xs.length || document.getElementById('eh-image-gallery')) return;
     const previous = document.activeElement, ov = document.createElement('div');
     ov.className = 'mbu-ov'; ov.id = 'eh-image-gallery';
-    ov.innerHTML = '<div class="mbu-ov-panel mbu-ui eh-images" role="dialog" aria-modal="true" aria-label="Choose image"><div class="mbu-ov-h"><span class="mbu-ov-title">Choose image <small class="eh-image-status">Comparing…</small></span><button type="button" class="mbu-ov-x" aria-label="Close">✕</button></div><div class="mbu-ov-body eh-image-grid"></div></div>';
-    const draw = groups => {
-        const grid = ov.querySelector('.eh-image-grid'), focus = grid.contains(document.activeElement);
-        grid.innerHTML = groups.map(indices => {
-            const i = indices[0], x = xs[i], providers = indices.map(j => xs[j]);
-            return `<div class="eh-image-option"><button type="button" class="eh-image-choice" data-image-index="${i}" aria-label="Use image from ${esc(providers.map(p => p.from).join(', '))}" aria-pressed="${indices.includes((g.imgI || 0) % xs.length)}"><img src="${esc(x.src)}" alt="${esc(x.from)}" referrerpolicy="no-referrer"><span class="eh-image-badges">${providers.map(p => `<span class="eh-image-badge" data-tip="${esc(p.from)}">${stIcon(p.key, 18)}</span>`).join('')}</span></button><div class="eh-image-links">${providers.map(p => `<a href="${esc(p.url)}" target="_blank" rel="noopener" data-tip="Open ${esc(p.from)}">${esc(p.from)} ↗</a>`).join('')}</div></div>`;
-        }).join('');
-        if (focus) ov.querySelector('[aria-pressed="true"]').focus();
-    };
-    draw(ArtistImage.groups(xs, []));
-    Promise.all(xs.map(x => imageFingerprint(x.src).catch(() => null))).then(signatures => {
-        if (!ov.isConnected || data !== d) return;
-        draw(ArtistImage.groups(xs, signatures));
-        ov.querySelector('.eh-image-status').textContent = '';
-    });
+    ov.innerHTML = '<div class="mbu-ov-panel mbu-ui eh-images" role="dialog" aria-modal="true" aria-label="Choose image"><div class="mbu-ov-h"><span class="mbu-ov-title">Choose image</span><button type="button" class="mbu-ov-x" aria-label="Close">\u2715</button></div><div class="mbu-ov-body eh-image-grid"></div></div>';
+    ov.querySelector('.eh-image-grid').innerHTML = xs.map((x, i) => {
+        const providers = x.providers || [x];
+        return `<div class="eh-image-option"><button type="button" class="eh-image-choice" data-image-index="${i}" aria-label="Use image from ${esc(providers.map(p => p.from).join(', '))}" aria-pressed="${i === (g.imgI || 0) % xs.length}"><img src="${esc(x.src)}" alt="${esc(x.from)}" referrerpolicy="no-referrer"></button><div class="eh-image-links">${providers.map(p => `<a href="${esc(p.url)}" target="_blank" rel="noopener" aria-label="Open ${esc(p.from)}" data-tip="Open ${esc(p.from)}">${stIcon(p.key, 20)}</a>`).join('')}</div></div>`;
+    }).join('');
     const close = () => { ov.remove(); removeEventListener('keydown', key, true); if (previous && previous.isConnected) previous.focus(); };
     const key = e => {
         if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
@@ -7585,7 +7579,8 @@ function openImageGallery() {
     addEventListener('keydown', key, true);
     ov.querySelector('[aria-pressed="true"]').focus();
 }
-const artistImage = (mbid, rels) => ARTIMG.findAll(mbid, rels.filter(x => x['target-type'] === 'url').map(x => x.url.resource));
+const artistImage = async (mbid, rels) => dedupArtistImages(await ARTIMG.findAll(mbid, rels.filter(x => x['target-type'] === 'url').map(x => x.url.resource)));
+
 // an artist or label left without a picture asks its linked sites again, over the cached miss; no site an image provider reads, nothing to ask
 const imgAskable = g => g.rels.some(x => x['target-type'] === 'url' && ARTIMG.providers.some(p => !S.imgOff.includes(p.key) && [].concat(p.re).some(re => re.test(x.url.resource))));
 const imgRetryBtn = g => g.imgs && !g.imgs.length && imgAskable(g) ? `<button type="button" class="imgretry" data-imgretry${g.imgBusy ? ' disabled' : ''}>${g.imgBusy ? 'Looking…' : 'Retry image'}</button>` : '';
@@ -12963,7 +12958,15 @@ function cfgWire(panel, b, body) {
     });
 }
 // the open artist's or label's pictures follow a new order: all of them stay cached, the order picks and sorts
-function imgResort() { if (data && !['area', 'place'].includes(data.kind) && data.g && data.g.imgsAll) { data.g.imgs = ARTIMG.sorted(data.g.imgsAll); data.g.imgI = 0; } }
+async function imgResort() {
+    const d = data;
+    if (!d || ['area', 'place'].includes(d.kind) || !d.g || !d.g.imgsAll) return;
+    const g = d.g, ticket = g.imgSortTicket = (g.imgSortTicket || 0) + 1;
+    const images = await dedupArtistImages(ARTIMG.sorted(g.imgsAll));
+    if (data !== d || g.imgSortTicket !== ticket) return;
+    g.imgs = images; g.imgI = 0;
+    if (ehOn) { const y = scrollY; render(); scrollTo(0, y); }
+}
 const closeCfg = () => { const w = document.getElementById('eh-cfg'); if (w) w.remove(); };
 function launcher() {
     const st = document.createElement('style'); st.id = 'eh-launch-css';
