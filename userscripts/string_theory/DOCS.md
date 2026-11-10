@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-10 13:01 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-10 13:03 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -92,11 +92,20 @@ The edit pages of artists, labels, places, works, recordings and events (and the
 
 An entity's **Add alias** page becomes a table of all its aliases, so several are added, changed and removed at once.
 
+Long aliases and sort names wrap within their columns as you edit.
+
+The **文** button beside Locale recognizes that alias's language. Right-click it to fill every empty locale. **Auto-detect locale** does this while you enter names and after importing them, and remembers your choice. Existing locale choices are kept; short or uncertain names stay empty. Review the guesses before **Enter edit**.
+
+**×** beside a set locale clears it and its primary mark. Automatic recognition keeps it empty until you change the alias name or explicitly recognize locales again.
+
 - Each line is one alias, in the order they were added, in columns: name, sort name, the locale and the type (both filter as you type), and begin and end dates. Once a locale is picked, a **☆** at the right of its field makes the alias the primary one for that locale (not once the alias has ended). A date is a year, year-month or full date; dots or slashes work too, and a day-first date like 31.12.2020 becomes 2020-12-31. Date fields take only digits and separators. A date that isn't whole when you leave the field, or an end before the begin, is marked in red, with the reason under the table, and nothing is submitted while it is. A search hint has only a name, as on MusicBrainz's form: its other fields are emptied and greyed out, and come back when you pick another type.
 - The last line is empty: type a name there to add an alias, and a new empty line follows.
+- **Fetch from Discogs** on an artist with a Discogs external link adds its name variations and aliases as new rows, removing Discogs' trailing numbers such as `(3)` and skipping names already in the table. A Discogs icon beside each imported name opens its source. Review the rows before **Enter edit**; the edit note includes the source link. Discogs aliases can represent separate MusicBrainz artists, so remove any that do not belong here.
 - A new alias's sort name follows its name, the way MusicBrainz guesses it (an artist's alias gets a person's, *Presley, Elvis*), until you type one yourself; **Aa** guesses it again.
 - A new row is green, a changed one yellow, and a removed one red; **↺** brings a removed alias back.
 - **Enter edit** appears once something has changed and enters one edit per green, yellow or red row. A row that fails turns red underneath, and hovering it shows MusicBrainz's reason.
+- The Aliases heading pulses while edits are being submitted.
+- New aliases are entered in parallel. Retrying sends only rows that failed.
 - **↺** on a changed alias puts it back as it was; on a removed one it keeps the alias.
 
 Elsewhere:
@@ -432,6 +441,8 @@ Right-click a release's **Edit** tab, or the **Edit** button on [Event Horizon](
 
 ### Settings
 
+**Auto-detect locale** in the [alias editor](#aliases) defaults off and remembers whether empty locales should be recognized automatically.
+
 Right-click Apollo's corner icon.
 
 | Setting                                                       | Default |                                                                                         |
@@ -463,30 +474,32 @@ Right-click Apollo's corner icon.
 
 ### Shortcuts
 
-| Where         | Key                                    |                                                 |
-| ------------- | -------------------------------------- | ----------------------------------------------- |
-| Tracklist     | ↓, Enter                               | next row                                        |
-| Tracklist     | ↑, Shift+Enter                         | previous row                                    |
-| Tracklist     | Tab, Shift+Tab                         | next, previous column                           |
-| Join phrase   | typing, ↓ ↑, Enter                     | filter the presets, move, pick                  |
-| Length parser | Ctrl+V                                 | read the lengths from the link on the clipboard |
-| Length parser | Ctrl+Enter                             | apply                                           |
-| Annotation    | Ctrl+B, Ctrl+I                         | bold, italic                                    |
-| Annotation    | Ctrl+Enter                             | enter the edit, on its own Edit annotation page |
-| Annotation    | Tab, Shift+Tab                         | make or change a list, remove it                |
-| Guess case    | right-click a track's **Aa**           | every track                                     |
-| Guess case    | right-click the release title's **Aa** | the options                                     |
-| Date box      | Alt+C                                  | copy the date to the other end of its range     |
-| Date box      | `-` `/` `.`                            | next box                                        |
-| Aliases       | ↓ ↑                                    | the same column in the next, previous row       |
-| Aliases       | Alt+↓, then ↓ ↑, Enter                 | open the locale or type list, move, pick        |
-| Release page  | right-click **Edit**                   | [clone the release](#clone-a-release)           |
+| Where         | Key                                    |                                                                                      |
+| ------------- | -------------------------------------- | ------------------------------------------------------------------------------------ |
+| Tracklist     | ↓, Enter                               | next row                                                                             |
+| Tracklist     | ↑, Shift+Enter                         | previous row                                                                         |
+| Tracklist     | Tab, Shift+Tab                         | next, previous column                                                                |
+| Join phrase   | typing, ↓ ↑, Enter                     | filter the presets, move, pick                                                       |
+| Length parser | Ctrl+V                                 | read the lengths from the link on the clipboard                                      |
+| Length parser | Ctrl+Enter                             | apply                                                                                |
+| Annotation    | Ctrl+B, Ctrl+I                         | bold, italic                                                                         |
+| Annotation    | Ctrl+Enter                             | enter the edit, on its own Edit annotation page                                      |
+| Annotation    | Tab, Shift+Tab                         | make or change a list, remove it                                                     |
+| Guess case    | right-click a track's **Aa**           | every track                                                                          |
+| Guess case    | right-click the release title's **Aa** | the options                                                                          |
+| Date box      | Alt+C                                  | copy the date to the other end of its range                                          |
+| Date box      | `-` `/` `.`                            | next box                                                                             |
+| Aliases       | ↓ ↑                                    | the same column in the next, previous row; in names, at the end or start of the text |
+| Aliases       | Alt+↓, then ↓ ↑, Enter                 | open the locale or type list, move, pick                                             |
+| Release page  | right-click **Edit**                   | [clone the release](#clone-a-release)                                                |
 
 ### Notes
 
 - When another script drives the editor, as Falcon does, Apollo runs nothing on its own: see [String Theory → Automated mode](../string_theory/README.md#automated-mode).
 
 #### Log history
+
+Alias imports, locale recognition, clearing and submissions are kept in Apollo's latest log, including work done in Event Horizon's alias editor.
 
 The log of a page where you entered edits, or where something went wrong, is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and page. **Clear history** deletes Apollo's.
 
@@ -816,6 +829,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 - **[Header menu](#header-menu)**: choose the actions, their order and which belong in More.
 - **[Background effects](#background-effects)**: Hexagons, Tron, Stars, Aurora and Rain, each with its own controls, over a background: the cover, a glow, generated artwork or any picture from the web.
 - **[Sections](#sections)**: all data, an entity's facts and external links included, in cards that can be reordered, hidden and configured.
+- **[Aliases](#aliases-1)**: edit aliases together and fetch an artist's names from Discogs.
 - **[Starred entities](#starred-entities)** keeps favorite entities on the homepage.
 - **[Collections](#collections)** adds or removes an entity from your MusicBrainz collections.
 - **[Recently opened](#recently-opened)** lists the pages you opened last on the homepage, with your choice of view, number and entity types.
@@ -886,6 +900,18 @@ While you tune an effect, move the mouse off the settings window to see the whol
 All data is arranged in sections that can be collapsed, hidden or reordered using main menu item. Card state is remembered for given entity. Specific cards have additional options at the right side.
 
 Click a card header, group or row to open or fold it. Right-click it, or its contents, to open or fold its siblings together. In the tracklist, tracks are siblings within a disc; right-click a card header to fold all cards into a contents list.
+
+### Aliases
+
+The pencil beside an entity's aliases opens the [bulk alias editor](../apollo_editor/README.md#aliases). The **Aliases** page offers the same editor.
+
+The heading shows the alias count as a badge and pulses while edits are being submitted.
+
+Use **文** beside Locale to recognize one alias's language; right-click it to fill all empty locales. **Auto-detect locale** fills them while you type or import names. Existing choices are kept and uncertain names stay empty. Review the guesses before **Enter edit**.
+
+**×** beside a set locale clears it and its primary mark. It stays empty until you change the alias name or explicitly recognize locales again. Alias work is kept in Apollo's latest log.
+
+Long aliases and sort names wrap within their columns. For an artist with a Discogs external link, **Fetch from Discogs** fills new rows with its name variations and aliases, removing Discogs' trailing numbers such as `(3)`, skipping names already present and adding the source to the edit note. Each imported row has a Discogs icon that opens its source. Review or remove the rows before **Enter edit**: Discogs aliases can represent separate MusicBrainz artists.
 
 ### Starred entities
 
@@ -966,6 +992,8 @@ Compatible scripts appear under **More (⋯)** in the page header and pinned bar
 > Authors can use the [menu-item protocol](../event_horizon/DEVELOP.md#external-menu-items) and [coexistence conventions](../../DEVELOP.md#interoperability).
 
 ### Settings
+
+**Auto-detect locale** in the [alias editor](#aliases-1) defaults off and remembers whether empty locales should be recognized automatically.
 
 Right-click the corner icon. Changes apply at once.
 

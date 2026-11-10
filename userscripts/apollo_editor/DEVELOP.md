@@ -23,11 +23,29 @@ Apollo clicks the element, then re-reads the tracklist. This suits tools without
 
 ## Discogs artist links
 
+On an artist's alias editor, **Fetch from Discogs** reads the artist URLs in `#sidebar ul.external_links` from the aliases page the editor already loads (the add-alias page has no sidebar). Only a click requests `api.discogs.com/artists/<id>` through GM, without a token. The importer is built into the shared alias editor, so Apollo's page and Event Horizon's page and popup use it alike; a caller can override it with an `importAliases` provider. `namevariations` and `aliases[].name` become unsaved rows. Names already present (trimmed, NFC, case-insensitive) and the form's default artist name are skipped; locale and type stay unset. The source URLs are appended to the shared edit note, preserving its text. All linked artists must load successfully before rows are added; failures leave the button available to retry. No MusicBrainz lookup is added.
+
 Before the name search, each track artist is matched by its Discogs URL, taken from the release's Discogs tracklist, against MusicBrainz's URL relationships. One linked MusicBrainz artist is applied (**DISC**); several are offered to pick from.
 
 Featured artists split out of the title count too. Discogs credits them as extra artists whose role varies (*Featuring* on some releases, *Vocals*, *Backing Vocals*, *Rap* or *MC* on others), so Apollo reads any performing role (vocals, rap, voice, performer, narration, choir; not producers, remixers or instrumentalists) and matches a featured artist by its Discogs link, keyed to its credited name, by title, or by position when the titles differ but the track counts agree. That link is often the only bridge, since the split name is frequently just an alias.
 
 Already-linked artists are verified through MusicBrainz's internal entity endpoint, so the rate-limited URL lookup runs only for artists missing a link, and a fully linked release is near-instant. Clearing or reverting all artists doesn't re-check; the next **Match** does.
+
+## Alias editor
+
+Discogs import strips a final space and `(digits)` from source names before duplicate checks, sort-name guessing and locale recognition; other parentheses are preserved. A caller can supply `heading: () => element` for the submission pulse. The shared editor pulses that heading from the start of the batch until all writes finish, with a static tint for reduced motion; Event Horizon supplies the popup header or Aliases section header.
+
+The editor calls its `keepLog` callback after imports, locale actions and submission, so successful fetch-based edits are retained without relying on a native form-submit event. Apollo passes its own `Log.keep()` and `flush()`. Event Horizon supplies a dedicated Apollo logger with the same `apollo:session:` history prefix, preserving its own active logger and issue-log registration. Locale actions record the alias and resulting code or the lack of a confident supported match.
+
+Clearing a locale also clears its primary flag, cancels pending recognition and sets a row-local `localeCleared` marker. Automatic recognition and the submit-time flush skip that row until its name changes or an explicit recognition action resets the marker. The marker is not submitted as an alias property.
+
+Alias and sort-name fields are auto-sized textareas: wrapping changes the display, while pasted line breaks become spaces. The shared editor sizes them on edits and width changes. Arrow keys stay inside a name until the caret reaches its start or end, then move to the same column in the adjacent row.
+
+Discogs imports retain a source URL on each new row for its linked platform icon; this provenance is local to the review session, not a MusicBrainz alias property.
+
+Independent new aliases submit with at most four concurrent form POSTs through the shared request gate. Existing aliases and primary-locale changes submit in order first. The editor is inert while submitting, and successes are marked clean while failures retain their error and stay dirty for retry. There is no automatic write retry after an uncertain response. The sandbox concurrency test observes overlapping real requests and reads all aliases back.
+
+Locale recognition uses the same lande 1.0.10 vendor model as release language recognition. Its source is `dev/aliases/lande-vendor.js`; `sync-aliases.mjs` fills both scripts' `ST-LANDE` blocks and String Theory deduplicates them. No request is sent. The model is initialized only on first recognition; results below 80% confidence or with fewer than four letters are left empty. ISO 639-3 results are canonicalized with `Intl.Locale` and accepted only when the base language is a supported form locale; regions are never guessed. The GM option `mbu.aliasAutoLocale` defaults off, stays with the providing script, and applies after typing pauses, on import and on opening the editor. It preserves manually chosen locales; a locale automatically assigned during this session is cleared and recognized again when its name changes. Right-clicking any locale recognition button processes only empty rows. All results remain unsaved edits until submission.
 
 ## Auto confirm
 

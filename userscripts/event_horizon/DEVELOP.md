@@ -2,6 +2,10 @@
 
 *Reference for maintainers and other scripts' authors*. The repo-wide procedure is in the root [DEVELOP.md](../../DEVELOP.md); tests are in [`test/`](test/).
 
+## Alias editor
+
+The alias popup and Aliases page use the same shared editor as Apollo. Its Discogs importer is described in [Apollo's Discogs artist links](../apollo_editor/DEVELOP.md#discogs-artist-links); it uses the already-loaded native aliases page, without relying on Event Horizon's rendered sidebar.
+
 ## Pages without page loads
 
 Event Horizon moves from page to page with `history.pushState` and draws each page in `#app`; the browser loads nothing. A userscript runs once, when the tab loads, so a script that starts from the page it finds sees only the page the tab loaded, never one reached inside Event Horizon. It runs on the wrong page, or not at all: Platform Check needs a release page with a sidebar, and a release opened on its History (`/release/<mbid>/edits`) has none, so at its Overview inside Event Horizon there was no Platform Check ([#847](https://github.com/majkinetor/musicbrainz-userscripts/issues/847)).

@@ -12,6 +12,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 - **[Header menu](#header-menu)**: choose the actions, their order and which belong in More.
 - **[Background effects](#background-effects)**: Hexagons, Tron, Stars, Aurora and Rain, each with its own controls, over a background: the cover, a glow, generated artwork or any picture from the web.
 - **[Sections](#sections)**: all data, an entity's facts and external links included, in cards that can be reordered, hidden and configured.
+- **[Aliases](#aliases)**: edit aliases together and fetch an artist's names from Discogs.
 - **[Starred entities](#starred-entities)** keeps favorite entities on the homepage.
 - **[Collections](#collections)** adds or removes an entity from your MusicBrainz collections.
 - **[Recently opened](#recently-opened)** lists the pages you opened last on the homepage, with your choice of view, number and entity types.
@@ -82,6 +83,18 @@ While you tune an effect, move the mouse off the settings window to see the whol
 All data is arranged in sections that can be collapsed, hidden or reordered using main menu item. Card state is remembered for given entity. Specific cards have additional options at the right side.
 
 Click a card header, group or row to open or fold it. Right-click it, or its contents, to open or fold its siblings together. In the tracklist, tracks are siblings within a disc; right-click a card header to fold all cards into a contents list.
+
+## Aliases
+
+The pencil beside an entity's aliases opens the [bulk alias editor](../apollo_editor/README.md#aliases). The **Aliases** page offers the same editor.
+
+The heading shows the alias count as a badge and pulses while edits are being submitted.
+
+Use **文** beside Locale to recognize one alias's language; right-click it to fill all empty locales. **Auto-detect locale** fills them while you type or import names. Existing choices are kept and uncertain names stay empty. Review the guesses before **Enter edit**.
+
+**×** beside a set locale clears it and its primary mark. It stays empty until you change the alias name or explicitly recognize locales again. Alias work is kept in Apollo's latest log.
+
+Long aliases and sort names wrap within their columns. For an artist with a Discogs external link, **Fetch from Discogs** fills new rows with its name variations and aliases, removing Discogs' trailing numbers such as `(3)`, skipping names already present and adding the source to the edit note. Each imported row has a Discogs icon that opens its source. Review or remove the rows before **Enter edit**: Discogs aliases can represent separate MusicBrainz artists.
 
 ## Starred entities
 
@@ -162,6 +175,8 @@ Compatible scripts appear under **More (⋯)** in the page header and pinned bar
 > Authors can use the [menu-item protocol](DEVELOP.md#external-menu-items) and [coexistence conventions](../../DEVELOP.md#interoperability).
 
 ## Settings
+
+**Auto-detect locale** in the [alias editor](#aliases) defaults off and remembers whether empty locales should be recognized automatically.
 
 Right-click the corner icon. Changes apply at once.
 
