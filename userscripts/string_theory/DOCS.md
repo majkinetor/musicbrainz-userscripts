@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-10 17:42 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-10 17:44 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -835,6 +835,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 - **[Recently opened](#recently-opened)** lists the pages you opened last on the homepage, with your choice of view, number and entity types.
 - **[Tracklist](#tracklist-1)**: each track's credits and its streaming links, with platforms deduplicated.
 - **[Releases and discography](#releases-and-discography)** as a grid or a table whose columns you choose, order and resize, grouped by type, with a filter, and with filters and columns saved by name.
+- **[Edit history](#edit-history)** groups edits and votes on a whole group at once.
 - **[Pending changes](#pending-changes)** marks what has edits open.
 - **[Keyboard shortcuts](#keyboard-shortcuts)**: single keys open an entity's edit, relationships, history and other pages, on MusicBrainz's page and in the viewer; **Ctrl+/** lists them and changes them.
 - **[Other scripts](#other-scripts)** can put their launchers in the header's **More (⋯)** menu.
@@ -956,6 +957,12 @@ Every table's filter also takes `column:value`, such as `artist:elvis` (put the 
 Write AND and OR in capitals: lowercase they are ordinary words. The **?** at the end of the box shows all this, with the section's columns.
 
 The arrow at the end of the filter box does the same for a filter: name it and save it, then pick it on any artist or release group. Saving under a name already there replaces it, and × deletes one. Releases and discographies keep their own lists.
+
+### Edit history
+
+Choose **Bursts**, **Day**, **Editor**, **Type** or **Status** to group edits. Each group’s **Yes**, **No**, **Abstain** and **None** buttons apply to its loaded edits you can vote on; **None** withdraws your votes. The number beside **Vote** counts eligible edits. A status filter limits the group vote to the edits shown. You can still vote on individual edits.
+
+A collection’s edit list starts with other editors’ edits. **All edits for this collection** includes your own; **Others’ edits for this collection** hides them.
 
 ### Pending changes
 
