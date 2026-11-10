@@ -209,6 +209,13 @@ const CSS = [
     '.mbu-log-f[hidden]{display:none}',
     '.mbu-log-fg{display:contents}',
     '.mbu-log-fs{width:1px;height:12px;background:var(--mbu-border);margin:0 6px}',
+    // a phone: the filters scroll sideways on one line, and each message takes the full width under its time and category
+    '@media (max-width:600px){.mbu-log-f{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}',
+    '.mbu-log-f .mbu-log-fb,.mbu-log-fs{flex-shrink:0;white-space:nowrap}',
+    '.mbu-log-list.mbu-log-cats{grid-template-columns:auto minmax(0,1fr);row-gap:0}',
+    '.mbu-log-cats .mbu-log-m{grid-column:1/-1;margin-bottom:5px}',
+    '.mbu-log-list:not(.mbu-log-cats) .mbu-log-li{flex-wrap:wrap;gap:0 9px}',
+    '.mbu-log-list:not(.mbu-log-cats) .mbu-log-m{flex-basis:100%}}',
     '.mbu-logpop .mbu-log-fb{width:auto;font:inherit;color:var(--mbu-text-weak);background:none;border:1px solid transparent;',
     'border-radius:5px;padding:0 6px;line-height:1.6;cursor:pointer}',
     '.mbu-logpop .mbu-log-fb:hover{color:var(--mbu-text);border-color:var(--mbu-border)}',
