@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.10.100946
+// @version      2026.11.10.103135
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11511,10 +11511,12 @@ function histEdit(e, sh) {
     const ns = sh ? e.notes.filter(n => hnKey(n) !== sh) : e.notes;
     return `<details class="hed"><summary><span class="d">${histTm(e.t)}</span>${histIco(e.tk)}<span class="hty">${esc(e.type)}</span>${histOne(data.id) || (data.grp !== 'burst' && data.grp !== 'editor') ? `<span class="hwho">${e.ed ? `<a href="${MB}/user/${encodeURIComponent(e.ed)}">${esc(e.ed)}</a>` : 'Editor hidden'}</span>` : ''}<span class="hst ${e.st}"${e.votes ? ` data-tip="${esc(e.votes[0].toUpperCase() + e.votes.slice(1))}"` : ''}>${H_ST[e.st]}</span>${ns.length ? `<span class="hnc" data-tip="${ns.length} edit note${ns.length > 1 ? 's' : ''}">💬 ${ns.length}</span><span class="hnp">${esc(ns[0].text.slice(0, 140))}</span>` : ''}${!e.can && e.myt && !/^none$/i.test(e.myt) ? `<span class="hmy" data-tip="Your vote">${esc(e.myt)}</span>` : ''}<a class="id" href="${MB}/edit/${e.id}">#${e.id}</a></summary><div class="hdt">${e.can ? histVote(e) : ''}${histOne(data.id) ? `<div class="hql">${e.votes ? `<span>Vote tally: ${esc(e.votes)}</span>` : ''}${e.cancel ? `<a class="hcx" href="${esc(e.cancel)}">Cancel edit</a>` : ''}</div>` : ''}${e.det}${ns.map(histNote).join('')}${e.canNote ? histNoteForm(e) : ''}</div></details>`;
 }
-// a group's edits, a run of one type folded into one line
+// a group's edits, a run of one type and one editor's note folded into one line: two submissions of the same type
+// carry two notes, and a run spanning both would show neither once
+const histOwn = e => { const n = e.notes.find(n => n.own); return n ? hnKey(n) : ''; };
 function histRuns(es) {
     const runs = [], g = histShared(es), gk = g && hnKey(g);
-    for (const e of es) { const r = runs[runs.length - 1]; if (r && r[0].tk === e.tk) r.push(e); else runs.push([e]); }
+    for (const e of es) { const r = runs[runs.length - 1]; if (r && r[0].tk === e.tk && (g || histOwn(r[0]) === histOwn(e))) r.push(e); else runs.push([e]); }
     return (g ? `<div class="hshr">${histNote(g)}</div>` : '') + runs.map(r => {
         // a group of one edit, or of one run, opens on it
         if (r.length === 1) return es.length === 1 ? histEdit(r[0], gk).replace('<details class="hed">', '<details class="hed" open>') : histEdit(r[0], gk);
