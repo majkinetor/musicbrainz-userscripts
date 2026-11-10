@@ -12,6 +12,16 @@ Event Horizon moves from page to page with `history.pushState` and draws each pa
 
 Never fix that with a reload. The maintainer is already on the page, and a reload throws away what Event Horizon shows. Event Horizon tells the other scripts what it shows instead, and they follow it, as Mission Control drives Platform Check.
 
+## Edit search
+
+Both empty and populated `/search/edits` pages use the history viewer. `esMount` moves the live native `#edit-search` form, preserving MusicBrainz's delegated condition handlers, hidden `#fields` templates and entity autocomplete. `esPark` puts it back at its original marker before a redraw or navigation; drafts and picker state survive history regrouping. Turning EH off restores the native controls. The empty page does not request results. Search results retain the server's order instead of the history viewer's default descending ID order.
+
+Every native select gets a filterable sibling picker; never wrap or replace the select, since MusicBrainz's handlers depend on its immediate parent. Pickers retain original values, including comma-separated edit-type groups, repeated arguments and distinct `no` (no vote) and `0` (No) values. Changes bubble from the original select. The observer rebuilds controls for native row changes and removes presentation nodes cloned with the trailing condition row. Native autocomplete menus follow their inputs into the visible body.
+
+Edit-search links and submissions load the destination normally so MusicBrainz initializes its own form and autocomplete there. This is a new search navigation, not a reload of the entity already showing. The homepage entry sits immediately after Advanced search.
+
+`editSearches` in GM storage holds `{name, query}` entries. Queries serialize the live form, without pagination or the unprefixed trailing `field`; repeated arguments and draft values are preserved. Loading uses the current MusicBrainz origin. Saving the same name case-insensitively replaces it only through the explicitly labelled Replace action. [`edit-search.spec.mjs`](test/edit-search.spec.mjs) covers every native predicate and option, ranges, native lookup selection, saved-search round trips and the homepage entry.
+
 ## The release shown
 
 While Event Horizon shows a release, `<html>` carries `data-mbu-release="<mbid>"`. Turning Event Horizon off, or showing anything that isn't a release, removes it. `ehRelMark` sets it from `setOn` and from `show`.

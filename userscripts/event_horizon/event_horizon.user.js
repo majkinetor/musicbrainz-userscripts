@@ -9884,6 +9884,7 @@ function colWire(root) {
 }
 function render(keepPop) {
     if (secDrag || colDrag) { secRedraw = true; return; } // keep the dragged row attached until the drag ends
+    esPark();
     if (!keepPop && $('#pop-collections:not([hidden])')) keepPop = 'collections';
     if (!keepPop) { const p = $('.col-pop:not([hidden])'); if (p) keepPop = p.id.slice(4); } // a background redraw leaves the Columns menu open
     if (!data || data.kind !== 'home') secFab(false);
@@ -10470,6 +10471,7 @@ function srchHero(hi, sub, q = '', ty = 'artist', meth = 'indexed', add = '') {
     const ss = S.hmQs === 'off' ? [] : searches(), qs = S.hmQs !== 'below' ? '' : ss.map(x => `<a href="${MB}/search?query=${encodeURIComponent(x.q)}&type=${x.t}&method=indexed">${x.t === 'artist' ? '' : `<b>${x.t.replace('_', ' ')}:</b> `}${esc(x.q)}</a>`).join('');
     return `<header class="hm-hero"><a class="hm-home" href="${MB}/" data-tip="Event Horizon's home" aria-label="Event Horizon's home">${LOGO.replace('<svg', '<svg class="hm-orb"')}<div class="hm-wm"><b>Event<br>Horizon</b><small>MUSICBRAINZ</small></div></a><div class="hm-hi">${hi}</div>
         <form class="hm-srch" action="${MB}/search" method="get"><button type="submit" class="hm-go" data-tip="Search" aria-label="Search">${SVG(LENS)}</button><input name="query" value="${esc(q)}" placeholder="${matchMedia('(max-width:700px)').matches ? 'Search' : 'Search MusicBrainz'}"${S.hmQs === 'combo' && ss.length ? ' autocomplete="off" role="combobox" aria-expanded="false" aria-controls="hm-ql"' : ''} required${q ? '' : ' autofocus'}>${S.hmQs === 'combo' && ss.length ? `<button type="button" class="hm-qc" data-tip="Recent searches" aria-label="Recent searches">${SVG('<path d="M6 9l6 6 6-6"/>')}</button>` : ''}<select name="type" hidden>${kinds}</select><button type="button" class="hm-ty" aria-haspopup="listbox" aria-expanded="false" aria-label="Entity type"><span>${srchName(ty)}</span></button><div class="hm-td" role="listbox" aria-label="Entity type" hidden>${tlist}</div><button type="button" class="hm-tg${S.hmAdv ? ' on' : ''}" data-tip="Advanced search" aria-label="Advanced search">${SVG('<path d="M4 6h10M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>')}</button>
+        <a class="hm-es" href="${MB}/search/edits" data-tip="Edit search" aria-label="Edit search">${SVG('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>')}</a>
         <div class="hm-adv"${S.hmAdv ? '' : ' hidden'}><label>Search method</label><select name="method">${[['indexed', 'Indexed'], ['advanced', 'Indexed, with advanced query syntax'], ['direct', 'Direct database search']].map(([v, l]) => `<option value="${v}"${v === meth ? ' selected' : ''}>${l}</option>`).join('')}</select>
         <span class="hm-hint">Advanced syntax: <code>artist:"Hania Rani" AND date:2023</code> · <a href="${MB}/doc/Indexed_Search_Syntax" target="_blank">syntax help</a></span><label>Recent searches</label><span class="hm-seg" role="radiogroup" aria-label="Recent searches">${[['off', 'Off'], ['below', 'Below search'], ['combo', 'In combobox']].map(([v, l]) => `<label><input type="radio" name="hm-qs" form="hm-noform" value="${v}" data-hm-qs${v === S.hmQs ? ' checked' : ''}><span>${l}</span></label>`).join('')}</span></div>${S.hmQs === 'combo' && ss.length ? `<div class="hm-qd" id="hm-ql" role="listbox" hidden>${ss.map(x => `<button type="button" role="option" data-q="${esc(x.q)}" data-t="${x.t}"${x.t === ty ? '' : ' hidden'}><span>${esc(x.q)}</span></button>`).join('')}</div>` : ''}</form>
         ${qs ? `<div class="hm-qr">${qs}<button type="button" class="hm-qx" data-tip="Forget these searches">Clear</button></div>` : ''}${sub}${add}</header>`;
@@ -10966,6 +10968,8 @@ function onClick(ev) {
         return;
     }
     const nav = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && ev.target.closest('a[href]');
+    // Edit search uses MusicBrainz's live form and its native lookup handlers on each search page.
+    if (nav && new URL(nav.href).origin === MB && new URL(nav.href).pathname === '/search/edits') return;
     const navId = nav && !nav.target && (navTo(nav.href) || histKey(nav.href));
     if (navId) { ev.preventDefault(); ehPush(nav.href); show(navId); return; }
     // a click anywhere on a section's header row, outside its tools, folds the section
@@ -11111,6 +11115,202 @@ const relKey = href => { const u = new URL(href, location.href), m = u.origin ==
 // a release's edit history → "hist/<mbid>"; MusicBrainz's other edit lists (a release's open edits, open and subscribed
 // edits, an edit search) and a single edit → "hist/<its address, encoded>"
 const H_LISTS = { '/edit/open': 'Open edits', '/edit/subscribed': 'Subscribed entities', '/edit/subscribed_editors': 'Subscribed editors', '/search/edits': 'Edit search' };
+/* The live native form owns predicates, translated options, cardinality and autocomplete.
+   Keep its nodes and delegated MusicBrainz handlers; only the selects get a presentation layer. */
+const EDIT_SEARCH_CSS = `
+#eh-edit-search{margin:0 0 30px;max-width:1080px}
+#edit-search.eh-es{font:inherit;color:var(--text)}
+#edit-search.eh-es>p{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:0 0 18px;font-size:13px;color:var(--muted)}
+#edit-search.eh-es .conditions{list-style:none;margin:0;padding:0}
+#edit-search.eh-es .conditions>li{display:grid;grid-template-columns:minmax(130px,210px) minmax(0,1fr) 28px;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+#edit-search.eh-es .conditions>li>button.remove-item{grid-column:3;grid-row:1;width:28px;height:28px;padding:0;background:none!important;border:0!important;color:var(--muted);font:24px/1 Manrope,system-ui,sans-serif;filter:none!important;cursor:pointer}
+#edit-search.eh-es .conditions>li>.eh-es-pick{grid-column:1;grid-row:1}
+#edit-search.eh-es .field-container{grid-column:2;grid-row:1;min-width:0}
+#edit-search.eh-es .field-container>span.field{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0}
+#edit-search.eh-es .field-container>span.field[style*="display: none"]{display:none}
+#edit-search.eh-es :is(input:not([type=checkbox]),button){font:inherit;color:inherit}
+#edit-search.eh-es input:not([type=checkbox]):not([type=hidden]){box-sizing:border-box;min-width:0;max-width:100%;padding:6px 8px;background:transparent!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:3px}
+#edit-search.eh-es .arg{max-width:100%}#edit-search.eh-es input[type=number]{width:125px}
+#edit-search.eh-es .autocomplete{position:relative;display:inline-flex;align-items:center;gap:5px;max-width:100%}
+#edit-search.eh-es .autocomplete input.name{width:260px!important}#edit-search.eh-es .autocomplete svg{width:15px;height:15px}
+#edit-search.eh-es a{color:var(--link)}
+#edit-search.eh-es #extra-condition{display:block;border:0;padding:12px 0}#edit-search.eh-es #extra-condition>:is(.remove-item,.field-container){display:none!important}
+#edit-search.eh-es #extra-condition>.eh-es-pick>button{color:var(--link);border-color:transparent;padding-left:0}
+#edit-search.eh-es #edit-search-submit{display:flex;align-items:center;gap:12px;margin-top:12px}
+#edit-search.eh-es #edit-search-submit button,.eh-es-saved>button{padding:6px 12px;border:1px solid var(--border);border-radius:3px;background:transparent;cursor:pointer;filter:none!important}
+#edit-search.eh-es #edit-search-submit button[type=submit]{color:var(--link);border-color:var(--link)}
+#edit-search.eh-es [hidden]{display:none!important}
+.eh-es-pick{display:inline-block;position:relative;max-width:100%;vertical-align:middle;min-width:0}
+.eh-es-pick>button{display:flex;align-items:center;gap:10px;max-width:100%;padding:5px 7px;border:1px solid var(--border);border-radius:3px;background:transparent;color:var(--text);cursor:pointer;text-align:left;filter:none!important}
+.eh-es-pick>button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.eh-es-pick>button::after{content:'⌄';margin-left:auto;color:var(--muted)}
+.eh-es-menu{position:absolute;top:calc(100% + 5px);left:0;z-index:1000;width:min(360px,calc(100vw - 40px));padding:8px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:3px}
+#edit-search.eh-es .eh-es-menu>input{width:100%;margin-bottom:6px}.eh-es-options{display:block;max-height:260px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
+.eh-es-options>button,.eh-es-options>label{display:flex;gap:8px;align-items:center;width:100%;padding:6px 7px;border:0;border-radius:0;background:transparent;color:inherit;cursor:pointer;text-align:left;font:inherit;filter:none!important}
+.eh-es-options>button[aria-selected=true]{color:var(--link)}.eh-es-options>:hover{background:var(--hover)}
+.eh-es-options input{accent-color:var(--accent);flex:none}.eh-es-options small{display:block;color:var(--muted)}.eh-es-empty{padding:6px;color:var(--muted);font-size:12px}
+.eh-es-saved{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.eh-es-saved>input{width:190px}.eh-es-saved>span:first-child{font-size:12px;color:var(--muted)}.eh-es-saved button:disabled{opacity:.4;cursor:default}
+.eh-es-status{font-size:12px;color:var(--muted);flex-basis:100%;min-height:18px}.eh-es-status:empty{display:none}
+/* MusicBrainz mounts autocomplete results beside the live input. */
+.eh-es-autocomplete{position:absolute;z-index:1001;max-width:calc(100vw - 40px);max-height:300px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;background:var(--surface);border:1px solid var(--border);color:var(--text);list-style:none;padding:4px;margin:0}
+.eh-es-autocomplete .ui-menu-item>a{display:block;padding:5px 8px;cursor:pointer;color:var(--text)}.eh-es-autocomplete .ui-state-focus{background:var(--hover)}.eh-es-autocomplete .autocomplete-comment{font-size:12px;color:var(--muted)}
+#edit-search.eh-es .ui-helper-hidden-accessible{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+:root[data-eh-theme=dark] #edit-search.eh-es .autocomplete img{filter:invert(.8)}
+@media(max-width:650px){#edit-search.eh-es .conditions>li{grid-template-columns:minmax(0,1fr) 28px;gap:8px}#edit-search.eh-es .conditions>li>button.remove-item{grid-column:2}#edit-search.eh-es .field-container{grid-column:1/-1;grid-row:2}.eh-es-menu{width:min(320px,calc(100vw - 40px))}.eh-es-saved>input{width:150px}}
+@media(pointer:coarse){.eh-es-pick>button,.eh-es-options>button,.eh-es-options>label{min-height:44px}}
+.hm-es{display:flex;align-items:center;justify-content:center;flex:none;color:var(--muted);padding:4px 8px;border-left:1px solid var(--border)}.hm-es:hover{color:var(--link)}.hm-es svg{width:19px;height:19px}
+`;
+let esForm = null, esHome = null, esObserver = null, esFocus = null, esSerial = 0;
+const esPicks = new WeakMap();
+const esIsSearch = id => /^\/search\/edits(?:\?|$)/.test(histSrc(id));
+const esHasQuery = id => [...new URL(MB + histSrc(id)).searchParams].some(([k, v]) => /^conditions\.\d+\.field$/.test(k) && v);
+function esPark() {
+    if (!esForm || !esHome || !esForm.closest('#app')) return;
+    const a = document.activeElement;
+    esFocus = a && esForm.contains(a) ? { el: a, at: a.selectionStart, end: a.selectionEnd } : null;
+    esHome.after(esForm);
+}
+function esQuery(form) {
+    const q = new URLSearchParams(new FormData(form));
+    // The native trailing empty row has an unprefixed field name. It is not a condition.
+    q.delete('field'); q.delete('page');
+    return q.toString();
+}
+function esSaved() {
+    try { const a = GM_getValue('editSearches', []); return Array.isArray(a) ? a.filter(x => x && typeof x.name === 'string' && typeof x.query === 'string') : []; }
+    catch (e) { return []; }
+}
+function esSavedBar(form) {
+    const bar = document.createElement('div'); bar.className = 'eh-es-saved';
+    bar.innerHTML = '<span>Saved searches</span><select aria-label="Saved searches"></select><button type="button" data-es-load>Load</button><button type="button" data-es-delete aria-label="Delete saved search">Delete</button><input aria-label="Search name" placeholder="Search name" maxlength="120"><button type="button" data-es-save>Save search</button><span class="eh-es-status" role="status"></span>';
+    const sel = bar.querySelector('select'), name = bar.querySelector('input'), save = bar.querySelector('[data-es-save]'), msg = bar.querySelector('.eh-es-status');
+    const update = () => {
+        const a = esSaved(), v = sel.value;
+        sel.replaceChildren(new Option('Choose a saved search', ''), ...a.map(x => new Option(x.name, x.name)));
+        if (a.some(x => x.name === v)) sel.value = v;
+        bar.querySelector('[data-es-load]').disabled = bar.querySelector('[data-es-delete]').disabled = !sel.value;
+        save.textContent = a.some(x => x.name.toLowerCase() === name.value.trim().toLowerCase()) ? 'Replace saved search' : 'Save search';
+        esScan();
+    };
+    const write = a => { try { GM_setValue('editSearches', a); return true; } catch (e) { msg.textContent = 'Search could not be saved'; return false; } };
+    name.addEventListener('input', () => { const duplicate = esSaved().some(x => x.name.toLowerCase() === name.value.trim().toLowerCase()); save.textContent = duplicate ? 'Replace saved search' : 'Save search'; });
+    name.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); save.click(); } });
+    sel.addEventListener('change', () => { name.value = sel.value; update(); });
+    save.onclick = () => {
+        const n = name.value.trim(); if (!n) { msg.textContent = 'Enter a search name'; name.focus(); return; }
+        const a = esSaved(), i = a.findIndex(x => x.name.toLowerCase() === n.toLowerCase()), x = { name: n, query: esQuery(form) };
+        if (i < 0) a.push(x); else a[i] = x;
+        if (!write(a)) return;
+        update(); sel.value = n; sel.dispatchEvent(new Event('change', { bubbles: true })); msg.textContent = 'Saved “' + n + '”';
+    };
+    bar.querySelector('[data-es-load]').onclick = () => { const s = esSaved().find(x => x.name === sel.value); if (s) location.assign(MB + '/search/edits?' + s.query); };
+    bar.querySelector('[data-es-delete]').onclick = () => { const n = sel.value; if (n && write(esSaved().filter(x => x.name !== n))) { name.value = ''; update(); msg.textContent = 'Deleted “' + n + '”'; } };
+    form.prepend(bar); update(); return bar;
+}
+function esPick(select) {
+    const root = document.createElement('span'); root.className = 'eh-es-pick'; root._esSelect = select;
+    const headers = { auto_edit_filter: 'Edit kind', order: 'Sort order', negation: 'Match mode', combinator: 'Condition logic' };
+    const label = select.getAttribute('aria-label') || headers[select.name] || (select.classList.contains('field') ? 'Condition' : select.name.endsWith('operator') ? 'Operator' : select.name.endsWith('args') ? 'Values' : select.name.split('.').pop().replace(/_/g, ' '));
+    const id = 'eh-es-options-' + ++esSerial;
+    root.innerHTML = `<button type="button" aria-label="${esc(label)}" aria-expanded="false" aria-controls="${id}"><span></span></button><span class="eh-es-menu" hidden><input type="search" placeholder="Filter options…" aria-label="Filter ${esc(label)}" autocomplete="off"><span class="eh-es-options" id="${id}"${select.multiple ? '' : ' role="listbox"'} aria-label="${esc(label)}"></span><span class="eh-es-empty" hidden>No matching options</span></span>`;
+    const trigger = root.firstElementChild, menu = root.querySelector('.eh-es-menu'), filter = menu.querySelector('input'), list = menu.querySelector('.eh-es-options');
+    let signature = '';
+    const close = focus => { menu.hidden = true; trigger.setAttribute('aria-expanded', 'false'); if (focus && root.isConnected) trigger.focus({ preventScroll: true }); };
+    const narrow = () => {
+        const q = filter.value.trim().toLowerCase();
+        let n = 0;
+        for (const el of list.children) { el.hidden = !el.textContent.toLowerCase().includes(q); if (!el.hidden) n++; }
+        menu.lastElementChild.hidden = n > 0;
+    };
+    const sync = () => {
+        const opts = [...select.options], selected = [...select.selectedOptions], extra = select.closest('#extra-condition');
+        const text = extra ? '+ Add condition' : !selected.length ? 'Choose values…' : selected.length > 2 ? selected.slice(0, 2).map(x => x.text.trim()).join(', ') + ' +' + (selected.length - 2) : selected.map(x => x.text.trim()).join(', ');
+        if (trigger.firstElementChild.textContent !== text) trigger.firstElementChild.textContent = text;
+        if (trigger.disabled !== select.disabled) trigger.disabled = select.disabled;
+        const sig = JSON.stringify(opts.map(o => [o.value, o.text, o.disabled, o.parentElement.tagName === 'OPTGROUP' ? o.parentElement.label : '']));
+        if (sig !== signature) {
+            signature = sig; list.replaceChildren();
+            opts.forEach((o, i) => {
+                // Native placeholder stays native but isn't a selectable condition.
+                if (extra && i === 0) return;
+                const el = document.createElement(select.multiple ? 'label' : 'button');
+                if (select.multiple) { const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = o.selected; cb.disabled = o.disabled; el.append(cb); }
+                else { el.type = 'button'; el.setAttribute('role', 'option'); el.disabled = o.disabled; }
+                const txt = document.createElement('span'); txt.textContent = o.text.trim();
+                if (o.parentElement.tagName === 'OPTGROUP') { const group = document.createElement('small'); group.textContent = o.parentElement.label; txt.append(group); }
+                el.append(txt); el.dataset.esIndex = i;
+                el.addEventListener(select.multiple ? 'change' : 'click', () => {
+                    if (select.multiple) o.selected = el.querySelector('input').checked;
+                    else { select.selectedIndex = i; close(true); }
+                    // The original parentage and bubbling event are required by MusicBrainz's delegated handlers.
+                    select.dispatchEvent(new Event('change', { bubbles: true }));
+                    sync();
+                });
+                list.append(el);
+            });
+            narrow();
+        }
+        for (const el of list.children) { const o = opts[+el.dataset.esIndex]; if (select.multiple) el.querySelector('input').checked = o.selected; else el.setAttribute('aria-selected', String(o.selected)); }
+    };
+    trigger.onclick = () => {
+        const open = menu.hidden;
+        for (const p of esForm.querySelectorAll('.eh-es-pick')) if (p !== root && p._esClose) p._esClose(false);
+        menu.hidden = !open; trigger.setAttribute('aria-expanded', String(open));
+        if (open) { filter.value = ''; sync(); narrow(); const box = root.getBoundingClientRect(), width = menu.getBoundingClientRect().width; menu.style.left = Math.max(16 - box.left, Math.min(0, innerWidth - 16 - box.left - width)) + 'px'; filter.focus(); }
+    };
+    filter.addEventListener('input', narrow);
+    root.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && !menu.hidden) { e.preventDefault(); e.stopPropagation(); close(true); }
+        else if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && !menu.hidden) {
+            const xs = [...list.children].filter(x => !x.hidden).map(x => x.matches('button') ? x : x.querySelector('input')).filter(x => !x.disabled);
+            if (xs.length) { e.preventDefault(); const i = xs.indexOf(document.activeElement), d = e.key === 'ArrowDown' ? 1 : -1; xs[i < 0 ? d > 0 ? 0 : xs.length - 1 : (i + d + xs.length) % xs.length].focus(); }
+        } else if (e.key === 'Enter' && e.target === filter) { e.preventDefault(); const x = [...list.children].find(x => !x.hidden && !x.disabled); if (x) (x.querySelector('input') || x).click(); }
+    });
+    root.addEventListener('focusout', e => { if (!root.contains(e.relatedTarget)) close(false); });
+    root._esClose = close; root._esSync = sync; select.after(root); esPicks.set(select, root); sync(); return root;
+}
+function esScan() {
+    if (!esForm) return;
+    // MusicBrainz clones the empty row when adding a condition; discard cloned presentation nodes.
+    for (const p of esForm.querySelectorAll('.eh-es-pick')) if (!p._esSelect || !esForm.contains(p._esSelect)) p.remove();
+    for (const s of esForm.querySelectorAll('select')) {
+        let p = esPicks.get(s); if (!p || !p.isConnected) p = esPick(s); else p._esSync();
+        s.hidden = ehOn; p.hidden = !ehOn || s.style.display === 'none';
+    }
+    for (const b of esForm.querySelectorAll('.remove-item')) if (ehOn && b.textContent !== '×') { b.textContent = '×'; b.setAttribute('aria-label', b.getAttribute('title') || 'Remove condition'); b.removeAttribute('title'); }
+    // jQuery UI creates menus under the body that existed at initialization, sometimes the hidden native one.
+    const jq = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window).jQuery;
+    if (ehOn && typeof jq === 'function') for (const input of esForm.querySelectorAll('.autocomplete input.name')) {
+        const menu = jq(input).data('mb-entitylookup')?.menu?.element?.[0];
+        if (menu) { menu.classList.add('eh-es-autocomplete'); if (menu.parentNode !== ehBody) ehBody.append(menu); }
+    }
+}
+function esMount(app, d) {
+    if (!esIsSearch(d.id)) return;
+    if (!esForm) {
+        esForm = mbBody.querySelector('#edit-search'); if (!esForm) return;
+        esHome = document.createComment('Event Horizon edit search'); esForm.before(esHome);
+        esSavedBar(esForm);
+        esForm.addEventListener('change', () => queueMicrotask(esScan));
+        esObserver = new MutationObserver(esScan); esObserver.observe(esForm, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'disabled'] });
+        const native = document.createElement('button'); native.type = 'button'; native.className = 'lnk'; native.textContent = 'Native form'; native.dataset.esNative = ''; native.onclick = () => switchOn(false); esForm.querySelector('#edit-search-submit').append(native);
+        document.addEventListener('click', e => { if (esForm && !e.target.closest('.eh-es-pick')) esForm.querySelectorAll('.eh-es-pick').forEach(p => p._esClose && p._esClose(false)); });
+    }
+    esForm.classList.add('eh-es');
+    esForm.querySelectorAll('.eh-es-saved,[data-es-native]').forEach(p => { p.hidden = false; });
+    app.querySelector('#eh-edit-search').append(esForm); esScan();
+    if (esFocus && esForm.contains(esFocus.el)) { esFocus.el.focus({ preventScroll: true }); if (typeof esFocus.at === 'number') esFocus.el.setSelectionRange(esFocus.at, esFocus.end); }
+    esFocus = null;
+}
+function esNative() {
+    esPark(); if (!esForm) return;
+    esForm.classList.remove('eh-es');
+    esForm.querySelectorAll('select').forEach(s => { s.hidden = false; });
+    esForm.querySelectorAll('.eh-es-pick,.eh-es-saved,[data-es-native]').forEach(p => { p.hidden = true; });
+    esForm.querySelectorAll('.remove-item').forEach(b => { b.textContent = ''; });
+    for (const menu of ehBody.querySelectorAll('.eh-es-autocomplete')) { menu.classList.remove('eh-es-autocomplete'); mbBody.append(menu); }
+}
+
 const histKey = href => {
     const u = new URL(href, location.href); if (u.origin !== location.origin) return null;
     const m = !u.search && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/edits/?$', 'i'));
@@ -11124,7 +11324,6 @@ const histKey = href => {
     // any other entity's history (release group, artist, recording, ...): its all and open edits
     const en = new RegExp('^/(release-group|artist|label|recording|work|area|instrument|series|event|place)/' + MBID.source + '/(open_)?edits$', 'i').test(pa);
     if (!o && !co && !en && !H_LISTS[pa]) return null;
-    if (pa === '/search/edits' && !u.searchParams.has('conditions.0.field')) return null; // the empty search form stays MusicBrainz's
     u.searchParams.delete('page');
     if (co && !u.searchParams.has('hide_own')) u.searchParams.set('hide_own', '1');
     return 'hist/' + encodeURIComponent(pa.toLowerCase() + (u.search === '?' ? '' : u.search));
@@ -11847,7 +12046,7 @@ async function histLoad(n, all) {
             const x = histParse(html), seen = new Set(d.edits.map(e => e.id));
             const fresh = x.edits.filter(e => !seen.has(e.id)); d.edits.push(...fresh); d.page = p; if (x.rid) { d.rid = x.rid; relGet(); }
             // a voted or failed edit carries when it closed: an edit is never later than the next newer one, ids go in the order they were made
-            d.edits.sort((a, b) => b.id - a.id); d.more = x.next && fresh.length > 0;
+            if (!esIsSearch(d.id)) d.edits.sort((a, b) => b.id - a.id); d.more = x.next && fresh.length > 0;
             LOG.debug(`History ${d.id}: page ${p} gave ${x.edits.length} edits, ${fresh.length} new, ${d.edits.length} in all${d.more ? '' : ', no more pages'}`);
             render();
             // enough once past the target, unless this page was all one burst that may go on
@@ -11970,14 +12169,15 @@ function histPage(app, d) {
     const hload = `<span class="hld">${d.busy ? `${d.edits.length} edits, loading…` : d.more ? `${d.edits.length} edits <span class="dwrap lmw hlm"><button type="button" class="sk-b" data-hmore>Load more</button>${lmMenu('sk-b', b => `data-hmore="${b}"`)}</span>` : `All ${d.edits.length} edits`}</span>`;
     const collection = src.match(/^\/collection\/[^/?]+\/[^?]+/), collectionLinks = collection ? [[collection[0] + '?hide_own=0', 'All edits for this collection'], [collection[0] + '?hide_own=1', 'Others’ edits for this collection']] : [];
     const bar = `<div class="hbar"><span class="lb">Group</span><span class="hseg">${[['burst', 'Bursts'], ['day', 'Day'], ['editor', 'Editor'], ['type', 'Type'], ['status', 'Status']].map(([k, t]) => `<button type="button" data-hgrp="${k}" class="${d.grp === k ? 'on' : ''}">${t}</button>`).join('')}</span><span class="sp"></span>${Object.keys(H_ST).map(k => cnt(k) ? `<button type="button" class="hchip${d.st === k ? ' on' : ''}" data-hst="${k}">${H_ST[k]} ${cnt(k)}</button>` : '').join('')}${hload}</div>` + `<div class="hql">${[...collectionLinks, ...(rid ? [[`/release/${rid}/open_edits`, 'Open edits for this release'], [`/release/${rid}/edits`, 'All its edits']] : []), ['/edit/subscribed', 'Subscribed entities'], ['/edit/subscribed_editors', 'Subscribed editors'], ['/edit/open', 'Open edits'], ['/vote', 'Voting suggestions'], ['/search/edits', 'Search for edits']].map(([u, t]) => `<a href="${MB}${u}">${t}</a>`).join('')}</div>`;
-    const foot = d.err ? `<div class="hmore msg err">${esc(d.err)} <button type="button" class="sk-b" data-hmore>Retry</button></div>` : d.edits.length ? '' : d.busy ? '<div class="hmore">Loading edits…</div>' : '<div class="hmore">No edits</div>';
+    const foot = esIsSearch(d.id) && !esHasQuery(d.id) ? '' : d.err ? `<div class="hmore msg err">${esc(d.err)} <button type="button" class="sk-b" data-hmore>Retry</button></div>` : d.edits.length ? '' : d.busy ? '<div class="hmore">Loading edits…</div>' : '<div class="hmore">No edits</div>';
     // an editor's own list says whose it is
     const owner = (src.match(/^\/user\/([^/?]+)\//) || [])[1];
     const en = histEntOf(d.id);
     // the entity's own action row, as on its page, History lit
     const enActs = en && actionRow((en[0] === 'release-group' ? RG_ACTS : en[0] === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS), en[0], en[1], 'edits');
     const enHd = en && entHead({ type: en[0], id: en[1], acts: enActs,img: en[0] === 'event' ? `https://eventartarchive.org/event/${en[1]}/front-250` : visitImg({ key: en.join('/') }), kick: histName(d.id) + ' · ' + (HM_KIND[en[0]] || [en[0]])[0], title: d.ent && d.ent.title }).replace(/<\/div>$/, (d.ent && d.ent.by ? `<div class="by">by ${d.ent.by}</div>` : '') + '</div>');
-    app.innerHTML = `<section class="arthd">${en ? enHd : r || rid ? subHead(r, r ? r.id : rid, 'edits', esc(histName(d.id)), '<h1>&nbsp;</h1>') : `<div class="rhtx"><div class="kicker label">${kick}<span class="acts">${acts}</span></div><h1>${esc(histName(d.id))}</h1>${owner ? `<div class="by">by <a href="${MB}/user/${owner}">${esc(decodeURIComponent(owner))}</a></div>` : ''}</div>`}</section><section class="hist">${!histOne(d.id) ? bar : ''}${body}${histOne(d.id) && d.edits.length ? '' : foot}</section>`;
+    app.innerHTML = `<section class="arthd">${en ? enHd : r || rid ? subHead(r, r ? r.id : rid, 'edits', esc(histName(d.id)), '<h1>&nbsp;</h1>') : `<div class="rhtx"><div class="kicker label">${kick}<span class="acts">${acts}</span></div><h1>${esc(histName(d.id))}</h1>${owner ? `<div class="by">by <a href="${MB}/user/${owner}">${esc(decodeURIComponent(owner))}</a></div>` : ''}</div>`}</section><section class="hist">${esIsSearch(d.id) ? '<div id="eh-edit-search"></div>' : ''}${!histOne(d.id) && (!esIsSearch(d.id) || esHasQuery(d.id)) ? bar : ''}${body}${histOne(d.id) && d.edits.length ? '' : foot}</section>`;
+    esMount(app, d);
     cvWire(app);
     app.onclick = ev => {
         if (data !== d) return;
@@ -12050,7 +12250,7 @@ function listFilters(root) {
 }
 function build() {
     const head = document.head || document.documentElement;
-    head.insertAdjacentHTML('beforeend', `<link id="eh-font" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"><style id="eh-css">${CSS}</style>`);
+    head.insertAdjacentHTML('beforeend', `<link id="eh-font" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"><style id="eh-css">${CSS}${EDIT_SEARCH_CSS}</style>`);
     ehBody = document.createElement('body');
     ehBody.innerHTML = `<main class="wrap" id="app"></main><div class="toast" id="toast" hidden role="status"></div>`;
     document.addEventListener('click', onClick);
@@ -12168,6 +12368,7 @@ function setOn(on) {
     if (/^(relate|form)\//.test(PAGE_ID)) { relSet(on); return; }
     // navigated inside EH: reload for MusicBrainz's page of this one, and stay off there
     if (!on && keyOf(location.href) !== PAGE_ID) { try { sessionStorage.setItem('eh-off', 1); } catch (e) {} location.reload(); return; }
+    if (!on) esNative();
     const wasOn = ehOn;
     if (on && !wasOn) mbTitle = document.title;
     const first = on && !ehBody, theme = on && mbuTheme();   // read off MusicBrainz's page, before it goes
@@ -12190,6 +12391,7 @@ function setOn(on) {
     for (const c of ['br', 'bl', 'tr', 'tl']) if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCorner(c);
     hexApply();
     artStationPlace(on); discApollo(on);
+    if (on && !first && data && data.kind === 'hist' && esIsSearch(data.id)) esMount(ehBody.querySelector('#app'), data);
     if (first) show(PAGE_ID);
     if (on) document.documentElement.setAttribute('data-eh-theme', theme);
     else document.documentElement.removeAttribute('data-eh-theme');
@@ -13049,6 +13251,7 @@ function ehPageMark() { const r = document.documentElement; if (ehOn) r.setAttri
 // o.y: where to scroll once the page is all in (Back, Forward, a redraw); o.quiet: a redraw of the page showing, with
 // what MusicBrainz changed since it was kept: no skeleton, drawn once whole, and the page stays where it was on a failure
 async function show(key, o = {}) {
+    esPark();
     const app = $('#app'), n = ++showing;
     ehCheckDone();
     const kind = key && key.split('/')[0], isRg = kind === 'release-group', isAr = kind === 'artist', isLb = kind === 'label', id = key && key.split('/')[1];
@@ -13058,7 +13261,7 @@ async function show(key, o = {}) {
     if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
     if (kind === 'discs' || kind === 'toc') { data = { kind, id }; scrollTo(0, 0); render(); discLoad(n, id); return; }
     if (kind === 'art' || kind === 'eart') { data = { kind: 'art', id, ev: kind === 'eart' }; render(); artLoad(n, id); return; }
-    if (kind === 'hist') { data = { kind: 'hist', id, edits: [], page: 0, more: true, grp: S.hgrp || 'burst', st: '', open: new Set() }; scrollTo(0, 0); render(); histLoad(n); return; }
+    if (kind === 'hist') { data = { kind: 'hist', id, edits: [], page: 0, more: !esIsSearch(id) || esHasQuery(id), grp: S.hgrp || 'burst', st: '', open: new Set() }; scrollTo(0, 0); render(); histLoad(n); return; }
     if (kind === 'gtag') {
         const p = key.split('/').slice(1);
         data = { kind: 'tagx', key, name: '', tag: decodeURIComponent(p[0]), type: p[1] || '', dn: false, q: '' };
