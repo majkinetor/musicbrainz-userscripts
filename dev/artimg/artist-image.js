@@ -44,7 +44,7 @@ class ArtistImage {
         { key: 'tidal', name: 'Tidal', re: /^https?:\/\/(?:listen\.|www\.)?tidal\.com\/(?:browse\/)?artist\/(\d+)/, get: async (m, http) => {
             const r = await http('https://tidal.com/artist/' + m[1]);
             if (!r.ok) return null;
-            return ArtistImage.og(await r.text());
+            return ArtistImage.tidalImage(ArtistImage.og(await r.text()));
         } },
         { key: 'apple', name: 'Apple Music', re: /^https?:\/\/(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?artist\/(?:[^/?#]+\/)?(?:id)?(\d+)/, get: async (m, http) => {
             const r = await http('https://music.apple.com/us/artist/' + m[1]);
@@ -94,6 +94,10 @@ class ArtistImage {
     }
 
     load() { try { return (this.store.get && this.store.get(this.key, null)) || {}; } catch (e) { return {}; } }
+    // Tidal's static social card is branding, not an artist photo.
+    static tidalImage(src) {
+        return src && !/^https?:\/\/(?:www\.)?tidal\.com\/img\//i.test(src) ? src : null;
+    }
     save(c) {
         const ks = Object.keys(c);
         if (ks.length > this.max) ks.sort((a, b) => c[a].t - c[b].t).slice(0, ks.length - this.max).forEach(k => delete c[k]);
@@ -102,7 +106,7 @@ class ArtistImage {
     sorted(all) {
         const o = (typeof this.order === 'function' ? this.order() : this.order) || this.providers.map(p => p.key);
         const at = k => o.indexOf(k);
-        return all.filter(x => o.includes(x.key)).sort((a, b) => at(a.key) - at(b.key)); // a provider left out of the order is off
+        return all.filter(x => o.includes(x.key) && (x.key !== 'tidal' || ArtistImage.tidalImage(x.src))).sort((a, b) => at(a.key) - at(b.key)); // also discard placeholders cached by older installs
     }
 
     // every cached image in order ([] for a cached miss), undefined when there is none or it expired

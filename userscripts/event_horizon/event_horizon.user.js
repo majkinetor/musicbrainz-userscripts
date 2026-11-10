@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.10.182720
+// @version      2026.11.10.184040
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2887,7 +2887,8 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .hero{display:flex;flex-wrap:wrap;gap:24px 44px;align-items:flex-start}.hero .label{font-size:10.5px}
 .art{flex:0 1 clamp(220px,30vw,380px);min-width:0;display:flex;flex-direction:column;gap:12px}
 .art .picw{position:relative}.chip[data-g=imgP]{cursor:grab;touch-action:none;user-select:none}.art .cover.rot,.art .cover[data-relcover],.art .thumbs img{cursor:pointer}
-.art .imgsrc{position:absolute;right:10px;bottom:10px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--surface);box-shadow:0 2px 8px var(--shadow);opacity:.92}.art .imgsrc:hover{opacity:1;outline:2px solid var(--accent)}
+.art .imgsrc{position:absolute;right:10px;bottom:10px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--surface);box-shadow:0 2px 8px var(--shadow);opacity:.92}.eh-images{width:min(540px,calc(100vw - 32px));min-width:0;max-height:80vh}.eh-image-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:16px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.eh-image-option{min-width:0}.eh-image-choice{display:block;position:relative;width:100%;padding:0;border:0;background:transparent;cursor:pointer}.eh-image-choice img{display:block;width:100%;height:130px;object-fit:contain}.eh-image-choice[aria-pressed="true"]{outline:2px solid var(--mbu-accent);outline-offset:3px}.eh-image-choice:hover{background:var(--mbu-bg)}.eh-image-badge{position:absolute;right:4px;bottom:4px;display:grid;place-items:center;padding:4px;background:var(--mbu-bg)}.eh-image-option>a{display:block;margin-top:8px;font-size:12px;color:var(--mbu-text);text-decoration:none}.eh-image-option>a:hover{text-decoration:underline}
+.art .imgsrc:hover{opacity:1;outline:2px solid var(--accent)}
 .art .cover{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px;box-shadow:0 18px 40px var(--shadow);display:block;color:transparent;background:var(--chip)}
 .art .cover.ipic{object-fit:contain;padding:8px;box-sizing:border-box;background:#fff}
 .art .nocover{width:100%;aspect-ratio:1;border-radius:14px;background:var(--chip);color:var(--muted);display:grid;place-items:center}
@@ -5551,7 +5552,7 @@ class ArtistImage {
         { key: 'tidal', name: 'Tidal', re: /^https?:\/\/(?:listen\.|www\.)?tidal\.com\/(?:browse\/)?artist\/(\d+)/, get: async (m, http) => {
             const r = await http('https://tidal.com/artist/' + m[1]);
             if (!r.ok) return null;
-            return ArtistImage.og(await r.text());
+            return ArtistImage.tidalImage(ArtistImage.og(await r.text()));
         } },
         { key: 'apple', name: 'Apple Music', re: /^https?:\/\/(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?artist\/(?:[^/?#]+\/)?(?:id)?(\d+)/, get: async (m, http) => {
             const r = await http('https://music.apple.com/us/artist/' + m[1]);
@@ -5601,6 +5602,10 @@ class ArtistImage {
     }
 
     load() { try { return (this.store.get && this.store.get(this.key, null)) || {}; } catch (e) { return {}; } }
+    // Tidal's static social card is branding, not an artist photo.
+    static tidalImage(src) {
+        return src && !/^https?:\/\/(?:www\.)?tidal\.com\/img\//i.test(src) ? src : null;
+    }
     save(c) {
         const ks = Object.keys(c);
         if (ks.length > this.max) ks.sort((a, b) => c[a].t - c[b].t).slice(0, ks.length - this.max).forEach(k => delete c[k]);
@@ -5609,7 +5614,7 @@ class ArtistImage {
     sorted(all) {
         const o = (typeof this.order === 'function' ? this.order() : this.order) || this.providers.map(p => p.key);
         const at = k => o.indexOf(k);
-        return all.filter(x => o.includes(x.key)).sort((a, b) => at(a.key) - at(b.key)); // a provider left out of the order is off
+        return all.filter(x => o.includes(x.key) && (x.key !== 'tidal' || ArtistImage.tidalImage(x.src))).sort((a, b) => at(a.key) - at(b.key)); // also discard placeholders cached by older installs
     }
 
     // every cached image in order ([] for a cached miss), undefined when there is none or it expired
@@ -7478,7 +7483,36 @@ function picHtml(g, cls, none) {
     const xs = g.imgs || [], i = (g.imgI || 0) % (xs.length || 1), x = xs[i];
     if (!x) return none;
     const more = xs.length > 1;
-    return `<div class="picw"><img class="cover ${cls}${more ? ' rot' : ''}" src="${esc(x.src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer"${more ? ` data-rot data-tip="${i + 1} of ${xs.length}: click for ${esc(xs[(i + 1) % xs.length].from)}"` : ''}>${x.badge ? `<img class="imgflag" src="${esc(x.badge)}" alt="" referrerpolicy="no-referrer">` : ''}<a class="imgsrc" href="${esc(x.url)}" target="_blank" rel="noopener" data-tip="From ${esc(x.from)}">${stIcon(x.key, 18)}</a></div>`;
+    return `<div class="picw"><img class="cover ${cls}${more ? ' rot' : ''}" src="${esc(x.src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer"${more ? ` data-rot data-tip="${i + 1} of ${xs.length}: click for ${esc(xs[(i + 1) % xs.length].from)}"` : ''}>${x.badge ? `<img class="imgflag" src="${esc(x.badge)}" alt="" referrerpolicy="no-referrer">` : ''}<a class="imgsrc" href="${esc(x.url)}" target="_blank" rel="noopener" data-tip="${['artist', 'label'].includes(data.kind) ? `Choose image&#10;From ${esc(x.from)}` : `From ${esc(x.from)}`}">${stIcon(x.key, 18)}</a></div>`;
+}
+function openImageGallery() {
+    const d = data, g = d.g, xs = g.imgs || [];
+    if (!xs.length || document.getElementById('eh-image-gallery')) return;
+    const previous = document.activeElement, ov = document.createElement('div');
+    ov.className = 'mbu-ov'; ov.id = 'eh-image-gallery';
+    ov.innerHTML = `<div class="mbu-ov-panel mbu-ui eh-images" role="dialog" aria-modal="true" aria-label="Choose image"><div class="mbu-ov-h"><span class="mbu-ov-title">Choose image</span><button type="button" class="mbu-ov-x" aria-label="Close">✕</button></div><div class="mbu-ov-body eh-image-grid">${xs.map((x, i) => `<div class="eh-image-option"><button type="button" class="eh-image-choice" data-image-index="${i}" aria-label="Use image from ${esc(x.from)}" aria-pressed="${i === (g.imgI || 0) % xs.length}"><img src="${esc(x.src)}" alt="${esc(x.from)}" referrerpolicy="no-referrer"><span class="eh-image-badge">${stIcon(x.key, 18)}</span></button><a href="${esc(x.url)}" target="_blank" rel="noopener" data-tip="Open ${esc(x.from)}">${esc(x.from)} ↗</a></div>`).join('')}</div></div>`;
+    const close = () => { ov.remove(); removeEventListener('keydown', key, true); if (previous && previous.isConnected) previous.focus(); };
+    const key = e => {
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
+        if (e.key === 'Tab') {
+            const nodes = [...ov.querySelectorAll('button,a[href]')], first = nodes[0], last = nodes[nodes.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+    };
+    ov.addEventListener('click', e => {
+        if (e.target === ov || e.target.closest('.mbu-ov-x')) return close();
+        const b = e.target.closest('[data-image-index]');
+        if (!b) return;
+        close();
+        if (data !== d) return;
+        g.imgI = Number(b.dataset.imageIndex);
+        const y = scrollY; render(); scrollTo(0, y);
+        document.querySelector('#app .art .imgsrc')?.focus();
+    });
+    document.documentElement.append(ov);
+    addEventListener('keydown', key, true);
+    ov.querySelector('[aria-pressed="true"]').focus();
 }
 const artistImage = (mbid, rels) => ARTIMG.findAll(mbid, rels.filter(x => x['target-type'] === 'url').map(x => x.url.resource));
 // an artist or label left without a picture asks its linked sites again, over the cached miss; no site an image provider reads, nothing to ask
@@ -9884,6 +9918,8 @@ function render(keepPop) {
     const pi = data.kind === 'place' && app.querySelector('.art img.cover');
     if (pi) pi.onerror = () => { pi.closest('.picw').outerHTML = `<div class="nocover pg">${bigMk(MK_PLACE)}</div>`; };
     const rot = app.querySelector('[data-rot]');
+    const source = app.querySelector('.art .imgsrc');
+    if (source && ['artist', 'label'].includes(data.kind)) source.onclick = e => { e.preventDefault(); openImageGallery(); };
     if (rot) rot.onclick = () => { const g = data.g; g.imgI = ((g.imgI || 0) + 1) % g.imgs.length; const sy = scrollY; render(); scrollTo(0, sy); };
     dgWire(app);
     // Every row's platforms take the widest row's width, so the ISRCs line up.

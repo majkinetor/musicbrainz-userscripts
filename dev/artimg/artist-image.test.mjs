@@ -8,6 +8,24 @@ const urls = ['https://mocky.bandcamp.com/', 'https://music.youtube.com/channel/
 const html = '<meta property="og:image" content="https://f4.bcbits.com/img/a2873093934_5.jpg"><img src="' + photo + '" class="band-photo" alt="Mocky image">';
 const response = body => ({ ok: true, text: async () => body });
 
+test('Tidal branding is rejected while real artist photos remain', async () => {
+    let src = 'https://tidal.com/img/FB_1200x627.png';
+    const ai = new ArtistImage({}, { http: async () => response('<meta property="og:image" content="' + src + '">') });
+    const url = 'https://tidal.com/artist/11993770';
+    assert.equal(await ai.find(null, [url]), null);
+    src = 'https://resources.tidal.com/images/real/artist/750x750.jpg';
+    assert.equal((await ai.find(null, [url])).src, src);
+});
+
+test('cached Tidal branding is skipped immediately, preserving other pictures', () => {
+    const all = [
+        { key: 'tidal', src: 'https://tidal.com/img/FB_1200x627.png' },
+        { key: 'bandcamp', src: photo },
+    ];
+    const ai = new ArtistImage({ get: () => ({ mocky: { all, t: Date.now() } }) });
+    assert.deepEqual(ai.cachedAll('mocky'), [all[1]]);
+});
+
 test('Bandcamp uses the profile photo even on an album landing page', async () => {
     const ai = new ArtistImage({}, { http: async () => response(html) });
     assert.equal((await ai.find(null, [urls[0]])).src, photo.replace('_21', '_10'));

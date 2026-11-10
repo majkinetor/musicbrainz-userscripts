@@ -55,7 +55,7 @@ Every provider with a matching URL is asked, and every image found is kept, so a
 | Discogs       | `discogs.com/artist/<id>`, `/label/<id>`                                                   | the primary image from `api.discogs.com`, else the first                            |
 | Deezer        | `deezer.com/artist/<id>`                                                                   | `picture_big` (500×500) from `api.deezer.com`                                       |
 | Wikipedia     | `commons.wikimedia.org/wiki/File:…`, `wikidata.org/wiki/Q…`, `<lang>.wikipedia.org/wiki/…` | the Commons file itself, else the item's P18, else the article's page image (500px) |
-| Tidal         | `tidal.com/artist/<id>`                                                                    | the artist page's `og:image` (750×750)                                              |
+| Tidal         | `tidal.com/artist/<id>`                                                                    | the artist page's `og:image` (750×750), excluding generic Tidal branding            |
 | Apple Music   | `music.apple.com/artist/<id>`                                                              | the artist page's `og:image`, as a 500×500 square                                   |
 | SoundCloud    | `soundcloud.com/<user>`                                                                    | the profile page's `og:image` (500×500), not the default avatar                     |
 | Bandcamp      | `<artist>.bandcamp.com`, `/music`                                                          | the profile's `band-photo`, including when the homepage opens an album              |
