@@ -144,7 +144,7 @@ The arrow at the end of the filter box does the same for a filter: name it and s
 
 ## Edit search
 
-Open **Edit search** beside **Advanced search** in the homepage search bar, or visit [Search for edits](https://musicbrainz.org/search/edits). Conditions sit above the results in compact rows. Every MusicBrainz field, operator, sort order and value is available, including date ranges, entity lookups and multiple values. Type in a choice list to filter it; checked values stay selected while filtering. **No vote** means no vote was cast; **No** means a vote against the edit.
+Open **Search for edits** beside **Advanced search** in the homepage search bar, or visit [Search for edits](https://musicbrainz.org/search/edits). Conditions sit above the results in compact rows. Every MusicBrainz field, operator, sort order and value is available, including date ranges, entity lookups and multiple values. Type in a choice list to filter it; checked values stay selected while filtering. **No vote** means no vote was cast; **No** means a vote against the edit.
 
 Type a **Search name** and choose **Save** to keep the current conditions, matching rules and order, even before searching. The magnifier finds saved searches; selecting one runs it. Edit the same name field and choose **Save** to rename the selected search and update its filters. **⋯** offers **New search**, **Save a copy** and **Delete**. Saved searches stay in your userscript manager's storage.
 
