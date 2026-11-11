@@ -15,11 +15,14 @@ test('your own edit accepts a note without voting permission', { tag: ['@sandbox
   await inject('event_horizon');
   const edit = page.locator('#app .hed.one');
   await expect(edit.locator('.hnadd textarea')).toBeVisible();
+  await inject('mammoth');
+  await expect(edit.locator('.hnadd .mmth-wrap textarea')).toBeVisible();
   await expect(edit.locator('.hvote')).toHaveCount(0);
   await expect(edit.locator('.hwho')).toContainText('majkinetor');
   const note = 'Own-edit note regression ' + Date.now();
   await edit.locator('.hnadd textarea').fill(note);
-  await edit.locator('.hnadd button').click();
+  await page.screenshot({ path: 'dev/_mammoth-edit-note.png', fullPage: true });
+  await edit.locator('.hnadd > button[type="submit"]').click();
   await expect(edit.locator('.hnote').last()).toContainText(note);
   await page.goto('https://test.musicbrainz.org' + href);
   await expect(page.locator('.edit-notes')).toContainText(note);

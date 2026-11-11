@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.11.110306
+// @version      2026.11.11.144425
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2993,7 +2993,7 @@ h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25
 .htc{font-size:11px;padding:1px 8px;border-radius:99px;background:var(--chip);color:var(--chip-text)}
 .hvote{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 10px}.hgh .hgv{margin:0;gap:4px;flex-wrap:nowrap;white-space:nowrap}.hgh .hgv button{min-height:26px;padding:2px 8px;border-radius:4px}.hvote .lb{color:var(--muted);font-weight:600;margin-right:4px}.hvote button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;font-weight:600;cursor:pointer}.hvote button:hover{border-color:var(--accent)}.hvote button[disabled]{opacity:.5;cursor:default}.hvote button.on{color:#fff;border-color:transparent}.hvote .v1.on{background:#2e8b57}.hvote .v0.on{background:#c0392b}.hvote .v-1.on{background:#888}.hvote .v-2.on{background:var(--accent)}
 .hdt a:has(>img),.hdt a:has(>span>img){font-size:0}
-.hnadd{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:10px 0 4px}.hnadd textarea{width:100%;box-sizing:border-box;min-height:70px;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;resize:vertical}.hnadd textarea:focus{outline:none;border-color:var(--accent)}.hnadd button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--accent);background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer}.hnadd button[disabled]{opacity:.5}
+.hnadd{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:10px 0 4px}.hnadd textarea{width:100%;box-sizing:border-box;min-height:70px;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;resize:vertical}.hnadd textarea:focus{outline:none;border-color:var(--accent)}.hnadd > button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--accent);background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer}.hnadd > button[disabled]{opacity:.5}
 .hmy{font-size:11px;font-weight:600;padding:1px 8px;border-radius:99px;border:1px solid var(--border);color:var(--muted)}
 .dsc-med{padding:10px 0;border-bottom:1px solid var(--line)}.dsc-med:last-child{border-bottom:0}.dsc-med.off{opacity:.55}.dsc-h{display:flex;gap:8px;align-items:center;margin-bottom:4px}.dsc-h .sub,.dsc-rel .sub{color:var(--muted);font-weight:400}
 .dsc-row,.dsc-rel{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;padding:4px 0 4px 26px}.dsc-rel{padding-left:0}.dsc-id{font-family:ui-monospace,Consolas,monospace;font-size:13px}.dsc-n{color:var(--muted);font-size:13px;min-width:60px}.dsc-a{margin-left:auto;display:flex;gap:12px}.dsc-none{color:var(--muted);font-size:13px;padding:2px 0 2px 26px}
@@ -12229,10 +12229,10 @@ function histVotePaint(d) {
     });
 }
 // A note has its own permission: your own and closed edits have no vote controls. Keep a vote only when present.
-const histNoteForm = e => `<form class="hnadd" data-hnote="${e.id}"><textarea rows="3" placeholder="Add an edit note" aria-label="Edit note"></textarea><button type="submit">Add note</button></form>`;
+const histNoteForm = e => `<form class="hnadd" data-hnote="${e.id}"><textarea class="edit-note" rows="3" placeholder="Add an edit note" aria-label="Edit note"></textarea><button type="submit">Add note</button></form>`;
 async function histNoteSend(fm) {
     const id = fm.dataset.hnote, e = data && data.edits && data.edits.find(x => String(x.id) === id), ta = fm.querySelector('textarea'), t = ta.value.trim(); if (!e || !t) return;
-    const bt = fm.querySelector('button'); bt.disabled = ta.disabled = true;
+    const bt = fm.querySelector('button[type="submit"]'); bt.disabled = ta.disabled = true;
     const fields = { 'enter-vote.vote.0.edit_id': id, 'enter-vote.vote.0.edit_note': t, url: `${MB}/edit/${id}` };
     if (e.can) fields['enter-vote.vote.0.vote'] = e.my || '-2';
     try {
