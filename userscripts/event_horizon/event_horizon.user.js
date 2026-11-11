@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.11.102157
+// @version      2026.11.11.104056
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11121,10 +11121,15 @@ const H_LISTS = { '/edit/open': 'Open edits', '/edit/subscribed': 'Subscribed en
 const EDIT_SEARCH_CSS = `
 #eh-edit-search{margin:0 0 30px}
 #edit-search.eh-es{font:inherit;color:var(--text)}
-#edit-search.eh-es .eh-es-head{display:flex;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:18px}
-#edit-search.eh-es .eh-es-head>p{display:flex;align-items:center;flex-wrap:wrap;flex:1 1 520px;gap:6px;margin:0;font-size:13px;color:var(--muted)}
-#edit-search.eh-es .eh-es-head>.eh-es-saved{flex:0 1 440px;margin:0 0 0 auto;padding:0;border:0;max-width:100%}
+#edit-search.eh-es .eh-es-head{display:flex;align-items:center;flex-wrap:nowrap;gap:12px;margin-bottom:24px}
+#edit-search.eh-es .eh-es-head>p{display:flex;align-items:center;flex-wrap:nowrap;flex:none;gap:6px;margin:0;font-size:13px;color:var(--muted)}
+#edit-search.eh-es .eh-es-head>.eh-es-saved{position:relative;flex:1 1 300px;flex-wrap:nowrap;margin:0 0 0 auto;padding:0;border:0;min-width:0;max-width:440px}
 #edit-search.eh-es .eh-es-head .eh-es-name{flex:1 1 180px;min-width:120px}
+#edit-search.eh-es .eh-es-top>button{white-space:nowrap;border:0;border-bottom:1px solid var(--border);border-radius:0;padding:6px;gap:7px}
+#edit-search.eh-es .eh-es-top>button>.eh-es-value{white-space:nowrap}.eh-es-top>button>svg,.eh-es-saved>[data-es-save]>svg,.eh-es-more>button>svg{width:16px;height:16px;flex:none}
+#edit-search.eh-es .eh-es-saved>[data-es-save]{display:flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;padding:6px;border:0}
+#edit-search.eh-es .eh-es-more>button{display:flex;align-items:center;justify-content:center;width:28px;height:32px;padding:6px}
+#edit-search.eh-es .eh-es-head .eh-es-status{position:absolute;right:0;top:calc(100% + 3px);margin:0;min-height:0;font-size:11px;white-space:nowrap}
 #edit-search.eh-es .conditions{list-style:none;margin:0;padding:0}
 #edit-search.eh-es .conditions>li{display:grid;grid-template-columns:24px minmax(130px,180px) minmax(0,1fr);align-items:center;gap:10px;padding:6px 0;border:0}
 #edit-search.eh-es .conditions>li>button.remove-item{grid-column:1;grid-row:1;width:24px;height:28px;padding:0;background:none!important;border:0!important;color:var(--muted);font:24px/1 Manrope,system-ui,sans-serif;filter:none!important;cursor:pointer}
@@ -11175,6 +11180,7 @@ const EDIT_SEARCH_CSS = `
 :root[data-eh-theme=dark] #edit-search.eh-es .autocomplete img{filter:invert(.8)}
 @media(max-width:650px){#edit-search.eh-es .conditions>li{grid-template-columns:24px minmax(0,1fr);gap:8px}#edit-search.eh-es .field-container{grid-column:2;grid-row:2}.eh-es-menu{width:min(320px,calc(100vw - 40px))}.eh-es-name{flex:1;min-width:150px}}
 @media(pointer:coarse){.eh-es-pick>button,.eh-es-options>button,.eh-es-options>label{min-height:44px}}
+@media(max-width:650px){#edit-search.eh-es .eh-es-head{gap:6px}#edit-search.eh-es .eh-es-head>p{gap:3px}#edit-search.eh-es .eh-es-top>button{gap:4px;padding:6px 4px}#edit-search.eh-es .eh-es-top>button>.eh-es-value{display:none}#edit-search.eh-es .eh-es-head .eh-es-name{min-width:90px}#edit-search.eh-es .eh-es-head>.eh-es-saved{gap:4px}}
 .hm-es{display:flex;align-items:center;justify-content:center;flex:none;color:var(--muted);padding:4px 8px;border-left:1px solid var(--border)}.hm-es:hover{color:var(--link)}.hm-es svg{width:19px;height:19px}
 `;
 let esForm = null, esHome = null, esObserver = null, esFocus = null, esSerial = 0, esMoving = false;
@@ -11203,6 +11209,8 @@ function esSavedBar(form) {
     const bar = document.createElement('div'); bar.className = 'eh-es-saved';
     bar.innerHTML = `<div class="eh-es-name"><button type="button" data-es-find aria-label="Find a saved search" aria-expanded="false" aria-controls="eh-es-library" data-tip="Find a saved search">${SVG(LENS)}</button><input type="search" aria-label="Search name" placeholder="Name this search…" maxlength="120" autocomplete="off" aria-controls="eh-es-library"><div class="eh-es-menu" data-es-library hidden><div class="eh-es-options" data-es-results id="eh-es-library" role="listbox" aria-label="Saved searches"></div></div></div><button type="button" data-es-save>Save</button><div class="eh-es-more"><button type="button" data-es-more aria-label="More saved-search actions" aria-expanded="false" aria-controls="eh-es-save-actions">⋯</button><div class="eh-es-menu" data-es-actions id="eh-es-save-actions" hidden><button type="button" data-es-new>New search</button><button type="button" data-es-copy>Save a copy</button><button type="button" data-es-delete>Delete</button></div></div><span class="eh-es-status" role="status"></span>`;
     const name = bar.querySelector('input'), save = bar.querySelector('[data-es-save]'), find = bar.querySelector('[data-es-find]'), library = bar.querySelector('[data-es-library]'), results = bar.querySelector('[data-es-results]'), more = bar.querySelector('[data-es-more]'), actions = bar.querySelector('[data-es-actions]'), del = bar.querySelector('[data-es-delete]'), msg = bar.querySelector('.eh-es-status');
+    save.innerHTML = SVG('<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12l4 4v12a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8V3"/>'); save.setAttribute('aria-label', 'Save'); save.dataset.tip = 'Save search';
+    more.innerHTML = SVG('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>'); more.dataset.tip = 'More saved-search actions';
     let selected = null, choosing = false, beforeFind = '', active = null, pending = null, fresh = false;
     try { pending = JSON.parse(sessionStorage.getItem('eh.editSearch') || 'null'); sessionStorage.removeItem('eh.editSearch'); } catch (e) {}
     const canonical = q => JSON.stringify([...new URLSearchParams(q)].filter(([k]) => k !== 'field' && k !== 'page').sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1])));
@@ -11288,13 +11296,41 @@ function esSavedBar(form) {
     refresh(); return bar;
 }
 
+function esTop(on) {
+    const p = esForm?.querySelector('.eh-es-head>p'); if (!p) return;
+    if (!p._esOriginal) {
+        p._esOriginal = [...p.childNodes];
+        const kind = p.querySelector('[name=auto_edit_filter]'), order = p.querySelector('[name=order]'), negation = p.querySelector('[name=negation]'), combinator = p.querySelector('[name=combinator]');
+        const logic = document.createElement('select'); logic.dataset.esLogic = ''; logic.setAttribute('aria-label', 'Condition matching');
+        logic.append(new Option('All match', 'all'), new Option('Any match', 'any'), new Option('None match', 'none'), new Option('Not all match', 'not-all'));
+        const read = () => { logic.value = negation.value === '1' ? combinator.value === 'or' ? 'none' : 'not-all' : combinator.value === 'or' ? 'any' : 'all'; };
+        logic.addEventListener('change', () => {
+            negation.value = ['none', 'not-all'].includes(logic.value) ? '1' : '0'; combinator.value = ['any', 'none'].includes(logic.value) ? 'or' : 'and';
+            for (const s of [negation, combinator]) s.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+        for (const s of [negation, combinator]) s.addEventListener('change', read);
+        p._esApply = on => {
+            if (on && !p.classList.contains('eh-es-compact')) {
+                read(); kind.dataset.esTop = 'kind'; order.dataset.esTop = 'sort';
+                negation.dataset.esTopHidden = ''; combinator.dataset.esTopHidden = '';
+                p.replaceChildren(kind, order, logic, negation, combinator); p.classList.add('eh-es-compact');
+            } else if (!on && p.classList.contains('eh-es-compact')) {
+                delete kind.dataset.esTop; delete order.dataset.esTop; delete negation.dataset.esTopHidden; delete combinator.dataset.esTopHidden;
+                p.replaceChildren(...p._esOriginal); p.classList.remove('eh-es-compact');
+            }
+        };
+    }
+    p._esApply(on);
+}
 function esPick(select) {
     const root = document.createElement('span'); root.className = 'eh-es-pick'; root._esSelect = select;
     const headers = { auto_edit_filter: 'Edit kind', order: 'Sort order', negation: 'Match mode', combinator: 'Condition logic' };
     const label = select.getAttribute('aria-label') || headers[select.name] || (select.classList.contains('field') ? 'Condition' : select.name.endsWith('operator') ? 'Operator' : select.name.endsWith('args') ? 'Values' : select.name.split('.').pop().replace(/_/g, ' '));
     const id = 'eh-es-options-' + ++esSerial;
-    root.innerHTML = `<button type="button" aria-label="${esc(label)}" aria-expanded="false" aria-controls="${id}"><span></span></button><span class="eh-es-menu" hidden><input type="search" placeholder="Filter options…" aria-label="Filter ${esc(label)}" autocomplete="off"><span class="eh-es-options" id="${id}"${select.multiple ? '' : ' role="listbox"'} aria-label="${esc(label)}"></span><span class="eh-es-empty" hidden>No matching options</span></span>`;
+    root.innerHTML = `<button type="button" aria-label="${esc(label)}" aria-expanded="false" aria-controls="${id}"><span class="eh-es-value"></span></button><span class="eh-es-menu" hidden><input type="search" placeholder="Filter options…" aria-label="Filter ${esc(label)}" autocomplete="off"><span class="eh-es-options" id="${id}"${select.multiple ? '' : ' role="listbox"'} aria-label="${esc(label)}"></span><span class="eh-es-empty" hidden>No matching options</span></span>`;
     const trigger = root.firstElementChild, menu = root.querySelector('.eh-es-menu'), filter = menu.querySelector('input'), list = menu.querySelector('.eh-es-options');
+    const top = select.dataset.esTop || (select.hasAttribute('data-es-logic') ? 'logic' : ''), valueLabel = trigger.querySelector('.eh-es-value');
+    if (top) { root.classList.add('eh-es-top'); trigger.insertAdjacentHTML('afterbegin', SVG(top === 'kind' ? '<path d="m16 3 5 5-13 13H3v-5Z"/><path d="m14 5 5 5"/>' : top === 'sort' ? '<path d="M4 3v18m-3-3 3 3 3-3M10 5h11M10 10h8M10 15h5M10 20h2"/>' : '<path d="M3 5h18l-7 8v6l-4 2v-8Z"/>')); }
     let signature = '', active = null;
     filter.setAttribute('aria-controls', id);
     filter.setAttribute('aria-autocomplete', 'list');
@@ -11314,8 +11350,11 @@ function esPick(select) {
     };
     const sync = () => {
         const opts = [...select.options], selected = [...select.selectedOptions], extra = select.closest('#extra-condition');
-        const text = extra ? '+ Add condition' : !selected.length ? 'Choose values…' : selected.length > 2 ? selected.slice(0, 2).map(x => x.text.trim()).join(', ') + ' +' + (selected.length - 2) : selected.map(x => x.text.trim()).join(', ');
-        if (trigger.firstElementChild.textContent !== text) trigger.firstElementChild.textContent = text;
+        let text = extra ? '+ Add condition' : !selected.length ? 'Choose values…' : selected.length > 2 ? selected.slice(0, 2).map(x => x.text.trim()).join(', ') + ' +' + (selected.length - 2) : selected.map(x => x.text.trim()).join(', ');
+        if (top === 'kind') text = { '': 'All edits', '1': 'Auto-edits', '0': 'Non-auto' }[select.value] || text;
+        if (top === 'sort') text = { desc: 'Newest', asc: 'Oldest', closed_desc: 'Recently closed', closed_asc: 'Earliest closed', vote_closing_asc: 'Voting closes sooner', vote_closing_desc: 'Voting closes later', latest_note: 'Recent notes', rand: 'Unspecified' }[select.value] || text;
+        if (valueLabel.textContent !== text) valueLabel.textContent = text;
+        if (top) { trigger.dataset.tip = label + '\n' + selected.map(x => x.text.trim()).join(', '); trigger.setAttribute('aria-label', label + ': ' + text); }
         if (trigger.disabled !== select.disabled) trigger.disabled = select.disabled;
         const sig = JSON.stringify(opts.map(o => [o.value, o.text, o.disabled, o.parentElement.tagName === 'OPTGROUP' ? o.parentElement.label : '']));
         if (sig !== signature) {
@@ -11366,6 +11405,7 @@ function esScan() {
     // MusicBrainz clones the empty row when adding a condition; discard cloned presentation nodes.
     for (const p of esForm.querySelectorAll('.eh-es-pick')) if (!p._esSelect || !esForm.contains(p._esSelect)) p.remove();
     for (const s of esForm.querySelectorAll('select')) {
+        if (ehOn && s.hasAttribute('data-es-top-hidden')) { s.hidden = true; continue; }
         let p = esPicks.get(s); if (!p || !p.isConnected) p = esPick(s); else p._esSync();
         s.hidden = ehOn; p.hidden = !ehOn || s.style.display === 'none';
     }
@@ -11395,6 +11435,7 @@ function esMount(app, d) {
         document.addEventListener('click', e => { if (esForm && !e.target.closest('.eh-es-pick')) esForm.querySelectorAll('.eh-es-pick').forEach(p => p._esClose && p._esClose(false)); });
     }
     esForm.classList.add('eh-es');
+    esTop(true);
     esForm.querySelectorAll('.eh-es-saved').forEach(p => { p.hidden = false; });
     app.querySelector('#eh-edit-search').append(esForm); esScan();
     if (esFocus && esForm.contains(esFocus.el)) { esFocus.el.focus({ preventScroll: true }); if (typeof esFocus.at === 'number') esFocus.el.setSelectionRange(esFocus.at, esFocus.end); }
@@ -11403,6 +11444,7 @@ function esMount(app, d) {
 function esNative() {
     esPark(); if (!esForm) return;
     esForm.classList.remove('eh-es');
+    esTop(false);
     esForm.querySelectorAll('select').forEach(s => { s.hidden = false; });
     esForm.querySelectorAll('.eh-es-pick,.eh-es-saved,[data-es-native]').forEach(p => { p.hidden = true; });
     esForm.querySelectorAll('.remove-item').forEach(b => { b.textContent = ''; });

@@ -146,6 +146,8 @@ The arrow at the end of the filter box does the same for a filter: name it and s
 
 Open **Search for edits** beside **Advanced search** in the homepage search bar, or visit [Search for edits](https://musicbrainz.org/search/edits). Conditions sit above the results in compact rows. Every MusicBrainz field, operator, sort order and value is available, including date ranges, entity lookups and multiple values. Type in a choice list to filter it; checked values stay selected while filtering. **No vote** means no vote was cast; **No** means a vote against the edit.
 
+The single top row chooses edit kind, sort order and matching: **All match**, **Any match**, **None match** or **Not all match**. Icons replace the labels and Save text; on narrow screens the icons also stand in for the selected values, which remain in their tooltips.
+
 The saved-search controls sit to the right of the search options. Type a **Search name** and choose **Save** to keep the current conditions, matching rules and order, even before searching. Focusing the name field lists saved searches; typing filters them, and selecting one runs it. Edit the same name field and choose **Save** to rename the selected search and update its filters. **⋯** offers **New search**, which clears the form without reloading, **Save a copy** and **Delete**. Saved searches stay in your userscript manager's storage.
 
 **Search** runs the form and shows the edits in Event Horizon's history view.
