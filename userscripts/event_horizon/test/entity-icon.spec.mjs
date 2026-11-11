@@ -33,4 +33,20 @@ test('the entity icon copies the MBID and sends to Picard', { tag: ['@sandbox', 
   const logged = await until(() => page.locator('.mbu-logpop').innerText(), t => /reachable|Sent to|answered/.test(t));
   check(logged.includes(`Send to Picard: http://127.0.0.1:8000/openalbum?id=${rel}`), 'the Activity log has the send, got ' + logged);
   check(/Picard is not reachable|Sent to Picard|Picard answered/.test(logged), 'and its outcome');
+
+  // #1002: on a subpage (.arthd) the format icon also sends to Picard, and the collections menu sits above Art Station's bar
+  await page.goto(`https://test.musicbrainz.org/release/${rel}/cover-art`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await settled(page);
+  await inject('art_station');
+  await inject('event_horizon');
+  const subIcon = page.locator('.arthd .kicker .kmk');
+  check(await until(() => subIcon.count(), n => n === 1) === 1, 'a release subpage also has the format icon');
+  check(await subIcon.getAttribute('data-picard') === `openalbum?id=${rel}`, 'with Send to Picard on right-click');
+  await subIcon.click({ button: 'right' });
+  check(/Picard/.test(await until(() => page.locator('#toast').innerText(), t => /Picard/.test(t))), 'and right-click on the subpage icon sends to Picard');
+  const collBtn = page.locator('.arthd [data-pop="collections"]');
+  check(await until(() => collBtn.count(), n => n === 1) === 1, 'the subpage has the collections button');
+  await collBtn.click();
+  check(await until(() => page.evaluate(() => getComputedStyle(document.querySelector('.arthd')).zIndex), z => z === '40') === '40', 'opening collections raises .arthd above .as-bar');
+  await attachShot(testInfo, page, 'cover-art-collections-above-as-bar');
 });
