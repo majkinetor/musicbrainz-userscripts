@@ -69,12 +69,21 @@ export async function mbnState(fn) {
     // The lock is held only for rw()'s synchronous moment, so a wait of seconds means it is
     // stuck (a frozen or sandboxed holder): give up on it and go unlocked rather than hang
     // every request behind it.
-    let timer = 0;
+    let timer = 0, expired = false;
     try {
         if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) {
             const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
-            if (ctrl) timer = setTimeout(() => ctrl.abort(), 3000);
-            return await navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, rw);
+            const timeout = new Promise((resolve, reject) => {
+                timer = setTimeout(() => {
+                    expired = true;
+                    reject(new Error('MusicBrainz gate lock timed out'));
+                    try { if (ctrl) ctrl.abort(); } catch (e) {}
+                }, 3000);
+            });
+            // Some userscript bridges never settle the request on abort. The timer
+            // must release our wait itself; a late grant must not book twice.
+            const locked = navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, () => expired ? undefined : rw());
+            return await Promise.race([locked, timeout]);
         }
     } catch (e) { /* no Web Locks here (an insecure or sandboxed context), or stuck: unlocked, like a lone script */ } finally { clearTimeout(timer); }
     return rw();

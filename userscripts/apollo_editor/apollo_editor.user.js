@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.11.145926
+// @version      2026.11.11.152821
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -105,12 +105,21 @@
       // The lock is held only for rw()'s synchronous moment, so a wait of seconds means it is
       // stuck (a frozen or sandboxed holder): give up on it and go unlocked rather than hang
       // every request behind it.
-      let timer = 0;
+      let timer = 0, expired = false;
       try {
           if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) {
               const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
-              if (ctrl) timer = setTimeout(() => ctrl.abort(), 3000);
-              return await navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, rw);
+              const timeout = new Promise((resolve, reject) => {
+                  timer = setTimeout(() => {
+                      expired = true;
+                      reject(new Error('MusicBrainz gate lock timed out'));
+                      try { if (ctrl) ctrl.abort(); } catch (e) {}
+                  }, 3000);
+              });
+              // Some userscript bridges never settle the request on abort. The timer
+              // must release our wait itself; a late grant must not book twice.
+              const locked = navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, () => expired ? undefined : rw());
+              return await Promise.race([locked, timeout]);
           }
       } catch (e) { /* no Web Locks here (an insecure or sandboxed context), or stuck: unlocked, like a lone script */ } finally { clearTimeout(timer); }
       return rw();
@@ -2891,13 +2900,15 @@ Click: open the label`;
   // behind a matching pass's background lookups.
   async function wsGet(url, opts) {
     const o = opts || {};
+    const gen = _stopGen;
+    const cancelled = () => _matchStop || gen !== _stopGen || !!(o.stale && o.stale());
     if (o.stale && o.stale()) return null;
     // The wait is interruptible: a lane parked in the gate cannot notice a Stop otherwise,
     // and a pass whose lanes are all parked looks unstoppable (#577).
-    const slot = await mbnSlot({ background: !o.stale, label: o.label || 'ws2', log: wsGateLog, cancelled: () => _matchStop || !!(o.stale && o.stale()) });
+    const slot = await mbnSlot({ background: !o.stale, label: o.label || 'ws2', log: wsGateLog, cancelled });
     if (!slot.ok) return null;                         // caller treats null as superseded
-    while (_wsInFlight >= wsLanes()) { if (_matchStop) return null; await _sleep(120); }
-    if (o.stale && o.stale()) return null;
+    while (_wsInFlight >= wsLanes()) { if (cancelled()) return null; await _sleep(120); }
+    if (cancelled()) return null;
     _wsInFlight++;
     const p = mbnWsFetch(url, { headers: { Accept: 'application/json' } });
     p.then(() => { _wsInFlight--; }, () => { _wsInFlight--; });
@@ -2908,7 +2919,7 @@ Click: open the label`;
     // until a request the manager never answered held "⏳ Stopping…" for good, with every
     // background lookup, the pickers' included, dropped behind the stuck stop.
     return new Promise((resolve, reject) => {
-      const t = setInterval(() => { if (_matchStop) { clearInterval(t); resolve(null); } }, 120);
+      const t = setInterval(() => { if (cancelled()) { clearInterval(t); resolve(null); } }, 120);
       p.then(r => { clearInterval(t); resolve(r); }, e => { clearInterval(t); reject(e); });
     });
   }
@@ -2951,19 +2962,23 @@ Click: open the label`;
     if (o.stale || o.onThrottle) return wsJsonOnce(url, o);
     const inflight = _wsFlight.get(url);
     if (inflight) { Log.cat('MusicBrainz').debug((o.label || 'ws2') + ': joined an identical request already in flight —', url); return inflight; }
-    const p = wsJsonOnce(url, o);
+    // Stop must release the shared flight too, otherwise Match rejoins the old
+    // unresolved promise even when no transport request remains (#999).
+    const p = matchWait(wsJsonOnce(url, o), o.label || 'web-service lookup', _stopGen)
+      .then(r => r === MATCH_STOPPED ? { stale: true } : r);
     _wsFlight.set(url, p);
     // settle-or-fail, then release: the next caller must be able to retry
     p.then(() => {}, () => {}).then(() => { if (_wsFlight.get(url) === p) _wsFlight.delete(url); });
     return p;
   }
   async function wsJsonOnce(url, opts) {
-    const o = opts || {}, label = o.label || 'ws2';
+    const o = opts || {}, label = o.label || 'ws2', gen = _stopGen;
     for (let attempt = 1; attempt <= WS_TRIES; attempt++) {
+      if (_matchStop || gen !== _stopGen) return { stale: true };
       let r;
       try { r = await wsGet(url, o); }
       catch (e) { Log.cat('MusicBrainz').warn(label + ': network error —', e.message, '(attempt ' + attempt + '/' + WS_TRIES + ')', url); await _sleep(600 * attempt); continue; }
-      if (!r) { Log.cat('MusicBrainz').debug(label + ': superseded while queued, dropped —', url); return { stale: true }; }
+      if (!r || gen !== _stopGen) { Log.cat('MusicBrainz').debug(label + ': superseded while queued, dropped —', url); return { stale: true }; }
       Log.cat('MusicBrainz').debug(label + ': HTTP', r.status, url);
       const a = await wsAnswer(r);
       if (a.throttled) {
