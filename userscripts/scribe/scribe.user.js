@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.11.152821
+// @version      2026.11.12.001106
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the corner button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBkPSJNNDYgMjQgTDI2IDI0IEwyNiAxMDQgTDQ2IDEwNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04MiAyNCBMMTAyIDI0IEwxMDIgMTA0IEw4MiAxMDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJmNmY1NCIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNjQgNDAgTDUxIDY2IEw2NCA5NCBMNzcgNjYgWiIgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iNjQiIHkxPSI3NCIgeDI9IjY0IiB5Mj0iOTIiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==
@@ -165,8 +165,13 @@
       init = init || {};
       const gm = typeof GM_xmlhttpRequest === 'function' ? GM_xmlhttpRequest
           : (typeof GM !== 'undefined' && GM && typeof GM.xmlHttpRequest === 'function' ? GM.xmlHttpRequest : null);
-      if (!gm) return fetch(url, init);
       const abs = new URL(String(url), typeof location !== 'undefined' ? location.href : 'https://musicbrainz.org/').href;
+      // #997: a request that asks for the login (credentials 'include' / 'same-origin') on this
+      // page's own origin goes through the page's fetch(): a manager's GM request carries the
+      // cookie only if the browser lets the extension send it (Safari's tracking prevention does
+      // not), and MusicBrainz then answers 401. The User-Agent is the browser's then.
+      const own = typeof location !== 'undefined' && (() => { try { return new URL(abs).origin === location.origin; } catch (e) { return false; } })();
+      if (!gm || (own && (init.credentials === 'include' || init.credentials === 'same-origin'))) return fetch(url, init);
       const headers = {};
       try { new Headers(init.headers || {}).forEach((v, k) => { headers[k] = v; }); } catch (e) {}
       headers['User-Agent'] = mbnUA();

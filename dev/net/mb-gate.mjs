@@ -220,14 +220,20 @@ export function mbnUA() {
  * User-Agent (Chrome ignores a User-Agent header there), so where the script may use
  * GM_xmlhttpRequest the request goes through it with mbnUA(). Takes fetch's (url, init) —
  * method, headers, body, signal — and resolves a Response; rejects like fetch on a network
- * error or an abort. Without GM it is plain fetch(). Paces nothing: take mbnSlot first.
+ * error or an abort. Without GM, or for a credentialed same-origin request (#997), it is plain
+ * fetch(). Paces nothing: take mbnSlot first.
  */
 export function mbnWsFetch(url, init) {
     init = init || {};
     const gm = typeof GM_xmlhttpRequest === 'function' ? GM_xmlhttpRequest
         : (typeof GM !== 'undefined' && GM && typeof GM.xmlHttpRequest === 'function' ? GM.xmlHttpRequest : null);
-    if (!gm) return fetch(url, init);
     const abs = new URL(String(url), typeof location !== 'undefined' ? location.href : 'https://musicbrainz.org/').href;
+    // #997: a request that asks for the login (credentials 'include' / 'same-origin') on this
+    // page's own origin goes through the page's fetch(): a manager's GM request carries the
+    // cookie only if the browser lets the extension send it (Safari's tracking prevention does
+    // not), and MusicBrainz then answers 401. The User-Agent is the browser's then.
+    const own = typeof location !== 'undefined' && (() => { try { return new URL(abs).origin === location.origin; } catch (e) { return false; } })();
+    if (!gm || (own && (init.credentials === 'include' || init.credentials === 'same-origin'))) return fetch(url, init);
     const headers = {};
     try { new Headers(init.headers || {}).forEach((v, k) => { headers[k] = v; }); } catch (e) {}
     headers['User-Agent'] = mbnUA();

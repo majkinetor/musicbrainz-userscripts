@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.11.152821
+// @version      2026.11.12.001106
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -168,8 +168,13 @@
       init = init || {};
       const gm = typeof GM_xmlhttpRequest === 'function' ? GM_xmlhttpRequest
           : (typeof GM !== 'undefined' && GM && typeof GM.xmlHttpRequest === 'function' ? GM.xmlHttpRequest : null);
-      if (!gm) return fetch(url, init);
       const abs = new URL(String(url), typeof location !== 'undefined' ? location.href : 'https://musicbrainz.org/').href;
+      // #997: a request that asks for the login (credentials 'include' / 'same-origin') on this
+      // page's own origin goes through the page's fetch(): a manager's GM request carries the
+      // cookie only if the browser lets the extension send it (Safari's tracking prevention does
+      // not), and MusicBrainz then answers 401. The User-Agent is the browser's then.
+      const own = typeof location !== 'undefined' && (() => { try { return new URL(abs).origin === location.origin; } catch (e) { return false; } })();
+      if (!gm || (own && (init.credentials === 'include' || init.credentials === 'same-origin'))) return fetch(url, init);
       const headers = {};
       try { new Headers(init.headers || {}).forEach((v, k) => { headers[k] = v; }); } catch (e) {}
       headers['User-Agent'] = mbnUA();

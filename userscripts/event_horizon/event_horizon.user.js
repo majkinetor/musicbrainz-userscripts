@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.11.234408
+// @version      2026.11.12.110051
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -211,8 +211,13 @@ function mbnWsFetch(url, init) {
     init = init || {};
     const gm = typeof GM_xmlhttpRequest === 'function' ? GM_xmlhttpRequest
         : (typeof GM !== 'undefined' && GM && typeof GM.xmlHttpRequest === 'function' ? GM.xmlHttpRequest : null);
-    if (!gm) return fetch(url, init);
     const abs = new URL(String(url), typeof location !== 'undefined' ? location.href : 'https://musicbrainz.org/').href;
+    // #997: a request that asks for the login (credentials 'include' / 'same-origin') on this
+    // page's own origin goes through the page's fetch(): a manager's GM request carries the
+    // cookie only if the browser lets the extension send it (Safari's tracking prevention does
+    // not), and MusicBrainz then answers 401. The User-Agent is the browser's then.
+    const own = typeof location !== 'undefined' && (() => { try { return new URL(abs).origin === location.origin; } catch (e) { return false; } })();
+    if (!gm || (own && (init.credentials === 'include' || init.credentials === 'same-origin'))) return fetch(url, init);
     const headers = {};
     try { new Headers(init.headers || {}).forEach((v, k) => { headers[k] = v; }); } catch (e) {}
     headers['User-Agent'] = mbnUA();
