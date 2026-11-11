@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.11.095908
+// @version      2026.11.11.100742
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11157,14 +11157,19 @@ const EDIT_SEARCH_CSS = `
 #edit-search.eh-es .field-id input.eh-es-id{width:125px;-webkit-appearance:textfield;appearance:textfield}#edit-search.eh-es .eh-es-id::-webkit-search-cancel-button{display:none}
 .eh-es-options input{accent-color:var(--accent);flex:none}.eh-es-options small{display:block;color:var(--muted)}.eh-es-empty{padding:6px;color:var(--muted);font-size:12px}
 .eh-es-saved{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border)}
-.eh-es-saved>input{width:190px}.eh-es-saved>span:first-child{font-size:12px;color:var(--muted)}.eh-es-saved button:disabled{opacity:.4;cursor:default}
+.eh-es-saved button:disabled{opacity:.4;cursor:default}
+.eh-es-name{position:relative;display:flex;align-items:center;flex:0 1 370px;min-width:180px;border-bottom:1px solid var(--border)}
+#edit-search.eh-es .eh-es-name>input.eh-es-nopw{width:100%;min-width:0;border:0!important;border-radius:0;padding-left:4px}
+.eh-es-name>button{flex:none;border:0;background:transparent;color:var(--muted);padding:6px;cursor:pointer;filter:none!important}.eh-es-name>button svg{display:block;width:16px;height:16px}
+.eh-es-saved>[data-es-save]{color:var(--link);border-color:var(--link)}.eh-es-more{position:relative}.eh-es-more>button{background:none;border:0;color:var(--muted);font:22px/1 Manrope,system-ui,sans-serif;padding:6px 9px;cursor:pointer;filter:none!important}
+.eh-es-more .eh-es-menu{left:auto;right:0;width:160px}.eh-es-more .eh-es-menu>button{display:block;width:100%;border:0;background:transparent;color:var(--text);padding:7px 8px;text-align:left;cursor:pointer;filter:none!important}.eh-es-more .eh-es-menu>button:hover{background:var(--hover)}
 .eh-es-status{font-size:12px;color:var(--muted);flex-basis:100%;min-height:18px}.eh-es-status:empty{display:none}
 /* MusicBrainz mounts autocomplete results beside the live input. */
 .eh-es-autocomplete{position:absolute;z-index:1001;max-width:calc(100vw - 40px);max-height:300px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;background:var(--surface);border:1px solid var(--border);color:var(--text);list-style:none;padding:4px;margin:0}
 .eh-es-autocomplete .ui-menu-item>a{display:block;padding:5px 8px;cursor:pointer;color:var(--text)}.eh-es-autocomplete .ui-state-focus{background:var(--hover)}.eh-es-autocomplete .autocomplete-comment{font-size:12px;color:var(--muted)}
 #edit-search.eh-es .ui-helper-hidden-accessible{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 :root[data-eh-theme=dark] #edit-search.eh-es .autocomplete img{filter:invert(.8)}
-@media(max-width:650px){#edit-search.eh-es .conditions>li{grid-template-columns:24px minmax(0,1fr);gap:8px}#edit-search.eh-es .field-container{grid-column:2;grid-row:2}.eh-es-menu{width:min(320px,calc(100vw - 40px))}.eh-es-saved>input{width:150px}}
+@media(max-width:650px){#edit-search.eh-es .conditions>li{grid-template-columns:24px minmax(0,1fr);gap:8px}#edit-search.eh-es .field-container{grid-column:2;grid-row:2}.eh-es-menu{width:min(320px,calc(100vw - 40px))}.eh-es-name{flex:1;min-width:150px}}
 @media(pointer:coarse){.eh-es-pick>button,.eh-es-options>button,.eh-es-options>label{min-height:44px}}
 .hm-es{display:flex;align-items:center;justify-content:center;flex:none;color:var(--muted);padding:4px 8px;border-left:1px solid var(--border)}.hm-es:hover{color:var(--link)}.hm-es svg{width:19px;height:19px}
 `;
@@ -11192,31 +11197,79 @@ function esSaved() {
 }
 function esSavedBar(form) {
     const bar = document.createElement('div'); bar.className = 'eh-es-saved';
-    bar.innerHTML = '<span>Saved searches</span><select aria-label="Saved searches"></select><button type="button" data-es-load>Load</button><button type="button" data-es-delete aria-label="Delete saved search">Delete</button><input aria-label="Search name" placeholder="Search name" maxlength="120"><button type="button" data-es-save>Save search</button><span class="eh-es-status" role="status"></span>';
-    const sel = bar.querySelector('select'), name = bar.querySelector('input'), save = bar.querySelector('[data-es-save]'), msg = bar.querySelector('.eh-es-status');
-    const update = () => {
-        const a = esSaved(), v = sel.value;
-        sel.replaceChildren(new Option('Choose a saved search', ''), ...a.map(x => new Option(x.name, x.name)));
-        if (a.some(x => x.name === v)) sel.value = v;
-        bar.querySelector('[data-es-load]').disabled = bar.querySelector('[data-es-delete]').disabled = !sel.value;
-        save.textContent = a.some(x => x.name.toLowerCase() === name.value.trim().toLowerCase()) ? 'Replace saved search' : 'Save search';
-        esScan();
+    bar.innerHTML = `<div class="eh-es-name"><button type="button" data-es-find aria-label="Find a saved search" aria-expanded="false" aria-controls="eh-es-library" data-tip="Find a saved search">${SVG(LENS)}</button><input type="search" aria-label="Search name" placeholder="Name this search…" maxlength="120" autocomplete="off" aria-controls="eh-es-library"><div class="eh-es-menu" data-es-library hidden><div class="eh-es-options" data-es-results id="eh-es-library" role="listbox" aria-label="Saved searches"></div></div></div><button type="button" data-es-save>Save</button><div class="eh-es-more"><button type="button" data-es-more aria-label="More saved-search actions" aria-expanded="false" aria-controls="eh-es-save-actions">⋯</button><div class="eh-es-menu" data-es-actions id="eh-es-save-actions" hidden><button type="button" data-es-new>New search</button><button type="button" data-es-copy>Save a copy</button><button type="button" data-es-delete>Delete</button></div></div><span class="eh-es-status" role="status"></span>`;
+    const name = bar.querySelector('input'), save = bar.querySelector('[data-es-save]'), find = bar.querySelector('[data-es-find]'), library = bar.querySelector('[data-es-library]'), results = bar.querySelector('[data-es-results]'), more = bar.querySelector('[data-es-more]'), actions = bar.querySelector('[data-es-actions]'), del = bar.querySelector('[data-es-delete]'), msg = bar.querySelector('.eh-es-status');
+    let selected = null, choosing = false, beforeFind = '', active = null, pending = null, fresh = false;
+    try { pending = JSON.parse(sessionStorage.getItem('eh.editSearch') || 'null'); sessionStorage.removeItem('eh.editSearch'); } catch (e) {}
+    const canonical = q => JSON.stringify([...new URLSearchParams(q)].filter(([k]) => k !== 'field' && k !== 'page').sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1])));
+    const remember = (n, query) => { try { sessionStorage.setItem('eh.editSearch', JSON.stringify({ name: n, query })); } catch (e) {} };
+    const refresh = () => {
+        if (!selected && !name.value && !choosing && !fresh) {
+            const q = canonical(esQuery(form)), a = esSaved();
+            const match = pending && canonical(pending.query) === q && a.find(x => x.name === pending.name) || a.find(x => canonical(x.query) === q);
+            if (match) { selected = match.name; name.value = match.name; }
+        }
+        const disabled = choosing || !name.value.trim(); if (save.disabled !== disabled) save.disabled = disabled;
+        const noSelection = !esSaved().some(x => x.name === selected); if (del.disabled !== noSelection) del.disabled = noSelection;
     };
+    const highlight = el => {
+        if (active) active.removeAttribute('data-es-active'); active = el;
+        if (el) { el.setAttribute('data-es-active', ''); name.setAttribute('aria-activedescendant', el.id); el.scrollIntoView({ block: 'nearest' }); }
+        else name.removeAttribute('aria-activedescendant');
+    };
+    const closeLibrary = () => {
+        if (choosing) name.value = beforeFind;
+        choosing = false; library.hidden = true; find.setAttribute('aria-expanded', 'false'); name.setAttribute('aria-expanded', 'false'); name.placeholder = 'Name this search…'; highlight(null); refresh();
+    };
+    const renderList = () => {
+        highlight(null); results.replaceChildren();
+        const q = name.value.trim().toLowerCase(), matches = esSaved().filter(x => x.name.toLowerCase().includes(q));
+        if (!matches.length) { const empty = document.createElement('span'); empty.className = 'eh-es-empty'; empty.textContent = 'No saved searches'; results.append(empty); }
+        matches.forEach((s, i) => {
+            const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'option'); b.setAttribute('aria-selected', String(s.name === selected)); b.textContent = s.name; b.id = 'eh-es-saved-' + i;
+            b.onclick = () => { remember(s.name, s.query); location.assign(MB + '/search/edits?' + s.query); }; results.append(b);
+        });
+    };
+    find.onclick = () => {
+        if (choosing) { closeLibrary(); return; }
+        refresh(); actions.hidden = true; more.setAttribute('aria-expanded', 'false'); beforeFind = name.value; choosing = true; name.value = ''; name.placeholder = 'Find a saved search…'; name.setAttribute('aria-expanded', 'true'); find.setAttribute('aria-expanded', 'true'); library.hidden = false; renderList(); refresh(); name.focus();
+    };
+    name.addEventListener('input', () => { msg.textContent = ''; if (choosing) renderList(); refresh(); });
+    name.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && choosing) { e.preventDefault(); e.stopPropagation(); closeLibrary(); }
+        else if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && choosing) {
+            e.preventDefault(); const xs = [...results.querySelectorAll('button')], i = xs.indexOf(active), d = e.key === 'ArrowDown' ? 1 : -1;
+            if (xs.length) highlight(xs[i < 0 ? d > 0 ? 0 : xs.length - 1 : (i + d + xs.length) % xs.length]);
+        } else if (e.key === 'Enter') { e.preventDefault(); if (choosing) (active || results.querySelector('button'))?.click(); else save.click(); }
+    });
+    results.addEventListener('pointerdown', e => e.preventDefault());
     const write = a => { try { GM_setValue('editSearches', a); return true; } catch (e) { msg.textContent = 'Search could not be saved'; return false; } };
-    name.addEventListener('input', () => { const duplicate = esSaved().some(x => x.name.toLowerCase() === name.value.trim().toLowerCase()); save.textContent = duplicate ? 'Replace saved search' : 'Save search'; });
-    name.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); save.click(); } });
-    sel.addEventListener('change', () => { name.value = sel.value; update(); });
     save.onclick = () => {
-        const n = name.value.trim(); if (!n) { msg.textContent = 'Enter a search name'; name.focus(); return; }
-        const a = esSaved(), i = a.findIndex(x => x.name.toLowerCase() === n.toLowerCase()), x = { name: n, query: esQuery(form) };
-        if (i < 0) a.push(x); else a[i] = x;
+        const n = name.value.trim(); if (!n || choosing) return;
+        const a = esSaved(), old = a.findIndex(x => x.name === selected), collision = a.findIndex(x => x.name.toLowerCase() === n.toLowerCase());
+        if (collision >= 0 && collision !== old) { msg.textContent = 'A search with this name already exists'; name.focus(); return; }
+        const x = { name: n, query: esQuery(form) }; if (old < 0) a.push(x); else a[old] = x;
         if (!write(a)) return;
-        update(); sel.value = n; sel.dispatchEvent(new Event('change', { bubbles: true })); msg.textContent = 'Saved “' + n + '”';
+        selected = n; name.value = n; remember(n, x.query); msg.textContent = 'Saved'; refresh();
     };
-    bar.querySelector('[data-es-load]').onclick = () => { const s = esSaved().find(x => x.name === sel.value); if (s) location.assign(MB + '/search/edits?' + s.query); };
-    bar.querySelector('[data-es-delete]').onclick = () => { const n = sel.value; if (n && write(esSaved().filter(x => x.name !== n))) { name.value = ''; update(); msg.textContent = 'Deleted “' + n + '”'; } };
-    form.prepend(bar); update(); return bar;
+    more.onclick = () => { closeLibrary(); actions.hidden = !actions.hidden; more.setAttribute('aria-expanded', String(!actions.hidden)); };
+    bar.querySelector('[data-es-new]').onclick = () => { try { sessionStorage.removeItem('eh.editSearch'); } catch (e) {} location.assign(MB + '/search/edits'); };
+    bar.querySelector('[data-es-copy]').onclick = () => {
+        actions.hidden = true; more.setAttribute('aria-expanded', 'false');
+        const base = (name.value.trim() || 'Search') + ' copy', used = new Set(esSaved().map(x => x.name.toLowerCase())); let n = base, i = 2;
+        while (used.has(n.toLowerCase())) n = base + ' ' + i++;
+        selected = null; fresh = true; name.value = n; msg.textContent = ''; refresh(); name.focus(); name.select();
+    };
+    del.onclick = () => {
+        if (!selected || !write(esSaved().filter(x => x.name !== selected))) return;
+        selected = null; fresh = true; name.value = ''; actions.hidden = true; more.setAttribute('aria-expanded', 'false'); msg.textContent = 'Deleted'; refresh();
+        try { sessionStorage.removeItem('eh.editSearch'); } catch (e) {}
+    };
+    form.addEventListener('submit', () => { if (selected) remember(selected, esQuery(form)); });
+    document.addEventListener('click', e => { if (!bar.contains(e.target)) { closeLibrary(); actions.hidden = true; more.setAttribute('aria-expanded', 'false'); } });
+    bar._esRefresh = refresh; form.prepend(bar); refresh(); return bar;
 }
+
 function esPick(select) {
     const root = document.createElement('span'); root.className = 'eh-es-pick'; root._esSelect = select;
     const headers = { auto_edit_filter: 'Edit kind', order: 'Sort order', negation: 'Match mode', combinator: 'Condition logic' };
@@ -11305,6 +11358,7 @@ function esScan() {
         input.type = 'search'; input.autocomplete = 'off'; input.classList.add('eh-es-nopw');
         input.setAttribute('data-lpignore', 'true'); input.setAttribute('data-1p-ignore', 'true'); input.setAttribute('data-bwignore', 'true'); input.setAttribute('data-form-type', 'other'); input.removeAttribute('autofocus');
     }
+    esForm.querySelector('.eh-es-saved')?._esRefresh?.();
     // jQuery UI creates menus under the body that existed at initialization, sometimes the hidden native one.
     const jq = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window).jQuery;
     if (ehOn && typeof jq === 'function') for (const input of esForm.querySelectorAll('.autocomplete input.name')) {

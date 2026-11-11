@@ -36,8 +36,8 @@ test('edit search keeps native conditions and saves the draft by name', { tag: '
   await page.locator('.condition .field-voter select[multiple]').evaluate(s => { for (const o of s.options) o.selected = o.value === 'no'; s.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.locator('#edit-search select[name=order]').evaluate(s => { s.value = 'asc'; s.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.getByLabel('Search name', { exact: true }).fill('My review');
-  await page.getByRole('button', { name: 'Save search', exact: true }).click();
-  await expect(page.locator('.eh-es-status')).toHaveText('Saved “My review”');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.locator('.eh-es-status')).toHaveText('Saved');
   const saved = await page.evaluate(() => GM_getValue('editSearches'));
   expect(saved).toHaveLength(1);
   const query = new URLSearchParams(saved[0].query);
@@ -51,9 +51,11 @@ test('edit search keeps native conditions and saves the draft by name', { tag: '
   await page.locator('.condition .field-id .arg input').first().fill('5');
   await page.locator('[data-hgrp=type]').click();
   await expect(page.locator('.condition .field-id .arg input').first()).toHaveValue('5');
-  await page.getByRole('button', { name: 'Replace saved search', exact: true }).click();
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
   expect(new URLSearchParams((await page.evaluate(() => GM_getValue('editSearches')))[0].query).get('conditions.0.args.0')).toBe('5');
-  await Promise.all([page.waitForURL(u => u.searchParams.get('conditions.0.args.0') === '5'), page.getByRole('button', { name: 'Load', exact: true }).click()]);
+  await page.getByRole('button', { name: 'Find a saved search', exact: true }).click();
+  await page.getByLabel('Search name', {exact:true}).fill('My review');
+  await Promise.all([page.waitForURL(u => u.searchParams.get('conditions.0.args.0') === '5'), page.getByRole('option', {name:'My review', exact:true}).click()]);
   await idle(page); await inject('event_horizon');
   await expect(page.locator('#app #edit-search')).toBeVisible();
   await expect(page.locator('.condition .field-id .arg input').first()).toHaveValue('5');
@@ -64,8 +66,8 @@ test('edit search keeps native conditions and saves the draft by name', { tag: '
   await idle(page); await inject('event_horizon');
   await expect(page.locator('#app #edit-search')).toBeVisible();
   expect(new URL(page.url()).searchParams.get('conditions.0.args.0')).toBe('5');
-  await page.locator('.eh-es-saved select').evaluate(s => { s.value = 'My review'; s.dispatchEvent(new Event('change', { bubbles: true })); });
-  await page.getByRole('button', { name: 'Delete saved search', exact: true }).click();
+  await page.getByRole('button', { name: 'More saved-search actions', exact: true }).click();
+  await page.locator('.eh-es-saved').getByRole('button', { name: 'Delete', exact: true }).click();
   expect(await page.evaluate(() => GM_getValue('editSearches'))).toEqual([]);
   await attachShot(info, page, 'edit-search');
 });
