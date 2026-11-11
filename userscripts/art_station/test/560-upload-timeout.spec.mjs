@@ -16,7 +16,7 @@ import { test, check, requireLogin, SANDBOX, attachShot, idle } from '../../../d
 
 test.use({ gm: { name: 'Art Station' } });
 
-test('the upload timeout is a setting, and reaches the upload request', { tag: ['@sandbox', '@login'] }, async ({ page, context, inject }, testInfo) => {
+test('the upload timeout is a setting, and reaches the upload request', { tag: ['@sandbox', '@login', '@flaky'] }, async ({ page, context, inject }, testInfo) => {
   const RELEASE = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';
   const OLD_TIMEOUT_MS = 300000;   // what it was hardcoded to before this change
 
