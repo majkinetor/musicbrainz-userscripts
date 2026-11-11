@@ -145,7 +145,7 @@ test('Catalog numbers without links: right-click, its chip, and with a Discogs m
   await page.click('#mb-found-cat');
   await page.click('#pc-cat-pop .pc-bc-opt', { button: 'right' });
   const one = await until(state, x => x.opened.length);
-  check(/AOF 146/.test(one.q) && one.opened[0].endsWith(`/release/${RELEASE}/edit#pc-autocommit-pc-catno`), `right-click adds it alone, in the background (${JSON.stringify(one)})`);
+  check(/AOF 146/.test(one.q) && one.opened[0].endsWith(`/release/${RELEASE}/edit?mbu-auto=0#pc-autocommit-pc-catno`), `right-click adds it alone, in the background (${JSON.stringify(one)})`);
   await page.click('#mb-found-cat');
   await page.click('#pc-cat-pop .pc-bc-opt');
   await page.click('#mb-picked-cat', { button: 'right' });

@@ -87,7 +87,7 @@ test('the barcodes the platforms report are offered, and picking one uses it', {
   const bg = await until(() => page.evaluate(rel => ({ q: localStorage.getItem('pc:bg-barcode:' + rel), opened: window.__opened || '' }), BARE), x => x.opened);
   check(asked.length === 1 && /already on another MusicBrainz release/.test(asked[0]) && /this release is CD/.test(asked[0]), `its warnings are asked about first (${asked[0]})`);
   check(JSON.parse(bg.q || '{}').code === CODE && /reported by Deezer/.test(bg.q), `right-click queues the barcode alone (${bg.q})`);
-  check(bg.opened.endsWith(`/release/${BARE}/edit#pc-autocommit-pc-barcode`), `…and opens the editor for it in the background (${bg.opened})`);
+  check(bg.opened.endsWith(`/release/${BARE}/edit?mbu-auto=0#pc-autocommit-pc-barcode`), `…and opens the editor for it in the background (${bg.opened})`);
   check(!(await page.evaluate(rel => localStorage.getItem('pc:pasted-barcode:' + rel), BARE)), '…without using it as pasted');
   await page.evaluate(rel => localStorage.removeItem('pc:bg-barcode:' + rel), BARE);
 

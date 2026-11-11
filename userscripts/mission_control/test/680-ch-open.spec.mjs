@@ -8,7 +8,8 @@ test.use({ gm: { name: 'Mission Control' } });
 
 const RELEASE = '54b7bca2-7ed6-4484-bdd3-fe35a3f33dda';
 
-test('#680: Release credits opens CH on a source, and its pre-flight starts', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('#680: Release credits opens CH on a source, and its pre-flight starts', { tag: ['@sandbox', '@login'] }, async ({ page: release, context, inject }) => {
+  let page = release;
   await page.goto(`https://test.musicbrainz.org/release/${RELEASE}`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#content table.medium');
   await inject('mission_control', { waitFor: '__mcTest' });
@@ -24,10 +25,12 @@ test('#680: Release credits opens CH on a source, and its pre-flight starts', { 
   check(names.length > 2 && names.at(-1) === 'All' && names.includes('Deezer') && !names.includes('?'), `one link per source, and All (${names})`);
   await page.screenshot({ path: 'test-results/mc-680-ch-open.png' });
 
-  await page.locator('#mc-root .mc-chopen a[href$="ch-import=Deezer"]').click();
+  // the icon opens Credit Hoarder in a new tab
+  const [tab] = await Promise.all([context.waitForEvent('page'), page.locator('#mc-root .mc-chopen a[href$="ch-import=Deezer"]').click()]);
+  page = tab;
   await page.waitForURL(/edit-relationships#ch-import=Deezer$/);
   await requireLogin(page);
-  await inject('credit_hoarder');
+  await inject('credit_hoarder', { target: page });
   await page.waitForSelector('.discogs-bar .discogs-src-ico[data-src="Deezer"].importing', { timeout: 40_000 });
   check(true, 'CH pressed Deezer: the import runs');
   // the same choice as CH's toolbar (Titles aside: CH offers it only after reading the titles)

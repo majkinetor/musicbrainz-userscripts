@@ -13,12 +13,12 @@ test('#680: corner launchers show their script icons, no disc', { tag: ['@sandbo
   await inject('mission_control', { waitFor: '__mcTest' });
   await inject('fusion');
   await inject('falcon');
-  await page.waitForSelector('#mc-launch img');
+  await page.waitForSelector('#mc-launch svg');   // Mission Control's is inline, so its hexes can flash while it reads
   await page.waitForSelector('#fs-launch img');
   await page.waitForSelector('#falcon-launcher img');
   const L = await page.evaluate(() => ['#mc-launch', '#fs-launch', '#falcon-launcher'].map(sel => {
-    const b = document.querySelector(sel), img = b.querySelector('img'), r = img.getBoundingClientRect(), cs = getComputedStyle(b);
-    return { sel, text: b.textContent.trim(), src: img.src.slice(0, 26), loaded: img.complete && img.naturalWidth > 0, w: Math.round(r.width), h: Math.round(r.height), bg: cs.backgroundColor, shadow: cs.boxShadow };
+    const b = document.querySelector(sel), img = b.querySelector('img, svg'), r = img.getBoundingClientRect(), cs = getComputedStyle(b);
+    return { sel, text: b.textContent.trim(), src: img.tagName === 'IMG' ? img.src.slice(0, 26) : 'data:image/svg+xml;base64,', loaded: img.tagName === 'IMG' ? img.complete && img.naturalWidth > 0 : true, w: Math.round(r.width), h: Math.round(r.height), bg: cs.backgroundColor, shadow: cs.boxShadow };
   }));
   console.log(JSON.stringify(L, null, 1));
   for (const l of L) {

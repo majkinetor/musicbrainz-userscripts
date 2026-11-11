@@ -41,7 +41,7 @@ test('#682: the master ✓ opens one tab; right-click adds it in the background'
 
   const right = await click('contextmenu');
   check(!right.opened.length, `a right-click opens no foreground tab (${JSON.stringify(right)})`);
-  check(right.bg.length === 1 && right.bg[0].includes(`/release-group/${RG}/edit#pc-autocommit`),
+  check(right.bg.length === 1 && right.bg[0].includes(`/release-group/${RG}/edit?mbu-auto=0#pc-autocommit`),
     'it adds the master in a background tab that submits itself');
   check(JSON.parse(await page.evaluate(rg => localStorage.getItem('pc:pending:rg:' + rg), RG) || '{}')['discogs-master'] === MASTER,
     'the master is what is queued');

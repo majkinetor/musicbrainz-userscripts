@@ -69,12 +69,12 @@ test.describe('without provider answers', () => {
     await page.waitForFunction(() => !!window.__pcTest464);
     await recordTabs(page);
     const bg = await page.evaluate(mbid => { window.__pcTest464.openReleaseEditTab(mbid, { background: true }); const t = window.__tabs[0]; return t && { url: t.url, opts: t.opts }; }, RAM);
-    check(bg && bg.url === `${SANDBOX_RELEASE}/edit#pc-autocommit`, `#464: right-click opens the editor with #pc-autocommit (${bg && bg.url})`);
+    check(bg && bg.url === `${SANDBOX_RELEASE}/edit?mbu-auto=0#pc-autocommit`, `#464: right-click opens the editor with #pc-autocommit (${bg && bg.url})`);
     check(bg && bg.opts.active === false && bg.opts.insert === true, `#464: …in the background (${JSON.stringify(bg && bg.opts)})`);
     const reloaded = page.waitForEvent('load', { timeout: 5000 }).then(() => true).catch(() => false);
     await page.evaluate(mbid => { const ch = new BroadcastChannel('platform-check-inject'); ch.postMessage({ type: 'pc-edit-committed', mbid }); ch.close(); }, RAM);
     check(await reloaded, '#464: once it hears "committed", the opener reloads');
-    check((await page.evaluate(() => sessionStorage.getItem('__fakeTabClosed'))) === `${SANDBOX_RELEASE}/edit#pc-autocommit`, '#464: …having closed the background tab');
+    check((await page.evaluate(() => sessionStorage.getItem('__fakeTabClosed'))) === `${SANDBOX_RELEASE}/edit?mbu-auto=0#pc-autocommit`, '#464: …having closed the background tab');
 
     // the release group (#559)
     await inject('platform_check');
@@ -98,7 +98,7 @@ test.describe('without provider answers', () => {
       window.__pcTest464.openRgEditTab(rg, { background: false, sameTabAllowed: true });
       return { url: t.url, active: t.opts.active, afterRelease, afterRg: t.closed, fg: window.__opened.slice() };
     }, FAKE_RG);
-    check(/\/release-group\/[0-9a-f-]{36}\/edit#pc-autocommit$/.test(rg.url) && rg.active === false, `#559: the release-group editor opens in the background too (${rg.url})`);
+    check(/\/release-group\/[0-9a-f-]{36}\/edit\?mbu-auto=0#pc-autocommit$/.test(rg.url) && rg.active === false, `#559: the release-group editor opens in the background too (${rg.url})`);
     check(!rg.afterRelease, "#559: a release's \"committed\" doesn't close the release-group tab");
     check(rg.afterRg, '#559: …its own does');
     check(rg.fg.length === 1 && /\/release-group\/.*\/edit$/.test(rg.fg[0]), `#559: + opens it in a new tab, without #pc-autocommit (${rg.fg})`);

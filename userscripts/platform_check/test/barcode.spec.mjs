@@ -165,15 +165,15 @@ test.describe('strict barcode confidence', () => {
     await reset();
     await page.evaluate(p => { const el = document.getElementById('plat-' + p); for (const t of ['mousedown', 'mouseup', 'auxclick']) el.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true, button: 1, ctrlKey: true })); }, target);
     const ctrlMiddle = await after();
-    check(!ctrlMiddle.opened && ctrlMiddle.bg.join() === 'edit#pc-autocommit' && ctrlMiddle.queued.join() === target && ctrlMiddle.forced, `Ctrl+middle-click adds it anyway, in a background tab that submits itself (${JSON.stringify(ctrlMiddle)})`);
+    check(!ctrlMiddle.opened && ctrlMiddle.bg.join() === 'edit?mbu-auto=0#pc-autocommit' && ctrlMiddle.queued.join() === target && ctrlMiddle.forced, `Ctrl+middle-click adds it anyway, in a background tab that submits itself (${JSON.stringify(ctrlMiddle)})`);
     await reset();
     await click(target, { ctrlKey: true, altKey: true });
     const ctrlAlt = await after();
-    check(!ctrlAlt.opened && ctrlAlt.bg.join() === 'edit#pc-autocommit' && ctrlAlt.queued.join() === target && ctrlAlt.forced, `Ctrl+Alt+click does the same (${JSON.stringify(ctrlAlt)})`);
+    check(!ctrlAlt.opened && ctrlAlt.bg.join() === 'edit?mbu-auto=0#pc-autocommit' && ctrlAlt.queued.join() === target && ctrlAlt.forced, `Ctrl+Alt+click does the same (${JSON.stringify(ctrlAlt)})`);
     await reset();
     await page.evaluate(() => { const el = document.getElementById('mb-inject-btn'); for (const t of ['mousedown', 'mouseup', 'auxclick']) el.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true, button: 1, ctrlKey: true })); });
     const plusBg = await after();
-    check(!plusBg.opened && plusBg.bg.join() === 'edit#pc-autocommit' && plusBg.queued.includes(target), `Ctrl+middle-click on + adds every link, the withheld ones too, in the background (${JSON.stringify(plusBg)})`);
+    check(!plusBg.opened && plusBg.bg.join() === 'edit?mbu-auto=0#pc-autocommit' && plusBg.queued.includes(target), `Ctrl+middle-click on + adds every link, the withheld ones too, in the background (${JSON.stringify(plusBg)})`);
     await page.evaluate(() => { Object.keys(localStorage).filter(k => /^pc:(pending|forced):/.test(k)).forEach(k => localStorage.removeItem(k)); });
     // + : every confirmed link, the withheld ones included
     await page.evaluate(() => { window.__opened = []; });
