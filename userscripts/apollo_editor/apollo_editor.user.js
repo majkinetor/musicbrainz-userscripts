@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.11.144811
+// @version      2026.11.11.145926
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -4614,7 +4614,7 @@ Click: open the label`;
   function handleArtistPageCallback() {
     const m = location.pathname.match(new RegExp('^/(?:artist|label)/(' + MBID_RE.source + ')', 'i')); if (!m) return false;
     let token = null; try { token = sessionStorage.getItem(PENDING_KEY); } catch (e) {} if (!token) return false;
-    try { sessionStorage.removeItem(PENDING_KEY); } catch (e) {}
+    try { sessionStorage.removeItem(PENDING_KEY); sessionStorage.removeItem(PENDING_KEY + '.auto'); } catch (e) {}
     const gid = m[1].toLowerCase();
     if (!ART_CHANNEL) { Log.cat('Create').warn('saved', gid, 'but this browser has no BroadcastChannel: the editor is not told; pick it there by hand'); return true; }
     createTabLog(token, 'info', 'saved, page of', gid, 'reached; sending it to the editor');
@@ -4630,6 +4630,9 @@ Click: open the label`;
   // error): the hash flag is gone after the POST, but the token stays in sessionStorage, so say why
   function handleCreateFormBack() {
     if (!/\/(artist|label)\/create\b/i.test(location.pathname) || /tc-autocommit/.test(location.hash)) return false;
+    // Foreground creates carry PENDING_KEY too, solely to return the saved entity.
+    // Only a tab that actually auto-submitted can be a failed background create.
+    try { if (!sessionStorage.getItem(PENDING_KEY + '.auto')) return false; } catch (e) { return false; }
     let token = null; try { token = sessionStorage.getItem(PENDING_KEY); } catch (e) {} if (!token) return false;
     const report = () => {
       const errs = [...document.querySelectorAll('.error, .errors li, .duplicate-check, #possible-duplicates')].map(x => (x.textContent || '').replace(/\s+/g, ' ').trim()).filter(Boolean);
@@ -4664,7 +4667,7 @@ Click: open the label`;
     if (!onCreate && !onEdit) return false;
     const hm = location.hash.match(/tc-autocommit(?:=([^&]+))?/); if (!hm) return false;
     let tok = '';
-    if (onCreate) { try { tok = decodeURIComponent(hm[1] || ''); } catch (e) { tok = hm[1] || ''; } try { sessionStorage.setItem(PENDING_KEY, tok); } catch (e) {} if (!tok) Log.cat('Create').warn('create tab opened without its token: the editor will not hear back'); else createTabLog(tok, 'info', 'opened, waiting for the form'); }
+    if (onCreate) { try { tok = decodeURIComponent(hm[1] || ''); } catch (e) { tok = hm[1] || ''; } try { sessionStorage.setItem(PENDING_KEY, tok); sessionStorage.setItem(PENDING_KEY + '.auto', '1'); } catch (e) {} if (!tok) Log.cat('Create').warn('create tab opened without its token: the editor will not hear back'); else createTabLog(tok, 'info', 'opened, waiting for the form'); }
     else { try { sessionStorage.setItem(CLOSE_KEY, '1'); } catch (e) {} }
     const et = (location.pathname.match(/\/(artist|label|place)\//) || [])[1] || 'artist';
     const seedUrl = new URLSearchParams(location.search).get(`edit-${et}.url.0.text`) || '';
