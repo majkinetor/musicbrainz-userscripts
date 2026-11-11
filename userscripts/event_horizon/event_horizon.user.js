@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.11.105401
+// @version      2026.11.11.110151
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11357,6 +11357,8 @@ function esPick(select) {
         if (top === 'sort') text = { desc: 'Newest', asc: 'Oldest', closed_desc: 'Recently closed', closed_asc: 'Earliest closed', vote_closing_asc: 'Voting closes sooner', vote_closing_desc: 'Voting closes later', latest_note: 'Recent notes', rand: 'Unspecified' }[select.value] || text;
         if (valueLabel.textContent !== text) valueLabel.textContent = text;
         if (top) { trigger.dataset.tip = label + '\n' + selected.map(x => x.text.trim()).join(', '); trigger.setAttribute('aria-label', label + ': ' + text); }
+        else if (select.multiple && selected.length) trigger.dataset.tip = selected.map(x => x.text.trim()).join('\n');
+        else delete trigger.dataset.tip;
         if (trigger.disabled !== select.disabled) trigger.disabled = select.disabled;
         const sig = JSON.stringify(opts.map(o => [o.value, o.text, o.disabled, o.parentElement.tagName === 'OPTGROUP' ? o.parentElement.label : '']));
         if (sig !== signature) {
