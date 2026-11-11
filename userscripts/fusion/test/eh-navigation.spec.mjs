@@ -1,7 +1,7 @@
 import { test, expect } from '../../../dev/test/harness.mjs';
 
 test.use({ profile: 'fresh', gm: { name: 'Fusion' } });
-test('Fusion follows EH navigation and restores each page board', { tag: '@unit' }, async ({ page, inject }) => {
+test('Fusion follows EH navigation and keeps the shared recording board', { tag: '@unit' }, async ({ page, inject }) => {
   const a = '11111111-1111-4111-8111-111111111111', b = '22222222-2222-4222-8222-222222222222';
   await page.route('https://test.musicbrainz.org/artist/*', r => r.fulfill({ body: '<html><body></body></html>', contentType: 'text/html' }));
   await page.goto('https://test.musicbrainz.org/artist/' + a);
@@ -24,7 +24,7 @@ test('Fusion follows EH navigation and restores each page board', { tag: '@unit'
   expect(await page.evaluate(() => window.__fusion.STATE.poolOrder)).toEqual([a]);
   await go(b);
   expect(await page.evaluate(() => window.__fusion.SCOPE.mbid)).toBe(b);
-  expect(await page.evaluate(() => window.__fusion.STATE.poolOrder)).toEqual([b]);
+  expect(await page.evaluate(() => window.__fusion.STATE.poolOrder)).toEqual([a, b]);
   await go(a);
-  expect(await page.evaluate(() => window.__fusion.STATE.poolOrder)).toEqual([a]);
+  expect(await page.evaluate(() => window.__fusion.STATE.poolOrder)).toEqual([a, b]);
 });

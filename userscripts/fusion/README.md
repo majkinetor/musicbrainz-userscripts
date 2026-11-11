@@ -54,12 +54,12 @@ Fusion opens empty. **Ctrl+click** or **middle-click** its corner icon for the a
 
 Recordings come into the pool as follows:
 
-| Page                | Pool                                                                   |
-| ------------------- | ---------------------------------------------------------------------- |
-| Release             | its recordings; *Load recordings from RG edition* adds another edition |
-| Release group       | the recordings of every release in the group                           |
-| Recording           | that recording                                                         |
-| Artist, any tab     | the artist's entire catalogue, not just the visible page (up to 2000)  |
+| Page            | Pool                                                                   |
+| --------------- | ---------------------------------------------------------------------- |
+| Release         | its recordings; *Load recordings from RG edition* adds another edition |
+| Release group   | the recordings of every release in the group                           |
+| Recording       | that recording                                                         |
+| Artist, any tab | the artist's entire catalogue, not just the visible page (up to 2000)  |
 
 **+** in the pool's header opens a field across it: paste a recording, release or release-group MBID or URL there to add it.
 
@@ -121,6 +121,8 @@ Artists, releases, release groups, works, labels, places, events and series are 
 - **Merge** submits one group, **Merge All** every group in turn; **Clear ▾** clears all of this type, empties the pool, returns the groups to the pool, or removes the merged ones.
 
 What you collect, recordings included, is kept in your userscript manager and shows in every open tab.
+
+Right-click a type's icon in the window's header or its counter beside Fusion's corner icon to empty that pool. Grouped entries stay.
 
 ## Settings
 

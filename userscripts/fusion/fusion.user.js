@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.10.103341
+// @version      2026.11.11.145054
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -1029,20 +1029,33 @@ const ID_FOLD = 3;
 // like every other type's in fusion.merge: every tab shows the same board and a reload keeps it.
 // What a card shows (selection, folds, the note being typed) stays per tab.
 const REC_KEY = 'fusion.recordings';
+Log.debug('Recording board context: ' + (window === window.top ? 'top-level page' : 'iframe') + ' ' + location.href);
 let recSaved = '', recSaveT = 0;
+function recRemovalDebug(gid, why, rec = STATE.recordings.get(gid)) {
+    Log.debug('Recording removal: ' + gid + (rec ? ' “' + rec.title + '”' : '') + ' — ' + why
+        + ' (pool=' + STATE.poolOrder.length + ', groups=' + STATE.groups.length + ', recordings=' + STATE.recordings.size + ')');
+}
 function recSnapshot() {
     return JSON.stringify({
-        recs: STATE.poolOrder.map(g => STATE.recordings.get(g)).filter(Boolean),
+        // Keep group members as well as pool entries. recApply needs each
+        // recording to render a group, while poolOrder alone controls which
+        // recordings remain in the pool.
+        recs: [...STATE.recordings.values()],
+        poolOrder: STATE.poolOrder.slice(),
         groups: STATE.groups.map(g => Object.assign({}, g, { editing: false })),
     });
 }
 function recApply(raw, fresh) {
+    const previous = STATE.recordings, previousPool = STATE.poolOrder;
     let s; try { s = JSON.parse(raw || '{}'); } catch (e) { s = {}; }
     const recs = Array.isArray(s && s.recs) ? s.recs.filter(r => r && r.gid) : [];
     const editing = new Set(STATE.groups.filter(g => g.editing).map(g => g.id));
     STATE.recordings = new Map(recs.map(r => [r.gid, r]));
-    STATE.poolOrder = recs.map(r => r.gid);
+    const savedPool = Array.isArray(s && s.poolOrder) ? s.poolOrder : recs.map(r => r.gid);
+    STATE.poolOrder = [...new Set(savedPool.filter(gid => STATE.recordings.has(gid)))];
     STATE.groups = (Array.isArray(s && s.groups) ? s.groups : []).filter(g => g && Array.isArray(g.memberGids)).map(g => {
+        const missing = g.memberGids.filter(x => !STATE.recordings.has(x));
+        missing.forEach(gid => recRemovalDebug(gid, 'saved group ' + g.id + ' references a missing recording', previous.get(gid)));
         g.memberGids = g.memberGids.filter(x => STATE.recordings.has(x));
         g.editing = editing.has(g.id);
         if (fresh && g.state === 'busy') g.state = 'pending';   // a merge the closed page never finished
@@ -1050,6 +1063,8 @@ function recApply(raw, fresh) {
     }).filter(g => g.memberGids.length);
     if (STATE.selected && !STATE.recordings.has(STATE.selected)) STATE.selected = null;
     if (STATE.activeGroupId && !findGroup(STATE.activeGroupId)) STATE.activeGroupId = null;
+    previous.forEach((rec, gid) => { if (!STATE.recordings.has(gid)) recRemovalDebug(gid, 'removed from Fusion by ' + (fresh ? 'startup' : 'remote') + ' snapshot', rec); });
+    previousPool.filter(gid => !STATE.poolOrder.includes(gid) && STATE.recordings.has(gid)).forEach(gid => recRemovalDebug(gid, 'removed from pool by ' + (fresh ? 'startup' : 'remote') + ' snapshot; retained in Fusion'));
 }
 function recSaveNow() {
     clearTimeout(recSaveT); recSaveT = 0;
@@ -1057,11 +1072,13 @@ function recSaveNow() {
     const v = recSnapshot();
     if (v === recSaved) return;
     recSaved = v;
+    Log.debug('Recording board save: pool=' + STATE.poolOrder.length + ', groups=' + STATE.groups.length + ', recordings=' + STATE.recordings.size);
     GM_setValue(REC_KEY, v);
 }
 function recSaveSoon() { if (!recSaveT) recSaveT = setTimeout(recSaveNow, 150); }
 if (typeof GM_getValue === 'function') { recSaved = GM_getValue(REC_KEY, '') || ''; recApply(recSaved, true); }
 if (typeof GM_addValueChangeListener === 'function') GM_addValueChangeListener(REC_KEY, (k, o, n, remote) => {
+    Log.debug('Recording board storage notification: remote=' + remote + ', pending save=' + !!recSaveT + ', unchanged=' + (n === recSaved));
     if (!remote) return;
     if (recSaveT) recSaveNow();   // this tab's unsaved change goes out first, then the other tab's wins
     recSaved = n || ''; recApply(recSaved, false);
@@ -1078,6 +1095,7 @@ function addToPool(rec) {
 }
 function findGroup(id) { return STATE.groups.find(g => g.id === id); }
 function removeFromPoolPermanently(gid) {
+    recRemovalDebug(gid, 'pool remove button; removed from Fusion');
     const i = STATE.poolOrder.indexOf(gid); if (i !== -1) STATE.poolOrder.splice(i, 1);
     STATE.recordings.delete(gid);
     Log.info('Removed ' + gid + ' from the pool');
@@ -1202,6 +1220,7 @@ function returnToPool(gid, groupId) {
 function removeFromGroupAndPool(gid, groupId) {
     const g = findGroup(groupId); if (!g) return;
     const i = g.memberGids.indexOf(gid); if (i === -1) return;
+    recRemovalDebug(gid, 'remove button in group ' + groupId + '; removed from Fusion');
     g.memberGids.splice(i, 1);
     STATE.recordings.delete(gid);
     dissolveOrRefresh(g);
@@ -1227,6 +1246,7 @@ function addToGroup(gid, groupId) {
     }
     STATE.poolOrder.splice(i, 1);
     g.memberGids.push(gid);
+    recRemovalDebug(gid, 'moved from pool to group ' + groupId + '; retained in Fusion');
     refreshGroupMeta(g);
     Log.info('Added ' + gid + ' to group ' + groupId);
     return true;   // callers branch on this to set the current group — the
@@ -1255,6 +1275,7 @@ function createGroupWithMember(gid) {
     STATE.poolOrder.splice(i, 1);
     const g = { id: 'g' + Math.random().toString(36).slice(2, 9), memberGids: [gid], confidence: 'manual', tier: 'manual', signals: [], signalsAll: [], target: gid, state: 'pending', error: null, editNote: null, editing: false };
     STATE.groups.push(g);
+    recRemovalDebug(gid, 'moved from pool to new group ' + g.id + '; retained in Fusion');
     Log.info('Created new group with ' + gid);
     return g;
 }
@@ -1282,6 +1303,7 @@ function clearMerged() {
     let dropped = 0;
     for (const g of done) {
         for (const gid of g.memberGids) {
+            recRemovalDebug(gid, 'clear merged group ' + g.id + '; removed from Fusion');
             STATE.recordings.delete(gid);
             const i = STATE.poolOrder.indexOf(gid); if (i !== -1) STATE.poolOrder.splice(i, 1);
             STATE.expandedReleases.delete(gid);
@@ -1308,6 +1330,7 @@ function autoClearSoon() {
 // #908: the pool's recordings leave the board; grouped ones stay
 function clearPool() {
     const inG = new Set(STATE.groups.flatMap(g => g.memberGids)), gone = STATE.poolOrder.filter(g => !inG.has(g));
+    gone.forEach(gid => recRemovalDebug(gid, 'clear pool; removed from Fusion'));
     gone.forEach(g => { STATE.recordings.delete(g); STATE.expandedReleases.delete(g); });
     STATE.poolOrder = STATE.poolOrder.filter(g => inG.has(g));
     if (STATE.selected && !STATE.recordings.has(STATE.selected)) STATE.selected = null;
@@ -5440,6 +5463,7 @@ async function onAutoMatch(byPosition, includePending) {
             g.memberGids.forEach(gid => Log.info('    ' + gid + (gid === g.target ? ' (target)' : '') + ': ' + describeRecordingForLog(STATE.recordings.get(gid))));
         });
         for (const g of groupings) {
+            g.memberGids.filter(gid => STATE.poolOrder.includes(gid)).forEach(gid => recRemovalDebug(gid, 'Match moved from pool to group ' + g.id + '; retained in Fusion'));
             g.memberGids.forEach(gid => { const i = STATE.poolOrder.indexOf(gid); if (i !== -1) STATE.poolOrder.splice(i, 1); });
             STATE.groups.push(g);
         }
@@ -6242,7 +6266,7 @@ function poolCount(type) {
 const entSvg = (type, size = 14) => '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (MBU_ENT_ICONS[type] || '') + '</svg>';
 function ctrHtml(k, on) {
     const n = poolCount(k);
-    return '<span class="fs-ctr' + (on ? ' fs-on' : '') + '" role="button" tabindex="0" data-type="' + k + '" data-tip="' + emLabel(k) + '\n' + n + ' to merge · click: open">'
+    return '<span class="fs-ctr' + (on ? ' fs-on' : '') + '" role="button" tabindex="0" data-type="' + k + '" data-tip="' + emLabel(k) + '\n' + n + ' to merge\nClick: open\nRight-click: clear this pool; grouped entries stay">'
         + entSvg(k, 16) + '<b>' + (n ? (n > 99 ? '99+' : n) : '') + '</b></span>';
 }
 // #908: a window's title, Fusion's own icon, the text of every type stacked in one cell (only the current
@@ -6302,7 +6326,20 @@ function emCountersWire(hdr) {
         openPool(c.dataset.type);
     };
     hdr.addEventListener('click', go);
+    hdr.addEventListener('contextmenu', clearPoolFromCounter);
     hdr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') go(e); });
+}
+function clearPoolFromCounter(e) {
+    const c = e.target.closest('.fs-ctr'); if (!c) return false;
+    e.preventDefault(); e.stopPropagation();
+    const type = c.dataset.type;
+    if (type === 'recording') { clearPool(); renderAll(); }
+    else {
+        if (EM_TYPE === type) EM_SEL.clear();
+        emEdit(() => { const t = emT(type); Log.info('Clear ' + type + ' pool: removed ' + t.pool.length + ' entries'); t.pool = []; });
+    }
+    mbuToast(emLabel(type) + ' pool cleared');
+    return true;
 }
 function refreshCounters() {
     const emOv = document.getElementById('fs-em-overlay');
@@ -6340,7 +6377,7 @@ function ensureLauncher() {
             if (e.ctrlKey || e.metaKey) { openAddMenu(btn); return; }
             if (detectScope() && (STATE.recordings.size || !emCount())) openFusion(); else openEntities();
         };
-        btn.oncontextmenu = e => { e.preventDefault(); if (document.getElementById('fs-settings')) document.getElementById('fs-settings').remove(); else openSettings(btn); };   // #695: right-click on every corner launcher opens its settings
+        btn.oncontextmenu = e => { if (clearPoolFromCounter(e)) return; e.preventDefault(); if (document.getElementById('fs-settings')) document.getElementById('fs-settings').remove(); else openSettings(btn); };
         document.body.appendChild(btn);
         mbRestackCorner('br');
     }
