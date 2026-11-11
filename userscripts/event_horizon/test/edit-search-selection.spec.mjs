@@ -1,6 +1,25 @@
 import { test, expect, idle } from '../../../dev/test/harness.mjs';
 test.use({ gm: { name: 'Event Horizon' } });
 
+test('arrow navigation keeps typing in the filter and Enter selects the highlighted option', { tag: '@sandbox' }, async ({page, inject}) => {
+  await page.goto('https://test.musicbrainz.org/search/edits');
+  await idle(page); await inject('event_horizon');
+  const add = page.locator('#extra-condition'), filter = add.getByRole('searchbox');
+  await add.locator('.eh-es-pick > button').click();
+  await filter.fill('edit');
+  await filter.press('ArrowDown');
+  await expect(filter).toBeFocused();
+  await filter.pressSequentially(' note');
+  await expect(filter).toHaveValue('edit note');
+  await filter.press('ArrowDown');
+  await filter.press('ArrowDown');
+  await filter.press('ArrowUp');
+  await expect(filter).toBeFocused();
+  await filter.press('ArrowDown');
+  await filter.press('Enter');
+  await expect(page.locator('#app .condition select.field')).toHaveValue('edit_note_content');
+});
+
 test('checkbox labels toggle selections without closing the picker or losing the filter to ID', { tag: '@sandbox' }, async ({page, inject}) => {
   await page.goto('https://test.musicbrainz.org/search/edits?conditions.0.field=id&conditions.0.operator=%3D&conditions.0.args.0=4&conditions.1.field=status&conditions.1.operator=%3D&conditions.1.args=1');
   await idle(page); await inject('event_horizon');

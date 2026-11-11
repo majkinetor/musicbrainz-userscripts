@@ -35,7 +35,7 @@ test('edit search keeps native conditions and saves the draft by name', { tag: '
   await page.locator('.condition .field-voter select.operator').evaluate(s => { s.value = 'me'; s.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.locator('.condition .field-voter select[multiple]').evaluate(s => { for (const o of s.options) o.selected = o.value === 'no'; s.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.locator('#edit-search select[name=order]').evaluate(s => { s.value = 'asc'; s.dispatchEvent(new Event('change', { bubbles: true })); });
-  await page.getByRole('textbox', { name: 'Search name', exact: true }).fill('My review');
+  await page.getByLabel('Search name', { exact: true }).fill('My review');
   await page.getByRole('button', { name: 'Save search', exact: true }).click();
   await expect(page.locator('.eh-es-status')).toHaveText('Saved “My review”');
   const saved = await page.evaluate(() => GM_getValue('editSearches'));
@@ -83,6 +83,7 @@ test('empty edit search keeps every native field, ranges and voter values', { ta
     await expect(row.locator(':scope > .eh-es-pick')).toHaveCount(1);
     const parity = await row.evaluate(r => [...r.querySelectorAll('select')].every(s => s.nextElementSibling?._esSelect === s && s.nextElementSibling.querySelectorAll('[data-es-index]').length === s.options.length));
     expect(parity, key + ' keeps every native select option').toBe(true);
+    expect(await page.locator('#edit-search').evaluate(f => [...f.querySelectorAll('input:not([type=hidden]):not([type=checkbox]):not([type=radio])')].every(i => i.type === 'search' && i.autocomplete === 'off' && i.dataset.lpignore === 'true' && i.getAttribute('data-1p-ignore') === 'true' && i.dataset.bwignore === 'true')), key + ' protects every editable field from password-manager autofill').toBe(true);
     if (key === 'open_time') {
       await row.locator('select.operator').evaluate(s => { s.value = 'BETWEEN'; s.dispatchEvent(new Event('change', { bubbles: true })); });
       await expect(row.locator('.arg:visible')).toHaveCount(2);

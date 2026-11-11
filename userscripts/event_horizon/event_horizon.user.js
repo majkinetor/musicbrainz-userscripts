@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.11.095256
+// @version      2026.11.11.095908
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11152,6 +11152,8 @@ const EDIT_SEARCH_CSS = `
 .eh-es-options>button[aria-selected=true]{color:var(--link)}.eh-es-options>:hover{background:var(--hover)}
 #edit-search.eh-es .eh-es-options>button:focus-visible{outline:0!important;border:0!important;box-shadow:inset 3px 0 var(--accent)!important;background:var(--hover)}
 #edit-search.eh-es .eh-es-options>label:has(input:focus-visible){background:var(--hover);box-shadow:inset 3px 0 var(--accent)}
+#edit-search.eh-es .eh-es-options>[data-es-active]{background:var(--hover);box-shadow:inset 3px 0 var(--accent)}
+#edit-search.eh-es input.eh-es-nopw{-webkit-appearance:textfield;appearance:textfield}#edit-search.eh-es .eh-es-nopw::-webkit-search-cancel-button{display:none}
 #edit-search.eh-es .field-id input.eh-es-id{width:125px;-webkit-appearance:textfield;appearance:textfield}#edit-search.eh-es .eh-es-id::-webkit-search-cancel-button{display:none}
 .eh-es-options input{accent-color:var(--accent);flex:none}.eh-es-options small{display:block;color:var(--muted)}.eh-es-empty{padding:6px;color:var(--muted);font-size:12px}
 .eh-es-saved{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border)}
@@ -11222,9 +11224,18 @@ function esPick(select) {
     const id = 'eh-es-options-' + ++esSerial;
     root.innerHTML = `<button type="button" aria-label="${esc(label)}" aria-expanded="false" aria-controls="${id}"><span></span></button><span class="eh-es-menu" hidden><input type="search" placeholder="Filter options…" aria-label="Filter ${esc(label)}" autocomplete="off"><span class="eh-es-options" id="${id}"${select.multiple ? '' : ' role="listbox"'} aria-label="${esc(label)}"></span><span class="eh-es-empty" hidden>No matching options</span></span>`;
     const trigger = root.firstElementChild, menu = root.querySelector('.eh-es-menu'), filter = menu.querySelector('input'), list = menu.querySelector('.eh-es-options');
-    let signature = '';
+    let signature = '', active = null;
+    filter.setAttribute('aria-controls', id);
+    filter.setAttribute('aria-autocomplete', 'list');
+    const highlight = el => {
+        if (active) active.removeAttribute('data-es-active');
+        active = el;
+        if (active) { active.setAttribute('data-es-active', ''); filter.setAttribute('aria-activedescendant', active.id); active.scrollIntoView({ block: 'nearest' }); }
+        else filter.removeAttribute('aria-activedescendant');
+    };
     const close = focus => { menu.hidden = true; trigger.setAttribute('aria-expanded', 'false'); if (focus && root.isConnected) trigger.focus({ preventScroll: true }); };
     const narrow = () => {
+        highlight(null);
         const q = filter.value.trim().toLowerCase();
         let n = 0;
         for (const el of list.children) { el.hidden = !el.textContent.toLowerCase().includes(q); if (!el.hidden) n++; }
@@ -11246,7 +11257,7 @@ function esPick(select) {
                 else { el.type = 'button'; el.setAttribute('role', 'option'); el.disabled = o.disabled; }
                 const txt = document.createElement('span'); txt.textContent = o.text.trim();
                 if (o.parentElement.tagName === 'OPTGROUP') { const group = document.createElement('small'); group.textContent = o.parentElement.label; txt.append(group); }
-                el.append(txt); el.dataset.esIndex = i;
+                el.append(txt); el.dataset.esIndex = i; el.id = id + '-' + i;
                 el.addEventListener(select.multiple ? 'change' : 'click', () => {
                     if (select.multiple) o.selected = el.querySelector('input').checked;
                     else { select.selectedIndex = i; close(true); }
@@ -11272,9 +11283,9 @@ function esPick(select) {
     root.addEventListener('keydown', e => {
         if (e.key === 'Escape' && !menu.hidden) { e.preventDefault(); e.stopPropagation(); close(true); }
         else if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && !menu.hidden) {
-            const xs = [...list.children].filter(x => !x.hidden).map(x => x.matches('button') ? x : x.querySelector('input')).filter(x => !x.disabled);
-            if (xs.length) { e.preventDefault(); const i = xs.indexOf(document.activeElement), d = e.key === 'ArrowDown' ? 1 : -1; xs[i < 0 ? d > 0 ? 0 : xs.length - 1 : (i + d + xs.length) % xs.length].focus(); }
-        } else if (e.key === 'Enter' && e.target === filter) { e.preventDefault(); const x = [...list.children].find(x => !x.hidden && !x.disabled); if (x) (x.querySelector('input') || x).click(); }
+            const xs = [...list.children].filter(x => !x.hidden && !(x.querySelector('input') || x).disabled);
+            if (xs.length) { e.preventDefault(); const i = xs.indexOf(active), d = e.key === 'ArrowDown' ? 1 : -1; highlight(xs[i < 0 ? d > 0 ? 0 : xs.length - 1 : (i + d + xs.length) % xs.length]); filter.focus({ preventScroll: true }); }
+        } else if (e.key === 'Enter' && e.target === filter) { e.preventDefault(); const x = active || [...list.children].find(x => !x.hidden && !(x.querySelector('input') || x).disabled); if (x) (x.querySelector('input') || x).click(); }
     });
     root.addEventListener('focusout', e => { if (!esMoving && !root.contains(e.relatedTarget)) close(false); });
     root._esClose = close; root._esSync = sync; select.after(root); esPicks.set(select, root); sync(); return root;
@@ -11288,8 +11299,10 @@ function esScan() {
         s.hidden = ehOn; p.hidden = !ehOn || s.style.display === 'none';
     }
     for (const b of esForm.querySelectorAll('.remove-item')) if (ehOn && b.textContent !== '×') { b.textContent = '×'; b.setAttribute('aria-label', b.getAttribute('title') || 'Remove condition'); b.removeAttribute('title'); }
-    if (ehOn) for (const input of esForm.querySelectorAll('.field-id .arg input')) {
-        input.type = 'search'; input.inputMode = 'numeric'; input.autocomplete = 'off'; input.classList.add('eh-es-id');
+    if (ehOn) for (const input of esForm.querySelectorAll('input:not([type=hidden]):not([type=checkbox]):not([type=radio])')) {
+        if (!input.hasAttribute('data-es-input-type')) input.dataset.esInputType = input.type;
+        if (input.type === 'number') { input.inputMode = 'numeric'; input.classList.add('eh-es-id'); }
+        input.type = 'search'; input.autocomplete = 'off'; input.classList.add('eh-es-nopw');
         input.setAttribute('data-lpignore', 'true'); input.setAttribute('data-1p-ignore', 'true'); input.setAttribute('data-bwignore', 'true'); input.setAttribute('data-form-type', 'other'); input.removeAttribute('autofocus');
     }
     // jQuery UI creates menus under the body that existed at initialization, sometimes the hidden native one.
@@ -11321,7 +11334,7 @@ function esNative() {
     esForm.querySelectorAll('select').forEach(s => { s.hidden = false; });
     esForm.querySelectorAll('.eh-es-pick,.eh-es-saved,[data-es-native]').forEach(p => { p.hidden = true; });
     esForm.querySelectorAll('.remove-item').forEach(b => { b.textContent = ''; });
-    esForm.querySelectorAll('.eh-es-id').forEach(input => { input.type = 'number'; input.classList.remove('eh-es-id'); });
+    esForm.querySelectorAll('[data-es-input-type]').forEach(input => { input.type = input.dataset.esInputType; input.classList.remove('eh-es-id', 'eh-es-nopw'); });
     for (const menu of ehBody.querySelectorAll('.eh-es-autocomplete')) { menu.classList.remove('eh-es-autocomplete'); mbBody.append(menu); }
 }
 
