@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-11 09:44 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-11 09:53 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -965,9 +965,11 @@ Open **Edit search** beside **Advanced search** in the homepage search bar, or v
 
 Type a **Search name** and choose **Save search** to keep the current conditions, matching rules and order, even before searching. Pick one under **Saved searches** and choose **Load** to run it, or **Delete** to remove it. An existing name changes Save to **Replace saved search**. Saved searches stay in your userscript manager's storage.
 
-**Search** runs the form and shows the edits in Event Horizon's history view. **Native form** opens the same conditions in MusicBrainz's interface.
+**Search** runs the form and shows the edits in Event Horizon's history view.
 
 ### Edit history
+
+The grouping, status and Load more toolbar stays pinned while scrolling.
 
 Choose **Bursts**, **Day**, **Editor**, **Type** or **Status** to group edits. Each group’s **Yes**, **No**, **Abstain** and **None** buttons apply to its loaded edits you can vote on; **None** withdraws your votes. The number beside **Vote** counts eligible edits. A status filter limits the group vote to the edits shown. Changing votes on more than 20 edits asks for confirmation. You can still vote on individual edits.
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.10.195119
+// @version      2026.11.11.095256
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2983,6 +2983,7 @@ h1.eh-tc:not(.open) .eh-tm{display:-webkit-box;-webkit-box-orient:vertical;-webk
 h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25em}
 .by{font-size:16px;font-weight:600}
 .hist{margin-top:24px}.hbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}.hbar .lb{color:var(--muted);font-size:13px}
+.hist>.hbar{position:sticky;top:var(--eh-pin-h,0px);z-index:25;padding:8px 0;background:var(--bg);transition:top .18s}
 .hseg{display:inline-flex;border:1px solid var(--border);border-radius:9px;overflow:hidden}.hseg button{font:500 13px Manrope,system-ui,sans-serif;height:30px;padding:0 12px;border:0;border-right:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}.hseg button:last-child{border-right:0}.hseg button.on{background:var(--accent);color:#fff}
 .hchip{font:500 12px Manrope,system-ui,sans-serif;padding:3px 9px;border-radius:99px;border:1px solid var(--border);background:var(--chip);color:var(--chip-text);cursor:pointer}.hchip.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .hday{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
@@ -11122,10 +11123,11 @@ const EDIT_SEARCH_CSS = `
 #edit-search.eh-es{font:inherit;color:var(--text)}
 #edit-search.eh-es>p{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:0 0 18px;font-size:13px;color:var(--muted)}
 #edit-search.eh-es .conditions{list-style:none;margin:0;padding:0}
-#edit-search.eh-es .conditions>li{display:grid;grid-template-columns:minmax(130px,210px) minmax(0,1fr) 28px;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
-#edit-search.eh-es .conditions>li>button.remove-item{grid-column:3;grid-row:1;width:28px;height:28px;padding:0;background:none!important;border:0!important;color:var(--muted);font:24px/1 Manrope,system-ui,sans-serif;filter:none!important;cursor:pointer}
-#edit-search.eh-es .conditions>li>.eh-es-pick{grid-column:1;grid-row:1}
-#edit-search.eh-es .field-container{grid-column:2;grid-row:1;min-width:0}
+#edit-search.eh-es .conditions>li{display:grid;grid-template-columns:24px minmax(130px,180px) minmax(0,1fr);align-items:center;gap:10px;padding:6px 0;border:0}
+#edit-search.eh-es .conditions>li>button.remove-item{grid-column:1;grid-row:1;width:24px;height:28px;padding:0;background:none!important;border:0!important;color:var(--muted);font:24px/1 Manrope,system-ui,sans-serif;filter:none!important;cursor:pointer}
+#edit-search.eh-es .conditions>li>.eh-es-pick{grid-column:2;grid-row:1}
+#edit-search.eh-es .field-container{grid-column:3;grid-row:1;min-width:0}
+#edit-search.eh-es .operator+.eh-es-pick{width:120px;flex:none}#edit-search.eh-es .operator+.eh-es-pick>button{width:100%}
 #edit-search.eh-es .field-container>span.field{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0}
 #edit-search.eh-es .field-container>span.field[style*="display: none"]{display:none}
 #edit-search.eh-es :is(input:not([type=checkbox]),button){font:inherit;color:inherit}
@@ -11136,6 +11138,7 @@ const EDIT_SEARCH_CSS = `
 #edit-search.eh-es a{color:var(--link)}
 #edit-search.eh-es #extra-condition{display:block;border:0;padding:12px 0}#edit-search.eh-es #extra-condition>:is(.remove-item,.field-container){display:none!important}
 #edit-search.eh-es #extra-condition>.eh-es-pick>button{color:var(--link);border-color:transparent;padding-left:0}
+#edit-search.eh-es #extra-condition>.eh-es-pick>button::after{content:none}
 #edit-search.eh-es #edit-search-submit{display:flex;align-items:center;gap:12px;margin-top:12px}
 #edit-search.eh-es #edit-search-submit button,.eh-es-saved>button{padding:6px 12px;border:1px solid var(--border);border-radius:3px;background:transparent;cursor:pointer;filter:none!important}
 #edit-search.eh-es #edit-search-submit button[type=submit]{color:var(--link);border-color:var(--link)}
@@ -11147,6 +11150,9 @@ const EDIT_SEARCH_CSS = `
 #edit-search.eh-es .eh-es-menu>input{width:100%;margin-bottom:6px}.eh-es-options{display:block;max-height:260px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
 .eh-es-options>button,.eh-es-options>label{display:flex;gap:8px;align-items:center;width:100%;padding:6px 7px;border:0;border-radius:0;background:transparent;color:inherit;cursor:pointer;text-align:left;font:inherit;filter:none!important}
 .eh-es-options>button[aria-selected=true]{color:var(--link)}.eh-es-options>:hover{background:var(--hover)}
+#edit-search.eh-es .eh-es-options>button:focus-visible{outline:0!important;border:0!important;box-shadow:inset 3px 0 var(--accent)!important;background:var(--hover)}
+#edit-search.eh-es .eh-es-options>label:has(input:focus-visible){background:var(--hover);box-shadow:inset 3px 0 var(--accent)}
+#edit-search.eh-es .field-id input.eh-es-id{width:125px;-webkit-appearance:textfield;appearance:textfield}#edit-search.eh-es .eh-es-id::-webkit-search-cancel-button{display:none}
 .eh-es-options input{accent-color:var(--accent);flex:none}.eh-es-options small{display:block;color:var(--muted)}.eh-es-empty{padding:6px;color:var(--muted);font-size:12px}
 .eh-es-saved{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border)}
 .eh-es-saved>input{width:190px}.eh-es-saved>span:first-child{font-size:12px;color:var(--muted)}.eh-es-saved button:disabled{opacity:.4;cursor:default}
@@ -11156,11 +11162,11 @@ const EDIT_SEARCH_CSS = `
 .eh-es-autocomplete .ui-menu-item>a{display:block;padding:5px 8px;cursor:pointer;color:var(--text)}.eh-es-autocomplete .ui-state-focus{background:var(--hover)}.eh-es-autocomplete .autocomplete-comment{font-size:12px;color:var(--muted)}
 #edit-search.eh-es .ui-helper-hidden-accessible{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 :root[data-eh-theme=dark] #edit-search.eh-es .autocomplete img{filter:invert(.8)}
-@media(max-width:650px){#edit-search.eh-es .conditions>li{grid-template-columns:minmax(0,1fr) 28px;gap:8px}#edit-search.eh-es .conditions>li>button.remove-item{grid-column:2}#edit-search.eh-es .field-container{grid-column:1/-1;grid-row:2}.eh-es-menu{width:min(320px,calc(100vw - 40px))}.eh-es-saved>input{width:150px}}
+@media(max-width:650px){#edit-search.eh-es .conditions>li{grid-template-columns:24px minmax(0,1fr);gap:8px}#edit-search.eh-es .field-container{grid-column:2;grid-row:2}.eh-es-menu{width:min(320px,calc(100vw - 40px))}.eh-es-saved>input{width:150px}}
 @media(pointer:coarse){.eh-es-pick>button,.eh-es-options>button,.eh-es-options>label{min-height:44px}}
 .hm-es{display:flex;align-items:center;justify-content:center;flex:none;color:var(--muted);padding:4px 8px;border-left:1px solid var(--border)}.hm-es:hover{color:var(--link)}.hm-es svg{width:19px;height:19px}
 `;
-let esForm = null, esHome = null, esObserver = null, esFocus = null, esSerial = 0;
+let esForm = null, esHome = null, esObserver = null, esFocus = null, esSerial = 0, esMoving = false;
 const esPicks = new WeakMap();
 const esIsSearch = id => /^\/search\/edits(?:\?|$)/.test(histSrc(id));
 const esHasQuery = id => [...new URL(MB + histSrc(id)).searchParams].some(([k, v]) => /^conditions\.\d+\.field$/.test(k) && v);
@@ -11168,7 +11174,9 @@ function esPark() {
     if (!esForm || !esHome || !esForm.closest('#app')) return;
     const a = document.activeElement;
     esFocus = a && esForm.contains(a) ? { el: a, at: a.selectionStart, end: a.selectionEnd } : null;
+    esMoving = true;
     esHome.after(esForm);
+    esMoving = false;
 }
 function esQuery(form) {
     const q = new URLSearchParams(new FormData(form));
@@ -11259,6 +11267,8 @@ function esPick(select) {
         if (open) { filter.value = ''; sync(); narrow(); const box = root.getBoundingClientRect(), width = menu.getBoundingClientRect().width; menu.style.left = Math.max(16 - box.left, Math.min(0, innerWidth - 16 - box.left - width)) + 'px'; filter.focus(); }
     };
     filter.addEventListener('input', narrow);
+    // A label's pointer-down otherwise blurs the filter to the body before its checkbox click.
+    list.addEventListener('pointerdown', e => { if (select.multiple && e.target.closest('label')) e.preventDefault(); });
     root.addEventListener('keydown', e => {
         if (e.key === 'Escape' && !menu.hidden) { e.preventDefault(); e.stopPropagation(); close(true); }
         else if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && !menu.hidden) {
@@ -11266,7 +11276,7 @@ function esPick(select) {
             if (xs.length) { e.preventDefault(); const i = xs.indexOf(document.activeElement), d = e.key === 'ArrowDown' ? 1 : -1; xs[i < 0 ? d > 0 ? 0 : xs.length - 1 : (i + d + xs.length) % xs.length].focus(); }
         } else if (e.key === 'Enter' && e.target === filter) { e.preventDefault(); const x = [...list.children].find(x => !x.hidden && !x.disabled); if (x) (x.querySelector('input') || x).click(); }
     });
-    root.addEventListener('focusout', e => { if (!root.contains(e.relatedTarget)) close(false); });
+    root.addEventListener('focusout', e => { if (!esMoving && !root.contains(e.relatedTarget)) close(false); });
     root._esClose = close; root._esSync = sync; select.after(root); esPicks.set(select, root); sync(); return root;
 }
 function esScan() {
@@ -11278,6 +11288,10 @@ function esScan() {
         s.hidden = ehOn; p.hidden = !ehOn || s.style.display === 'none';
     }
     for (const b of esForm.querySelectorAll('.remove-item')) if (ehOn && b.textContent !== '×') { b.textContent = '×'; b.setAttribute('aria-label', b.getAttribute('title') || 'Remove condition'); b.removeAttribute('title'); }
+    if (ehOn) for (const input of esForm.querySelectorAll('.field-id .arg input')) {
+        input.type = 'search'; input.inputMode = 'numeric'; input.autocomplete = 'off'; input.classList.add('eh-es-id');
+        input.setAttribute('data-lpignore', 'true'); input.setAttribute('data-1p-ignore', 'true'); input.setAttribute('data-bwignore', 'true'); input.setAttribute('data-form-type', 'other'); input.removeAttribute('autofocus');
+    }
     // jQuery UI creates menus under the body that existed at initialization, sometimes the hidden native one.
     const jq = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window).jQuery;
     if (ehOn && typeof jq === 'function') for (const input of esForm.querySelectorAll('.autocomplete input.name')) {
@@ -11293,11 +11307,10 @@ function esMount(app, d) {
         esSavedBar(esForm);
         esForm.addEventListener('change', () => queueMicrotask(esScan));
         esObserver = new MutationObserver(esScan); esObserver.observe(esForm, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'disabled'] });
-        const native = document.createElement('button'); native.type = 'button'; native.className = 'lnk'; native.textContent = 'Native form'; native.dataset.esNative = ''; native.onclick = () => switchOn(false); esForm.querySelector('#edit-search-submit').append(native);
         document.addEventListener('click', e => { if (esForm && !e.target.closest('.eh-es-pick')) esForm.querySelectorAll('.eh-es-pick').forEach(p => p._esClose && p._esClose(false)); });
     }
     esForm.classList.add('eh-es');
-    esForm.querySelectorAll('.eh-es-saved,[data-es-native]').forEach(p => { p.hidden = false; });
+    esForm.querySelectorAll('.eh-es-saved').forEach(p => { p.hidden = false; });
     app.querySelector('#eh-edit-search').append(esForm); esScan();
     if (esFocus && esForm.contains(esFocus.el)) { esFocus.el.focus({ preventScroll: true }); if (typeof esFocus.at === 'number') esFocus.el.setSelectionRange(esFocus.at, esFocus.end); }
     esFocus = null;
@@ -11308,6 +11321,7 @@ function esNative() {
     esForm.querySelectorAll('select').forEach(s => { s.hidden = false; });
     esForm.querySelectorAll('.eh-es-pick,.eh-es-saved,[data-es-native]').forEach(p => { p.hidden = true; });
     esForm.querySelectorAll('.remove-item').forEach(b => { b.textContent = ''; });
+    esForm.querySelectorAll('.eh-es-id').forEach(input => { input.type = 'number'; input.classList.remove('eh-es-id'); });
     for (const menu of ehBody.querySelectorAll('.eh-es-autocomplete')) { menu.classList.remove('eh-es-autocomplete'); mbBody.append(menu); }
 }
 
