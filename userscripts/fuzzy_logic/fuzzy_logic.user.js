@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.11.234408
+// @version      2026.11.11.234653
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm, RateYourMusic and Album of the Year, read when you open their pages), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjI4Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMxNmNjZjgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjZmZhZTM4Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -2864,7 +2864,7 @@
   // header marks them (data-eh-mine, from its own entity lookup; it tells mbu-tags-mine when it draws). MusicBrainz's
   // sidebar (hidden under EH) is the page that loaded, never one EH navigated to. Without Event Horizon, or when it doesn't
   // know them, the entity asks ws/2 once (user-tags, your login's own; a logged-out 401 leaves it unknown)
-  const HOME = em ? em[1] + '/' + em[2] : null, own = new Map(), ownAsked = new Set(), ownKey = () => TYPE + '/' + MBID;
+  const HOME = em ? em[1] + '/' + em[2] : null, own = new Map(), ownAsked = new Set(), ownFail = new Set(), ownKey = () => TYPE + '/' + MBID;
   async function ownAsk(k) {
     ownAsked.add(k);
     try {
@@ -2872,7 +2872,7 @@
       if (own.has(k)) return;   // the editor opened meanwhile
       own.set(k, new Set([...(j['user-tags'] || []), ...(j['user-genres'] || [])].map(t => String(t.name).trim().toLowerCase())));
       if (k === ownKey()) { S.have = haveNow(); badge(); draw(); }
-    } catch (e) { LOG.warn('Your votes on ' + k + ' could not be read: ' + e.message); }
+    } catch (e) { LOG.warn('Your votes on ' + k + ' could not be read: ' + e.message); ownFail.add(k); badge(); }
   }
   // Event Horizon's mark: the names, null while its header shows no answer for this entity, undefined with no header
   const ehMine = k => {
@@ -2900,6 +2900,8 @@
     else if (!own.has(k) && !ownAsked.has(k)) ownAsk(k);
   });
   const haveNow = () => new Set([...S.ent, ...ownNow()]);
+  // your votes are in (or can't be): until then the count waits, so it never shows N and then drops to M
+  const ownKnown = () => { const k = ownKey(); return !loggedIn || !TYPE || !MBID || own.has(k) || ownFail.has(k); };
 
   function rebuild() {
     const rules = parseRules(CFG.mapper), ign = parseIgnore(CFG.ignore);
@@ -3456,6 +3458,7 @@
   // ── the launcher (String Theory's dock) ───────────────────────────────────
   let dock = null;
   function badge() { if (dock && !busyAt) {   // a count would swap the busy icon out mid-round; it waits for the round to end
+    ownNow(); if (!ownKnown()) { dock.status(''); return; }
     const n = fresh(); dock.status(S.ran || n ? String(n || '') : ''); } }
   // Off waits for the round to finish, when the rings are back in place, so the animation never snaps
   let busyAt = 0, busyOff = 0;
