@@ -37,7 +37,8 @@ for (const path of ['/', '/doc/About']) test('idle appearance and exact effect r
   await page.screenshot({ path: 'dev/_953-settings.png' });
   await page.clock.runFor(120001);
   check(await page.locator('#st-theme').getAttribute('data-variant') === 'light', 'random theme stays light');
-  check(await page.evaluate(() => JSON.parse(localStorage.getItem('mbu.ehFxPresets')).includes(document.documentElement.dataset.stEhFxIdle)), 'random effect resolves to an available preset');
+  // the pick is applied by a view transition, a frame after the timer fires
+  check(await until(() => page.evaluate(() => JSON.parse(localStorage.getItem('mbu.ehFxPresets')).includes(document.documentElement.dataset.stEhFxIdle)), Boolean), 'random effect resolves to an available preset');
   // Wake the page before locating a control: the idle theme can change its position and font.
   await page.mouse.move(0, 0);
   await page.waitForFunction(() => !document.documentElement.hasAttribute('data-st-idle'));

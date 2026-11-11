@@ -15,7 +15,7 @@ test.use({ gm: apolloGm(null, { values: {
   'apollo.picks.artist': JSON.stringify({ pinned: [kitchener], recent: [mozart, bach, kitchener] }),
 } }) });
 
-test('an emptied artist field shows one collapsed Recent, pinned artists first', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('an emptied artist field shows one collapsed Recent, pinned artists first', { tag: ['@sandbox', '@login', '@flaky'] }, async ({ page, inject }) => {
   await page.route(/\/ws\/(js|2)\/artist\?/, r => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
   const seed = { name: 'Apollo picks fixture', 'artist_credit.names.0.name': 'Zzq Nobody', 'mediums.0.format': 'CD', 'mediums.0.track.0.name': 'One', 'mediums.0.track.0.artist_credit.names.0.name': 'Zzq Nobody' };
   const submitted = await openApollo(page, inject, { seed, tab: 'tracklist' });

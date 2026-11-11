@@ -15,7 +15,7 @@ test('an instrument\'s description shows its links, not its HTML, and its pictur
   await inject('event_horizon');
   const d = page.locator('#app .facts a[href*="/instrument/4431f7b0"]');
   check(await until(() => d.count(), n => n > 0, 15000) > 0, 'the link to tambourine is a link');
-  check(await d.first().evaluate(a => { const r = a.getBoundingClientRect(), p = a.parentElement.getBoundingClientRect(); return r.left > p.left + 20; }), 'the link runs on in its sentence, not on its own line');
+  check(await until(() => d.first().evaluate(a => { const r = a.getBoundingClientRect(), p = a.parentElement.getBoundingClientRect(); return r.left > p.left + 20; }), Boolean), 'the link runs on in its sentence, not on its own line');
   check(!/<a href|<br/.test(await page.locator('#app .facts').innerText()), 'no HTML shows as text');
   check(await page.locator('#app .facts a[href*="/area/"]').count() > 0, 'From names its area');
   check(await page.locator('#app .facts a[href*="/genre/"]').count() > 0, 'Used in names its genres');
