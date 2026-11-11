@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.11.155204
+// @version      2026.11.11.200000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -8644,12 +8644,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (s === 'with') return ' with '; if (s === '×' || s === 'x') return ' × '; return ' ' + sep.trim() + ' ';
   }
   // ⋔ : split this slot's combined credit into one slot per artist, auto-match (if on), drop the credited-as override
-  async function splitSlot(entry, idx) {
+  // #1000: `sel` ({left, join, right}) splits at a selection instead, the selected text being the join phrase
+  async function splitSlot(entry, idx, sel) {
     const slot = entry.slots[idx];
-    const parts = splitArtistText(slot.creditedAs || slot.name || slot.query || '');
+    const parts = sel ? [{ name: sel.left, sep: sel.join }, { name: sel.right, sep: '' }] : splitArtistText(slot.creditedAs || slot.name || slot.query || '');
     if (parts.length < 2) return;
     const beforeKey = creditKey(entry);   // snapshot before the split, for "all matching tracks"
-    const fresh = parts.map((p, i) => { const s = blankSlot(entry); s.creditedAs = p.name; s.joinPhrase = i < parts.length - 1 ? normJoin(p.sep) : ''; s._pending = true; return s; });
+    const fresh = parts.map((p, i) => { const s = blankSlot(entry); s.creditedAs = p.name; s.joinPhrase = i < parts.length - 1 ? (sel ? sel.join : normJoin(p.sep)) : (slot.joinPhrase || ''); s._pending = true; return s; });
     entry.slots.splice(idx, 1, ...fresh); entry.slots.forEach(s => { s._entry = entry; });
     commitTrack(entry); rerender();
     if (entry.release) { fresh.forEach(s => { delete s._pending; }); Log.cat('Artist').info('split the release artist', JSON.stringify(slot.creditedAs || slot.name), '→', parts.map(p => p.name).join(' · ')); await matchReleaseArtist(true); return; }   // #652: matched by the release artist's stages
@@ -9026,7 +9027,20 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     credClr.onmousedown = e => e.preventDefault();
     credClr.onclick = () => { if (!cred.value) return; cred.value = ''; cred.onchange(); updCredClr(); };
     credClr.oncontextmenu = e => { e.preventDefault(); clearAllCredits(); };   // #735
-    cred.oninput = () => { line.classList.toggle('tc-can-split', splitArtistText(cred.value || s.name || '').length > 1); updCredClr(); };   // re-evaluate the highlight / ⋔ + clear button as you type
+    cred.oninput = () => { line.classList.toggle('tc-can-split', splitArtistText(cred.value || s.name || '').length > 1); updCredClr(); };
+    // #1000: text selected inside a credit ("A [y] B") offers ⋔ there, the selection being the join phrase
+    const baseSplit = line.classList.contains('tc-can-split');
+    const trackSel = el => {
+      const v = el.value, a = el.selectionStart, b = el.selectionEnd; let r = null;
+      if (b > a && v.slice(a, b).trim()) {
+        let i = a, j = b; while (i > 0 && /\s/.test(v[i - 1])) i--; while (j < v.length && /\s/.test(v[j])) j++;
+        const left = v.slice(0, i).trim(), right = v.slice(j).trim();
+        if (left && right) r = { left, join: v.slice(i, j), right };
+      }
+      line._selSplit = r;
+      line.classList.toggle('tc-can-split', !!r || (el === cred ? splitArtistText(cred.value || s.name || '').length > 1 : baseSplit));
+      if (r) Log.cat('Artist').debug('split at selection offered:', JSON.stringify(r.left), JSON.stringify(r.join), JSON.stringify(r.right));
+    };   // re-evaluate the highlight / ⋔ + clear button as you type
     cred.onchange = () => {
       const v = cred.value.trim(); const newCred = v || (s.name || '');
       // whole-credit "all matching tracks" propagation (liveRerender=false → keep focus when nothing propagates)
@@ -9079,6 +9093,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const search = document.createElement('span'); search.className = 'tc-search';
     const inp = noPw(document.createElement('input')); inp.className = 'nm'; inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.dataset.tip = inp.value;
     search.appendChild(inp);
+    for (const el of [cred, inp]) for (const ev of ['select', 'mouseup', 'keyup']) el.addEventListener(ev, () => trackSel(el));
     // #228: hover × right after the name clears the field (and unsets a matched
     // artist — the input handler un-links on an empty value)
     const nmClr = document.createElement('button'); nmClr.type = 'button'; nmClr.className = 'tc-nm-clr'; nmClr.textContent = '×'; nmClr.dataset.tip = 'Clear the artist';
@@ -9099,7 +9114,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const acts = document.createElement('span'); acts.className = 'tc-acts';
     const add = document.createElement('button'); add.className = 'tc-enter'; add.textContent = '↵'; add.dataset.tip = 'Add another artist to this credit'; add.onclick = () => addSlotAfter(entry, idx); acts.appendChild(add);
     // ⋔ split: only when this credit looks like several artists (& / feat. / , …)
-    { const sp = document.createElement('button'); sp.className = 'tc-splitb'; sp.textContent = '⋔'; sp.dataset.tip = 'Split into separate artists, and match them\nAt &, feat. and the like'; sp.onclick = () => splitSlot(entry, idx); acts.appendChild(sp); }
+    { const sp = document.createElement('button'); sp.className = 'tc-splitb'; sp.textContent = '⋔'; sp.dataset.tip = 'Split into separate artists, and match them\nAt &, feat. and the like, or at the selected text'; sp.onmousedown = e => e.preventDefault(); sp.onclick = () => splitSlot(entry, idx, line._selSplit); acts.appendChild(sp); }
     if (entry.slots.length > 1) {
       const g = document.createElement('span'); g.className = 'tc-slotgrab'; g.textContent = '⠿'; g.draggable = true; g.dataset.tip = 'Drag: move this artist within the credit'; acts.appendChild(g);   // #150
       const x = document.createElement('button'); x.className = 'tc-slotx'; x.textContent = '✕'; x.dataset.tip = 'Remove this artist'; x.onclick = () => removeSlot(entry, idx); acts.appendChild(x);
