@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-11 10:15 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-11 10:22 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -963,7 +963,7 @@ The arrow at the end of the filter box does the same for a filter: name it and s
 
 Open **Search for edits** beside **Advanced search** in the homepage search bar, or visit [Search for edits](https://musicbrainz.org/search/edits). Conditions sit above the results in compact rows. Every MusicBrainz field, operator, sort order and value is available, including date ranges, entity lookups and multiple values. Type in a choice list to filter it; checked values stay selected while filtering. **No vote** means no vote was cast; **No** means a vote against the edit.
 
-Type a **Search name** and choose **Save** to keep the current conditions, matching rules and order, even before searching. The magnifier finds saved searches; selecting one runs it. Edit the same name field and choose **Save** to rename the selected search and update its filters. **⋯** offers **New search**, **Save a copy** and **Delete**. Saved searches stay in your userscript manager's storage.
+The saved-search controls sit to the right of the search options. Type a **Search name** and choose **Save** to keep the current conditions, matching rules and order, even before searching. Focusing the name field lists saved searches; typing filters them, and selecting one runs it. Edit the same name field and choose **Save** to rename the selected search and update its filters. **⋯** offers **New search**, which clears the form without reloading, **Save a copy** and **Delete**. Saved searches stay in your userscript manager's storage.
 
 **Search** runs the form and shows the edits in Event Horizon's history view.
 

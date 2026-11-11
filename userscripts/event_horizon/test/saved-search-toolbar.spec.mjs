@@ -31,7 +31,27 @@ test('one saved-search name supports rename, copy, filtering and deletion', {tag
   expect((await page.evaluate(()=>GM_getValue('editSearches'))).length).toBe(1);
   await page.locator('.eh-es-saved').getByRole('button',{name:'More saved-search actions'}).click();
   await Promise.all([page.waitForURL(u=>u.pathname==='/search/edits'&&!u.search),page.locator('.eh-es-saved').getByRole('button',{name:'New search',exact:true}).click()]);
-  await idle(page);await inject('event_horizon');
+  await idle(page);
+  await expect(page.locator('.eh-es-saved')).toHaveCount(1);
   await expect(page.locator('#app .condition')).toHaveCount(0);
   await expect(page.locator('.eh-es-saved').getByLabel('Search name',{exact:true})).toHaveValue('');
+});
+
+test('saved names are visible on combo focus and New search resets without reloading', {tag:'@sandbox'},async({page,inject})=>{
+  await page.goto('https://test.musicbrainz.org/search/edits?conditions.0.field=id&conditions.0.operator=%3D&conditions.0.args.0=4');
+  await idle(page);
+  await page.evaluate(()=>GM_setValue('editSearches', [{name:'Review four',query:'conditions.0.field=id&conditions.0.operator=%3D&conditions.0.args.0=4'},{name:'Review five',query:'conditions.0.field=id&conditions.0.operator=%3D&conditions.0.args.0=5'}]));
+  await inject('event_horizon');
+  const bar=page.locator('.eh-es-saved'),name=bar.getByLabel('Search name',{exact:true});
+  await name.focus();
+  await expect(bar.getByRole('option',{name:'Review four',exact:true})).toBeVisible();
+  await expect(bar.getByRole('option',{name:'Review five',exact:true})).toBeVisible();
+  await name.press('Escape');
+  await page.evaluate(()=>window.__searchResetMarker=1);
+  await bar.getByRole('button',{name:'More saved-search actions'}).click();
+  await bar.getByRole('button',{name:'New search',exact:true}).click();
+  await expect(page.locator('#app .condition')).toHaveCount(0);
+  expect(await page.evaluate(()=>window.__searchResetMarker)).toBe(1);
+  expect(new URL(page.url()).search).toBe('');
+  expect((await page.evaluate(()=>GM_getValue('editSearches'))).length).toBe(2);
 });

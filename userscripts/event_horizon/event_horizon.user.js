@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.11.101526
+// @version      2026.11.11.102157
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11119,15 +11119,19 @@ const H_LISTS = { '/edit/open': 'Open edits', '/edit/subscribed': 'Subscribed en
 /* The live native form owns predicates, translated options, cardinality and autocomplete.
    Keep its nodes and delegated MusicBrainz handlers; only the selects get a presentation layer. */
 const EDIT_SEARCH_CSS = `
-#eh-edit-search{margin:0 0 30px;max-width:1080px}
+#eh-edit-search{margin:0 0 30px}
 #edit-search.eh-es{font:inherit;color:var(--text)}
-#edit-search.eh-es>p{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:0 0 18px;font-size:13px;color:var(--muted)}
+#edit-search.eh-es .eh-es-head{display:flex;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:18px}
+#edit-search.eh-es .eh-es-head>p{display:flex;align-items:center;flex-wrap:wrap;flex:1 1 520px;gap:6px;margin:0;font-size:13px;color:var(--muted)}
+#edit-search.eh-es .eh-es-head>.eh-es-saved{flex:0 1 440px;margin:0 0 0 auto;padding:0;border:0;max-width:100%}
+#edit-search.eh-es .eh-es-head .eh-es-name{flex:1 1 180px;min-width:120px}
 #edit-search.eh-es .conditions{list-style:none;margin:0;padding:0}
 #edit-search.eh-es .conditions>li{display:grid;grid-template-columns:24px minmax(130px,180px) minmax(0,1fr);align-items:center;gap:10px;padding:6px 0;border:0}
 #edit-search.eh-es .conditions>li>button.remove-item{grid-column:1;grid-row:1;width:24px;height:28px;padding:0;background:none!important;border:0!important;color:var(--muted);font:24px/1 Manrope,system-ui,sans-serif;filter:none!important;cursor:pointer}
 #edit-search.eh-es .conditions>li>.eh-es-pick{grid-column:2;grid-row:1}
 #edit-search.eh-es .field-container{grid-column:3;grid-row:1;min-width:0}
-#edit-search.eh-es .operator+.eh-es-pick{width:120px;flex:none}#edit-search.eh-es .operator+.eh-es-pick>button{width:100%}
+#edit-search.eh-es .operator+.eh-es-pick{width:max-content;min-width:120px;max-width:100%;flex:none}#edit-search.eh-es .operator+.eh-es-pick>button{width:100%}
+#edit-search.eh-es .eh-es-pick>button>span{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
 #edit-search.eh-es .field-container>span.field{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0}
 #edit-search.eh-es .field-container>span.field[style*="display: none"]{display:none}
 #edit-search.eh-es :is(input:not([type=checkbox]),button){font:inherit;color:inherit}
@@ -11145,7 +11149,7 @@ const EDIT_SEARCH_CSS = `
 #edit-search.eh-es [hidden]{display:none!important}
 .eh-es-pick{display:inline-block;position:relative;max-width:100%;vertical-align:middle;min-width:0}
 .eh-es-pick>button{display:flex;align-items:center;gap:10px;max-width:100%;padding:5px 7px;border:1px solid var(--border);border-radius:3px;background:transparent;color:var(--text);cursor:pointer;text-align:left;filter:none!important}
-.eh-es-pick>button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.eh-es-pick>button::after{content:'⌄';margin-left:auto;color:var(--muted)}
+.eh-es-pick>button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.eh-es-pick>button::after{content:'';display:block;flex:none;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid currentColor;margin-left:auto;color:var(--muted)}
 .eh-es-menu{position:absolute;top:calc(100% + 5px);left:0;z-index:1000;width:min(360px,calc(100vw - 40px));padding:8px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:3px}
 #edit-search.eh-es .eh-es-menu>input{width:100%;margin-bottom:6px}.eh-es-options{display:block;max-height:260px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
 .eh-es-options>button,.eh-es-options>label{display:flex;gap:8px;align-items:center;width:100%;padding:6px 7px;border:0;border-radius:0;background:transparent;color:inherit;cursor:pointer;text-align:left;font:inherit;filter:none!important}
@@ -11209,7 +11213,7 @@ function esSavedBar(form) {
             const match = pending && canonical(pending.query) === q && a.find(x => x.name === pending.name) || a.find(x => canonical(x.query) === q);
             if (match) { selected = match.name; name.value = match.name; }
         }
-        const disabled = choosing || !name.value.trim(); if (save.disabled !== disabled) save.disabled = disabled;
+        const disabled = !name.value.trim(); if (save.disabled !== disabled) save.disabled = disabled;
         const noSelection = !esSaved().some(x => x.name === selected); if (del.disabled !== noSelection) del.disabled = noSelection;
     };
     const highlight = el => {
@@ -11217,26 +11221,29 @@ function esSavedBar(form) {
         if (el) { el.setAttribute('data-es-active', ''); name.setAttribute('aria-activedescendant', el.id); el.scrollIntoView({ block: 'nearest' }); }
         else name.removeAttribute('aria-activedescendant');
     };
-    const closeLibrary = () => {
-        if (choosing) name.value = beforeFind;
+    const closeLibrary = (restore = false) => {
+        if (choosing && restore) name.value = beforeFind;
         choosing = false; library.hidden = true; find.setAttribute('aria-expanded', 'false'); name.setAttribute('aria-expanded', 'false'); name.placeholder = 'Name this search…'; highlight(null); refresh();
     };
-    const renderList = () => {
+    const renderList = (all = false) => {
         highlight(null); results.replaceChildren();
-        const q = name.value.trim().toLowerCase(), matches = esSaved().filter(x => x.name.toLowerCase().includes(q));
+        const q = all ? '' : name.value.trim().toLowerCase(), matches = esSaved().filter(x => x.name.toLowerCase().includes(q));
         if (!matches.length) { const empty = document.createElement('span'); empty.className = 'eh-es-empty'; empty.textContent = 'No saved searches'; results.append(empty); }
         matches.forEach((s, i) => {
             const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'option'); b.setAttribute('aria-selected', String(s.name === selected)); b.textContent = s.name; b.id = 'eh-es-saved-' + i;
             b.onclick = () => { remember(s.name, s.query); location.assign(MB + '/search/edits?' + s.query); }; results.append(b);
         });
     };
-    find.onclick = () => {
-        if (choosing) { closeLibrary(); return; }
-        refresh(); actions.hidden = true; more.setAttribute('aria-expanded', 'false'); beforeFind = name.value; choosing = true; name.value = ''; name.placeholder = 'Find a saved search…'; name.setAttribute('aria-expanded', 'true'); find.setAttribute('aria-expanded', 'true'); library.hidden = false; renderList(); refresh(); name.focus();
+    const openLibrary = (clear = false) => {
+        refresh(); actions.hidden = true; more.setAttribute('aria-expanded', 'false'); beforeFind = name.value; choosing = true; if (clear) name.value = ''; name.setAttribute('aria-expanded', 'true'); find.setAttribute('aria-expanded', 'true'); library.hidden = false; renderList(true); refresh();
     };
+    name.setAttribute('role', 'combobox'); name.setAttribute('aria-autocomplete', 'list'); name.setAttribute('aria-expanded', 'false');
+    find.onclick = () => { if (choosing && !name.value) closeLibrary(true); else { openLibrary(true); name.focus(); } };
+    name.addEventListener('focus', () => { if (!choosing) openLibrary(); });
+    name.addEventListener('click', () => { if (!choosing) openLibrary(); });
     name.addEventListener('input', () => { msg.textContent = ''; if (choosing) renderList(); refresh(); });
     name.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && choosing) { e.preventDefault(); e.stopPropagation(); closeLibrary(); }
+        if (e.key === 'Escape' && choosing) { e.preventDefault(); e.stopPropagation(); closeLibrary(true); }
         else if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && choosing) {
             e.preventDefault(); const xs = [...results.querySelectorAll('button')], i = xs.indexOf(active), d = e.key === 'ArrowDown' ? 1 : -1;
             if (xs.length) highlight(xs[i < 0 ? d > 0 ? 0 : xs.length - 1 : (i + d + xs.length) % xs.length]);
@@ -11245,7 +11252,7 @@ function esSavedBar(form) {
     results.addEventListener('pointerdown', e => e.preventDefault());
     const write = a => { try { GM_setValue('editSearches', a); return true; } catch (e) { msg.textContent = 'Search could not be saved'; return false; } };
     save.onclick = () => {
-        const n = name.value.trim(); if (!n || choosing) return;
+        const n = name.value.trim(); if (!n) return; closeLibrary();
         const a = esSaved(), old = a.findIndex(x => x.name === selected), collision = a.findIndex(x => x.name.toLowerCase() === n.toLowerCase());
         if (collision >= 0 && collision !== old) { msg.textContent = 'A search with this name already exists'; name.focus(); return; }
         const x = { name: n, query: esQuery(form) }; if (old < 0) a.push(x); else a[old] = x;
@@ -11253,7 +11260,15 @@ function esSavedBar(form) {
         selected = n; name.value = n; remember(n, x.query); msg.textContent = 'Saved'; refresh();
     };
     more.onclick = () => { closeLibrary(); actions.hidden = !actions.hidden; more.setAttribute('aria-expanded', String(!actions.hidden)); };
-    bar.querySelector('[data-es-new]').onclick = () => { try { sessionStorage.removeItem('eh.editSearch'); } catch (e) {} location.assign(MB + '/search/edits'); };
+    bar.querySelector('[data-es-new]').onclick = () => {
+        closeLibrary(); selected = null; fresh = true; pending = null; name.value = ''; msg.textContent = ''; actions.hidden = true; more.setAttribute('aria-expanded', 'false');
+        try { sessionStorage.removeItem('eh.editSearch'); } catch (e) {}
+        form.querySelectorAll('.conditions>.condition').forEach(row => row.remove());
+        for (const [key, value] of [['auto_edit_filter', ''], ['order', 'desc'], ['negation', '0'], ['combinator', 'and']]) {
+            const s = form.querySelector(`select[name="${key}"]`); if (s) { s.value = value; s.dispatchEvent(new Event('change', { bubbles: true })); }
+        }
+        const href = MB + '/search/edits'; ehPush(href); show(histKey(href)); refresh();
+    };
     bar.querySelector('[data-es-copy]').onclick = () => {
         actions.hidden = true; more.setAttribute('aria-expanded', 'false');
         const base = (name.value.trim() || 'Search') + ' copy', used = new Set(esSaved().map(x => x.name.toLowerCase())); let n = base, i = 2;
@@ -11267,7 +11282,10 @@ function esSavedBar(form) {
     };
     form.addEventListener('submit', () => { if (selected) remember(selected, esQuery(form)); });
     document.addEventListener('click', e => { if (!bar.contains(e.target)) { closeLibrary(); actions.hidden = true; more.setAttribute('aria-expanded', 'false'); } });
-    bar._esRefresh = refresh; form.prepend(bar); refresh(); return bar;
+    bar._esRefresh = refresh;
+    const controls = form.querySelector(':scope>p'), head = document.createElement('div'); head.className = 'eh-es-head';
+    if (controls) { controls.before(head); head.append(controls, bar); } else form.prepend(bar);
+    refresh(); return bar;
 }
 
 function esPick(select) {
