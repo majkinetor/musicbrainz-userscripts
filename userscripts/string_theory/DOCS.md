@@ -60,6 +60,7 @@ Each part is optional, and Apollo's corner icon switches to MusicBrainz's own ed
 - **+** takes several links at once and pulls URLs out of anything pasted, HTML included, dropping duplicates and setting each link's type.
 - A **front-cover thumbnail** under the links opens the cover-art page.
 - Right-click a date's or label's ✕ to remove all of them.
+- **↑** / **↓** move to the field above or below, **←** / **→** to the next one in the row (in a text box, from its start or end). They leave an open suggestion list alone.
 - The help bubbles are gone; the badges say what is linked.
 - Long drop-downs (**Language**, **Script**, a medium's **Format**, …) open a list filtered as you type: click one, or type on it, then pick with the arrows and Enter. Esc closes it.
 - The release **Artist** field is the Tracklist's artist cell, in place of MusicBrainz's box and its Edit popup. One line per artist, with its credited-as name, search, join phrase and match badge. **↵** adds an artist, **⋔** splits a combined name, **⠿** reorders, **✕** removes, and **＋** / **🔗** / **⚠** offer to create the artist or add its link.
