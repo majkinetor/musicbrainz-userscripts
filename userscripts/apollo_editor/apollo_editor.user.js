@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.11.200000
+// @version      2026.11.11.210000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15523,6 +15523,56 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       else if (k.length === 1 && !e.altKey) { e.preventDefault(); sfOpen(s, k); }
     }, true);
   }
+  // #998 Release information: Up/Down move to the field above/below, Left/Right along the row
+  // (Left/Right in a text box only from its start/end). Hands off while any suggestion list is open.
+  let _inHooked = false;
+  const IN_FIELD = 'input:not([type=hidden]):not([type=submit]):not([type=button]):not([disabled]), select:not([disabled])';
+  function inListOpen(el) {
+    if (el.getAttribute('aria-expanded') === 'true') return true;
+    if (_sfPop) return true;
+    for (const l of document.querySelectorAll('[role=listbox], ul.ui-autocomplete, .autocomplete2 ul, .tc-pick-list')) {
+      if (l.offsetParent !== null && l.getBoundingClientRect().height > 0 && !l.contains(el)) return true;
+    }
+    return false;
+  }
+  function inFields(root) {
+    return Array.from(root.querySelectorAll(IN_FIELD)).filter(f => f.offsetParent !== null && f.getClientRects().length)
+      .map(f => { const r = f.getBoundingClientRect(); return { f, x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
+  }
+  function installInfoNav() {
+    if (_inHooked) return; _inHooked = true;
+    document.addEventListener('keydown', e => {
+      const k = e.key;
+      if (k !== 'ArrowUp' && k !== 'ArrowDown' && k !== 'ArrowLeft' && k !== 'ArrowRight') return;
+      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.defaultPrevented) return;
+      const el = e.target;
+      if (!(el instanceof HTMLElement) || !el.matches(IN_FIELD)) return;
+      const root = el.closest('#information'); if (!root) return;
+      if (inListOpen(el)) return;
+      const horiz = k === 'ArrowLeft' || k === 'ArrowRight';
+      if (horiz && el instanceof HTMLInputElement && /^(text|search|url|number|tel|email|)$/.test(el.type)) {
+        let at; try { at = el.selectionStart; } catch (x) { at = null; }
+        if (at != null && (el.selectionStart !== el.selectionEnd || (k === 'ArrowLeft' ? at > 0 : at < el.value.length))) return;
+      }
+      const all = inFields(root); const me = all.find(o => o.f === el); if (!me) return;
+      const row = o => Math.abs(o.y - me.y) < 12;
+      let best = null;
+      if (horiz) {
+        const dir = k === 'ArrowRight' ? 1 : -1;
+        for (const o of all) if (o !== me && row(o) && (o.x - me.x) * dir > 0 && (!best || Math.abs(o.x - me.x) < Math.abs(best.x - me.x))) best = o;
+      } else {
+        const dir = k === 'ArrowDown' ? 1 : -1;
+        const cand = all.filter(o => (o.y - me.y) * dir >= 12);
+        if (cand.length) {
+          const ny = cand.reduce((a, o) => Math.abs(o.y - me.y) < Math.abs(a - me.y) ? o.y : a, cand[0].y);
+          for (const o of cand) if (Math.abs(o.y - ny) < 12 && (!best || Math.abs(o.x - me.x) < Math.abs(best.x - me.x))) best = o;
+        }
+      }
+      if (!best) return;
+      e.preventDefault(); e.stopPropagation();
+      try { best.f.focus(); if (best.f.select && best.f instanceof HTMLInputElement && /^(text|search|url|)$/.test(best.f.type)) best.f.select(); } catch (x) { /* fine */ }
+    }, true);
+  }
   // #960 Dates: paste a whole date into any of MB's year/month/day boxes, type straight through them,
   // Alt+C copies begin <-> end; the x after a date clears it. Delegated on document: dialogs and forms re-render.
   let _dpHooked = false;
@@ -18354,6 +18404,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // #external-links-editor check inside it.
     installMultiLinkPaste();
     installSelectFilter();          // #930 long drop-downs filter as you type
+    installInfoNav();               // #998 arrow keys move between Release information fields
     hookNativeGuessCase(ed);        // #785 MusicBrainz's own guess-case buttons give Apollo's guess
     setTimeout(() => { try { Log.reopen(); } catch (e) {} }, 1200);   // #283 reopen the log if it was left open
     snapshotOriginals();
