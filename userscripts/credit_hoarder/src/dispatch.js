@@ -862,6 +862,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                 if (SPECIFIC_WRITER_ROLES.includes(role.linkType)) noteSpecific(mbidOf(confirmedMbUrl(role.artist)), role.linkType);
             }
             const workRels = workRelsOf(workEntity);
+            const wNotAdded = [], wRemoved = [];   // this work's, for one log line each
             const relArtist = (r) => [r.entity0, r.entity1, r.target].find(e => e?.entityType === 'artist');
             const relName = (r) => String(MB.linkedEntities?.link_type?.[r.linkTypeID]?.name || '').toLowerCase();
             for (const r of workRels) {
@@ -878,8 +879,8 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                 }
                 const has = role.linkType === 'writer' && specificByArtist.get(mbidOf(mbUrl));
                 if (has) {
-                    log.info(`Writer not added for ${role.artist.name} on "${trackTitle}": ${[...has].join(' and ')} is there (#928)`);
-                    writersNotAdded.push(`${role.artist.name} on "${trackTitle}" (${[...has].join(' and ')})`);
+                    writersNotAdded.push({ track: trackTitle, name: role.artist.name, roles: [...has].join(' and ') });
+                    wNotAdded.push({ name: role.artist.name, roles: [...has].join(' and ') });
                     continue;
                 }
                 const credit = role.creditedAs || stripDiscogsNum(role.artist.anv?.trim() || role.artist.name);
@@ -925,7 +926,7 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                 const has = artist && specificByArtist.get(artist.gid);
                 if (!has) continue;
                 const roles = [...has].join(' and ');
-                const what = `${artist.name} on "${trackTitle}" (${roles})`;
+                const what = { track: trackTitle, name: artist.name, roles };
                 const credit = (r.entity0?.entityType === 'artist' ? r.entity0_credit : r.entity1_credit) || '';
                 const attrCount = (() => { try { return [...MB.tree.iterate(r.attributes)].length; } catch (e) { return 0; } })();
                 if (credit || attrCount) {
@@ -941,16 +942,25 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                     re.dispatch({ type: 'remove-relationship', relationship: r });
                     if (staged) {
                         writersNotAdded.push(what);
+                        wNotAdded.push(what);
                         added--;
-                        log.info(`Writer added earlier this session taken back for ${artist.name} on "${trackTitle}": ${roles} is there (#928)`);
                     } else {
                         writersRemoved.push(what);
-                        log.info(`Existing writer removed for ${artist.name} on "${trackTitle}": redundant next to ${roles} (#928)`);
+                        wRemoved.push(what);
                     }
                 } catch (e) {
                     log.error(`Failed to remove writer for ${artist.name} on "${trackTitle}": ${e.message}`);
                 }
             }
+            // One line per track and outcome, names grouped by the role that made the writer redundant.
+            const sayWriterRule = (list, verb) => {
+                const byRoles = new Map();
+                for (const w of list) byRoles.set(w.roles, [...(byRoles.get(w.roles) || []), w.name]);
+                const parts = [...byRoles].map(([roles, names]) => `${names.join(', ')} (${roles})`);
+                if (parts.length) log.info(`Writer rule, "${trackTitle}": ${verb} for ${parts.join('; ')} (#928)`);
+            };
+            sayWriterRule(wNotAdded, 'not added');
+            sayWriterRule(wRemoved, 'removed');
         }
     }
 
@@ -1028,13 +1038,16 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
         // the source's writer credits that were never added.
         const WRITER_DOC = 'https://musicbrainz.org/relationship/a255bca1-b157-4518-9108-7b147dc3fc68';
         const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
-        const removedLine = writersRemoved.length
-            ? `Removed ${plural(writersRemoved.length, 'existing writer relationship')}: the same artist has the more specific composer / lyricist / librettist / scriptwriter role on the same work, which the writer guideline prefers (${WRITER_DOC}). ${writersRemoved.join('; ')}`
+        // Names are in the log; each removal is its own edit. The note carries counts and the guideline.
+        const tracksOf = (list) => new Set(list.map(w => w.track)).size;
+        const writerCounts = [
+            writersRemoved.length ? `${writersRemoved.length} removed on ${plural(tracksOf(writersRemoved), 'track')}` : null,
+            writersNotAdded.length ? `${writersNotAdded.length} not added on ${plural(tracksOf(writersNotAdded), 'track')}` : null,
+        ].filter(Boolean);
+        const writerLine = writerCounts.length
+            ? `Writer dropped where composer / lyricist / librettist / scriptwriter exists (${WRITER_DOC}): ${writerCounts.join(', ')}.`
             : null;
-        const notAddedLine = writersNotAdded.length
-            ? `Not added: ${plural(writersNotAdded.length, 'writer credit')} from the source, as the same artist has a more specific role on the same work. ${writersNotAdded.join('; ')}`
-            : null;
-        const ourNote = buildEditNote(discogsUrl, opts, [inputStats, matchedLine, unresolvedLine, resultStats, removedLine, notAddedLine].filter(Boolean), dedupOpts.sourceLabel);   // #408: consolidated runs label the source
+        const ourNote = buildEditNote(discogsUrl, opts, [inputStats, matchedLine, unresolvedLine, resultStats, writerLine].filter(Boolean), dedupOpts.sourceLabel);   // #408: consolidated runs label the source
         // Preserve any note another script already wrote — append ours instead
         // of overwriting (issue #174). Read the live textarea value as the base.
         const existingNote = document.querySelector(SELECTORS.EditNote)?.value || '';

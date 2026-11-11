@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-11 22:10 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-11 21:35 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -764,7 +764,7 @@ On a row:
 
 Adds the confirmed relationships to the editor without dialogs: release-level (labels, places, companies, artists), per track (instruments, vocals, engineers…) and per work (composer, lyricist, writer). A relationship that already exists, or was added earlier in the session, is skipped, and so is the same role with only other attributes (*guitar* where *guitar (solo)* is there); a different instrument or voice is still added.
 
-Writer is left out for an artist who is composer, lyricist, librettist or scriptwriter on the same work, as MusicBrainz prefers the [more specific role](https://musicbrainz.org/relationship/a255bca1-b157-4518-9108-7b147dc3fc68). An existing writer for that artist is removed when the import brings writing credits for that work, unless it has a credited-as name or attributes (then the log flags it). The edit note lists the existing writers removed apart from the source's writer credits not added. Translator, arranger and the like don't count.
+Writer is left out for an artist who is composer, lyricist, librettist or scriptwriter on the same work, as MusicBrainz prefers the [more specific role](https://musicbrainz.org/relationship/a255bca1-b157-4518-9108-7b147dc3fc68). An existing writer for that artist is removed when the import brings writing credits for that work, unless it has a credited-as name or attributes (then the log flags it). The edit note gives the counts (writers removed, writer credits not added) and the guideline link; the log names them, one line per track. Translator, arranger and the like don't count.
 
 The edit note carries the statistics per source, with how the entities were matched: *Matched: 9 exact, 4 strong, 1 user (cutoff: strong)*. What an earlier source added counts as *already added this session*, not *already in MB*.
 

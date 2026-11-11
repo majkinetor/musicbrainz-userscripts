@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.11.11.153023
+// @version      2026.11.11.213556
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -8534,6 +8534,7 @@ Its \u{1F517} chip adds the link.`;
           if (SPECIFIC_WRITER_ROLES.includes(role.linkType)) noteSpecific(mbidOf(confirmedMbUrl(role.artist)), role.linkType);
         }
         const workRels = workRelsOf(workEntity);
+        const wNotAdded = [], wRemoved = [];
         const relArtist = (r) => [r.entity0, r.entity1, r.target].find((e) => e?.entityType === "artist");
         const relName = (r) => String(MB2.linkedEntities?.link_type?.[r.linkTypeID]?.name || "").toLowerCase();
         for (const r of workRels) {
@@ -8548,8 +8549,8 @@ Its \u{1F517} chip adds the link.`;
           }
           const has = role.linkType === "writer" && specificByArtist.get(mbidOf(mbUrl));
           if (has) {
-            log.info(`Writer not added for ${role.artist.name} on "${trackTitle}": ${[...has].join(" and ")} is there (#928)`);
-            writersNotAdded.push(`${role.artist.name} on "${trackTitle}" (${[...has].join(" and ")})`);
+            writersNotAdded.push({ track: trackTitle, name: role.artist.name, roles: [...has].join(" and ") });
+            wNotAdded.push({ name: role.artist.name, roles: [...has].join(" and ") });
             continue;
           }
           const credit = role.creditedAs || stripDiscogsNum2(role.artist.anv?.trim() || role.artist.name);
@@ -8582,7 +8583,7 @@ Its \u{1F517} chip adds the link.`;
           const has = artist && specificByArtist.get(artist.gid);
           if (!has) continue;
           const roles = [...has].join(" and ");
-          const what = `${artist.name} on "${trackTitle}" (${roles})`;
+          const what = { track: trackTitle, name: artist.name, roles };
           const credit = (r.entity0?.entityType === "artist" ? r.entity0_credit : r.entity1_credit) || "";
           const attrCount = (() => {
             try {
@@ -8604,16 +8605,24 @@ Its \u{1F517} chip adds the link.`;
             re.dispatch({ type: "remove-relationship", relationship: r });
             if (staged) {
               writersNotAdded.push(what);
+              wNotAdded.push(what);
               added--;
-              log.info(`Writer added earlier this session taken back for ${artist.name} on "${trackTitle}": ${roles} is there (#928)`);
             } else {
               writersRemoved.push(what);
-              log.info(`Existing writer removed for ${artist.name} on "${trackTitle}": redundant next to ${roles} (#928)`);
+              wRemoved.push(what);
             }
           } catch (e) {
             log.error(`Failed to remove writer for ${artist.name} on "${trackTitle}": ${e.message}`);
           }
         }
+        const sayWriterRule = (list, verb) => {
+          const byRoles = /* @__PURE__ */ new Map();
+          for (const w of list) byRoles.set(w.roles, [...byRoles.get(w.roles) || [], w.name]);
+          const parts = [...byRoles].map(([roles, names]) => `${names.join(", ")} (${roles})`);
+          if (parts.length) log.info(`Writer rule, "${trackTitle}": ${verb} for ${parts.join("; ")} (#928)`);
+        };
+        sayWriterRule(wNotAdded, "not added");
+        sayWriterRule(wRemoved, "removed");
       }
     }
     async function dispatchTracklistArtists() {
@@ -8666,9 +8675,13 @@ Its \u{1F517} chip adds the link.`;
       const resultStats = `Result: ${added} added, ${existedInMb} already in MB${editNoteStagedPart}${editNoteDedupPart}, ${skipped} skipped, ${failed} failed${recSelectionActive ? ` (applied to ${checkedRecGids.size} of ${recordingByGid.size} selected recordings)` : ""}`;
       const WRITER_DOC = "https://musicbrainz.org/relationship/a255bca1-b157-4518-9108-7b147dc3fc68";
       const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
-      const removedLine = writersRemoved.length ? `Removed ${plural(writersRemoved.length, "existing writer relationship")}: the same artist has the more specific composer / lyricist / librettist / scriptwriter role on the same work, which the writer guideline prefers (${WRITER_DOC}). ${writersRemoved.join("; ")}` : null;
-      const notAddedLine = writersNotAdded.length ? `Not added: ${plural(writersNotAdded.length, "writer credit")} from the source, as the same artist has a more specific role on the same work. ${writersNotAdded.join("; ")}` : null;
-      const ourNote = buildEditNote(discogsUrl, opts, [inputStats, matchedLine, unresolvedLine, resultStats, removedLine, notAddedLine].filter(Boolean), dedupOpts.sourceLabel);
+      const tracksOf = (list) => new Set(list.map((w) => w.track)).size;
+      const writerCounts = [
+        writersRemoved.length ? `${writersRemoved.length} removed on ${plural(tracksOf(writersRemoved), "track")}` : null,
+        writersNotAdded.length ? `${writersNotAdded.length} not added on ${plural(tracksOf(writersNotAdded), "track")}` : null
+      ].filter(Boolean);
+      const writerLine = writerCounts.length ? `Writer dropped where composer / lyricist / librettist / scriptwriter exists (${WRITER_DOC}): ${writerCounts.join(", ")}.` : null;
+      const ourNote = buildEditNote(discogsUrl, opts, [inputStats, matchedLine, unresolvedLine, resultStats, writerLine].filter(Boolean), dedupOpts.sourceLabel);
       const existingNote = document.querySelector(SELECTORS.EditNote)?.value || "";
       const note = combineEditNote(existingNote, ourNote);
       re.dispatch({ type: "update-edit-note", editNote: note });
