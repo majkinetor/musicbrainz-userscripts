@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.11.154128
+// @version      2026.11.11.155204
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -17074,14 +17074,28 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     _riOptObs.observe(ext, { childList: true, subtree: true });
   }
   let _riPrevOn = false;
+  let _riTypeObs = null;
+  function riTypeBars() {
+    rgTypeBar(document.getElementById('primary-type'), false, 'apolloDefaultPrimaryType');
+    rgTypeBar(document.getElementById('secondary-types'), true, 'apolloDefaultSecondaryTypes', false, rgFold('secondary'));
+    rgTypeBar(document.getElementById('status'), false, 'apolloDefaultStatus', true, rgFold('status'));
+  }
   function applyReleaseInfo() {
     riStyle();
     wireLinkClicks();
     wireReleaseInfoBatch();
     autoSelectReleaseGroup();   // #716
-    rgTypeBar(document.getElementById('primary-type'), false, 'apolloDefaultPrimaryType');
-    rgTypeBar(document.getElementById('secondary-types'), true, 'apolloDefaultSecondaryTypes', false, rgFold('secondary'));
-    rgTypeBar(document.getElementById('status'), false, 'apolloDefaultStatus', true, rgFold('status'));
+    riTypeBars();
+    // Changing the group rebuilds these selects. Restore their bars before the
+    // next frame rather than leaving hidden native fields until the next tick.
+    const info = document.getElementById('information');
+    if (info && !_riTypeObs) {
+      const types = '#primary-type,#secondary-types,#status';
+      _riTypeObs = new MutationObserver(records => {
+        if (records.some(r => [...r.addedNodes].some(n => n.nodeType === 1 && (n.matches(types) || n.querySelector(types))))) riTypeBars();
+      });
+      _riTypeObs.observe(info, { childList: true, subtree: true });
+    }
     // #652 (majkinetor): "no bubbles anywhere" — the #143 selection popover is retired; the badges say what was picked
     if (riWant()) {
       _apolloUsed = true;
