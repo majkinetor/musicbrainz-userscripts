@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.11.144425
+// @version      2026.11.11.144442
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12087,6 +12087,15 @@ const histTime = el => {
 };
 // an open edit past its week shows no expiry date: its editor's first note, written as it was entered, dates it instead
 const histNoteTime = notes => { const n = notes.find(x => x.own), m = n && n.date.match(/(\d{4}-\d\d-\d\d) (\d\d:\d\d)/); return m ? Date.parse(m[1] + 'T' + m[2] + 'Z') : 0; };
+// Match MusicBrainz's failed-cover fallback, including its translated message and link.
+document.addEventListener('error', ev => {
+    const im = ev.target;
+    if (!im.matches || !im.matches('#app .hdt span.artwork-image img')) return;
+    const holder = im.closest('span.artwork-image'), message = holder.dataset.message;
+    if (!message) return;
+    const fallback = document.createElement('em'); fallback.className = 'cover-art-error'; fallback.innerHTML = message;
+    (holder.closest('a.artwork-image') || holder).replaceWith(fallback);
+}, true);
 function histParse(html) {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const one = !doc.querySelector('.edit-list') && doc.querySelector('#content > .edit-header');
