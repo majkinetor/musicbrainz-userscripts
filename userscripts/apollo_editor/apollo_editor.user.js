@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.10.180611
+// @version      2026.11.11.144811
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -3993,6 +3993,24 @@ Click: open the label`;
      (majkinetor, "again won't stop", after splitting a credit mid-match). A pass queued
      before the last Stop now skips; its slots stay unmatched, as the Stop promised. */
   let _stopGen = 0;
+  const _matchWaits = new Set();
+  const MATCH_STOPPED = {};
+  // Cancellation belongs to the pass, including its setup, not to a transport.
+  // A stopped generation stays stopped even after another pass clears the flag.
+  function matchWait(p, label, gen) {
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      const finish = (fn, value) => {
+        if (settled) return;
+        settled = true; clearTimeout(timer); _matchWaits.delete(cancel); fn(value);
+      };
+      const cancel = () => finish(resolve, MATCH_STOPPED);
+      const timer = setTimeout(() => Log.cat('Artist').warn('matching still waiting for ' + label + ' — Stop can end this wait'), 15000);
+      _matchWaits.add(cancel);
+      Promise.resolve(p).then(v => finish(resolve, v), e => finish(reject, e));
+      if (_matchStop || gen !== _stopGen) cancel();
+    });
+  }
   function matchModel(onProgress) {
     const gen = _stopGen;
     const run = _passChain.then(() => {
@@ -4024,16 +4042,20 @@ Click: open the label`;
     setMatching(true);
     // hoisted out of the try so the finally can report how far it got (#577)
     let stopped = false, done = 0, planned = 0;
+    const gen = _stopGen;
+    const wait = (p, label) => matchWait(p, label, gen);
     startMatchLog();
     try {
-      const siblings = await loadSiblingMap();
-      const dmap = await loadDiscogsMap();
+      const siblings = await wait(loadSiblingMap(), 'other editions');
+      if (siblings === MATCH_STOPPED) { stopped = true; return; }
+      const dmap = await wait(loadDiscogsMap(), 'Discogs release');
+      if (dmap === MATCH_STOPPED) { stopped = true; return; }
       const total = MODEL.tracks.length;
       // ti is the track's position in the release, which discogsUrlsForTrack
       // needs (#283 falls back to matching by position), so carry it along
       // rather than re-deriving it from a filtered list.
       const todo = MODEL.tracks.map((t, ti) => ({ t, ti })).filter(x => x.t.slots.some(s => s._pending)); planned = todo.length;
-      await prewarmPlatformLinks(todo.map(x => x.t));   // #651: First Contact's platform links, a few batched lookups up front
+      if (await wait(prewarmPlatformLinks(todo.map(x => x.t)), 'platform links') === MATCH_STOPPED) { stopped = true; return; }
       /* #575 (majkinetor, "Matching takes too long"): this loop used to await
          each track before starting the next. The /ws/2 pacer allows four reads in
          flight — measured on a 14-track fixture against production, the pass
@@ -4056,12 +4078,8 @@ Click: open the label`;
          pass ends only when every lane has. So each slot's wait now also ends on
          Stop; whatever it was waiting for still finishes in the background and its
          answer is dropped. */
-      const STOPPED = {};
-      const untilStop = p => new Promise((resolve, reject) => {
-        if (_matchStop) { p.catch(() => {}); return resolve(STOPPED); }
-        const iv = setInterval(() => { if (_matchStop) { clearInterval(iv); p.catch(() => {}); resolve(STOPPED); } }, 120);
-        p.then(r => { clearInterval(iv); resolve(r); }, e => { clearInterval(iv); reject(e); });
-      });
+      const STOPPED = MATCH_STOPPED;
+      const untilStop = p => wait(p, 'track artist lookup');
       let nextIdx = 0;
       const lane = async () => {
         for (;;) {
@@ -8176,6 +8194,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     Log.cat('Artist').info('Stop pressed' + (_matchStop ? ' again' : '') + ' — ' + _wsInFlight + ' MusicBrainz request(s) and ' + _webInFlight + ' search/entity load(s) on their way, tracklist pass ' + (_matching ? 'running' : 'idle') + ', recordings pass ' + (_autoMatching ? 'running' : 'idle'));
     if (_matchStop) return;
     _matchStop = true;
+    for (const cancel of [..._matchWaits]) cancel();
     // Driven off each pass's own running flag, not off what its button happens
     // to say. The label is not reliable — a Recordings shell rebuilt mid-pass
     // reads "Match" — and the flag is shared, so stopping the tracklist must not
