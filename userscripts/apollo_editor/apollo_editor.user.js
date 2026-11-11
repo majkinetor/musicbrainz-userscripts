@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.11.152821
+// @version      2026.11.11.154128
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -2901,7 +2901,7 @@ Click: open the label`;
   async function wsGet(url, opts) {
     const o = opts || {};
     const gen = _stopGen;
-    const cancelled = () => _matchStop || gen !== _stopGen || !!(o.stale && o.stale());
+    const cancelled = () => o.stale ? !!o.stale() : _matchStop || gen !== _stopGen;
     if (o.stale && o.stale()) return null;
     // The wait is interruptible: a lane parked in the gate cannot notice a Stop otherwise,
     // and a pass whose lanes are all parked looks unstoppable (#577).
@@ -2974,11 +2974,11 @@ Click: open the label`;
   async function wsJsonOnce(url, opts) {
     const o = opts || {}, label = o.label || 'ws2', gen = _stopGen;
     for (let attempt = 1; attempt <= WS_TRIES; attempt++) {
-      if (_matchStop || gen !== _stopGen) return { stale: true };
+      if (!o.stale && (_matchStop || gen !== _stopGen)) return { stale: true };
       let r;
       try { r = await wsGet(url, o); }
       catch (e) { Log.cat('MusicBrainz').warn(label + ': network error —', e.message, '(attempt ' + attempt + '/' + WS_TRIES + ')', url); await _sleep(600 * attempt); continue; }
-      if (!r || gen !== _stopGen) { Log.cat('MusicBrainz').debug(label + ': superseded while queued, dropped —', url); return { stale: true }; }
+      if (!r || (!o.stale && gen !== _stopGen)) { Log.cat('MusicBrainz').debug(label + ': superseded while queued, dropped —', url); return { stale: true }; }
       Log.cat('MusicBrainz').debug(label + ': HTTP', r.status, url);
       const a = await wsAnswer(r);
       if (a.throttled) {
@@ -13244,6 +13244,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (_autoMatching) return; _autoMatching = true;   // #577
     _recLeftForYou.clear();
     if (!_matching) _matchStop = false;   // #575: don't clear a stop the tracklist pass has not acted on yet
+    const gen = _stopGen, cancelled = () => _matchStop || gen !== _stopGen;
+    const REC_STOPPED = {};
+    const wait = async (p, label) => {
+      const out = await matchWait(p, 'recordings: ' + label, gen);
+      if (out === MATCH_STOPPED || cancelled()) throw REC_STOPPED;
+      return out;
+    };
     // #545: the status text alone was easy to miss while MusicBrainz was slow —
     // and the button stayed enabled and unchanged, so it read as "nothing
     // happened". Re-queried on each use rather than captured: the recordings
@@ -13306,7 +13313,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       try {
         for (let t = 0; t < 60 && (!rows.length || anyLoading()); t++) {
           if (_matchStop) { stopped = true; break; }
-          await new Promise(z => setTimeout(z, 250));
+          await wait(new Promise(z => setTimeout(z, 250)), 'tracklist');
           rows = readRecordings();
         }
       } finally { _autoMatchWaiting = false; }
@@ -13326,10 +13333,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         rgGidForDup = rgGid || null; relTitleForDup = rel ? (u(rel.name) || '') : ''; relArtistGidForDup = (acArtistGids(u(rel && rel.artistCredit)) || [])[0] || null;
         if (rgGid) {
           setStatus('loading release-group recordings…');
-          pool = await fetchRgRecordings(rgGid); pool.forEach(p => { const k = recFold(p.name); if (!byTitle.has(k)) byTitle.set(k, []); byTitle.get(k).push(p); });
-          posIndex = await fetchRgPositionIndex(rgGid);   // #440 position index from the RG's editions
+          pool = await wait(fetchRgRecordings(rgGid), 'release-group recordings'); pool.forEach(p => { const k = recFold(p.name); if (!byTitle.has(k)) byTitle.set(k, []); byTitle.get(k).push(p); });
+          posIndex = await wait(fetchRgPositionIndex(rgGid), 'release-group positions');   // #440 position index from the RG's editions
         }
-      } catch (e) { Log.cat('Recording').warn('RG pool load failed', e.message); }
+      } catch (e) { if (e === REC_STOPPED) throw e; Log.cat('Recording').warn('RG pool load failed', e.message); }
       Log.cat('Recording').debug('rg=' + (rgGidForDup || 'none') + ' pool=' + pool.length + ' posIndex=' + posIndex.size + ' relTitle="' + relTitleForDup + '" relArtist=' + (relArtistGidForDup || 'none') + ' cutoff=' + (SETTINGS.recCutoff || 'near') + '(' + maxLevel + ')');   // #440 diag
       // #440 — the edit track's "<medium>.<track>" position, to look up sibling/duplicate recordings placed there.
       const posKeyOf = (r, ko) => { try { return (u(mediums()[r.mi].position) || (r.mi + 1)) + '.' + (u(ko.position) || r.number || (r.ti + 1)); } catch (e) { return null; } };
@@ -13373,7 +13380,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         if (!isrc && fcHandoff()) Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' no ISRC in the First Contact handoff for this track');
         if (isrc) {
           setStatus('auto-matching ' + (i + 1) + '/' + todo.length + '… (ISRC)');
-          const held = (await isrcRecordings(isrc)).filter(d => !(videoBlocked && d.video));
+          const held = (await wait(isrcRecordings(isrc), 'ISRC lookup')).filter(d => !(videoBlocked && d.video));
           const agree = held.filter(d => isrcAgrees(d, ctx));
           Log.cat('Recording').info('track ' + (r.number || (r.ti + 1)) + ' ISRC ' + isrc + ' → ' + held.length + ' recording(s)' + (held.length ? ': ' + held.map(d => '"' + d.name + '" [' + (d.gid || '').slice(0, 8) + ']' + (isrcAgrees(d, ctx) ? ' agrees' : ' differs')).join(', ') : ''));
           if (held.length === 1 && agree.length === 1) {
@@ -13403,7 +13410,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
             if ((!best || bestLevel > maxLevel) && !dupFetched && relTitleForDup) {   // widen to possible duplicates once (works even on a fresh import with no RG yet, #440)
               dupFetched = true; setStatus('scanning duplicates…');
               const before = posIndex.size;
-              await fetchDuplicatePositionIndex(relTitleForDup, relArtistGidForDup, rgGidForDup, posIndex);
+              await wait(fetchDuplicatePositionIndex(relTitleForDup, relArtistGidForDup, rgGidForDup, posIndex), 'duplicate positions');
               Log.cat('Recording').debug('duplicate search for "' + relTitleForDup + '" (artist=' + (relArtistGidForDup || 'none') + ') → posIndex ' + before + '→' + posIndex.size);
               /* #575 round 4: "it often shows 'scanning duplicates', although
                  there either aren't any or all are 0% similar". The status was
@@ -13426,7 +13433,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           if (!sugg.length || stale) {
             if (stale) refetchSuggestions(ko);
             else { try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) {} }
-            for (let t = 0; t < 28; t++) { await new Promise(z => setTimeout(z, 250)); const loading = typeof ko.loadingSuggestedRecordings === 'function' ? u(ko.loadingSuggestedRecordings) : false; sugg = u(ko.suggestedRecordings) || []; if (!loading && sugg.length) break; if (!loading && t >= 3) break; }
+            for (let t = 0; t < 28; t++) { await wait(new Promise(z => setTimeout(z, 250)), 'MusicBrainz suggestions'); const loading = typeof ko.loadingSuggestedRecordings === 'function' ? u(ko.loadingSuggestedRecordings) : false; sugg = u(ko.suggestedRecordings) || []; if (!loading && sugg.length) break; if (!loading && t >= 3) break; }
           }
           for (let s = 0; s < sugg.length; s++) { consider(suggData(sugg[s])); if (bestLevel === 0) break; }   // 0 = exact, can't do better
         }
@@ -13437,11 +13444,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           const qy = recNarrowQuery(ko);
           if (qy) {
             setStatus('auto-matching ' + (i + 1) + '/' + todo.length + '… (search)');
-            const hits = ((await searchRecordings(qy)) || []).filter(d => !(videoBlocked && d.video));
+            const hits = ((await wait(searchRecordings(qy), 'recording search')) || []).filter(d => !(videoBlocked && d.video));
             if (hits.length === 1) consider(hits[0]);
             Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' search tier → ' + hits.length + ' hit(s)' + (hits.length === 1 ? ': "' + hits[0].name + '" [' + (hits[0].gid || '').slice(0, 8) + '] level=' + recComboLevel(hits[0], ctx) : hits.length ? ', not used (more than one)' : ''));
           }
         }
+        if (cancelled()) throw REC_STOPPED;
         // #540: settle the winner on evidence, and refuse to guess between equals.
         const pk2 = posKeyOf(r, ko);
         const posGids = pk2 ? (posIndex.get(pk2) || []).map(c => c.gid).filter(Boolean) : [];
@@ -13477,6 +13485,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           Log.cat('Recording').info('track ' + (r.number || (r.ti + 1)) + ': skipped ' + vidSkipped + ' video recording(s) — this medium’s format cannot hold video and the track is not a data track (MusicBrainz would list it under "Videos in non-video mediums")');
         }
       }
+    } catch (e) {
+      if (e !== REC_STOPPED) throw e;
+      stopped = true;
     } finally {
       _autoMatching = false;
       rerenderRec();
@@ -13783,19 +13794,19 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   // direct lookup of one recording by MBID — backs pasting a recording MBID / URL
   // into the picker's search field (mirrors the artist picker). #189
-  async function fetchRecordingById(gid) {
-    const res = await wsJson(`${ORIGIN}/ws/2/recording/${gid}?fmt=json&inc=artist-credits+releases+release-groups+isrcs`, { label: 'recording lookup' });
+  async function fetchRecordingById(gid, opts) {
+    const res = await wsJson(`${ORIGIN}/ws/2/recording/${gid}?fmt=json&inc=artist-credits+releases+release-groups+isrcs`, Object.assign({ label: 'recording lookup' }, opts));
     const j = res.json;
     Log.cat('Recording').debug('recording lookup:', gid, '→', j && j.id ? JSON.stringify(j.title || '') : 'none');
     return j && j.id ? mapWsRec(j) : null;
   }
   // recordings sharing an ISRC — backs pasting an ISRC into the picker's search
   // field (one ISRC can map to several recordings). #196
-  async function fetchRecordingsByIsrc(isrc) {
+  async function fetchRecordingsByIsrc(isrc, opts) {
     // NB: the `isrc` resource rejects `release-groups` as an inc param (unlike
     // the `recording` resource) — including it returns an error object with no
     // recordings, which is why an existing ISRC came back "not found". #196
-    const res = await wsJson(`${ORIGIN}/ws/2/isrc/${encodeURIComponent(isrc)}?fmt=json&inc=artist-credits+releases+isrcs`, { label: 'ISRC lookup' });
+    const res = await wsJson(`${ORIGIN}/ws/2/isrc/${encodeURIComponent(isrc)}?fmt=json&inc=artist-credits+releases+isrcs`, Object.assign({ label: 'ISRC lookup' }, opts));
     const out = ((res.json && res.json.recordings) || []).map(mapWsRec);
     Log.cat('Recording').debug('ISRC lookup:', isrc, '→', out.length, 'recording(s)');
     return out;
@@ -14116,6 +14127,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         if (!loading && renderSugg()) { rerenderRec(); return; }   // also refresh the ⊕ count on the row
         if (!loading && tries > 3) { suggBox.innerHTML = '<div class="tc-rpk-empty">no suggestions</div>'; return; }
         if (++tries < 40) setTimeout(poll, 250);
+        else suggBox.innerHTML = '<div class="tc-rpk-empty">suggestions did not arrive — reopen to retry</div>';
       };
       setTimeout(poll, 250);
     }
@@ -14130,12 +14142,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     let seq = 0, tmr = null;
     const runSearch = async (query, fallbackTitle) => {
       const my = ++seq;
+      const sOpts = { stale: () => my !== seq || !_recPop, onThrottle: () => { if (my === seq && _recPop) resBox.innerHTML = '<div class="tc-rpk-empty tc-rpk-busy">MusicBrainz is throttling requests — retrying…</div>'; } };
       // paste a recording MBID or a /recording/<mbid> URL → resolve and LINK it
       // immediately (same as pasting an MBID in the artist picker). #189
       const gid = mbidFrom(query);
       if (gid) {
         resBox.innerHTML = '<div class="tc-rpk-empty tc-rpk-busy">resolving recording…</div>';
-        const rec = await fetchRecordingById(gid);
+        const rec = await fetchRecordingById(gid, sOpts);
         if (my !== seq || !_recPop) return;
         if (rec) pickRecording(entry, rec);   // links the recording + closes the picker
         else resBox.innerHTML = '<div class="tc-rpk-empty">recording MBID not found</div>';
@@ -14146,7 +14159,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const isrc = isrcFrom(query);
       if (isrc) {
         resBox.innerHTML = '<div class="tc-rpk-empty tc-rpk-busy">resolving ISRC ' + esc(isrc) + '…</div>';
-        const recs = await fetchRecordingsByIsrc(isrc);
+        const recs = await fetchRecordingsByIsrc(isrc, sOpts);
         if (my !== seq || !_recPop) return;
         if (recs.length === 1) { pickRecording(entry, recs[0]); return; }   // one hit → link + close
         if (recs.length > 1) { recs.forEach(rr => { data[rr.gid] = rr; }); lastResults = recs; paintResults(); return; }
@@ -14157,7 +14170,6 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // superseded queries are dropped before they cost a request (typing fires one
       // per pause and the WS2 gate is ~1 req/s); a throttled search says so instead
       // of rendering an empty list. #555
-      const sOpts = { stale: () => my !== seq || !_recPop, onThrottle: () => { if (my === seq && _recPop) resBox.innerHTML = '<div class="tc-rpk-empty tc-rpk-busy">MusicBrainz is throttling requests — retrying…</div>'; } };
       let results = await searchRecordings(query, sOpts);
       if (fallbackTitle && results && !results.length) results = await searchRecordings(u(ko.name) || '', sOpts);   // smart query too tight → broaden
       if (my !== seq || !_recPop) return;
@@ -14370,7 +14382,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const wiz = document.createElement('div'); wiz.id = 'tc-nav-wiz';
     WIZ_DEFS.forEach(d => {
       const b = document.createElement('button'); b.className = 'tc-nav-wbtn ' + d.cls; b.dataset.wiz = d.id; b.textContent = d.label;
-      b.onclick = () => { ensureApolloEditNote(); const f = navFooterEl(); const nat = f && d.find(f); if (nat) nat.click(); setTimeout(syncNav, 40); };   // #130: set the edit note on the compact-nav submit path too
+      b.onclick = () => {
+        const forward = () => { ensureApolloEditNote(); const f = navFooterEl(); const nat = f && d.find(f); if (nat) nat.click(); setTimeout(syncNav, 40); };
+        // Finish must not race a matching pass still writing recording links.
+        // Cancellation settles through microtasks before the next event task.
+        if (_matching || _autoMatching) { stopMatching(); setTimeout(forward, 0); }
+        else forward();
+      };   // #130: set the edit note on the compact-nav submit path too
       wiz.appendChild(b);
     });
     // right-side paginators (Cancel / Prev / Next)
