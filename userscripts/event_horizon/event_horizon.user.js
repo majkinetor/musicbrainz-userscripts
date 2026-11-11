@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.11.104056
+// @version      2026.11.11.105401
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11120,18 +11120,18 @@ const H_LISTS = { '/edit/open': 'Open edits', '/edit/subscribed': 'Subscribed en
    Keep its nodes and delegated MusicBrainz handlers; only the selects get a presentation layer. */
 const EDIT_SEARCH_CSS = `
 #eh-edit-search{margin:0 0 30px}
-#edit-search.eh-es{font:inherit;color:var(--text)}
+#edit-search.eh-es{font:inherit;line-height:1.25;color:var(--text)}
 #edit-search.eh-es .eh-es-head{display:flex;align-items:center;flex-wrap:nowrap;gap:12px;margin-bottom:24px}
 #edit-search.eh-es .eh-es-head>p{display:flex;align-items:center;flex-wrap:nowrap;flex:none;gap:6px;margin:0;font-size:13px;color:var(--muted)}
 #edit-search.eh-es .eh-es-head>.eh-es-saved{position:relative;flex:1 1 300px;flex-wrap:nowrap;margin:0 0 0 auto;padding:0;border:0;min-width:0;max-width:440px}
 #edit-search.eh-es .eh-es-head .eh-es-name{flex:1 1 180px;min-width:120px}
-#edit-search.eh-es .eh-es-top>button{white-space:nowrap;border:0;border-bottom:1px solid var(--border);border-radius:0;padding:6px;gap:7px}
+#edit-search.eh-es .eh-es-top>button{white-space:nowrap;border:0;border-radius:0;padding:4px 6px;gap:7px}
 #edit-search.eh-es .eh-es-top>button>.eh-es-value{white-space:nowrap}.eh-es-top>button>svg,.eh-es-saved>[data-es-save]>svg,.eh-es-more>button>svg{width:16px;height:16px;flex:none}
 #edit-search.eh-es .eh-es-saved>[data-es-save]{display:flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;padding:6px;border:0}
 #edit-search.eh-es .eh-es-more>button{display:flex;align-items:center;justify-content:center;width:28px;height:32px;padding:6px}
 #edit-search.eh-es .eh-es-head .eh-es-status{position:absolute;right:0;top:calc(100% + 3px);margin:0;min-height:0;font-size:11px;white-space:nowrap}
 #edit-search.eh-es .conditions{list-style:none;margin:0;padding:0}
-#edit-search.eh-es .conditions>li{display:grid;grid-template-columns:24px minmax(130px,180px) minmax(0,1fr);align-items:center;gap:10px;padding:6px 0;border:0}
+#edit-search.eh-es .conditions>li{display:grid;grid-template-columns:24px minmax(130px,180px) minmax(0,1fr);align-items:center;gap:8px;padding:3px 0;border:0}
 #edit-search.eh-es .conditions>li>button.remove-item{grid-column:1;grid-row:1;width:24px;height:28px;padding:0;background:none!important;border:0!important;color:var(--muted);font:24px/1 Manrope,system-ui,sans-serif;filter:none!important;cursor:pointer}
 #edit-search.eh-es .conditions>li>.eh-es-pick{grid-column:2;grid-row:1}
 #edit-search.eh-es .field-container{grid-column:3;grid-row:1;min-width:0}
@@ -11140,10 +11140,12 @@ const EDIT_SEARCH_CSS = `
 #edit-search.eh-es .field-container>span.field{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0}
 #edit-search.eh-es .field-container>span.field[style*="display: none"]{display:none}
 #edit-search.eh-es :is(input:not([type=checkbox]),button){font:inherit;color:inherit}
-#edit-search.eh-es input:not([type=checkbox]):not([type=hidden]){box-sizing:border-box;min-width:0;max-width:100%;padding:6px 8px;background:transparent!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:3px}
+#edit-search.eh-es input:not([type=checkbox]):not([type=hidden]){box-sizing:border-box;min-width:0;max-width:100%;padding:4px 7px;background:transparent!important;color:var(--text)!important;border:0!important;border-radius:0;line-height:1.25}
+#edit-search.eh-es .eh-es-pick>button{border:0;border-radius:0;padding:4px 7px;line-height:1.25}
+#edit-search.eh-es .eh-es-name{border:0}
 #edit-search.eh-es .arg{max-width:100%}#edit-search.eh-es input[type=number]{width:125px}
-#edit-search.eh-es .autocomplete{position:relative;display:inline-flex;align-items:center;gap:5px;max-width:100%}
-#edit-search.eh-es .autocomplete input.name{width:260px!important}#edit-search.eh-es .autocomplete svg{width:15px;height:15px}
+#edit-search.eh-es .autocomplete{position:relative;display:inline-flex;align-items:center;max-width:100%}
+#edit-search.eh-es .autocomplete input.name{width:260px!important;padding-left:27px}#edit-search.eh-es .autocomplete svg{position:absolute;left:7px;top:50%;transform:translateY(-50%);width:15px;height:15px;pointer-events:none}
 #edit-search.eh-es a{color:var(--link)}
 #edit-search.eh-es #extra-condition{display:block;border:0;padding:12px 0}#edit-search.eh-es #extra-condition>:is(.remove-item,.field-container){display:none!important}
 #edit-search.eh-es #extra-condition>.eh-es-pick>button{color:var(--link);border-color:transparent;padding-left:0}
