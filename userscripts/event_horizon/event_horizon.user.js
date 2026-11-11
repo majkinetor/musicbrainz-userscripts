@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.12.120500
+// @version      2026.11.11.234408
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4189,11 +4189,14 @@ const wskAs = path => kept('ws:' + path, bg => wsText(path, bg)).then(JSON.parse
 // signed in: eh.in, from the last start(), since the page's first lookup goes before MusicBrainz's header is read. Signed out
 // they answer 401, and the lookup goes again without them. MINE: the names you voted for, by type/mbid, for Fuzzy Logic
 const MINE = new Map(), OWN_INC = '+user-tags+user-genres';
+// a kept answer can predate votes made elsewhere (Fuzzy Logic, MusicBrainz's sidebar, another tab): its recheck sets them again
+const mineFrom = (ek, j) => MINE.set(ek, new Set([...(j['user-tags'] || []), ...(j['user-genres'] || [])].map(t => String(t.name).trim().toLowerCase())));
+const mineKept = (k, t) => { const m = k.match(/^ws:([a-z-]+)\/([0-9a-f-]{36})\?inc=.*\+user-tags\+user-genres$/); if (m) try { mineFrom(m[1] + '/' + m[2], JSON.parse(t)); } catch (e) { /* not JSON */ } };
 let ehIn = false; try { ehIn = localStorage.getItem('eh.in') === '1'; } catch (e) { /* storage blocked */ }
 const wsk = path => {
     const m = ehIn && path.match(/^([a-z-]+)\/([0-9a-f-]{36})\?inc=[^&]*\bgenres\b/);
     if (!m) return wskAs(path);
-    return wskAs(path + OWN_INC).then(j => { MINE.set(m[1] + '/' + m[2], new Set([...(j['user-tags'] || []), ...(j['user-genres'] || [])].map(t => String(t.name).trim().toLowerCase()))); return j; },
+    return wskAs(path + OWN_INC).then(j => { mineFrom(m[1] + '/' + m[2], j); return j; },
         e => { if (e.status !== 401) throw e; ehIn = false; try { localStorage.removeItem('eh.in'); } catch (x) { /* storage blocked */ } return wskAs(path); });
 };
 
@@ -4243,7 +4246,7 @@ async function kpCheck(used, live) {
     let changed = 0;
     for (const [k, u] of used) {
         if (!live()) return false;
-        try { const t = await u.get(); kpPut(k, t); if (t !== u.t) { changed++; LOG.debug('Kept answer changed: ' + k); } } catch (e) { LOG.debug('Kept answer not checked: ' + k + ', ' + (e && e.message || e)); }
+        try { const t = await u.get(); kpPut(k, t); mineKept(k, t); if (t !== u.t) { changed++; LOG.debug('Kept answer changed: ' + k); } } catch (e) { LOG.debug('Kept answer not checked: ' + k + ', ' + (e && e.message || e)); }
     }
     LOG.debug('Kept answers checked: ' + used.size + ', ' + changed + ' changed');
     return changed > 0 && live();
