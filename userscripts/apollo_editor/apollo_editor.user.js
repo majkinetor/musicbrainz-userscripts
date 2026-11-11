@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.11.210000
+// @version      2026.11.11.220000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -14903,6 +14903,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     body.tc-ri-on #information input[type=text]:focus,
     body.tc-ri-on #information select:focus,
     body.tc-ri-on #information textarea:focus{border-color:var(--mbu-accent);outline:none}
+    #information :is(input:not([type=checkbox]):not([type=radio]),select,textarea):focus{outline:1px solid var(--mbu-accent)!important;outline-offset:0}   /* #998 the field arrows reached */
+    #information :is(.tc-rg-seg > button,input[type=checkbox],input[type=radio]):focus-visible{outline:2px solid var(--mbu-accent)!important;outline-offset:-2px;position:relative;z-index:1}
     /* "Additional information": the native annotation textarea renders narrower than the
        disambiguation input, and this fieldset's wider "Disambiguation:" caption pushed both
        fields ~23px right of the fields above. Pin its label column to the same 150px the main
@@ -15526,7 +15528,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // #998 Release information: Up/Down move to the field above/below, Left/Right along the row
   // (Left/Right in a text box only from its start/end). Hands off while any suggestion list is open.
   let _inHooked = false;
-  const IN_FIELD = 'input:not([type=hidden]):not([type=submit]):not([type=button]):not([disabled]), select:not([disabled])';
+  const IN_FIELD = 'input:not([type=hidden]):not([type=submit]):not([type=button]):not([disabled]), select:not([disabled]), .tc-rg-seg > button';
   function inListOpen(el) {
     if (el.getAttribute('aria-expanded') === 'true') return true;
     if (_sfPop) return true;
@@ -15536,7 +15538,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     return false;
   }
   function inFields(root) {
-    return Array.from(root.querySelectorAll(IN_FIELD)).filter(f => f.offsetParent !== null && f.getClientRects().length)
+    return Array.from(root.querySelectorAll(IN_FIELD)).filter(f => f.offsetParent !== null && f.getClientRects().length && getComputedStyle(f).opacity !== '0')
       .map(f => { const r = f.getBoundingClientRect(); return { f, x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
   }
   function installInfoNav() {
