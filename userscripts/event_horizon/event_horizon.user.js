@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.001500
+// @version      2026.11.13.001600
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -10473,6 +10473,11 @@ async function profLoad(app) {
     } catch (e) { console.warn('[Event Horizon] profile fetch failed', e); }
 }
 const fmtN = n => n.toLocaleString('en');
+// #1005: headline figures, on the editor page and the home page's profile; 10,000 and up shown in K
+const fmtK = n => n >= 1e4 ? (n / 1e3).toFixed(n >= 1e5 ? 0 : 1).replace(/\.0$/, '') + 'K' : fmtN(n);
+const KI = { ed: '<path d="M4 20h4L19 9l-4-4L4 16z"/>', day: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>', open: '<path d="M7 4h10M7 20h10M8 4c0 5 8 6 8 16M16 4c0 5-8 6-8 16"/>',
+    add: '<circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/>', vote: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12l3 3 5-6"/>', tag: '<path d="M4 4h7l9 9-7 7-9-9z"/><circle cx="8.5" cy="8.5" r="1.5"/>' };
+const uKpi = (ic, n, l, h) => n == null ? '' : (x => h ? `<a class="u-kpi u-k-${ic}" href="${esc(h)}"${x}</a>` : `<span class="u-kpi u-k-${ic}"${x}</span>`)(`${n >= 1e4 ? ` data-tip="${fmtN(n)}"` : ''}><svg viewBox="0 0 24 24">${KI[ic]}</svg><b>${fmtK(n)}</b><small>${l}</small>`);
 // Gravatar finds your picture by your email's SHA-256: read from your own profile page (shown only to you), or set on the avatar
 // to use another address; only the hash is kept, and only it goes to Gravatar
 const sha256 = async t => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))].map(b => b.toString(16).padStart(2, '0')).join('');
@@ -10493,12 +10498,12 @@ function profFill(app, p) {
     const el = app.querySelector('.hm-pf'); if (!el) return;
     const yrs = p.since ? new Date().getFullYear() - p.since : 0, top = p.added[0] ? p.added[0][1] : 1, u = `${MB}/user/${encodeURIComponent(ME)}`;
     const sub = [p.loc, p.since && `member since ${p.since}${yrs ? ` (${yrs} year${yrs > 1 ? 's' : ''})` : ''}`, p.langs.join(', ')].filter(Boolean).map(esc).join(' · ');
-    const stat = (n, l, h) => `<a class="hm-st" href="${/^\//.test(h) ? MB + esc(h) : `${u}/${h}`}"><b>${fmtN(n)}</b><small>${l}</small></a>`;
+    const href = h => /^\//.test(h) ? MB + h : `${u}/${h}`;
     profP = p; let gh = ''; try { gh = GM_getValue('gravatar', ''); } catch (e) {}
     gh = gh || p.gh; const av = p.av || (gh && `https://gravatar.com/avatar/${gh}?s=104&d=404`);
     el.innerHTML = `<a class="hm-pl" href="${u}" data-tip="Your profile" aria-label="Your profile">${SVG(MK_CR)}</a><a class="hm-pl hm-lo" href="${MB}/logout?returnto=%2F" data-tip="Log out" aria-label="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a><div class="hm-pid"><button type="button" class="hm-av" data-tip="Your Gravatar
 Click to use another email" aria-label="Set your Gravatar email">${esc(ME[0] || '?').toUpperCase()}${av ? `<img src="${esc(av)}" alt="" width="52" height="52" onerror="this.remove()">` : ''}</button><div><b>${esc(ME)}</b><small>${sub}</small>${p.bio ? `<small><a href="${esc(p.bio)}" target="_blank">${esc(p.bio.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></small>` : ''}</div></div>
-        <div class="hm-sts">${stat(p.total, 'edits', 'edits')}${stat(p.open, 'open', 'edits/open')}${stat(p.day, 'last 24 hours', p.dayHref || 'edits')}${stat(p.votes, 'votes', 'votes')}</div>
+        <div class="u-kpis"><div class="u-kgrp">${uKpi('ed', p.total, 'Edits', href('edits'))}${uKpi('day', p.day, '24h', href(p.dayHref || 'edits'))}${uKpi('open', p.open, 'Open', href('edits/open'))}</div>${uKpi('add', p.added.length ? p.added.reduce((a, x) => a + x[1], 0) : null, 'Added', '')}${uKpi('vote', p.votes, 'Votes', href('votes'))}</div>
         ${p.added.length ? `<div class="hm-bars">${p.added.map(([n, v]) => `<div><span>${esc(n)}</span><i style="width:${Math.max(2, v / top * 100)}%"></i><em>${fmtN(v)}</em></div>`).join('')}</div>` : ''}
         ${p.sec.length ? `<small class="hm-sec">${p.sec.map(([n, v]) => `${esc(n)} ${fmtN(v)}`).join(' · ')}</small>` : ''}`;
 }
@@ -10730,12 +10735,9 @@ function userHtml(d) {
     const vsrch = v => u.id ? `${MB}/search/edits?conditions.0.field=voter&conditions.0.operator=%3D&conditions.0.name=${en}&conditions.0.voter_id=${u.id}&conditions.0.args=${v}` : '';
     const VOTE = [1, 0, -1, 2]; // the votes table's rows: Yes, No, Abstain, Approve
     // #1005: six headline figures above the tables, the first three (edits) grouped; 10,000 and up shown in K
-    const fmtK = n => n >= 1e4 ? (n / 1e3).toFixed(n >= 1e5 ? 0 : 1).replace(/\.0$/, '') + 'K' : fmtN(n);
-    const KI = { ed: '<path d="M4 20h4L19 9l-4-4L4 16z"/>', day: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>', open: '<path d="M7 4h10M7 20h10M8 4c0 5 8 6 8 16M16 4c0 5-8 6-8 16"/>',
-        add: '<circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/>', vote: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12l3 3 5-6"/>', tag: '<path d="M4 4h7l9 9-7 7-9-9z"/><circle cx="8.5" cy="8.5" r="1.5"/>' };
     const sum = (rs, j = 0) => rs.reduce((a, r) => a + (r.v[j] || 0), 0), edL = re => ed0.find(r => re.test(r.href) || re.test(r.l));
     const vt = u.stats.find(t => t.two), at = u.stats[2] && !u.stats[2].two ? u.stats[2] : null, tt = u.stats[3] && !u.stats[3].two ? u.stats[3] : null;
-    const kpi = (ic, n, l, h) => n == null ? '' : (x => h ? `<a class="u-kpi u-k-${ic}" href="${esc(abs(h))}"${x}</a>` : `<span class="u-kpi u-k-${ic}"${x}</span>`)(`${n >= 1e4 ? ` data-tip="${fmtN(n)}"` : ''}><svg viewBox="0 0 24 24">${KI[ic]}</svg><b>${fmtK(n)}</b><small>${l}</small>`);
+    const kpi = (ic, n, l, h) => uKpi(ic, n, l, h && abs(h));
     // #1005: one stacked bar per table, its legend items linking where the table did
     const stk = ps => { ps = ps.filter(p => p.v); const tot = ps.reduce((a, p) => a + p.v, 0); return tot ? `<div class="u-stk">${ps.map(p => `<span style="width:${p.v / tot * 100}%;background:${p.c}"></span>`).join('')}</div><div class="u-lgd">${ps.map(p => (x => p.h ? `<a href="${esc(abs(p.h))}">${x}</a>` : `<span>${x}</span>`)(`<i style="background:${p.c}"></i>${esc(p.l)} ${fmtN(p.v)}${p.s || ''}`)).join('')}</div>` : ''; };
     const SC = ['#3f8f7a', '#c4533f', '#ba478f', '#b48a2c', '#4a7bc0', '#8a6fc0', '#4aa3b0', '#9099ab'];
