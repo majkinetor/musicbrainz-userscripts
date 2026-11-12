@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.040001
+// @version      2026.11.13.050000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3099,7 +3099,7 @@ h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25
 .hgh{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:9px 12px;cursor:pointer}.hgi{display:flex;flex:1 1 280px;min-width:0;flex-wrap:wrap;align-items:center;gap:8px}.hga{display:flex;flex:none;align-items:center;gap:12px;margin-left:auto}.hgh .t{font-weight:700}.hgh .m{color:var(--muted);font-size:12px}.hgh .sp{flex:1}.hgh .cv{transition:transform .15s;color:var(--muted)}.hgrp.open .hgh .cv{transform:rotate(90deg)}
 .hav{width:26px;height:26px;border-radius:50%;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
 .htc{font-size:11px;padding:1px 8px;border-radius:99px;background:var(--chip);color:var(--chip-text)}
-.hbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:-3px 0 -3px auto;font-size:13px;align-self:center}.hbar .hbr{width:60px!important}.hbar~.id{margin-left:0!important;align-self:center}.hbar .htl{display:flex;align-items:center;gap:8px;color:var(--muted);font-variant-numeric:tabular-nums}.hbar .hbr{display:flex;width:90px;height:6px;border-radius:3px;overflow:hidden;background:var(--border)}.hbar .hbr i{display:block;height:100%}.hbar .hvote{margin:0 0 0 auto}.hseg{gap:0!important;border:1px solid var(--border);border-radius:4px;overflow:hidden}.hseg button{border:0!important;border-radius:0!important;border-right:1px solid var(--border)!important;min-height:24px!important;padding:1px 10px!important;font-size:13px!important;display:inline-flex;gap:6px;align-items:center}.hseg button:last-child{border-right:0!important}.hseg .v1{color:#2e8b57}.hseg .v0{color:#c0392b}.hseg .v-1{color:var(--muted)}.hseg button.on{color:#fff}.hseg .c{font-weight:400;opacity:.85}.hbar a.hcx2{display:inline-flex;align-items:center;min-height:24px;padding:1px 10px;box-sizing:border-box;border:1px solid var(--border);border-radius:4px;color:#c0392b;font-weight:600;font-size:13px;text-decoration:none}.hbar a.hcx2:hover{border-color:#c0392b;background:#c0392b;color:#fff}.hed[data-lean]{box-shadow:inset 3px 0 var(--lean)}.hed[data-lean=yes]{--lean:#2e8b57}.hed[data-lean=no]{--lean:#c0392b}.hed[data-lean=tie]{--lean:var(--border)}.hvote{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 10px}.hgh .hgv{margin:0;gap:4px;flex-wrap:nowrap;white-space:nowrap}.hgh .hgv button{min-height:26px;padding:2px 8px;border-radius:4px}.hvote .lb{color:var(--muted);font-weight:600;margin-right:4px}.hvote button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;font-weight:600;cursor:pointer}.hvote button:hover{border-color:var(--accent)}.hvote button[disabled]{opacity:.5;cursor:default}.hvote button.on{color:#fff;border-color:transparent}.hvote .v1.on{background:#2e8b57}.hvote .v0.on{background:#c0392b}.hvote .v-1.on{background:#888}.hvote .v-2.on{background:var(--accent)}.hvote button.busy{position:relative;opacity:1;color:transparent;border-color:var(--accent)}.hvote button.busy::after{content:"";position:absolute;inset:0;margin:auto;width:14px;height:14px;box-sizing:border-box;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:hv-spin .7s linear infinite}@keyframes hv-spin{to{transform:rotate(360deg)}}.eh-cf button{min-height:30px;padding:4px 16px;border-radius:9px;border:1px solid var(--mbu-border);background:transparent;color:var(--mbu-text);font:inherit;font-weight:600;cursor:pointer}.eh-cf button:hover,.eh-cf button:focus-visible{border-color:var(--mbu-accent);outline:none}.eh-cf .eh-cf-ok{background:var(--mbu-accent);border-color:transparent;color:#fff}
+.hbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:-3px 0 -3px auto;font-size:13px;align-self:center}.hbar .hbr{width:60px!important}.hbar~.id{margin-left:0!important;align-self:center}.hbar .htl{display:flex;align-items:center;gap:8px;color:var(--muted);font-variant-numeric:tabular-nums}.hbar .hbr{display:flex;width:90px;height:6px;border-radius:3px;overflow:hidden;background:var(--border)}.hbar .hbr i{display:block;height:100%}.hbar .hvote{margin:0 0 0 auto}.hseg{gap:0!important;border:1px solid var(--border);border-radius:4px;overflow:hidden}.hseg button{border:0!important;border-radius:0!important;border-right:1px solid var(--border)!important;min-height:24px!important;padding:1px 10px!important;font-size:13px!important;display:inline-flex;gap:6px;align-items:center}.hseg button:last-child{border-right:0!important}.hseg .v1{color:#2e8b57}.hseg .v0{color:#c0392b}.hseg .v-1{color:var(--muted)}.hseg button.on{color:#fff}.hseg .c{font-weight:400;opacity:.85}.hbar a.hcx2{display:inline-flex;align-items:center;min-height:24px;padding:1px 10px;box-sizing:border-box;border:1px solid var(--border);border-radius:4px;color:#c0392b;font-weight:600;font-size:13px;text-decoration:none}.hbar a.hcx2.busy{opacity:.5;pointer-events:none}.hbar a.hcx2:hover{border-color:#c0392b;background:#c0392b;color:#fff}.hed[data-lean]{box-shadow:inset 3px 0 var(--lean)}.hed[data-lean=yes]{--lean:#2e8b57}.hed[data-lean=no]{--lean:#c0392b}.hed[data-lean=tie]{--lean:var(--border)}.hvote{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 10px}.hgh .hgv{margin:0;gap:4px;flex-wrap:nowrap;white-space:nowrap}.hgh .hgv button{min-height:26px;padding:2px 8px;border-radius:4px}.hvote .lb{color:var(--muted);font-weight:600;margin-right:4px}.hvote button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;font-weight:600;cursor:pointer}.hvote button:hover{border-color:var(--accent)}.hvote button[disabled]{opacity:.5;cursor:default}.hvote button.on{color:#fff;border-color:transparent}.hvote .v1.on{background:#2e8b57}.hvote .v0.on{background:#c0392b}.hvote .v-1.on{background:#888}.hvote .v-2.on{background:var(--accent)}.hvote button.busy{position:relative;opacity:1;color:transparent;border-color:var(--accent)}.hvote button.busy::after{content:"";position:absolute;inset:0;margin:auto;width:14px;height:14px;box-sizing:border-box;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:hv-spin .7s linear infinite}@keyframes hv-spin{to{transform:rotate(360deg)}}.eh-cf button{min-height:30px;padding:4px 16px;border-radius:9px;border:1px solid var(--mbu-border);background:transparent;color:var(--mbu-text);font:inherit;font-weight:600;cursor:pointer}.eh-cf button:hover,.eh-cf button:focus-visible{border-color:var(--mbu-accent);outline:none}.eh-cf .eh-cf-ok{background:var(--mbu-accent);border-color:transparent;color:#fff}.eh-cf .eh-cx-ok{background:#c0392b}.eh-cf textarea{width:100%;box-sizing:border-box;min-height:90px;margin:0 0 14px;padding:8px 10px;border-radius:8px;border:1px solid var(--mbu-border);background:transparent;color:var(--mbu-text);font:inherit;resize:vertical;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.eh-cf textarea:focus{outline:none;border-color:var(--mbu-accent)}
 .hdt a:has(>img),.hdt a:has(>span>img){font-size:0}
 .hnadd{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:10px 0 4px}.hnadd textarea{width:100%;box-sizing:border-box;min-height:70px;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;resize:vertical}.hnadd textarea:focus{outline:none;border-color:var(--accent)}.hnadd > button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--accent);background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer}.hnadd > button[disabled]{opacity:.5}
 .hmy{font-size:11px;font-weight:600;padding:1px 8px;border-radius:99px;border:1px solid var(--border);color:var(--muted)}
@@ -7692,6 +7692,44 @@ function ehConfirm(msg, ok = 'OK') {
         ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('.eh-cf-no')) done(false); else if (e.target.closest('.eh-cf-ok')) done(true); });
         addEventListener('keydown', key, true); document.body.appendChild(ov); ov.querySelector('.eh-cf-ok').focus();
     });
+}
+// MusicBrainz's cancel page only asks for an optional note: ask here, then post its form
+function histCancelAsk(id) {
+    return new Promise(res => {
+        const previous = document.activeElement, ov = document.createElement('div');
+        ov.className = 'mbu-ov eh-cf';
+        ov.innerHTML = '<div class="mbu-ov-panel mbu-ui" role="dialog" aria-modal="true" aria-label="Cancel edit" style="width:min(480px,calc(100vw - 32px))"><div class="mbu-ov-body" style="padding:18px 20px"><p style="margin:0 0 12px"></p><textarea placeholder="Edit note (optional), such as a link to another edit"></textarea><div style="display:flex;justify-content:flex-end;gap:8px"><button type="button" class="eh-cf-no">Keep</button><button type="button" class="eh-cf-ok eh-cx-ok">Cancel edit</button></div></div></div>';
+        ov.querySelector('p').textContent = `Cancel edit #${id}? This cannot be undone.`;
+        const ta = ov.querySelector('textarea');
+        const done = v => { ov.remove(); removeEventListener('keydown', key, true); if (previous && previous.isConnected) previous.focus(); res(v); };
+        const key = e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); done(null); } };
+        ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('.eh-cf-no')) done(null); else if (e.target.closest('.eh-cf-ok')) done(ta.value.trim()); });
+        addEventListener('keydown', key, true); document.body.appendChild(ov); ta.focus();
+    });
+}
+async function histCancel(a) {
+    const d = data, x = a.closest('.hbar'), id = x && x.dataset.id, e = d && d.edits && d.edits.find(y => String(y.id) === id);
+    if (!e || e.cancelling) return;
+    const note = await histCancelAsk(e.id); if (note == null || data !== d) return;
+    e.cancelling = true; a.classList.add('busy');
+    try {
+        LOG.keep();
+        const url = new URL(a.getAttribute('href'), MB).href, r = await mbnFetch(url, { credentials: 'include' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const doc = new DOMParser().parseFromString(await r.text(), 'text/html'), form = [...doc.querySelectorAll('#content form')].find(f => f.querySelector('textarea')) || doc.querySelector('#content form');
+        if (!form) throw new Error('no cancel form');
+        const fd = new URLSearchParams();
+        form.querySelectorAll('input[name],textarea[name]').forEach(i => { if (i.type !== 'submit' && !((i.type === 'checkbox' || i.type === 'radio') && !i.checked)) fd.set(i.name, i.tagName === 'TEXTAREA' ? note : i.value); });
+        const sb = form.querySelector('button[name],input[type=submit][name]'); if (sb) fd.set(sb.name, sb.value || '1');
+        const p = await mbnFetch(new URL(form.getAttribute('action') || url, url).href, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: fd });
+        if (!p.ok) throw new Error('HTTP ' + p.status);
+        e.st = 'cx'; e.can = false; e.cancel = ''; e.mine = false; kpWrote(); LOG.info('Cancelled edit #' + e.id);
+        const dt = x.closest('details.hed'), st = dt && dt.querySelector(':scope>summary .hst');
+        if (dt) { dt.dataset.st = 'cx'; delete dt.dataset.lean; }
+        if (st) { st.className = 'hst cx'; st.textContent = H_ST.cx; }
+        x.remove();
+    } catch (err) { LOG.err('Cancelling failed: ' + err.message); toast('MusicBrainz didn\'t cancel the edit'); a.classList.remove('busy'); }
+    e.cancelling = false;
 }
 function openImageGallery() {
     const d = data, g = d.g, xs = g.imgs || [];
@@ -12477,7 +12515,7 @@ function histBar(e, one) {
     const vt = e.can ? `<div class="hvote hseg" role="radiogroup" aria-label="Your vote">${H_SEG.map(([v, t, i]) => `<button type="button" class="v${v}${e.my === v ? ' on' : ''}" role="radio" aria-checked="${e.my === v}" data-hvote="${e.id}:${v}"${e.voting ? ' disabled' : ''}>${t}${c && i != null ? ` <span class="c">${c[i]}</span>` : ''}</button>`).join('')}</div>` : '';
     const cu = e.cancel || (e.st === 'op' && e.mine ? `${MB}/edit/${e.id}/cancel` : ''), cx = cu ? `<a class="hcx2" href="${esc(cu)}">Cancel edit</a>` : '';
     const dl = e.st === 'op' && e.exp > Date.now() ? Math.ceil((e.exp - Date.now()) / 864e5) : 0, tl = (c ? `<span class="htl"><span class="hbr">${c[0] + c[1] ? `<i style="width:${100 * c[0] / (c[0] + c[1])}%;background:#2e8b57"></i><i style="width:${100 * c[1] / (c[0] + c[1])}%;background:#c0392b"></i>` : ''}</span>${c[0]} yes · ${c[1]} no</span>` : '') + (dl ? `<span class="htl">closes in ${dl} d</span>` : '');
-    return tl || vt || cx ? `<div class="hbar">${tl}${vt}${cx}</div>` : '';
+    return tl || vt || cx ? `<div class="hbar" data-id="${e.id}">${tl}${vt}${cx}</div>` : '';
 }
 // Only edits with MusicBrainz's voting permission belong to the group action; status filters already scoped es.
 function histGroupVote(es) {
@@ -12533,6 +12571,7 @@ async function histVoteSend(b) {
     es.forEach(e => { const x = document.querySelector(`#app [data-hvote^="${e.id}:"]`), dt = x && x.closest('details.hed'), bar = x && x.closest('.hbar'); if (!bar) return; bar.outerHTML = histBar(e, histOne(d.id)); const l = histLean(e); if (l) dt.dataset.lean = l; });
 }
 document.addEventListener('click', ev => {
+    const cx = ehOn && data && data.kind === 'hist' && ev.target.closest('.hbar a.hcx2'); if (cx && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.button) { ev.preventDefault(); histCancel(cx); return; }
     const b = ehOn && data && data.kind === 'hist' && ev.target.closest('[data-hvote],[data-hgvote]'); if (!b) return;
     ev.preventDefault(); histVoteSend(b);
 });
