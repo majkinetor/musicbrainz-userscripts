@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.12.151307
+// @version      2026.11.12.202454
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -5337,7 +5337,13 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
         val.textContent = String(remoteTracks) + (hiddenTracks > 0 ? 'ⁿ' : '') + (unoffered > 0 ? '/' + (parseInt(remoteTracks, 10) + unoffered) : '');
         const hiddenNote = (hiddenTracks > 0 ? `\n- ${hiddenTracks} download-only track${hiddenTracks === 1 ? '' : 's'}, hidden from streaming on Bandcamp` : '')
             + (unoffered > 0 ? `\n- The album has ${parseInt(remoteTracks, 10) + unoffered} tracks: ${unoffered} not offered by ${PROVIDER_NAME[p]}, so missing from its track list` : '');
-        if (parseInt(remoteTracks, 10) === parseInt(mbTracks, 10)) {
+        if (String(remoteTracks).endsWith('+')) {
+            // #1018 a count cut at the platform's cap: neither a match nor a mismatch
+            ico.textContent = '?'; ico.style.color = 'var(--mbu-text-dim)';
+            val.style.color = 'var(--mbu-text-dim)';
+            val.dataset.tip = `${PROVIDER_NAME[p]} lists only its first ${parseInt(remoteTracks, 10)} tracks; MusicBrainz has ${mbTracks}
+The count can't be checked`;
+        } else if (parseInt(remoteTracks, 10) === parseInt(mbTracks, 10)) {
             ico.textContent = '✓';
             const tone = fromCache ? '#5B82B0' : '#008000';
             ico.style.color = tone;
@@ -5834,7 +5840,8 @@ function scoreCandidate(meta, mbTracks, mbAlbum, mbArtist, isVA) {
     if (!meta) return -1;
     let s = 0;
     if (meta.tracks != null) {
-        if (meta.tracks === mbTracks)                   s += 100;
+        if (meta.capped && mbTracks > meta.tracks)      s += 30;   // #1018 a list cut at its cap: can't tell
+        else if (meta.tracks === mbTracks)              s += 100;
         else if (Math.abs(meta.tracks - mbTracks) <= 2) s += 30;
     }
     const titleMatch = meta.title && titleSimilar(meta.title, mbAlbum);
@@ -6322,6 +6329,8 @@ async function fetchSpotifyMeta(albumUrl) {
     const artist = subtitleMatch?.[1] || null;
     return {
         tracks: trackUris.length || null,
+        // #1018 the embed lists at most 100 tracks and names no total: 100 means "100 or more"
+        capped: trackUris.length >= 100,
         title:  titleMatch?.[1] || null,
         year:   yearMatch?.[1]  || null,
         label:  labelMatch?.[1] || null,
@@ -6431,7 +6440,9 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
             }
         } catch (_) { /* enrichment is best-effort */ }
     }
-    const tracks = meta?.tracks ?? null;
+    // #1018 a capped embed count is "100+": shown, but never as a mismatch
+    const tracks = meta?.capped && mbTracks > meta.tracks ? meta.tracks + '+' : meta?.tracks ?? null;
+    if (meta?.capped) appendLog(label, `Spotify's embed lists only its first ${meta.tracks} tracks; the album may have more`, 'warn');
     const lbl    = meta?.label  ?? null;
     const sbc = exactBarcode ? MB_BARCODE : null;   // exact UPC → MB barcode (no mismatch); else unknown
     cacheSet(mbid, 'spotify', { url: albumUrl, tracks, year: displayYear, label: lbl, source, barcode: sbc });
@@ -8771,8 +8782,22 @@ function parseMbFromDom() {
         // skips the header automatically and works for multi-disc releases
         // (one table per medium, all summed). The older `tr.track` selector
         // is kept as a fallback for any legacy renderer.
-        const mbTracks = document.querySelectorAll('table.tbl.medium tbody tr > td.pos').length
+        // #1017 MusicBrainz collapses some media of a big release and renders no rows for them;
+        // its own release data (a <script type="application/json">) still has every medium's
+        // track_count, so that wins when it says more.
+        const domTracks = document.querySelectorAll('table.tbl.medium tbody tr > td.pos').length
                        || document.querySelectorAll('tr.track').length;
+        let dataTracks = 0;
+        for (const s of document.querySelectorAll('script[type="application/json"]')) {
+            if (!(s.textContent || '').includes('"track_count"')) continue;
+            try {
+                const media = JSON.parse(s.textContent)?.release?.mediums;
+                if (Array.isArray(media)) dataTracks = media.reduce((n, m) => n + (+m.track_count || 0), 0);
+            } catch (_) {}
+            if (dataTracks) break;
+        }
+        const mbTracks = Math.max(domTracks, dataTracks);
+        if (dataTracks > domTracks) appendLog('System', `Track count ${dataTracks} from the release data (#1017): the page shows ${domTracks} rows, a medium is collapsed`);
 
         // Release-group MBID — usually present as a /release-group/<mbid>
         // anchor in the release-information sidebar block. Some skins or
