@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.180000
+// @version      2026.11.12.190000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -2897,7 +2897,11 @@ Click: open the label`;
   // schedule and the hold cover every script and tab on the origin, not Apollo alone.
   // What stays here: the lanes, the Stop and the stale checks.
   const WS_MAX_INFLIGHT = 4;    // a burst ceiling; the gate's pace is what bounds the rate
-  let _wsInFlight = 0;
+  let _wsInFlight = 0, _wsLaneGen = 0;
+  // #999: lanes are counted per Stop generation. A request still out when Stop is pressed
+  // (one the manager is slow to answer can take 35s) lands unread, so it must not hold the
+  // next Match's lanes: while throttled there is a single one, and the new pass sat behind it.
+  const wsLaneSync = () => { if (_wsLaneGen !== _stopGen) { _wsLaneGen = _stopGen; _wsInFlight = 0; } };
   const wsLanes = () => (mbnHot() ? 1 : WS_MAX_INFLIGHT);   // while throttled, probe with one
   const wsGateLog = (lv, m) => (lv === 'warn' ? Log.cat('MusicBrainz').warn : Log.cat('MusicBrainz').info)(m);
   // opts.stale() → true means "this request has been superseded" (the picker types
@@ -2914,11 +2918,17 @@ Click: open the label`;
     // and a pass whose lanes are all parked looks unstoppable (#577).
     const slot = await mbnSlot({ background: !o.stale, label: o.label || 'ws2', log: wsGateLog, cancelled });
     if (!slot.ok) return null;                         // caller treats null as superseded
-    while (_wsInFlight >= wsLanes()) { if (cancelled()) return null; await _sleep(120); }
+    for (let told = false; wsLaneSync(), _wsInFlight >= wsLanes();) {
+      if (cancelled()) return null;
+      if (!told) { told = true; wsGateLog('debug', 'MusicBrainz gate: ' + (o.label || 'ws2') + ' waits for a free lane (' + _wsInFlight + ' of ' + wsLanes() + ' busy)'); }
+      await _sleep(120);
+    }
     if (cancelled()) return null;
     _wsInFlight++;
+    const laneGen = _wsLaneGen;
     const p = mbnWsFetch(url, { headers: { Accept: 'application/json' } });
-    p.then(() => { _wsInFlight--; }, () => { _wsInFlight--; });
+    const free = () => { if (laneGen === _wsLaneGen && _wsInFlight > 0) _wsInFlight--; };
+    p.then(free, free);
     if (o.stale) return p;
     // A background request in flight stops being waited for at a Stop (it isn't aborted:
     // it lands on its own and frees its lane). Every caller sharing it is background too,
