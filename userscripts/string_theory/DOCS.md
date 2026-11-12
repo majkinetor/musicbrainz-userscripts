@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-12 17:04 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-12 17:17 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1854,7 +1854,7 @@ Right-click a type's icon in the window's header or its counter beside Fusion's 
 
 #### On merge edits
 
-An open merge edit of these types, on its own page or in an edit list, shows Fusion's group card instead of MusicBrainz's Merge and Into tables, read only: the same chips, tinted values and alias lines, so a voter sees what the merged entries share. Fusion's icon on the card switches to MusicBrainz's own tables, and the **Fusion** button above them switches back; the choice is remembered. Each entry is read from MusicBrainz when the edit scrolls into view. Applied and failed edits, and recording merges, keep MusicBrainz's tables.
+An open merge edit of any type, on its own page or in an edit list, shows Fusion's group card instead of MusicBrainz's Merge and Into tables, read only: the same chips, tinted values and alias lines (for recordings, the recordings window's card with ISRCs, AcoustIDs and lengths), so a voter sees what the merged entries share. Fusion's icon on the card switches to MusicBrainz's own tables, and the **Fusion** button above them switches back; the choice is remembered. Each entry is read from MusicBrainz when the edit scrolls into view. This holds in Event Horizon's edit view and lists too, and on an edit reached without a page load. Applied and failed edits keep MusicBrainz's tables.
 
 ### Settings
 

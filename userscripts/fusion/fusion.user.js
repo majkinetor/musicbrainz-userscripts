@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.190000
+// @version      2026.11.12.200000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -7237,7 +7237,7 @@ try {
    read only. Fusion's icon on the card switches to MB's own tables, and a small
    Fusion button above those switches back; the choice is kept (SETTINGS.editView).
    Applied and failed edits get nothing: their merged entities are gone.
-   Recordings are not covered (their card needs the recording model). */
+   Recordings get the window's recording card. */
 {
     const CACHE = new Map();   // type:gid -> Promise of emFetch's details
     const fetchOne = (type, gid) => {
@@ -7250,7 +7250,7 @@ try {
         const out = [];
         tbl.querySelectorAll('tbody > tr').forEach(tr => {
             const a = tr.querySelector('td:first-child a[href]');
-            const m = a && a.getAttribute('href').match(/\/(artist|release-group|release|work|label|place|series|event)\/([0-9a-f-]{36})/i);
+            const m = a && a.getAttribute('href').match(/\/(artist|release-group|release|recording|work|label|place|series|event)\/([0-9a-f-]{36})/i);
             if (m) out.push({ type: m[1].toLowerCase(), gid: m[2].toLowerCase(), name: a.textContent.trim() });
         });
         return out;
@@ -7260,7 +7260,7 @@ try {
         const rows = [...details.querySelectorAll(':scope > tbody > tr, :scope > tr')].filter(tr => tr.querySelector(':scope > td table'));
         if (rows.length < 2) return null;
         const src = gidsIn(rows[0].querySelector(':scope > td table')), into = gidsIn(rows[rows.length - 1].querySelector(':scope > td table'))[0];
-        if (!src.length || !into || src.some(x => x.type !== into.type) || !EM_COLS[into.type]) return null;
+        if (!src.length || !into || src.some(x => x.type !== into.type) || (into.type !== 'recording' && !EM_COLS[into.type])) return null;
         return { type: into.type, target: into, members: [into].concat(src.filter(x => x.gid !== into.gid)) };
     };
     const native = () => SETTINGS.editView === 'native';
@@ -7272,7 +7272,33 @@ try {
     };
     const applyAll = () => document.querySelectorAll('.fs-editwrap').forEach(w => apply(w._fsDetails, w, w._fsBtn));
     const setView = v => { SETTINGS.editView = v; saveSettings(); applyAll(); };
+    // a recording merge draws the window's own recording card: its members are lent to the board's store
+    // just while the card is drawn, so they never join the saved board
+    const recCache = new Map();
+    const paintRec = async (m, wrap) => {
+        const recs = await Promise.all(m.members.map(x => {
+            if (!recCache.has(x.gid)) recCache.set(x.gid, fetchRecordingByGid(x.gid).catch(e => { recCache.delete(x.gid); Log.warn('Merge edit: no details for recording ' + x.gid + ': ' + e.message); return null; }));
+            return recCache.get(x.gid);
+        }));
+        const ok = recs.filter(Boolean);
+        if (ok.length < 2) { wrap.innerHTML = '<div class="fs-editwait">Fusion could not read these recordings.</div>'; return; }
+        const draw = () => {
+            const lent = ok.filter(r => !STATE.recordings.has(r.gid));
+            lent.forEach(r => STATE.recordings.set(r.gid, r));
+            try {
+                const g = Object.assign({ id: 'edit', memberGids: ok.map(r => r.gid), target: m.target.gid, state: '', error: null }, computeGroupConfidence(ok));
+                wrap.innerHTML = groupCardHtml(g, true);
+            } finally { lent.forEach(r => STATE.recordings.delete(r.gid)); }
+            wrap.querySelectorAll('[data-act="refresh-acoustid"],[data-act="edit-note"],[data-act="toggle-all-details"]').forEach(x => x.remove());
+            const b = wrap.querySelector('[data-act="mc-open"]');
+            if (b) { b.dataset.act = 'ro-native'; b.setAttribute('data-tip', 'Fusion’s comparison\nClick: MusicBrainz’s own view'); b.setAttribute('aria-label', 'MusicBrainz’s own view'); }
+            placeLenBadges(wrap);
+        };
+        draw();
+        if (SETTINGS.acoustidEnrich !== false) { try { await enrichAcoustIds(ok.filter(r => r.acoustids == null), 2); draw(); } catch (e) { Log.warn('Merge edit: AcoustIDs not read: ' + e.message); } }
+    };
     const paint = async (m, wrap) => {
+        if (m.type === 'recording') return paintRec(m, wrap);
         const g = { id: 'edit', target: m.target.gid, state: '', members: m.members.map(x => ({ gid: x.gid, name: x.name, dis: '', info: null })) };
         const draw = () => { wrap.innerHTML = emCardHtml(m.type, g, 0, true, ''); };
         draw();
@@ -7290,9 +7316,14 @@ try {
             details._fsDone = true;
             let p = details.previousElementSibling;
             while (p && (p.classList.contains('fs-editwrap') || p.classList.contains('fs-editback'))) { const q = p.previousElementSibling; if (!p._fsDetails && !p._fsOwn) p.remove(); p = q; }
-            const box = details.closest('.edit-list');
-            const hdr = (box && box.querySelector('.edit-header')) || document.querySelector('.edit-header');
-            if (!hdr || !hdr.className.split(' ').some(c => c.startsWith('edit-merge')) || !hdr.classList.contains('open')) return;
+            // the edit's status: Event Horizon's own row says it (data-st), else MB's header of this edit, else the page's
+            const hed = details.closest('details.hed');
+            if (hed && hed.dataset.st) { if (hed.dataset.st !== 'op') return; }
+            else {
+                const box = details.closest('.edit-list');
+                const hdr = (box && box.querySelector('.edit-header')) || document.querySelector('.edit-header');
+                if (!hdr || !hdr.classList.contains('open')) return;
+            }
             const m = parse(details);
             if (!m) return;
             fsStyle();
@@ -7305,13 +7336,14 @@ try {
             wrap._fsDetails = details; wrap._fsBtn = btn;
             wrap.addEventListener('click', e => { if (e.target.closest('[data-act="ro-native"]')) { e.preventDefault(); setView('native'); } });
             details.before(btn, wrap);
-            wrap.innerHTML = '<div class="fs-editwait">Fusion: ' + m.members.length + ' ' + emLabel(m.type).toLowerCase() + '…</div>';
+            wrap.innerHTML = '<div class="fs-editwait">Fusion: ' + m.members.length + ' ' + (m.type === 'recording' ? 'recordings' : emLabel(m.type).toLowerCase()) + '…</div>';
             apply(details, wrap, btn);
             const io = new IntersectionObserver(es => { if (es.some(x => x.isIntersecting)) { io.disconnect(); paint(m, wrap); } }, { rootMargin: '300px' });
             io.observe(details.closest('.edit-list') || wrap.parentElement);
         });
     };
-    if (/\/(edit\/|edits|open_edits|votes)/.test(location.pathname)) {
+    // every page: Event Horizon opens edits and lists in place, without a page load
+    {
         scan();
         let t = 0;
         new MutationObserver(() => { clearTimeout(t); t = setTimeout(scan, 300); }).observe(document.body, { childList: true, subtree: true });
