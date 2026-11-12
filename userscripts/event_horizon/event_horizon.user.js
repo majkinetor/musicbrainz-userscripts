@@ -1,7 +1,11 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
+<<<<<<< HEAD
 // @version      2026.11.13.080200
+=======
+// @version      2026.11.13.090000
+>>>>>>> e8794a139 (Event Horizon: a profile's recent vote counts open their edit search too)
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -10795,7 +10799,9 @@ function userHtml(d) {
     // #1005: accepted and voted down as a share of the edits that went to a vote
     const ed0 = u.stats[0] && !u.stats[0].two ? u.stats[0].rows : [], edR = re => ed0.find(r => re.test(r.href)), acc = edR(/\/edits\/accepted$/) || ed0[1], rej = edR(/\/edits\/rejected$/) || ed0[4]; // without links (logged out): by position
     const voted = (acc ? acc.v[0] : 0) + (rej ? rej.v[0] : 0), share = r => voted && (r === acc || r === rej) ? `<small>${Math.round(r.v[0] / voted * 100)}%</small>` : '';
-    const vsrch = v => u.id ? `${MB}/search/edits?conditions.0.field=voter&conditions.0.operator=%3D&conditions.0.name=${en}&conditions.0.voter_id=${u.id}&conditions.0.args=${v}` : '';
+    // a recent column's votes: MB can't search by vote date, so edits opened in the last 28 days stand in
+    const since28 = new Date(Date.now() - 28 * 864e5).toISOString().slice(0, 10);
+    const vsrch = (v, recent) => u.id ? `${MB}/search/edits?conditions.0.field=voter&conditions.0.operator=%3D&conditions.0.name=${en}&conditions.0.voter_id=${u.id}&conditions.0.args=${v}${recent ? `&conditions.1.field=open_time&conditions.1.operator=%3E&conditions.1.args.0=${since28}` : ''}` : '';
     const VOTE = [1, 0, -1, 2]; // the votes table's rows: Yes, No, Abstain, Approve
     // #1005: six headline figures above the tables, the first three (edits) grouped; 10,000 and up shown in K
     const sum = (rs, j = 0) => rs.reduce((a, r) => a + (r.v[j] || 0), 0), edL = re => ed0.find(r => re.test(r.href) || re.test(r.l));
@@ -10816,7 +10822,7 @@ function userHtml(d) {
             const jo = cols.length - 1, vr = k => t.rows[k] ? t.rows[k].v[jo] || 0 : 0;
             body = stk([{ l: 'Yes', v: vr(0), c: SC[0], h: vsrch(1) }, { l: 'No', v: vr(1), c: SC[1], h: vsrch(0) }, { l: 'Approve', v: vr(3), c: SC[2], h: vsrch(2) }, { l: 'Abstain', v: vr(2), c: 'var(--mbu-border)', h: vsrch(-1) }]) + `<div class="u-votes">${cols.map((c, j) => {
                 const all = t.rows.reduce((s, r) => s + (r.v[j] || 0), 0), eff = all - ((t.rows[2] && t.rows[2].v[j]) || 0);
-                const lab = (r, k) => { const h = j === cols.length - 1 && VOTE[k] !== undefined && vsrch(VOTE[k]); return h ? `<a href="${esc(h)}">${esc(r.l)}</a>` : `<span>${esc(r.l)}</span>`; };
+                const lab = (r, k) => { const h = VOTE[k] !== undefined && vsrch(VOTE[k], j < cols.length - 1); return h ? `<a href="${esc(h)}">${esc(r.l)}</a>` : `<span>${esc(r.l)}</span>`; };
                 return `<div class="u-vcol"><h3>${esc(c)}</h3>${t.rows.map((r, k) => `<div class="u-vr">${lab(r, k)}<i><b style="width:${r.p[j] || 0}%"></b></i><em>${fmtN(r.v[j] || 0)}<small>${r.p[j] || 0}%</small></em></div>`).join('')}<div class="u-vt">${fmtN(all)} votes · ${fmtN(eff)} effective${all ? ` (${Math.round(eff / all * 100)}%)` : ''}</div></div>`;
             }).join('')}</div>`;
         } else if (i === 2) {
