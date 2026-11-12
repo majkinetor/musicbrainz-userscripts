@@ -1,11 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-<<<<<<< HEAD
-// @version      2026.11.13.080200
-=======
-// @version      2026.11.13.090000
->>>>>>> e8794a139 (Event Horizon: a profile's recent vote counts open their edit search too)
+// @version      2026.11.13.100000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2779,7 +2775,7 @@ const CSS = `
 .u-bio{grid-column:1/-1;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;max-height:320px;overflow:auto;overflow-wrap:anywhere}.u-bio p{margin:0 0 6px}.u-bio *{background:none!important}
 .u-langs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.u-lang{background:var(--chip);color:var(--chip-text);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600}.u-lang small{color:var(--muted);font-weight:500;margin-left:5px}
 .u-nav{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 28px;border-bottom:1px solid var(--border);margin:4px 0 22px;flex-basis:100%}.u-hd{display:flex!important;align-items:center;margin:8px 0 0!important}.u-hd .u-id{flex:1;min-width:0}.u-hd h1{margin:0 0 4px!important}.u-hd h1 a{color:inherit!important;text-decoration:none!important}.u-hd .acts{position:absolute;top:0;right:0;display:flex;align-items:center;gap:6px}.u-hd .u-nav{border-bottom:0;margin:0;min-height:44px}
-.u-pbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:-24px}.u-pbar .u-sub{margin:0}.u-pbar .u-tabs{margin-top:0}.u-pbar+.u-facts,.u-hd+.u-facts{margin-top:-24px}.u-facts+.u-bio{margin-top:-24px}.u-ng{display:flex;flex-wrap:wrap;gap:0 22px}.u-ng.acc{margin-left:auto;padding-left:22px;border-left:1px solid var(--border);margin-bottom:10px;align-self:stretch;align-items:flex-end}.u-ng.acc .u-nt{margin-bottom:-10px}
+.u-pbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:-24px}.u-pbar .u-sub{margin:0}.u-pbar .u-langs{margin-top:0}.u-pbar .u-tabs{margin-top:0}.u-pbar+.u-facts,.u-hd+.u-facts{margin-top:-24px}.u-facts+.u-bio{margin-top:-24px}.u-ng{display:flex;flex-wrap:wrap;gap:0 22px}.u-ng.acc{margin-left:auto;padding-left:22px;border-left:1px solid var(--border);margin-bottom:10px;align-self:stretch;align-items:flex-end}.u-ng.acc .u-nt{margin-bottom:-10px}
 .u-nt{padding:10px 0 9px;font-weight:600;font-size:14px;color:var(--muted)!important;text-decoration:none!important;border-bottom:3px solid transparent;white-space:nowrap}.u-nt:hover{color:var(--text)!important}.u-nt.on{color:var(--text)!important;border-color:var(--accent)}
 .u-av{position:relative;overflow:visible!important}.u-av>img{border-radius:50%}.u-avb{position:absolute;right:-4px;bottom:-4px;width:32px;height:32px;border-radius:50%;background:var(--surface);border:2px solid var(--bg);display:grid;place-items:center;color:var(--accent)}
 .u-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}.u-tab{display:inline-flex;align-items:center;min-height:30px;padding:4px 12px;border-radius:9px;border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important;font-weight:600;font-size:13px}.u-tab:hover{border-color:var(--accent)}
@@ -10787,7 +10783,7 @@ function userHtml(d) {
     if (!u) return `<section class="u-hero">${avatar}<div class="u-id"><div class="kicker label"><span>Editor</span><span class="acts">${SRCH()}</span></div><h1>${esc(name)}</h1><p class="u-sub">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : 'Loading the profile…'}</p></div></section>`;
     const bio = u.info.find(x => x.bio), langs = u.info.find(x => x.langs), loc = u.info.find(x => x.loc);
     const since = (u.info.map(x => x.t.match(/^(\d{4})-\d\d-\d\d \d\d:\d\d/)).find(Boolean) || [])[1], yrs = since ? new Date().getFullYear() - since : 0;
-    const sub = [loc && loc.h.replace(/<span class="comment">[\s\S]*?<\/span>/, ''), since && esc(`member since ${since}${yrs ? ` (${yrs} year${yrs > 1 ? 's' : ''})` : ''}`)].filter(Boolean).join(' · ');
+    const sub = [loc && loc.h.replace(/<span class="comment">[\s\S]*?<\/span>/, '').replace(/\s+,/g, ','), since && esc(`member since ${since}${yrs ? ` (${yrs} year${yrs > 1 ? 's' : ''})` : ''}`)].filter(Boolean).join(' · ');
     const langHtml = langs ? `<div class="u-langs">${[...new DOMParser().parseFromString(langs.h, 'text/html').querySelectorAll('li')].map(li => {
         const t = li.textContent.replace(/\s+/g, ' ').trim(), m = t.match(/^(.*?)\s*\((.*)\)$/);
         return `<span class="u-lang">${esc(m ? m[1] : t)}${m ? `<small>${esc(m[2])}</small>` : ''}</span>`; }).join('')}</div>` : '';
