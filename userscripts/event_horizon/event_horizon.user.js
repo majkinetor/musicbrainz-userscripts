@@ -1,7 +1,11 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
+<<<<<<< HEAD
 // @version      2026.11.13.021502
+=======
+// @version      2026.11.13.030100
+>>>>>>> 61e8397a3 (Event Horizon: an edit search shows its total beside the loaded count (100 of 5,336 edits); from the profile the exact count rides along, else MusicBrainz's 500+)
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -10502,7 +10506,8 @@ function gravForm(app) {
 }
 // the "Added" table's rows and the edit types that add each (#1013); an applied search of them is what the row counts
 const ADD_T = { artist: '1', 'cover art': '314', 'release group': '10', place: '61', release: '31%2C216', label: '20', series: '140', recording: '71', work: '41', area: '81', event: '150', instrument: '131', genre: '160' };
-const addHref = (p, ts) => p.id && ts.length ? `${MB}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=editor&conditions.0.operator=%3D&conditions.0.name=${encodeURIComponent(ME)}&conditions.0.args.0=${p.id}&conditions.1.field=type&conditions.1.operator=%3D${ts.map(t => '&conditions.1.args=' + t).join('')}&conditions.2.field=status&conditions.2.operator=%3D&conditions.2.args=2` : '';
+// the count rides along in the hash: MusicBrainz's search says only "at least 500"
+const addHref = (p, ts, n) => p.id && ts.length ? `${MB}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=editor&conditions.0.operator=%3D&conditions.0.name=${encodeURIComponent(ME)}&conditions.0.args.0=${p.id}&conditions.1.field=type&conditions.1.operator=%3D${ts.map(t => '&conditions.1.args=' + t).join('')}&conditions.2.field=status&conditions.2.operator=%3D&conditions.2.args=2${n ? '#eh-n=' + n : ''}` : '';
 function profFill(app, p) {
     const el = app.querySelector('.hm-pf'); if (!el) return;
     const yrs = p.since ? new Date().getFullYear() - p.since : 0, top = p.added[0] ? p.added[0][1] : 1, u = `${MB}/user/${encodeURIComponent(ME)}`;
@@ -10512,8 +10517,8 @@ function profFill(app, p) {
     gh = gh || p.gh; const av = p.av || (gh && `https://gravatar.com/avatar/${gh}?s=104&d=404`);
     el.innerHTML = `<a class="hm-pl" href="${u}" data-tip="Your profile" aria-label="Your profile">${SVG(MK_CR)}</a><a class="hm-pl hm-lo" href="${MB}/logout?returnto=%2F" data-tip="Log out" aria-label="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a><div class="hm-pid"><button type="button" class="hm-av" data-tip="Your Gravatar
 Click to use another email" aria-label="Set your Gravatar email">${esc(ME[0] || '?').toUpperCase()}${av ? `<img src="${esc(av)}" alt="" width="52" height="52" onerror="this.remove()">` : ''}</button><div><b>${esc(ME)}</b><small>${sub}</small>${p.bio ? `<small><a href="${esc(p.bio)}" target="_blank">${esc(p.bio.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></small>` : ''}</div></div>
-        <div class="u-kpis"><div class="u-kgrp">${uKpi('ed', p.total, 'Edits', href('edits'))}${uKpi('day', p.day, '24h', href(p.dayHref || 'edits'))}${uKpi('open', p.open, 'Open', href('edits/open'))}</div>${uKpi('add', p.added.length ? p.added.reduce((a, x) => a + x[1], 0) : null, 'Added', addHref(p, Object.values(ADD_T)))}${uKpi('vote', p.votes, 'Votes', href('votes'))}</div>
-        ${p.added.length ? `<div class="hm-bars">${p.added.map(([n, v]) => (h => `<${h ? `a href="${esc(h)}"` : 'div'}><span>${esc(n)}</span><i style="width:${Math.max(2, v / top * 100)}%"></i><em>${fmtN(v)}</em></${h ? 'a' : 'div'}>`)(addHref(p, [ADD_T[n.toLowerCase()]].filter(Boolean)))).join('')}</div>` : ''}
+        <div class="u-kpis"><div class="u-kgrp">${uKpi('ed', p.total, 'Edits', href('edits'))}${uKpi('day', p.day, '24h', href(p.dayHref || 'edits'))}${uKpi('open', p.open, 'Open', href('edits/open'))}</div>${uKpi('add', p.added.length ? p.added.reduce((a, x) => a + x[1], 0) : null, 'Added', addHref(p, Object.values(ADD_T), p.added.reduce((a, x) => a + x[1], 0)))}${uKpi('vote', p.votes, 'Votes', href('votes'))}</div>
+        ${p.added.length ? `<div class="hm-bars">${p.added.map(([n, v]) => (h => `<${h ? `a href="${esc(h)}"` : 'div'}><span>${esc(n)}</span><i style="width:${Math.max(2, v / top * 100)}%"></i><em>${fmtN(v)}</em></${h ? 'a' : 'div'}>`)(addHref(p, [ADD_T[n.toLowerCase()]].filter(Boolean), v))).join('')}</div>` : ''}
         ${p.sec.length ? `<small class="hm-sec">${p.sec.map(([n, v]) => `${esc(n)} ${fmtN(v)}`).join(' · ')}</small>` : ''}`;
 }
 const HM_CLR = ['#ba478f', '#8c5bd6', '#d6833e', '#3f8f7a', '#c4466a', '#6b6fd6', '#2f8bbf', '#7a9a3a', '#8a6a55'];
@@ -12347,7 +12352,10 @@ function histParse(html) {
     const cur = +((doc.querySelector('.pagination .current, .pagination li.current') || {}).textContent || 0);
     const next = [...doc.querySelectorAll('.pagination a[href*="page="]')].some(x => +(x.getAttribute('href').match(/page=(\d+)/) || [])[1] > (cur || 1));
     const rl = one && edits[0] && new DOMParser().parseFromString(edits[0].det, 'text/html').querySelector('a[href^="/release/"]');
-    return { edits, next: !one && next, rid: rl ? (rl.getAttribute('href').match(MBID) || [''])[0] : '' };
+    // the search's total, the first number in "Found 5,336 edits" (any language), outside the edit list
+    const fp = one ? null : [...doc.querySelectorAll('.search-toggle p, #content p, .pageselector-results')].find(p => !p.closest('.edit-list') && /d/.test(p.textContent) && p.textContent.trim().length < 80);
+    const total = fp ? +(fp.textContent.match(/d[d,.  ]*/) || ['0'])[0].replace(/D/g, '') : 0;
+    return { edits, total, next: !one && next, rid: rl ? (rl.getAttribute('href').match(MBID) || [''])[0] : '' };
 }
 // an edit type's icon: what it changes, coloured by what it does (add green, edit blue, remove red, the rest violet)
 const H_ICO = {
@@ -12411,7 +12419,7 @@ async function histLoad(n, all) {
                 LOG.debug(`History ${d.id}: entity header "${d.ent.title}"`);
             }
             const x = histParse(html), seen = new Set(d.edits.map(e => e.id));
-            const fresh = x.edits.filter(e => !seen.has(e.id)); d.edits.push(...fresh); d.page = p; if (x.rid) { d.rid = x.rid; relGet(); }
+            const fresh = x.edits.filter(e => !seen.has(e.id)); d.edits.push(...fresh); d.page = p; if (p === 1) { const hn = +(location.hash.match(/eh-n=(d+)/) || [])[1] || 0; d.total = Math.max(hn, x.total); d.atLeast = !hn && x.total >= 500; } if (x.rid) { d.rid = x.rid; relGet(); }
             // a voted or failed edit carries when it closed: an edit is never later than the next newer one, ids go in the order they were made
             if (!esIsSearch(d.id)) d.edits.sort((a, b) => b.id - a.id); d.more = x.next && fresh.length > 0;
             LOG.debug(`History ${d.id}: page ${p} gave ${x.edits.length} edits, ${fresh.length} new, ${d.edits.length} in all${d.more ? '' : ', no more pages'}`);
@@ -12552,7 +12560,7 @@ function histPage(app, d) {
     }
     const cnt = k => d.edits.filter(e => e.st === k).length;
     // how much is loaded, and the buttons for more, sit at the bar's right end
-    const hload = `<span class="hld">${d.busy ? `${d.edits.length} edits, loading…` : d.more ? `${d.edits.length} edits <span class="dwrap lmw hlm"><button type="button" class="sk-b" data-hmore>Load more</button>${lmMenu('sk-b', b => `data-hmore="${b}"`)}</span>` : `All ${d.edits.length} edits`}</span>`;
+    const hload = `<span class="hld">${d.busy ? `${fmtN(d.edits.length)}${d.total > d.edits.length ? ` of ${fmtN(d.total)}${d.atLeast ? '+' : ''}` : ''} edits, loading…` : d.more ? `${fmtN(d.edits.length)}${d.total > d.edits.length ? ` of ${fmtN(d.total)}${d.atLeast ? '+' : ''}` : ''} edits <span class="dwrap lmw hlm"><button type="button" class="sk-b" data-hmore>Load more</button>${lmMenu('sk-b', b => `data-hmore="${b}"`)}</span>` : `All ${d.edits.length} edits`}</span>`;
     const collection = src.match(/^\/collection\/[^/?]+\/[^?]+/), collectionLinks = collection ? [[collection[0] + '?hide_own=0', 'All edits for this collection'], [collection[0] + '?hide_own=1', 'Others’ edits for this collection']] : [];
     const bar = `<div class="hbar"><span class="lb">Group</span><span class="hseg">${[['burst', 'Bursts'], ['day', 'Day'], ['editor', 'Editor'], ['type', 'Type'], ['status', 'Status']].map(([k, t]) => `<button type="button" data-hgrp="${k}" class="${d.grp === k ? 'on' : ''}">${t}</button>`).join('')}</span><span class="sp"></span>${Object.keys(H_ST).map(k => cnt(k) ? `<button type="button" class="hchip${d.st === k ? ' on' : ''}" data-hst="${k}">${H_ST[k]} ${cnt(k)}</button>` : '').join('')}${hload}</div>` + `<div class="hql">${[...collectionLinks, ...(rid ? [[`/release/${rid}/open_edits`, 'Open edits for this release'], [`/release/${rid}/edits`, 'All its edits']] : []), ['/edit/subscribed', 'Subscribed entities'], ['/edit/subscribed_editors', 'Subscribed editors'], ['/edit/open', 'Open edits'], ['/vote', 'Voting suggestions'], ['/search/edits', 'Search for edits']].map(([u, t]) => `<a href="${MB}${u}">${t}</a>`).join('')}</div>`;
     const foot = esIsSearch(d.id) && !esHasQuery(d.id) ? '' : d.err ? `<div class="hmore msg err">${esc(d.err)} <button type="button" class="sk-b" data-hmore>Retry</button></div>` : d.edits.length ? '' : d.busy ? '<div class="hmore">Loading edits…</div>' : '<div class="hmore">No edits</div>';
