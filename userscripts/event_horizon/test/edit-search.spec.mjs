@@ -66,8 +66,8 @@ test('edit search keeps native conditions and saves the draft by name', { tag: '
   await idle(page); await inject('event_horizon');
   await expect(page.locator('#app #edit-search')).toBeVisible();
   expect(new URL(page.url()).searchParams.get('conditions.0.args.0')).toBe('5');
-  await page.getByRole('button', { name: 'More saved-search actions', exact: true }).click();
-  await page.locator('.eh-es-saved').getByRole('button', { name: 'Delete', exact: true }).click();
+  await page.locator('.eh-es-saved').getByLabel('Search name', { exact: true }).click();
+  await page.locator('.eh-es-saved [role=option]').first().getByRole('button', { name: 'Delete' }).click();
   expect(await page.evaluate(() => GM_getValue('editSearches'))).toEqual([]);
   await attachShot(info, page, 'edit-search');
 });

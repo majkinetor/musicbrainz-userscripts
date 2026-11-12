@@ -10,10 +10,8 @@ test('one saved-search name supports rename, copy, filtering and deletion', {tag
   await name.fill('Review');await bar.getByRole('button',{name:'Save',exact:true}).click();
   await name.fill('Renamed review');await bar.getByRole('button',{name:'Save',exact:true}).click();
   expect((await page.evaluate(()=>GM_getValue('editSearches'))).map(s=>s.name)).toEqual(['Renamed review']);
-  await bar.getByRole('button',{name:'More saved-search actions'}).click();
-  await bar.getByRole('button',{name:'Save a copy',exact:true}).click();
-  await expect(name).toHaveValue('Renamed review copy');
-  await bar.getByRole('button',{name:'Save',exact:true}).click();
+  await name.click();
+  await bar.getByRole('option',{name:'Renamed review',exact:true}).getByRole('button',{name:'Save a copy'}).click();
   expect((await page.evaluate(()=>GM_getValue('editSearches'))).map(s=>s.name)).toEqual(['Renamed review','Renamed review copy']);
   await name.fill('Renamed review');await bar.getByRole('button',{name:'Save',exact:true}).click();
   await expect(bar.getByRole('status')).toHaveText('A search with this name already exists');
@@ -26,10 +24,9 @@ test('one saved-search name supports rename, copy, filtering and deletion', {tag
   await idle(page);await inject('event_horizon');
   await expect(page.locator('.eh-es-saved').getByLabel('Search name',{exact:true})).toHaveValue('Renamed review copy');
   // Both saved entries have the same query; selecting by name must retain the chosen identity.
-  await page.locator('.eh-es-saved').getByRole('button',{name:'More saved-search actions'}).click();
-  await page.locator('.eh-es-saved').getByRole('button',{name:'Delete',exact:true}).click();
+  await page.locator('.eh-es-saved').getByLabel('Search name',{exact:true}).click();
+  await page.locator('.eh-es-saved').getByRole('option',{name:'Renamed review copy',exact:true}).getByRole('button',{name:'Delete'}).click();
   expect((await page.evaluate(()=>GM_getValue('editSearches'))).length).toBe(1);
-  await page.locator('.eh-es-saved').getByRole('button',{name:'More saved-search actions'}).click();
   await Promise.all([page.waitForURL(u=>u.pathname==='/search/edits'&&!u.search),page.locator('.eh-es-new').click()]);
   await idle(page);
   await expect(page.locator('.eh-es-saved')).toHaveCount(1);
@@ -48,7 +45,6 @@ test('saved names are visible on combo focus and New search resets without reloa
   await expect(bar.getByRole('option',{name:'Review five',exact:true})).toBeVisible();
   await name.press('Escape');
   await page.evaluate(()=>window.__searchResetMarker=1);
-  await bar.getByRole('button',{name:'More saved-search actions'}).click();
   await page.locator('.eh-es-new').click();
   await expect(page.locator('#app .condition')).toHaveCount(0);
   expect(await page.evaluate(()=>window.__searchResetMarker)).toBe(1);

@@ -1,11 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-<<<<<<< HEAD
-// @version      2026.11.13.021502
-=======
-// @version      2026.11.13.030100
->>>>>>> 61e8397a3 (Event Horizon: an edit search shows its total beside the loaded count (100 of 5,336 edits); from the profile the exact count rides along, else MusicBrainz's 500+)
+// @version      2026.11.13.040000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11370,7 +11366,7 @@ const EDIT_SEARCH_CSS = `
 #edit-search.eh-es .eh-es-name>input.eh-es-nopw{width:100%;min-width:0;border:0!important;border-radius:0;padding-left:4px}
 .eh-es-name>button{flex:none;border:0;background:transparent;color:var(--muted);padding:6px;cursor:pointer;filter:none!important}.eh-es-name>button svg{display:block;width:16px;height:16px}
 .eh-es-saved>[data-es-save]{color:var(--link);border-color:var(--link)}.eh-es-more{position:relative}.eh-es-more>button{background:none;border:0;color:var(--muted);font:22px/1 Manrope,system-ui,sans-serif;padding:6px 9px;cursor:pointer;filter:none!important}
-.eh-es-more .eh-es-menu{left:auto;right:0;width:160px}.eh-es-more .eh-es-menu>button{display:block;width:100%;border:0;background:transparent;color:var(--text);padding:7px 8px;text-align:left;cursor:pointer;filter:none!important}.eh-es-more .eh-es-menu>button:hover{background:var(--hover)}
+.eh-es-name>.eh-es-menu{left:24px;right:0;width:auto;padding:4px 0}.eh-es-name .eh-es-options>[role=option]{display:flex;align-items:center;gap:4px;padding:4px 0 4px 6px;cursor:pointer}.eh-es-row-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.eh-es-name .eh-es-options>[aria-selected=true]{color:var(--link)}.eh-es-row-act{flex:none;border:0;background:transparent;color:var(--muted);padding:5px;cursor:pointer;filter:none!important;opacity:.6}.eh-es-row-act:hover{opacity:1;color:var(--text)}.eh-es-row-act svg{display:block;width:15px;height:15px}.eh-es-more .eh-es-menu{left:auto;right:0;width:160px}.eh-es-more .eh-es-menu>button{display:block;width:100%;border:0;background:transparent;color:var(--text);padding:7px 8px;text-align:left;cursor:pointer;filter:none!important}.eh-es-more .eh-es-menu>button:hover{background:var(--hover)}
 .eh-es-status{font-size:12px;color:var(--muted);flex-basis:100%;min-height:18px}.eh-es-status:empty{display:none}
 /* MusicBrainz mounts autocomplete results beside the live input. */
 .eh-es-autocomplete{position:absolute;z-index:1001;max-width:calc(100vw - 40px);max-height:300px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;background:var(--surface);border:1px solid var(--border);color:var(--text);list-style:none;padding:4px;margin:0}
@@ -11406,10 +11402,9 @@ function esSaved() {
 }
 function esSavedBar(form) {
     const bar = document.createElement('div'); bar.className = 'eh-es-saved';
-    bar.innerHTML = `<button type="button" class="eh-es-new" data-es-new>New search</button><div class="eh-es-name"><button type="button" data-es-find aria-label="Find a saved search" aria-expanded="false" aria-controls="eh-es-library" data-tip="Find a saved search">${SVG(LENS)}</button><input type="search" aria-label="Search name" placeholder="Name this search…" maxlength="120" autocomplete="off" aria-controls="eh-es-library"><div class="eh-es-menu" data-es-library hidden><div class="eh-es-options" data-es-results id="eh-es-library" role="listbox" aria-label="Saved searches"></div></div></div><button type="button" data-es-save>Save</button><div class="eh-es-more"><button type="button" data-es-more aria-label="More saved-search actions" aria-expanded="false" aria-controls="eh-es-save-actions">⋯</button><div class="eh-es-menu" data-es-actions id="eh-es-save-actions" hidden><button type="button" data-es-copy>Save a copy</button><button type="button" data-es-delete>Delete</button></div></div><span class="eh-es-status" role="status"></span>`;
-    const name = bar.querySelector('input'), save = bar.querySelector('[data-es-save]'), find = bar.querySelector('[data-es-find]'), library = bar.querySelector('[data-es-library]'), results = bar.querySelector('[data-es-results]'), more = bar.querySelector('[data-es-more]'), actions = bar.querySelector('[data-es-actions]'), del = bar.querySelector('[data-es-delete]'), msg = bar.querySelector('.eh-es-status');
+    bar.innerHTML = `<button type="button" class="eh-es-new" data-es-new>New search</button><div class="eh-es-name"><button type="button" data-es-find aria-label="Find a saved search" aria-expanded="false" aria-controls="eh-es-library" data-tip="Find a saved search">${SVG(LENS)}</button><input type="search" aria-label="Search name" placeholder="Name this search…" maxlength="120" autocomplete="off" aria-controls="eh-es-library"><div class="eh-es-menu" data-es-library hidden><div class="eh-es-options" data-es-results id="eh-es-library" role="listbox" aria-label="Saved searches"></div></div></div><button type="button" data-es-save>Save</button><span class="eh-es-status" role="status"></span>`;
+    const name = bar.querySelector('input'), save = bar.querySelector('[data-es-save]'), find = bar.querySelector('[data-es-find]'), library = bar.querySelector('[data-es-library]'), results = bar.querySelector('[data-es-results]'), msg = bar.querySelector('.eh-es-status');
     save.innerHTML = SVG('<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12l4 4v12a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8V3"/>'); save.setAttribute('aria-label', 'Save'); save.dataset.tip = 'Save search';
-    more.innerHTML = SVG('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>'); more.dataset.tip = 'More saved-search actions';
     let selected = null, choosing = false, beforeFind = '', active = null, pending = null, fresh = false;
     try { pending = JSON.parse(sessionStorage.getItem('eh.editSearch') || 'null'); sessionStorage.removeItem('eh.editSearch'); } catch (e) {}
     const canonical = q => JSON.stringify([...new URLSearchParams(q)].filter(([k]) => k !== 'field' && k !== 'page').sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1])));
@@ -11421,7 +11416,6 @@ function esSavedBar(form) {
             if (match) { selected = match.name; name.value = match.name; }
         }
         const disabled = !name.value.trim(); if (save.disabled !== disabled) save.disabled = disabled;
-        const noSelection = !esSaved().some(x => x.name === selected); if (del.disabled !== noSelection) del.disabled = noSelection;
     };
     const highlight = el => {
         if (active) active.removeAttribute('data-es-active'); active = el;
@@ -11437,12 +11431,16 @@ function esSavedBar(form) {
         const q = all ? '' : name.value.trim().toLowerCase(), matches = esSaved().filter(x => x.name.toLowerCase().includes(q));
         if (!matches.length) { const empty = document.createElement('span'); empty.className = 'eh-es-empty'; empty.textContent = 'No saved searches'; results.append(empty); }
         matches.forEach((s, i) => {
-            const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'option'); b.setAttribute('aria-selected', String(s.name === selected)); b.textContent = s.name; b.id = 'eh-es-saved-' + i;
+            const b = document.createElement('div'); b.setAttribute('role', 'option'); b.setAttribute('aria-selected', String(s.name === selected)); b.id = 'eh-es-saved-' + i; b.setAttribute('aria-label', s.name);
+            b.innerHTML = `<span class="eh-es-row-name"></span><button type="button" class="eh-es-row-act" data-es-row-copy aria-label="Save a copy" data-tip="Save a copy">${SVG('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>')}</button><button type="button" class="eh-es-row-act" data-es-row-delete aria-label="Delete" data-tip="Delete">${SVG('<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>')}</button>`;
+            b.firstChild.textContent = s.name;
+            b.querySelector('[data-es-row-copy]').onclick = e => { e.stopPropagation(); copyOf(s); };
+            b.querySelector('[data-es-row-delete]').onclick = e => { e.stopPropagation(); deleteOf(s.name); };
             b.onclick = () => { remember(s.name, s.query); location.assign(MB + '/search/edits?' + s.query); }; results.append(b);
         });
     };
     const openLibrary = (clear = false) => {
-        refresh(); actions.hidden = true; more.setAttribute('aria-expanded', 'false'); beforeFind = name.value; choosing = true; if (clear) name.value = ''; name.setAttribute('aria-expanded', 'true'); find.setAttribute('aria-expanded', 'true'); library.hidden = false; renderList(true); refresh();
+        refresh(); beforeFind = name.value; choosing = true; if (clear) name.value = ''; name.setAttribute('aria-expanded', 'true'); find.setAttribute('aria-expanded', 'true'); library.hidden = false; renderList(true); refresh();
     };
     name.setAttribute('role', 'combobox'); name.setAttribute('aria-autocomplete', 'list'); name.setAttribute('aria-expanded', 'false');
     find.onclick = () => { if (choosing && !name.value) closeLibrary(true); else { openLibrary(true); name.focus(); } };
@@ -11452,11 +11450,21 @@ function esSavedBar(form) {
     name.addEventListener('keydown', e => {
         if (e.key === 'Escape' && choosing) { e.preventDefault(); e.stopPropagation(); closeLibrary(true); }
         else if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && choosing) {
-            e.preventDefault(); const xs = [...results.querySelectorAll('button')], i = xs.indexOf(active), d = e.key === 'ArrowDown' ? 1 : -1;
+            e.preventDefault(); const xs = [...results.querySelectorAll('[role=option]')], i = xs.indexOf(active), d = e.key === 'ArrowDown' ? 1 : -1;
             if (xs.length) highlight(xs[i < 0 ? d > 0 ? 0 : xs.length - 1 : (i + d + xs.length) % xs.length]);
-        } else if (e.key === 'Enter') { e.preventDefault(); if (choosing) (active || results.querySelector('button'))?.click(); else save.click(); }
+        } else if (e.key === 'Enter') { e.preventDefault(); if (choosing && active) active.click(); else save.click(); }
     });
     results.addEventListener('pointerdown', e => e.preventDefault());
+    const copyOf = s => {
+        const base = s.name + ' copy', used = new Set(esSaved().map(x => x.name.toLowerCase())); let n = base, i = 2;
+        while (used.has(n.toLowerCase())) n = base + ' ' + i++;
+        if (!write([...esSaved(), { name: n, query: s.query }])) return; msg.textContent = 'Saved as ' + n; renderList(!name.value.trim() || name.value === beforeFind); name.focus();
+    };
+    const deleteOf = n => {
+        if (!write(esSaved().filter(x => x.name !== n))) return;
+        if (n === selected) { selected = null; fresh = true; beforeFind = ''; try { sessionStorage.removeItem('eh.editSearch'); } catch (e) {} }
+        msg.textContent = 'Deleted ' + n; renderList(true); refresh(); name.focus();
+    };
     const write = a => { try { GM_setValue('editSearches', a); return true; } catch (e) { msg.textContent = 'Search could not be saved'; return false; } };
     save.onclick = () => {
         const n = name.value.trim(); if (!n) return; closeLibrary();
@@ -11466,9 +11474,8 @@ function esSavedBar(form) {
         if (!write(a)) return;
         selected = n; name.value = n; remember(n, x.query); msg.textContent = 'Saved'; refresh();
     };
-    more.onclick = () => { closeLibrary(); actions.hidden = !actions.hidden; more.setAttribute('aria-expanded', String(!actions.hidden)); };
     bar.querySelector('[data-es-new]').onclick = () => {
-        closeLibrary(); selected = null; fresh = true; pending = null; name.value = ''; msg.textContent = ''; actions.hidden = true; more.setAttribute('aria-expanded', 'false');
+        closeLibrary(); selected = null; fresh = true; pending = null; name.value = ''; msg.textContent = '';
         try { sessionStorage.removeItem('eh.editSearch'); } catch (e) {}
         form.querySelectorAll('.conditions>.condition').forEach(row => row.remove());
         for (const [key, value] of [['auto_edit_filter', ''], ['order', 'desc'], ['negation', '0'], ['combinator', 'and']]) {
@@ -11476,19 +11483,8 @@ function esSavedBar(form) {
         }
         const href = MB + '/search/edits'; ehPush(href); show(histKey(href)); refresh();
     };
-    bar.querySelector('[data-es-copy]').onclick = () => {
-        actions.hidden = true; more.setAttribute('aria-expanded', 'false');
-        const base = (name.value.trim() || 'Search') + ' copy', used = new Set(esSaved().map(x => x.name.toLowerCase())); let n = base, i = 2;
-        while (used.has(n.toLowerCase())) n = base + ' ' + i++;
-        selected = null; fresh = true; name.value = n; msg.textContent = ''; refresh(); name.focus(); name.select();
-    };
-    del.onclick = () => {
-        if (!selected || !write(esSaved().filter(x => x.name !== selected))) return;
-        selected = null; fresh = true; name.value = ''; actions.hidden = true; more.setAttribute('aria-expanded', 'false'); msg.textContent = 'Deleted'; refresh();
-        try { sessionStorage.removeItem('eh.editSearch'); } catch (e) {}
-    };
     form.addEventListener('submit', () => { if (selected) remember(selected, esQuery(form)); });
-    document.addEventListener('click', e => { if (!bar.contains(e.target)) { closeLibrary(); actions.hidden = true; more.setAttribute('aria-expanded', 'false'); } });
+    document.addEventListener('click', e => { if (!bar.contains(e.target)) { closeLibrary(); } });
     bar._esRefresh = refresh;
     const newBtn = bar.querySelector('[data-es-new]'), controls = form.querySelector(':scope>p'), head = document.createElement('div'); head.className = 'eh-es-head';
     if (controls) { controls.before(head); head.append(controls, newBtn, bar); } else form.prepend(bar);
