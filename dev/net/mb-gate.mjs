@@ -118,14 +118,22 @@ export async function mbnSlot(o) {
         s.tat = Math.max(tat, at) + MBN_GAP;
         return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second' };
     });
-    let told = false;
+    // #999: the wait logs again whenever its end moves later (a hold another tab or script set
+    // while we queued) and every 10s it goes on, so a long wait is never silent
+    let toldUntil = 0, toldAt = 0;
     for (;;) {
         if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
         let cool = 0;
         try { cool = (JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}).cool || 0; } catch (e) { cool = (globalThis.__mbnGate || {}).cool || 0; }
-        const until = Math.max(booked.at, cool), left = until - Date.now();   // a hold that appeared while we queued
+        const now = Date.now();
+        cool = Math.min(cool, now + MBN_MAX_HOLD);   // a hold is never longer than the longest one the gate sets
+        const until = Math.max(booked.at, cool), left = until - now;   // a hold that appeared while we queued
         if (left <= 0) break;
-        if (!told && until - t0 > 1000 && o.log) { told = true; o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + ' waits ' + Math.round((until - t0) / 100) / 10 + 's (' + (cool > booked.at ? 'MusicBrainz asked everyone to wait' : booked.why) + ')'); }
+        if (o.log && until - t0 > 1000 && (!toldAt || until > toldUntil + 1000 || now - toldAt >= 10000)) {
+            const why = cool > booked.at ? 'MusicBrainz asked everyone to wait' : booked.why;
+            o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + (toldAt ? ' still waits, ' + Math.round(left / 100) / 10 + 's to go' : ' waits ' + Math.round((until - t0) / 100) / 10 + 's') + ' (' + why + ')');
+            toldUntil = until; toldAt = now;
+        }
         await new Promise(r => setTimeout(r, Math.min(left, 250)));   // in slices, so a cancel lands promptly
     }
     return { ok: true, waited: Date.now() - t0 };
