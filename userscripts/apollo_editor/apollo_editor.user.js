@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.120500
+// @version      2026.11.12.140000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -2908,7 +2908,7 @@ Click: open the label`;
   async function wsGet(url, opts) {
     const o = opts || {};
     const gen = _stopGen;
-    const cancelled = () => o.stale ? !!o.stale() : _matchStop || gen !== _stopGen;
+    const cancelled = () => o.stale ? !!o.stale() : gen !== _stopGen;
     if (o.stale && o.stale()) return null;
     // The wait is interruptible: a lane parked in the gate cannot notice a Stop otherwise,
     // and a pass whose lanes are all parked looks unstoppable (#577).
@@ -2981,7 +2981,7 @@ Click: open the label`;
   async function wsJsonOnce(url, opts) {
     const o = opts || {}, label = o.label || 'ws2', gen = _stopGen;
     for (let attempt = 1; attempt <= WS_TRIES; attempt++) {
-      if (!o.stale && (_matchStop || gen !== _stopGen)) return { stale: true };
+      if (!o.stale && gen !== _stopGen) return { stale: true };
       let r;
       try { r = await wsGet(url, o); }
       catch (e) { Log.cat('MusicBrainz').warn(label + ': network error —', e.message, '(attempt ' + attempt + '/' + WS_TRIES + ')', url); await _sleep(600 * attempt); continue; }
@@ -4030,7 +4030,7 @@ Click: open the label`;
       const timer = setTimeout(() => Log.cat('Artist').warn('matching still waiting for ' + label + ' — Stop can end this wait'), 15000);
       _matchWaits.add(cancel);
       Promise.resolve(p).then(v => finish(resolve, v), e => finish(reject, e));
-      if (_matchStop || gen !== _stopGen) cancel();
+      if (gen !== _stopGen) cancel();
     });
   }
   function matchModel(onProgress) {
