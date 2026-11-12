@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.020100
+// @version      2026.11.13.021500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8991,18 +8991,23 @@ let tgxIo = null;
 function tagxArt(app) {
     if (tgxIo) tgxIo.disconnect();
     const q = [], busy = { n: 0 };
-    const next = () => { while (busy.n < 6 && q.length) { const i = q.findIndex(e => ART_LINKS[e.dataset.tgxart.split(':')[1]]), el = q.splice(i < 0 ? 0 : i, 1)[0], [k, id] = el.dataset.tgxart.split(':'); if (TGX_ART[id] !== undefined) continue; if (!ART_LINKS[id] && busy.ws >= 2) { q.unshift(el); break; } busy.n++; const viaWs = !ART_LINKS[id]; if (viaWs) busy.ws = (busy.ws || 0) + 1;
+    const next = () => { while (busy.n < 6 && q.length) { const i = q.findIndex(e => ART_LINKS[e.dataset.tgxart.split(':')[1]]), el = q.splice(i < 0 ? 0 : i, 1)[0], [k, id] = el.dataset.tgxart.split(':'); tgxIo.unobserve(el); if (TGX_ART[id] !== undefined) continue; if (!ART_LINKS[id] && busy.ws >= 2) { q.unshift(el); break; } busy.n++; const viaWs = !ART_LINKS[id]; if (viaWs) busy.ws = (busy.ws || 0) + 1;
         (ART_LINKS[id] ? Promise.resolve(ART_LINKS[id]) : ws(`${k}/${id}?inc=url-rels`).then(g => (g.relations || []).filter(x => x.url).map(x => x.url.resource))).then(ls => ARTIMG.findAll(id, ls)).then(xs => xs[0] || null, () => null)
             .then(a => { TGX_ART[id] = a; for (const t of document.querySelectorAll(`[data-tgxart$=":${id}"]`)) { t.removeAttribute('data-tgxart'); if (a) t.outerHTML = `<img src="${esc(a.src)}" alt="" referrerpolicy="no-referrer">`; } })
             .finally(() => { busy.n--; if (viaWs) busy.ws--; next(); }); } };
-    tgxIo = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) { tgxIo.unobserve(e.target); q.push(e.target); } next(); }, { rootMargin: '300px' });
-    for (const el of app.querySelectorAll('[data-tgxart]')) tgxIo.observe(el);
+    // a card loads only once it stays in view a moment: a fast scroll past it loads nothing, so the cards
+    // stopped on aren't queued behind the ones flown over; one that leaves before its turn drops out of the queue
+    const tm = new Map();
+    tgxIo = new IntersectionObserver(es => { for (const e of es) { const el = e.target; clearTimeout(tm.get(el)); tm.delete(el);
+        if (e.isIntersecting) tm.set(el, setTimeout(() => { tm.delete(el); if (el.dataset.tgxsrc) { tgxIo.unobserve(el); el.src = el.dataset.tgxsrc; el.removeAttribute('data-tgxsrc'); } else if (!q.includes(el)) { q.push(el); next(); } }, 400));
+        else { const i = q.indexOf(el); if (i >= 0) q.splice(i, 1); } } });
+    for (const el of app.querySelectorAll('[data-tgxart], img[data-tgxsrc]')) tgxIo.observe(el);
 }
 // a grid card's picture, linking to its entity: a cover or poster, an artist's or label's picture (found once on screen), else the kind's mark
 function tgxPic(u) {
     const m = (u || '').match(/\/(release-group|release|artist|label|recording|work|area|place|instrument|series|event)\/([0-9a-f-]{36})/), k = m && m[1], mk = (HM_KIND[k] || ['', CI_TAG])[1];
     const pic = k === 'artist' || k === 'label' ? (a => a ? `<img src="${esc(a.src)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<span class="tgx-mk"${a === undefined ? ` data-tgxart="${k}:${m[2]}"` : ''}>${bigMk(mk)}</span>`)(TGX_ART[m[2]] !== undefined ? TGX_ART[m[2]] : ARTIMG.cached(m[2])) : null;
-    return `<a class="tgx-p" href="${esc(u)}" tabindex="-1" aria-hidden="true">${pic !== null ? pic : k === 'release' || k === 'release-group' || k === 'event' ? `<img src="${k === 'event' ? 'https://eventartarchive.org' : 'https://coverartarchive.org'}/${k}/${m[2]}/front-250" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'tgx-mk',innerHTML:this.dataset.mk}))" data-mk="${esc(bigMk(mk))}">` : `<span class="tgx-mk">${bigMk(mk)}</span>`}</a>`;
+    return `<a class="tgx-p" href="${esc(u)}" tabindex="-1" aria-hidden="true">${pic !== null ? pic : k === 'release' || k === 'release-group' || k === 'event' ? `<img data-tgxsrc="${k === 'event' ? 'https://eventartarchive.org' : 'https://coverartarchive.org'}/${k}/${m[2]}/front-250" alt="" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'tgx-mk',innerHTML:this.dataset.mk}))" data-mk="${esc(bigMk(mk))}">` : `<span class="tgx-mk">${bigMk(mk)}</span>`}</a>`;
 }
 function tagxHtml(d) {
     const t = d.t, q = (d.q || '').trim().toLowerCase(), U = encodeURIComponent(d.name), T = encodeURIComponent(d.tag);
