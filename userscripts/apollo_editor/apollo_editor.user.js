@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.001106
+// @version      2026.11.12.120500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -1881,6 +1881,8 @@
     // a throttled lookup must NOT be cached as "no match" — that would freeze a
     // transient 503 into a permanent auto-match failure for this name (#555)
     const res = await wsJson(`${ORIGIN}/ws/2/${kind}?query=${encodeURIComponent(q)}&fmt=json&limit=${MBM_EXACT_LIMIT}`, { label: kind + ' alias search' });
+    // #999: a Stop drops the queued lookups; that's not a failure, so it isn't warned about
+    if (res.stale) { Log.cat(kind === 'label' ? 'Label' : 'Artist').debug('alias search dropped at Stop:', name); return null; }
     if (!res.json) { Log.cat(kind === 'label' ? 'Label' : 'Artist').warn('alias search failed:', name, '— not cached, a later pass retries'); return null; }
     // #613: unique only when MB returned EVERY match. The search doesn't rank exact holders
     // first — `artist:"kim"` matches 2,777 artists and the one exact "Kim" among the first 25
@@ -8907,7 +8909,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     let curQuery = '', curLimit = 8;   // "Show more…" pagination: bump the limit and re-search
     let lastRes = [];
     const position = () => { if (pop) acPlace(pop, inp); };   // #735: stays on screen (flips above near the bottom)
-    const ensure = () => { if (pop) return; pop = document.createElement('div'); pop.className = 'tc-acpop'; pop._tcOwner = inp; document.body.appendChild(pop); onScroll = () => { if (!pop || !pop.isConnected) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); pop = null; } else position(); }; window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', onScroll); position(); };
+    const ensure = () => { if (pop && pop.isConnected) return; if (pop) close(); document.querySelectorAll('.tc-acpop').forEach(p => { if (p._tcOwner !== inp) p.remove(); }); pop = document.createElement('div'); pop.className = 'tc-acpop'; pop._tcOwner = inp; document.body.appendChild(pop); onScroll = () => { if (!pop || !pop.isConnected) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); pop = null; } else position(); }; window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', onScroll); position(); };
     const close = () => { if (pop) pop.remove(); pop = null; hi = -1; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
     // a pinned or recent artist is stored lean: fetch the full one first (a track credit needs its id)
     const choose = c => {
@@ -8916,6 +8918,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     };
     // the pinned and recent artists matching what's typed show at once, the search's results follow
     const searching = () => {
+      if (!inp.isConnected) { close(); return; }
       ensure(); list = [];
       if (inp.value.trim() && picksAny('artist')) { draw([]); const none = pop.querySelector('.tc-acrow.none'); if (none) none.remove(); }
       else pop.innerHTML = '';
@@ -8928,6 +8931,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // section of their own, with how many editions back each — also once the slot resolved.
     const posLead = () => ((slot._pos && slot._pos.artists) || []).filter(x => x.entity && x.entity.gid);
     const draw = res => {
+      if (!inp.isConnected) { close(); return []; }   // #999: a late answer for a field a re-render replaced opens nothing
       ensure(); lastRes = res; const q = inp.value.trim() || slot.creditedAs || '';
       const lead = posLead(), leadG = new Set(lead.map(x => x.entity.gid)), votes = new Map(lead.map(x => [x.entity.gid, x.votes]));
       Log.cat('Artist').debug(`picker "${slot.creditedAs}": ${lead.length} artist(s) from other editions at this position, ${res.length} from the search (slot ${slot.status}${slot._pos ? ', position data kept' : ', no position data'})`);
@@ -9192,6 +9196,16 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (moveTrackToIndex({ mi: t.mi, ti: fromTi, number: fromTi + 1 }, dest)) rebuild();
     });
   }
+  // #999: a popup whose field is gone, or that lost its field's focus, closes on the next click or Esc
+  // anywhere. The pickers close on blur, but a popup left behind by a re-render had no way out.
+  const sweepPops = e => document.querySelectorAll('.tc-acpop').forEach(p => {
+    const o = p._tcOwner;
+    if (!o || !o.isConnected) { p.remove(); return; }
+    if (p.classList.contains('tc-joinpop')) return;   // the join presets close themselves
+    if (e.type === 'keydown' ? e.key === 'Escape' && document.activeElement !== o : document.activeElement !== o && !p.contains(e.target) && e.target !== o) p.remove();
+  });
+  document.addEventListener('mousedown', sweepPops, true);
+  document.addEventListener('keydown', sweepPops, true);
   function fillRows(tbody, mi) {
     // rebuilding rows detaches inputs — drop any open search/join popups so they can't orphan. Only
     // the Tracklist's: a matching pass rebuilds the rows again and again, and this also shut the
