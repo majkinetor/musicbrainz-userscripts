@@ -3089,7 +3089,7 @@ h1.eh-tc:not(.open) .eh-tm{display:-webkit-box;-webkit-box-orient:vertical;-webk
 h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25em}
 .by{font-size:16px;font-weight:600}
 .hist{margin-top:24px}.hbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}.hbar .lb{color:var(--muted);font-size:13px}
-.hist>.hbar{position:sticky;top:var(--eh-pin-h,0px);z-index:25;padding:8px 10px;background:var(--eh-bar);transition:top .18s}
+.hist>.hbar{position:sticky;top:var(--eh-pin-h,0px);z-index:25;padding:8px 10px;background:var(--eh-bar);box-shadow:0 -12px 0 var(--eh-bar);transition:top .18s}
 /* an open edit's header pins under the Group bar while its body scrolls past */
 .hist .hed[open]>summary{position:sticky;top:calc(var(--eh-pin-h,0px) + var(--eh-hb,0px) - 1px);z-index:22;background:var(--eh-bar);transition:top .18s}.hist .hed[open]>summary:hover{background:linear-gradient(var(--line),var(--line)),var(--eh-bar)}
 .hseg{display:inline-flex;border:1px solid var(--border);border-radius:9px;overflow:hidden}.hseg button{font:500 13px Manrope,system-ui,sans-serif;height:30px;padding:0 12px;border:0;border-right:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}.hseg button:last-child{border-right:0}.hseg button.on{background:var(--accent);color:#fff}
@@ -11074,7 +11074,7 @@ function pinBar(app) {
     // A centred, capped header moves on viewport resize even when its own size stays the same.
     pinAlign = align; addEventListener('resize', pinAlign);
     // the section headers and Art Station's bar stick just under the bar, so its height is read once it holds the action row, and again when that wraps
-    const pinH = () => document.documentElement.style.setProperty('--eh-pin-h', bar.classList.contains('on') ? bar.offsetHeight + 'px' : '0px');
+    const pinH = () => document.documentElement.style.setProperty('--eh-pin-h', bar.classList.contains('on') ? bar.getBoundingClientRect().height + 'px' : '0px');
     if (window.ResizeObserver) { pinRo = new window.ResizeObserver(() => { align(); pinH(); }); pinRo.observe(hd); pinRo.observe(kick); pinRo.observe(bar); }
     const home = document.createElement('span'); home.hidden = true; acts.before(home);
     // a shown bar takes the new action row at once: left to the observer, the row leaves the header a frame later and the page jumps
