@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.13.001500
+// @version      2026.11.13.003000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -7326,14 +7326,14 @@ try {
             while (p && (p.classList.contains('fs-editwrap') || p.classList.contains('fs-editback'))) { const q = p.previousElementSibling; if (!p._fsDetails && !p._fsOwn) p.remove(); p = q; }
             // the edit's status: Event Horizon's own row says it (data-st), else MB's header of this edit, else the page's
             const hed = details.closest('details.hed');
-            if (hed && hed.dataset.st) { if (hed.dataset.st !== 'op') { Log.debug('Merge edit: not open (' + hed.dataset.st + ')'); return; } }
+            if (hed && hed.dataset.st) { if (hed.dataset.st !== 'op') { details._fsDone = null; Log.info('Merge edit: not open (' + hed.dataset.st + ')'); return; } }
             else {
                 const box = details.closest('.edit-list');
                 const hdr = (box && box.querySelector('.edit-header')) || document.querySelector('.edit-header');
-                if (!hdr || !hdr.classList.contains('open')) { Log.debug('Merge edit: no open edit header'); return; }
+                if (!hdr || !hdr.classList.contains('open')) { details._fsDone = null; Log.info('Merge edit: no open edit header'); return; }
             }
             const m = parse(details);
-            if (!m) { Log.debug('Merge edit: Merge/Into tables not read'); return; }
+            if (!m) { details._fsDone = null; Log.info('Merge edit: Merge/Into tables not read'); return; }
             fsStyle();
             const wrap = el('div', 'fs-embed fs-editwrap');
             const btn = el('button', 'fs-editback');
