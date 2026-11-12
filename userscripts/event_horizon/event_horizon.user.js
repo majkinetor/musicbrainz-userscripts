@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.070001
+// @version      2026.11.13.070002
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3125,7 +3125,7 @@ h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25
 .hdt{padding:6px 12px 12px 62px;overflow-x:auto;font-size:13px}@media(max-width:600px){.hdt{padding:6px 8px 12px}.hdt table.details:not(.wrap-block)>*>tr{display:block}.hdt table.details:not(.wrap-block)>*>tr>:is(th,td){display:block;text-align:left;min-width:0;padding:4px 0 0}.hdt td{overflow-wrap:anywhere}}.hdt table{border-collapse:collapse}.hdt th{text-align:right;vertical-align:top;padding:2px 8px 2px 0;color:var(--muted);font-weight:600;white-space:nowrap}.hdt td{padding:2px 0;vertical-align:top}.hdt table.tbl{margin:2px 0 6px}.hdt table.details[class*="merge"] table.tbl{table-layout:fixed;width:min(100%,900px)}.hdt table.details[class*="merge"] table.tbl :is(th,td){overflow:hidden;text-overflow:ellipsis}.hdt table.details[class*="merge"] table.tbl tr>:first-child{width:40%}.hdt table.tbl :is(td,th){padding:3px 14px 3px 0;text-align:left}.hdt table.tbl td.pos{color:var(--muted);font-variant-numeric:tabular-nums;padding-right:10px}.hdt table.tbl td.treleases{text-align:right;padding-right:24px;font-variant-numeric:tabular-nums}.hdt table.wrap-block{display:inline-table;margin:0 6px 6px 0;vertical-align:top}.hdt table.wrap-block td{padding:1px 6px;font-variant-numeric:tabular-nums;border:1px solid var(--border);background:var(--chip)}.hdt td :is(ul,ol){list-style:none;margin:0;padding:0}.hdt .isrcs>.isrc{display:block;padding:0}.hdt th{font-weight:700!important;color:var(--text)!important}.hdt .expanded-ac-list{display:block;padding-left:1.5em;font-size:.92em;color:var(--muted)}.hdt .release-event{display:flex;flex-wrap:wrap;gap:0 .5em;align-items:baseline}.hdt .release-event>br{display:none}.hdt table.details:not(.wrap-block)>*>tr>th{min-width:10em}.hdt img{max-width:120px;height:auto;border-radius:4px}.hdt .thumb-position{display:inline-block;margin:0 6px 6px 0}.hdt .old,.hdt del{color:var(--warn)}.hdt .new,.hdt ins{color:#2e8b57;text-decoration:none}.hdt .diff-only-a,.hdt .diff-only-b{display:inline-block;padding:0 4px;border-radius:3px}.hdt .diff-only-a{margin-right:6px}
 .hwho{font-size:13px;font-weight:600}.hico{display:inline-grid;place-items:center;align-self:center;flex:none}.hico svg{width:17px;height:17px}.hgh .t .hico{vertical-align:-3px;margin-right:6px}.hico.add{color:#2e8b57}.hico.edit{color:#3b7dd8}.hico.rem{color:#c0392b}.hico.oth{color:#8a6bb8}.hnc{font-size:12px;color:var(--soft)}.hnp{flex:1 1 200px;min-width:0;color:var(--muted);font-size:12px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hed[open] .hnp{display:none}
 .hnote{--hv:var(--muted);margin-top:10px;padding:8px 12px;border-left:3px solid var(--hv);background:color-mix(in srgb,var(--hv) 10%,transparent);border-radius:0 8px 8px 0;max-width:820px}.hnote.v-own{--hv:var(--accent)}.hnote.v-yes,.hnote.v-approve{--hv:#2e8b57}.hnote.v-no{--hv:#c0392b}.hnote.v-abstain{--hv:#b8862b}.hnote.bot{--hv:var(--muted)}.hnote:not([open]){margin-top:4px;padding-top:4px;padding-bottom:4px}
-.hndel{display:inline-grid;place-items:center;margin-left:4px;padding:2px 4px;border:0;border-radius:6px;background:none;color:var(--muted);cursor:pointer;opacity:.5}.hnote>summary:hover .hndel,.hndel:focus-visible{opacity:1}.hndel:hover{color:#c0392b}.hndel.arm{opacity:1;color:#fff;background:#c0392b}.hndel.arm::after{content:'Remove?';font:600 12px Manrope,system-ui,sans-serif;margin-left:4px}.hndel.arm{display:inline-flex;align-items:center}
+.hndel{display:inline-grid;place-items:center;margin-left:4px;padding:2px 4px;border:0;border-radius:6px;background:none;color:var(--muted);cursor:pointer;opacity:.5}.hnote>summary:hover .hndel,.hndel:focus-visible{opacity:1}.hndel:hover{color:#c0392b}.hndel.arm{opacity:1;color:#fff;background:#c0392b}.hndelf{display:flex;flex-direction:column;gap:6px;margin:6px 0 8px;max-width:820px}.hndelf textarea{box-sizing:border-box;width:100%;font:inherit;padding:6px 8px;border:1px solid var(--mbu-border,var(--line));border-radius:6px;background:transparent;color:inherit;resize:vertical;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.hndelf div{display:flex;gap:6px}.hndelf button{border:0;border-radius:6px;padding:4px 12px;cursor:pointer;font:600 12px Manrope,system-ui,sans-serif;background:none;color:var(--muted)}.hndelf [data-go]{background:#c0392b;color:#fff}.hndelf [data-go]:disabled{opacity:.6}
 .hnote>summary.hnh{list-style:none;display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:var(--text);margin-bottom:6px}.hnote:not([open])>summary.hnh{margin-bottom:0}.hnote>summary::-webkit-details-marker{display:none}.hnh>a{font-weight:700}.hnd{font-size:12px;color:var(--muted)}.hvc{margin-left:auto;min-width:44px;text-align:center;padding:2px 12px;border-radius:9px;font-size:13px;font-weight:600;color:#fff;background:var(--hv)}
 .hshr{padding:0 12px 8px 36px;font-size:13px}.hshr .hnote{margin-top:4px}.hnh{font-size:12px;color:var(--muted);margin-bottom:3px}.hnh a{font-weight:600}.hvt{display:inline-block;padding:0 7px;border-radius:999px;font-size:11px;font-weight:700;line-height:1.6;background:var(--surface);color:var(--soft)}.hvt.yes,.hvt.approve{color:#2e9e5b;background:color-mix(in srgb,#2e9e5b 16%,transparent)}.hvt.no{color:#d64545;background:color-mix(in srgb,#d64545 16%,transparent)}.hnt{white-space:normal;overflow-wrap:anywhere}
 .hld{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:13px;margin-left:6px}.hld .sk-b{padding:3px 10px;font-size:12px}.hmore{display:flex;gap:10px;align-items:center;justify-content:center;padding:14px;color:var(--muted);font-size:13px}
@@ -12540,8 +12540,8 @@ function histVotePaint(d) {
 // the folded note form opens on its button, the note box focused
 document.addEventListener('click', ev => { const b = ev.target.closest && ev.target.closest('.hnadd.fold>.hnopen'); if (!b) return; const f = b.parentNode; f.classList.remove('fold'); const t = f.querySelector('textarea'); if (t) t.focus(); });
 const histNoteForm = e => `<form class="hnadd fold" data-hnote="${e.id}"><button type="button" class="hnopen">Add note</button><textarea class="edit-note" rows="3" placeholder="Add an edit note" aria-label="Edit note"></textarea><button type="submit">Add note</button></form>`;
-// a note's remove (majkinetor): MusicBrainz's own remove page, filled and sent in place; the first click arms it, a second within 3 s removes
-async function histNoteDel(b) {
+// a note's remove (majkinetor): MusicBrainz's own remove page, filled and sent in place; the ✕ opens a reason box under the note's header, Remove sends it
+async function histNoteDel(b, why) {
     const id = b.dataset.hndel, nt = b.closest('.hnote'), u = `${MB}/edit-note/${id}/delete`;
     b.disabled = true;
     try {
@@ -12549,7 +12549,13 @@ async function histNoteDel(b) {
         const g = await mbnFetch(u, { credentials: 'include' }); if (!g.ok) throw new Error('HTTP ' + g.status);
         const fm = new DOMParser().parseFromString(await g.text(), 'text/html').querySelector('form[method="post" i]'); if (!fm) throw new Error('no remove form');
         const body = new URLSearchParams();
-        for (const x of fm.querySelectorAll('input[name],textarea[name]')) if (!/^(checkbox|radio)$/i.test(x.type) || x.checked) body.append(x.name, x.value || '');
+        let put = false;
+        for (const x of fm.querySelectorAll('input[name],textarea[name]')) {
+            if (/^(checkbox|radio)$/i.test(x.type) && !x.checked) continue;
+            const free = !put && (x.tagName === 'TEXTAREA' || /^text$/i.test(x.type));
+            if (free) put = true;
+            body.append(x.name, free ? why : x.value || '');
+        }
         const sb = fm.querySelector('button[type="submit"][name],input[type="submit"][name]'); if (sb) body.append(sb.name, sb.value || '1');
         const p = await mbnFetch(new URL(fm.getAttribute('action') || u, u).href, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
         if (!p.ok) throw new Error('HTTP ' + p.status);
@@ -12558,10 +12564,24 @@ async function histNoteDel(b) {
     } catch (err) { LOG.err('Removing edit note ' + id + ' failed: ' + err.message); toast('MusicBrainz did not remove the note'); b.disabled = false; }
 }
 document.addEventListener('click', ev => {
-    const b = ehOn && ev.target.closest && ev.target.closest('.hnote [data-hndel]'); if (!b) return;
+    const t = ehOn && ev.target.closest && ev.target; if (!t) return;
+    const go = t.closest('.hndelf [data-go]'), no = t.closest('.hndelf [data-no]');
+    if (go || no) {
+        ev.preventDefault(); ev.stopPropagation();
+        const f = t.closest('.hndelf'), b = f.closest('.hnote').querySelector('[data-hndel]');
+        if (no) { f.remove(); b.classList.remove('arm'); return; }
+        go.disabled = true; b.classList.remove('arm');
+        histNoteDel(b, f.querySelector('textarea').value.trim()).finally(() => { if (f.isConnected) go.disabled = false; });
+        return;
+    }
+    const b = t.closest('.hnote [data-hndel]'); if (!b) return;
     ev.preventDefault(); ev.stopPropagation();
-    if (b.classList.contains('arm')) { clearTimeout(b._t); b.classList.remove('arm'); histNoteDel(b); return; }
-    b.classList.add('arm'); b._t = setTimeout(() => b.classList.remove('arm'), 3000);
+    const nt = b.closest('.hnote'), old = nt.querySelector('.hndelf');
+    if (old) { old.remove(); b.classList.remove('arm'); return; }
+    nt.open = true; b.classList.add('arm');
+    const f = document.createElement('div'); f.className = 'hndelf';
+    f.innerHTML = '<textarea rows="2" placeholder="Reason for removing (optional)"></textarea><div><button type="button" data-go>Remove note</button><button type="button" data-no>Cancel</button></div>';
+    nt.querySelector('summary').after(f); f.querySelector('textarea').focus();
 }, true);
 async function histNoteSend(fm) {
     const id = fm.dataset.hnote, e = data && data.edits && data.edits.find(x => String(x.id) === id), ta = fm.querySelector('textarea'), t = ta.value.trim(); if (!e || !t) return;
