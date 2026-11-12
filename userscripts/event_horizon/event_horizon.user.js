@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.030000
+// @version      2026.11.13.030001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11375,7 +11375,7 @@ const EDIT_SEARCH_CSS = `
 :root[data-eh-theme=dark] #edit-search.eh-es .autocomplete img{filter:invert(.8)}
 @media(max-width:650px){#edit-search.eh-es .conditions>li{grid-template-columns:24px minmax(0,1fr);gap:8px}#edit-search.eh-es .field-container{grid-column:2;grid-row:2}.eh-es-menu{width:min(320px,calc(100vw - 40px))}.eh-es-name{flex:1;min-width:150px}#edit-search.eh-es .conditions>li{row-gap:2px;padding:6px 0}#edit-search.eh-es .field-container>span.field{gap:2px 10px}#edit-search.eh-es .operator+.eh-es-pick{min-width:0}#edit-search.eh-es .conditions .eh-es-pick>button{min-height:36px}}
 @media(pointer:coarse){.eh-es-pick>button,.eh-es-options>button,.eh-es-options>label{min-height:44px}}
-@media(max-width:650px){#edit-search.eh-es .eh-es-head{gap:6px}#edit-search.eh-es .eh-es-head>p{gap:3px}#edit-search.eh-es .eh-es-top>button{gap:4px;padding:6px 4px}#edit-search.eh-es .eh-es-top>button>.eh-es-value{display:none}#edit-search.eh-es .eh-es-head .eh-es-name{flex:1 1 100%;min-width:0;order:9}#edit-search.eh-es .eh-es-head>.eh-es-saved{gap:4px}}
+@media(max-width:650px){#edit-search.eh-es .eh-es-head{gap:6px}#edit-search.eh-es .eh-es-head>p{gap:3px}#edit-search.eh-es .eh-es-top>button{gap:4px;padding:6px 4px}#edit-search.eh-es .eh-es-top>button>.eh-es-value{display:none}#edit-search.eh-es .eh-es-head{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;padding-bottom:2px}#edit-search.eh-es .eh-es-head>*{flex:none}#edit-search.eh-es .eh-es-head>.eh-es-saved{flex:none;max-width:none;margin:0}#edit-search.eh-es .eh-es-head .eh-es-name{flex:none;width:150px;min-width:0}#edit-search.eh-es .eh-es-head .eh-es-status{position:static;flex:none}#edit-search.eh-es .eh-es-head .eh-es-menu{position:fixed}#edit-search.eh-es .eh-es-head>.eh-es-saved{gap:4px}}
 .hm-es{display:flex;align-items:center;justify-content:center;flex:none;color:var(--muted);padding:4px 8px;border-left:1px solid var(--border)}.hm-es:hover{color:var(--link)}.hm-es svg{width:19px;height:19px}
 `;
 let esForm = null, esHome = null, esObserver = null, esFocus = null, esSerial = 0, esMoving = false;
@@ -11488,6 +11488,18 @@ function esSavedBar(form) {
     bar._esRefresh = refresh;
     const newBtn = bar.querySelector('[data-es-new]'), controls = form.querySelector(':scope>p'), head = document.createElement('div'); head.className = 'eh-es-head';
     if (controls) { controls.before(head); head.append(controls, newBtn, bar); } else form.prepend(bar);
+    // On phones the head is one row that swipes sideways; its menus go fixed so the scroller doesn't clip them.
+    const place = () => {
+        if (!matchMedia('(max-width:650px)').matches) return;
+        for (const m of head.querySelectorAll('.eh-es-menu:not([hidden])')) {
+            const b = m.parentElement.getBoundingClientRect(), w = m.getBoundingClientRect().width;
+            m.style.top = b.bottom + 5 + 'px'; m.style.right = 'auto';
+            m.style.left = Math.max(16, Math.min(b.left, innerWidth - 16 - w)) + 'px';
+        }
+    };
+    head.addEventListener('click', () => requestAnimationFrame(place));
+    head.addEventListener('scroll', place);
+    addEventListener('scroll', place, { passive: true });
     refresh(); return bar;
 }
 
