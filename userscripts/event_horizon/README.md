@@ -37,6 +37,7 @@ When MB page has Event Horizon redesign available, EH dock button shows on the n
 - **Relate**, the release's relationship editor, stays MusicBrainz's but takes Event Horizon's look; its regions and tracks fold like cards.
 - **Long titles**: a subtitle after a colon or dash sits smaller on its own line, long titles shrink, and very long ones stop at four lines with **Show full title**. Every page header follows this, and titles in grids, tables and track lists stop at three lines.
 - **Search**: start a search with a type's letter and a space to search that type: `w yesterday` searches works for "yesterday". On the homepage the type switches as soon as you type the space, and the letter leaves the box. The letters are **a** artist, **g** release group, **r** release, **w** work, **s** series, **p** place and **e** editor; the homepage's type list shows them beside the types. An empty search shows them in a tip instead of searching. Recent searches in the search field's list show only the chosen type's.
+- **Logged out**: the Event Horizon logo at the top right turns grey with an amber dot; click it to log in and come back to the same page.
 - **Pinned headers**: once the page's header scrolls away, a single bar keeps its cover, title and artist in reach; section headers are pinned to as you scroll.
 
 ## Header menu
