@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.070003
+// @version      2026.11.13.070004
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11380,6 +11380,7 @@ const EDIT_SEARCH_CSS = `
 #edit-search.eh-es .conditions>li{display:grid;grid-template-columns:24px minmax(130px,180px) minmax(0,1fr);align-items:center;gap:8px;padding:3px 0;border:0}
 #edit-search.eh-es .conditions>li>button.remove-item{grid-column:1;grid-row:1;width:24px;height:28px;padding:0;background:none!important;border:0!important;color:var(--muted);font:24px/1 Manrope,system-ui,sans-serif;filter:none!important;cursor:pointer}
 #edit-search.eh-es .conditions>li>.eh-es-pick{grid-column:2;grid-row:1}
+#edit-search.eh-es .conditions>li>:not(button.remove-item,.eh-es-pick,.field-container){grid-column:1/-1;margin:2px 0 4px 32px;color:var(--mbu-err,#e06c6c)}
 #edit-search.eh-es .field-container{grid-column:3;grid-row:1;min-width:0}
 #edit-search.eh-es .operator+.eh-es-pick{width:max-content;min-width:120px;max-width:100%;flex:none}#edit-search.eh-es .operator+.eh-es-pick>button{width:100%}
 #edit-search.eh-es .eh-es-pick>button>span{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
