@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.12.151307
+// @version      2026.11.12.163513
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -3343,6 +3343,8 @@
     if (item.length) out.push(`length ${item.length} ms`);
     const aliases = (item.aliases || []).filter(a => a && String(a.name || '').trim());
     if (aliases.length) out.push(`${aliases.length} alias(es)`);
+    const tags = tagsOf(item.tags);
+    if (tags.length) out.push(`tags ${tags.join(', ')}`);
     const covers = (item.cover || []).filter(c => c.url || (c.candidates || []).length);
     if (covers.length) out.push(`${covers.length} cover(s)`);
     return out.join(' · ') || 'nothing';
@@ -3680,7 +3682,8 @@
         || (type === 'recording' && Array.isArray(r.isrcs) && r.isrcs.some(Boolean))
         || (type === 'recording' && r.video === true)
         || (type === 'recording' && !!lengthOf(r.length))
-        || normalizeAliases(r.aliases).length > 0;
+        || normalizeAliases(r.aliases).length > 0
+        || tagsOf(r.tags).length > 0;
       if (Array.isArray(r.urls) || hasCover || hasMeta) {
         // full item: reinstate it whole, status and all
         const urls = Array.isArray(r.urls) ? r.urls.filter(u => u && u.url).map(u => ({ url: String(u.url), linkTypeId: u.linkTypeId || null })) : [];
@@ -3703,6 +3706,7 @@
           video: type === 'recording' && r.video === true,
           length: type === 'recording' ? lengthOf(r.length) : null,
           aliases: normalizeAliases(r.aliases),
+          tags: tagsOf(r.tags),
           source: typeof r.source === 'string' ? r.source : '',
           cover: coverArr, coverExistingCount: null,
           name: r.name || null, urlResults: r.urlResults || null,
@@ -6768,28 +6772,75 @@
   // of the cover upload — so they fold into the row's status the same way the
   // cover does: all good keeps whatever the rest achieved, some good is
   // 'partial', none good is 'failed'.
+  // #1009 tags: "assign each recording its own tag from the release page". A tag is
+  // a vote, not an edit: no edit note, nothing to vote on, and voting for a tag
+  // you already voted for changes nothing, so there is no duplicate check. One
+  // request per entity, MusicBrainz's own tag editor's: GET
+  // /<type>/<mbid>/tags/upvote?tags=a, b, answering { updates: [...] }.
+  function tagsOf(v) {
+    const list = Array.isArray(v) ? v : String(v || '').split(',');
+    const seen = new Set();
+    return list.map(t => String(t || '').trim().toLowerCase().replace(/\s+/g, ' ')).filter(t => t && !seen.has(t) && seen.add(t));
+  }
+  async function submitTags(item, tags) {
+    const url = `${MB_ORIGIN}/${entityUrlSegment(item.entityType)}/${item.mbid}/tags/upvote?tags=${encodeURIComponent(tags.join(', '))}`;
+    const res = await mbnFetch(url, { credentials: 'same-origin', headers: { Accept: 'application/json' } });
+    if (!res.ok) throw new Error(`MusicBrainz answered ${res.status}`);
+    const j = await res.json().catch(() => null);
+    if (!j || !Array.isArray(j.updates)) throw new Error('MusicBrainz did not confirm the tags (logged out?)');
+    return j.updates;
+  }
+  async function runTagItem(item, tag, card) {
+    const tags = tagsOf(item.tags);
+    item.tagResults = null;
+    if (!tags.length) return null;
+    workerPhase(card, 'tags');
+    try {
+      log('info', `${tag} ${entityLabel(item)} — tagging: ${tags.join(', ')}`);
+      const up = await submitTags(item, tags);
+      dbg(tag, `tags: MusicBrainz answered ${JSON.stringify(up)}`);
+      item.tagResults = { ok: 1, total: 1, dupes: 0, errors: [] };
+    } catch (e) {
+      const m = (e && e.message) || String(e);
+      log('error', `${tag} ${entityLabel(item)} — tags failed: ${m}`);
+      item.tagResults = { ok: 0, total: 1, dupes: 0, errors: [`tags: ${m}`] };
+    }
+    return item.tagResults;
+  }
+  async function runExtras(item, tag, card) {
+    item.aliasResults = null;
+    if ((item.aliases || []).some(a => a && String(a.name || '').trim())) await runAliasItem(item, tag, card);
+    await runTagItem(item, tag, card);
+  }
+  // the aliases and the tag vote, folded into the row as one outcome
+  function extrasOf(item) {
+    const a = item.aliasResults, t = item.tagResults;
+    if (!a && !t) return null;
+    const z = { ok: 0, total: 0, dupes: 0, errors: [] };
+    return [a || z, t || z].reduce((s, r) => ({ ok: s.ok + r.ok, total: s.total + r.total, dupes: s.dupes + r.dupes, errors: s.errors.concat(r.errors) }), z);
+  }
   function aliasPrior(item) {
-    const r = item.aliasResults;
+    const r = extrasOf(item);
     if (!r || !r.total) return undefined;
     if (!r.errors.length) return { status: 'done', error: '' };
     return { status: r.ok ? 'partial' : 'failed', error: r.errors.join(' | ') };
   }
   function finishAliasOnlyItem(item, tag) {
-    const r = item.aliasResults;
+    const r = extrasOf(item);
     // every alias already present: the desired state holds, nothing to do —
     // 'skipped', the same way an all-links-already-there item is reported.
     if (r && !r.total && r.dupes) {
       item.status = 'skipped'; item.error = '';
-      log('info', `${tag} ${entityLabel(item)} — already has all ${r.dupes} alias(es), nothing to add`);
+      log('info', `${tag} ${entityLabel(item)} — already has all ${r.dupes} alias(es) and tag(s), nothing to add`);
       return;
     }
     if (!r || !r.total) { item.status = 'skipped'; item.error = ''; return; }
     if (!r.errors.length) { item.status = 'done'; item.error = ''; }
     else { item.status = r.ok ? 'partial' : 'failed'; item.error = r.errors.join(' | '); }
-    log(r.errors.length ? 'warn' : 'info', `${tag} ${entityLabel(item)} — ${r.ok}/${r.total} alias(es) added`);
+    log(r.errors.length ? 'warn' : 'info', `${tag} ${entityLabel(item)} — ${r.ok}/${r.total} alias(es) and tag votes added`);
   }
   function mergeAliasOutcome(item) {
-    const r = item.aliasResults;
+    const r = extrasOf(item);
     if (!r || !r.total || !r.errors.length) return;
     const msg = r.errors.join(' | ');
     const restOk = item.status === 'done' || item.status === 'skipped';
@@ -6927,7 +6978,8 @@
       // asynchronous (it measures every candidate), and reading "no url" as
       // "no cover" is what made a Harmony release report "nothing filled in".
       const needsCover = item.entityType === 'release' && (item.cover || []).some(c => c.url || (c.candidates || []).length);
-      const needsAliases = (item.aliases || []).some(a => a && String(a.name || '').trim());
+      // #1009: tags ride with the aliases: separate requests, run whatever the form did
+      const needsAliases = (item.aliases || []).some(a => a && String(a.name || '').trim()) || tagsOf(item.tags).length > 0;
       const needsForm = !!(item.urls.length
         || (DISAMBIGUATABLE.has(item.entityType) && (item.disambiguation || '').trim())
         || (RENAMEABLE.has(item.entityType) && (item.rename || '').trim())
@@ -6940,7 +6992,7 @@
         || (item.entityType === 'recording' && item.length));
       if (!needsForm && !needsCover && !needsAliases) {
         item.status = 'skipped';
-        item.error = 'nothing to submit yet — add a url, name, disambiguation, barcode, catalog number, release event, track length, ISRC, alias or cover';
+        item.error = 'nothing to submit yet — add a url, name, disambiguation, barcode, catalog number, release event, track length, ISRC, alias, tag or cover';
         log('info', `${tag} ${item.entityType} ${item.mbid} — skipped, nothing filled in`);
         renderQueue();
         continue;
@@ -6956,9 +7008,9 @@
         const tNoForm = Date.now();
         // #547: this path never touches an iframe, so without a phase its card
         // sat on whatever the previous item left there.
-        updateWorkerLabel(card, item, needsAliases ? 'aliases' : 'cover art');
+        updateWorkerLabel(card, item, needsAliases ? ((item.aliases || []).length ? 'aliases' : 'tags') : 'cover art');
         let aliasMs = 0;
-        if (needsAliases) { const a0 = Date.now(); await runAliasItem(item, tag, card); aliasMs = Date.now() - a0; }
+        if (needsAliases) { const a0 = Date.now(); await runExtras(item, tag, card); aliasMs = Date.now() - a0; }
         if (needsCover) await runCoverItem(item, tag, card, aliasPrior(item));
         else finishAliasOnlyItem(item, tag);
         item.timing = { worker: tag, loadMs: 0, settleMs: 0, fillMs: 0, submitMs: 0, aliasMs, totalMs: Date.now() - tNoForm };
@@ -7074,7 +7126,7 @@
         // #495: the cover upload is a plain API call, independent of this
         // iframe — still worth attempting even though the link form never
         // loaded.
-        if (needsAliases) { await runAliasItem(item, tag, card); mergeAliasOutcome(item); }
+        if (needsAliases) { await runExtras(item, tag, card); mergeAliasOutcome(item); }
         if (needsCover) await runCoverItem(item, tag, card, { status: item.status, error: item.error });
         retireCard(card, item.error); scheduleRender('queue');
         const replacement = spawnWorkerCard();
@@ -7141,7 +7193,7 @@
       // then fold their outcome in before the cover step reads item.status.
       if (needsAliases) {
         const a0 = Date.now();
-        await runAliasItem(item, tag, card);
+        await runExtras(item, tag, card);
         mergeAliasOutcome(item);
         if (item.timing) item.timing.aliasMs = Date.now() - a0;
       }
@@ -7465,6 +7517,7 @@
         (i.isrcs || []).length ? 'isrc' : '',
         i.cover && i.cover.some(c => c.url) ? 'cover' : '',
         (i.aliases || []).length ? `${i.aliases.length} alias${i.aliases.length === 1 ? '' : 'es'}` : '',
+        tagsOf(i.tags).length ? 'tags' : '',
       ].filter(Boolean).join(', ');
       rows.forEach(i => {
         const t = i.timing || {};
@@ -8070,6 +8123,7 @@
           if (i.entityType === 'recording') { item.isrcs = i.isrcs || []; item.video = i.video === true; if (i.length) item.length = i.length; }
           // #535: aliases exist on every type, so they are exported whenever
           // the item has any — and the export doubles as the JSON template.
+          if (tagsOf(i.tags).length) item.tags = tagsOf(i.tags);   // #1009
           if ((i.aliases || []).length) item.aliases = i.aliases.map(a => ({ name: a.name, locale: a.locale || '', type: a.type || '', primary: !!a.primary, sortName: a.sortName || '', begin: a.begin || '', end: a.end || '', ended: !!a.ended }));
           if (i.aliasResults) item.aliasResults = i.aliasResults;
           if (i.source) item.source = i.source;
@@ -8530,6 +8584,8 @@
         fldInp.value = kind === 'event' ? (it.event ? eventText(it.event) : '') : kind === 'tracks' ? tracksText(it.tracks) : it.length ? lenText(it.length) : '';
         return;
       }
+      const tagsInp = e.target.closest('.falcon-tags-input');
+      if (tagsInp) { const it = queue.find(i => i.id === tagsInp.dataset.id); if (it) { it.tags = tagsOf(tagsInp.value); dbg('tags', `${it.id} tags: ${it.tags.join(', ') || '(none)'}`); } return; }
       const isrcInp = e.target.closest('.falcon-isrc-input');
       if (isrcInp) {
         const it = queue.find(i => i.id === isrcInp.dataset.id);
@@ -8888,6 +8944,7 @@
       it.entityType === 'recording' && 'length',
       it.entityType === 'recording' && 'isrc',
       cfg.queueView !== 'grid' && 'alias',   // the grid edits aliases below the row, off the keyboard walk
+      cfg.queueView !== 'grid' && 'tags',    // #1009; the grid has them below the row too
       it.entityType === 'recording' && 'video',
     ].filter(Boolean);
   }
@@ -8903,6 +8960,7 @@
     if (col === 'tracks') return `<input type="text" class="falcon-tracks-input" data-id="${it.id}" data-col="tracks" placeholder="${short ? 'medium.track "title" length' : 'track titles and lengths: 1.2 "New title" 5:02; 1.3 6:58'}" data-tip="Track titles and lengths\nEach as \`medium.track\`, a quoted title, then a length, separated by \`;\`, as in \`1.2 &quot;New title&quot; 5:02\`\n\`+rec\` after the title: the recording gets that title too\nA track that changed since these were set keeps what it has." value="${esc(tracksText(it.tracks))}" spellcheck="false" ${dis} />`;
     if (col === 'length') return `<input type="text" class="falcon-length-input" data-id="${it.id}" data-col="length" inputmode="numeric" placeholder="m:ss" data-tip="The recording's length (\`m:ss\`)\nFor a recording without tracks: MusicBrainz takes any other's from its tracks." value="${esc(it.length ? lenText(it.length) : '')}" spellcheck="false" ${dis} />`;
     if (col === 'isrc') return `<input type="text" class="falcon-isrc-input" data-id="${it.id}" data-col="isrc" placeholder="${short ? 'ISRCs' : 'ISRCs, comma-separated'}" value="${esc((it.isrcs || []).join(', '))}" ${dis} />`;
+    if (col === 'tags') return `<input type="text" class="falcon-tags-input" data-id="${it.id}" data-col="tags" placeholder="tags, comma-separated" data-tip="Tags to vote for, comma-separated\nA tag is your vote, not an edit: it takes no edit note" spellcheck="false" value="${esc(tagsOf(it.tags).join(', '))}" ${dis} />`;
     if (col === 'video') return `<input type="checkbox" class="falcon-video-input mbu-video" data-id="${it.id}" data-col="video" data-tip="This recording is a video\nMusicBrainz's Video checkbox" ${it.video ? 'checked' : ''} ${dis} />`;
     if (col === 'alias') {
       // #535: aliases apply to every entity type. Each alias is one MB edit; the
@@ -8919,7 +8977,7 @@
     }
     return '';
   }
-  const FIELD_LABEL = { name: 'Name', disambig: 'Disambiguation', barcode: 'Barcode', event: 'Event', tracks: 'Tracks', length: 'Length', isrc: 'ISRCs', alias: 'Aliases', video: 'Video' };
+  const FIELD_LABEL = { name: 'Name', disambig: 'Disambiguation', barcode: 'Barcode', event: 'Event', tracks: 'Tracks', length: 'Length', isrc: 'ISRCs', alias: 'Aliases', tags: 'Tags', video: 'Video' };
   // #663 (majkinetor): the + that adds a link or an alias sits by its label
   const plusLbl = (it, kind, walk) => {
     const dis = it.status === 'active' ? 'disabled' : '';
@@ -8934,7 +8992,7 @@
     // nothing while it still equals that name, so a row you only looked at
     // never submits an edit.
     const links = renderLinks(it);
-    const fields = (gridSub ? (it.entityType === 'release' ? ['barcode', 'event', 'tracks', 'alias'] : ['alias']) : fieldCols(it)).map(col => col === 'alias'
+    const fields = (gridSub ? (it.entityType === 'release' ? ['barcode', 'event', 'tracks', 'alias', 'tags'] : ['alias', 'tags']) : fieldCols(it)).map(col => col === 'alias'
       ? plusLbl(it, 'alias', !gridSub) + fieldHtml(it, col, gridSub ? 'sub' : undefined) : col === 'video'
       ? `<span class="falcon-lbl">Type</span><label class="falcon-video-lbl">${fieldHtml(it, col)} video</label>`
       : `<span class="falcon-lbl">${FIELD_LABEL[col]}</span>${fieldHtml(it, col)}`);
@@ -9080,10 +9138,10 @@
       const sub = expanded
         ? `<tr class="falcon-sub" data-id="${it.id}"><td colspan="10">${renderRowDetail(it, true)}</td></tr>` : '';
       const nLinksTxt = nLinks ? nLinks + (nLinks === 1 ? ' link' : ' links') : '', nAl = (it.aliases || []).length;
-      const what = [nLinksTxt, nAl ? nAl + (nAl === 1 ? ' alias' : ' aliases') : '', hasCover ? 'cover art' : ''].filter(Boolean).join(', ');
+      const what = [nLinksTxt, nAl ? nAl + (nAl === 1 ? ' alias' : ' aliases') : '', tagsOf(it.tags).length ? 'tags' : '', hasCover ? 'cover art' : ''].filter(Boolean).join(', ');
       return `<tr class="falcon-row" data-id="${it.id}" style="background:${ROW_BG[it.status] || ''};${excluded ? 'opacity:.45' : ''}" data-tip="${it.error ? esc(it.error) : ''}">
         <td><input type="checkbox" class="falcon-row-check" data-id="${it.id}" ${_selectedIds.has(it.id) ? 'checked' : ''} ${isActive ? 'disabled' : ''} /></td>
-        <td><button type="button" class="falcon-row-expand falcon-xp" data-id="${it.id}" data-tip="${expanded ? 'Hide' : 'Show and edit'} the links and aliases${what ? '&#10;' + esc(what) : ''}">${expanded ? '▾' : '▸'}</button></td>
+        <td><button type="button" class="falcon-row-expand falcon-xp" data-id="${it.id}" data-tip="${expanded ? 'Hide' : 'Show and edit'} the links, aliases and tags${what ? '&#10;' + esc(what) : ''}">${expanded ? '▾' : '▸'}</button></td>
         <td style="white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'}"></span>
           <a class="falcon-row-type" data-id="${it.id}" data-type="${esc(it.entityType)}" href="${MB_ORIGIN}/${entityUrlSegment(it.entityType)}/${it.mbid}" target="_blank" rel="noopener" data-tip="Open ${esc(entityLabel(it))}&#10;Right-click: select every ${esc(it.entityType)}" style="font-size:9px;text-transform:uppercase;color:var(--mbu-text-weak);text-decoration:none;margin-left:3px">${esc(TYPE_BADGE[it.entityType] || it.entityType.slice(0, 3))}</a></td>
         <td>${cols.includes('name') ? cell('name') : `<span style="padding:0 7px">${esc(entityLabel(it))}</span>`}</td>
@@ -9191,6 +9249,7 @@
               isrcN ? (isrcN === 1 ? 'ISRC' : `${isrcN} ISRCs`) : '',
               it.video ? 'video' : '',
               aliasN ? (aliasN === 1 ? 'alias' : `${aliasN} aliases`) : '',
+              tagsOf(it.tags).length ? 'tags' : '',
               hasCover ? (it.coverExistingCount ? 'cover ⚠' : 'cover') : '',
             ].filter(Boolean).join(' + ');
             const coverTitle = hasCover && it.coverExistingCount

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-12 16:34 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-12 16:35 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1066,7 +1066,7 @@ To keep an effect you like, type a name beside **Preset** and click **Save** (or
 
 ## Falcon
 
-A MusicBrainz batch editor: queue many entities, then let a pool of workers add their links, ISRCs, names, aliases, disambiguations and cover art, through MusicBrainz's own forms or its API.
+A MusicBrainz batch editor: queue many entities, then let a pool of workers add their links, ISRCs, names, aliases, disambiguations, tags and cover art, through MusicBrainz's own forms or its API.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/falcon/falcon.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/falcon/falcon.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)
@@ -1082,7 +1082,7 @@ An importer like [Harmony](https://harmony.pulsewidth.org.uk) hands you 20–50 
 - **[Queue from anywhere](#filling-the-queue)**: a [Harmony](#from-harmony) import, [the page you're on](#from-the-current-page), [a series](#from-a-series), [a label](#from-a-label), a [JSON file](#json-model) or [another script](#from-another-script).
 - **[Editing the queue](#editing-the-queue)** as a list of forms or a spreadsheet-like grid.
 - **[Failures you can inspect](#the-run)**: MusicBrainz's own error on the row, the worker left where it stopped, retry in place.
-- **[Attributes](#attributes)**: links, names, disambiguations, aliases, ISRCs, the video flag, cover art.
+- **[Attributes](#attributes)**: links, names, disambiguations, aliases, tags, ISRCs, the video flag, cover art.
 - **[Batch edit note](#batch-edit-note)** on every edit of a run.
 - **[Hands-free Harmony import](#hands-free-import)**, including retries when MusicBrainz errors, and a hand-off to Picard once the run finishes.
 - **[Export and import](#json-model)** a run as JSON, with each item's outcome, so a partial batch can be rerun without repeating what went through.
@@ -1127,7 +1127,7 @@ On a label page, **+ Add from label** queues its releases and their release grou
 
 - **List**: expand a row to edit it as a form. Each link shows its types; the mark before it (✓ done, ✗ failed, ↗ not run yet) opens it.
 - Edit a URL in its box (empty drops it). A type badge picks another type or **✕** drops it; **+** after the types adds one, **+** by *Links* adds a link, the link's **✕** removes it. A link without a type shows *auto*, left for MusicBrainz to guess.
-- **Grid**: one line per row, with its name, disambiguation and ISRCs editable in place. **▸** opens the row's links and aliases (and a release's cover art) beneath it, lined up under *Name*; aliases are added and edited only there.
+- **Grid**: one line per row, with its name, disambiguation and ISRCs editable in place. **▸** opens the row's links, aliases and tags (and a release's cover art) beneath it, lined up under *Name*; aliases and tags are added and edited only there.
 
 The [keyboard](#shortcuts-3) moves between fields like a spreadsheet; in the list, rows open and close as you go.
 
@@ -1167,14 +1167,15 @@ The last 10 runs' logs are kept in this browser, so a run whose tab crashed can 
 
 ### Attributes
 
-|                                      | artist | label | recording | release | release group |
-| ------------------------------------ | :----: | :---: | :-------: | :-----: | :-----------: |
-| links, name, aliases, disambiguation |   ✓    |   ✓   |     ✓     |    ✓    |       ✓       |
-| ISRCs, video, length                 |        |       |     ✓     |         |               |
-| cover art, barcode, event, tracks    |        |       |           |    ✓    |               |
+|                                            | artist | label | recording | release | release group |
+| ------------------------------------------ | :----: | :---: | :-------: | :-----: | :-----------: |
+| links, name, aliases, disambiguation, tags |   ✓    |   ✓   |     ✓     |    ✓    |       ✓       |
+| ISRCs, video, length                       |        |       |     ✓     |         |               |
+| cover art, barcode, event, tracks          |        |       |           |    ✓    |               |
 
 - **Name**: the ✎ box starts with the current name. A rename shows once its edit passes the vote.
 - **Aliases**: one row per alias, with its name, its language and **✕**; the **+** by the *Aliases* label adds one, or use [JSON](../falcon/examples/aliases.json) for many. A new alias takes the language last typed; `name@locale` typed in the name box sets the language too. Enter on a filled alias opens the next one, on an empty one moves on to the next row's aliases; Esc drops a new, still empty row.
+- **Tags**: comma-separated, voted for as you: a release's recordings each get their own from the release page. A tag is a vote, not an edit, so it takes no edit note; one you already voted for is left as it is.
 - **Video** is only ever set, never cleared.
 - **Barcode** fills a release that has none and unticks *This release does not have a barcode*. A different barcode is kept, and the row says so.
 - **Event** gives a release that has no release event one: the date (`2014`, `2014-02` or `2014-02-20`), then the country's code, `2014-02-20 XW`. Only `XW` ([Worldwide]) is known so far; another code leaves the country empty. An existing event is kept, and the row says so.
@@ -1231,6 +1232,7 @@ What **Import** reads, **Export** writes, and Harmony and other scripts produce:
 | `rename`                        | a new name (`name` is the current one, read only)                                                                                                                           |
 | `disambiguation`                | the disambiguation comment                                                                                                                                                  |
 | `aliases[]`                     | `{ name, locale, type, primary, sortName, begin, end, ended }`, or `"name@locale"`; each is its own edit. `type` as MusicBrainz names it (`Recording name`, `Search hint`…) |
+| `tags[]`                        | tags to vote for, `["rock", "live"]`; all five types                                                                                                                        |
 | `isrcs[]`                       | recordings                                                                                                                                                                  |
 | `video`                         | recordings; only `true` does anything                                                                                                                                       |
 | `length`                        | recordings: the length in ms, for a recording without tracks                                                                                                                |
@@ -1252,17 +1254,17 @@ Another script can hand Falcon a queue in the [JSON model](#json-model), by a `?
 
 ### Settings
 
-| Setting                                                  | Default   |                                                                                                             |
-| -------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------- |
-| Hide Falcon icon                                         | off       | Ctrl+Alt+F still opens it                                                                                   |
-| Add covers only when there aren't any                    | on        | a release that already has cover art gets none from the queue                                               |
-| Harmony: Ignore cover art                                | off       | a Harmony import queues no cover art                                                                        |
-| Harmony: Auto send                                       | on        | see [Hands-free import](#hands-free-import)                                                                 |
-| Harmony: Auto start import after … seconds               | on, 10    | see [Hands-free import](#hands-free-import)                                                                 |
-| Harmony: Reload release page after import without errors | on        | see [Hands-free import](#hands-free-import)                                                                 |
-| Harmony: Open in new tab                                 | on        | off navigates the Harmony tab                                                                               |
-| Harmony: Automatically send to Picard                    | off       | hand the release to [Picard](https://picard.musicbrainz.org/) after a run (needs its *Browser integration* on port 8000) |
-| Workers                                                  | 5         | entities processed at once                                                                                  |
+| Setting                                                  | Default |                                                                                                                          |
+| -------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Hide Falcon icon                                         | off     | Ctrl+Alt+F still opens it                                                                                                |
+| Add covers only when there aren't any                    | on      | a release that already has cover art gets none from the queue                                                            |
+| Harmony: Ignore cover art                                | off     | a Harmony import queues no cover art                                                                                     |
+| Harmony: Auto send                                       | on      | see [Hands-free import](#hands-free-import)                                                                              |
+| Harmony: Auto start import after … seconds               | on, 10  | see [Hands-free import](#hands-free-import)                                                                              |
+| Harmony: Reload release page after import without errors | on      | see [Hands-free import](#hands-free-import)                                                                              |
+| Harmony: Open in new tab                                 | on      | off navigates the Harmony tab                                                                                            |
+| Harmony: Automatically send to Picard                    | off     | hand the release to [Picard](https://picard.musicbrainz.org/) after a run (needs its *Browser integration* on port 8000) |
+| Workers                                                  | 5       | entities processed at once                                                                                               |
 
 MusicBrainz's own tagger button points at port 8000 too, whether *Automatically send to Picard* is ticked or not.
 
