@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.200000
+// @version      2026.11.12.201000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -2903,6 +2903,10 @@ Click: open the label`;
   // next Match's lanes: while throttled there is a single one, and the new pass sat behind it.
   const wsLaneSync = () => { if (_wsLaneGen !== _stopGen) { _wsLaneGen = _stopGen; _wsInFlight = 0; } };
   const wsLanes = () => (mbnHot() ? 1 : WS_MAX_INFLIGHT);   // while throttled, probe with one
+  // #999: a lane wait is woken when a lane frees or Stop is pressed, not by a 120ms poll, which a
+  // background tab holds to one tick a second (a minute, after five minutes hidden)
+  const _wsLaneWaiters = new Set();
+  const wsLaneWake = () => { const w = [..._wsLaneWaiters]; _wsLaneWaiters.clear(); w.forEach(z => z()); };
   const wsGateLog = (lv, m) => (lv === 'warn' ? Log.cat('MusicBrainz').warn : Log.cat('MusicBrainz').info)(m);
   // opts.stale() → true means "this request has been superseded" (the picker types
   // a new query while an older one still queues). Checked while it waits for its slot
@@ -2921,13 +2925,13 @@ Click: open the label`;
     for (let told = false; wsLaneSync(), _wsInFlight >= wsLanes();) {
       if (cancelled()) return null;
       if (!told) { told = true; wsGateLog('debug', 'MusicBrainz gate: ' + (o.label || 'ws2') + ' waits for a free lane (' + _wsInFlight + ' of ' + wsLanes() + ' busy)'); }
-      await _sleep(120);
+      await new Promise(z => { _wsLaneWaiters.add(z); setTimeout(z, 1000); });   // woken by a freed lane or Stop
     }
     if (cancelled()) return null;
     _wsInFlight++;
     const laneGen = _wsLaneGen;
     const p = mbnWsFetch(url, { headers: { Accept: 'application/json' } });
-    const free = () => { if (laneGen === _wsLaneGen && _wsInFlight > 0) _wsInFlight--; };
+    const free = () => { if (laneGen === _wsLaneGen && _wsInFlight > 0) _wsInFlight--; wsLaneWake(); };
     p.then(free, free);
     if (o.stale) return p;
     // A background request in flight stops being waited for at a Stop (it isn't aborted:
@@ -8227,6 +8231,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
      may be sharing — but that wait is now visible rather than silent. */
   const stopMatching = () => {
     _stopGen++;   // passes queued behind this one skip (matchModel)
+    wsLaneWake();
     Log.cat('Artist').info('Stop pressed' + (_matchStop ? ' again' : '') + ' — ' + _wsInFlight + ' MusicBrainz request(s) and ' + _webInFlight + ' search/entity load(s) on their way, tracklist pass ' + (_matching ? 'running' : 'idle') + ', recordings pass ' + (_autoMatching ? 'running' : 'idle'));
     if (_matchStop) return;
     _matchStop = true;
@@ -13479,7 +13484,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           if (!sugg.length || stale) {
             if (stale) refetchSuggestions(ko);
             else { try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) {} }
+            const st0 = Date.now();
             await wait(recSuggestionsSettled(ko), 'MusicBrainz suggestions'); sugg = u(ko.suggestedRecordings) || [];
+            Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' MusicBrainz suggestions → ' + sugg.length + ' in ' + (Date.now() - st0) + 'ms' + (typeof ko.loadingSuggestedRecordings === 'function' && u(ko.loadingSuggestedRecordings) ? ' (still loading, gave up)' : '') + (document.hidden ? ', page hidden' : ''));
           }
           for (let s = 0; s < sugg.length; s++) { consider(suggData(sugg[s])); if (bestLevel === 0) break; }   // 0 = exact, can't do better
         }
@@ -13490,6 +13497,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           const qy = recNarrowQuery(ko);
           if (qy) {
             setStatus('auto-matching ' + (i + 1) + '/' + todo.length + '… (search)');
+            Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' search tier: asking MusicBrainz' + (document.hidden ? ' (page hidden: the browser slows its timers)' : ''));
             const hits = ((await wait(searchRecordings(qy, { stale: cancelled }), 'recording search')) || []).filter(d => !(videoBlocked && d.video));
             if (hits.length === 1) consider(hits[0]);
             Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' search tier → ' + hits.length + ' hit(s)' + (hits.length === 1 ? ': "' + hits[0].name + '" [' + (hits[0].gid || '').slice(0, 8) + '] level=' + recComboLevel(hits[0], ctx) : hits.length ? ', not used (more than one)' : ''));
