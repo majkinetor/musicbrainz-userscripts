@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.070002
+// @version      2026.11.13.070003
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12542,7 +12542,7 @@ document.addEventListener('click', ev => { const b = ev.target.closest && ev.tar
 const histNoteForm = e => `<form class="hnadd fold" data-hnote="${e.id}"><button type="button" class="hnopen">Add note</button><textarea class="edit-note" rows="3" placeholder="Add an edit note" aria-label="Edit note"></textarea><button type="submit">Add note</button></form>`;
 // a note's remove (majkinetor): MusicBrainz's own remove page, filled and sent in place; the ✕ opens a reason box under the note's header, Remove sends it
 async function histNoteDel(b, why) {
-    const id = b.dataset.hndel, nt = b.closest('.hnote'), u = `${MB}/edit-note/${id}/delete`;
+    const id = b.dataset.hndel, nt = b.closest('.hnote,div.edit-note'), u = `${MB}/edit-note/${id}/delete`;
     b.disabled = true;
     try {
         LOG.keep();
@@ -12568,20 +12568,23 @@ document.addEventListener('click', ev => {
     const go = t.closest('.hndelf [data-go]'), no = t.closest('.hndelf [data-no]');
     if (go || no) {
         ev.preventDefault(); ev.stopPropagation();
-        const f = t.closest('.hndelf'), b = f.closest('.hnote').querySelector('[data-hndel]');
+        const f = t.closest('.hndelf'), b = f.closest('.hnote,div.edit-note').querySelector('[data-hndel]');
         if (no) { f.remove(); b.classList.remove('arm'); return; }
         go.disabled = true; b.classList.remove('arm');
         histNoteDel(b, f.querySelector('textarea').value.trim()).finally(() => { if (f.isConnected) go.disabled = false; });
         return;
     }
-    const b = t.closest('.hnote [data-hndel]'); if (!b) return;
+    // MusicBrainz's own remove link on an edit list or an edit's page opens the same box instead of its page
+    const nl = t.closest('div.edit-note a[href*="/edit-note/"][href$="/delete"]'), nm = nl && nl.href.match(/edit-note.([0-9]+).delete$/);
+    if (nm) nl.dataset.hndel = nm[1];
+    const b = nm ? nl : t.closest('.hnote [data-hndel]'); if (!b) return;
     ev.preventDefault(); ev.stopPropagation();
-    const nt = b.closest('.hnote'), old = nt.querySelector('.hndelf');
+    const nt = b.closest('.hnote,div.edit-note'), old = nt.querySelector('.hndelf');
     if (old) { old.remove(); b.classList.remove('arm'); return; }
-    nt.open = true; b.classList.add('arm');
+    if (nt.tagName === 'DETAILS') nt.open = true; b.classList.add('arm');
     const f = document.createElement('div'); f.className = 'hndelf';
     f.innerHTML = '<textarea rows="2" placeholder="Reason for removing (optional)"></textarea><div><button type="button" data-go>Remove note</button><button type="button" data-no>Cancel</button></div>';
-    nt.querySelector('summary').after(f); f.querySelector('textarea').focus();
+    (nt.querySelector(':scope>summary') || nt.querySelector('h3') || nt.firstElementChild).after(f); f.querySelector('textarea').focus();
 }, true);
 async function histNoteSend(fm) {
     const id = fm.dataset.hnote, e = data && data.edits && data.edits.find(x => String(x.id) === id), ta = fm.querySelector('textarea'), t = ta.value.trim(); if (!e || !t) return;
