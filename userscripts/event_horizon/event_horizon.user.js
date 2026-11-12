@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.12.210000
+// @version      2026.11.12.220000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2780,10 +2780,10 @@ const CSS = `
 .u-av{position:relative;overflow:visible!important}.u-av>img{border-radius:50%}.u-avb{position:absolute;right:-4px;bottom:-4px;width:32px;height:32px;border-radius:50%;background:var(--surface);border:2px solid var(--bg);display:grid;place-items:center;color:var(--accent)}
 .u-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}.u-tab{display:inline-flex;align-items:center;min-height:30px;padding:4px 12px;border-radius:9px;border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important;font-weight:600;font-size:13px}.u-tab:hover{border-color:var(--accent)}
 .u-facts{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;font-size:13px}.u-facts dt{color:var(--muted);font-weight:600}.u-facts dd{margin:0;overflow-wrap:anywhere}
-.u-sts{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.u-st.positive b{color:#3f8f7a}.u-st.negative b{color:#c4466a}span.hm-st:hover{outline:none}
-.u-bars .u-bar{display:grid;grid-template-columns:130px 1fr 64px;gap:8px;align-items:center;font-size:13px;padding:3px 0;color:var(--text)!important;text-decoration:none!important}.u-bar i{height:8px;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.u-bar em{font-style:normal;text-align:right;color:var(--muted)}a.u-bar:hover span{color:var(--accent)}
+.u-sts{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.u-st b small{font-size:12px;font-weight:400;color:var(--muted);margin-left:6px}.u-st.positive b{color:#3f8f7a}.u-st.negative b{color:#c4466a}span.hm-st:hover{outline:none}
+.u-bars .u-bar{display:grid;grid-template-columns:130px 1fr 100px;gap:8px;align-items:center;font-size:13px;padding:3px 0;color:var(--text)!important;text-decoration:none!important}.u-bar i{height:8px;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.u-bar em{font-style:normal;text-align:right;color:var(--muted)}.u-bar em small{margin-left:6px;opacity:.75}a.u-bar:hover span{color:var(--accent)}
 .u-votes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:14px}.u-vcol{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 16px}.u-vcol h3{margin:0 0 8px;font-size:13px;color:var(--muted)}
-.u-vr{display:grid;grid-template-columns:70px 1fr 90px;gap:8px;align-items:center;font-size:13px;padding:3px 0}.u-vr i{height:8px;border-radius:4px;background:var(--chip)}.u-vr b{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.u-vr em{font-style:normal;text-align:right}.u-vr small{color:var(--muted);margin-left:6px}.u-vt{margin-top:6px;font-size:12px;color:var(--muted)}
+.u-vr{display:grid;grid-template-columns:70px 1fr 90px;gap:8px;align-items:center;font-size:13px;padding:3px 0}.u-vr i{height:8px;border-radius:4px;background:var(--chip)}.u-vr b{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.u-vr em{font-style:normal;text-align:right}.u-vr a{color:var(--text)!important}.u-vr a:hover{color:var(--accent)!important}.u-vr small{color:var(--muted);margin-left:6px}.u-vt{margin-top:6px;font-size:12px;color:var(--muted)}
 .hm-sec{display:block;color:var(--muted);margin-top:8px}
 .hm-me{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 .hm-chips{display:flex;flex-wrap:wrap;gap:8px}
@@ -10669,7 +10669,9 @@ function userParse(html) {
             rows: rows.map(r => { const tds = [...r.querySelectorAll('td')]; return { l: tx(r.querySelector('th')), cls: r.className, href: at(r, 'td a[href]'), v: tds.map(td => num(tx(td))), p: tds.map(td => pct(tx(td))) }; }) };
     });
     const mail = (info.map(x => x.t).join(' ').match(/[^\s@()]+@[^\s@()]+\.[a-z]{2,}/i) || [''])[0].toLowerCase();
-    return { name: h1 ? tx(h1) : '', av: av.replace(/^\/\//, 'https://').replace(/([?&]s=)\d+/, '$1192'), tabs, info, stats, mail };
+    // #1005: the editor's id, for the vote and edit-note searches, is in the edit table's search links
+    const idm = (at(d.querySelector('table.statistics'), 'a[href*="conditions.0.args.0="]') || '').match(/conditions\.0\.args\.0=(\d+)/);
+    return { name: h1 ? tx(h1) : '', av: av.replace(/^\/\//, 'https://').replace(/([?&]s=)\d+/, '$1192'), tabs, info, stats, mail, id: idm ? idm[1] : '' };
 }
 async function userLoad(n, key) {
     const d = data;
@@ -10704,22 +10706,40 @@ function userHtml(d) {
     const facts = rest.length ? `<dl class="u-facts">${rest.map(x => `<dt>${esc(x.l)}</dt><dd>${x.h}</dd>`).join('')}</dl>` : '';
     const hero = userHead(u.name || name, avImg, u.tabs) + userBar(sub && `<p class="u-sub">${sub}</p>`, langHtml) + facts + (bio ? `<div class="u-bio">${bio.h}</div>` : '');
     const link = (r, inner, cls) => r.href ? `<a class="${cls}" href="${esc(abs(r.href))}">${inner}</a>` : `<span class="${cls}">${inner}</span>`;
-    const ids = ['ued', 'uvo', 'uad', 'utg'];
+    const ids = ['ued', 'uvo', 'uad', 'utg'], uname = u.name || name, en = encodeURIComponent(uname);
+    // #1005: accepted and voted down as a share of the edits that went to a vote
+    const ed0 = u.stats[0] && !u.stats[0].two ? u.stats[0].rows : [], edR = re => ed0.find(r => re.test(r.href)), acc = edR(/\/edits\/accepted$/) || ed0[1], rej = edR(/\/edits\/rejected$/) || ed0[4]; // without links (logged out): by position
+    const voted = (acc ? acc.v[0] : 0) + (rej ? rej.v[0] : 0), share = r => voted && (r === acc || r === rej) ? `<small>${Math.round(r.v[0] / voted * 100)}%</small>` : '';
+    const vsrch = v => u.id ? `${MB}/search/edits?conditions.0.field=voter&conditions.0.operator=%3D&conditions.0.name=${en}&conditions.0.voter_id=${u.id}&conditions.0.args=${v}` : '';
+    const VOTE = [1, 0, -1, 2]; // the votes table's rows: Yes, No, Abstain, Approve
     const secs = u.stats.map((t, i) => {
         const id = ids[i] || 'ust' + i, tools = t.href ? `<a class="aside" href="${esc(abs(t.href))}">all</a>` : '';
         let body;
         if (t.two) {
             const cols = t.cols.length ? t.cols : ['Recent', 'Overall'];
-            body = `<div class="u-votes">${cols.map((c, j) => `<div class="u-vcol"><h3>${esc(c)}</h3>${t.rows.map(r => `<div class="u-vr"><span>${esc(r.l)}</span><i><b style="width:${r.p[j] || 0}%"></b></i><em>${fmtN(r.v[j] || 0)}<small>${r.p[j] || 0}%</small></em></div>`).join('')}<div class="u-vt">${fmtN(t.rows.reduce((s, r) => s + (r.v[j] || 0), 0))} votes</div></div>`).join('')}</div>`;
+            // #1005: the overall column's votes open the search for them; effective votes leave abstentions out
+            body = `<div class="u-votes">${cols.map((c, j) => {
+                const all = t.rows.reduce((s, r) => s + (r.v[j] || 0), 0), eff = all - ((t.rows[2] && t.rows[2].v[j]) || 0);
+                const lab = (r, k) => { const h = j === cols.length - 1 && VOTE[k] !== undefined && vsrch(VOTE[k]); return h ? `<a href="${esc(h)}">${esc(r.l)}</a>` : `<span>${esc(r.l)}</span>`; };
+                return `<div class="u-vcol"><h3>${esc(c)}</h3>${t.rows.map((r, k) => `<div class="u-vr">${lab(r, k)}<i><b style="width:${r.p[j] || 0}%"></b></i><em>${fmtN(r.v[j] || 0)}<small>${r.p[j] || 0}%</small></em></div>`).join('')}<div class="u-vt">${fmtN(all)} votes · ${fmtN(eff)} effective${all ? ` (${Math.round(eff / all * 100)}%)` : ''}</div></div>`;
+            }).join('')}</div>`;
         } else if (i === 2) {
-            const rs = t.rows.filter(r => r.v[0]).sort((a, b) => b.v[0] - a.v[0]), top = rs[0] ? rs[0].v[0] : 1;
-            body = rs.length ? `<div class="u-bars">${rs.map(r => link(r, `<span>${esc(r.l)}</span><i style="width:${Math.max(2, r.v[0] / top * 100)}%"></i><em>${fmtN(r.v[0])}</em>`, 'u-bar')).join('')}</div>` : '<p class="hm-none">Nothing added yet.</p>';
+            const rs = t.rows.filter(r => r.v[0]).sort((a, b) => b.v[0] - a.v[0]), top = rs[0] ? rs[0].v[0] : 1, sum = rs.reduce((s, r) => s + r.v[0], 0);
+            // #1005: each type's share of everything added, and the total
+            body = rs.length ? `<div class="u-bars">${rs.map(r => link(r, `<span>${esc(r.l)}</span><i style="width:${Math.max(2, r.v[0] / top * 100)}%"></i><em>${fmtN(r.v[0])}<small>${Math.round(r.v[0] / sum * 100)}%</small></em>`, 'u-bar')).join('')}</div><div class="u-vt">${fmtN(sum)} added in all</div>` : '<p class="hm-none">Nothing added yet.</p>';
         } else {
-            body = `<div class="u-sts">${t.rows.map(r => link(r, `<b>${fmtN(r.v[0])}</b><small>${esc(r.l)}</small>`, 'hm-st u-st' + (r.cls ? ' ' + r.cls : ''))).join('')}</div>`;
+            body = `<div class="u-sts">${t.rows.map(r => link(r, `<b>${fmtN(r.v[0])}${i === 0 ? share(r) : ''}</b><small>${esc(r.l)}</small>`, 'hm-st u-st' + (r.cls ? ' ' + r.cls : ''))).join('')}</div>`;
         }
         return sect(id, esc(t.title), tools, body, '');
     }).join('');
-    return hero + secs;
+    // #1005: another editor's edit notes beside yours, as edit searches
+    const ns = '/search/edits?', ed = (k, op) => `conditions.${k}.field=editor&conditions.${k}.operator=${op}`, by = (k, f) => `conditions.${k}.field=${f}&conditions.${k}.operator=%3D&conditions.${k}.name=${en}&conditions.${k}.args.0=${u.id}`;
+    const notes = u.id && ME && uname !== ME ? sect('unote', 'Edit notes', '', `<div class="hm-news">${[
+        [`${ns}${by(0, 'editor')}&conditions.1.field=edit_note_author&conditions.1.operator=me`, `Edits by ${uname} with your notes`],
+        [`${ns}${ed(0, 'me')}&${by(1, 'edit_note_author')}`, `Notes by ${uname} on your edits`],
+        [`${ns}${ed(0, 'not_me')}&${by(1, 'editor').replace('operator=%3D', 'operator=%21%3D')}&conditions.2.field=edit_note_author&conditions.2.operator=me&${by(3, 'edit_note_author')}`, `Other edits with notes by both of you`],
+    ].map(([h, t]) => `<a href="${esc(MB + h)}">${esc(t)}</a>`).join('')}</div>`, '') : '';
+    return hero + secs + notes;
 }
 /* ── search results ────────────────────────────────── */
 // MusicBrainz's /search page, read off its own markup (every type has its own columns): this tab's page as loaded, another one fetched.
