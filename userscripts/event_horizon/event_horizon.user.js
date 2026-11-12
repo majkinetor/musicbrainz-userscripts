@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.100000
+// @version      2026.11.13.103000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -10556,7 +10556,7 @@ function gravForm(app) {
 // the "Added" table's rows and the edit types that add each (#1013); an applied search of them is what the row counts
 const ADD_T = { artist: '1', 'cover art': '314', 'release group': '10', place: '61', release: '31%2C216', label: '20', series: '140', recording: '71', work: '41', area: '81', event: '150', instrument: '131', genre: '160' };
 // the count rides along in the hash: MusicBrainz's search says only "at least 500"
-const addHref = (p, ts, n) => p.id && ts.length ? `${MB}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=editor&conditions.0.operator=%3D&conditions.0.name=${encodeURIComponent(ME)}&conditions.0.args.0=${p.id}&conditions.1.field=type&conditions.1.operator=%3D${ts.map(t => '&conditions.1.args=' + t).join('')}&conditions.2.field=status&conditions.2.operator=%3D&conditions.2.args=2${n ? '#eh-n=' + n : ''}` : '';
+const addHref = (p, ts, n) => p.id && ts.length ? `${MB}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=editor&conditions.0.operator=%3D&conditions.0.name=${encodeURIComponent(p.name || ME)}&conditions.0.args.0=${p.id}&conditions.1.field=type&conditions.1.operator=%3D${ts.map(t => '&conditions.1.args=' + t).join('')}&conditions.2.field=status&conditions.2.operator=%3D&conditions.2.args=2${n ? '#eh-n=' + n : ''}` : '';
 function profFill(app, p) {
     const el = app.querySelector('.hm-pf'); if (!el) return;
     const yrs = p.since ? new Date().getFullYear() - p.since : 0, top = p.added[0] ? p.added[0][1] : 1, u = `${MB}/user/${encodeURIComponent(ME)}`;
@@ -10808,7 +10808,7 @@ function userHtml(d) {
     const SC = ['#3f8f7a', '#c4533f', '#ba478f', '#b48a2c', '#4a7bc0', '#8a6fc0', '#4aa3b0', '#9099ab'];
     const e0 = ed0[0], e24 = edL(/24|last_day/i), eop = edL(/\/open$|^open$/i), tg = tt ? tt.rows.filter(r => /tag/i.test(r.l)) : [];
     const kpis = ed0.length ? `<div class="u-kpis"><div class="u-kgrp">${kpi('ed', e0 && e0.v[0], 'Edits', e0 && e0.href)}${kpi('day', e24 && e24.v[0], '24h', e24 && e24.href)}${kpi('open', eop && eop.v[0], 'Open', eop && eop.href)}</div>${
-        kpi('add', at ? sum(at.rows) : null, 'Added', '')}${kpi('vote', vt ? sum(vt.rows, (vt.cols.length || 2) - 1) : null, 'Votes', vt && vt.href)}${kpi('tag', tg.length ? sum(tg) : null, 'Tags', tg[0] && tg[0].href)}</div>` : '';
+        kpi('add', at ? sum(at.rows) : null, 'Added', at && addHref({ id: u.id, name: uname }, Object.values(ADD_T), sum(at.rows)))}${kpi('vote', vt ? sum(vt.rows, (vt.cols.length || 2) - 1) : null, 'Votes', vt && vt.href)}${kpi('tag', tg.length ? sum(tg) : null, 'Tags', tg[0] && tg[0].href)}</div>` : '';
     const secs = u.stats.map((t, i) => {
         const id = ids[i] || 'ust' + i, tools = t.href ? `<a class="aside" href="${esc(abs(t.href))}">all</a>` : '';
         let body;
