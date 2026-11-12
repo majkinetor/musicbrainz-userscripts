@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.11.120000
+// @version      2026.11.12.120000
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Presto Music, RateYourMusic, Album of the Year.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -3185,12 +3185,20 @@ function handoffFor(rel, provider, token) {
     };
 }
 
+// #995: every stored handoff and its age, for the log when one goes missing
+function handoffKeys() {
+    try {
+        const ks = GM_listValues().filter(k => k.startsWith(HANDOFF_PREFIX));
+        if (!ks.length) return 'no handoffs stored';
+        return ks.length + ' handoff(s) stored: ' + ks.map(k => { const h = GM_getValue(k, null); return k.slice(HANDOFF_PREFIX.length) + (h && h.created ? ' ' + Math.round((Date.now() - h.created) / 1000) + ' s old' : ' (no date)'); }).join(', ');
+    } catch (e) { return 'handoffs not listable: ' + e.message; }
+}
 function pruneHandoffs() {
     try {
         for (const k of GM_listValues()) {
             if (!k.startsWith(HANDOFF_PREFIX)) continue;
             const h = GM_getValue(k, null);
-            if (!h || !h.created || Date.now() - h.created > HANDOFF_TTL_MS) { GM_deleteValue(k); Log.debug(`pruned old handoff ${k}`); }
+            if (!h || !h.created || Date.now() - h.created > HANDOFF_TTL_MS) { GM_deleteValue(k); Log.info(`pruned handoff ${k}: ${!h ? 'empty' : !h.created ? 'no date' : Math.round((Date.now() - h.created) / 60000) + ' min old'}`); }
         }
     } catch (e) { Log.warn(`handoff prune: ${e.message}`); }
 }
@@ -4098,12 +4106,18 @@ async function consolidateCurrent() {
         Log.info(`release read in ${Date.now() - t0} ms: "${rel.title}" · ${rel.mediums.length} medium(s), ${nTracks} track(s) · barcode ${rel.barcode || '—'}`);
         pruneHandoffs();
         GM_setValue(CONS_PREFIX + token, { v: 1, token, created: Date.now(), source: provider.id, sourceName: provider.name, platform: providerMeta(provider), id, page: mbaCleanUrl(location.href), url: rel.url, rel: relWithForms(rel, provider) });
+        {   // #995: what was written, and whether this tab can read it back before it opens Mission Control
+            const back = GM_getValue(CONS_PREFIX + token, null);
+            let size = '?'; try { size = JSON.stringify(back || '').length; } catch (e) {}
+            Log.info(`stored album as ${CONS_PREFIX + token}: ${back ? 'reads back, ' + size + ' chars' : 'DOES NOT read back'} · ${handoffKeys()}`);
+        }
         const url = `https://${server}/release/add#mc=${token}`;
         if (mbuTestHooks()) window.__fcLastCons = { token, url, rel };
         Log.ok(`handed to Mission Control: ${url}`);
         let here = false;
         if (typeof GM_openInTab === 'function' && !mbuTestHooks()) GM_openInTab(url, { active: true, insert: true });
         else if (!mbuTestHooks()) { const w = window.open(url, '_blank'); if (w) w.opener = null; else here = true; }
+        Log.debug(`opening Mission Control with ${typeof GM_openInTab === 'function' ? 'GM_openInTab' : 'window.open'}${here ? ' (blocked, this tab)' : ''}; close after Consolidate ${settings().closeAfter ? 'on' : 'off'}`);
         if (settings().closeAfter) {
             if (!here) closeSourceTab();
             else Log.info('close after Consolidate: skipped, the browser blocked a new tab and Mission Control opens in this one');
@@ -4490,6 +4504,8 @@ const HANDOFF_WAIT = 3000;
 function fcHandoff(key, what, done) {
     const t0 = Date.now();
     let h = GM_getValue(key, null), from = 'storage';
+    let ss = 'none'; try { ss = sessionStorage.getItem(key) ? 'present' : 'none'; } catch (e) { ss = 'unreadable: ' + e.message; }
+    Log.debug(`${what}: ${key} in storage: ${h ? 'yes' : 'no'}, copy in this tab: ${ss} · ${handoffKeys()}`);
     if (!h) { try { h = JSON.parse(sessionStorage.getItem(key) || 'null'); from = 'this tab'; } catch (e) { h = null; } }
     const finish = () => {
         if (h) {
@@ -4504,7 +4520,7 @@ function fcHandoff(key, what, done) {
     const look = () => {
         h = GM_getValue(key, null);
         if (h) { from = 'storage late'; finish(); }
-        else if (Date.now() - t0 >= HANDOFF_WAIT) finish();
+        else if (Date.now() - t0 >= HANDOFF_WAIT) { Log.warn(`${what}: still not stored after ${Date.now() - t0} ms · ${handoffKeys()} · page ${location.href}, referrer ${document.referrer || 'none'}`); finish(); }
         else setTimeout(look, 150);
     };
     setTimeout(look, 150);
