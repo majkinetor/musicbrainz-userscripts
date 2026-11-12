@@ -58,10 +58,26 @@ function stRemoteVersion(ref, cb) {
 }
 // Icons are drawn with different margins, so the same box shows them at different sizes: crop an SVG
 // icon to what it draws, square and with a little room for strokes. A raster icon is left as it is.
+// Both fits are kept in localStorage, keyed by a hash of the icon: measuring forces a layout of the whole
+// page per icon, which made every page's first open of the settings take a second or more.
+var stFitStore = (function () {
+  var KEY = 'mbu-st-icon-fit', data = null, timer = 0;
+  var hash = function (s) { var h = 5381; for (var i = 0; i < s.length; i++) h = (h * 33 ^ s.charCodeAt(i)) >>> 0; return s.length + ':' + h.toString(36); };
+  var load = function () { if (!data) { try { data = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { data = {}; } } return data; };
+  return {
+    get: function (k) { return load()[hash(k)]; },
+    set: function (k, v) {
+      load()[hash(k)] = v === k ? 1 : v;
+      clearTimeout(timer); timer = setTimeout(function () { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) { /* full or blocked */ } }, 500);
+    },
+  };
+})();
 var stFitCache = {};
 function stFitIcon(src) {
   if (!src) return '';
   if (stFitCache[src]) return stFitCache[src];
+  var kept = stFitStore.get('b' + src);
+  if (kept) return (stFitCache[src] = kept === 1 ? src : kept);
   var out = src;
   try {
     var txt = null, m = /^<img\b[^>]*?\ssrc="([^"]*)"/i.exec(src);
@@ -93,6 +109,7 @@ function stFitIcon(src) {
     }
   } catch (e) { /* keep the icon as it is */ }
   stFitCache[src] = out;
+  stFitStore.set('b' + src, out === src ? 'b' + src : out);
   return out;
 }
 // getBBox counts what a clip path or a mask hides (Art Station's sky), so the box can still be too big:
@@ -101,6 +118,7 @@ var stPixCache = {};
 function stFitPixels(root) {
   Array.prototype.forEach.call(root.querySelectorAll('img[src^="data:image/svg+xml"]'), function (img) {
     var src = img.getAttribute('src');
+    if (!stPixCache[src]) { var kept = stFitStore.get('p' + src); if (kept) stPixCache[src] = kept === 1 ? src : kept; }
     if (stPixCache[src]) { if (stPixCache[src] !== src) img.src = stPixCache[src]; return; }
     try {
       var txt = decodeURIComponent(src.slice(src.indexOf(',') + 1));
@@ -129,7 +147,7 @@ function stFitPixels(root) {
           svg.removeAttribute('width');
           svg.removeAttribute('height');
           var out = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(svg));
-          stPixCache[src] = out;
+          stPixCache[src] = out; stFitStore.set('p' + src, out);
           Array.prototype.forEach.call(root.querySelectorAll('img'), function (o) { if (o.getAttribute('src') === src) o.src = out; });
         } catch (e) { stPixCache[src] = src; }
       };
