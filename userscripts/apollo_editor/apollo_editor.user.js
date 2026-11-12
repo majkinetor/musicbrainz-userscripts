@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.220000
+// @version      2026.11.12.230000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -11633,7 +11633,23 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       applyDuplicates();   // #187: score the Add-release Duplicates tab when "Modify Duplicates" is on
       if (editorEl()) { ensureLauncher(); wireTabFlush(); } else { const l = document.getElementById('tc-launch'); if (l) { l.remove(); mbRestackCorner('br'); } }   // #135: the switch shows on every tab; #145: flush the takeover on tab clicks
     };
-    tick(); setInterval(tick, 500);
+    // #999 the 500ms timer was seen to stop on this page (Firefox, Violentmonkey): no "entered Recordings
+    // tab", and the nav bar kept Finish on the edit note tab, where it did nothing. Page changes and
+    // clicks run the check too whenever the timer is late, and a late timer is logged once per stall.
+    let last = 0, stalled = false, inTick = false;
+    const run = why => {
+      if (inTick) return;
+      const now = Date.now(), gap = last ? now - last : 0;
+      if (why !== 'timer' && gap < 700) return;   // the timer is keeping up
+      if (why !== 'timer' && !stalled && gap > 2000) { stalled = true; Log.cat('System').debug('tab watcher: the timer is ' + gap + 'ms late, checking on page changes instead'); }
+      if (why === 'timer' && stalled) { stalled = false; Log.cat('System').debug('tab watcher: the timer runs again' + (gap > 2000 ? ' (' + gap + 'ms late)' : '')); }
+      last = now; inTick = true;
+      try { tick(); } finally { inTick = false; }
+    };
+    run('timer'); setInterval(() => run('timer'), 500);
+    try { new MutationObserver(() => run('page')).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style', 'disabled'] }); } catch (e) { Log.cat('System').warn('tab watcher: no page observer', e && e.message || e); }
+    window.addEventListener('click', () => Promise.resolve().then(() => run('click')));
+    window.addEventListener('keyup', () => Promise.resolve().then(() => run('key')));
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -14511,7 +14527,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     STEP_DEFS.forEach(d => {
       const b = document.createElement('button'); b.className = 'tc-nav-step' + (d.diff ? ' tc-nav-diff' : ''); b.dataset.step = d.key; b.dataset.baseTitle = d.title;
       b.innerHTML = d.diff ? DIFF_ICON : d.label; b.dataset.tip = d.title;
-      b.onclick = () => { const l = stepLink(d.key); if (l) l.click(); setTimeout(syncNav, 40); };
+      b.onclick = () => { const l = stepLink(d.key); if (l) l.click(); syncNav(); setTimeout(syncNav, 40); };   // #999 at once too: timers were seen held back
       steps.appendChild(b);
     });
     // submit button (Finish / Enter edit) — sits to the right of the switcher
@@ -14526,7 +14542,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         const name = d.label.replace(/^\W+/, ''), log = Log.cat('Release');
         const tryIt = (how, fn) => { try { fn(); return true; } catch (e) { log.warn(name + ': ' + how + ' failed', e && e.message || e); return false; } };
         const finish = () => {
-          if (activeStepKey() === 'edit-note') { ensureApolloEditNote(); return; }
+          // #999 Finish still showing on the edit note tab (its switch to Enter edit lagged) used to do
+          // nothing at all: it is Enter edit there
+          if (activeStepKey() === 'edit-note') { log.info(name + ': already on the edit note tab, entering the edit'); enter(); return; }
           relWatchErrors(name);
           const re = relEd(), there = () => activeStepKey() === 'edit-note';
           const ways = [
@@ -14546,7 +14564,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
             }
           }
           if (!there()) { const bl = submitBlockers(); log.warn(name + ': the edit note tab would not open' + (bl.length ? '; MusicBrainz: ' + bl.join('; ') : '')); }
-          ensureApolloEditNote(); setTimeout(syncNav, 40);
+          ensureApolloEditNote(); syncNav(); setTimeout(syncNav, 40);
         };
         const enter = () => {
           ensureApolloEditNote();
@@ -14554,14 +14572,22 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           // the note as typed, in case the binding missed an input event
           if (re && ta && re.rootField && typeof re.rootField.editNote === 'function' && re.rootField.editNote.peek() !== ta.value) tryIt('syncing the edit note', () => re.rootField.editNote(ta.value));
           const bl = submitBlockers();
-          if (bl.length) { log.warn(name + ': MusicBrainz won\'t take it yet: ' + bl.join('; ')); setTimeout(syncNav, 40); return; }
+          if (bl.length) { log.warn(name + ': MusicBrainz won\'t take it yet: ' + bl.join('; ')); syncNav(); setTimeout(syncNav, 40); return; }
           Log.keep(); tryIt('archiving the links', archiveOnSubmit);
           relWatchErrors(name, 4000);
           const f = navFooterEl(), nat = f && d.find(f);
-          const direct = why => { if (!re || relTry(() => re.submissionInProgress())) return; log.info(name + ': ' + why + ', calling MusicBrainz\'s submitEdits'); tryIt('submitEdits', () => re.submitEdits()); };
-          if (!nat) { direct('its own button is not on the page'); return; }
+          // #999 MusicBrainz's submitEdits first (what its button runs), checked at once rather than on a
+          // timer, which was seen held back; its button only when that did not start the submission
+          const busy = () => !!(re && relTry(() => re.submissionInProgress()));
+          if (re && typeof re.submitEdits === 'function') {
+            tryIt('submitEdits', () => re.submitEdits());
+            if (busy()) { log.info(name + ': MusicBrainz is entering the edit'); return; }
+            log.warn(name + ': MusicBrainz\'s submitEdits did not start the submission' + (nat ? ', clicking its button' : ''));
+          }
+          if (!nat) { log.warn(name + ': MusicBrainz\'s Enter edit button is not on the page'); return; }
           nat.click();
-          setTimeout(() => { if (!relTry(() => re.submissionInProgress()) && relTry(() => re.allowsSubmission())) direct('its button did not start the submission'); }, 300);
+          if (busy()) log.info(name + ': MusicBrainz is entering the edit (its button)');
+          else { const bl2 = submitBlockers(); log.warn(name + ': MusicBrainz did not start entering the edit' + (bl2.length ? ': ' + bl2.join('; ') : (re ? '' : ' (its editor is not reachable)'))); }
         };
         // Finish must not race a matching pass still writing recording links.
         // Cancellation settles through microtasks before the next event task.
@@ -14576,7 +14602,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const pager = document.createElement('div'); pager.id = 'tc-nav-pager';
     PAGE_DEFS.forEach(d => {
       const b = document.createElement('button'); b.className = 'tc-nav-wbtn ' + d.cls; b.dataset.page = d.id; b.textContent = d.label;
-      b.onclick = () => { const f = navFooterEl(); const nat = f && d.find(f); if (nat) nat.click(); setTimeout(syncNav, 40); };
+      b.onclick = () => { const f = navFooterEl(); const nat = f && d.find(f); if (nat) nat.click(); syncNav(); setTimeout(syncNav, 40); };   // #999 at once too
       pager.appendChild(b);
     });
     const left = document.createElement('div'); left.id = 'tc-nav-left'; left.append(steps, wiz);
