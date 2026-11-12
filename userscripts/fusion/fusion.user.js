@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.13.004500
+// @version      2026.11.13.010000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -4313,7 +4313,7 @@ function fsStyle() {
         // #790: the group card in Mission Control's slot, outside Fusion's window
         + '.fs-embed{font:13px -apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:var(--fs-text);text-align:left}'
         + '.fs-editwrap{margin:6px 0 10px}.fs-editwrap .fs-emh .fs-emh-n{flex:2 1 180px;min-width:120px;box-sizing:content-box}.fs-editwait{color:var(--fs-muted);padding:6px 0}'
-        + '.fs-editback{display:inline-flex;align-items:center;gap:5px;margin:0 0 6px;padding:2px 8px;font:12px -apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:inherit;background:transparent;border:1px solid var(--mbu-border);border-radius:5px;cursor:pointer}.fs-editback:hover{border-color:var(--mbu-accent)}.fs-editback img{width:16px;height:16px}'
+        + '.fs-editback{display:inline-flex;align-items:center;gap:5px;margin:0 0 6px;padding:2px 8px;font:12px -apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:inherit;background:transparent;border:1px solid var(--mbu-border);border-radius:5px;cursor:pointer}.fs-editback:hover{border-color:var(--mbu-accent)}.fs-editback img{width:16px;height:16px}.fs-editback.fs-busy::after{content:"";width:9px;height:9px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:fs-spin .8s linear infinite}@keyframes fs-spin{to{transform:rotate(360deg)}}'
         + '.fs-embed .fs-ghdr{cursor:default}.fs-embed .fs-grow{cursor:default}'
         + '.fs-mcopen{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;border-radius:5px;cursor:pointer;background:transparent;border:1px solid transparent;flex-shrink:0}.fs-mcopen:hover,.fs-mcopen:focus-visible{background:var(--fs-panel2);border-color:var(--fs-purple)}.fs-mcopen img{width:16px;height:16px;display:block}'
         + '.fs-mstate{font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid var(--fs-border);color:var(--fs-muted);white-space:nowrap}.fs-mstate.fs-done{color:var(--fs-green);border-color:var(--fs-green)}.fs-mstate.fs-err{color:var(--fs-red);border-color:var(--fs-red)}'
@@ -7345,17 +7345,20 @@ try {
                 if (!native()) return setView('native');
                 m.members.forEach(x => { recCache.delete(x.gid); CACHE.delete(m.type + ':' + x.gid); });
                 Log.info('Merge edit: reading ' + m.members.length + ' ' + m.type + 's again');
-                paint(m, wrap);
+                go();
                 setView('fusion');
             });
             btn.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation(); openLog(); });
             wrap._fsDetails = details; wrap._fsBtn = btn;
+            // the button shows at once; its spinner runs until the card is read
+            btn.classList.add('fs-busy');
+            const go = () => { btn.classList.add('fs-busy'); Promise.resolve(paint(m, wrap)).catch(e => Log.warn('Merge edit: ' + e.message)).finally(() => btn.classList.remove('fs-busy')); };
             wrap.addEventListener('click', e => { if (e.target.closest('[data-act="ro-native"]')) { e.preventDefault(); setView('native'); } });
             details.before(btn, wrap); details._fsWrap = wrap;
             wrap.innerHTML = '<div class="fs-editwait">Fusion: ' + m.members.length + ' ' + (m.type === 'recording' ? 'recordings' : emLabel(m.type).toLowerCase()) + '…</div>';
             apply(details, wrap, btn);
             Log.info('Merge edit: ' + m.type + ' merge of ' + m.members.length + ' placed, waiting for it to scroll into view');
-            const io = new IntersectionObserver(es => { if (es.some(x => x.isIntersecting)) { io.disconnect(); Log.info('Merge edit: ' + m.type + ' merge in view, reading ' + m.members.length); paint(m, wrap); } }, { rootMargin: '300px' });
+            const io = new IntersectionObserver(es => { if (es.some(x => x.isIntersecting)) { io.disconnect(); Log.info('Merge edit: ' + m.type + ' merge in view, reading ' + m.members.length); go(); } }, { rootMargin: '300px' });
             io.observe(details.closest('.edit-list') || wrap.parentElement);
         });
     };
