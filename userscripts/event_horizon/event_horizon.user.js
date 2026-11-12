@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.021501
+// @version      2026.11.13.021502
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11372,9 +11372,9 @@ const EDIT_SEARCH_CSS = `
 .eh-es-autocomplete .ui-menu-item>a{display:block;padding:5px 8px;cursor:pointer;color:var(--text)}.eh-es-autocomplete .ui-state-focus{background:var(--hover)}.eh-es-autocomplete .autocomplete-comment{font-size:12px;color:var(--muted)}
 #edit-search.eh-es .ui-helper-hidden-accessible{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 :root[data-eh-theme=dark] #edit-search.eh-es .autocomplete img{filter:invert(.8)}
-@media(max-width:650px){#edit-search.eh-es .conditions>li{grid-template-columns:24px minmax(0,1fr);gap:8px}#edit-search.eh-es .field-container{grid-column:2;grid-row:2}.eh-es-menu{width:min(320px,calc(100vw - 40px))}.eh-es-name{flex:1;min-width:150px}}
+@media(max-width:650px){#edit-search.eh-es .conditions>li{grid-template-columns:24px minmax(0,1fr);gap:8px}#edit-search.eh-es .field-container{grid-column:2;grid-row:2}.eh-es-menu{width:min(320px,calc(100vw - 40px))}.eh-es-name{flex:1;min-width:150px}#edit-search.eh-es .conditions>li{row-gap:2px;padding:6px 0}#edit-search.eh-es .field-container>span.field{gap:2px 10px}#edit-search.eh-es .operator+.eh-es-pick{min-width:0}#edit-search.eh-es .conditions .eh-es-pick>button{min-height:36px}}
 @media(pointer:coarse){.eh-es-pick>button,.eh-es-options>button,.eh-es-options>label{min-height:44px}}
-@media(max-width:650px){#edit-search.eh-es .eh-es-head{gap:6px}#edit-search.eh-es .eh-es-head>p{gap:3px}#edit-search.eh-es .eh-es-top>button{gap:4px;padding:6px 4px}#edit-search.eh-es .eh-es-top>button>.eh-es-value{display:none}#edit-search.eh-es .eh-es-head .eh-es-name{min-width:90px}#edit-search.eh-es .eh-es-head>.eh-es-saved{gap:4px}}
+@media(max-width:650px){#edit-search.eh-es .eh-es-head{gap:6px}#edit-search.eh-es .eh-es-head>p{gap:3px}#edit-search.eh-es .eh-es-top>button{gap:4px;padding:6px 4px}#edit-search.eh-es .eh-es-top>button>.eh-es-value{display:none}#edit-search.eh-es .eh-es-head .eh-es-name{flex:1 1 100%;min-width:0;order:9}#edit-search.eh-es .eh-es-head>.eh-es-saved{gap:4px}}
 .hm-es{display:flex;align-items:center;justify-content:center;flex:none;color:var(--muted);padding:4px 8px;border-left:1px solid var(--border)}.hm-es:hover{color:var(--link)}.hm-es svg{width:19px;height:19px}
 `;
 let esForm = null, esHome = null, esObserver = null, esFocus = null, esSerial = 0, esMoving = false;
