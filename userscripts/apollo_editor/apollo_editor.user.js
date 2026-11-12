@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.235001
+// @version      2026.11.12.236001
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -17110,13 +17110,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       mbuTipOn('form.tc-ent-plain button.guesscase-sortname', () => riWant() ? 'Guess sort name\n"The Beatles" → "Beatles, The", "John Smith" → "Smith, John"' : null);
       // the sort name's guess depends on the type (a person's is "Smith, John", a group's isn't turned): a new type guesses again, unless the sort name was typed by hand
       const sortIn = () => document.getElementById('id-edit-' + ENT_KIND + '.sort_name'), nameIn = () => document.getElementById('id-edit-' + ENT_KIND + '.name');
-      form.addEventListener('click', e => { if (e.target.closest && e.target.closest('button.guesscase-sortname')) setTimeout(() => { form._tcSortGuess = (sortIn() || {}).value; }, 0); }, true);
+      form.addEventListener('click', e => { if (e.target.closest && e.target.closest('button.guesscase-sortname')) setTimeout(() => { form._tcSortGuess = (sortIn() || {}).value; form._tcSortHand = false; }, 0); }, true);
+      form.addEventListener('input', e => { if (e.isTrusted && e.target === sortIn()) form._tcSortHand = true; }, true);   // only a sort name the user typed is kept; MB's own fill isn't
       form.addEventListener('change', e => {
         if (!riWant() || !/\.type_id$/.test(e.target.name || '')) return;
         const s = sortIn(), b = form.querySelector('button.guesscase-sortname'), n = nameIn(); if (!s || !b || !n || !n.value.trim()) return;
         const v = s.value.trim();
-        if (v && v !== form._tcSortGuess && v !== n.value.trim()) { Log.cat('Artist').debug('type changed; sort name typed by hand, kept:', v); return; }
-        b.click(); Log.cat('Artist').debug('type changed → sort name guessed again');
+        if (v && form._tcSortHand && v !== form._tcSortGuess && v !== n.value.trim()) { Log.cat('Artist').debug('type changed; sort name typed by hand, kept:', v); return; }
+        setTimeout(() => { b.click(); Log.cat('Artist').debug('type changed → sort name guessed again'); }, 0);   // after React has taken the new type, or the guess uses the old one
       });
     }
     if (ENT_PLAIN) { form.classList.add('tc-ent-plain'); entCards(on); ['name', 'sort_name'].forEach(k => entNameHl(document.getElementById('id-edit-' + ENT_KIND + '.' + k))); }
