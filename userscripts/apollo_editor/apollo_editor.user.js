@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.203002
+// @version      2026.11.12.210000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -4509,7 +4509,7 @@ Click: open the label`;
     list.style.top = (r.bottom + 4 + h > window.innerHeight - 8 && r.top - 4 - h > 8 ? r.top - 4 - h : r.bottom + 4) + 'px';
     btn.setAttribute('aria-expanded', 'true');
     // an outside mousedown closes it and eats the click that follows, so it doesn't land on what was under the list
-    const eat = e => { e.preventDefault(); e.stopPropagation(); };
+    const eat = e => { window.removeEventListener('click', eat, true); if (e.target && e.target.closest && e.target.closest('#tc-nav-bar')) return; e.preventDefault(); e.stopPropagation(); };   // #999 one click, never the nav bar's
     const off = e => { if (wrap.contains(e.target)) return; close(); window.addEventListener('click', eat, true); setTimeout(() => window.removeEventListener('click', eat, true), 400); };
     const esc = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); btn.focus(); } };
     const scroll = e => { if (!list.contains(e.target)) close(); };
@@ -11605,7 +11605,16 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
   // single watcher for both managed tabs; the one launcher persists across them and is removed elsewhere
   function watchTabs() {
+    // #999 one failing step used to end the tick silently each time, the nav bar (Finish / Enter edit)
+    // with it: each part runs on its own, and an error is logged once per message
+    const seen = new Set();
+    const guard = (what, fn) => { try { fn(); } catch (e) { const m = what + ': ' + (e && e.message || e); if (!seen.has(m)) { seen.add(m); Log.cat('System').warn('tab watcher: ' + m); } } };
     const tick = () => {
+      guard('tabs', tick0);
+      guard('nav bar', () => { if (navOn() && editorEl()) { if (!document.getElementById('tc-nav-steps')) applyNav(); else syncNav(); relocateAddMedium(); } });   // keep compact nav alive + synced
+      guard('zen', applyZen);   // #141: keep zen state applied (and fill the nav title once the release model is ready)
+    };
+    const tick0 = () => {
       const tl = tracklistVisible(), rec = recordingsVisible();
       if (document.getElementById('tc-mirror-wrap')) syncNative();   // keep native tracklist bits in their chosen state if MB re-renders
       if (tl && !_tlPrev) { _tlPrev = true; Log.cat('System').info('entered Tracklist tab');
@@ -11623,8 +11632,6 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       applyLangScript();   // #703: language and script from the titles, while none is given
       applyDuplicates();   // #187: score the Add-release Duplicates tab when "Modify Duplicates" is on
       if (editorEl()) { ensureLauncher(); wireTabFlush(); } else { const l = document.getElementById('tc-launch'); if (l) { l.remove(); mbRestackCorner('br'); } }   // #135: the switch shows on every tab; #145: flush the takeover on tab clicks
-      if (navOn() && editorEl()) { if (!document.getElementById('tc-nav-steps')) applyNav(); else syncNav(); relocateAddMedium(); }   // keep compact nav alive + synced
-      applyZen();   // #141: keep zen state applied (and fill the nav title once the release model is ready)
     };
     tick(); setInterval(tick, 500);
   }
@@ -14345,7 +14352,36 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     { id: 'prev',   label: '‹ Prev',   cls: 'tc-wiz-prev',   find: f => f.querySelector('button[data-click="previousTab"]') || [...f.querySelectorAll('button')].find(b => /previous/i.test(b.textContent)) },
     { id: 'next',   label: 'Next ›',   cls: 'tc-wiz-next',   find: f => f.querySelector('button[data-click="nextTab"]') || [...f.querySelectorAll('button')].find(b => /^\s*next\s*»?\s*$/i.test(b.textContent)) }
   ];
+  let _lastBlk = '';
   function hasChanges() { try { const re = W.MB && W.MB.releaseEditor; return !!(re && typeof re.allowsSubmission === 'function' && re.allowsSubmission()); } catch (e) { return false; } }
+  // #999 MusicBrainz's release editor object, its methods called straight, so no click handler on the page can swallow them
+  function relEd() { const M = W.MB; return (M && (M.releaseEditor || M._releaseEditor)) || null; }
+  function relTry(fn) { try { return fn(); } catch (e) { return undefined; } }
+  function editCount() { const re = relEd(); const n = re && relTry(() => re.allEdits().length); return typeof n === 'number' ? n : (hasChanges() ? 1 : 0); }
+  // #999 why MusicBrainz won't take the edit, in words: its allowsSubmission() checks, one by one
+  function submitBlockers() {
+    const re = relEd(); if (!re) return ['MusicBrainz\'s release editor is not ready'];
+    const out = [], root = re.rootField;
+    if (relTry(() => re.submissionInProgress())) out.push('a submission is already in progress');
+    if (relTry(() => re.validation.errorsExist())) {
+      const tabs = [...((stepNavEl() || document).querySelectorAll('li.error-tab a'))].map(a => (a.textContent || '').trim()).filter(Boolean);
+      const errs = [...document.querySelectorAll('#release-editor .field-error[data-visible="1"]')].map(e => (e.textContent || '').trim().replace(/\s+/g, ' ')).filter(Boolean).slice(0, 3);
+      out.push('MusicBrainz reports errors' + (tabs.length ? ' on ' + tabs.join(', ') : '') + (errs.length ? ': ' + errs.join(' · ') : ''));
+    }
+    if (relTry(() => re.addingWithoutVisitingTracklist())) out.push('the Tracklist tab was never opened (open it once)');
+    if (root && relTry(() => root.invalidEditNote())) out.push('the edit note is not valid');
+    if (root && re.action === 'add' && relTry(() => root.missingEditNote())) out.push('the edit note is empty');
+    if (relTry(() => re.allEdits().length) === 0) out.push('there are no changes to enter');
+    if (!out.length && relTry(() => re.allowsSubmission()) === false) out.push('MusicBrainz refuses it without saying why');
+    return out;
+  }
+  // #999 an exception MusicBrainz throws while Finish / Enter edit runs goes to window.onerror, not to us: log it
+  function relWatchErrors(what, ms) {
+    const h = e => Log.cat('Release').warn(what + ': MusicBrainz threw', (e && (e.message || (e.error && e.error.message))) || e);
+    const r = e => Log.cat('Release').warn(what + ': MusicBrainz rejected', (e && e.reason && (e.reason.message || e.reason)) || e);
+    const t = W.addEventListener ? W : window; t.addEventListener('error', h); t.addEventListener('unhandledrejection', r);
+    setTimeout(() => { t.removeEventListener('error', h); t.removeEventListener('unhandledrejection', r); }, ms || 1500);
+  }
   function editorEl() { return document.getElementById('release-editor'); }
   function stepNavEl() { const e = editorEl(); return e && e.querySelector(':scope > ul.ui-tabs-nav'); }
   function navFooterEl() { const e = editorEl(); return e && e.querySelector(':scope > div.buttons'); }
@@ -14385,6 +14421,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-nav-wbtn:disabled{opacity:.4;cursor:default;font-weight:normal;color:var(--mbu-text-weak);background:none;border-color:transparent}
     .tc-nav-wbtn.tc-wiz-finish,.tc-nav-wbtn.tc-wiz-enter{color:var(--mbu-ok);font-weight:600}
     .tc-nav-wbtn.tc-wiz-finish:hover,.tc-nav-wbtn.tc-wiz-enter:hover{background:var(--mbu-ok-bg);border-color:var(--mbu-ok)}
+    .tc-nav-wbtn.tc-wiz-enter.tc-nav-blocked{opacity:.55}
     .tc-addmed{font:13px Arial;padding:4px 12px;border:1px solid var(--mbu-accent);background:var(--mbu-bg);color:var(--mbu-accent-text);border-radius:5px;cursor:pointer;margin-left:auto}
     .tc-addmed:hover{background:var(--mbu-bg-raised)}
     /* #140 — full-width nav bar: step switcher + Finish on the left, Cancel/Prev/Next paginators on the right */
@@ -14471,28 +14508,55 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     WIZ_DEFS.forEach(d => {
       const b = document.createElement('button'); b.className = 'tc-nav-wbtn ' + d.cls; b.dataset.wiz = d.id; b.textContent = d.label;
       b.onclick = () => {
-        // #999: a Finish that goes nowhere used to say nothing. MB's own button does nothing when its
-        // last tab is disabled (jQuery UI won't open a disabled tab), so say so and why.
-        const forward = () => {
-          ensureApolloEditNote(); const f = navFooterEl(); const nat = f && d.find(f);
-          if (!nat) { Log.cat('Release').warn(d.label.replace(/^\W+/, '') + ': MusicBrainz\'s own button is not on the page, nothing to press'); return; }
-          if (nat.disabled) Log.cat('Release').warn(d.label.replace(/^\W+/, '') + ': MusicBrainz\'s own button is disabled');
-          const from = activeStepKey(); nat.click(); setTimeout(syncNav, 40);
-          if (d.id === 'finish') setTimeout(() => {
-            if (activeStepKey() !== from || from === 'edit-note') return;
-            const link = stepLink('edit-note'), li = link && link.closest('li');
-            const off = !!(li && li.classList.contains('ui-state-disabled'));
-            const bad = [...((stepNavEl() || document).querySelectorAll('li.error-tab a'))].map(a => (a.textContent || '').trim()).filter(Boolean);
-            Log.cat('Release').warn('Finish: MusicBrainz stayed on this tab' + (off ? ', its edit note tab is disabled' + (link && link.title ? ' ("' + link.title + '")' : '') : '') + (bad.length ? '; tabs with errors: ' + bad.join(', ') : ''));
-            // the tab is open to take, so open it as the step switcher does
-            if (!off && link) { Log.cat('Release').info('Finish: opening the edit note tab directly'); link.click(); setTimeout(syncNav, 40); }
-          }, 300);
+        // #999: Finish and Enter edit call MusicBrainz's release editor themselves (lastTab / submitEdits),
+        // not its hidden buttons: a click on those can be swallowed on the way (a popup's outside-click
+        // guard, a handler that stops it), and then nothing happens and nothing says why. Each way that
+        // fails is logged, with what MusicBrainz says is in the way.
+        const name = d.label.replace(/^\W+/, ''), log = Log.cat('Release');
+        const tryIt = (how, fn) => { try { fn(); return true; } catch (e) { log.warn(name + ': ' + how + ' failed', e && e.message || e); return false; } };
+        const finish = () => {
+          if (activeStepKey() === 'edit-note') { ensureApolloEditNote(); return; }
+          relWatchErrors(name);
+          const re = relEd(), there = () => activeStepKey() === 'edit-note';
+          const ways = [
+            ['MusicBrainz\'s lastTab', () => re.lastTab()],
+            ['a stuck tab switch reset', () => { const t = re.uiTabs; if (!t || !t.running) return; log.warn(name + ': MusicBrainz\'s tabs were stuck mid-switch, resetting them'); t.running = false; re.lastTab(); }],
+            ['the tabs widget', () => { const t = re.uiTabs; t.option('active', (re.tabCount || t.panels.length) - 1); }],
+            ['the edit note tab', () => { const l = stepLink('edit-note'); if (!l) throw new Error('no edit note tab'); l.click(); }],
+            ['MusicBrainz\'s own Finish button', () => { const f = navFooterEl(), nat = f && d.find(f); if (!nat) throw new Error('not on the page'); nat.click(); }]
+          ];
+          for (let i = 0; i < ways.length; i++) {
+            if (!re && i < 3) continue;
+            tryIt(ways[i][0], ways[i][1]);
+            if (there()) { if (i) log.info(name + ': opened the edit note tab through ' + ways[i][0]); break; }
+            if (i === 0) {
+              const link = stepLink('edit-note'), li = link && link.closest('li');
+              log.warn(name + ': MusicBrainz stayed on ' + (activeStepKey() || 'no tab') + ' (edit note tab ' + (li && li.classList.contains('ui-state-disabled') ? 'disabled' + (link.title ? ': "' + link.title + '"' : '') : 'enabled') + ', tab switch ' + (re && re.uiTabs && re.uiTabs.running ? 'stuck running' : 'idle') + '), trying other ways');
+            }
+          }
+          if (!there()) { const bl = submitBlockers(); log.warn(name + ': the edit note tab would not open' + (bl.length ? '; MusicBrainz: ' + bl.join('; ') : '')); }
+          ensureApolloEditNote(); setTimeout(syncNav, 40);
+        };
+        const enter = () => {
+          ensureApolloEditNote();
+          const re = relEd(), ta = document.getElementById('edit-note-text');
+          // the note as typed, in case the binding missed an input event
+          if (re && ta && re.rootField && typeof re.rootField.editNote === 'function' && re.rootField.editNote.peek() !== ta.value) tryIt('syncing the edit note', () => re.rootField.editNote(ta.value));
+          const bl = submitBlockers();
+          if (bl.length) { log.warn(name + ': MusicBrainz won\'t take it yet: ' + bl.join('; ')); setTimeout(syncNav, 40); return; }
+          Log.keep(); tryIt('archiving the links', archiveOnSubmit);
+          relWatchErrors(name, 4000);
+          const f = navFooterEl(), nat = f && d.find(f);
+          const direct = why => { if (!re || relTry(() => re.submissionInProgress())) return; log.info(name + ': ' + why + ', calling MusicBrainz\'s submitEdits'); tryIt('submitEdits', () => re.submitEdits()); };
+          if (!nat) { direct('its own button is not on the page'); return; }
+          nat.click();
+          setTimeout(() => { if (!relTry(() => re.submissionInProgress()) && relTry(() => re.allowsSubmission())) direct('its button did not start the submission'); }, 300);
         };
         // Finish must not race a matching pass still writing recording links.
         // Cancellation settles through microtasks before the next event task.
-        Log.cat('Release').info(d.label.replace(/^\W+/, '') + ' pressed on ' + (activeStepKey() || 'no tab') + (_matching || _autoMatching ? ', stopping the matching pass first' : ''));
-        const go = () => { try { forward(); } catch (e) { Log.cat('Release').warn(d.label.replace(/^\W+/, '') + ': failed', e && e.message || e); } };
-        if (_matching || _autoMatching) { try { stopMatching(); } catch (e) { Log.cat('Release').warn('Stop failed', e && e.message || e); } setTimeout(go, 0); }
+        log.info(name + ' pressed on ' + (activeStepKey() || 'no tab') + (_matching || _autoMatching ? ', stopping the matching pass first' : ''));
+        const go = () => { try { (d.id === 'finish' ? finish : enter)(); } catch (e) { log.warn(name + ': failed', e && e.message || e); } };
+        if (_matching || _autoMatching) { try { stopMatching(); } catch (e) { log.warn('Stop failed', e && e.message || e); } setTimeout(go, 0); }
         else go();
       };   // #130: set the edit note on the compact-nav submit path too
       wiz.appendChild(b);
@@ -14580,8 +14644,17 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // clicked (it only jumps to the edit-note tab — no submit, no skipped validation), so show OUR
       // Finish on every non-last tab when there are changes, mirroring only MB's "not the last tab"
       // half. Enter edit keeps MB's own visibility (the edit-note tab alone).
-      const show = changed && (d.id === 'finish' ? (!!nat && active !== 'edit-note') : vis(nat));
+      // #999 on edit counts, not allowsSubmission(): Enter edit stays up while MB refuses it, and its
+      // tooltip and a press say why (a press used to do nothing, silently)
+      const edits = editCount() > 0;
+      const show = d.id === 'finish' ? (edits && active !== 'edit-note' && (!!nat || !!relEd())) : (edits && (vis(nat) || active === 'edit-note'));
       mbuProp(proxy.style, 'display', show ? '' : 'none');
+      if (d.id === 'enter' && show) {
+        const bl = changed ? [] : submitBlockers(), k = bl.join('; ');
+        mbuCls(proxy, 'tc-nav-blocked', !!bl.length);
+        mbuAttr(proxy, 'data-tip', bl.length ? 'MusicBrainz won\'t take it yet: ' + k : '');
+        if (k !== _lastBlk) { _lastBlk = k; if (k) Log.cat('Release').debug('Enter edit: MusicBrainz won\'t take it yet: ' + k); }
+      }
     });
     // paginators stay in a fixed position — Prev/Next are never hidden, just disabled
     // when MB's native button isn't applicable (Prev on the first step, Next on the last) (#140)
