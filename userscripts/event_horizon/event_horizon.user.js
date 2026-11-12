@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.12.160000
+// @version      2026.11.12.170000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2757,7 +2757,7 @@ const CSS = `
 .hm-you{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:22px;align-items:start}
 @media (max-width:900px){.hm-you{grid-template-columns:1fr}}
 .hm-pf{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 18px}
-.hm-pid{display:flex;gap:12px;align-items:center;padding-right:40px}.hm-pl{position:absolute;top:12px;right:12px;width:32px;height:32px;display:grid;place-items:center;border-radius:9px;background:var(--chip);color:var(--chip-text)!important}.hm-pl:hover{outline:1px solid var(--accent)}.hm-pl svg{width:18px;height:18px}button.hm-av{border:0;padding:0;cursor:pointer;filter:none!important}.hm-gv{display:flex;gap:6px;margin-top:4px}.hm-gv input{border:1px solid var(--border);border-radius:8px;background:var(--surface)!important;color:var(--text)!important;font:inherit;font-size:13px;padding:5px 8px;width:240px}.hm-gv button{border:0;border-radius:8px;background:var(--accent);color:#fff;font:inherit;font-size:13px;font-weight:700;padding:5px 12px;cursor:pointer;filter:none!important}
+.hm-pid{display:flex;gap:12px;align-items:center;padding-right:80px}.hm-lo{right:52px!important}.hm-pl{position:absolute;top:12px;right:12px;width:32px;height:32px;display:grid;place-items:center;border-radius:9px;background:var(--chip);color:var(--chip-text)!important}.hm-pl:hover{outline:1px solid var(--accent)}.hm-pl svg{width:18px;height:18px}button.hm-av{border:0;padding:0;cursor:pointer;filter:none!important}.hm-gv{display:flex;gap:6px;margin-top:4px}.hm-gv input{border:1px solid var(--border);border-radius:8px;background:var(--surface)!important;color:var(--text)!important;font:inherit;font-size:13px;padding:5px 8px;width:240px}.hm-gv button{border:0;border-radius:8px;background:var(--accent);color:#fff;font:inherit;font-size:13px;font-weight:700;padding:5px 12px;cursor:pointer;filter:none!important}
 .hm-pid b{font-size:16px}.hm-pid small{display:block;color:var(--muted)}
 .hm-av{flex:none;overflow:hidden;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#ba478f,#eb743b);color:#fff;display:grid;place-items:center;font-size:22px;font-weight:800}
 .hm-sts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:14px 0}@media(max-width:700px){.hm-sts{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -10465,7 +10465,7 @@ function profFill(app, p) {
     const stat = (n, l, h) => `<a class="hm-st" href="${/^\//.test(h) ? MB + esc(h) : `${u}/${h}`}"><b>${fmtN(n)}</b><small>${l}</small></a>`;
     profP = p; let gh = ''; try { gh = GM_getValue('gravatar', ''); } catch (e) {}
     gh = gh || p.gh; const av = p.av || (gh && `https://gravatar.com/avatar/${gh}?s=104&d=404`);
-    el.innerHTML = `<a class="hm-pl" href="${u}" data-tip="Your profile" aria-label="Your profile">${SVG(MK_CR)}</a><div class="hm-pid"><button type="button" class="hm-av" data-tip="Your Gravatar
+    el.innerHTML = `<a class="hm-pl" href="${u}" data-tip="Your profile" aria-label="Your profile">${SVG(MK_CR)}</a><a class="hm-pl hm-lo" href="${MB}/logout?returnto=%2F" data-tip="Log out" aria-label="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a><div class="hm-pid"><button type="button" class="hm-av" data-tip="Your Gravatar
 Click to use another email" aria-label="Set your Gravatar email">${esc(ME[0] || '?').toUpperCase()}${av ? `<img src="${esc(av)}" alt="" width="52" height="52" onerror="this.remove()">` : ''}</button><div><b>${esc(ME)}</b><small>${sub}</small>${p.bio ? `<small><a href="${esc(p.bio)}" target="_blank">${esc(p.bio.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></small>` : ''}</div></div>
         <div class="hm-sts">${stat(p.total, 'edits', 'edits')}${stat(p.open, 'open', 'edits/open')}${stat(p.day, 'last 24 hours', p.dayHref || 'edits')}${stat(p.votes, 'votes', 'votes')}</div>
         ${p.added.length ? `<div class="hm-bars">${p.added.map(([n, v]) => `<div><span>${esc(n)}</span><i style="width:${Math.max(2, v / top * 100)}%"></i><em>${fmtN(v)}</em></div>`).join('')}</div>` : ''}
