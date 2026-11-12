@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.236002
+// @version      2026.11.12.214500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -1784,6 +1784,7 @@
   // measure a name's pixel width so an artist input can shrink-wrap to its text (so the
   // clear × hugs the name instead of sitting at the box's far right). #284 follow-up.
   const _nmMeasCtx = (() => { try { return document.createElement('canvas').getContext('2d'); } catch (e) { return null; } })();
+  const _nmFieldSizing = (() => { try { return CSS.supports('field-sizing', 'content'); } catch (e) { return false; } })();
   const fitNmWidth = inp => {
     if (!_nmMeasCtx) return;
     // Rows are built off-page; measure after mounting so the real font and
@@ -1791,6 +1792,14 @@
     if (!inp.isConnected) { requestAnimationFrame(() => { if (inp.isConnected) fitNmWidth(inp); }); return; }
     const v = inp.value;
     if (!v) { inp.style.removeProperty('width'); return; }   // empty → let flex give it the full width
+    // #1019: where the browser can size a field to its text, let it: no measuring, so no font
+    // or padding guess can cut the last letter off (#909 measured, and still ran short on ChromeOS)
+    if (_nmFieldSizing) {
+      inp.style.setProperty('field-sizing', 'content', 'important');
+      inp.style.setProperty('width', 'auto', 'important');
+      inp.style.setProperty('min-width', '2ch', 'important');
+      return;
+    }
     // #909: measure in the font the input really renders (a hard-coded Arial ran short where the
     // browser substitutes a wider face, e.g. ChromeOS, cutting the last letter), plus its padding
     const cs = inp.isConnected ? getComputedStyle(inp) : null;
