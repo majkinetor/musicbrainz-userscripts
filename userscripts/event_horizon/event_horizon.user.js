@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.021500
+// @version      2026.11.13.021501
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11516,6 +11516,25 @@ function esTop(on) {
     }
     p._esApply(on);
 }
+// Lists as many selected values as the room right of the picker allows, then "+N" for the rest.
+let esCanvas;
+function esFit(names, valueLabel, trigger) {
+    const all = names.join(', ');
+    if (names.length <= 2) return all;
+    const box = trigger.getBoundingClientRect(), form = trigger.closest('form') || document.body;
+    const room = Math.min(720, (form.getBoundingClientRect().right || innerWidth) - box.left - 48);
+    if (!box.width || room <= 0) return names.slice(0, 2).join(', ') + ' +' + (names.length - 2);
+    const ctx = (esCanvas ||= document.createElement('canvas')).getContext('2d'), cs = getComputedStyle(valueLabel);
+    ctx.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+    if (ctx.measureText(all).width <= room) return all;
+    for (let k = names.length - 1; k > 1; k--) {
+        const t = names.slice(0, k).join(', ') + ' +' + (names.length - k);
+        if (ctx.measureText(t).width <= room) return t;
+    }
+    return names.slice(0, 1).join(', ') + ' +' + (names.length - 1);
+}
+let esResizeTimer;
+addEventListener('resize', () => { clearTimeout(esResizeTimer); esResizeTimer = setTimeout(() => document.querySelectorAll('.eh-es-pick').forEach(r => r._esSync?.()), 150); });
 function esPick(select) {
     const root = document.createElement('span'); root.className = 'eh-es-pick'; root._esSelect = select;
     const headers = { auto_edit_filter: 'Edit kind', order: 'Sort order', negation: 'Match mode', combinator: 'Condition logic' };
@@ -11544,7 +11563,7 @@ function esPick(select) {
     };
     const sync = () => {
         const opts = [...select.options], selected = [...select.selectedOptions], extra = select.closest('#extra-condition');
-        let text = extra ? '+ Add condition' : !selected.length ? 'Choose values…' : selected.length > 2 ? selected.slice(0, 2).map(x => x.text.trim()).join(', ') + ' +' + (selected.length - 2) : selected.map(x => x.text.trim()).join(', ');
+        let text = extra ? '+ Add condition' : !selected.length ? 'Choose values…' : esFit(selected.map(x => x.text.trim()), valueLabel, trigger);
         if (top === 'kind') text = { '': 'All edits', '1': 'Auto-edits', '0': 'Non-auto' }[select.value] || text;
         if (top === 'sort') text = { desc: 'Newest', asc: 'Oldest', closed_desc: 'Recently closed', closed_asc: 'Earliest closed', vote_closing_asc: 'Voting closes sooner', vote_closing_desc: 'Voting closes later', latest_note: 'Recent notes', rand: 'Unspecified' }[select.value] || text;
         if (valueLabel.textContent !== text) valueLabel.textContent = text;
