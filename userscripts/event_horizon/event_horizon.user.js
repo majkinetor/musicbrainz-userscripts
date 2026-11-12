@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.12.220000
+// @version      2026.11.12.230000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2780,7 +2780,7 @@ const CSS = `
 .u-av{position:relative;overflow:visible!important}.u-av>img{border-radius:50%}.u-avb{position:absolute;right:-4px;bottom:-4px;width:32px;height:32px;border-radius:50%;background:var(--surface);border:2px solid var(--bg);display:grid;place-items:center;color:var(--accent)}
 .u-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}.u-tab{display:inline-flex;align-items:center;min-height:30px;padding:4px 12px;border-radius:9px;border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important;font-weight:600;font-size:13px}.u-tab:hover{border-color:var(--accent)}
 .u-facts{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;font-size:13px}.u-facts dt{color:var(--muted);font-weight:600}.u-facts dd{margin:0;overflow-wrap:anywhere}
-.u-sts{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.u-st b small{font-size:12px;font-weight:400;color:var(--muted);margin-left:6px}.u-st.positive b{color:#3f8f7a}.u-st.negative b{color:#c4466a}span.hm-st:hover{outline:none}
+.u-kpis{display:grid;grid-template-columns:3fr 1fr 1fr 1fr;gap:8px;margin:12px 0}.u-kgrp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-left:3px solid var(--accent);background:var(--mbu-hover,rgba(127,127,127,.08));border-radius:2px;padding:4px 0}.u-kpi{min-width:0;padding:6px 0 6px 8px;border-left:3px solid var(--mbu-border);color:var(--text)!important;text-decoration:none!important}.u-kgrp .u-kpi{padding:2px 0 2px 8px;border-left:0}.u-kgrp .u-kpi+.u-kpi{border-left:1px solid var(--mbu-border)}a.u-kpi:hover b{color:var(--accent)}.u-kpi b{display:block;font-size:clamp(14px,3.4vw,24px);line-height:1.1;font-variant-numeric:tabular-nums}.u-kpi small{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)}.u-kpi svg{width:13px;height:13px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.u-sts{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.u-st b small{font-size:12px;font-weight:400;color:var(--muted);margin-left:6px}.u-st.positive b{color:#3f8f7a}.u-st.negative b{color:#c4466a}span.hm-st:hover{outline:none}
 .u-bars .u-bar{display:grid;grid-template-columns:130px 1fr 100px;gap:8px;align-items:center;font-size:13px;padding:3px 0;color:var(--text)!important;text-decoration:none!important}.u-bar i{height:8px;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.u-bar em{font-style:normal;text-align:right;color:var(--muted)}.u-bar em small{margin-left:6px;opacity:.75}a.u-bar:hover span{color:var(--accent)}
 .u-votes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:14px}.u-vcol{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 16px}.u-vcol h3{margin:0 0 8px;font-size:13px;color:var(--muted)}
 .u-vr{display:grid;grid-template-columns:70px 1fr 90px;gap:8px;align-items:center;font-size:13px;padding:3px 0}.u-vr i{height:8px;border-radius:4px;background:var(--chip)}.u-vr b{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.u-vr em{font-style:normal;text-align:right}.u-vr a{color:var(--text)!important}.u-vr a:hover{color:var(--accent)!important}.u-vr small{color:var(--muted);margin-left:6px}.u-vt{margin-top:6px;font-size:12px;color:var(--muted)}
@@ -10712,6 +10712,16 @@ function userHtml(d) {
     const voted = (acc ? acc.v[0] : 0) + (rej ? rej.v[0] : 0), share = r => voted && (r === acc || r === rej) ? `<small>${Math.round(r.v[0] / voted * 100)}%</small>` : '';
     const vsrch = v => u.id ? `${MB}/search/edits?conditions.0.field=voter&conditions.0.operator=%3D&conditions.0.name=${en}&conditions.0.voter_id=${u.id}&conditions.0.args=${v}` : '';
     const VOTE = [1, 0, -1, 2]; // the votes table's rows: Yes, No, Abstain, Approve
+    // #1005: six headline figures above the tables, the first three (edits) grouped; 10,000 and up shown in K
+    const fmtK = n => n >= 1e4 ? (n / 1e3).toFixed(n >= 1e5 ? 0 : 1).replace(/\.0$/, '') + 'K' : fmtN(n);
+    const KI = { ed: '<path d="M4 20h4L19 9l-4-4L4 16z"/>', day: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>', open: '<path d="M7 4h10M7 20h10M8 4c0 5 8 6 8 16M16 4c0 5-8 6-8 16"/>',
+        add: '<circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/>', vote: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12l3 3 5-6"/>', tag: '<path d="M4 4h7l9 9-7 7-9-9z"/><circle cx="8.5" cy="8.5" r="1.5"/>' };
+    const sum = (rs, j = 0) => rs.reduce((a, r) => a + (r.v[j] || 0), 0), edL = re => ed0.find(r => re.test(r.href) || re.test(r.l));
+    const vt = u.stats.find(t => t.two), at = u.stats[2] && !u.stats[2].two ? u.stats[2] : null, tt = u.stats[3] && !u.stats[3].two ? u.stats[3] : null;
+    const kpi = (ic, n, l, h) => n == null ? '' : (x => h ? `<a class="u-kpi" href="${esc(abs(h))}"${x}</a>` : `<span class="u-kpi"${x}</span>`)(`${n >= 1e4 ? ` data-tip="${fmtN(n)}"` : ''}><b>${fmtK(n)}</b><small><svg viewBox="0 0 24 24">${KI[ic]}</svg>${l}</small>`);
+    const e0 = ed0[0], e24 = edL(/24|last_day/i), eop = edL(/\/open$|^open$/i), tg = tt ? tt.rows.filter(r => /tag/i.test(r.l)) : [];
+    const kpis = ed0.length ? `<div class="u-kpis"><div class="u-kgrp">${kpi('ed', e0 && e0.v[0], 'Edits', e0 && e0.href)}${kpi('day', e24 && e24.v[0], '24h', e24 && e24.href)}${kpi('open', eop && eop.v[0], 'Open', eop && eop.href)}</div>${
+        kpi('add', at ? sum(at.rows) : null, 'Added', '')}${kpi('vote', vt ? sum(vt.rows, (vt.cols.length || 2) - 1) : null, 'Votes', vt && vt.href)}${kpi('tag', tg.length ? sum(tg) : null, 'Tags', tg[0] && tg[0].href)}</div>` : '';
     const secs = u.stats.map((t, i) => {
         const id = ids[i] || 'ust' + i, tools = t.href ? `<a class="aside" href="${esc(abs(t.href))}">all</a>` : '';
         let body;
@@ -10739,7 +10749,7 @@ function userHtml(d) {
         [`${ns}${ed(0, 'me')}&${by(1, 'edit_note_author')}`, `Notes by ${uname} on your edits`],
         [`${ns}${ed(0, 'not_me')}&${by(1, 'editor').replace('operator=%3D', 'operator=%21%3D')}&conditions.2.field=edit_note_author&conditions.2.operator=me&${by(3, 'edit_note_author')}`, `Other edits with notes by both of you`],
     ].map(([h, t]) => `<a href="${esc(MB + h)}">${esc(t)}</a>`).join('')}</div>`, '') : '';
-    return hero + secs + notes;
+    return hero + kpis + secs + notes;
 }
 /* ── search results ────────────────────────────────── */
 // MusicBrainz's /search page, read off its own markup (every type has its own columns): this tab's page as loaded, another one fetched.
