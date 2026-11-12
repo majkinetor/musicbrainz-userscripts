@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.151307
+// @version      2026.11.12.215500
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -1583,6 +1583,8 @@ function linksCell(t) {
     return '<span class="mc-icons">' + have.join('') + (have.length && neu.length ? '<span class="mc-isep"></span>' : '') + neu.join('') + '</span>';
 }
 const PICKABLE = { new: 1, withheld: 1, unsure: 1 };
+// #1020: a link Platform Check holds back by its own settings (withheld, unsure) isn't taken in until picked by hand
+const HELD = { withheld: 1, unsure: 1 };
 // what a lane's "take all in" takes: not a link whose track count or format says it is another release (#709)
 const laneTakes = x => PICKABLE[x.state] && !x.mismatch && !x.other && !['barcode', 'catno', 'label', 'event', 'lengths'].includes(x.kind);   // #740: never a catalog number or a label
 function cellHtml(c, t) {
@@ -4288,7 +4290,7 @@ function ccBuildSources() {
     out.forEach(s => {
         if (s.take != null) return;
         const bc = ccBc(s.barcode);
-        s.take = !s.mismatch && (bc ? bc === own : (s.tracks === n || s.tracks == null));
+        s.take = !s.mismatch && !HELD[s.state] && (bc ? bc === own : (s.tracks === n || s.tracks == null));
     });
     Log.cat('Platforms').info('consolidation sources: ' + out.map(s => s.key + (s.take ? '✓' : '·') + (s.barcode ? ' ' + s.barcode : '') + (s.tracks != null ? ' ' + s.tracks + 't' : '') + (s.mismatch ? ' [' + s.mismatch.join('; ') + ']' : '')).join(' | '));
 }
@@ -5315,7 +5317,7 @@ function cmpStart() {
     CC.sources = links.map(x => {
         const bc = ccBc(x.barcode), count = x.tracks == null || x.tracks === n;
         return { key: x.key, url: x.url, barcode: x.barcode || null, tracks: x.tracks == null ? null : x.tracks, format: x.format || null, mismatch: x.mismatch || null, state: x.state,
-            role: 'found', take: !x.mismatch && (own && bc ? bc === own : count), read: VET.get(x.url) && VET.get(x.url).rel ? { state: 'done', rel: VET.get(x.url).rel, provider: { id: x.key }, ms: 0 } : { state: 'none' } };
+            role: 'found', take: !x.mismatch && !HELD[x.state] && (own && bc ? bc === own : count), read: VET.get(x.url) && VET.get(x.url).rel ? { state: 'done', rel: VET.get(x.url).rel, provider: { id: x.key }, ms: 0 } : { state: 'none' } };
     });
     // #801: the album First Contact found to be this release, as it read it: taken in, first, in place of what Platform
     // Check found on its platform, unless the release links that platform already
