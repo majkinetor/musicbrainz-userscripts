@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.12.151651
+// @version      2026.11.12.150137
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11241,7 +11241,7 @@ const EDIT_SEARCH_CSS = `
 #edit-search.eh-es .eh-es-head .eh-es-name{flex:1 1 180px;min-width:120px}
 #edit-search.eh-es .eh-es-top>button{white-space:nowrap;border:0;border-radius:0;padding:4px 6px;gap:7px}
 #edit-search.eh-es .eh-es-top>button>.eh-es-value{white-space:nowrap}.eh-es-top>button>svg,.eh-es-saved>[data-es-save]>svg,.eh-es-more>button>svg{width:16px;height:16px;flex:none}
-#edit-search.eh-es .eh-es-saved>[data-es-save]{display:flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;padding:6px;border:0}
+#edit-search.eh-es .eh-es-head>.eh-es-new{background:transparent;cursor:pointer;filter:none!important;flex:none;border:0;color:var(--link);padding:6px 8px;white-space:nowrap}#edit-search.eh-es .eh-es-saved>[data-es-save]{display:flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;padding:6px;border:0}
 #edit-search.eh-es .eh-es-more>button{display:flex;align-items:center;justify-content:center;width:28px;height:32px;padding:6px}
 #edit-search.eh-es .eh-es-head .eh-es-status{position:absolute;right:0;top:calc(100% + 3px);margin:0;min-height:0;font-size:11px;white-space:nowrap}
 #edit-search.eh-es .conditions{list-style:none;margin:0;padding:0}
@@ -11323,7 +11323,7 @@ function esSaved() {
 }
 function esSavedBar(form) {
     const bar = document.createElement('div'); bar.className = 'eh-es-saved';
-    bar.innerHTML = `<div class="eh-es-name"><button type="button" data-es-find aria-label="Find a saved search" aria-expanded="false" aria-controls="eh-es-library" data-tip="Find a saved search">${SVG(LENS)}</button><input type="search" aria-label="Search name" placeholder="Name this search…" maxlength="120" autocomplete="off" aria-controls="eh-es-library"><div class="eh-es-menu" data-es-library hidden><div class="eh-es-options" data-es-results id="eh-es-library" role="listbox" aria-label="Saved searches"></div></div></div><button type="button" data-es-save>Save</button><div class="eh-es-more"><button type="button" data-es-more aria-label="More saved-search actions" aria-expanded="false" aria-controls="eh-es-save-actions">⋯</button><div class="eh-es-menu" data-es-actions id="eh-es-save-actions" hidden><button type="button" data-es-new>New search</button><button type="button" data-es-copy>Save a copy</button><button type="button" data-es-delete>Delete</button></div></div><span class="eh-es-status" role="status"></span>`;
+    bar.innerHTML = `<button type="button" class="eh-es-new" data-es-new>New search</button><div class="eh-es-name"><button type="button" data-es-find aria-label="Find a saved search" aria-expanded="false" aria-controls="eh-es-library" data-tip="Find a saved search">${SVG(LENS)}</button><input type="search" aria-label="Search name" placeholder="Name this search…" maxlength="120" autocomplete="off" aria-controls="eh-es-library"><div class="eh-es-menu" data-es-library hidden><div class="eh-es-options" data-es-results id="eh-es-library" role="listbox" aria-label="Saved searches"></div></div></div><button type="button" data-es-save>Save</button><div class="eh-es-more"><button type="button" data-es-more aria-label="More saved-search actions" aria-expanded="false" aria-controls="eh-es-save-actions">⋯</button><div class="eh-es-menu" data-es-actions id="eh-es-save-actions" hidden><button type="button" data-es-copy>Save a copy</button><button type="button" data-es-delete>Delete</button></div></div><span class="eh-es-status" role="status"></span>`;
     const name = bar.querySelector('input'), save = bar.querySelector('[data-es-save]'), find = bar.querySelector('[data-es-find]'), library = bar.querySelector('[data-es-library]'), results = bar.querySelector('[data-es-results]'), more = bar.querySelector('[data-es-more]'), actions = bar.querySelector('[data-es-actions]'), del = bar.querySelector('[data-es-delete]'), msg = bar.querySelector('.eh-es-status');
     save.innerHTML = SVG('<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12l4 4v12a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8V3"/>'); save.setAttribute('aria-label', 'Save'); save.dataset.tip = 'Save search';
     more.innerHTML = SVG('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>'); more.dataset.tip = 'More saved-search actions';
@@ -11407,8 +11407,8 @@ function esSavedBar(form) {
     form.addEventListener('submit', () => { if (selected) remember(selected, esQuery(form)); });
     document.addEventListener('click', e => { if (!bar.contains(e.target)) { closeLibrary(); actions.hidden = true; more.setAttribute('aria-expanded', 'false'); } });
     bar._esRefresh = refresh;
-    const controls = form.querySelector(':scope>p'), head = document.createElement('div'); head.className = 'eh-es-head';
-    if (controls) { controls.before(head); head.append(controls, bar); } else form.prepend(bar);
+    const newBtn = bar.querySelector('[data-es-new]'), controls = form.querySelector(':scope>p'), head = document.createElement('div'); head.className = 'eh-es-head';
+    if (controls) { controls.before(head); head.append(controls, newBtn, bar); } else form.prepend(bar);
     refresh(); return bar;
 }
 
@@ -11554,7 +11554,7 @@ function esMount(app, d) {
     }
     esForm.classList.add('eh-es');
     esTop(true);
-    esForm.querySelectorAll('.eh-es-saved').forEach(p => { p.hidden = false; });
+    esForm.querySelectorAll('.eh-es-saved,.eh-es-new').forEach(p => { p.hidden = false; });
     app.querySelector('#eh-edit-search').append(esForm); esScan();
     if (esFocus && esForm.contains(esFocus.el)) { esFocus.el.focus({ preventScroll: true }); if (typeof esFocus.at === 'number') esFocus.el.setSelectionRange(esFocus.at, esFocus.end); }
     esFocus = null;
@@ -11564,7 +11564,7 @@ function esNative() {
     esForm.classList.remove('eh-es');
     esTop(false);
     esForm.querySelectorAll('select').forEach(s => { s.hidden = false; });
-    esForm.querySelectorAll('.eh-es-pick,.eh-es-saved,[data-es-native]').forEach(p => { p.hidden = true; });
+    esForm.querySelectorAll('.eh-es-pick,.eh-es-saved,.eh-es-new,[data-es-native]').forEach(p => { p.hidden = true; });
     esForm.querySelectorAll('.remove-item').forEach(b => { b.textContent = ''; });
     esForm.querySelectorAll('[data-es-input-type]').forEach(input => { input.type = input.dataset.esInputType; input.classList.remove('eh-es-id', 'eh-es-nopw'); });
     for (const menu of ehBody.querySelectorAll('.eh-es-autocomplete')) { menu.classList.remove('eh-es-autocomplete'); mbBody.append(menu); }

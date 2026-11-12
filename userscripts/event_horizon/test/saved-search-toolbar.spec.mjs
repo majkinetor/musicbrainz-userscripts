@@ -30,7 +30,7 @@ test('one saved-search name supports rename, copy, filtering and deletion', {tag
   await page.locator('.eh-es-saved').getByRole('button',{name:'Delete',exact:true}).click();
   expect((await page.evaluate(()=>GM_getValue('editSearches'))).length).toBe(1);
   await page.locator('.eh-es-saved').getByRole('button',{name:'More saved-search actions'}).click();
-  await Promise.all([page.waitForURL(u=>u.pathname==='/search/edits'&&!u.search),page.locator('.eh-es-saved').getByRole('button',{name:'New search',exact:true}).click()]);
+  await Promise.all([page.waitForURL(u=>u.pathname==='/search/edits'&&!u.search),page.locator('.eh-es-new').click()]);
   await idle(page);
   await expect(page.locator('.eh-es-saved')).toHaveCount(1);
   await expect(page.locator('#app .condition')).toHaveCount(0);
@@ -49,7 +49,7 @@ test('saved names are visible on combo focus and New search resets without reloa
   await name.press('Escape');
   await page.evaluate(()=>window.__searchResetMarker=1);
   await bar.getByRole('button',{name:'More saved-search actions'}).click();
-  await bar.getByRole('button',{name:'New search',exact:true}).click();
+  await page.locator('.eh-es-new').click();
   await expect(page.locator('#app .condition')).toHaveCount(0);
   expect(await page.evaluate(()=>window.__searchResetMarker)).toBe(1);
   expect(new URL(page.url()).search).toBe('');
