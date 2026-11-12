@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.020000
+// @version      2026.11.13.020100
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2764,7 +2764,7 @@ const CSS = `
 .hm-sts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:14px 0}@media(max-width:700px){.hm-sts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .hm-st{background:var(--chip);border-radius:10px;padding:8px 10px;color:var(--text)!important;text-decoration:none!important}.hm-st:hover{outline:1px solid var(--accent)}
 .hm-st b{display:block;font-size:18px}.hm-st small{color:var(--muted)}
-.hm-bars div{display:grid;grid-template-columns:100px 1fr 56px;gap:8px;align-items:center;font-size:12px;padding:2px 0}
+.hm-bars>*{color:var(--text)!important;text-decoration:none!important}.hm-bars a:hover>span{color:var(--accent)}.hm-bars>*{display:grid;grid-template-columns:100px 1fr 56px;gap:8px;align-items:center;font-size:12px;padding:2px 0}
 .hm-bars i{height:8px;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.hm-bars em{font-style:normal;text-align:right;color:var(--muted)}
 .hm-home{position:absolute;inset:0 0 auto auto;width:400px;height:190px}@media (max-width:1100px){.hm-home{width:190px}}@media (max-width:700px){.hm-home{display:none}}.hm-hi{overflow-wrap:anywhere}.sr-sub{position:relative;margin:12px 0 0}
 .sr-t .flagi{display:inline-block;height:.8em;width:1.2em;object-fit:cover;margin-right:5px;vertical-align:0;border-radius:2px;box-shadow:0 0 0 1px var(--border)}.sr-t .release-country+.release-date{margin-left:8px}.sr-t td.sr-sc,.sr-t th.sr-sc{width:64px;white-space:nowrap}.sr-sc i{display:inline-block;vertical-align:middle;width:34px;height:6px;border-radius:3px;background:linear-gradient(90deg,#ba478f,#eb743b) 0/var(--w) 100% no-repeat,var(--chip)}.sr-sc small{margin-left:6px;color:var(--muted)}
@@ -10455,6 +10455,7 @@ function profParse(html) {
         mail: ((info ? info.textContent : '').match(/[^\s@()]+@[^\s@()]+\.[a-z]{2,}/i) || [''])[0].toLowerCase(),
         bio: (info && info.querySelector('tr.biography a[href]') || {}).href || '',
         total: num(row(ed, 0) && row(ed, 0).querySelector('td')), open: num(row(ed, 7) && row(ed, 7).querySelector('td')), day: num(row(ed, 8) && row(ed, 8).querySelector('td')), dayHref: ((row(ed, 8) && row(ed, 8).querySelector('td a[href]')) || { getAttribute: () => '' }).getAttribute('href'),
+        id: ((d.querySelector('table.statistics a[href*="conditions.0.args.0="]') || { getAttribute: () => '' }).getAttribute('href').match(/conditions\.0\.args\.0=(\d+)/) || [])[1] || '',
         votes: votes && votes[2] ? num({ textContent: votes[2].textContent.split('(')[0] }) : 0, added: added.sort((a, b) => b[1] - a[1]), sec,
     };
 }
@@ -10463,7 +10464,7 @@ async function profLoad(app) {
     // one cache serves every MusicBrainz server, and the same name can be a different editor on each (test's majkinetor
     // isn't production's): a profile counts only on the server it came from
     if (p && (p.me !== ME || p.site !== MB)) p = null;
-    if (p && 'gh' in p && 'dayHref' in p && Date.now() - p.at < PROF_TTL) return profFill(app, p);
+    if (p && 'gh' in p && 'id' in p && Date.now() - p.at < PROF_TTL) return profFill(app, p);
     if (p) profFill(app, p);
     try {
         const r = await mbnFetch(`${MB}/user/${encodeURIComponent(ME)}`); if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -10494,6 +10495,9 @@ function gravForm(app) {
         if (profP) profFill(app, profP); else f.remove();
     });
 }
+// the "Added" table's rows and the edit types that add each (#1013); an applied search of them is what the row counts
+const ADD_T = { artist: '1', 'cover art': '314', 'release group': '10', place: '61', release: '31%2C216', label: '20', series: '140', recording: '71', work: '41', area: '81', event: '150', instrument: '131', genre: '160' };
+const addHref = (p, ts) => p.id && ts.length ? `${MB}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=editor&conditions.0.operator=%3D&conditions.0.name=${encodeURIComponent(ME)}&conditions.0.args.0=${p.id}&conditions.1.field=type&conditions.1.operator=%3D${ts.map(t => '&conditions.1.args=' + t).join('')}&conditions.2.field=status&conditions.2.operator=%3D&conditions.2.args=2` : '';
 function profFill(app, p) {
     const el = app.querySelector('.hm-pf'); if (!el) return;
     const yrs = p.since ? new Date().getFullYear() - p.since : 0, top = p.added[0] ? p.added[0][1] : 1, u = `${MB}/user/${encodeURIComponent(ME)}`;
@@ -10503,8 +10507,8 @@ function profFill(app, p) {
     gh = gh || p.gh; const av = p.av || (gh && `https://gravatar.com/avatar/${gh}?s=104&d=404`);
     el.innerHTML = `<a class="hm-pl" href="${u}" data-tip="Your profile" aria-label="Your profile">${SVG(MK_CR)}</a><a class="hm-pl hm-lo" href="${MB}/logout?returnto=%2F" data-tip="Log out" aria-label="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a><div class="hm-pid"><button type="button" class="hm-av" data-tip="Your Gravatar
 Click to use another email" aria-label="Set your Gravatar email">${esc(ME[0] || '?').toUpperCase()}${av ? `<img src="${esc(av)}" alt="" width="52" height="52" onerror="this.remove()">` : ''}</button><div><b>${esc(ME)}</b><small>${sub}</small>${p.bio ? `<small><a href="${esc(p.bio)}" target="_blank">${esc(p.bio.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></small>` : ''}</div></div>
-        <div class="u-kpis"><div class="u-kgrp">${uKpi('ed', p.total, 'Edits', href('edits'))}${uKpi('day', p.day, '24h', href(p.dayHref || 'edits'))}${uKpi('open', p.open, 'Open', href('edits/open'))}</div>${uKpi('add', p.added.length ? p.added.reduce((a, x) => a + x[1], 0) : null, 'Added', '')}${uKpi('vote', p.votes, 'Votes', href('votes'))}</div>
-        ${p.added.length ? `<div class="hm-bars">${p.added.map(([n, v]) => `<div><span>${esc(n)}</span><i style="width:${Math.max(2, v / top * 100)}%"></i><em>${fmtN(v)}</em></div>`).join('')}</div>` : ''}
+        <div class="u-kpis"><div class="u-kgrp">${uKpi('ed', p.total, 'Edits', href('edits'))}${uKpi('day', p.day, '24h', href(p.dayHref || 'edits'))}${uKpi('open', p.open, 'Open', href('edits/open'))}</div>${uKpi('add', p.added.length ? p.added.reduce((a, x) => a + x[1], 0) : null, 'Added', addHref(p, Object.values(ADD_T)))}${uKpi('vote', p.votes, 'Votes', href('votes'))}</div>
+        ${p.added.length ? `<div class="hm-bars">${p.added.map(([n, v]) => (h => `<${h ? `a href="${esc(h)}"` : 'div'}><span>${esc(n)}</span><i style="width:${Math.max(2, v / top * 100)}%"></i><em>${fmtN(v)}</em></${h ? 'a' : 'div'}>`)(addHref(p, [ADD_T[n.toLowerCase()]].filter(Boolean)))).join('')}</div>` : ''}
         ${p.sec.length ? `<small class="hm-sec">${p.sec.map(([n, v]) => `${esc(n)} ${fmtN(v)}`).join(' · ')}</small>` : ''}`;
 }
 const HM_CLR = ['#ba478f', '#8c5bd6', '#d6833e', '#3f8f7a', '#c4466a', '#6b6fd6', '#2f8bbf', '#7a9a3a', '#8a6a55'];
