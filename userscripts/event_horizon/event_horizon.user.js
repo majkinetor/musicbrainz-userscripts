@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.070004
+// @version      2026.11.13.080000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -10566,7 +10566,7 @@ function profFill(app, p) {
     gh = gh || p.gh; const av = p.av || (gh && `https://gravatar.com/avatar/${gh}?s=104&d=404`);
     el.innerHTML = `<a class="hm-pl" href="${u}" data-tip="Your profile" aria-label="Your profile">${SVG(MK_CR)}</a><a class="hm-pl hm-lo" href="${MB}/logout?returnto=%2F" data-tip="Log out" aria-label="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a><div class="hm-pid"><button type="button" class="hm-av" data-tip="Your Gravatar
 Click to use another email" aria-label="Set your Gravatar email">${esc(ME[0] || '?').toUpperCase()}${av ? `<img src="${esc(av)}" alt="" width="52" height="52" onerror="this.remove()">` : ''}</button><div><b>${esc(ME)}</b><small>${sub}</small>${p.bio ? `<small><a href="${esc(p.bio)}" target="_blank">${esc(p.bio.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></small>` : ''}</div></div>
-        <div class="u-kpis"><div class="u-kgrp">${uKpi('ed', p.total, 'Edits', href('edits'))}${uKpi('day', p.day, '24h', href(p.dayHref || 'edits'))}${uKpi('open', p.open, 'Open', href('edits/open'))}</div>${uKpi('add', p.added.length ? p.added.reduce((a, x) => a + x[1], 0) : null, 'Added', addHref(p, Object.values(ADD_T), p.added.reduce((a, x) => a + x[1], 0)))}${uKpi('vote', p.votes, 'Votes', href('votes'))}</div>
+        <div class="u-kpis"><div class="u-kgrp">${uKpi('ed', p.total, 'Edits', href('edits'))}${uKpi('day', p.day, '24h', href(p.dayHref || 'edits'))}${uKpi('open', p.open, 'Open', href('edits/open'))}</div>${uKpi('add', p.added.length ? p.added.reduce((a, x) => a + x[1], 0) : null, 'Added', addHref(p, Object.values(ADD_T), p.added.reduce((a, x) => a + x[1], 0)))}${uKpi('vote', p.votes, 'Votes', href('votes'))}${(t => uKpi('tag', t.length ? t.reduce((a, x) => a + x[1], 0) : null, 'Tags', href('tags')))(p.sec.filter(([k]) => /^Tags/.test(k)))}</div>
         ${p.added.length ? `<div class="hm-bars">${p.added.map(([n, v]) => (h => `<${h ? `a href="${esc(h)}"` : 'div'}><span>${esc(n)}</span><i style="width:${Math.max(2, v / top * 100)}%"></i><em>${fmtN(v)}</em></${h ? 'a' : 'div'}>`)(addHref(p, [ADD_T[n.toLowerCase()]].filter(Boolean), v))).join('')}</div>` : ''}
         ${p.sec.length ? `<small class="hm-sec">${p.sec.map(([n, v]) => `${esc(n)} ${fmtN(v)}`).join(' · ')}</small>` : ''}`;
 }
