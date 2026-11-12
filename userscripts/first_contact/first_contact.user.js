@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.131000
+// @version      2026.11.12.141802
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Presto Music, RateYourMusic, Album of the Year.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -1223,11 +1223,17 @@ const BEATPORT = {
         const pp = nd.props.pageProps;
         const r = pp.release;
         if (!r) throw new Error(`Beatport: no release ${id} in the page data`);
-        const q = ((pp.dehydratedState || {}).queries || []).map(x => x.state && x.state.data).find(d => d && Array.isArray(d.results) && d.results.some(t => t.release && String(t.release.id) === String(id)));
-        if (!q) throw new Error('Beatport: no tracks in the page data');
+        const tok = pp.anonSession && pp.anonSession.access_token;
+        let q = ((pp.dehydratedState || {}).queries || []).map(x => x.state && x.state.data).find(d => d && Array.isArray(d.results) && d.results.some(t => t.release && String(t.release.id) === String(id)));
+        if (!q && tok) {
+            // #1008: the page no longer carries the tracks; the site itself reads them from the API with its anonymous token
+            Log.info(`Beatport: no tracks in the page data; reading release ${id}'s tracks from Beatport's API`);
+            q = await gmJson(`https://api.beatport.com/v4/catalog/releases/${id}/tracks/?page=1&per_page=100`, { Authorization: 'Bearer ' + tok });
+            Log.debug(`Beatport API: ${(q.results || []).length} of ${q.count} track(s) on the first page`);
+        }
+        if (!q || !Array.isArray(q.results)) throw new Error(`Beatport: no tracks in the page data${tok ? '' : ', and no token to ask Beatport\'s API'}`);
         const results = q.results.slice();
         for (let next = q.next; next;) {
-            const tok = pp.anonSession && pp.anonSession.access_token;
             if (!tok) { Log.warn(`Beatport: ${q.count} tracks but no token to read past ${results.length}`); break; }
             // the page names an internal host; the same path answers on the public one
             const page = await gmJson(next.replace(/^https?:\/\/[^/]+/, 'https://api.beatport.com'), { Authorization: 'Bearer ' + tok });
@@ -1237,8 +1243,9 @@ const BEATPORT = {
         Log.info(`Beatport release ${id}: "${r.name}" by ${(r.artists || []).map(a => a.name).join(', ')} · type ${(r.type || {}).name} · ${r.track_count} track(s), ${results.length} read · ${r.new_release_date} · UPC ${r.upc || '—'} · label "${(r.label || {}).name}" ${r.catalog_number || ''}`);
 
         // release.tracks lists the track URLs last to first; a track it misses keeps the API's order
-        const byUrl = new Map(results.map(t => [t.url, t]));
-        const order = (r.tracks || []).slice().reverse().map(u => byUrl.get(u)).filter(Boolean);
+        const path = u => String(u || '').replace(/^https?:\/\/[^/]+/, '');   // the page names an internal host, the API the public one
+        const byUrl = new Map(results.map(t => [path(t.url), t]));
+        const order = (r.tracks || []).slice().reverse().map(u => byUrl.get(path(u))).filter(Boolean);
         const tracks = order.length === results.length ? order : results;
         if (tracks !== order) Log.warn(`Beatport: the release's track list matched ${order.length} of ${results.length} tracks; using the API's order`);
         const artist = a => ({ name: a.name, url: this.url('artist', a) });
