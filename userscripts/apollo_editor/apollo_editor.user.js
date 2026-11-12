@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.210000
+// @version      2026.11.12.220000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -14216,16 +14216,16 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (staleSugg) refetchSuggestions(ko);   // the old track's suggestions: show the current track's instead
     if (staleSugg || !renderSugg()) {
       if (!staleSugg) { try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) { Log.cat('Recording').warn('findRecordingSuggestions failed', e.message); } }
-      let tries = 0;
-      const poll = () => {
-        if (!_recPop) return;
-        const loading = typeof ko.loadingSuggestedRecordings === 'function' ? u(ko.loadingSuggestedRecordings) : false;
-        if (!loading && renderSugg()) { rerenderRec(); return; }   // also refresh the ⊕ count on the row
-        if (!loading && tries > 3) { suggBox.innerHTML = '<div class="tc-rpk-empty">no suggestions</div>'; return; }
-        if (++tries < 40) setTimeout(poll, 250);
-        else suggBox.innerHTML = '<div class="tc-rpk-empty">suggestions did not arrive — reopen to retry</div>';
-      };
-      setTimeout(poll, 250);
+      // #999 wait on MusicBrainz's observables, not a chain of 250ms timers: those were seen held back
+      // while MusicBrainz was busy, and the picker said "finding suggestions…" for good
+      const t0 = Date.now();
+      recSuggestionsSettled(ko).then(() => {
+        if (_recPop !== pop) return;
+        if (renderSugg()) { rerenderRec(); return; }   // also refresh the ⊕ count on the row
+        const loading = typeof ko.loadingSuggestedRecordings === 'function' ? !!u(ko.loadingSuggestedRecordings) : false;
+        Log.cat('Recording').debug('picker: MusicBrainz suggestions for track', entry.number, loading ? 'still loading after' : 'empty after', Date.now() - t0, 'ms');
+        if (!suggGids.size) suggBox.innerHTML = '<div class="tc-rpk-empty">' + (loading ? 'suggestions did not arrive — reopen to retry' : 'no suggestions') + '</div>';
+      });
     }
     q.value = u(ko.name) || '';
     q.dataset.tip = 'Free form: a MusicBrainz query as it is\nLike `isrc:USXXX…` or `artist:"…"`\nPaste: an MBID, or its MusicBrainz URL, links that recording at once';
@@ -14243,11 +14243,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // immediately (same as pasting an MBID in the artist picker). #189
       const gid = mbidFrom(query);
       if (gid) {
+        // #999 one already listed (a suggestion or a search hit) is linked at once, no request
+        if (data[gid]) { Log.cat('Recording').info('picker: linking pasted recording', gid, 'for track', entry.number, '(already listed)'); pickRecording(entry, data[gid]); return; }
+        Log.cat('Recording').info('picker: looking up pasted recording', gid, 'for track', entry.number);
         resBox.innerHTML = '<div class="tc-rpk-empty tc-rpk-busy">resolving recording…</div>';
         const rec = await fetchRecordingById(gid, sOpts);
-        if (my !== seq || !_recPop) return;
+        if (my !== seq || _recPop !== pop) { Log.cat('Recording').debug('picker: lookup of', gid, 'dropped (the picker moved on)'); return; }
         if (rec) pickRecording(entry, rec);   // links the recording + closes the picker
-        else resBox.innerHTML = '<div class="tc-rpk-empty">recording MBID not found</div>';
+        else { resBox.innerHTML = '<div class="tc-rpk-empty">recording not found, or MusicBrainz is busy — press Enter to try again</div>'; Log.cat('Recording').warn('picker: no recording for', gid); }
         return;
       }
       // paste an ISRC → resolve to its recording(s). Exactly one → link
@@ -14287,7 +14290,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       runSearch(autoQuery(), !relax);
     };
     // once the user edits the box, search their raw text (free Lucene); the initial run is the auto query
-    q.oninput = () => { clearTimeout(tmr); tmr = setTimeout(() => runSearch(q.value, false), 300); };
+    // #999 a pasted MBID, URL or ISRC is looked up at once, not after the typing pause (a timer that was
+    // seen held back while MusicBrainz was busy), and Enter runs what is in the box now
+    q.oninput = () => { clearTimeout(tmr); if (mbidFrom(q.value) || isrcFrom(q.value)) runSearch(q.value, false); else tmr = setTimeout(() => runSearch(q.value, false), 300); };
+    q.onkeydown = e => {
+      if (e.key !== 'Enter' || e.isComposing) return;
+      e.preventDefault(); e.stopPropagation(); clearTimeout(tmr);
+      Log.cat('Recording').debug('picker: Enter on', JSON.stringify(q.value));
+      runSearch(q.value, false);
+    };
     q.focus(); q.select(); runSearch(autoQuery(), !relax);
     _recPopReposition();
   }
