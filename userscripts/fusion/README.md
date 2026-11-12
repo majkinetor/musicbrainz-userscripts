@@ -140,6 +140,7 @@ The ⚙ window (or right-click Fusion's corner icon), which also holds the activ
 | Preload group release details                     | off     | fetch every grouped recording's releases in the background |
 | Length tolerance                                  | 5 s     | lengths this close count as the same                       |
 | Match never groups if lengths differ by more than | 30 s    | whatever else matches; grouping by hand still can          |
+| Add Fusion card on merge edit pages               | on      | [the card on merge edits](#on-merge-edits); after a reload |
 
 ## Notes
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.235000
+// @version      2026.11.13.000500
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -5888,7 +5888,8 @@ function openSettings(anchor) {
         + '<label class="fs-opt" data-tip="Read the releases of every grouped recording at once\nAs soon as a group forms, so opening a row is instant. It runs in the background, and the stop button in the header halts it.\n⚠ One request per grouped recording: off by default, as seeding already makes many"><input type="checkbox" id="fs-opt-prefetch"> Preload group release details in the background</label>'
         + '<label class="fs-opt">Length tolerance <input type="number" id="fs-opt-tol" min="0" max="60"> s</label>'
         + '<label class="fs-opt" data-tip="Match never groups two recordings whose known lengths differ more than this\nWhatever else matches. Grouping by hand is not affected.">Match never groups if lengths differ by more than <input type="number" id="fs-opt-gross" min="5" max="600"> s</label>'
-        + '<label class="fs-opt" data-tip="Remove a group from the board once it has merged\nA few seconds after it merges, so its ✓ is still seen. Its recordings or entities go with it, as with Clear merged.\nOn: the board keeps only what is left to do\nOff: merged groups stay until Clear → Clear merged"><input type="checkbox" id="fs-opt-autoclear"> Auto clear merged</label>';
+        + '<label class="fs-opt" data-tip="Remove a group from the board once it has merged\nA few seconds after it merges, so its ✓ is still seen. Its recordings or entities go with it, as with Clear merged.\nOn: the board keeps only what is left to do\nOff: merged groups stay until Clear → Clear merged"><input type="checkbox" id="fs-opt-autoclear"> Auto clear merged</label>'
+        + '<label class="fs-opt" data-tip="Show Fusion’s group card instead of MusicBrainz’s Merge and Into tables on open merge edits\nOn edit pages, edit lists and Event Horizon. Takes effect when the page reloads."><input type="checkbox" id="fs-opt-editcard"> Add Fusion card on merge edit pages</label>';
     document.body.appendChild(s);
     mbuControls(s);   // the shared − n + steppers
     Object.assign(s.style, { left: '50%', top: '50%', transform: 'translate(-50%, -50%)' });   // in the middle of the screen, moved by its header (#847)
@@ -5901,6 +5902,8 @@ function openSettings(anchor) {
     s.querySelector('#fs-opt-tol').value = Math.round(SETTINGS.lengthToleranceMs / 1000);
     s.querySelector('#fs-opt-gross').value = Math.round((SETTINGS.grossLengthMs != null ? SETTINGS.grossLengthMs : 30000) / 1000);
     s.querySelector('#fs-opt-prefetch').checked = !!SETTINGS.prefetchGroupReleases;
+    s.querySelector('#fs-opt-editcard').checked = SETTINGS.editCard !== false;
+    s.querySelector('#fs-opt-editcard').onchange = e => { SETTINGS.editCard = e.target.checked; saveSettings(); };
     s.querySelector('#fs-opt-autoclear').checked = SETTINGS.autoClearMerged !== false;
     s.querySelector('#fs-opt-autoclear').onchange = e => { SETTINGS.autoClearMerged = e.target.checked; saveSettings(); if (e.target.checked) autoClearSoon(); };
     s.querySelector('#fs-opt-acoustid').onchange = e => { SETTINGS.acoustidEnrich = e.target.checked; saveSettings(); };
@@ -7308,6 +7311,7 @@ try {
         }));
     };
     const scan = () => {
+        if (SETTINGS.editCard === false) return;
         // Event Horizon redraws an edit's page and copies its tables into its own view: take every
         // merge table, the copies too, and read "open" from the nearest edit header, else the page's
         document.querySelectorAll('table.details[class*="merge-"]').forEach(details => {
@@ -7344,7 +7348,7 @@ try {
                 paint(m, wrap);
                 setView('fusion');
             });
-            btn.addEventListener('contextmenu', e => { e.preventDefault(); openLog(); });
+            btn.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation(); openLog(); });
             wrap._fsDetails = details; wrap._fsBtn = btn;
             wrap.addEventListener('click', e => { if (e.target.closest('[data-act="ro-native"]')) { e.preventDefault(); setView('native'); } });
             details.before(btn, wrap); details._fsWrap = wrap;
