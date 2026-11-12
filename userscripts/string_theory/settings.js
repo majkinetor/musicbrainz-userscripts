@@ -308,11 +308,12 @@ function stOpenFor(name, toFront) {
   return false;
 }
 // tab: 'g' General, 'a' About (MusicBrainz only; elsewhere there is only About); 'l' is General's Dock section
-function stSettings(tab) {
+function stSettings(tab, warm) {
   var dock = tab === 'l';
   if (dock) tab = 'g';
   var toDock = function () { var d = ST_ON_MB && stCfgOv && stCfgOv.querySelector('#st-dock'); if (dock && d) d.scrollIntoView({ block: 'start' }); };
   if (stCfgOv && stCfgOv.isConnected) {
+    if (stCfgOv._show) { var sh = stCfgOv._show; stCfgOv._show = null; sh(tab, dock); return; }
     if (tab && stCfgOv.querySelector('#st-tab-' + tab)) stCfgOv.querySelector('#st-tab-' + tab).click();
     stCfgOv.querySelector('#st-cfg').focus();
     toDock();
@@ -391,6 +392,7 @@ function stSettings(tab) {
   var ov = document.createElement('div');
   ov.className = 'mbu-ov';
   ov.id = 'st-cfg-ov';
+  if (warm) ov.style.display = 'none';
   ov.innerHTML = '<div class="mbu-ov-panel mbu-ui" id="st-cfg" tabindex="-1" role="dialog" aria-label="String Theory settings">' + h + '</div>';
   (document.body || html).appendChild(ov);
   stCfgOv = ov;
@@ -405,9 +407,7 @@ function stSettings(tab) {
     });
     if (on) { s.setProperty('right', 'auto', 'important'); s.setProperty('bottom', 'auto', 'important'); } else { s.removeProperty('right'); s.removeProperty('bottom'); }
   };
-  pin();
-  if (vv) { vv.addEventListener('resize', pin); vv.addEventListener('scroll', pin); }
-  var close = function () { if (vv) { vv.removeEventListener('resize', pin); vv.removeEventListener('scroll', pin); } if (tabObserver) tabObserver.disconnect(); ov.remove(); document.removeEventListener('keydown', onKey, true); document.removeEventListener('mousedown', onOut, true); };
+  var close = function () { if (vv) { vv.removeEventListener('resize', pin); vv.removeEventListener('scroll', pin); } if (tabObserver) tabObserver.disconnect(); ov.remove(); document.removeEventListener('keydown', onKey, true); document.removeEventListener('mousedown', onOut, true); stCfgWarmSoon(); };
   var newsLink = ov.querySelector('#st-cfg-news');
   if (newsLink) newsLink.addEventListener('click', function (e) { e.preventDefault(); close(); stNewsOpen(); });
   // #851: a script's settings opened from here sit above this window, which stays open; the one used last
@@ -424,15 +424,13 @@ function stSettings(tab) {
     if (!front) { toFront(true); return; }   // the script's window closes first, this one on the next Escape
     e.stopPropagation(); close();
   };
-  document.addEventListener('keydown', onKey, true);
   var onOut = function (e) {
     if (panel.contains(e.target)) { if (!front) toFront(true); return; }
     if (e.target.closest && e.target.closest('#mbu-toast')) return;
     if (floating(e.target)) { toFront(false); return; }
     close();
   };
-  document.addEventListener('mousedown', onOut, true);
-  var tabObserver = null;
+  var tabObserver = null, refresh = function () {};
   if (ST_ON_MB) {
     var title = q('.mbu-cfg-h'), tabs = q('.st-tabs'), footer = document.createElement('div');
     title.classList.add('st-title'); footer.className = 'st-footer';
@@ -704,6 +702,7 @@ function stSettings(tab) {
       openFor(d.dataset.name);
     });
     show();
+    refresh = function () { show(); showTheme(); showIdle(); showPal(); };
   }
 
   var updateCheck = 0;
@@ -740,7 +739,7 @@ function stSettings(tab) {
       });
     });
   }
-  if (!ST_ON_MB) checkUpdates();
+  if (!ST_ON_MB && !warm) checkUpdates();
   else {
     if (!tab) try { tab = localStorage.getItem('st-cfg-tab'); } catch (_) {}
     if (tab && tab !== 'g' && q('#st-tab-' + tab)) q('#st-tab-' + tab).click();
@@ -759,6 +758,25 @@ function stSettings(tab) {
   stFitPixels(panel);
   U.mbuControls(panel);
   U.mbuCfgDrag(panel);
-  panel.focus();
-  toDock();
+  // the window is built hidden at idle beforehand, so opening it only shows it
+  var activate = function (t, d) {
+    pin();
+    if (vv) { vv.addEventListener('resize', pin); vv.addEventListener('scroll', pin); }
+    document.addEventListener('keydown', onKey, true);
+    document.addEventListener('mousedown', onOut, true);
+    ov.style.display = '';
+    if (warm) { try { refresh(); } catch (e) {} if (!ST_ON_MB) checkUpdates(); }
+    if (t && q('#st-tab-' + t)) q('#st-tab-' + t).click();
+    panel.focus();
+    var dk = d && ST_ON_MB && q('#st-dock'); if (dk) dk.scrollIntoView({ block: 'start' });
+  };
+  if (warm) ov._show = activate; else activate(null, dock);
+}
+var stCfgWarmT = 0;
+function stCfgWarmSoon() {
+  clearTimeout(stCfgWarmT);
+  stCfgWarmT = setTimeout(function () {
+    var go = function () { if (!stCfgOv || !stCfgOv.isConnected) try { stSettings(null, true); } catch (e) {} };
+    if (window.requestIdleCallback) requestIdleCallback(go, { timeout: 5000 }); else go();
+  }, 1500);
 }

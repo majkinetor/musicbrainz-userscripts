@@ -267,6 +267,7 @@ var __stStarters = {};   // #851: per member folder, how String Theory's setting
   stPalListen();
   var open = function () { try { stSettings(); } catch (e) { try { console.error('[String Theory] settings failed:', e); } catch (x) {} } };
   document.addEventListener('mbu-st-settings', open);
+  stCfgWarmSoon();
   var palette = function () { try { stPalette(); } catch (e) { try { console.error('[String Theory] command palette failed:', e); } catch (x) {} } };
   document.addEventListener('mbu-st-palette', palette);
   // another script's way to the theme chooser, as Event Horizon's Effects tab has
