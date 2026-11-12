@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.170000
+// @version      2026.11.12.190000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -7283,17 +7283,22 @@ try {
         }));
     };
     const scan = () => {
-        document.querySelectorAll('div.edit-header.open[class*="edit-merge"]').forEach(hdr => {
-            const box = hdr.closest('.edit-list') || hdr.parentElement;
-            const details = box && box.querySelector('table.details[class*="merge-"]');
-            if (!details || details._fsDone) return;
+        // Event Horizon redraws an edit's page and copies its tables into its own view: take every
+        // merge table, the copies too, and read "open" from the nearest edit header, else the page's
+        document.querySelectorAll('table.details[class*="merge-"]').forEach(details => {
+            if (details._fsDone) return;
             details._fsDone = true;
+            let p = details.previousElementSibling;
+            while (p && (p.classList.contains('fs-editwrap') || p.classList.contains('fs-editback'))) { const q = p.previousElementSibling; if (!p._fsDetails && !p._fsOwn) p.remove(); p = q; }
+            const box = details.closest('.edit-list');
+            const hdr = (box && box.querySelector('.edit-header')) || document.querySelector('.edit-header');
+            if (!hdr || !hdr.className.split(' ').some(c => c.startsWith('edit-merge')) || !hdr.classList.contains('open')) return;
             const m = parse(details);
             if (!m) return;
             fsStyle();
             const wrap = el('div', 'fs-embed fs-editwrap');
             const btn = el('button', 'fs-editback');
-            btn.type = 'button';
+            btn.type = 'button'; btn._fsOwn = true;
             btn.innerHTML = '<img alt="" src="' + ICON_URL + '">Fusion';
             btn.setAttribute('data-tip', 'Fusion’s comparison of this merge');
             btn.addEventListener('click', () => setView('fusion'));
