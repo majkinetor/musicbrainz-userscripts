@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.151307
+// @version      2026.11.12.151418
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -4349,6 +4349,7 @@ function fsStyle() {
         // #908: in a group card the columns share the width, so they never overlap and the name keeps its room
         + '.fs-emcard .fs-emc{flex:1 1 110px;min-width:48px;width:auto}'
         + '.fs-emcard .fs-emc.fs-wide{flex-basis:150px}'
+        + '.fs-alias-sub{display:block;font-size:11px;color:var(--mbu-text-weak);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fs-alias-sub i{font-style:normal;color:var(--mbu-ok)}.fs-alias-sub.fs-alias-near i{color:var(--mbu-warn)}'   // #1007
         + '.fs-emcard .fs-grow .fs-t,.fs-emcard .fs-emh-n{flex:2 1 180px;min-width:120px}'
         + '.fs-emh{display:flex;gap:8px;padding:4px 13px 0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--mbu-text-weak)}'
         + '.fs-emh .fs-emc{color:inherit;font-size:inherit}'
@@ -6241,7 +6242,7 @@ function emAdd(ent) {
         return 'ok';
     });
 }
-const EM_INC = { release: 'artist-credits+labels+media', 'release-group': 'artist-credits', work: 'artist-rels', event: '' };
+const EM_INC = { release: 'artist-credits+labels+media', 'release-group': 'artist-credits', work: 'artist-rels', event: '', artist: 'aliases' };
 const EM_COLS = {
     release: ['Artist', 'Format', 'Tracks', 'Country/Date', 'Label', 'Catalog#', 'Barcode'],
     'release-group': ['Artist', 'Type', 'First release'],
@@ -6275,11 +6276,36 @@ const EM_FETCHING = new Set();
 async function emFetch(type, gid) {
     const inc = EM_INC[type];
     const j = await wsGet('/ws/2/' + type + '/' + gid + '?fmt=json' + (inc ? '&inc=' + inc : ''));
-    return { name: j.title || j.name || gid, dis: j.disambiguation || '', info: emInfo(type, j).map(v => v == null ? '' : String(v)) };
+    const d = { name: j.title || j.name || gid, dis: j.disambiguation || '', info: emInfo(type, j).map(v => v == null ? '' : String(v)) };
+    if (type === 'artist') d.aliases = [...new Set((j.aliases || []).map(a => a.name).filter(Boolean))];   // #1007
+    return d;
+}
+/* #1007: is a member's name an alias of another member? Exact: the name equals one of the other's aliases,
+   case, accents and punctuation folded. Near: every word of the name is in one alias (Julio Fontalvo in
+   "Julio Fontalvo Caro"). Per member, the best hit on any other member, exact first. */
+const emNorm = v => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+function emAliasHits(members) {
+    const hits = new Map();
+    for (const x of members) {
+        const n = emNorm(x.name), words = n.split(' ');
+        if (!n) continue;
+        let best = null;
+        for (const y of members) {
+            if (y === x || !Array.isArray(y.aliases) || emNorm(y.name) === n) continue;
+            for (const a of y.aliases) {
+                const an = emNorm(a);
+                if (an === n) { best = { of: y, alias: a, exact: true }; break; }
+                if (!best && words.length > 1) { const aw = new Set(an.split(' ')); if (words.every(w => aw.has(w))) best = { of: y, alias: a, exact: false }; }
+            }
+            if (best && best.exact) break;
+        }
+        if (best) hits.set(x.gid, best);
+    }
+    return hits;
 }
 // entries added without details (an album artist from the add menu, say) get them on first show
 function emFillMissing(type) {
-    const t = emT(type), need = t.pool.concat(...t.groups.filter(g => g.state !== 'done').map(g => g.members)).filter(x => !x.info && !EM_FETCHING.has(x.gid));
+    const t = emT(type), need = t.pool.concat(...t.groups.filter(g => g.state !== 'done').map(g => g.members)).filter(x => (!x.info || (type === 'artist' && !Array.isArray(x.aliases))) && !EM_FETCHING.has(x.gid));   // #1007: older artist entries get their aliases
     need.forEach(x => EM_FETCHING.add(x.gid));
     (async () => {
         for (const x of need) {
@@ -6714,12 +6740,19 @@ function emRender() {
             const rep = Object.entries(cnt).filter(([, n]) => n > 1).sort((a, b) => b[1] - a[1]);
             return { vs, rep, color: Object.fromEntries(rep.map(([v], k) => [v, 'fs-idc' + (k % 6)])) };
         });
-        const chips = g.members.length > 1 ? cols.map((c, i) => {
+        let chips = g.members.length > 1 ? cols.map((c, i) => {
             const { vs, rep } = colStats[i], all = vs[0] && vs.every(v => v === vs[0]);
             const cls = all ? 'hit' : rep.length ? 'partial' : '';
             const tip = all ? c + ': the same on all\n' + vs[0] : rep.length ? c + ': shared by ' + rep[0][1] + ' of ' + g.members.length + '\n' + rep[0][0] : c + ': all differ';
             return '<span class="' + cls + '" data-tip="' + escapeHtml(tip) + '">' + c + '</span>';
         }).join('') : '';
+        const aliasHits = type === 'artist' && g.members.length > 1 ? emAliasHits(g.members) : null;
+        if (aliasHits) {
+            const hs = [...aliasHits.entries()], anyExact = hs.some(([, h]) => h.exact);
+            const tip = hs.length ? (anyExact ? 'Alias: a name is an alias of another' : 'Alias: a name is close to an alias of another') + '\n' + hs.map(([gid, h]) => (g.members.find(m => m.gid === gid) || {}).name + (h.exact ? ' = ' : ' ≈ ') + '“' + h.alias + '” of ' + h.of.name).join('\n')
+                : g.members.some(m => !Array.isArray(m.aliases)) ? 'Alias: loading…' : 'Alias: no name is an alias of another';
+            chips = '<span class="' + (hs.length ? (anyExact ? 'hit' : 'partial') : '') + '" data-tip="' + escapeHtml(tip) + '">Alias</span>' + chips;
+        }
         const hasNote = !!(g.note || '').trim();
         const mLabel = busy ? '⏳ Merging…' : done ? '✓ Merged' : err ? '⚠ Retry merge' : tooFew ? MERGE_MARK + ' Merge (needs 2+)' : MERGE_MARK + ' Merge';
         const head = '<div class="fs-ghdr fs-ghdr-grid"><div class="fs-ghl">'
@@ -6733,6 +6766,7 @@ function emRender() {
             + '<span class="fs-kill" data-act="delete-group" data-tip="' + (done ? 'Remove this group' : 'Delete this group\nIts ' + label.toLowerCase() + ' go back to the pool.') + '">🗑</span>'
             + '</div></div>';
         const colHead = cols.length ? '<div class="fs-emh"><span class="fs-emh-n">' + escapeHtml(emOne(type)) + '</span>' + cols.map(c => '<span class="fs-emc' + (EM_WIDE.has(c) ? ' fs-wide' : '') + '">' + c + '</span>').join('') + '<span class="fs-emh-a"></span></div>' : '';
+        const aliasLine = x => { const h = aliasHits && aliasHits.get(x.gid); return h ? '<span class="fs-alias-sub' + (h.exact ? '' : ' fs-alias-near') + '" data-tip="' + escapeHtml((h.exact ? 'An alias of ' : 'Close to an alias of ') + h.of.name) + '">' + (h.exact ? '=' : '≈') + ' alias of ' + (h.of.gid === target.gid ? '★' : escapeHtml(h.of.name)) + ': <i>' + escapeHtml(h.alias) + '</i></span>' : ''; };
         const rows = g.members.map(x => {
             const isT = x.gid === target.gid;
             const star = isT ? '<span class="fs-star fs-star-on" data-tip="The merge target\nThis one is kept.">★</span>'
@@ -6742,7 +6776,7 @@ function emRender() {
                 return '<span class="fs-emc' + (EM_WIDE.has(c) ? ' fs-wide' : '') + '" data-tip="' + escapeHtml(c + '\n' + (v == null ? 'loading…' : v || '—')) + '">' + (v == null ? '…' : v ? (cc ? '<span class="' + cc + '">' + escapeHtml(v) + '</span>' : escapeHtml(v)) : '') + '</span>';
             }).join('');
             return '<div class="fs-growwrap"><div class="fs-grow' + (isT ? ' fs-target-row' : '') + '"' + (busy || done ? '' : ' draggable="true"') + ' data-gid="' + x.gid + '">' + star
-                + '<span class="fs-t">' + link(x) + (x.dis ? '<span class="fs-dis">(' + escapeHtml(x.dis) + ')</span>' : '') + '</span>' + cells
+                + '<span class="fs-t">' + link(x) + (x.dis ? '<span class="fs-dis">(' + escapeHtml(x.dis) + ')</span>' : '') + aliasLine(x) + '</span>' + cells
                 + (busy || done ? '<span class="fs-acts"></span>' : '<span class="fs-acts"><span data-act="return" data-tip="Back to the pool">↩</span><span class="fs-rm-x" data-act="remove-both" data-tip="Remove from the group and the pool">✕</span></span>') + '</div></div>';
         }).join('');
         return '<div class="fs-gcard fs-gcard-manual fs-tier-manual' + active + '" data-g="' + g.id + '">' + head + colHead + '<div class="fs-grows">' + rows + '</div>'
