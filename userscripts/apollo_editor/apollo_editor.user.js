@@ -18465,8 +18465,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         go.onclick = async () => {
           if (submitting) return;
           for (const r of rows) { clearTimeout(r.localeTimer); if (autoLocale) recognize(r); }
-          const gs = (typeof GM_info !== "undefined" && GM_info.script) || {}, sig = gs.name ? gs.name + " v" + gs.version + " by " + (gs.author || "majkinetor") + (gs.homepageURL || gs.homepage ? " - " + (gs.homepageURL || gs.homepage) : "") : "";   // credit the script like its other edits
-          const typed = noteIn.value.trim(), note = [typed, sig].filter(Boolean).join(String.fromCharCode(10, 10));
+          const note = noteIn.value.trim();
           const todo = rows.filter(r => { const s = state(r); return s === 'del' || (s && r.name.trim()); });
           submitting = true; tb.inert = true; noteIn.disabled = true;
           const heading = o.heading ? o.heading() : box.querySelector('.tc-al-bar');
