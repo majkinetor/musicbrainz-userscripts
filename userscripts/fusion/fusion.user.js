@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.13.010000
+// @version      2026.11.13.011000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -7248,21 +7248,35 @@ try {
         if (!CACHE.has(k)) CACHE.set(k, emFetch(type, gid).catch(e => { CACHE.delete(k); Log.warn('Merge edit: no details for ' + type + ' ' + gid + ': ' + e.message); return null; }));
         return CACHE.get(k);
     };
-    const gidsIn = tbl => {
-        if (!tbl) return [];
+    // the merged type, from the table's class (merge-release-groups -> release-group)
+    const typeOf = t => { const c = (t.className.match(/\bmerge-([a-z-]+)/) || [])[1]; return !c ? null : c === 'series' ? c : c.replace(/s$/, ''); };
+    // a row's entry is its first link to the merged type: a release group's row opens on its year, and every row links artists too
+    const gidsOf = (trs, type) => {
         const out = [];
-        tbl.querySelectorAll('tbody > tr').forEach(tr => {
-            const a = tr.querySelector('td:first-child a[href]');
-            const m = a && a.getAttribute('href').match(/\/(artist|release-group|release|recording|work|label|place|series|event)\/([0-9a-f-]{36})/i);
-            if (m) out.push({ type: m[1].toLowerCase(), gid: m[2].toLowerCase(), name: a.textContent.trim() });
+        trs.forEach(tr => {
+            for (const a of tr.querySelectorAll('a[href]')) {
+                const m = a.getAttribute('href').match(/\/(artist|release-group|release|recording|work|label|place|series|event)\/([0-9a-f-]{36})/i);
+                if (m && m[1].toLowerCase() === type) { out.push({ type, gid: m[2].toLowerCase(), name: a.textContent.trim() }); break; }
+            }
         });
         return out;
     };
-    // MB's outer table: a "Merge:" row and an "Into:" row, each holding an inner table
+    const gidsIn = (tbl, type) => tbl ? gidsOf([...tbl.querySelectorAll('tbody > tr')], type) : [];
+    // MB's outer table: a "Merge:" row and an "Into:" row, each holding an inner table; a release merge
+    // is one table instead, its "Into:" a sub-heading row
     const parse = details => {
-        const rows = [...details.querySelectorAll(':scope > tbody > tr, :scope > tr')].filter(tr => tr.querySelector(':scope > td table'));
-        if (rows.length < 2) return null;
-        const src = gidsIn(rows[0].querySelector(':scope > td table')), into = gidsIn(rows[rows.length - 1].querySelector(':scope > td table'))[0];
+        const type = typeOf(details);
+        if (!type) return null;
+        let src, into;
+        if (details.classList.contains('tbl')) {
+            const trs = [...details.querySelectorAll(':scope > tbody > tr')], k = trs.findIndex(tr => tr.classList.contains('subh'));
+            if (k < 1) return null;
+            src = gidsOf(trs.slice(0, k), type); into = gidsOf(trs.slice(k + 1), type)[0];
+        } else {
+            const rows = [...details.querySelectorAll(':scope > tbody > tr, :scope > tr')].filter(tr => tr.querySelector(':scope > td table'));
+            if (rows.length < 2) return null;
+            src = gidsIn(rows[0].querySelector(':scope > td table'), type); into = gidsIn(rows[rows.length - 1].querySelector(':scope > td table'), type)[0];
+        }
         if (!src.length || !into || src.some(x => x.type !== into.type) || (into.type !== 'recording' && !EM_COLS[into.type])) return null;
         return { type: into.type, target: into, members: [into].concat(src.filter(x => x.gid !== into.gid)) };
     };
@@ -7310,18 +7324,20 @@ try {
             draw();
         }));
     };
+    // the card turned off in the settings: MB's tables come back, and nothing more is read
+    const clear = () => document.querySelectorAll('.fs-editwrap').forEach(w => { w._fsIo && w._fsIo.disconnect(); w._fsDetails.style.display = ''; w._fsDetails._fsDone = null; w._fsBtn.remove(); w.remove(); });
     const scan = () => {
-        if (SETTINGS.editCard === false) return;
+        if (SETTINGS.editCard === false) { if (document.querySelector('.fs-editwrap')) { clear(); Log.info('Merge edit: card off, MusicBrainz’s tables back'); } return; }
         // Event Horizon redraws an edit's page and copies its tables into its own view: take every
         // merge table, the copies too, and read "open" from the nearest edit header, else the page's
-        document.querySelectorAll('table.details[class*="merge-"]').forEach(details => {
+        document.querySelectorAll('table.details[class*="merge-"], table.tbl.merge-releases').forEach(details => {
             // a table can be moved (Event Horizon takes MB's own into its view): look again when its edit changes
             // or its card got left behind
             const ctx = details.closest('details.hed') || document.body;
             if (details._fsDone === ctx && (!details._fsWrap || details.previousElementSibling === details._fsWrap)) return;
             details._fsDone = ctx; details._fsWrap = null;
             if (details.style.display === 'none') details.style.display = '';
-            document.querySelectorAll('.fs-editwrap').forEach(w => { if (w._fsDetails === details) { w._fsBtn.remove(); w.remove(); } });
+            document.querySelectorAll('.fs-editwrap').forEach(w => { if (w._fsDetails === details) { w._fsIo && w._fsIo.disconnect(); w._fsBtn.remove(); w.remove(); } });
             let p = details.previousElementSibling;
             while (p && (p.classList.contains('fs-editwrap') || p.classList.contains('fs-editback'))) { const q = p.previousElementSibling; if (!p._fsDetails && !p._fsOwn) p.remove(); p = q; }
             // the edit's status: Event Horizon's own row says it (data-st), else MB's header of this edit, else the page's
@@ -7350,15 +7366,23 @@ try {
             });
             btn.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation(); openLog(); });
             wrap._fsDetails = details; wrap._fsBtn = btn;
-            // the button shows at once; its spinner runs until the card is read
-            btn.classList.add('fs-busy');
-            const go = () => { btn.classList.add('fs-busy'); Promise.resolve(paint(m, wrap)).catch(e => Log.warn('Merge edit: ' + e.message)).finally(() => btn.classList.remove('fs-busy')); };
+            // the button shows at once; its spinner runs while the card is read, so not while MB's own tables show
+            let read = false;
+            const go = () => { read = true; wrap._fsIo && wrap._fsIo.disconnect(); btn.classList.add('fs-busy'); Promise.resolve(paint(m, wrap)).catch(e => Log.warn('Merge edit: ' + e.message)).finally(() => btn.classList.remove('fs-busy')); };
             wrap.addEventListener('click', e => { if (e.target.closest('[data-act="ro-native"]')) { e.preventDefault(); setView('native'); } });
             details.before(btn, wrap); details._fsWrap = wrap;
             wrap.innerHTML = '<div class="fs-editwait">Fusion: ' + m.members.length + ' ' + (m.type === 'recording' ? 'recordings' : emLabel(m.type).toLowerCase()) + '…</div>';
             apply(details, wrap, btn);
             Log.info('Merge edit: ' + m.type + ' merge of ' + m.members.length + ' placed, waiting for it to scroll into view');
-            const io = new IntersectionObserver(es => { if (es.some(x => x.isIntersecting)) { io.disconnect(); Log.info('Merge edit: ' + m.type + ' merge in view, reading ' + m.members.length); go(); } }, { rootMargin: '300px' });
+            // read only an edit that stays in view a moment: a fast scroll past it reads nothing, so the
+            // edits on screen aren't queued behind the ones flown over; MB's own view reads nothing at all
+            let t = 0;
+            const io = new IntersectionObserver(es => {
+                const vis = es[es.length - 1].isIntersecting;
+                clearTimeout(t);
+                if (vis && !read && !native()) t = setTimeout(() => { if (read || native()) return; Log.info('Merge edit: ' + m.type + ' merge in view, reading ' + m.members.length); go(); }, 400);
+            });
+            wrap._fsIo = io;
             io.observe(details.closest('.edit-list') || wrap.parentElement);
         });
     };
