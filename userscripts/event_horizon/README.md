@@ -119,6 +119,8 @@ Open a track to see its recording and work credits. The recording and work icons
 
 The tracklist has convenient options in header to toggle visibility of its columns. The **Artist** column, each track's artist, shows by itself on a Various Artists release and where most tracks have guests, and Show › Artist changes it for that release; with **Artist column by itself** off in the tracklist's settings, Show › Artist is one choice for every release. **Credits display** can be configured in expanded track regarding disambiguation and role/name grouping (choice is remembered).
 
+Show › **Tags** (off at first) puts each recording's genres (filled) and tags (outlined) after its title; it shows only on a release with tagged recordings. An opened track lists them all with their vote counts.
+
 Expanded track contains info about associated recording and works.
 
 ## Releases and discography

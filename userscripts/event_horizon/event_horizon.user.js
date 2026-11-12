@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.12.180000
+// @version      2026.11.12.155618
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3350,6 +3350,12 @@ body.col-dragging,body.col-dragging *{cursor:grabbing!important;user-select:none
 .hide-links .lk .slots,.hide-links .lk .popwrap{display:none}
 .hide-mk .sub,.hide-mk .tr .ti .mk{display:none}
 .hide-len .ln,.hide-len .tot{display:none}
+.hide-tags .tr .ti .tg{display:none}
+.tr .ti .tg{display:inline-flex;gap:4px;align-self:center;margin-left:8px;min-width:0;overflow:hidden}
+.tr .ti .tg .chip,.rtg .chip{height:20px;padding:0 8px;font-size:11.5px;font-weight:500;text-decoration:none;color:inherit;cursor:pointer;white-space:nowrap}
+.tr .ti .tg .chip:not(.tag),.rtg .chip:not(.tag){background:color-mix(in srgb,var(--chip) 60%,transparent)}
+.tr .ti .tg .chip:hover,.rtg .chip:hover{color:var(--accent);border-color:var(--accent)}
+.rtg{display:inline-flex;flex-wrap:wrap;gap:4px}.rtg .cnt{margin-left:5px;color:var(--muted);font-size:10.5px}
 .slots{display:flex;gap:2px}
 .slot{display:inline-grid;place-items:center;width:calc(var(--pl-size,22px) + 2px);height:calc(var(--pl-size,22px) + 2px);border-radius:6px;filter:grayscale(1);opacity:.55}
 .tr:hover .slot{filter:none;opacity:1}
@@ -4168,7 +4174,7 @@ function ambientApply(layer, kind) {
 
 const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'arAuto', 'arCol', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'fx', 'fxOff', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'bgAmount', 'bgSize', 'bgGlow', 'bgHue', 'auraOpacity', 'auraBlur', 'auraSat', 'auraHeight', 'glowStrength', 'glowSize', 'glowPlace', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
 const S = {
-    cols: { mk: true, isrc: true, links: true, len: true },
+    cols: { mk: true, isrc: true, links: true, len: true, tags: false },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
     plOrder: [], // the settings' platform order, shown or not; prov follows it
     crTracks: true,
@@ -4217,6 +4223,7 @@ S.pending = false; // MusicBrainz's grey mark on what has edits open; takes one 
 const ehWidth = () => { const s = document.documentElement.style; s.setProperty('--eh-w', S.width ? S.width + 'px' : 'none'); s.setProperty('--eh-wn', S.width ? S.width + 'px' : '100vw'); };
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
 try { const v = fxMigrate({ ...GM_getValue('view', {}) }); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; if (v.hexFx == null && v.hexOpacity != null) S.hexFx = Math.min(100, Math.round(S.hexOpacity * 2.25)); } catch (e) {}
+if (S.cols && !("tags" in S.cols)) S.cols = { ...S.cols, tags: false }; // Show › Tags came later, off until turned on
 // Preserve an existing hex background as an independent overlay over Flat.
 if (S.bg === 'hex') { S.bg = 'flat'; S.hex = true; S.hexMotion = 'drift'; }
 if (S.bg === 'band') S.bg = 'flat'; // Header band is gone
@@ -4487,6 +4494,9 @@ function release(r, rg, images) {
                     work: work && { id: work.work.id, title: work.work.title }, wcr: work ? creditsOf(work.work.relations || []) : [],
                     works: workRels.map(x => ({ id: x.work.id, title: x.work.title, iswcs: x.work.iswcs || [], cr: creditsOf(x.work.relations || []), type: x.work.type || '', dis: x.work.disambiguation || '', langs: (x.work.languages || (x.work.language ? [x.work.language] : [])).map(l => nameOf('language', l) || l), attrs: (x.work.attributes || []).map(a => [a.type, a.value]), perf: x.attributes || [] })),
                     links: urlsOf(rels),
+                    // the recording's genres and its other tags, most votes first; come with the release lookup's +genres+tags
+                    genres: [...(rec.genres || [])].sort((a, b) => b.count - a.count),
+                    tags: (rec.tags || []).filter(x => !(rec.genres || []).some(g => g.name === x.name)).sort((a, b) => b.count - a.count),
                     rec: { dis: rec.disambiguation || '', first: rec['first-release-date'] || '', len: rec.length || 0, title: rec.title, ac: rec['artist-credit'] || [] },
                 };
             }),
@@ -4527,7 +4537,7 @@ function edTip(e, cur) {
 }
 mbuTipOn('[data-ed]', el => { const x = ED_TIP.get(el.getAttribute('data-ed')); return x && edTip(x.e, x.cur); }, { wide: true });
 async function load(id, step = () => {}) {
-    const inc = 'artist-credits+labels+label-rels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+media+genres+release-groups+annotation+aliases';
+    const inc = 'artist-credits+labels+label-rels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+media+genres+tags+release-groups+annotation+aliases';
     // the editions and the Cover Art Archive's image list come after: the page shows without them and fills them in
     const covers = caa(id).then(x => { step('covers'); return x; });
     const r = await wsk(`release/${id}?inc=${inc}`);
@@ -4609,6 +4619,7 @@ const TX_ICON = Object.fromEntries(Object.entries({
     isrc: '<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/>',
     links: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
     len: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    tags: '<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/>',
 }).map(([k, d]) => [k, `<svg class="txi" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`]));
 const SVG = d => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 // MusicBrainz search, sent as MB's own search form; a bare magnifier that, clicked, swaps the header's actions for its field until a search, × or Escape
@@ -5339,6 +5350,8 @@ function recFacts(t) {
     if (r.ac && r.ac.length && acText(r.ac) !== acText(t.ac)) out.push(['Artist', r.ac.map(a => artistA({ id: a.artist.id, name: a.name }) + esc(a.joinphrase || '')).join(''), esc(acText(r.ac))]);
     if (r.len && t.lenMs && Math.abs(r.len - t.lenMs) >= 1000) out.push(['Length', esc(ms(r.len)) + ` <span class="r">(track ${esc(t.len)})</span>`, esc(ms(r.len))]);
     if (r.first) out.push(['First released', esc(r.first)]);
+    const tg = [...(t.genres || []).map(x => [x, '']), ...(t.tags || []).map(x => [x, ' tag'])];
+    if (tg.length) out.push(['Tags', `<span class="rtg">${tg.map(([x, c]) => `<a class="chip${c}" href="${MB}/tag/${encodeURIComponent(x.name)}">${esc(x.name)}<span class="cnt">${x.count}</span></a>`).join('')}</span>`, esc(tg.map(([x]) => x.name).join(', '))]);
     if (t.isrcs.length) out.push([t.isrcs.length > 1 ? 'ISRCs' : 'ISRC', t.isrcs.map(mono).join(' '), esc(t.isrcs[0]) + (t.isrcs.length > 1 ? ' +' + (t.isrcs.length - 1) : '')]);
     return out;
 }
@@ -5380,7 +5393,7 @@ function tracklist(r) {
     const row = (t, i) => {
         const sub = !va && t.feat.length ? 'with ' + t.feat.join(', ') : '';
         return `<div class="tr${i % 2 ? ' alt' : ''}" data-row="${esc(t.key)}" aria-expanded="${S.open.has(t.key)}"><span class="n mono">${esc(t.n)}</span>
-            <div class="ti"><a class="t${longC(t.title)}"${longT(t.title)} href="${MB}/recording/${t.rid}">${esc(t.title)}</a>${marks(t)}${sub ? `<div class="sub">${esc(sub)}</div>` : ''}</div>${va ? `<span class="ar">${acHtml(t.ac)}</span>` : ''}
+            <div class="ti"><a class="t${longC(t.title)}"${longT(t.title)} href="${MB}/recording/${t.rid}">${esc(t.title)}</a>${marks(t)}${(t.genres || []).length + (t.tags || []).length ? `<span class="tg">${[...(t.genres || []).map(x => [x, '']), ...(t.tags || []).map(x => [x, ' tag'])].slice(0, 4).map(([x, c]) => `<a class="chip${c}" href="${MB}/tag/${encodeURIComponent(x.name)}" data-tip="${esc(x.name)}: ${x.count} vote${x.count === 1 ? '' : 's'}">${esc(x.name)}</a>`).join('')}</span>` : ''}${sub ? `<div class="sub">${esc(sub)}</div>` : ''}</div>${va ? `<span class="ar">${acHtml(t.ac)}</span>` : ''}
             <span class="is">${t.isrcs.length ? (t.isrcs.length <= 2 ? t.isrcs.map(isrcHtml).join('') : `<span class="isrow">${isrcHtml(t.isrcs[0])}<span class="popwrap"><button class="more" type="button" data-pop="is-${t.key}" aria-expanded="false" aria-label="${t.isrcs.length - 1} more ISRCs">+${t.isrcs.length - 1}</button><div class="pop" id="pop-is-${t.key}" hidden><div class="h label">ISRCs</div>${t.isrcs.slice(1).map(isrcHtml).join('')}</div></span></span>`) : ''}</span>
             <span class="lk">${trackLinks(t, ctx)}</span>
             <span class="ln mono">${esc(t.len)}</span></div>${S.open.has(t.key) ? detail(t) : ''}`;
@@ -5391,7 +5404,7 @@ function tracklist(r) {
         rows += `<button class="disc" type="button" data-disc="${mi}" aria-expanded="${!shut}" data-tip="${shut ? 'Open' : 'Fold'} this disc&#10;Right-click: ${shut ? 'open' : 'fold'} every disc">${CHEV}<span class="fi">${fmtSvg(fmtKind(m.format), 18)}</span>${esc(fmtName(m.format))}${multi ? ' ' + m.position : ''}${m.title ? ' · ' + esc(m.title) : ''}<span class="count">${m.tracks.length}</span><span class="tot">${total(ts)}</span></button>`;
         if (!shut) rows += ts.map(row).join('');
     });
-    const toggles = `<button class="tx" type="button" data-arcol="${esc(r.id)}" data-va="${va}" aria-pressed="${va}" data-tip="Each track's artist in a column${S.arAuto ? `\n${vaAuto ? 'On by itself' : 'Off by itself'} for this release` : ''}" aria-label="Artist">${TX_ICON.ar}<span class="txl">Artist</span></button>` + [['mk', 'Markers', 'Markers on tracks'], ['isrc', 'ISRCs', "Each track's ISRCs"], ['links', 'Platforms', 'Platform icons on tracks'], ['len', 'Lengths', 'Track lengths']].map(([k, n, tip]) => `<button class="tx" type="button" data-col="${k}" aria-pressed="${S.cols[k] !== false}" aria-label="${n}" data-tip="${tip}">${TX_ICON[k]}<span class="txl">${n}</span></button>`).join('');
+    const toggles = `<button class="tx" type="button" data-arcol="${esc(r.id)}" data-va="${va}" aria-pressed="${va}" data-tip="Each track's artist in a column${S.arAuto ? `\n${vaAuto ? 'On by itself' : 'Off by itself'} for this release` : ''}" aria-label="Artist">${TX_ICON.ar}<span class="txl">Artist</span></button>` + [['mk', 'Markers', 'Markers on tracks'], ['isrc', 'ISRCs', "Each track's ISRCs"], ['links', 'Platforms', 'Platform icons on tracks'], ['len', 'Lengths', 'Track lengths'], ['tags', 'Tags', "Each recording's genres and tags"]].filter(([k]) => k !== 'tags' || tracks.some(t => t.genres.length + t.tags.length)).map(([k, n, tip]) => `<button class="tx" type="button" data-col="${k}" aria-pressed="${S.cols[k] !== false}" aria-label="${n}" data-tip="${tip}">${TX_ICON[k]}<span class="txl">${n}</span></button>`).join('');
     rowKeys = tracks.map(t => t.key);
     const plB = `<button class="tx plcfg" type="button" data-plcfg="1" aria-label="Tracklist settings" data-tip="Tracklist settings\nTrack colors and platform icons">${MBU_CFG_ICON}</button>`;
     const tools = `<span class="label" style="margin-right:2px">Show</span>${toggles}${plB}`;
