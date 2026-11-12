@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.11.12.134645
+// @version      2026.11.12.151653
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -289,28 +289,142 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       }
       return out;
     };
-    let timer = 0, expired = false;
+    let expired = false, settled = false;
     try {
       if (typeof navigator !== "undefined" && navigator.locks && navigator.locks.request) {
         const ctrl = typeof AbortController === "function" ? new AbortController() : null;
-        const timeout = new Promise((resolve, reject) => {
-          timer = setTimeout(() => {
-            expired = true;
-            reject(new Error("MusicBrainz gate lock timed out"));
-            try {
-              if (ctrl) ctrl.abort();
-            } catch (e) {
-            }
-          }, 3e3);
+        const timeout = mbnSleep(3e3, () => settled).then(() => {
+          if (settled) return new Promise(() => {
+          });
+          expired = true;
+          try {
+            if (ctrl) ctrl.abort();
+          } catch (e) {
+          }
+          throw new Error("MusicBrainz gate lock timed out");
         });
         const locked = navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, () => expired ? void 0 : rw());
         return await Promise.race([locked, timeout]);
       }
     } catch (e) {
     } finally {
-      clearTimeout(timer);
+      settled = true;
     }
     return rw();
+  }
+  function mbnSleep(ms, cancelled) {
+    const end = Date.now() + Math.max(0, +ms || 0);
+    const w = globalThis.__mbnWake1 || (globalThis.__mbnWake1 = { all: /* @__PURE__ */ new Set(), due: /* @__PURE__ */ new Map(), raf: 0, mo: null, worker: null, stall: null });
+    const note = () => {
+      const now = Date.now();
+      if (w.stall && now - w.stall.at < 6e4) return;
+      for (const d of w.due.values()) {
+        if (now - d <= 2e3) continue;
+        let state = "", hidden = false;
+        try {
+          state = document.readyState;
+          hidden = !!document.hidden;
+        } catch (e) {
+        }
+        w.stall = { ms: now - d, at: now, state, hidden, told: false };
+        return;
+      }
+    };
+    const wake = () => {
+      note();
+      for (const f of Array.from(w.all)) f();
+    };
+    return new Promise((resolve) => {
+      let done = false;
+      const tok = {};
+      const me = () => {
+        if (done) return;
+        let stop = false;
+        try {
+          stop = !!(cancelled && cancelled());
+        } catch (e) {
+        }
+        const now = Date.now();
+        if (!stop && now < end) return;
+        done = true;
+        w.all.delete(me);
+        if (!w.all.size) {
+          try {
+            if (w.raf) cancelAnimationFrame(w.raf);
+          } catch (e) {
+          }
+          w.raf = 0;
+          try {
+            if (w.mo) w.mo.disconnect();
+          } catch (e) {
+          }
+          w.mo = null;
+          try {
+            if (w.worker && w.ticking) w.worker.postMessage(0);
+          } catch (e) {
+          }
+          w.ticking = false;
+        }
+        resolve(Math.max(0, now - end));
+      };
+      const tick = () => {
+        if (Date.now() - (w.due.get(tok) || Infinity) > 2e3) note();
+        w.due.delete(tok);
+        me();
+        if (!done) arm();
+      };
+      const arm = () => {
+        const d = Math.max(1, Math.min(cancelled ? 250 : 2147483647, end - Date.now()));
+        if (w.due.size < 500) w.due.set(tok, Date.now() + d);
+        setTimeout(tick, d);
+      };
+      me();
+      if (done) return;
+      w.all.add(me);
+      arm();
+      try {
+        if (!w.raf && typeof requestAnimationFrame === "function") {
+          const frame = () => {
+            w.raf = 0;
+            wake();
+            if (w.all.size) w.raf = requestAnimationFrame(frame);
+          };
+          w.raf = requestAnimationFrame(frame);
+        }
+      } catch (e) {
+      }
+      try {
+        if (!w.mo && typeof MutationObserver === "function" && typeof document !== "undefined" && document.documentElement) {
+          w.mo = new MutationObserver(wake);
+          w.mo.observe(document.documentElement, { childList: true, subtree: true, attributes: true, characterData: true });
+        }
+      } catch (e) {
+        w.mo = null;
+      }
+      try {
+        if (w.worker === null && typeof Worker === "function" && typeof Blob === "function" && typeof URL !== "undefined" && URL.createObjectURL) {
+          w.worker = false;
+          const wk = new Worker(URL.createObjectURL(new Blob(["let t=0;onmessage=e=>{clearInterval(t);t=0;if(e.data>0)t=setInterval(()=>postMessage(1),e.data)}"], { type: "text/javascript" })));
+          wk.onmessage = () => {
+            const x = globalThis.__mbnWake1;
+            if (x) {
+              x.wake && x.wake();
+            }
+          };
+          wk.onerror = () => {
+            w.worker = false;
+          };
+          w.worker = wk;
+        }
+        w.wake = wake;
+        if (w.worker && !w.ticking) {
+          w.ticking = true;
+          w.worker.postMessage(100);
+        }
+      } catch (e) {
+        w.worker = false;
+      }
+    });
   }
   async function mbnSlot(o) {
     o = o || {};
@@ -329,7 +443,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         told = true;
         o.log("info", "MusicBrainz gate: " + (o.label || "request") + " waits for a page being drawn");
       }
-      await new Promise((r) => setTimeout(r, Math.min(left, 250)));
+      await mbnSleep(Math.min(left, 250), o.cancelled);
     }
     const booked = await mbnState((s) => {
       const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
@@ -357,7 +471,12 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         toldUntil = until;
         toldAt = now;
       }
-      await new Promise((r) => setTimeout(r, Math.min(left, 250)));
+      await mbnSleep(Math.min(left, 250), o.cancelled);
+      const st = globalThis.__mbnWake1 && globalThis.__mbnWake1.stall;
+      if (st && !st.told && o.log) {
+        st.told = true;
+        o.log("info", "MusicBrainz gate: this page's timer fired " + Math.round(st.ms / 100) / 10 + "s late (page " + (st.state || "?") + (st.hidden ? ", hidden" : "") + "); waits wake on page activity too");
+      }
     }
     return { ok: true, waited: Date.now() - t0 };
   }
@@ -435,11 +554,10 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         reject(new DOMException("Aborted", "AbortError"));
         return;
       }
-      let req = null, done = false, guard = 0;
+      let req = null, done = false;
       const onAbort = () => {
         if (done) return;
         done = true;
-        clearTimeout(guard);
         try {
           req && req.abort && req.abort();
         } catch (e) {
@@ -449,18 +567,17 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       const fail = (m) => () => {
         if (done) return;
         done = true;
-        clearTimeout(guard);
         if (sig) sig.removeEventListener("abort", onAbort);
         reject(new TypeError(m));
       };
-      guard = setTimeout(() => {
+      mbnSleep(35e3, () => done).then(() => {
         if (done) return;
         fail("no answer in 35s")();
         try {
           req && req.abort && req.abort();
         } catch (e) {
         }
-      }, 35e3);
+      });
       if (sig) sig.addEventListener("abort", onAbort);
       const res = gm({
         method: String(init.method || "GET").toUpperCase(),
@@ -471,7 +588,6 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         onload: (x) => {
           if (done) return;
           done = true;
-          clearTimeout(guard);
           if (sig) sig.removeEventListener("abort", onAbort);
           const h = new Headers();
           for (const line of String(x.responseHeaders || "").split(/\r?\n/)) {
@@ -547,11 +663,10 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       fr.setAttribute("data-mbn-check", "");
       fr.tabIndex = -1;
       fr.style.cssText = "position:fixed;width:1px;height:1px;left:-9999px;top:0;border:0;opacity:0;pointer-events:none";
-      let loads = 0, done = false, timer = 0;
+      let loads = 0, done = false;
       const finish = (ok) => {
         if (done) return;
         done = true;
-        clearTimeout(timer);
         fr.remove();
         g.busy = null;
         if (ok) log2("info", "browser check passed in " + (Date.now() - t0) + " ms \u2014 retrying");
@@ -577,7 +692,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         }
         if (!still) finish(true);
       };
-      timer = setTimeout(() => finish(false), 2e4);
+      mbnSleep(2e4, () => done).then(() => finish(false));
       fr.src = src;
       (document.body || document.documentElement).appendChild(fr);
     });

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.233000
+// @version      2026.11.12.233001
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -105,24 +105,101 @@
       // The lock is held only for rw()'s synchronous moment, so a wait of seconds means it is
       // stuck (a frozen or sandboxed holder): give up on it and go unlocked rather than hang
       // every request behind it.
-      let timer = 0, expired = false;
+      let expired = false, settled = false;
       try {
           if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) {
               const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
-              const timeout = new Promise((resolve, reject) => {
-                  timer = setTimeout(() => {
-                      expired = true;
-                      reject(new Error('MusicBrainz gate lock timed out'));
-                      try { if (ctrl) ctrl.abort(); } catch (e) {}
-                  }, 3000);
+              const timeout = mbnSleep(3000, () => settled).then(() => {
+                  if (settled) return new Promise(() => {});   // the lock answered first
+                  expired = true;
+                  try { if (ctrl) ctrl.abort(); } catch (e) {}
+                  throw new Error('MusicBrainz gate lock timed out');
               });
               // Some userscript bridges never settle the request on abort. The timer
               // must release our wait itself; a late grant must not book twice.
               const locked = navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, () => expired ? undefined : rw());
               return await Promise.race([locked, timeout]);
           }
-      } catch (e) { /* no Web Locks here (an insecure or sandboxed context), or stuck: unlocked, like a lone script */ } finally { clearTimeout(timer); }
+      } catch (e) { /* no Web Locks here (an insecure or sandboxed context), or stuck: unlocked, like a lone script */ } finally { settled = true; }
       return rw();
+  }
+  function mbnSleep(ms, cancelled) {
+      const end = Date.now() + Math.max(0, +ms || 0);
+      const w = globalThis.__mbnWake1 || (globalThis.__mbnWake1 = { all: new Set(), due: new Map(), raf: 0, mo: null, worker: null, stall: null });
+      const note = () => {   // a timer overdue by 2s: note it once a minute, for the log
+          const now = Date.now();
+          if (w.stall && now - w.stall.at < 60000) return;
+          for (const d of w.due.values()) {
+              if (now - d <= 2000) continue;
+              let state = '', hidden = false;
+              try { state = document.readyState; hidden = !!document.hidden; } catch (e) {}
+              w.stall = { ms: now - d, at: now, state, hidden, told: false };
+              return;
+          }
+      };
+      const wake = () => { note(); for (const f of Array.from(w.all)) f(); };
+      return new Promise(resolve => {
+          let done = false;
+          const tok = {};
+          const me = () => {
+              if (done) return;
+              let stop = false;
+              try { stop = !!(cancelled && cancelled()); } catch (e) {}
+              const now = Date.now();
+              if (!stop && now < end) return;
+              done = true;
+              w.all.delete(me);
+              if (!w.all.size) {   // the last sleeper: the wakers rest
+                  try { if (w.raf) cancelAnimationFrame(w.raf); } catch (e) {}
+                  w.raf = 0;
+                  try { if (w.mo) w.mo.disconnect(); } catch (e) {}
+                  w.mo = null;
+                  try { if (w.worker && w.ticking) w.worker.postMessage(0); } catch (e) {}
+                  w.ticking = false;
+              }
+              resolve(Math.max(0, now - end));
+          };
+          // the plain timer, left to fire after another waker ended the sleep: when it fires late, it says so
+          // with a cancel check it runs in 250ms slices, so a cancel lands where nothing else wakes it (no page)
+          const tick = () => {
+              if (Date.now() - (w.due.get(tok) || Infinity) > 2000) note();
+              w.due.delete(tok);
+              me();
+              if (!done) arm();
+          };
+          const arm = () => {
+              const d = Math.max(1, Math.min(cancelled ? 250 : 2147483647, end - Date.now()));
+              if (w.due.size < 500) w.due.set(tok, Date.now() + d);
+              setTimeout(tick, d);
+          };
+          me();
+          if (done) return;
+          w.all.add(me);
+          arm();
+          try {
+              if (!w.raf && typeof requestAnimationFrame === 'function') {
+                  const frame = () => { w.raf = 0; wake(); if (w.all.size) w.raf = requestAnimationFrame(frame); };
+                  w.raf = requestAnimationFrame(frame);
+              }
+          } catch (e) {}
+          try {
+              if (!w.mo && typeof MutationObserver === 'function' && typeof document !== 'undefined' && document.documentElement) {
+                  w.mo = new MutationObserver(wake);
+                  w.mo.observe(document.documentElement, { childList: true, subtree: true, attributes: true, characterData: true });
+              }
+          } catch (e) { w.mo = null; }
+          try {   // a worker's timers run apart from the page's; a page that forbids blob workers goes without
+              if (w.worker === null && typeof Worker === 'function' && typeof Blob === 'function' && typeof URL !== 'undefined' && URL.createObjectURL) {
+                  w.worker = false;
+                  const wk = new Worker(URL.createObjectURL(new Blob(['let t=0;onmessage=e=>{clearInterval(t);t=0;if(e.data>0)t=setInterval(()=>postMessage(1),e.data)}'], { type: 'text/javascript' })));
+                  wk.onmessage = () => { const x = globalThis.__mbnWake1; if (x) { x.wake && x.wake(); } };
+                  wk.onerror = () => { w.worker = false; };
+                  w.worker = wk;
+              }
+              w.wake = wake;
+              if (w.worker && !w.ticking) { w.ticking = true; w.worker.postMessage(100); }
+          } catch (e) { w.worker = false; }
+      });
   }
   async function mbnSlot(o) {
       o = o || {};
@@ -135,7 +212,7 @@
           if (left <= 0) break;
           if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
           if (!told && o.log) { told = true; o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + ' waits for a page being drawn'); }
-          await new Promise(r => setTimeout(r, Math.min(left, 250)));
+          await mbnSleep(Math.min(left, 250), o.cancelled);
       }
       const booked = await mbnState(s => {
           const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
@@ -160,7 +237,12 @@
               o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + (toldAt ? ' still waits, ' + Math.round(left / 100) / 10 + 's to go' : ' waits ' + Math.round((until - t0) / 100) / 10 + 's') + ' (' + why + ')');
               toldUntil = until; toldAt = now;
           }
-          await new Promise(r => setTimeout(r, Math.min(left, 250)));   // in slices, so a cancel lands promptly
+          await mbnSleep(Math.min(left, 250), o.cancelled);   // in slices, so a cancel lands promptly
+          const st = globalThis.__mbnWake1 && globalThis.__mbnWake1.stall;
+          if (st && !st.told && o.log) {
+              st.told = true;
+              o.log('info', 'MusicBrainz gate: this page\'s timer fired ' + Math.round(st.ms / 100) / 10 + 's late (page ' + (st.state || '?') + (st.hidden ? ', hidden' : '') + '); waits wake on page activity too');
+          }
       }
       return { ok: true, waited: Date.now() - t0 };
   }
@@ -239,21 +321,22 @@
       return new Promise((resolve, reject) => {
           const sig = init.signal;
           if (sig && sig.aborted) { reject(new DOMException('Aborted', 'AbortError')); return; }
-          let req = null, done = false, guard = 0;
-          const onAbort = () => { if (done) return; done = true; clearTimeout(guard); try { req && req.abort && req.abort(); } catch (e) {} reject(new DOMException('Aborted', 'AbortError')); };
-          const fail = m => () => { if (done) return; done = true; clearTimeout(guard); if (sig) sig.removeEventListener('abort', onAbort); reject(new TypeError(m)); };
+          let req = null, done = false;
+          const onAbort = () => { if (done) return; done = true; try { req && req.abort && req.abort(); } catch (e) {} reject(new DOMException('Aborted', 'AbortError')); };
+          const fail = m => () => { if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort); reject(new TypeError(m)); };
           // A request the manager never answers, not even with its own timeout (seen in
           // Violentmonkey on Firefox): give up on it here, or whoever awaits it, a matching
           // pass that was told to stop included, waits forever. MusicBrainz answers a search in
           // seconds even on a slow day; one that took a minute held every lane behind it while
           // the shared throttle allowed a single one, so the gate stops waiting after half that.
-          guard = setTimeout(() => { if (done) return; fail('no answer in 35s')(); try { req && req.abort && req.abort(); } catch (e) {} }, 35000);
+          // #999 mbnSleep, not a plain timer: with this page's timers held back, a stuck request was never given up on
+          mbnSleep(35000, () => done).then(() => { if (done) return; fail('no answer in 35s')(); try { req && req.abort && req.abort(); } catch (e) {} });
           if (sig) sig.addEventListener('abort', onAbort);
           const res = gm({
               method: String(init.method || 'GET').toUpperCase(), url: abs, headers, data: init.body,
               timeout: 30000,
               onload: x => {
-                  if (done) return; done = true; clearTimeout(guard); if (sig) sig.removeEventListener('abort', onAbort);
+                  if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort);
                   const h = new Headers();
                   for (const line of String(x.responseHeaders || '').split(/\r?\n/)) { const i = line.indexOf(':'); if (i > 0) try { h.append(line.slice(0, i).trim(), line.slice(i + 1).trim()); } catch (e) {} }
                   const st = x.status || 0;
@@ -306,9 +389,9 @@
           const fr = document.createElement('iframe');   // fresh each time, never re-navigated
           fr.setAttribute('aria-hidden', 'true'); fr.setAttribute('data-mbn-check', ''); fr.tabIndex = -1;
           fr.style.cssText = 'position:fixed;width:1px;height:1px;left:-9999px;top:0;border:0;opacity:0;pointer-events:none';
-          let loads = 0, done = false, timer = 0;
+          let loads = 0, done = false;
           const finish = ok => {
-              if (done) return; done = true; clearTimeout(timer); fr.remove(); g.busy = null;
+              if (done) return; done = true; fr.remove(); g.busy = null;
               if (ok) log('info', 'browser check passed in ' + (Date.now() - t0) + ' ms — retrying');
               else {
                   g.failedAt = Date.now();
@@ -326,7 +409,7 @@
               catch (e) { still = loads < 2; }
               if (!still) finish(true);
           };
-          timer = setTimeout(() => finish(false), 20000);
+          mbnSleep(20000, () => done).then(() => finish(false));   // #999 wakes even with this page's timers held back
           fr.src = src;
           (document.body || document.documentElement).appendChild(fr);
       });
@@ -2739,7 +2822,7 @@ Click: open the label`;
     if (!rgGid) { Log.cat('Artist').info('no release group linked → search-only'); return new Map(); }
     if (!force && _sibCache.gid === rgGid && _sibCache.map && _sibCache.map.size) return _sibCache.map;
     let map = new Map();
-    for (let i = 0; i < 3 && !map.size; i++) { if (i) await new Promise(r => setTimeout(r, 1100)); map = await fetchSiblings(rgGid); }
+    for (let i = 0; i < 3 && !map.size; i++) { if (i) await mbnSleep(1100); map = await fetchSiblings(rgGid); }
     _sibCache = { gid: rgGid, map };
     if (map.size) Log.cat('Artist').info('sibling map:', map.size, 'titles from RG', rgGid);
     else Log.cat('Artist').warn('sibling map empty (RG', rgGid + ') — search only; retries on rebuild');
@@ -2880,7 +2963,9 @@ Click: open the label`;
   // "unknown" and NOT cache it, so a transient 503 never becomes a false
   // negative (#227). Only successful responses are cached.
   const _discogsResolveCache = new Map();
-  const _sleep = ms => new Promise(z => setTimeout(z, ms));
+  // #999 the gate's sleep: plain timers were seen held back for minutes on the release editor (Firefox,
+  // Violentmonkey), and a matching pass hung on "matching 1/9…" with nothing in flight
+  const _sleep = ms => mbnSleep(ms);
   // The public /ws/2 endpoint is rate-limited (~1 req/s), so requests are paced
   // here (#227). This used to pace them by CHAINING: each call waited for the
   // previous one to come back, then waited out the gap. That makes our rate
@@ -2933,7 +3018,7 @@ Click: open the label`;
     for (let told = false; wsLaneSync(), _wsInFlight >= wsLanes();) {
       if (cancelled()) return null;
       if (!told) { told = true; wsGateLog('debug', 'MusicBrainz gate: ' + (o.label || 'ws2') + ' waits for a free lane (' + _wsInFlight + ' of ' + wsLanes() + ' busy)'); }
-      await new Promise(z => { _wsLaneWaiters.add(z); setTimeout(z, 1000); });   // woken by a freed lane or Stop
+      await Promise.race([new Promise(z => _wsLaneWaiters.add(z)), mbnSleep(1000, cancelled)]);   // woken by a freed lane or Stop
     }
     if (cancelled()) return null;
     _wsInFlight++;
@@ -2947,9 +3032,11 @@ Click: open the label`;
     // and the gate drops those at a Stop anyway. Waiting for it used to be the bargain,
     // until a request the manager never answered held "⏳ Stopping…" for good, with every
     // background lookup, the pickers' included, dropped behind the stuck stop.
+    // #999 the Stop is watched with the gate's sleep, not a 120ms interval that could be held back
     return new Promise((resolve, reject) => {
-      const t = setInterval(() => { if (cancelled()) { clearInterval(t); resolve(null); } }, 120);
-      p.then(r => { clearInterval(t); resolve(r); }, e => { clearInterval(t); reject(e); });
+      let settled = false;
+      p.then(r => { settled = true; resolve(r); }, e => { settled = true; reject(e); });
+      mbnSleep(36e5, () => settled || cancelled()).then(() => { if (!settled) resolve(null); });
     });
   }
   // tell the gate how MusicBrainz answered: a 429/503 holds everybody, a clean answer earns room back
@@ -9468,7 +9555,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (!pending.length) return true;
     Log.cat('Tool').info('loading', pending.length, 'collapsed medium(s) first');
     pending.forEach(m => { try { if (typeof m.loadTracks === 'function') m.loadTracks(); } catch (e) { Log.cat('Tool').warn('loadTracks failed', e.message); } });
-    for (let n = 0; n < 150 && !pending.every(medLoaded); n++) await new Promise(r => setTimeout(r, 200));
+    for (let n = 0; n < 150 && !pending.every(medLoaded); n++) await mbnSleep(200);   // #999 wakes even with timers held back
     const ok = pending.every(medLoaded);
     if (!ok) Log.cat('Tool').warn('medium(s) did not finish loading:', pending.filter(m => !medLoaded(m)).map(m => u(m.position)).join(', '));
     return ok;
@@ -11713,7 +11800,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (!td.isConnected) continue;
       const candTracks = media ? media.reduce((n, m) => n + ((m.tracks || []).length || 0), 0) : NaN;   // #187: candidate's actual track count
       paintDupCell(td, tr, gid, media ? dupTrackScore(media, enteredTracklist()) : null, candTracks);
-      await new Promise(z => setTimeout(z, 1100));
+      await mbnSleep(1100);   // #999 wakes even with timers held back
     }
     _dupBusy = false;
   }
@@ -13398,7 +13485,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       try {
         for (let t = 0; t < 60 && (!rows.length || anyLoading()); t++) {
           if (_matchStop) { stopped = true; break; }
-          await wait(new Promise(z => setTimeout(z, 250)), 'tracklist');
+          await wait(mbnSleep(250, () => _matchStop), 'tracklist');   // #999 wakes even with timers held back
           rows = readRecordings();
         }
       } finally { _autoMatchWaiting = false; }
@@ -14908,10 +14995,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // Foreground (`stale`): a background read queued behind every match lookup and joined their
     // flights, and one the manager never answered left the tab on "Cloning release…" for good.
     let gaveUp = false;
-    const timer = setTimeout(() => { gaveUp = true; }, 60000);
+    const timer = setTimeout(() => { gaveUp = true; }, 60000);   // the race below also ends on mbnSleep, which wakes with timers held back (#999)
     const res = await Promise.race([
       wsJson(`${ORIGIN}/ws/2/release/${mbid}?inc=artist-credits+labels+recordings+release-groups+url-rels&fmt=json`, { label: 'release to clone', stale: () => gaveUp }),
-      new Promise(r => setTimeout(() => r({ timedOut: true }), 60500)),
+      mbnSleep(60500, () => gaveUp).then(() => ({ timedOut: true })),
     ]).finally(() => clearTimeout(timer));
     if (!res.json) Log.cat('Release').warn('clone: no release read —', res.timedOut || gaveUp ? 'timed out after 60 s' : JSON.stringify(res));
     if (!res.json) { say('Couldn’t read the release to clone it.'); mbuToast('⚠ Couldn’t read the release to clone it.', { kind: 'warn' }); return; }
@@ -15784,7 +15871,6 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       }
       if (!best) return;
       e.preventDefault(); e.stopPropagation();
-      document.querySelectorAll('.tc-acpop').forEach(p => { if (p._tcOwner === el) p.remove(); });   // the artist picker the field showed on focus goes with it
       try { best.f.focus(); const t = best.f; if (t instanceof HTMLInputElement && /^(text|search|url|)$/.test(t.type)) { t.select(); } } catch (x) { /* fine */ }   // all selected: typing replaces it, the next arrow moves on
     }, true);
   }

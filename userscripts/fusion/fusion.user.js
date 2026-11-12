@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.134616
+// @version      2026.11.12.151307
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -111,24 +111,101 @@ async function mbnState(fn) {
     // The lock is held only for rw()'s synchronous moment, so a wait of seconds means it is
     // stuck (a frozen or sandboxed holder): give up on it and go unlocked rather than hang
     // every request behind it.
-    let timer = 0, expired = false;
+    let expired = false, settled = false;
     try {
         if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) {
             const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
-            const timeout = new Promise((resolve, reject) => {
-                timer = setTimeout(() => {
-                    expired = true;
-                    reject(new Error('MusicBrainz gate lock timed out'));
-                    try { if (ctrl) ctrl.abort(); } catch (e) {}
-                }, 3000);
+            const timeout = mbnSleep(3000, () => settled).then(() => {
+                if (settled) return new Promise(() => {});   // the lock answered first
+                expired = true;
+                try { if (ctrl) ctrl.abort(); } catch (e) {}
+                throw new Error('MusicBrainz gate lock timed out');
             });
             // Some userscript bridges never settle the request on abort. The timer
             // must release our wait itself; a late grant must not book twice.
             const locked = navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, () => expired ? undefined : rw());
             return await Promise.race([locked, timeout]);
         }
-    } catch (e) { /* no Web Locks here (an insecure or sandboxed context), or stuck: unlocked, like a lone script */ } finally { clearTimeout(timer); }
+    } catch (e) { /* no Web Locks here (an insecure or sandboxed context), or stuck: unlocked, like a lone script */ } finally { settled = true; }
     return rw();
+}
+function mbnSleep(ms, cancelled) {
+    const end = Date.now() + Math.max(0, +ms || 0);
+    const w = globalThis.__mbnWake1 || (globalThis.__mbnWake1 = { all: new Set(), due: new Map(), raf: 0, mo: null, worker: null, stall: null });
+    const note = () => {   // a timer overdue by 2s: note it once a minute, for the log
+        const now = Date.now();
+        if (w.stall && now - w.stall.at < 60000) return;
+        for (const d of w.due.values()) {
+            if (now - d <= 2000) continue;
+            let state = '', hidden = false;
+            try { state = document.readyState; hidden = !!document.hidden; } catch (e) {}
+            w.stall = { ms: now - d, at: now, state, hidden, told: false };
+            return;
+        }
+    };
+    const wake = () => { note(); for (const f of Array.from(w.all)) f(); };
+    return new Promise(resolve => {
+        let done = false;
+        const tok = {};
+        const me = () => {
+            if (done) return;
+            let stop = false;
+            try { stop = !!(cancelled && cancelled()); } catch (e) {}
+            const now = Date.now();
+            if (!stop && now < end) return;
+            done = true;
+            w.all.delete(me);
+            if (!w.all.size) {   // the last sleeper: the wakers rest
+                try { if (w.raf) cancelAnimationFrame(w.raf); } catch (e) {}
+                w.raf = 0;
+                try { if (w.mo) w.mo.disconnect(); } catch (e) {}
+                w.mo = null;
+                try { if (w.worker && w.ticking) w.worker.postMessage(0); } catch (e) {}
+                w.ticking = false;
+            }
+            resolve(Math.max(0, now - end));
+        };
+        // the plain timer, left to fire after another waker ended the sleep: when it fires late, it says so
+        // with a cancel check it runs in 250ms slices, so a cancel lands where nothing else wakes it (no page)
+        const tick = () => {
+            if (Date.now() - (w.due.get(tok) || Infinity) > 2000) note();
+            w.due.delete(tok);
+            me();
+            if (!done) arm();
+        };
+        const arm = () => {
+            const d = Math.max(1, Math.min(cancelled ? 250 : 2147483647, end - Date.now()));
+            if (w.due.size < 500) w.due.set(tok, Date.now() + d);
+            setTimeout(tick, d);
+        };
+        me();
+        if (done) return;
+        w.all.add(me);
+        arm();
+        try {
+            if (!w.raf && typeof requestAnimationFrame === 'function') {
+                const frame = () => { w.raf = 0; wake(); if (w.all.size) w.raf = requestAnimationFrame(frame); };
+                w.raf = requestAnimationFrame(frame);
+            }
+        } catch (e) {}
+        try {
+            if (!w.mo && typeof MutationObserver === 'function' && typeof document !== 'undefined' && document.documentElement) {
+                w.mo = new MutationObserver(wake);
+                w.mo.observe(document.documentElement, { childList: true, subtree: true, attributes: true, characterData: true });
+            }
+        } catch (e) { w.mo = null; }
+        try {   // a worker's timers run apart from the page's; a page that forbids blob workers goes without
+            if (w.worker === null && typeof Worker === 'function' && typeof Blob === 'function' && typeof URL !== 'undefined' && URL.createObjectURL) {
+                w.worker = false;
+                const wk = new Worker(URL.createObjectURL(new Blob(['let t=0;onmessage=e=>{clearInterval(t);t=0;if(e.data>0)t=setInterval(()=>postMessage(1),e.data)}'], { type: 'text/javascript' })));
+                wk.onmessage = () => { const x = globalThis.__mbnWake1; if (x) { x.wake && x.wake(); } };
+                wk.onerror = () => { w.worker = false; };
+                w.worker = wk;
+            }
+            w.wake = wake;
+            if (w.worker && !w.ticking) { w.ticking = true; w.worker.postMessage(100); }
+        } catch (e) { w.worker = false; }
+    });
 }
 async function mbnSlot(o) {
     o = o || {};
@@ -141,7 +218,7 @@ async function mbnSlot(o) {
         if (left <= 0) break;
         if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
         if (!told && o.log) { told = true; o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + ' waits for a page being drawn'); }
-        await new Promise(r => setTimeout(r, Math.min(left, 250)));
+        await mbnSleep(Math.min(left, 250), o.cancelled);
     }
     const booked = await mbnState(s => {
         const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
@@ -166,7 +243,12 @@ async function mbnSlot(o) {
             o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + (toldAt ? ' still waits, ' + Math.round(left / 100) / 10 + 's to go' : ' waits ' + Math.round((until - t0) / 100) / 10 + 's') + ' (' + why + ')');
             toldUntil = until; toldAt = now;
         }
-        await new Promise(r => setTimeout(r, Math.min(left, 250)));   // in slices, so a cancel lands promptly
+        await mbnSleep(Math.min(left, 250), o.cancelled);   // in slices, so a cancel lands promptly
+        const st = globalThis.__mbnWake1 && globalThis.__mbnWake1.stall;
+        if (st && !st.told && o.log) {
+            st.told = true;
+            o.log('info', 'MusicBrainz gate: this page\'s timer fired ' + Math.round(st.ms / 100) / 10 + 's late (page ' + (st.state || '?') + (st.hidden ? ', hidden' : '') + '); waits wake on page activity too');
+        }
     }
     return { ok: true, waited: Date.now() - t0 };
 }
@@ -245,21 +327,22 @@ function mbnWsFetch(url, init) {
     return new Promise((resolve, reject) => {
         const sig = init.signal;
         if (sig && sig.aborted) { reject(new DOMException('Aborted', 'AbortError')); return; }
-        let req = null, done = false, guard = 0;
-        const onAbort = () => { if (done) return; done = true; clearTimeout(guard); try { req && req.abort && req.abort(); } catch (e) {} reject(new DOMException('Aborted', 'AbortError')); };
-        const fail = m => () => { if (done) return; done = true; clearTimeout(guard); if (sig) sig.removeEventListener('abort', onAbort); reject(new TypeError(m)); };
+        let req = null, done = false;
+        const onAbort = () => { if (done) return; done = true; try { req && req.abort && req.abort(); } catch (e) {} reject(new DOMException('Aborted', 'AbortError')); };
+        const fail = m => () => { if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort); reject(new TypeError(m)); };
         // A request the manager never answers, not even with its own timeout (seen in
         // Violentmonkey on Firefox): give up on it here, or whoever awaits it, a matching
         // pass that was told to stop included, waits forever. MusicBrainz answers a search in
         // seconds even on a slow day; one that took a minute held every lane behind it while
         // the shared throttle allowed a single one, so the gate stops waiting after half that.
-        guard = setTimeout(() => { if (done) return; fail('no answer in 35s')(); try { req && req.abort && req.abort(); } catch (e) {} }, 35000);
+        // #999 mbnSleep, not a plain timer: with this page's timers held back, a stuck request was never given up on
+        mbnSleep(35000, () => done).then(() => { if (done) return; fail('no answer in 35s')(); try { req && req.abort && req.abort(); } catch (e) {} });
         if (sig) sig.addEventListener('abort', onAbort);
         const res = gm({
             method: String(init.method || 'GET').toUpperCase(), url: abs, headers, data: init.body,
             timeout: 30000,
             onload: x => {
-                if (done) return; done = true; clearTimeout(guard); if (sig) sig.removeEventListener('abort', onAbort);
+                if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort);
                 const h = new Headers();
                 for (const line of String(x.responseHeaders || '').split(/\r?\n/)) { const i = line.indexOf(':'); if (i > 0) try { h.append(line.slice(0, i).trim(), line.slice(i + 1).trim()); } catch (e) {} }
                 const st = x.status || 0;
@@ -312,9 +395,9 @@ function mbnReverify(url, init, o) {
         const fr = document.createElement('iframe');   // fresh each time, never re-navigated
         fr.setAttribute('aria-hidden', 'true'); fr.setAttribute('data-mbn-check', ''); fr.tabIndex = -1;
         fr.style.cssText = 'position:fixed;width:1px;height:1px;left:-9999px;top:0;border:0;opacity:0;pointer-events:none';
-        let loads = 0, done = false, timer = 0;
+        let loads = 0, done = false;
         const finish = ok => {
-            if (done) return; done = true; clearTimeout(timer); fr.remove(); g.busy = null;
+            if (done) return; done = true; fr.remove(); g.busy = null;
             if (ok) log('info', 'browser check passed in ' + (Date.now() - t0) + ' ms — retrying');
             else {
                 g.failedAt = Date.now();
@@ -332,7 +415,7 @@ function mbnReverify(url, init, o) {
             catch (e) { still = loads < 2; }
             if (!still) finish(true);
         };
-        timer = setTimeout(() => finish(false), 20000);
+        mbnSleep(20000, () => done).then(() => finish(false));   // #999 wakes even with this page's timers held back
         fr.src = src;
         (document.body || document.documentElement).appendChild(fr);
     });
