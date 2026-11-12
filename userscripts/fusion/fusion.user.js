@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.151418
+// @version      2026.11.12.170000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -485,7 +485,7 @@ async function wsGet(path, retries) {
 
 // ── settings (GM-persisted) ──────────────────────────────────────────────
 const SETTINGS_KEY = 'fusion.settings';
-const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, prefetchGroupReleases: false, releasePrefetchCap: 200, poolCollapsed: false, matchCutoff: 'strict', poolSort: 'added', autoClearMerged: true };
+const SETTINGS_DEFAULTS = { lengthToleranceMs: 5000, grossLengthMs: 30000, acoustidEnrich: true, acoustidPoolCap: 2000, prefetchGroupReleases: false, releasePrefetchCap: 200, poolCollapsed: false, matchCutoff: 'strict', poolSort: 'added', autoClearMerged: true, editView: 'fusion' };
 function loadSettings() {
     // (#623: the one-time #529 migrations of the old AcoustID cap and prefetch default are retired)
     try { return Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(GM_getValue(SETTINGS_KEY, '{}'))); }
@@ -4312,6 +4312,8 @@ function fsStyle() {
         + '.fs-cons,.fs-embed{--fs-bg:var(--mbu-bg-sunken);--fs-panel:var(--mbu-bg);--fs-panel2:var(--mbu-bg-raised);--fs-border:var(--mbu-border-soft);--fs-text:var(--mbu-text);--fs-muted:var(--mbu-text-dim);--fs-purple:var(--mbu-accent);--fs-purple-d:var(--mbu-accent-hover);--fs-green:var(--mbu-ok);--fs-amber:var(--mbu-warn);--fs-red:var(--mbu-error);--fs-blue:var(--mbu-info)}'
         // #790: the group card in Mission Control's slot, outside Fusion's window
         + '.fs-embed{font:13px -apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:var(--fs-text);text-align:left}'
+        + '.fs-editwrap{margin:6px 0 10px}.fs-editwrap .fs-emh .fs-emh-n{flex:2 1 180px;min-width:120px;box-sizing:content-box}.fs-editwait{color:var(--fs-muted);padding:6px 0}'
+        + '.fs-editback{display:inline-flex;align-items:center;gap:5px;margin:0 0 6px;padding:2px 8px;font:12px -apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:inherit;background:transparent;border:1px solid var(--mbu-border);border-radius:5px;cursor:pointer}.fs-editback:hover{border-color:var(--mbu-accent)}.fs-editback img{width:16px;height:16px}'
         + '.fs-embed .fs-ghdr{cursor:default}.fs-embed .fs-grow{cursor:default}'
         + '.fs-mcopen{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;border-radius:5px;cursor:pointer;background:transparent;border:1px solid transparent;flex-shrink:0}.fs-mcopen:hover,.fs-mcopen:focus-visible{background:var(--fs-panel2);border-color:var(--fs-purple)}.fs-mcopen img{width:16px;height:16px;display:block}'
         + '.fs-mstate{font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid var(--fs-border);color:var(--fs-muted);white-space:nowrap}.fs-mstate.fs-done{color:var(--fs-green);border-color:var(--fs-green)}.fs-mstate.fs-err{color:var(--fs-red);border-color:var(--fs-red)}'
@@ -6693,6 +6695,63 @@ function emMove(gids, dest) {
     gids.forEach(x => EM_SEL.delete(x));
     emRender();
 }
+/* #edit-card: one entity group's card. ro: read only, for a merge edit's page (no target picking, drag,
+   note or Merge; the header's right side is Fusion's icon, which switches to MB's own view). */
+function emCardHtml(type, g, gi, ro, active) {
+    const label = emLabel(type), cols = EM_COLS[type] || [];
+    const link = x => '<a href="/' + type + '/' + x.gid + '" target="_blank" rel="noopener">' + escapeHtml(x.name) + '</a>';
+    const busy = EM_BUSY.has(g.id), done = g.state === 'done', err = g.state === 'error', tooFew = g.members.length < 2, noStrat = type === 'release' && !g.strategy;
+    const target = g.members.find(x => x.gid === g.target) || g.members[0] || {};
+    // per column: how many members share each value; the chips and the row colours both come from it
+    const colStats = cols.map((c, i) => {
+        const vs = g.members.map(x => x.info ? (x.info[i] || '') : ''), cnt = {};
+        vs.forEach(v => { if (v) cnt[v] = (cnt[v] || 0) + 1; });
+        const rep = Object.entries(cnt).filter(([, n]) => n > 1).sort((a, b) => b[1] - a[1]);
+        return { vs, rep, color: Object.fromEntries(rep.map(([v], k) => [v, 'fs-idc' + (k % 6)])) };
+    });
+    let chips = g.members.length > 1 ? cols.map((c, i) => {
+        const { vs, rep } = colStats[i], all = vs[0] && vs.every(v => v === vs[0]);
+        const cls = all ? 'hit' : rep.length ? 'partial' : '';
+        const tip = all ? c + ': the same on all\n' + vs[0] : rep.length ? c + ': shared by ' + rep[0][1] + ' of ' + g.members.length + '\n' + rep[0][0] : c + ': all differ';
+        return '<span class="' + cls + '" data-tip="' + escapeHtml(tip) + '">' + c + '</span>';
+    }).join('') : '';
+    const aliasHits = type === 'artist' && g.members.length > 1 ? emAliasHits(g.members) : null;
+    if (aliasHits) {
+        const hs = [...aliasHits.entries()], anyExact = hs.some(([, h]) => h.exact);
+        const tip = hs.length ? (anyExact ? 'Alias: a name is an alias of another' : 'Alias: a name is close to an alias of another') + '\n' + hs.map(([gid, h]) => (g.members.find(m => m.gid === gid) || {}).name + (h.exact ? ' = ' : ' ≈ ') + '“' + h.alias + '” of ' + h.of.name).join('\n')
+            : g.members.some(m => !Array.isArray(m.aliases)) ? 'Alias: loading…' : 'Alias: no name is an alias of another';
+        chips = '<span class="' + (hs.length ? (anyExact ? 'hit' : 'partial') : '') + '" data-tip="' + escapeHtml(tip) + '">Alias</span>' + chips;
+    }
+    const hasNote = !!(g.note || '').trim();
+    const mLabel = ro ? '' : busy ? '⏳ Merging…' : done ? '✓ Merged' : err ? '⚠ Retry merge' : tooFew ? MERGE_MARK + ' Merge (needs 2+)' : MERGE_MARK + ' Merge';
+    const head = '<div class="fs-ghdr fs-ghdr-grid"><div class="fs-ghl">'
+        + '<span class="fs-gnum" data-tip="Group ' + (gi + 1) + '\n' + g.members.length + ' ' + (g.members.length === 1 ? emOne(type) : label.toLowerCase()) + '">' + g.members.length + '</span>'
+        + '<span class="fs-gt" data-tip="' + escapeHtml(target.name || '') + '">' + (target.gid ? link(target) : 'New group') + '</span></div>'
+        + '<div class="fs-sig">' + chips + '</div><div class="fs-ghr">'
+        + (ro ? '<button class="fs-mcopen" type="button" data-act="ro-native" data-tip="Fusion\u2019s comparison\nClick: MusicBrainz\u2019s own view" aria-label="MusicBrainz\u2019s own view"><img alt="" src="' + ICON_URL + '"></button></div></div>' : '')
+        + (ro ? '' : (type === 'release' && !done ? '<select class="fs-strat' + (noStrat ? ' fs-strat-unset' : '') + '" data-act="strategy" data-tip="Mediums\nHow the releases’ mediums combine">' + (noStrat ? '<option value="" disabled selected hidden>Mediums…</option>' : '') + '<option value="1"' + (g.strategy === '1' ? ' selected' : '') + '>Append mediums</option><option value="2"' + (g.strategy === '2' ? ' selected' : '') + '>Merge mediums</option></select>' : '')
+        + (done ? (g.mergedUrl ? '<a href="' + escapeHtml(g.mergedUrl) + '" target="_blank" rel="noopener">view</a>' : '')
+            : '<span class="fs-note-btn' + (hasNote ? ' fs-has-note' : '') + '" data-act="edit-note" data-tip="' + (hasNote ? 'A custom edit note is set\nClick: edit it' : 'Add a custom edit note for this merge') + '">✎</span>')
+        + '<button class="fs-mbtn' + (done ? ' fs-done' : err ? ' fs-err' : '') + '" type="button" data-act="merge-group"' + (busy || done || tooFew || noStrat ? ' disabled' : '') + (err ? ' data-tip="' + escapeHtml('Merge failed\n' + (g.error || '')) + '"' : noStrat && !tooFew ? ' data-tip="Choose how the mediums combine first"' : '') + '>' + mLabel + '</button>'
+        + '<span class="fs-kill" data-act="delete-group" data-tip="' + (done ? 'Remove this group' : 'Delete this group\nIts ' + label.toLowerCase() + ' go back to the pool.') + '">🗑</span>'
+        + '</div></div>');
+    const colHead = cols.length ? '<div class="fs-emh"><span class="fs-emh-n">' + escapeHtml(emOne(type)) + '</span>' + cols.map(c => '<span class="fs-emc' + (EM_WIDE.has(c) ? ' fs-wide' : '') + '">' + c + '</span>').join('') + '<span class="fs-emh-a"></span></div>' : '';
+    const aliasLine = x => { const h = aliasHits && aliasHits.get(x.gid); return h ? '<span class="fs-alias-sub' + (h.exact ? '' : ' fs-alias-near') + '" data-tip="' + escapeHtml((h.exact ? 'An alias of ' : 'Close to an alias of ') + h.of.name) + '">' + (h.exact ? '=' : '≈') + ' alias of ' + (h.of.gid === target.gid ? '★' : escapeHtml(h.of.name)) + ': <i>' + escapeHtml(h.alias) + '</i></span>' : ''; };
+    const rows = g.members.map(x => {
+        const isT = x.gid === target.gid;
+        const star = isT ? '<span class="fs-star fs-star-on" data-tip="The merge target\nThis one is kept.">★</span>'
+            : done || ro ? '<span class="fs-star"></span>' : '<span class="fs-star" data-act="set-target" data-tip="Make this the merge target\nThe one kept; the others merge into it.">☆</span>';
+        const cells = cols.map((c, i) => {
+            const v = x.info ? (x.info[i] || '') : null, cc = v ? colStats[i].color[v] : '';
+            return '<span class="fs-emc' + (EM_WIDE.has(c) ? ' fs-wide' : '') + '" data-tip="' + escapeHtml(c + '\n' + (v == null ? 'loading…' : v || '—')) + '">' + (v == null ? '…' : v ? (cc ? '<span class="' + cc + '">' + escapeHtml(v) + '</span>' : escapeHtml(v)) : '') + '</span>';
+        }).join('');
+        return '<div class="fs-growwrap"><div class="fs-grow' + (isT ? ' fs-target-row' : '') + '"' + (busy || done || ro ? '' : ' draggable="true"') + ' data-gid="' + x.gid + '">' + star
+            + '<span class="fs-t">' + link(x) + (x.dis ? '<span class="fs-dis">(' + escapeHtml(x.dis) + ')</span>' : '') + aliasLine(x) + '</span>' + cells
+            + (busy || done || ro ? '<span class="fs-acts"></span>' : '<span class="fs-acts"><span data-act="return" data-tip="Back to the pool">↩</span><span class="fs-rm-x" data-act="remove-both" data-tip="Remove from the group and the pool">✕</span></span>') + '</div></div>';
+    }).join('');
+    return '<div class="fs-gcard fs-gcard-manual fs-tier-manual' + (ro ? ' fs-emcard' : '') + active + '" data-g="' + g.id + '">' + head + colHead + '<div class="fs-grows">' + rows + '</div>'
+        + (err && g.error ? '<div class="fs-gerr">' + escapeHtml(g.error) + '</div>' : '') + '</div>';
+}
 function emRender() {
     const ov = document.getElementById('fs-em-overlay'); if (!ov) { refreshCounters(); return; }
     const type = EM_TYPE, t = emT(type), label = emLabel(type), cols = EM_COLS[type] || [];
@@ -6733,54 +6792,7 @@ function emRender() {
                 + '</div><div class="fs-note-wrap"><textarea class="fs-note-ta" spellcheck="false" placeholder="Edit note submitted with this merge…">' + escapeHtml(draft) + '</textarea>'
                 + '<div class="fs-note-hint">Replaces the auto-generated reason line. Fusion\'s attribution footer is always appended.</div></div></div>';
         }
-        // per column: how many members share each value; the chips and the row colours both come from it
-        const colStats = cols.map((c, i) => {
-            const vs = g.members.map(x => x.info ? (x.info[i] || '') : ''), cnt = {};
-            vs.forEach(v => { if (v) cnt[v] = (cnt[v] || 0) + 1; });
-            const rep = Object.entries(cnt).filter(([, n]) => n > 1).sort((a, b) => b[1] - a[1]);
-            return { vs, rep, color: Object.fromEntries(rep.map(([v], k) => [v, 'fs-idc' + (k % 6)])) };
-        });
-        let chips = g.members.length > 1 ? cols.map((c, i) => {
-            const { vs, rep } = colStats[i], all = vs[0] && vs.every(v => v === vs[0]);
-            const cls = all ? 'hit' : rep.length ? 'partial' : '';
-            const tip = all ? c + ': the same on all\n' + vs[0] : rep.length ? c + ': shared by ' + rep[0][1] + ' of ' + g.members.length + '\n' + rep[0][0] : c + ': all differ';
-            return '<span class="' + cls + '" data-tip="' + escapeHtml(tip) + '">' + c + '</span>';
-        }).join('') : '';
-        const aliasHits = type === 'artist' && g.members.length > 1 ? emAliasHits(g.members) : null;
-        if (aliasHits) {
-            const hs = [...aliasHits.entries()], anyExact = hs.some(([, h]) => h.exact);
-            const tip = hs.length ? (anyExact ? 'Alias: a name is an alias of another' : 'Alias: a name is close to an alias of another') + '\n' + hs.map(([gid, h]) => (g.members.find(m => m.gid === gid) || {}).name + (h.exact ? ' = ' : ' ≈ ') + '“' + h.alias + '” of ' + h.of.name).join('\n')
-                : g.members.some(m => !Array.isArray(m.aliases)) ? 'Alias: loading…' : 'Alias: no name is an alias of another';
-            chips = '<span class="' + (hs.length ? (anyExact ? 'hit' : 'partial') : '') + '" data-tip="' + escapeHtml(tip) + '">Alias</span>' + chips;
-        }
-        const hasNote = !!(g.note || '').trim();
-        const mLabel = busy ? '⏳ Merging…' : done ? '✓ Merged' : err ? '⚠ Retry merge' : tooFew ? MERGE_MARK + ' Merge (needs 2+)' : MERGE_MARK + ' Merge';
-        const head = '<div class="fs-ghdr fs-ghdr-grid"><div class="fs-ghl">'
-            + '<span class="fs-gnum" data-tip="Group ' + (gi + 1) + '\n' + g.members.length + ' ' + (g.members.length === 1 ? emOne(type) : label.toLowerCase()) + '">' + g.members.length + '</span>'
-            + '<span class="fs-gt" data-tip="' + escapeHtml(target.name || '') + '">' + (target.gid ? link(target) : 'New group') + '</span></div>'
-            + '<div class="fs-sig">' + chips + '</div><div class="fs-ghr">'
-            + (type === 'release' && !done ? '<select class="fs-strat' + (noStrat ? ' fs-strat-unset' : '') + '" data-act="strategy" data-tip="Mediums\nHow the releases’ mediums combine">' + (noStrat ? '<option value="" disabled selected hidden>Mediums…</option>' : '') + '<option value="1"' + (g.strategy === '1' ? ' selected' : '') + '>Append mediums</option><option value="2"' + (g.strategy === '2' ? ' selected' : '') + '>Merge mediums</option></select>' : '')
-            + (done ? (g.mergedUrl ? '<a href="' + escapeHtml(g.mergedUrl) + '" target="_blank" rel="noopener">view</a>' : '')
-                : '<span class="fs-note-btn' + (hasNote ? ' fs-has-note' : '') + '" data-act="edit-note" data-tip="' + (hasNote ? 'A custom edit note is set\nClick: edit it' : 'Add a custom edit note for this merge') + '">✎</span>')
-            + '<button class="fs-mbtn' + (done ? ' fs-done' : err ? ' fs-err' : '') + '" type="button" data-act="merge-group"' + (busy || done || tooFew || noStrat ? ' disabled' : '') + (err ? ' data-tip="' + escapeHtml('Merge failed\n' + (g.error || '')) + '"' : noStrat && !tooFew ? ' data-tip="Choose how the mediums combine first"' : '') + '>' + mLabel + '</button>'
-            + '<span class="fs-kill" data-act="delete-group" data-tip="' + (done ? 'Remove this group' : 'Delete this group\nIts ' + label.toLowerCase() + ' go back to the pool.') + '">🗑</span>'
-            + '</div></div>';
-        const colHead = cols.length ? '<div class="fs-emh"><span class="fs-emh-n">' + escapeHtml(emOne(type)) + '</span>' + cols.map(c => '<span class="fs-emc' + (EM_WIDE.has(c) ? ' fs-wide' : '') + '">' + c + '</span>').join('') + '<span class="fs-emh-a"></span></div>' : '';
-        const aliasLine = x => { const h = aliasHits && aliasHits.get(x.gid); return h ? '<span class="fs-alias-sub' + (h.exact ? '' : ' fs-alias-near') + '" data-tip="' + escapeHtml((h.exact ? 'An alias of ' : 'Close to an alias of ') + h.of.name) + '">' + (h.exact ? '=' : '≈') + ' alias of ' + (h.of.gid === target.gid ? '★' : escapeHtml(h.of.name)) + ': <i>' + escapeHtml(h.alias) + '</i></span>' : ''; };
-        const rows = g.members.map(x => {
-            const isT = x.gid === target.gid;
-            const star = isT ? '<span class="fs-star fs-star-on" data-tip="The merge target\nThis one is kept.">★</span>'
-                : done ? '<span class="fs-star"></span>' : '<span class="fs-star" data-act="set-target" data-tip="Make this the merge target\nThe one kept; the others merge into it.">☆</span>';
-            const cells = cols.map((c, i) => {
-                const v = x.info ? (x.info[i] || '') : null, cc = v ? colStats[i].color[v] : '';
-                return '<span class="fs-emc' + (EM_WIDE.has(c) ? ' fs-wide' : '') + '" data-tip="' + escapeHtml(c + '\n' + (v == null ? 'loading…' : v || '—')) + '">' + (v == null ? '…' : v ? (cc ? '<span class="' + cc + '">' + escapeHtml(v) + '</span>' : escapeHtml(v)) : '') + '</span>';
-            }).join('');
-            return '<div class="fs-growwrap"><div class="fs-grow' + (isT ? ' fs-target-row' : '') + '"' + (busy || done ? '' : ' draggable="true"') + ' data-gid="' + x.gid + '">' + star
-                + '<span class="fs-t">' + link(x) + (x.dis ? '<span class="fs-dis">(' + escapeHtml(x.dis) + ')</span>' : '') + aliasLine(x) + '</span>' + cells
-                + (busy || done ? '<span class="fs-acts"></span>' : '<span class="fs-acts"><span data-act="return" data-tip="Back to the pool">↩</span><span class="fs-rm-x" data-act="remove-both" data-tip="Remove from the group and the pool">✕</span></span>') + '</div></div>';
-        }).join('');
-        return '<div class="fs-gcard fs-gcard-manual fs-tier-manual' + active + '" data-g="' + g.id + '">' + head + colHead + '<div class="fs-grows">' + rows + '</div>'
-            + (err && g.error ? '<div class="fs-gerr">' + escapeHtml(g.error) + '</div>' : '') + '</div>';
+        return emCardHtml(type, g, gi, false, active);
     }).join('') + '<div class="fs-newgroup" id="fs-em-newgroup">+ New group — drag a pool entry here, or select some and click here</div>';
     const ready = open.filter(g => g.members.length > 1 && !EM_BUSY.has(g.id)).length;
     ov.querySelector('#fs-em-sum').innerHTML = '<b>' + open.length + '</b> group' + (open.length === 1 ? '' : 's') + ' · <b>' + ready + '</b> ready · <b>' + t.pool.length + '</b> in pool';
@@ -7216,5 +7228,89 @@ try {
         getBusyCount: () => _busyCount,
     };
 } catch (e) {}
+
+
+/* ── Merge edits: Fusion's group card in place of MB's Merge/Into tables ─────
+   On an open merge edit (its own page or any edit list), the merged entities
+   are read from MB's tables, fetched once each when the edit scrolls into view
+   (ws/2, the same lookup the Fusion window makes), and drawn as the group card,
+   read only. Fusion's icon on the card switches to MB's own tables, and a small
+   Fusion button above those switches back; the choice is kept (SETTINGS.editView).
+   Applied and failed edits get nothing: their merged entities are gone.
+   Recordings are not covered (their card needs the recording model). */
+{
+    const CACHE = new Map();   // type:gid -> Promise of emFetch's details
+    const fetchOne = (type, gid) => {
+        const k = type + ':' + gid;
+        if (!CACHE.has(k)) CACHE.set(k, emFetch(type, gid).catch(e => { CACHE.delete(k); Log.warn('Merge edit: no details for ' + type + ' ' + gid + ': ' + e.message); return null; }));
+        return CACHE.get(k);
+    };
+    const gidsIn = tbl => {
+        if (!tbl) return [];
+        const out = [];
+        tbl.querySelectorAll('tbody > tr').forEach(tr => {
+            const a = tr.querySelector('td:first-child a[href]');
+            const m = a && a.getAttribute('href').match(/\/(artist|release-group|release|work|label|place|series|event)\/([0-9a-f-]{36})/i);
+            if (m) out.push({ type: m[1].toLowerCase(), gid: m[2].toLowerCase(), name: a.textContent.trim() });
+        });
+        return out;
+    };
+    // MB's outer table: a "Merge:" row and an "Into:" row, each holding an inner table
+    const parse = details => {
+        const rows = [...details.querySelectorAll(':scope > tbody > tr, :scope > tr')].filter(tr => tr.querySelector(':scope > td table'));
+        if (rows.length < 2) return null;
+        const src = gidsIn(rows[0].querySelector(':scope > td table')), into = gidsIn(rows[rows.length - 1].querySelector(':scope > td table'))[0];
+        if (!src.length || !into || src.some(x => x.type !== into.type) || !EM_COLS[into.type]) return null;
+        return { type: into.type, target: into, members: [into].concat(src.filter(x => x.gid !== into.gid)) };
+    };
+    const native = () => SETTINGS.editView === 'native';
+    const apply = (details, wrap, btn) => {
+        const n = native();
+        details.style.display = n ? '' : 'none';
+        wrap.style.display = n ? 'none' : '';
+        btn.style.display = n ? '' : 'none';
+    };
+    const applyAll = () => document.querySelectorAll('.fs-editwrap').forEach(w => apply(w._fsDetails, w, w._fsBtn));
+    const setView = v => { SETTINGS.editView = v; saveSettings(); applyAll(); };
+    const paint = async (m, wrap) => {
+        const g = { id: 'edit', target: m.target.gid, state: '', members: m.members.map(x => ({ gid: x.gid, name: x.name, dis: '', info: null })) };
+        const draw = () => { wrap.innerHTML = emCardHtml(m.type, g, 0, true, ''); };
+        draw();
+        await Promise.all(g.members.map(async x => {
+            const d = await fetchOne(m.type, x.gid);
+            Object.assign(x, d || { info: [] });
+            draw();
+        }));
+    };
+    const scan = () => {
+        document.querySelectorAll('div.edit-header.open[class*="edit-merge"]').forEach(hdr => {
+            const box = hdr.closest('.edit-list') || hdr.parentElement;
+            const details = box && box.querySelector('table.details[class*="merge-"]');
+            if (!details || details._fsDone) return;
+            details._fsDone = true;
+            const m = parse(details);
+            if (!m) return;
+            fsStyle();
+            const wrap = el('div', 'fs-embed fs-editwrap');
+            const btn = el('button', 'fs-editback');
+            btn.type = 'button';
+            btn.innerHTML = '<img alt="" src="' + ICON_URL + '">Fusion';
+            btn.setAttribute('data-tip', 'Fusion’s comparison of this merge');
+            btn.addEventListener('click', () => setView('fusion'));
+            wrap._fsDetails = details; wrap._fsBtn = btn;
+            wrap.addEventListener('click', e => { if (e.target.closest('[data-act="ro-native"]')) { e.preventDefault(); setView('native'); } });
+            details.before(btn, wrap);
+            wrap.innerHTML = '<div class="fs-editwait">Fusion: ' + m.members.length + ' ' + emLabel(m.type).toLowerCase() + '…</div>';
+            apply(details, wrap, btn);
+            const io = new IntersectionObserver(es => { if (es.some(x => x.isIntersecting)) { io.disconnect(); paint(m, wrap); } }, { rootMargin: '300px' });
+            io.observe(details.closest('.edit-list') || wrap.parentElement);
+        });
+    };
+    if (/\/(edit\/|edits|open_edits|votes)/.test(location.pathname)) {
+        scan();
+        let t = 0;
+        new MutationObserver(() => { clearTimeout(t); t = setTimeout(scan, 300); }).observe(document.body, { childList: true, subtree: true });
+    }
+}
 
 })();

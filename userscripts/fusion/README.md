@@ -125,6 +125,10 @@ What you collect, recordings included, is kept in your userscript manager and sh
 
 Right-click a type's icon in the window's header or its counter beside Fusion's corner icon to empty that pool. Grouped entries stay.
 
+### On merge edits
+
+An open merge edit of these types, on its own page or in an edit list, shows Fusion's group card instead of MusicBrainz's Merge and Into tables, read only: the same chips, tinted values and alias lines, so a voter sees what the merged entries share. Fusion's icon on the card switches to MusicBrainz's own tables, and the **Fusion** button above them switches back; the choice is remembered. Each entry is read from MusicBrainz when the edit scrolls into view. Applied and failed edits, and recording merges, keep MusicBrainz's tables.
+
 ## Settings
 
 The ⚙ window (or right-click Fusion's corner icon), which also holds the activity **Log**:
