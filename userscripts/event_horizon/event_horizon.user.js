@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.12.233000
+// @version      2026.11.12.234500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3097,7 +3097,7 @@ h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25
 .hgh{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:9px 12px;cursor:pointer}.hgi{display:flex;flex:1 1 280px;min-width:0;flex-wrap:wrap;align-items:center;gap:8px}.hga{display:flex;flex:none;align-items:center;gap:12px;margin-left:auto}.hgh .t{font-weight:700}.hgh .m{color:var(--muted);font-size:12px}.hgh .sp{flex:1}.hgh .cv{transition:transform .15s;color:var(--muted)}.hgrp.open .hgh .cv{transform:rotate(90deg)}
 .hav{width:26px;height:26px;border-radius:50%;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
 .htc{font-size:11px;padding:1px 8px;border-radius:99px;background:var(--chip);color:var(--chip-text)}
-.hvote{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 10px}.hgh .hgv{margin:0;gap:4px;flex-wrap:nowrap;white-space:nowrap}.hgh .hgv button{min-height:26px;padding:2px 8px;border-radius:4px}.hvote .lb{color:var(--muted);font-weight:600;margin-right:4px}.hvote button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;font-weight:600;cursor:pointer}.hvote button:hover{border-color:var(--accent)}.hvote button[disabled]{opacity:.5;cursor:default}.hvote button.on{color:#fff;border-color:transparent}.hvote .v1.on{background:#2e8b57}.hvote .v0.on{background:#c0392b}.hvote .v-1.on{background:#888}.hvote .v-2.on{background:var(--accent)}
+.hvote{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 10px}.hgh .hgv{margin:0;gap:4px;flex-wrap:nowrap;white-space:nowrap}.hgh .hgv button{min-height:26px;padding:2px 8px;border-radius:4px}.hvote .lb{color:var(--muted);font-weight:600;margin-right:4px}.hvote button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;font-weight:600;cursor:pointer}.hvote button:hover{border-color:var(--accent)}.hvote button[disabled]{opacity:.5;cursor:default}.hvote button.on{color:#fff;border-color:transparent}.hvote .v1.on{background:#2e8b57}.hvote .v0.on{background:#c0392b}.hvote .v-1.on{background:#888}.hvote .v-2.on{background:var(--accent)}.hvote button.busy{position:relative;opacity:1;color:transparent;border-color:var(--accent)}.hvote button.busy::after{content:"";position:absolute;inset:0;margin:auto;width:14px;height:14px;box-sizing:border-box;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:hv-spin .7s linear infinite}@keyframes hv-spin{to{transform:rotate(360deg)}}
 .hdt a:has(>img),.hdt a:has(>span>img){font-size:0}
 .hnadd{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:10px 0 4px}.hnadd textarea{width:100%;box-sizing:border-box;min-height:70px;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;resize:vertical}.hnadd textarea:focus{outline:none;border-color:var(--accent)}.hnadd > button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--accent);background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer}.hnadd > button[disabled]{opacity:.5}
 .hmy{font-size:11px;font-weight:600;padding:1px 8px;border-radius:99px;border:1px solid var(--border);color:var(--muted)}
@@ -12389,18 +12389,18 @@ const hnKey = n => (n.by || '') + '\n' + n.text;
 const histShared = es => { if (es.length < 2) return null; const n = es[0].notes.find(n => n.own); return n && es.every(e => e.notes.some(m => hnKey(m) === hnKey(n))) ? n : null; };
 // your vote on an open edit: MusicBrainz's own vote form, one edit at a time
 const H_VOTES = [['1', 'Yes'], ['0', 'No'], ['-1', 'Abstain'], ['-2', 'None']];
-const histVote = e => `<div class="hvote" role="radiogroup" aria-label="Your vote"><span class="lb">Your vote</span>${H_VOTES.map(([v, t]) => `<button type="button" class="v${v}${e.my === v ? ' on' : ''}" role="radio" aria-checked="${e.my === v}" data-hvote="${e.id}:${v}"${e.voting ? ' disabled' : ''}>${t}</button>`).join('')}</div>`;
+const histVote = e => `<div class="hvote" role="radiogroup" aria-label="Your vote"><span class="lb">Your vote</span>${H_VOTES.map(([v, t]) => `<button type="button" class="v${v}${e.my === v ? ' on' : ''}${e.voting === v ? ' busy' : ''}" role="radio" aria-checked="${e.my === v}" data-hvote="${e.id}:${v}"${e.voting ? ' disabled' : ''}>${t}</button>`).join('')}</div>`;
 // Only edits with MusicBrainz's voting permission belong to the group action; status filters already scoped es.
 function histGroupVote(es) {
     const xs = es.filter(e => e.can); if (!xs.length) return '';
-    return `<span class="hvote hgv" role="group" aria-label="Vote on group" data-hids="${xs.map(e => e.id).join(',')}"><span class="lb">Vote ${xs.length}</span>${H_VOTES.map(([v, t]) => `<button type="button" class="v${v}${xs.every(e => e.my === v) ? ' on' : ''}" data-hgvote="${v}" aria-pressed="${xs.every(e => e.my === v)}"${xs.some(e => e.voting) ? ' disabled' : ''} data-tip="${t === 'None' ? 'Withdraw votes' : 'Vote ' + t} on ${xs.length} eligible edit${xs.length === 1 ? '' : 's'} in this group">${t}</button>`).join('')}</span>`;
+    return `<span class="hvote hgv" role="group" aria-label="Vote on group" data-hids="${xs.map(e => e.id).join(',')}"><span class="lb">Vote ${xs.length}</span>${H_VOTES.map(([v, t]) => `<button type="button" class="v${v}${xs.every(e => e.my === v) ? ' on' : ''}${xs.some(e => e.voting === v) ? ' busy' : ''}" data-hgvote="${v}" aria-pressed="${xs.every(e => e.my === v)}"${xs.some(e => e.voting) ? ' disabled' : ''} data-tip="${t === 'None' ? 'Withdraw votes' : 'Vote ' + t} on ${xs.length} eligible edit${xs.length === 1 ? '' : 's'} in this group">${t}</button>`).join('')}</span>`;
 }
 function histVotePaint(d) {
     if (data !== d) return;
     document.querySelectorAll('#app [data-hvote],#app [data-hgvote]').forEach(b => {
         const group = b.closest('[data-hids]'), ids = group ? group.dataset.hids.split(',') : [b.dataset.hvote.split(':')[0]], v = group ? b.dataset.hgvote : b.dataset.hvote.split(':')[1];
         const es = d.edits.filter(e => e.can && ids.includes(String(e.id))), on = es.length > 0 && es.every(e => e.my === v);
-        b.disabled = es.some(e => e.voting); b.classList.toggle('on', on); b.setAttribute(group ? 'aria-pressed' : 'aria-checked', String(on));
+        b.disabled = es.some(e => e.voting); b.classList.toggle('on', on); b.classList.toggle('busy', es.some(e => e.voting === v)); b.setAttribute('aria-busy', String(b.classList.contains('busy'))); b.setAttribute(group ? 'aria-pressed' : 'aria-checked', String(on));
     });
 }
 // A note has its own permission: your own and closed edits have no vote controls. Keep a vote only when present.
@@ -12429,7 +12429,7 @@ async function histVoteSend(b) {
     if (!eligible || eligible.some(e => e.voting) || !H_VOTES.some(x => x[0] === v)) return;
     const es = eligible.filter(e => e.my !== v); if (!es.length) return;
     if (group && es.length > 20 && !confirm(v === '-2' ? `Withdraw your votes on ${es.length} edits?` : `Vote ${H_VOTES.find(x => x[0] === v)[1]} on ${es.length} edits?`)) return;
-    es.forEach(e => { e.voting = true; }); histVotePaint(d);
+    es.forEach(e => { e.voting = v; }); histVotePaint(d);
     try {
         LOG.keep();
         const fields = new URLSearchParams({ url: MB + histSrc(d.id) });
