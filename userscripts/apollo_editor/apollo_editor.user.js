@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.191000
+// @version      2026.11.12.200000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -13479,7 +13479,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           if (!sugg.length || stale) {
             if (stale) refetchSuggestions(ko);
             else { try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) {} }
-            for (let t = 0; t < 28; t++) { await wait(new Promise(z => setTimeout(z, 250)), 'MusicBrainz suggestions'); const loading = typeof ko.loadingSuggestedRecordings === 'function' ? u(ko.loadingSuggestedRecordings) : false; sugg = u(ko.suggestedRecordings) || []; if (!loading && sugg.length) break; if (!loading && t >= 3) break; }
+            await wait(recSuggestionsSettled(ko), 'MusicBrainz suggestions'); sugg = u(ko.suggestedRecordings) || [];
           }
           for (let s = 0; s < sugg.length; s++) { consider(suggData(sugg[s])); if (bestLevel === 0) break; }   // 0 = exact, can't do better
         }
@@ -13952,6 +13952,25 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     return l.length > 0 && !l.some(s => { try { return recSharesArtist(suggData(s), ctx); } catch (e) { return true; } });
   }
   // empty the list so a poll sees MB's fresh answer, not the stale one, then ask MB again
+  // #999: wait for MusicBrainz's suggestions to land: done as soon as they arrive, or once nothing is
+  // loading after a short grace, or after 7s. It listens to the observables rather than polling: a
+  // chain of 250ms timers is held to one tick a minute in a background tab, which kept the
+  // recordings pass "running" for minutes on one track.
+  function recSuggestionsSettled(ko) {
+    return new Promise(resolve => {
+      const subs = [], t0 = Date.now(); let done = false, grace = 0, cap = 0;
+      const loading = () => typeof ko.loadingSuggestedRecordings === 'function' ? !!u(ko.loadingSuggestedRecordings) : false;
+      const finish = () => { if (done) return; done = true; clearTimeout(grace); clearTimeout(cap); subs.forEach(x => { try { x.dispose(); } catch (e) {} }); resolve(); };
+      const check = () => {
+        if (done) return;
+        if (!loading() && (u(ko.suggestedRecordings) || []).length) return finish();
+        if (!loading() && Date.now() - t0 >= 750) return finish();
+      };
+      [ko.suggestedRecordings, ko.loadingSuggestedRecordings].forEach(o => { if (o && typeof o.subscribe === 'function') subs.push(o.subscribe(check)); });
+      grace = setTimeout(check, 800); cap = setTimeout(finish, 7000);
+      check();
+    });
+  }
   function refetchSuggestions(ko) {
     try { if (ko.suggestedRecordings.removeAll) ko.suggestedRecordings.removeAll(); else ko.suggestedRecordings([]); } catch (e) {}
     try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) { Log.cat('Recording').warn('findRecordingSuggestions failed', e.message); }
