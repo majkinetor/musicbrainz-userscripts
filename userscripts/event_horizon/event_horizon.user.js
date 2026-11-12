@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.12.234500
+// @version      2026.11.12.235500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3097,7 +3097,7 @@ h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25
 .hgh{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:9px 12px;cursor:pointer}.hgi{display:flex;flex:1 1 280px;min-width:0;flex-wrap:wrap;align-items:center;gap:8px}.hga{display:flex;flex:none;align-items:center;gap:12px;margin-left:auto}.hgh .t{font-weight:700}.hgh .m{color:var(--muted);font-size:12px}.hgh .sp{flex:1}.hgh .cv{transition:transform .15s;color:var(--muted)}.hgrp.open .hgh .cv{transform:rotate(90deg)}
 .hav{width:26px;height:26px;border-radius:50%;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
 .htc{font-size:11px;padding:1px 8px;border-radius:99px;background:var(--chip);color:var(--chip-text)}
-.hvote{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 10px}.hgh .hgv{margin:0;gap:4px;flex-wrap:nowrap;white-space:nowrap}.hgh .hgv button{min-height:26px;padding:2px 8px;border-radius:4px}.hvote .lb{color:var(--muted);font-weight:600;margin-right:4px}.hvote button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;font-weight:600;cursor:pointer}.hvote button:hover{border-color:var(--accent)}.hvote button[disabled]{opacity:.5;cursor:default}.hvote button.on{color:#fff;border-color:transparent}.hvote .v1.on{background:#2e8b57}.hvote .v0.on{background:#c0392b}.hvote .v-1.on{background:#888}.hvote .v-2.on{background:var(--accent)}.hvote button.busy{position:relative;opacity:1;color:transparent;border-color:var(--accent)}.hvote button.busy::after{content:"";position:absolute;inset:0;margin:auto;width:14px;height:14px;box-sizing:border-box;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:hv-spin .7s linear infinite}@keyframes hv-spin{to{transform:rotate(360deg)}}
+.hvote{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 10px}.hgh .hgv{margin:0;gap:4px;flex-wrap:nowrap;white-space:nowrap}.hgh .hgv button{min-height:26px;padding:2px 8px;border-radius:4px}.hvote .lb{color:var(--muted);font-weight:600;margin-right:4px}.hvote button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;font-weight:600;cursor:pointer}.hvote button:hover{border-color:var(--accent)}.hvote button[disabled]{opacity:.5;cursor:default}.hvote button.on{color:#fff;border-color:transparent}.hvote .v1.on{background:#2e8b57}.hvote .v0.on{background:#c0392b}.hvote .v-1.on{background:#888}.hvote .v-2.on{background:var(--accent)}.hvote button.busy{position:relative;opacity:1;color:transparent;border-color:var(--accent)}.hvote button.busy::after{content:"";position:absolute;inset:0;margin:auto;width:14px;height:14px;box-sizing:border-box;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:hv-spin .7s linear infinite}@keyframes hv-spin{to{transform:rotate(360deg)}}.eh-cf button{min-height:30px;padding:4px 16px;border-radius:9px;border:1px solid var(--mbu-border);background:transparent;color:var(--mbu-text);font:inherit;font-weight:600;cursor:pointer}.eh-cf button:hover,.eh-cf button:focus-visible{border-color:var(--mbu-accent);outline:none}.eh-cf .eh-cf-ok{background:var(--mbu-accent);border-color:transparent;color:#fff}
 .hdt a:has(>img),.hdt a:has(>span>img){font-size:0}
 .hnadd{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:10px 0 4px}.hnadd textarea{width:100%;box-sizing:border-box;min-height:70px;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;resize:vertical}.hnadd textarea:focus{outline:none;border-color:var(--accent)}.hnadd > button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--accent);background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer}.hnadd > button[disabled]{opacity:.5}
 .hmy{font-size:11px;font-weight:600;padding:1px 8px;border-radius:99px;border:1px solid var(--border);color:var(--muted)}
@@ -7673,6 +7673,22 @@ function imageFingerprint(src) {
 async function dedupArtistImages(images) {
     const signatures = await Promise.all(images.map(x => imageFingerprint(x.src).catch(() => null)));
     return ArtistImage.groups(images, signatures).map(indices => ({ ...images[indices[0]], providers: indices.map(i => images[i]) }));
+}
+// The suite's own confirm, in place of the browser's: resolves true on the OK button or Enter, false on Cancel, Escape or a click outside.
+function ehConfirm(msg, ok = 'OK') {
+    return new Promise(res => {
+        const previous = document.activeElement, ov = document.createElement('div');
+        ov.className = 'mbu-ov eh-cf';
+        ov.innerHTML = '<div class="mbu-ov-panel mbu-ui" role="alertdialog" aria-modal="true" style="width:min(400px,calc(100vw - 32px))"><div class="mbu-ov-body" style="padding:18px 20px"><p style="margin:0 0 16px"></p><div style="display:flex;justify-content:flex-end;gap:8px"><button type="button" class="eh-cf-no">Cancel</button><button type="button" class="eh-cf-ok"></button></div></div></div>';
+        ov.querySelector('p').textContent = msg; ov.querySelector('.eh-cf-ok').textContent = ok;
+        const done = v => { ov.remove(); removeEventListener('keydown', key, true); if (previous && previous.isConnected) previous.focus(); res(v); };
+        const key = e => {
+            if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); done(false); }
+            else if (e.key === 'Tab') { e.preventDefault(); (document.activeElement === ov.querySelector('.eh-cf-ok') ? ov.querySelector('.eh-cf-no') : ov.querySelector('.eh-cf-ok')).focus(); }
+        };
+        ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('.eh-cf-no')) done(false); else if (e.target.closest('.eh-cf-ok')) done(true); });
+        addEventListener('keydown', key, true); document.body.appendChild(ov); ov.querySelector('.eh-cf-ok').focus();
+    });
 }
 function openImageGallery() {
     const d = data, g = d.g, xs = g.imgs || [];
@@ -12428,7 +12444,8 @@ async function histVoteSend(b) {
     const eligible = d && d.edits && d.edits.filter(e => e.can && ids.includes(String(e.id)));
     if (!eligible || eligible.some(e => e.voting) || !H_VOTES.some(x => x[0] === v)) return;
     const es = eligible.filter(e => e.my !== v); if (!es.length) return;
-    if (group && es.length > 20 && !confirm(v === '-2' ? `Withdraw your votes on ${es.length} edits?` : `Vote ${H_VOTES.find(x => x[0] === v)[1]} on ${es.length} edits?`)) return;
+    if (group && es.length > 20 && !await ehConfirm(v === '-2' ? `Withdraw your votes on ${es.length} edits?` : `Vote ${H_VOTES.find(x => x[0] === v)[1]} on ${es.length} edits?`, v === '-2' ? 'Withdraw' : 'Vote ' + H_VOTES.find(x => x[0] === v)[1])) return;
+    if (data !== d || es.some(e => e.voting)) return;
     es.forEach(e => { e.voting = v; }); histVotePaint(d);
     try {
         LOG.keep();
