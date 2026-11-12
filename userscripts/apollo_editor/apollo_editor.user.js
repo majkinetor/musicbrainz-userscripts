@@ -13479,7 +13479,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           const qy = recNarrowQuery(ko);
           if (qy) {
             setStatus('auto-matching ' + (i + 1) + '/' + todo.length + '… (search)');
-            const hits = ((await wait(searchRecordings(qy), 'recording search')) || []).filter(d => !(videoBlocked && d.video));
+            const hits = ((await wait(searchRecordings(qy, { stale: cancelled }), 'recording search')) || []).filter(d => !(videoBlocked && d.video));
             if (hits.length === 1) consider(hits[0]);
             Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' search tier → ' + hits.length + ' hit(s)' + (hits.length === 1 ? ': "' + hits[0].name + '" [' + (hits[0].gid || '').slice(0, 8) + '] level=' + recComboLevel(hits[0], ctx) : hits.length ? ', not used (more than one)' : ''));
           }
@@ -13609,7 +13609,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     document.removeEventListener('mousedown', _recPopOutside, true); document.removeEventListener('keydown', _recPopKey, true);
     window.removeEventListener('scroll', _recPopReposition, true); window.removeEventListener('resize', _recPopReposition);
   }
-  function _recPopOutside(e) { if (_recPop && !_recPop.contains(e.target)) closeRecPop(); }
+  function _recPopOutside(e) { if (_recPop && (!_recPop.isConnected || !_recPop.contains(e.target))) closeRecPop(); }
   function _recPopKey(e) { if (e.key === 'Escape') closeRecPop(); }
   // dock the picker as a tall panel whose RIGHT edge aligns with the status-circle column (so it sits
   // over the Track half, not far off to the side), using the full viewport height.
@@ -14032,6 +14032,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function openRecPicker(entry, anchor) {
     recStyle(); closeRecPop();
     const pop = document.createElement('div'); pop.className = 'tc-recpop'; _recPop = pop; _recPopAnchor = anchor; document.body.appendChild(pop);
+    // #999: hook the outside-click / Escape close at once, so a failure further down can't leave a picker nothing closes
+    setTimeout(() => { if (_recPop !== pop) return; document.addEventListener('mousedown', _recPopOutside, true); document.addEventListener('keydown', _recPopKey, true); window.addEventListener('scroll', _recPopReposition, true); window.addEventListener('resize', _recPopReposition); }, 0);
     const ko = koTrack(entry.mi, entry.ti);
     const data = {};
     const ctx = { title: u(ko.name), artist: acText(u(ko.artistCredit)), length: u(ko.length), artistGids: acArtistGids(u(ko.artistCredit)), artistNames: acNameList(u(ko.artistCredit)) };   // for result confidence colouring
@@ -14229,7 +14231,6 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     q.oninput = () => { clearTimeout(tmr); tmr = setTimeout(() => runSearch(q.value, false), 300); };
     q.focus(); q.select(); runSearch(autoQuery(), !relax);
     _recPopReposition();
-    setTimeout(() => { document.addEventListener('mousedown', _recPopOutside, true); document.addEventListener('keydown', _recPopKey, true); window.addEventListener('scroll', _recPopReposition, true); window.addEventListener('resize', _recPopReposition); }, 0);
   }
   // the Recordings tab panel (#recordings) — check the PANEL not the inner table (we hide the table)
   function recordingsVisible() { const p = document.getElementById('recordings'); return !!(p && p.offsetParent !== null); }
