@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.080000
+// @version      2026.11.13.080100
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11741,7 +11741,7 @@ const histKey = href => {
     if (/^\/edit\/\d+\/?$/.test(u.pathname)) return 'hist/' + encodeURIComponent(u.pathname.replace(/\/$/, ''));
     const pa = u.pathname.replace(/\/$/, ''), o = new RegExp('^/release/' + MBID.source + '/open_edits$', 'i').test(pa);
     // an editor's open and all edits: the user name keeps its case
-    if (/^\/user\/[^/]+\/(edits(\/open)?|votes)$/.test(pa)) { u.searchParams.delete('page'); return 'hist/' + encodeURIComponent(pa + (u.search === '?' ? '' : u.search)); }
+    if (/^\/user\/[^/]+\/(edits(\/(open|accepted|autoedits|rejected|failed))?|votes)$/.test(pa)) { u.searchParams.delete('page'); return 'hist/' + encodeURIComponent(pa + (u.search === '?' ? '' : u.search)); }
     // a collection's edit lists (all, open, others'): their items' edits
     const co = new RegExp('^/collection/' + MBID.source + '/[a-z_]*edits$', 'i').test(pa);
     // any other entity's history (release group, artist, recording, ...): its all and open edits
@@ -11756,7 +11756,7 @@ const histSrc = id => MBID.test(id) && id.length === 36 ? `/release/${id}/edits`
 // a non-release entity's history: [its type, its MBID]
 const histEntOf = id => { const m = histSrc(id).match(new RegExp('^/(release-group|artist|label|recording|work|area|instrument|series|event|place)/(' + MBID.source + ')/(open_)?edits$', 'i')); return m && [m[1].toLowerCase(), m[2].toLowerCase()]; };
 const histOne = id => (histSrc(id).match(/^\/edit\/(\d+)$/) || [])[1];
-const histName = id => { const s = histSrc(id), pa = s.split('?')[0]; return histOne(id) ? 'Edit #' + histOne(id) : /\/open_edits$|^\/user\/[^/]+\/edits\/open$/.test(pa) ? 'Open edits' : /^\/collection\/[^/]+\/[a-z_]*others[a-z_]*$/.test(pa) ? 'Others’ edits' : /^\/user\/[^/]+\/edits$/.test(pa) ? 'All edits' : /^\/user\/[^/]+\/votes$/.test(pa) ? 'Votes' : H_LISTS[pa] || 'Edit history'; };
+const histName = id => { const s = histSrc(id), pa = s.split('?')[0]; return histOne(id) ? 'Edit #' + histOne(id) : /\/open_edits$|^\/user\/[^/]+\/edits\/open$/.test(pa) ? 'Open edits' : /^\/collection\/[^/]+\/[a-z_]*others[a-z_]*$/.test(pa) ? 'Others’ edits' : /^\/user\/[^/]+\/edits$/.test(pa) ? 'All edits' : /^\/user\/[^/]+\/edits\/autoedits$/.test(pa) ? 'Auto-edits' : /^\/user\/[^/]+\/edits\/(accepted|rejected|failed)$/.test(pa) ? pa.split('/').pop().replace(/^./, c => c.toUpperCase()) + ' edits' : /^\/user\/[^/]+\/votes$/.test(pa) ? 'Votes' : H_LISTS[pa] || 'Edit history'; };
 const histRid = id => histOne(id) ? (data && data.kind === 'hist' && data.id === id && data.rid) || '' : (histSrc(id).match(new RegExp('^/release/(' + MBID.source + ')/', 'i')) || [])[1];
 // a release group's Set cover art, or an entity's Edit annotation → "form/<type>/<mbid>/<form>". Dressed as the
 // relationship editor is: MusicBrainz's form stays, so what other scripts mount on it (Apollo's annotation editor) keeps working
