@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.008400
+// @version      2026.11.14.010000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -9541,16 +9541,23 @@ function hexPattern(layer, mode) {
     let raf = 0, last = performance.now(), t = 0;
     // an effect may ask for fewer frames than the screen's rate (Electricity: 30), which halves its cost on a 60 Hz screen and more on a faster one
     const step = fx.fps ? 1000 / fx.fps - 2 : 0;
+    // while the page scrolls the effect holds still: every redraw makes the see-through cards blur what is under them again,
+    // which made scrolling lag under an effect that never goes blank (Neural with a long trail)
+    let scrolled = 0;
+    const onScroll = () => { scrolled = performance.now(); };
+    addEventListener('scroll', onScroll, { passive: true, capture: true });
+    addEventListener('wheel', onScroll, { passive: true });
     const frame = now => {
         if (!layer.isConnected) { stop(); return; }
         raf = requestAnimationFrame(frame);
-        if (now - last < step) return;
+        if (now - last < step || now - scrolled < 150) return;
         const dt = Math.min(.25, (now - last) / 1000); last = now; t += dt;
         fx.tick(dt, t);
     };
     const vis = () => { cancelAnimationFrame(raf); raf = 0; if (!document.hidden) { last = performance.now(); raf = requestAnimationFrame(frame); } };
     function stop() {
         cancelAnimationFrame(raf); document.removeEventListener('visibilitychange', vis); fx.off?.();
+        removeEventListener('scroll', onScroll, { capture: true }); removeEventListener('wheel', onScroll);
         cv?.remove(); setMask(''); delete layer._ehPattern;
     }
     layer._ehPattern = { key, P, stop, draw() {}, shift: d => fx.shift(d) };
