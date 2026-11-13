@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.13.120000
+// @version      2026.11.13.140000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -7246,7 +7246,7 @@ try {
    read only. Fusion's icon on the card switches to MB's own tables, and a small
    Fusion button above those switches back; the choice is kept (SETTINGS.editView).
    Applied and failed edits get nothing: their merged entities are gone.
-   Recordings get the window's recording card. */
+   Recordings get the window's recording card, whose rows unfold their releases as on the board. */
 {
     const CACHE = new Map();   // type:gid -> Promise of emFetch's details
     const fetchOne = (type, gid) => {
@@ -7311,11 +7311,27 @@ try {
                 const g = Object.assign({ id: 'edit', memberGids: ok.map(r => r.gid), target: m.target.gid, state: '', error: null }, computeGroupConfidence(ok));
                 wrap.innerHTML = groupCardHtml(g, true);
             } finally { lent.forEach(r => STATE.recordings.delete(r.gid)); }
-            wrap.querySelectorAll('[data-act="refresh-acoustid"],[data-act="edit-note"],[data-act="toggle-all-details"]').forEach(x => x.remove());
+            wrap.querySelectorAll('[data-act="refresh-acoustid"],[data-act="edit-note"]').forEach(x => x.remove());
             const b = wrap.querySelector('[data-act="mc-open"]');
             if (b) { b.dataset.act = 'ro-native'; b.setAttribute('data-tip', 'Fusion’s comparison\nClick: MusicBrainz’s own view'); b.setAttribute('aria-label', 'MusicBrainz’s own view'); }
             placeLenBadges(wrap);
         };
+        wrap._fsDraw = draw;
+        // a row's ▶ unfolds its releases, the header's toggle every row's, right-click on a ▶ the same;
+        // the card isn't on the board, so it repaints itself: now for the loading stub, again once read
+        const unfold = gids => { const ps = gids.map(gid => toggleReleaseDetails(gid)); wrap._fsDraw(); Promise.all(ps).finally(() => wrap.isConnected && wrap._fsDraw()); };
+        const all = () => { const gids = ok.map(r => r.gid), on = gids.every(g => STATE.expandedReleases.has(g)); unfold(gids.filter(g => on || !STATE.expandedReleases.has(g))); };
+        if (!wrap._fsUnfold) {
+            wrap._fsUnfold = true;
+            wrap.addEventListener('click', e => {
+                const t = e.target.closest('[data-act]'), act = t && t.dataset.act, row = t && t.closest('.fs-grow');
+                if (act === 'toggle-releases' && row) { e.preventDefault(); Log.info('Merge edit: releases of ' + row.dataset.gid + (STATE.expandedReleases.has(row.dataset.gid) ? ' folded' : ' unfolded')); unfold([row.dataset.gid]); }
+                else if (act === 'toggle-all-details') { e.preventDefault(); wrap._fsAll(); }
+                else if (act === 'toggle-ids' && row) { e.preventDefault(); toggleIdList(row.dataset.gid, t.dataset.kind); wrap._fsDraw(); }
+            });
+            wrap.addEventListener('contextmenu', e => { if (e.target.closest('[data-act="toggle-releases"]')) { e.preventDefault(); wrap._fsAll(); } });
+        }
+        wrap._fsAll = all;
         draw();
         if (SETTINGS.acoustidEnrich !== false) { try { await enrichAcoustIds(ok.filter(r => r.acoustids == null), 2); draw(); } catch (e) { Log.warn('Merge edit: AcoustIDs not read: ' + e.message); } }
     };
