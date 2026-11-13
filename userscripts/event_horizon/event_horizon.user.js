@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.203000
+// @version      2026.11.13.210000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3055,6 +3055,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .kicker.pin-home{min-height:30px}.kicker.pin-home>span:not(.acts){min-width:0;overflow:hidden;text-overflow:ellipsis}.kicker.pin-home .acts,#eh-pin .acts{flex:none}
 .kicker.pin-home>span.eh-collections{overflow:visible}.eh-collections>button{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #eh-pin{position:fixed;top:0;left:0;right:0;z-index:9990;background:color-mix(in srgb,var(--eh-bar) 82%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);transform:translateY(-110%);transition:transform .18s}#eh-pin.on{transform:none}#eh-pin>.kicker{box-sizing:border-box;padding:6px 0;display:flex;align-items:center;gap:10px;font-size:13px}#eh-pin .pident{display:flex;align-items:center;gap:10px;flex:1;min-width:0}#eh-pin .pnm .disamb{display:none}#eh-pin .pby{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;max-width:35%;text-transform:none;letter-spacing:0;font-size:13px}#eh-pin .pcv{width:30px;height:30px;border-radius:6px;object-fit:contain;flex:none}#eh-pin .pnm{font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;text-transform:none;letter-spacing:0;cursor:pointer}#eh-pin .rg-l{flex:none;margin:0;font-size:13px}#eh-pin .rg-l svg{width:17px;height:17px}@media (prefers-reduced-motion:reduce){#eh-pin{transition:none}}@media (max-width:700px){#eh-pin .pkk,#eh-pin .pby{display:none}#eh-pin .abm .abt{display:inline}}
+#eh-pin .pes{display:flex;gap:6px;min-width:0;flex:0 1 auto;overflow:hidden}#eh-pin .pes-c{all:unset;box-sizing:border-box;display:inline-flex;gap:4px;max-width:280px;min-width:0;padding:1px 9px;border:1px solid var(--border);border-radius:999px;font-size:12px;line-height:18px;white-space:nowrap;cursor:pointer;color:var(--text);text-transform:none;letter-spacing:0}#eh-pin .pes-c:hover{border-color:var(--accent)}#eh-pin .pes-c i{font-style:normal;color:var(--muted);flex:none}#eh-pin .pes-c b{font-weight:600;overflow:hidden;text-overflow:ellipsis;min-width:0}#eh-pin .pes-k{margin-left:auto;flex:none;font-size:12px;color:var(--muted);white-space:nowrap;text-transform:none;letter-spacing:0}@media(max-width:700px){#eh-pin .pes,#eh-pin .pes-k{display:none}}
 #eh-pin .pident,#eh-pin .pkk{overflow:hidden}#eh-pin .pkk{display:flex;align-items:center;gap:6px;min-width:0;max-width:40%;color:var(--muted);font-size:10.5px;white-space:nowrap}#eh-pin .pkk svg{width:18px;height:18px;flex:none}#eh-pin .pkk>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 /* Reserve the release identity before fitting actions; format icons must not shrink under the menu. */
 #eh-pin .pident{min-width:min(360px,45%)}#eh-pin .pkk{flex:none}
@@ -11138,6 +11139,7 @@ function pinBar(app) {
     });
     pinIo.observe(kick);   // the bar comes in as soon as the action row leaves the screen
     actsFit(acts);
+    esPinSum();
 }
 // on a phone the pinned bar has no room for the action row, so its links go into More (and back once the bar hides)
 const PIN_NARROW = matchMedia('(max-width:700px)');
@@ -11722,6 +11724,27 @@ function esPick(select) {
     root.addEventListener('focusout', e => { if (!esMoving && !root.contains(e.relatedTarget)) close(false); });
     root._esClose = close; root._esSync = sync; select.after(root); esPicks.set(select, root); sync(); return root;
 }
+// pinned over an edit search, the bar names its conditions as chips; a chip's click goes back to its row (majkinetor)
+function esPinSum() {
+    const k = document.querySelector('#eh-pin>.kicker'); if (!k) return;
+    k.querySelectorAll('.pes,.pes-k').forEach(e => e.remove());
+    if (!esForm || !ehOn || !esForm.isConnected) return;
+    const txt = s => [...(s?.selectedOptions || [])].map(o => o.text.trim()).filter(Boolean);
+    const rows = [...esForm.querySelectorAll('.conditions>.condition')].filter(r => r.id !== 'extra-condition' && r.style.display !== 'none');
+    const chips = rows.map((r, i) => {
+        const field = txt(r.querySelector('select.field'))[0]; if (!field) return '';
+        const op = txt(r.querySelector('select[name$=operator]'))[0] || '';
+        const vals = [...r.querySelectorAll('select[name*=args]')].flatMap(txt).concat([...r.querySelectorAll('input[name*=args]:not([type=hidden])')].map(x => x.value.trim()).filter(Boolean));
+        const lab = /not|\u2260/i.test(op) ? ' not' : /^(is|=)$/i.test(op) ? '' : ' ' + op, v = vals.join(', ');
+        return `<button type="button" class="pes-c" data-es-row="${i}" data-tip="${esc((field + ' ' + op + ' ' + v).trim())}"><i>${esc(field + lab)}</i>${v ? `<b>${esc(v)}</b>` : ''}</button>`;
+    }).filter(Boolean);
+    const top = ['auto_edit_filter', 'order'].map(n => txt(esForm.querySelector(`select[name=${n}]`))[0]).filter(Boolean).join(' \u00b7 ');
+    if (!chips.length && !top) return;
+    const span = document.createElement('span'); span.className = 'pes'; span.innerHTML = chips.join('');
+    span.onclick = e => { const c = e.target.closest('[data-es-row]'); const r = c && rows[+c.dataset.esRow]; if (r?.isConnected) r.scrollIntoView({ block: 'center', behavior: 'smooth' }); };
+    const id = k.querySelector('.pident'); (id || k.firstChild || k).after(span);
+    if (top) { const t = document.createElement('span'); t.className = 'pes-k'; t.textContent = top; span.after(t); }
+}
 function esScan() {
     if (!esForm) return;
     // MusicBrainz clones the empty row when adding a condition; discard cloned presentation nodes.
@@ -11739,6 +11762,7 @@ function esScan() {
         input.setAttribute('data-lpignore', 'true'); input.setAttribute('data-1p-ignore', 'true'); input.setAttribute('data-bwignore', 'true'); input.setAttribute('data-form-type', 'other'); input.removeAttribute('autofocus');
     }
     esForm.querySelector('.eh-es-saved')?._esRefresh?.();
+    esPinSum();
     // jQuery UI creates menus under the body that existed at initialization, sometimes the hidden native one.
     const jq = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window).jQuery;
     if (ehOn && typeof jq === 'function') for (const input of esForm.querySelectorAll('.autocomplete input.name')) {
