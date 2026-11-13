@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.151307
+// @version      2026.11.13.141500
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -5943,6 +5943,11 @@
       'Removed ' + total + ' ISRC' + (total === 1 ? '' : 's') + ' from ' + recs.length + ' recording' + (recs.length === 1 ? '' : 's'),
     ].join('\n');
   }
+  // #1030: a hand-edited note in the Edit note pane goes on link edits too (add and remove)
+  function handNote() {
+    const ta = modal && modal.querySelector('#ii-note-text');
+    return (noteEdited && ta && ta.value.trim()) ? ta.value.trim() : '';
+  }
   function getRemovalNote(recs, total) {
     const ta = modal.querySelector('#ii-note-text');
     return (noteEdited && ta.value.trim()) ? ta.value.trim() : defaultRemovalNote(recs, total);   // respect a hand-edited note
@@ -7559,6 +7564,7 @@
     // Same shape as ISRC Scout's standard edit note (noteHeader + Release line +
     // an "Added …" summary), so link edits read like the script's ISRC edits.
     function noteFor(provs, urls) {
+      const own = handNote(); if (own) return own;   // #1030
       const counts = {};
       provs.forEach(p => { counts[p.name] = (counts[p.name] || 0) + 1; });
       const breakdown = Object.keys(counts).sort().map(n => n + ' (' + counts[n] + ')').join(', ');
@@ -7689,6 +7695,7 @@
       return (_relCache[recGid] = (j.relationships || []).filter(x => x.target_type === 'url'));
     }
     function delNote(provs) {
+      const own = handNote(); if (own) return own;   // #1030
       const counts = {}; provs.forEach(p => { counts[p.name] = (counts[p.name] || 0) + 1; });
       const breakdown = Object.keys(counts).sort().map(n => n + ' (' + counts[n] + ')').join(', ');
       return [noteHeader(), '', 'Release: ' + MB_ROOT + '/release/' + mbid,
