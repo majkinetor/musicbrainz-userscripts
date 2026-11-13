@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.008100
+// @version      2026.11.14.008200
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12613,7 +12613,7 @@ const histPills = es => Object.keys(H_ST).map(k => { const c = es.filter(e => e.
 // a note's header says how its writer voted (MusicBrainz's class on it); the edit's own editor is marked as such
 const H_VT = { yes: 'Yes', no: 'No', abstain: 'Abstain', approve: 'Approved' };
 // #1013: a note's tint and its header's box show the author's vote; right-click on a header folds or opens every note of that edit; a folded note's header shows its text, muted
-const histNote = n => `<details class="hnote v-${n.own ? 'own' : n.vote || 'none'}${n.bot ? ' bot' : ''}" open><summary class="hnh">${n.by ? `<a href="${MB}/user/${encodeURIComponent(n.by)}">${esc(n.by)}</a>` : ''}${n.own ? ' <span class="hvt own">editor</span>' : ''}<span class="hnd">${esc(n.date)}</span>${n.text ? `<span class="hnx">${esc(n.text)}</span>` : ''}${!n.own && n.vote ? `<span class="hvc ${n.vote}">${H_VT[n.vote]}</span>` : ''}${n.del ? `<button type="button" class="hndel" data-hndel="${n.del}" data-tip="Remove this note" aria-label="Remove this note"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}</summary><div class="hnt">${n.html}</div></details>`;
+const histNote = n => `<details class="hnote v-${n.own ? 'own' : n.vote || 'none'}${n.bot ? ' bot' : ''}" open><summary class="hnh">${n.by ? `<a href="${MB}/user/${encodeURIComponent(n.by)}">${esc(n.by)}</a>` : ''}${n.own ? ' <span class="hvt own">editor</span>' : ''}<span class="hnd">${esc(n.date)}</span>${n.text ? `<span class="hnx">${esc(n.text)}</span>` : ''}${!n.own && n.vote ? `<span class="hvc ${n.vote}">${H_VT[n.vote]}</span>` : ''}${n.del ? `<button type="button" class="hndel" data-hndel="${n.del}" data-tip="Remove this note" aria-label="Remove this note"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : '<span class="hndel" aria-hidden="true" style="visibility:hidden"><svg width="15" height="15"></svg></span>'}</summary><div class="hnt">${n.html}</div></details>`;
 document.addEventListener('contextmenu', ev => {
     const h = ehOn && data && data.kind === 'hist' && ev.target.closest && ev.target.closest('.hnote>summary'); if (!h) return;
     ev.preventDefault(); const n = h.parentElement, op = !n.open, box = n.closest('.hed,.hshr') || n.parentElement;
@@ -12724,7 +12724,7 @@ async function histNoteSend(fm) {
         LOG.keep();
         const r = await mbnFetch(`${MB}/edit/enter_votes`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(fields) });
         if (!r.ok) throw new Error('HTTP ' + r.status);
-        const n = { by: ME, date: 'just now', text: t, html: esc(t).replace(/\n/g, '<br>') };
+        const sv = { 1: 'yes', 0: 'no', '-1': 'abstain' }[fields['enter-vote.vote.0.vote']], n = { by: ME, date: 'just now', text: t, vote: sv || '', html: esc(t).replace(/\n/g, '<br>') };
         e.notes.push(n); fm.insertAdjacentHTML('beforebegin', histNote(n)); ta.value = ''; LOG.info('Added a note to edit #' + id + (hv ? ', voting ' + H_VOTES.find(x => x[0] === hv)[1] : ''));
         if (hv && hv !== e.my) {
             const c = histCnt(e); if (c) { const k = x => x === '1' ? 0 : x === '0' ? 1 : -1, o = k(e.my), nw = k(hv); if (o >= 0) c[o]--; if (nw >= 0) c[nw]++; e.votes = `${c[0]} yes : ${c[1]} no`; }
