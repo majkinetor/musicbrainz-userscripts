@@ -460,20 +460,39 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
         tronStep(state, t - state.last, p); state.last = t;
         const outlines = Math.max(0, Math.min(100, p.tronOutlines ?? 25)) / 100 * .22;
         if (outlines) {
-            for (let x = 0; x < w; x += grid) line([[x, 0], [x, h]], c1, outlines);
-            for (let y = 0; y < h; y += grid) line([[0, y], [w, y]], c1, outlines);
+            // the grid never moves: painted once onto its own canvas and copied, not stroked line by line each frame
+            const dpr = ctx.getTransform().a, gkey = [w, h, grid, outlines, c1, p.glow, dpr].join('|');
+            if (ctx._ehGrid?.key !== gkey) {
+                const c = ctx.canvas.ownerDocument.createElement('canvas'); c.width = ctx.canvas.width; c.height = ctx.canvas.height;
+                const g = c.getContext('2d'), keep = ctx; g.scale(dpr, dpr); g.lineCap = 'round';
+                ctx = g;
+                ctx.beginPath();
+                for (let x = 0; x < w; x += grid) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+                for (let y = 0; y < h; y += grid) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+                stroke(c1, outlines);
+                ctx = keep; ctx._ehGrid = { key: gkey, c };
+            }
+            ctx.globalAlpha = 1; ctx.drawImage(ctx._ehGrid.c, 0, 0, w, h);
         }
         for (const r of state.riders) {
             const col = tone(r.id), fade = r.alive ? 1 : Math.max(0, 1 - (state.time - r.died) / .65);
+            // the trail's 16px pieces go into one path per brightness step: a path and three strokes a piece were most of the cost
+            const steps = [];
             for (const edge of r.trail) {
                 const n = Math.max(1, Math.ceil((edge.end - edge.start) / 16));
                 for (let j = 0; j < n; j++) {
-                    const point = f => [edge.a[0] + (edge.b[0] - edge.a[0]) * f, edge.a[1] + (edge.b[1] - edge.a[1]) * f];
                     const d = edge.start + (edge.end - edge.start) * (j + .5) / n;
-                    const alpha = Math.max(0, 1 - (r.distance - d) / (grid * p.tronTrail));
-                    line([point(j / n), point((j + 1) / n)], col, alpha * .9 * fade, 1.5);
+                    const alpha = Math.max(0, 1 - (r.distance - d) / (grid * p.tronTrail)) * .9 * fade;
+                    if (alpha <= 0) continue;
+                    const k = Math.min(11, alpha * 12 | 0), f0 = j / n, f1 = (j + 1) / n;
+                    (steps[k] ||= []).push(edge.a[0] + (edge.b[0] - edge.a[0]) * f0, edge.a[1] + (edge.b[1] - edge.a[1]) * f0, edge.a[0] + (edge.b[0] - edge.a[0]) * f1, edge.a[1] + (edge.b[1] - edge.a[1]) * f1);
                 }
             }
+            steps.forEach((s, k) => {
+                ctx.beginPath();
+                for (let i = 0; i < s.length; i += 4) { ctx.moveTo(s[i], s[i + 1]); ctx.lineTo(s[i + 2], s[i + 3]); }
+                stroke(col, (k + .5) / 12, 1.5);
+            });
             if (r.alive) { ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.fillRect(r.x - 1.7, r.y - 1.7, 3.4, 3.4); }
         }
         for (const e of state.effects) {

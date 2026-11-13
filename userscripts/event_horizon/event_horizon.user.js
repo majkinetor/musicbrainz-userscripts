@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.230000
+// @version      2026.11.13.233000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3998,20 +3998,39 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
         tronStep(state, t - state.last, p); state.last = t;
         const outlines = Math.max(0, Math.min(100, p.tronOutlines ?? 25)) / 100 * .22;
         if (outlines) {
-            for (let x = 0; x < w; x += grid) line([[x, 0], [x, h]], c1, outlines);
-            for (let y = 0; y < h; y += grid) line([[0, y], [w, y]], c1, outlines);
+            // the grid never moves: painted once onto its own canvas and copied, not stroked line by line each frame
+            const dpr = ctx.getTransform().a, gkey = [w, h, grid, outlines, c1, p.glow, dpr].join('|');
+            if (ctx._ehGrid?.key !== gkey) {
+                const c = ctx.canvas.ownerDocument.createElement('canvas'); c.width = ctx.canvas.width; c.height = ctx.canvas.height;
+                const g = c.getContext('2d'), keep = ctx; g.scale(dpr, dpr); g.lineCap = 'round';
+                ctx = g;
+                ctx.beginPath();
+                for (let x = 0; x < w; x += grid) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+                for (let y = 0; y < h; y += grid) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+                stroke(c1, outlines);
+                ctx = keep; ctx._ehGrid = { key: gkey, c };
+            }
+            ctx.globalAlpha = 1; ctx.drawImage(ctx._ehGrid.c, 0, 0, w, h);
         }
         for (const r of state.riders) {
             const col = tone(r.id), fade = r.alive ? 1 : Math.max(0, 1 - (state.time - r.died) / .65);
+            // the trail's 16px pieces go into one path per brightness step: a path and three strokes a piece were most of the cost
+            const steps = [];
             for (const edge of r.trail) {
                 const n = Math.max(1, Math.ceil((edge.end - edge.start) / 16));
                 for (let j = 0; j < n; j++) {
-                    const point = f => [edge.a[0] + (edge.b[0] - edge.a[0]) * f, edge.a[1] + (edge.b[1] - edge.a[1]) * f];
                     const d = edge.start + (edge.end - edge.start) * (j + .5) / n;
-                    const alpha = Math.max(0, 1 - (r.distance - d) / (grid * p.tronTrail));
-                    line([point(j / n), point((j + 1) / n)], col, alpha * .9 * fade, 1.5);
+                    const alpha = Math.max(0, 1 - (r.distance - d) / (grid * p.tronTrail)) * .9 * fade;
+                    if (alpha <= 0) continue;
+                    const k = Math.min(11, alpha * 12 | 0), f0 = j / n, f1 = (j + 1) / n;
+                    (steps[k] ||= []).push(edge.a[0] + (edge.b[0] - edge.a[0]) * f0, edge.a[1] + (edge.b[1] - edge.a[1]) * f0, edge.a[0] + (edge.b[0] - edge.a[0]) * f1, edge.a[1] + (edge.b[1] - edge.a[1]) * f1);
                 }
             }
+            steps.forEach((s, k) => {
+                ctx.beginPath();
+                for (let i = 0; i < s.length; i += 4) { ctx.moveTo(s[i], s[i + 1]); ctx.lineTo(s[i + 2], s[i + 3]); }
+                stroke(col, (k + .5) / 12, 1.5);
+            });
             if (r.alive) { ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.fillRect(r.x - 1.7, r.y - 1.7, 3.4, 3.4); }
         }
         for (const e of state.effects) {
@@ -4031,11 +4050,28 @@ function ambientDraw(ctx, w, h, kind, p, t, c1, c2) {
         };
         if (p.starTwinkle > 0) {
             ctx._ehStars = null;
+            // each star is a copy of a ready-made one (by colour and size step), not up to three blended circles drawn live
+            const skey = [p.colour, p.glow, p.user?.join(), c1, c2, p.starDepth].join('|');
+            if (ctx._ehSprites?.key !== skey) ctx._ehSprites = { key: skey, m: new Map() };
+            const sprites = ctx._ehSprites.m, reach = 1 + (p.glow > 0 ? p.glow ** 1.5 * 6 : 0) + .45 + (.25 + p.starDepth) * .7;
+            const sprite = (i, zs) => {
+                const k = (p.colour >= 2 ? i % 64 : i % 5 ? 0 : 1) + '|' + zs;
+                let s = sprites.get(k);
+                if (!s) {
+                    const r = Math.ceil(reach) + 1, c = ctx.canvas.ownerDocument.createElement('canvas'); c.width = c.height = r * 4;
+                    const x = c.getContext('2d'); x.scale(2, 2);
+                    star(x, p.colour >= 2 ? i % 64 : i, r, r, .25 + (zs + .5) / 6 * p.starDepth, 1);
+                    sprites.set(k, s = { c, r });
+                }
+                return s;
+            };
             for (let i = 1; i <= count; i++) {
-                const z = .25 + rand(i + 9) * p.starDepth;
+                const z = .25 + rand(i + 9) * p.starDepth, zs = Math.min(5, (z - .25) / p.starDepth * 6 | 0);
                 const x = fract(rand(i) + t * p.starDrift * z / w * 4) * w;
                 const y = fract(rand(i + 3) + t * p.starDrift * z / h) * h;
-                star(ctx, i, x, y, z, (.25 + .55 * rand(i + 4)) * (1 - p.starTwinkle * .35 + p.starTwinkle * .35 * Math.sin(t * .8 + i)));
+                const s = sprite(i, zs);
+                ctx.globalAlpha = (.25 + .55 * rand(i + 4)) * (1 - p.starTwinkle * .35 + p.starTwinkle * .35 * Math.sin(t * .8 + i));
+                ctx.drawImage(s.c, x - s.r, y - s.r, 2 * s.r, 2 * s.r);
             }
         } else {
             // Without twinkle every star keeps its look, so thousands of glowing stars are painted once
@@ -4170,8 +4206,8 @@ function ambientApply(layer, kind) {
     const draw = now => {
         if (!layer.isConnected) { stop(); return; }
         if (last) time += Math.min(.1, (now - last) / 1000); last = now;
-        // Decorative Aurora paints at most 20 fps and the slow Stars at most 30; animation time still follows the clock.
-        if ((kind !== 'aurora' && kind !== 'stars') || now - lastPaint >= (kind === 'stars' ? 32 : 48) || hexReduce.matches) {
+        // Decorative Aurora paints at most 20 fps, Stars and Tron at most 30; animation time still follows the clock.
+        if (kind === 'rain' || now - lastPaint >= (kind === 'aurora' ? 48 : 32) || hexReduce.matches) {
             ambientDraw(ctx, w, h, kind, p, time, p.c1, p.c2); lastPaint = now;
         }
         if (!hexReduce.matches) raf = requestAnimationFrame(draw);
@@ -9553,13 +9589,14 @@ const HEX_FX = {
                 for (const p of on) {
                     const a = Math.sin(Math.PI * p.age / p.life);
                     ctx.beginPath(); HEXV.forEach(([dx, dy], k) => ctx[k ? 'lineTo' : 'moveTo'](p.x + dx, p.y + dy)); ctx.closePath();
-                    ctx.shadowColor = p.c; ctx.shadowBlur = 0;
                     ctx.globalAlpha = a * .22; ctx.fillStyle = p.c; ctx.fill();
-                    // a soft halo around the cell, as wide as the Glow setting says
-                    if (P.glow) { ctx.shadowBlur = 18 * P.glow ** 1.5; ctx.globalAlpha = a * .12 * P.glow; ctx.lineWidth = 6 * P.glow; ctx.strokeStyle = p.c; ctx.stroke(); }
-                    ctx.shadowBlur = 10 * P.glow; ctx.globalAlpha = a; ctx.strokeStyle = p.c; ctx.lineWidth = 1; ctx.stroke();
+                    // a soft halo around the cell, as wide as the Glow setting says, made of wide faint strokes:
+                    // a shadow blur per cell was most of the effect's time
+                    ctx.strokeStyle = p.c;
+                    if (P.glow) for (const [lw, k] of [[22 * P.glow ** 1.5, .04], [12 * P.glow, .08], [5 * P.glow, .14]]) { ctx.globalAlpha = a * k * P.glow; ctx.lineWidth = lw; ctx.stroke(); }
+                    ctx.globalAlpha = a; ctx.lineWidth = 1; ctx.stroke();
                 }
-                ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
             },
             shift(d) { for (const p of on) p.y -= 48 * d; },
         };
@@ -9669,13 +9706,14 @@ const HEX_FX = {
     },
     // a signal starts at one corner and spreads, branching, along the sides; what it passed glows and fades
     neural({ L, w, h, ctx, rnd, tone, P }) {
-        let lit = [], front = [], due = 0;
+        let lit = [], front = [], due = 0, blank = false;
         const fire = () => {
             let i; do i = Math.random() * L.xs.length | 0; while (!(L.xs[i] > 0 && L.xs[i] < w && L.ys[i] > 0 && L.ys[i] < h));
             const c = tone(), seen = new Set([i]);
             front.push(...[0, 1].map(() => ({ i, prev: -1, j: -1, p: 1, left: Math.round(rnd(26, 46)), c, seen })));
         };
         return {
+            fps: 30,
             tick(dt) {
                 due -= dt;
                 if (due <= 0) { fire(); due = rnd(2.5, 5.5) / P.often; }
@@ -9691,20 +9729,34 @@ const HEX_FX = {
                     ways.sort(() => Math.random() - .5).slice(0, n).forEach((j, k) => { f.seen.add(j); next.push({ ...f, j, p: 0, left: k ? Math.min(f.left, Math.round(rnd(4, 14))) : f.left }); });
                 }
                 front = next.slice(0, 400);
-                ctx.clearRect(0, 0, w, h); ctx.lineWidth = 1.2;
                 // squared, so the strip spans a short spark (20%) to a long glowing wake (200%)
                 const fade = 1.6 * P.trail;
                 lit = lit.filter(e => (e.age += dt) < fade);
-                const seg = (a, b, al, c) => { ctx.strokeStyle = ctx.shadowColor = c; for (const [lw, k] of P.glow ? [[7 * P.glow, .14 * P.glow], [1.2, 1]] : [[1.2, 1]]) { ctx.lineWidth = lw; ctx.globalAlpha = al * k; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke(); } };
-                ctx.shadowBlur = 8 * P.glow ** 1.5;
-                for (const e of lit) seg(e.a, e.b, (1 - e.age / fade) ** 1.5, e.c);
+                // nothing to draw: clear once, then leave the canvas alone
+                if (!lit.length && !front.length) { if (!blank) { ctx.clearRect(0, 0, w, h); blank = true; } return; }
+                blank = false;
+                ctx.clearRect(0, 0, w, h);
+                // segments go in one path per colour and brightness step, and the glow is wide faint strokes:
+                // a shadow blur and a stroke per segment were nearly all of the effect's time
+                const groups = new Map();
+                const add = (a, b, al, c, head) => {
+                    const key = c + '|' + (head ? 'h' : Math.min(7, al * 8 | 0));
+                    let g = groups.get(key);
+                    if (!g) groups.set(key, g = { c, al: head ? 1 : ((Math.min(7, al * 8 | 0)) + .5) / 8, head, s: [] });
+                    g.s.push(a[0], a[1], b[0], b[1]);
+                };
+                for (const e of lit) add(e.a, e.b, (1 - e.age / fade) ** 1.5, e.c);
+                for (const f of front) if (f.j >= 0) add([L.xs[f.i], L.ys[f.i]], [L.xs[f.i] + (L.xs[f.j] - L.xs[f.i]) * f.p, L.ys[f.i] + (L.ys[f.j] - L.ys[f.i]) * f.p], 1, f.c, true);
                 // the signal's head burns brighter than its trail
-                ctx.shadowBlur = 16 * P.glow ** 1.5;
-                for (const f of front) if (f.j >= 0) {
-                    const x = L.xs[f.i] + (L.xs[f.j] - L.xs[f.i]) * f.p, y = L.ys[f.i] + (L.ys[f.j] - L.ys[f.i]) * f.p;
-                    seg([L.xs[f.i], L.ys[f.i]], [x, y], 1, f.c);
+                const g15 = P.glow ** 1.5;
+                for (const g of groups.values()) {
+                    ctx.beginPath();
+                    for (let k = 0; k < g.s.length; k += 4) { ctx.moveTo(g.s[k], g.s[k + 1]); ctx.lineTo(g.s[k + 2], g.s[k + 3]); }
+                    ctx.strokeStyle = g.c;
+                    const layers = P.glow ? [[(g.head ? 16 : 10) * g15 + 2, .07 * P.glow], [7 * P.glow, .14 * P.glow], [1.2, 1]] : [[1.2, 1]];
+                    for (const [lw, k] of layers) { ctx.lineWidth = lw; ctx.globalAlpha = g.al * k; ctx.stroke(); }
                 }
-                ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
             },
             shift(d) {
                 for (const e of lit) { e.a[1] -= 48 * d; e.b[1] -= 48 * d; }
