@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.070000
+// @version      2026.11.14.080000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12701,8 +12701,10 @@ const H_ICO = {
     instrument: MBU_ENT_ICONS['instrument'],
     other: '<circle cx="12" cy="12" r="9"/><path d="M8 12h.01M12 12h.01M16 12h.01"/>',
 };
-// the icon key for what a type is about: "add-cover-art" → "cover art", "edit-release-label" → "label"
-const histIk = e => H_ICO[e] ? e : Object.keys(H_ICO).find(x => e.endsWith(x)) || Object.keys(H_ICO).find(x => e.includes(x)) || 'other';
+// the icon key for what a type is about: "add-cover-art" → "cover art", "edit-release-label" → "label",
+// "merge-release-groups" → "release group" (a plural is singular first, and the longest key wins, so "release" never takes a release group)
+const H_IK = Object.keys(H_ICO).sort((a, b) => b.length - a.length);
+const histIk = e => H_ICO[e] ? e : H_ICO[e.replace(/s$/, '')] ? e.replace(/s$/, '') : H_IK.find(x => e.endsWith(x) || e.endsWith(x + 's')) || H_IK.find(x => e.includes(x)) || 'other';
 const histIco = tk => {
     const k = histIk(histEnt(tk));
     const a = /^add-/.test(tk) ? 'add' : /^(edit|set|change)-/.test(tk) ? 'edit' : /^remove-/.test(tk) ? 'rem' : 'oth';
