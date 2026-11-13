@@ -43,6 +43,16 @@ It runs **last**, after every register, and is **re-run whenever a failed upload
 
 Every edit body also carries `.edit_note` (crediting Art Station and the image's source, if any) and `.make_votable=1` when that box is ticked. **Dry run** (the ▾ menu on **Submit edits**) prints each request's method / URL / body instead of POSTing.
 
+## Upscaled images
+
+[#972](https://github.com/majkinetor/musicbrainz-userscripts/issues/972). The `up*` functions after `flatHash`; off when `SETTINGS.detectUpscale` is `false`.
+
+- **Which**: an image B whose long side is over `UP_MIN` (1600 px) is checked when the gallery holds a copy of the same picture (dHash within `SAME_PICTURE`, neither hash flat) whose short side is at least `UP_GAIN` (1.25×) smaller. Bigs are taken smallest first.
+- **How**: an enlarged image has soft edges, and shrinking it to its real size and back changes them little. `upRb(S)` is the median width of strong step edges (6×6 tiles of up to 256 px, edges read across the gradient) after a Lanczos3 round trip through `S`, over their width as it is. With `ref = rb(0.9·N)` (N = B's short side), for each copy size S, largest first, `slope = ln(rb(S)/ref) / ln(0.9·N/S)`; the first S with a slope under `UP_SLOPE` (0.3) is B's real size. Calibration: enlarged covers 0.09–0.23, genuine 0.35–0.63.
+- **Cost**: each B and its copies are read once (an archive image or a store image is downloaded, a dropped file read in place), about 1.5 s of work per picture in a background pass that yields to the page. Fingerprints and measures go in GM `artstation:upscale`, keyed `caa:<id>` or by the store image URL (a dropped file isn't kept), at most `UP_CAP` (200), newest kept; a verdict stays until a pass judges that image again.
+- **Best cover**: `pickBest` sorts by `realArea`; within 2% a genuine image beats an enlarged one. `sourceBest` waits for the pass (`upSettled`, a minute at most) when a big image is in the gallery.
+- **Tests**: `test/972-upscaled.spec.mjs` drops a drawn picture at 2400, the same at 1200, and that 1200 enlarged to 2400. `window.__asTest.up` (`scan`, `settled`, `items`) with test hooks on.
+
 ## Plugin API
 
 Another userscript can add its own source. It appears as **Import from &lt;name&gt;** in the URL panel, and its images are staged like any other. A site script that's logged in to a fan site, say, can fetch with its own session and hand the images over:

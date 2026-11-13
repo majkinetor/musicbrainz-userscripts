@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.220000
+// @version      2026.11.13.013939
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -943,7 +943,7 @@
   function dimText(it) {
     const parts = [];
     if (sizeText(it)) parts.push(sizeText(it));
-    if (it.w && it.h) parts.push(`${it.w} × ${it.h}`);
+    if (it.w && it.h) parts.push(`${it.w} × ${it.h}` + (isUp(it) ? ` → ≈${it._realW} × ${it._realH}` : ''));
     return parts.length ? parts.join(' ') : '…';
   }
   // card-foot version: size + resolution as separate spans so they WRAP (stack) on a
@@ -952,11 +952,13 @@
     const parts = [];
     if (sizeText(it)) parts.push(`<span class="as-dim-sz">${sizeText(it)}</span>`);
     if (it.w && it.h) parts.push(`<span class="as-dim-px">${it.w} × ${it.h}</span>`);
+    if (it.w && it.h && isUp(it)) parts.push(`<span class="as-dim-px as-dim-up" data-tip="${esc(upTip(it))}">→ ≈${it._realW} × ${it._realH}</span>`);   // #972
     return parts.join('') || '<span class="as-dim-sz">…</span>';
   }
   function refreshDim(it) {
     const el = document.querySelector(`.as-card[data-id="${CSS.escape(String(it.id))}"] .as-dim`);
     if (el) el.innerHTML = dimHtml(it);
+    upSchedule();   // #972 a new size: check for enlarged pictures
   }
   // one request per release: archive.org item metadata carries every original's byte size — and the
   // #368 `is_dark` flag for a darkened item (read from this same request, no extra fetch)
@@ -993,7 +995,7 @@
   // timeout (currently visible as IA is slow) while it passes in native uploader.
   // Let's make timeout configurable in minutes, and make default double the
   // current value." Was a hardcoded 5 minutes; the default is 10 now.
-  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoRepeat: true, autoRepeatMin: 10, autoRepeatTimes: 10, arV: AR_SETTINGS_V, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone', clearSelAfterOp: true, followPan: true, uploadTimeoutMin: 10, showFileType: false }; try { const stored = JSON.parse(gmLoad('artstation:settings') || '{}'); return arMigrate(Object.assign(d, stored), stored); } catch (e) { return d; } }
+  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoRepeat: true, autoRepeatMin: 10, autoRepeatTimes: 10, arV: AR_SETTINGS_V, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone', clearSelAfterOp: true, followPan: true, uploadTimeoutMin: 10, showFileType: false, detectUpscale: true }; try { const stored = JSON.parse(gmLoad('artstation:settings') || '{}'); return arMigrate(Object.assign(d, stored), stored); } catch (e) { return d; } }
   /* #566 follow-up (majkinetor): "change defaults to 10/10 and enable the option
      by default". Raising the defaults alone reaches nobody who already has
      settings stored — save() persists every key, so a stored 20 shadows the new
@@ -1371,6 +1373,9 @@
       + ` <select class="as-setup-autofront-mode"><option value="whenNone"${SETTINGS.autoFrontMode !== 'always' ? ' selected' : ''}>when none exists</option><option value="always"${SETTINGS.autoFrontMode === 'always' ? ' selected' : ''}>always</option></select></div>`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-clearsel"${SETTINGS.clearSelAfterOp ? ' checked' : ''}> Clear the selection after a batch action (type, comment, download, report)</label>`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-filetype"${SETTINGS.showFileType ? ' checked' : ''}> Show each ${ITEM}'s file type next to its size (PNG, JPEG…)</label>`
+      + `<label class="as-setup-opt" data-tip="${esc(`Spots a big file that is a smaller picture enlarged
+On: it shows its real size, and Best cover goes by that size; each picture over 1600 px that has a smaller copy in the gallery is downloaded once to check
+Off: nothing is checked or downloaded`)}"><input type="checkbox" class="as-setup-upscale"${SETTINGS.detectUpscale !== false ? ' checked' : ''}> Detect upscaled images</label>`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-followpan"${SETTINGS.followPan ? ' checked' : ''}> Full-screen: pan a zoomed image by moving the mouse (no dragging)</label>`
       // #560 — a big PDF booklet against a slow Internet Archive needs more than
       // the old fixed 5 minutes; the native uploader sets no timeout at all.
@@ -1386,6 +1391,7 @@
     mbuCfgDrag(panel);
     panel.querySelector('.as-setup-hidefoot').onchange = e => { SETTINGS.hideMbFooter = e.target.checked; save(); applyHideFooter(); };
     panel.querySelector('.as-setup-filetype').onchange = e => { SETTINGS.showFileType = e.target.checked; save(); render(); asLog.info(`File type next to the size: ${SETTINGS.showFileType ? 'on' : 'off'}`); };   // #630
+    panel.querySelector('.as-setup-upscale').onchange = e => { SETTINGS.detectUpscale = e.target.checked; save(); render(); asLog.info(`Detect upscaled images: ${SETTINGS.detectUpscale ? 'on' : 'off'}`); if (SETTINGS.detectUpscale) upSchedule(0); };   // #972
     panel.querySelector('.as-setup-autotype').onchange = e => { SETTINGS.autoType = e.target.checked; save(); };
     panel.querySelector('.as-setup-autocomment').onchange = e => { SETTINGS.autoComment = e.target.checked; save(); };
     panel.querySelector('.as-setup-autofront').onchange = e => { SETTINGS.autoFront = e.target.checked; save(); };
@@ -3565,8 +3571,14 @@
     return [...firstOf.values()];
   }
   if (mbuTestHooks()) (window.__asTest || (window.__asTest = {})).best = { frontsOf, pickBest: c => pickBest(c) };
+  // #972 by real size: an enlarged file counts at the size it was made from, and loses a near tie to a genuine one
+  const realArea = x => isUp(x) ? x._realW * x._realH : x.w * x.h;
   function pickBest(cands) {
-    return cands.slice().sort((a, b) => (b.w * b.h - a.w * a.h) || ((a.bytes || Infinity) - (b.bytes || Infinity)))[0];
+    return cands.slice().sort((a, b) => {
+      const A = realArea(a), B = realArea(b);
+      if (isUp(a) !== isUp(b) && Math.abs(A - B) <= 0.02 * Math.max(A, B)) return isUp(a) ? 1 : -1;
+      return (B - A) || ((a.bytes || Infinity) - (b.bytes || Infinity));
+    })[0];
   }
   function sourceBestFromButton(btn) {
     allSources().then(all => {
@@ -3600,10 +3612,16 @@
         if (notFront.length) asLog.info(`Best cover: only each source's first image counts as its front; left out ${notFront.length} more (${notFront.map(x => `${x._provider || x.id} ${x.w}×${x.h}`).join(', ')})`);
         asLog.debug(`Best cover: candidates ${cands.map(x => `${x._provider || x.id} ${x.w}×${x.h} ${x.bytes || '?'}b`).join(', ') || '(none)'}${busy ? ' (timed out while still sourcing)' : ''}`);
         if (!cands.length) { toast('No cover could be imported', 4000); onDone(null); return; }
+        // #972: an enlarged file is told by its real size, so a big one waits for the check (a minute at most)
+        if (upOn() && MODEL.some(x => !x._del && Math.max(x.w || 0, x.h || 0) > UP_MIN)) { asLog.debug('Best cover: waiting for the upscale check'); upSettled(60000).then(() => finish(cands)); }
+        else finish(cands);
+      };
+      const real = x => isUp(x) ? ` (≈${x._realW}×${x._realH})` : '';
+      const finish = cands => {
         const best = pickBest(cands);
         best._bestOf = cands.length;
         best._found = cands.map(x => ({ provider: x._provider || '', w: x.w || 0, h: x.h || 0, bytes: x.bytes || 0, url: x._provImageUrl || '' }));   // #751
-        asLog.info(`Best cover: ${best._provider || best.id} ${best.w}×${best.h} (${best.bytes ? fmtBytes(best.bytes) : '?'}) of ${cands.length}`);
+        asLog.info(`Best cover: ${best._provider || best.id} ${best.w}×${best.h}${real(best)} (${best.bytes ? fmtBytes(best.bytes) : '?'}) of ${cands.length}${cands.some(isUp) ? `; enlarged: ${cands.filter(isUp).map(x => `${x._provider || x.id} ${x.w}×${x.h}${real(x)}`).join(', ')}` : ''}`);
         // the losers are removed outright, not marked for removal — they never show up at all
         const drop = MODEL.filter(x => !before.has(x.id) && x !== best && !x._sourcing);
         // #772: in Mission Control's frame they are the store's other images: #784 they stay in the gallery, left out
@@ -3614,7 +3632,7 @@
         gone.forEach(x => { try { if (x._file) URL.revokeObjectURL(x._file); } catch (e) {} });
         MODEL = MODEL.filter(x => !gone.includes(x)); MODEL.forEach((x, i) => x.order = i);
         asLog.info(`Best cover: removed the other ${gone.length} imported ${gone.length === 1 ? ITEM : ITEMS}${gone.length ? ` (${gone.map(x => `${x._provider || x.id} ${x.w}×${x.h}`).join(', ')})` : ''}${_mcPool.length ? `; ${_mcPool.length} left out for Mission Control's gallery` : ''}`);
-        toast(cands.length > 1 ? `Kept the best of ${cands.length}: ${best._provider || ''} ${best.w}×${best.h}` : `Only one cover found — ${best._provider || 'kept'}`);
+        toast(cands.length > 1 ? `Kept the best of ${cands.length}: ${best._provider || ''} ${best.w}×${best.h}${real(best)}` : `Only one cover found — ${best._provider || 'kept'}`);
         render();
         onDone(best);
       };
@@ -3651,6 +3669,212 @@
   // a nearly flat picture (a black back, a blank page) has a hash of nearly all one bit: it would match every other
   // flat one, so it is compared with nothing
   const flatHash = h => { const ones = h.split('1').length - 1; return ones < 4 || ones > 60; };
+  // ── #972 upscaled pictures ────────────────────────────────────────────────
+  // A store's big file is at times a smaller picture enlarged (Tidal's 3000 from a 1500 master): big, but no
+  // sharper. A picture holds detail only up to its real size, so shrinking it to that size and enlarging it again
+  // leaves its edges as they were, while a smaller size softens them. Each picture over UP_MIN px that has a smaller
+  // copy of the same picture (dHash) in the gallery is measured: the width of its step edges after a round trip
+  // through size S, over their width as it is (rb), is taken at 0.9 of its size and at each copy's real size; the
+  // first copy size, largest first, at which rb has stopped growing (the log-log slope from 0.9 under UP_SLOPE) is
+  // its real size. Pictures are taken smallest first, so an enlarged copy counts with its own real size (Spotify's
+  // 2000 → 1440 before the 3000s). Background, one at a time, results kept in GM storage; off, nothing is fetched.
+  const UP_MIN = 1600, UP_GAIN = 1.25, UP_SLOPE = 0.3, UP_GRID = 6, UP_TILE = 256, UP_R = 8, UP_MINC = 80, UP_PERP = 2, UP_TOP = 0.08, UP_MIN_SITES = 20, UP_CAP = 200;
+  // declarations, not consts: a card's size line asks before this part of the script has run
+  function upOn() { return SETTINGS.detectUpscale !== false; }
+  function isUp(it) { return upOn() && it._realW > 0; }
+  const upName = x => `${x._provider || (x._new ? 'imported' : 'archive #' + x.id)} ${x.w}×${x.h}`;
+  const upLabel = x => x._provider || (x._new ? 'an imported image' : 'the archive');
+  let _upCache = null, _upSaveT = 0;
+  function upCache() {
+    if (!_upCache) { try { _upCache = JSON.parse(gmLoad('artstation:upscale') || '{}') || {}; } catch (e) { _upCache = {}; } }
+    return _upCache;
+  }
+  function upCacheSet(k, v) {   // newest last; the oldest go past UP_CAP
+    const c = upCache(); delete c[k]; c[k] = v;
+    const ks = Object.keys(c); for (let i = 0; i < ks.length - UP_CAP; i++) delete c[ks[i]];
+    clearTimeout(_upSaveT); _upSaveT = setTimeout(() => gmSave('artstation:upscale', JSON.stringify(c)), 2000);
+  }
+  const upKey = it => it._new ? (it._provImageUrl || '') : 'caa:' + it.id;
+  const upSrc = it => it._new ? it._file : (it._img || imgUrl(it.id));
+  const upBlob = async src => typeof src === 'string' && /^https?:/.test(src) ? gmFetch(src) : (await fetch(src)).blob();
+  // an item's fingerprint and measures, from the cache while its size is the same
+  function upRec(it) {
+    const sig = `${it.w}x${it.h}`, src = upSrc(it);
+    if (it._upRec && it._upRec.sig === sig && it._upRec.src === src) return it._upRec;
+    const k = upKey(it), c = k && upCache()[k], hit = c && c.s === sig;
+    return (it._upRec = { sig, src, k, h: hit ? c.h : undefined, rb: hit ? Object.assign({}, c.rb) : {} });
+  }
+  const upStore = r => { if (r.k) upCacheSet(r.k, { s: r.sig, h: r.h, rb: r.rb }); };
+  async function upHash(it) {
+    const r = upRec(it);
+    if (r.h !== undefined) return r.h;
+    if (r.failed) return null;
+    for (const src of it._new ? [r.src] : [thumb(it.id, 250), r.src]) {   // an archive cover by its small thumbnail, else its file
+      try {
+        const bmp = await createImageBitmap(await upBlob(src)), h = dHash(bmp);
+        if (bmp.close) bmp.close();
+        r.h = flatHash(h) ? null : h; upStore(r);
+        return r.h;
+      } catch (e) { asLog.debug(`Upscale check: no fingerprint for ${upName(it)} from ${src}: ${(e && e.message) || e}`); }
+    }
+    r.failed = true;   // this session only: tried again on the next visit
+    return null;
+  }
+  // the grey of a 6×6 grid of tiles over the middle 90% of the full-size file, pixel for pixel
+  async function upTiles(it) {
+    const t0 = Date.now(), bmp = await createImageBitmap(await upBlob(upSrc(it)));
+    try {
+      const W = bmp.width, H = bmp.height, t = Math.min(UP_TILE, Math.floor(Math.min(W, H) * 0.9 / UP_GRID)), c = document.createElement('canvas');
+      c.width = c.height = t;
+      const g = c.getContext('2d', { willReadFrequently: true }), Ls = [];
+      for (let gy = 0; gy < UP_GRID; gy++) for (let gx = 0; gx < UP_GRID; gx++) {
+        const x0 = Math.round(W * (0.05 + 0.9 * (gx + 0.5) / UP_GRID) - t / 2), y0 = Math.round(H * (0.05 + 0.9 * (gy + 0.5) / UP_GRID) - t / 2);
+        g.clearRect(0, 0, t, t); g.drawImage(bmp, x0, y0, t, t, 0, 0, t, t);
+        const d = g.getImageData(0, 0, t, t).data, L = new Float32Array(t * t);
+        for (let i = 0, j = 0; j < L.length; i += 4, j++) L[j] = d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114;
+        Ls.push(L);
+      }
+      asLog.debug(`Upscale check: ${upName(it)} decoded, ${UP_GRID * UP_GRID} tiles of ${t} px (${Date.now() - t0} ms)`);
+      return { t, Ls, min: Math.min(W, H) };
+    } finally { if (bmp.close) bmp.close(); }
+  }
+  const upLz = x => { x = Math.abs(x); if (x < 1e-6) return 1; if (x >= 3) return 0; const p = Math.PI * x; return 3 * Math.sin(p) * Math.sin(p / 3) / (p * p); };
+  // separable Lanczos3 resize of a grey array, antialiased when shrinking
+  function upRes(S, w, h, W, H) {
+    const pass = (src, sw, sh, n, horiz) => {
+      const len = horiz ? sw : sh, sc = len / n, sup = 3 * Math.max(1, sc), out = new Float32Array(horiz ? n * sh : sw * n), taps = [];
+      for (let x = 0; x < n; x++) {
+        const u = (x + 0.5) * sc - 0.5, a = Math.ceil(u - sup), b = Math.floor(u + sup), ws = []; let sum = 0;
+        for (let k = a; k <= b; k++) { const wt = upLz((u - k) / Math.max(1, sc)); ws.push([Math.min(len - 1, Math.max(0, k)), wt]); sum += wt; }
+        taps.push(ws.map(([k, wt]) => [k, wt / sum]));
+      }
+      if (horiz) for (let y = 0; y < sh; y++) for (let x = 0; x < n; x++) { let v = 0; for (const [k, wt] of taps[x]) v += wt * src[y * sw + k]; out[y * n + x] = v; }
+      else for (let y = 0; y < n; y++) for (let x = 0; x < sw; x++) { let v = 0; for (const [k, wt] of taps[y]) v += wt * src[k * sw + x]; out[y * sw + x] = v; }
+      return out;
+    };
+    return pass(pass(S, w, h, W, true), W, h, H, false);
+  }
+  // step-edge sites: gradient peaks along their own axis, close to it, the strongest UP_TOP of each tile
+  function upSites(Ls, t) {
+    const out = [], R = UP_R;
+    Ls.forEach((L, ti) => {
+      const g = [];
+      for (let y = R + 1; y < t - R - 1; y++) for (let x = R + 1; x < t - R - 1; x++) {
+        const i = y * t + x, gx = L[i + 1] - L[i - 1], gy = L[i + t] - L[i - t], ax = Math.abs(gx) >= Math.abs(gy), m = Math.abs(ax ? gx : gy), st = ax ? 1 : t;
+        const mp = Math.abs(L[i + st + st] - L[i]), mm = Math.abs(L[i] - L[i - st - st]);
+        if (m <= mp || m < mm) continue;
+        if (Math.abs(ax ? gy : gx) > 0.5 * m) continue;
+        g.push([m, ti, i, st]);
+      }
+      g.sort((a, b) => b[0] - a[0]);
+      for (const s of g.slice(0, Math.ceil(g.length * UP_TOP))) out.push(s);
+    });
+    return out;
+  }
+  // the median width of the clean steps at the sites: the step's height over its steepest rise
+  function upWidth(Ls, ss) {
+    const w = [], R = UP_R, P = UP_PERP;
+    for (const [, ti, i, st] of ss) {
+      const L = Ls[ti], t = Math.round(Math.sqrt(L.length)), q = st === 1 ? t : 1, p = [];
+      for (let k = -R; k <= R; k++) { let v = 0; for (let j = -P; j <= P; j++) v += L[i + k * st + j * q]; p.push(v / (2 * P + 1)); }
+      const a = (p[0] + p[1] + p[2]) / 3, b = (p[2 * R] + p[2 * R - 1] + p[2 * R - 2]) / 3, C = Math.abs(b - a);
+      if (C < UP_MINC) continue;
+      if (C < 0.8 * (Math.max(...p) - Math.min(...p))) continue;   // a step, not a line or texture
+      if (Math.max(Math.abs(p[0] - p[2]), Math.abs(p[2 * R] - p[2 * R - 2])) > 0.15 * C) continue;   // flat either side
+      let m = 0, mk = 0; for (let k = 0; k < 2 * R; k++) { const d = Math.abs(p[k + 1] - p[k]); if (d > m) { m = d; mk = k; } }
+      if (Math.abs(mk + 0.5 - R) > 2) continue;   // the step is at the site
+      w.push(C / m);
+    }
+    w.sort((x, y) => x - y);
+    return { n: w.length, med: w.length ? w[w.length >> 1] : NaN };
+  }
+  const upYield = () => new Promise(r => setTimeout(r, 0));
+  // edge width after a round trip through S px, over the width as it is; null with too few clean edges to tell
+  async function upRb(T, S) {
+    const { t, Ls } = T, ts = Math.max(4, Math.round(t * S / T.min)), Lr = [];
+    for (const L of Ls) { Lr.push(upRes(upRes(L, t, t, ts, ts), ts, ts, t, t)); await upYield(); }
+    const ss = upSites(Lr, t), a = upWidth(Ls, ss), b = upWidth(Lr, ss);
+    if (a.n < UP_MIN_SITES || b.n < UP_MIN_SITES || !(a.med > 0)) return null;
+    return b.med / a.med;
+  }
+  let _upBusy = null, _upAgain = false;
+  var _upT = 0;   // var: a card can be measured before this line has run
+  function upSchedule(ms) {
+    if (!upOn()) return;
+    clearTimeout(_upT); _upT = setTimeout(upScan, ms == null ? 1500 : ms);
+  }
+  function upScan() {
+    if (!upOn()) return Promise.resolve();
+    if (_upBusy) { _upAgain = true; return _upBusy; }
+    _upBusy = (async () => {
+      try { do { _upAgain = false; await upPass(); } while (_upAgain && upOn()); }
+      catch (e) { asLog.warn('Upscale check failed: ' + ((e && e.message) || e)); }
+      finally { _upBusy = null; }
+    })();
+    return _upBusy;
+  }
+  // the scan, or as much of it as `ms` allows (Best cover waits for it before choosing)
+  const upSettled = ms => Promise.race([upScan(), new Promise(r => setTimeout(r, ms))]);
+  async function upPass() {
+    const items = MODEL.filter(x => !x._del && !x._pdf && !x._sourcing && x.w > 0 && x.h > 0 && upSrc(x));
+    const bigs = items.filter(x => Math.max(x.w, x.h) > UP_MIN);
+    if (!bigs.length) return;
+    const t0 = Date.now(), hs = new Map();
+    for (const x of items) { if (!upOn()) return; const h = await upHash(x); if (h) hs.set(x, h); }
+    const verdict = new Map();   // unset: not judged; null: genuine; {w, h, of}: enlarged
+    const realMin = x => { const v = verdict.get(x); return v ? Math.min(v.w, v.h) : Math.min(x.w, x.h); };
+    for (const B of bigs.filter(x => hs.has(x)).sort((a, b) => Math.min(a.w, a.h) - Math.min(b.w, b.h))) {
+      if (!upOn()) return;
+      const N = Math.min(B.w, B.h), hB = hs.get(B);
+      const copies = items.filter(x => x !== B && hs.has(x) && hamming(hs.get(x), hB) <= SAME_PICTURE && N / realMin(x) >= UP_GAIN);
+      if (!copies.length) { asLog.debug(`Upscale check: ${upName(B)} has no smaller copy of the same picture, not judged`); continue; }
+      const sizes = [...new Set(copies.map(realMin))].sort((a, b) => b - a), r = upRec(B);
+      let T = null;
+      const rb = async S => {
+        const k = String(S);
+        if (!(k in r.rb)) { if (!T) T = await upTiles(B); r.rb[k] = await upRb(T, S); upStore(r); }
+        return r.rb[k];
+      };
+      try {
+        const ref = await rb(Math.round(0.9 * N));
+        if (!ref) { asLog.debug(`Upscale check: ${upName(B)} has too few clean edges to tell`); continue; }
+        let found = 0;
+        for (const S of sizes) {
+          const v = await rb(S);
+          if (!v) continue;
+          const slope = Math.log(v / ref) / Math.log(0.9 * N / S);
+          asLog.debug(`Upscale check: ${upName(B)} through ${S} px: ${v.toFixed(3)} against ${ref.toFixed(3)}, slope ${slope.toFixed(2)} (${slope < UP_SLOPE ? 'nothing lost' : 'detail lost'})`);
+          if (slope < UP_SLOPE) { found = S; break; }
+        }
+        if (!found) { verdict.set(B, null); continue; }
+        // the copy it was made from: a genuine one at that size first, else what an enlarged one was made from
+        const at = copies.filter(x => realMin(x) === found).sort((a, b) => (verdict.get(a) ? 1 : 0) - (verdict.get(b) ? 1 : 0))[0], av = verdict.get(at);
+        const k = found / N;
+        verdict.set(B, { w: Math.round(B.w * k), h: Math.round(B.h * k), of: av ? av.of : { provider: upLabel(at), w: at.w, h: at.h } });
+      } catch (e) { asLog.debug(`Upscale check: ${upName(B)} not measured: ${(e && e.message) || e}`); }
+      finally { T = null; }
+    }
+    upApply(verdict);
+    asLog.debug(`Upscale check: ${items.length} ${items.length === 1 ? ITEM : ITEMS}, ${bigs.length} over ${UP_MIN} px, done in ${Date.now() - t0} ms`);
+  }
+  // a picture not judged this time (its copies gone, as Best cover drops them) keeps what it was found to be
+  function upApply(verdict) {
+    verdict.forEach((v, x) => {
+      const was = x._realW ? `${x._realW}×${x._realH}` : '', now = v ? `${v.w}×${v.h}` : '';
+      if (v) { x._realW = v.w; x._realH = v.h; x._upOf = v.of; } else { delete x._realW; delete x._realH; delete x._upOf; }
+      if (was === now) return;
+      asLog.info(v ? `Upscale check: ${upName(x)} is enlarged, real size ≈${now}, same picture as ${v.of.provider} ${v.of.w}×${v.of.h}` : `Upscale check: ${upName(x)} is genuine`);
+      upPaint(x);
+    });
+  }
+  function upPaint(x) {
+    const el = document.querySelector(`.as-card[data-id="${CSS.escape(String(x.id))}"] .as-dim`);
+    if (el) el.innerHTML = dimHtml(x);
+    if (_lb != null && byId(_lb) === x) paintLightbox();
+  }
+  function upTip(it) { return `Enlarged from a smaller picture\nIts detail goes only to about ${it._realW} × ${it._realH}, the size of the same picture from ${it._upOf ? `${it._upOf.provider} (${it._upOf.w} × ${it._upOf.h})` : 'another source'}. Best cover goes by this size`; }
+  if (mbuTestHooks()) (window.__asTest || (window.__asTest = {})).up = { scan: upScan, settled: upSettled, cache: upCache, isUp,
+    items: () => MODEL.filter(x => !x._del).map(x => ({ name: x._fileObj ? x._fileObj.name : String(x.id), w: x.w, h: x.h, realW: x._realW || 0, realH: x._realH || 0, of: x._upOf || null })) };
   // a store's images in the order it gave them, keyed by the store (the link it came from)
   const provKey = x => x._provUrl || x._provider || '';
   // #772: the other images of the stores that gave several (Discogs, Amazon), each with its place in the store's
@@ -5348,7 +5572,7 @@
       m.onload = () => { it.w = m.naturalWidth; it.h = m.naturalHeight; if (byId(_lb) === it) paintLightbox(); };
       m.src = it._img;
     }
-    const dims = [[it.bytes ? fmtSize(it.bytes) : '', it.fmt || ''].filter(Boolean).join(' '), it.w && it.h ? `${it.w} × ${it.h}` : ''].filter(Boolean).join(' · ');   // #380-followup show file size in full screen too, like the card; its file type always, whatever the card's option
+    const dims = [[it.bytes ? fmtSize(it.bytes) : '', it.fmt || ''].filter(Boolean).join(' '), it.w && it.h ? `${it.w} × ${it.h}` + (isUp(it) ? ` → ≈${it._realW} × ${it._realH}${it._upOf ? `, same picture as ${it._upOf.provider} ${it._upOf.w} × ${it._upOf.h}` : ''}` : '') : ''].filter(Boolean).join(' · ');   // #972 its real size; #380-followup show file size in full screen too, like the card; its file type always, whatever the card's option
     const cap = ov.querySelector('.as-lb-cap');
     // type is a clickable chip (same picker as the grid pills) so it can be set full-screen
     // the store it came from, as on the card (#249)
@@ -8340,6 +8564,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
      instead of being clipped. */
   .as-dim{font-size:12px;font-weight:600;color:var(--mbu-accent-text);flex:0 1 auto;min-width:0;margin-left:auto;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:0 7px}
   .as-dim-sz,.as-dim-px{white-space:nowrap}
+  .as-dim-up{color:var(--mbu-warn)}
   .as-tbtn{position:absolute;top:6px;right:6px;border:none;border-radius:var(--mbu-radius);background:rgba(255,255,255,.92);cursor:pointer;font-size:14px;line-height:1;padding:4px 7px;color:var(--mbu-text-dim);box-shadow:0 1px 3px rgba(0,0,0,.2);opacity:0;transition:.1s}
   .as-card:hover .as-tbtn{opacity:1}
   /* the NEW ribbon owns the top-right corner: what else sits there moves left of it, above it */

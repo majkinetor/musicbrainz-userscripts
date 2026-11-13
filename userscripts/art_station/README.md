@@ -15,6 +15,7 @@ A cover and event art editor for MusicBrainz: one gallery to view, sort, reorder
 - **[Gallery](#gallery)** on a release's _Cover art_ and an event's _Event art_ tab: views, grouping, sorting and reordering by drag.
 - **[Actions](#actions)** on one cover or the selection: type, comment, remove, download, report.
 - **[Add images](#add-images)**: files, folders, zips, URLs, MH Covers, reverse-image search.
+- **[Upscaled images](#upscaled-images)**: a big file that is a smaller picture enlarged shows its real size.
 - **[Full-screen viewer](#full-screen-viewer)** with zoom, pan and slideshow.
 - **[File names ⇄ types](#file-names--types)**: a downloaded archive re-adds with its types and comments.
 - **[AI scan](#ai-scan)** reads a cover's printed credits for Group Therapy's Text parser.
@@ -50,13 +51,13 @@ Each cover shows its size and resolution, and with _Show each cover's file type 
 | Zip                                           | drop or pick one; unpacked in the browser like a folder                          |
 | URL                                           | **Ctrl+V** a URL anywhere on the gallery, or the **URL (N)** panel               |
 | [MH Covers](https://covers.musichoarders.xyz) | pick a cover; it's staged as a new one                                           |
-| Reverse-image search                          | 🔍 on a cover searches Yandex, Google Lens, TinEye or Bing for a bigger copy     |
+| Reverse-image search                          | 🔍 on a cover searches Yandex, Google Lens, TinEye or Bing for a bigger copy      |
 
 An Art Station download, added back as a zip, restores each cover's types and comment.
 
 The Cover Art Archive takes JPEG, PNG, GIF and PDF, so a WebP, AVIF, BMP or TIFF is converted as it's added: to JPEG when lossy, to PNG when lossless or transparent (`WEBP→JPEG` with the file type shown). TIFF converts only where the browser shows it (Safari); elsewhere it's skipped.
 
-The **URL (N)** panel has an import for each source the release links, plus any [registered providers](DEVELOP.md#plugin-api). A middle-click imports from all and keeps the best cover: the largest front (each source's first image), then the smallest file.
+The **URL (N)** panel has an import for each source the release links, plus any [registered providers](DEVELOP.md#plugin-api). A middle-click imports from all and keeps the best cover: the largest front (each source's first image) by its [real size](#upscaled-images), then the smallest file.
 
 Each other link the release has, such as a label's or a blog's page, gets **All images from &lt;site&gt;**: every image that page shows, each at its largest, leaving out those under 250 px and banners. These stay out of the import from all; the **URL** button counts them in a second, outlined marker.
 
@@ -77,6 +78,17 @@ Links that open the add page with images, as Harmony's do, import with their typ
 
 With the [Picker](./as_picker/README.md), clicking a copy in the search results sends it back to the gallery.
 
+## Upscaled images
+
+Stores sometimes offer a bigger file that is only a smaller picture enlarged, such as a 3000 px cover made from a 1500 px one. When the gallery has a smaller copy of the same picture, Art Station checks the bigger one and shows its real size next to the file's: `3000 × 3000 → ≈1500 × 1500`. The full-screen viewer also names the copy it was compared with.
+
+- Only images over 1600 px are checked, in the background, and each only once.
+- Picking the best cover goes by the real size, and a genuine image wins a near tie. Nothing is hidden or removed.
+- _Detect upscaled images_ (⚙, on) switches it off; then nothing is checked or downloaded.
+
+> [!NOTE]
+> The check can be fooled: an image enlarged by AI looks genuine, and a very plain cover, or one heavily compressed, can be misjudged.
+
 ## Full-screen viewer
 
 Its keys are in [Shortcuts](#shortcuts). A zoomed image follows the mouse, or drags with that off in ⚙.
@@ -87,12 +99,12 @@ Its keys are in [Shortcuts](#shortcuts). A zoomed image follows the mouse, or dr
 
 When an added image has no type, it's guessed from its file name (switch it off in ⚙):
 
-| Type      | Name contains                                                                                                                                                                                                                        |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Front     | `front`, `folder`, `cover`, `frontal`, `recto`                                                                                                                                                                                       |
-| Back      | `back`, `rear`, `verso`                                                                                                                                                                                                              |
-| Booklet   | `booklet`, `inlay`, `insert`                                                                                                                                                                                                         |
-| Medium    | `cd`, `disc`, `disk`, `vinyl`, `medium`, `label`, `side a/b/…`                                                                                                                                                                       |
+| Type | Name contains |
+| --- | --- |
+| Front | `front`, `folder`, `cover`, `frontal`, `recto` |
+| Back | `back`, `rear`, `verso` |
+| Booklet | `booklet`, `inlay`, `insert` |
+| Medium | `cd`, `disc`, `disk`, `vinyl`, `medium`, `label`, `side a/b/…` |
 | _by name_ | `tray`, `obi`, `spine`, `sticker`, `liner`, `poster`, `matrix`, `runout`, `track`, `top`, `bottom`, `raw`, `unedited`, `watermark`; for events `flyer`, `ticket`, `setlist`, `banner`, `program`, `schedule`, `map`, `logo`, `merch` |
 
 Matching is by whole word and order-aware: `back cover` is **Back**, and _Super Disco Pirata_ is no type at all.
