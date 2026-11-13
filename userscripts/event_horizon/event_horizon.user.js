@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.007000
+// @version      2026.11.14.008000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12699,17 +12699,37 @@ document.addEventListener('click', ev => {
     f.innerHTML = '<textarea rows="2" placeholder="Reason for removing (optional)"></textarea><div><button type="button" data-go>Remove note</button><button type="button" data-no>Cancel</button></div>';
     (nt.querySelector(':scope>summary') || nt.querySelector('h3') || nt.firstElementChild).after(f); f.querySelector('textarea').focus();
 }, true);
+// right-click on a vote opens the edit's note form, its button casting that vote with the note (Mammoth sits on the box)
+function histNoteVote(fm, v) {
+    const bt = fm.querySelector('button[type="submit"]'), t = v && H_VOTES.find(x => x[0] === v);
+    if (t) fm.dataset.hv = v; else delete fm.dataset.hv;
+    bt.textContent = t ? 'Vote ' + t[1] + ' with note' : 'Add note';
+}
+document.addEventListener('contextmenu', ev => {
+    const b = ehOn && data && data.kind === 'hist' && ev.target.closest && ev.target.closest('[data-hvote]'); if (!b || b.disabled) return;
+    const [id, v] = b.dataset.hvote.split(':'), dt = b.closest('details.hed'), fm = dt && dt.querySelector(`.hdt form[data-hnote="${id}"]`); if (!fm) return;
+    ev.preventDefault(); dt.open = true; fm.classList.remove('fold'); histNoteVote(fm, v);
+    const ta = fm.querySelector('textarea'); ta.focus(); fm.scrollIntoView({ block: 'nearest' });
+    LOG.debug('Vote ' + v + ' on edit #' + id + ' waits for a note');
+});
 async function histNoteSend(fm) {
     const id = fm.dataset.hnote, e = data && data.edits && data.edits.find(x => String(x.id) === id), ta = fm.querySelector('textarea'), t = ta.value.trim(); if (!e || !t) return;
     const bt = fm.querySelector('button[type="submit"]'); bt.disabled = ta.disabled = true;
     const fields = { 'enter-vote.vote.0.edit_id': id, 'enter-vote.vote.0.edit_note': t, url: `${MB}/edit/${id}` };
-    if (e.can) fields['enter-vote.vote.0.vote'] = e.my || '-2';
+    const hv = e.can && H_VOTES.some(x => x[0] === fm.dataset.hv) ? fm.dataset.hv : '';
+    if (e.can) fields['enter-vote.vote.0.vote'] = hv || e.my || '-2';
     try {
         LOG.keep();
         const r = await mbnFetch(`${MB}/edit/enter_votes`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(fields) });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         const n = { by: ME, date: 'just now', text: t, html: esc(t).replace(/\n/g, '<br>') };
-        e.notes.push(n); fm.insertAdjacentHTML('beforebegin', histNote(n)); ta.value = ''; LOG.info('Added a note to edit #' + id);
+        e.notes.push(n); fm.insertAdjacentHTML('beforebegin', histNote(n)); ta.value = ''; LOG.info('Added a note to edit #' + id + (hv ? ', voting ' + H_VOTES.find(x => x[0] === hv)[1] : ''));
+        if (hv && hv !== e.my) {
+            const c = histCnt(e); if (c) { const k = x => x === '1' ? 0 : x === '0' ? 1 : -1, o = k(e.my), nw = k(hv); if (o >= 0) c[o]--; if (nw >= 0) c[nw]++; e.votes = `${c[0]} yes : ${c[1]} no`; }
+            e.my = hv; kpWrote(); histVotePaint(data);
+            const x = document.querySelector(`#app [data-hvote^="${e.id}:"]`), dt = x && x.closest('details.hed'), bar = x && x.closest('.hbar'); if (bar) { bar.outerHTML = histBar(e, histOne(data.id)); const l = histLean(e); if (l && dt) dt.dataset.lean = l; }
+        }
+        histNoteVote(fm, '');
     } catch (err) { LOG.err('Note on edit #' + id + ' failed: ' + err.message); toast('MusicBrainz didn\'t take the note'); }
     bt.disabled = ta.disabled = false;
 }
