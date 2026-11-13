@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.13.170000
+// @version      2026.11.13.180000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -4356,11 +4356,11 @@ function fsStyle() {
         + '.fs-emcard .fs-emc{flex:1 1 110px;min-width:48px;width:auto}'
         + '.fs-emcard .fs-emc.fs-wide{flex-basis:150px}'
         + '.fs-alias-sub{display:block;font-size:11px;color:var(--mbu-text-weak);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fs-alias-sub i{font-style:normal;color:var(--mbu-ok)}.fs-alias-sub.fs-alias-near i{color:var(--mbu-warn)}'   // #1007
-        + '.fs-emcard .fs-grow .fs-t,.fs-emcard .fs-emh-n{flex:2 1 180px;min-width:120px}'
+        + '.fs-emcard .fs-grow .fs-t{flex:2 1 180px;min-width:120px}.fs-emcard .fs-emh .fs-emh-n{flex:2 1 180px;min-width:120px;box-sizing:content-box}'
         + '.fs-emh{display:flex;gap:8px;padding:4px 13px 0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--mbu-text-weak)}'
         + '.fs-emh .fs-emc{color:inherit;font-size:inherit}'
         + '.fs-emh .fs-emh-n{flex:1;min-width:0;padding-left:24px}'
-        + '.fs-emh .fs-emh-a{width:44px;flex-shrink:0}'
+        + '.fs-emh .fs-emh-a{visibility:hidden;opacity:0}'
         + '.fs-grow .fs-dis{color:var(--fs-muted);font-size:11px;margin-left:4px}'
         + '#fs-em-cons .fs-sig{flex-wrap:wrap;justify-content:center}'
         + '#fs-em-cons .fs-sig span{width:auto;min-width:48px}'
@@ -6762,7 +6762,7 @@ function emCardHtml(type, g, gi, ro, active) {
         + '<button class="fs-mbtn' + (done ? ' fs-done' : err ? ' fs-err' : '') + '" type="button" data-act="merge-group"' + (busy || done || tooFew || noStrat ? ' disabled' : '') + (err ? ' data-tip="' + escapeHtml('Merge failed\n' + (g.error || '')) + '"' : noStrat && !tooFew ? ' data-tip="Choose how the mediums combine first"' : '') + '>' + mLabel + '</button>'
         + '<span class="fs-kill" data-act="delete-group" data-tip="' + (done ? 'Remove this group' : 'Delete this group\nIts ' + label.toLowerCase() + ' go back to the pool.') + '">🗑</span>'
         + '</div></div>');
-    const colHead = cols.length ? '<div class="fs-emh"><span class="fs-emh-n">' + escapeHtml(emOne(type)) + '</span>' + cols.map(c => '<span class="fs-emc' + (EM_WIDE.has(c) ? ' fs-wide' : '') + '">' + c + '</span>').join('') + '<span class="fs-emh-a"></span></div>' : '';
+    const colHead = cols.length ? '<div class="fs-emh"><span class="fs-emh-n">' + escapeHtml(emOne(type)) + '</span>' + cols.map(c => '<span class="fs-emc' + (EM_WIDE.has(c) ? ' fs-wide' : '') + '">' + c + '</span>').join('') + (busy || done || ro ? '<span class="fs-acts fs-emh-a"></span>' : '<span class="fs-acts fs-emh-a"><span>↩</span><span>✕</span></span>') + '</div>' : '';
     const aliasLine = x => { const h = aliasHits && aliasHits.get(x.gid); return h ? '<span class="fs-alias-sub' + (h.exact ? '' : ' fs-alias-near') + '" data-tip="' + escapeHtml((h.exact ? 'An alias of ' : 'Close to an alias of ') + h.of.name) + '">' + (h.exact ? '=' : '≈') + ' alias of ' + (h.of.gid === target.gid ? '★' : escapeHtml(h.of.name)) + ': <i>' + escapeHtml(h.alias) + '</i></span>' : ''; };
     const rows = g.members.map(x => {
         const isT = x.gid === target.gid;
