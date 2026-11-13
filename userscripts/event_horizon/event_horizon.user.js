@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.008000
+// @version      2026.11.14.008100
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12624,14 +12624,16 @@ const hnKey = n => (n.by || '') + '\n' + n.text;
 const histShared = es => { if (es.length < 2) return null; const n = es[0].notes.find(n => n.own); return n && es.every(e => e.notes.some(m => hnKey(m) === hnKey(n))) ? n : null; };
 // your vote on an open edit: MusicBrainz's own vote form, one edit at a time
 const H_VOTES = [['1', 'Yes'], ['0', 'No'], ['-1', 'Abstain'], ['-2', 'None']];
-const histVote = e => `<div class="hvote" role="radiogroup" aria-label="Your vote"><span class="lb">Your vote</span>${H_VOTES.map(([v, t]) => `<button type="button" class="v${v}${e.my === v ? ' on' : ''}${e.voting === v ? ' busy' : ''}" role="radio" aria-checked="${e.my === v}" data-hvote="${e.id}:${v}"${e.voting ? ' disabled' : ''}>${t}</button>`).join('')}</div>`;
+const histVote = e => `<div class="hvote" role="radiogroup" aria-label="Your vote"><span class="lb">Your vote</span>${H_VOTES.map(([v, t]) => `<button type="button" class="v${v}${e.my === v ? ' on' : ''}${e.voting === v ? ' busy' : ''}" role="radio" aria-checked="${e.my === v}" data-hvote="${e.id}:${v}" data-tip="Vote ${t}
+Right-click: vote ${t} with an edit note"${e.voting ? ' disabled' : ''}>${t}</button>`).join('')}</div>`;
 // one line under an open edit: tally, then your vote (the one you hold, clicked again, withdraws it) or, on your own, Cancel
 const histCnt = e => { const m = /(\d+)\D+?(\d+)/.exec(e.votes || ''); return m ? [+m[1], +m[2]] : null; };
 const histLean = e => { const c = histCnt(e); return e.st !== 'op' || !c ? '' : c[0] > c[1] ? 'yes' : c[1] > c[0] ? 'no' : 'tie'; };
 const H_SEG = [['1', 'Yes', 0], ['0', 'No', 1], ['-1', 'Abstain']];
 function histBar(e, one) {
     const c = histCnt(e), tl0 = c ? `<span class="htl"><span class="hbr">${c[0] + c[1] ? `<i style="width:${100 * c[0] / (c[0] + c[1])}%;background:#2e8b57"></i><i style="width:${100 * c[1] / (c[0] + c[1])}%;background:#c0392b"></i>` : ''}</span>${c[0]} yes · ${c[1]} no</span>` : '';
-    const vt = e.can ? `<div class="hvote hseg" role="radiogroup" aria-label="Your vote">${H_SEG.map(([v, t, i]) => `<button type="button" class="v${v}${e.my === v ? ' on' : ''}" role="radio" aria-checked="${e.my === v}" data-hvote="${e.id}:${v}"${e.voting ? ' disabled' : ''}>${t}${c && i != null ? ` <span class="c">${c[i]}</span>` : ''}</button>`).join('')}</div>` : '';
+    const vt = e.can ? `<div class="hvote hseg" role="radiogroup" aria-label="Your vote">${H_SEG.map(([v, t, i]) => `<button type="button" class="v${v}${e.my === v ? ' on' : ''}" role="radio" aria-checked="${e.my === v}" data-hvote="${e.id}:${v}" data-tip="Vote ${t}
+Right-click: vote ${t} with an edit note"${e.voting ? ' disabled' : ''}>${t}${c && i != null ? ` <span class="c">${c[i]}</span>` : ''}</button>`).join('')}</div>` : '';
     const cu = e.cancel || (e.st === 'op' && e.mine ? `${MB}/edit/${e.id}/cancel` : ''), cx = cu ? `<a class="hcx2" href="${esc(cu)}">Cancel edit</a>` : '';
     const dl = e.st === 'op' && e.exp > Date.now() ? Math.ceil((e.exp - Date.now()) / 864e5) : 0, tl = (c ? `<span class="htl"><span class="hbr">${c[0] + c[1] ? `<i style="width:${100 * c[0] / (c[0] + c[1])}%;background:#2e8b57"></i><i style="width:${100 * c[1] / (c[0] + c[1])}%;background:#c0392b"></i>` : ''}</span>${c[0]} yes · ${c[1]} no</span>` : '') + (dl ? `<span class="htl">closes in ${dl} d</span>` : '');
     return tl || vt || cx ? `<div class="hbar" data-id="${e.id}">${tl}${vt}${cx}</div>` : '';
