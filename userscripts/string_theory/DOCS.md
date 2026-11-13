@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-13 01:33 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-13 01:37 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -977,7 +977,7 @@ The saved-search controls sit to the right of the search options. Type a **Searc
 
 The grouping, status and Load more toolbar stays pinned while scrolling.
 
-Choose **Bursts**, **Day**, **Editor**, **Type** or **Status** to group edits. Each group’s **Yes**, **No**, **Abstain** and **None** buttons apply to its loaded edits you can vote on; **None** withdraws your votes. The number beside **Vote** counts eligible edits. A status filter limits the group vote to the edits shown. Changing votes on more than 20 edits asks for confirmation. You can still vote on individual edits.
+Choose **Bursts**, **Day**, **Editor**, **Type** or **Status** to group edits. Each group’s **Yes**, **No**, **Abstain** and **None** buttons apply to its loaded edits you can vote on; **None** withdraws your votes. The number beside **Vote** counts eligible edits. A status filter limits the group vote to the edits shown. Changing votes on more than 20 edits asks for confirmation. You can still vote on individual edits. An edit's date opens the edit on MusicBrainz.
 
 A collection’s edit list starts with other editors’ edits. **All edits for this collection** includes your own; **Others’ edits for this collection** hides them.
 
