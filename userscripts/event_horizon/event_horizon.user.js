@@ -10159,7 +10159,59 @@ function colWire(root) {
         raf = requestAnimationFrame(tick);
     });
 }
+// #1029: a redraw changes only what differs, so images, fonts and the layout around them don't blink
+// patch a live subtree to match new markup; an element with an id is matched by it, else by position and tag
+const EH_LIS = new WeakMap(), EH_FORM = /^(INPUT|TEXTAREA|SELECT|OPTION)$/;
+function ehMorph(root, html) {
+    const t = document.createElement('template'); t.innerHTML = html;
+    ehMorphKids(root, t.content);
+}
+function ehMorphKids(a, b) {
+    let ac = a.firstChild;
+    for (let bc = b.firstChild; bc;) {
+        const next = bc.nextSibling, id = bc.nodeType === 1 && bc.id;
+        let m = null;
+        if (id) { for (let x = ac; x; x = x.nextSibling) if (x.nodeType === 1 && x.id === id) { m = x; break; } }
+        else if (ac && ac.nodeType === bc.nodeType && ac.nodeName === bc.nodeName && !(ac.nodeType === 1 && ac.id)) m = ac;
+        if (m) { if (m === ac) ac = ac.nextSibling; else a.insertBefore(m, ac); ehMorphNode(m, bc); }
+        else a.insertBefore(bc, ac);
+        bc = next;
+    }
+    while (ac) { const n = ac.nextSibling; ac.remove(); ac = n; }
+}
+function ehMorphNode(a, b) {
+    if (a.nodeType !== 1) { if (a.nodeValue !== b.nodeValue) a.nodeValue = b.nodeValue; return; }
+    // an image a fallback has since repointed keeps its picture while its markup is unchanged
+    const imgSame = a.nodeName === 'IMG' && a._ehSrc === b.getAttribute('src');
+    for (const at of [...a.attributes]) if (!b.hasAttributeNS(at.namespaceURI, at.localName) && !(imgSame && /^(src|srcset)$/.test(at.name))) a.removeAttributeNS(at.namespaceURI, at.localName);
+    for (const at of b.attributes) if (!(imgSame && /^(src|srcset)$/.test(at.name)) && a.getAttributeNS(at.namespaceURI, at.localName) !== at.value) a.setAttributeNS(at.namespaceURI, at.name, at.value);
+    if (a.nodeName === 'IMG') a._ehSrc = b.getAttribute('src');
+    if (EH_FORM.test(a.nodeName) && a !== document.activeElement) {
+        if (a.nodeName === 'TEXTAREA') { a.value = b.value; return; }
+        if ('value' in b && a.nodeName !== 'SELECT') a.value = b.value;
+        if ('checked' in b) a.checked = b.checked;
+        if ('selected' in b) a.selected = b.selected;
+    }
+    if (a.nodeName === 'TEXTAREA') return;
+    ehMorphKids(a, b);
+    if (a.nodeName === 'SELECT' && a !== document.activeElement) { const s = [...b.options].findIndex(o => o.selected); if (s >= 0) a.selectedIndex = s; }
+}
+// while a redraw wires the page, a node kept from the last one drops its earlier copy of the same handler
 function render(keepPop) {
+    const app = $('#app') || (ehBody && ehBody.querySelector('#app')), P = EventTarget.prototype, add = P.addEventListener, rem = P.removeEventListener;
+    if (!app) return renderNow(keepPop);
+    P.addEventListener = function (type, fn, o) {
+        if (typeof fn === 'function' && this.nodeType === 1 && app.contains(this)) {
+            const cap = typeof o === 'boolean' ? o : !!(o && o.capture), k = type + '|' + cap + '|' + fn;
+            let m = EH_LIS.get(this); if (!m) EH_LIS.set(this, m = new Map());
+            const old = m.get(k); if (old) rem.call(this, type, old, cap);
+            m.set(k, fn);
+        }
+        return add.call(this, type, fn, o);
+    };
+    try { return renderNow(keepPop); } finally { P.addEventListener = add; }
+}
+function renderNow(keepPop) {
     if (secDrag || colDrag) { secRedraw = true; return; } // keep the dragged row attached until the drag ends
     esPark();
     if (!keepPop && $('#pop-collections:not([hidden])')) keepPop = 'collections';
@@ -10176,31 +10228,31 @@ function render(keepPop) {
     ehWidth();
     if (!data) return;
     document.title = titleOf(data);
-    if (data.kind === 'user') { app.innerHTML = userHtml(data); secRail(app); save(); return; }
+    if (data.kind === 'user') { ehMorph(app, userHtml(data)); secRail(app); save(); return; }
     if (data.kind === 'tags') {
         // a background redraw leaves the tag being typed as it was, focus included
         const nw = $('#tg-new'), a = document.activeElement, typing = a && (a.id === 'tg-new' || a.id === 'tg-q') ? a.id : '', at = typing ? a.selectionStart : 0, text = nw ? nw.value : '';
-        app.innerHTML = tagsHtml(data); tagsWire(); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); pinBar(app); document.getElementById('eh-rail')?.remove();
+        ehMorph(app, tagsHtml(data)); tagsWire(); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); pinBar(app); document.getElementById('eh-rail')?.remove();
         const ni = $('#tg-new'); if (ni && text) ni.value = text;
         const back = typing && document.getElementById(typing); if (back) { back.focus({ preventScroll: true }); back.setSelectionRange(at, at); }
         return;
     }
     if (data.kind === 'aliases') {
         const a = document.activeElement, keep = alBox && alBox.el.contains(a) ? a : null;
-        app.innerHTML = aliasesHtml(data); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah);
+        ehMorph(app, aliasesHtml(data)); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah);
         if (alBox && alBox.key === data.key) $('#al-body').replaceChildren(alBox.el);
         secRail(app); pinBar(app); save(); if (keep) keep.focus({ preventScroll: true });
         return;
     }
-    if (data.kind === 'rels') { app.innerHTML = relsHtml(data); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); dgWire(app); secRail(app); pinBar(app); lmWatch(app); shWatch(app); save(); return; }
-    if (data.kind === 'tagx') { app.innerHTML = tagxHtml(data); tagxWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
-    if (data.kind === 'rates') { app.innerHTML = ratesHtml(data); ratesWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
-    if (data.kind === 'colls') { app.innerHTML = collsHtml(data); secRail(app); save(); return; }
-    if (data.kind === 'search') { app.innerHTML = searchHtml(data); srchWire(app); secRail(app); lmWatch(app); save(); return; }
+    if (data.kind === 'rels') { ehMorph(app, relsHtml(data)); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); dgWire(app); secRail(app); pinBar(app); lmWatch(app); shWatch(app); save(); return; }
+    if (data.kind === 'tagx') { ehMorph(app, tagxHtml(data)); tagxWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
+    if (data.kind === 'rates') { ehMorph(app, ratesHtml(data)); ratesWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
+    if (data.kind === 'colls') { ehMorph(app, collsHtml(data)); secRail(app); save(); return; }
+    if (data.kind === 'search') { ehMorph(app, searchHtml(data)); srchWire(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'art') { artPage(app, data); pinBar(app); return; }
     if (data.kind === 'discs' || data.kind === 'toc') { document.title = (data.kind === 'toc' ? 'Disc ID ' + data.id : (data.rel ? data.rel.title + ' · ' : '') + 'Disc IDs') + ' · Event Horizon'; discPage(app, data); pinBar(app); return; }
     if (data.kind === 'hist') { histPage(app, data); entHeadWire(app.querySelector('.arthd') || app); pinBar(app); return; }
-    if (data.kind === 'home') { app.innerHTML = homeHtml(); hmWire(app); secRail(app); save(); const p = keepPop && document.getElementById('pop-' + keepPop), t = keepPop && $(`[data-pop="${keepPop}"]`); if (p) { p.hidden = false; if (t) t.setAttribute('aria-expanded', 'true'); } return; }
+    if (data.kind === 'home') { ehMorph(app, homeHtml()); hmWire(app); secRail(app); save(); const p = keepPop && document.getElementById('pop-' + keepPop), t = keepPop && $(`[data-pop="${keepPop}"]`); if (p) { p.hidden = false; if (t) t.setAttribute('aria-expanded', 'true'); } return; }
     const r = data.rel || data.g || { id: data.id };
     // another page starts unfiltered
     if (FLT.of !== r.id) { FLT.of = r.id; LM_ERR.clear(); for (const k in TSORT) delete TSORT[k]; for (const k in TQ) delete TQ[k]; FLT.dg = { q: '', f: {} }; FLT.ed = { q: '', f: {} }; }
@@ -10213,7 +10265,7 @@ function render(keepPop) {
     // keyed by the markup an image was drawn from: a fallback that changed its src since still matches
     const oldImgs = new Map([...app.querySelectorAll('img')].filter(i => i.complete && i.naturalWidth).map(i => [imgKey.get(i) || imgKeyOf(i), i]));
     const KN = { rg: 'group', recording: 'recording', work: 'work', area: 'area', label: 'label', artist: 'artist', instrument: 'instrument', place: 'place', series: 'series', event: 'event', collection: 'collection' };
-    app.innerHTML = !data.g && !data.rel ? heroSk(KN[data.kind] || data.kind, data.gErr) + (data.kind === 'recording' ? editions({ id: null, page: `/recording/${r.id}`, type: 'recording' }, data.editions, data.edCount)
+    ehMorph(app, !data.g && !data.rel ? heroSk(KN[data.kind] || data.kind, data.gErr) + (data.kind === 'recording' ? editions({ id: null, page: `/recording/${r.id}`, type: 'recording' }, data.editions, data.edCount)
         : data.kind === 'place' ? wikipedia(data.wikiX) + w('pe', 'Events', placeEvents(data)) + w('pr', 'Recordings', tabSect('pr', 'Recordings', data.listsX && data.listsX[1], `${MB}/place/${r.id}/performances`))
         : data.kind === 'event' ? wikipedia(data.wikiX)
         : data.kind === 'series' ? wikipedia(data.wikiX) + w('sp', serPartsName(data), serParts(data))
@@ -10233,7 +10285,7 @@ function render(keepPop) {
         : data.kind === 'area' ? areaHero(data) + annotation(r) + wikipedia(data.wikiX) + w('aa', 'Artists', areaList(data, 0)) + w('al', 'Labels', areaList(data, 1)) + w('ap', 'Places', areaList(data, 2))
         : data.kind === 'work' ? wkHero(data) + annotation(r) + wikipedia(data.wikiX) + wkCredits(r) + w('rc', 'Recordings', recsHtml(data))
         : data.kind === 'label' ? lbHero(data) + annotation(r) + wikipedia(data.wikiX) + editions({ id: null, page: `/label/${r.id}`, type: 'label' }, data.editions, data.edCount) : data.kind === 'artist' ? arHero(data) + annotation(r) + wikipedia(data.wikiX) + discography(data) : data.kind === 'rg' ? rgHero(data) + annotation(r) + wikipedia(data.wikiX) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgCard(r, true)
-        : hero(r) + annotation(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r);    // a group without its own cover shows its first release's, else the format's mark
+        : hero(r) + annotation(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r));    // a group without its own cover shows its first release's, else the format's mark
     // a redraw keeps the images already loaded, so the covers don't blink
     for (const im of app.querySelectorAll('img')) { const k = imgKeyOf(im), o = oldImgs.get(k); if (o) { im.replaceWith(o); oldImgs.delete(k); } else imgKey.set(im, k); }
     heroFacts(app);
