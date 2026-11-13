@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.12.230500
+// @version      2026.11.13.233000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -1763,6 +1763,8 @@
       else pickArtist(pend.slot, ent || { gid: d.gid, name: d.name, id: d.id });
       // #273: close the background create tab via its handle (a GM-opened tab can't always self-close).
       try { if (pend.bgTab && typeof pend.bgTab.close === 'function') pend.bgTab.close(); } catch (x) {}
+      // a foreground create tab too: Firefox can refuse it closing itself and leave it blank; its opener may always close it
+      setTimeout(() => { try { if (pend.tab && !pend.tab.closed) pend.tab.close(); } catch (x) {} }, 400);
       if (landed) Log.cat('Create').info('inserted newly-created artist', JSON.stringify(d.name), 'into the table' + (ent ? '' : ' (plain fallback — native link may be incomplete)'));
       else Log.cat('Create').warn('created artist', JSON.stringify(d.name), '(' + d.gid + ') could not be set: its cell is gone; pick it by hand');
     });
@@ -4722,7 +4724,7 @@ Click: open the label`;
     }
     const tab = W.open(url, '_blank');   // NOT noopener — we set a token on the new tab's sessionStorage
     if (tab && token) {
-      _pendingCreates.set(token, { slot });
+      _pendingCreates.set(token, { slot, tab });
       const trySet = () => { try { tab.sessionStorage.setItem(PENDING_KEY, token); } catch (e) { setTimeout(trySet, 50); } }; trySet();
       Log.cat('Create').info('artist for', JSON.stringify(name), '— will auto-insert on save');
     } else { Log.cat('Create').info('open MB create-artist for', JSON.stringify(name)); }
@@ -4749,7 +4751,7 @@ Click: open the label`;
     }
     const tab = W.open(url, '_blank');   // NOT noopener — we set a token on the new tab's sessionStorage
     if (tab && token) {
-      _pendingCreates.set(token, pend);
+      pend.tab = tab; _pendingCreates.set(token, pend);
       const trySet = () => { try { tab.sessionStorage.setItem(PENDING_KEY, token); } catch (e) { setTimeout(trySet, 50); } }; trySet();
       Log.cat('Create').info('label for', JSON.stringify(name), '— will be set on save');
     } else Log.cat('Create').info('open MB create-label for', JSON.stringify(name));
