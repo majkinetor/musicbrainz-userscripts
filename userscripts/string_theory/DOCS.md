@@ -1,10 +1,6 @@
 # String Theory — Unified Documentation
 
-<<<<<<< HEAD
-*Built 2026-11-13 02:22 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
-=======
-*Built 2026-11-13 02:25 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
->>>>>>> da1922605 (Pinned bar shows the edit search's conditions as chips; a chip's click scrolls to its row)
+*Built 2026-11-13 02:26 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
