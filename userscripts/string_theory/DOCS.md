@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-13 18:05 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-13 18:15 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -592,11 +592,11 @@ With the [Picker](../art_station/as_picker/README.md), clicking a copy in the se
 
 ### Upscaled images
 
-Stores sometimes offer a bigger file that is only a smaller picture enlarged, such as a 3000 px cover made from a 1500 px one. When the gallery has a smaller copy of the same picture, Art Station checks the bigger one and shows its real size next to the file's: `3000 × 3000 → ≈1500 × 1500`. The full-screen viewer also names the copy it was compared with.
+Stores sometimes offer a bigger file that is only a smaller picture enlarged, such as a 3000 px cover made from a 1500 px one. **Upscaled?** on the toolbar checks every image over 1600 px that has a smaller copy of the same picture in the gallery, and shows an enlarged one's real size next to the file's: `3000 × 3000 → ≈1500 × 1500`. The full-screen viewer also names the copy it was compared with.
 
-- Only images over 1600 px are checked, in the background, and each only once.
-- Picking the best cover goes by the real size, and a genuine image wins a near tie. Nothing is hidden or removed.
-- _Detect upscaled images_ (⚙, on) switches it off; then nothing is checked or downloaded.
+- The check is slow, a few seconds an image, so it runs only when clicked. The card being checked shows its progress, and the button shows how far the check has got; clicking it again stops the check.
+- An image checked once isn't checked again, so a second click is quick.
+- Picking the best cover goes by the real size once a check has found it, and a genuine image wins a near tie. Nothing is hidden or removed.
 
 > [!NOTE]
 > The check can be fooled: an image enlarged by AI looks genuine, and a very plain cover, or one heavily compressed, can be misjudged.

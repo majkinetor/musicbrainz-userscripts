@@ -1,7 +1,8 @@
 // #972: a store's big file is at times a smaller picture enlarged (Tidal's 3000 from a 1500 master). Three
 // pictures of one drawn scene are dropped on the gallery: drawn at 2400 (genuine), drawn at 1200 (genuine, the
 // smaller copy), and the 1200 one enlarged to 2400. Only the enlarged one is flagged, at ≈1200, with its badge;
-// the genuine 2400 is not. Turned off, the flag and the badge go. Nothing is uploaded.
+// the genuine 2400 is not. The check runs from the toolbar's button, and the card being measured shows its
+// progress. Nothing is uploaded.
 import { test, check, until } from '../../../dev/test/harness.mjs';
 import { openArtStation } from './as.mjs';
 
@@ -35,7 +36,12 @@ test('#972: an enlarged picture is told by its real size, a genuine one is not',
   });
   const items = () => page.evaluate(() => window.__asTest.up.items().filter(x => /\.jpg$/.test(x.name)));
   await until(async () => { const xs = await items(); return xs.length === 3 && xs.every(x => x.w > 0); }, Boolean, { timeout: 30000 });
-  await page.evaluate(() => window.__asTest.up.scan());
+  check(await page.evaluate(() => window.__asTest.up.items().every(x => !x.realW)), 'nothing is checked before the button is clicked');
+  await page.click('#as-root .as-up');
+  await page.waitForSelector('.as-card .as-upprog', { timeout: 60000 });
+  check(true, 'the card being measured shows its progress');
+  await until(() => page.evaluate(() => window.__asTest.up.busy()), b => !b, { timeout: 150000 });
+  check(await page.$$eval('.as-card .as-upprog', els => els.length) === 0, 'the progress is gone when the check ends');
   const by = Object.fromEntries((await items()).map(x => [x.name, x]));
   console.log(JSON.stringify(by));
   check(by['enlarged-2400.jpg'].realW === 1200 && by['enlarged-2400.jpg'].realH === 1200, `the enlarged 2400 is flagged at 1200: ${JSON.stringify(by['enlarged-2400.jpg'])}`);
@@ -43,14 +49,4 @@ test('#972: an enlarged picture is told by its real size, a genuine one is not',
   check(!by['copy-1200.jpg'].realW, 'the 1200 copy is not checked (under 1600 px)');
   const badges = await page.$$eval('.as-card .as-dim-up', els => els.map(e => e.textContent));
   check(badges.length === 1 && /→ ≈1200 × 1200/.test(badges[0]), `one badge, on the enlarged picture: ${JSON.stringify(badges)}`);
-
-  // turned off: no flag, no badge
-  await page.click('#as-switch', { button: 'right' });
-  await page.waitForSelector('#as-setup', { timeout: 5000 });
-  const box = page.locator('.as-setup-upscale');
-  if (await box.count()) {
-    await box.uncheck();
-    check(await page.$$eval('.as-card .as-dim-up', els => els.length) === 0, 'off: the badge is gone');
-    check(await page.evaluate(() => !window.__asTest.up.isUp({ _realW: 1200, w: 2400, h: 2400 })), 'off: nothing counts as enlarged');
-  } else check(false, 'the setting\'s checkbox is in the setup panel');
 });

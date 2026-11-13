@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.14.030000
+// @version      2026.11.14.040000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -978,7 +978,6 @@
   function refreshDim(it) {
     const el = document.querySelector(`.as-card[data-id="${CSS.escape(String(it.id))}"] .as-dim`);
     if (el) el.innerHTML = dimHtml(it);
-    upSchedule();   // #972 a new size: check for enlarged pictures
   }
   // one request per release: archive.org item metadata carries every original's byte size — and the
   // #368 `is_dark` flag for a darkened item (read from this same request, no extra fetch)
@@ -1015,7 +1014,7 @@
   // timeout (currently visible as IA is slow) while it passes in native uploader.
   // Let's make timeout configurable in minutes, and make default double the
   // current value." Was a hardcoded 5 minutes; the default is 10 now.
-  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoRepeat: true, autoRepeatMin: 10, autoRepeatTimes: 10, arV: AR_SETTINGS_V, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone', clearSelAfterOp: true, followPan: true, uploadTimeoutMin: 10, showFileType: false, detectUpscale: true }; try { const stored = JSON.parse(gmLoad('artstation:settings') || '{}'); return arMigrate(Object.assign(d, stored), stored); } catch (e) { return d; } }
+  function load() { const d = { tile: 200, group: false, sort: 'type', detailed: false, hideMbFooter: true, showOrig: false, autoRepeat: true, autoRepeatMin: 10, autoRepeatTimes: 10, arV: AR_SETTINGS_V, autoType: true, autoComment: true, autoFront: true, autoFrontMode: 'whenNone', clearSelAfterOp: true, followPan: true, uploadTimeoutMin: 10, showFileType: false }; try { const stored = JSON.parse(gmLoad('artstation:settings') || '{}'); return arMigrate(Object.assign(d, stored), stored); } catch (e) { return d; } }
   /* #566 follow-up (majkinetor): "change defaults to 10/10 and enable the option
      by default". Raising the defaults alone reaches nobody who already has
      settings stored — save() persists every key, so a stored 20 shadows the new
@@ -1393,9 +1392,6 @@
       + ` <select class="as-setup-autofront-mode"><option value="whenNone"${SETTINGS.autoFrontMode !== 'always' ? ' selected' : ''}>when none exists</option><option value="always"${SETTINGS.autoFrontMode === 'always' ? ' selected' : ''}>always</option></select></div>`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-clearsel"${SETTINGS.clearSelAfterOp ? ' checked' : ''}> Clear the selection after a batch action (type, comment, download, report)</label>`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-filetype"${SETTINGS.showFileType ? ' checked' : ''}> Show each ${ITEM}'s file type next to its size (PNG, JPEG…)</label>`
-      + `<label class="as-setup-opt" data-tip="${esc(`Spots a big file that is a smaller picture enlarged
-On: it shows its real size, and Best cover goes by that size; each picture over 1600 px that has a smaller copy in the gallery is downloaded once to check
-Off: nothing is checked or downloaded`)}"><input type="checkbox" class="as-setup-upscale"${SETTINGS.detectUpscale !== false ? ' checked' : ''}> Detect upscaled images</label>`
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-followpan"${SETTINGS.followPan ? ' checked' : ''}> Full-screen: pan a zoomed image by moving the mouse (no dragging)</label>`
       // #560 — a big PDF booklet against a slow Internet Archive needs more than
       // the old fixed 5 minutes; the native uploader sets no timeout at all.
@@ -1411,7 +1407,6 @@ Off: nothing is checked or downloaded`)}"><input type="checkbox" class="as-setup
     mbuCfgDrag(panel);
     panel.querySelector('.as-setup-hidefoot').onchange = e => { SETTINGS.hideMbFooter = e.target.checked; save(); applyHideFooter(); };
     panel.querySelector('.as-setup-filetype').onchange = e => { SETTINGS.showFileType = e.target.checked; save(); render(); asLog.info(`File type next to the size: ${SETTINGS.showFileType ? 'on' : 'off'}`); };   // #630
-    panel.querySelector('.as-setup-upscale').onchange = e => { SETTINGS.detectUpscale = e.target.checked; save(); render(); asLog.info(`Detect upscaled images: ${SETTINGS.detectUpscale ? 'on' : 'off'}`); if (SETTINGS.detectUpscale) upSchedule(0); };   // #972
     panel.querySelector('.as-setup-autotype').onchange = e => { SETTINGS.autoType = e.target.checked; save(); };
     panel.querySelector('.as-setup-autocomment').onchange = e => { SETTINGS.autoComment = e.target.checked; save(); };
     panel.querySelector('.as-setup-autofront').onchange = e => { SETTINGS.autoFront = e.target.checked; save(); };
@@ -1566,6 +1561,7 @@ Off: nothing is checked or downloaded`)}"><input type="checkbox" class="as-setup
       <button class="as-btn as-src" data-tip="Source ${ENT.noun}\nFrom a linked platform, a registered provider, or any URL"><span class="as-bi">🔗</span><span class="mbu-bt">URL</span><span class="as-src-n"></span><span class="as-src-pg"></span></button>
       <span class="as-size" data-tip="${SIZE_TIP}">${TILE_SIZES.map(([n], i) => `<button type="button" class="${i === tileIdx() ? 'on' : ''}" aria-label="${n}">${tileIcon(i)}</button>`).join('')}</span>
       <button class="as-btn as-view" data-tip="Sort and group"><span class="as-bi as-view-ic"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></span><span class="mbu-bt">View</span> ▾</button>
+      ${upBtn()}
       ${!canReorder() ? '<span class="as-dragwarn" data-tip="Dragging to reorder is off\nIt works only sorted by Position, in the grid view.\nClick: change the view">⚠</span>' : ''}
       <span class="as-selbox">${selBox()}</span>
       <button class="as-btn as-commit" data-tip="Review and apply the staged changes as MusicBrainz edits\nRight-click: start at once, without the Run click"${n?'':' disabled'}>${commitInner(n)}</button>
@@ -1713,7 +1709,7 @@ Off: nothing is checked or downloaded`)}"><input type="checkbox" class="as-setup
       <div class="as-thumb"${uploadTip(it)}>${thumbImg(it, SETTINGS.tile > 260 ? 500 : 250)}
         ${it._del && !it._mcOffer ? '<span class="as-newban as-rmban">REMOVE</span>' : it._new ? '<span class="as-newban">NEW</span>' : ''}
         ${it._pdf ? '<span class="as-pdfban" data-tip="A PDF: opens in a new tab">PDF</span>' : ''}
-        ${provBadge(it)}${rmOpenChip(it)}
+        ${provBadge(it)}${rmOpenChip(it)}${upProgHtml(it)}
         ${!it._del && !it._rmOpen ? `<button class="as-tbtn as-rmone" data-tip="Mark this ${ITEM} for removal">${trashSvg(15)}</button>` : ''}
         ${it._del ? (it._mcOffer ? (it._mcDup ? '' : `<button class="as-tbtn as-undo"${_mcChecking ? ' disabled data-tip="Checking for duplicates…"' : ' data-tip="Take this image in"'}>＋ take in</button>`) : '<button class="as-tbtn as-undo" data-tip="Keep this image">↺ keep</button>') : ''}
         ${it._mcDup && it._del ? `<span class="as-mcdup" data-tip="The same picture as ${esc(it._mcDup.replace(/^= /, ''))}">${esc(it._mcDup)}</span>` : ''}
@@ -1922,6 +1918,7 @@ Off: nothing is checked or downloaded`)}"><input type="checkbox" class="as-setup
     const dw = root.querySelector('.as-dragwarn'); if (dw) dw.onclick = () => { SETTINGS.detailed = false; SETTINGS.group = false; SETTINGS.sort = 'type'; save(); render(); };
     root.querySelector('.as-add').onclick = toggleDropZone;
     const mh = root.querySelector('.as-mh'); if (mh) mh.onclick = openMHCovers;
+    const upb = root.querySelector('.as-up'); if (upb) upb.onclick = () => _upBusy ? upStop() : upScan();   // #972
     const src = root.querySelector('.as-src');
     if (src) {
       src.onclick = e => { e.stopPropagation(); openSourcePop(src); };
@@ -3632,9 +3629,7 @@ Off: nothing is checked or downloaded`)}"><input type="checkbox" class="as-setup
         if (notFront.length) asLog.info(`Best cover: only each source's first image counts as its front; left out ${notFront.length} more (${notFront.map(x => `${x._provider || x.id} ${x.w}×${x.h}`).join(', ')})`);
         asLog.debug(`Best cover: candidates ${cands.map(x => `${x._provider || x.id} ${x.w}×${x.h} ${x.bytes || '?'}b`).join(', ') || '(none)'}${busy ? ' (timed out while still sourcing)' : ''}`);
         if (!cands.length) { toast('No cover could be imported', 4000); onDone(null); return; }
-        // #972: an enlarged file is told by its real size, so a big one waits for the check (a minute at most)
-        if (upOn() && MODEL.some(x => !x._del && Math.max(x.w || 0, x.h || 0) > UP_MIN)) { asLog.debug('Best cover: waiting for the upscale check'); upSettled(60000).then(() => finish(cands)); }
-        else finish(cands);
+        finish(cands);   // #972 an enlarged file counts by its real size once a check has found it
       };
       const real = x => isUp(x) ? ` (≈${x._realW}×${x._realH})` : '';
       const finish = cands => {
@@ -3697,11 +3692,41 @@ Off: nothing is checked or downloaded`)}"><input type="checkbox" class="as-setup
   // through size S, over their width as it is (rb), is taken at 0.9 of its size and at each copy's real size; the
   // first copy size, largest first, at which rb has stopped growing (the log-log slope from 0.9 under UP_SLOPE) is
   // its real size. Pictures are taken smallest first, so an enlarged copy counts with its own real size (Spotify's
-  // 2000 → 1440 before the 3000s). Background, one at a time, results kept in GM storage; off, nothing is fetched.
-  const UP_MIN = 1600, UP_GAIN = 1.25, UP_SLOPE = 0.3, UP_GRID = 6, UP_TILE = 256, UP_R = 8, UP_MINC = 80, UP_PERP = 2, UP_TOP = 0.08, UP_MIN_SITES = 20, UP_CAP = 200;
+  // 2000 → 1440 before the 3000s). Slow, so it runs only from the toolbar's Upscaled? button, one picture at a
+  // time, results kept in GM storage; the card being measured shows its progress.
+  const UP_MIN = upMin(), UP_GAIN = 1.25, UP_SLOPE = 0.3, UP_GRID = 6, UP_TILE = 256, UP_R = 8, UP_MINC = 80, UP_PERP = 2, UP_TOP = 0.08, UP_MIN_SITES = 20, UP_CAP = 200;
   // declarations, not consts: a card's size line asks before this part of the script has run
-  function upOn() { return SETTINGS.detectUpscale !== false; }
-  function isUp(it) { return upOn() && it._realW > 0; }
+  function upMin() { return 1600; }
+  function isUp(it) { return it._realW > 0; }
+  // the pictures a check can judge: over 1600 px
+  function upBigs() { return MODEL.filter(x => !x._del && !x._pdf && !x._sourcing && Math.max(x.w || 0, x.h || 0) > upMin()); }
+  var _upBusy = null, _upStop = false, _upStage = '';   // var: the toolbar asks before this part of the script has run
+  function upSvg() { return '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="13" width="8" height="8" rx="1"/><path d="M3 9V4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-5"/><path d="M14 10l5-5M14 5h5v5"/></svg>'; }
+  function upBtnInner() { return `<span class="as-bi">${upSvg()}</span><span class="mbu-bt">${_upBusy ? (_upStage || 'Checking…') : 'Upscaled?'}</span>`; }
+  function upBtn() {
+    const n = upBigs().length;
+    const tip = _upBusy ? 'Checking for enlarged pictures\nClick: stop'
+      : `Find enlarged pictures\nEach picture over ${upMin()} px that has a smaller copy of the same picture in the gallery is downloaded and measured; an enlarged one then shows its real size, and Best cover goes by it. Slow: a few seconds a picture${n ? '' : `\nNo picture here is over ${upMin()} px`}`;
+    return `<button class="as-btn as-up${_upBusy ? ' on' : ''}" data-tip="${esc(tip)}"${n || _upBusy ? '' : ' disabled'}>${upBtnInner()}</button>`;
+  }
+  function upBarPaint(stage) {
+    _upStage = stage || '';
+    const b = document.querySelector('#as-root .as-up'); if (!b) return;
+    b.innerHTML = upBtnInner(); b.classList.toggle('on', !!_upBusy);
+  }
+  // a bar on the card being measured; pct < 0 while its file is read
+  function upProgHtml(it) {
+    if (it._upPct == null) return '';
+    const p = Math.max(0, Math.min(100, Math.round(it._upPct)));
+    return `<div class="as-upprog"><span class="as-upprog-lbl">${it._upPct < 0 ? 'Reading…' : `Checking size ${p}%`}</span><span class="as-upprog-bar"><i style="width:${it._upPct < 0 ? 0 : p}%"></i></span></div>`;
+  }
+  function upProg(it, pct) {
+    if (pct == null) delete it._upPct; else it._upPct = pct;
+    const th = document.querySelector(`.as-card[data-id="${CSS.escape(String(it.id))}"] .as-thumb`); if (!th) return;
+    const old = th.querySelector('.as-upprog'), html = upProgHtml(it);
+    if (!html) { if (old) old.remove(); return; }
+    if (old) old.outerHTML = html; else th.insertAdjacentHTML('beforeend', html);
+  }
   const upName = x => `${x._provider || (x._new ? 'imported' : 'archive #' + x.id)} ${x.w}×${x.h}`;
   const upLabel = x => x._provider || (x._new ? 'an imported image' : 'the archive');
   let _upCache = null, _upSaveT = 0;
@@ -3810,49 +3835,62 @@ Off: nothing is checked or downloaded`)}"><input type="checkbox" class="as-setup
   }
   const upYield = () => new Promise(r => setTimeout(r, 0));
   // edge width after a round trip through S px, over the width as it is; null with too few clean edges to tell
-  async function upRb(T, S) {
+  async function upRb(T, S, onTile) {
     const { t, Ls } = T, ts = Math.max(4, Math.round(t * S / T.min)), Lr = [];
-    for (const L of Ls) { Lr.push(upRes(upRes(L, t, t, ts, ts), ts, ts, t, t)); await upYield(); }
+    for (const L of Ls) { if (_upStop) throw new Error('stopped'); Lr.push(upRes(upRes(L, t, t, ts, ts), ts, ts, t, t)); if (onTile) onTile(); await upYield(); }
     const ss = upSites(Lr, t), a = upWidth(Ls, ss), b = upWidth(Lr, ss);
     if (a.n < UP_MIN_SITES || b.n < UP_MIN_SITES || !(a.med > 0)) return null;
     return b.med / a.med;
   }
-  let _upBusy = null, _upAgain = false;
-  var _upT = 0;   // var: a card can be measured before this line has run
-  function upSchedule(ms) {
-    if (!upOn()) return;
-    clearTimeout(_upT); _upT = setTimeout(upScan, ms == null ? 1500 : ms);
-  }
+  // the toolbar's Upscaled? button: one check at a time, a second click stops it
   function upScan() {
-    if (!upOn()) return Promise.resolve();
-    if (_upBusy) { _upAgain = true; return _upBusy; }
+    if (_upBusy) return _upBusy;
+    _upStop = false;
+    asLog.info('Upscale check: started');
     _upBusy = (async () => {
-      try { do { _upAgain = false; await upPass(); } while (_upAgain && upOn()); }
-      catch (e) { asLog.warn('Upscale check failed: ' + ((e && e.message) || e)); }
-      finally { _upBusy = null; }
+      try { await upPass(); }
+      catch (e) { if (!_upStop) asLog.warn('Upscale check failed: ' + ((e && e.message) || e)); }
+      finally {
+        _upBusy = null;
+        MODEL.forEach(x => { if (x._upPct != null) upProg(x, null); });
+        upBarPaint();
+        const n = MODEL.filter(x => !x._del && isUp(x)).length;
+        if (_upStop) { asLog.info('Upscale check: stopped'); toast('Upscale check stopped'); }
+        else toast(n ? `${n} enlarged ${n === 1 ? 'picture' : 'pictures'} found` : 'No enlarged picture found', 4000);
+      }
     })();
+    upBarPaint('Checking…');
     return _upBusy;
   }
-  // the scan, or as much of it as `ms` allows (Best cover waits for it before choosing)
-  const upSettled = ms => Promise.race([upScan(), new Promise(r => setTimeout(r, ms))]);
+  function upStop() { if (_upBusy) { _upStop = true; upBarPaint('Stopping…'); } }
   async function upPass() {
     const items = MODEL.filter(x => !x._del && !x._pdf && !x._sourcing && x.w > 0 && x.h > 0 && upSrc(x));
     const bigs = items.filter(x => Math.max(x.w, x.h) > UP_MIN);
     if (!bigs.length) return;
     const t0 = Date.now(), hs = new Map();
-    for (const x of items) { if (!upOn()) return; const h = await upHash(x); if (h) hs.set(x, h); }
+    let hi = 0;
+    for (const x of items) { if (_upStop) return; upBarPaint(`Fingerprints ${++hi}/${items.length}`); const h = await upHash(x); if (h) hs.set(x, h); }
     const verdict = new Map();   // unset: not judged; null: genuine; {w, h, of}: enlarged
     const realMin = x => { const v = verdict.get(x); return v ? Math.min(v.w, v.h) : Math.min(x.w, x.h); };
-    for (const B of bigs.filter(x => hs.has(x)).sort((a, b) => Math.min(a.w, a.h) - Math.min(b.w, b.h))) {
-      if (!upOn()) return;
+    const todo = bigs.filter(x => hs.has(x)).sort((a, b) => Math.min(a.w, a.h) - Math.min(b.w, b.h));
+    let bi = 0;
+    for (const B of todo) {
+      if (_upStop) break;
+      upBarPaint(`Checking ${++bi}/${todo.length}`);
       const N = Math.min(B.w, B.h), hB = hs.get(B);
       const copies = items.filter(x => x !== B && hs.has(x) && hamming(hs.get(x), hB) <= SAME_PICTURE && N / realMin(x) >= UP_GAIN);
       if (!copies.length) { (B._upSaid === 'none' ? asLog.debug : asLog.info)(`Upscale check: ${upName(B)} has no smaller copy of the same picture, not judged`); B._upSaid = 'none'; continue; }
       const sizes = [...new Set(copies.map(realMin))].sort((a, b) => b - a), r = upRec(B);
-      let T = null;
+      // progress: the tiles of every round trip not measured before
+      const total = [Math.round(0.9 * N), ...sizes].filter(S => !(String(S) in r.rb)).length * UP_GRID * UP_GRID;
+      let T = null, done = 0;
+      const tick = () => upProg(B, 100 * ++done / total);
       const rb = async S => {
         const k = String(S);
-        if (!(k in r.rb)) { if (!T) T = await upTiles(B); r.rb[k] = await upRb(T, S); upStore(r); }
+        if (!(k in r.rb)) {
+          if (!T) { upProg(B, -1); T = await upTiles(B); upProg(B, 100 * done / total); }
+          r.rb[k] = await upRb(T, S, tick); upStore(r);
+        }
         return r.rb[k];
       };
       try {
@@ -3871,8 +3909,8 @@ Off: nothing is checked or downloaded`)}"><input type="checkbox" class="as-setup
         const at = copies.filter(x => realMin(x) === found).sort((a, b) => (verdict.get(a) ? 1 : 0) - (verdict.get(b) ? 1 : 0))[0], av = verdict.get(at);
         const k = found / N;
         verdict.set(B, { w: Math.round(B.w * k), h: Math.round(B.h * k), of: av ? av.of : { provider: upLabel(at), w: at.w, h: at.h } });
-      } catch (e) { asLog.debug(`Upscale check: ${upName(B)} not measured: ${(e && e.message) || e}`); }
-      finally { T = null; }
+      } catch (e) { if (_upStop) break; asLog.debug(`Upscale check: ${upName(B)} not measured: ${(e && e.message) || e}`); }
+      finally { T = null; upProg(B, null); }
     }
     upApply(verdict);
     asLog.debug(`Upscale check: ${items.length} ${items.length === 1 ? ITEM : ITEMS}, ${bigs.length} over ${UP_MIN} px, done in ${Date.now() - t0} ms`);
@@ -3895,7 +3933,7 @@ Off: nothing is checked or downloaded`)}"><input type="checkbox" class="as-setup
     if (_lb != null && byId(_lb) === x) paintLightbox();
   }
   function upTip(it) { return `Enlarged from a smaller picture\nIts detail goes only to about ${it._realW} × ${it._realH}, the size of the same picture from ${it._upOf ? `${it._upOf.provider} (${it._upOf.w} × ${it._upOf.h})` : 'another source'}. Best cover goes by this size`; }
-  if (mbuTestHooks()) (window.__asTest || (window.__asTest = {})).up = { scan: upScan, settled: upSettled, cache: upCache, isUp,
+  if (mbuTestHooks()) (window.__asTest || (window.__asTest = {})).up = { scan: upScan, stop: upStop, busy: () => !!_upBusy, cache: upCache, isUp,
     items: () => MODEL.filter(x => !x._del).map(x => ({ name: x._fileObj ? x._fileObj.name : String(x.id), w: x.w, h: x.h, realW: x._realW || 0, realH: x._realH || 0, of: x._upOf || null })) };
   // a store's images in the order it gave them, keyed by the store (the link it came from)
   const provKey = x => x._provUrl || x._provider || '';
@@ -8548,6 +8586,11 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   @keyframes as-spin{to{transform:rotate(360deg)}}
   .as-loading{display:flex;align-items:center;justify-content:center;gap:12px;padding:48px 0;color:var(--mbu-text-dim);font:600 13px Arial}
   .as-srcing-lbl{font:600 12px Arial;color:var(--mbu-ok)}
+  .as-upprog{position:absolute;left:0;right:0;bottom:0;z-index:6;display:flex;flex-direction:column;gap:5px;padding:7px 9px 8px;background:var(--mbu-bg);border-top:1px solid var(--mbu-border-soft);pointer-events:none}
+  .as-upprog-lbl{font:600 12px Arial;color:var(--mbu-accent-text)}
+  .as-upprog-bar{display:block;height:4px;border-radius:2px;background:var(--mbu-bg-sunken);overflow:hidden}
+  .as-upprog-bar i{display:block;height:100%;background:var(--mbu-accent);transition:width .2s}
+  .as-btn.as-up.on{border-color:var(--mbu-accent);color:var(--mbu-accent-text)}
   .as-pdfban{position:absolute;right:6px;top:6px;z-index:4;background:#7a3a8f;color:var(--mbu-text-on-accent);font:700 10px/1 Arial;letter-spacing:.5px;padding:3px 7px;border-radius:var(--mbu-radius);box-shadow:0 1px 3px rgba(0,0,0,.25);pointer-events:none}
   .as-newban{position:absolute;top:8px;right:-26px;transform:rotate(45deg);background:#1f9d6b;color:var(--mbu-text-on-accent);font:700 10px Arial;letter-spacing:1px;padding:2px 26px;z-index:5;box-shadow:0 1px 3px rgba(0,0,0,.3);pointer-events:none}
   /* #249 provider favicon chip, bottom-left of a newly-sourced cover */
