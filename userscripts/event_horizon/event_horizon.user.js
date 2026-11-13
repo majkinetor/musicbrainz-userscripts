@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.030000
+// @version      2026.11.14.040000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3094,8 +3094,11 @@ h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25
 .by{font-size:16px;font-weight:600}
 .hist{margin-top:24px}.hbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}.hbar .lb{color:var(--muted);font-size:13px}
 .hist>.hbar{position:sticky;top:var(--eh-pin-h,0px);z-index:25;padding:8px 10px;background:var(--eh-bar);box-shadow:0 -12px 0 var(--eh-bar);transition:top .18s}
-/* an open edit's header pins under the Group bar while its body scrolls past */
-.hist .hed[open]>summary{position:sticky;top:calc(var(--eh-pin-h,0px) + var(--eh-hb,0px) - 1px);z-index:22;background:var(--eh-bar);transition:top .18s}.hist .hed[open]>summary:hover{background:linear-gradient(var(--line),var(--line)),var(--eh-bar)}
+/* an open group's header pins under the Group bar, an open run's under it and an open edit's under those, so a group's
+   votes stay in reach while its edits scroll past (majkinetor) */
+.hist .hgrp.open>.hgh{position:sticky;top:calc(var(--eh-pin-h,0px) + var(--eh-hb,0px) - 1px);z-index:24;background:linear-gradient(var(--surface),var(--surface)),var(--eh-bar);transition:top .18s}
+.hist .hrun[open]>summary{position:sticky;top:calc(var(--eh-pin-h,0px) + var(--eh-hb,0px) + var(--eh-gh,0px) - 2px);z-index:23;background:linear-gradient(var(--surface),var(--surface)),var(--eh-bar);transition:top .18s}.hist .hrun[open]>summary:hover{background:linear-gradient(var(--line),var(--line)),linear-gradient(var(--surface),var(--surface)),var(--eh-bar)}
+.hist .hed[open]>summary{position:sticky;top:calc(var(--eh-pin-h,0px) + var(--eh-hb,0px) + var(--eh-gh,0px) + var(--eh-rh,0px) - 3px);z-index:22;background:var(--eh-bar);transition:top .18s}.hist .hed[open]>summary:hover{background:linear-gradient(var(--line),var(--line)),var(--eh-bar)}
 .hseg{display:inline-flex;border:1px solid var(--border);border-radius:9px;overflow:hidden}.hseg button{font:500 13px Manrope,system-ui,sans-serif;height:30px;padding:0 12px;border:0;border-right:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}.hseg button:last-child{border-right:0}.hseg button.on{background:var(--accent);color:#fff}
 .hchip{font:500 12px Manrope,system-ui,sans-serif;padding:3px 9px;border-radius:99px;border:1px solid var(--border);background:var(--chip);color:var(--chip-text);cursor:pointer}.hchip.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .hday{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
@@ -10407,12 +10410,14 @@ function toolsEdge(t) {
     const m = t.scrollWidth - t.clientWidth, v = m < 2 ? '' : (t.scrollLeft > 1 ? 'l' : '') + (t.scrollLeft < m - 1 ? 'r' : '');
     if (t.dataset.ovr !== v) t.dataset.ovr = v;
 }
-// an open edit's header pins under the history's Group bar, so it needs that bar's height, kept as it wraps
+// an open group's, run's and edit's headers pin under the history's Group bar and each other, so each needs the heights
+// above it, kept as they wrap: the bar's on the list, a group header's on its group, a run header's on its run
 let hbRo = null;
+const hbVar = t => t.matches('.hbar') ? '--eh-hb' : t.matches('.hgh') ? '--eh-gh' : '--eh-rh';
 function hbWatch(app) {
-    if (!hbRo) hbRo = new ResizeObserver(es => { for (const e of es) if (e.target.parentNode) e.target.parentNode.style.setProperty('--eh-hb', e.target.getBoundingClientRect().height + 'px'); });
+    if (!hbRo) hbRo = new ResizeObserver(es => { for (const e of es) if (e.target.parentNode) e.target.parentNode.style.setProperty(hbVar(e.target), e.target.getBoundingClientRect().height + 'px'); });
     hbRo.disconnect();
-    const b = app.querySelector('.hist>.hbar'); if (b) { b.parentNode.style.setProperty('--eh-hb', b.getBoundingClientRect().height + 'px'); hbRo.observe(b); }
+    app.querySelectorAll('.hist>.hbar,.hgrp.open>.hgh,.hgrp.open .hrun>summary').forEach(b => { b.parentNode.style.setProperty(hbVar(b), b.getBoundingClientRect().height + 'px'); hbRo.observe(b); });
 }
 function shWatch(app) {
     if (!shRo) {
