@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.170100
+// @version      2026.11.13.180000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3099,7 +3099,7 @@ h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25
 .hgh{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:9px 12px;cursor:pointer}.hgi{display:flex;flex:1 1 280px;min-width:0;flex-wrap:wrap;align-items:center;gap:8px}.hga{display:flex;flex:none;align-items:center;gap:12px;margin-left:auto}.hgh .t{font-weight:700}.hgh .m{color:var(--muted);font-size:12px}.hgh .sp{flex:1}.hgh .cv{transition:transform .15s;color:var(--muted)}.hgrp.open .hgh .cv{transform:rotate(90deg)}
 .hav{width:26px;height:26px;border-radius:50%;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
 .htc{font-size:11px;padding:1px 8px;border-radius:99px;background:var(--chip);color:var(--chip-text)}
-.hbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:-3px 0 -3px auto;font-size:13px;align-self:center}.hbar .hbr{width:60px!important}.hbar~.id{margin-left:0!important;align-self:center}.hbar .htl{display:flex;align-items:center;gap:8px;color:var(--muted);font-variant-numeric:tabular-nums}.hbar .hbr{display:flex;width:90px;height:6px;border-radius:3px;overflow:hidden;background:var(--border)}.hbar .hbr i{display:block;height:100%}.hbar .hvote{margin:0 0 0 auto}.hseg{gap:0!important;border:1px solid var(--border);border-radius:4px;overflow:hidden}.hseg button{border:0!important;border-radius:0!important;border-right:1px solid var(--border)!important;min-height:24px!important;padding:1px 10px!important;font-size:13px!important;display:inline-flex;gap:6px;align-items:center}.hseg button:last-child{border-right:0!important}.hseg .v1{color:#2e8b57}.hseg .v0{color:#c0392b}.hseg .v-1{color:var(--muted)}.hseg button.on{color:#fff}.hseg .c{font-weight:400;opacity:.85}.hbar a.hcx2{display:inline-flex;align-items:center;min-height:24px;padding:1px 10px;box-sizing:border-box;border:1px solid var(--border);border-radius:4px;color:#c0392b;font-weight:600;font-size:13px;text-decoration:none}.hbar a.hcx2.busy{opacity:.5;pointer-events:none}.hbar a.hcx2:hover{border-color:#c0392b;background:#c0392b;color:#fff}.hed[data-lean]{box-shadow:inset 3px 0 var(--lean)}.hed[data-lean=yes]{--lean:#2e8b57}.hed[data-lean=no]{--lean:#c0392b}.hed[data-lean=tie]{--lean:var(--border)}.hvote{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 10px}.hgh .hgv{margin:0;gap:4px;flex-wrap:nowrap;white-space:nowrap}.hgh .hgv button{min-height:26px;padding:2px 8px;border-radius:4px}.hvote .lb{color:var(--muted);font-weight:600;margin-right:4px}.hvote button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;font-weight:600;cursor:pointer}.hvote button:hover{border-color:var(--accent)}.hvote button[disabled]{opacity:.5;cursor:default}.hvote button.on{color:#fff;border-color:transparent}.hvote .v1.on{background:#2e8b57}.hvote .v0.on{background:#c0392b}.hvote .v-1.on{background:#888}.hvote .v-2.on{background:var(--accent)}.hvote button.busy{position:relative;opacity:1;color:transparent;border-color:var(--accent)}.hvote button.busy::after{content:"";position:absolute;inset:0;margin:auto;width:14px;height:14px;box-sizing:border-box;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:hv-spin .7s linear infinite}@keyframes hv-spin{to{transform:rotate(360deg)}}.eh-cf :is(.eh-cf-no,.eh-cf-ok){min-height:30px;padding:4px 16px;border-radius:9px;border:1px solid var(--mbu-border);background:transparent;color:var(--mbu-text);font:inherit;font-weight:600;cursor:pointer}.eh-cf :is(.eh-cf-no,.eh-cf-ok):is(:hover,:focus-visible){border-color:var(--mbu-accent);outline:none}.eh-cf .eh-cf-ok{background:var(--mbu-accent);border-color:transparent;color:#fff}.eh-cf .eh-cx-ok{background:#c0392b}.eh-cf textarea{width:100%;box-sizing:border-box;min-height:90px;margin:0 0 14px;padding:8px 10px;border-radius:8px;border:1px solid var(--mbu-border);background:transparent;color:var(--mbu-text);font:inherit;resize:vertical;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.eh-cf p a{color:var(--mbu-accent)}.eh-cf .eh-cx-hd{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px;padding:8px 10px;border:1px solid var(--mbu-border);border-radius:8px;font-size:13px}.eh-cf .eh-cx-hd svg{width:16px;height:16px}.eh-cf .mmth-wrap{margin:0 0 14px;max-width:none;gap:10px}.eh-cf .mmth-wrap textarea{margin:0}.eh-cf .mmth-vsep{display:none}.eh-cf textarea:focus{outline:none;border-color:var(--mbu-accent)}
+.hbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:-3px 0 -3px auto;font-size:13px;align-self:center}.hbar .hbr{width:60px!important}.hbar~.id{margin-left:0!important;align-self:center}.hbar .htl{display:flex;align-items:center;gap:8px;color:var(--muted);font-variant-numeric:tabular-nums}.hbar .hbr{display:flex;width:90px;height:6px;border-radius:3px;overflow:hidden;background:var(--border)}.hbar .hbr i{display:block;height:100%}.hbar .hvote{margin:0 0 0 auto}.hseg{gap:0!important;border:1px solid var(--border);border-radius:4px;overflow:hidden}.hseg button{border:0!important;border-radius:0!important;border-right:1px solid var(--border)!important;min-height:24px!important;padding:1px 10px!important;font-size:13px!important;display:inline-flex;gap:6px;align-items:center}.hseg button:last-child{border-right:0!important}.hseg .v1{color:#2e8b57}.hseg .v0{color:#c0392b}.hseg .v-1{color:var(--muted)}.hseg button.on{color:#fff}.hseg .c{font-weight:400;opacity:.85}:is(.hbar a,button).hcx2{background:none;cursor:pointer;font-family:inherit;flex:none;margin-left:auto;display:inline-flex;align-items:center;min-height:24px;padding:1px 10px;box-sizing:border-box;border:1px solid var(--border);border-radius:4px;color:#c0392b;font-weight:600;font-size:13px;text-decoration:none}:is(.hbar a,button).hcx2.busy{opacity:.5;pointer-events:none}:is(.hbar a,button).hcx2:hover{border-color:#c0392b;background:#c0392b;color:#fff}.hed[data-lean]{box-shadow:inset 3px 0 var(--lean)}.hed[data-lean=yes]{--lean:#2e8b57}.hed[data-lean=no]{--lean:#c0392b}.hed[data-lean=tie]{--lean:var(--border)}.hvote{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 10px}.hgh .hgv{margin:0;gap:4px;flex-wrap:nowrap;white-space:nowrap}.hgh .hgv button{min-height:26px;padding:2px 8px;border-radius:4px}.hvote .lb{color:var(--muted);font-weight:600;margin-right:4px}.hvote button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;font-weight:600;cursor:pointer}.hvote button:hover{border-color:var(--accent)}.hvote button[disabled]{opacity:.5;cursor:default}.hvote button.on{color:#fff;border-color:transparent}.hvote .v1.on{background:#2e8b57}.hvote .v0.on{background:#c0392b}.hvote .v-1.on{background:#888}.hvote .v-2.on{background:var(--accent)}.hvote button.busy{position:relative;opacity:1;color:transparent;border-color:var(--accent)}.hvote button.busy::after{content:"";position:absolute;inset:0;margin:auto;width:14px;height:14px;box-sizing:border-box;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:hv-spin .7s linear infinite}@keyframes hv-spin{to{transform:rotate(360deg)}}.eh-cf :is(.eh-cf-no,.eh-cf-ok){min-height:30px;padding:4px 16px;border-radius:9px;border:1px solid var(--mbu-border);background:transparent;color:var(--mbu-text);font:inherit;font-weight:600;cursor:pointer}.eh-cf :is(.eh-cf-no,.eh-cf-ok):is(:hover,:focus-visible){border-color:var(--mbu-accent);outline:none}.eh-cf .eh-cf-ok{background:var(--mbu-accent);border-color:transparent;color:#fff}.eh-cf .eh-cx-ok{background:#c0392b}.eh-cf textarea{width:100%;box-sizing:border-box;min-height:90px;margin:0 0 14px;padding:8px 10px;border-radius:8px;border:1px solid var(--mbu-border);background:transparent;color:var(--mbu-text);font:inherit;resize:vertical;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.eh-cf p a{color:var(--mbu-accent)}.eh-cf .eh-cx-hd{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px;padding:8px 10px;border:1px solid var(--mbu-border);border-radius:8px;font-size:13px}.eh-cf .eh-cx-hd svg{width:16px;height:16px}.eh-cf .mmth-wrap{margin:0 0 14px;max-width:none;gap:10px}.eh-cf .mmth-wrap textarea{margin:0}.eh-cf .mmth-vsep{display:none}.eh-cf textarea:focus{outline:none;border-color:var(--mbu-accent)}
 .hdt a:has(>img),.hdt a:has(>span>img){font-size:0}
 .hnadd{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:10px 0 4px}.hnadd textarea{width:100%;box-sizing:border-box;min-height:70px;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;resize:vertical}.hnadd textarea:focus{outline:none;border-color:var(--accent)}.hnadd > button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--accent);background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer}.hnadd > button[disabled]{opacity:.5}
 /* the note form stays one button until clicked (majkinetor) */
@@ -7704,12 +7704,12 @@ function ehConfirm(msg, ok = 'OK') {
     });
 }
 // MusicBrainz's cancel page only asks for an optional note: ask here, then post its form
-function histCancelAsk(id, hd) {
+function histCancelAsk(id, hd, n = 1) {
     return new Promise(res => {
         const previous = document.activeElement, ov = document.createElement('div');
         ov.className = 'mbu-ov eh-cf';
-        ov.innerHTML = '<div class="mbu-ov-panel mbu-ui" role="dialog" aria-modal="true" aria-label="Cancel edit" style="width:min(640px,calc(100vw - 32px))"><div class="mbu-ov-body" style="padding:18px 20px"><p style="margin:0 0 12px">Cancel edit <a target="_blank" rel="noopener"></a>? This cannot be undone.</p><div class="eh-cx-hd"></div><textarea class="edit-note" placeholder="Edit note (optional), such as a link to another edit"></textarea><div style="display:flex;justify-content:flex-end;gap:8px"><button type="button" class="eh-cf-no">Keep</button><button type="button" class="eh-cf-ok eh-cx-ok submit">Cancel edit</button></div></div></div>';
-        const il = ov.querySelector('p a'); il.href = `${MB}/edit/${id}`; il.textContent = '#' + id;
+        ov.innerHTML = '<div class="mbu-ov-panel mbu-ui" role="dialog" aria-modal="true" aria-label="Cancel edit" style="width:min(640px,calc(100vw - 32px))"><div class="mbu-ov-body" style="padding:18px 20px"><p style="margin:0 0 12px">' + (n > 1 ? 'Cancel ' + n + ' edits? This cannot be undone.' : 'Cancel edit <a target="_blank" rel="noopener"></a>? This cannot be undone.') + '</p><div class="eh-cx-hd"></div><textarea class="edit-note" placeholder="Edit note (optional), such as a link to another edit"></textarea><div style="display:flex;justify-content:flex-end;gap:8px"><button type="button" class="eh-cf-no">Keep</button><button type="button" class="eh-cf-ok eh-cx-ok submit">' + (n > 1 ? 'Cancel ' + n + ' edits' : 'Cancel edit') + '</button></div></div></div>';
+        const il = ov.querySelector('p a'); if (il) { il.href = `${MB}/edit/${id}`; il.textContent = '#' + id; }
         const hb = ov.querySelector('.eh-cx-hd'); if (hd) { const c = hd.cloneNode(true); c.querySelectorAll('.hbar,.id').forEach(n => n.remove()); hb.append(...c.childNodes); } else hb.remove();
         const ta = ov.querySelector('textarea');
         const done = v => { ov.remove(); removeEventListener('keydown', key, true); if (previous && previous.isConnected) previous.focus(); res(v); };
@@ -7718,14 +7718,30 @@ function histCancelAsk(id, hd) {
         addEventListener('keydown', key, true); document.body.appendChild(ov); ta.focus();
     });
 }
+const histCanCancel = e => e.st === 'op' && !!(e.cancel || e.mine);
 async function histCancel(a) {
     const d = data, x = a.closest('.hbar'), id = x && x.dataset.id, e = d && d.edits && d.edits.find(y => String(y.id) === id);
     if (!e || e.cancelling) return;
     const note = await histCancelAsk(e.id, x.closest('summary')); if (note == null || data !== d) return;
-    e.cancelling = true; a.classList.add('busy');
+    if (!await histCancelPost(e, note, a)) toast('MusicBrainz didn\'t cancel the edit');
+}
+// a run's or a group's open edits of yours, cancelled one after another with one note
+async function histGroupCancel(b) {
+    const d = data, ids = b.dataset.hgcx.split(','), es = d && d.edits ? d.edits.filter(e => ids.includes(String(e.id)) && histCanCancel(e) && !e.cancelling) : [];
+    if (!es.length) return;
+    const note = await histCancelAsk(es[0].id, es.length === 1 ? b.closest('summary') : null, es.length); if (note == null || data !== d) return;
+    b.classList.add('busy'); b.disabled = true;
+    let bad = 0; for (const e of es) { if (data !== d) return; if (!await histCancelPost(e, note)) bad++; }
+    LOG.info(`Group cancel: ${es.length - bad} of ${es.length} edits cancelled`);
+    if (bad) { toast(`MusicBrainz didn't cancel ${bad} of ${es.length} edits`); b.classList.remove('busy'); b.disabled = false; } else b.remove();
+}
+async function histCancelPost(e, note, a) {
+    if (e.cancelling) return false;
+    e.cancelling = true; if (a) a.classList.add('busy');
+    let ok = false;
     try {
         LOG.keep();
-        const url = new URL(a.getAttribute('href'), MB).href, r = await mbnFetch(url, { credentials: 'include' });
+        const url = new URL(e.cancel || `${MB}/edit/${e.id}/cancel`, MB).href, r = await mbnFetch(url, { credentials: 'include' });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         const doc = new DOMParser().parseFromString(await r.text(), 'text/html'), form = [...doc.querySelectorAll('#content form')].find(f => f.querySelector('textarea')) || doc.querySelector('#content form');
         if (!form) throw new Error('no cancel form');
@@ -7734,14 +7750,15 @@ async function histCancel(a) {
         const sb = form.querySelector('button[name],input[type=submit][name]'); if (sb) fd.set(sb.name, sb.value || '1');
         const p = await mbnFetch(new URL(form.getAttribute('action') || url, url).href, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: fd });
         if (!p.ok) throw new Error('HTTP ' + p.status);
-        e.st = 'cx'; e.can = false; e.cancel = ''; e.mine = false; kpWrote(); LOG.info('Cancelled edit #' + e.id);
-        const dt = x.closest('details.hed'), st = dt && dt.querySelector(':scope>summary .hst');
+        e.st = 'cx'; e.can = false; e.cancel = ''; e.mine = false; kpWrote(); LOG.info('Cancelled edit #' + e.id); ok = true;
+        const x = document.querySelector(`#app .hbar[data-id="${e.id}"]`), dt = x && x.closest('details.hed'), st = dt && dt.querySelector(':scope>summary .hst');
         if (dt) { dt.dataset.st = 'cx'; delete dt.dataset.lean; }
         if (st) { st.className = 'hst cx'; st.textContent = H_ST.cx; }
-        x.remove();
-    } catch (err) { LOG.err('Cancelling failed: ' + err.message); toast('MusicBrainz didn\'t cancel the edit'); a.classList.remove('busy'); }
-    e.cancelling = false;
+        if (x) x.remove();
+    } catch (err) { LOG.err(`Cancelling #${e.id} failed: ` + err.message); if (a) a.classList.remove('busy'); }
+    e.cancelling = false; return ok;
 }
+const histGroupCx = es => { const xs = es.filter(histCanCancel); return xs.length > 1 ? `<button type="button" class="hcx2 hgcx" data-hgcx="${xs.map(e => e.id).join(',')}" data-tip="Cancel your ${xs.length} open edits here, with one note">Cancel ${xs.length} edits</button>` : ''; };
 function openImageGallery() {
     const d = data, g = d.g, xs = g.imgs || [];
     if (!xs.length || document.getElementById('eh-image-gallery')) return;
@@ -12647,6 +12664,7 @@ async function histVoteSend(b) {
 }
 document.addEventListener('click', ev => {
     const cx = ehOn && data && data.kind === 'hist' && ev.target.closest('.hbar a.hcx2'); if (cx && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.button) { ev.preventDefault(); histCancel(cx); return; }
+    const gcx = ehOn && data && data.kind === 'hist' && ev.target.closest('[data-hgcx]'); if (gcx) { ev.preventDefault(); ev.stopPropagation(); histGroupCancel(gcx); return; }
     const b = ehOn && data && data.kind === 'hist' && ev.target.closest('[data-hvote],[data-hgvote]'); if (!b) return;
     ev.preventDefault(); histVoteSend(b);
 });
@@ -12662,13 +12680,13 @@ function histRuns(es) {
         // a group of one edit, or of one run, opens on it
         if (r.length === 1) return es.length === 1 ? histEdit(r[0], gk).replace('<details class="hed"', '<details class="hed" open') : histEdit(r[0], gk);
         const s = !g && histShared(r), k = gk || (s && hnKey(s));
-        return `<details class="hrun"${runs.length === 1 ? " open" : ""}><summary><span class="hed"><span class="d">${histSpan(r[r.length - 1].t, r[0].t)}</span></span>${histIco(r[0].tk)}<span class="hty">${esc(r[0].type)}</span><span class="n">×${r.length}</span>${data.grp !== 'burst' && data.grp !== 'editor' && r.every(e => e.ed === r[0].ed) ? `<span class="hwho">${r[0].ed ? `<a href="${MB}/user/${encodeURIComponent(r[0].ed)}">${esc(r[0].ed)}</a>` : 'Editor hidden'}</span>` : ''}${histPills(r)}${s || g ? `<span class="hnc" data-tip="1 edit note, on every edit">💬 1</span><span class="hnp">${esc((s || g).text.slice(0, 140))}</span>` : ''}</summary>${s ? `<div class="hshr">${histNote(s)}</div>` : ''}${r.map(e => histEdit(e, k)).join('')}</details>`;
+        return `<details class="hrun"${runs.length === 1 ? " open" : ""}><summary><span class="hed"><span class="d">${histSpan(r[r.length - 1].t, r[0].t)}</span></span>${histIco(r[0].tk)}<span class="hty">${esc(r[0].type)}</span><span class="n">×${r.length}</span>${data.grp !== 'burst' && data.grp !== 'editor' && r.every(e => e.ed === r[0].ed) ? `<span class="hwho">${r[0].ed ? `<a href="${MB}/user/${encodeURIComponent(r[0].ed)}">${esc(r[0].ed)}</a>` : 'Editor hidden'}</span>` : ''}${histPills(r)}${s || g ? `<span class="hnc" data-tip="1 edit note, on every edit">💬 1</span><span class="hnp">${esc((s || g).text.slice(0, 140))}</span>` : ''}${histGroupCx(r)}</summary>${s ? `<div class="hshr">${histNote(s)}</div>` : ''}${r.map(e => histEdit(e, k)).join('')}</details>`;
     }).join('');
 }
 function histGroup(key, title, es, av, nm) {
     const d = data, ents = {}; es.forEach(e => { const k = histEnt(e.tk); ents[k] = (ents[k] || 0) + 1; });
     const when = histSpan(es[es.length - 1].t, es[0].t);
-    return `<div class="hgrp${d.open.has(key) ? ' open' : ''}" data-hg="${esc(key)}"><div class="hgh"><div class="hgi">${av ? `<span class="hav" style="background:hsl(${histHue(nm || '')} 45% 45%)">${esc((nm || '?')[0].toUpperCase())}</span>` : ''}<span class="t">${title}</span><span class="m">${es.length} edit${es.length > 1 ? 's' : ''}${d.grp === 'burst' ? ' · ' + when : ''}</span><span class="sp"></span>${Object.entries(ents).map(([k, c]) => `<span class="htc">${c > 1 ? c + ' ' : ''}${esc(k)}</span>`).join('')}${histPills(es)}</div><div class="hga">${histGroupVote(es)}<span class="cv">▸</span></div></div><div class="hgb">${d.open.has(key) ? histRuns(es) : ''}</div></div>`;
+    return `<div class="hgrp${d.open.has(key) ? ' open' : ''}" data-hg="${esc(key)}"><div class="hgh"><div class="hgi">${av ? `<span class="hav" style="background:hsl(${histHue(nm || '')} 45% 45%)">${esc((nm || '?')[0].toUpperCase())}</span>` : ''}<span class="t">${title}</span><span class="m">${es.length} edit${es.length > 1 ? 's' : ''}${d.grp === 'burst' ? ' · ' + when : ''}</span><span class="sp"></span>${Object.entries(ents).map(([k, c]) => `<span class="htc">${c > 1 ? c + ' ' : ''}${esc(k)}</span>`).join('')}${histPills(es)}</div><div class="hga">${histGroupVote(es)}${histGroupCx(es)}<span class="cv">▸</span></div></div><div class="hgb">${d.open.has(key) ? histRuns(es) : ''}</div></div>`;
 }
 function histPage(app, d) {
     const r = d.rel, rid = histRid(d.id), src = histSrc(d.id), acts = (rid ? backA(rid) + actionRow(relActs(r), 'release', rid, 'edits') : '') + SRCH();
