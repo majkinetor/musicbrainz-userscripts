@@ -98,3 +98,18 @@ test('the header\'s pencil edits the tags in place: add, withdraw, done', { tag:
   await page.click('button[data-tgin="close"]');
   check(await until(() => page.locator('.tgi-in').count(), n => n === 0) === 0, 'Done closes the editor');
 });
+
+// the header redraws from markup it remembers (#1029): with nothing changed, ✓ must still put the tags back, every time
+test("the header's tag editor closes with nothing changed", { tag: '@sandbox' }, async ({ page, inject }) => {
+  await page.goto(`https://test.musicbrainz.org/artist/${AR}`);
+  await inject('event_horizon');
+  for (const round of [1, 2]) {
+    await until(() => page.locator('button.eh-edit[data-tgin="open"]').count(), n => n > 0);
+    await page.click('button.eh-edit[data-tgin="open"]');
+    await page.locator('.tgi-in').waitFor();
+    check(await until(() => page.locator('.tgi .tgi-n:not(.tgi-ph)').count(), n => n > 0) > 0, `the tags load (${round})`);
+    await page.click('button[data-tgin="close"]');
+    check(await until(() => page.locator('.tgi-in').count(), n => n === 0) === 0, `Done closes the editor (${round})`);
+    check(await page.locator('button.eh-edit[data-tgin="open"]').count() === 1, `the pencil is back (${round})`);
+  }
+});
