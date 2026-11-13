@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.104000
+// @version      2026.11.13.120000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4523,6 +4523,8 @@ const edition = e => ({
     counts: (e.media || []).map(m => m['track-count'] || 0),
     events: (e['release-events'] || []).map(v => ({ date: v.date || '', area: v.area ? v.area.name.replace(/^\[(.*)\]$/, '$1') : '', iso: v.area && ((v.area['iso-3166-1-codes'] || [])[0] || v.area.name.replace(/^\[(.*)\]$/, '$1')) })),
     ac: e['artist-credit'] || [], links: urlsOf(e.relations || []),
+    // its release group's types, on a label's or a recording's releases (inc=release-groups, in the same request)
+    rgType: e['release-group'] ? [e['release-group']['primary-type'], ...(e['release-group']['secondary-types'] || [])].filter(Boolean).join(' + ') : '',
     li: (e['label-info'] || []).map(l => ({ id: l.label && l.label.id, name: l.label && l.label.name !== '[no label]' ? l.label.name : '', catno: l['catalog-number'] && !/^\[none\]$/i.test(l['catalog-number']) ? l['catalog-number'] : '' })).filter(l => l.name || l.catno),
 });
 // The edition tile's tooltip: the release info's look, small (majkinetor, from a mock)
@@ -5129,7 +5131,7 @@ async function edToggle(id) {
 }
 // flat: a paged list loads in MusicBrainz's order, so status groups would grow above the reader
 // the releases table's sortable columns: key, heading, the value it sorts by
-const ED_COLS = [['title', 'Release', e => e.title || ''], ['artist', 'Artist', e => (e.ac || []).map(c => (c.name || '') + (c.joinphrase || '')).join('')], ['format', 'Format', e => fmtSummary(e.formats)],
+const ED_COLS = [['title', 'Release', e => e.title || ''], ['artist', 'Artist', e => (e.ac || []).map(c => (c.name || '') + (c.joinphrase || '')).join('')], ['format', 'Format', e => fmtSummary(e.formats)], ['rgtype', 'Type', e => e.rgType || '\uffff'],
     ['tracks', 'Tracks', e => String(e.counts.reduce((a, b) => a + (+b || 0), 0)).padStart(5, '0')], ['date', 'Country / date', e => e.date || '9'], ['label', 'Label', e => (e.li[0] || {}).name || '\uffff'],
     ['catno', 'Catalog#', e => (e.li[0] || {}).catno || '\uffff'], ['barcode', 'Barcode', e => e.barcode || '\uffff'],
     ['status', 'Status', e => e.status || '\uffff'], ['packaging', 'Packaging', e => e.packaging || '\uffff'], ['lang', 'Language / script', e => (e.lang || []).join(' ') || '\uffff'], ['comment', 'Comment', e => e.disambig || '\uffff']];
@@ -5145,6 +5147,8 @@ function colState(sc) {
     const { keys, off } = COLS[sc], saved = S.colPick[sc] || {}, known = (saved.order || []).filter(k => keys.includes(k)), order = [...known];
     keys.forEach((k, i) => { if (!order.includes(k)) order.splice(i ? order.indexOf(keys[i - 1]) + 1 : 0, 0, k); });
     if (sc === 'ed' && edNoLinks) order.splice(order.indexOf('links'), 1);
+    // Type is the release group's: a release group's own releases all share it, and only a label's or a recording's fetch it
+    if (sc === 'ed' && !(data && (data.kind === 'label' || data.kind === 'recording'))) order.splice(order.indexOf('rgtype'), 1);
     return { order, off: new Set(keys.slice(1).filter(k => known.includes(k) ? (saved.off || []).includes(k) : off.includes(k))) };
 }
 const colKeep = (sc, order, off) => { S.colPick = { ...S.colPick, [sc]: { order, off: [...off] } }; };
@@ -5225,6 +5229,7 @@ function edTable(es, curId, flat, part) {
                 title: [`<a class="${longC(e.title)}"${longT(e.title)} href="${esc(relUrl(e.id))}">${esc(e.title)}</a>${e.disambig ? ` <span class="sub">(${esc(e.disambig)})</span>` : ''}`],
                 artist: [acHtml(e.ac)],
                 format: [esc(fmtSummary(e.formats))],
+                rgtype: [esc(e.rgType || '')],
                 tracks: [`<button class="ed-tr" type="button" data-edtr="${e.id}" aria-expanded="${edOpen.has(e.id)}" data-tip="${edOpen.has(e.id) ? 'Hide' : 'Show'} the tracklist&#10;Right-click: ${edOpen.has(e.id) ? 'hide' : 'show'} every row's tracklist">${e.counts.join(' + ')}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>`, 'num'],
                 date: [evCell(e)],
                 label: [e.li.map(l => `<div>${l.name ? entA('label', l.id, l.name) : ''}</div>`).join('')],
@@ -7856,7 +7861,7 @@ function label(l) {
     };
 }
 async function loadLabel(id, step = () => {}) {
-    const eds = wsk(`release?label=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, noSec(`release?label=${id}&inc=media+labels+artist-credits+url-rels&limit=100`));
+    const eds = wsk(`release?label=${id}&inc=media+labels+artist-credits+url-rels+release-groups&limit=100`).then(x => { step('releases'); return x; }, noSec(`release?label=${id}&inc=media+labels+artist-credits+url-rels+release-groups&limit=100`));
     const wiki = wikiOf('label', id);
     const gP = wsk(`label/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`).then(l => { step('label'); const g = label(l); areaFill(g, [g.area]); return g; });
     const img = gP.then(g => artistImage(id, g.rels)).then(x => { step('logo'); return x; });
@@ -7975,7 +7980,7 @@ function recording(x) {
     };
 }
 async function loadRecording(id, step = () => {}) {
-    const eds = wsk(`release?recording=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, noSec(`release?recording=${id}&inc=media+labels+artist-credits+url-rels&limit=100`));
+    const eds = wsk(`release?recording=${id}&inc=media+labels+artist-credits+url-rels+release-groups&limit=100`).then(x => { step('releases'); return x; }, noSec(`release?recording=${id}&inc=media+labels+artist-credits+url-rels+release-groups&limit=100`));
     const gP = wsk(`recording/${id}?inc=artist-credits+isrcs+aliases+genres+tags+ratings+annotation+artist-rels+work-rels+url-rels`).then(x => { step('recording'); return recording(x); });
     // the works' own writers: one request per work, the first five
     const wk = gP.then(g => Promise.all(g.works.slice(0, 5).map(w => wsk(`work/${w.id}?inc=artist-rels`).then(y => { w.cr = creditsOf(y.relations || []); }, () => {})))).then(() => { step('works'); return true; });
@@ -9231,7 +9236,7 @@ const FLT_TEXT = { dg: g => [g.title, g.disambiguation], ed: e => [e.title, e.di
 const FLT_COLS = {
     dg: [['title', g => g.title], ['artist', g => acText(g['artist-credit'] || [])], ['type', g => [g['primary-type'], ...(g['secondary-types'] || [])].join(' ')],
         ['date', g => g['first-release-date']], ['year', g => yearOf(g['first-release-date'])], ['rating', g => String(starsShown('release_group', g.id, g.rating))]],
-    ed: [['release', e => e.title], ['title', e => e.title], ['artist', e => acText(e.ac)], ['format', e => e.formats.join(' ')], ['tracks', e => String(e.counts.reduce((a, b) => a + (+b || 0), 0))],
+    ed: [['release', e => e.title], ['title', e => e.title], ['artist', e => acText(e.ac)], ['format', e => e.formats.join(' ')], ['type', e => e.rgType], ['tracks', e => String(e.counts.reduce((a, b) => a + (+b || 0), 0))],
         ['country', e => e.where.join(' ')], ['date', e => e.date], ['year', e => yearOf(e.date)], ['label', e => e.labels.join(' ')], ['catno', e => e.li.map(l => l.catno).join(' ')],
         ['barcode', e => e.barcode], ['status', e => e.status], ['packaging', e => e.packaging], ['language', e => (e.lang || []).join(' ')], ['comment', e => e.disambig]],
 };
@@ -9313,7 +9318,7 @@ const fltSaved = sc => { const key = 'flt-' + sc, f = FLT[sc], set = f.q.trim() 
 const total0 = x => x['release-group-count'] || (x['release-groups'] || []).length;
 // a heading's funnel in the discography and the releases: "column:" added to the filter box, ready for the value
 const fFun = (sc, k, n) => k ? `<button type="button" class="tq-col" data-ffun="${sc}\t${k}" aria-label="Filter by ${n}" data-tip="Filter by ${n}"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button>` : '';
-const DG_FUN = { title: 'title', artist: 'artist', date: 'date', rating: 'rating' }, ED_FUN = { title: 'release', artist: 'artist', format: 'format', tracks: 'tracks', date: 'date', label: 'label', catno: 'catno', barcode: 'barcode', status: 'status', packaging: 'packaging', lang: 'language', comment: 'comment' };
+const DG_FUN = { title: 'title', artist: 'artist', date: 'date', rating: 'rating' }, ED_FUN = { title: 'release', artist: 'artist', format: 'format', rgtype: 'type', tracks: 'tracks', date: 'date', label: 'label', catno: 'catno', barcode: 'barcode', status: 'status', packaging: 'packaging', lang: 'language', comment: 'comment' };
 const DG_ORDER = ['Album', 'EP', 'Single', 'Broadcast', 'Other'];
 function discoHtml(d) {
     const x = d.discX;
@@ -10269,7 +10274,7 @@ async function lmMore(k) {
 async function edMore(d) {
     if (d.edCount <= d.editions.length) return;
     const id = (d.rel || d.g).id, q = (d.kind === 'label' ? 'label=' : d.kind === 'recording' ? 'recording=' : 'release-group=') + id;
-    const x = await ws(`release?${q}&inc=media+labels+artist-credits+url-rels&limit=100&offset=${d.editions.length}`);
+    const x = await ws(`release?${q}&inc=media+labels+artist-credits+url-rels${d.kind === 'label' || d.kind === 'recording' ? '+release-groups' : ''}&limit=100&offset=${d.editions.length}`);
     if (data !== d) return;
     const seen = new Set(d.editions.map(e => e.id));
     const add = (x.releases || []).map(edition).filter(e => !seen.has(e.id));
