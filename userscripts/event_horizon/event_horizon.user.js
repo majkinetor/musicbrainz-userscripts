@@ -4628,8 +4628,8 @@ const EXTRA = {
 };
 const MONO = { amazon: 'a', allmusic: 'AM', mora: 'mo', ototoy: 'OT', pandora: 'P', jaxsta: 'Jx', ebay: 'eb', bol: 'bol' };
 // an icon's ids (Instagram's gradient, RYM's) made unique per copy: url(#id) resolves to the first copy, blank when that one is hidden
-let UID = 0;
-const uniq = s => { const u = '-' + (++UID); return s.replace(/id="([^"]+)"/g, 'id="$1' + u + '"').replace(/url\(#([^)]+)\)/g, 'url(#$1' + u + ')').replace(/href="#([^"]+)"/g, 'href="#$1' + u + '"'); };
+let UID = 0, RUID = null; // a full redraw numbers its copies from r1 again, so its markup comes out the same and the redraw leaves the icons alone
+const uniq = s => { const u = '-' + (RUID ? 'r' + (++RUID.n) : ++UID); return s.replace(/id="([^"]+)"/g, 'id="$1' + u + '"').replace(/url\(#([^)]+)\)/g, 'url(#$1' + u + ')').replace(/href="#([^"]+)"/g, 'href="#$1' + u + '"'); };
 function icon(p, size = 20) {
     // a BBC Music review: the BBC's blocks in a round badge, the same weight as the round icons beside it (majkinetor, from a mock)
     if (p.key === 'review') return `<svg viewBox="0 0 32 32" width="${size}" height="${size}" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#111"/><g fill="#fff"><rect x="5" y="11" width="6.5" height="10"/><rect x="12.75" y="11" width="6.5" height="10"/><rect x="20.5" y="11" width="6.5" height="10"/></g><g fill="#111" font-family="Arial,sans-serif" font-weight="700" font-size="8" text-anchor="middle"><text x="8.25" y="19">B</text><text x="16" y="19">B</text><text x="23.75" y="19">C</text></g></svg>`;
@@ -4735,15 +4735,18 @@ function menuLayout(acts, fold = false) {
     let more = menuMore(acts), list = more.querySelector('.abm');
     const off = Array.isArray(S.menuOff) ? S.menuOff : [];
     const titleOff = Array.isArray(S.menuTitleOff) ? S.menuTitleOff : [];
-    const place = (n, main) => {
+    const place = (n, main, next = main ? more : null) => {
         const noTitle = main && titleOff.includes(n.dataset.menuKey);
         n.classList.toggle('menu-no-title', noTitle);
         n.setAttribute('aria-label', n.dataset.menuTip || n.textContent);
         n.querySelector('span')?.classList.add('abt');
-        if (main) { n.dataset.tip = n.dataset.menuTip || n.textContent; acts.insertBefore(n, more); }
-        else { n.removeAttribute('data-tip'); list.append(n); }
+        const box = main ? acts : list;
+        if (main) { const t = n.dataset.menuTip || n.textContent; if (n.dataset.tip !== t) n.dataset.tip = t; } else n.removeAttribute('data-tip');
+        if (n.parentElement !== box || n.nextElementSibling !== next) box.insertBefore(n, next);
     };
-    ordered.forEach(n => { n.hidden = off.includes(n.dataset.menuKey); place(n, !fold && menuPlace(n.dataset.menuKey) === 'main'); });
+    ordered.forEach(n => { n.hidden = off.includes(n.dataset.menuKey); });
+    // placed from the last back, each before the one after it: a row already in order moves nothing, so a redraw leaves it alone
+    for (let i = ordered.length - 1, nm = more, nl = null; i >= 0; i--) { const n = ordered[i], main = !fold && menuPlace(n.dataset.menuKey) === 'main'; place(n, main, main ? nm : nl); if (main) nm = n; else nl = n; }
     const visible = ordered.filter(n => !n.hidden);
     const mark = () => { more.hidden = ![...list.children].some(n => !n.hidden); if (more.hidden) more.open = false; };
     mark();
@@ -4762,8 +4765,9 @@ function menuLayout(acts, fold = false) {
         }
     }
     // Promotion and overflow never change the configured relative order in either destination.
-    ordered.filter(n => n.parentElement === acts).forEach(n => acts.insertBefore(n, more));
-    ordered.filter(n => n.parentElement === list).forEach(n => list.append(n));
+    // placed from the last back, each before the one after it, so a row already in order moves nothing
+    const order = (box, end) => { let next = end; for (const n of ordered.filter(x => x.parentElement === box).reverse()) { if (n.nextElementSibling !== next) box.insertBefore(n, next); next = n; } };
+    order(acts, more); order(list, null);
     mark();
 }
 function menuRefresh() {
@@ -4952,37 +4956,49 @@ function kickerMark(el) {
     const pc = PICARD_OPEN[pm[1].toLowerCase()];
     k.outerHTML = `<button type="button" class="kmk" data-copy="${id}" data-copylabel="the MBID"${pc ? ` data-picard="${pc}?id=${id}"` : ''} ${pc ? '' : ` data-tip="Copy the MBID&#10;${id}"`} aria-label="Copy the MBID">${k.outerHTML}</button>`;
 }
-function heroFacts(app) {
-    const h = app.querySelector('section.hero'), f = h && h.querySelector('.facts'); if (!f) return;
-    const mb = [...f.children].find(c => { const l = c.querySelector('.label'); return l && l.textContent.trim() === 'MBID'; }) || null;
+// the hero's facts take their final shape in the markup, before the redraw, so the redraw finds them as they are
+// and leaves them alone: no MBID row, the rating and the tags as facts. live is the hero on the page, for which rows are wide now
+function heroShape(root, live) {
+    const h = root.querySelector('section.hero'), f = h && h.querySelector('.facts'); if (!f) return;
     // no MBID row: the kind's mark by the kicker copies it
-    const pm = location.pathname.match(/^\/([a-z-]+)\/([0-9a-f-]{36})(?:\/|$)/i), id = pm && pm[2];
+    const mb = [...f.children].find(c => { const l = c.querySelector('.label'); return l && l.textContent.trim() === 'MBID'; });
     if (mb) mb.remove();
     kickerMark(h);
-    // your own votes, marked for Fuzzy Logic (data-eh-mine, newline-separated; absent when not known), and told it
-    if (id) {
-        const ek = pm[1].toLowerCase() + '/' + id, mine = MINE.get(ek);
-        h.dataset.ehPath = '/' + ek; if (mine) h.dataset.ehMine = [...mine].join('\n'); else delete h.dataset.ehMine;
-        document.dispatchEvent(new CustomEvent('mbu-tags-mine', { detail: { path: '/' + ek, names: mine ? [...mine] : null } }));
-    }
+    const pm = location.pathname.match(/^\/([a-z-]+)\/([0-9a-f-]{36})(?:\/|$)/i);
+    if (pm) { const ek = pm[1].toLowerCase() + '/' + pm[2], mine = MINE.get(ek); h.dataset.ehPath = '/' + ek; if (mine) h.dataset.ehMine = [...mine].join('\n'); }
+    const lf = live && live.querySelector('section.hero .facts'), wideNow = sel => { const c = lf && lf.querySelector(sel); return c ? c.classList.contains('wide') : null; };
+    const al = f.querySelector(':scope>div:has(>.v>.als)'), aw = wideNow(':scope>div:has(>.v>.als)'); if (al && aw !== null) al.classList.toggle('wide', aw);
     const u = h.querySelector('.art .under'); if (!u) return;
     // the rating is one more fact, before the aliases and the full-width rows; the tags go last, before the links
     const add = (lbl, node, wide) => { const c = document.createElement('div'); if (wide) c.className = 'wide'; c.innerHTML = `<div class="label">${lbl}</div><div class="v"></div>`; c.lastChild.append(node); f.insertBefore(c, f.querySelector((wide ? '' : ':scope>div.wide, :scope>div:has(>.v>.als), ') + ':scope>div:has(>.label:empty), :scope>div:not(:has(>.label))')); return c; };
     const st = u.querySelector('.meta'), tg = u.querySelector('.gtags');
     if (st) add('Rating', st);
-    if (tg && ME) { tg.dataset.tgin = ''; if (tgIn && tgIn.path === tgPath()) tg.innerHTML = tgInHtml(); else tg.insertAdjacentHTML('beforeend', `<button type="button" class="eh-edit" data-tgin="open" aria-label="Edit the tags" data-tip="Edit the tags&#10;Right-click: open the Tags page">${MBU_EDIT_ICON}</button>`); tgInWire(); }
-    if (tg) {
-        // few tags stay a fact beside the others; ones that don't fit on one line take the whole row (and so does the edit box, by CSS)
-        const c = add('Tags', tg, true), fit = () => { c.classList.remove('wide'); tg.style.width = 'max-content'; const over = tg.offsetWidth > c.clientWidth; tg.style.width = ''; c.classList.toggle('wide', over); };
-        fit(); new ResizeObserver(fit).observe(f);
-    }
-    // so do aliases that don't fit their cell on one line
-    const al = f.querySelector(':scope>div:not(.wide):has(>.v>.als)');
-    if (al) {
-        const as = al.querySelector('.als'), fit = () => { al.classList.remove('wide'); as.style.width = 'max-content'; const over = as.offsetWidth > al.clientWidth; as.style.width = ''; al.classList.toggle('wide', over); };
-        fit(); new ResizeObserver(fit).observe(f);
-    }
+    if (tg && ME) { tg.dataset.tgin = ''; if (tgIn && tgIn.path === tgPath()) tg.innerHTML = tgInHtml(); else tg.insertAdjacentHTML('beforeend', `<button type="button" class="eh-edit" data-tgin="open" aria-label="Edit the tags" data-tip="Edit the tags&#10;Right-click: open the Tags page">${MBU_EDIT_ICON}</button>`); }
+    if (tg) { const c = add('Tags', tg, true), tw = wideNow(':scope>div:has(>.v>.gtags)'); if (tw !== null) c.classList.toggle('wide', tw); }
     u.remove();
+}
+const heroFit = new WeakSet();
+function heroFacts(app) {
+    const h = app.querySelector('section.hero'), f = h && h.querySelector('.facts'); if (!f) return;
+    kickerMark(h);
+    // your own votes, marked for Fuzzy Logic (data-eh-mine, newline-separated; absent when not known), and told it
+    const pm = location.pathname.match(/^\/([a-z-]+)\/([0-9a-f-]{36})(?:\/|$)/i), id = pm && pm[2];
+    if (id) {
+        const ek = pm[1].toLowerCase() + '/' + id, mine = MINE.get(ek), mj = mine ? [...mine].join('\n') : null;
+        if (h.dataset.ehPath !== '/' + ek) h.dataset.ehPath = '/' + ek;
+        if (mj === null) delete h.dataset.ehMine; else if (h.dataset.ehMine !== mj) h.dataset.ehMine = mj;
+        document.dispatchEvent(new CustomEvent('mbu-tags-mine', { detail: { path: '/' + ek, names: mine ? [...mine] : null } }));
+    }
+    if (ME && f.querySelector('.gtags')) tgInWire();
+    // few tags (or aliases) stay a fact beside the others; ones that don't fit on one line take the whole row (and so does the edit box, by CSS)
+    const fit = () => {
+        for (const [c, v] of [':scope>div:has(>.v>.gtags)', ':scope>div:has(>.v>.als)'].map(q => f.querySelector(q)).filter(Boolean).map(c => [c, c.querySelector('.gtags, .als')])) {
+            const was = c.classList.contains('wide'); c.classList.remove('wide'); v.style.width = 'max-content';
+            const over = v.offsetWidth > c.clientWidth; v.style.width = ''; if (!v.getAttribute('style')) v.removeAttribute('style');
+            if (over || was !== over) c.classList.toggle('wide', over); else if (was) c.classList.add('wide');
+        }
+    };
+    fit(); if (!heroFit.has(f)) { heroFit.add(f); new ResizeObserver(fit).observe(f); }
 }
 function under(r) {
     const on = k => S.extras.includes(k);
@@ -10163,8 +10179,8 @@ function colWire(root) {
 // #1029: a redraw changes only what differs, so images, fonts and the layout around them don't blink
 // patch a live subtree to match new markup; an element with an id is matched by it, else by position and tag
 const EH_LIS = new WeakMap(), EH_FORM = /^(INPUT|TEXTAREA|SELECT|OPTION)$/;
-function ehMorph(root, html) {
-    const t = document.createElement('template'); t.innerHTML = html;
+function ehMorph(root, html, prep) {
+    const t = document.createElement('template'); t.innerHTML = html; if (prep) prep(t.content);
     const f = document.activeElement, sel = f && /^(INPUT|TEXTAREA)$/.test(f.nodeName) ? [f.selectionStart, f.selectionEnd] : null;
     // the page's sections come in the rail's order, so a redraw doesn't move them back and forth
     if (root.id === 'app') secSorted([...t.content.querySelectorAll(':scope>section.sec')]).forEach(x => t.content.appendChild(x));
@@ -10194,14 +10210,20 @@ function ehMorphKids(a, b) {
             else while (ac !== m) { const n = ac.nextSibling; ac.remove(); ac = n; }
         }
         if (m) { if (m === ac) ac = ac.nextSibling; ehMorphNode(m, bc); }
-        else a.insertBefore(bc, ac);
+        else { ehStamp(bc); a.insertBefore(bc, ac); }
         bc = next;
     }
     while (ac) { const n = ac.nextSibling; ac.remove(); ac = n; }
 }
+// the hero's parts remember the markup they were drawn from: one whose markup is the same is left as it is, with what the page
+// has added to it since (the kicker's marks, the link bar's order), so a redraw for another cover touches nothing else
+const EH_SAME = new WeakMap();
+const ehSameScope = b => b.nodeType === 1 && b.closest('section.hero');
+function ehStamp(b) { if (!ehSameScope(b)) return; for (const x of [b, ...b.querySelectorAll('*')]) EH_SAME.set(x, x.outerHTML); }
 function ehMorphNode(a, b) {
     if (a.nodeType !== 1) { if (a.nodeValue !== b.nodeValue) a.nodeValue = b.nodeValue; return; }
     if (a.dataset.dgsrc) return;
+    if (ehSameScope(b)) { const h = b.outerHTML; if (EH_SAME.get(a) === h) return; EH_SAME.set(a, h); }
     // an image a fallback has since repointed keeps its picture while its markup is unchanged
     const imgSame = a.nodeName === 'IMG' && a._ehSrc === b.getAttribute('src');
     // a kept image that has loaded keeps its loaded mark, rather than losing it and getting it back
@@ -10239,7 +10261,8 @@ function render(keepPop) {
     };
     try { return renderNow(keepPop); } finally { P.addEventListener = add; }
 }
-function renderNow(keepPop) {
+function renderNow(keepPop) { RUID = { n: 0 }; try { return renderDraw(keepPop); } finally { RUID = null; } }
+function renderDraw(keepPop) {
     if (secDrag || colDrag) { secRedraw = true; return; } // keep the dragged row attached until the drag ends
     esPark();
     if (!keepPop && $('#pop-collections:not([hidden])')) keepPop = 'collections';
@@ -10313,7 +10336,7 @@ function renderNow(keepPop) {
         : data.kind === 'area' ? areaHero(data) + annotation(r) + wikipedia(data.wikiX) + w('aa', 'Artists', areaList(data, 0)) + w('al', 'Labels', areaList(data, 1)) + w('ap', 'Places', areaList(data, 2))
         : data.kind === 'work' ? wkHero(data) + annotation(r) + wikipedia(data.wikiX) + wkCredits(r) + w('rc', 'Recordings', recsHtml(data))
         : data.kind === 'label' ? lbHero(data) + annotation(r) + wikipedia(data.wikiX) + editions({ id: null, page: `/label/${r.id}`, type: 'label' }, data.editions, data.edCount) : data.kind === 'artist' ? arHero(data) + annotation(r) + wikipedia(data.wikiX) + discography(data) : data.kind === 'rg' ? rgHero(data) + annotation(r) + wikipedia(data.wikiX) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgCard(r, true)
-        : hero(r) + annotation(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r));    // a group without its own cover shows its first release's, else the format's mark
+        : hero(r) + annotation(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r), t => heroShape(t, app));    // a group without its own cover shows its first release's, else the format's mark
     // an image the redraw had to draw anew takes back a loaded one it dropped, so the covers don't blink;
     // one it kept stays where it is, so a cover never jumps to another tile
     for (const im of app.querySelectorAll('img')) { if (imgKey.has(im)) continue; const k = imgKeyOf(im), o = oldImgs.get(k); if (o && !o.isConnected) { im.replaceWith(o); oldImgs.delete(k); } else imgKey.set(im, k); }
@@ -10561,11 +10584,11 @@ async function collectionChange(key, id) {
 }
 function collectionButton(app) {
     kickerMark(app);
-    const k0 = app && app.querySelector('.kicker > span:not([class])'); if (k0 && !k0.dataset.tip) k0.dataset.tip = k0.textContent;
+    const k0 = app && app.querySelector('.kicker > span:not([class]):not([hidden])'); if (k0 && !k0.dataset.tip) k0.dataset.tip = k0.textContent;
     if (!ME || !app) return;
     const m = location.pathname.match(/^\/(release-group|release|artist|label|recording|work|area|instrument|place|series|event)\/([0-9a-f-]{36})(?:\/|$)/i);
-    const label = app.querySelector('.kicker > span:not([class])');
-    if (!m || !label || label.closest('.eh-collections')) return;
+    const label = app.querySelector('.kicker > span:not([class]):not([hidden])');
+    if (!m || !label || label.closest('.eh-collections') || app.querySelector('.kicker .eh-collections')) return;
     const key = m[1] + '/' + m[2], w = document.createElement('span'); w.className = 'eh-collections';
     label.replaceWith(w);
     w.innerHTML = '<button type="button" data-pop="collections" aria-expanded="false" aria-label="Collections" data-tip="' + esc(label.textContent + '\nClick: add to or remove from your collections') + '">' + label.innerHTML + '</button><span class="pop" id="pop-collections" data-key="' + key + '" hidden></span>';
@@ -11261,7 +11284,9 @@ function pinBar(app) {
     // the section headers and Art Station's bar stick just under the bar, so its height is read once it holds the action row, and again when that wraps
     const pinH = () => document.documentElement.style.setProperty('--eh-pin-h', bar.classList.contains('on') ? bar.getBoundingClientRect().height + 'px' : '0px');
     if (window.ResizeObserver) { pinRo = new window.ResizeObserver(() => { align(); pinH(); }); pinRo.observe(hd); pinRo.observe(kick); pinRo.observe(bar); }
-    const home = document.createElement('span'); home.hidden = true; acts.before(home);
+    // a redraw keeps the placeholder from the last one, so the header doesn't change on every redraw
+    let home = acts.previousElementSibling;
+    if (!(home && home.classList.contains('pin-slot'))) { home = document.createElement('span'); home.className = 'pin-slot'; home.hidden = true; acts.before(home); }
     // a shown bar takes the new action row at once: left to the observer, the row leaves the header a frame later and the page jumps
     if (wasOn) k.appendChild(acts);
     if (wasOn) pinFold(acts, true);
@@ -11271,7 +11296,7 @@ function pinBar(app) {
         if (pin === bar.classList.contains('on') && !first) return;
         first = false;
         bar.classList.toggle('on', pin);
-        if (pin) k.appendChild(acts); else if (home.isConnected) home.after(acts);
+        if (pin) { if (k.lastChild !== acts) k.appendChild(acts); } else if (home.isConnected && home.nextSibling !== acts) home.after(acts);
         pinFold(acts, pin);
         // the section headers stick just under the bar (majkinetor)
         pinH();
@@ -11346,15 +11371,15 @@ function fitQuiet() {
 }
 function fitQuietBox(box) {
     const more = box.querySelector(':scope>.popwrap'), ic = [...box.querySelectorAll('a.qi')], gs = [...box.querySelectorAll('.kg')];
-    const hide = (x, h) => { (x.closest('.qk') || x).hidden = h; x.hidden = h; };
-    ic.forEach(x => hide(x, false)); gs.forEach(g => { g.hidden = false; }); more.hidden = true;
+    const hid = (x, h) => { if (x.hidden !== h) x.hidden = h; }, hide = (x, h) => { hid(x.closest('.qk') || x, h); hid(x, h); };
+    ic.forEach(x => hide(x, false)); gs.forEach(g => hid(g, false)); hid(more, true);
     const left = box.getBoundingClientRect().left, avail = box.getBoundingClientRect().width;
     let shown = ic.findIndex(x => x.getBoundingClientRect().right - left > avail);
     if (shown >= 0) {
         shown = ic.findIndex(x => x.getBoundingClientRect().right - left > avail - 48);
         ic.slice(shown).forEach(x => hide(x, true));
-        gs.forEach(g => { g.hidden = !g.querySelector('a.qi:not([hidden])'); });
-        more.hidden = false; more.querySelector('button').textContent = '+' + (ic.length - shown);
+        gs.forEach(g => hid(g, !g.querySelector('a.qi:not([hidden])')));
+        more.hidden = false; const mb = more.querySelector('button'), mt = '+' + (ic.length - shown); if (mb.textContent !== mt) mb.textContent = mt;
     } else shown = ic.length;
     const rows = [...more.querySelectorAll('.row')], flt = more.querySelector('.mflt');
     // a long list gets a filter; a kind with nothing left to show loses its heading
