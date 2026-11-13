@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.008200
+// @version      2026.11.14.008300
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12632,10 +12632,10 @@ const histLean = e => { const c = histCnt(e); return e.st !== 'op' || !c ? '' : 
 const H_SEG = [['1', 'Yes', 0], ['0', 'No', 1], ['-1', 'Abstain']];
 function histBar(e, one) {
     const c = histCnt(e), tl0 = c ? `<span class="htl"><span class="hbr">${c[0] + c[1] ? `<i style="width:${100 * c[0] / (c[0] + c[1])}%;background:#2e8b57"></i><i style="width:${100 * c[1] / (c[0] + c[1])}%;background:#c0392b"></i>` : ''}</span>${c[0]} yes · ${c[1]} no</span>` : '';
-    const vt = e.can ? `<div class="hvote hseg" role="radiogroup" aria-label="Your vote">${H_SEG.map(([v, t, i]) => `<button type="button" class="v${v}${e.my === v ? ' on' : ''}" role="radio" aria-checked="${e.my === v}" data-hvote="${e.id}:${v}" data-tip="Vote ${t}
+    const vt = e.can ? `<div class="hvote hseg" role="radiogroup" aria-label="Your vote">${H_SEG.map(([v, t, i]) => `<button type="button" class="v${v}${e.my === v ? ' on' : ''}${e.voting === v ? ' busy' : ''}" role="radio" aria-checked="${e.my === v}" data-hvote="${e.id}:${v}" data-tip="Vote ${t}
 Right-click: vote ${t} with an edit note"${e.voting ? ' disabled' : ''}>${t}${c && i != null ? ` <span class="c">${c[i]}</span>` : ''}</button>`).join('')}</div>` : '';
     const cu = e.cancel || (e.st === 'op' && e.mine ? `${MB}/edit/${e.id}/cancel` : ''), cx = cu ? `<a class="hcx2" href="${esc(cu)}">Cancel edit</a>` : '';
-    const dl = e.st === 'op' && e.exp > Date.now() ? Math.ceil((e.exp - Date.now()) / 864e5) : 0, tl = (c ? `<span class="htl"><span class="hbr">${c[0] + c[1] ? `<i style="width:${100 * c[0] / (c[0] + c[1])}%;background:#2e8b57"></i><i style="width:${100 * c[1] / (c[0] + c[1])}%;background:#c0392b"></i>` : ''}</span>${c[0]} yes · ${c[1]} no</span>` : '') + (dl ? `<span class="htl">closes in ${dl} d</span>` : '');
+    const dl = e.st === 'op' && e.exp > Date.now() ? Math.ceil((e.exp - Date.now()) / 864e5) : 0, tl = (c && !vt ? `<span class="htl"><span class="hbr">${c[0] + c[1] ? `<i style="width:${100 * c[0] / (c[0] + c[1])}%;background:#2e8b57"></i><i style="width:${100 * c[1] / (c[0] + c[1])}%;background:#c0392b"></i>` : ''}</span>${c[0]} yes · ${c[1]} no</span>` : '') + (dl ? `<span class="htl">closes in ${dl} d</span>` : '');
     return tl || vt || cx ? `<div class="hbar" data-id="${e.id}">${tl}${vt}${cx}</div>` : '';
 }
 // Only edits with MusicBrainz's voting permission belong to the group action; status filters already scoped es.
@@ -12720,6 +12720,7 @@ async function histNoteSend(fm) {
     const fields = { 'enter-vote.vote.0.edit_id': id, 'enter-vote.vote.0.edit_note': t, url: `${MB}/edit/${id}` };
     const hv = e.can && H_VOTES.some(x => x[0] === fm.dataset.hv) ? fm.dataset.hv : '';
     if (e.can) fields['enter-vote.vote.0.vote'] = hv || e.my || '-2';
+    if (hv) { e.voting = hv; histVotePaint(data); }
     try {
         LOG.keep();
         const r = await mbnFetch(`${MB}/edit/enter_votes`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(fields) });
@@ -12728,11 +12729,12 @@ async function histNoteSend(fm) {
         e.notes.push(n); fm.insertAdjacentHTML('beforebegin', histNote(n)); ta.value = ''; LOG.info('Added a note to edit #' + id + (hv ? ', voting ' + H_VOTES.find(x => x[0] === hv)[1] : ''));
         if (hv && hv !== e.my) {
             const c = histCnt(e); if (c) { const k = x => x === '1' ? 0 : x === '0' ? 1 : -1, o = k(e.my), nw = k(hv); if (o >= 0) c[o]--; if (nw >= 0) c[nw]++; e.votes = `${c[0]} yes : ${c[1]} no`; }
-            e.my = hv; kpWrote(); histVotePaint(data);
+            e.my = hv; e.voting = false; kpWrote(); histVotePaint(data);
             const x = document.querySelector(`#app [data-hvote^="${e.id}:"]`), dt = x && x.closest('details.hed'), bar = x && x.closest('.hbar'); if (bar) { bar.outerHTML = histBar(e, histOne(data.id)); const l = histLean(e); if (l && dt) dt.dataset.lean = l; }
         }
         histNoteVote(fm, '');
     } catch (err) { LOG.err('Note on edit #' + id + ' failed: ' + err.message); toast('MusicBrainz didn\'t take the note'); }
+    if (e.voting) { e.voting = false; histVotePaint(data); }
     bt.disabled = ta.disabled = false;
 }
 document.addEventListener('submit', ev => {
