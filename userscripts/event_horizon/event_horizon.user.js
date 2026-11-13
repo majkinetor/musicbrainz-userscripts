@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.210000
+// @version      2026.11.13.230000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12937,7 +12937,14 @@ function build() {
 }
 // what you switch to stays: the next page opens the same way (majkinetor)
 const switchOn = on => { S.on = on; save(); setOn(on); };
+// the pre-paint hide goes whatever happens: a throw anywhere on the way left a blank page (an artist just created)
 function setOn(on) {
+    try { setOn1(on); }
+    catch (e) { LOG.error('Switching the viewer failed: ' + (e && e.stack || e)); throw e; }
+    finally { const h = document.getElementById('eh-hide'); if (h) h.remove(); }
+}
+function setOn1(on) {
+
     if (/^(relate|form)\//.test(PAGE_ID)) { relSet(on); return; }
     // navigated inside EH: reload for MusicBrainz's page of this one, and stay off there
     if (!on && keyOf(location.href) !== PAGE_ID) { try { sessionStorage.setItem('eh-off', 1); } catch (e) {} location.reload(); return; }
@@ -13766,6 +13773,9 @@ function launcher() {
 // DOMContentLoaded, when start() runs; each logs a line
 const LOG = mbuLog({ name: 'Event Horizon', version: VERSION, key: 'event_horizon.logwin', history: { prefix: 'eh:session:', auto: true } });   // #890: sessions with a vote, a note, a warning or an error
 function start() {
+    try { start1(); } catch (e) { const h = document.getElementById('eh-hide'); if (h) h.remove(); LOG.error('Start failed: ' + (e && e.stack || e)); throw e; }
+}
+function start1() {
     mbBody = document.body; mbTitle = document.title; mbHome = location.pathname === '/';
     // the signed-in editor, off MusicBrainz's header: the home page's own links go to their pages
     const ua = mbBody.querySelector('.header a[href*="/user/"], header a[href*="/user/"]');
