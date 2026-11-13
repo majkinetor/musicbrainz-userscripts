@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.233000
+// @version      2026.11.14.001000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7783,7 +7783,7 @@ async function histCancelPost(e, note, a) {
         LOG.keep();
         const url = new URL(e.cancel || `${MB}/edit/${e.id}/cancel`, MB).href, r = await mbnFetch(url, { credentials: 'include' });
         if (!r.ok) throw new Error('HTTP ' + r.status);
-        const doc = new DOMParser().parseFromString(await r.text(), 'text/html'), form = [...doc.querySelectorAll('#content form')].find(f => f.querySelector('textarea')) || doc.querySelector('#content form');
+        const doc = new DOMParser().parseFromString(await r.text(), 'text/html'), fs = [...doc.querySelectorAll('form')].filter(f => !f.closest('#header, .header, footer')), form = fs.find(f => (f.getAttribute('action') || '').includes('/cancel')) || fs.find(f => f.querySelector('textarea')) || fs.find(f => (f.method || '').toLowerCase() === 'post');
         if (!form) throw new Error('no cancel form');
         const fd = new URLSearchParams();
         form.querySelectorAll('input[name],textarea[name]').forEach(i => { if (i.type !== 'submit' && !((i.type === 'checkbox' || i.type === 'radio') && !i.checked)) fd.set(i.name, i.tagName === 'TEXTAREA' ? note : i.value); });
