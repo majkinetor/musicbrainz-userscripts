@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.190000
+// @version      2026.11.13.193000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12567,14 +12567,14 @@ function histBar(e, one) {
 // Only edits with MusicBrainz's voting permission belong to the group action; status filters already scoped es.
 function histGroupVote(es) {
     const xs = es.filter(e => e.can); if (!xs.length) return '';
-    return `<span class="hvote hgv" role="group" aria-label="Vote on group" data-hids="${xs.map(e => e.id).join(',')}"><span class="lb">Vote ${xs.length}</span>${H_VOTES.map(([v, t]) => `<button type="button" class="v${v}${xs.every(e => e.my === v) ? ' on' : ''}${xs.some(e => e.voting === v) ? ' busy' : ''}" data-hgvote="${v}"${v === '-2' && xs.every(e => e.my === v) ? ' hidden' : ''} aria-pressed="${xs.every(e => e.my === v)}"${xs.some(e => e.voting) ? ' disabled' : ''} data-tip="${t === 'None' ? 'Withdraw votes' : 'Vote ' + t} on ${xs.length} eligible edit${xs.length === 1 ? '' : 's'} in this group">${t}</button>`).join('')}</span>`;
+    return `<span class="hvote hgv" role="group" aria-label="Vote on group" data-hids="${xs.map(e => e.id).join(',')}"><span class="lb">Vote ${xs.length}</span>${H_VOTES.filter(x => x[0] !== '-2').map(([v, t]) => `<button type="button" class="v${v}${xs.every(e => e.my === v) ? ' on' : ''}${xs.some(e => e.voting === v) ? ' busy' : ''}" data-hgvote="${v}" aria-pressed="${xs.every(e => e.my === v)}"${xs.some(e => e.voting) ? ' disabled' : ''} data-tip="Vote ${t} on ${xs.length} eligible edit${xs.length === 1 ? '' : 's'} in this group; click again to withdraw">${t}</button>`).join('')}</span>`;
 }
 function histVotePaint(d) {
     if (data !== d) return;
     document.querySelectorAll('#app [data-hvote],#app [data-hgvote]').forEach(b => {
         const group = b.closest('[data-hids]'), ids = group ? group.dataset.hids.split(',') : [b.dataset.hvote.split(':')[0]], v = group ? b.dataset.hgvote : b.dataset.hvote.split(':')[1];
         const es = d.edits.filter(e => e.can && ids.includes(String(e.id))), on = es.length > 0 && es.every(e => e.my === v);
-        b.disabled = es.some(e => e.voting); b.classList.toggle('on', on); b.classList.toggle('busy', es.some(e => e.voting === v)); b.setAttribute('aria-busy', String(b.classList.contains('busy'))); if (group && v === '-2') b.hidden = on; b.setAttribute(group ? 'aria-pressed' : 'aria-checked', String(on));
+        b.disabled = es.some(e => e.voting); b.classList.toggle('on', on); b.classList.toggle('busy', es.some(e => e.voting === v)); b.setAttribute('aria-busy', String(b.classList.contains('busy'))); b.setAttribute(group ? 'aria-pressed' : 'aria-checked', String(on));
     });
 }
 // A note has its own permission: your own and closed edits have no vote controls. Keep a vote only when present.
@@ -12649,7 +12649,7 @@ async function histVoteSend(b) {
     const d = data, group = b.closest('[data-hids]'), ids = group ? group.dataset.hids.split(',') : [b.dataset.hvote.split(':')[0]]; let v = group ? b.dataset.hgvote : b.dataset.hvote.split(':')[1];
     const eligible = d && d.edits && d.edits.filter(e => e.can && ids.includes(String(e.id)));
     if (!eligible || eligible.some(e => e.voting) || !H_VOTES.some(x => x[0] === v)) return;
-    if (!group && eligible[0] && eligible[0].my === v) v = '-2';
+    if (eligible.every(e => e.my === v)) v = '-2';
     const es = eligible.filter(e => e.my !== v); if (!es.length) return;
     if (group && es.length > 20 && !await ehConfirm(v === '-2' ? `Withdraw your votes on ${es.length} edits?` : `Vote ${H_VOTES.find(x => x[0] === v)[1]} on ${es.length} edits?`, v === '-2' ? 'Withdraw' : 'Vote ' + H_VOTES.find(x => x[0] === v)[1])) return;
     if (data !== d || es.some(e => e.voting)) return;
