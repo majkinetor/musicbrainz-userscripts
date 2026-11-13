@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.100001
+// @version      2026.11.14.100002
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12802,8 +12802,8 @@ const histCnt = e => { const m = /(\d+)\D+?(\d+)/.exec(e.votes || ''); return m 
 const histLean = e => { const c = histCnt(e); return e.st !== 'op' || !c ? '' : c[0] > c[1] ? 'yes' : c[1] > c[0] ? 'no' : 'tie'; };
 const H_SEG = [['1', 'Yes'], ['0', 'No'], ['-1', 'Abstain']];
 function histBar(e) {
-    // the yes and no buttons carry their own counts, so a row you can vote on needs no separate tally
-    const c = histCnt(e), cn = v => { const n = c && (v === '1' ? c[0] : v === '0' ? c[1] : null); return n == null ? '' : ` <span class="hvn${n ? '' : ' z'}">${n}</span>`; };
+    // the vote buttons carry their own counts (abstain only where the voters are known: a single edit), so a row you can vote on needs no separate tally
+    const c = histCnt(e), cn = v => { const n = v === '-1' ? (e.voters ? e.voters.filter(x => x.v === '-1').length : null) : c && (v === '1' ? c[0] : v === '0' ? c[1] : null); return n == null ? '' : ` <span class="hvn${n ? '' : ' z'}">${n}</span>`; };
     const vt = e.can ? `<div class="hvote hseg" role="radiogroup" aria-label="Your vote">${H_SEG.map(([v, t]) => `<button type="button" class="v${v}${e.my === v ? ' on' : ''}${e.voting === v ? ' busy' : ''}" role="radio" aria-checked="${e.my === v}" data-hvote="${e.id}:${v}" data-tip="Vote ${t}${histVotersTip(e, v)}
 Right-click: vote ${t} with an edit note"${e.voting ? ' disabled' : ''}>${t}${cn(v)}</button>`).join('')}</div>` : '';
     const cu = e.cancel || (e.st === 'op' && e.mine ? `${MB}/edit/${e.id}/cancel` : ''), cx = cu ? `<a class="hcx2" href="${esc(cu)}">Cancel edit</a>` : '';
