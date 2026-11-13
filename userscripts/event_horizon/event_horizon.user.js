@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.13.130000
+// @version      2026.11.13.140000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2765,7 +2765,7 @@ const CSS = `
 .hm-st{background:var(--chip);border-radius:10px;padding:8px 10px;color:var(--text)!important;text-decoration:none!important}.hm-st:hover{outline:1px solid var(--accent)}
 .hm-st b{display:block;font-size:18px}.hm-st small{color:var(--muted)}
 .hm-bars>*{color:var(--text)!important;text-decoration:none!important}.hm-bars a:hover>span{color:var(--accent)}.hm-bars>*{display:grid;grid-template-columns:100px 1fr 56px;gap:8px;align-items:center;font-size:12px;padding:2px 0}
-.hm-bars i{height:8px;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.hm-bars em{font-style:normal;text-align:right;color:var(--muted)}
+.hm-bars i{height:8px;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.hm-bars em{font-style:normal;text-align:right;color:var(--muted)}.eh-bscale{display:block;margin:4px 0 0;padding:0;border:0;background:none;font-size:11px;color:var(--muted);cursor:pointer;text-decoration:underline dotted}.eh-bscale:hover{color:var(--accent)}
 .hm-home{position:absolute;inset:0 0 auto auto;width:400px;height:190px}@media (max-width:1100px){.hm-home{width:190px}}@media (max-width:700px){.hm-home{display:none}}.hm-hi{overflow-wrap:anywhere}.sr-sub{position:relative;margin:12px 0 0}
 .sr-t .flagi{display:inline-block;height:.8em;width:1.2em;object-fit:cover;margin-right:5px;vertical-align:0;border-radius:2px;box-shadow:0 0 0 1px var(--border)}.sr-t .release-country+.release-date{margin-left:8px}.sr-t td.sr-sc,.sr-t th.sr-sc{width:64px;white-space:nowrap}.sr-sc i{display:inline-block;vertical-align:middle;width:34px;height:6px;border-radius:3px;background:linear-gradient(90deg,#ba478f,#eb743b) 0/var(--w) 100% no-repeat,var(--chip)}.sr-sc small{margin-left:6px;color:var(--muted)}
 .u-hero{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,.9fr);gap:24px;align-items:start;margin:8px 0 26px}
@@ -10562,8 +10562,19 @@ function gravForm(app) {
 const ADD_T = { artist: '1', 'cover art': '314', 'release group': '10', place: '61', release: '31%2C216', label: '20', series: '140', recording: '71', work: '41', area: '81', event: '150', instrument: '131', genre: '160' };
 // the count rides along in the hash: MusicBrainz's search says only "at least 500"
 const addHref = (p, ts, n) => p.id && ts.length ? `${MB}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=editor&conditions.0.operator=%3D&conditions.0.name=${encodeURIComponent(p.name || ME)}&conditions.0.args.0=${p.id}&conditions.1.field=type&conditions.1.operator=%3D${ts.map(t => '&conditions.1.args=' + t).join('')}&conditions.2.field=status&conditions.2.operator=%3D&conditions.2.args=2${n ? '#eh-n=' + n : ''}` : '';
-// #1006: a bar's width on a log scale, so a type far below the top one still shows
-const logW = (v, top) => Math.max(2, Math.log1p(v) / Math.log1p(Math.max(top, 1)) * 100);
+// #1006: the Added bars' scale, linear or log, switched by the link under them and remembered
+const barLog = () => { try { return GM_getValue('barScale', 'lin') === 'log'; } catch (e) { return false; } };
+const barW = (v, top) => Math.max(2, barLog() ? Math.log1p(v) / Math.log1p(Math.max(top, 1)) * 100 : v / Math.max(top, 1) * 100);
+const barI = (v, top) => `<i data-bv="${v}" data-bt="${top}" style="width:${barW(v, top)}%"></i>`;
+const barScale = () => `<button type="button" class="eh-bscale">${barLog() ? 'log scale' : 'linear scale'}</button>`;
+document.addEventListener('click', ev => {
+    const b = ev.target.closest && ev.target.closest('.eh-bscale'); if (!b) return;
+    ev.preventDefault();
+    const log = !barLog(); try { GM_setValue('barScale', log ? 'log' : 'lin'); } catch (e) {}
+    LOG.info('Added bars: ' + (log ? 'log' : 'linear') + ' scale');
+    document.querySelectorAll('i[data-bv]').forEach(i => { i.style.width = barW(+i.dataset.bv, +i.dataset.bt) + '%'; });
+    document.querySelectorAll('.eh-bscale').forEach(x => { x.textContent = log ? 'log scale' : 'linear scale'; });
+});
 function profFill(app, p) {
     const el = app.querySelector('.hm-pf'); if (!el) return;
     const yrs = p.since ? new Date().getFullYear() - p.since : 0, top = p.added[0] ? p.added[0][1] : 1, u = `${MB}/user/${encodeURIComponent(ME)}`;
@@ -10574,7 +10585,7 @@ function profFill(app, p) {
     el.innerHTML = `<a class="hm-pl" href="${u}" data-tip="Your profile" aria-label="Your profile">${SVG(MK_CR)}</a><a class="hm-pl hm-lo" href="${MB}/logout?returnto=%2F" data-tip="Log out" aria-label="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a><div class="hm-pid"><button type="button" class="hm-av" data-tip="Your Gravatar
 Click to use another email" aria-label="Set your Gravatar email">${esc(ME[0] || '?').toUpperCase()}${av ? `<img src="${esc(av)}" alt="" width="52" height="52" onerror="this.remove()">` : ''}</button><div><b>${esc(ME)}</b><small>${sub}</small>${p.bio ? `<small><a href="${esc(p.bio)}" target="_blank">${esc(p.bio.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></small>` : ''}</div></div>
         <div class="u-kpis"><div class="u-kgrp">${uKpi('ed', p.total, 'Edits', href('edits'))}${uKpi('day', p.day, '24h', href(p.dayHref || 'edits'))}${uKpi('open', p.open, 'Open', href('edits/open'))}</div>${uKpi('add', p.added.length ? p.added.reduce((a, x) => a + x[1], 0) : null, 'Added', addHref(p, Object.values(ADD_T), p.added.reduce((a, x) => a + x[1], 0)))}${uKpi('vote', p.votes, 'Votes', href('votes'))}${(t => uKpi('tag', t.length ? t.reduce((a, x) => a + x[1], 0) : null, 'Tags', href('tags')))(p.sec.filter(([k]) => /^Tags/.test(k)))}</div>
-        ${p.added.length ? `<div class="hm-bars">${p.added.map(([n, v]) => (h => `<${h ? `a href="${esc(h)}"` : 'div'}><span>${esc(n)}</span><i style="width:${logW(v, top)}%"></i><em>${fmtN(v)}</em></${h ? 'a' : 'div'}>`)(addHref(p, [ADD_T[n.toLowerCase()]].filter(Boolean), v))).join('')}</div>` : ''}
+        ${p.added.length ? `<div class="hm-bars">${p.added.map(([n, v]) => (h => `<${h ? `a href="${esc(h)}"` : 'div'}><span>${esc(n)}</span>${barI(v, top)}<em>${fmtN(v)}</em></${h ? 'a' : 'div'}>`)(addHref(p, [ADD_T[n.toLowerCase()]].filter(Boolean), v))).join('')}</div>${barScale()}` : ''}
         ${p.sec.length ? `<small class="hm-sec">${p.sec.map(([n, v]) => `${esc(n)} ${fmtN(v)}`).join(' · ')}</small>` : ''}`;
 }
 const HM_CLR = ['#ba478f', '#8c5bd6', '#d6833e', '#3f8f7a', '#c4466a', '#6b6fd6', '#2f8bbf', '#7a9a3a', '#8a6a55'];
@@ -10831,7 +10842,7 @@ function userHtml(d) {
         } else if (i === 2) {
             const rs = t.rows.filter(r => r.v[0]).sort((a, b) => b.v[0] - a.v[0]), top = rs[0] ? rs[0].v[0] : 1, sum = rs.reduce((s, r) => s + r.v[0], 0);
             // #1005: each type's share of everything added, and the total
-            body = rs.length ? stk(rs.map((r, k) => ({ l: r.l, v: r.v[0], c: SC[[2, 0, 3, 4, 5, 6, 1][k] ?? 7], h: r.href, s: ` · ${Math.round(r.v[0] / sum * 100)}%` }))) + `<div class="u-bars">${rs.map(r => link(r, `<span>${esc(r.l)}</span><i style="width:${logW(r.v[0], top)}%"></i><em>${fmtN(r.v[0])}<small>${Math.round(r.v[0] / sum * 100)}%</small></em>`, 'u-bar')).join('')}</div><div class="u-vt">${fmtN(sum)} added in all</div>` : '<p class="hm-none">Nothing added yet.</p>';
+            body = rs.length ? stk(rs.map((r, k) => ({ l: r.l, v: r.v[0], c: SC[[2, 0, 3, 4, 5, 6, 1][k] ?? 7], h: r.href, s: ` · ${Math.round(r.v[0] / sum * 100)}%` }))) + `<div class="u-bars">${rs.map(r => link(r, `<span>${esc(r.l)}</span>${barI(r.v[0], top)}<em>${fmtN(r.v[0])}<small>${Math.round(r.v[0] / sum * 100)}%</small></em>`, 'u-bar')).join('')}</div>${barScale()}<div class="u-vt">${fmtN(sum)} added in all</div>` : '<p class="hm-none">Nothing added yet.</p>';
         } else {
             const bar = i === 0 ? (() => { const g = (re, k) => edR(re) || ed0[k], ac = g(/\/edits\/accepted$/, 1), au = g(/\/edits\/autoedits$/, 2), rj = g(/\/edits\/rejected$/, 4), tot = ed0[0] ? ed0[0].v[0] : 0, v = r => r ? r.v[0] : 0;
                 return stk([{ l: 'Accepted', v: v(ac), c: SC[0], h: ac && ac.href, s: share(ac) && ` · ${Math.round(v(ac) / voted * 100)}%` }, { l: 'Auto-edits', v: v(au), c: SC[3], h: au && au.href }, { l: 'Voted down', v: v(rj), c: SC[1], h: rj && rj.href, s: share(rj) && ` · ${Math.round(v(rj) / voted * 100)}%` }, { l: 'Failed and open', v: Math.max(0, tot - v(ac) - v(au) - v(rj)), c: SC[7] }]); })() : '';
