@@ -118,3 +118,20 @@ test('a page redraw does not interrupt a section drag', { tag: '@sandbox' }, asy
   check(result.retained, 'the dragged row stays in the document during a redraw');
   check(result.last === result.moved, 'the drop still reorders the sections');
 });
+
+// a redraw leaves an unchanged header as it was (#1029): the action row, in the pinned bar meanwhile, must come through it
+test('a redraw while the header is pinned keeps the action row', { tag: '@sandbox' }, async ({ page, inject }) => {
+  await page.setViewportSize({ width: 1400, height: 800 });
+  await page.goto('https://test.musicbrainz.org/artist/a74b1b7f-71a5-4011-9441-d0b5e4122711');
+  await inject('event_horizon');
+  await until(() => page.locator('#s-dg tbody tr, #s-dg .dg-card, #s-dg li').count(), n => n > 5, 20000);
+  const view = page.locator('#s-dg [data-dgview="table"]');
+  await view.evaluate(el => scrollBy(0, el.getBoundingClientRect().top - 200));
+  check(await until(() => page.locator('#eh-pin.on .acts .eh-more').count(), n => n === 1, 5000) === 1, 'scrolled, the bar holds the action row');
+  for (const v of ['table', 'grid', 'table']) {
+    await page.locator(`#s-dg [data-dgview="${v}"]`).click();
+    check(await until(() => page.locator('#eh-pin.on .acts .eh-more').count(), n => n === 1, 3000) === 1, `after the ${v} view's redraw, the bar still holds it`);
+  }
+  await page.evaluate(() => scrollTo(0, 0));
+  check(await until(() => page.locator('#app .kicker .acts .eh-more').count(), n => n === 1, 5000) === 1, 'back at the top, the action row is in the header');
+});
