@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.13.160000
+// @version      2026.11.13.170000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -4695,7 +4695,7 @@ function oldestGidOf(members) {
 function oldestBadge(rec, oldest) {
     if (!oldest || oldest.gid !== rec.gid) return '';
     const others = oldest.ids.filter(id => id !== oldest.id).sort((a, b) => a - b).map(n => n.toLocaleString('en-US'));
-    return '<span class="fs-oldest" data-tip="The oldest of these recordings\nRow id ' + oldest.id.toLocaleString('en-US') + ' ← ' + others.join(' + ') + '">oldest</span> ';
+    return ' <span class="fs-oldest" data-tip="The oldest of these recordings\nRow id ' + oldest.id.toLocaleString('en-US') + ' ← ' + others.join(' + ') + '">oldest</span>';
 }
 function liveBadge(rec) { return rec.live ? '<span class="fs-live" data-tip="Live recording: its performance of the work is marked live">live</span> ' : ''; }
 function recPlace(rec) {
@@ -5210,7 +5210,7 @@ function groupCardHtml(group, embed) {
             + '<div class="fs-grow' + (isTarget ? ' fs-target-row' : '') + '"' + (embed ? '' : ' draggable="true"') + ' data-gid="' + m.gid + '">'
             + '<span class="fs-exp' + (expanded ? ' fs-exp-on' : '') + '" data-act="toggle-releases" data-tip="' + (expanded ? 'Hide' : 'Show') + ' every release this recording is on\nRight-click: every recording in this group">' + (expanded ? '▼' : '▶') + '</span>'
             + star
-            + '<span class="fs-t" data-tip="' + recTip(m) + '">' + oldestBadge(m, oldest) + pendingBadge(m) + videoBadge(m) + liveBadge(m) + recLink(m.gid, m.title) + recPlace(m) + recDis(m) + albumDisHtml(m, members) + '</span>'
+            + '<span class="fs-t" data-tip="' + recTip(m) + '">' + pendingBadge(m) + videoBadge(m) + liveBadge(m) + recLink(m.gid, m.title) + recPlace(m) + recDis(m) + albumDisHtml(m, members) + oldestBadge(m, oldest) + '</span>'
             + '<span class="fs-artistcol" data-tip="' + escapeHtml(m.artistCredit || '') + '">' + artistLink(m) + '</span>'
             + '<span class="fs-rel" data-tip="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + '</span>'
             + (() => { const d = lenOffBy(m); return d == null ? '<span class="fs-len">' + dur(m.length) + '</span>'
