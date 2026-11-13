@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.13.150000
+// @version      2026.11.13.160000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -4554,6 +4554,7 @@ function fsStyle() {
         // #619 follow-up: "it should be in len column" — placeLenBadges() lifts it out of
         // the title track and over the rows' length column (left edge = the amber cells').
         + '.fs-setwarn{flex:0 0 auto;margin-left:6px;padding:0 6px;border:1px solid var(--mbu-warn);border-radius:9px;color:var(--mbu-warn);background:color-mix(in srgb, var(--mbu-warn) 14%, transparent);font-size:10.5px;font-weight:700;line-height:1.5;white-space:nowrap;cursor:help}'
+        + '.fs-oldest{color:var(--fs-blue);border:1px solid color-mix(in srgb, var(--fs-blue) 45%, transparent);border-radius:3px;padding:0 4px;font-size:9.5px;font-weight:700;text-transform:uppercase;white-space:nowrap}'
         + '.fs-live{background:color-mix(in srgb, var(--fs-red) 12%, transparent);color:var(--fs-red);border:1px solid color-mix(in srgb, var(--fs-red) 40%, transparent);border-radius:3px;padding:0 4px;font-size:9.5px;font-weight:700;text-transform:uppercase;white-space:nowrap}'
         + '.fs-reldis{font-weight:400;color:var(--fs-muted);font-style:italic}'
         + '.fs-reltag{font-style:normal;font-size:8.5px;font-weight:700;text-transform:uppercase;border:1px solid var(--fs-border);border-radius:3px;padding:0 3px;margin-right:3px;vertical-align:1px}'
@@ -4682,6 +4683,20 @@ function recDis(rec) {
 }
 // #789 (phw): a live recording and where it was recorded, read from its relationships
 const recordedAt = rec => rec.places && rec.places.length ? 'recorded ' + rec.places.map(p => (p.kind === 'area' ? 'in ' : 'at ') + placeText(p)).join(', ') : '';
+// majkinetor: editors merge into the oldest MBID ("Merging into oldest MBID (7,414,857 ← 25,898,187 + …)"),
+// so the row with the lowest internal id gets a pill; shown only once every member's id is known
+function oldestGidOf(members) {
+    if (members.length < 2) return null;
+    const ids = members.map(m => _idCache.get(m.gid));
+    if (ids.some(id => !id)) return null;
+    let k = 0; ids.forEach((id, i) => { if (id < ids[k]) k = i; });
+    return { gid: members[k].gid, id: ids[k], ids };
+}
+function oldestBadge(rec, oldest) {
+    if (!oldest || oldest.gid !== rec.gid) return '';
+    const others = oldest.ids.filter(id => id !== oldest.id).sort((a, b) => a - b).map(n => n.toLocaleString('en-US'));
+    return '<span class="fs-oldest" data-tip="The oldest of these recordings\nRow id ' + oldest.id.toLocaleString('en-US') + ' ← ' + others.join(' + ') + '">oldest</span> ';
+}
 function liveBadge(rec) { return rec.live ? '<span class="fs-live" data-tip="Live recording: its performance of the work is marked live">live</span> ' : ''; }
 function recPlace(rec) {
     return rec.places && rec.places.length ? ' <span class="fs-place" data-tip="' + escapeHtml(recordedAt(rec)) + '">@ ' + escapeHtml(rec.places.map(p => p.name).join(', ')) + '</span>' : '';
@@ -5182,6 +5197,7 @@ function groupCardHtml(group, embed) {
         const toggle = '<span class="fs-idmore" data-act="toggle-ids" data-kind="' + kind + '" data-tip="' + (open ? 'Show only the first ' + keep : 'Show ' + more + ' more ' + label + 's, none shared with this group') + '">' + (open ? 'less' : '+' + more + ' more') + '</span>';
         return '<span class="fs-isrc">' + (open ? tags : tags.slice(0, keep)).join('') + toggle + '</span>';
     };
+    const oldest = oldestGidOf(members);
     const rows = ordered.map(m => {
         const rs = releasesSummary(m);
         const isTarget = group.target === m.gid;
@@ -5194,7 +5210,7 @@ function groupCardHtml(group, embed) {
             + '<div class="fs-grow' + (isTarget ? ' fs-target-row' : '') + '"' + (embed ? '' : ' draggable="true"') + ' data-gid="' + m.gid + '">'
             + '<span class="fs-exp' + (expanded ? ' fs-exp-on' : '') + '" data-act="toggle-releases" data-tip="' + (expanded ? 'Hide' : 'Show') + ' every release this recording is on\nRight-click: every recording in this group">' + (expanded ? '▼' : '▶') + '</span>'
             + star
-            + '<span class="fs-t" data-tip="' + recTip(m) + '">' + pendingBadge(m) + videoBadge(m) + liveBadge(m) + recLink(m.gid, m.title) + recPlace(m) + recDis(m) + albumDisHtml(m, members) + '</span>'
+            + '<span class="fs-t" data-tip="' + recTip(m) + '">' + oldestBadge(m, oldest) + pendingBadge(m) + videoBadge(m) + liveBadge(m) + recLink(m.gid, m.title) + recPlace(m) + recDis(m) + albumDisHtml(m, members) + '</span>'
             + '<span class="fs-artistcol" data-tip="' + escapeHtml(m.artistCredit || '') + '">' + artistLink(m) + '</span>'
             + '<span class="fs-rel" data-tip="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + '</span>'
             + (() => { const d = lenOffBy(m); return d == null ? '<span class="fs-len">' + dur(m.length) + '</span>'
@@ -7335,6 +7351,7 @@ try {
         }
         wrap._fsAll = all;
         draw();
+        if (ok.some(r => !_idCache.get(r.gid))) { await Promise.all(ok.map(r => resolveInternalId(r.gid))); if (wrap.isConnected) draw(); }
         if (SETTINGS.acoustidEnrich !== false) { try { await enrichAcoustIds(ok.filter(r => r.acoustids == null), 2); draw(); } catch (e) { Log.warn('Merge edit: AcoustIDs not read: ' + e.message); } }
     };
     const paint = async (m, wrap) => {
