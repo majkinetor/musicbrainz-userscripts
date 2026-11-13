@@ -32,7 +32,7 @@ async function drag(page, key, rows) {
 test('a column turns off in place and stays off after a redraw', { tag: '@sandbox' }, async ({ page, inject }) => {
   await open(page, inject);
   // late data (ratings, cover art) still redraws the page now and then: mark the table once it has held for a while
-  const mark = await until(() => page.evaluate(() => new Promise(r => { const t = document.querySelector('#s-dg table.ed-t'); t.dataset.same = '1'; setTimeout(() => r(document.querySelector('#s-dg table.ed-t') === t), 1500); })), v => v);
+  const mark = await until(() => page.evaluate(() => new Promise(r => { const t = document.querySelector('#s-dg table.ed-t'); t._same = 1; setTimeout(() => r(document.querySelector('#s-dg table.ed-t') === t), 1500); })), v => v);
   check(mark && await heads(page) === 'title,artist,date,rating,releases,links', 'the usual columns');
   check(await span(page) === 7, 'a group heading spans them all');
   await page.locator('#pop-cols-dg [data-colk="rating"] input').click();
@@ -40,7 +40,7 @@ test('a column turns off in place and stays off after a redraw', { tag: '@sandbo
   check(await rowCells(page) === 'title,artist,date,releases,links', 'the rows follow the heading');
   check(await span(page) === 6, 'the group heading narrows');
   check(await page.locator('#pop-cols-dg').isVisible(), 'the menu stays open');
-  check(await page.$eval('#s-dg table.ed-t', t => t.dataset.same === '1'), 'the table was not redrawn');
+  check(await page.$eval('#s-dg table.ed-t', t => t._same === 1), 'the table was not redrawn');
   check((await page.locator('[data-pop="cols-dg"] i').textContent()) === '+1', 'the button counts what is off');
   check(await page.locator('#pop-cols-dg [data-colk="title"] input').isDisabled(), 'the title stays');
   await page.locator('#s-dg [data-dgsort="date"]').click();

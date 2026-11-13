@@ -9318,6 +9318,7 @@ function fltBar(sc, xs) {
 // the suggestions under the box (majkinetor, option C of a mock): the title as typed first, then each field's
 // values that contain it, grouped under the field's name; Enter or a click takes the lit one
 function fltSug(sc, inp) {
+    if (!inp.isConnected) return;
     const f = FLT[sc], q = fltFold(inp.value.trim()), pop = inp.parentNode.querySelector('.fpop');
     if (!pop) return;
     if (!q || document.activeElement !== inp) { pop.hidden = true; pop.innerHTML = ''; return; }
@@ -10164,16 +10165,31 @@ function colWire(root) {
 const EH_LIS = new WeakMap(), EH_FORM = /^(INPUT|TEXTAREA|SELECT|OPTION)$/;
 function ehMorph(root, html) {
     const t = document.createElement('template'); t.innerHTML = html;
+    const f = document.activeElement, sel = f && /^(INPUT|TEXTAREA)$/.test(f.nodeName) ? [f.selectionStart, f.selectionEnd] : null;
     ehMorphKids(root, t.content);
+    // a kept box that had to move loses focus on the way: give it back, caret included
+    if (f && f !== document.activeElement && f.isConnected && root.contains(f)) {
+        f.focus({ preventScroll: true });
+        if (sel && sel[0] != null) try { f.setSelectionRange(sel[0], sel[1]); } catch { }
+    }
 }
+// an unnamed element is matched by its tag and first class, so "Clear" showing up before a filter box doesn't become the box
+const ehMorphKey = n => n.nodeType !== 1 ? n.nodeName : n.id ? '#' + n.id : n.nodeName + '.' + ((n.getAttribute('class') || '').trim().split(/\s+/)[0]);
 function ehMorphKids(a, b) {
     let ac = a.firstChild;
     for (let bc = b.firstChild; bc;) {
-        const next = bc.nextSibling, id = bc.nodeType === 1 && bc.id;
-        let m = null;
-        if (id) { for (let x = ac; x; x = x.nextSibling) if (x.nodeType === 1 && x.id === id) { m = x; break; } }
-        else if (ac && ac.nodeType === bc.nodeType && ac.nodeName === bc.nodeName && !(ac.nodeType === 1 && ac.id)) m = ac;
-        if (m) { if (m === ac) ac = ac.nextSibling; else a.insertBefore(m, ac); ehMorphNode(m, bc); }
+        const next = bc.nextSibling, k = ehMorphKey(bc);
+        let m = null, named = false;
+        for (let x = ac; x; x = x.nextSibling) {
+            if (x.nodeType === bc.nodeType && ehMorphKey(x) === k) { m = x; break; }
+            if (x.nodeType === 1 && x.id) named = true;
+        }
+        if (m && m !== ac) {
+            // the old nodes passed over can't match anything later: drop them, so the match stays put (moving it would blur it)
+            if (named) a.insertBefore(m, ac);
+            else while (ac !== m) { const n = ac.nextSibling; ac.remove(); ac = n; }
+        }
+        if (m) { if (m === ac) ac = ac.nextSibling; ehMorphNode(m, bc); }
         else a.insertBefore(bc, ac);
         bc = next;
     }
@@ -10185,7 +10201,11 @@ function ehMorphNode(a, b) {
     const imgSame = a.nodeName === 'IMG' && a._ehSrc === b.getAttribute('src');
     for (const at of [...a.attributes]) if (!b.hasAttributeNS(at.namespaceURI, at.localName) && !(imgSame && /^(src|srcset)$/.test(at.name))) a.removeAttributeNS(at.namespaceURI, at.localName);
     for (const at of b.attributes) if (!(imgSame && /^(src|srcset)$/.test(at.name)) && a.getAttributeNS(at.namespaceURI, at.localName) !== at.value) a.setAttributeNS(at.namespaceURI, at.name, at.value);
-    if (a.nodeName === 'IMG') a._ehSrc = b.getAttribute('src');
+    if (a.nodeName === 'IMG') {
+        // a kept image loads no more, so it keeps the loaded mark the page put on it
+        if (a.complete && a.naturalWidth) a.classList.add('eh-ok');
+        a._ehSrc = b.getAttribute('src');
+    }
     if (EH_FORM.test(a.nodeName) && a !== document.activeElement) {
         if (a.nodeName === 'TEXTAREA') { a.value = b.value; return; }
         if ('value' in b && a.nodeName !== 'SELECT') a.value = b.value;
@@ -10201,6 +10221,7 @@ function render(keepPop) {
     const app = $('#app') || (ehBody && ehBody.querySelector('#app')), P = EventTarget.prototype, add = P.addEventListener, rem = P.removeEventListener;
     if (!app) return renderNow(keepPop);
     P.addEventListener = function (type, fn, o) {
+        if (this == null) return add.call(window, type, fn, o); // a bare addEventListener() is the window's
         if (typeof fn === 'function' && this.nodeType === 1 && app.contains(this)) {
             const cap = typeof o === 'boolean' ? o : !!(o && o.capture), k = type + '|' + cap + '|' + fn;
             let m = EH_LIS.get(this); if (!m) EH_LIS.set(this, m = new Map());
