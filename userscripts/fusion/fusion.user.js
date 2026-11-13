@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.13.011000
+// @version      2026.11.13.120000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -1141,11 +1141,13 @@ function recRemovalDebug(gid, why, rec = STATE.recordings.get(gid)) {
         + ' (pool=' + STATE.poolOrder.length + ', groups=' + STATE.groups.length + ', recordings=' + STATE.recordings.size + ')');
 }
 function recSnapshot() {
+    const onBoard = new Set(STATE.poolOrder.concat(STATE.groups.flatMap(g => g.memberGids)));
     return JSON.stringify({
         // Keep group members as well as pool entries. recApply needs each
         // recording to render a group, while poolOrder alone controls which
-        // recordings remain in the pool.
-        recs: [...STATE.recordings.values()],
+        // recordings remain in the pool. Only those on the board: the ones Mission Control lent
+        // for its findings stay in this page's memory and are never stored
+        recs: [...STATE.recordings.values()].filter(r => onBoard.has(r.gid)),
         poolOrder: STATE.poolOrder.slice(),
         groups: STATE.groups.map(g => Object.assign({}, g, { editing: false })),
     });
@@ -1177,7 +1179,7 @@ function recSaveNow() {
     const v = recSnapshot();
     if (v === recSaved) return;
     recSaved = v;
-    Log.debug('Recording board save: pool=' + STATE.poolOrder.length + ', groups=' + STATE.groups.length + ', recordings=' + STATE.recordings.size);
+    Log.debug('Recording board save: pool=' + STATE.poolOrder.length + ', groups=' + STATE.groups.length + ', recordings=' + JSON.parse(v).recs.length);
     GM_setValue(REC_KEY, v);
 }
 function recSaveSoon() { if (!recSaveT) recSaveT = setTimeout(recSaveNow, 150); }
@@ -1438,6 +1440,8 @@ function clearPool() {
     gone.forEach(gid => recRemovalDebug(gid, 'clear pool; removed from Fusion'));
     gone.forEach(g => { STATE.recordings.delete(g); STATE.expandedReleases.delete(g); });
     STATE.poolOrder = STATE.poolOrder.filter(g => inG.has(g));
+    // and whatever Mission Control lent that never went on the board
+    [...STATE.recordings.keys()].filter(g => !inG.has(g)).forEach(g => { STATE.recordings.delete(g); STATE.expandedReleases.delete(g); });
     if (STATE.selected && !STATE.recordings.has(STATE.selected)) STATE.selected = null;
     Log.info('Clear pool: removed ' + gone.length + ' recording(s)');
 }
@@ -6395,7 +6399,9 @@ const EM_ALL = [['recording', 'Recordings']].concat(EM_TYPES);
 const emLabel = type => (EM_ALL.find(x => x[0] === type) || [type, type])[1];
 const emOne = type => type === 'series' ? 'series' : type === 'release-group' ? 'release group' : emLabel(type).toLowerCase().replace(/s$/, '');
 function poolCount(type) {
-    if (type === 'recording') return STATE.recordings?.size || 0;
+    // what the board shows: the pool and the groups not yet merged. STATE.recordings also holds recordings
+    // Mission Control lent for its findings, which never went on the board, so its size overcounts
+    if (type === 'recording') return STATE.poolOrder ? new Set(STATE.poolOrder.concat(STATE.groups.filter(g => g.state !== 'done').flatMap(g => g.memberGids))).size : 0;
     const u = EM.types[type];
     return u ? u.pool.length + u.groups.filter(g => g.state !== 'done').reduce((m, g) => m + g.members.length, 0) : 0;
 }
@@ -6511,7 +6517,7 @@ function ensureLauncher() {
         btn.onclick = e => {
             const c = e.target.closest('.fs-ctr'); if (c) { openPool(c.dataset.type); return; }
             if (e.ctrlKey || e.metaKey) { openAddMenu(btn); return; }
-            if (detectScope() && (STATE.recordings.size || !emCount())) openFusion(); else openEntities();
+            if (detectScope() && (poolCount('recording') || !emCount())) openFusion(); else openEntities();
         };
         btn.oncontextmenu = e => { if (clearPoolFromCounter(e)) return; e.preventDefault(); if (document.getElementById('fs-settings')) document.getElementById('fs-settings').remove(); else openSettings(btn); };
         document.body.appendChild(btn);
