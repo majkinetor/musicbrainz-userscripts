@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.060000
+// @version      2026.11.14.070000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12934,7 +12934,7 @@ function histRuns(es) {
 function histGroup(key, title, es, av, nm) {
     const d = data, ents = {}; es.forEach(e => { const k = histEnt(e.tk); ents[k] = (ents[k] || 0) + 1; });
     const when = histSpan(es[es.length - 1].t, es[0].t);
-    return `<div class="hgrp${d.open.has(key) ? ' open' : ''}" data-hg="${esc(key)}"><div class="hgh"><div class="hgi">${av ? `<span class="hav" style="background:hsl(${histHue(nm || '')} 45% 45%)">${esc((nm || '?')[0].toUpperCase())}</span>` : ''}<span class="t">${title}</span><span class="m">${es.length} edit${es.length > 1 ? 's' : ''}${d.grp === 'burst' ? ' · ' + when : ''}</span><span class="sp"></span>${Object.entries(ents).map(([k, c]) => `<span class="htc" data-tip="${c} ${esc(k)}">${SVG(H_ICO[histIk(k)])}${c > 1 ? `<b>${c}</b>` : ''}</span>`).join('')}${histPills(es)}</div><div class="hga">${histGroupVote(es)}${histGroupCx(es)}<span class="cv">▸</span></div></div><div class="hgb">${d.open.has(key) ? histRuns(es) : ''}</div></div>`;
+    return `<div class="hgrp${d.open.has(key) ? ' open' : ''}" data-hg="${esc(key)}"><div class="hgh"><div class="hgi">${av ? `<span class="hav" style="background:hsl(${histHue(nm || '')} 45% 45%)">${esc((nm || '?')[0].toUpperCase())}</span>` : ''}<span class="t">${title}</span><span class="m">${es.length} edit${es.length > 1 ? 's' : ''}${d.grp === 'burst' ? ' · ' + when : ''}</span>${Object.entries(ents).map(([k, c]) => `<span class="htc" data-tip="${c} ${esc(k)}">${SVG(H_ICO[histIk(k)])}${c > 1 ? `<b>${c}</b>` : ''}</span>`).join('')}<span class="sp"></span>${histPills(es)}</div><div class="hga">${histGroupVote(es)}${histGroupCx(es)}<span class="cv">▸</span></div></div><div class="hgb">${d.open.has(key) ? histRuns(es) : ''}</div></div>`;
 }
 function histPage(app, d) {
     const r = d.rel, rid = histRid(d.id), src = histSrc(d.id), acts = (rid ? backA(rid) + actionRow(relActs(r), 'release', rid, 'edits') : '') + SRCH();
