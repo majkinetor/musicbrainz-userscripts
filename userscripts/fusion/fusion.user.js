@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.13.140000
+// @version      2026.11.13.150000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -4491,7 +4491,7 @@ function fsStyle() {
         + '.fs-cnt{font-size:10.5px;color:var(--fs-muted);white-space:nowrap}'
         // The release table must scroll INSIDE the card — it has far more columns
         // than the card is wide, and letting it stretch would blow out the layout.
-        + '.fs-reltbl{overflow-x:auto;margin:0 0 6px 30px;border:1px solid var(--fs-border);border-radius:4px;background:var(--mbu-bg);scrollbar-width:thin;scrollbar-color:#d3d3e0 transparent}'
+        + '.fs-reltbl{overflow-x:auto;margin:0 0 6px 30px;border:1px solid var(--fs-border);border-radius:4px;background:var(--mbu-bg);scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}'
         + '.fs-reltbl::-webkit-scrollbar{height:7px}'
         + '.fs-reltbl::-webkit-scrollbar-track{background:transparent}'
         + '.fs-reltbl::-webkit-scrollbar-thumb{background:var(--mbu-bg-sunken);border-radius:4px}'
@@ -4500,10 +4500,12 @@ function fsStyle() {
         + '.fs-reltbl col.c-num{width:3.5%} .fs-reltbl col.c-title{width:14%} .fs-reltbl col.c-len{width:4.5%}'
         + '.fs-reltbl col.c-tart{width:11%} .fs-reltbl col.c-rel{width:17%} .fs-reltbl col.c-rart{width:10.5%}'
         + '.fs-reltbl col.c-rgt{width:13%} .fs-reltbl col.c-cd{width:8.5%} .fs-reltbl col.c-label{width:10.5%} .fs-reltbl col.c-cat{width:7%}'
-        + '.fs-reltbl th{text-align:left;font-weight:600;padding:4px 7px;border-bottom:1px solid var(--fs-border);white-space:nowrap;background:rgba(0,0,0,.03)}'
-        + '.fs-reltbl td{padding:3px 7px;border-bottom:1px solid rgba(0,0,0,.05);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
-        + '.fs-reltbl tr:last-child td{border-bottom:none}'
-        + '.fs-relband td{font-weight:600;background:rgba(0,0,0,.05);color:var(--fs-text)}'
+        // The id-less :not() pair outranks a host page's table rules (Event Horizon's .hdt / sticky .ed-t headers)
+        + '.fs-reltbl:not(#fs-0):not(#fs-1) :is(th,td){position:static;text-align:left;vertical-align:middle;letter-spacing:normal;text-transform:none;font-size:inherit;line-height:1.45;color:var(--fs-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:table-cell;min-width:0;width:auto}'
+        + '.fs-reltbl:not(#fs-0):not(#fs-1) th{font-weight:600!important;color:var(--fs-muted)!important;padding:4px 7px;border:0;border-bottom:1px solid var(--fs-border);background:var(--mbu-bg-sunken)}'
+        + '.fs-reltbl:not(#fs-0):not(#fs-1) td{padding:3px 7px;border:0;border-bottom:1px solid var(--fs-border);background:none}'
+        + '.fs-reltbl:not(#fs-0):not(#fs-1) tr:last-child td{border-bottom:none}'
+        + '.fs-reltbl:not(#fs-0):not(#fs-1) tr.fs-relband td{font-weight:600;background:var(--mbu-bg-sunken);color:var(--fs-text)}'
         + '.fs-relload,.fs-relerr,.fs-relempty{padding:6px 9px;font-size:10.5px;color:var(--fs-muted)}'
         + '.fs-relerr{color:var(--fs-red)}'
         + '.fs-gt{font-weight:700;font-size:12.5px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
