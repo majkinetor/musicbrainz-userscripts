@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.012000
+// @version      2026.11.14.020000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2853,9 +2853,12 @@ body{margin:0;background:var(--eh-page);color:var(--text);font-family:Manrope,sy
 /* no isolation: it made <body> its own layer, so every window in it (Fusion, Mission Control, What is new) sat under the launchers on <html>; the backgrounds behind (z-index:-1) paint the same without it, since <html> has no background */
 body{position:relative;overflow-x:clip}
 body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;pointer-events:none}
-#eh-aura{display:none;position:absolute;left:-210px;top:-210px;width:calc(100% + 420px);max-width:none;height:calc(1040px * var(--eh-aura-h,1));z-index:-1;pointer-events:none;opacity:var(--eh-aura-o,.4);transform:scale(1.15);-webkit-mask-image:linear-gradient(#000 41%,transparent 80%);mask-image:linear-gradient(#000 41%,transparent 80%)}
-:root[data-eh-bg=aura][data-eh-aura] #eh-aura{display:block}
-@media (max-width:700px){#eh-aura{left:0;width:var(--eh-aura-w,100%);transform:none}}
+/* scrolling stays cheap: the fade is drawn into the canvas (no CSS mask), its 15% enlargement is in the box (no transform),
+   and a clipping box keeps it from widening the page, so no extra page-sized layers repaint under the blurred sticky headers */
+#eh-aura-box{display:none;position:absolute;left:0;top:0;width:100%;height:calc(1118px * var(--eh-aura-h,1) - 210px);overflow:hidden;contain:strict;z-index:-1;pointer-events:none}
+#eh-aura{position:absolute;left:calc(-7.5% - 241.5px);top:calc(-210px - 78px * var(--eh-aura-h,1));width:calc(115% + 483px);max-width:none;height:calc(1196px * var(--eh-aura-h,1));opacity:var(--eh-aura-o,.4)}
+:root[data-eh-bg=aura][data-eh-aura] #eh-aura-box{display:block}
+@media (max-width:700px){#eh-aura-box{width:var(--eh-aura-w,100%);height:calc(1040px * var(--eh-aura-h,1) - 210px)}#eh-aura{left:0;top:-210px;width:100%;height:calc(1040px * var(--eh-aura-h,1))}}
 @media (max-width:700px){html main#app.wrap{padding-top:12px}:is(#app,#eh-pin) .kicker{gap:4px}:is(#app,#eh-pin) .kicker .acts{gap:0}:is(#app,#eh-pin) .kicker .ab{padding:0 5px}:is(#app,#eh-pin) .kicker :is(.srch,.acts>*+.ab[data-star]){margin-left:0}:is(#app,#eh-pin) .kicker .abm{max-width:calc(100vw - 16px)}:is(#app,#eh-pin) .kicker .abm .ab{white-space:normal}#app .detail .grp h4{flex-wrap:wrap;row-gap:4px}#app .hm-hi{display:none}#app .hm-hero{padding-bottom:2px}#app .hm-srch{gap:4px;padding:3px 3px 3px 12px;border-radius:22px}#app .hm-srch>.hm-go{flex:none;width:24px;height:30px}#app .hm-srch>.hm-go svg{width:16px;height:16px}#app .hm-srch>input[name=query]{flex:1 1 0;min-width:0;font-size:15px;padding:6px 0}#app .hm-srch>.hm-ty{flex:none;max-width:84px;padding:4px;font-size:12px}#app .hm-srch>button.hm-tg{width:30px;height:30px}#app .hm-qr{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:6px;margin-top:10px;padding-right:40px;-webkit-mask-image:linear-gradient(90deg,#000 80%,transparent);mask-image:linear-gradient(90deg,#000 80%,transparent)}#app .hm-qr::-webkit-scrollbar{display:none}#app .hm-qr a{flex:none;white-space:nowrap}#app .hm-add{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:2px;margin-top:10px;padding-right:40px;-webkit-mask-image:linear-gradient(90deg,#000 80%,transparent);mask-image:linear-gradient(90deg,#000 80%,transparent)}#app .hm-add::-webkit-scrollbar{display:none}#app .hm-add span{flex:none;font-size:11px;margin-right:2px}#app .hm-add a{flex:none;width:34px;height:34px}#app .hm-add a svg{width:18px;height:18px}#app #s-tl>.secthead>.tools>.label{display:none}}   /* past the edges it widened a phone's page by 270px */
 :root[data-eh-bg=aura][data-eh-theme=dark] #eh-aura{opacity:calc(var(--eh-aura-o,.4) * .7)}
 /* the Image background: a picture from the web, fixed behind the page and below the effects; the filters go on the picture
@@ -9807,7 +9810,10 @@ function bgApply() {
         de.style.setProperty('--eh-aura-o', String((+S.auraOpacity || 40) / 100));
         de.style.setProperty('--eh-aura-h', String((+S.auraHeight || 100) / 100));
         let cv = document.getElementById('eh-aura');
-        if (!cv) { cv = document.createElement('canvas'); cv.id = 'eh-aura'; cv.setAttribute('aria-hidden', 'true'); document.body.prepend(cv); }
+        if (!cv) {
+            const box = document.createElement('div'); box.id = 'eh-aura-box'; box.setAttribute('aria-hidden', 'true');
+            cv = document.createElement('canvas'); cv.id = 'eh-aura'; box.append(cv); document.body.prepend(box);
+        }
         if (cv.dataset.src !== src || cv.dataset.width !== String(width) || cv.dataset.look !== look) {
             // Quarter-size is plenty for a 70px blur. Padding keeps its edges outside the visible area.
             // Draw the existing image directly: no extra request, CORS readback or image export needed.
@@ -9817,6 +9823,12 @@ function bgApply() {
             const iw = im.naturalWidth * scale, ih = im.naturalHeight * scale;
             ctx.filter = `blur(${blur}px) saturate(${sat})`;
             ctx.drawImage(im, pad + (w - iw) / 2, pad + (h - ih) * .3, iw, ih);
+            // the fade to the page, kept in the canvas: a CSS mask on this big box repainted it on every scroll
+            const fade = ctx.createLinearGradient(0, 0, 0, cv.height);
+            fade.addColorStop(.41, '#000'); fade.addColorStop(.8, 'transparent');
+            ctx.filter = 'none'; ctx.globalCompositeOperation = 'destination-in';
+            ctx.fillStyle = fade; ctx.fillRect(0, 0, cv.width, cv.height);
+            ctx.globalCompositeOperation = 'source-over';
             cv.dataset.src = src; cv.dataset.width = String(width); cv.dataset.look = look;
         }
         de.setAttribute('data-eh-aura', '');
