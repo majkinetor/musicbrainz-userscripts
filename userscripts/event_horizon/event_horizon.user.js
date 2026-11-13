@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.010000
+// @version      2026.11.14.011000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5620,7 +5620,7 @@ async function tgInSend(names, v) {
     } catch (e) { LOG.err('Tagging failed: ' + e.message); toast('Tagging failed: ' + e.message); }
     if (tgIn === d) tgInDraw(true);
 }
-function tgInClose() { const dirty = tgIn && tgIn.dirty && tgIn.t.tags; if (dirty) MINE.set(tgIn.path.slice(1), new Set(dirty.filter(t => t.v > 0).map(t => t.n.toLowerCase()))); tgIn = null; tgInTell(null); if (dirty && data && data.g) { const ts = dirty.filter(t => t.c > 0); data.g.genres = ts.filter(t => t.g).map(t => t.n); data.g.tags = ts.filter(t => !t.g).map(t => t.n); } render(); }
+function tgInClose() { const dirty = tgIn && tgIn.dirty && tgIn.t.tags; if (dirty) MINE.set(tgIn.path.slice(1), new Set(dirty.filter(t => t.v > 0).map(t => t.n.toLowerCase()))); const box = tgInBox(); tgIn = null; tgInTell(null); ehDirty(box); if (dirty && data && data.g) { const ts = dirty.filter(t => t.c > 0); data.g.genres = ts.filter(t => t.g).map(t => t.n); data.g.tags = ts.filter(t => !t.g).map(t => t.n); } render(); }
 function tgInWire() {
     if (tgInWired) return; tgInWired = true;
     // Fuzzy Logic voted itself (the editor shut): show its tags in the header without a reload, and drop the kept answers
@@ -10219,6 +10219,8 @@ function ehMorphKids(a, b) {
 // has added to it since (the kicker's marks, the link bar's order), so a redraw for another cover touches nothing else
 const EH_SAME = new WeakMap();
 const ehSameScope = b => b.nodeType === 1 && b.closest('section.hero');
+// a part the page has redrawn itself (the tags' edit box) forgets its markup, it and the parts around it, so the next redraw puts it back
+function ehDirty(n) { for (; n; n = n.parentElement) EH_SAME.delete(n); }
 function ehStamp(b) { if (!ehSameScope(b)) return; for (const x of [b, ...b.querySelectorAll('*')]) EH_SAME.set(x, x.outerHTML); }
 function ehMorphNode(a, b) {
     if (a.nodeType !== 1) { if (a.nodeValue !== b.nodeValue) a.nodeValue = b.nodeValue; return; }
