@@ -8317,7 +8317,7 @@ const tsKey = sid => 'eh-tsort:' + location.pathname + ':' + sid;
 const tsGet = sid => { if (!(sid in TSORT)) { try { const v = JSON.parse(sessionStorage.getItem(tsKey(sid)) || 'null'); if (v) TSORT[sid] = v; } catch {} } return TSORT[sid]; };
 const tsSet = (sid, v) => { TSORT[sid] = v; try { v.length ? sessionStorage.setItem(tsKey(sid), JSON.stringify(v)) : sessionStorage.removeItem(tsKey(sid)); } catch {} };
 // a cover that doesn't load is its kind's mark
-const dgWire = app => { for (const im of app.querySelectorAll('[data-dgcover]')) { const fb = () => { if (!im.parentNode) return; const look = im.dataset.dgcover === 'artist' && !im.getAttribute('src') && ARTIMG.cached(im.dataset.aid) === undefined && TGX_ART[im.dataset.aid] === undefined; im.outerHTML = `<span class="dn"${look ? ` data-tgxart="artist:${im.dataset.aid}"` : ''}>${im.dataset.dgcover === 'artist' ? mkSvg(MK_CR).replace(/width="15" height="15"/, im.closest('.tt') ? 'width="18" height="18"' : 'width="36" height="36"') : im.closest('.tt') ? LAYERS(18) : LAYERS(36, 1)}</span>`; }; im.onerror = fb; if (!im.getAttribute('src')) fb(); } if (app.querySelector('[data-tgxart]')) tagxArt(app); };    // TQ: a table's filter text, absent while its box is shut
+const dgWire = app => { for (const im of app.querySelectorAll('[data-dgcover]')) { const fb = () => { if (!im.parentNode) return; const look = im.dataset.dgcover === 'artist' && !im.getAttribute('src') && ARTIMG.cached(im.dataset.aid) === undefined && TGX_ART[im.dataset.aid] === undefined; const src = im.getAttribute('src'); im.outerHTML = `<span class="dn"${src ? ` data-dgsrc="${esc(src)}"` : ''}${look ? ` data-tgxart="artist:${im.dataset.aid}"` : ''}>${im.dataset.dgcover === 'artist' ? mkSvg(MK_CR).replace(/width="15" height="15"/, im.closest('.tt') ? 'width="18" height="18"' : 'width="36" height="36"') : im.closest('.tt') ? LAYERS(18) : LAYERS(36, 1)}</span>`; }; im.onerror = fb; if (!im.getAttribute('src')) fb(); } if (app.querySelector('[data-tgxart]')) tagxArt(app); };    // TQ: a table's filter text, absent while its box is shut
 // a column's key in the filter box: its heading, folded, without spaces ("artist:elvis"; a prefix will do)
 const tqKey = h => fltFold((h || '').replace(/<[^>]*>/g, '')).replace(/[^a-z0-9#]+/g, '');
 // a year or date column's value as a range (2022-2024, 2022-, -2024), or null; a year's end still being typed leaves that end open,
@@ -10166,6 +10166,8 @@ const EH_LIS = new WeakMap(), EH_FORM = /^(INPUT|TEXTAREA|SELECT|OPTION)$/;
 function ehMorph(root, html) {
     const t = document.createElement('template'); t.innerHTML = html;
     const f = document.activeElement, sel = f && /^(INPUT|TEXTAREA)$/.test(f.nodeName) ? [f.selectionStart, f.selectionEnd] : null;
+    // the page's sections come in the rail's order, so a redraw doesn't move them back and forth
+    if (root.id === 'app') secSorted([...t.content.querySelectorAll(':scope>section.sec')]).forEach(x => t.content.appendChild(x));
     ehMorphKids(root, t.content);
     // a kept box that had to move loses focus on the way: give it back, caret included
     if (f && f !== document.activeElement && f.isConnected && root.contains(f)) {
@@ -10173,8 +10175,10 @@ function ehMorph(root, html) {
         if (sel && sel[0] != null) try { f.setSelectionRange(sel[0], sel[1]); } catch { }
     }
 }
-// an unnamed element is matched by its tag and first class, so "Clear" showing up before a filter box doesn't become the box
-const ehMorphKey = n => n.nodeType !== 1 ? n.nodeName : n.id ? '#' + n.id : n.nodeName + '.' + ((n.getAttribute('class') || '').trim().split(/\s+/)[0]);
+// an unnamed element is matched by its tag and first class, so "Clear" showing up before a filter box doesn't become the box;
+// an image's loaded mark doesn't count, so a loaded cover isn't a stranger to its own markup;
+// a cover that failed and became a placeholder still answers to its image, so a redraw doesn't try it again
+const ehMorphKey = n => n.nodeType !== 1 ? n.nodeName : n.id ? '#' + n.id : n.dataset.dgsrc ? 'dg:' + n.dataset.dgsrc : n.nodeName === 'IMG' && n.hasAttribute('data-dgcover') && n.getAttribute('src') ? 'dg:' + n.getAttribute('src') : n.nodeName + '.' + ((n.getAttribute('class') || '').replace(/\beh-ok\b/, '').trim().split(/\s+/)[0]);
 function ehMorphKids(a, b) {
     let ac = a.firstChild;
     for (let bc = b.firstChild; bc;) {
@@ -10197,8 +10201,11 @@ function ehMorphKids(a, b) {
 }
 function ehMorphNode(a, b) {
     if (a.nodeType !== 1) { if (a.nodeValue !== b.nodeValue) a.nodeValue = b.nodeValue; return; }
+    if (a.dataset.dgsrc) return;
     // an image a fallback has since repointed keeps its picture while its markup is unchanged
     const imgSame = a.nodeName === 'IMG' && a._ehSrc === b.getAttribute('src');
+    // a kept image that has loaded keeps its loaded mark, rather than losing it and getting it back
+    if (a.nodeName === 'IMG' && a.classList.contains('eh-ok') && (imgSame || a.getAttribute('src') === b.getAttribute('src'))) b.classList.add('eh-ok');
     for (const at of [...a.attributes]) if (!b.hasAttributeNS(at.namespaceURI, at.localName) && !(imgSame && /^(src|srcset)$/.test(at.name))) a.removeAttributeNS(at.namespaceURI, at.localName);
     for (const at of b.attributes) if (!(imgSame && /^(src|srcset)$/.test(at.name)) && a.getAttributeNS(at.namespaceURI, at.localName) !== at.value) a.setAttributeNS(at.namespaceURI, at.name, at.value);
     if (a.nodeName === 'IMG') {
@@ -10307,8 +10314,9 @@ function renderNow(keepPop) {
         : data.kind === 'work' ? wkHero(data) + annotation(r) + wikipedia(data.wikiX) + wkCredits(r) + w('rc', 'Recordings', recsHtml(data))
         : data.kind === 'label' ? lbHero(data) + annotation(r) + wikipedia(data.wikiX) + editions({ id: null, page: `/label/${r.id}`, type: 'label' }, data.editions, data.edCount) : data.kind === 'artist' ? arHero(data) + annotation(r) + wikipedia(data.wikiX) + discography(data) : data.kind === 'rg' ? rgHero(data) + annotation(r) + wikipedia(data.wikiX) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgCard(r, true)
         : hero(r) + annotation(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r));    // a group without its own cover shows its first release's, else the format's mark
-    // a redraw keeps the images already loaded, so the covers don't blink
-    for (const im of app.querySelectorAll('img')) { const k = imgKeyOf(im), o = oldImgs.get(k); if (o) { im.replaceWith(o); oldImgs.delete(k); } else imgKey.set(im, k); }
+    // an image the redraw had to draw anew takes back a loaded one it dropped, so the covers don't blink;
+    // one it kept stays where it is, so a cover never jumps to another tile
+    for (const im of app.querySelectorAll('img')) { if (imgKey.has(im)) continue; const k = imgKeyOf(im), o = oldImgs.get(k); if (o && !o.isConnected) { im.replaceWith(o); oldImgs.delete(k); } else imgKey.set(im, k); }
     heroFacts(app);
     const gc = app.querySelector('[data-rgcover]');
     if (gc) gc.onerror = () => { const e = data.editions.find(x => x.thumb); if (e && !gc.dataset.tried) { gc.dataset.tried = 1; gc.src = `https://coverartarchive.org/release/${e.id}/front-500`; } else gc.outerHTML = `<div class="nocover">${LAYERS(96, 1)}</div>`; };
@@ -11133,12 +11141,19 @@ function secFab(on) {
     }
     fabPlace();
 }
+// the page's sections in the rail's order: the ones it names first, the rest as they come
+function secSorted(secs) {
+    const at = x => { const i = S.secOrder.indexOf(x.id.slice(2)); return i < 0 ? 100 + secs.indexOf(x) : i; };
+    return [...secs].sort((a, b) => at(a) - at(b));
+}
 function secRail(app) {
-    const secs = [...app.querySelectorAll(':scope>section.sec')], id = x => x.id.slice(2);
+    const secs = secSorted([...app.querySelectorAll(':scope>section.sec')]), id = x => x.id.slice(2);
     // A release's Editions and a release group's Releases are separate sections for visibility.
     const hideKey = k => k === 'ed' && data.kind === 'rg' ? 'rg-ed' : k;
-    const at = x => { const i = S.secOrder.indexOf(id(x)); return i < 0 ? 100 + secs.indexOf(x) : i; };
-    secs.sort((a, b) => at(a) - at(b)).forEach(x => { x.hidden = S.secHide.includes(hideKey(id(x))); app.appendChild(x); });
+    secs.forEach(x => { x.hidden = S.secHide.includes(hideKey(id(x))); });
+    // a section already in its place stays: moving it would redraw everything in it (#1029)
+    const tail = [...app.children].slice(-secs.length);
+    if (secs.length && secs.some((x, i) => tail[i] !== x)) secs.forEach(x => app.appendChild(x));
     let rail = document.getElementById('eh-rail');
     if (!rail) {
         rail = document.createElement('nav');
