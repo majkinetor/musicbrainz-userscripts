@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.006000
+// @version      2026.11.14.007000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11481,7 +11481,7 @@ const EDIT_SEARCH_CSS = `
 #edit-search.eh-es .eh-es-pick>button{border:0;border-radius:0;padding:4px 7px;line-height:1.25}
 #edit-search.eh-es .eh-es-name{border:0}
 #edit-search.eh-es .arg{max-width:100%}#edit-search.eh-es input[type=number]{width:125px}
-#edit-search.eh-es .autocomplete{position:relative;display:inline-flex;align-items:center;max-width:100%}
+#edit-search.eh-es .autocomplete{position:relative;display:inline-flex!important;align-items:center;max-width:100%}
 #edit-search.eh-es .autocomplete input.name{width:auto!important;field-sizing:content;min-width:12ch;max-width:260px}#edit-search.eh-es .autocomplete img{order:2;position:static;margin:0 0 0 6px;width:16px;height:16px;align-self:center;vertical-align:middle}#edit-search.eh-es .autocomplete>*{order:1}#edit-search.eh-es .autocomplete>:is(img,svg,:has(img,svg)){order:2!important;position:static!important;transform:none!important;margin-left:6px;align-self:center;flex:none}#edit-search.eh-es .autocomplete svg{width:15px;height:15px;pointer-events:none}
 #edit-search.eh-es a{color:var(--link)}
 #edit-search.eh-es #extra-condition{display:block;border:0;padding:12px 0}#edit-search.eh-es #extra-condition>:is(.remove-item,.field-container){display:none!important}
