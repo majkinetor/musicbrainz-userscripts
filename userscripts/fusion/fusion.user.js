@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.13.180000
+// @version      2026.11.13.190000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -4692,10 +4692,10 @@ function oldestGidOf(members) {
     let k = 0; ids.forEach((id, i) => { if (id < ids[k]) k = i; });
     return { gid: members[k].gid, id: ids[k], ids };
 }
-function oldestBadge(rec, oldest) {
+function oldestBadge(rec, oldest, what) {
     if (!oldest || oldest.gid !== rec.gid) return '';
     const others = oldest.ids.filter(id => id !== oldest.id).sort((a, b) => a - b).map(n => n.toLocaleString('en-US'));
-    return ' <span class="fs-oldest" data-tip="The oldest of these recordings\nRow id ' + oldest.id.toLocaleString('en-US') + ' ← ' + others.join(' + ') + '">oldest</span>';
+    return ' <span class="fs-oldest" data-tip="The oldest of these ' + (what || 'recordings') + '\nRow id ' + oldest.id.toLocaleString('en-US') + ' ← ' + others.join(' + ') + '">oldest</span>';
 }
 function liveBadge(rec) { return rec.live ? '<span class="fs-live" data-tip="Live recording: its performance of the work is marked live">live</span> ' : ''; }
 function recPlace(rec) {
@@ -5210,7 +5210,7 @@ function groupCardHtml(group, embed) {
             + '<div class="fs-grow' + (isTarget ? ' fs-target-row' : '') + '"' + (embed ? '' : ' draggable="true"') + ' data-gid="' + m.gid + '">'
             + '<span class="fs-exp' + (expanded ? ' fs-exp-on' : '') + '" data-act="toggle-releases" data-tip="' + (expanded ? 'Hide' : 'Show') + ' every release this recording is on\nRight-click: every recording in this group">' + (expanded ? '▼' : '▶') + '</span>'
             + star
-            + '<span class="fs-t" data-tip="' + recTip(m) + '">' + pendingBadge(m) + videoBadge(m) + liveBadge(m) + recLink(m.gid, m.title) + recPlace(m) + recDis(m) + albumDisHtml(m, members) + oldestBadge(m, oldest) + '</span>'
+            + '<span class="fs-t" data-tip="' + recTip(m) + '">' + pendingBadge(m) + videoBadge(m) + liveBadge(m) + recLink(m.gid, m.title) + oldestBadge(m, oldest) + recPlace(m) + recDis(m) + albumDisHtml(m, members) + '</span>'
             + '<span class="fs-artistcol" data-tip="' + escapeHtml(m.artistCredit || '') + '">' + artistLink(m) + '</span>'
             + '<span class="fs-rel" data-tip="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + '</span>'
             + (() => { const d = lenOffBy(m); return d == null ? '<span class="fs-len">' + dur(m.length) + '</span>'
@@ -6764,6 +6764,7 @@ function emCardHtml(type, g, gi, ro, active) {
         + '</div></div>');
     const colHead = cols.length ? '<div class="fs-emh"><span class="fs-emh-n">' + escapeHtml(emOne(type)) + '</span>' + cols.map(c => '<span class="fs-emc' + (EM_WIDE.has(c) ? ' fs-wide' : '') + '">' + c + '</span>').join('') + (busy || done || ro ? '<span class="fs-acts fs-emh-a"></span>' : '<span class="fs-acts fs-emh-a"><span>↩</span><span>✕</span></span>') + '</div>' : '';
     const aliasLine = x => { const h = aliasHits && aliasHits.get(x.gid); return h ? '<span class="fs-alias-sub' + (h.exact ? '' : ' fs-alias-near') + '" data-tip="' + escapeHtml((h.exact ? 'An alias of ' : 'Close to an alias of ') + h.of.name) + '">' + (h.exact ? '=' : '≈') + ' alias of ' + (h.of.gid === target.gid ? '★' : escapeHtml(h.of.name)) + ': <i>' + escapeHtml(h.alias) + '</i></span>' : ''; };
+    const oldest = oldestGidOf(g.members), what = label.toLowerCase();
     const rows = g.members.map(x => {
         const isT = x.gid === target.gid;
         const star = isT ? '<span class="fs-star fs-star-on" data-tip="The merge target\nThis one is kept.">★</span>'
@@ -6773,11 +6774,19 @@ function emCardHtml(type, g, gi, ro, active) {
             return '<span class="fs-emc' + (EM_WIDE.has(c) ? ' fs-wide' : '') + '" data-tip="' + escapeHtml(c + '\n' + (v == null ? 'loading…' : v || '—')) + '">' + (v == null ? '…' : v ? (cc ? '<span class="' + cc + '">' + escapeHtml(v) + '</span>' : escapeHtml(v)) : '') + '</span>';
         }).join('');
         return '<div class="fs-growwrap"><div class="fs-grow' + (isT ? ' fs-target-row' : '') + '"' + (busy || done || ro ? '' : ' draggable="true"') + ' data-gid="' + x.gid + '">' + star
-            + '<span class="fs-t">' + link(x) + (x.dis ? '<span class="fs-dis">(' + escapeHtml(x.dis) + ')</span>' : '') + aliasLine(x) + '</span>' + cells
+            + '<span class="fs-t">' + link(x) + oldestBadge(x, oldest, what) + (x.dis ? '<span class="fs-dis">(' + escapeHtml(x.dis) + ')</span>' : '') + aliasLine(x) + '</span>' + cells
             + (busy || done || ro ? '<span class="fs-acts"></span>' : '<span class="fs-acts"><span data-act="return" data-tip="Back to the pool">↩</span><span class="fs-rm-x" data-act="remove-both" data-tip="Remove from the group and the pool">✕</span></span>') + '</div></div>';
     }).join('');
     return '<div class="fs-gcard fs-gcard-manual fs-tier-manual' + (ro ? ' fs-emcard' : '') + active + '" data-g="' + g.id + '">' + head + colHead + '<div class="fs-grows">' + rows + '</div>'
         + (err && g.error ? '<div class="fs-gerr">' + escapeHtml(g.error) + '</div>' : '') + '</div>';
+}
+// the oldest pill needs every member's internal id: read the missing ones, then draw again
+const EM_ID_ASKED = new Set();
+function emResolveIds(members) {
+    const need = members.filter(x => !_idCache.has(x.gid) && !EM_ID_ASKED.has(x.gid));
+    if (members.length < 2 || !need.length) return;
+    need.forEach(x => EM_ID_ASKED.add(x.gid));
+    Promise.all(need.map(x => resolveInternalId(x.gid))).then(() => emRender());
 }
 function emRender() {
     const ov = document.getElementById('fs-em-overlay'); if (!ov) { refreshCounters(); return; }
@@ -6819,6 +6828,7 @@ function emRender() {
                 + '</div><div class="fs-note-wrap"><textarea class="fs-note-ta" spellcheck="false" placeholder="Edit note submitted with this merge…">' + escapeHtml(draft) + '</textarea>'
                 + '<div class="fs-note-hint">Replaces the auto-generated reason line. Fusion\'s attribution footer is always appended.</div></div></div>';
         }
+        emResolveIds(g.members);
         return emCardHtml(type, g, gi, false, active);
     }).join('') + '<div class="fs-newgroup" id="fs-em-newgroup">+ New group — drag a pool entry here, or select some and click here</div>';
     const ready = open.filter(g => g.members.length > 1 && !EM_BUSY.has(g.id)).length;
@@ -7364,6 +7374,7 @@ try {
             Object.assign(x, d || { info: [] });
             draw();
         }));
+        if (g.members.some(x => !_idCache.get(x.gid))) { await Promise.all(g.members.map(x => resolveInternalId(x.gid))); if (wrap.isConnected) draw(); }
     };
     // the card turned off in the settings: MB's tables come back, and nothing more is read
     const clear = () => document.querySelectorAll('.fs-editwrap').forEach(w => { w._fsIo && w._fsIo.disconnect(); w._fsDetails.style.display = ''; w._fsDetails._fsDone = null; w._fsBtn.remove(); w.remove(); });
