@@ -85,6 +85,19 @@
       "disposition": "accepted",
       "acceptedBy": "majkinetor",
       "decision": "Maintainer verdicts, notes and capability assessments for two script reviews incorporated."
+    },
+    {
+      "id": "D_kwDOSj7rds4ArF-y",
+      "discussionNumber": 1025,
+      "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/1025",
+      "authorId": "MDQ6VXNlcjg1NzY3",
+      "createdAt": "2026-11-13T01:06:57Z",
+      "updatedAt": "2026-11-13T01:06:57Z",
+      "exportPath": "contributions/1025.json",
+      "reportVersion": "8fb7efeb0ff2dacd8f6e5bb9ac7402afa3cc7a97f44640a743fe28435a1a13b3",
+      "disposition": "accepted",
+      "acceptedBy": "majkinetor",
+      "decision": "Maintainer verdicts for two scripts, with the Power Vote note, taken from the discussion body because no export was attached; the other two reviews in the title were not listed."
     }
   ]
 }

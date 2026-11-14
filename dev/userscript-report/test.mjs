@@ -214,7 +214,7 @@ test('analysis fingerprints include implementation parts and new relevant suite 
 test('every positive accepted verdict has an analysis or an explicit unavailable source',()=>{
  const html=readFileSync(new URL('./out/index.html',import.meta.url),'utf8');const data=JSON.parse(html.match(/<script type="application\/json" id="report-data">([\s\S]*?)<\/script>/)[1]);
  const accepted=data.entries.filter(e=>e.acceptedReview);assert.equal(accepted.length,279);
- const maintainerOnly=new Set(['wiki-53f4e1b3c204c0084c4b']); // Paste-A-Date! 2.0: maintainer verdict from #961, its source was never analyzed
+ const maintainerOnly=new Set(['wiki-53f4e1b3c204c0084c4b','wiki-26be863cb99d393b8154']); // Paste-A-Date! 2.0 (#961) and Power Vote (#1025): maintainer verdicts, their sources were never analyzed
  assert.ok(accepted.filter(e=>!['No equivalent','Not applicable'].includes(e.verdict)&&!maintainerOnly.has(e.id)).every(e=>e.sourceAnalysis || e.assessment),'every positive verdict has an analysis');
  const harmony=accepted.find(e=>e.name==='Harmony');assert.equal(harmony.features.length,8);
  assert.equal(harmony.verdict,'Mostly replaceable');assert.equal(harmony.sourceVerdict,'Partial overlap');assert.equal(harmony.acceptedReview.discussionNumber,943);
