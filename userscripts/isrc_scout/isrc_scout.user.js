@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.13.141500
+// @version      2026.11.14.140000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -479,12 +479,46 @@
       let j; try { j = JSON.parse(el.textContent); } catch (e) { return false; }
       const qs = (((j || {}).props || {}).pageProps || {}).dehydratedState;
       const queries = (qs && qs.queries) || [];
-      let results = null;
+      let results = grab.results || null;
       for (const q of queries) {
         const r = q && q.state && q.state.data && q.state.data.results;
         if (Array.isArray(r) && r.length && ('isrc' in r[0])) { results = r; break; }
       }
-      if (!results) return false;
+      if (!results) {
+        // #1044: Beatport's release page no longer embeds the tracklist (only track API URLs, no
+        // ISRCs). Each track page still carries its ISRC in `track-details-<id>`, so fetch those
+        // same-origin from here, where Cloudflare is already satisfied.
+        let refs = null;
+        for (const q of queries) {
+          const d = q && q.state && q.state.data;
+          if (d && Array.isArray(d.tracks) && d.tracks.length) { refs = d.tracks; break; }
+        }
+        if (!refs) return false;
+        if (grab.busy) return 'busy';
+        grab.busy = true;
+        const ids = refs.map(u => (String(u).match(/tracks\/(\d+)/) || [])[1]).filter(Boolean);
+        const one = async id => {
+          const r = await fetch('/track/-/' + id, { credentials: 'include' });
+          const m = (await r.text()).match(/<script id="__NEXT_DATA__"[^>]*>([^<]*)<\/script>/);
+          if (!m) throw new Error('no data for track ' + id);
+          const qq = ((JSON.parse(m[1]).props || {}).pageProps || {}).dehydratedState;
+          const hit = ((qq && qq.queries) || []).find(x => x && x.state && x.state.data && String(x.state.data.track_id) === id);
+          if (!hit) throw new Error('no details for track ' + id);
+          const t = hit.state.data;
+          return { id: Number(id), slug: '-', isrc: t.isrc, name: t.track_name, mix_name: t.mix_name, artists: t.artists, number: t.track_number,
+            length: t.track_length_ms ? Math.floor(t.track_length_ms / 60000) + ':' + String(Math.round(t.track_length_ms / 1000) % 60).padStart(2, '0') : '' };
+        };
+        (async () => {
+          const out = new Array(ids.length);
+          let next = 0;
+          const worker = async () => { while (next < ids.length) { const i = next++; out[i] = await one(ids[i]); } };
+          try {
+            await Promise.all([worker(), worker(), worker()]);
+            grab.results = out;
+          } catch (e) { grab.failed = true; }
+        })();
+        return 'busy';
+      }
       // #457: Beatport's release PAGE embeds the tracklist id-DESCENDING (the reverse of album
       // order) and carries no `number`, so the index-based position below came out reversed vs the
       // authenticated API (which serves the same tracks id-ASCENDING = album order). Sort by id
@@ -507,7 +541,7 @@
     };
     const t0 = Date.now();
     const tick = () => {
-      if (grab()) {
+      if (grab() === true) {
         // Only self-close when the editor's background harvest opened this tab
         // (it sets a per-release close flag first). A tab the USER opened — or
         // one Platform Check's ↗/link opened — must stay put; we still harvest
@@ -518,7 +552,7 @@
         } catch (e) {}
         return;
       }
-      if (Date.now() - t0 > 90000) return;   // Cloudflare never cleared — give up silently
+      if (Date.now() - t0 > 120000) return;   // Cloudflare never cleared — give up silently
       window.setTimeout(tick, 500);
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tick, { once: true });
@@ -5244,7 +5278,7 @@
           : window.open(url, '_blank');
       } catch (e) { tab = window.open(url, '_blank'); }
       const t0 = Date.now();
-      while (Date.now() - t0 < 60000) {
+      while (Date.now() - t0 < 120000) {   // #1044: track pages are fetched one by one now
         await sleep(500);
         h = readBeatportHarvest(releaseId);
         if (h) break;
