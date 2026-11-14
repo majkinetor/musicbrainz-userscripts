@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.143533
+// @version      2026.11.14.150000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4535,6 +4535,7 @@ function release(r, rg, images) {
         genres: (r.genres || []).sort((a, b) => b.count - a.count).map(g => g.name),
         events: (r['release-events'] || []).map(v => ({ date: v.date, area: v.area && v.area.name.replace(/^\[(.*)\]$/, '$1'), aid: v.area && v.area.id, iso: v.area && (v.area['iso-3166-1-codes'] || [])[0] || '' })),
         labels: (r['label-info'] || []).map(l => ({ name: l.label && l.label.name, id: l.label && l.label.id, catno: l['catalog-number'] })),
+        series: (r.relations || []).filter(x => x['target-type'] === 'series' && x.series),
         links: urlsOf(r.relations || []), urlCredits: (r.relations || []).filter(x => x['target-type'] === 'url').map(x => ({ type: x.type, url: x.url.resource })),
         media: (r.media || []).map(m => ({
             format: m.format, position: m.position, title: m.title,
@@ -4594,7 +4595,7 @@ function edTip(e, cur) {
 }
 mbuTipOn('[data-ed]', el => { const x = ED_TIP.get(el.getAttribute('data-ed')); return x && edTip(x.e, x.cur); }, { wide: true });
 async function load(id, step = () => {}) {
-    const inc = 'artist-credits+labels+label-rels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+media+genres+tags+release-groups+annotation+aliases';
+    const inc = 'artist-credits+labels+label-rels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+series-rels+media+genres+tags+release-groups+annotation+aliases';
     // the editions and the Cover Art Archive's image list come after: the page shows without them and fills them in
     const covers = caa(id).then(x => { step('covers'); return x; });
     const r = await wsk(`release/${id}?inc=${inc}`);
@@ -5517,10 +5518,13 @@ function creditsCard(r) {
     for (const u of urls) { const role = phrase(u); const list = urlRoles.get(role) || []; list.push(u); urlRoles.set(role, list); }
     // a link reads as its site, icon and name in a chip; the URL is in the tooltip (majkinetor, from a mock)
     const urlLines = [...urlRoles].map(([role, list]) => `<div class="cline"><span class="role">${esc(role)}</span><span class="uchips">${platforms(list).map(p => p.urls.map(u => `<a class="uchip" href="${esc(u.url)}" target="_blank" rel="noopener" data-tip="${esc(u.url)}">${icon(p, 16)}<span>${esc(p.name)}${p.urls.length > 1 && u.region ? ' · ' + esc(u.region.toUpperCase()) : ''}</span></a>`).join('')).join('')}</span></div>`).join('');
-    const n = r.credits.length + m.size + urls.length;
+    // the series it's part of, as MusicBrainz's own release credits list them first (majkinetor)
+    const ser = r.series || [];
+    const serLines = ser.length ? `<div class="cline"><span class="role">part of</span><span class="ents">${ser.map(x => `<span class="ent">${entA('series', x.series.id, x.series.name)} ${rgAttrs(x)}</span>`).join('<span class="sep">, </span>')}</span></div>` : '';
+    const n = r.credits.length + m.size + urls.length + ser.length;
     if (!n) return '';
     const body = `<div class="card dm-${S.dis}"><div class="cols">
-        ${relLines || urlLines ? `<div class="grp"><div class="label">On the release</div>${relLines}${urlLines}</div>` : ''}
+        ${serLines || relLines || urlLines ? `<div class="grp"><div class="label">On the release</div>${serLines}${relLines}${urlLines}</div>` : ''}
         ${S.crTracks ? `<div class="grp"><div class="label">On the tracks · numbers say which, none means all</div>${trackLines || '<div class="folded-note">None yet</div>'}</div>` : ''}
     </div></div>`;
     return sect('cr', 'Credits', `<button class="chip" type="button" data-crtracks aria-pressed="${S.crTracks}">${S.crTracks ? '✓ ' : ''}Track credits</button><span class="crdis">${byNameB('ib')}${disMenu('ib')}</span><span class="aside">${n} credits</span>`, body, `<div class="folded-note">${n} credits</div>`);
