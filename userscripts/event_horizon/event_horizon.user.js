@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.180501
+// @version      2026.11.14.200000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2723,6 +2723,7 @@ const CSS = `
 @media (max-width:700px){.hm-hero{padding-right:4px}.hm-orb{display:none}}
 .hm-av{position:relative}.hm-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .hm-hi{position:relative;font-size:30px;font-weight:800;margin:6px 0 16px}.hm-hi em{font-style:normal;background:linear-gradient(90deg,#f07dbf,#f5a06b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tl-bar{position:sticky;top:var(--eh-pin-h,0px);z-index:21;display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 10px;margin:4px 0 14px;padding:8px 0;background:var(--eh-bar);transition:top .18s}.tl-bar label{display:flex;flex-direction:column;gap:2px;flex:1 1 140px;min-width:0;font-size:11px;color:var(--muted)}.tl-bar input{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface)!important;color:var(--text);font-size:14px}.tl-bar input:focus{outline:none;border-color:var(--accent)}.tl-bar label:has([name$=tracknum]),.tl-bar label:has([name$=duration]){flex:0 1 90px}.tl-bar>.hm-go{flex:none;width:34px;height:31px}
 .hm-srch{position:relative;max-width:820px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--surface)!important;border:1px solid var(--border);border-radius:14px;padding:6px 6px 6px 16px;color:var(--muted);box-shadow:0 6px 22px var(--shadow)}
 .hm-srch:focus-within{border-color:var(--accent)}
 .hm-hero:has(:is(.hm-qd,.hm-td):not([hidden])),.hm-srch:has(:is(.hm-qd,.hm-td):not([hidden])){position:relative;z-index:30}
@@ -11132,7 +11133,7 @@ function searchHtml(d) {
     const p = new URLSearchParams(d.qs), s = d.s;
     // the count goes on the Results heading; above the form only while searching, or when nothing came
     const sub = d.err ? `<span class="u-err">${esc(d.err)}</span>` : !s ? 'Searching…' : s.rows.length ? '' : esc(s.found || s.err || 'No results');
-    const hero = srchHero(esc(d.q), sub ? `<p class="u-sub sr-sub">${sub}</p>` : '', d.q, d.t, p.get('method') || 'indexed');
+    const tl = p.get('tl'), hero = tl ? tlHero(new URLSearchParams(tl), sub) : srchHero(esc(d.q), sub ? `<p class="u-sub sr-sub">${sub}</p>` : '', d.q, d.t, p.get('method') || 'indexed');
     if (!s || !s.rows.length) return hero;
     // a column empty in every row goes; the score shows as a bar
     const txt = c => (c || '').replace(/<[^>]*>/g, '').trim(), on = s.head.map((_, i) => s.rows.some(r => txt(r.cells[i])));
@@ -11140,6 +11141,12 @@ function searchHtml(d) {
     // MusicBrainz's next page comes in under these, by Load more or Auto, as every paged list's does
     const more = s.next ? lmFoot('sr', s.rows.length, s.total ? fmtN(s.total) : 0) : '';
     return hero + sect('sr', `Results <span class="count">${fmtN(s.rows.length)}${s.total > s.rows.length ? '/' + fmtN(s.total) : ''}</span>`, '', table + more, `<div class="folded-note">${esc(s.found)}</div>`);
+}
+// a tag lookup's page: the tagger's six fields in a bar pinned under the header, sent to /taglookup as MusicBrainz's own form sends them
+const TL_F = [['artist', 'Artist'], ['release', 'Release'], ['tracknum', 'Track number'], ['track', 'Track'], ['duration', 'Duration'], ['filename', 'Filename']];
+function tlHero(v, sub) {
+    const f = TL_F.map(([k, l]) => `<label><span>${l}</span><input name="tag-lookup.${k}" value="${esc(v.get('tag-lookup.' + k) || '')}"></label>`).join('');
+    return `<header class="hm-hero tl-hero"><div class="hm-hi">Tag lookup</div>${sub ? `<p class="u-sub sr-sub">${sub}</p>` : ''}</header><form class="tl-bar" action="${MB}/taglookup/index" method="get">${f}<button type="submit" class="hm-go" data-tip="Look up" aria-label="Look up">${SVG(LENS)}</button></form>`;
 }
 /* ── section rail ──────────────────────────────────── */
 // The Sections button in the page's action row opens a list of the sections, the one in view lit: a name jumps
@@ -13089,7 +13096,7 @@ function build() {
     // a type's letter before the words picks that type (srchKey), first, so the recent searches keep the rewritten search
     document.addEventListener('submit', ev => { const fm = ev.target; if (ehOn && fm.action && new URL(fm.action).pathname === '/search') srchKey(fm); }, true);
     document.addEventListener('submit', ev => {
-        const fm = ev.target; if (!ehOn || ev.defaultPrevented || !fm.action || new URL(fm.action).pathname !== '/search') return;
+        const fm = ev.target; if (!ehOn || ev.defaultPrevented || !fm.action || !/^\/(search|taglookup\/index)$/.test(new URL(fm.action).pathname)) return;
         const u = new URL(fm.action); u.search = new URLSearchParams(new FormData(fm)).toString();
         const k = navTo(u.href); if (!k) return;
         ev.preventDefault(); fm.classList.remove('open'); ehPush(u.href); show(k);
@@ -14127,7 +14134,7 @@ async function show(key, o = {}) {
     if (kind === 'user') { data = { kind: 'user', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); userLoad(n, key); return; }
     if (kind === 'search') {
         const p = new URLSearchParams(key.slice(7)), q = p.get('query') || '', t = p.get('type') || 'artist';
-        searchKeep(q, t);
+        if (!p.get('tl')) searchKeep(q, t);   // a tag lookup's chip would reopen it as a plain search
         data = { kind: 'search', qs: key.slice(7), q, t }; scrollTo(0, 0); render(); searchLoad(n, key); return;
     }
     if (!id) { data = null; app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }
