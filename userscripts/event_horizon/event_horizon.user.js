@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.230000
+// @version      2026.11.14.233000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11130,6 +11130,9 @@ async function urlPage(p, off) {
 async function searchLoad(n, key) {
     const d = data;
     if (d.t === 'url') {
+        // nothing typed yet: wait for the form, don't list every URL
+        const p0 = new URLSearchParams(d.qs);
+        if (!['query', 'tt', 'rt', 'tid'].some(k => (p0.get(k) || '').trim())) { d.s = { head: [], rows: [], total: 0, found: '', next: '', err: '' }; if (n === showing && data === d) render(); return; }
         try { const s = await urlPage(new URLSearchParams(d.qs), 0); LOG.info(`URL search ${urlQuery(new URLSearchParams(d.qs))}: ${s.rows.length} rows, ${s.total} URLs`); if (n === showing && data === d) { d.s = s; LM_ERR.delete('sr'); render(); } }
         catch (e) { LOG.err('URL search failed: ' + e.message); if (n === showing && data === d) { d.err = e.message; render(); } }
         return;
