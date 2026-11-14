@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.234000
+// @version      2026.11.14.235000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11104,6 +11104,8 @@ function searchParse(html, base) {
     return { head, rows, found, total: +(found.match(/\d[\d,.\u00a0 ]*/) || ['0'])[0].replace(/\D/g, ''), next: mbNextPage(c, base), err };
 }
 // URL search: ws/2's URL index, by the link's pattern and what it links to (tt entity type, rt relationship type, tid entity MBID)
+// URL relationship names for the field's suggestions, a copy of Falcon's URL_LINK_TYPES
+const URL_RT = ["allmusic","amazon asin","apple music","art gallery","bandcamp","bandsintown","BBC Music page","biography","blog","BookBrainz","catalog site","CD Baby","cover art link","CPDL","crowdfunding","discography","discography entry","discography page","discogs","download for free","fanpage","free streaming","geonames","get the music","get the score","history site","image","IMDb","IMDB samples","IMSLP","information page","interview","last.fm","license","logo","lyrics","myspace","official homepage","official site","online community","online data","other databases","patronage","podcast feed","poster","production","purchase artwork","purchase for download","purchase for mail-order","purevolume","review","schedule","secondhandsongs","setlistfm","show notes","social network","songfacts","songkick","soundcloud","streaming","ticketing","vgmdb","VIAF","video channel","wikidata","wikipedia","work list entry","youtube","youtube music"];
 const URL_TT = ['artist', 'release', 'release-group', 'recording', 'work', 'label', 'area', 'event', 'place', 'series', 'instrument', 'genre'];
 function urlQuery(p) {
     const t = (p.get('query') || '').trim(), tt = p.get('tt'), rt = (p.get('rt') || '').trim(), tid = (p.get('tid') || '').trim();
@@ -11188,8 +11190,8 @@ function tlHero(v, sub) {
 // URL search's fields, in the tag lookup's bar
 function urlHero(p, sub) {
     const tt = p.get('tt') || '', inp = (n, l, ph) => `<label><span>${l}</span><input name="${n}" value="${esc(p.get(n) || '')}" placeholder="${ph}"></label>`;
-    const sel = `<label><span>Linked entity type</span><select name="tt"><option value="">Any</option>${URL_TT.map(t => `<option value="${t}"${t === tt ? ' selected' : ''}>${srchName(t.replace('-', '_'))}</option>`).join('')}</select></label>`;
-    return `${srchHero('URL search', sub ? `<p class="u-sub sr-sub">${sub}</p>` : '', '', 'artist')}<form class="tl-bar url-bar" aria-label="URL search" action="${MB}/search" method="get"><input type="hidden" name="type" value="url">${inp('query', 'URL', '')}${sel}${inp('rt', 'Relationship type', '')}${inp('tid', 'Linked entity MBID', '')}<button type="submit" class="hm-go" data-tip="Search URLs" aria-label="Search URLs">${SVG(LENS)}</button></form>`;
+    const sel = `<label><span>Linked entity type</span><input name="tt" list="eh-url-tt" autocomplete="off" placeholder="Any" value="${esc(tt)}"><datalist id="eh-url-tt">${URL_TT.map(t => `<option value="${t}" label="${srchName(t.replace('-', '_'))}">`).join('')}</datalist></label>`;
+    return `${srchHero('URL search', sub ? `<p class="u-sub sr-sub">${sub}</p>` : '', '', 'artist')}<form class="tl-bar url-bar" aria-label="URL search" action="${MB}/search" method="get"><input type="hidden" name="type" value="url">${inp('query', 'URL', '')}${sel}${inp('rt', 'Relationship type', '').replace('<input ', '<input list="eh-url-rt" autocomplete="off" ')}<datalist id="eh-url-rt">${URL_RT.map(n => `<option value="${esc(n)}">`).join('')}</datalist>${inp('tid', 'Linked entity MBID', '')}<button type="submit" class="hm-go" data-tip="Search URLs" aria-label="Search URLs">${SVG(LENS)}</button></form>`;
 }
 /* ── section rail ──────────────────────────────────── */
 // The Sections button in the page's action row opens a list of the sections, the one in view lit: a name jumps
