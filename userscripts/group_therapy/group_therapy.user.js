@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.181500
+// @version      2026.11.14.213000
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -520,7 +520,7 @@
         continue;
       }
       if (it.checklist) {   // per-credit toggles for copy/move — clicking a box toggles, doesn't close the menu
-        const box = el('div', 'gt-ck-list');
+        const box = el('div', 'gt-ck-list' + (it.cls ? ' ' + it.cls : ''));
         it.checklist.forEach(entry => {
           const lab = el('label', 'gt-ck');
           const cb = el('input', 'gt-ck-cb'); cb.type = 'checkbox'; cb.checked = entry.checked !== false; entry.cb = cb;
@@ -528,7 +528,7 @@
           // whole row toggles (it's a <label>); right-click selects only this role — SHIFT-right-click ADDS
           // this role to the current selection instead of replacing it (#377)
           lab.addEventListener('contextmenu', ev => { ev.preventDefault(); ev.stopPropagation(); it.checklist.forEach(en => { if (!en.cb) return; if (ev.shiftKey) { if (en.role === entry.role) en.cb.checked = true; } else en.cb.checked = en.role === entry.role; }); if (it.onToggle) it.onToggle(); });
-          lab.appendChild(cb); lab.appendChild(el('span', 'gt-ck-pos', `[${entry.pos}]`)); lab.appendChild(el('span', 'gt-ck-tx', entry.text));
+          lab.appendChild(cb); if (entry.pos != null) lab.appendChild(el('span', 'gt-ck-pos', `[${entry.pos}]`)); lab.appendChild(el('span', 'gt-ck-tx', entry.text));
           if (it.rowBtns) { const acts = el('span', 'gt-ck-acts'); it.rowBtns.forEach(rb => { const b = el('button', 'gt-ck-act', rb.label); b.type = 'button'; b.dataset.tip = rb.title || ''; b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); rb.run(entry); }); acts.appendChild(b); }); lab.appendChild(acts); }   // #377 [A]/[R] per-row select buttons
           box.appendChild(lab);
         });
@@ -3068,6 +3068,7 @@
       .gt-menu .gt-hdr{padding:5px 9px 4px;font-size:11px;font-weight:700;letter-spacing:.02em;color:var(--mbu-text-dim);text-transform:uppercase}
       .gt-menu .gt-note{padding:0 9px 6px;font-size:11px;color:var(--mbu-text-weak);white-space:normal;word-break:break-word}
       .gt-menu .gt-ck-list{margin:2px 0 3px}
+      .gt-menu .gt-attr-list{max-height:50vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
       .gt-menu .gt-ck{display:flex;align-items:flex-start;gap:7px;padding:3px 9px;font-size:11px;color:var(--mbu-text-dim);line-height:1.4;cursor:pointer;user-select:none}
       .gt-menu .gt-ck:hover{background:var(--mbu-info-bg)}
       /* #377 per-row [A]/[R] select-by-artist/role buttons, shown on row hover */
@@ -9677,6 +9678,80 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     openMenu(x, y, items);
   }
 
+  // #1032 the attributes a role allows, as a flat list of the values a user can tick: each allowed
+  // root (link_type.attributes keys, e.g. "vocal") expanded to its whole subtree from
+  // link_attribute_type (lead vocals, choir vocals, …). Free-text attributes (a text_value) and
+  // a root whose subtree is huge (instrument: ~1000) are left out — those stay MB-dialog work.
+  const ATTR_MAX = 80;
+  function allowedAttrChoices(linkTypeID) {
+    const le = W.MB && W.MB.linkedEntities, lt = le && le.link_type && le.link_type[linkTypeID];
+    const lat = (le && le.link_attribute_type) || {};
+    if (!lt || !lt.attributes) return { choices: [], skipped: [] };
+    const all = [], seen = new Set();
+    for (const a of Object.values(lat)) if (a && a.id != null && !seen.has(a.id)) { seen.add(a.id); all.push(a); }
+    const kids = new Map();
+    for (const a of all) if (a.parent_id != null) { if (!kids.has(a.parent_id)) kids.set(a.parent_id, []); kids.get(a.parent_id).push(a); }
+    const choices = [], skipped = [];
+    for (const rootId of Object.keys(lt.attributes).map(Number)) {
+      const root = lat[rootId]; if (!root) continue;
+      if (root.free_text) { skipped.push(root.name); continue; }
+      const sub = [];
+      const walk = (a, depth) => { sub.push({ id: a.id, name: a.name, depth }); (kids.get(a.id) || []).sort((p, q) => ((p.child_order || 0) - (q.child_order || 0)) || p.name.localeCompare(q.name)).forEach(c => walk(c, depth + 1)); };
+      walk(root, 0);
+      if (sub.length > ATTR_MAX) { skipped.push(root.name); continue; }
+      choices.push(...sub);
+    }
+    return { choices, skipped };
+  }
+  // #1032 set a rel's attributes from the ticked choices: attributes outside the offered choices
+  // (free text, instruments) are kept; every offered one follows its tick. An update in place, the
+  // same _status discipline as applyRelDate (#383). Returns false when nothing would change.
+  function setRelAttrs(re, rel, ends, offered, ticked) {
+    const cur = relAttrList(rel);
+    const next = cur.filter(a => !offered.has(a.typeID));
+    for (const id of ticked) { const had = cur.find(a => a.typeID === id); next.push(had || { typeID: id, text_value: '', credited_as: '' }); }
+    const key = l => l.map(a => a.typeID).sort((p, q) => p - q).join(',');
+    if (key(next) === key(cur)) return false;
+    re.dispatch({
+      type: 'update-relationship-state', sourceEntity: ends.src, batchSelectionCount: null,
+      creditsToChangeForSource: '', creditsToChangeForTarget: '',
+      oldRelationshipState: rel,
+      newRelationshipState: { ...rel, _status: rel._status === 1 ? 1 : 2, attributes: buildAttrTree(next) },
+    });
+    return true;
+  }
+  function openAttrMenu(item, list, what, x, y) {
+    const rel = relFromNode(item); if (!rel) return;
+    const { choices, skipped } = allowedAttrChoices(rel.linkTypeID);
+    if (!choices.length) { toast('This role has no attributes to tick here'); return; }
+    const have = new Set(relAttrList(rel).map(a => a.typeID));
+    const entries = choices.map(c => ({ id: c.id, text: '\u2003'.repeat(c.depth) + c.name, checked: have.has(c.id) }));
+    const offered = new Set(choices.map(c => c.id));
+    const items = [{ header: `Attributes of ${what}` }, { note: `on ${list.length} credit${list.length > 1 ? 's' : ''}: ticked ones are set, unticked ones removed` }];
+    if (skipped.length) items.push({ note: `not here: ${skipped.join(', ')} (set those in MB's dialog)` });
+    items.push({ checklist: entries, cls: 'gt-attr-list' }, {
+      label: 'Apply', sub: String(list.length),
+      run: () => {
+        const re = RE(); if (!re) { toast('MusicBrainz relationship editor not ready'); return; }
+        const ticked = entries.filter(e => e.cb ? e.cb.checked : e.checked).map(e => e.id);
+        let n = 0, same = 0, skip = 0;
+        for (const it of list) {
+          const r = relFromNode(it), ends = r && relEnds(r);
+          if (!r || !ends) { skip++; continue; }
+          try { if (setRelAttrs(re, r, ends, offered, ticked)) n++; else same++; } catch (e) { skip++; LOG().warn(`set attributes failed: ${e && e.message || e}`); }
+        }
+        const names = ticked.map(id => (choices.find(c => c.id === id) || {}).name).join(', ') || 'none';
+        LOG().info(`attributes of ${what} → ${names}: ${n} set, ${same} already so, ${skip} skipped`);
+        if (n) markUsed(`Set attributes of ${what} to ${names} on ${n} credit${n > 1 ? 's' : ''}`);
+        const bits = [n ? `Set ${names} on ${n}` : 'Nothing to change'];
+        if (same) bits.push(`${same} already so`);
+        if (skip) bits.push(`${skip} skipped (see console)`);
+        toast(bits.join(' — ') + (n ? ' — review & save' : ''));
+      },
+    });
+    openMenu(x, y, items);
+  }
+
   // the two menu entries offered on a rel's pencil: this role everywhere, and
   // this role only where the far end is this specific entity.
   function replaceRoleMenuItems(item) {
@@ -9705,6 +9780,11 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     const out = ['sep'];
     if (scopeNote) out.push({ note: scopeNote });
     out.push({ label: 'Set “Credited as”…', run: () => { const r = item.getBoundingClientRect(); setTimeout(() => openCreditMenu(item, r.left, r.bottom + 4), 0); } });
+    if (allowedAttrChoices(rel.linkTypeID).choices.length) {   // #1032
+      const at = (list, what) => () => { if (!list.length) { toast('Nothing matches that scope'); return; } const r = item.getBoundingClientRect(); setTimeout(() => openAttrMenu(item, list, what, r.left, r.bottom + 4), 0); };
+      out.push({ label: `Set attributes of ${t(roleLabel, 26)}…`, sub: String(byRole.length), run: at(byRole, `“${roleLabel}”`) },
+        { label: `Set attributes of ${t(roleLabel, 14)} for “${t(tgt, 18)}”…`, sub: String(byRoleTgt.length), run: at(byRoleTgt, `“${roleLabel}” for “${tgt}”`) });
+    }
     out.push(
       mk(`Replace role ${t(roleLabel, 34)}…`, byRole, `“${roleLabel}”`),
       mk(`Replace ${t(roleLabel, 20)} for “${t(tgt, 20)}”…`, byRoleTgt, `“${roleLabel}” for “${tgt}”`),
