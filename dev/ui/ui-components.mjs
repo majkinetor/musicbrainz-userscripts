@@ -388,7 +388,7 @@ const CSS = [
     // Pill drop-down and − n + stepper, the settings' controls (mbuControls). A script's own rule for its
     // select or number field (an id and an element, often) would outrank a class, and these are adopted,
     // not defaults: :not(#mbu-0):not(#mbu-1) weighs two ids, so they win without !important.
-    'select.mbu-select:not(#mbu-0):not(#mbu-1){-webkit-appearance:none;-moz-appearance:none;appearance:none;box-sizing:border-box;height:22px;max-width:100%;margin:0 2px;',
+    'select.mbu-select:not(#mbu-0):not(#mbu-1){filter:none!important;-webkit-appearance:none;-moz-appearance:none;appearance:none;box-sizing:border-box;height:22px;max-width:100%;margin:0 2px;',
     'padding:0 26px 0 12px;border:1px solid var(--mbu-border);border-radius:20px;outline-offset:1px;background-color:transparent;',
     'background-image:linear-gradient(45deg,transparent 50%,var(--mbu-text-weak) 50%),linear-gradient(135deg,var(--mbu-text-weak) 50%,transparent 50%);',
     'background-position:calc(100% - 13px) 50%,calc(100% - 8px) 50%;background-size:5px 5px;background-repeat:no-repeat;',
