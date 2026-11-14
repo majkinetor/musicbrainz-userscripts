@@ -274,6 +274,8 @@ Pages: `<store>.7digital.com/artist/<artist>/release/<slug>`
 - A track's artists come from its artist line (_A, B & C_, _A x B_, _A feat. B_). The release artist has a 7digital link to hand off, and so does a track artist who is the whole line.
 - When [Mission Control](../mission_control/README.md#consolidate-a-new-release) compares a 7digital album and the page asks to verify you're human, the album is read from 7digital's catalogue search instead: the same data, without the page's ℗ and © lines.
 
+To find the barcode, FC calls `api.7digital.com/1.2/release/search` with the album title, then with `artist + title`, 50 results per page. It tries the store’s country first, then GB, then US. It keeps the result whose `release.id` matches the ID on the page, taken from `.release-info[data-releaseid]` or the number at the end of the URL. FC reads `rel.barcode`
+
 ### Ototoy
 
 Pages: `ototoy.jp/_/default/p/<id>`
