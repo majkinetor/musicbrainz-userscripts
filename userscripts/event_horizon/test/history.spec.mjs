@@ -84,3 +84,15 @@ test('an open edit takes your vote and a note in place, and your votes open as a
   check(await until(() => page.locator('h1').first().textContent(), x => x === 'Votes') === 'Votes', 'your votes open as a history');
   await attachShot(testInfo, page, 'votes');
 });
+
+// the notes left on your edits open in the same viewer, each edit with its notes
+test('notes received show in the history viewer', { tag: ['@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
+  await page.goto('https://test.musicbrainz.org/edit/notes-received', { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await idle(page);
+  await inject('event_horizon');
+  check(await until(() => page.locator('.arthd h1').textContent(), t => /Notes received/.test(t || '')), 'the title names the list');
+  check(await until(() => page.locator('.hist .hgrp, .hist .hmore').count(), n => n > 0) > 0, 'the edits show');
+  await page.locator('.hgrp .hgh').first().click();
+  check(await until(() => page.locator('.hist .hnote').count(), n => n > 0) > 0, 'an edit carries its notes');
+  await attachShot(testInfo, page, 'notes-received');
+});

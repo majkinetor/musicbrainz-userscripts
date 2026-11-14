@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.15.003000
+// @version      2026.11.15.003001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -10535,6 +10535,7 @@ const HM_ADD = [
 const HM_ME = [
     ['edits/open', 'Open edits', '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'],
     ['edits', 'All edits', '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>'],
+    ['/edit/notes-received', 'Notes received', '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'],
     ['collections', 'Collections', '<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/>'],
     ['subscriptions/artist', 'Subscriptions', '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.300 21a1.900 1.900 0 0 0 3.400 0"/>'],
     ['ratings', 'Ratings', '<path d="m12 3 2.800 5.700 6.200.9-4.500 4.400 1.100 6.200L12 17.300 6.400 20.200l1.100-6.200L3 9.600l6.200-.9z"/>'],
@@ -11708,7 +11709,7 @@ const artKey = href => {
 const relKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/edit-relationships/?$', 'i')); return m ? 'relate/' + m[1].toLowerCase() : null; };
 // a release's edit history → "hist/<mbid>"; MusicBrainz's other edit lists (a release's open edits, open and subscribed
 // edits, an edit search) and a single edit → "hist/<its address, encoded>"
-const H_LISTS = { '/edit/open': 'Open edits', '/edit/subscribed': 'Subscribed entities', '/edit/subscribed_editors': 'Subscribed editors', '/search/edits': 'Search for edits' };
+const H_LISTS = { '/edit/open': 'Open edits', '/edit/subscribed': 'Subscribed entities', '/edit/subscribed_editors': 'Subscribed editors', '/search/edits': 'Search for edits', '/edit/notes-received': 'Notes received' };
 /* The live native form owns predicates, translated options, cardinality and autocomplete.
    Keep its nodes and delegated MusicBrainz handlers; only the selects get a presentation layer. */
 const EDIT_SEARCH_CSS = `
@@ -12764,7 +12765,7 @@ function histParse(html) {
             det.querySelectorAll('span.artwork-image').forEach(x => { if (!x.querySelector('img') && x.dataset.smallThumbnail) x.innerHTML = `<img src="${x.dataset.smallThumbnail}" alt="${esc(x.dataset.title || '')}" loading="lazy">`; });
             det.querySelectorAll('script,input,noscript').forEach(x => x.remove());
         }
-        const notes = [...el.querySelectorAll('.edit-notes div.edit-note[id^="note-"]')].map(n => { const hh = n.querySelector('h3'), o = hh && hh.querySelector('a[href*="/user/"]'), dt = hh && hh.querySelector('.date'), vt = hh && (hh.className.match(/\b(yes|no|abstain|approve)\b/) || [])[1], tx = n.querySelector('.edit-note-text'); return { vote: vt || '', own: !!(hh && hh.classList.contains('owner')), by: o ? o.textContent.trim() : '', date: dt ? dt.textContent.trim() : '', bot: !!(tx && tx.classList.contains('modbot')), del: ((n.querySelector('a[href*="/edit-note/"][href$="/delete"]') || {}).href || '').match(/\/edit-note\/(\d+)\/delete/)?.[1] || '', html: tx ? tx.innerHTML : '', text: tx ? (c => { c.querySelectorAll('br').forEach(b => b.replaceWith(' ')); return c.textContent.replace(/\s+/g, ' ').trim(); })(tx.cloneNode(true)) : '' }; });
+        const notes = [...el.querySelectorAll('.edit-notes div.edit-note[id^="note-"], :scope > div.edit-note[id^="note-"]')].map(n => { const hh = n.querySelector('h3'), o = hh && hh.querySelector('a[href*="/user/"]'), dt = hh && hh.querySelector('.date'), vt = hh && (hh.className.match(/\b(yes|no|abstain|approve)\b/) || [])[1], tx = n.querySelector('.edit-note-text'); return { vote: vt || '', own: !!(hh && hh.classList.contains('owner')), by: o ? o.textContent.trim() : '', date: dt ? dt.textContent.trim() : '', bot: !!(tx && tx.classList.contains('modbot')), del: ((n.querySelector('a[href*="/edit-note/"][href$="/delete"]') || {}).href || '').match(/\/edit-note\/(\d+)\/delete/)?.[1] || '', html: tx ? tx.innerHTML : '', text: tx ? (c => { c.querySelectorAll('br').forEach(b => b.replaceWith(' ')); return c.textContent.replace(/\s+/g, ' ').trim(); })(tx.cloneNode(true)) : '' }; });
         const vc = one ? el.querySelector('.vote-tally td.vote') : h.querySelector('.vote-count'), a = (one ? h.querySelector('h1') || doc.querySelector('#content h1') : h.querySelector('h2 a')) || h.querySelector('a[href*="/edit/"]');
         if (!a) { LOG.debug('History: an edit without its number, skipped'); return null; }
         if (one) { const x = doc.querySelector('#sidebar .edit-expiration'); if (x) el.append(x); }
