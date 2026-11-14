@@ -7,7 +7,7 @@ test('a tag lookup shows its fields in a pinned bar over the results', async ({ 
   const bar = page.locator('#app form.tl-bar');
   await expect(bar.locator('[name="tag-lookup.artist"]')).toHaveValue('Swayzak');
   await expect(bar.locator('[name="tag-lookup.release"]')).toHaveValue('Dirty Dancing');
-  await expect(page.locator('#app .hm-srch')).toHaveCount(0);
+  await expect(page.locator('#app .hm-srch')).toHaveCount(1);   // the standard toolbar stays, so the page reads as MusicBrainz
   await expect(page.locator('#app .sr-t tbody tr').first()).toBeVisible({ timeout: 30_000 });
   await page.screenshot({ path: process.env.SHOT || 'tl.png' });
 });
