@@ -3059,7 +3059,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         lbl.textContent = labelText + ':';
         wrap.appendChild(lbl);
         const sel = document.createElement('select');
-        sel.style.cssText = 'font-size:12px;padding:0.05rem 0.2rem;border:none;background:transparent;cursor:pointer;color:var(--mbu-text);font-weight:600;';
+        sel.className = 'mbu-select';
         options.forEach(opt => {
             const o = document.createElement('option');
             o.value = opt.value;

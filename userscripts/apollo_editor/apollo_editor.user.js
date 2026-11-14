@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.13.233000
+// @version      2026.11.14.165153
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -9851,7 +9851,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
     const p = document.createElement('div'); p.id = 'tc-tpppop'; p.className = 'tc-tpppop';
     const medSel = mediums().length > 1
-      ? `<select class="tc-tpp-med">${mediums().map((m, i) => `<option value="${i}"${i === curMi ? ' selected' : ''}>Medium ${i + 1}</option>`).join('')}</select>`
+      ? `<select class="tc-tpp-med mbu-select">${mediums().map((m, i) => `<option value="${i}"${i === curMi ? ' selected' : ''}>Medium ${i + 1}</option>`).join('')}</select>`
       : `<span class="tc-tpp-med1">Medium ${curMi + 1}</span>`;
     p.innerHTML = `
       <div class="tc-tpp-hd"><span class="tc-tpp-t">Pattern parser</span>${medSel}<button type="button" class="tc-tpp-max" data-tip="Maximize or restore">⛶</button><button type="button" class="tc-tpp-x" data-tip="Close (Esc)">✕</button></div>
@@ -10191,7 +10191,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
     const p = document.createElement('div'); p.id = 'tc-lppop'; p.className = 'tc-lppop';
     const medSel = mediums().length > 1
-      ? `<select class="tc-lp-med">${mediums().map((m, i) => `<option value="${i}"${i === curMi ? ' selected' : ''}>Medium ${i + 1}</option>`).join('')}</select>`
+      ? `<select class="tc-lp-med mbu-select">${mediums().map((m, i) => `<option value="${i}"${i === curMi ? ' selected' : ''}>Medium ${i + 1}</option>`).join('')}</select>`
       : `<span class="tc-lp-med1">Medium ${curMi + 1}</span>`;
     p.innerHTML = `
       <div class="tc-lp-hd"><button type="button" class="tc-lp-back" data-tip="Back to the sources" style="display:none">‹ Sources</button><span class="tc-lp-t">Length parser</span><span class="tc-lp-err" style="display:none"></span>${medSel}<button type="button" class="tc-lp-x" data-tip="Close (Esc)">✕</button></div>
@@ -10684,7 +10684,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const box = document.createElement('span'); box.className = 'tc-medo tc-spo';
       const all = mediums(); let mi = toolMedium(); if (!all[mi]) mi = 0;
       if (all.length > 1) {
-        const sel = document.createElement('select'); sel.className = 'tc-medsel'; sel.dataset.tip = 'Which medium';
+        const sel = document.createElement('select'); sel.className = 'tc-medsel mbu-select'; sel.dataset.tip = 'Which medium';
         all.forEach((m, i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = 'Medium ' + (i + 1); o.title = medLabel(m, i); sel.appendChild(o); });
         sel.value = String(mi); sel.onchange = () => { _toolMedium = parseInt(sel.value, 10) || 0; _splitAt = null; renderToolbar(); };
         box.appendChild(sel);
@@ -10693,7 +10693,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // MB lazy-loads a collapsed medium's tracks — load it, then rebuild these params with its tracks
       if (m && !medLoaded(m) && !_splitLoading) { _splitLoading = true; loadMediums([m]).then(() => { _splitLoading = false; renderToolbar(); }); }
       const lab = document.createElement('span'); lab.className = 'tc-mmo-lab'; lab.textContent = m && !medLoaded(m) ? 'loading medium…' : 'new medium from #';
-      const at = document.createElement('select'); at.className = 'tc-medsel tc-spat'; at.dataset.tip = 'The first track of the new medium';
+      const at = document.createElement('select'); at.className = 'tc-medsel tc-spat mbu-select'; at.dataset.tip = 'The first track of the new medium';
       tr.forEach((t, i) => { if (i === 0) return; const o = document.createElement('option'); o.value = String(i); o.textContent = String(u(t.number) || i + 1); o.title = u(t.name) || ''; at.appendChild(o); });
       if (_splitAt == null || _splitAt <= 0 || _splitAt >= tr.length) _splitAt = Math.floor(tr.length / 2) || null;
       if (_splitAt != null) at.value = String(_splitAt);
@@ -10702,7 +10702,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       box.append(lab, at); host.appendChild(box);
     } else if (MEDIUM_TOOLS.has(act) && mediums().length > 1) {
       const box = document.createElement('span'); box.className = 'tc-medo';
-      const sel = document.createElement('select'); sel.className = 'tc-medsel'; sel.dataset.tip = 'Which medium';
+      const sel = document.createElement('select'); sel.className = 'tc-medsel mbu-select'; sel.dataset.tip = 'Which medium';
       mediums().forEach((m, i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = 'Medium ' + (i + 1); sel.appendChild(o); });
       sel.value = String(toolMedium()); sel.onchange = () => { _toolMedium = parseInt(sel.value, 10) || 0; };
       // #280: no Run button — pick the medium here, then click the tool's icon/name to run it

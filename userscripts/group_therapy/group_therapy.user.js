@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.164325
+// @version      2026.11.14.165153
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -4657,7 +4657,7 @@
   function wmNewParamsUi() {
     wmDefaultType();   // #363 default to "Song" (once the catalogue exists)
     const wrap = el('div', 'gt-wm-nwp');
-    const typeSel = el('select', 'gt-wm-nwp-type'); typeSel.dataset.tip = 'The type of every new work';
+    const typeSel = el('select', 'gt-wm-nwp-type mbu-select'); typeSel.dataset.tip = 'The type of every new work';
     typeSel.appendChild(new Option('— type —', ''));
     wmWorkTypes().forEach(t => { const o = new Option(t.name, String(t.id)); if (t.id === wmNewType) o.selected = true; typeSel.appendChild(o); });
     typeSel.onchange = () => { wmNewType = typeSel.value ? +typeSel.value : null; wmApplyNewParams(); };
@@ -8032,7 +8032,7 @@
     // #539: scope picker. Release is still the default — the recording scope is
     // opt-in and inert until a track selector is typed.
     const scopeWrap = el('span', 'gt-tp-scope');
-    const scopeSel = el('select', 'gt-tp-scope-sel');
+    const scopeSel = el('select', 'gt-tp-scope-sel mbu-select');
     [['release', 'Release'], ['recording', 'Recordings']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; scopeSel.appendChild(o); });
     scopeSel.value = scope.kind;
     const tracksIn = el('input', 'gt-tp-tracks'); tracksIn.type = 'text'; tracksIn.value = scope.spec;
@@ -8060,7 +8060,7 @@
       v => { scope.tracks = v ? 'auto' : 'off'; render(); saveState(); });   // #597
     // #777: where a work role goes when a credit lands on recordings — "create
     // needed", as in Credit Hoarder, makes the work a track lacks.
-    const worksSel = el('select', 'gt-tp-works-sel');
+    const worksSel = el('select', 'gt-tp-works-sel mbu-select');
     [['none', 'create none'], ['needed', 'create needed']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; worksSel.appendChild(o); });
     worksSel.value = scope.works;
     worksSel.dataset.tip = 'Work roles\nA role works have and recordings don\'t (lyricist, composer, librettist, translator) goes on the works of its tracks.\n'
@@ -8465,7 +8465,7 @@
           }
           if (!r0.entityForced) {
             // a role MusicBrainz has for several kinds: search the one you mean
-            const ks = el('select', 'gt-tp-esrch-kind');
+            const ks = el('select', 'gt-tp-esrch-kind mbu-select');
             ['artist', 'label', 'place'].forEach(v => { const o = el('option', '', KIND[v]); o.value = v; ks.appendChild(o); });
             ks.value = kind;
             ks.onchange = () => { nameKind.set(g.key, ks.value); searchState.set(g.key, { term: q.value, kind: ks.value }); render(); saveState(); txpRunSearch(g.key, g.text); };
