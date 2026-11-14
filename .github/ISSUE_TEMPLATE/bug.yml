@@ -5,11 +5,11 @@ body:
   - type: markdown
     attributes:
       value: Issues are for bugs. For suggestions or feature requests, [open a discussion](https://github.com/majkinetor/musicbrainz-userscripts/discussions/new?category=ideas).
-  - type: input
+  - type: textarea
     id: script
     attributes:
-      label: Script and version
-      placeholder: "Apollo Editor 1.2.3"
+      label: Script versions
+      description: Open Event Horizon (the command palette), run "String Theory: Copy versions as Markdown", and paste the result here. It lists your installed script versions.
     validations:
       required: true
   - type: textarea
@@ -22,8 +22,3 @@ body:
     id: steps
     attributes:
       label: Steps to reproduce (a page link helps)
-  - type: input
-    id: env
-    attributes:
-      label: Browser and userscript manager
-      placeholder: "Chrome, Violentmonkey"
