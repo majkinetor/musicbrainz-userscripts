@@ -16,6 +16,8 @@ test('URL search finds links by pattern', { tag: '@sandbox' }, async ({ page, in
   const rows = await until(() => page.locator('.sr-t tbody tr').count(), n => n > 0);
   check(rows > 0, 'results show: ' + rows);
   check(/type=url/.test(page.url()), 'the address keeps the search: ' + page.url());
+  const urls = await page.locator('.sr-t tbody tr a[href*="/url/"]').allTextContents();
+  check(urls.every(u => /discogs/i.test(u)), 'every URL matches the pattern: ' + urls.filter(u => !/discogs/i.test(u)).slice(0, 3).join(', '));
   check(await page.locator('.sr-t tbody tr a[href*="/url/"]').count() > 0, 'each URL opens its MusicBrainz page');
   await attachShot(testInfo, page, 'url-search');
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT, fullPage: false });
