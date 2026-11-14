@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.180500
+// @version      2026.11.14.180501
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12238,7 +12238,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] :is(#tracklist,#page .ars) table :is(td,th){background:transparent!important}
 :root[data-eh-rel] #page .ars,:root[data-eh-rel] #content>.releaseheader{background:none!important;padding:0!important;margin:0!important;min-height:0!important}
 :root[data-eh-rel] #relationship-editor-form{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px}
-:root[data-eh-rel] :is(#page,#content) :is(input[type=text],input[type=email],input[type=url],input[type=password],input[type=date],input:not([type]),textarea,select):not(.srch *){background:var(--bg)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:8px}
+:root[data-eh-rel] :is(#page,#content) :is(input[type=text],input[type=email],input[type=url],input[type=password],input[type=date],input:not([type]),textarea,select):not(.srch *):not(.mbu-select){background:var(--bg)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:8px}
 :root[data-eh-rel] #page button.submit,:root[data-eh-rel] #page .buttons button[type=submit]{background:var(--accent)!important;color:#fff!important;border:0!important;border-radius:9px;padding:6px 16px;font-weight:700}
 :root[data-eh-rel] #content>[class*=header]:not(.releaseheader):not(#eh-relhd){display:none!important}
 :root[data-eh-rel] #page .buttons button:not(.submit){background:transparent!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:9px;padding:6px 16px;font-weight:600}
