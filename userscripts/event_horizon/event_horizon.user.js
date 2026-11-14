@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.15.003002
+// @version      2026.11.15.003003
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12757,9 +12757,9 @@ function histParse(html) {
         if (one) {
             // Changes is the section after the edit header. Merge comparisons and explanations can sit
             // outside table.details; keep the whole section, ending before Votes, in any interface language.
-            let n = h.nextElementSibling;
-            if (n && n.tagName === 'H2') n = n.nextElementSibling;
-            for (; n && n.tagName !== 'H2' && n.tagName !== 'FORM'; n = n.nextElementSibling) det.append(n.cloneNode(true));
+            // "Entered from" can come before Changes' heading: a heading whose section holds the changes table is skipped, any other ends it
+            const chg = x => x && (x.matches('table.details') || !!x.querySelector('table.details'));
+            for (let n = h.nextElementSibling; n && n.tagName !== 'FORM'; n = n.nextElementSibling) { if (n.tagName === 'H2') { if (chg(n.nextElementSibling)) continue; break; } det.append(n.cloneNode(true)); }
         }
         if (det) {
             // MusicBrainz's page draws a cover's thumbnail itself: the fetched page carries only its address
@@ -12922,7 +12922,7 @@ function histBar(e) {
     const vt = e.can ? `<div class="hvote hseg" role="radiogroup" aria-label="Your vote">${H_SEG.map(([v, t]) => `<button type="button" class="v${v}${e.my === v ? ' on' : ''}${e.voting === v ? ' busy' : ''}" role="radio" aria-checked="${e.my === v}" data-hvote="${e.id}:${v}" data-tip="Vote ${t}${histVotersTip(e, v)}
 Right-click: vote ${t} with an edit note"${e.voting ? ' disabled' : ''}>${t}${cn(v)}</button>`).join('')}</div>` : '';
     const cu = e.cancel || (e.st === 'op' && e.mine ? `${MB}/edit/${e.id}/cancel` : ''), cx = cu ? `<a class="hcx2" href="${esc(cu)}">Cancel edit</a>` : '';
-    const dl = e.st === 'op' && e.exp > Date.now() ? Math.ceil((e.exp - Date.now()) / 864e5) : 0, tl = (c && !vt ?`<span class="htl"><span class="hbr">${c[0] + c[1] ? `<i style="width:${100 * c[0] / (c[0] + c[1])}%;background:#2e8b57"></i><i style="width:${100 * c[1] / (c[0] + c[1])}%;background:#c0392b"></i>` : ''}</span>${c[0]} yes · ${c[1]} no</span>` : '') + (dl ? `<span class="htl">closes in ${dl} d</span>` : '');
+    const dl = e.st === 'op' && e.exp > Date.now() ? Math.ceil((e.exp - Date.now()) / 864e5) : 0, tl = (c && !vt ?`<span class="htl"${e.voters && e.voters.length ? ` data-tip="${H_SEG.map(([v, t]) => { const n = e.voters.filter(x => x.v === v).map(x => esc(x.by)); return n.length ? t + ': ' + n.join(', ') : ''; }).filter(Boolean).join('&#10;')}"` : ''}><span class="hbr">${c[0] + c[1] ? `<i style="width:${100 * c[0] / (c[0] + c[1])}%;background:#2e8b57"></i><i style="width:${100 * c[1] / (c[0] + c[1])}%;background:#c0392b"></i>` : ''}</span>${c[0]} yes · ${c[1]} no</span>` : '') + (dl ? `<span class="htl">closes in ${dl} d</span>` : '');
     return tl || vt || cx ? `<div class="hbar" data-id="${e.id}">${tl}${vt}${cx}</div>` : '';
 }
 // Only edits with MusicBrainz's voting permission belong to the group action; status filters already scoped es.
