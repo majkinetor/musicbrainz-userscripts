@@ -42,5 +42,16 @@ test('Set "Credited as" stages the credited name on every matching credit', { ta
   }, res ? res.gid : '');
   const after2 = await until(() => page.evaluate(() => document.body.innerText.includes('GT Second 1047') && !document.body.innerText.includes('GT Credited 1047')), x => x);
   check(n2 > 0 && after2, 'a second name replaces the first');
+  // a release's own credit (release → place/label/artist) is updated too
+  const rel = await page.evaluate(() => {
+    const GT = window.__groupTherapy;
+    const it = [...document.querySelectorAll('.relationship-item')].find(i => { if (i.closest('tr.track')) return false; const r = window.__rel(i); return r && [r.entity0, r.entity1].some(e => e && e.entityType === 'release'); });
+    if (!it) return null;
+    const n = GT.setCredit([it], 'GT Release 1047', () => 'test credit 3');
+    return { n };
+  });
+  check(rel, 'the release has a credit of its own');
+  const relShown = await until(() => page.evaluate(() => document.body.innerText.includes('GT Release 1047')), x => x);
+  check(rel && rel.n === 1 && relShown, 'a release credit takes the credited name');
   check(posts.length === 0, `nothing was submitted (${posts.length})`);
 });

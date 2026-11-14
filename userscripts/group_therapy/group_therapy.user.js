@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.165153
+// @version      2026.11.14.165954
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -9619,11 +9619,20 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   // #1047 set the "Credited as" name on many credits at once — an update of each rel's credit on the
   // far end (the artist/place/label side), keeping its id, role, attributes and dates. Same _status
   // discipline as applyRelDate (#383): an existing rel goes to EDIT (2), a not-yet-saved one stays ADD.
+  // relEnds knows only recording/work credits; a release's own credit (a place, label, artist on the
+  // release) has the release as its container — without this, "In every role" skipped it (#1047)
+  function creditEnds(rel) {
+    const e = relEnds(rel); if (e || !rel) return e;
+    const a = rel.entity0, b = rel.entity1;
+    if (a && a.entityType === 'release' && b && b.entityType !== 'release') return { src: a, other: b, credit: rel.entity1_credit || '' };
+    if (b && b.entityType === 'release' && a && a.entityType !== 'release') return { src: b, other: a, credit: rel.entity0_credit || '' };
+    return null;
+  }
   function setCredit(items, text, describe) {
     const re = RE(); if (!re) { toast('MusicBrainz relationship editor not ready'); return 0; }
     let n = 0, same = 0, skipped = 0;
     for (const it of items) {
-      const rel = relFromNode(it), ends = relEnds(rel);
+      const rel = relFromNode(it), ends = creditEnds(rel);
       if (!rel || !ends) { skipped++; continue; }
       const key = ends.other === rel.entity0 ? 'entity0_credit' : 'entity1_credit';
       const want = text === val(ends.other.name) ? '' : text;
@@ -9647,7 +9656,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     return n;
   }
   function openCreditMenu(item, x, y) {
-    const rel = relFromNode(item), ends = relEnds(rel); if (!ends) return;
+    const rel = relFromNode(item), ends = creditEnds(rel); if (!ends) return;
     const btn = item.querySelector(REMOVE_SEL); if (!btn) return;
     const roleLabel = pickRoleLabel(item.closest('tr')) || ltName(rel.linkTypeID);
     const name = val(ends.other.name) || targetLabel(item);
