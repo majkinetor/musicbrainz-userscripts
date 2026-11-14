@@ -2,10 +2,14 @@
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
 <<<<<<< HEAD
+<<<<<<< HEAD
 // @version      2026.11.14.170003
 =======
 // @version      2026.11.14.160514
 >>>>>>> 4bd9af86c (Event Horizon's header shows Fuzzy Logic's votes on a release page too; both logs open with the startup line)
+=======
+// @version      2026.11.14.180000
+>>>>>>> 3fda1accb (Event Horizon: tag lookup results show in its search view)
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11107,7 +11111,7 @@ async function searchLoad(n, key) {
     try {
         let html, base = location.href;
         if (key === PAGE_ID && mbBody) html = '<body>' + mbBody.innerHTML + '</body>';
-        else { base = `${MB}/search?${key.slice(7)}`; const r = await mbnFetch(base); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
+        else { const tl = new URLSearchParams(key.slice(7)).get('tl'); base = tl ? `${MB}/taglookup/index?${tl}` : `${MB}/search?${key.slice(7)}`; const r = await mbnFetch(base); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
         const s = searchParse(html, base);
         LOG.info(`Search "${d.q}" (${d.t}): ${s.rows.length} rows of ${s.total}${s.next ? ', more at ' + s.next : ''}${s.err ? ' — ' + s.err : ''}`);
         if (n === showing && data === d) { d.s = s; LM_ERR.delete('sr'); render(); }
@@ -11595,6 +11599,11 @@ function navTo(href) {
     if (e) return 'user/' + e[1];
     // a search → "search/<its query string>"; a documentation search stays MusicBrainz's, whose results Google's script draws in the page
     if (u.origin === location.origin && /^\/search\/?$/.test(u.pathname) && u.searchParams.get('query') && u.searchParams.get('type') !== 'doc') return 'search/' + u.search.slice(1);
+    // a tag lookup (the tagger's search) → a release search whose rows come from /taglookup: "search/query=<artist – release>&type=release&tl=<its query string>"
+    if (u.origin === location.origin && /^\/taglookup(\/index)?\/?$/.test(u.pathname) && [...u.searchParams].some(([k, v]) => k.startsWith('tag-lookup.') && v.trim())) {
+        const g = k => (u.searchParams.get('tag-lookup.' + k) || '').trim();
+        return 'search/' + new URLSearchParams({ query: [g('artist'), g('release'), g('track')].filter(Boolean).join(' – ') || g('filename') || 'Tag lookup', type: 'release', tl: u.search.slice(1) });
+    }
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
