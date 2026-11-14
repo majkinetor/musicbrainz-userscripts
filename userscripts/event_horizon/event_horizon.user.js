@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.200000
+// @version      2026.11.14.203000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2723,7 +2723,7 @@ const CSS = `
 @media (max-width:700px){.hm-hero{padding-right:4px}.hm-orb{display:none}}
 .hm-av{position:relative}.hm-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .hm-hi{position:relative;font-size:30px;font-weight:800;margin:6px 0 16px}.hm-hi em{font-style:normal;background:linear-gradient(90deg,#f07dbf,#f5a06b);-webkit-background-clip:text;background-clip:text;color:transparent}
-.tl-bar{position:sticky;top:var(--eh-pin-h,0px);z-index:21;display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 10px;margin:4px 0 14px;padding:8px 0;background:var(--eh-bar);transition:top .18s}.tl-bar label{display:flex;flex-direction:column;gap:2px;flex:1 1 140px;min-width:0;font-size:11px;color:var(--muted)}.tl-bar input{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface)!important;color:var(--text);font-size:14px}.tl-bar input:focus{outline:none;border-color:var(--accent)}.tl-bar label:has([name$=tracknum]),.tl-bar label:has([name$=duration]){flex:0 1 90px}.tl-bar>.hm-go{flex:none;width:34px;height:31px}
+.tl-hero{padding-bottom:0}.tl-hero .hm-hi{font-size:20px;margin:2px 0 0}.tl-bar{position:sticky;top:var(--eh-pin-h,0px);z-index:21;display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 10px;margin:4px 0 14px;padding:8px 0;background:var(--eh-bar);transition:top .18s}.tl-bar label{display:flex;flex-direction:column;gap:2px;flex:1 1 140px;min-width:0;font-size:11px;color:var(--muted)}.tl-bar input{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface)!important;color:var(--text);font-size:14px}.tl-bar input:focus{outline:none;border-color:var(--accent)}.tl-bar label:has([name$=tracknum]),.tl-bar label:has([name$=duration]){flex:0 1 90px}.tl-bar>.hm-go{flex:none;width:34px;height:31px}
 .hm-srch{position:relative;max-width:820px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--surface)!important;border:1px solid var(--border);border-radius:14px;padding:6px 6px 6px 16px;color:var(--muted);box-shadow:0 6px 22px var(--shadow)}
 .hm-srch:focus-within{border-color:var(--accent)}
 .hm-hero:has(:is(.hm-qd,.hm-td):not([hidden])),.hm-srch:has(:is(.hm-qd,.hm-td):not([hidden])){position:relative;z-index:30}
@@ -11091,8 +11091,12 @@ function searchParse(html, base) {
         });
         return td.innerHTML.trim();
     };
-    const head = t ? [...t.querySelectorAll('thead th')].map(tx) : [];
-    const rows = t ? [...t.querySelectorAll('tbody tr')].map(r => ({ score: +r.dataset.score || 0, cells: [...r.querySelectorAll('td')].map(cell) })) : [];
+    let head = t ? [...t.querySelectorAll('thead th')].map(tx) : [];
+    // a tag lookup's recording spans its releases' rows (rowspan): those rows lack the leading cells, so they get blanks
+    let rows = t ? [...t.querySelectorAll('tbody tr')].map(r => { const cs = [...r.querySelectorAll('td')].map(cell); return { score: +r.dataset.score || 0, cells: [...Array(Math.max(0, head.length - cs.length)).fill('&#8203;'), ...cs] }; }) : [];
+    // the tag lookup's Tagger column (the "open in Picard" button) is no use here
+    const tg = head.indexOf('Tagger');
+    if (tg >= 0) { head = head.filter((_, i) => i !== tg); rows = rows.map(r => ({ ...r, cells: r.cells.filter((_, i) => i !== tg) })); }
     const ps = [...c.querySelectorAll(':scope>p')].map(tx).filter(x => x && !/^\S+:\s*\d{4}-\d\d-\d\d/.test(x));
     const found = tx(c.querySelector('.pageselector-results')) || ps.find(x => /\d/.test(x) && x.includes('"')) || '';
     const err = t ? '' : ps.filter(x => x !== found).join(' ') || tx(c.querySelector('.error, p'));
