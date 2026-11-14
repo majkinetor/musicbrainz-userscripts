@@ -1,15 +1,15 @@
 name: Bug report
-description: Something in a script is broken. Suggestions go to Discussions instead.
+description: 'Something in a script is broken. Suggestions go to Discussions instead.'
 labels: [bug]
 body:
   - type: markdown
     attributes:
-      value: Issues are for bugs. For suggestions or feature requests, [open a discussion](https://github.com/majkinetor/musicbrainz-userscripts/discussions/new?category=ideas).
+      value: 'Issues are for bugs. For suggestions or feature requests, [open a discussion](https://github.com/majkinetor/musicbrainz-userscripts/discussions/new?category=ideas).'
   - type: textarea
     id: script
     attributes:
       label: Script versions
-      description: Open Event Horizon (the command palette), run "String Theory: Copy versions as Markdown", and paste the result here. It lists your installed script versions.
+      description: 'Open Event Horizon (the command palette), run "String Theory: Copy versions as Markdown", and paste the result here. It lists your installed script versions.'
     validations:
       required: true
   - type: textarea
