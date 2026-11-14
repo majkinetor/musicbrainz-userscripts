@@ -19,6 +19,7 @@ Batch operations and helpers for the MusicBrainz *Edit relationships* page.
 - **[Work matching](#work-matching)** links recordings to existing works, a medley to each of its works.
 - **[Text parser](#text-parser)** turns liner notes into relationships.
 - **[Replace role](#replace-role)** on many credits at once.
+- **[Credited as](#credited-as)** on many credits at once.
 - **[Highlight](#highlight)** a role or an entity everywhere, with counts.
 - **[Edit note](#edit-note)**: a line per action, under Group Therapy's signature.
 
@@ -193,6 +194,10 @@ Right-click a credit's pencil for **Replace role "writer"…** (every credit wit
 
 > [!NOTE]
 > MusicBrainz can't change a relationship's type, so this removes and re-adds it. Attributes belong to the old type and are dropped; the toast counts the credits that had some.
+
+## Credited as
+
+Right-click a credit's pencil for **Set “Credited as”…**, type the name, then pick where it goes: **As ‹role›** (that entity's credits in that role) or **In every role**, limited to the ticked recordings or works if any. Typical use: credit every *Meadowlands Arena* on a live release as *Brendan Byrne Arena*, its name at the time. The entity's own name clears the credited name.
 
 ## Highlight
 

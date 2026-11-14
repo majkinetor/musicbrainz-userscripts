@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.12.151307
+// @version      2026.11.14.164325
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -9616,6 +9616,58 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     return n;
   }
 
+  // #1047 set the "Credited as" name on many credits at once — an update of each rel's credit on the
+  // far end (the artist/place/label side), keeping its id, role, attributes and dates. Same _status
+  // discipline as applyRelDate (#383): an existing rel goes to EDIT (2), a not-yet-saved one stays ADD.
+  function setCredit(items, text, describe) {
+    const re = RE(); if (!re) { toast('MusicBrainz relationship editor not ready'); return 0; }
+    let n = 0, same = 0, skipped = 0;
+    for (const it of items) {
+      const rel = relFromNode(it), ends = relEnds(rel);
+      if (!rel || !ends) { skipped++; continue; }
+      const key = ends.other === rel.entity0 ? 'entity0_credit' : 'entity1_credit';
+      const want = text === val(ends.other.name) ? '' : text;
+      if ((rel[key] || '') === want) { same++; continue; }
+      try {
+        re.dispatch({
+          type: 'update-relationship-state', sourceEntity: ends.src, batchSelectionCount: null,
+          creditsToChangeForSource: '', creditsToChangeForTarget: '',
+          oldRelationshipState: rel,
+          newRelationshipState: { ...rel, _status: rel._status === 1 ? 1 : 2, [key]: want },
+        });
+        n++;
+      } catch (e) { skipped++; LOG().warn(`set credit failed: ${e && e.message || e}`); }
+    }
+    LOG().info(`credited as "${text}": ${n} set, ${same} already so, ${skipped} skipped`);
+    if (n) markUsed(describe(n));
+    const bits = [n ? `Credited ${n} as “${text}”` : 'Nothing to change'];
+    if (same) bits.push(`${same} already so`);
+    if (skipped) bits.push(`${skipped} skipped (see console)`);
+    toast(bits.join(' — ') + (n ? ' — review & save' : ''));
+    return n;
+  }
+  function openCreditMenu(item, x, y) {
+    const rel = relFromNode(item), ends = relEnds(rel); if (!ends) return;
+    const btn = item.querySelector(REMOVE_SEL); if (!btn) return;
+    const roleLabel = pickRoleLabel(item.closest('tr')) || ltName(rel.linkTypeID);
+    const name = val(ends.other.name) || targetLabel(item);
+    const sel = selectionKeys();
+    const scoped = list => (sel.recs.size || sel.works.size) ? list.filter(i => itemInSelection(i, sel)) : list;
+    const byRoleTgt = scoped(collect(btn, 'role-and-target')), byTgt = scoped(collect(btn, 'target'));
+    let text = ends.credit || name;
+    const t = (s, k) => { s = String(s || ''); return s.length > k ? s.slice(0, k - 1) + '…' : s; };
+    const run = (list, what) => () => {
+      const v = text.trim(); if (!v) { toast('Type a name first'); return; }
+      setCredit(list, v, k => `Credited “${name}” as “${v}”${what} on ${k} credit${k > 1 ? 's' : ''}`);
+    };
+    const items = [{ header: `Credit “${t(name, 30)}” as` },
+      { input: { value: text, placeholder: name, title: 'The name as credited; the entity’s own name clears it', onInput: v => { text = v; return { ok: true, text: v.trim() === name ? 'clears the credited name' : '' }; } } }];
+    if (sel.recs.size || sel.works.size) items.push({ note: 'scoped to the selected tracks' });
+    items.push({ label: `As ${t(roleLabel, 30)}`, sub: String(byRoleTgt.length), run: run(byRoleTgt, ` as ${roleLabel}`) },
+      { label: 'In every role', sub: String(byTgt.length), run: run(byTgt, '') });
+    openMenu(x, y, items);
+  }
+
   // the two menu entries offered on a rel's pencil: this role everywhere, and
   // this role only where the far end is this specific entity.
   function replaceRoleMenuItems(item) {
@@ -9643,6 +9695,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     });
     const out = ['sep'];
     if (scopeNote) out.push({ note: scopeNote });
+    out.push({ label: 'Set “Credited as”…', run: () => { const r = item.getBoundingClientRect(); setTimeout(() => openCreditMenu(item, r.left, r.bottom + 4), 0); } });
     out.push(
       mk(`Replace role ${t(roleLabel, 34)}…`, byRole, `“${roleLabel}”`),
       mk(`Replace ${t(roleLabel, 20)} for “${t(tgt, 20)}”…`, byRoleTgt, `“${roleLabel}” for “${tgt}”`),
@@ -9750,7 +9803,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     document.body.addEventListener('mouseout', onOut);
     document.body.addEventListener('mouseover', hintControls, true);
     let tries = 0; (function tryInject() { if (injectCloneButton() || tries++ > 40) return; setTimeout(tryInject, 500); })();
-    try { W.__groupTherapy = { VERSION, fmtBadges, badgeInk, FMT_FAMILY, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, fetchReleaseRels, injectCloneButton, openCopyFromPopover, workEntity, workCreditRels, openWorkMenu, mediumFormatOf, formatExcludeRolesFor, RE, replacementRoles, replaceRole, replaceRoleMenuItems, relEnds, openRolePicker,
+    try { W.__groupTherapy = { VERSION, fmtBadges, badgeInk, FMT_FAMILY, collect, removeButtons, highlightPage, recordingRels, recordingEntity, copyCredits, checkedDestinations, openCopyMenu, removeSourceRels, rowForRecording, fetchReleaseRels, injectCloneButton, openCopyFromPopover, workEntity, workCreditRels, openWorkMenu, mediumFormatOf, formatExcludeRolesFor, RE, replacementRoles, replaceRole, replaceRoleMenuItems, setCredit, relEnds, openRolePicker,
       // #522 text parser
       txpTokenize, txpCompile, txpExpand, linkTypesForPair, openTextParser, closeTextParser,
       txpTrackRows, txpMatchTracks,   // #539 recording scope
