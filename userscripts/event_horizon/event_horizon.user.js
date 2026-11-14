@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.235000
+// @version      2026.11.15.002000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2723,7 +2723,8 @@ const CSS = `
 @media (max-width:700px){.hm-hero{padding-right:4px}.hm-orb{display:none}}
 .hm-av{position:relative}.hm-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .hm-hi{position:relative;font-size:30px;font-weight:800;margin:6px 0 16px}.hm-hi em{font-style:normal;background:linear-gradient(90deg,#f07dbf,#f5a06b);-webkit-background-clip:text;background-clip:text;color:transparent}
-.tl-hero{padding-top:0;padding-bottom:0;margin:-6px 0 0}.tl-hero .hm-hi{font-size:18px;margin:0;line-height:1.2}.tl-bar{position:sticky;top:var(--eh-pin-h,0px);z-index:21;display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px 10px;margin:16px 0 6px;padding:6px 10px;border-radius:8px;background:color-mix(in srgb,var(--eh-bar) 70%,transparent);backdrop-filter:blur(6px);transition:top .18s}.tl-bar label{display:flex;flex-direction:column;gap:2px;flex:1 1 140px;min-width:0;font-size:11px;color:var(--muted)}.tl-bar input{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface)!important;color:var(--text);font-size:14px}.tl-bar input:focus{outline:none;border-color:var(--accent)}.tl-bar label:has([name$=tracknum]),.tl-bar label:has([name$=duration]){flex:0 1 90px}.tl-bar select{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface)!important;color:var(--text);font-size:14px}.url-bar label:has([name=query]){flex:2 1 240px}.sr-out{color:var(--muted);text-decoration:none}.tl-bar>.hm-go{flex:none;width:34px;height:31px}
+.eh-cb-pop{position:fixed;z-index:1002;max-height:280px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:6px;padding:4px;color:var(--text);font-size:14px}.eh-cb-opt{padding:4px 8px;border-radius:4px;cursor:pointer;white-space:nowrap}.eh-cb-opt small{color:var(--muted);margin-left:6px}.eh-cb-opt:hover,.eh-cb-opt.on{background:var(--hover)}.tl-bar input[data-ehcombo]{padding-right:28px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 8px center!important;background-size:14px!important}.eh-cb-none{padding:4px 8px;color:var(--muted)}
+.tl-hero{padding-top:0;padding-bottom:0;margin:-6px 0 0}.tl-hero .hm-hi{font-size:18px;margin:0;line-height:1.2}.tl-bar{position:sticky;top:var(--eh-pin-h,0px);z-index:21;display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px 10px;margin:16px 0 6px;padding:6px 10px;border-radius:8px;background:color-mix(in srgb,var(--eh-bar) 70%,transparent);backdrop-filter:blur(6px);transition:top .18s}.tl-bar label{display:flex;flex-direction:column;gap:2px;flex:1 1 140px;min-width:0;font-size:11px;color:var(--muted)}.tl-bar input{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:8px;background-color:color-mix(in srgb,var(--surface) 55%,transparent)!important;color:var(--text);font-size:14px}.tl-bar input:focus{outline:none;border-color:var(--accent)}.tl-bar label:has([name$=tracknum]),.tl-bar label:has([name$=duration]){flex:0 1 90px}.tl-bar select{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface)!important;color:var(--text);font-size:14px}.url-bar label:has([name=query]){flex:2 1 240px}.sr-out{color:var(--muted);text-decoration:none}.tl-bar>.hm-go{flex:none;width:34px;height:31px}
 .hm-srch{position:relative;max-width:820px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--surface)!important;border:1px solid var(--border);border-radius:14px;padding:6px 6px 6px 16px;color:var(--muted);box-shadow:0 6px 22px var(--shadow)}
 .hm-srch:focus-within{border-color:var(--accent)}
 .hm-hero:has(:is(.hm-qd,.hm-td):not([hidden])),.hm-srch:has(:is(.hm-qd,.hm-td):not([hidden])){position:relative;z-index:30}
@@ -11176,7 +11177,7 @@ function searchHtml(d) {
     if (!s || !s.rows.length) return hero;
     // a column empty in every row goes; the score shows as a bar
     const txt = c => (c || '').replace(/<[^>]*>/g, '').trim(), on = s.head.map((_, i) => s.rows.some(r => txt(r.cells[i])));
-    const table = `<div class="ed-tw"><table class="ed-t sr-t"><thead><tr><th class="sr-sc" data-tip="How well it matches">Score</th>${s.head.filter((_, i) => on[i]).map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${s.rows.map(r => `<tr><td class="sr-sc"><i style="--w:${r.score}%"></i><small>${r.score}</small></td>${r.cells.filter((_, i) => on[i]).map(c => `<td>${txt(c) ? c : '—'}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+    const table = `<div class="ed-tw"><table class="ed-t sr-t"><thead><tr><th class="sr-sc" data-tip="How well it matches">Score</th>${s.head.filter((_, i) => on[i]).map(h => d.t === 'url' ? `<th aria-sort="none"><button type="button" class="tg-th" data-srsort data-tip="Sort by ${esc(h.toLowerCase())}">${esc(h)}</button></th>` : `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${s.rows.map(r => `<tr><td class="sr-sc"><i style="--w:${r.score}%"></i><small>${r.score}</small></td>${r.cells.filter((_, i) => on[i]).map(c => `<td>${txt(c) ? c : '—'}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
     // MusicBrainz's next page comes in under these, by Load more or Auto, as every paged list's does
     const more = s.next ? lmFoot('sr', s.rows.length, s.total ? fmtN(s.total) : 0) : '';
     return hero + sect('sr', `Results <span class="count">${fmtN(s.rows.length)}${s.total > s.rows.length ? '/' + fmtN(s.total) : ''}</span>`, '', table + more, `<div class="folded-note">${esc(s.found)}</div>`);
@@ -11188,10 +11189,53 @@ function tlHero(v, sub) {
     return `${srchHero('', sub ? `<p class="u-sub sr-sub">${sub}</p>` : '', '', 'release')}<form class="tl-bar" aria-label="Tag lookup" action="${MB}/taglookup/index" method="get">${f}<button type="submit" class="hm-go" data-tip="Look up" aria-label="Look up">${SVG(LENS)}</button></form>`;
 }
 // URL search's fields, in the tag lookup's bar
+// a URL search heading sorts the loaded rows by its column, again the other way
+document.addEventListener('click', ev => {
+    const b = ev.target.closest?.('[data-srsort]'); if (!b) return;
+    const th = b.closest('th'), tb = th.closest('table').tBodies[0], i = [...th.parentNode.children].indexOf(th);
+    const dir = th.getAttribute('aria-sort') === 'ascending' ? -1 : 1;
+    for (const h of th.parentNode.children) if (h.hasAttribute('aria-sort')) h.setAttribute('aria-sort', 'none');
+    th.setAttribute('aria-sort', dir > 0 ? 'ascending' : 'descending');
+    const key = r => (r.cells[i]?.textContent || '').trim();
+    [...tb.rows].sort((x, y) => dir * key(x).localeCompare(key(y), undefined, { numeric: true, sensitivity: 'base' })).forEach(r => tb.append(r));
+});
+// a filterable list under a URL search field, in the suite's look instead of the browser's datalist
+const EH_COMBO = { tt: () => URL_TT.map(v => ({ v, t: srchName(v.replace('-', '_')) })), rt: () => URL_RT.map(v => ({ v, t: v })) };
+let ehCbIn = null, ehCbHit = [], ehCbAt = 0, ehCbPop = null;
+const ehCbDraw = () => {
+    ehCbPop.innerHTML = ehCbHit.map((o, i) => `<div class="eh-cb-opt${i === ehCbAt ? ' on' : ''}" data-i="${i}">${esc(o.t)}${o.t !== o.v ? ` <small>${esc(o.v)}</small>` : ''}</div>`).join('') || '<div class="eh-cb-none">No match</div>';
+    ehCbPop.querySelector('.on')?.scrollIntoView({ block: 'nearest' });
+};
+const ehCbOpen = (inp, all) => {
+    if (!ehCbPop) {
+        ehCbPop = document.createElement('div'); ehCbPop.className = 'eh-cb-pop'; ehCbPop.hidden = true; document.body.append(ehCbPop);
+        ehCbPop.addEventListener('mousedown', ev => { ev.preventDefault(); const d = ev.target.closest('.eh-cb-opt'); if (d) ehCbPick(ehCbHit[+d.dataset.i]); });
+    }
+    ehCbIn = inp; const t = all ? '' : inp.value.trim().toLowerCase();
+    ehCbHit = EH_COMBO[inp.dataset.ehcombo]().filter(o => !t || o.t.toLowerCase().includes(t) || o.v.includes(t));
+    ehCbHit.sort((a, b) => t ? (a.t.toLowerCase().startsWith(t) ? 0 : 1) - (b.t.toLowerCase().startsWith(t) ? 0 : 1) : 0);
+    ehCbAt = Math.max(0, ehCbHit.findIndex(o => o.v === inp.value)); ehCbDraw();
+    const r = inp.getBoundingClientRect();
+    Object.assign(ehCbPop.style, { left: r.left + 'px', top: (r.bottom + 2) + 'px', minWidth: r.width + 'px' });
+    ehCbPop.hidden = false;
+};
+const ehCbClose = () => { if (ehCbPop) ehCbPop.hidden = true; ehCbIn = null; };
+const ehCbPick = o => { const inp = ehCbIn; ehCbClose(); if (inp && o) inp.value = o.v; };
+document.addEventListener('click', ev => { const i = ev.target.closest?.('input[data-ehcombo]'); if (i && ehCbIn !== i) ehCbOpen(i, true); }, true);
+document.addEventListener('input', ev => { if (ev.target.dataset?.ehcombo) ehCbOpen(ev.target); }, true);
+document.addEventListener('focusout', ev => { if (ev.target === ehCbIn) ehCbClose(); }, true);
+document.addEventListener('scroll', () => { if (ehCbIn) ehCbClose(); }, true);
+document.addEventListener('keydown', ev => {
+    const inp = ev.target; if (!inp.dataset?.ehcombo) return;
+    if (ehCbIn !== inp) { if (ev.key === 'ArrowDown') { ehCbOpen(inp, true); ev.preventDefault(); } return; }
+    if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') { ehCbAt = Math.min(ehCbHit.length - 1, Math.max(0, ehCbAt + (ev.key === 'ArrowDown' ? 1 : -1))); ehCbDraw(); ev.preventDefault(); }
+    else if (ev.key === 'Enter' && ehCbHit[ehCbAt] && inp.value !== ehCbHit[ehCbAt].v) { ehCbPick(ehCbHit[ehCbAt]); ev.preventDefault(); }
+    else if (ev.key === 'Escape') { ehCbClose(); ev.stopPropagation(); }
+}, true);
 function urlHero(p, sub) {
     const tt = p.get('tt') || '', inp = (n, l, ph) => `<label><span>${l}</span><input name="${n}" value="${esc(p.get(n) || '')}" placeholder="${ph}"></label>`;
-    const sel = `<label><span>Linked entity type</span><input name="tt" list="eh-url-tt" autocomplete="off" placeholder="Any" value="${esc(tt)}"><datalist id="eh-url-tt">${URL_TT.map(t => `<option value="${t}" label="${srchName(t.replace('-', '_'))}">`).join('')}</datalist></label>`;
-    return `${srchHero('URL search', sub ? `<p class="u-sub sr-sub">${sub}</p>` : '', '', 'artist')}<form class="tl-bar url-bar" aria-label="URL search" action="${MB}/search" method="get"><input type="hidden" name="type" value="url">${inp('query', 'URL', '')}${sel}${inp('rt', 'Relationship type', '').replace('<input ', '<input list="eh-url-rt" autocomplete="off" ')}<datalist id="eh-url-rt">${URL_RT.map(n => `<option value="${esc(n)}">`).join('')}</datalist>${inp('tid', 'Linked entity MBID', '')}<button type="submit" class="hm-go" data-tip="Search URLs" aria-label="Search URLs">${SVG(LENS)}</button></form>`;
+    const sel = `<label><span>Linked entity type</span><input name="tt" data-ehcombo="tt" autocomplete="off" placeholder="Any" value="${esc(tt)}"></label>`;
+    return `${srchHero('URL search', sub ? `<p class="u-sub sr-sub">${sub}</p>` : '', '', 'artist')}<form class="tl-bar url-bar" aria-label="URL search" action="${MB}/search" method="get"><input type="hidden" name="type" value="url">${inp('query', 'URL', '*bandcamp.com*')}${sel}${inp('rt', 'Relationship type', '').replace('<input ', '<input data-ehcombo="rt" autocomplete="off" ')}${inp('tid', 'Linked entity MBID', '')}<button type="submit" class="hm-go" data-tip="Search URLs" aria-label="Search URLs">${SVG(LENS)}</button></form>`;
 }
 /* ── section rail ──────────────────────────────────── */
 // The Sections button in the page's action row opens a list of the sections, the one in view lit: a name jumps
