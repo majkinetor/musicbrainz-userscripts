@@ -1,7 +1,11 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
+<<<<<<< HEAD
 // @version      2026.11.14.170003
+=======
+// @version      2026.11.14.160514
+>>>>>>> 4bd9af86c (Event Horizon's header shows Fuzzy Logic's votes on a release page too; both logs open with the startup line)
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5644,7 +5648,7 @@ function tgInWire() {
         const d = ev.detail || {}; kpWrote(); if (!d.path) return;
         const lc = xs => (xs || []).map(x => String(x).trim().toLowerCase()).filter(Boolean), up = d.kind !== 'withdraw', ns = [...lc(d.genres), ...lc(d.tags)];
         const mk = d.path.slice(1), mine = MINE.get(mk); if (mine) ns.forEach(n => up ? mine.add(n) : mine.delete(n)); else if (up) MINE.set(mk, new Set(ns));
-        if (tgIn || !up || !tgPath().startsWith(d.path) || !data || !data.g) { if (!tgIn) render(); return; } const g = data.g; g.genres = [...new Set([...(g.genres || []), ...lc(d.genres)])]; g.tags = [...new Set([...(g.tags || []), ...lc(d.tags)])]; render(); });
+        if (tgIn || !up || !tgPath().startsWith(d.path) || !data || !(data.rel || data.g)) { if (!tgIn) render(); return; } const g = data.rel || data.g; LOG.info('Fuzzy Logic voted on this page: header tags updated'); g.genres = [...new Set([...(g.genres || []), ...lc(d.genres)])]; g.tags = [...new Set([...(g.tags || []), ...lc(d.tags)])]; render(); });
     document.addEventListener('mbu-tags-add', ev => { const ns = ((ev.detail && ev.detail.names) || []).map(x => String(x).trim().toLowerCase()).filter(Boolean); if (!tgIn || !ns.length) return; if (tgIn.t) tgInSend(ns, 1); else tgIn.pend = [...(tgIn.pend || []), ...ns]; });
     document.addEventListener('click', ev => {
         const b = ehOn && ev.target.closest('button[data-tgin]'); if (!b) return;
@@ -14025,6 +14029,7 @@ function launcher() {
 // made before start(): the page's own data is asked for at once (prefetch), and its first answers can come before
 // DOMContentLoaded, when start() runs; each logs a line
 const LOG = mbuLog({ name: 'Event Horizon', version: VERSION, key: 'event_horizon.logwin', history: { prefix: 'eh:session:', auto: true } });   // #890: sessions with a vote, a note, a warning or an error
+LOG.info(mbuStartupInfo('Event Horizon'));
 function start() {
     try { start1(); } catch (e) { const h = document.getElementById('eh-hide'); if (h) h.remove(); LOG.error('Start failed: ' + (e && e.stack || e)); throw e; }
 }
