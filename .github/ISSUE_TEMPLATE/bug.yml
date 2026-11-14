@@ -9,7 +9,7 @@ body:
     id: script
     attributes:
       label: Script versions
-      description: 'Open Event Horizon (the command palette), run "String Theory: Copy versions as Markdown", and paste the result here. It lists your installed script versions.'
+      description: 'Use `CTRL+K` to open the command palette, run "String Theory: Copy versions as Markdown", and paste the result here. It lists your installed script versions.'
     validations:
       required: true
   - type: textarea
