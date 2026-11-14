@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.12.154357
+// @version      2026.11.14.115126
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -5782,7 +5782,8 @@
     const ambiguousSelect = typeRow?.classList?.contains('relationship-item') ? typeRow.querySelector('select.link-type') : null;
     if (!linkTypeId && ambiguousSelect && !ambiguousSelect.value) {
       removeIfOurs(row);
-      return 'ambiguous relationship type — MusicBrainz needs you to pick one; use ⇗ "open in tab" to add this url manually';
+      const choices = [...ambiguousSelect.options].map(o => (o.textContent || '').trim()).filter(Boolean).join(', ');
+      return `MusicBrainz has no default relationship type for this url here, so one has to be picked${choices ? ` (${choices})` : ''}; use ⇗ "open in tab" to add it by hand`;
     }
     if (errAlready) { removeIfOurs(row); return errAlready; }
     return null;
@@ -6256,7 +6257,27 @@
   // (Harmony's dual-relationship case) only keeps the first — deduped here,
   // rare enough for a manual-review tab that the human can add the second by
   // hand if they need it (they're already there reviewing).
+  // #1042: link types MusicBrainz leaves blank but that have one obvious answer.
+  // A Bandcamp track page on a release gets no type from MB (only an album page
+  // does), so Falcon gives it the pair MB picks for an album: purchase for
+  // download (74) + free streaming (85). Expands an untyped url into both, once.
+  const DEFAULT_URL_TYPES = [
+    { entity: 'release', re: /^https?:\/\/[^/]+\.bandcamp\.com\/track\//i, types: ['74', '85'] },
+  ];
+  function applyDefaultLinkTypes(item) {
+    const out = [];
+    let changed = false;
+    for (const u of item.urls || []) {
+      const rule = !u.linkTypeId && DEFAULT_URL_TYPES.find(r => r.entity === item.entityType && r.re.test(u.url));
+      if (!rule) { out.push(u); continue; }
+      changed = true;
+      rule.types.forEach(t => { if (!out.some(x => x.url === u.url && x.linkTypeId === t) && !item.urls.some(x => x.url === u.url && x.linkTypeId === t)) out.push({ url: u.url, linkTypeId: t }); });
+      dbg('[types]', `${u.url} — no type given; using ${rule.types.map(linkTypeName).join(' + ')}`);
+    }
+    if (changed) item.urls = out;
+  }
   function buildSeedEditUrl(item) {
+    applyDefaultLinkTypes(item);
     // ⚠ MB's form prefix uses the URL segment, not Falcon's internal type name:
     // a release group's fields are `edit-release-group.*` (hyphen), NOT
     // `edit-release_group.*`. Verified on the sandbox while doing #533 —
@@ -6324,7 +6345,8 @@
     // #494: release items have no edit-relationships form to seed — the
     // closest manual fallback is MB's own add-cover-art page (no seeding
     // possible there either, it's a plain upload form).
-    if (item.entityType === 'release') {
+    // #1042: only when there are no links to seed — a release with links opens its edit page, seeded below.
+    if (item.entityType === 'release' && !(item.urls || []).length) {
       const tab = window.open(`${MB_ORIGIN}/release/${item.mbid}/add-cover-art`, '_blank');
       if (!tab) { log('error', `${item.mbid}: popup blocked — allow popups for this site to use "open in tab"`); return; }
       item.status = 'manual'; item.error = ''; renderQueue();
