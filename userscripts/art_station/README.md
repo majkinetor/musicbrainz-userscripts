@@ -144,7 +144,7 @@ The answer is the credits as printed, each line with its [pattern](../group_ther
 | ← → ↑ ↓   | gallery         | move between covers             |
 | Enter     | gallery         | open the cover full-screen      |
 | Space     | gallery         | select or deselect the cover    |
-| Delete    | gallery, viewer | mark for removal                |
+| Delete    | gallery, viewer | mark for removal (the selection, if any) |
 | ← → / ↑ ↓ | viewer          | previous, next / zoom           |
 | Enter     | viewer          | edit the comment                |
 | D         | viewer          | download the original           |
