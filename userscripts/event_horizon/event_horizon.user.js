@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.210000
+// @version      2026.11.14.211000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2723,7 +2723,7 @@ const CSS = `
 @media (max-width:700px){.hm-hero{padding-right:4px}.hm-orb{display:none}}
 .hm-av{position:relative}.hm-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .hm-hi{position:relative;font-size:30px;font-weight:800;margin:6px 0 16px}.hm-hi em{font-style:normal;background:linear-gradient(90deg,#f07dbf,#f5a06b);-webkit-background-clip:text;background-clip:text;color:transparent}
-.tl-hero{padding-top:0;padding-bottom:0;margin:-6px 0 0}.tl-hero .hm-hi{font-size:18px;margin:0;line-height:1.2}.tl-bar{position:sticky;top:var(--eh-pin-h,0px);z-index:21;display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px 10px;margin:2px 0 6px;padding:4px 0;background:var(--eh-bar);transition:top .18s}.tl-bar label{display:flex;flex-direction:column;gap:2px;flex:1 1 140px;min-width:0;font-size:11px;color:var(--muted)}.tl-bar input{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface)!important;color:var(--text);font-size:14px}.tl-bar input:focus{outline:none;border-color:var(--accent)}.tl-bar label:has([name$=tracknum]),.tl-bar label:has([name$=duration]){flex:0 1 90px}.tl-bar>.hm-go{flex:none;width:34px;height:31px}
+.tl-hero{padding-top:0;padding-bottom:0;margin:-6px 0 0}.tl-hero .hm-hi{font-size:18px;margin:0;line-height:1.2}.tl-bar{position:sticky;top:var(--eh-pin-h,0px);z-index:21;display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px 10px;margin:2px 0 6px;padding:6px 10px;border-radius:8px;background:var(--eh-bar);transition:top .18s}.tl-bar label{display:flex;flex-direction:column;gap:2px;flex:1 1 140px;min-width:0;font-size:11px;color:var(--muted)}.tl-bar input{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface)!important;color:var(--text);font-size:14px}.tl-bar input:focus{outline:none;border-color:var(--accent)}.tl-bar label:has([name$=tracknum]),.tl-bar label:has([name$=duration]){flex:0 1 90px}.tl-bar>.hm-go{flex:none;width:34px;height:31px}
 .hm-srch{position:relative;max-width:820px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--surface)!important;border:1px solid var(--border);border-radius:14px;padding:6px 6px 6px 16px;color:var(--muted);box-shadow:0 6px 22px var(--shadow)}
 .hm-srch:focus-within{border-color:var(--accent)}
 .hm-hero:has(:is(.hm-qd,.hm-td):not([hidden])),.hm-srch:has(:is(.hm-qd,.hm-td):not([hidden])){position:relative;z-index:30}
