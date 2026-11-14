@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Suggestion or idea
+    url: https://github.com/majkinetor/musicbrainz-userscripts/discussions/new?category=ideas
+    about: Suggestions, feature requests and questions go to Discussions. Issues are for bugs and the maintainer's own work.
+  - name: Question or help
+    url: https://github.com/majkinetor/musicbrainz-userscripts/discussions/new?category=q-a
+    about: Ask how something works in Discussions.

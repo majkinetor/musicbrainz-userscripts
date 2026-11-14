@@ -1,0 +1,29 @@
+name: Bug report
+description: Something in a script is broken. Suggestions go to Discussions instead.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Issues are for bugs. For suggestions or feature requests, [open a discussion](https://github.com/majkinetor/musicbrainz-userscripts/discussions/new?category=ideas).
+  - type: input
+    id: script
+    attributes:
+      label: Script and version
+      placeholder: "Apollo Editor 1.2.3"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce (a page link helps)
+  - type: input
+    id: env
+    attributes:
+      label: Browser and userscript manager
+      placeholder: "Chrome, Violentmonkey"
