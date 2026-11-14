@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.14.215000
+// @version      2026.11.14.230000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2723,7 +2723,7 @@ const CSS = `
 @media (max-width:700px){.hm-hero{padding-right:4px}.hm-orb{display:none}}
 .hm-av{position:relative}.hm-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .hm-hi{position:relative;font-size:30px;font-weight:800;margin:6px 0 16px}.hm-hi em{font-style:normal;background:linear-gradient(90deg,#f07dbf,#f5a06b);-webkit-background-clip:text;background-clip:text;color:transparent}
-.tl-hero{padding-top:0;padding-bottom:0;margin:-6px 0 0}.tl-hero .hm-hi{font-size:18px;margin:0;line-height:1.2}.tl-bar{position:sticky;top:var(--eh-pin-h,0px);z-index:21;display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px 10px;margin:16px 0 6px;padding:6px 10px;border-radius:8px;background:color-mix(in srgb,var(--eh-bar) 70%,transparent);backdrop-filter:blur(6px);transition:top .18s}.tl-bar label{display:flex;flex-direction:column;gap:2px;flex:1 1 140px;min-width:0;font-size:11px;color:var(--muted)}.tl-bar input{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface)!important;color:var(--text);font-size:14px}.tl-bar input:focus{outline:none;border-color:var(--accent)}.tl-bar label:has([name$=tracknum]),.tl-bar label:has([name$=duration]){flex:0 1 90px}.tl-bar>.hm-go{flex:none;width:34px;height:31px}
+.tl-hero{padding-top:0;padding-bottom:0;margin:-6px 0 0}.tl-hero .hm-hi{font-size:18px;margin:0;line-height:1.2}.tl-bar{position:sticky;top:var(--eh-pin-h,0px);z-index:21;display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px 10px;margin:16px 0 6px;padding:6px 10px;border-radius:8px;background:color-mix(in srgb,var(--eh-bar) 70%,transparent);backdrop-filter:blur(6px);transition:top .18s}.tl-bar label{display:flex;flex-direction:column;gap:2px;flex:1 1 140px;min-width:0;font-size:11px;color:var(--muted)}.tl-bar input{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface)!important;color:var(--text);font-size:14px}.tl-bar input:focus{outline:none;border-color:var(--accent)}.tl-bar label:has([name$=tracknum]),.tl-bar label:has([name$=duration]){flex:0 1 90px}.tl-bar select{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface)!important;color:var(--text);font-size:14px}.url-bar label:has([name=query]){flex:2 1 240px}.sr-out{color:var(--muted);text-decoration:none}.tl-bar>.hm-go{flex:none;width:34px;height:31px}
 .hm-srch{position:relative;max-width:820px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--surface)!important;border:1px solid var(--border);border-radius:14px;padding:6px 6px 6px 16px;color:var(--muted);box-shadow:0 6px 22px var(--shadow)}
 .hm-srch:focus-within{border-color:var(--accent)}
 .hm-hero:has(:is(.hm-qd,.hm-td):not([hidden])),.hm-srch:has(:is(.hm-qd,.hm-td):not([hidden])){position:relative;z-index:30}
@@ -10917,7 +10917,7 @@ function srchHero(hi, sub, q = '', ty = 'artist', meth = 'indexed', add = '') {
     const ss = S.hmQs === 'off' ? [] : searches(), qs = S.hmQs !== 'below' ? '' : ss.map(x => `<a href="${MB}/search?query=${encodeURIComponent(x.q)}&type=${x.t}&method=indexed">${x.t === 'artist' ? '' : `<b>${x.t.replace('_', ' ')}:</b> `}${esc(x.q)}</a>`).join('');
     return `<header class="hm-hero">${ME ? `<a class="hm-home" href="${MB}/" data-tip="Event Horizon's home" aria-label="Event Horizon's home">` : `<a class="hm-home eh-out" href="${MB}/login?returnto=%2F" data-tip="Logged out&#10;Click to log in" aria-label="Log in">`}${LOGO.replace('<svg', '<svg class="hm-orb"')}<div class="hm-wm"><b>Event<br>Horizon</b><small>MUSICBRAINZ</small></div></a><div class="hm-hi">${hi}</div>
         <form class="hm-srch" action="${MB}/search" method="get"><button type="submit" class="hm-go" data-tip="Search" aria-label="Search">${SVG(LENS)}</button><input name="query" value="${esc(q)}" placeholder="${matchMedia('(max-width:700px)').matches ? 'Search' : 'Search MusicBrainz'}"${S.hmQs === 'combo' && ss.length ? ' autocomplete="off" role="combobox" aria-expanded="false" aria-controls="hm-ql"' : ''} required${q ? '' : ' autofocus'}>${S.hmQs === 'combo' && ss.length ? `<button type="button" class="hm-qc" data-tip="Recent searches" aria-label="Recent searches">${SVG('<path d="M6 9l6 6 6-6"/>')}</button>` : ''}<select name="type" hidden>${kinds}</select><button type="button" class="hm-ty" aria-haspopup="listbox" aria-expanded="false" aria-label="Entity type"><span>${srchName(ty)}</span></button><div class="hm-td" role="listbox" aria-label="Entity type" hidden>${tlist}</div><button type="button" class="hm-tg${S.hmAdv ? ' on' : ''}" data-tip="Advanced search" aria-label="Advanced search">${SVG('<path d="M4 6h10M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>')}</button>
-        <a class="hm-es" href="${MB}/search/edits" data-tip="Search for edits" aria-label="Search for edits">${SVG('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>')}</a>
+        <a class="hm-es" href="${MB}/search/edits" data-tip="Search for edits" aria-label="Search for edits">${SVG('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>')}</a><a class="hm-es" href="${MB}/search?type=url&query=" data-tip="Search for URLs" aria-label="Search for URLs">${SVG('<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>')}</a>
         <div class="hm-adv"${S.hmAdv ? '' : ' hidden'}><label>Search method</label><select name="method">${[['indexed', 'Indexed'], ['advanced', 'Indexed, with advanced query syntax'], ['direct', 'Direct database search']].map(([v, l]) => `<option value="${v}"${v === meth ? ' selected' : ''}>${l}</option>`).join('')}</select>
         <span class="hm-hint">Advanced syntax: <code>artist:"Hania Rani" AND date:2023</code> · <a href="${MB}/doc/Indexed_Search_Syntax" target="_blank">syntax help</a></span><label>Recent searches</label><span class="hm-seg" role="radiogroup" aria-label="Recent searches">${[['off', 'Off'], ['below', 'Below search'], ['combo', 'In combobox']].map(([v, l]) => `<label><input type="radio" name="hm-qs" form="hm-noform" value="${v}" data-hm-qs${v === S.hmQs ? ' checked' : ''}><span>${l}</span></label>`).join('')}</span></div>${S.hmQs === 'combo' && ss.length ? `<div class="hm-qd" id="hm-ql" role="listbox" hidden>${ss.map(x => `<button type="button" role="option" data-q="${esc(x.q)}" data-t="${x.t}"${x.t === ty ? '' : ' hidden'}><span>${esc(x.q)}</span></button>`).join('')}</div>` : ''}</form>
         ${qs ? `<div class="hm-qr">${qs}<button type="button" class="hm-qx" data-tip="Forget these searches">Clear</button></div>` : ''}${sub}${add}</header>`;
@@ -11103,8 +11103,37 @@ function searchParse(html, base) {
     // how many there are, the first number in "Found 4,676,836 results"
     return { head, rows, found, total: +(found.match(/\d[\d,.\u00a0 ]*/) || ['0'])[0].replace(/\D/g, ''), next: mbNextPage(c, base), err };
 }
+// URL search: ws/2's URL index, by the link's pattern and what it links to (tt entity type, rt relationship type, tid entity MBID)
+const URL_TT = ['artist', 'release', 'release-group', 'recording', 'work', 'label', 'area', 'event', 'place', 'series', 'instrument', 'genre'];
+function urlQuery(p) {
+    const t = (p.get('query') || '').trim(), tt = p.get('tt'), rt = (p.get('rt') || '').trim(), tid = (p.get('tid') || '').trim();
+    // a link with no wildcard is matched whole, quoted; with one, its / and : are escaped
+    let q = 'url:' + (!t ? '*' : /^".*"$|^\(.*\)$/.test(t) ? t : /[/:]/.test(t) ? (/[*?]/.test(t) ? t.replace(/[/:]/g, '\\$&') : `"${t}"`) : t);
+    if (tt) q += ` AND targettype:(${tt})`;
+    if (rt) q += ` AND relationtype:(${/\s/.test(rt) ? `"${rt}"` : rt})`;
+    if (tid) q += ` AND targetid:${tid}`;
+    return q;
+}
+async function urlPage(p, off) {
+    const j = await ws('url/?query=' + encodeURIComponent(urlQuery(p)) + '&limit=100&offset=' + off), rows = [];
+    for (const u of j.urls || []) {
+        const rels = (u['relation-list'] || []).flatMap(x => x.relations || []), url = `<a href="${MB}/url/${u.id}">${esc(u.resource)}</a> <a class="sr-out" href="${esc(u.resource)}" target="_blank" rel="noopener" aria-label="Open the link">↗</a>`;
+        for (const r of rels.length ? rels : [{}]) {
+            const ty = r['target-type'] || URL_TT.find(k => r[k] || r[k.replace('-', '_')]) || '', e = ty && (r[ty] || r[ty.replace('-', '_')]);
+            const nm = e ? (e.name || e.title || e['sort-name'] || e.id) + (e.disambiguation ? ` (${e.disambiguation})` : '') : '';
+            rows.push({ score: u.score || 0, cells: [url, ty ? srchName(ty.replace('-', '_')) : '', e ? `<a href="${MB}/${ty}/${e.id}">${esc(nm)}</a>` : '', esc(r.type || '')] });
+        }
+    }
+    const total = j.count || 0, got = off + (j.urls || []).length;
+    return { head: ['URL', 'Entity type', 'Entity', 'Relationship'], rows, total, found: total ? '' : 'No URLs match', next: got < total && (j.urls || []).length ? got : '', err: '' };
+}
 async function searchLoad(n, key) {
     const d = data;
+    if (d.t === 'url') {
+        try { const s = await urlPage(new URLSearchParams(d.qs), 0); LOG.info(`URL search ${urlQuery(new URLSearchParams(d.qs))}: ${s.rows.length} rows, ${s.total} URLs`); if (n === showing && data === d) { d.s = s; LM_ERR.delete('sr'); render(); } }
+        catch (e) { LOG.err('URL search failed: ' + e.message); if (n === showing && data === d) { d.err = e.message; render(); } }
+        return;
+    }
     try {
         let html, base = location.href;
         if (key === PAGE_ID && mbBody) html = '<body>' + mbBody.innerHTML + '</body>';
@@ -11120,6 +11149,7 @@ async function searchLoad(n, key) {
 // the search's next page: its rows join the ones in
 async function srMore(d) {
     const s = d.s; if (!s || !s.next) return;
+    if (d.t === 'url') { const y = await urlPage(new URLSearchParams(d.qs), s.next); if (data !== d || d.s !== s) return; s.rows = s.rows.concat(y.rows); s.next = y.next; return; }
     const r = await mbnFetch(s.next); if (!r.ok) throw new Error('HTTP ' + r.status);
     const y = searchParse(await r.text(), s.next);
     if (data !== d || d.s !== s) return;
@@ -11128,7 +11158,7 @@ async function srMore(d) {
 // "w yesterday" searches works for "yesterday": a lowercase letter of SRCH_K, a space, and the words; anything else is left as typed
 function srchKey(fm) {
     const q = fm.elements.query, ty = fm.elements.type, m = q && ty && q.value.match(/^([a-z]) +(\S.*)$/);
-    const t = m && Object.keys(SRCH_K).find(k => SRCH_K[k] === m[1]);
+    const t = m && ty.tagName === 'SELECT' && Object.keys(SRCH_K).find(k => SRCH_K[k] === m[1]);
     if (!t || ![...ty.options].some(o => o.value === t)) return;
     q.value = m[2]; ty.value = t;
 }
@@ -11137,7 +11167,7 @@ function searchHtml(d) {
     const p = new URLSearchParams(d.qs), s = d.s;
     // the count goes on the Results heading; above the form only while searching, or when nothing came
     const sub = d.err ? `<span class="u-err">${esc(d.err)}</span>` : !s ? 'Searching…' : s.rows.length ? '' : esc(s.found || s.err || 'No results');
-    const tl = p.get('tl'), hero = tl ? tlHero(new URLSearchParams(tl), sub) : srchHero(esc(d.q), sub ? `<p class="u-sub sr-sub">${sub}</p>` : '', d.q, d.t, p.get('method') || 'indexed');
+    const tl = p.get('tl'), hero = d.t === 'url' ? urlHero(p, sub) : tl ? tlHero(new URLSearchParams(tl), sub) : srchHero(esc(d.q), sub ? `<p class="u-sub sr-sub">${sub}</p>` : '', d.q, d.t, p.get('method') || 'indexed');
     if (!s || !s.rows.length) return hero;
     // a column empty in every row goes; the score shows as a bar
     const txt = c => (c || '').replace(/<[^>]*>/g, '').trim(), on = s.head.map((_, i) => s.rows.some(r => txt(r.cells[i])));
@@ -11151,6 +11181,12 @@ const TL_F = [['artist', 'Artist'], ['release', 'Release'], ['tracknum', 'Track 
 function tlHero(v, sub) {
     const f = TL_F.map(([k, l]) => `<label><span>${l}</span><input name="tag-lookup.${k}" value="${esc(v.get('tag-lookup.' + k) || '')}"></label>`).join('');
     return `${srchHero('', sub ? `<p class="u-sub sr-sub">${sub}</p>` : '', '', 'release')}<form class="tl-bar" aria-label="Tag lookup" action="${MB}/taglookup/index" method="get">${f}<button type="submit" class="hm-go" data-tip="Look up" aria-label="Look up">${SVG(LENS)}</button></form>`;
+}
+// URL search's fields, in the tag lookup's bar
+function urlHero(p, sub) {
+    const tt = p.get('tt') || '', inp = (n, l, ph) => `<label><span>${l}</span><input name="${n}" value="${esc(p.get(n) || '')}" placeholder="${ph}"></label>`;
+    const sel = `<label><span>Linked entity type</span><select name="tt"><option value="">Any</option>${URL_TT.map(t => `<option value="${t}"${t === tt ? ' selected' : ''}>${srchName(t.replace('-', '_'))}</option>`).join('')}</select></label>`;
+    return `${srchHero('URL search', sub ? `<p class="u-sub sr-sub">${sub}</p>` : '', '', 'artist')}<form class="tl-bar url-bar" aria-label="URL search" action="${MB}/search" method="get"><input type="hidden" name="type" value="url">${inp('query', 'URL', '*bandcamp.com*')}${sel}${inp('rt', 'Relationship type', 'free streaming')}${inp('tid', 'Linked entity MBID', '')}<button type="submit" class="hm-go" data-tip="Search URLs" aria-label="Search URLs">${SVG(LENS)}</button></form>`;
 }
 /* ── section rail ──────────────────────────────────── */
 // The Sections button in the page's action row opens a list of the sections, the one in view lit: a name jumps
@@ -11601,7 +11637,7 @@ function navTo(href) {
     const e = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/?$/);
     if (e) return 'user/' + e[1];
     // a search → "search/<its query string>"; a documentation search stays MusicBrainz's, whose results Google's script draws in the page
-    if (u.origin === location.origin && /^\/search\/?$/.test(u.pathname) && u.searchParams.get('query') && u.searchParams.get('type') !== 'doc') return 'search/' + u.search.slice(1);
+    if (u.origin === location.origin && /^\/search\/?$/.test(u.pathname) && (u.searchParams.get('query') || u.searchParams.get('type') === 'url') && u.searchParams.get('type') !== 'doc') return 'search/' + u.search.slice(1);
     // a tag lookup (the tagger's search) → a release search whose rows come from /taglookup: "search/query=<artist – release>&type=release&tl=<its query string>"
     if (u.origin === location.origin && /^\/taglookup(\/index)?\/?$/.test(u.pathname) && [...u.searchParams].some(([k, v]) => k.startsWith('tag-lookup.') && v.trim())) {
         const g = k => (u.searchParams.get('tag-lookup.' + k) || '').trim();
@@ -11610,7 +11646,7 @@ function navTo(href) {
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
-const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'aliases' ? (d.t && d.t.en || 'Aliases') + ' · Aliases · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + ' · ' + (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
+const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? (d.t === 'url' ? (d.q ? d.q + ' · ' : '') + 'URL search' : d.q + ' · Search') + ' · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'aliases' ? (d.t && d.t.en || 'Aliases') + ' · Aliases · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + ' · ' + (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
 // a release's cover-art page, or its add-cover-art page → "art/<mbid>"; an event's event-art or add-event-art page → "eart/<mbid>": its title and artist, then Art Station's gallery (#as-slot). Only as the
 // page the tab loaded, as Art Station runs on that page alone: a link to it loads it
 const artKey = href => {
@@ -14138,7 +14174,7 @@ async function show(key, o = {}) {
     if (kind === 'user') { data = { kind: 'user', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); userLoad(n, key); return; }
     if (kind === 'search') {
         const p = new URLSearchParams(key.slice(7)), q = p.get('query') || '', t = p.get('type') || 'artist';
-        if (!p.get('tl')) searchKeep(q, t);   // a tag lookup's chip would reopen it as a plain search
+        if (!p.get('tl') && t !== 'url') searchKeep(q, t);   // a tag lookup's chip would reopen it as a plain search
         data = { kind: 'search', qs: key.slice(7), q, t }; scrollTo(0, 0); render(); searchLoad(n, key); return;
     }
     if (!id) { data = null; app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }

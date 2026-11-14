@@ -19,6 +19,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 - **[Tracklist](#tracklist)**: each track's credits and its streaming links, with platforms deduplicated.
 - **[Releases and discography](#releases-and-discography)** as a grid or a table whose columns you choose, order and resize, grouped by type, with a filter, and with filters and columns saved by name.
 - **[Edit search](#edit-search)**: every MusicBrainz condition in compact rows, filterable choices and named saved searches.
+- **[URL search](#url-search)** finds MusicBrainz's links by address and by what they link to.
 - **[Edit history](#edit-history)** groups edits and votes on a whole group at once.
 - **[Pending changes](#pending-changes)** marks what has edits open.
 - **[Keyboard shortcuts](#keyboard-shortcuts)**: single keys open an entity's edit, relationships, history and other pages, on MusicBrainz's page and in the viewer; **Ctrl+/** lists them and changes them.
@@ -154,6 +155,17 @@ The single top row chooses edit kind, sort order and matching: **All match**, **
 The saved-search controls sit to the right of the search options. Type a **Search name** and choose **Save** to keep the current conditions, matching rules and order, even before searching. Focusing the name field lists saved searches; typing filters them, and selecting one runs it. Edit the same name field and choose **Save** to rename the selected search and update its filters. **⋯** offers **New search**, which clears the form without reloading, **Save a copy** and **Delete**. Saved searches stay in your userscript manager's storage.
 
 **Search** runs the form and shows the edits in Event Horizon's history view.
+
+## URL search
+
+Open **Search for URLs**, the link icon beside **Search for edits** in the homepage search bar. Fill in any of the fields and search:
+
+- **URL**: the link's address. A whole address finds that link; `*` stands for any text, so `*bandcamp.com*` finds every Bandcamp link.
+- **Linked entity type**: only links to artists, releases, works and so on.
+- **Relationship type**: only links of that kind, such as `free streaming` or `discogs`.
+- **Linked entity MBID**: only the links of one entity.
+
+Each row shows a link, the entity it is linked to and the kind of link. A link opens its MusicBrainz page, and ↗ opens the site itself. More results load as in every list, with **Load more** or **Auto**.
 
 ## Edit history
 
