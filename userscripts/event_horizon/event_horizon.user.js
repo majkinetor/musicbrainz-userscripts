@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.15.003001
+// @version      2026.11.15.003002
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12736,7 +12736,8 @@ const histTime = el => {
     return /\bopen\b/.test(el.querySelector('.edit-header').className) ? t - 7 * 864e5 : t;
 };
 // an open edit past its week shows no expiry date: its editor's first note, written as it was entered, dates it instead
-const histNoteTime = notes => { const n = notes.find(x => x.own), m = n && n.date.match(/(\d{4}-\d\d-\d\d) (\d\d:\d\d)/); return m ? Date.parse(m[1] + 'T' + m[2] + 'Z') : 0; };
+// your note's time, else the newest note's (notes received carry only others' notes)
+const histNoteTime = notes => { const t = n => { const m = n && n.date.match(/(\d{4}-\d\d-\d\d) (\d\d:\d\d)/); return m ? Date.parse(m[1] + 'T' + m[2] + 'Z') : 0; }; return t(notes.find(x => x.own)) || Math.max(0, ...notes.map(t)); };
 // Match MusicBrainz's failed-cover fallback, including its translated message and link.
 document.addEventListener('error', ev => {
     const im = ev.target;
@@ -12780,6 +12781,8 @@ function histParse(html) {
             notes, voters, votes: vc ? (one ? vc.textContent : vc.textContent.replace(/^.*?:\s*/, '')).replace(/\s+/g, ' ').trim() : '', det: det ? det.innerHTML : '',
         };
     }).filter(Boolean);
+    // notes received: every edit is yours, and an edit with several notes comes once per note: merge them
+    if (doc.querySelector('select[name="modbot_condition"]')) { const by = new Map(); for (const e of edits) { if (!e.ed) e.ed = ME || ''; const o = by.get(e.id); if (o) { o.notes.push(...e.notes); o.t = Math.max(o.t, e.t); } else by.set(e.id, e); } edits.splice(0, edits.length, ...by.values()); }
     // still undated: an edit's number orders it in time, so it takes the date of the nearest older edit with one
     edits.forEach(e => { if (e.t) return; const o = edits.filter(x => x.t && x.id < e.id).sort((x, y) => y.id - x.id)[0]; if (o) e.t = o.t; });
     const cur = +((doc.querySelector('.pagination .current, .pagination li.current') || {}).textContent || 0);
@@ -13094,7 +13097,7 @@ function histPage(app, d) {
     const cnt = k => d.edits.filter(e => e.st === k).length;
     // how much is loaded, and the buttons for more, sit at the bar's right end
     const hload = `<span class="hld">${d.busy ? `${fmtN(d.edits.length)}${d.total > d.edits.length ? ` of ${fmtN(d.total)}${d.atLeast ? '+' : ''}` : ''} edits, loading…` : d.more ? `${fmtN(d.edits.length)}${d.total > d.edits.length ? ` of ${fmtN(d.total)}${d.atLeast ? '+' : ''}` : ''} edits <span class="dwrap lmw hlm"><button type="button" class="sk-b" data-hmore>Load more</button>${lmMenu('sk-b', b => `data-hmore="${b}"`)}</span>` : `All ${d.edits.length} edits`}</span>`;
-    const collection = src.match(/^\/collection\/[^/?]+\/[^?]+/), collectionLinks = collection ? [[collection[0] + '?hide_own=0', 'All edits for this collection'], [collection[0] + '?hide_own=1', 'Others’ edits for this collection']] : [];
+    const collection = src.match(/^\/collection\/[^/?]+\/[^?]+/), notesLinks = /^\/edit\/notes-received/.test(src) ? [['/edit/notes-received', 'All notes'], ['/edit/notes-received?modbot_condition=%3D', 'Only ModBot'], ['/edit/notes-received?modbot_condition=%21%3D', 'Only by someone else']] : [], collectionLinks = notesLinks.length ? notesLinks : collection ? [[collection[0] + '?hide_own=0', 'All edits for this collection'], [collection[0] + '?hide_own=1', 'Others’ edits for this collection']] : [];
     const bar = `<div class="hbar"><span class="lb">Group</span><span class="hseg">${[['burst', 'Bursts'], ['day', 'Day'], ['editor', 'Editor'], ['type', 'Type'], ['status', 'Status']].map(([k, t]) => `<button type="button" data-hgrp="${k}" class="${d.grp === k ? 'on' : ''}">${t}</button>`).join('')}</span><span class="sp"></span>${Object.keys(H_ST).map(k => cnt(k) ? `<button type="button" class="hchip${d.st === k ? ' on' : ''}" data-hst="${k}">${H_ST[k]} ${cnt(k)}</button>` : '').join('')}${hload}</div>` + `<div class="hql">${[...collectionLinks, ...(rid ? [[`/release/${rid}/open_edits`, 'Open edits for this release'], [`/release/${rid}/edits`, 'All its edits']] : []), ['/edit/subscribed', 'Subscribed entities'], ['/edit/subscribed_editors', 'Subscribed editors'], ['/edit/open', 'Open edits'], ['/vote', 'Voting suggestions'], ['/search/edits', 'Search for edits']].map(([u, t]) => `<a href="${MB}${u}">${t}</a>`).join('')}</div>`;
     const foot = esIsSearch(d.id) && !esHasQuery(d.id) ? '' : d.err ? `<div class="hmore msg err">${esc(d.err)} <button type="button" class="sk-b" data-hmore>Retry</button></div>` : d.edits.length ? '' : d.busy ? '<div class="hmore">Loading edits…</div>' : '<div class="hmore">No edits</div>';
     // an editor's own list says whose it is
