@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.15.140000
+// @version      2026.11.15.150000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -7317,11 +7317,15 @@ try {
             if (rows.length < 2) return null;
             src = gidsIn(rows[0].querySelector(':scope > td table'), type); into = gidsIn(rows[rows.length - 1].querySelector(':scope > td table'), type)[0];
         }
+        // a merged entry removed since (MB shows its name without a link): nothing left to compare
+        const gone = details.querySelectorAll('.deleted').length;
+        if (gone && into && src.every(x => x.gid === into.gid)) return { gone, type };
         if (!src.length || !into || src.some(x => x.type !== into.type) || (into.type !== 'recording' && !EM_COLS[into.type])) return null;
         return { type: into.type, target: into, members: [into].concat(src.filter(x => x.gid !== into.gid)) };
     };
     const native = () => SETTINGS.editView === 'native';
     const apply = (details, wrap, btn) => {
+        if (wrap._fsGone) return;
         const n = native();
         details.style.display = n ? '' : 'none';
         wrap.style.display = n ? 'none' : '';
@@ -7412,6 +7416,14 @@ try {
             if (!m) return skip(details, 'Merge/Into tables not read');
             details._fsSkip = null;
             fsStyle();
+            if (m.gone) {
+                const note = el('div', 'fs-editwait fs-editwrap');
+                note._fsDetails = details; note._fsBtn = note; note._fsOwn = true; note._fsGone = true;
+                note.textContent = 'Fusion: ' + (m.gone === 1 ? 'the merged entry was' : m.gone + ' merged entries were') + ' removed since, nothing left to compare.';
+                details.before(note); details._fsWrap = note;
+                Log.info('Merge edit: ' + m.type + ' merge has ' + m.gone + ' removed entr' + (m.gone === 1 ? 'y' : 'ies') + ', no card');
+                return;
+            }
             const wrap = el('div', 'fs-embed fs-editwrap');
             const btn = el('button', 'fs-editback');
             btn.type = 'button'; btn._fsOwn = true;
