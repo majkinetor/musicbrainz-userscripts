@@ -8,7 +8,7 @@ test('group votes over twenty require confirmation and cancel sends nothing', { 
     const prompts = [], sent = [];
     let allow = false;
     const data = { id: 'list', edits: [] };
-    const send = new Function('data', 'MB', 'histSrc', 'histVotePaint', 'LOG', 'mbnFetch', 'kpWrote', 'toast', 'confirm', src + '; return histVoteSend;')(data, 'https://test.musicbrainz.org', () => '/edit/open', () => {}, { keep() {}, info() {}, err() {} }, async (_, o) => { sent.push([...o.body].filter(([k]) => k.endsWith('.edit_id')).length); return { ok: true }; }, () => {}, () => {}, t => { prompts.push(t); return allow; });
+    const send = new Function('data', 'MB', 'histSrc', 'histVotePaint', 'LOG', 'mbnFetch', 'kpWrote', 'toast', 'ehConfirm', 'histMyVote', src + '; return histVoteSend;')(data, 'https://test.musicbrainz.org', () => '/edit/open', () => {}, { keep() {}, info() {}, err() {} }, async (_, o) => { sent.push([...o.body].filter(([k]) => k.endsWith('.edit_id')).length); return { ok: true }; }, () => {}, () => {}, async t => { prompts.push(t); return allow; }, (e, v) => { e.my = v; });
     const pick = async n => {
       data.edits = Array.from({ length: n }, (_, id) => ({ id, can: true, my: '-2' }));
       await send({ closest: () => ({ dataset: { hids: data.edits.map(e => e.id).join(',') } }), dataset: { hgvote: '1' } });
@@ -44,18 +44,23 @@ test('group voting filters permission, skips unchanged votes and recovers after 
     const data = { id: 'list', edits: [{ id: 1, can: true, my: '-2' }, { id: 2, can: false, my: '-2' }, { id: 3, can: true, my: '1' }] };
     const sent = [], warnings = [];
     let fail = true;
-    const send = new Function('data', 'MB', 'histSrc', 'histVotePaint', 'LOG', 'mbnFetch', 'kpWrote', 'toast', src + '; return histVoteSend;')(data, 'https://test.musicbrainz.org', () => '/edit/open', () => {}, { keep() {}, info() {}, err() {} }, async (_, o) => { sent.push([...o.body]); return { ok: !fail, status: fail ? 500 : 200 }; }, () => {}, x => warnings.push(x));
+    const send = new Function('data', 'MB', 'histSrc', 'histVotePaint', 'LOG', 'mbnFetch', 'kpWrote', 'toast', 'histMyVote', src + '; return histVoteSend;')(data, 'https://test.musicbrainz.org', () => '/edit/open', () => {}, { keep() {}, info() {}, err() {} }, async (_, o) => { sent.push([...o.body]); return { ok: !fail, status: fail ? 500 : 200 }; }, () => {}, x => warnings.push(x), (e, v) => { e.my = v; });
     const b = { closest: () => ({ dataset: { hids: '1,2,3' } }), dataset: { hgvote: '1' } };
     await send(b);
     const failed = data.edits.map(e => ({ my: e.my, busy: !!e.voting }));
-    fail = false; await send(b); await send(b);
-    return { sent, warnings, failed, final: data.edits.map(e => e.my) };
+    fail = false; await send(b);
+    const voted = data.edits.map(e => e.my);
+    // every allowed edit now holds the group's vote, so clicking it again withdraws it (3f63d2ca)
+    await send(b);
+    return { sent, warnings, failed, voted, final: data.edits.map(e => e.my) };
   }, src);
-  expect(result.sent).toHaveLength(2);
+  expect(result.sent).toHaveLength(3);
   expect(result.sent[1]).toContainEqual(['enter-vote.vote.0.edit_id', '1']);
   expect(result.sent[1].filter(([k]) => k.endsWith('edit_id'))).toHaveLength(1);
   expect(result.failed).toEqual([{ my: '-2', busy: false }, { my: '-2', busy: false }, { my: '1', busy: false }]);
-  expect(result.final).toEqual(['1', '-2', '1']);
+  expect(result.voted).toEqual(['1', '-2', '1']);
+  expect(result.sent[2].filter(([k]) => k.endsWith('.vote')).map(([, v]) => v)).toEqual(['-2', '-2']);
+  expect(result.final).toEqual(['-2', '-2', '-2']);
   expect(result.warnings).toHaveLength(1);
 });
 
