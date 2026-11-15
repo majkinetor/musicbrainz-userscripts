@@ -14,7 +14,7 @@ test('suggest locales as hints, apply one or all, preserve choices and save appl
   for (const name of names) await page.locator('.tc-al-row').last().locator('.tc-al-n').fill(name);
   check(!await page.getByLabel('Auto-detect locale', { exact: true }).count(), 'no automatic option');
   check(await row(0).locator('.tc-al-l').getAttribute('placeholder') === 'English' && await locale(0) === '', 'an empty locale shows the recognized one as a hint, unset');
-  check(await row(3).locator('.tc-al-l').getAttribute('placeholder') === '' && await row(6).locator('.tc-al-t').getAttribute('placeholder') === null, 'no hint for an uncertain name, no Type placeholder');
+  check(await row(3).locator('.tc-al-l').getAttribute('placeholder') === '' && await row(5).locator('.tc-al-t').getAttribute('placeholder') === null, 'no hint for an uncertain name, no Type placeholder');
   await row(0).getByRole('button', { name: 'Recognize locale', exact: true }).click();
   check(await locale(0) === 'en', 'single-row recognition maps English to a supported base locale');
   check(await page.evaluate(() => {
