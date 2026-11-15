@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.15.230000
+// @version      2026.11.15.231000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12911,9 +12911,9 @@ const histLean = e => { const c = histCnt(e); return e.st !== 'op' || !c ? '' : 
 const H_SEG = [['1', 'Yes'], ['0', 'No'], ['-1', 'Abstain']];
 // the open edit's Votes line: voters grouped by vote, each with its count; Abstain only when someone did
 const histVotes = e => e.voters && e.voters.length ? `<div class="hvl"><b>Votes</b>${H_SEG.map(([v, t]) => { const n = e.voters.filter(x => x.v === v); return v === '-1' && !n.length ? '' : `<span class="hvg"><i class="v${v}">${t} (${n.length})</i>${n.length ? n.map(x => `<a href="${MB}/user/${encodeURIComponent(x.by)}">${esc(x.by)}</a>`).join(', ') : '<span class="hvz">none</span>'}</span>`; }).join('')}</div>` : '';
-// a list doesn't name the voters: an open edit's card, expanded, fetches its page once and adds the Votes line
+// a list doesn't name the voters: any edit's card, expanded (applied and failed too), fetches its page once and adds the Votes line
 document.addEventListener('toggle', async ev => {
-    const dt = ev.target; if (!dt.open || !dt.matches?.('#app details.hed[data-st="op"]') || dt.dataset.hvf) return;
+    const dt = ev.target; if (!dt.open || !dt.matches?.('#app details.hed') || dt.dataset.hvf) return;
     const id = (dt.querySelector(':scope>summary>a.d')?.getAttribute('href') || '').match(/\/edit\/(\d+)/)?.[1], d = data, e = id && d && d.edits && d.edits.find(x => String(x.id) === id);
     if (!e || e.voters) return;
     dt.dataset.hvf = '1';
