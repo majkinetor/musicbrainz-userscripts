@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.15.192003
+// @version      2026.11.15.192004
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -1916,11 +1916,26 @@
   function acPlace(pop, inp, o) {
     o = o || {};
     const phone = innerWidth <= 600;   // a phone: the picker takes the screen's width and all the room above or below the input
-    const r = inp.getBoundingClientRect(), gap = o.gap || 2, margin = phone ? 0 : 8, cap = phone ? innerHeight : 300;
+    if (phone) {
+      // the input at the screen's top, the picker filling all the rest of the visible screen (above the keyboard)
+      let r = inp.getBoundingClientRect();
+      // what sits on top of the screen's first rows (Apollo's sticky toolbar): the input goes just below it
+      const over = document.elementsFromPoint(innerWidth / 2, 2).find(e => { const p = getComputedStyle(e).position; return (p === 'sticky' || p === 'fixed') && e !== pop && !pop.contains(e); });
+      const under = over ? Math.max(0, over.getBoundingClientRect().bottom) : 0;
+      if (Math.abs(r.top - under - 2) > 4) { scrollBy(0, r.top - under - 2); r = inp.getBoundingClientRect(); }
+      // still under a sticky row (the toolbar has more than one): step back until the input shows
+      const shows = () => { const e = document.elementFromPoint(Math.min(innerWidth - 1, r.left + 4), r.top + r.height / 2); return e && (e === inp || inp.contains(e) || e.contains(inp)); };
+      for (let i = 0; i < 30 && !shows(); i++) { scrollBy(0, -8); r = inp.getBoundingClientRect(); }
+      const vv = window.visualViewport, top = r.bottom + (o.gap || 2);
+      const h = Math.max(120, (vv ? vv.height + vv.offsetTop : innerHeight) - top);
+      pop.classList.add('tc-pop-phone');
+      Object.assign(pop.style, { left: '0px', minWidth: innerWidth + 'px', top: top + 'px', bottom: '', height: h + 'px', maxHeight: h + 'px' });
+      return;
+    }
+    pop.classList.remove('tc-pop-phone'); pop.style.height = '';
+    const r = inp.getBoundingClientRect(), gap = o.gap || 2, margin = 8, cap = 300;
     pop.style.left = (o.right ? Math.max(4, r.right - o.right) : r.left) + 'px';
     pop.style.minWidth = (o.minWidth || Math.max(210, r.width)) + 'px';
-    pop.classList.toggle('tc-pop-phone', phone);
-    if (phone) { pop.style.left = '0px'; pop.style.minWidth = innerWidth + 'px'; }
     pop.style.maxHeight = cap + 'px';
     const want = Math.min(pop.scrollHeight, cap);
     const below = innerHeight - r.bottom - gap - margin, above = r.top - gap - margin;
@@ -14439,7 +14454,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       Log.cat('Recording').debug('picker: Enter on', JSON.stringify(q.value));
       runSearch(q.value, false);
     };
-    q.focus(); q.select(); runSearch(autoQuery(), !relax);
+    if (innerWidth > 600) { q.focus(); q.select(); }   // a phone: no keyboard over the full-screen picker until the field is tapped
+    runSearch(autoQuery(), !relax);
     _recPopReposition();
   }
   // the Recordings tab panel (#recordings) — check the PANEL not the inner table (we hide the table)
