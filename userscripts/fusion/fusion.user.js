@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.14.170003
+// @version      2026.11.15.013000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -6352,6 +6352,8 @@ async function emAddByUrl(text) {
     const r = emAdd(Object.assign({ type, gid }, d));
     if (r === 'dup') mbuToast('Already here');
 }
+// #1050: MB's release-group merge pages live under /release_group/ (its controller's namespace); /release-group/merge_queue reads merge_queue as an MBID and answers 400
+const emPath = type => type === 'release-group' ? 'release_group' : type;
 function emMerge(type, gid) {
     const t = emT(type), g = t.groups.find(x => x.id === gid);
     if (!g || EM_BUSY.has(g.id) || g.state === 'done' || g.members.length < 2) return Promise.resolve();
@@ -6366,9 +6368,9 @@ function emMerge(type, gid) {
         const ids = await ensureInternalIds(members);
         const targetId = ids[members.indexOf(target)];
         return withMergeLock(async () => {
-            const gr = await gmGet(location.origin + '/' + type + '/merge_queue?' + ids.map(id => 'add-to-merge=' + id).join('&'), { Accept: 'text/html' });
+            const gr = await gmGet(location.origin + '/' + emPath(type) + '/merge_queue?' + ids.map(id => 'add-to-merge=' + id).join('&'), { Accept: 'text/html' });
             if (gr.status < 200 || gr.status >= 400) throw new Error('merge_queue GET failed: HTTP ' + gr.status);
-            const mergeUrl = gr.finalUrl || (location.origin + '/' + type + '/merge');
+            const mergeUrl = gr.finalUrl || (location.origin + '/' + emPath(type) + '/merge');
             // keep what MB's form fills in (a release's medium order, say), then set the members, the target and the note
             const form = [...new DOMParser().parseFromString(gr.responseText || '', 'text/html').querySelectorAll('form')].find(f => f.querySelector('[name="merge.target"]'));
             if (!form) throw new Error('MB did not show its merge form — are you logged in?');
