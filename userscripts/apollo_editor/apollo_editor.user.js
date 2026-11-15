@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.15.192004
+// @version      2026.11.15.192005
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -2763,7 +2763,7 @@ Click: open the label`;
       (res.json.artists || []).forEach(a => { cacheAliases(a.id, a.aliases || []); noteDisamb(a.id, a.disambiguation); });
     }
   }
-  const isEditingNow = () => { const a = document.activeElement; return a && /^(INPUT|SELECT)$/.test(a.tagName) && (a.closest('.tc-medsec') || a.closest('#tc-panel')); };
+  const isEditingNow = () => { const a = document.activeElement; return a && /^(INPUT|SELECT)$/.test(a.tagName) && (a.closest('.tc-medsec') || a.closest('#tc-panel') || a.closest('.tc-acsheet-hd')); };
   // re-run adorn for every rendered slot (adds/updates the alias span) WITHOUT rebuilding rows — so it
   // can't steal focus or detach the slot an in-flight edit is using
   function refreshAdorns() {
@@ -7557,6 +7557,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-mirror tr:hover .tc-enter,.tc-mirror tr:hover .tc-slotx,.tc-mirror tr:hover .tc-splitb,.tc-mirror tr:hover .tc-slotgrab{visibility:visible}
     .tc-acpop.tc-pop-phone{width:100vw;max-width:100vw;box-sizing:border-box;border-radius:0;border-left:0;border-right:0;font-size:14px}
     .tc-acpop.tc-pop-phone .tc-acrow{padding:9px 10px}
+    .tc-acpop.tc-acsheet{inset:46px 0 0 0;width:100vw;max-width:none;max-height:none;min-width:0;box-sizing:border-box;border:0;border-radius:0;box-shadow:none;font-size:14px;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
+    .tc-acpop.tc-acsheet .tc-acrow{padding:10px}
+    .tc-acsheet-hd{position:fixed;top:0;left:0;right:0;height:46px;z-index:100003;display:flex;align-items:center;gap:6px;padding:0 6px 0 8px;box-sizing:border-box;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-accent)}
+    .tc-acsheet-hd .tc-acsheet-q{flex:1;min-width:0;height:32px;box-sizing:border-box;font-size:16px;padding:0 8px;border:1px solid var(--mbu-border);border-radius:4px;background:var(--mbu-bg);color:var(--mbu-text)}
+    .tc-acsheet-hd .tc-acsheet-x{flex:none;width:32px;height:32px;font-size:22px;line-height:1;display:inline-grid;place-items:center}
     .tc-acpop{position:fixed;z-index:100002;background:var(--mbu-bg);border:1px solid var(--mbu-accent);border-radius:4px;box-shadow:0 6px 22px rgba(40,20,80,.3);max-height:300px;overflow:auto;font:12px Arial;min-width:210px}
     .tc-acrow{display:flex;align-items:center;gap:7px;padding:4px 9px;cursor:pointer}
     .tc-acrow:hover,.tc-acrow.hi{background:var(--mbu-bg-hover)}
@@ -9067,9 +9072,28 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     let pop = null, list = [], hi = -1, seq = 0, onScroll = null;
     let curQuery = '', curLimit = 8;   // "Show more…" pagination: bump the limit and re-search
     let lastRes = [];
-    const position = () => { if (pop) acPlace(pop, inp); };   // #735: stays on screen (flips above near the bottom)
+    // a phone: the picker is a full-screen sheet like the recording picker, with its own search field and a close;
+    // the track's field opens it without the keyboard (inputmode none), the sheet's field brings the keyboard up
+    const phone = () => innerWidth <= 600;
+    let hd = null, q = null;
+    const active = () => document.activeElement === inp || (q && document.activeElement === q);
+    if (phone()) inp.setAttribute('inputmode', 'none');
+    const sheet = () => {
+      if (!hd || !hd.isConnected) {
+        hd = document.createElement('div'); hd.className = 'tc-acsheet-hd mbu-ui';
+        hd.innerHTML = '<input type="search" class="tc-acsheet-q" placeholder="Search artists" autocomplete="off"><button type="button" class="mbu-ov-x tc-acsheet-x" aria-label="Close">\u00d7</button>';
+        document.body.appendChild(hd); q = hd.querySelector('input');
+        q.oninput = () => { inp.value = q.value; inp.oninput(); };
+        q.onkeydown = e => inp.onkeydown(e);
+        q.onblur = () => setTimeout(() => { if (!active()) close(); }, 160);
+        hd.querySelector('.tc-acsheet-x').onmousedown = e => { e.preventDefault(); close(); inp.blur(); };
+      }
+      if (document.activeElement !== q) q.value = inp.value;
+      pop.classList.add('tc-acsheet'); pop.style.cssText = '';
+    };
+    const position = () => { if (!pop) return; if (phone()) sheet(); else acPlace(pop, inp); };   // #735: stays on screen (flips above near the bottom)
     const ensure = () => { if (pop && pop.isConnected) return; if (pop) close(); document.querySelectorAll('.tc-acpop').forEach(p => { if (p._tcOwner !== inp) p.remove(); }); pop = document.createElement('div'); pop.className = 'tc-acpop'; pop._tcOwner = inp; document.body.appendChild(pop); onScroll = () => { if (!pop || !pop.isConnected) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); pop = null; } else position(); }; window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', onScroll); position(); };
-    const close = () => { if (pop) pop.remove(); pop = null; hi = -1; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
+    const close = () => { if (hd) { hd.remove(); hd = null; q = null; } if (pop) pop.remove(); pop = null; hi = -1; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
     // a pinned or recent artist is stored lean: fetch the full one first (a track credit needs its id)
     const choose = c => {
       if (c.id) { close(); pickArtist(slot, c); return; }
@@ -9085,7 +9109,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     };
     const akaHtml = c => { const a = aliasStr(c); return a ? `<span class="tc-aka">${esc(a)}</span>` : ''; };
     // a full page of results probably means there are more — offer "Show more…" (like MB's native popup)
-    const loadMore = () => { curLimit = curLimit >= 50 ? 100 : curLimit >= 25 ? 50 : 25; const my = ++seq; const more = pop && pop.querySelector('.tc-acmore'); if (more) more.textContent = 'Loading…'; searchArtist(curQuery, curLimit).then(res => { if (my === seq && document.activeElement === inp) showResults(res, curQuery); }); };
+    const loadMore = () => { curLimit = curLimit >= 50 ? 100 : curLimit >= 25 ? 50 : 25; const my = ++seq; const more = pop && pop.querySelector('.tc-acmore'); if (more) more.textContent = 'Loading…'; searchArtist(curQuery, curLimit).then(res => { if (my === seq && active()) showResults(res, curQuery); }); };
     // #626: the artists other editions credit at this track's position lead the list, in a
     // section of their own, with how many editions back each — also once the slot resolved.
     const posLead = () => ((slot._pos && slot._pos.artists) || []).filter(x => x.entity && x.entity.gid);
@@ -9127,7 +9151,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         patchAliases(arr);
       });
     };
-    const runSearch = q => { curQuery = q; curLimit = 8; const my = ++seq; searching(); searchArtist(q).then(res => { if (my === seq && document.activeElement === inp) showResults(res, q); }); };
+    const runSearch = q => { curQuery = q; curLimit = 8; const my = ++seq; searching(); searchArtist(q).then(res => { if (my === seq && active()) showResults(res, q); }); };
     // paste an MBID or a MusicBrainz /artist/<mbid> URL → resolve it straight to that artist. Gate on the
     // field value (not focus): a commit-rerender can steal focus before the fetch returns.
     const resolveByGid = async gid => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">Resolving…</div>`; position(); const ent = await fetchEntity(gid); if (mbidFrom(inp.value) !== gid) return; if (ent && ent.id) { const entry = slot._entry, i = entry.slots.indexOf(slot); close(); pickArtist(slot, ent); focusSlotInput(entry, i, true); } else { pop.innerHTML = `<div class="tc-acrow none">MBID not found</div>`; } };   // refocus the (re-rendered) field so keyboard nav keeps working after a paste
@@ -9143,8 +9167,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const gid = mbidFrom(inp.value); if (gid) { resolveByGid(gid); return; }   // pasted an MBID / artist URL → resolve directly (pickArtist replaces whatever was there; no un-link needed)
       // editing away from the matched artist un-links it: bar goes white, ＋ creates the typed name
       if (slot.committed && !sameName(inp.value, slot.name)) { slot.committed = false; slot.status = 'none'; slot.entity = null; slot.gid = null; commitTrack(slot._entry); if (refresh) refresh(); }
-      if (!inp.value.trim()) { ++seq; if (picksAny('artist') && document.activeElement === inp) { curQuery = ''; draw([]); } else close(); return; }   // nothing typed → no search, only the pinned and recent artists
-      searching(); const my = ++seq; tmr = setTimeout(async () => { curQuery = inp.value; curLimit = 8; const res = await searchArtist(inp.value); if (my === seq && document.activeElement === inp) showResults(res, inp.value); }, 250);
+      if (!inp.value.trim()) { ++seq; if (picksAny('artist') && active()) { curQuery = ''; draw([]); } else close(); return; }   // nothing typed → no search, only the pinned and recent artists
+      searching(); const my = ++seq; tmr = setTimeout(async () => { curQuery = inp.value; curLimit = 8; const res = await searchArtist(inp.value); if (my === seq && active()) showResults(res, inp.value); }, 250);
     };
     // arrows browse the results popup WHILE searching; once the slot is resolved they move row-to-row instead
     const browsing = () => pop && !slot.committed && list.length;
@@ -9157,7 +9181,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       else if (e.key === 'ArrowUp') { if (browsing()) { hi = Math.max(0, hi - 1); hiliteRow(); e.preventDefault(); } else { close(); if (focusSameField(inp, -1)) e.preventDefault(); } }
       else if (e.key === 'Enter') { e.preventDefault(); const c = list[hi >= 0 ? hi : 0]; if (c) { const entry = slot._entry, i = entry.slots.indexOf(slot); choose(c); focusSlotInput(entry, i, true); } }   // keep focus on the field after picking (so ↓ moves on)
     };
-    inp.onblur = () => { slot._editing = false; setTimeout(close, 160); };   // keep whatever the user typed (no reset); #580 hands the slot back to auto-match
+    inp.onblur = () => { slot._editing = false; setTimeout(() => { if (!active()) close(); }, 160); };   // keep whatever the user typed (no reset); #580 hands the slot back to auto-match
   }
 
   // #284: hovering an artist highlights every OTHER instance of that same artist in
