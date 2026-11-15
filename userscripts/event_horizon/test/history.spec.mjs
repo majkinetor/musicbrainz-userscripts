@@ -66,7 +66,7 @@ test('an open edit takes your vote and a note in place, and your votes open as a
   await page.getByText(/^1 edit · /).first().click();
   const ed = page.locator('details.hed', { has: page.locator('.hvote') }).first();
   check(await until(() => ed.count(), n => n > 0) > 0, 'an open edit shows the vote buttons');
-  const id = (await ed.locator('a.id').textContent()).slice(1);
+  const id = (await ed.locator('summary a.d').getAttribute('href')).split('/').pop();
   if (!(await ed.evaluate(x => x.open))) await ed.locator('summary .hty').click();
   const pick = (await ed.locator('.hvote button.v-1').getAttribute('aria-checked')) === 'true' ? 'v-2' : 'v-1';
   await ed.locator('.hvote button.' + pick).click();
