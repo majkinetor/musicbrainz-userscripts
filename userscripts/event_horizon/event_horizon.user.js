@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.16.14502
+// @version      2026.11.16.14503
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13013,7 +13013,9 @@ document.addEventListener('click', async ev => {
             LOG.keep(); await histNoteModSend(st, v);
             if (tx) tx.innerHTML = esc(v).replace(/\n/g, '<br>');
             const hx = nt.querySelector('.hnx'); if (hx) hx.textContent = v.replace(/\s+/g, ' ');
-            for (const x of (data && data.edits) || []) for (const n of x.notes || []) if (n.mod === id) { n.html = tx ? tx.innerHTML : n.html; n.text = v.replace(/\s+/g, ' '); }
+            const md = new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC', hd = nt.querySelector(':scope>summary .hnd');
+            if (hd) { let m = nt.querySelector(':scope>summary .hnmd'); if (!m) { m = document.createElement('span'); m.className = 'hnmd'; hd.after(m); } m.textContent = 'modified ' + md; }
+            for (const x of (data && data.edits) || []) for (const n of x.notes || []) if (n.mod === id) { n.html = tx ? tx.innerHTML : n.html; n.text = v.replace(/\s+/g, ' '); n.modd = '(' + md + ')'; }
             f.remove(); if (tx) tx.hidden = false; LOG.info('Modified edit note ' + id);
         } catch (err) { LOG.err('Modifying edit note ' + id + ' failed: ' + err.message); toast('MusicBrainz did not save the note'); e.target.disabled = ta.disabled = false; }
     };
