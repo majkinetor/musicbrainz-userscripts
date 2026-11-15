@@ -233,15 +233,24 @@ const mbuAliasEditor = (() => {
       const rows = [];
       const key = r => JSON.stringify([r.name, r.sort, r.locale, !!r.primary, r.type, r.begin, r.end, !!(r.ended || r.end)]);
       let submitting = false, importing = false;
-      let autoLocale = typeof GM_getValue === 'function' && GM_getValue('mbu.aliasAutoLocale', false) === true;
+      const localeName = v => (locales.find(o => o.v === v) || {}).t || '';
+      // an empty locale shows the recognized one as its placeholder; the 文 button takes it
+      const suggest = r => {
+        const k = [r.name, r.locale, r.type, !!r.removed].join('\u0001');
+        if (r.suggestKey === k) return;
+        r.suggestKey = k;
+        const v = r.removed || r.locale || (!!r.type && r.type === hintType) || !r.name.trim() ? '' : detectLocale(r.name, locales);
+        r.suggest = v;
+        r.tr.querySelector('.tc-al-l').placeholder = v ? localeName(v) : '';
+        r.tr.querySelector('.tc-al-detect').dataset.tip = (v ? 'Use the recognized locale: ' + localeName(v) : 'No locale recognized for this alias') + '\nRight-click: fill every empty locale with its recognized one';
+      };
       const recognize = r => {
         if (submitting || importing || r.removed || r.locale || r.type === hintType || !r.name.trim()) return false;
-        if (r.localeCleared) return false;
         const locale = detectLocale(r.name, locales);
         if (!locale) { record('locale recognition', JSON.stringify(r.name), 'no confident supported locale'); return false; }
-        r.locale = locale; r.autoLocale = true;
+        r.locale = locale;
         const inp = r.tr.querySelector('.tc-al-l');
-        inp.value = locales.find(o => o.v === locale).t; inp.dataset.v = locale;
+        inp.value = localeName(locale); inp.dataset.v = locale;
         inp.classList.remove('tc-al-bad');
         record('locale recognized', JSON.stringify(r.name), locale);
         return true;
@@ -274,6 +283,7 @@ const mbuAliasEditor = (() => {
           // primary needs a locale, and an ended alias or a search hint can't be one, as on MusicBrainz's form
           const p = r.tr.querySelector('.tc-al-p'); p.disabled = !r.locale || !!r.end || !!r.ended || (!!r.type && r.type === hintType); if (p.disabled) r.primary = false; p.hidden = p.disabled; r.tr.querySelector('.tc-al-l').classList.toggle('tc-al-lp', !p.disabled);
           r.tr.querySelector('.tc-al-detect').hidden = !!r.type && r.type === hintType;
+          suggest(r);
           r.tr.querySelector('.tc-al-clear').hidden = !r.locale || !!r.type && r.type === hintType;
           r.tr.querySelector('.tc-al-lw').classList.toggle('tc-al-filled', !!r.locale);
           p.textContent = r.primary ? '★' : '☆'; p.classList.toggle('on', !!r.primary);
@@ -294,8 +304,8 @@ const mbuAliasEditor = (() => {
       const addRow = r => {
         const tr = document.createElement('div'); r.tr = tr;
         tr.innerHTML = '<span class="tc-al-name"><textarea class="tc-al-n" rows="1" aria-label="Alias" placeholder="Alias"></textarea></span><span class="tc-al-sw"><textarea class="tc-al-s" rows="1" aria-label="Sort name" placeholder="Sort name"></textarea><button type="button" class="tc-al-g" data-tip="Guess the sort name">' + (typeof MBU_SORT_ICON === 'string' ? MBU_SORT_ICON : 'Aa') + '</button></span>'
-          + '<span class="tc-al-lw"><input class="tc-al-l" placeholder="Locale" data-tip="Type to filter the locales"><button type="button" class="tc-al-p" data-tip="Primary for its locale"></button><button type="button" class="tc-al-clear" aria-label="Clear locale" data-tip="Clear this locale">×</button><button type="button" class="tc-al-detect" aria-label="Recognize locale" data-tip="Recognize this alias’s locale\nRight-click: recognize all empty locales">文</button></span>'
-          + '<input class="tc-al-t" placeholder="Type" data-tip="Type to filter the types">'
+          + '<span class="tc-al-lw"><input class="tc-al-l" aria-label="Locale" data-tip="Type to filter the locales"><button type="button" class="tc-al-p" data-tip="Primary for its locale"></button><button type="button" class="tc-al-clear" aria-label="Clear locale" data-tip="Clear this locale">×</button><button type="button" class="tc-al-detect" aria-label="Recognize locale">文</button></span>'
+          + '<input class="tc-al-t" aria-label="Type" data-tip="Type to filter the types">'
           + '<button type="button" class="tc-al-c" data-tip="Begin and end dates"></button><button type="button" class="tc-al-x"></button>'
           + '<span class="tc-al-dt"><label>Begin <input class="tc-al-b" maxlength="10" inputmode="numeric" data-tip="YYYY, YYYY-MM or YYYY-MM-DD"></label><button type="button" class="tc-al-cp" data-tip="Copy the begin date to the end">\u2192</button><label>End <input class="tc-al-e" maxlength="10" inputmode="numeric" data-tip="YYYY, YYYY-MM or YYYY-MM-DD"></label>'
           + '<label class="tc-al-ew"><input type="checkbox" class="tc-al-ed"> This alias is no longer current</label></span>';
@@ -338,12 +348,12 @@ const mbuAliasEditor = (() => {
           for (const c of HINT_OFF) { $(c).disabled = on; }
           tr.classList.toggle('tc-al-hint', on);
         };
-        const locIn = $('.tc-al-l'), locName = v => (locales.find(o => o.v === v) || {}).t || '';
-        $('.tc-al-detect').onclick = () => { r.localeCleared = false; const found = recognize(r); sync(); msg.textContent = found ? 'Locale recognized' : r.locale ? 'Locale already set' : 'No confident locale match'; };
-        $('.tc-al-detect').oncontextmenu = ev => { ev.preventDefault(); rows.forEach(r => { r.localeCleared = false; }); recognizeAll(); };
+        const locIn = $('.tc-al-l'), locName = localeName;
+        $('.tc-al-detect').onclick = () => { const found = recognize(r); sync(); msg.textContent = found ? 'Locale recognized' : r.locale ? 'Locale already set' : 'No confident locale match'; };
+        $('.tc-al-detect').oncontextmenu = ev => { ev.preventDefault(); recognizeAll(); };
         $('.tc-al-clear').onclick = () => {
-          clearTimeout(r.localeTimer); popClose();
-          const previous = r.locale; r.locale = ''; r.primary = false; r.autoLocale = false; r.localeCleared = true;
+          popClose();
+          const previous = r.locale; r.locale = ''; r.primary = false;
           locIn.value = ''; locIn.dataset.v = ''; locIn.classList.remove('tc-al-bad');
           record('locale cleared', JSON.stringify(r.name), previous); sync(); locIn.focus();
         };
@@ -355,9 +365,6 @@ const mbuAliasEditor = (() => {
         r.autoSort = !r.id && (!r.sort || r.sort === guess(r.name));
         const read = ev => {
           r.name = $('.tc-al-n').value;
-          if (ev?.target === locIn) { r.autoLocale = false; r.localeCleared = false; }
-          if (ev?.target === $('.tc-al-n')) r.localeCleared = false;
-          if (autoLocale && ev?.target === $('.tc-al-n') && r.autoLocale) { r.locale = ''; locIn.value = ''; locIn.dataset.v = ''; r.autoLocale = false; }
           if (ev && ev.target === $('.tc-al-s')) r.autoSort = !$('.tc-al-s').value;
           if (ev && ev.target === $('.tc-al-n') && r.autoSort) $('.tc-al-s').value = r.name.trim() ? guess(r.name.trim()) : '';
           r.sort = $('.tc-al-s').value;
@@ -386,10 +393,6 @@ const mbuAliasEditor = (() => {
           hint(); dates();
           if (!r.id && r.name.trim() && tb.lastElementChild === tr) addRow(blank());
           sync();
-          if (autoLocale && !r.locale && ev?.target === $('.tc-al-n')) {
-            clearTimeout(r.localeTimer);
-            r.localeTimer = setTimeout(() => { if (!r.tr.isConnected || !autoLocale) return; if (recognize(r)) sync(); }, 400);
-          }
         };
         tr.addEventListener('input', read); tr.addEventListener('change', read);
         $('.tc-al-g').onclick = () => { if (!r.name.trim()) return; $('.tc-al-s').value = guess(r.name.trim()); r.autoSort = true; read(); };
@@ -415,7 +418,6 @@ const mbuAliasEditor = (() => {
       const filled = (name, sort, loc, typ) => blank(name, sort || guess(name), loc, typ);
       go.onclick = async () => {
         if (submitting) return;
-        for (const r of rows) { clearTimeout(r.localeTimer); if (autoLocale) recognize(r); }
         const note = noteIn.value.trim();
         const todo = rows.filter(r => { const s = state(r); return s === 'del' || (s && r.name.trim()); });
         submitting = true; tb.inert = true; noteIn.disabled = true;
@@ -466,18 +468,6 @@ const mbuAliasEditor = (() => {
       if (o.seed) addRow(filled(o.seed, form.querySelector('input[name="edit-alias.sort_name"]')?.value || ''));
       addRow(blank());
       sync();
-      const autoLabel = document.createElement('label'); autoLabel.className = 'tc-al-auto';
-      const autoInput = document.createElement('input'); autoInput.type = 'checkbox'; autoInput.checked = autoLocale;
-      autoLabel.append(autoInput, document.createTextNode('Auto-detect locale'));
-      autoLabel.dataset.tip = 'Recognize empty locales while entering aliases\nExisting locale choices are kept';
-      box.querySelector('.tc-al-foot').prepend(autoLabel);
-      autoInput.onchange = () => {
-        autoLocale = autoInput.checked;
-        record('automatic locale recognition', autoLocale ? 'on' : 'off');
-        if (typeof GM_setValue === 'function') GM_setValue('mbu.aliasAutoLocale', autoLocale);
-        if (autoLocale) recognizeAll();
-      };
-      if (autoLocale) recognizeAll();
       // Stage source names for review, never submit them.
       const importer = o.importAliases || (ent === 'artist' ? discogsImporter(form) : null);
       if (loaded && importer && (!importer.available || importer.available(aliasDoc))) {
@@ -505,7 +495,7 @@ const mbuAliasEditor = (() => {
             sync(); msg.textContent = added ? added + ' aliases added for review' : 'No new aliases found';
             record(msg.textContent);
           } catch (e) { msg.textContent = 'Could not fetch aliases: ' + e.message; Log.warn(msg.textContent); }
-          finally { importing = false; button.disabled = false; if (autoLocale) recognizeAll(); sync(); }
+          finally { importing = false; button.disabled = false; sync(); }
         };
       }
       return box;
@@ -557,6 +547,7 @@ const mbuAliasEditor = (() => {
       #tc-alias .tc-al-g{position:absolute;right:0;top:50%;transform:translateY(-50%);padding:1px 4px;font:600 11px var(--mbu-font, inherit);line-height:0}#tc-alias .tc-al-g svg{width:16px;height:14px}
       #tc-alias .tc-al-lw{position:relative;display:flex;min-width:0}
       #tc-alias .tc-al-lw .tc-al-l{padding-right:22px}
+      #tc-alias .tc-al-l::placeholder{font-style:italic}
       #tc-alias .tc-al-lw .tc-al-l.tc-al-lp{padding-right:42px}
       #tc-alias .tc-al-lw.tc-al-filled .tc-al-l{padding-right:42px}
       #tc-alias .tc-al-lw.tc-al-filled .tc-al-l.tc-al-lp{padding-right:62px}
@@ -565,8 +556,6 @@ const mbuAliasEditor = (() => {
       #tc-alias .tc-al-clear{position:absolute;right:20px;top:50%;transform:translateY(-50%);width:20px;background:none!important;border:0;color:var(--mbu-text-weak);cursor:pointer;font:inherit;padding:0;filter:none!important}
       #tc-alias .tc-al-clear[hidden]{display:none}
       #tc-alias .tc-al-lw .tc-al-p{right:40px}
-      #tc-alias .tc-al-auto{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-size:12px;color:var(--mbu-text-weak)}
-      #tc-alias .tc-al-auto input{width:auto}
       #tc-alias .tc-al-foot{flex-wrap:wrap}
       #tc-alias .tc-al-p{position:absolute;right:0;top:50%;transform:translateY(-50%);width:20px;font-size:15px;line-height:1;color:var(--mbu-text-weak)}
       #tc-alias .tc-al-p[hidden]{display:none}

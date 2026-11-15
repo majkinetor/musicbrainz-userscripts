@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-15 00:45 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-15 02:09 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -95,9 +95,9 @@ An entity's **Add alias** page becomes a table of all its aliases, so several ar
 
 Long aliases and sort names wrap within their columns as you edit.
 
-The **文** button beside Locale recognizes that alias's language. Right-click it to fill every empty locale. **Auto-detect locale** does this while you enter names and after importing them, and remembers your choice. Existing locale choices are kept; short or uncertain names stay empty. Review the guesses before **Enter edit**.
+An empty Locale shows the alias's recognized language in grey. Press the **文** button beside it to take it, or right-click the button to fill every empty locale. Existing locale choices are kept; short or uncertain names show nothing.
 
-**×** beside a set locale clears it and its primary mark. Automatic recognition keeps it empty until you change the alias name or explicitly recognize locales again.
+**×** beside a set locale clears it and its primary mark.
 
 - Each line is one alias, in the order they were added, in columns: name, sort name, the locale and the type (both filter as you type), and begin and end dates. Once a locale is picked, a **☆** at the right of its field makes the alias the primary one for that locale (not once the alias has ended). A date is a year, year-month or full date; dots or slashes work too, and a day-first date like 31.12.2020 becomes 2020-12-31. Date fields take only digits and separators. A date that isn't whole when you leave the field, or an end before the begin, is marked in red, with the reason under the table, and nothing is submitted while it is. A search hint has only a name, as on MusicBrainz's form: its other fields are emptied and greyed out, and come back when you pick another type.
 - The last line is empty: type a name there to add an alias, and a new empty line follows.
@@ -441,8 +441,6 @@ Right-click a release's **Edit** tab, or the **Edit** button on [Event Horizon](
 - Shift+right-click opens the browser's own menu.
 
 ### Settings
-
-**Auto-detect locale** in the [alias editor](#aliases) defaults off and remembers whether empty locales should be recognized automatically.
 
 Right-click Apollo's corner icon.
 
@@ -924,9 +922,9 @@ The pencil beside an entity's aliases opens the [bulk alias editor](../apollo_ed
 
 The heading shows the alias count as a badge and pulses while edits are being submitted.
 
-Use **文** beside Locale to recognize one alias's language; right-click it to fill all empty locales. **Auto-detect locale** fills them while you type or import names. Existing choices are kept and uncertain names stay empty. Review the guesses before **Enter edit**.
+An empty Locale shows the alias's recognized language in grey. Press **文** beside it to take it; right-click it to fill all empty locales. Existing choices are kept and uncertain names show nothing.
 
-**×** beside a set locale clears it and its primary mark. It stays empty until you change the alias name or explicitly recognize locales again. Alias work is kept in Apollo's latest log.
+**×** beside a set locale clears it and its primary mark. Alias work is kept in Apollo's latest log.
 
 Long aliases and sort names wrap within their columns. For an artist with a Discogs external link, **Fetch from Discogs** fills new rows with its name variations and aliases, removing Discogs' trailing numbers such as `(3)`, skipping names already present and adding the source to the edit note. Each imported row has a Discogs icon that opens its source. Review or remove the rows before **Enter edit**: Discogs aliases can represent separate MusicBrainz artists.
 
@@ -1040,8 +1038,6 @@ Compatible scripts appear under **More (⋯)** in the page header and pinned bar
 > Authors can use the [menu-item protocol](../event_horizon/DEVELOP.md#external-menu-items) and [coexistence conventions](../../DEVELOP.md#interoperability).
 
 ### Settings
-
-**Auto-detect locale** in the [alias editor](#aliases-1) defaults off and remembers whether empty locales should be recognized automatically.
 
 Right-click the corner icon. Changes apply at once.
 

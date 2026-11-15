@@ -94,9 +94,9 @@ The pencil beside an entity's aliases opens the [bulk alias editor](../apollo_ed
 
 The heading shows the alias count as a badge and pulses while edits are being submitted.
 
-Use **文** beside Locale to recognize one alias's language; right-click it to fill all empty locales. **Auto-detect locale** fills them while you type or import names. Existing choices are kept and uncertain names stay empty. Review the guesses before **Enter edit**.
+An empty Locale shows the alias's recognized language in grey. Press **文** beside it to take it; right-click it to fill all empty locales. Existing choices are kept and uncertain names show nothing.
 
-**×** beside a set locale clears it and its primary mark. It stays empty until you change the alias name or explicitly recognize locales again. Alias work is kept in Apollo's latest log.
+**×** beside a set locale clears it and its primary mark. Alias work is kept in Apollo's latest log.
 
 Long aliases and sort names wrap within their columns. For an artist with a Discogs external link, **Fetch from Discogs** fills new rows with its name variations and aliases, removing Discogs' trailing numbers such as `(3)`, skipping names already present and adding the source to the edit note. Each imported row has a Discogs icon that opens its source. Review or remove the rows before **Enter edit**: Discogs aliases can represent separate MusicBrainz artists.
 
@@ -210,8 +210,6 @@ Compatible scripts appear under **More (⋯)** in the page header and pinned bar
 > Authors can use the [menu-item protocol](DEVELOP.md#external-menu-items) and [coexistence conventions](../../DEVELOP.md#interoperability).
 
 ## Settings
-
-**Auto-detect locale** in the [alias editor](#aliases) defaults off and remembers whether empty locales should be recognized automatically.
 
 Right-click the corner icon. Changes apply at once.
 

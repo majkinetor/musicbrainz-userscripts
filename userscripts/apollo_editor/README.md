@@ -73,9 +73,9 @@ An entity's **Add alias** page becomes a table of all its aliases, so several ar
 
 Long aliases and sort names wrap within their columns as you edit.
 
-The **文** button beside Locale recognizes that alias's language. Right-click it to fill every empty locale. **Auto-detect locale** does this while you enter names and after importing them, and remembers your choice. Existing locale choices are kept; short or uncertain names stay empty. Review the guesses before **Enter edit**.
+An empty Locale shows the alias's recognized language in grey. Press the **文** button beside it to take it, or right-click the button to fill every empty locale. Existing locale choices are kept; short or uncertain names show nothing.
 
-**×** beside a set locale clears it and its primary mark. Automatic recognition keeps it empty until you change the alias name or explicitly recognize locales again.
+**×** beside a set locale clears it and its primary mark.
 
 - Each line is one alias, in the order they were added, in columns: name, sort name, the locale and the type (both filter as you type), and begin and end dates. Once a locale is picked, a **☆** at the right of its field makes the alias the primary one for that locale (not once the alias has ended). A date is a year, year-month or full date; dots or slashes work too, and a day-first date like 31.12.2020 becomes 2020-12-31. Date fields take only digits and separators. A date that isn't whole when you leave the field, or an end before the begin, is marked in red, with the reason under the table, and nothing is submitted while it is. A search hint has only a name, as on MusicBrainz's form: its other fields are emptied and greyed out, and come back when you pick another type.
 - The last line is empty: type a name there to add an alias, and a new empty line follows.
@@ -419,8 +419,6 @@ Right-click a release's **Edit** tab, or the **Edit** button on [Event Horizon](
 - Shift+right-click opens the browser's own menu.
 
 ## Settings
-
-**Auto-detect locale** in the [alias editor](#aliases) defaults off and remembers whether empty locales should be recognized automatically.
 
 Right-click Apollo's corner icon.
 
