@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.15.013000
+// @version      2026.11.15.140000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -6269,10 +6269,10 @@ function emAdd(ent) {
         return 'ok';
     });
 }
-const EM_INC = { release: 'artist-credits+labels+media', 'release-group': 'artist-credits', work: 'artist-rels', event: '', artist: 'aliases' };
+const EM_INC = { release: 'artist-credits+labels+media', 'release-group': 'artist-credits+releases', work: 'artist-rels', event: '', artist: 'aliases' };
 const EM_COLS = {
     release: ['Artist', 'Format', 'Tracks', 'Country/Date', 'Label', 'Catalog#', 'Barcode'],
-    'release-group': ['Artist', 'Type', 'First release'],
+    'release-group': ['Artist', 'Type', 'Year', 'Releases'],
     artist: ['Type', 'Gender', 'Area', 'Begin', 'End'],
     work: ['Type', 'Language', 'ISWC', 'Writers'],
     label: ['Type', 'Area', 'Code', 'Begin', 'End'],
@@ -6290,7 +6290,11 @@ function emInfo(type, j) {
             return [emAc(j), Object.entries(fmts).map(([k, n]) => (n > 1 ? n + '×' : '') + k).join(' + '), media.map(m => m['track-count']).join(' + '),
                 uniq(ev.length ? ev : [[j.country, j.date].filter(Boolean).join(' ')]), uniq((j['label-info'] || []).map(l => l.label && l.label.name)), uniq((j['label-info'] || []).map(l => l['catalog-number'])), j.barcode || ''];
         }
-        case 'release-group': return [emAc(j), [j['primary-type']].concat(j['secondary-types'] || []).filter(Boolean).join(' + '), j['first-release-date'] || ''];
+        case 'release-group': {
+            // inc=releases lists at most 25; a browse (no releases) leaves the count out, so the entry is fetched again
+            const rels = j.releases, base = [emAc(j), [j['primary-type']].concat(j['secondary-types'] || []).filter(Boolean).join(' + '), (j['first-release-date'] || '').slice(0, 4)];
+            return Array.isArray(rels) ? base.concat(rels.length >= 25 ? '25+' : String(rels.length)) : base;
+        }
         case 'artist': return [j.type, j.gender, j.area && j.area.name, ls.begin, ls.end || (ls.ended ? '(ended)' : '')];
         case 'work': return [j.type, uniq(j.languages || [j.language]), uniq(j.iswcs || []), uniq((j.relations || []).filter(r => /composer|lyricist|writer/.test(r.type)).map(r => r.artist && r.artist.name))];
         case 'label': return [j.type, j.area && j.area.name, j['label-code'] ? 'LC ' + j['label-code'] : '', ls.begin, ls.end];
@@ -6332,7 +6336,7 @@ function emAliasHits(members) {
 }
 // entries added without details (an album artist from the add menu, say) get them on first show
 function emFillMissing(type) {
-    const t = emT(type), need = t.pool.concat(...t.groups.filter(g => g.state !== 'done').map(g => g.members)).filter(x => (!x.info || (type === 'artist' && !Array.isArray(x.aliases))) && !EM_FETCHING.has(x.gid));   // #1007: older artist entries get their aliases
+    const t = emT(type), need = t.pool.concat(...t.groups.filter(g => g.state !== 'done').map(g => g.members)).filter(x => (!x.info || x.info.length < (EM_COLS[type] || []).length || (type === 'artist' && !Array.isArray(x.aliases))) && !EM_FETCHING.has(x.gid));   // #1007: older artist entries get their aliases
     need.forEach(x => EM_FETCHING.add(x.gid));
     (async () => {
         for (const x of need) {
@@ -6618,7 +6622,7 @@ async function addFromPage(sel, gid) {
             if (want('release-group') && j['release-group']) list.push({ type: 'release-group', gid: j['release-group'].id, name: j['release-group'].title, dis: j['release-group'].disambiguation || '', info: null });
             if (want('artist')) addArtists(j);
         } else if (here === 'release-group') {
-            const j = await wsGet('/ws/2/release-group/' + gid + '?fmt=json&inc=artist-credits');
+            const j = await wsGet('/ws/2/release-group/' + gid + '?fmt=json&inc=artist-credits+releases');
             if (want('release-group')) list.push(ent('release-group', j));
             if (want('artist')) addArtists(j);
             if (want('release')) {
