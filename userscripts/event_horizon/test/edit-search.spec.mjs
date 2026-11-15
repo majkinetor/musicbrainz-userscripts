@@ -120,7 +120,7 @@ test('empty edit search keeps every native field, ranges and voter values', { ta
 test('homepage links to edit search beside advanced search', { tag: '@sandbox' }, async ({ page, inject }, info) => {
   await page.goto('https://test.musicbrainz.org/'); await idle(page); await inject('event_horizon');
   await expect(page.locator('.hm-tg + a.hm-es')).toHaveAttribute('href', 'https://test.musicbrainz.org/search/edits');
-  await Promise.all([page.waitForURL('**/search/edits'), page.locator('.hm-es').click()]);
+  await Promise.all([page.waitForURL('**/search/edits'), page.locator('a.hm-es[href$="/search/edits"]').click()]);
   await idle(page); await inject('event_horizon');
   await expect(page.locator('#app #edit-search')).toBeVisible();
   await expect(page.locator('.condition')).toHaveCount(0);
