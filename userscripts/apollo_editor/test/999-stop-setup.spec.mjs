@@ -13,7 +13,7 @@ for (const stage of ['siblings', 'discogs', 'platform']) {
       const document = { querySelector: () => null };
       const MODEL = { tracks: [{ slots: [{ _pending: true }] }] };
       const isEditingNow = () => false, setMatching = v => { _matching = v; };
-      const startMatchLog = () => {}, endMatchLog = () => {}, refreshStatus = () => {};
+      const wsLaneWake = () => {}, startMatchLog = () => {}, endMatchLog = () => {}, refreshStatus = () => {};
       const unresolvedIn = () => 1, updateStatus = () => {};
       const tagDiscogsForAll = () => {}, tagPlatformForAll = () => {};
       let entered, release;

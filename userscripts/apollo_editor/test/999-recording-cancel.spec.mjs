@@ -8,7 +8,7 @@ for (const stage of ['pool', 'positions', 'suggestions']) {
     const source = await functionSource('apollo_editor', ['autoMatchRecordings', 'matchWait', 'stopMatching']);
     const run = new Function('stage', `
       let _stopGen = 0, _matchStop = false, _matching = false, _autoMatching = false, _autoMatchWaiting = false, _recLastStatus = '';
-      const _wsInFlight = 0, _webInFlight = 0, _matchWaits = new Set(), MATCH_STOPPED = {}, _recLeftForYou = new Map();
+      const wsLaneWake = () => {}, _wsInFlight = 0, _webInFlight = 0, _matchWaits = new Set(), MATCH_STOPPED = {}, _recLeftForYou = new Map();
       const document = { querySelector: () => null, getElementById: () => null };
       const messages = [], Log = { cat: () => ({ info: (...x) => messages.push(x.join(' ')), debug() {}, warn() {} }) };
       const SETTINGS = {}, CUTOFF = { near: 2 }, u = v => typeof v === 'function' ? v() : v;
@@ -25,7 +25,7 @@ for (const stage of ['pool', 'positions', 'suggestions']) {
       const koTrack = () => track, videoBlockedHere = () => false, fcIsrcFor = () => null, fcHandoff = () => null;
       const recFold = s => s, suggList = () => [], suggStale = () => false;
       const getEditor = () => ({ recordingAssociation: { findRecordingSuggestions: () => { entered(); } } });
-      const rerenderRec = () => {};
+      const rerenderRec = () => {}, recSuggestionsSettled = () => new Promise(() => {});
       ${source}
       return (async () => {
         const pass = autoMatchRecordings();
@@ -48,7 +48,7 @@ test('manual recording search remains available during Stop', { tag: '@unit' }, 
   const source = await functionSource('apollo_editor', ['wsGet', 'wsJsonOnce']);
   const run = new Function(`
     let _stopGen = 1, _matchStop = true, _wsInFlight = 0, calls = 0;
-    const WS_TRIES = 4, wsLanes = () => 4, wsGateLog = () => {}, _sleep = () => Promise.resolve();
+    const WS_TRIES = 4, wsLanes = () => 4, wsLaneSync = () => {}, wsLaneWake = () => {}, mbnSleep = () => new Promise(() => {}), _wsLaneWaiters = new Set(), _wsLaneGen = 1, wsGateLog = () => {}, _sleep = () => Promise.resolve();
     const Log = { cat: () => ({ debug() {}, warn() {}, err() {} }) };
     const mbnSlot = async o => ({ ok: !o.cancelled() });
     const wsAnswer = async () => ({ throttled: false });
@@ -64,6 +64,7 @@ test('Finish cancels matching before forwarding to MusicBrainz', { tag: '@unit' 
   const source = await functionSource('apollo_editor', ['buildNav']);
   const run = new Function(`
     let _matching = false, _autoMatching = true, stops = 0, forwarded;
+    const Log = { cat: () => ({ info() {}, debug() {}, warn() {}, err() {} }), keep() {} }, activeStepKey = () => '', relEd = () => null, stepLink = () => null, relWatchErrors = () => {}, submitBlockers = () => [];
     const elements = [], element = () => { const e = { dataset: {}, append() {}, appendChild() {}, insertBefore() {} }; elements.push(e); return e; };
     const document = { getElementById: () => null, createElement: element };
     const editor = element(), editorEl = () => editor, navStyle = () => {}, fillNavTitle = () => {};

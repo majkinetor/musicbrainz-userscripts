@@ -4,7 +4,7 @@ test('a restarted match does not rejoin a stopped alias search', { tag: '@unit' 
   const source = await functionSource('apollo_editor', ['wsJson', 'matchWait', 'stopMatching']);
   const run = new Function(`
     let _stopGen = 0, _matchStop = false, _matching = true, _autoMatching = false;
-    const _wsInFlight = 0, _webInFlight = 0, _wsFlight = new Map(), _matchWaits = new Set(), MATCH_STOPPED = {};
+    const wsLaneWake = () => {}, _wsInFlight = 0, _webInFlight = 0, _wsFlight = new Map(), _matchWaits = new Set(), MATCH_STOPPED = {};
     const document = { querySelector: () => null };
     const Log = { cat: () => ({ info() {}, debug() {}, warn() {} }) };
     let calls = 0, late;
