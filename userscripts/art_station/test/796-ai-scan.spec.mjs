@@ -8,7 +8,8 @@ test.use({ gm: { name: 'Art Station', values: {} } });
 
 test('✦ copies the cover and opens the chosen AI with the prompt', { tag: ['@sandbox'] }, async ({ page, inject }) => {
   const wsReads = [];
-  page.on('request', r => { if (/\/ws\/2\/release\/.*inc=recordings/.test(r.url())) wsReads.push(r.url()); });
+  // a busy answer that mbnFetch retries isn't a second read: count the ones that land
+  page.on('response', r => { if (r.status() === 200 && /\/ws\/2\/release\/.*inc=recordings/.test(r.url())) wsReads.push(r.url()); });
   await openArtStation(page, inject);
   await page.evaluate(() => {
     window.__clip = []; window.__opened = [];
