@@ -30,10 +30,10 @@ Credit Hoarder lists every credited artist, label and place, with clear matches 
 - **Import credits:** one icon per source available on this release. Click to import; right-click opens the source's page. Several sources can run in one session; their edits stack.
 - **⚛ All** (with more than one source) runs a [consolidated import](#consolidated-import).
 
-| Option                         |                                                                                          |
-| ------------------------------ | ---------------------------------------------------------------------------------------- |
-| Per-track credits              | import track credits as well as release credits                                          |
-| Use works                      | existing ones (*create none*), also those writer credits need (*create needed*), or off  |
+| Option            |                                                                                         |
+| ----------------- | --------------------------------------------------------------------------------------- |
+| Per-track credits | import track credits as well as release credits                                         |
+| Use works         | existing ones (*create none*), also those writer credits need (*create needed*), or off |
 
 ## Review table
 
@@ -108,7 +108,7 @@ The edit note carries the statistics per source, with how the entities were matc
 | Tidal          | producer, engineers, writers and publisher per track; performers and artwork per release | Tidal artist ID, on nearly all credits     |          |
 | Metal Archives | the lineup with instruments, work credits, other staff                                   | Metal Archives artist ID                   |          |
 | Qobuz          | composer, lyricist, producer, publisher, performers                                      | names, except the composer and main artist | optional |
-| Apple Music    | composer, writer, lyricist, producer, engineers, arranger, vocals                        | names                                      |          |
+| Apple Music    | composer, writer, lyricist, producer, engineers, arranger, vocals, guest performers      | names                                      |          |
 | AllMusic       | performers, instruments, composer                                                        | AllMusic artist ID                         |          |
 | YouTube Music  | writer, producer                                                                         | names                                      |          |
 | Deezer         | composers only                                                                           | names                                      |          |

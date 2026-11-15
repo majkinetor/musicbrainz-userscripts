@@ -34,15 +34,17 @@ export function parseAppleAlbumUrl(url) {
 
 // Apple role name → Discogs-style role key (resolved via ENTITY_TYPE_MAP). Anything
 // not listed passes through VERBATIM so instrument/vocal role names (Guitar, Bass,
-// Piano…) resolve through INSTRUMENTS. Two roles are intentionally dropped and
-// reported: "Performer" (Apple stamps the track's own main artist — redundant) and
-// "Mastering Engineer" (mastering is a RELEASE-level rel in MB, not per-recording,
-// exactly as the Tidal source treats it).
+// Piano…) resolve through INSTRUMENTS. "Mastering Engineer" is dropped and reported
+// (mastering is a RELEASE-level rel in MB, not per-recording, exactly as the Tidal
+// source treats it). "Performer" is dropped only for the track's own artist (Apple
+// stamps the main artist with it); anyone else is a guest and gets a performer rel (#1033).
 const APPLE_ROLE_BRIDGE = {
     'Songwriter':       'Written-By',
     'Writer':           'Written-By',
     'Composer':         'Composed By',
     'Lyricist':         'Lyrics By',
+    'Lyrics':           'Lyrics By',
+    'Performer':        'Performer',
     'Producer':         'Producer',
     'Mixing Engineer':  'Mixed By',
     'Mixer':            'Mixed By',
@@ -54,7 +56,13 @@ const APPLE_ROLE_BRIDGE = {
     'Background Vocals':'Backing Vocals',
     'Background Vocal': 'Backing Vocals',
 };
-const APPLE_SKIP = new Set(['Performer', 'Mastering Engineer', 'Studio Personnel']);
+const APPLE_SKIP = new Set(['Mastering Engineer', 'Studio Personnel']);
+
+// The names in Apple's track artist string ("A & B", "A, B and C", "A feat. B"),
+// lowercased: a "Performer" among them is the track's own artist, not a guest.
+const trackArtistNames = s => String(s || '').toLowerCase()
+    .split(/\s*(?:,|&|\+|\/|\band\b|\bfeat\.?|\bft\.?|\bfeaturing\b|\bwith\b|\bx\b)\s*/)
+    .map(n => n.trim()).filter(Boolean);
 
 /**
  * Map parsed Apple credits to the engine's tracklist-relationship shape (same
@@ -62,7 +70,8 @@ const APPLE_SKIP = new Set(['Performer', 'Mastering Engineer', 'Studio Personnel
  * every credit goes through name search + review (`resource_url: ''`). Returns
  * `{ tracklistRels, tracklist, skipped }`.
  *
- * `parsedTracks` = `[{ index, title, credits: [{ name, role }] }]`.
+ * `parsedTracks` = `[{ index, title, artist, credits: [{ name, role }] }]`; `artist`
+ * is Apple's track artist string, which tells a guest "Performer" from the main one.
  */
 export function appleToEngine(parsedTracks) {
     const tracklistRels = [];
@@ -76,11 +85,16 @@ export function appleToEngine(parsedTracks) {
     tracks.forEach((t, i) => {
         const track = { position: positions[i], title: t.title || '', type_: 'track' };
         tracklist.push(track);
+        const mainArtists = trackArtistNames(t.artist);
         for (const c of (t.credits || [])) {
             const role = String(c.role || '').trim();
             const name = String(c.name || '').trim();
             if (!role || !name) continue;
             if (APPLE_SKIP.has(role)) { skipped.push(`track ${track.position}: ${role} — ${name}`); continue; }
+            // no track artist known → can't tell a guest from the main artist: keep the old skip
+            if (role === 'Performer' && (!mainArtists.length || mainArtists.includes(name.toLowerCase()))) {
+                skipped.push(`track ${track.position}: ${role} — ${name} (track artist)`); continue;
+            }
             const discogsRole = APPLE_ROLE_BRIDGE[role] || role;
             const rels = getArtistRoles({ name, anv: '', role: discogsRole, resource_url: '' });
             if (!rels || !rels.length) { skipped.push(`track ${track.position}: ${role} — ${name} (unmapped)`); continue; }
@@ -155,6 +169,7 @@ export async function fetchAppleCredits(storefront, albumId, onProgress) {
         const sid = s.id;
         const num = (s.attributes && s.attributes.trackNumber) || (done + 1);
         const title = (s.attributes && s.attributes.name) || '';
+        const artist = (s.attributes && s.attributes.artistName) || '';
         const credits = [];
         try {
             const cr = await appleGet(`${APPLE_AMP}/${sf}/songs/${encodeURIComponent(sid)}/credits?l=en-US`, ampHeaders(tok));
@@ -172,7 +187,7 @@ export async function fetchAppleCredits(storefront, albumId, onProgress) {
             }
             // status 404 = "no related resources" → this track simply has no credits
         } catch (e) { /* per-track failure — skip that track's credits, keep going */ }
-        if (credits.length) tracks.push({ index: +num, title, credits });
+        if (credits.length) tracks.push({ index: +num, title, artist, credits });
         done++;
         if (onProgress) { try { onProgress(done, songs.length); } catch (e) {} }
     }
