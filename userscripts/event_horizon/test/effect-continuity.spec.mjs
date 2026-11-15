@@ -16,6 +16,8 @@ test('ambient redraws retain the canvas, simulation and clock while taking new p
     S.tronSpeed = 2; S.tronGlow = 2; S.starsGlow = 0;
     apply(layer, 'tron');
     await new Promise(requestAnimationFrame);
+    // tron paints at most 30 fps (c15785a7) and its clock moves with a paint, so a frame alone may not move it
+    for (const end = performance.now() + 2000; state.time <= before && performance.now() < end;) await new Promise(requestAnimationFrame);
     const kept = canvas === layer.querySelector('canvas') && state === ctx._ehTron;
     const advanced = state.time > before;
     const params = layer._ehPattern.P;
