@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.16.003000
+// @version      2026.11.16.004500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13042,7 +13042,7 @@ async function histNoteDel(b, why) {
 }
 document.addEventListener('click', ev => {
     const t = ehOn && ev.target.closest && ev.target; if (!t) return;
-    const go = t.closest('.hndelf [data-go]'), no = t.closest('.hndelf [data-no]');
+    const go = t.closest('.hndelf:not(.hnmodf) [data-go]'), no = t.closest('.hndelf:not(.hnmodf) [data-no]');
     if (go || no) {
         ev.preventDefault(); ev.stopPropagation();
         const f = t.closest('.hndelf'), b = f.closest('.hnote,div.edit-note').querySelector('[data-hndel]');
@@ -13088,6 +13088,13 @@ async function histNoteSend(fm) {
         const r = await mbnFetch(`${MB}/edit/enter_votes`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(fields) });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         const sv = { 1: 'yes', 0: 'no', '-1': 'abstain' }[fields['enter-vote.vote.0.vote']], n = { by: ME, date: 'just now', text: t, vote: sv || '', html: esc(t).replace(/\n/g, '<br>') };
+        // the new note's own ids, for its edit and remove buttons, are on the edit page MusicBrainz answers with
+        try {
+            const pg = new DOMParser().parseFromString(await r.text(), 'text/html'), ns = [...pg.querySelectorAll('div.edit-note[id^="note-"]')].reverse();
+            const mine = ns.find(x => { const a = x.querySelector('h3 a[href*="/user/"]'); return a && a.textContent.trim() === ME; });
+            const lk = k => mine && ((mine.querySelector(`a[href*="/edit-note/"][href$="/${k}"]`) || {}).href || '').match(/edit-note.([0-9]+)./)?.[1] || '';
+            n.del = lk('delete'); n.mod = lk('modify');
+        } catch (_) { /* the note still shows, without its buttons until a reload */ }
         e.notes.push(n); fm.insertAdjacentHTML('beforebegin', histNote(n)); ta.value = ''; LOG.info('Added a note to edit #' + id + (hv ? ', voting ' + H_VOTES.find(x => x[0] === hv)[1] : ''));
         if (hv && hv !== e.my) {
             histMyVote(e, hv); e.voting = false; kpWrote(); histVotePaint(data);
