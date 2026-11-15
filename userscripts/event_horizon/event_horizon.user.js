@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.15.232000
+// @version      2026.11.15.233000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12752,7 +12752,7 @@ function histParse(html) {
             // outside table.details; keep the whole section, ending before Votes, in any interface language.
             // "Entered from" can come before Changes' heading: a heading whose section holds the changes table is skipped, any other ends it
             const chg = x => x && (x.matches('table.details, table.tbl[class*="merge-"]') || !!x.querySelector('table.details'));   // a release merge opens on its own table.tbl.merge-releases
-            for (let n = h.nextElementSibling; n && n.tagName !== 'FORM'; n = n.nextElementSibling) { if (n.tagName === 'H2') { if (chg(n.nextElementSibling)) continue; break; } det.append(n.cloneNode(true)); }
+            for (let n = h.nextElementSibling; n && n.tagName !== 'FORM'; n = n.nextElementSibling) { if (n.tagName === 'H2') { { let y = n.nextElementSibling; while (y && y.tagName !== 'H2' && y.tagName !== 'FORM' && !chg(y)) y = y.nextElementSibling; if (chg(y)) continue; } break; } det.append(n.cloneNode(true)); }
         }
         if (det) {
             // MusicBrainz's page draws a cover's thumbnail itself: the fetched page carries only its address
