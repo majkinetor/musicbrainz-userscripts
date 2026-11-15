@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.15.220000
+// @version      2026.11.15.230000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12926,6 +12926,8 @@ document.addEventListener('toggle', async ev => {
         if (bar) bar.outerHTML = histBar(e);
     } catch (err) { delete dt.dataset.hvf; LOG.debug(`History: voters of edit ${id} not loaded: ${err.message}`); }
 }, true);
+// your vote, cast from here, redraws the Votes line under the edit
+function histVlPaint(dt, e) { const o = dt && dt.querySelector(':scope>.hdt>.hvl'); if (o) o.outerHTML = histVotes(e) || '<i hidden></i>'; }
 function histBar(e) {
     // the vote buttons carry their own counts (abstain only where the voters are known: a single edit), so a row you can vote on needs no separate tally
     const c = histCnt(e), cn = v => { const n = e.voters ? e.voters.filter(x => x.v === v).length : v === '-1' ? null : c && (v === '1' ? c[0] : v === '0' ? c[1] : null); return n == null ? '' : ` <span class="hvn${n ? '' : ' z'}">${n}</span>`; };
@@ -13034,7 +13036,7 @@ async function histNoteSend(fm) {
         e.notes.push(n); fm.insertAdjacentHTML('beforebegin', histNote(n)); ta.value = ''; LOG.info('Added a note to edit #' + id + (hv ? ', voting ' + H_VOTES.find(x => x[0] === hv)[1] : ''));
         if (hv && hv !== e.my) {
             histMyVote(e, hv); e.voting = false; kpWrote(); histVotePaint(data);
-            const x = document.querySelector(`#app [data-hvote^="${e.id}:"]`), dt = x && x.closest('details.hed'), bar = x && x.closest('.hbar'); if (bar) { bar.outerHTML = histBar(e); const l = histLean(e); if (l && dt) dt.dataset.lean = l; }
+            const x = document.querySelector(`#app [data-hvote^="${e.id}:"]`), dt = x && x.closest('details.hed'), bar = x && x.closest('.hbar'); if (bar) { bar.outerHTML = histBar(e); const l = histLean(e); if (l && dt) dt.dataset.lean = l; } histVlPaint(dt, e);
         }
         histNoteVote(fm, '');
     } catch (err) { LOG.err('Note on edit #' + id + ' failed: ' + err.message); toast('MusicBrainz didn\'t take the note'); }
@@ -13063,7 +13065,7 @@ async function histVoteSend(b) {
         es.forEach(e => histMyVote(e, v)); kpWrote(); LOG.info('Voted ' + H_VOTES.find(x => x[0] === v)[1] + ' on edits ' + es.map(e => '#' + e.id).join(', '));
     } catch (err) { LOG.err('Voting failed: ' + err.message); toast('MusicBrainz didn\'t take the vote'); }
     es.forEach(e => { e.voting = false; }); histVotePaint(d);
-    es.forEach(e => { const x = document.querySelector(`#app [data-hvote^="${e.id}:"]`), dt = x && x.closest('details.hed'), bar = x && x.closest('.hbar'); if (!bar) return; bar.outerHTML = histBar(e); const l = histLean(e); if (l) dt.dataset.lean = l; });
+    es.forEach(e => { const x = document.querySelector(`#app [data-hvote^="${e.id}:"]`), dt = x && x.closest('details.hed'), bar = x && x.closest('.hbar'); if (!bar) return; bar.outerHTML = histBar(e); const l = histLean(e); if (l) dt.dataset.lean = l; histVlPaint(dt, e); });
 }
 document.addEventListener('click', ev => {
     const cx = ehOn && data && data.kind === 'hist' && ev.target.closest('.hbar a.hcx2'); if (cx && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.button) { ev.preventDefault(); histCancel(cx); return; }
