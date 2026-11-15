@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.15.234500
+// @version      2026.11.15.235500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12760,11 +12760,11 @@ function histParse(html) {
             // MusicBrainz's page draws a cover's thumbnail itself: the fetched page carries only its address
             det.querySelectorAll('span.artwork-image').forEach(x => { if (!x.querySelector('img') && x.dataset.smallThumbnail) x.innerHTML = `<img src="${x.dataset.smallThumbnail}" alt="${esc(x.dataset.title || '')}" loading="lazy">`; });
             det.querySelectorAll('script,input,noscript').forEach(x => x.remove());
-            // a cover edit MusicBrainz can't show (still pending in the Cover Art Archive) shows its image straight from archive.org, by its file name
+            // a cover edit shows its full image straight from archive.org, by its file name: a pending one has no thumbnails yet, and MusicBrainz shows none
             for (const td of det.querySelectorAll('table.details td')) {
                 const m = td.textContent.trim().match(/^mbid-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})-d+.w+$/);
-                if (!m || det.querySelector('img')) continue;
-                const u = `https://archive.org/download/mbid-${m[1]}/${m[0]}`, tr = td.closest('tr'), cell = [...tr.parentNode.querySelectorAll('td')].find(x => x.querySelector('a[href$="/cover-art"]'));
+                if (!m) continue;
+                const u = `https://archive.org/download/mbid-${m[1]}/${m[0]}`, tr = td.closest('tr'), cell = [...tr.parentNode.querySelectorAll('td')].find(x => x.matches('.edit-cover-art') || x.querySelector('a[href$="/cover-art"], .artwork-image'));
                 const html = `<a href="${u}" target="_blank" rel="noopener"><img class="eh-cvi" src="${u}" alt="" loading="lazy"></a>`;
                 if (cell) cell.innerHTML = html; else tr.insertAdjacentHTML('afterend', `<tr><th></th><td>${html}</td></tr>`);
             }
