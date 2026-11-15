@@ -31,12 +31,10 @@ test('a lock bridge ignoring abort cannot retain the gate or book twice', { tag:
   const got = await a.evaluate(async () => {
     let grant, writes = 0;
     Object.defineProperty(navigator, 'locks', { configurable: true, value: { request: (key, opts, fn) => new Promise(resolve => { grant = () => resolve(fn()); }) } });
-    const nativeTimer = window.setTimeout;
-    window.setTimeout = (fn, ms, ...args) => nativeTimer(fn, ms === 3000 ? 10 : ms, ...args);
-    const answer = await Promise.race([mbnState(s => { writes++; s.tat = 123; return 'ready'; }), new Promise(r => nativeTimer(() => r('hung'), 500))]);
+    // the real 3s watchdog: mbnSleep checks the clock, so a shortened timer would not end it (#999)
+    const answer = await Promise.race([mbnState(s => { writes++; s.tat = 123; return 'ready'; }), new Promise(r => setTimeout(() => r('hung'), 5000))]);
     grant();
     await Promise.resolve();
-    window.setTimeout = nativeTimer;
     return { answer, writes, tat: JSON.parse(localStorage.getItem('mbu:mb-gate') || '{}').tat };
   });
   check(got.answer === 'ready', 'the watchdog releases the caller even when abort has no effect');
