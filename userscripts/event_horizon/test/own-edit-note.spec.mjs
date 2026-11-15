@@ -14,6 +14,8 @@ test('your own edit accepts a note without voting permission', { tag: ['@sandbox
   await expect(page.locator('textarea[name$=".edit_note"]')).toBeVisible();
   await inject('event_horizon');
   const edit = page.locator('#app .hed.one');
+  await edit.locator('summary .hty').hover();
+  await edit.locator('summary .hnico').click();   // the note icon beside the date opens the form
   await expect(edit.locator('.hnadd textarea')).toBeVisible();
   await inject('mammoth');
   await expect(edit.locator('.hnadd .mmth-wrap textarea')).toBeVisible();

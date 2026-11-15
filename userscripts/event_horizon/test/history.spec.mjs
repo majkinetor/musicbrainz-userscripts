@@ -72,8 +72,10 @@ test('an open edit takes your vote and a note in place, and your votes open as a
   await ed.locator('.hvote button.' + pick).click();
   check(await until(() => ed.locator('.hvote button.' + pick).getAttribute('aria-checked'), v => v === 'true') === 'true', 'the vote button lights');
   const note = 'EH test note ' + Date.now();
+  await ed.locator('summary .hty').hover();
+  await ed.locator('summary .hnico').click();   // the note icon beside the date opens the form
   await ed.locator('.hnadd textarea').fill(note);
-  await ed.locator('.hnadd button').click();
+  await ed.locator('.hnadd > button[type="submit"]').click();
   check(await until(() => ed.locator('.hnote', { hasText: note }).count(), n => n > 0) > 0, 'the note shows under the edit');
   await page.goto('https://test.musicbrainz.org/edit/' + id);
   const mine = await until(() => page.evaluate(() => (document.querySelector('.voteopts input:checked') || {}).value), v => v != null);
