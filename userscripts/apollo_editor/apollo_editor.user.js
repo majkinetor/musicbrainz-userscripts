@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.15.192002
+// @version      2026.11.15.192003
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -1915,9 +1915,12 @@
   //   o.right  align its left edge this many px left of the input's right edge (the join list)
   function acPlace(pop, inp, o) {
     o = o || {};
-    const r = inp.getBoundingClientRect(), gap = o.gap || 2, margin = 8, cap = 300;
+    const phone = innerWidth <= 600;   // a phone: the picker takes the screen's width and all the room above or below the input
+    const r = inp.getBoundingClientRect(), gap = o.gap || 2, margin = phone ? 0 : 8, cap = phone ? innerHeight : 300;
     pop.style.left = (o.right ? Math.max(4, r.right - o.right) : r.left) + 'px';
     pop.style.minWidth = (o.minWidth || Math.max(210, r.width)) + 'px';
+    pop.classList.toggle('tc-pop-phone', phone);
+    if (phone) { pop.style.left = '0px'; pop.style.minWidth = innerWidth + 'px'; }
     pop.style.maxHeight = cap + 'px';
     const want = Math.min(pop.scrollHeight, cap);
     const below = innerHeight - r.bottom - gap - margin, above = r.top - gap - margin;
@@ -7537,6 +7540,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-aslot.tc-slotdrop-before{box-shadow:inset 0 2px 0 #5f3ec0}.tc-aslot.tc-slotdrop-after{box-shadow:inset 0 -2px 0 #5f3ec0}
     .tc-slotx{color:var(--mbu-error);font-size:13px}.tc-slotx:hover{color:var(--mbu-error)}
     .tc-mirror tr:hover .tc-enter,.tc-mirror tr:hover .tc-slotx,.tc-mirror tr:hover .tc-splitb,.tc-mirror tr:hover .tc-slotgrab{visibility:visible}
+    .tc-acpop.tc-pop-phone{width:100vw;max-width:100vw;box-sizing:border-box;border-radius:0;border-left:0;border-right:0;font-size:14px}
+    .tc-acpop.tc-pop-phone .tc-acrow{padding:9px 10px}
     .tc-acpop{position:fixed;z-index:100002;background:var(--mbu-bg);border:1px solid var(--mbu-accent);border-radius:4px;box-shadow:0 6px 22px rgba(40,20,80,.3);max-height:300px;overflow:auto;font:12px Arial;min-width:210px}
     .tc-acrow{display:flex;align-items:center;gap:7px;padding:4px 9px;cursor:pointer}
     .tc-acrow:hover,.tc-acrow.hi{background:var(--mbu-bg-hover)}
@@ -12645,6 +12650,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       '.tc-rectbl .tc-recpick:hover{background:var(--mbu-bg-hover)}',
       '.tc-recpop{position:fixed;z-index:100003;width:410px;overflow:auto;background:var(--mbu-bg);border:1px solid var(--mbu-accent);border-radius:6px;box-shadow:0 8px 28px rgba(40,20,80,.28);font:12px Arial}',
       '.tc-recpop .tc-rpk-hd{position:sticky;top:0;z-index:1}',
+      '.tc-recpop .tc-rpk-x{display:none}@media (max-width:600px){.tc-recpop .tc-rpk-hd{align-items:center}.tc-recpop .tc-rpk-x{display:inline-grid;place-items:center;flex:none;width:30px;height:30px;font-size:20px;line-height:1}}',
+      '@media (max-width:600px){.tc-recpop{inset:0 !important;width:100vw !important;height:100dvh !important;max-width:none !important;max-height:none !important;border:0 !important;border-radius:0 !important;box-sizing:border-box}.tc-recpop .tc-rpk-hd{border-radius:0}}',   // a phone: the recording picker takes the whole screen
       '.tc-recpop .tc-rpk-hd{padding:7px 10px;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-accent);border-radius:6px 6px 0 0;display:flex;align-items:baseline;gap:8px}',   // #144: title - artist … sec (sec right)
       '.tc-recpop .tc-rpk-hdmain{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
       '.tc-recpop .tc-rpk-curwrap{border-bottom:1px solid var(--mbu-border)}',   // one separator under the whole current-recording group
@@ -14253,7 +14260,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       '<div class="tc-rpk-hd">' +
         '<span class="tc-rpk-hdmain"><b>' + esc(u(ko.name) || '') + '</b>' +
           (trackArtist ? '<span class="tc-rpk-hdby"> - ' + acLinks(u(ko.artistCredit)) + '</span>' : '') + '</span>' +
-        (trackLen ? '<span class="tc-rpk-hdlen">' + fmtMs(trackLen) + '</span>' : '') + '</div>' +
+        (trackLen ? '<span class="tc-rpk-hdlen">' + fmtMs(trackLen) + '</span>' : '') +
+        '<button type="button" class="mbu-ov-x tc-rpk-x" aria-label="Close">\u00d7</button></div>' +
       '<div class="tc-rpk-curwrap">' +
         '<div class="tc-rpk-cur">' + curHtml + '</div>' +
         // ISRC of the linked recording — makes it obvious when an ISRC drove the
@@ -14295,6 +14303,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         }).catch(() => {});
     }
     _recPopDrag(pop.querySelector('.tc-rpk-hd'));   // header is the drag handle
+    pop.querySelector('.tc-rpk-x').addEventListener('click', e => { e.stopPropagation(); closeRecPop(); });   // a phone's full-screen picker has no outside to tap
     _recPopReposition();   // dock it right + tall now the content (and height) exist
     const q = pop.querySelector('.tc-rpk-q'), suggBox = pop.querySelector('.tc-rpk-sugg'), resBox = pop.querySelector('.tc-rpk-res');
     // collapsible suggestions — click the header to fold it away and see search results immediately (remembered)
