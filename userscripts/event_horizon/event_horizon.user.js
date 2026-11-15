@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.15.200000
+// @version      2026.11.15.210000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12911,6 +12911,21 @@ const histLean = e => { const c = histCnt(e); return e.st !== 'op' || !c ? '' : 
 const H_SEG = [['1', 'Yes'], ['0', 'No'], ['-1', 'Abstain']];
 // the open edit's Votes line: voters grouped by vote, each with its count; Abstain only when someone did
 const histVotes = e => e.voters && e.voters.length ? `<div class="hvl"><b>Votes</b>${H_SEG.map(([v, t]) => { const n = e.voters.filter(x => x.v === v); return v === '-1' && !n.length ? '' : `<span class="hvg"><i class="v${v}">${t} (${n.length})</i>${n.length ? n.map(x => `<a href="${MB}/user/${encodeURIComponent(x.by)}">${esc(x.by)}</a>`).join(', ') : '<span class="hvz">none</span>'}</span>`; }).join('')}</div>` : '';
+// a list doesn't name the voters: an open edit's card, expanded, fetches its page once and adds the Votes line
+document.addEventListener('toggle', async ev => {
+    const dt = ev.target; if (!dt.open || !dt.matches?.('#app details.hed[data-st="op"]') || dt.dataset.hvf) return;
+    const id = (dt.querySelector(':scope>summary>a.d')?.getAttribute('href') || '').match(/\/edit\/(\d+)/)?.[1], d = data, e = id && d && d.edits && d.edits.find(x => String(x.id) === id);
+    if (!e || e.voters) return;
+    dt.dataset.hvf = '1';
+    try {
+        const t0 = performance.now(), r = await mbnFetch(`${MB}/edit/${id}`); fetchLog(`/edit/${id} voters`, t0, r); if (!r || !r.ok) throw new Error(r ? 'HTTP ' + r.status : 'cancelled');
+        const x = histParse(await r.text()).edits[0]; if (!x || !x.voters || data !== d) return;
+        e.voters = x.voters;
+        const cur = document.querySelector(`#app [data-hvote^="${e.id}:"]`)?.closest('details.hed') || dt, hd = cur.querySelector(':scope>.hdt'), bar = cur.querySelector(':scope>summary .hbar');
+        if (hd && !hd.querySelector(':scope>.hvl')) { const n = hd.querySelector(':scope>.hnote,:scope>form.hnadd'), w = document.createElement('div'); w.innerHTML = histVotes(e); if (w.firstChild) hd.insertBefore(w.firstChild, n); }
+        if (bar) bar.outerHTML = histBar(e);
+    } catch (err) { delete dt.dataset.hvf; LOG.debug(`History: voters of edit ${id} not loaded: ${err.message}`); }
+}, true);
 function histBar(e) {
     // the vote buttons carry their own counts (abstain only where the voters are known: a single edit), so a row you can vote on needs no separate tally
     const c = histCnt(e), cn = v => { const n = v === '-1' ? (e.voters ? e.voters.filter(x => x.v === '-1').length : null) : c && (v === '1' ? c[0] : v === '0' ? c[1] : null); return n == null ? '' : ` <span class="hvn${n ? '' : ' z'}">${n}</span>`; };
