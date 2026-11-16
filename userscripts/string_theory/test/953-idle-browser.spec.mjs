@@ -29,6 +29,8 @@ for (const path of ['/', '/doc/About']) test('idle appearance and exact effect r
   check(await page.locator('#eh-cfg [data-g=hexOpacity][data-k="60"][aria-pressed=true]').count() === 1, 'exact prior effect settings restored');
   await page.keyboard.press('Escape');
   await page.evaluate(() => document.dispatchEvent(new Event('mbu-st-settings')));
+  // the window reopens on the last tab used, kept in the profile's localStorage: Idle is on General
+  await page.locator('#st-tab-g').click();
   await page.locator('#st-idle-minutes').fill('2');
   await page.locator('#st-idle-minutes').dispatchEvent('change');
   await page.locator('#st-idle-theme').selectOption('*');

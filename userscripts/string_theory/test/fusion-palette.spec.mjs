@@ -4,7 +4,7 @@ import { test, check, until, SANDBOX } from '../../../dev/test/harness.mjs';
 
 const rows = page => page.$$eval('#st-pal-list .st-pal-i', ls => ls.map(l => l.querySelector('.st-pal-c').textContent + l.querySelector('.st-pal-l').textContent));
 
-test.use({ gm: { name: 'String Theory', values: {} } });
+test.use({ gm: { name: 'String Theory', values: { 'string_theory.off': ['event_horizon'] } } });
 test("Fusion's commands are in the palette", { tag: ['@sandbox'] }, async ({ page, inject }) => {
   await page.goto(`${SANDBOX}/search/edits`, { waitUntil: 'load', timeout: 60000 });
   const gid = await page.evaluate(async () => (await (await fetch('/ws/2/release?query=status:official&limit=1&fmt=json')).json()).releases[0].id);

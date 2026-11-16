@@ -13,7 +13,8 @@ const open = async (page, inject) => {
 };
 
 test.describe('palette', () => {
-  test.use({ gm: { name: 'String Theory', values: {} } });
+  // Event Horizon takes over /search/edits since #994: the palette is tested on MusicBrainz's own page
+  test.use({ gm: { name: 'String Theory', values: { 'string_theory.off': ['event_horizon'] } } });
   test('filters, previews a theme, runs on Enter, pins', { tag: ['@sandbox', '@critical'] }, async ({ page, inject }) => {
     await open(page, inject);
     check((await rows(page))[0] === 'Settings: String Theory', 'starts with the settings');

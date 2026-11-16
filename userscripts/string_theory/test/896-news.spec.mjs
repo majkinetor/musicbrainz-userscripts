@@ -5,7 +5,7 @@ const post = (id, title, channel) => ({ id, title, url: 'https://github.com/x', 
   html: `<p>Body ${id} on the RG page</p><sub>Issue: #${id}</sub><script>window.bad = 1</script>`, script: 'Apollo Editor', icon: '', issue: id, channel });
 
 test.describe('what\'s new', () => {
-  test.use({ gm: { name: 'String Theory', values: { stNews: { at: Date.now(), since: 1, seen: [], items: [post(2, 'Two', 'latest'), post(1, 'One', 'stable')] } } } });
+  test.use({ gm: { name: 'String Theory', values: { 'string_theory.off': ['event_horizon'], stNews: { at: Date.now(), since: 1, seen: [], items: [post(2, 'Two', 'latest'), post(1, 'One', 'stable')] } } } });
   test('golden icon opens the viewer, reading clears it', { tag: ['@sandbox'] }, async ({ page, inject }) => {
     await page.goto(`${SANDBOX}/search/edits`, { waitUntil: 'load', timeout: 60000 });
     await page.evaluate(() => localStorage.removeItem('st:news:full'));   // the viewer remembers full screen in the profile
@@ -75,7 +75,7 @@ test.describe('what\'s new', () => {
 });
 test.describe("what's new, older posts", () => {
   const full = Array.from({ length: 20 }, (_, k) => post(990020 - k, 'Cached ' + (20 - k), 'stable'));
-  test.use({ gm: { name: 'String Theory', values: { stNews: { at: Date.now(), since: 1, seen: [], items: full } } } });
+  test.use({ gm: { name: 'String Theory', values: { 'string_theory.off': ['event_horizon'], stNews: { at: Date.now(), since: 1, seen: [], items: full } } } });
   test('scrolling to the end loads older posts', { tag: ['@sandbox'] }, async ({ page, inject }) => {
     await page.goto(`${SANDBOX}/search/edits`, { waitUntil: 'load', timeout: 60000 });
     await inject('string_theory');
