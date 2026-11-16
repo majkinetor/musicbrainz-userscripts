@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.16.214500
+// @version      2026.11.16.220000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12065,7 +12065,7 @@ function esPinSum() {
     const chips = rows.map((r, i) => {
         const field = txt(r.querySelector('select.field'))[0]; if (!field) return '';
         const op = txt(r.querySelector('select[name$=operator]'))[0] || '';
-        const vals = [...r.querySelectorAll('select[name*=args]')].flatMap(txt).concat([...r.querySelectorAll('input[name*=args]:not([type=hidden]),input[name$=".name"]:not([type=hidden])')].map(x => x.value.trim()).filter(Boolean));
+        const vals = [...r.querySelectorAll('select[name*=args]')].flatMap(txt).concat([...new Set([...r.querySelectorAll('input[name*=args]:not([type=hidden]),input[name$=".name"]:not([type=hidden]),.autocomplete input.name:not([type=hidden])')].filter(x => !x.closest('[style*="display: none"]')).map(x => x.value.trim()).filter(Boolean))]);
         const lab = /^(is not|not|\u2260|!=)$/i.test(op) ? ' not' : /^(is|=)$/i.test(op) ? '' : ' ' + op.replace(/^is /i, ''), v = vals.join(', ');
         return `<button type="button" class="pes-c" data-es-row="${i}" data-tip="${esc((field + ' ' + op + ' ' + v).trim())}"><i>${esc(field + lab)}</i>${v ? `<b>${esc(v)}</b>` : ''}</button>`;
     }).filter(Boolean);
@@ -12114,7 +12114,7 @@ function esMount(app, d) {
         esHome = document.createComment('Event Horizon edit search'); esForm.before(esHome);
         esSavedBar(esForm);
         esForm.addEventListener('change', () => queueMicrotask(esScan));
-        esForm.addEventListener('focusin', esMenus); esForm.addEventListener('input', () => setTimeout(esMenus));
+        esForm.addEventListener('focusin', esMenus); esForm.addEventListener('input', () => setTimeout(esMenus)); esForm.addEventListener('focusout', () => setTimeout(esPinSum));
         esObserver = new MutationObserver(esScan); esObserver.observe(esForm, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'disabled'] });
         document.addEventListener('click', e => { if (esForm && !e.target.closest('.eh-es-pick')) esForm.querySelectorAll('.eh-es-pick').forEach(p => p._esClose && p._esClose(false)); });
     }
