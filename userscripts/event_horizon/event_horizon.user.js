@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.16.210000
+// @version      2026.11.16.213000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11796,10 +11796,19 @@ function histExpand(det) {
         let items = null;
         try { const j = sc && sc.matches('script[type="application/json"]') && JSON.parse(sc.textContent); items = j && Object.values(j).find(Array.isArray); } catch (e) {}
         if (!f || !items) { LOG.debug('History: a collapsed list without its data, left short'); li.remove(); continue; }
-        ul.innerHTML = items.map(f[1]).join('');
-        LOG.debug(`History: drew a collapsed list whole, ${items.length} items`);
+        // shown short as MusicBrainz shows it: the items it drew stay, the rest wait behind its "show N more"
+        const keep = [...ul.children].filter(x => x !== li).length, hid = items.length - keep;
+        if (hid <= 0) { ul.innerHTML = items.map(f[1]).join(''); continue; }
+        ul.innerHTML = items.map((x, i) => i < keep ? f[1](x) : f[1](x).replace(/^<li/, '<li hidden data-ehmore-item')).join('') + `<li class="show-all"><a href="#" role="button" data-ehmore-list>(show ${hid} more)</a></li>`;
+        LOG.debug(`History: a collapsed list of ${items.length} items, ${hid} behind "show more"`);
     }
 }
+// "show N more" opens the rest of its list in place; its "#" would otherwise reload History
+document.addEventListener('click', e => {
+    const a = e.target.closest && e.target.closest('[data-ehmore-list]'); if (!a) return;
+    e.preventDefault(); e.stopPropagation();
+    const ul = a.closest('ul'); ul.querySelectorAll('[data-ehmore-item]').forEach(x => { x.hidden = false; }); a.closest('li').remove();
+}, true);
 function esPark() {
     if (!esForm || !esHome || !esForm.closest('#app')) return;
     const a = document.activeElement;
