@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.16.224500
+// @version      2026.11.16.230000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12069,7 +12069,7 @@ function esPinSum() {
         const lab = op ? ' ' + op : '', v = vals.join(', ');
         return `<button type="button" class="pes-c" data-es-row="${i}" data-tip="${esc((field + ' ' + op + ' ' + v).trim())}"><i>${esc(field + lab)}</i>${v ? `<b>${esc(v)}</b>` : ''}</button>`;
     }).filter(Boolean);
-    const top = ['[name=auto_edit_filter]', '[name=order]', '[data-es-logic]'].map(q => { const sel = esForm.querySelector(`select${q}`); return esPicks.get(sel)?.textContent.replace(/\s+/g, ' ').trim() || txt(sel)[0]; }).filter(Boolean).join(' \u00b7 ');
+    const top = ['[name=auto_edit_filter]', '[name=order]', '[data-es-logic]'].map(q => { const sel = esForm.querySelector(`select${q}`); return esPicks.get(sel)?.querySelector('.eh-es-value')?.textContent.replace(/\s+/g, ' ').trim() || txt(sel)[0]; }).filter(Boolean).join(' \u00b7 ');
     if (!chips.length && !top) return;
     const span = document.createElement('span'); span.className = 'pes'; span.innerHTML = chips.join('');
     span.onclick = e => { const c = e.target.closest('[data-es-row]'); const r = c && rows[+c.dataset.esRow]; if (r?.isConnected) r.scrollIntoView({ block: 'center', behavior: 'smooth' }); };
