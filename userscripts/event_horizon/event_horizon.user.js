@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.16
+// @version      2026.11.16.120000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12939,7 +12939,12 @@ document.addEventListener('toggle', async ev => {
     } catch (err) { delete dt.dataset.hvf; LOG.debug(`History: voters of edit ${id} not loaded: ${err.message}`); }
 }, true);
 // your vote, cast from here, redraws the Votes line under the edit
-function histVlPaint(dt, e) { const o = dt && dt.querySelector(':scope>.hdt>.hvl'); if (o) o.outerHTML = histVotes(e) || '<i hidden></i>'; }
+function histVlPaint(dt, e) {
+    const hd = dt && dt.querySelector(':scope>.hdt'); if (!hd) return;
+    const o = hd.querySelector(':scope>.hvl'), w = document.createElement('div'); w.innerHTML = histVotes(e); const n = w.firstChild;
+    // an edit no one had voted on has no Votes line yet: your vote adds it, above the notes
+    if (o) o.replaceWith(n || document.createElement('i')); else if (n) hd.insertBefore(n, hd.querySelector(':scope>.hnote,:scope>form.hnadd'));
+}
 function histBar(e) {
     // the vote buttons carry their own counts (abstain only where the voters are known: a single edit), so a row you can vote on needs no separate tally
     const c = histCnt(e), cn = v => { const n = e.voters ? e.voters.filter(x => x.v === v).length : v === '-1' ? null : c && (v === '1' ? c[0] : v === '0' ? c[1] : null); return n == null ? '' : ` <span class="hvn${n ? '' : ' z'}">${n}</span>`; };
