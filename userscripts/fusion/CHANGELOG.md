@@ -1,5 +1,17 @@
 # Fusion Changelog
 
+## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
+
+### Features
+
+1. Artist alias comparison ([#1007](https://github.com/majkinetor/musicbrainz-userscripts/issues/1007))
+1. Auto clear merged (option) ([#982](https://github.com/majkinetor/musicbrainz-userscripts/issues/982))
+
+### Fixes
+
+1. Error when merging release groups ([#1050](https://github.com/majkinetor/musicbrainz-userscripts/issues/1050))
+1. Recordings added to group from the pool disapear after a second ([#996](https://github.com/majkinetor/musicbrainz-userscripts/issues/996))
+
 ## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
 
 ### Features

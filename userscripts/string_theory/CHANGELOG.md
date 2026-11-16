@@ -1,5 +1,167 @@
 # String Theory Changelog
 
+## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
+
+### Features
+
+1. Disable automation in non interactive use ([#936](https://github.com/majkinetor/musicbrainz-userscripts/issues/936))
+
+### Fixes
+
+1. Dock broken on user report pages ([#977](https://github.com/majkinetor/musicbrainz-userscripts/issues/977))
+
+### [Apollo Editor](../apollo_editor/README.md)
+
+#### Features
+
+1. Split artist on join phrase selection ([#1000](https://github.com/majkinetor/musicbrainz-userscripts/issues/1000))
+1. Keyboard navigation in Release Info ([#998](https://github.com/majkinetor/musicbrainz-userscripts/issues/998))
+1. Alias locale recognition ([#984](https://github.com/majkinetor/musicbrainz-userscripts/issues/984))
+1. Artist aliases from Discogs ([#983](https://github.com/majkinetor/musicbrainz-userscripts/issues/983))
+1. Track numbers reset after split ([#975](https://github.com/majkinetor/musicbrainz-userscripts/issues/975))
+1. Whole-date paste and type-through in date fields ([#960](https://github.com/majkinetor/musicbrainz-userscripts/issues/960))
+1. Clone a release ([#959](https://github.com/majkinetor/musicbrainz-userscripts/issues/959))
+
+#### Fixes
+
+1. Artist names cut off ([#1019](https://github.com/majkinetor/musicbrainz-userscripts/issues/1019))
+1. Types dissappear when removing chars from RG ([#1001](https://github.com/majkinetor/musicbrainz-userscripts/issues/1001))
+1. Blocks while matching tracks ([#999](https://github.com/majkinetor/musicbrainz-userscripts/issues/999))
+1. Auto-match recordings leaves a track unset even though the picker shows exactly one hit ([#963](https://github.com/majkinetor/musicbrainz-userscripts/issues/963))
+1. Track parser artists lost on added tracks of new release ([#958](https://github.com/majkinetor/musicbrainz-userscripts/issues/958))
+
+### [Art Station](../art_station/README.md)
+
+#### Features
+
+1. Full comment in a tooltip ([#1022](https://github.com/majkinetor/musicbrainz-userscripts/issues/1022))
+1. Copy a cover's source link via icon click ([#988](https://github.com/majkinetor/musicbrainz-userscripts/issues/988))
+1. Detection of upscaled covers ([#972](https://github.com/majkinetor/musicbrainz-userscripts/issues/972))
+1. Amazon Music support ([#965](https://github.com/majkinetor/musicbrainz-userscripts/issues/965))
+1. Import all cover-like images from external link ([#962](https://github.com/majkinetor/musicbrainz-userscripts/issues/962))
+1. YouTube Music support ([#957](https://github.com/majkinetor/musicbrainz-userscripts/issues/957))
+
+#### Fixes
+
+1. UI injected into non-existing pages ([#1046](https://github.com/majkinetor/musicbrainz-userscripts/issues/1046))
+
+### [Credit Hoarder](../credit_hoarder/README.md)
+
+1. Small improvements
+
+### [Event Horizon](../event_horizon/README.md)
+
+#### Features
+
+1. Advanced URL search ([#1049](https://github.com/majkinetor/musicbrainz-userscripts/issues/1049))
+1. Tag lookup view with a pinned field bar ([#1048](https://github.com/majkinetor/musicbrainz-userscripts/issues/1048))
+1. Group canceling open edits ([#1026](https://github.com/majkinetor/musicbrainz-userscripts/issues/1026))
+1. Edit page improvements ([#1013](https://github.com/majkinetor/musicbrainz-userscripts/issues/1013))
+1. Fusion group card on merge edits ([#1012](https://github.com/majkinetor/musicbrainz-userscripts/issues/1012))
+1. Tags for individual recordings on a release ([#1011](https://github.com/majkinetor/musicbrainz-userscripts/issues/1011))
+1. Logarithmic scaling of profile counters ([#1006](https://github.com/majkinetor/musicbrainz-userscripts/issues/1006))
+1. More profile statistics ([#1005](https://github.com/majkinetor/musicbrainz-userscripts/issues/1005))
+1. Login status ([#1004](https://github.com/majkinetor/musicbrainz-userscripts/issues/1004))
+1. Search edits page with named searches ([#994](https://github.com/majkinetor/musicbrainz-userscripts/issues/994))
+1. Artist image selector gallery with deduplication ([#992](https://github.com/majkinetor/musicbrainz-userscripts/issues/992))
+1. Bandcamp and YouTube Music artist pictures ([#991](https://github.com/majkinetor/musicbrainz-userscripts/issues/991))
+1. Group level voting ([#990](https://github.com/majkinetor/musicbrainz-userscripts/issues/990))
+1. Icons for Threads, Naver, FLO, Genie, Tiktok ([#989](https://github.com/majkinetor/musicbrainz-userscripts/issues/989))
+1. VA release groups on artist discography, alone or together with own ([#987](https://github.com/majkinetor/musicbrainz-userscripts/issues/987))
+1. Header menu configuration ([#981](https://github.com/majkinetor/musicbrainz-userscripts/issues/981))
+
+#### Fixes
+
+1. Columns in edit details wrapped ([#1051](https://github.com/majkinetor/musicbrainz-userscripts/issues/1051))
+1. Release series parts show no covers while thumbnails are pending ([#1045](https://github.com/majkinetor/musicbrainz-userscripts/issues/1045))
+1. Redraws rebuild the whole page, so images and fonts flicker ([#1029](https://github.com/majkinetor/musicbrainz-userscripts/issues/1029))
+1. Add to collection is covered by AS gallery toolbar ([#1002](https://github.com/majkinetor/musicbrainz-userscripts/issues/1002))
+1. Mammoth missing in history edit note ([#993](https://github.com/majkinetor/musicbrainz-userscripts/issues/993))
+1. Profile counts do not update in a timely manner ([#971](https://github.com/majkinetor/musicbrainz-userscripts/issues/971))
+1. Right clicking on text in the open edits page minimises everything ([#967](https://github.com/majkinetor/musicbrainz-userscripts/issues/967))
+
+### [Falcon](../falcon/README.md)
+
+#### Features
+
+1. Tags support ([#1009](https://github.com/majkinetor/musicbrainz-userscripts/issues/1009))
+
+#### Fixes
+
+1. No link type set for Bandcamp track ([#1042](https://github.com/majkinetor/musicbrainz-userscripts/issues/1042))
+
+### [First Contact](../first_contact/README.md)
+
+#### Features
+
+1. Import from non-English Apple Music pages ([#1034](https://github.com/majkinetor/musicbrainz-userscripts/issues/1034))
+1. Beatport import using API instead NEXT_DATA ([#1008](https://github.com/majkinetor/musicbrainz-userscripts/issues/1008))
+
+#### Fixes
+
+1. iTunes not recognized as linked ([#1053](https://github.com/majkinetor/musicbrainz-userscripts/issues/1053))
+
+### [Fusion](../fusion/README.md)
+
+#### Features
+
+1. Artist alias comparison ([#1007](https://github.com/majkinetor/musicbrainz-userscripts/issues/1007))
+1. Auto clear merged (option) ([#982](https://github.com/majkinetor/musicbrainz-userscripts/issues/982))
+
+#### Fixes
+
+1. Error when merging release groups ([#1050](https://github.com/majkinetor/musicbrainz-userscripts/issues/1050))
+1. Recordings added to group from the pool disapear after a second ([#996](https://github.com/majkinetor/musicbrainz-userscripts/issues/996))
+
+### [Fuzzy Logic](../fuzzy_logic/README.md)
+
+#### Features
+
+1. RateYourMusic and Album of the Year support ([#973](https://github.com/majkinetor/musicbrainz-userscripts/issues/973))
+
+#### Fixes
+
+1. 401 errors viewing/updating my tag votes ([#997](https://github.com/majkinetor/musicbrainz-userscripts/issues/997))
+
+### [Group Therapy](../group_therapy/README.md)
+
+#### Features
+
+1. Batch replace "Credited as" ([#1047](https://github.com/majkinetor/musicbrainz-userscripts/issues/1047))
+1. Bulk change an attribute of a role ([#1032](https://github.com/majkinetor/musicbrainz-userscripts/issues/1032))
+
+### [ISRC Scout](../isrc_scout/README.md)
+
+#### Features
+
+1. Edit note for link actions ([#1030](https://github.com/majkinetor/musicbrainz-userscripts/issues/1030))
+
+#### Fixes
+
+1. Open new tab for beatport, but takes a long time or times-out ([#1044](https://github.com/majkinetor/musicbrainz-userscripts/issues/1044))
+1. Main dialog closed when closing settings ([#1003](https://github.com/majkinetor/musicbrainz-userscripts/issues/1003))
+
+### [Mammoth](../mammoth/README.md)
+
+1. Small improvements
+
+### [Mission Control](../mission_control/README.md)
+
+#### Fixes
+
+1. Truncated tracklist with over 100 tracks ([#1054](https://github.com/majkinetor/musicbrainz-userscripts/issues/1054))
+1. Edits can be prematurely submitted ([#1024](https://github.com/majkinetor/musicbrainz-userscripts/issues/1024))
+1. PC settings are not respected ([#1020](https://github.com/majkinetor/musicbrainz-userscripts/issues/1020))
+
+### [Platform Check](../platform_check/README.md)
+
+#### Fixes
+
+1. iTunes not recognized as linked ([#1053](https://github.com/majkinetor/musicbrainz-userscripts/issues/1053))
+1. PC settings are not respected ([#1020](https://github.com/majkinetor/musicbrainz-userscripts/issues/1020))
+1. Platform Control only sees first 100 tracks on Spotify releases ([#1018](https://github.com/majkinetor/musicbrainz-userscripts/issues/1018))
+1. Platform Check doesn’t see all tracks on a release if trackless has collapsed media ([#1017](https://github.com/majkinetor/musicbrainz-userscripts/issues/1017))
+
 ## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
 
 ### Features

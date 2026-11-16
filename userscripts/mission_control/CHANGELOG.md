@@ -1,5 +1,13 @@
 # Mission Control Changelog
 
+## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
+
+### Fixes
+
+1. Truncated tracklist with over 100 tracks ([#1054](https://github.com/majkinetor/musicbrainz-userscripts/issues/1054))
+1. Edits can be prematurely submitted ([#1024](https://github.com/majkinetor/musicbrainz-userscripts/issues/1024))
+1. PC settings are not respected ([#1020](https://github.com/majkinetor/musicbrainz-userscripts/issues/1020))
+
 ## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
 
 ### Features

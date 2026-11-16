@@ -1,5 +1,20 @@
 # Art Station Changelog
 
+## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
+
+### Features
+
+1. Full comment in a tooltip ([#1022](https://github.com/majkinetor/musicbrainz-userscripts/issues/1022))
+1. Copy a cover's source link via icon click ([#988](https://github.com/majkinetor/musicbrainz-userscripts/issues/988))
+1. Detection of upscaled covers ([#972](https://github.com/majkinetor/musicbrainz-userscripts/issues/972))
+1. Amazon Music support ([#965](https://github.com/majkinetor/musicbrainz-userscripts/issues/965))
+1. Import all cover-like images from external link ([#962](https://github.com/majkinetor/musicbrainz-userscripts/issues/962))
+1. YouTube Music support ([#957](https://github.com/majkinetor/musicbrainz-userscripts/issues/957))
+
+### Fixes
+
+1. UI injected into non-existing pages ([#1046](https://github.com/majkinetor/musicbrainz-userscripts/issues/1046))
+
 ## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
 
 ### Fixes

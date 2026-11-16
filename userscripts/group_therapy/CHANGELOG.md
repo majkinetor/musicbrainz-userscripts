@@ -1,5 +1,12 @@
 # Group Therapy
 
+## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
+
+### Features
+
+1. Batch replace "Credited as" ([#1047](https://github.com/majkinetor/musicbrainz-userscripts/issues/1047))
+1. Bulk change an attribute of a role ([#1032](https://github.com/majkinetor/musicbrainz-userscripts/issues/1032))
+
 ## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
 
 ### Features

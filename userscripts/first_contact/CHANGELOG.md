@@ -1,5 +1,16 @@
 # First Contact Changelog
 
+## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
+
+### Features
+
+1. Import from non-English Apple Music pages ([#1034](https://github.com/majkinetor/musicbrainz-userscripts/issues/1034))
+1. Beatport import using API instead NEXT_DATA ([#1008](https://github.com/majkinetor/musicbrainz-userscripts/issues/1008))
+
+### Fixes
+
+1. iTunes not recognized as linked ([#1053](https://github.com/majkinetor/musicbrainz-userscripts/issues/1053))
+
 ## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
 
 ### Features

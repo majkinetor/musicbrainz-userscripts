@@ -1,5 +1,16 @@
 # ISRC Scout Changelog
 
+## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
+
+### Features
+
+1. Edit note for link actions ([#1030](https://github.com/majkinetor/musicbrainz-userscripts/issues/1030))
+
+### Fixes
+
+1. Open new tab for beatport, but takes a long time or times-out ([#1044](https://github.com/majkinetor/musicbrainz-userscripts/issues/1044))
+1. Main dialog closed when closing settings ([#1003](https://github.com/majkinetor/musicbrainz-userscripts/issues/1003))
+
 ## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
 
 ### Features

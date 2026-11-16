@@ -1,5 +1,25 @@
 # Apollo Editor Changelog
 
+## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
+
+### Features
+
+1. Split artist on join phrase selection ([#1000](https://github.com/majkinetor/musicbrainz-userscripts/issues/1000))
+1. Keyboard navigation in Release Info ([#998](https://github.com/majkinetor/musicbrainz-userscripts/issues/998))
+1. Alias locale recognition ([#984](https://github.com/majkinetor/musicbrainz-userscripts/issues/984))
+1. Artist aliases from Discogs ([#983](https://github.com/majkinetor/musicbrainz-userscripts/issues/983))
+1. Track numbers reset after split ([#975](https://github.com/majkinetor/musicbrainz-userscripts/issues/975))
+1. Whole-date paste and type-through in date fields ([#960](https://github.com/majkinetor/musicbrainz-userscripts/issues/960))
+1. Clone a release ([#959](https://github.com/majkinetor/musicbrainz-userscripts/issues/959))
+
+### Fixes
+
+1. Artist names cut off ([#1019](https://github.com/majkinetor/musicbrainz-userscripts/issues/1019))
+1. Types dissappear when removing chars from RG ([#1001](https://github.com/majkinetor/musicbrainz-userscripts/issues/1001))
+1. Blocks while matching tracks ([#999](https://github.com/majkinetor/musicbrainz-userscripts/issues/999))
+1. Auto-match recordings leaves a track unset even though the picker shows exactly one hit ([#963](https://github.com/majkinetor/musicbrainz-userscripts/issues/963))
+1. Track parser artists lost on added tracks of new release ([#958](https://github.com/majkinetor/musicbrainz-userscripts/issues/958))
+
 ## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
 
 ### Features

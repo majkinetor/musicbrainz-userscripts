@@ -1,5 +1,15 @@
 # Falcon 
 
+## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
+
+### Features
+
+1. Tags support ([#1009](https://github.com/majkinetor/musicbrainz-userscripts/issues/1009))
+
+### Fixes
+
+1. No link type set for Bandcamp track ([#1042](https://github.com/majkinetor/musicbrainz-userscripts/issues/1042))
+
 ## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
 
 - Small improvements

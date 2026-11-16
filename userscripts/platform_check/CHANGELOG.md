@@ -1,5 +1,14 @@
 # Platform Check Changelog
 
+## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
+
+### Fixes
+
+1. iTunes not recognized as linked ([#1053](https://github.com/majkinetor/musicbrainz-userscripts/issues/1053))
+1. PC settings are not respected ([#1020](https://github.com/majkinetor/musicbrainz-userscripts/issues/1020))
+1. Platform Control only sees first 100 tracks on Spotify releases ([#1018](https://github.com/majkinetor/musicbrainz-userscripts/issues/1018))
+1. Platform Check doesn’t see all tracks on a release if trackless has collapsed media ([#1017](https://github.com/majkinetor/musicbrainz-userscripts/issues/1017))
+
 ## [2026.11.08](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.08)
 
 ### Fixes
