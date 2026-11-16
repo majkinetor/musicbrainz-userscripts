@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.17.000500
+// @version      2026.11.17.001500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4687,7 +4687,7 @@ const TX_ICON = Object.fromEntries(Object.entries({
     isrc: '<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/>',
     links: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
     len: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
-    tags: '<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/>',
+    tags: CI_TAG,
 }).map(([k, d]) => [k, `<svg class="txi" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`]));
 const SVG = d => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 // MusicBrainz search, sent as MB's own search form; a bare magnifier that, clicked, swaps the header's actions for its field until a search, × or Escape
@@ -10753,7 +10753,7 @@ const fmtN = n => n.toLocaleString('en');
 // #1005: headline figures, on the editor page and the home page's profile; 10,000 and up shown in K
 const fmtK = n => n >= 1e4 ? (n / 1e3).toFixed(n >= 1e5 ? 0 : 1).replace(/\.0$/, '') + 'K' : fmtN(n);
 const KI = { ed: '<path d="M4 20h4L19 9l-4-4L4 16z"/>', day: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>', open: '<path d="M7 4h10M7 20h10M8 4c0 5 8 6 8 16M16 4c0 5-8 6-8 16"/>',
-    add: '<circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/>', vote: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12l3 3 5-6"/>', tag: '<path d="M4 4h7l9 9-7 7-9-9z"/><circle cx="8.5" cy="8.5" r="1.5"/>' };
+    add: '<circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/>', vote: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12l3 3 5-6"/>', tag: CI_TAG };
 const uKpi = (ic, n, l, h) => n == null ? '' : (x => h ? `<a class="u-kpi u-k-${ic}" href="${esc(h)}"${x}</a>` : `<span class="u-kpi u-k-${ic}"${x}</span>`)(`${n >= 1e4 ? ` data-tip="${fmtN(n)}"` : ''}><svg viewBox="0 0 24 24">${KI[ic]}</svg><b>${fmtK(n)}</b><small>${l}</small>`);
 // Gravatar finds your picture by your email's SHA-256: read from your own profile page (shown only to you), or set on the avatar
 // to use another address; only the hash is kept, and only it goes to Gravatar
