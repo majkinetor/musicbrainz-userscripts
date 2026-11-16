@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.16.233000
+// @version      2026.11.17.000500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4678,7 +4678,8 @@ function greyLift(k) {
 const plA = (p, size, cls, st = '') => `<a class="${cls}"${greyLift(p.key) + st ? ` style="${greyLift(p.key) + st}"` : ''} href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, size)}</a>`;
 const popRows = ps => ps.map(p => `<a class="row" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${esc(p.name)}</span><span class="r">${regions(p).map(r => `<span class="iso">${esc(r.toUpperCase())}</span>`).join('') || (p.urls.length > 1 ? `<span class="iso">×${p.urls.length}</span>` : '')}</span></a>`).join('');
 const LAYERS = (size, sw = 1.5) => `<svg viewBox="0 0 16 16" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 2 6 3-6 3-6-3z"/><path d="m2 8 6 3 6-3"/><path d="m2 11 6 3 6-3"/></svg>`;
-const CI_TAG = MBU_ENT_ICONS['label'];
+const CI_TAG = '<path d="M9 3 7 21M17 3l-2 18M4 8.5h17M3 15.5h17"/>'; // a hash
+const CI_LABEL = MBU_ENT_ICONS['label'];
 // the tracklist's SHOW toggles on a phone
 const TX_ICON = Object.fromEntries(Object.entries({
     ar: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
@@ -4803,7 +4804,7 @@ function actionRow(actions, type, id, active = '') {
     if (WORKS_TYPES.includes(type) && !actions.some(a => a[0] === 'works')) actions = [...actions, ['works', 'Works', 'Works', MK_WORK]];
     if (EVENTS_TYPES.includes(type) && !actions.some(a => a[0] === 'events')) actions = [...actions, ['events', 'Events', 'Events', MK_EVENT]];
     if (ARTISTS_TYPES.includes(type) && !actions.some(a => a[0] === 'artists')) actions = [...actions, ['artists', 'Artists', 'Artists', MK_CR]];
-    if (LABELS_TYPES.includes(type) && !actions.some(a => a[0] === 'labels')) actions = [...actions, ['labels', 'Labels', 'Labels', CI_TAG]];
+    if (LABELS_TYPES.includes(type) && !actions.some(a => a[0] === 'labels')) actions = [...actions, ['labels', 'Labels', 'Labels', CI_LABEL]];
     if (RECS_TYPES.includes(type) && !actions.some(a => a[0] === 'recordings')) actions = [...actions, ['recordings', 'Recordings', 'Recordings', '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/>']];
     if (RELS_TYPES.includes(type) && !actions.some(a => a[0] === 'relationships')) actions = [...actions, ['relationships', 'Relationships', 'Relationships', '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M9 6h6M8.1 8.1l7.8 7.8"/>']];
     if (ALIASES_TYPES.includes(type) && !actions.some(a => a[0] === 'aliases')) actions = [...actions, ['aliases', 'Aliases', 'Aliases', '<path d="M4 7h16M4 12h11M4 17h7"/>']];
@@ -7967,11 +7968,11 @@ function lbHero(d) {
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide', 'mbid'],
         ['', g.links.length && rlQuiet(g), 'wide', 'links'],
     ];
-    const pic = picHtml(g, 'lpic', `<div class="nocover">${SVG(CI_TAG).replace(/width="18" height="18"/, 'width="96" height="96"').replace('stroke-width="2"', 'stroke-width=".8"')}${imgRetryBtn(g)}</div>`);
+    const pic = picHtml(g, 'lpic', `<div class="nocover">${SVG(CI_LABEL).replace(/width="18" height="18"/, 'width="96" height="96"').replace('stroke-width="2"', 'stroke-width=".8"')}${imgRetryBtn(g)}</div>`);
     return `<section class="hero">
         <div class="art">${pic}${under(g)}</div>
         <div class="facts-col">
-            <div class="kicker label">${SVG(CI_TAG)}<span>${esc(g.type || 'Label')}</span><span class="acts">${actionRow(LB_ACTS, 'label', g.id)}${SRCH()}</span></div>
+            <div class="kicker label">${SVG(CI_LABEL)}<span>${esc(g.type || 'Label')}</span><span class="acts">${actionRow(LB_ACTS, 'label', g.id)}${SRCH()}</span></div>
             ${heroH1(g.title, g.disambig)}
             <div class="facts"><button class="tx plcfg hdcfg" type="button" data-plcfg="label" aria-label="Header settings" data-tip="Header settings
 Which facts the header shows, and where the picture comes from">${MBU_CFG_ICON}</button>${F.filter(x => x[1] && !S.factOff.label.includes(x[3])).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
@@ -10519,7 +10520,7 @@ const MK_RG = MBU_ENT_ICONS['release-group'];
 const HM_ADD = [
     ['release/add', 'Release', MK_RELEASE],
     ['artist/create', 'Artist', MK_CR],
-    ['label/create', 'Label', CI_TAG],
+    ['label/create', 'Label', CI_LABEL],
     ['work/create', 'Work', MK_WORK],
     ['recording/create', 'Recording', MK_REC],
     ['release-group/create', 'Release group', MK_RG],
@@ -10536,7 +10537,7 @@ const HM_ME = [
     ['ratings', 'Ratings', '<path d="m12 3 2.800 5.700 6.200.9-4.500 4.400 1.100 6.200L12 17.300 6.400 20.200l1.100-6.200L3 9.600l6.200-.9z"/>'],
     ['tags', 'Tags', CI_TAG],
 ];
-const HM_KIND = { release: ['Release', MK_RELEASE], 'release-group': ['Release group', MK_RG], artist: ['Artist', MK_CR], label: ['Label', CI_TAG], recording: ['Recording', MK_REC], work: ['Work', MK_WORK], area: ['Area', MK_AREA], instrument: ['Instrument', MK_INS], place: ['Place', MK_PLACE], series: ['Series', MK_SER], event: ['Event', MK_EVENT], collection: ['Collection', MK_COL] };
+const HM_KIND = { release: ['Release', MK_RELEASE], 'release-group': ['Release group', MK_RG], artist: ['Artist', MK_CR], label: ['Label', CI_LABEL], recording: ['Recording', MK_REC], work: ['Work', MK_WORK], area: ['Area', MK_AREA], instrument: ['Instrument', MK_INS], place: ['Place', MK_PLACE], series: ['Series', MK_SER], event: ['Event', MK_EVENT], collection: ['Collection', MK_COL] };
 const starDateValid = n => Number.isSafeInteger(n) && n > 0 && n <= 8640000000000000;
 const STAR = '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z"/>';
 /* ── the entity's collections ────────────────────── */
