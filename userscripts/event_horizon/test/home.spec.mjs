@@ -14,7 +14,7 @@ test('the home page shows search, Add, You and the tab icon', { tag: '@sandbox' 
   if (await page.locator('.hm-adv[hidden]').count()) await page.locator('.hm-srch .hm-tg').click();
   const fit = await page.evaluate(() => { const f = document.querySelector('.hm-srch').getBoundingClientRect(); return [...document.querySelectorAll('.hm-adv, .hm-adv *')].every(x => x.getBoundingClientRect().right <= f.right + 0.5); });
   check(fit, 'the advanced panel stays inside the search box');
-  if (await page.locator('.hm-pf').count()) check(await until(() => page.locator('.hm-st').count(), n => n === 4) === 4, 'the profile card fills in its edit totals');
+  if (await page.locator('.hm-pf').count()) check(await until(() => page.locator('.hm-pf .u-kgrp .u-kpi').count(), n => n === 3) === 3, 'the profile card fills in its edit totals');
   check(await page.evaluate(() => !!document.getElementById('eh-icon')), 'the tab shows Event Horizon\'s icon');
   await attachShot(testInfo, page, 'home');
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT, fullPage: true });

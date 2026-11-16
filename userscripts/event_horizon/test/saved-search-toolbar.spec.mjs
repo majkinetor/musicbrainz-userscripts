@@ -13,8 +13,9 @@ test('one saved-search name supports rename, copy, filtering and deletion', {tag
   await name.click();
   await bar.getByRole('option',{name:'Renamed review',exact:true}).getByRole('button',{name:'Save a copy'}).click();
   expect((await page.evaluate(()=>GM_getValue('editSearches'))).map(s=>s.name)).toEqual(['Renamed review','Renamed review copy']);
-  await name.fill('Renamed review');await bar.getByRole('button',{name:'Save',exact:true}).click();
+  await name.fill('Renamed review copy');await bar.getByRole('button',{name:'Save',exact:true}).click();
   await expect(bar.getByRole('status')).toHaveText('A search with this name already exists');
+  await name.fill('Renamed review');
   await bar.getByRole('button',{name:'Find a saved search'}).click();
   await name.fill('no match');await expect(bar.locator('[data-es-results]')).toContainText('No saved searches');
   await name.press('Escape');await expect(name).toHaveValue('Renamed review');
