@@ -90,6 +90,8 @@ test('a group batch persists on the sandbox and keeps its group open state', { t
     const wasOpen = await parent.locator('xpath=..').getAttribute('class');
     const responsePromise = page.waitForResponse(r => r.url().includes('/edit/enter_votes') && r.request().method() === 'POST');
     await group.locator(`[data-hgvote="${choice}"]`).click();
+    // a group of more than twenty asks first (the first test): say yes
+    if (before.filter(([, v]) => v !== choice).length > 20) await page.locator('.eh-cf .eh-cf-ok').click();
     const response = await responsePromise;
     const submitted = new URLSearchParams(response.request().postData());
     expect([...submitted].filter(([k]) => k.endsWith('.edit_id')).map(([, id]) => id).sort()).toEqual(before.filter(([, v]) => v !== choice).map(([id]) => id).sort());
