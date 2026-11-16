@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.16.120000
+// @version      2026.11.16.210000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11734,7 +11734,8 @@ const EDIT_SEARCH_CSS = `
 #edit-search.eh-es .eh-es-pick>button{border:0;border-radius:0;padding:4px 7px;line-height:1.25}
 #edit-search.eh-es .eh-es-name{border:0}
 #edit-search.eh-es .arg{max-width:100%}#edit-search.eh-es input[type=number]{width:125px}
-#edit-search.eh-es .autocomplete{position:relative;display:inline-flex!important;align-items:center;max-width:100%}
+#edit-search.eh-es [style*="display: none"]{display:none!important}
+#edit-search.eh-es .autocomplete:not([style*="display: none"]){position:relative;display:inline-flex!important;align-items:center;max-width:100%}
 #edit-search.eh-es .autocomplete input.name{width:auto!important;field-sizing:content;min-width:12ch;max-width:260px}#edit-search.eh-es .autocomplete img{order:2;position:static;margin:0 0 0 6px;width:16px;height:16px;align-self:center;vertical-align:middle}#edit-search.eh-es .autocomplete>*{order:1}#edit-search.eh-es .autocomplete>:is(img,svg,:has(img,svg)){order:2!important;position:static!important;transform:none!important;margin-left:6px;align-self:center;flex:none}#edit-search.eh-es .autocomplete svg{width:15px;height:15px;pointer-events:none}
 #edit-search.eh-es a{color:var(--link)}
 #edit-search.eh-es #extra-condition{display:block;border:0;padding:12px 0}#edit-search.eh-es #extra-condition>:is(.remove-item,.field-container){display:none!important}
@@ -11767,7 +11768,7 @@ const EDIT_SEARCH_CSS = `
 .eh-es-status{font-size:12px;color:var(--muted);flex-basis:100%;min-height:18px}.eh-es-status:empty{display:none}
 /* MusicBrainz mounts autocomplete results beside the live input. */
 .eh-es-autocomplete{position:absolute;z-index:1001;max-width:calc(100vw - 40px);max-height:300px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;background:var(--surface);border:1px solid var(--border);color:var(--text);list-style:none;padding:4px;margin:0}
-.eh-es-autocomplete .ui-menu-item>a{display:block;padding:5px 8px;cursor:pointer;color:var(--text)}.eh-es-autocomplete .ui-state-focus{background:var(--hover)}.eh-es-autocomplete .autocomplete-comment{font-size:12px;color:var(--muted)}
+.eh-es-autocomplete .ui-menu-item{list-style:none;margin:0;background:none;border:0}.eh-es-autocomplete .ui-menu-item>:is(a,div){display:block;padding:5px 8px;margin:0;cursor:pointer;color:var(--text);background:none;border:0}.eh-es-autocomplete :is(.ui-state-focus,.ui-state-active){background:var(--hover)!important;color:var(--text)!important;border:0!important;margin:0!important}.eh-es-autocomplete .autocomplete-comment{font-size:12px;color:var(--muted)}
 #edit-search.eh-es .ui-helper-hidden-accessible{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 :root[data-eh-theme=dark] #edit-search.eh-es .autocomplete img{filter:invert(.8)}
 @media(max-width:650px){#edit-search.eh-es .conditions>li{grid-template-columns:24px minmax(0,1fr);gap:8px}#edit-search.eh-es .field-container{grid-column:2;grid-row:2}.eh-es-menu{width:min(320px,calc(100vw - 40px))}.eh-es-name{flex:1;min-width:150px}#edit-search.eh-es .conditions>li{row-gap:2px;padding:6px 0}#edit-search.eh-es .field-container>span.field{gap:2px 10px}#edit-search.eh-es .operator+.eh-es-pick{min-width:0}#edit-search.eh-es .conditions .eh-es-pick>button{min-height:36px}}
@@ -11779,6 +11780,26 @@ let esForm = null, esHome = null, esObserver = null, esFocus = null, esSerial = 
 const esPicks = new WeakMap();
 const esIsSearch = id => /^\/search\/edits(?:\?|$)/.test(histSrc(id));
 const esHasQuery = id => [...new URL(MB + histSrc(id)).searchParams].some(([k, v]) => /^conditions\.\d+\.field$/.test(k) && v);
+// #1057: a long list in an edit's cell ("show 36 more") is drawn short, and MusicBrainz's script draws the rest from
+// the JSON just before it; the fetched page has no script running, so the whole list is drawn from that JSON here
+function histExpand(det) {
+    const a = (g, n) => `<a href="/artist/${g}"><bdi>${esc(n)}</bdi></a>`;
+    const row = {
+        'work-artists-container': x => '<li>' + (x.names || []).map(n => (n.artist ? a(n.artist.gid, n.name) : esc(n.name)) + esc(n.joinPhrase || '')).join('') + '</li>',
+        'artist-roles-container': x => `<li>${x.entity ? a(x.entity.gid, x.credit || x.entity.name) : ''}${x.roles && x.roles.length ? ' (' + esc(x.roles.join(', ')) + ')' : ''}</li>`,
+        'entity-attributes-container': x => `<li class="work-attribute">${esc(x.value == null ? '' : x.value)} (${esc(x.typeName || '')})</li>`,
+        'iswc-list-container': x => `<li><code>${esc(x.iswc)}</code></li>`,
+    };
+    for (const li of det.querySelectorAll('li.show-all')) {
+        const box = li.closest('div[class$="-container"]'), sc = box && box.previousElementSibling, ul = li.parentNode;
+        const f = box && Object.entries(row).find(([k]) => box.classList.contains(k));
+        let items = null;
+        try { const j = sc && sc.matches('script[type="application/json"]') && JSON.parse(sc.textContent); items = j && Object.values(j).find(Array.isArray); } catch (e) {}
+        if (!f || !items) { LOG.debug('History: a collapsed list without its data, left short'); li.remove(); continue; }
+        ul.innerHTML = items.map(f[1]).join('');
+        LOG.debug(`History: drew a collapsed list whole, ${items.length} items`);
+    }
+}
 function esPark() {
     if (!esForm || !esHome || !esForm.closest('#app')) return;
     const a = document.activeElement;
@@ -12070,6 +12091,12 @@ function esScan() {
         const menu = jq(input).data('mb-entitylookup')?.menu?.element?.[0];
         if (menu) { menu.classList.add('eh-es-autocomplete'); if (menu.parentNode !== ehBody) ehBody.append(menu); }
     }
+    esMenus();
+}
+// MusicBrainz's lookup menus sit in its hidden page: the edit search's own, made when a condition first needs one, come out beside it
+function esMenus() {
+    if (!ehOn || !esForm || !esForm.closest('#app')) return;
+    for (const menu of mbBody.querySelectorAll(':scope>ul.ui-autocomplete')) { menu.classList.add('eh-es-autocomplete'); ehBody.append(menu); LOG.debug('Edit search: a lookup menu moved beside the form'); }
 }
 function esMount(app, d) {
     if (!esIsSearch(d.id)) return;
@@ -12078,6 +12105,7 @@ function esMount(app, d) {
         esHome = document.createComment('Event Horizon edit search'); esForm.before(esHome);
         esSavedBar(esForm);
         esForm.addEventListener('change', () => queueMicrotask(esScan));
+        esForm.addEventListener('focusin', esMenus); esForm.addEventListener('input', () => setTimeout(esMenus));
         esObserver = new MutationObserver(esScan); esObserver.observe(esForm, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'disabled'] });
         document.addEventListener('click', e => { if (esForm && !e.target.closest('.eh-es-pick')) esForm.querySelectorAll('.eh-es-pick').forEach(p => p._esClose && p._esClose(false)); });
     }
@@ -12761,6 +12789,7 @@ function histParse(html) {
         if (det) {
             // MusicBrainz's page draws a cover's thumbnail itself: the fetched page carries only its address
             det.querySelectorAll('span.artwork-image').forEach(x => { if (!x.querySelector('img') && x.dataset.smallThumbnail) x.innerHTML = `<img src="${x.dataset.smallThumbnail}" alt="${esc(x.dataset.title || '')}" loading="lazy">`; });
+            histExpand(det);
             det.querySelectorAll('script,input,noscript').forEach(x => x.remove());
             // a cover edit shows its full image straight from archive.org, by its file name: a pending one has no thumbnails yet, and MusicBrainz shows none
             for (const td of det.querySelectorAll('table.details td')) {
