@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.17.002000
+// @version      2026.11.17.003000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3008,7 +3008,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 
 .hero{display:flex;flex-wrap:wrap;gap:24px 44px;align-items:flex-start}.hero .label{font-size:10.5px}
 .art{flex:0 1 clamp(220px,30vw,380px);min-width:0;display:flex;flex-direction:column;gap:12px}
-.art .picw{position:relative}.chip[data-g=imgP]{cursor:grab;touch-action:none;user-select:none}.art .cover.rot,.art .cover[data-relcover],.art .thumbs img{cursor:pointer}
+.art .picw{position:relative}.chip[data-g=imgP]{cursor:grab;touch-action:none;user-select:none}.art .cover.rot,.art .cover[data-relcover],.art .thumbs img,.art .cover[data-rgcover]{cursor:pointer}
 .art .imgsrc{position:absolute;right:10px;bottom:10px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--surface);box-shadow:0 2px 8px var(--shadow);opacity:.92}.eh-images{width:min(540px,calc(100vw - 32px));min-width:0;max-height:80vh}.eh-image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:20px 16px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.eh-image-option{min-width:0}.eh-image-choice{display:block;position:relative;width:100%;padding:0;border:0;background:transparent;cursor:pointer}.eh-image-choice img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover}.eh-image-choice[aria-pressed="true"]{outline:2px solid var(--mbu-accent);outline-offset:3px}.eh-image-choice:hover{background:var(--mbu-bg)}.eh-image-links{display:flex;flex-wrap:wrap;gap:4px 10px}.eh-image-links>a{display:inline-grid;place-items:center;width:30px;height:30px;margin-top:6px;color:var(--mbu-text);text-decoration:none}.eh-image-links>a:hover{background:var(--mbu-bg-hover)}
 .art .imgsrc:hover{opacity:1;outline:2px solid var(--accent)}
 .art .cover{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px;box-shadow:0 18px 40px var(--shadow);display:block;color:transparent;background:var(--chip)}
@@ -10373,6 +10373,20 @@ function renderDraw(keepPop) {
     heroFacts(app);
     const gc = app.querySelector('[data-rgcover]');
     if (gc) gc.onerror = () => { const e = data.editions.find(x => x.thumb); if (e && !gc.dataset.tried) { gc.dataset.tried = 1; gc.src = `https://coverartarchive.org/release/${e.id}/front-500`; } else gc.outerHTML = `<div class="nocover">${LAYERS(96, 1)}</div>`; };
+    // the group's cover is a release's: Art Station's viewer opens that release's images, the front first
+    if (gc) gc.onclick = async e => {
+        e.preventDefault();
+        const rel = gc.src.match(/\/release\/([0-9a-f-]{36})\//), rid = rel ? rel[1] : null;
+        try {
+            const j = rid ? await fetch('https://coverartarchive.org/release/' + rid).then(x => x.ok ? x.json() : null) : await fetch('https://coverartarchive.org/release-group/' + r.id).then(x => x.ok ? x.json() : null);
+            const imgs = (j && j.images) || [], id = rid || ((j && j.release) || '').split('/').pop();
+            if (!imgs.length) return;
+            const images = imgs.map(i => ({ id: i.id, types: i.types, comment: i.comment, image: i.image })), f = imgs.find(i => i.front) || imgs[0];
+            const ask = new CustomEvent('mbu-gallery-open', { cancelable: true, detail: JSON.stringify({ release: id, start: f.id, images }) });
+            document.dispatchEvent(ask);
+            if (!ask.defaultPrevented) window.open(f.image, '_blank', 'noopener');
+        } catch (x) { LOG.debug('group cover gallery failed', x); }
+    };
     // a fresh upload has no thumbnails yet: the full image stands in
     for (const im of app.querySelectorAll('img[data-full]:not([data-relcover])')) im.addEventListener('error', e => { if (im.dataset.full && im.src !== im.dataset.full) { e.stopImmediatePropagation(); im.src = im.dataset.full; } }, true);
     // an artwork image that won't load even at full size: a quiet tile with the picture mark, not a broken image
