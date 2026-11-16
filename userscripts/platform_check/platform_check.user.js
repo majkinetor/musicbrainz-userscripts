@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.14.170003
+// @version      2026.11.16.104000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -5915,7 +5915,8 @@ async function pickBestCandidate(candidates, fetchMeta, mbTracks, mbAlbum, label
 function pcUrlKey(u) {
     const ID = pcUrlKey._id || (pcUrlKey._id = [
         [/open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\/([a-z0-9]+)/i,        'spotify'],
-        [/music\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/?#]+\/)?(\d+)/i,     'apple'],
+        // #1053: and the older itunes.apple.com/gb/album/id123 MusicBrainz still holds
+        [/(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/?#]+\/)?(?:id)?(\d+)/i, 'apple'],
         [/(?:www\.)?deezer\.com\/(?:[a-z]{2}\/)?album\/(\d+)/i,               'deezer'],
         [/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/i,               'tidal'],
         [/(?:www\.)?discogs\.com\/(?:[a-z-]+\/)?release\/(\d+)/i,             'discogs'],
@@ -7864,7 +7865,7 @@ async function appleAmpV1(path) {
 const applePickByUpc = (items, upc) => (items || []).find(a => normBarcode(a.attributes?.upc) === normBarcode(upc)) || null;
 // what every album read asks for besides the album: each song's artists, for Artists & labels (#757)
 const APPLE_ALBUM_INC = 'include[songs]=artists';
-const appleStorefront = url => ((String(url || '').match(/music\.apple\.com\/([a-z]{2})\//i) || [])[1] || 'us').toLowerCase();
+const appleStorefront = url => ((String(url || '').match(/(?:music|itunes)\.apple\.com\/([a-z]{2})\//i) || [])[1] || 'us').toLowerCase();
 // Apple's catalogue is per storefront: an album is only in the ones it is licensed to (majkinetor,
 // #627: "better to find any release in any store than no release in particular store"). The short
 // list is read first, all at once: eight storefronts in parallel answered in 83 ms. Only when it has
@@ -7918,7 +7919,7 @@ async function scanApple(args) {
 async function pcAppleSale(mbid) {
     const c = cacheGet(mbid, 'apple');
     if (!c?.url || 'forSale' in c) return;
-    const m = c.url.match(/\/([a-z]{2})\/album\/(?:[^/]+\/)?(\d+)/i);
+    const m = c.url.match(/\/([a-z]{2})\/album\/(?:[^/]+\/)?(?:id)?(\d+)/i);
     if (!m) return;
     const r = await gmGet(`https://itunes.apple.com/lookup?id=${m[2]}&country=${m[1]}`).catch(() => null);
     if (!r?.ok) { appendLog('Apple', 'iTunes Store lookup failed — the link stays a streaming page only', 'warn'); return; }
@@ -8841,7 +8842,7 @@ function parseMbFromDom() {
             discogs:  externalHrefs.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i.test(u)) || null,
             bandcamp:      externalHrefs.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/(?:album|track)\//i.test(u)) || null,
             deezer:        externalHrefs.find(u => /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]+\/)?album\/\d+/i.test(u)) || null,
-            apple:         externalHrefs.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/]+\/)?\d+/i.test(u)) || null,
+            apple:         externalHrefs.find(u => /^https?:\/\/(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/]+\/)?(?:id)?\d+/i.test(u)) || null,
             tidal:         externalHrefs.find(u => /^https?:\/\/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/\d+/i.test(u)) || null,
             qobuz:         externalHrefs.find(u => /^https?:\/\/(?:www\.|play\.|open\.)?qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\//i.test(u)) || null,
             beatport:      externalHrefs.find(u => /^https?:\/\/(?:www\.)?beatport\.com\/release\/[^/]+\/\d+/i.test(u)) || null,
@@ -9080,7 +9081,7 @@ function parseMbData(data) {
         discogs:  relUrls.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i.test(u)) || null,
         bandcamp:      relUrls.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/(?:album|track)\//i.test(u)) || null,
         deezer:        relUrls.find(u => /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]+\/)?album\/\d+/i.test(u)) || null,
-        apple:         relUrls.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/]+\/)?\d+/i.test(u)) || null,
+        apple:         relUrls.find(u => /^https?:\/\/(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/]+\/)?(?:id)?\d+/i.test(u)) || null,
         tidal:         relUrls.find(u => /^https?:\/\/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/\d+/i.test(u)) || null,
         qobuz:         relUrls.find(u => /^https?:\/\/(?:www\.|play\.|open\.)?qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\//i.test(u)) || null,
         beatport:      relUrls.find(u => /^https?:\/\/(?:www\.)?beatport\.com\/release\/[^/]+\/\d+/i.test(u)) || null,
