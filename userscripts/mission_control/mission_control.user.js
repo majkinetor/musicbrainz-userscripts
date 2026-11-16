@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.16.015905
+// @version      2026.11.16.104500
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -894,8 +894,9 @@ async function mcFollowRun() {
         Object.keys(results).forEach(k => delete results[k]); Object.keys(picked).forEach(k => delete picked[k]);
         Object.assign(CMP, { waiting: false, cons: null, isrcs: null, title: null, picks: {} }); clearTimeout(CMP.timer);
     }
-    if (mcOwnPage() || (mcApi && mcApi.id === RELEASE)) return true;
-    try { mcApi = { id: RELEASE, rel: await mcApiRelease(RELEASE) }; }
+    if ((mcOwnPage() && !pageCut()) || (mcApi && mcApi.id === RELEASE)) return true;
+    if (mcOwnPage()) Log.cat('Release').info('the page shows only part of a long medium: reading the whole release from the API');
+    try { mcApi = { id: RELEASE, rel: await mcApiRelease(RELEASE), full: mcOwnPage() }; }
     catch (e) { Log.cat('Release').err('release ' + RELEASE + ' could not be read: ' + (e && e.message || e)); mbuToast('Mission Control: the release could not be read', { kind: 'error' }); return false; }
     return true;
 }
@@ -937,8 +938,13 @@ function shownRel() {
     const at = {};   // pos: the track's place on its medium (a track number can be "A1")
     return { tracks: mcApi.rel.tracks.map(t => ({ medium: t.medium, pos: (at[t.medium] = (at[t.medium] || 0) + 1), rec: t.rec })), relLinks: mcApi.rel.links || [] };
 }
+// #1054: MusicBrainz loads a long medium 100 tracks at a time ("showing 100 out of 115"): a medium
+// of exactly 100, 200… rows may be cut short, so the whole release is read from the API instead
+function pageCut() {
+    return [...document.querySelectorAll('#content table.medium')].some(t => { const n = t.querySelectorAll('tbody tr a[href*="/recording/"]').length; return n && n % 100 === 0; });
+}
 function readRelease() {
-    if (!mcOwnPage() && mcApi && mcApi.id === RELEASE) return mcApi.rel;
+    if (mcApi && mcApi.id === RELEASE && (!mcOwnPage() || mcApi.full)) return mcApi.rel;
     const D = mcPage();
     const h = D.querySelector('.releaseheader');
     // the h1's own link: other scripts append to the h1 (ISRC Scout's "ISRC ✓ 12/12")
@@ -2390,7 +2396,7 @@ function watchTracks() {
         clearTimeout(trackT);
         trackT = setTimeout(() => {
             const n = document.querySelectorAll('#content table.medium tbody tr a[href*="/recording/"]').length;
-            if (n === rel.tracks.length) return;
+            if (n === rel.tracks.length || (mcApi && mcApi.full && mcApi.id === RELEASE)) return;   // #1054: the API's copy is whole
             Log.cat('Release').info('tracklist changed on the page: ' + rel.tracks.length + ' → ' + n + ' tracks, re-reading');
             rel = readRelease();
             if (selected != null && selected >= rel.tracks.length) selected = null;
