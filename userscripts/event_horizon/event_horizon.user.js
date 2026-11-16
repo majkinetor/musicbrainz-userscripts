@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.16.14505
+// @version      2026.11.16.14506
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3105,7 +3105,7 @@ h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25
 /* a phone has room for one pinned header under the Group bar: the group's, which carries its vote (majkinetor) */
 @media (max-width:700px){.hist .hrun[open]>summary,.hist .hed[open]>summary{position:static}
 /* and that header takes two rows, not four: who and when, then what, its status and the vote */
-.hist .hgh{padding:6px 10px;gap:4px 8px}.hist .hgh .hgi{display:contents}.hist .hgh .sp{display:none}.hist .hgh .m{font-size:11px}.hist .hgh .hav{width:22px;height:22px;font-size:12px}.hist .hgh .hga{gap:6px}.hist .hgh .hgv button{min-height:24px;padding:1px 7px}}
+.hist .hgh{padding:6px 10px;gap:4px 8px}.hist .hgh .hgi{display:contents}.hist .hgh .sp{display:none}.hist .hgh .m{font-size:11px}.hist .hgh .hav{width:22px;height:22px;font-size:12px}.hist .hgh .hga{gap:6px}.hist .hgh .hgv button{min-height:24px;padding:1px 7px}.hist>.hbar{position:static;padding:6px 8px;gap:6px}.hist>.hbar .lb{display:none}.hist{--eh-hb:0px!important}.hist .hgh .hgv .lb{display:none}.hist .hgh .hga{flex:1 1 100%;margin-left:0;justify-content:space-between}.hist .hgh .m{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}}
 .hseg{display:inline-flex;border:1px solid var(--border);border-radius:9px;overflow:hidden}.hseg button{font:500 13px Manrope,system-ui,sans-serif;height:30px;padding:0 12px;border:0;border-right:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}.hseg button:last-child{border-right:0}.hseg button.on{background:var(--accent);color:#fff}
 .hchip{font:500 12px Manrope,system-ui,sans-serif;padding:3px 9px;border-radius:99px;border:1px solid var(--border);background:var(--chip);color:var(--chip-text);cursor:pointer}.hchip.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .hday{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
