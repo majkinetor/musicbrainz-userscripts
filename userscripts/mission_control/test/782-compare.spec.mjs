@@ -33,7 +33,7 @@ test('#782: Compare reads the release\'s platforms and offers what it lacks', { 
       window.__pcProbes.push(d.cons || null);
       const fs = [
         { key: 'deezer', name: 'Deezer', url: url('deezer'), barcode: bc, state: 'linked' },
-        { key: 'qobuz', name: 'Qobuz', url: url('qobuz'), barcode: bc, tracks: 5, state: 'withheld', why: 'barcode not confirmed' },
+        { key: 'qobuz', name: 'Qobuz', url: url('qobuz'), barcode: bc, tracks: 5, state: 'new' },   // not withheld: since #1020 a held link isn't taken in unless picked
         { key: 'spotify', name: 'Spotify', url: url('spotify'), barcode: bc, tracks: 5, state: 'new' },
         { key: 'beatport', name: 'Beatport', url: url('beatport'), barcode: '0000782782782', tracks: 5, state: 'unsure' },
         { key: 'tidal', name: 'Tidal', url: url('tidal'), tracks: 4, state: 'unsure', mismatch: ['4 tracks, the release has 5'] },
