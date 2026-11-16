@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.15.192005
+// @version      2026.11.15.192007
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -7561,7 +7561,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-acpop.tc-acsheet .tc-acrow{padding:10px}
     .tc-acsheet-hd{position:fixed;top:0;left:0;right:0;height:46px;z-index:100003;display:flex;align-items:center;gap:6px;padding:0 6px 0 8px;box-sizing:border-box;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-accent)}
     .tc-acsheet-hd .tc-acsheet-q{flex:1;min-width:0;height:32px;box-sizing:border-box;font-size:16px;padding:0 8px;border:1px solid var(--mbu-border);border-radius:4px;background:var(--mbu-bg);color:var(--mbu-text)}
-    .tc-acsheet-hd .tc-acsheet-x{flex:none;width:32px;height:32px;font-size:22px;line-height:1;display:inline-grid;place-items:center}
+    .tc-acsheet-hd .tc-acsheet-mk,.tc-acsheet-hd .tc-acsheet-x{flex:none;width:32px;height:32px;font-size:22px;line-height:1;display:inline-grid;place-items:center}
     .tc-acpop{position:fixed;z-index:100002;background:var(--mbu-bg);border:1px solid var(--mbu-accent);border-radius:4px;box-shadow:0 6px 22px rgba(40,20,80,.3);max-height:300px;overflow:auto;font:12px Arial;min-width:210px}
     .tc-acrow{display:flex;align-items:center;gap:7px;padding:4px 9px;cursor:pointer}
     .tc-acrow:hover,.tc-acrow.hi{background:var(--mbu-bg-hover)}
@@ -9081,11 +9081,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const sheet = () => {
       if (!hd || !hd.isConnected) {
         hd = document.createElement('div'); hd.className = 'tc-acsheet-hd mbu-ui';
-        hd.innerHTML = '<input type="search" class="tc-acsheet-q" placeholder="Search artists" autocomplete="off"><button type="button" class="mbu-ov-x tc-acsheet-x" aria-label="Close">\u00d7</button>';
+        hd.innerHTML = '<input type="search" class="tc-acsheet-q" placeholder="Search artists" autocomplete="off"><button type="button" class="mbu-ov-x tc-acsheet-mk" aria-label="Create this artist on MusicBrainz">＋</button><button type="button" class="mbu-ov-x tc-acsheet-x" aria-label="Close">\u00d7</button>';
         document.body.appendChild(hd); q = hd.querySelector('input');
         q.oninput = () => { inp.value = q.value; inp.oninput(); };
         q.onkeydown = e => inp.onkeydown(e);
         q.onblur = () => setTimeout(() => { if (!active()) close(); }, 160);
+        hd.querySelector('.tc-acsheet-mk').onmousedown = e => { e.preventDefault(); const v = (q.value || inp.value).trim() || slot.creditedAs; close(); inp.blur(); createArtist(v, slot, slot._discogsUrl || null); };
         hd.querySelector('.tc-acsheet-x').onmousedown = e => { e.preventDefault(); close(); inp.blur(); };
       }
       if (document.activeElement !== q) q.value = inp.value;
@@ -9167,7 +9168,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const gid = mbidFrom(inp.value); if (gid) { resolveByGid(gid); return; }   // pasted an MBID / artist URL → resolve directly (pickArtist replaces whatever was there; no un-link needed)
       // editing away from the matched artist un-links it: bar goes white, ＋ creates the typed name
       if (slot.committed && !sameName(inp.value, slot.name)) { slot.committed = false; slot.status = 'none'; slot.entity = null; slot.gid = null; commitTrack(slot._entry); if (refresh) refresh(); }
-      if (!inp.value.trim()) { ++seq; if (picksAny('artist') && active()) { curQuery = ''; draw([]); } else close(); return; }   // nothing typed → no search, only the pinned and recent artists
+      if (!inp.value.trim()) { ++seq; if (picksAny('artist') && active()) { curQuery = ''; draw([]); } else if (hd && pop) { list = []; pop.innerHTML = ''; } else close(); return; }   // nothing typed → no search, only the pinned and recent artists
       searching(); const my = ++seq; tmr = setTimeout(async () => { curQuery = inp.value; curLimit = 8; const res = await searchArtist(inp.value); if (my === seq && active()) showResults(res, inp.value); }, 250);
     };
     // arrows browse the results popup WHILE searching; once the slot is resolved they move row-to-row instead
@@ -9386,7 +9387,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const o = p._tcOwner;
     if (!o || !o.isConnected) { p.remove(); return; }
     if (p.classList.contains('tc-joinpop')) return;   // the join presets close themselves
-    if (e.type === 'keydown' ? e.key === 'Escape' && document.activeElement !== o : !p.contains(e.target) && e.target !== o) p.remove();   // a click outside closes it at once: the field still has focus at mousedown, so waiting for its blur took a second click
+    if (e.type === 'keydown' ? e.key === 'Escape' && document.activeElement !== o : !p.contains(e.target) && e.target !== o && !(e.target.closest && e.target.closest('.tc-acsheet-hd'))) p.remove();   // a click outside closes it at once: the field still has focus at mousedown, so waiting for its blur took a second click
   });
   document.addEventListener('mousedown', sweepPops, true);
   document.addEventListener('keydown', sweepPops, true);
@@ -9395,6 +9396,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // the Tracklist's: a matching pass rebuilds the rows again and again, and this also shut the
     // Label and release artist pickers on Release information the moment they opened
     document.querySelectorAll('.tc-acpop').forEach(p => { if (!(p._tcOwner && p._tcOwner.closest('#information'))) p.remove(); });
+    if (!document.querySelector('.tc-acpop.tc-acsheet')) document.querySelectorAll('.tc-acsheet-hd').forEach(h => h.remove());   // a phone's sheet goes with its list
     tbody.innerHTML = ''; let lastMi = -1, lastDataMi = -1; const multi = mediums().length > 1 && mi == null;
     const tracks = (mi == null) ? MODEL.tracks : MODEL.tracks.filter(t => t.mi === mi);
     tracks.forEach(t => {
