@@ -5,7 +5,7 @@
 // The new link must go in; the one already there is reported as such. The artist is pristine,
 // made for the run (#795).
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, mbNoise, pristine } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, mbNoise, pristine, until } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: false });
 
@@ -58,8 +58,9 @@ test('#769: a link already there in another form does not stop the new one going
   check(res.find(r => r.url === fresh)?.ok, 'the new channel is committed');
 
   // read it back from MusicBrainz itself
-  const r = await page.request.get(`https://test.musicbrainz.org/ws/2/artist/${ARTIST}?inc=url-rels&fmt=json`);
-  const urls = ((await r.json()).relations || []).map(x => x.url?.resource);
+  // ws/2 can trail the edit for a moment: wait for the new channel to show
+  const read = async () => { const r = await page.request.get(`https://test.musicbrainz.org/ws/2/artist/${ARTIST}?inc=url-rels&fmt=json`); return r.ok() ? ((await r.json()).relations || []).map(x => x.url?.resource) : []; };
+  const urls = await until(read, u => u.includes(fresh));
   check(urls.includes(fresh), `the artist has the new channel on MusicBrainz (${fresh})`);
   check(!urls.includes(QOBUZ('us-en')), 'the us-en duplicate was not added');
   check(urls.includes(QOBUZ('gb-en')), 'the gb-en link is still there');

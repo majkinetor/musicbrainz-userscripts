@@ -38,7 +38,7 @@ test('#783: Event and Tracks on a release row, Length on a recording row', { tag
   const labels = id => page.evaluate(id => [...document.querySelectorAll('.falcon-form')].filter(f => f.querySelector(`[data-id="${id}"]`)).flatMap(f => [...f.querySelectorAll('.falcon-lbl')].map(l => l.textContent.replace('+', '').trim())), id);
   const rel = await labels(rid), rec = await labels(cid);
   console.log('release: ' + rel.join(', ') + ' · recording: ' + rec.join(', '));
-  check(rel.join() === 'Name,Links,Disambiguation,Barcode,Event,Tracks,Aliases,Cover', `a release has Event and Tracks after Barcode (${rel})`);
+  check(rel.join() === 'Name,Links,Disambiguation,Barcode,Event,Tracks,Aliases,Tags,Cover', `a release has Event and Tracks after Barcode (${rel})`);
   check(rec.includes('Length') && !rec.includes('Event'), `a recording has Length (${rec})`);
   const val = sel => page.locator(sel).inputValue();
   check(await val(`.falcon-event-input[data-id="${rid}"]`) === '2014-02-20 XW', 'the event shows as date and country');

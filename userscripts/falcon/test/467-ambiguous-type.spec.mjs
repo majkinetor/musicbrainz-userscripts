@@ -49,7 +49,7 @@ test("#467: ambiguous type", { tag: ['@sandbox', '@login'] }, async ({ context, 
     console.log('ambiguous-alone result:', JSON.stringify(result, null, 1));
     ck(result.committed === false, `nothing submitted — the only url in the group was unresolvable (committed=${result.committed})`);
     ck(result.results?.[0]?.ok === false, 'the ambiguous url is reported as a failure, not silently ok');
-    ck(/ambiguous relationship type/.test(result.results?.[0]?.error || ''), `the error clearly names the real cause, not a generic "form invalid?" (got "${result.results?.[0]?.error}")`);
+    ck(/no default relationship type for this url/.test(result.results?.[0]?.error || ''), `the error clearly names the real cause, not a generic "form invalid?" (got "${result.results?.[0]?.error}")`);
     ck(/open in tab/.test(result.results?.[0]?.error || ''), `the error points at the actionable next step (got "${result.results?.[0]?.error}")`);
     const rowStillThere = await page.evaluate(() => [...document.querySelectorAll('tr.external-link-item a[href]')].some(a => a.getAttribute('href') === 'https://sagason.bandcamp.com/track/ambiguous-test-1'));
     ck(!rowStillThere, 'the unresolvable row is removed from the page rather than left dangling');
@@ -94,7 +94,7 @@ test("#467: ambiguous type", { tag: ['@sandbox', '@login'] }, async ({ context, 
     const tidalResult = result?.urlResults?.find(r => r.url.includes('tidal'));
     const bandcampResult = result?.urlResults?.find(r => r.url.includes('bandcamp'));
     ck(tidalResult?.ok === true, `the unambiguous url still commits (${JSON.stringify(tidalResult)})`);
-    ck(bandcampResult?.ok === false && /ambiguous/.test(bandcampResult?.error || ''), `the ambiguous url is cleanly reported as failed, not silently dropped (${JSON.stringify(bandcampResult)})`);
+    ck(bandcampResult?.ok === false && /no default relationship type for this url/.test(bandcampResult?.error || ''), `the ambiguous url is cleanly reported as failed, not silently dropped (${JSON.stringify(bandcampResult)})`);
     ck(posts === 1, `exactly one real submit happened, carrying the one good url (got ${posts})`);
     ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
     await page.close();

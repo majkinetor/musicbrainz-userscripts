@@ -8,7 +8,8 @@
 // and Harmony's tab is answered by a stand-in too (the harness's GM_openInTab opens none).
 import { test, check, until } from '../../../dev/test/harness.mjs';
 
-test.use({ gm: { name: 'First Contact' } });
+// the button is off by default since 8682ddc6: these specs turn it on
+test.use({ gm: { name: 'First Contact', values: { 'fc.settings': { harmony: true } } } });
 
 const stub = async (page, url) => {
   await page.route(url, r => r.fulfill({ contentType: 'text/html', body: '<!doctype html><title>album</title><body><h1>album</h1></body>' }));

@@ -30,7 +30,7 @@ test('?falcon= is read as an Import', { tag: '@unit' }, async () => {
 });
 
 test('the model from the URL is queued as Import queues a file, note included', { tag: '@unit' }, async () => {
-  const src = await functionSource('falcon', ['MBID_RE', 'ENTITY_RE', 'normalizeEntityType', 'DISAMBIGUATABLE', 'RENAMEABLE', 'normalizeAliases', 'normalizeCoverForImport', 'importQueueJson']);
+  const src = await functionSource('falcon', ['MBID_RE', 'ENTITY_RE', 'normalizeEntityType', 'DISAMBIGUATABLE', 'RENAMEABLE', 'normalizeAliases', 'normalizeCoverForImport', 'tagsOf', 'importQueueJson']);
   const env = new Function(`
     let queue = [], _idSeq = 0, _batchNote = '', added = [];
     const batchNote = () => _batchNote.trim(), setBatchNote = v => { _batchNote = String(v || ''); };
@@ -54,7 +54,7 @@ test('the model from the URL is queued as Import queues a file, note included', 
 // #671: majkinetor's batch reached Falcon three times and each artist ran three times over.
 // A handed-over batch now merges into what's queued; a file Import still restores as it was.
 test('a batch handed over again merges into the queue; it names the session', { tag: '@unit' }, async () => {
-  const src = await functionSource('falcon', ['MBID_RE', 'ENTITY_RE', 'normalizeEntityType', 'DISAMBIGUATABLE', 'RENAMEABLE', 'normalizeAliases', 'normalizeCoverForImport', 'importQueueJson']);
+  const src = await functionSource('falcon', ['MBID_RE', 'ENTITY_RE', 'normalizeEntityType', 'DISAMBIGUATABLE', 'RENAMEABLE', 'normalizeAliases', 'normalizeCoverForImport', 'tagsOf', 'importQueueJson']);
   const env = new Function(`
     let queue = [], _idSeq = 0, _batchNote = '', _batchName = '', named = [];
     const batchNote = () => _batchNote.trim(), setBatchNote = v => { _batchNote = String(v || ''); };

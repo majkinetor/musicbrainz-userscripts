@@ -2,7 +2,8 @@
 // keeps its ship, the text goes, the tooltip says what it does; it holds across a reload.
 import { test, check } from '../../../dev/test/harness.mjs';
 
-test.use({ gm: { name: 'First Contact', persist: 'tabs' }, pageErrors: 'ignore' });   // bandcamp.com's own scripts are not ours
+// the Harmony button is off by default since 8682ddc6: this file turns it on
+test.use({ gm: { name: 'First Contact', persist: 'tabs', values: { 'fc.settings': { harmony: true } } }, pageErrors: 'ignore' });   // bandcamp.com's own scripts are not ours
 
 test('Icon only: the button loses its text, keeps its tooltip, and stays that way', { tag: ['@web'] }, async ({ page, inject }) => {
   const url = 'https://bullion.bandcamp.com/album/nearly';
