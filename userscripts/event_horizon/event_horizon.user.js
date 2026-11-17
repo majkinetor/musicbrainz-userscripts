@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.006000
+// @version      2026.11.18.007000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11976,7 +11976,7 @@ function plyDraw() {
     const t = ply.q[ply.i]; if (!t) return;
     const root = plyRoot(), bar = S.playerPlace !== 'chip';
     root.className = 'mbu-ui ' + (bar ? 'ply-bar' : 'ply-chip') + (ply.ctl && !(ply.yt && S.playerVideo) ? ' ply-novid' : '');
-    plyCtl.className = 'mbu-ui ply-ctl ' + (bar ? 'pa' : 'pb');
+    plyCtl.className = 'mbu-ui ply-ctl pb' + (bar ? ' pa' : '');
     document.documentElement.classList.toggle('eh-ply-bar', bar);
     const p = t.srcs.find(x => x.key === ply.src) || t.srcs[0], lb = S.playerLb || S.playerScrobble;
     const nav = plyB('prev', 'Previous track', ply.i > 0 ? '' : ' disabled')
@@ -11984,19 +11984,9 @@ function plyDraw() {
         + plyB('next', 'Next track', ply.i + 1 < ply.q.length ? '' : ' disabled');
     const name = `<button type="button" class="ply-t" data-ply="list" aria-haspopup="menu" data-tip="${esc(t.title + ' — ' + t.artist + '\n' + t.relTitle)}\nClick: the playlist"><span class="ply-n">${esc(plyNo(t))}</span><b>${esc(t.title)}</b><span class="ply-ar">· ${esc(t.artist)}</span>${t.relTitle ? `<span class="ply-rl">· ${esc(t.relTitle)}</span>` : ''}</button>`;
     const prog = ply.ctl && t.len ? `<span class="ply-pr sk" data-ply="seek" aria-label="Position"><i></i>${bar ? '' : '<b class="ply-hv"></b>'}</span>` : '<span class="ply-pr" aria-hidden="true"><i></i></span>';
-    const menu = lb ? `<button type="button" class="ply-b ply-lb${t.ok != null ? ' sent' : ''}" data-ply="lb" aria-haspopup="menu" aria-label="ListenBrainz" data-tip="ListenBrainz${t.ok != null ? '\nListen sent' : ''}">${plyLogo(18)}</button>`
-        : bar ? '' : plyB('more', 'More', ' aria-haspopup="menu"');
+    const menu = `<button type="button" class="ply-b ply-lb${lb && t.ok != null ? ' sent' : ''}" data-ply="lb" aria-haspopup="menu" aria-label="Playing from ${esc(p.name)}" data-tip="Playing from ${esc(p.name)}${lb && t.ok != null ? '\nListen sent' : ''}\nClick: sources, ListenBrainz, stop">${icon(p, 18)}</button>`;
     const v = +S.playerVol, vol = plyHasVol() ? `<span class="ply-vg"><button type="button" class="ply-b" data-ply="mute" aria-pressed="${!v}" aria-label="${v ? 'Mute' : 'Unmute'}" data-tip="${v ? 'Mute' : 'Unmute'}">${SVG(PLY_I[v ? 'vol' : 'mute'])}</button><span class="ply-vp"><input type="range" class="ply-vol" min="0" max="100" step="1" value="${v}" aria-label="Volume"></span></span>` : '';
-    if (bar) {
-        const many = t.srcs.length > 1;
-        const src = `<button type="button" class="ply-sc" data-ply="src"${many ? '' : ' disabled'} aria-label="Source: ${esc(p.name)}" data-tip="Playing from ${esc(p.name)}${many ? '\nClick: another source' : ''}">${icon(p, 18)}</button>`;
-        const cov = t.rel ? `<a class="ply-cov" href="${MB}/release/${t.rel}" aria-label="Open the release" data-tip="Open the release"><img src="https://coverartarchive.org/release/${t.rel}/front-250" alt=""></a>` : '';
-        const vid = ply.yt ? plyB('video', S.playerVideo ? 'Hide the video' : 'Show the video', ` aria-pressed="${S.playerVideo}"`) : '';
-        plyCtl.innerHTML = `<div class="ply-l">${nav}</div>`
-            + `<div class="ply-m">${cov}<div class="ply-mc"><div class="ply-row">${name}</div>`
-            + `<div class="ply-row ply-pg"><span class="ply-tm" data-tm="at"></span>${prog}<span class="ply-tm">${t.len ? dur(t.len) : ''}</span></div></div></div>`
-            + `<div class="ply-r">${vol}${src}${vid}${menu}<button type="button" class="mbu-ov-x" data-ply="x" aria-label="Close" data-tip="Close the player">${SVG(PLY_I.x)}</button></div>`;
-    } else plyCtl.innerHTML = `<span class="ply-g">${nav}</span>${name}${prog}${vol}${menu}`;
+    plyCtl.innerHTML = `<span class="ply-g">${nav}</span>${name}${prog}${vol}${menu}`;
     const im = plyCtl.querySelector('.ply-cov img');
     if (im) im.addEventListener('error', () => { if (/-250$/.test(im.src)) { LOG.debug('player: no cover thumbnail, trying the full front'); im.src = im.src.replace(/-250$/, ''); } else im.remove(); });
     plyProg();
@@ -12104,7 +12094,7 @@ const plySrcItems = t => t.srcs.map(p => `<button type="button" class="it" role=
 function plySrcMenu(btn, t, pick) {
     if (t) plyMenu(btn, `<div class="hd">Play from</div>${plySrcItems(t)}`, v => v.k && pick(v.k));
 }
-// ListenBrainz: the track and the release there, the listen, the user's listens; in the header (B) also the sources, the video and stop
+// the player's menu: ListenBrainz (the track and the release there, the listen, the user's listens), the sources, the video and stop
 function plyLbMenu(btn) {
     const t = ply.q[ply.i]; if (!t) return;
     const it = (href, i, label) => `<a class="it" role="menuitem" href="${href}" target="_blank" rel="noopener">${SVG(PLY_I[i])}<span>${label}</span></a>`;
@@ -12117,7 +12107,7 @@ function plyLbMenu(btn) {
         + (S.playerLb ? it(`https://listenbrainz.org/track/${t.rid}`, 'note', 'This track') + (t.rel ? it(`https://listenbrainz.org/release/${t.rel}`, 'rel', 'This release') : '') : '')
         + (st ? `<hr><div class="st">${st}</div>` : '')
         + (S.playerLb ? it('https://listenbrainz.org/my/listens/', 'ext', 'Your listens') : ''));
-    if (S.playerPlace === 'chip') parts.push((t.srcs.length > 1 ? `<div class="hd">Play from</div>${plySrcItems(t)}` : '')
+    parts.push((t.srcs.length > 1 ? `<div class="hd">Play from</div>${plySrcItems(t)}` : '')
         + (ply.yt ? `<button type="button" class="it" role="menuitem" data-m="video">${SVG(PLY_I.video)}<span>${S.playerVideo ? 'Hide the video' : 'Show the video'}</span></button>` : '')
         + `<button type="button" class="it" role="menuitem" data-m="x">${SVG(PLY_I.x)}<span>Stop playing</span></button>`);
     plyMenu(btn, parts.join('<hr>'), v => { if (v.k) plySrc(v.k); else if (v.m === 'video') plyVideo(); else if (v.m === 'x') plyClose(); });
@@ -12157,18 +12147,8 @@ const PLY_CSS = `
 .ply-ctl .ply-vol{display:block;writing-mode:vertical-lr;direction:rtl;width:18px;height:96px;margin:0;accent-color:var(--accent,#ba478f);cursor:pointer}
 .ply-ctl .ply-sc[disabled]{cursor:default}
 .ply-ctl .mbu-ov-x{position:static;flex:none}
-.ply-ctl.pa{position:fixed;z-index:9995;left:0;right:0;bottom:0;height:60px;padding:0 16px;box-sizing:border-box;display:grid;grid-template-columns:1fr minmax(0,860px) 1fr;padding-right:68px;align-items:center;gap:16px;background:var(--surface,#fff);border-top:1px solid var(--line,#ddd);font:14px/1.3 system-ui,sans-serif;color:var(--text,#222)}
-.pa .ply-l,.pa .ply-r{display:flex;align-items:center;gap:4px;min-width:0}
-.pa .ply-l{justify-content:flex-end}
-.pa .ply-r{justify-content:flex-start}
 html.eh-ply-bar #eh-secfab{bottom:76px}
-.pa .ply-m{display:flex;align-items:center;align-self:stretch;gap:10px;min-width:0;padding:6px 0;box-sizing:border-box}
-.pa .ply-mc{flex:1;display:flex;flex-direction:column;gap:5px;min-width:0}
-.pa .ply-row{display:flex;align-items:center;gap:8px;min-width:0}
-.pa .ply-cov{display:block;flex:none;width:44px;height:44px;border-radius:4px;overflow:hidden;background:color-mix(in srgb,currentColor 8%,transparent)}
-.pa .ply-cov img{display:block;width:100%;height:100%;object-fit:cover}
-.pa .ply-cov:hover{outline:2px solid var(--accent,#ba478f);outline-offset:1px}
-html.eh-ply-bar body{padding-bottom:60px}
+html.eh-ply-bar body{padding-bottom:48px}
 .ply-ctl.pb{position:relative;display:flex;align-items:center;gap:6px;flex:0 1 auto;padding:0 10px;margin:0 6px;border-left:1px solid var(--line,#ddd);border-right:1px solid var(--line,#ddd);font-size:13px}
 .pb .ply-b,.pb .ply-b.big,.pb .ply-b.big:hover{width:28px;height:28px}
 .kicker .ply-ctl .ply-b svg{color:inherit}
@@ -12182,11 +12162,15 @@ html.eh-ply-bar body{padding-bottom:60px}
 .pb .ply-pr.sk:hover .ply-hv:not(:empty){display:block}
 
 #eh-ply>.ply-ctl.pb{position:fixed;right:16px;top:84px;height:40px;max-width:calc(100vw - 32px);box-sizing:border-box;margin:0;padding:0 4px 0 6px;background:var(--surface,#fff);color:var(--text,#222);border:1px solid var(--line,#ddd);border-radius:999px}
+#eh-ply>.ply-ctl.pb.pa{top:auto;bottom:0;left:0;right:0;height:48px;max-width:none;justify-content:center;padding:0 16px;border-width:1px 0 0;border-radius:0}
+.pa.pb .ply-t{max-width:min(900px,60vw)}
+.pa .ply-vp{top:auto;bottom:100%}
+.ply-ctl .ply-lb img,.ply-ctl .ply-lb svg{width:18px;height:18px;display:block}
 #eh-ply .ply-dock{position:fixed;right:16px;width:360px;max-width:calc(100vw - 32px);background:var(--surface,#fff);border:1px solid var(--line,#ddd);border-radius:8px;overflow:hidden}
 #eh-ply .ply-dock:empty{display:none}
 #eh-ply .ply-dock iframe{display:block;width:100%;border:0}
 #eh-ply.ply-novid .ply-dock{width:1px;height:1px;opacity:0;pointer-events:none;border:0}
-#eh-ply.ply-bar .ply-dock{bottom:68px}
+#eh-ply.ply-bar .ply-dock{bottom:56px}
 #eh-ply.ply-chip .ply-dock{top:132px}
 html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
 .ply-menu{position:fixed;z-index:9996;min-width:230px;max-height:calc(100vh - 16px);overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;box-sizing:border-box;padding:5px;background:var(--surface,#fff);color:var(--text,#222);border:1px solid var(--line,#ddd);border-radius:9px;box-shadow:0 6px 20px rgba(0,0,0,.12);font:13px/1.3 system-ui,sans-serif}
@@ -12206,7 +12190,7 @@ html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
 .ply-menu .st{display:flex;align-items:center;gap:8px;padding:5px 9px;color:var(--muted,#777);font-size:12px}
 .ply-menu .st .d{width:7px;height:7px;border-radius:50%;background:#3fa56b;flex:none}
 @media(max-width:720px){.pb .ply-t{max-width:110px}}
-@media(max-width:600px){.ply-ctl.pa{grid-template-columns:auto minmax(0,1fr) auto;gap:8px;padding:0 8px}.pa .ply-cov,.pa .ply-sc,.pa .ply-tm{display:none}#eh-ply .ply-dock{right:8px;max-width:calc(100vw - 16px)}#eh-ply>.ply-ctl.pb{right:8px;left:8px;max-width:none}}
+@media(max-width:600px){#eh-ply .ply-dock{right:8px;max-width:calc(100vw - 16px)}#eh-ply>.ply-ctl.pb{right:8px;left:8px;max-width:none}#eh-ply>.ply-ctl.pb.pa{left:0;right:0;padding:0 8px}.pa.pb .ply-t{max-width:none}}
 `;
 // is this release's track the one playing
 const plyOn = (r, key) => { const t = ply.q[ply.i]; return !!t && t.rel === r.id && t.key === key; };
