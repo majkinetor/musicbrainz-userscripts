@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011008
+// @version      2026.11.18.011009
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12115,7 +12115,7 @@ function plyDraw() {
     document.documentElement.classList.toggle('eh-ply-bar', bar);
     const p = t.srcs.find(x => x.key === ply.src) || t.srcs[0], lb = S.playerLb || S.playerScrobble;
     const rep = S.playerRepeat === 'one' ? 'Repeat one' : S.playerRepeat === 'all' ? 'Repeat all' : 'Play once';
-    const play = plyB(ply.paused ? 'play' : 'pause', (ply.paused ? 'Play' : 'Pause') + '\n' + rep + '\nRight-click: change repeat', '', ' big').replace('</button>', S.playerRepeat === 'off' ? '</button>' : `<span class="ply-repeat" aria-hidden="true">↻${S.playerRepeat === 'one' ? '¹' : ''}</span></button>`);
+    const play = plyB(ply.paused ? 'play' : 'pause', (ply.paused ? 'Play' : 'Pause') + '\n' + rep + '\nRight-click: change repeat', '', ' big').replace('</button>', S.playerRepeat === 'off' ? '</button>' : `<span class="ply-repeat" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20.5 12a8.5 8.5 0 1 1-2.5-6"/><path d="M20.5 2.5v4h-4"/>${S.playerRepeat === 'one' ? '<text x="12" y="15.6" text-anchor="middle">1</text>' : ''}</svg></span></button>`);
     const nav = plyB('prev', ply.i > 0 ? 'Previous track' : 'Restart track', ply.i > 0 || ply.ctl ? '' : ' disabled')
         + (ply.ctl ? play : '')
         + plyB('next', 'Next track', ply.i + 1 < ply.q.length ? '' : ' disabled');
@@ -12271,7 +12271,7 @@ const PLY_CSS = `
 .ply-ctl .ply-b[disabled]{opacity:.35;cursor:default}
 .ply-ctl .ply-b[aria-pressed="true"]{color:var(--accent,#ba478f)}
 .ply-ctl .ply-b.big,.ply-ctl .ply-b.big:hover{width:34px;height:34px;border-radius:50%;background:var(--accent,#ba478f);color:#fff}
-.ply-ctl .ply-b.big{position:relative}.ply-ctl .ply-repeat{position:absolute;right:-3px;bottom:-3px;display:grid;place-items:center;min-width:13px;height:13px;padding:0 1px;border-radius:8px;background:var(--surface,#fff);color:var(--accent,#ba478f);font:bold 11px/1 system-ui,sans-serif}
+.ply-ctl .ply-b.big{position:relative}.ply-ctl .ply-repeat{position:absolute;right:-4px;bottom:-4px;display:grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--surface,#fff);color:var(--accent,#ba478f)}.ply-b .ply-repeat>svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.ply-b .ply-repeat text{fill:currentColor;stroke:none;font:bold 10px system-ui,sans-serif}
 .ply-ctl .ply-b.big svg{width:16px;height:16px}
 .ply-ctl .ply-lb{position:relative}
 .ply-ctl .ply-lb.sent::after{content:'';position:absolute;right:3px;top:3px;width:7px;height:7px;border-radius:50%;background:#3fa56b;box-shadow:0 0 0 2px var(--surface,#fff)}
