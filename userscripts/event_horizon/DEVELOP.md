@@ -32,6 +32,8 @@ A search page with `type=url` (`/search?type=url&query=…&tt=…&rt=…&tid=…
 
 ## The release shown
 
+After a successful write, Mission Control, Platform Check and ISRC Scout dispatch a cancelable `mbu-refresh-release` event on `document` with `{ release: <MBID> }` in its detail. When Event Horizon is on and showing that release it cancels the event, invalidates kept MusicBrainz answers and quietly reloads the release without replacing the player. Requests close together are coalesced. Callers that would otherwise reload can use the dispatch return value to fall back when Event Horizon did not handle it; a request for a different release is left unhandled.
+
 While Event Horizon shows a release, `<html>` carries `data-mbu-release="<mbid>"`. Turning Event Horizon off, or showing anything that isn't a release, removes it. `ehRelMark` sets it from `setOn` and from `show`.
 
 Platform Check follows it ([its DEVELOP.md](../platform_check/DEVELOP.md#following-event-horizon)): it watches the attribute and scans each release named there, reading it from the API. ISRC Scout (`isFollow`) and Mission Control (`mcFollow`) do the same while their windows are shut, with no reload. Mission Control reads its tracklist off the page only on the release the tab loaded. A script that wants to follow does the same: a `MutationObserver` on `document.documentElement` with `attributeFilter: ['data-mbu-release']`, plus one read at start, since the attribute may already be there.

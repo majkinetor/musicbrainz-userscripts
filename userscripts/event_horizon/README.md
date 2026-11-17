@@ -129,11 +129,13 @@ Expanded track contains info about associated recording and works.
 
 Point at a track's number and click its play button: the release plays from that track, one track after another. **Play** in the tracklist's header plays the whole release. Right-click a track's play button to choose the streaming site it plays from; the next tracks keep that choice when they have it.
 
-The player plays from YouTube, YouTube Music, Spotify, Deezer, Apple Music, SoundCloud and Bandcamp, in the page, and goes on to the next track when one ends. Apple Music's player can't be started for you: click its play button, and the next track follows when the track's length has played. **Hide the video** is remembered. A track with no such link has no play button; with **Open in ListenBrainz** on, it gets a ListenBrainz icon instead.
+The player plays from YouTube, YouTube Music, Spotify, Deezer, Apple Music, SoundCloud and Bandcamp, in the page, and goes on to the next track when one ends. Apple Music's player can't be started for you: click its play button, and the next track follows when the track's length has played. **Hide the video** is remembered. A track with no such link has no play button; with **Show ListenBrainz menu items** on, it gets a ListenBrainz icon instead.
 
 The player shows at the bottom of the page, or as a chip under the header's actions. It has the track, previous and next, the streaming site, and links to the track and the release in ListenBrainz. On the first track, previous restarts it when the source supports seeking. Close it with ×.
 
-**Send listens to ListenBrainz** adds what the player plays to your listens. Paste your user token from [ListenBrainz's settings](https://listenbrainz.org/settings/) into **ListenBrainz token**; Event Horizon checks it with ListenBrainz. A track shows as playing now when it starts and counts as a listen after half of it or four minutes, whichever comes first. The ListenBrainz icon in the player turns to the accent colour once the listen is sent.
+While the player is open, editing a release opens the editor in another tab so playback continues. Successful updates from Mission Control, Platform Check and ISRC Scout refresh the release in place when Event Horizon is showing it.
+
+**Send listens to ListenBrainz** adds what the player plays to your listens. Use **Get token** to open [ListenBrainz's settings](https://listenbrainz.org/settings/) and paste your user token into **LB token**; Event Horizon checks it with ListenBrainz. A track shows as playing now when it starts and counts as a listen after half of it or four minutes, whichever comes first. The ListenBrainz icon in the player turns to the accent colour once the listen is sent.
 
 ## Releases and discography
 
@@ -246,10 +248,10 @@ Right-click the corner icon. Changes apply at once.
 | Menu → Show menu titles               | off                                                       | text beside icons in the main menu                                                          |
 | Menu → Responsive                     | off                                                       | brings items from More into the main menu when space allows                                 |
 | Menu → Items                          | all visible                                               | drag to order, use the eye to show or hide, toggle Title, choose Main or More               |
-| Player → Player                       | on                                                        | the play buttons and the [player](#player)                                                  |
-| Player → Player place                 | Bottom bar                                                | **Bottom bar** or **Header chip**                                                           |
-| Player → Open in ListenBrainz         | on                                                        | the player's links to ListenBrainz                                                          |
-| Player → Send listens to ListenBrainz | off                                                       | your listens, with the **ListenBrainz token** below it                                      |
+| Player → Enable player                | on                                                        | the play buttons and the [player](#player)                                                  |
+| Player → Player place                 | Bottom bar                                                | **Bottom bar** or **Top bar**                                                               |
+| Player → Show ListenBrainz menu items | on                                                        | the player's links to ListenBrainz                                                          |
+| Player → Send listens to ListenBrainz | off                                                       | your listens, with the **ListenBrainz token** beside it                                     |
 | General → Pending changes             | off                                                       | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
 | General → Keyboard shortcuts          | on                                                        | the keys below; [keyboard shortcuts](#keyboard-shortcuts); **Change keys** opens their list |
 

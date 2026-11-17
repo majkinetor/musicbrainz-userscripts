@@ -65,13 +65,11 @@ test.describe('settings', () => {
     const cfg = page.locator('#eh-cfg');
     await cfg.waitFor();
     await cfg.locator('[data-tab="player"]').click();
-    const sec = cfg.locator('.m-sec', { hasText: /^Player$/ });
-    check(await sec.count() === 1, 'a Player section');
+    check(await cfg.locator('[data-g="player"]').count() === 1, 'the player can be enabled');
     check(await cfg.locator('[data-lbtok]').count() === 1, 'a ListenBrainz token field');
     const pc = cfg.locator('[data-g="playerPlace"][data-k="chip"]');
     await pc.click();
-    check(await until(() => cfg.locator('[data-g="playerPlace"][data-k="chip"]').getAttribute('aria-pressed'), v => v === 'true') === 'true', 'Header chip is chosen');
-    await sec.scrollIntoViewIfNeeded();
+    check(await until(() => cfg.locator('[data-g="playerPlace"][data-k="chip"]').getAttribute('aria-pressed'), v => v === 'true') === 'true', 'Top bar is chosen');
     await attachShot(testInfo, cfg, 'settings');
   });
 });

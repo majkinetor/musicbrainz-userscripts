@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011001
+// @version      2026.11.18.011002
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11777,6 +11777,13 @@ const PLY_I = {
 // kind: the source playing; ctl: its widget takes play and pause; ends: it says when a track ends (the others end
 // when the track's length has played); gen: which plyGo is current, for Bandcamp's late answer
 const ply = { q: [], i: -1, src: '', pref: '', paused: false, yt: false, kind: '', ctl: false, ends: false, gen: 0 };
+// Keep playback alive when opening the release editor, including on MusicBrainz's native page.
+document.addEventListener('click', ev => {
+    if (ply.i < 0 || ev.defaultPrevented || ev.button !== 0 || ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey) return;
+    const a = ev.target.closest && ev.target.closest('a[href]'); if (!a || a.target || a.hasAttribute('download')) return;
+    const u = new URL(a.href);
+    if (u.origin === location.origin && /^\/release\/[0-9a-f-]{36}\/edit\/?$/i.test(u.pathname)) { ev.preventDefault(); window.open(u.href, '_blank', 'noopener'); }
+}, true);
 // a link's player: the widget's address and height; Bandcamp's widget wants the track's id, read from its page (bc)
 function plyEmbed(p) {
     const u = p.urls[0].url;
@@ -14635,6 +14642,7 @@ function hexRows(chip, row) {
 }
 const MENU_CFG_CSS = `
 #eh-cfg .mbu-ov-panel.eh-cfg{height:min(600px,88vh)}
+#eh-cfg .player-listens{display:flex;align-items:center;gap:8px;flex-wrap:wrap}#eh-cfg .player-listens .ckr{flex:none}#eh-cfg .player-listens .fx-combo{flex:1 1 140px;min-width:120px}
 #eh-cfg .menu-options{display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px;margin:2px 0 6px}
 #eh-cfg .menu-options .ckr{margin:0;padding:0;min-height:0}
 #eh-cfg .menu-options .ck{padding:3px 2px}
@@ -14678,17 +14686,13 @@ function cfgBody() {
     const chip = cfgChip, row = cfgRow;
     const tabs = [['general', 'General'], ['player', 'Player'], ['menu', 'Menu'], ['effects', 'Effects']];
     const panes = {
-        general: '<div class="m-sec">Page</div>'
-            + row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen')
+        general: row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen')
             + ckRow('pending', 'Show pending changes', 'Mark what has edits open, as MusicBrainz does\nTakes one extra MusicBrainz request per page, sent last')
-            + '<div class="m-sec">Keyboard</div>'
             + `<div class="keys">${ckRow('keysOn', 'Keyboard shortcuts', 'Single keys open the page\'s edit, relationships, history and more\nCtrl+/ lists them\nOn MusicBrainz\'s pages and in Event Horizon alike')}<button type="button" class="btn" data-keys-open>Change keys…</button></div>`,
-        player: '<div class="m-sec">Player</div>'
-            + ckRow('player', 'Player', 'A play button on each track of a release that has it on a streaming site\nPlays the release from there, track after track')
-            + row('Player place', [['bar', 'Bottom bar'], ['chip', 'Header chip']].map(([v, l]) => chip('playerPlace', v, S.playerPlace === v, l)).join(''), 'Where the player shows')
-            + ckRow('playerLb', 'Open in ListenBrainz', 'Links in the player to the track and the release in ListenBrainz')
-            + ckRow('playerScrobble', 'Send listens to ListenBrainz', 'What the player plays goes to your ListenBrainz listens\nNeeds your token, below')
-            + row('ListenBrainz token', `<span class="fx-combo"><input type="password" data-lbtok autocomplete="off" spellcheck="false" placeholder="Your user token" aria-label="ListenBrainz token" value="${esc(lbToken())}"></span>`, 'Your user token, from listenbrainz.org/settings'),
+        player: ckRow('player', 'Enable player', 'A play button on each track of a release that has it on a streaming site\nPlays the release from there, track after track')
+            + row('Player place', [['bar', 'Bottom bar'], ['chip', 'Top bar']].map(([v, l]) => chip('playerPlace', v, S.playerPlace === v, l)).join(''), 'Where the player shows')
+            + ckRow('playerLb', 'Show ListenBrainz menu items', 'Links in the player to the track and the release in ListenBrainz')
+            + `<div class="player-listens">${ckRow('playerScrobble', 'Send listens to ListenBrainz', 'What the player plays goes to your ListenBrainz listens\nNeeds your user token')}<span class="fx-combo"><input type="password" data-lbtok autocomplete="off" spellcheck="false" placeholder="LB token" aria-label="ListenBrainz token" value="${esc(lbToken())}"></span><a href="https://listenbrainz.org/settings" target="_blank" rel="noopener noreferrer" data-lb-get${lbToken() ? ' hidden' : ''}>Get token</a></div>`,
         menu: menuPane(),
         effects: fxPane(chip, row),
     };
@@ -14993,6 +14997,7 @@ function cfgWire(panel, b, body) {
         if (ehOn) { const sy = scrollY; render(); scrollTo(0, sy); }
     });
     // the ListenBrainz token is kept as it's typed, then checked with ListenBrainz
+    panel.addEventListener('input', ev => { if (ev.target.matches('[data-lbtok]')) { const a = panel.querySelector('[data-lb-get]'); if (a) a.hidden = !!ev.target.value.trim(); } });
     panel.addEventListener('change', ev => {
         const inp = ev.target.closest && ev.target.closest('[data-lbtok]'); if (!inp) return;
         const v = lbToken(inp.value.trim());
@@ -15096,6 +15101,14 @@ function ehRelMark() { if (ehOn && ehRel) document.documentElement.setAttribute(
 // and the page showing, on <html data-mbu-page> (path and query): String Theory puts in the dock a script that page is
 // for but the page the tab loaded wasn't, so it never started (#847)
 function ehPageMark() { const r = document.documentElement; if (ehOn) r.setAttribute('data-mbu-page', location.pathname + location.search); else r.removeAttribute('data-mbu-page'); }
+// A successful write by another script requests a fresh release without replacing the player iframe.
+let ehRefreshTimer;
+document.addEventListener('mbu-refresh-release', ev => {
+    const id = ev.detail && ev.detail.release;
+    if (!ehOn || !ehRel || typeof id !== 'string' || id.toLowerCase() !== ehRel.toLowerCase()) return;
+    ev.preventDefault(); kpWrote(); clearTimeout(ehRefreshTimer);
+    ehRefreshTimer = setTimeout(() => { if (ehOn && ehRel === id.toLowerCase()) show('release/' + ehRel, { quiet: true, y: scrollY }); }, 300);
+});
 // o.y: where to scroll once the page is all in (Back, Forward, a redraw); o.quiet: a redraw of the page showing, with
 // what MusicBrainz changed since it was kept: no skeleton, drawn once whole, and the page stays where it was on a failure
 async function show(key, o = {}) {
@@ -15243,7 +15256,7 @@ const keyGo = sub => () => {
     const url = `${MB}/${e.type}/${e.id}${sub ? '/' + sub : ''}`;
     // the viewer's own button takes it, so it opens where the viewer would
     const a = ehOn && [...document.querySelectorAll('#app a[href]')].find(x => x.href === url);
-    if (a) a.click(); else location.assign(url);
+    if (a) a.click(); else if (sub === 'edit' && e.type === 'release' && ply.i >= 0) window.open(url, '_blank', 'noopener'); else location.assign(url);
     return true;
 };
 // the viewer's search box, else MusicBrainz's header one, else its search page
