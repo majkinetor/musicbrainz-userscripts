@@ -22,6 +22,7 @@ test.describe('bar', () => {
     check(await until(() => page.locator('#eh-ply.ply-bar').count(), n => n === 1) === 1, 'the player shows as the bottom bar');
     check(await until(() => page.locator('.tr.ply-on').count(), n => n === 1) === 1, 'the playing row is marked');
     check(await page.locator('#eh-ply .ply-ctl.pa').count() === 1, 'the bar has its controls');
+    check(await page.locator('#eh-ply [data-ply="prev"]').isEnabled(), 'the first track can be restarted');
     await page.locator('#eh-ply [data-ply="list"]').click();
     check(await until(() => page.locator('#eh-ply-menu .qi').count(), n => n > 1) > 1, 'the title opens the playlist');
     check(await page.locator('#eh-ply-menu .qi[aria-current]').count() === 1, 'the playing track is marked in it');
@@ -56,13 +57,14 @@ test.describe('chip', () => {
 test.describe('settings', () => {
   test.use({ profile: 'fresh', gm: { name: 'Event Horizon', persist: true, values: { view: { on: true } } } });
 
-  test('the settings have a Player section', { tag: '@prod' }, async ({ page, inject }, testInfo) => {
+  test('the settings have a Player tab', { tag: '@prod' }, async ({ page, inject }, testInfo) => {
     await page.goto(REL);
     await inject('event_horizon');
     await page.locator('.tr[data-row]').first().waitFor();
     await page.evaluate(() => document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: 'event_horizon', cancelable: true })));
     const cfg = page.locator('#eh-cfg');
     await cfg.waitFor();
+    await cfg.locator('[data-tab="player"]').click();
     const sec = cfg.locator('.m-sec', { hasText: /^Player$/ });
     check(await sec.count() === 1, 'a Player section');
     check(await cfg.locator('[data-lbtok]').count() === 1, 'a ListenBrainz token field');

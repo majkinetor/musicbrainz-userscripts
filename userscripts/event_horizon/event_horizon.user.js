@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011000
+// @version      2026.11.18.011001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -75,7 +75,7 @@ if (window.top !== window && new URLSearchParams(location.search).get('mc_embed'
 // on any other site is left alone: nothing happens until a parent sends {ehPlyCmd}.
 if (window.top !== window && (location.hostname === 'bandcamp.com' && location.pathname.startsWith('/EmbeddedPlayer/') || location.hostname === 'widget.deezer.com')) {
     const BTN = location.hostname === 'bandcamp.com' ? '#big_play_button, #play' : '[data-testid="widget-player-play"]';
-    let armed = false, last = 0;
+    let armed = false, last = 0, restoring = false;
     const post = (state, a) => { if (armed) try { window.parent.postMessage({ ehPly: state, pos: a ? a.currentTime : 0, dur: a ? a.duration : 0 }, '*'); } catch (e) {} };
     for (const k of ['play', 'pause', 'ended']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement) post(k, ev.target); }, true);
     document.addEventListener('timeupdate', ev => { if (ev.target instanceof HTMLMediaElement && Date.now() - last > 900) { last = Date.now(); post(ev.target.paused ? 'pause' : 'time', ev.target); } }, true);
@@ -91,6 +91,20 @@ if (window.top !== window && (location.hostname === 'bandcamp.com' && location.p
         if (!armed) { armed = true; post('hello'); }
         if (ev.data.ehPlyCmd === 'vol') { const a = document.querySelector('audio'); if (a && ev.data.v >= 0) a.volume = Math.min(1, ev.data.v); return; }
         if (ev.data.ehPlyCmd === 'seek') { const a = document.querySelector('audio'); if (a && ev.data.pos >= 0) a.currentTime = ev.data.pos; return; }
+        if (ev.data.ehPlyCmd === 'play' && ev.data.pos > 0) {
+            if (restoring) return;
+            restoring = true;
+            let n = 0;
+            const restore = () => {
+                const a = document.querySelector('audio');
+                if (a && a.readyState >= 1) {
+                    try { a.currentTime = ev.data.pos; clearInterval(iv); press(true); post('restored', a); return; } catch (e) {}
+                }
+                if (++n > 120) { clearInterval(iv); restoring = false; post('restore-failed'); }
+            };
+            const iv = setInterval(restore, 250); restore();
+            return;
+        }
         const play = ev.data.ehPlyCmd === 'play';
         if (press(play) === false) { let n = 0; const iv = setInterval(() => { if (press(play) !== false || ++n > 60) clearInterval(iv); }, 250); }
     });
@@ -11846,7 +11860,7 @@ function plyEnded(why) {
     if (ply.i + 1 < ply.q.length) plyGo(ply.i + 1); else { ply.paused = true; plyDraw(); }
 }
 const plyState = paused => { if (paused === ply.paused) return; ply.paused = paused; LOG.debug('player:', paused ? 'paused' : 'plays'); plyDraw(); };
-const plyStep = d => { const i = ply.i + d; if (i >= 0 && i < ply.q.length) plyGo(i); };
+const plyStep = d => { const i = ply.i + d; if (i >= 0 && i < ply.q.length) plyGo(i); else if (d < 0 && ply.i === 0 && ply.ctl) plySeek(0); };
 function plyClose() {
     LOG.info('player: closed');
     try { sessionStorage.removeItem('eh-ply'); } catch (e) {}
@@ -11866,7 +11880,7 @@ function plyDock(e) {
     f.addEventListener('load', () => {
         if (kind === 'youtube' || kind === 'ytmusic') plyPost('{"event":"listening","id":1,"channel":"widget"}');
         // the bridge in Bandcamp's and Deezer's widget may load after the frame does: asked again until it answers
-        if (kind === 'bandcamp' || kind === 'deezer') { let n = 0; const iv = setInterval(() => { if (gen !== ply.gen || ply.bridged === gen || ++n > 10) { if (n > 10) LOG.warn('player: no answer from the', kind, 'widget; its track ends by its length'); clearInterval(iv); return; } plyPost({ ehPlyCmd: 'play' }); }, 1000); plyPost({ ehPlyCmd: 'play' }); }
+        if (kind === 'bandcamp' || kind === 'deezer') { const start = () => plyPost({ ehPlyCmd: 'play', pos: kind === 'bandcamp' ? (ply.q[ply.i]?.resume || 0) / 1000 : 0 }); let n = 0; const iv = setInterval(() => { if (gen !== ply.gen || ply.bridged === gen || ++n > 10) { if (n > 10) LOG.warn('player: no answer from the', kind, 'widget; its track ends by its length'); clearInterval(iv); return; } start(); }, 1000); start(); }
     }, { once: true });
 }
 const plyFrame = () => document.querySelector('#eh-ply .ply-dock iframe');
@@ -11940,6 +11954,8 @@ window.addEventListener('message', ev => {
         else if (m.method === 'playProgress' && m.value) t.played = m.value.currentPosition || t.played;
     } else if (typeof m.ehPly === 'string') {
         if (ply.bridged !== ply.gen) { ply.bridged = ply.gen; ply.ends = true; LOG.debug('player: the', k, 'widget answers'); plyVolOnce(); }
+        if (m.ehPly === 'restored') { t.played = t.resume || m.pos * 1000; t.resume = 0; plyProg(); return; }
+        if (m.ehPly === 'restore-failed') { t.resume = 0; toast('Bandcamp could not restore the playback position'); return; }
         if (m.pos > 0) t.played = m.pos * 1000;
         if (m.ehPly === 'ended') plyEnded(k); else if (m.ehPly !== 'hello') plyState(m.ehPly === 'pause');
     }
@@ -11984,7 +12000,7 @@ function plyDraw() {
     plyCtl.className = 'mbu-ui ply-ctl pb' + (bar ? ' pa' : '');
     document.documentElement.classList.toggle('eh-ply-bar', bar);
     const p = t.srcs.find(x => x.key === ply.src) || t.srcs[0], lb = S.playerLb || S.playerScrobble;
-    const nav = plyB('prev', 'Previous track', ply.i > 0 ? '' : ' disabled')
+    const nav = plyB('prev', ply.i > 0 ? 'Previous track' : 'Restart track', ply.i > 0 || ply.ctl ? '' : ' disabled')
         + (ply.ctl ? plyB(ply.paused ? 'play' : 'pause', ply.paused ? 'Play' : 'Pause', '', ' big') : '')
         + plyB('next', 'Next track', ply.i + 1 < ply.q.length ? '' : ' disabled');
     const name = `<button type="button" class="ply-t" data-ply="list" aria-haspopup="menu" data-tip="${esc(t.title + ' — ' + t.artist + '\n' + t.relTitle)}\nClick: the playlist"><span class="ply-n">${esc(plyNo(t))}</span><b>${esc(t.title)}</b><span class="ply-ar">· ${esc(t.artist)}</span>${t.relTitle ? `<span class="ply-rl">· ${esc(t.relTitle)}</span>` : ''}</button>`;
@@ -12250,7 +12266,7 @@ setInterval(() => {
     const t = ply.q[ply.i]; if (!t || ply.paused || !t.at || t.done) return;
     t.played += 1000;
     // the saved place is sought once the widget has played a moment, so it is ready to take it
-    if (t.resume && t.played >= 2000) { const at = t.resume; t.resume = 0; plySeek(at); }
+    if (t.resume && ply.kind !== 'bandcamp' && t.played >= 2000) { const at = t.resume; t.resume = 0; plySeek(at); }
     try { sessionStorage.setItem('eh-ply', JSON.stringify({ rel: t.rel, key: t.key, src: t.src, played: t.played })); } catch (e) {}
     plyProg();
     if (!ply.ends && t.len && t.played >= t.len + 1500) { plyEnded('its length has played'); return; }
@@ -14618,7 +14634,7 @@ function hexRows(chip, row) {
         + row('Depth', chip('hexDepth', 'hexDepth', S.hexDepth, 'On', 'The hexagons scroll slower than the page\nOn: they sit deeper, behind the page\nOff: they stay still')), true);
 }
 const MENU_CFG_CSS = `
-#eh-cfg .mbu-ov-panel.eh-cfg:has([data-tab=menu][aria-selected=true]){height:min(600px,88vh)}
+#eh-cfg .mbu-ov-panel.eh-cfg{height:min(600px,88vh)}
 #eh-cfg .menu-options{display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px;margin:2px 0 6px}
 #eh-cfg .menu-options .ckr{margin:0;padding:0;min-height:0}
 #eh-cfg .menu-options .ck{padding:3px 2px}
@@ -14660,19 +14676,19 @@ function menuPane() {
 }
 function cfgBody() {
     const chip = cfgChip, row = cfgRow;
-    const tabs = [['general', 'General'], ['menu', 'Menu'], ['effects', 'Effects']];
+    const tabs = [['general', 'General'], ['player', 'Player'], ['menu', 'Menu'], ['effects', 'Effects']];
     const panes = {
         general: '<div class="m-sec">Page</div>'
             + row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen')
             + ckRow('pending', 'Show pending changes', 'Mark what has edits open, as MusicBrainz does\nTakes one extra MusicBrainz request per page, sent last')
-            + '<div class="m-sec">Player</div>'
+            + '<div class="m-sec">Keyboard</div>'
+            + `<div class="keys">${ckRow('keysOn', 'Keyboard shortcuts', 'Single keys open the page\'s edit, relationships, history and more\nCtrl+/ lists them\nOn MusicBrainz\'s pages and in Event Horizon alike')}<button type="button" class="btn" data-keys-open>Change keys…</button></div>`,
+        player: '<div class="m-sec">Player</div>'
             + ckRow('player', 'Player', 'A play button on each track of a release that has it on a streaming site\nPlays the release from there, track after track')
             + row('Player place', [['bar', 'Bottom bar'], ['chip', 'Header chip']].map(([v, l]) => chip('playerPlace', v, S.playerPlace === v, l)).join(''), 'Where the player shows')
             + ckRow('playerLb', 'Open in ListenBrainz', 'Links in the player to the track and the release in ListenBrainz')
             + ckRow('playerScrobble', 'Send listens to ListenBrainz', 'What the player plays goes to your ListenBrainz listens\nNeeds your token, below')
-            + row('ListenBrainz token', `<span class="fx-combo"><input type="password" data-lbtok autocomplete="off" spellcheck="false" placeholder="Your user token" aria-label="ListenBrainz token" value="${esc(lbToken())}"></span>`, 'Your user token, from listenbrainz.org/settings')
-            + '<div class="m-sec">Keyboard</div>'
-            + `<div class="keys">${ckRow('keysOn', 'Keyboard shortcuts', 'Single keys open the page\'s edit, relationships, history and more\nCtrl+/ lists them\nOn MusicBrainz\'s pages and in Event Horizon alike')}<button type="button" class="btn" data-keys-open>Change keys…</button></div>`,
+            + row('ListenBrainz token', `<span class="fx-combo"><input type="password" data-lbtok autocomplete="off" spellcheck="false" placeholder="Your user token" aria-label="ListenBrainz token" value="${esc(lbToken())}"></span>`, 'Your user token, from listenbrainz.org/settings'),
         menu: menuPane(),
         effects: fxPane(chip, row),
     };
