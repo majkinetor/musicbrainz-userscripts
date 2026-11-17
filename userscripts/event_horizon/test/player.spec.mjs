@@ -21,7 +21,9 @@ test.describe('bar', () => {
     await b.click();
     check(await until(() => page.locator('#eh-ply.ply-bar').count(), n => n === 1) === 1, 'the player shows as the bottom bar');
     check(await until(() => page.locator('.tr.ply-on').count(), n => n === 1) === 1, 'the playing row is marked');
-    check(await page.locator('#eh-ply a[href*="listenbrainz.org/track/"]').count() >= 1, 'the bar links the track in ListenBrainz');
+    check(await page.locator('#eh-ply .ply-ctl.pa').count() === 1, 'the bar has its controls');
+    await page.locator('#eh-ply [data-ply="lb"]').click();
+    check(await until(() => page.locator('#eh-ply-menu a[href*="listenbrainz.org/track/"]').count(), n => n >= 1) >= 1, 'the ListenBrainz menu links the track');
     const now = await until(() => sent.find(o => /submit-listens/.test(o.url)), v => !!v);
     const body = now ? JSON.parse(now.data) : {};
     check(body.listen_type === 'playing_now' && /^Token tok$/.test((now.headers || {}).Authorization || ''), 'playing_now goes to ListenBrainz with the token');
@@ -39,7 +41,11 @@ test.describe('chip', () => {
     await page.locator('button[data-playall]').click();
     check(await until(() => page.locator('#eh-ply.ply-chip').count(), n => n === 1) === 1, 'the player shows as a chip');
     check(!(await page.evaluate(() => document.documentElement.classList.contains('eh-ply-bar'))), 'no room is kept for a bar');
-    check(await page.locator('#eh-ply a[href*="listenbrainz.org"]').count() === 0, 'no ListenBrainz links');
+    check(await until(() => page.locator('#eh-pin .ply-ctl.pb').count(), n => n === 1) === 1, 'the controls sit in the header');
+    check(await page.locator('.ply-ctl [data-ply="lb"]').count() === 0, 'no ListenBrainz button');
+    await page.locator('.ply-ctl [data-ply="more"]').click();
+    check(await until(() => page.locator('#eh-ply-menu').count(), n => n === 1) === 1, 'the more menu opens');
+    check(await page.locator('#eh-ply-menu a[href*="listenbrainz.org"]').count() === 0, 'no ListenBrainz links');
     await attachShot(testInfo, page, 'chip');
   });
 });
