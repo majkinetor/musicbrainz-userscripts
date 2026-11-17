@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011022
+// @version      2026.11.18.011023
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12418,12 +12418,13 @@ html[data-eh-ply-hold] #eh-ply{visibility:hidden}
 .ply-ctl .mbu-ov-x{position:static;flex:none}
 html.eh-ply-bar #eh-secfab{bottom:76px}
 html.eh-ply-bar body{padding-bottom:48px}
+html.eh-ply-win,html.eh-ply-win body{overflow:hidden!important}
 html.eh-ply-win body{padding:0!important}
 html.eh-ply-win #eh-ply{inset:0;display:flex;flex-direction:column;background:var(--surface,#fff)}
 html.eh-ply-win #eh-ply>.ply-ctl.pb.pa{position:relative;order:0;flex:none;justify-content:flex-start;border-width:0 0 1px}
 html.eh-ply-win .pa .ply-vp{bottom:auto;top:100%}
 html.eh-ply-win #eh-ply:not(.ply-novid) .ply-dock{position:static;order:1;flex:none;width:auto;max-width:none;margin:8px;}
-html.eh-ply-win .ply-wl{order:2;flex:1;min-height:0;overflow:auto;padding:4px;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
+html.eh-ply-win .ply-wl{order:2;flex:1;min-height:0;overflow:hidden auto;padding:4px;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
 .ply-wl .qi{display:flex;align-items:center;gap:9px;width:100%;box-sizing:border-box;padding:6px 9px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
 .ply-wl .qi:hover,.ply-wl .qi:focus-visible{background:color-mix(in srgb,currentColor 10%,transparent);outline:0}
 .ply-wl .qi[aria-current]{background:color-mix(in srgb,var(--accent,#ba478f) 16%,transparent);font-weight:600}
