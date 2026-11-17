@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.17.003000
+// @version      2026.11.17.090000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4477,7 +4477,7 @@ const HOSTS = [
     ['flo', 'FLO', /^https?:\/\/(?:[a-z0-9-]+\.)*music-flo\.com(?:[/:?#]|$)/i],
     ['genie', 'Genie', /^https?:\/\/(?:[a-z0-9-]+\.)*genie\.co\.kr(?:[/:?#]|$)/i],
     ['spotify', 'Spotify', /spotify\.com/], ['apple', 'Apple Music', /music\.apple\.com|itunes\.apple/], ['deezer', 'Deezer', /deezer\.com/],
-    ['tidal', 'Tidal', /tidal\.com/], ['qobuz', 'Qobuz', /qobuz\.com/], ['beatport', 'Beatport', /beatport\.com/], ['bandcamp', 'Bandcamp', /bandcamp\.com/],
+    ['tidal', 'Tidal', /tidal\.com/], ['qobuz', 'Qobuz', /qobuz\.com/], ['beatport', 'Beatport', /beatport\.com/], ['traxsource', 'Traxsource', /traxsource\.com/], ['bandcamp', 'Bandcamp', /bandcamp\.com/],
     ['ytmusic', 'YouTube Music', /music\.youtube\.com/], ['youtube', 'YouTube', /youtube\.com|youtu\.be/], ['audiomack', 'Audiomack', /audiomack\.com/],
     ['soundcloud', 'SoundCloud', /soundcloud\.com/], ['sevendigital', '7digital', /7digital\.com/], ['hdtracks', 'HDtracks', /hdtracks\.com/],
     ['amazonmusic', 'Amazon Music', /music\.amazon\./], ['amazon', 'Amazon', /amazon\./], ['discogs', 'Discogs', /discogs\.com/], ['allmusic', 'AllMusic', /allmusic\.com/],
@@ -4660,7 +4660,7 @@ function icon(p, size = 20) {
     const t = MONO[p.key] || p.name.replace(/[^A-Za-z0-9]/g, '').slice(0, 2);
     return `<span class="mgram" style="width:${size}px;height:${size}px;font-size:${Math.round(size * (t.length > 2 ? .34 : .42))}px" aria-hidden="true">${esc(t)}</span>`;
 }
-const ORDER = ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic', 'youtube', 'amazonmusic', 'amazon', 'beatport', 'bandcamp', 'soundcloud', 'audiomack', 'pandora', 'hdtracks', 'sevendigital', 'mora', 'ototoy', 'discogs', 'allmusic', 'jaxsta'];
+const ORDER = ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic', 'youtube', 'amazonmusic', 'amazon', 'beatport', 'traxsource', 'bandcamp', 'soundcloud', 'audiomack', 'pandora', 'hdtracks', 'sevendigital', 'mora', 'ototoy', 'discogs', 'allmusic', 'jaxsta'];
 const rank = p => { const i = ORDER.indexOf(p.key); return i < 0 ? 99 : i; };
 const sortP = ps => [...ps].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
 const KINDS = [['free', 'Stream free'], ['listen', 'Stream'], ['buy', 'Buy'], ['info', 'Info']];
