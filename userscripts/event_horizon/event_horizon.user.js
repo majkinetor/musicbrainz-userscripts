@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011013
+// @version      2026.11.18.011014
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12462,7 +12462,10 @@ function plySave() {
     const t = ply.q[ply.i]; if (!t || plyRemote || PLY_WINDOW) return;
     try { sessionStorage.setItem('eh-ply', JSON.stringify({ rel: t.rel, key: t.key, src: t.src, played: t.resume || t.played, q: ply.q })); } catch (e) {}
 }
+// a tab opened from another (Platform Check's add links, a middle-click) gets a copy of its sessionStorage, so the opener's
+// saved player too: a tab's first page drops it, and only reloads and in-tab navigation resume
 let plyResumed = false;
+try { const nav = performance.getEntriesByType('navigation')[0]; if (history.length <= 1 && (!nav || nav.type === 'navigate')) sessionStorage.removeItem('eh-ply'); } catch (e) {}
 setInterval(() => {
     if (PLY_WINDOW) plyPublish();
     if (plyRemote && !PLY_WINDOW) {
