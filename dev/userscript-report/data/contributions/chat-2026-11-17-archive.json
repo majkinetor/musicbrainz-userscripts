@@ -1,0 +1,124 @@
+{
+  "format": "mb-userscript-review",
+  "schemaVersion": 1,
+  "exportedAt": "2026-11-17T12:30:00.000Z",
+  "report": {
+    "reportId": "mb-userscripts-926",
+    "reportVersion": "209486e912e2bc3a3bf7093670bc26b0cc3db636a8940cf3f294a4495196e811",
+    "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/209486e912e2bc3a3bf7093670bc26b0cc3db636a8940cf3f294a4495196e811.html",
+    "wikiRevision": 79510,
+    "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+    "sourceManifestSha256": "dfe48854716f3ecb535f9e232f3fe0ad1bcee0e43ff5c49e482f699b52af9473",
+    "collectedAt": "2026-11-07T18:55:51.247Z"
+  },
+  "purpose": "User review data for AI incorporation. Preserve source provenance, distinguish user preferences from verified evidence, and investigate corrections before replacing original findings.",
+  "scoringPolicy": {
+    "weights": [
+      [
+        0,
+        "Ignore"
+      ],
+      [
+        1,
+        "Minor"
+      ],
+      [
+        3,
+        "Normal"
+      ],
+      [
+        5,
+        "Important"
+      ],
+      [
+        10,
+        "Essential"
+      ]
+    ],
+    "coverageCredit": {
+      "Covered": 1,
+      "Partial": 0.5,
+      "Gap": 0
+    },
+    "unknown": "Any active unknown coverage yields Needs assessment",
+    "essential": "An essential feature not fully covered caps the weighted verdict at Partial overlap",
+    "manualVerdict": "proposedVerdict is the visitor-selected verdict; retain the weighted suggestion separately"
+  },
+  "entries": [
+    {
+      "id": "wiki-a6e7dd3930919bbb327c",
+      "name": "Import Internet Archive releases to MusicBrainz",
+      "currentBasis": {
+        "name": "Import Internet Archive releases to MusicBrainz",
+        "hash": "222d51ed43a9f7b0cc96940a111febc1d0b7892c9b159795f69d1f96a8a61e5c",
+        "wikiRevision": 79510,
+        "wikiRowHash": "a7d2a120f0457c2c860900473f8fb99193032f13b1173f6c62ca22da3d7902e3",
+        "sourceIdentity": "https://github.com/JensBee/userscripts",
+        "sourceUrl": "https://github.com/JensBee/userscripts",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "No equivalent",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Import album data from the Internet Archive to add a new release on MusicBrainz.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Replaceable",
+        "note": "Fully replaceable now: First Contact imports Internet Archive audio items (#1061); this script no longer works.",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "Import Internet Archive releases to MusicBrainz",
+          "hash": "222d51ed43a9f7b0cc96940a111febc1d0b7892c9b159795f69d1f96a8a61e5c",
+          "wikiRevision": 79510,
+          "wikiRowHash": "a7d2a120f0457c2c860900473f8fb99193032f13b1173f6c62ca22da3d7902e3",
+          "sourceIdentity": "https://github.com/JensBee/userscripts",
+          "sourceUrl": "https://github.com/JensBee/userscripts",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "No equivalent",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Import album data from the Internet Archive to add a new release on MusicBrainz.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "d5079ea591c46c4be942bc5ca0c1a8887485bce3daa5bedbea26edc0f83fffee",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/d5079ea591c46c4be942bc5ca0c1a8887485bce3daa5bedbea26edc0f83fffee.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+          "sourceManifestSha256": "e328fdc67d6bafbccb56f5675bd47bb2c8b5caf91e77d1b76006a39106f66171",
+          "collectedAt": "2026-11-07T18:55:51.247Z"
+        },
+        "updatedAt": "2026-11-17T12:30:00.000Z"
+      }
+    }
+  ]
+}

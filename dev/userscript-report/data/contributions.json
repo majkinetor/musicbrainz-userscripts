@@ -124,6 +124,19 @@
       "disposition": "accepted",
       "acceptedBy": "majkinetor",
       "decision": "Maintainer verdict given in chat: Goram's and dufferZafar's Amazon importers are fully replaceable."
+    },
+    {
+      "id": "chat-2026-11-17-archive",
+      "discussionNumber": 1061,
+      "url": "https://github.com/majkinetor/musicbrainz-userscripts/issues/1061",
+      "authorId": "MDQ6VXNlcjg1NzY3",
+      "createdAt": "2026-11-17T12:30:00Z",
+      "updatedAt": "2026-11-17T12:30:00Z",
+      "exportPath": "contributions/chat-2026-11-17-archive.json",
+      "reportVersion": "209486e912e2bc3a3bf7093670bc26b0cc3db636a8940cf3f294a4495196e811",
+      "disposition": "accepted",
+      "acceptedBy": "majkinetor",
+      "decision": "Maintainer verdict given in chat: JensBee's Internet Archive importer (broken) is fully replaceable."
     }
   ]
 }
