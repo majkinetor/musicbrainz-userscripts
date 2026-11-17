@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-17 15:44 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-17 15:52 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1401,15 +1401,9 @@ The _Check MusicBrainz_ [setting](#settings-3) says when the album is looked up:
 
 #### Found releases
 
-With _On page load_, the releases that count as this album show beside the button as the page opens, above or below it, wherever there is room, up to two: each with its light, its title linked to the release, year and track count, the same icons, and Mission Control's icon to **update** it. Other editions are only a count, which opens the panel. While the button shows its text, they are no wider than the button.
+With _On page load_, the releases that count as this album show beside the button as the page opens, above or below it, wherever there is room, up to two: each with its light and its title, and +N for the other editions, which opens the panel. While the pointer is on a release, it shows as the panel shows it, with its icons and **Update this release**; a click opens it. While the button shows its text, they are no wider than the button.
 
-The _Found releases beside the button_ [setting](#settings-3) says how:
-
-| Found releases beside the button |                                                                                                                 |
-| -------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Compact                          | the light, the title and +N; the release as the panel shows it while the pointer is on it, and a click opens it |
-| Full                             | everything, always                                                                                              |
-| Off                              | none; only the light on the button                                                                              |
+Turn off _Found releases beside the button_ in the [settings](#settings-3) to keep only the light on the button.
 
 ### Consolidate
 
@@ -1753,7 +1747,7 @@ Drag the buttons anywhere; each platform remembers its place, and **⚙︎ → R
 | --------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | MusicBrainz server                            | musicbrainz.org           | where the release editor opens and the album is [looked up](#already-in-musicbrainz): musicbrainz.org, beta or test |
 | Check MusicBrainz                             | On import                 | when the album is [looked up](#already-in-musicbrainz) in MusicBrainz                                               |
-| Found releases beside the button              | Compact                   | with _On page load_: how the [found releases](#found-releases) show                                                 |
+| Found releases beside the button              | on                        | with _On page load_: the [found releases](#found-releases) beside the button                                        |
 | Annotation from _platform_'s notes            | on                        | the album's [notes](#platforms) go into the annotation, with _From <platform>: <album page>_                        |
 | Set Country as Worldwide for digital releases | on                        | on Discogs, use Worldwide for digital releases instead of its country                                               |
 | Close this page after the import              | off                       | the tab closes once the album is sent on; not on a failure                                                          |
