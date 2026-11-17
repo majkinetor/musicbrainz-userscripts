@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-17 16:29 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-17 17:00 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -2294,6 +2294,8 @@ The **Links** tab shows, per track, what each recording already links to (**Link
 <img width="1000" src="../isrc_scout/screenshots/links.png" />
 
 **Find links** resolves every track on every available provider, in parallel. A provider matched by position (Apple Music, Bandcamp, SoundCloud, Audiomack, Spotify, YouTube Music, Amazon Music) must also have the track's title, allowing a typo, a *feat.* or another apostrophe. A Deezer track that no longer plays anywhere isn't offered. **➕ Add links** adds everything found, with no authorizing needed.
+
+Bandcamp and YouTube Music also accept a small spelling difference in a short word when the track counts, position and length agree and the match is unambiguous. The log records these matches.
 
 #### Match
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.17.180000
+// @version      2026.11.17.180001
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -6990,7 +6990,7 @@
         const json = m[1].replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&amp;/g, '&');
         let j; try { j = JSON.parse(json); } catch (e) { return []; }
         let origin = ''; try { origin = new URL(j.url).origin; } catch (e) { origin = url.replace(/\/(?:album|track)\/.*$/, ''); }
-        return (j.trackinfo || []).map(ti => ({ title: ti.title || '', url: ti.title_link ? origin + ti.title_link : '' })).filter(ti => ti.url);
+        return (j.trackinfo || []).map(ti => ({ title: ti.title || '', len: ti.duration == null ? null : Number(ti.duration), url: ti.title_link ? origin + ti.title_link : '' }));
       })();
       _bcList = await _bcPromise.catch(() => []); _bcPromise = null;
       return _bcList;
@@ -7011,12 +7011,41 @@
       const aw = a.split(' '), bw = b.split(' ');
       return aw.length === bw.length && aw.every((w, i) => wordTypo(w, bw[i]));
     }
+    // A single short word may differ by one letter when the rest of a sufficiently long title
+    // agrees. This is only a fallback for the same album position, with duration and uniqueness.
+    function albumFuzzyTitle(x, y) {
+      // Compilation albums often prefix the track title with "Artist - ".
+      if (String(x).includes(' - ') && albumFuzzyTitle(String(x).slice(String(x).lastIndexOf(' - ') + 3), y)) return true;
+      const a = _nrm(unfeat(x)).split(' ').filter(Boolean), b = _nrm(unfeat(y)).split(' ').filter(Boolean);
+      if (a.length !== b.length || a.length < 2 || a.join('').length < 10 || b.join('').length < 10) return false;
+      let differences = 0, unchanged = 0;
+      for (let i = 0; i < a.length; i++) {
+        if (a[i] === b[i]) { unchanged += a[i].length; continue; }
+        if (++differences > 1 || Math.min(a[i].length, b[i].length) < 4 || a[i][0] !== b[i][0]) return false;
+        const p = a[i], q = b[i];
+        if (Math.abs(p.length - q.length) > 1) return false;
+        let n = 0; while (n < p.length && p[n] === q[n]) n++;
+        if (!(p.slice(n + 1) === q.slice(n + 1) || p.slice(n) === q.slice(n + 1) || p.slice(n + 1) === q.slice(n) || (p[n] === q[n + 1] && p[n + 1] === q[n] && p.slice(n + 2) === q.slice(n + 2)))) return false;
+      }
+      return differences === 1 && unchanged >= 8;
+    }
+    function albumFuzzyAt(list, t, idx, mbTracks) {
+      const e = list[idx], want = durToSec(t.dur);
+      if (list.length !== mbTracks.length) return false;
+      if (!e || want == null || e.len == null || !Number.isFinite(e.len) || Math.abs(e.len - want) > 3 || !albumFuzzyTitle(e.title, t.title)) return false;
+      return list.filter(x => x && (albumFuzzyTitle(x.title, t.title) || _sameTitle(x.title, t.title))).length === 1
+        && mbTracks.filter(x => albumFuzzyTitle(e.title, x.title) || _sameTitle(e.title, x.title)).length === 1;
+    }
     async function bcResolve(t, idx) {
       const list = await bcAlbum();
       const e = list[idx];
       if (!e) return null;
       // position match must agree on title (else the editions are out of sync) — don't add a likely-wrong link
-      return _sameTitle(e.title, t.title) ? e.url : null;
+      if (!e.url) return null;
+      if (_sameTitle(e.title, t.title)) return e.url;
+      if (albumFuzzyAt(list, t, idx, RELEASE.tracks)) { Log.info('Bandcamp track ' + (idx + 1) + ': matched "' + t.title + '" to "' + e.title + '" by position, similar title and length'); return e.url; }
+      Log.info('Bandcamp track ' + (idx + 1) + ' "' + t.title + '": position has "' + e.title + '" — no safe match');
+      return null;
     }
 
     // YouTube Music (#640), through the API its web player uses (anonymous). Two routes:
@@ -7202,6 +7231,10 @@
         const at = alb.tracks[idx];
         let s = at && !why(at) ? at : null;
         if (!s) { const c = alb.tracks.filter(x => !why(x)); if (c.length === 1) s = c[0]; }
+        if (!s && at && (!at.type || at.type === 'ATV') && albumFuzzyAt(alb.tracks, t, idx, RELEASE.tracks)) {
+          s = at;
+          Log.info('YouTube Music track ' + (idx + 1) + ': matched "' + t.title + '" to "' + at.title + '" by position, similar title and length');
+        }
         if (s) {
           const url = ytWatch(s.vid);
           const sib = RELEASE.rgFrom && RELEASE.rgFrom.ytmUrl;   // #302: the link came from a sibling release

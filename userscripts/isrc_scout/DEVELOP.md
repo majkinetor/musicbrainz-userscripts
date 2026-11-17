@@ -44,6 +44,8 @@ A Platform Check link withheld for a barcode or format mismatch isn't used by de
 
 A provider is offered for a track only when it can be resolved (Deezer and Tidal need the track's ISRC, the others the release's album link) or the recording already links it.
 
+Bandcamp and YouTube Music have a fallback for one letter's difference in a word of at least four letters, with at least eight unchanged letters in the other words. It requires equal track counts, the same position, a known length within 3 s, and a unique title candidate on each tracklist. YouTube's official-audio and playability checks still apply; its ISRC search keeps the stricter title match.
+
 **Dead links aren't offered.** Deezer keeps an ISRC → track mapping after it pulls the audio, so a by-ISRC lookup can return a track that streams nowhere (unreadable, available in no country). Find links treats it as not found.
 
 Providers resolve in parallel, each with its own light rate limit, and an album page is fetched once per release. Links are added through MusicBrainz's internal edit API over the logged-in session, so they need no OAuth. Ending and removing act on the existing relationship by its URL, which is why they work on any linked provider, including ones ISRC Scout can't add.

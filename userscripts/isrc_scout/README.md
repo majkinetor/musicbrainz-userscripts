@@ -114,6 +114,8 @@ The **Links** tab shows, per track, what each recording already links to (**Link
 
 **Find links** resolves every track on every available provider, in parallel. A provider matched by position (Apple Music, Bandcamp, SoundCloud, Audiomack, Spotify, YouTube Music, Amazon Music) must also have the track's title, allowing a typo, a *feat.* or another apostrophe. A Deezer track that no longer plays anywhere isn't offered. **➕ Add links** adds everything found, with no authorizing needed.
 
+Bandcamp and YouTube Music also accept a small spelling difference in a short word when the track counts, position and length agree and the match is unambiguous. The log records these matches.
+
 ### Match
 
 **⚡ Match** does both: it imports ISRCs from the fastest source the release links (Qobuz, Audiomack, Apple Music, Tidal… before Deezer, 7digital and Spotify), moving on when one fails or gives nothing, then runs **Find links**. It skips the release group's links, which need you to look.
