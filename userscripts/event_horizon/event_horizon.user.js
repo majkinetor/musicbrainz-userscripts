@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.17.110000
+// @version      2026.11.17.113000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4646,8 +4646,8 @@ const EXTRA = {
     googleplus: TILE('#dd4b39', '#fff', 'G+', 11), setlistfm: `<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#86c540"/>${NOTE}</svg>`, snac: TILE('#1c5873', '#f3e4c5', 'SNAC', 7),
     sonyjp: TILE('#000', '#fff', 'SONY', 7), vgmdb: TILE('#2b3a55', '#fff', 'VGM', 8),
     whosampled: '<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#ffe500"/><circle cx="7" cy="12" r="5" fill="#333"/><circle cx="17" cy="12" r="5" fill="#333"/><circle cx="7" cy="12" r="1.2" fill="#fff"/><circle cx="17" cy="12" r="1.2" fill="#fff"/></svg>',
-    // the Internet Archive's temple on a dark disc
-    archive: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#111"/><g fill="#fff"><path d="M5 9.6 12 5.4l7 4.2z"/><rect x="5.6" y="10.2" width="12.8" height="1.3"/><rect x="6.6" y="12.2" width="1.5" height="4.8"/><rect x="9.6" y="12.2" width="1.5" height="4.8"/><rect x="12.9" y="12.2" width="1.5" height="4.8"/><rect x="15.9" y="12.2" width="1.5" height="4.8"/><rect x="5" y="17.6" width="14" height="1.5"/></g></svg>',
+    // the Internet Archive's temple, bare and filling its square like the icons beside it, in the theme's text colour (majkinetor)
+    archive: '<svg viewBox="0 0 24 24" style="fill:var(--mbu-text,currentColor)"><path d="M1 7.5 12 1l11 6.5z"/><rect x="2" y="8.5" width="20" height="2"/><rect x="3.6" y="11.8" width="2.4" height="7.6"/><rect x="8.2" y="11.8" width="2.4" height="7.6"/><rect x="13.4" y="11.8" width="2.4" height="7.6"/><rect x="18" y="11.8" width="2.4" height="7.6"/><rect x="1" y="20.6" width="22" height="2.4"/></svg>',
     worldcat: '<svg viewBox="0 0 24 24"><g fill="none" stroke-width="3" stroke-linecap="round"><path d="M12 4a8 8 0 0 1 7 4" stroke="#6b3fa0"/><path d="M20 12a8 8 0 0 1-4 7" stroke="#e07b25"/><path d="M12 20a8 8 0 0 1-7-4" stroke="#3a9a3a"/><path d="M4 12a8 8 0 0 1 4-7" stroke="#1a7ab8"/><path d="M17 6a8 8 0 0 1 2.5 8" stroke="#b0207e"/></g></svg>',
 };
 const MONO = { amazon: 'a', allmusic: 'AM', mora: 'mo', ototoy: 'OT', pandora: 'P', jaxsta: 'Jx', ebay: 'eb', bol: 'bol' };
