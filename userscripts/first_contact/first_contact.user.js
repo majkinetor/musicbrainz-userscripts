@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.17.150000
+// @version      2026.11.17.170000
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Amazon (CDs, vinyl and MP3 albums in its store), Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Internet Archive (audio items), Presto Music, RateYourMusic, Album of the Year.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -3679,7 +3679,6 @@ function injectStyle() {
 #fc-root .fc-shelf .fc-shelf-upd svg { width: 16px; height: 16px; display: block; }
 #fc-root .fc-shelf-foot { display: flex; align-items: center; gap: 8px; padding: 1px 4px 0; }
 #fc-root .fc-shelf-row + .fc-shelf-foot { margin-top: 2px; border-top: 1px solid var(--mbu-border-soft); }
-#fc-root .fc-shelf .fc-shelf-hide { margin-left: auto; }
 ` + mbaKeysCss('#fc-panel');
     (document.head || document.documentElement).appendChild(st);
 }
@@ -4116,7 +4115,6 @@ function togglePanel(anchor) {
         + `<label class="fc-check" data-tip="Only the icon on the button\nHover it for what it does"><input type="checkbox" class="fc-iconly-opt"${s.iconOnly ? ' checked' : ''}> Icon only</label>`
         + `<label class="fc-check" data-tip="No ⚙︎ button\nRight-click: any of the buttons opens the settings (with ⚙︎ shown too)"><input type="checkbox" class="fc-gear-hidden-opt"${s.gearHidden ? ' checked' : ''}> Hide settings button, use right click instead</label>`
         + `<label class="fc-check" data-tip="A moved button scrolls with the page\nIt stays on its spot on the page (above the cover, say) instead of on the screen. In its corner it always stays on the screen. For ${here} only."><input type="checkbox" class="fc-scroll-opt"${here ? '' : ' disabled'}${scrollsWithPage(here) ? ' checked' : ''}> Moved button scrolls with the page on ${here}</label>`
-        + `<label class="fc-check" data-tip="The releases the check found, above or below the button\nOne row for each that is this album, with its badges and Update; the other editions as a count. With Check MusicBrainz: On page load. For ${here} only."><input type="checkbox" class="fc-shelf-opt"${here ? '' : ' disabled'}${here && !shelfHidden(here) ? ' checked' : ''}> Found releases beside the button</label>`
         // majkinetor: "change this to Reset: all | this one"
         + `<div class="fc-reset" data-tip="Drag the button to move it\nEach platform remembers its own place. Reset puts it back in the bottom-right corner."><span class="fc-pos">Position</span>Reset: `
         + `<button type="button" class="fc-reset-all" data-tip="Back in the corner on every platform">all</button> | `
@@ -4157,11 +4155,6 @@ function togglePanel(anchor) {
         Log.info(`check MusicBrainz: ${e.target.value}`);
         if (next.check === 'off') showLight(null);
         else if (current) checkOnLoad(current.provider, current.id);
-    });
-    panel.querySelector('.fc-shelf-opt').addEventListener('change', e => {
-        setShelfHidden(here, !e.target.checked);
-        Log.info(`found releases on ${here}: ${e.target.checked ? 'shown' : 'hidden'}`);
-        renderShelf();
     });
     panel.querySelector('.fc-harmony-host').addEventListener('change', e => {
         const next = Object.assign(settings(), { harmonyHost: e.target.value });
@@ -4690,15 +4683,8 @@ function showLight(light) {
     renderShelf();
 }
 // #1062: the releases the check on page load found, on a shelf beside the button: one row for each that
-// counts as this album (two at most), the other editions as a count that opens the panel. Hide folds it,
-// per platform; ⚙︎ brings it back.
-const SHELF_KEY = 'fc.shelfHidden';
-const shelfHidden = name => !!(GM_getValue(SHELF_KEY, {}) || {})[name];
-function setShelfHidden(name, on) {
-    const all = GM_getValue(SHELF_KEY, {}) || {};
-    if (on) all[name] = true; else delete all[name];
-    GM_setValue(SHELF_KEY, all);
-}
+// counts as this album (two at most), the other editions as a count that opens the panel.
+GM_deleteValue('fc.shelfHidden');   // the Hide switch the shelf had at first
 function renderShelf() {
     const root = document.getElementById('fc-root');
     if (!root) return;
@@ -4706,7 +4692,7 @@ function renderShelf() {
     const c = current && checks.get(checkKey(current.provider, current.id));
     const r = c && c.rel && c.result;   // the final light is drawn before busy is cleared
     const releases = r && r.light !== 'none' && c.rel ? r.releases : [];
-    if (checkMode() !== 'load' || !releases.length || shelfHidden(current.provider.name)) {
+    if (checkMode() !== 'load' || !releases.length) {
         if (shelf) shelf.remove();
         return;
     }
@@ -4749,26 +4735,17 @@ function renderShelf() {
         row.append(badges);
         shelf.append(row);
     }
-    const foot = el('div', 'fc-shelf-foot');
     const rest = releases.length - rows.length;
     if (rest) {
+        const foot = el('div', 'fc-shelf-foot');
         const others = releases.length - same.length;
         const more = el('button', 'fc-shelf-more', `+${rest} ${others === rest ? 'other ' : 'more '}edition${rest === 1 ? '' : 's'}`);
         more.type = 'button';
         more.dataset.tip = 'Every release the check found\nWith Add link only and Import anyway';
         more.addEventListener('click', () => importCurrent());
         foot.append(more);
+        shelf.append(foot);
     }
-    const hide = el('button', 'fc-shelf-hide', 'Hide');
-    hide.type = 'button';
-    hide.dataset.tip = `Only the light on the button\nFor ${provider.name}. ⚙︎ → Found releases beside the button brings them back.`;
-    hide.addEventListener('click', () => {
-        setShelfHidden(provider.name, true);
-        Log.info(`found releases hidden on ${provider.name}`);
-        renderShelf();
-    });
-    foot.append(hide);
-    shelf.append(foot);
     Log.debug(`shelf: ${rows.length} release(s) shown, ${rest} more`);
     placeShelf(root);
 }

@@ -110,8 +110,8 @@ test.describe('on a Deezer album the sandbox has', () => {
     check(/MusicBrainz has this album/.test(tip), `the tooltip says so (${tip})`);
   });
 
-  // #1062: the found releases on a shelf beside the button; Hide folds it, per platform, and ⚙︎ brings it back
-  test('On page load: the found release shows beside the button, and Hide folds it', { tag: ['@web', '@sandbox'] }, async ({ page, inject }) => {
+  // #1062: the found releases on a shelf beside the button
+  test('On page load: the found release shows beside the button', { tag: ['@web', '@sandbox'] }, async ({ page, inject }) => {
     test.setTimeout(90_000);
     await page.goto(ALBUM, { waitUntil: 'domcontentloaded' });
     await page.evaluate(() => GM_setValue('fc.settings', { server: 'test.musicbrainz.org', archive: false, check: 'load' }));
@@ -134,9 +134,5 @@ test.describe('on a Deezer album the sandbox has', () => {
     await row.locator('.fc-shelf-upd').click();
     const upd = await until(() => page.evaluate(() => window.__fcLastUpdate), Boolean);
     check(upd && upd.mbid === RAM, `Update goes to the release (${JSON.stringify(upd)})`);
-    await shelf.locator('.fc-shelf-hide').click();
-    check(await shelf.count() === 0, 'Hide folds it back to the light');
-    check(await page.locator('#fc-root .fc-go .fc-light[data-light="linked"]').count() === 1, 'the light stays');
-    check(await page.evaluate(() => GM_getValue('fc.shelfHidden', {}).Deezer === true), 'remembered for Deezer');
   });
 });
