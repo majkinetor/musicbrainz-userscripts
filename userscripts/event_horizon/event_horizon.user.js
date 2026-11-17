@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.17.220000
+// @version      2026.11.17.231500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -89,6 +89,7 @@ if (window.top !== window && (location.hostname === 'bandcamp.com' && location.p
     window.addEventListener('message', ev => {
         if (ev.source !== window.parent || !ev.data || typeof ev.data.ehPlyCmd !== 'string') return;
         if (!armed) { armed = true; post('hello'); }
+        if (ev.data.ehPlyCmd === 'vol') { const a = document.querySelector('audio'); if (a && ev.data.v >= 0) a.volume = Math.min(1, ev.data.v); return; }
         if (ev.data.ehPlyCmd === 'seek') { const a = document.querySelector('audio'); if (a && ev.data.pos >= 0) a.currentTime = ev.data.pos; return; }
         const play = ev.data.ehPlyCmd === 'play';
         if (press(play) === false) { let n = 0; const iv = setInterval(() => { if (press(play) !== false || ++n > 60) clearInterval(iv); }, 250); }
@@ -4325,10 +4326,11 @@ S.fxCur = ''; // the effect preset being worked on: Save writes a change into it
 S.colW = {}; // the widths dragged in a table, by section; the title takes what they leave, and none means the table fits itself
 S.colPick = {}; // the tables' column choice, by section: { order, off }; none is the usual table
 S.pending = false; // MusicBrainz's grey mark on what has edits open; takes one more request per page
-VIEW.push('player', 'playerPlace', 'playerLb', 'playerScrobble', 'playerVideo');
+VIEW.push('player', 'playerPlace', 'playerLb', 'playerScrobble', 'playerVideo', 'playerVol');
 S.player = true; // the play buttons on a release's tracks, and the player they start
 S.playerPlace = 'bar'; // where the player shows: 'bar' at the bottom, 'chip' at the top right
 S.playerLb = true; // the player's links to the track and the release in ListenBrainz
+S.playerVol = 100; // the player's volume, 0 to 100; 0 is muted
 S.playerVideo = true; // YouTube's video shows above the player; its Hide video button
 S.playerScrobble = false; // what the player plays goes to ListenBrainz as listens, under the token kept apart in 'lbToken'
 // the page's width; --eh-wn is the same as a length (the screen's for Full), for the launchers' column
@@ -8262,14 +8264,15 @@ function pgHero(g, type, icon, kind, F, by, pic) {
 const codes = xs => xs.map(i => copyB(i)).join(' ');
 function recHero(d) {
     const g = d.g;
-    return pgHero(g, 'recording', MK_REC, g.video ? 'Video' : 'Recording', [
+    const play = S.player && plySources({ links: g.links || [] }).length ? `<button class="tx" type="button" data-playrec="1" aria-label="Play" data-tip="Play the recording\nFrom its streaming links">${SVG(PLY_I.play)}<span class="txl">Play</span></button>` : '';
+    return (h => play ? h.replace('<span class="acts">', '<span class="acts">' + play) : h)(pgHero(g, 'recording', MK_REC, g.video ? 'Video' : 'Recording', [
         ['Length', g.len && `<span>${esc(ms(g.len))}</span>`],
         ['First released', g.first && `<span>${fdate(g.first)}</span>`],
         [g.isrcs.length > 1 ? 'ISRCs' : 'ISRC', g.isrcs.length && codes(g.isrcs), g.isrcs.length > 2 ? 'wide' : ''],
         [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide'],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
         ['', g.links.length && rlQuiet(g), 'wide'],
-    ], g.ac.length ? 'by ' + acHtml(g.ac) : '');
+    ], g.ac.length ? 'by ' + acHtml(g.ac) : ''));
 }
 const WK_ATTRS = 3, wkId = k => /\b(id|code)$/i.test(k);
 const wkIdRow = ([k, v]) => `<div class="wkr"><span>${esc(k.replace(/\s+id$/i, ''))}</span>${mono(v)}</div>`;
@@ -11752,6 +11755,8 @@ const PLY_I = {
     more: '<circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"/>',
     rel: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/>',
     x: '<path d="M5 5l14 14M19 5L5 19"/>',
+    vol: '<path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor" stroke="none"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/>',
+    mute: '<path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor" stroke="none"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>',
 };
 // kind: the source playing; ctl: its widget takes play and pause; ends: it says when a track ends (the others end
 // when the track's length has played); gen: which plyGo is current, for Bandcamp's late answer
@@ -11872,6 +11877,25 @@ function plyCmd(play) {
     else if (k === 'soundcloud') plyPost(JSON.stringify({ method: play ? 'play' : 'pause' }));
     else plyPost({ ehPlyCmd: play ? 'play' : 'pause' });
 }
+// the volume, in each widget's words; Spotify's and Apple's can't be told
+const plyHasVol = () => ply.ctl && ply.kind !== 'spotify';
+function plyVol() {
+    if (!plyHasVol()) return;
+    const v = Math.max(0, Math.min(100, Math.round(+S.playerVol || 0))), k = ply.kind;
+    if (ply.yt) { plyPost(JSON.stringify({ event: 'command', func: v ? 'unMute' : 'mute', args: [] })); plyPost(JSON.stringify({ event: 'command', func: 'setVolume', args: [v] })); }
+    else if (k === 'soundcloud') plyPost(JSON.stringify({ method: 'setVolume', value: v }));
+    else plyPost({ ehPlyCmd: 'vol', v: v / 100 });
+}
+// once per track, when its widget first answers
+const plyVolOnce = () => { if (ply.volGen !== ply.gen) { ply.volGen = ply.gen; if (+S.playerVol !== 100) plyVol(); } };
+function plyVolSet(v, keep) {
+    v = Math.max(0, Math.min(100, Math.round(v)));
+    if (v && !keep) ply.lastVol = v;
+    S.playerVol = v; save(); plyVol();
+    const r = plyCtl && plyCtl.querySelector('.ply-vol'); if (r && +r.value !== v) r.value = v;
+    const b = plyCtl && plyCtl.querySelector('[data-ply="mute"]');
+    if (b) { b.innerHTML = SVG(PLY_I[v ? 'vol' : 'mute']); b.setAttribute('aria-pressed', String(!v)); b.dataset.tip = v ? 'Mute' : 'Unmute'; b.setAttribute('aria-label', b.dataset.tip); }
+}
 // a jump to ms into the track, in each widget's words; Apple's can't be told
 function plySeek(ms) {
     const k = ply.kind, t = ply.q[ply.i]; if (!t || !ply.ctl) return;
@@ -11894,6 +11918,7 @@ window.addEventListener('message', ev => {
     if (ply.yt) {
         const st = m.event === 'onStateChange' ? m.info : m.event === 'infoDelivery' && m.info ? m.info.playerState : undefined;
         if (st === 0) plyEnded('YouTube'); else if (st === 1 || st === 2) plyState(st === 2);
+        if (st === 1) plyVolOnce();
     } else if (k === 'spotify') {
         if (m.type === 'ready' && !t.kicked) { t.kicked = true; LOG.debug('player: Spotify ready, started'); plyPost({ command: 'toggle' }); }
         else if (m.type === 'playback_update' && m.payload) {
@@ -11903,12 +11928,12 @@ window.addEventListener('message', ev => {
             else plyState(!!isPaused);
         }
     } else if (k === 'soundcloud') {
-        if (m.method === 'ready') { LOG.debug('player: SoundCloud ready, started'); for (const e of ['finish', 'play', 'pause', 'playProgress']) plyPost(JSON.stringify({ method: 'addEventListener', value: e })); plyPost(JSON.stringify({ method: 'play' })); }
+        if (m.method === 'ready') { LOG.debug('player: SoundCloud ready, started'); for (const e of ['finish', 'play', 'pause', 'playProgress']) plyPost(JSON.stringify({ method: 'addEventListener', value: e })); plyPost(JSON.stringify({ method: 'play' })); plyVolOnce(); }
         else if (m.method === 'finish') plyEnded('SoundCloud');
         else if (m.method === 'play' || m.method === 'pause') plyState(m.method === 'pause');
         else if (m.method === 'playProgress' && m.value) t.played = m.value.currentPosition || t.played;
     } else if (typeof m.ehPly === 'string') {
-        if (ply.bridged !== ply.gen) { ply.bridged = ply.gen; ply.ends = true; LOG.debug('player: the', k, 'widget answers'); }
+        if (ply.bridged !== ply.gen) { ply.bridged = ply.gen; ply.ends = true; LOG.debug('player: the', k, 'widget answers'); plyVolOnce(); }
         if (m.pos > 0) t.played = m.pos * 1000;
         if (m.ehPly === 'ended') plyEnded(k); else if (m.ehPly !== 'hello') plyState(m.ehPly === 'pause');
     }
@@ -11928,7 +11953,7 @@ function plyRoot() {
         root.innerHTML = '<div class="ply-dock"></div>';
         document.documentElement.append(root);
     }
-    if (!plyCtl) { plyCtl = document.createElement('div'); plyCtl.addEventListener('click', plyClick); }
+    if (!plyCtl) { plyCtl = document.createElement('div'); plyCtl.addEventListener('click', plyClick); plyCtl.addEventListener('input', ev => { if (ev.target.classList.contains('ply-vol')) plyVolSet(+ev.target.value); }); }
     return root;
 }
 // B: the controls go into the pinned header, after its title, and the header stays shown; without one, back to the chip
@@ -11956,21 +11981,22 @@ function plyDraw() {
     const nav = plyB('prev', 'Previous track', ply.i > 0 ? '' : ' disabled')
         + (ply.ctl ? plyB(ply.paused ? 'play' : 'pause', ply.paused ? 'Play' : 'Pause', '', ' big') : '')
         + plyB('next', 'Next track', ply.i + 1 < ply.q.length ? '' : ' disabled');
-    const name = `<button type="button" class="ply-t" data-ply="list" aria-haspopup="menu" data-tip="${esc(t.title + ' — ' + t.artist + '\n' + t.relTitle)}\nClick: the playlist"><span class="ply-n">${esc(plyNo(t))}</span><b>${esc(t.title)}</b><span class="ply-ar">· ${esc(t.artist)}</span><span class="ply-rl">· ${esc(t.relTitle)}</span></button>`;
+    const name = `<button type="button" class="ply-t" data-ply="list" aria-haspopup="menu" data-tip="${esc(t.title + ' — ' + t.artist + '\n' + t.relTitle)}\nClick: the playlist"><span class="ply-n">${esc(plyNo(t))}</span><b>${esc(t.title)}</b><span class="ply-ar">· ${esc(t.artist)}</span>${t.relTitle ? `<span class="ply-rl">· ${esc(t.relTitle)}</span>` : ''}</button>`;
     const prog = ply.ctl && t.len ? `<span class="ply-pr sk" data-ply="seek" data-tip="Click: jump there"><i></i></span>` : '<span class="ply-pr" aria-hidden="true"><i></i></span>';
     const menu = lb ? `<button type="button" class="ply-b ply-lb${t.ok != null ? ' sent' : ''}" data-ply="lb" aria-haspopup="menu" aria-label="ListenBrainz" data-tip="ListenBrainz${t.ok != null ? '\nListen sent' : ''}">${plyLogo(18)}</button>`
         : bar ? '' : plyB('more', 'More', ' aria-haspopup="menu"');
     if (bar) {
         const many = t.srcs.length > 1;
-        const src = `<button type="button" class="ply-sc" data-ply="src"${many ? '' : ' disabled'} aria-label="Source: ${esc(p.name)}" data-tip="Playing from ${esc(p.name)}${many ? '\nClick: another source' : ''}">${esc(p.name)}</button>`;
-        const cov = `<img class="ply-cov" src="https://coverartarchive.org/release/${t.rel}/front-250" alt="">`;
+        const src = `<button type="button" class="ply-sc" data-ply="src"${many ? '' : ' disabled'} aria-label="Source: ${esc(p.name)}" data-tip="Playing from ${esc(p.name)}${many ? '\nClick: another source' : ''}">${icon(p, 18)}</button>`;
+        const cov = t.rel ? `<a class="ply-cov" href="${MB}/release/${t.rel}" aria-label="Open the release" data-tip="Open the release"><img src="https://coverartarchive.org/release/${t.rel}/front-250" alt=""></a>` : '';
+        const v = +S.playerVol, vol = plyHasVol() ? `<span class="ply-vg"><button type="button" class="ply-b" data-ply="mute" aria-pressed="${!v}" aria-label="${v ? 'Mute' : 'Unmute'}" data-tip="${v ? 'Mute' : 'Unmute'}">${SVG(PLY_I[v ? 'vol' : 'mute'])}</button><input type="range" class="ply-vol" min="0" max="100" step="1" value="${v}" aria-label="Volume"></span>` : '';
         const vid = ply.yt ? plyB('video', S.playerVideo ? 'Hide the video' : 'Show the video', ` aria-pressed="${S.playerVideo}"`) : '';
         plyCtl.innerHTML = `<div class="ply-l">${nav}</div>`
-            + `<div class="ply-m"><div class="ply-row">${cov}${name}</div>`
-            + `<div class="ply-row ply-pg"><span class="ply-tm" data-tm="at"></span>${prog}<span class="ply-tm">${t.len ? dur(t.len) : ''}</span></div></div>`
-            + `<div class="ply-r">${src}${vid}${menu}<button type="button" class="mbu-ov-x" data-ply="x" aria-label="Close" data-tip="Close the player">${SVG(PLY_I.x)}</button></div>`;
+            + `<div class="ply-m">${cov}<div class="ply-mc"><div class="ply-row">${name}</div>`
+            + `<div class="ply-row ply-pg"><span class="ply-tm" data-tm="at"></span>${prog}<span class="ply-tm">${t.len ? dur(t.len) : ''}</span></div></div></div>`
+            + `<div class="ply-r">${vol}${src}${vid}${menu}<button type="button" class="mbu-ov-x" data-ply="x" aria-label="Close" data-tip="Close the player">${SVG(PLY_I.x)}</button></div>`;
     } else plyCtl.innerHTML = `<span class="ply-g">${nav}</span>${name}${prog}${menu}`;
-    const im = plyCtl.querySelector('.ply-cov');
+    const im = plyCtl.querySelector('.ply-cov img');
     if (im) im.addEventListener('error', () => { if (/-250$/.test(im.src)) { LOG.debug('player: no cover thumbnail, trying the full front'); im.src = im.src.replace(/-250$/, ''); } else im.remove(); });
     plyProg();
     plyPin();
@@ -11993,6 +12019,7 @@ const plySrc = key => { ply.pref = key; plyGo(ply.i, key); };
 function plyClick(ev) {
     const b = ev.target.closest('[data-ply]'); if (!b || b.disabled) return;
     const k = b.dataset.ply;
+    if (k === 'mute') { const v = +S.playerVol; LOG.info('player:', v ? 'muted' : 'unmuted'); plyVolSet(v ? 0 : ply.lastVol || 100, true); return; }
     if (k === 'seek') { const t = ply.q[ply.i], r = b.getBoundingClientRect(); if (t && t.len && r.width) plySeek(Math.round(Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)) * t.len)); return; }
     if (k === 'prev') plyStep(-1);
     else if (k === 'next') plyStep(1);
@@ -12007,9 +12034,24 @@ function plyClick(ev) {
 const plyNo = t => ply.q.some(x => !String(x.key).startsWith('1-')) ? t.key : String(t.n);
 // the queue: a click plays that track
 function plyListMenu(btn) {
-    plyMenu(btn, '<div class="hd">Playlist</div>' + ply.q.map((x, i) => `<button type="button" class="it qi" role="menuitem" data-k="q${i}"${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span><span class="ql">${x.len ? dur(x.len) : ''}</span></button>`).join(''),
+    plyMenu(btn, '<div class="hd"><span>Playlist</span>' + (ply.q.length > 1 ? '<input type="search" class="qf" placeholder="Filter" aria-label="Filter the playlist" autocomplete="off">' : '') + '</div>' + ply.q.map((x, i) => `<button type="button" class="it qi" role="menuitem" data-k="q${i}"${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span><span class="ql">${x.len ? dur(x.len) : ''}</span></button>`).join(''),
         ({ k }) => { const i = +String(k).slice(1); if (i >= 0 && i < ply.q.length && i !== ply.i) { LOG.info('player: picked from the playlist', i + 1); plyGo(i, ply.pref); } });
     document.querySelector('#eh-ply-menu [aria-current]')?.scrollIntoView({ block: 'nearest' });
+    const qf = document.querySelector('#eh-ply-menu .qf'); if (!qf) return;
+    const fold = x => String(x).normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+    const rows = [...document.querySelectorAll('#eh-ply-menu .qi')].map(r => [r, fold(r.textContent)]);
+    qf.addEventListener('input', () => { const w = fold(qf.value).trim().split(/\s+/).filter(Boolean); for (const [r, tx] of rows) r.hidden = !w.every(x => tx.includes(x)); });
+    qf.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); rows.find(([r]) => !r.hidden)?.[0].click(); } });
+    qf.focus({ preventScroll: true });
+}
+// one recording, from its own page: a queue of one
+function plyRec(g, eds) {
+    if (!S.player || !g) return;
+    const e = (eds || [])[0] || {}, srcs = plySources({ links: g.links || [] });
+    if (!srcs.length) { toast('Nothing to play this recording from'); return; }
+    ply.q = [{ key: '1-1', n: 1, title: g.title, rid: g.id, artist: acText(g.ac), len: g.len || 0, srcs, rel: e.id || '', relTitle: e.title || '', front: true }];
+    LOG.info('player: start the recording', g.id);
+    plyGo(0);
 }
 // a menu under or above the button that opened it; pick gets the clicked item's {k} or {m}
 function plyMenu(btn, html, pick) {
@@ -12045,7 +12087,7 @@ function plyLbMenu(btn) {
         : t.sent ? 'Sending the listen…' : `Listen sends at ${dur(plyDue(t))}`;
     const parts = [];
     if (S.playerLb || S.playerScrobble) parts.push(`<div class="hd">${plyLogo(14)}<span>ListenBrainz</span></div>`
-        + (S.playerLb ? it(`https://listenbrainz.org/track/${t.rid}`, 'note', 'This track') + it(`https://listenbrainz.org/release/${t.rel}`, 'rel', 'This release') : '')
+        + (S.playerLb ? it(`https://listenbrainz.org/track/${t.rid}`, 'note', 'This track') + (t.rel ? it(`https://listenbrainz.org/release/${t.rel}`, 'rel', 'This release') : '') : '')
         + (st ? `<hr><div class="st">${st}</div>` : '')
         + (S.playerLb ? it('https://listenbrainz.org/my/listens/', 'ext', 'Your listens') : ''));
     if (S.playerPlace === 'chip') parts.push((t.srcs.length > 1 ? `<div class="hd">Play from</div>${plySrcItems(t)}` : '')
@@ -12078,8 +12120,11 @@ const PLY_CSS = `
 .ply-ctl .ply-pr.sk{cursor:pointer;background-clip:content-box;padding:6px 0;height:3px;box-sizing:content-box}
 .ply-ctl .ply-pr.sk:hover{height:5px;padding:5px 0}
 .ply-ctl .ply-pr i{display:block;width:0;height:100%;background:var(--accent,#ba478f)}
-.ply-ctl .ply-sc{flex:none;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 7px;margin-right:4px;border:1px solid var(--line,#ddd);border-radius:5px;background:none;color:inherit;font:11px/1.4 system-ui,sans-serif;cursor:pointer}
-.ply-ctl .ply-sc:hover:not([disabled]){border-color:var(--accent,#ba478f)}
+.ply-ctl .ply-sc{display:inline-flex;align-items:center;justify-content:center;flex:none;width:30px;height:30px;padding:0;border:0;border-radius:7px;background:none;color:inherit;cursor:pointer}
+.ply-ctl .ply-sc img,.ply-ctl .ply-sc svg{width:18px;height:18px;display:block}
+.ply-ctl .ply-sc:hover:not([disabled]){background:color-mix(in srgb,currentColor 9%,transparent)}
+.ply-ctl .ply-vg{display:inline-flex;align-items:center;gap:2px;flex:none;margin-right:4px}
+.ply-ctl .ply-vol{width:80px;margin:0;accent-color:var(--accent,#ba478f);cursor:pointer}
 .ply-ctl .ply-sc[disabled]{cursor:default}
 .ply-ctl .mbu-ov-x{position:static;flex:none}
 .ply-ctl.pa{position:fixed;z-index:9995;left:0;right:0;bottom:0;height:60px;padding:0 16px;box-sizing:border-box;display:grid;grid-template-columns:1fr minmax(0,860px) 1fr;padding-right:68px;align-items:center;gap:16px;background:var(--surface,#fff);border-top:1px solid var(--line,#ddd);font:14px/1.3 system-ui,sans-serif;color:var(--text,#222)}
@@ -12087,10 +12132,12 @@ const PLY_CSS = `
 .pa .ply-l{justify-content:flex-end}
 .pa .ply-r{justify-content:flex-start}
 html.eh-ply-bar #eh-secfab{bottom:76px}
-.pa .ply-r{justify-content:flex-end}
-.pa .ply-m{display:flex;flex-direction:column;gap:5px;min-width:0}
+.pa .ply-m{display:flex;align-items:center;align-self:stretch;gap:10px;min-width:0;padding:6px 0;box-sizing:border-box}
+.pa .ply-mc{flex:1;display:flex;flex-direction:column;gap:5px;min-width:0}
 .pa .ply-row{display:flex;align-items:center;gap:8px;min-width:0}
-.pa .ply-cov{width:26px;height:26px;border-radius:4px;object-fit:cover;flex:none}
+.pa .ply-cov{display:block;flex:none;height:100%;aspect-ratio:1;border-radius:4px;overflow:hidden;background:color-mix(in srgb,currentColor 8%,transparent)}
+.pa .ply-cov img{display:block;width:100%;height:100%;object-fit:cover}
+.pa .ply-cov:hover{outline:2px solid var(--accent,#ba478f);outline-offset:1px}
 html.eh-ply-bar body{padding-bottom:60px}
 .ply-ctl.pb{display:flex;align-items:center;gap:6px;flex:0 1 auto;padding:0 10px;margin:0 6px;border-left:1px solid var(--line,#ddd);border-right:1px solid var(--line,#ddd);font-size:13px}
 .pb .ply-b,.pb .ply-b.big,.pb .ply-b.big:hover{width:28px;height:28px}
@@ -12107,6 +12154,9 @@ html.eh-ply-bar body{padding-bottom:60px}
 html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
 .ply-menu{position:fixed;z-index:9996;min-width:230px;max-height:calc(100vh - 16px);overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;box-sizing:border-box;padding:5px;background:var(--surface,#fff);color:var(--text,#222);border:1px solid var(--line,#ddd);border-radius:9px;box-shadow:0 6px 20px rgba(0,0,0,.12);font:13px/1.3 system-ui,sans-serif}
 .ply-menu .hd{display:flex;align-items:center;gap:7px;padding:6px 9px 4px;color:var(--muted,#777);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.ply-menu .hd .qf{margin-left:auto;width:150px;min-width:0;padding:3px 7px;border:1px solid var(--line,#ddd);border-radius:5px;background:transparent;color:var(--text,#222);font:12px/1.3 system-ui,sans-serif;text-transform:none;letter-spacing:0;outline:0}
+.ply-menu .hd .qf:focus{border-color:var(--accent,#ba478f)}
+.ply-menu .qi[hidden]{display:none}
 .ply-menu .it{display:flex;align-items:center;gap:9px;width:100%;box-sizing:border-box;padding:7px 9px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;text-align:left;text-decoration:none;cursor:pointer}
 .ply-menu .it:hover,.ply-menu .it:focus-visible,.ply-menu .it[aria-current]{background:color-mix(in srgb,currentColor 10%,transparent);outline:0}
 .ply-menu .it svg,.ply-menu .it img{width:16px;height:16px;flex:none}
@@ -12119,7 +12169,7 @@ html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
 .ply-menu .st{display:flex;align-items:center;gap:8px;padding:5px 9px;color:var(--muted,#777);font-size:12px}
 .ply-menu .st .d{width:7px;height:7px;border-radius:50%;background:#3fa56b;flex:none}
 @media(max-width:720px){.pb .ply-t{max-width:110px}}
-@media(max-width:600px){.ply-ctl.pa{grid-template-columns:auto minmax(0,1fr) auto;gap:8px;padding:0 8px}.pa .ply-cov,.pa .ply-sc,.pa .ply-tm{display:none}#eh-ply .ply-dock{right:8px;max-width:calc(100vw - 16px)}#eh-ply>.ply-ctl.pb{right:8px;left:8px;max-width:none}.pb .ply-pr{display:none}}
+@media(max-width:600px){.ply-ctl.pa{grid-template-columns:auto minmax(0,1fr) auto;gap:8px;padding:0 8px}.pa .ply-cov,.pa .ply-sc,.pa .ply-tm,.pa .ply-vol{display:none}#eh-ply .ply-dock{right:8px;max-width:calc(100vw - 16px)}#eh-ply>.ply-ctl.pb{right:8px;left:8px;max-width:none}.pb .ply-pr{display:none}}
 `;
 // is this release's track the one playing
 const plyOn = (r, key) => { const t = ply.q[ply.i]; return !!t && t.rel === r.id && t.key === key; };
@@ -12190,6 +12240,7 @@ function onClick(ev) {
     let keep;
     if (d.play) { plyStart(data.rel, d.play); return; }
     if (d.playall) { plyStart(data.rel); return; }
+    if (d.playrec) { plyRec(data.g); return; }
     if ('srch' in d) { const fm = b.form; if (fm.classList.toggle('open')) fm.query.focus(); return; }
     if (d.collchange) { collectionChange(d.collkey, d.collchange); return; }
     if (d.collrefresh) { collectionLoad(d.collrefresh, true); return; }
