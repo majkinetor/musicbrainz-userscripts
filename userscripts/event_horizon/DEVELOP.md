@@ -52,7 +52,7 @@ Event Horizon shares the release and release-group lookups its page draws from, 
 | `MBU.ehReleaseGroup(id)` | the same for a release group                                                                                  |
 | `mbu-eh-release` (event) | fired on `document` when a release lookup arrives, a redraw with changes included; `detail` is the release ID |
 
-The release lookup's `inc` is `artist-credits+labels+label-rels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+series-rels+media+genres+tags+release-groups+annotation+aliases`; the release group's is `ratings+release-group-rels+series-rels+url-rels`. A reader checks the share first and falls back to its own request when it is `null` or fails (Event Horizon off, or another entity shown). ISRC Scout, Platform Check and Fuzzy Logic read it; Mission Control, Art Station and Scribe could ([#1064](https://github.com/majkinetor/musicbrainz-userscripts/issues/1064)).
+The release lookup's `inc` is `artist-credits+labels+label-rels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+series-rels+media+genres+tags+release-groups+annotation+aliases`; the release group's is `ratings+release-group-rels+series-rels+url-rels`. A reader checks the share first and falls back to its own request when it is `null` or fails (Event Horizon off, or another entity shown). ISRC Scout, Platform Check, Fuzzy Logic and Mission Control read it; Art Station and Scribe could ([#1064](https://github.com/majkinetor/musicbrainz-userscripts/issues/1064)).
 
 A script needs `@grant unsafeWindow` to see the share: without it, a sandboxed script reads its own `window`.
 

@@ -208,7 +208,7 @@ On an entity's page, in the viewer or on MusicBrainz's own page, a key opens one
 
 Compatible scripts appear under **More (⋯)** in the page header and pinned bar. Select an item to launch its script. A script working on its own table can temporarily suspend Event Horizon's shortcuts and hide the corner launchers until its window closes.
 
-Inside Event Horizon, ISRC Scout, Platform Check and Fuzzy Logic read the release and its release group from what Event Horizon already got from MusicBrainz. They ask MusicBrainz nothing for it, so they show sooner and don't slow your other tabs. Without Event Horizon, each asks MusicBrainz itself.
+Inside Event Horizon, ISRC Scout, Platform Check, Fuzzy Logic and Mission Control read the release and its release group from what Event Horizon already got from MusicBrainz. They ask MusicBrainz nothing for it, so they show sooner and don't slow your other tabs. Without Event Horizon, each asks MusicBrainz itself.
 
 > [!NOTE]
 > Authors can use the [menu-item protocol](DEVELOP.md#external-menu-items), the [shared lookups](DEVELOP.md#shared-lookups) and [coexistence conventions](../../DEVELOP.md#interoperability).

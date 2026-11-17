@@ -55,3 +55,20 @@ test('Fuzzy Logic reads the release Event Horizon already looked up', { tag: ['@
   check(log.includes('release read from Event Horizon'), 'Fuzzy Logic read the release from Event Horizon');
   check(!/\/ws\/2\/release\/[0-9a-f-]{36}\?inc=url-rels/.test(log), 'and did not ask for its links');
 });
+
+// Mission Control reads the release it follows from Event Horizon's lookup
+test('Mission Control reads the release Event Horizon already looked up', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+  await page.goto('https://test.musicbrainz.org/release/' + REL, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await settled(page);
+  await inject('event_horizon');
+  const on = () => page.evaluate(() => document.documentElement.hasAttribute('data-mbu-dock'));
+  if (!(await on())) await page.locator('#eh-launch').click();
+  check(await until(on, v => v) === true, 'EH shows');
+  check(await until(() => page.evaluate(id => !!(window.MBU && window.MBU.ehRelease && window.MBU.ehRelease(id)), REL), v => v) === true, 'EH shares its release lookup');
+  await inject('mission_control', { waitFor: '__mcTest' });
+  const rel = await page.evaluate(id => window.__mcTest.apiRelease(id), REL);
+  check(rel && rel.tracks.length > 0 && !!rel.title, 'the release has its tracks: ' + (rel && rel.title));
+  const log = await page.evaluate(() => Object.values(window.__mbuLogs || {}).map(l => l.markdown()).join('\n'));
+  check(log.includes('release read from Event Horizon'), 'Mission Control read it from Event Horizon');
+  check(!log.includes('Mission Control release'), 'and asked MusicBrainz nothing');
+});
