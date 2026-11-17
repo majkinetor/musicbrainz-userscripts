@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.17.5
+// @version      2026.11.17.7
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -9226,6 +9226,14 @@ async function runScans() {
     setScanStatus(ok ? 'done' : 'halt');
     if (pcDockItem) pcDockItem.busy(false);
 }
+// Event Horizon's lookup of this release (or, with 'ehReleaseGroup', release group), as JSON text, or null (#1064)
+async function pcEhShared(id, fn = 'ehRelease') {
+    try {
+        const ns = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
+        const p = ns.MBU && ns.MBU[fn] && ns.MBU[fn](id);
+        return p ? String(await p) : null;
+    } catch (e) { return null; }
+}
 async function runScansInner() {
     // Source precedence: DOM (instant, no network) > /ws/2 API (~10s when MB is
     // hot) > mbDataCache (transient MB outage). DOM is identical data to API
@@ -9241,9 +9249,19 @@ async function runScansInner() {
     } else if (mbData) {
         appendLog('MusicBrainz', `Parsed from page DOM — skipping API call`, 'ok');
     } else {
-        appendLog('MusicBrainz', `DOM scrape incomplete — falling back to /ws/2 API`);
-        const mb = await gmGet(`${MB_ORIGIN}/ws/2/release/${mbid}?inc=artists+media+url-rels+release-groups+labels&fmt=json`);
-        appendLog('MusicBrainz', `status=${mb.status} ${mb.responseText.length}b in ${mb.ms}ms`);
+        // In Event Horizon the release comes from the lookup Event Horizon drew its page from (MBU.ehRelease), which
+        // has everything this one asks for: no request of our own. Without it (Event Horizon off, or it has not
+        // looked this release up), or when it fails, MusicBrainz is asked
+        const eh = await pcEhShared(mbid);
+        let mb;
+        if (eh) {
+            mb = { ok: true, status: 200, responseText: eh, ms: 0 };
+            appendLog('MusicBrainz', `Release read from Event Horizon — skipping API call`, 'ok');
+        } else {
+            appendLog('MusicBrainz', PC_FOLLOW ? `Event Horizon release — asking the /ws/2 API` : `DOM scrape incomplete — falling back to /ws/2 API`);
+            mb = await gmGet(`${MB_ORIGIN}/ws/2/release/${mbid}?inc=artists+media+url-rels+release-groups+labels&fmt=json`);
+            appendLog('MusicBrainz', `status=${mb.status} ${mb.responseText.length}b in ${mb.ms}ms`);
+        }
         if (mb.ok) {
             try {
                 const data = JSON.parse(mb.responseText);
@@ -9289,8 +9307,11 @@ async function runScansInner() {
     try { rgNoMaster = sessionStorage.getItem(rgNoMasterKey) === '1'; } catch (e) {}
     if (providerEnabled('discogs') && !rgNoMaster && !mbData.existing?.discogsMaster && mbData.releaseGroupMbid) {
         try {
-            appendLog('MusicBrainz', 'RG Discogs master not on the page — asking the release group');
-            const rgRes = await gmGet(`${MB_ORIGIN}/ws/2/release-group/${mbData.releaseGroupMbid}?inc=url-rels&fmt=json`);
+            // Event Horizon's lookup of the release group has its links: no request then
+            const ehRg = await pcEhShared(mbData.releaseGroupMbid, 'ehReleaseGroup');
+            if (ehRg) appendLog('MusicBrainz', 'RG Discogs master not on the page — release group read from Event Horizon, no request', 'ok');
+            else appendLog('MusicBrainz', 'RG Discogs master not on the page — asking the release group');
+            const rgRes = ehRg ? { status: 200, responseText: ehRg } : await gmGet(`${MB_ORIGIN}/ws/2/release-group/${mbData.releaseGroupMbid}?inc=url-rels&fmt=json`);
             const rgJson = rgRes && rgRes.status === 200 ? JSON.parse(rgRes.responseText) : null;
             const found = (rgJson?.relations || [])
                 .map(r => r?.url?.resource)

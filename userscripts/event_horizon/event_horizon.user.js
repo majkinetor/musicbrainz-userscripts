@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.17.180000
+// @version      2026.11.17.190000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4617,21 +4617,24 @@ function edTip(e, cur) {
         + '</div></div>';
 }
 mbuTipOn('[data-ed]', el => { const x = ED_TIP.get(el.getAttribute('data-ed')); return x && edTip(x.e, x.cur); }, { wide: true });
-// The release lookup the page draws from, shared with ISRC Scout (MBU.ehRelease), whose own lookup asks for a part of it:
-// Scout reads the release from here and asks MusicBrainz nothing. As JSON text, which crosses between userscript sandboxes.
-// mbu-eh-release tells it a lookup came in, a redraw with what MusicBrainz changed since it was kept included
-const REL_SHARE = new Map();
-function relShare(id, p) {
-    const t = p.then(j => JSON.stringify(j));
-    t.then(() => { try { document.dispatchEvent(new CustomEvent('mbu-eh-release', { detail: String(id) })); } catch (e) { /* no event */ } }, () => {});
-    REL_SHARE.delete(id); REL_SHARE.set(id, t);
-    while (REL_SHARE.size > 4) REL_SHARE.delete(REL_SHARE.keys().next().value);
+// The release and release-group lookups the page draws from, shared with the scripts inside it (MBU.ehRelease,
+// MBU.ehReleaseGroup), whose own lookups ask for a part of them: ISRC Scout and Platform Check read them from here and
+// ask MusicBrainz nothing (#1064). As JSON text, which crosses between userscript sandboxes. mbu-eh-release tells them a
+// release lookup came in, a redraw with what MusicBrainz changed since it was kept included
+const REL_SHARE = new Map(), RG_SHARE = new Map();
+function relShare(id, p, map = REL_SHARE) {
+    const t = p.then(j => { if (!j) throw new Error('none'); return JSON.stringify(j); });
+    t.catch(() => {});
+    if (map === REL_SHARE) t.then(() => { try { document.dispatchEvent(new CustomEvent('mbu-eh-release', { detail: String(id) })); } catch (e) { /* no event */ } }, () => {});
+    map.delete(id); map.set(id, t);
+    while (map.size > 4) map.delete(map.keys().next().value);
     return p;
 }
 try {
     const ns = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
     if (!ns.MBU) ns.MBU = {};
     if (!ns.MBU.ehRelease) ns.MBU.ehRelease = id => REL_SHARE.get(String(id).toLowerCase()) || null;
+    if (!ns.MBU.ehReleaseGroup) ns.MBU.ehReleaseGroup = id => RG_SHARE.get(String(id).toLowerCase()) || null;
 } catch (e) { /* a page with its own window.MBU: nothing shared */ }
 async function load(id, step = () => {}) {
     const inc = 'artist-credits+labels+label-rels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+series-rels+media+genres+tags+release-groups+annotation+aliases';
@@ -4641,7 +4644,7 @@ async function load(id, step = () => {}) {
     step('release');
     // the page shows off the release's own release group; the group's rating and relationships fill in after
     const rgId = r['release-group'].id;
-    const rgP = wsk(`release-group/${rgId}?inc=ratings+release-group-rels+series-rels+url-rels`).catch(() => null);
+    const rgP = relShare(rgId, wsk(`release-group/${rgId}?inc=ratings+release-group-rels+series-rels+url-rels`), RG_SHARE).catch(() => null);
     const eds = wsk(`release?release-group=${rgId}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('editions'); return x; }, noSec(`release?release-group=${rgId}&inc=media+labels+artist-credits+url-rels&limit=100`));
     return { rel: release(r, r['release-group'], []), rgP, editions: [], edCount: 0, eds, covers };
 }
