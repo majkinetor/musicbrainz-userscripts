@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.004000
+// @version      2026.11.18.005000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3095,7 +3095,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 #eh-pin .pident,#eh-pin .pkk{overflow:hidden}#eh-pin .pkk{display:flex;align-items:center;gap:6px;min-width:0;max-width:40%;color:var(--muted);font-size:10.5px;white-space:nowrap}#eh-pin .pkk svg{width:18px;height:18px;flex:none}#eh-pin .pkk>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 /* Reserve the release identity before fitting actions; format icons must not shrink under the menu. */
 #eh-pin .pident{min-width:min(360px,45%)}#eh-pin .pkk{flex:none}
-#eh-pin.eh-ply{transform:none}#eh-pin.eh-ply>.kicker{min-height:42px}#eh-pin.eh-ply .pident{flex:1 1 0;min-width:0}#eh-pin.eh-ply .ply-ctl.pb~*{flex:1 1 0;min-width:0;justify-content:flex-end}#eh-pin.eh-ply>.kicker:has(>.ply-ctl.pb:last-child)::after{content:"";flex:1 1 0}#eh-pin .ply-ctl.pb{max-width:min(560px,56%);min-width:0}@media(max-width:700px){#eh-pin .ply-ctl.pb{flex:0 1 auto;max-width:70%}#eh-pin.eh-ply>.kicker::after{display:none}}#eh-pin .ply-ctl.pb{align-self:stretch;margin-top:-6px;margin-bottom:-6px}html.eh-ply-pin body{padding-top:var(--eh-pin-h,0px)}
+#eh-pin.eh-ply{transform:none}#eh-pin.eh-ply>.kicker{min-height:42px}#eh-pin.eh-ply .pident{flex:1 1 0;min-width:0}#eh-pin.eh-ply .ply-ctl.pb~*{flex:1 1 0;min-width:0;justify-content:flex-end}#eh-pin.eh-ply>.kicker:has(>.ply-ctl.pb:last-child)::after{content:"";flex:1 1 0}#eh-pin .ply-ctl.pb{max-width:min(1000px,52%);min-width:0}@media(max-width:700px){#eh-pin .ply-ctl.pb{flex:0 1 auto;max-width:70%}#eh-pin.eh-ply>.kicker::after{display:none}}#eh-pin .ply-ctl.pb{align-self:stretch;margin-top:-6px;margin-bottom:-6px}html.eh-ply-pin body{padding-top:var(--eh-pin-h,0px)}
 @media(max-width:700px){#eh-pin .pkk{display:none}}
 .kicker .ab[data-ehsec]:hover,.kicker .srch>.ab:hover,.kicker .ab.eh-home:hover{background:var(--surface)!important;border-color:var(--accent)}
 .ib{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--soft)!important;cursor:pointer;display:grid;place-items:center;position:relative}
@@ -11986,17 +11986,17 @@ function plyDraw() {
     const prog = ply.ctl && t.len ? `<span class="ply-pr sk" data-ply="seek" aria-label="Position"><i></i>${bar ? '' : '<b class="ply-hv"></b>'}</span>` : '<span class="ply-pr" aria-hidden="true"><i></i></span>';
     const menu = lb ? `<button type="button" class="ply-b ply-lb${t.ok != null ? ' sent' : ''}" data-ply="lb" aria-haspopup="menu" aria-label="ListenBrainz" data-tip="ListenBrainz${t.ok != null ? '\nListen sent' : ''}">${plyLogo(18)}</button>`
         : bar ? '' : plyB('more', 'More', ' aria-haspopup="menu"');
+    const v = +S.playerVol, vol = plyHasVol() ? `<span class="ply-vg"><button type="button" class="ply-b" data-ply="mute" aria-pressed="${!v}" aria-label="${v ? 'Mute' : 'Unmute'}" data-tip="${v ? 'Mute' : 'Unmute'}">${SVG(PLY_I[v ? 'vol' : 'mute'])}</button><span class="ply-vp"><input type="range" class="ply-vol" min="0" max="100" step="1" value="${v}" aria-label="Volume"></span></span>` : '';
     if (bar) {
         const many = t.srcs.length > 1;
         const src = `<button type="button" class="ply-sc" data-ply="src"${many ? '' : ' disabled'} aria-label="Source: ${esc(p.name)}" data-tip="Playing from ${esc(p.name)}${many ? '\nClick: another source' : ''}">${icon(p, 18)}</button>`;
         const cov = t.rel ? `<a class="ply-cov" href="${MB}/release/${t.rel}" aria-label="Open the release" data-tip="Open the release"><img src="https://coverartarchive.org/release/${t.rel}/front-250" alt=""></a>` : '';
-        const v = +S.playerVol, vol = plyHasVol() ? `<span class="ply-vg"><button type="button" class="ply-b" data-ply="mute" aria-pressed="${!v}" aria-label="${v ? 'Mute' : 'Unmute'}" data-tip="${v ? 'Mute' : 'Unmute'}">${SVG(PLY_I[v ? 'vol' : 'mute'])}</button><input type="range" class="ply-vol" min="0" max="100" step="1" value="${v}" aria-label="Volume"></span>` : '';
         const vid = ply.yt ? plyB('video', S.playerVideo ? 'Hide the video' : 'Show the video', ` aria-pressed="${S.playerVideo}"`) : '';
         plyCtl.innerHTML = `<div class="ply-l">${nav}</div>`
             + `<div class="ply-m">${cov}<div class="ply-mc"><div class="ply-row">${name}</div>`
             + `<div class="ply-row ply-pg"><span class="ply-tm" data-tm="at"></span>${prog}<span class="ply-tm">${t.len ? dur(t.len) : ''}</span></div></div></div>`
             + `<div class="ply-r">${vol}${src}${vid}${menu}<button type="button" class="mbu-ov-x" data-ply="x" aria-label="Close" data-tip="Close the player">${SVG(PLY_I.x)}</button></div>`;
-    } else plyCtl.innerHTML = `<span class="ply-g">${nav}</span>${name}${prog}${menu}`;
+    } else plyCtl.innerHTML = `<span class="ply-g">${nav}</span>${name}${prog}${vol}${menu}`;
     const im = plyCtl.querySelector('.ply-cov img');
     if (im) im.addEventListener('error', () => { if (/-250$/.test(im.src)) { LOG.debug('player: no cover thumbnail, trying the full front'); im.src = im.src.replace(/-250$/, ''); } else im.remove(); });
     plyProg();
@@ -12144,8 +12144,11 @@ const PLY_CSS = `
 .ply-ctl .ply-sc{display:inline-flex;align-items:center;justify-content:center;flex:none;width:30px;height:30px;padding:0;border:0;border-radius:7px;background:none;color:inherit;cursor:pointer}
 .ply-ctl .ply-sc img,.ply-ctl .ply-sc svg{width:18px;height:18px;display:block}
 .ply-ctl .ply-sc:hover:not([disabled]){background:color-mix(in srgb,currentColor 9%,transparent)}
-.ply-ctl .ply-vg{display:inline-flex;align-items:center;gap:2px;flex:none;margin-right:4px}
-.ply-ctl .ply-vol{width:80px;margin:0;accent-color:var(--accent,#ba478f);cursor:pointer}
+.ply-ctl .ply-vg{position:relative;display:inline-flex;align-items:center;flex:none}
+.ply-ctl .ply-vp{display:none;position:absolute;left:50%;bottom:100%;transform:translateX(-50%);z-index:3;padding:10px 6px;border:1px solid var(--mbu-border,#8884);border-radius:6px;background:var(--surface,#fff)}
+.pb .ply-vp{bottom:auto;top:100%}
+.ply-ctl .ply-vg:hover .ply-vp,.ply-ctl .ply-vg:focus-within .ply-vp{display:block}
+.ply-ctl .ply-vol{display:block;writing-mode:vertical-lr;direction:rtl;width:18px;height:96px;margin:0;accent-color:var(--accent,#ba478f);cursor:pointer}
 .ply-ctl .ply-sc[disabled]{cursor:default}
 .ply-ctl .mbu-ov-x{position:static;flex:none}
 .ply-ctl.pa{position:fixed;z-index:9995;left:0;right:0;bottom:0;height:60px;padding:0 16px;box-sizing:border-box;display:grid;grid-template-columns:1fr minmax(0,860px) 1fr;padding-right:68px;align-items:center;gap:16px;background:var(--surface,#fff);border-top:1px solid var(--line,#ddd);font:14px/1.3 system-ui,sans-serif;color:var(--text,#222)}
@@ -12163,7 +12166,7 @@ html.eh-ply-bar body{padding-bottom:60px}
 .ply-ctl.pb{position:relative;display:flex;align-items:center;gap:6px;flex:0 1 auto;padding:0 10px;margin:0 6px;border-left:1px solid var(--line,#ddd);border-right:1px solid var(--line,#ddd);font-size:13px}
 .pb .ply-b,.pb .ply-b.big,.pb .ply-b.big:hover{width:28px;height:28px}
 .kicker .ply-ctl .ply-b svg{color:inherit}
-.pb .ply-t{max-width:260px}
+.pb .ply-t{max-width:260px}#eh-pin .pb .ply-t{max-width:none;flex:0 1 auto}
 .pb .ply-pr{position:absolute;left:0;right:0;bottom:0;width:auto;height:3px;border-radius:0;overflow:visible}
 .pb .ply-pr.sk{padding:8px 0 0;height:3px}
 .pb .ply-pr.sk:hover{height:5px;padding:6px 0 0}
@@ -12197,7 +12200,7 @@ html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
 .ply-menu .st{display:flex;align-items:center;gap:8px;padding:5px 9px;color:var(--muted,#777);font-size:12px}
 .ply-menu .st .d{width:7px;height:7px;border-radius:50%;background:#3fa56b;flex:none}
 @media(max-width:720px){.pb .ply-t{max-width:110px}}
-@media(max-width:600px){.ply-ctl.pa{grid-template-columns:auto minmax(0,1fr) auto;gap:8px;padding:0 8px}.pa .ply-cov,.pa .ply-sc,.pa .ply-tm,.pa .ply-vol{display:none}#eh-ply .ply-dock{right:8px;max-width:calc(100vw - 16px)}#eh-ply>.ply-ctl.pb{right:8px;left:8px;max-width:none}}
+@media(max-width:600px){.ply-ctl.pa{grid-template-columns:auto minmax(0,1fr) auto;gap:8px;padding:0 8px}.pa .ply-cov,.pa .ply-sc,.pa .ply-tm{display:none}#eh-ply .ply-dock{right:8px;max-width:calc(100vw - 16px)}#eh-ply>.ply-ctl.pb{right:8px;left:8px;max-width:none}}
 `;
 // is this release's track the one playing
 const plyOn = (r, key) => { const t = ply.q[ply.i]; return !!t && t.rel === r.id && t.key === key; };
