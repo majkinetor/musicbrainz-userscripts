@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011011
+// @version      2026.11.18.011012
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12405,6 +12405,7 @@ html.eh-ply-win .ply-wl{order:2;flex:1;min-height:0;overflow:auto;padding:4px;sc
 #eh-ply.ply-bar .ply-dock{bottom:56px}
 #eh-ply.ply-chip .ply-dock{top:132px}
 html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
+html:not(.eh-ply-pin):has(#app .hm-hero) #eh-ply>.ply-ctl.pb:not(.pa){top:auto;bottom:16px}html:not(.eh-ply-pin):has(#app .hm-hero) #eh-ply>.ply-ctl.pb:not(.pa) .ply-vp{top:auto;bottom:100%}html:not(.eh-ply-pin):has(#app .hm-hero) #eh-ply.ply-chip .ply-dock{top:auto;bottom:64px}
 .ply-menu{position:fixed;z-index:9996;min-width:230px;max-height:calc(100vh - 16px);overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;box-sizing:border-box;padding:5px;background:var(--surface,#fff);color:var(--text,#222);border:1px solid var(--line,#ddd);border-radius:9px;box-shadow:0 6px 20px rgba(0,0,0,.12);font:13px/1.3 system-ui,sans-serif}
 .ply-menu .hd{display:flex;align-items:center;gap:7px;padding:6px 9px 4px;color:var(--muted,#777);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
 .ply-menu .hd .qf{margin-left:auto;width:150px;min-width:0;padding:3px 7px;border:1px solid var(--line,#ddd);border-radius:5px;background:transparent;color:var(--text,#222);font:12px/1.3 system-ui,sans-serif;text-transform:none;letter-spacing:0;outline:0}
