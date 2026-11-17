@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011017
+// @version      2026.11.18.011018
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12303,7 +12303,12 @@ function plyRec(g, eds) {
     plyGo(0);
 }
 // a menu under or above the button that opened it; pick gets the clicked item's {k} or {m}
+// a press anywhere outside it closes it, its own button too (which then doesn't reopen it), and so does a click into the
+// player's frame, which the page never sees but which takes the focus from the window
+let plyMenuShut = { k: '', t: 0 };
 function plyMenu(btn, html, pick, align) {
+    const kind = btn.dataset.ply || '';
+    if (kind && plyMenuShut.k === kind && Date.now() - plyMenuShut.t < 700) { plyMenuShut.k = ''; return; }
     document.getElementById('eh-ply-menu')?.remove();
     if (!document.getElementById('eh-ply-css')) plyRoot();
     const m = document.createElement('div'); m.id = 'eh-ply-menu'; m.className = 'mbu-ui ply-menu'; m.setAttribute('role', 'menu');
@@ -12312,11 +12317,12 @@ function plyMenu(btn, html, pick, align) {
     const r = btn.getBoundingClientRect(), h = m.offsetHeight, w = m.offsetWidth;
     m.style.left = Math.max(8, Math.min(align === 'left' ? r.left : r.right - w, innerWidth - w - 8)) + 'px';
     m.style.top = Math.max(8, r.bottom + h + 6 < innerHeight ? r.bottom + 4 : r.top - h - 4) + 'px';
-    const off = ev => { if (!m.contains(ev.target) && !btn.contains(ev.target)) shut(); };
+    const off = ev => { if (m.contains(ev.target)) return; plyMenuShut = { k: ev.target.closest?.('[data-ply]')?.dataset.ply || '', t: Date.now() }; shut(); };
     // Escape closes the menu (the playlist's filter included) before anything else sees the key
     const key = ev => { if (ev.key !== 'Escape' || !m.isConnected) return; ev.preventDefault(); ev.stopPropagation(); shut(); btn.focus({ preventScroll: true }); };
-    const shut = () => { m.remove(); document.removeEventListener('pointerdown', off, true); document.removeEventListener('keydown', key, true); };
-    setTimeout(() => document.addEventListener('pointerdown', off, true));
+    const blur = () => setTimeout(() => { if (document.activeElement?.tagName === 'IFRAME' || !document.hasFocus()) shut(); });
+    const shut = () => { m.remove(); document.removeEventListener('pointerdown', off, true); document.removeEventListener('keydown', key, true); removeEventListener('blur', blur); };
+    setTimeout(() => { if (m.isConnected) { document.addEventListener('pointerdown', off, true); addEventListener('blur', blur); } });
     document.addEventListener('keydown', key, true);
     m.addEventListener('click', ev => {
         const b = ev.target.closest('[data-k],[data-m],a'); if (!b) return;
