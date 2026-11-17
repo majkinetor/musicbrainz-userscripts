@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011026
+// @version      2026.11.18.011027
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -78,6 +78,7 @@ if (window.top !== window && (location.hostname === 'bandcamp.com' && location.p
     let armed = false, last = 0, restoring = false, restoreMute = null, restoreReady = false, vol = -1;   // vol: the page's volume, 0 to 1, put on the audio before it sounds
     const post = (state, a) => { if (armed) try { window.parent.postMessage({ ehPly: state, pos: a ? a.currentTime : 0, dur: a ? a.duration : 0 }, '*'); } catch (e) {} };
     for (const k of ['play', 'pause', 'ended']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement) { if (k === 'play' && vol >= 0) ev.target.volume = vol; if (k === 'play' && restoring && !restoreReady) { if (restoreMute === null) restoreMute = ev.target.muted; ev.target.muted = true; } post(k, ev.target); } }, true);
+    for (const k of ['playing', 'loadedmetadata']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement && vol >= 0 && Math.abs(ev.target.volume - vol) > 0.005) ev.target.volume = vol; }, true);
     document.addEventListener('timeupdate', ev => { if (ev.target instanceof HTMLMediaElement && Date.now() - last > 900) { last = Date.now(); post(ev.target.paused ? 'pause' : 'time', ev.target); } }, true);
     const press = want => {
         const a = document.querySelector('audio');
@@ -12008,6 +12009,7 @@ function plyGo(i, want) {
     if (plyRemote && !PLY_WINDOW) { plyControl('go', { i, want }); return; }
     const t = ply.q[i]; if (!t) return;
     const p = plyPick(t, want), e = plyEmbed(p), gen = ++ply.gen;
+    plyVolLoad();
     // a track waits paused until its widget says it plays; YouTube autoplays, Apple's says nothing (see the blur below)
     ply.i = i; ply.src = ply.kind = p.key; ply.paused = !e.yt; ply.yt = !!e.yt;
     ply.ctl = p.key !== 'apple'; ply.ends = !!e.yt || p.key === 'spotify' || p.key === 'soundcloud';
@@ -12088,14 +12090,19 @@ function plyVol() {
     else if (k === 'soundcloud') plyPost(JSON.stringify({ method: 'setVolume', value: v }));
     else plyPost({ ehPlyCmd: 'vol', v: v / 100 });
 }
-// once per track, when its widget first answers
-const plyVolOnce = () => { if (ply.volGen !== ply.gen) { ply.volGen = ply.gen; if (+S.playerVol !== 100) plyVol(); } };
+// once per track, when its widget first answers (100 included: a widget can start at its own remembered volume)
+const plyVolOnce = () => { if (ply.volGen !== ply.gen) { ply.volGen = ply.gen; plyVol(); } };
+// The volume has a key of its own, read at every track and written only by a change of the volume. It is in the view
+// settings too, which every tab writes whole with whatever it loaded: a tab opened before the volume changed wrote its
+// old one back (100 most often), and the next page's track started at it.
+function plyVolLoad() { try { const v = GM_getValue('playerVol', null); if (v != null && !(plyRemote && !PLY_WINDOW)) S.playerVol = v; } catch (e) {} }
+plyVolLoad();
 // the speaker loses its waves as the volume drops
 const plyVolIc = v => SVG(PLY_I[!v ? 'mute' : v < 15 ? 'vol0' : v < 50 ? 'vol1' : 'vol']);
 function plyVolSet(v, keep) {
     v = Math.max(0, Math.min(100, Math.round(v)));
     if (v && !keep) ply.lastVol = v;
-    S.playerVol = v; save(); plyVol(); plyVolShow(v);
+    S.playerVol = v; try { GM_setValue('playerVol', v); if (v) GM_setValue('playerVolLast', v); } catch (e) {} save(); plyVol(); plyVolShow(v);
 }
 function plyVolShow(v) {
     const r = plyCtl && plyCtl.querySelector('.ply-vol'); if (r) { if (+r.value !== v) r.value = v; r.style.setProperty('--p', v + '%'); }
@@ -12126,7 +12133,8 @@ window.addEventListener('message', ev => {
     if (ply.yt) {
         const st = m.event === 'onStateChange' ? m.info : m.event === 'infoDelivery' && m.info ? m.info.playerState : undefined;
         if (st === 0) plyEnded('YouTube'); else if (st === 1 || st === 2) plyState(st === 2);
-        plyVolOnce();   // on its first word, before it sounds
+        plyVolOnce();
+        if (st === 1 && ply.volPlay !== ply.gen) { ply.volPlay = ply.gen; plyVol(); }   // on its first word, before it sounds
     } else if (k === 'spotify') {
         if (m.type === 'ready' && !t.kicked) { t.kicked = true; LOG.debug('player: Spotify ready, started'); plyPost({ command: 'toggle' }); }
         else if (m.type === 'playback_update' && m.payload) {
@@ -12279,7 +12287,7 @@ const plySrc = key => { ply.pref = key; plyGo(ply.i, key); };
 function plyClick(ev) {
     const b = ev.target.closest('[data-ply]'); if (!b || b.disabled) return;
     const k = b.dataset.ply;
-    if (k === 'mute') { const v = +S.playerVol; LOG.info('player:', v ? 'muted' : 'unmuted'); plyVolSet(v ? 0 : ply.lastVol || 100, true); return; }
+    if (k === 'mute') { const v = +S.playerVol; LOG.info('player:', v ? 'muted' : 'unmuted'); plyVolSet(v ? 0 : ply.lastVol || (() => { try { return GM_getValue('playerVolLast', 100); } catch (e) { return 100; } })(), true); return; }
     if (k === 'seek') { const t = ply.q[ply.i], r = b.getBoundingClientRect(); if (t && t.len && r.width) plySeek(Math.round(Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)) * t.len)); return; }
     if (k === 'prev') plyStep(-1);
     else if (k === 'next') plyStep(1);
