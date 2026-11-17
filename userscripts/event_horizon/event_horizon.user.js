@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011029
+// @version      2026.11.18.011030
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11894,6 +11894,7 @@ if (PLY_BUS) {
             else if (m.action === 'repeat') plyRepeat();
             else if (m.action === 'close') { plyClose(); window.close(); }
             else if (m.action === 'to-tab') { plyToTab(m.value); return; }
+            else if (m.action === 'queue') plyRequeue(m.value && m.value.rel, m.value && m.value.q);
             plyPublish(); return;
         }
         if (m.type === 'hello' && !plyRemote && ply.i >= 0) { plySend({ type: 'tab-active', id: PLY_ID }); return; }
@@ -11965,11 +11966,28 @@ function plyEmbed(p) {
 // a track's sources, in the user's platform order
 const plySources = t => plSorted((t.links || []).filter(p => PLY_SRC.includes(p.key) && plyEmbed(p)));
 // the release's tracks as a queue; the ones with nothing to play are left out
-function plyQueue(r) {
+function plyQueue(r, all) {
     if (!r || !r.media) return [];
     const relAc = acText(r.ac || []), relYear = ((r.events || []).map(v => v.date || '').filter(Boolean).sort()[0] || '').slice(0, 4);
     return r.media.flatMap((m, mi) => (m.tracks || []).map(t => ({ key: (mi + 1) + '-' + t.n, n: t.n, title: t.title, rid: t.rid, artist: t.ac ? acText(t.ac) : relAc, len: t.lenMs, srcs: plySources(t), rel: r.id, relTitle: r.title, relAc, relYear, front: r.front })))
-        .filter(t => t.srcs.length);
+        .filter(t => all || t.srcs.length);
+}
+// a release redrawn after another script's write (ISRC Scout adding links): the queue playing from it takes the new
+// sources and the tracks that can now play, and keeps each track's place and clock, and the one playing
+function plyRequeue(rel, fresh) {
+    if (!rel || !Array.isArray(fresh) || !ply.q.length || !ply.q.every(t => t.rel === rel && 'relAc' in t)) return;   // a recording's queue of one has no relAc
+    const cur = ply.q[ply.i], old = new Map(ply.q.map(t => [t.key, t]));
+    const q = fresh.filter(t => t.srcs.length || (cur && t.key === cur.key)).map(t => { const o = old.get(t.key); return o ? Object.assign(o, t) : t; });
+    const sig = x => x.map(t => t.key + ':' + t.srcs.map(p => p.key + ' ' + (p.urls || []).map(u => u.url).join(' ')).join(',')).join('|');
+    if (sig(q) === sig(ply.q)) return;
+    LOG.info('player: the release changed, ' + q.length + ' playable (was ' + ply.q.length + ')');
+    ply.q = q; ply.i = cur ? q.indexOf(cur) : -1;
+    if (PLY_WINDOW) plyPublish(); else { plySave(); plyDraw(); }
+}
+function plyRelChanged(r) {
+    if (!r || !r.id) return;
+    if (plyRemote && !PLY_WINDOW) plyControl('queue', { rel: r.id, q: plyQueue(r, true) });
+    else if (!PLY_WINDOW) plyRequeue(r.id, plyQueue(r, true));
 }
 const plyPick = (t, want) => t.srcs.find(p => p.key === want) || t.srcs.find(p => p.key === ply.pref) || t.srcs[0];
 // Bandcamp's track page names the track's id in <meta name="bc-page-properties">; the widget's address, or '' when it doesn't
@@ -15534,7 +15552,7 @@ async function show(key, o = {}) {
         if (d.lists) (LIST_IDS[kind] || LIST_IDS.area).forEach(k => wait.add(k));
         if (kind === 'release') wait.add('art');
         let_('ed', d.eds); let_('wp', d.wiki); let_('dg', d.disc); let_('rc', d.recs); (LIST_IDS[kind] || LIST_IDS.area).forEach(k => let_(k, d.lists)); if (kind === 'release') let_('art', d.covers);
-        if (n === showing) { data = d; render(); visited(key, d); LOG.ok('Loaded in ' + (Date.now() - t0) + ' ms'); if (o.notifyRefresh && kind === 'release') { document.documentElement.setAttribute('data-mbu-release-refreshed', id); document.dispatchEvent(new CustomEvent('mbu-release-refreshed', { detail: id })); } }
+        if (n === showing) { data = d; render(); visited(key, d); LOG.ok('Loaded in ' + (Date.now() - t0) + ' ms'); if (o.quiet && kind === 'release') plyRelChanged(d.rel); if (o.notifyRefresh && kind === 'release') { document.documentElement.setAttribute('data-mbu-release-refreshed', id); document.dispatchEvent(new CustomEvent('mbu-release-refreshed', { detail: id })); } }
         d.eds.then(x => { if (n === showing && data === d && !x) { d.edErr = true; render(); } if (n === showing && data === d && x) { d.editions = (x.releases || []).map(edition); d.edCount = x['release-count'] || 0; LOG.debug(kind + ' ' + id + ': ' + d.editions.length + ' release(s) to show'); if (d.editions.length > (kind === 'release' ? 1 : 0)) render(); } }).catch(e => LOG.err(kind + ' ' + id + ': showing the releases failed: ' + e.message));
         if (d.rgP) d.rgP.then(rg => { if (n === showing && data === d && rg) { Object.assign(d.rel, { rating: rg.rating || {}, rg: { title: rg.title, rels: rg.relations || [] } }); render(); } });
         if (d.recs) d.recs.then(x => { if (n === showing && data === d && x) { d.recsX = x; render(); } });
