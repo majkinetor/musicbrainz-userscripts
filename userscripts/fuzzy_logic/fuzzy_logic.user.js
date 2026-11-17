@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.16
+// @version      2026.11.17
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm, RateYourMusic and Album of the Year, read when you open their pages), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjI4Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMxNmNjZjgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjZmZhZTM4Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -21,6 +21,7 @@
 // @grant        GM_openInTab
 // @grant        GM_addValueChangeListener
 // @grant        GM_removeValueChangeListener
+// @grant        unsafeWindow
 // @connect      bandcamp.com
 // @connect      api.discogs.com
 // @connect      api.deezer.com
@@ -2820,9 +2821,20 @@
     return r.json();
   }
   const urlsOf = o => (o.relations || []).filter(x => x.url && x.url.resource).map(x => x.url.resource);
+  // In Event Horizon a release or release group comes from the lookup Event Horizon drew its page from (MBU.ehRelease,
+  // MBU.ehReleaseGroup), which has everything asked for here: no request of our own. Without it, MusicBrainz is asked
+  async function wsEh(type, id, path) {
+    try {
+      const ns = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
+      const fn = type === 'release' ? 'ehRelease' : type === 'release-group' ? 'ehReleaseGroup' : null;
+      const p = fn && ns.MBU && ns.MBU[fn] && ns.MBU[fn](id);
+      if (p) { const j = JSON.parse(String(await p)); LOG.info(type + ' read from Event Horizon, no request'); return j; }
+    } catch (e) { /* not shared: ask MusicBrainz */ }
+    return ws(path);
+  }
 
   async function links() {
-    const own = await ws(TYPE + '/' + MBID + '?inc=url-rels');
+    const own = await wsEh(TYPE, MBID, TYPE + '/' + MBID + '?inc=url-rels');
     const set = new Set(urlsOf(own));
     if (TYPE === 'release-group') {
       // the maintainer: "RG could use all links from releases"
@@ -2940,7 +2952,7 @@
   async function targets() {
     const list = [{ type: TYPE, mbid: MBID }];
     if (TYPE !== 'release' || !S.prop) return list;
-    const j = await ws('release/' + MBID + '?inc=release-groups+recordings');
+    const j = await wsEh('release', MBID, 'release/' + MBID + '?inc=release-groups+recordings');
     if (j['release-group']) list.push({ type: 'release-group', mbid: j['release-group'].id });
     const seen = new Set();
     for (const m of j.media || []) for (const t of m.tracks || []) {

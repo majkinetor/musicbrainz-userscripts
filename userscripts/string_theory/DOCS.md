@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-17 16:16 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-17 16:19 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -851,7 +851,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 - **[Edit history](#edit-history)** groups edits and votes on a whole group at once.
 - **[Pending changes](#pending-changes)** marks what has edits open.
 - **[Keyboard shortcuts](#keyboard-shortcuts)**: single keys open an entity's edit, relationships, history and other pages, on MusicBrainz's page and in the viewer; **Ctrl+/** lists them and changes them.
-- **[Other scripts](#other-scripts)** can put their launchers in the header's **More (⋯)** menu.
+- **[Other scripts](#other-scripts)** can put their launchers in the header's **More (⋯)** menu, and read what Event Horizon already got from MusicBrainz instead of asking again.
 
 Also on board: artist, label, release, release group and area images, a configurable homepage, inline tag and alias editing, an Aliases page with an artist's credits, infinite scroll, advanced filtering and grouped edit history.
 
@@ -1036,8 +1036,10 @@ On an entity's page, in the viewer or on MusicBrainz's own page, a key opens one
 
 Compatible scripts appear under **More (⋯)** in the page header and pinned bar. Select an item to launch its script. A script working on its own table can temporarily suspend Event Horizon's shortcuts and hide the corner launchers until its window closes.
 
+Inside Event Horizon, ISRC Scout, Platform Check and Fuzzy Logic read the release and its release group from what Event Horizon already got from MusicBrainz. They ask MusicBrainz nothing for it, so they show sooner and don't slow your other tabs. Without Event Horizon, each asks MusicBrainz itself.
+
 > [!NOTE]
-> Authors can use the [menu-item protocol](../event_horizon/DEVELOP.md#external-menu-items) and [coexistence conventions](../../DEVELOP.md#interoperability).
+> Authors can use the [menu-item protocol](../event_horizon/DEVELOP.md#external-menu-items), the [shared lookups](../event_horizon/DEVELOP.md#shared-lookups) and [coexistence conventions](../../DEVELOP.md#interoperability).
 
 ### Settings
 

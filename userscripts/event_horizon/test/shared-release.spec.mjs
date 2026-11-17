@@ -38,3 +38,20 @@ test('Platform Check reads the release group Event Horizon already looked up', {
   const text = await until(log, t => /release group read from Event Horizon|asking the release group|Header meta/.test(t), { timeout: 30000 });
   check(text.includes('release group read from Event Horizon') && !text.includes('asking the release group'), 'Platform Check read the release group from Event Horizon: ' + text.split('\n').filter(l => /MusicBrainz/.test(l)).slice(0, 6).join(' | '));
 });
+
+// Fuzzy Logic reads the release's links, its release group and its recordings from Event Horizon's lookups
+test('Fuzzy Logic reads the release Event Horizon already looked up', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+  await page.goto('https://test.musicbrainz.org/release/' + REL, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await settled(page);
+  await inject('event_horizon');
+  const on = () => page.evaluate(() => document.documentElement.hasAttribute('data-mbu-dock'));
+  if (!(await on())) await page.locator('#eh-launch').click();
+  check(await until(on, v => v) === true, 'EH shows');
+  check(await until(() => page.evaluate(id => !!(window.MBU && window.MBU.ehRelease && window.MBU.ehRelease(id)), REL), v => v) === true, 'EH shares its release lookup');
+  await inject('fuzzy_logic', { waitFor: '__fuzzyLogic' });
+  await page.evaluate(() => document.getElementById('mb-fl-dock').click());
+  await until(() => page.evaluate(() => window.__fuzzyLogic.ran && !window.__fuzzyLogic.busy), b => b, { timeout: 90000 });
+  const log = await page.evaluate(() => Object.values(window.__mbuLogs || {}).map(l => l.markdown()).join('\n'));
+  check(log.includes('release read from Event Horizon'), 'Fuzzy Logic read the release from Event Horizon');
+  check(!/\/ws\/2\/release\/[0-9a-f-]{36}\?inc=url-rels/.test(log), 'and did not ask for its links');
+});

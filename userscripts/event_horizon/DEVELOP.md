@@ -42,6 +42,20 @@ While Event Horizon shows, `<html>` carries `data-mbu-page` with the page's path
 
 String Theory reads it ([its DEVELOP.md](../string_theory/DEVELOP.md#runtime)): a tab loaded on a page a script isn't for never starts that script, so a release reached inside Event Horizon from the home page had no Platform Check, ISRC Scout or Mission Control at all, though all three can read the release from the API. String Theory starts them there. Falcon, which runs on every page, watches it to put its icon on a release, release group or series.
 
+## Shared lookups
+
+Event Horizon shares the release and release-group lookups its page draws from, so scripts inside it need no request of their own. Both are on `unsafeWindow.MBU` (the page's `window.MBU`) and cross userscript sandboxes as JSON text.
+
+| Name                     | Contract                                                                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| `MBU.ehRelease(id)`      | a Promise of the release's ws/2 JSON text, or `null` when Event Horizon hasn't looked it up; the last 4 kept  |
+| `MBU.ehReleaseGroup(id)` | the same for a release group                                                                                  |
+| `mbu-eh-release` (event) | fired on `document` when a release lookup arrives, a redraw with changes included; `detail` is the release ID |
+
+The release lookup's `inc` is `artist-credits+labels+label-rels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+series-rels+media+genres+tags+release-groups+annotation+aliases`; the release group's is `ratings+release-group-rels+series-rels+url-rels`. A reader checks the share first and falls back to its own request when it is `null` or fails (Event Horizon off, or another entity shown). ISRC Scout, Platform Check and Fuzzy Logic read it; Mission Control, Art Station and Scribe could ([#1064](https://github.com/majkinetor/musicbrainz-userscripts/issues/1064)).
+
+A script needs `@grant unsafeWindow` to see the share: without it, a sandboxed script reads its own `window`.
+
 ## Header menu configuration
 
 The Menu settings live in the manager's `view` value: `menuTitles`, `menuResponsive`, `menuOrder` (action IDs), `menuOff` (hidden IDs), and `menuPlaces` (ID to `main` or `more`). Empty collections retain the shipped defaults. `menuKey` unifies Art, Relationships and collection Edit across entity types; page renderers still decide which actions and URLs are available. External launchers use `external:<registration ID>` and default to More.
@@ -129,6 +143,7 @@ What saves requests:
 - **Cover images**: the newest 60 are kept, so CAA's two redirects aren't repeated.
 - **Pending edits**: an answer is reused for 5 minutes, and the option turns the request off ([Pending edits](#pending-edits)).
 - **A hidden tab** takes no lead and sends no pending edits request.
+- **Shared lookups**: scripts inside Event Horizon read its release and release-group lookups instead of their own ([Shared lookups](#shared-lookups)).
 
 ## Kept answers
 
