@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.007000
+// @version      2026.11.18.008000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12102,14 +12102,14 @@ function plyLbMenu(btn) {
     if (S.playerScrobble) st = !lbToken() ? 'Add your ListenBrainz token in the settings to send listens'
         : t.ok != null ? `<i class="d"></i>Listen sent · ${dur(t.ok)} in`
         : t.sent ? 'Sending the listen…' : `Listen sends at ${dur(plyDue(t))}`;
-    const parts = [];
+    // the sources first, as a strip of icons (five to a row), the one playing marked
+    const parts = [`<div class="hd">Playing from</div><div class="ply-ss">${t.srcs.map(p => `<button type="button" class="ss" role="menuitem" data-k="${p.key}" data-tip="${esc(p.name)}"${p.key === ply.src ? ' aria-current="true"' : ''}>${icon(p, 20)}<span>${esc(p.name.replace(/ Music$/, ''))}</span></button>`).join('')}</div>`];
     if (S.playerLb || S.playerScrobble) parts.push(`<div class="hd">${plyLogo(14)}<span>ListenBrainz</span></div>`
         + (S.playerLb ? it(`https://listenbrainz.org/track/${t.rid}`, 'note', 'This track') + (t.rel ? it(`https://listenbrainz.org/release/${t.rel}`, 'rel', 'This release') : '') : '')
         + (st ? `<hr><div class="st">${st}</div>` : '')
         + (S.playerLb ? it('https://listenbrainz.org/my/listens/', 'ext', 'Your listens') : ''));
-    parts.push((t.srcs.length > 1 ? `<div class="hd">Play from</div>${plySrcItems(t)}` : '')
-        + (ply.yt ? `<button type="button" class="it" role="menuitem" data-m="video">${SVG(PLY_I.video)}<span>${S.playerVideo ? 'Hide the video' : 'Show the video'}</span></button>` : '')
-        + `<button type="button" class="it" role="menuitem" data-m="x">${SVG(PLY_I.x)}<span>Stop playing</span></button>`);
+    parts.push((ply.yt ? `<button type="button" class="it" role="menuitem" data-m="video">${SVG(PLY_I.video)}<span>${S.playerVideo ? 'Hide the video' : 'Show the video'}</span></button>` : '')
+        + `<button type="button" class="it" role="menuitem" data-m="x" style="color:var(--mbu-bad,#c2413b)">${SVG(PLY_I.x)}<span>Stop and close</span></button>`);
     plyMenu(btn, parts.join('<hr>'), v => { if (v.k) plySrc(v.k); else if (v.m === 'video') plyVideo(); else if (v.m === 'x') plyClose(); });
 }
 const PLY_CSS = `
@@ -12186,6 +12186,12 @@ html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
 .ply-menu .qt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ply-menu .qt small{margin-left:6px;color:var(--muted,#777);font-size:12px}
 .ply-menu .ql{flex:none;color:var(--muted,#777);font-size:12px;font-variant-numeric:tabular-nums}
+.ply-menu .ply-ss{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;padding:2px 4px 4px}
+.ply-menu .ss{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;padding:7px 2px;border:0;border-radius:6px;background:none;color:var(--muted,#777);font:11px/1.2 system-ui,sans-serif;cursor:pointer}
+.ply-menu .ss span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ply-menu .ss img,.ply-menu .ss svg{width:20px;height:20px}
+.ply-menu .ss:hover,.ply-menu .ss:focus-visible{background:color-mix(in srgb,currentColor 10%,transparent);outline:0}
+.ply-menu .ss[aria-current]{background:color-mix(in srgb,currentColor 10%,transparent);color:var(--text,#222);box-shadow:inset 0 -2px 0 var(--accent,#ba478f)}
 .ply-menu hr{margin:5px 4px;border:0;border-top:1px solid var(--line,#ddd)}
 .ply-menu .st{display:flex;align-items:center;gap:8px;padding:5px 9px;color:var(--muted,#777);font-size:12px}
 .ply-menu .st .d{width:7px;height:7px;border-radius:50%;background:#3fa56b;flex:none}
