@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.008000
+// @version      2026.11.18.009000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12011,11 +12011,11 @@ function plyProg() {
     const n = plyCtl.classList.contains('pb') && plyCtl.querySelector('.ply-t');
     if (n) n.dataset.tip = t.title + ' — ' + t.artist + (t.relTitle ? '\n' + t.relTitle : '') + '\n' + dur(t.played || 0) + (t.len ? ' / ' + dur(t.len) : '') + '\nClick: the playlist';
 }
-// the wheel over the volume sets it, over the position bar winds the track
+// the wheel over the volume sets it, anywhere else on the player winds the track
 function plyWheel(ev) {
     const up = ev.deltaY < 0, t = ply.q[ply.i];
     if (ev.target.closest('.ply-vg') && plyHasVol()) { ev.preventDefault(); plyVolSet(Math.max(0, Math.min(100, +S.playerVol + (up ? 5 : -5)))); return; }
-    if (ev.target.closest('.ply-pr.sk') && t && t.len) { ev.preventDefault(); plySeek(Math.max(0, Math.min(t.len - 1000, (t.played || 0) + (up ? 5000 : -5000)))); }
+    if (ply.ctl && t && t.len && !ev.target.closest('.ply-menu,.ply-vp')) { ev.preventDefault(); plySeek(Math.max(0, Math.min(t.len - 1000, (t.played || 0) + (up ? 5000 : -5000)))); }
 }
 // the time under the pointer, over the chip's bar
 function plyHover(ev) {
