@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.17.140003
+// @version      2026.11.17.150000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4350,9 +4350,12 @@ async function wsText(path, bg) {
     if (!r.ok) throw Object.assign(new Error('MusicBrainz answered ' + r.status + '.'), { status: r.status });
     return r.text();
 }
-const ws = path => wsText(path).then(JSON.parse);
+// ENT: the last lookup of each entity by its MBID (title, artist credit, dates), for the copy menu's "Artist - Title - Year"
+const ENT = new Map();
+const entKeep = (path, j) => { const m = String(path).match(/^[a-z-]+\/([0-9a-f-]{36})\?/); if (m && j && j.id === m[1]) ENT.set(m[1], j); return j; };
+const ws = path => wsText(path).then(JSON.parse).then(j => entKeep(path, j));
 // a page loader's request: drawn from its kept answer when there is one (kept)
-const wskAs = path => kept('ws:' + path, bg => wsText(path, bg)).then(JSON.parse);
+const wskAs = path => kept('ws:' + path, bg => wsText(path, bg)).then(JSON.parse).then(j => entKeep(path, j));
 // Your own votes ride along an entity's lookup (user-tags, user-genres: no request of their own) once you're known to be
 // signed in: eh.in, from the last start(), since the page's first lookup goes before MusicBrainz's header is read. Signed out
 // they answer 401, and the lookup goes again without them. MINE: the names you voted for, by type/mbid, for Fuzzy Logic
@@ -4987,16 +4990,13 @@ function kickerMark(el) {
         + (pc ? `<button type="button" class="opt" data-picardgo="${pc}?id=${id}">${PICARD_IC}<span>Send to Picard</span></button>` : '') + '</div></span>';
 }
 let kmkN = 0;
-// "Artist - Title - Year" from the header the icon sits in (the pinned bar's copy reads the hero's): its title, its artist line and its first release's year, whichever it has
+// "Artist - Title - Year" from the entity's own lookup (ENT), not the header, which other scripts add badges to; the year is its date or first release
 function kmkName(b) {
-    const src = b.dataset.kmkfor && document.querySelector(`.kmk[data-pop="${b.dataset.kmkfor}"]`) || b;
-    let root = src.parentElement; while (root && !root.querySelector('h1')) root = root.parentElement;
-    if (!root) return '';
-    const txt = (el, drop) => { if (!el) return ''; const c = el.cloneNode(true); c.querySelectorAll(drop).forEach(x => x.remove()); return c.textContent.replace(/\s+/g, ' ').trim(); };
-    const title = txt(root.querySelector('h1'), '.disamb,.eh-tx'), artist = txt(root.querySelector('.by'), '.rg-l').replace(/^by\s+/i, '');
-    const when = [...root.querySelectorAll('.facts>div')].find(c => /^(first )?released\b/i.test((c.querySelector('.label') || {}).textContent || ''));
-    const year = when && ((when.querySelector('.v') || when).textContent.match(/\b(1[89]|20)\d\d\b/) || [''])[0];
-    LOG.debug(`Copy menu name: artist "${artist}", title "${title}", year "${year || ''}"`);
+    const id = b.dataset.copy, j = ENT.get(id);
+    if (!j) { LOG.debug(`Copy menu name: no lookup of ${id} yet`); return ''; }
+    const artist = acText(j['artist-credit'] || []).trim(), title = String(j.title || '').trim();
+    const year = ((j.date || j['first-release-date'] || '').match(/^\d{4}/) || [''])[0];
+    LOG.debug(`Copy menu name: artist "${artist}", title "${title}", year "${year}"`);
     return artist && title ? [artist, title, year].filter(Boolean).join(' - ') : '';
 }
 function kmkFill(b) {
