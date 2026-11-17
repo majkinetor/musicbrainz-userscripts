@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011020
+// @version      2026.11.18.011021
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12513,12 +12513,17 @@ function plyClock(t) {
 // A native MusicBrainz navigation destroys the tab's player. Keep its queue in this tab so it can be restored on any page.
 function plySave() {
     const t = ply.q[ply.i]; if (!t || plyRemote || PLY_WINDOW) return;
-    try { sessionStorage.setItem('eh-ply', JSON.stringify({ rel: t.rel, key: t.key, src: t.src, played: t.resume || t.played, q: ply.q })); } catch (e) {}
+    try { sessionStorage.setItem('eh-ply', JSON.stringify({ tab: PLY_TAB, rel: t.rel, key: t.key, src: t.src, played: t.resume || t.played, q: ply.q })); } catch (e) {}
 }
 // a tab opened from another (Platform Check's add links, a middle-click) gets a copy of its sessionStorage, so the opener's
-// saved player too: a tab's first page drops it, and only reloads and in-tab navigation resume
+// saved player too. The saved player carries its tab's mark, kept in window.name, which survives a reload and in-tab
+// navigation but never goes to a new tab: a player saved under another mark is the opener's and is dropped.
+const PLY_TAB = PLY_WINDOW ? '' : (() => { try { if (/^eh-ply-/.test(window.name)) return window.name; window.name = 'eh-ply-' + PLY_ID; return window.name; } catch (e) { return ''; } })();
 let plyResumed = false;
-try { const nav = performance.getEntriesByType('navigation')[0]; if (history.length <= 1 && (!nav || nav.type === 'navigate')) sessionStorage.removeItem('eh-ply'); } catch (e) {}
+try {
+    const nav = performance.getEntriesByType('navigation')[0], v = JSON.parse(sessionStorage.getItem('eh-ply') || 'null');
+    if (v && (!PLY_TAB || v.tab !== PLY_TAB || (history.length <= 1 && (!nav || nav.type === 'navigate')))) sessionStorage.removeItem('eh-ply');
+} catch (e) {}
 if (!PLY_WINDOW) { document.documentElement.setAttribute('data-eh-ply-hold', ''); setTimeout(plyUnhold, 4000); addEventListener('load', () => setTimeout(() => { if (!ehOn) plyUnhold(); }, 300)); }
 setInterval(() => {
     if (PLY_WINDOW) plyPublish();
