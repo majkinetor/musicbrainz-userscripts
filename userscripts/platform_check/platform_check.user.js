@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.17
+// @version      2026.11.17.1
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -7654,17 +7654,81 @@ async function scanAmazon({ artist, album, mbTracks, existingUrl, mbid, isVariou
     updateRow('amazonmusic', { url: meta.url, mbTracks, remoteTracks: meta.tracks, year: meta.year, label: meta.label, source: 'search' });
 }
 
-// Amazon's store: never searched (its search answers a script with a bot check), so the row
-// shows the release's ASIN link, or else stays a link to the store's barcode search.
-async function scanAmazonStore({ mbTracks, existingUrl, barcode }) {
+// Amazon's store. Its search answers a script with a bot check unless the browser has passed
+// it lately (the cookie rides along), so a blocked search leaves the row a link to the store's
+// barcode search. Product pages load without the check.
+const AMZS_UA = { 'User-Agent': navigator.userAgent, 'Accept': 'text/html' };
+const amzsText = el => (el ? el.textContent.replace(/[\s\u200e\u200f]+/g, ' ').trim() : '');
+async function fetchAmzsProduct(asin, label) {
+    const url = `https://www.amazon.com/dp/${asin}`;
+    const r = await gmGet(url, { headers: AMZS_UA });
+    if (!r.ok || r.status !== 200) { appendLog(label, `Product ${asin}: HTTP ${r.status}`, 'warn'); return null; }
+    const doc = new DOMParser().parseFromString(r.responseText, 'text/html');
+    const title = amzsText(doc.getElementById('productTitle'));
+    if (!title) { appendLog(label, `Product ${asin}: no title (a bot check?)`, 'warn'); return null; }
+    const byline = doc.getElementById('bylineInfo');
+    const artist = [...(byline ? byline.querySelectorAll('.author a') : [])].map(amzsText).filter(Boolean).join(', ') || null;
+    const fmtText = (amzsText(byline).match(/Format\s*:\s*(.+)$/i) || [])[1] || '';
+    const format = /vinyl|\bLP\b/i.test(fmtText) ? 'Vinyl' : /MP3|digital|streaming/i.test(fmtText) ? 'Digital Media' : /\bCD\b/i.test(fmtText) ? 'CD' : null;
+    const details = {};
+    for (const li of doc.querySelectorAll('#detailBullets_feature_div li, #productDetails_detailBullets_sections1 tr, #prodDetails tr')) {
+        const m = amzsText(li).match(/^(.+?)\s*:\s*(.+)$/);
+        if (m && !details[m[1].toLowerCase()]) details[m[1].toLowerCase()] = m[2].trim();
+    }
+    const pick = re => { const k = Object.keys(details).find(x => re.test(x)); return k ? details[k] : ''; };
+    const labelName = pick(/^(?:label|music label)$/) || pick(/^manufacturer$/) || null;
+    const date = pick(/^(?:original release date|release date)/) || pick(/^date first available/);
+    const barcode = (pick(/^(?:ean|upc|gtin|barcode)/).match(/\b\d{12,14}\b/) || [])[0] || null;
+    const box = doc.querySelector('#music-tracks') || doc.querySelector('#musicTracks_feature_div');
+    let tracks = box ? [...box.querySelectorAll('tr')].filter(tr => [...tr.querySelectorAll('td')].some(td => /\D/.test(amzsText(td)))).length : 0;
+    if (!tracks) tracks = [...doc.querySelectorAll('[id^="dmusic_tracklist"] tr')].filter(tr => tr.querySelector('.TitleLink, a[href*="/dp/"]')).length;
+    return { url: `https://www.amazon.com/gp/product/${asin}`, title, artist, format, label: labelName, barcode,
+        year: (date.match(/\b(\d{4})\b/) || [])[1] || null, date, tracks: tracks || null };
+}
+async function scanAmazonStore({ artist, album, mbTracks, existingUrl, barcode, mbid, isVariousArtists }) {
     const label = 'Amazon';
+    const cached = cacheGet(mbid, 'amazon');
+    if (cached?.url && (!existingUrl || pcSameUrl(existingUrl, cached.url))) { applyCachedRow('amazon', label, cached, mbTracks); return; }
+    if (cached && !cached.url && !existingUrl) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('amazon', label, cached, mbTracks); return; }
+    const put = (meta, source) => {
+        cacheSet(mbid, 'amazon', { url: meta?.url || null, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source });
+        updateRow('amazon', { url: meta?.url || null, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, format: meta?.format ?? null, barcode: meta?.barcode ?? null, source });
+    };
+    const log = m => appendLog(label, `Product parsed: tracks=${m.tracks ?? '?'} title="${m.title}" artist="${m.artist || '?'}" format=${m.format || '?'} date=${m.date || '?'} label="${m.label || '?'}" barcode=${m.barcode || '?'}`, m.tracks ? 'ok' : 'warn');
     if (existingUrl) {
         appendLog(label, `Using existing MB URL: ${existingUrl}`, 'ok');
-        updateRow('amazon', { url: existingUrl, mbTracks, remoteTracks: null, source: 'MB rels' });
+        const asin = (String(existingUrl).match(/\/(?:dp|gp\/product)\/([A-Z0-9]{10})/i) || [])[1];
+        const meta = asin ? await fetchAmzsProduct(asin.toUpperCase(), label) : null;
+        if (meta) log(meta); else appendLog(label, `Couldn't read the linked product — shown unverified`, 'warn');
+        cacheSet(mbid, 'amazon', { url: existingUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'MB rels' });
+        updateRow('amazon', { url: existingUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, format: meta?.format ?? null, barcode: meta?.barcode ?? null, source: 'MB rels' });
         return;
     }
-    appendLog(label, barcode ? `Not searched — click to search the store for ${barcode}` : 'Not searched — click to search the store by name', 'warn');
-    updateRow('amazon', { url: null, mbTracks, remoteTracks: null });
+    if (!barcode) { appendLog(label, 'No barcode — not searched; click to search the store by name', 'warn'); put(null, 'search'); return; }
+    const r = await gmGet(`https://www.amazon.com/s?k=${encodeURIComponent(barcode)}`, { headers: AMZS_UA });
+    const doc = r.status === 200 ? new DOMParser().parseFromString(r.responseText, 'text/html') : null;
+    if (!doc || !doc.querySelector('#search, [data-component-type="s-search-result"]')) {
+        appendLog(label, `Barcode search blocked by Amazon's bot check (HTTP ${r.status}) — click the row to search, opening amazon.com once lets later scans through`, 'warn');
+        updateRow('amazon', { url: null, mbTracks, remoteTracks: null });   // not cached: the next scan may get through
+        return;
+    }
+    const asins = [...new Set([...doc.querySelectorAll('[data-component-type="s-search-result"][data-asin]')].map(e => e.dataset.asin).filter(x => /^[A-Z0-9]{10}$/.test(x)))];
+    appendLog(label, `Barcode search ${barcode}: ${asins.length} result(s)${asins.length ? ' — ' + asins.slice(0, 3).join(', ') : ''}`);
+    // the search matches loosely (other products come along), so a hit must show the barcode or
+    // match the title, and match the track count
+    for (const asin of asins.slice(0, 3)) {
+        const meta = await fetchAmzsProduct(asin, label);
+        if (!meta) continue;
+        log(meta);
+        const sameBc = !!(meta.barcode && normBarcode(meta.barcode) === normBarcode(barcode));
+        if (!sameBc && !titleSimilar(meta.title || '', album)) { appendLog(label, `  not taken: neither the barcode nor the title matches`); continue; }
+        if (meta.tracks != null && meta.tracks !== mbTracks) { appendLog(label, `  not taken: ${meta.tracks} tracks, the release has ${mbTracks}`); continue; }
+        appendLog(label, `Picked (barcode search${sameBc ? ', barcode matches' : ''}): ${meta.url}`, 'ok');
+        put(meta, 'barcode');
+        return;
+    }
+    appendLog(label, 'No verifiable match — leaving URL unset', 'warn');
+    put(null, 'search');
 }
 
 // ─── Deezer ─────────────────────────────────────────────────────────────────
