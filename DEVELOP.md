@@ -207,7 +207,7 @@ Readers accept an absent version as version 1; writers stamp `version: 1`, prese
 
 ### Shared kept answers and artist images
 
-A script that keeps MusicBrainz answers across page loads treats every entry kept before `localStorage['mbu:kept-drop']` (Unix milliseconds) as a miss, and sets that key to `Date.now()` after each write it makes to MusicBrainz. An edit made with any participating script then drops every script's kept answers. Event Horizon still reads its old `eh.kept.drop` as well.
+A script that keeps MusicBrainz answers across page loads treats every entry kept before `localStorage['mbLastWrite']` (Unix milliseconds) as a miss, and sets that key to `Date.now()` after each write it makes to MusicBrainz. An edit made with any participating script then drops every script's kept answers.
 
 Event Horizon publishes its artist-image instance as `window.MBU.artistImage`: `find(mbid, urls)`, `findAll(mbid, urls)`, `distinct(mbid, urls)` and `cached(mbid)`, as in [`dev/artimg`](dev/artimg/README.md). One cache and one set of provider requests then serve every script, with Event Horizon's provider order and switched-off providers. Answers are copies. Check for it when you call, since Event Horizon may load later or not at all, and keep your own lookup as the fallback.
 

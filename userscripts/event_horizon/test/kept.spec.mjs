@@ -49,7 +49,7 @@ test('a changed answer redraws the page', { tag: ['@sandbox'] }, async ({ page, 
   if (!e) return;
   // the kept release gets another title and an old date, as if MusicBrainz's had changed since (the profile persists:
   // a vote in an earlier spec voids entries older than it)
-  await page.evaluate(e => new Promise(ok => { const r = JSON.parse(e.t); r.title = 'Kept long ago'; e.t = JSON.stringify(r); e.at = Date.now() - 600000; localStorage.removeItem('eh.kept.drop'); localStorage.removeItem('mbu:kept-drop');
+  await page.evaluate(e => new Promise(ok => { const r = JSON.parse(e.t); r.title = 'Kept long ago'; e.t = JSON.stringify(r); e.at = Date.now() - 600000; localStorage.removeItem('mbLastWrite');
     const q = indexedDB.open('eh-kept', 1); q.onsuccess = () => { q.result.transaction('a', 'readwrite').objectStore('a').put(e).onsuccess = () => ok(); }; }), e);
   await page.reload({ waitUntil: 'domcontentloaded' });
   await open(page, inject);

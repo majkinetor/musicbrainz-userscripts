@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.17.140000
+// @version      2026.11.17.140001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4376,10 +4376,9 @@ const wsk = path => {
 const KP_TTL = 60000, KP_MAX = 800, KP_MEM = new Map(), KP_FLY = new Map();
 let kpSeen = Date.now(), kpUsed = null, kpDb = null, kpPuts = 0;
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') kpSeen = Date.now(); });
-// `mbu:kept-drop` is shared by the suite and SAED (#938): an edit made with any of them drops every script's kept answers.
-// The old `eh.kept.drop` is still read, for drops written before the shared key existed
-const kpDrop = () => { try { return Math.max(+localStorage.getItem('mbu:kept-drop') || 0, +localStorage.getItem('eh.kept.drop') || 0); } catch (e) { return 0; } };
-function kpWrote() { KP_MEM.clear(); try { localStorage.setItem('mbu:kept-drop', String(Date.now())); } catch (e) { /* storage blocked: this tab's memory is dropped all the same */ } }
+// `mbLastWrite`, the time of the last write to MusicBrainz, is shared by the suite and SAED (#938): an edit made with any of them drops every script's kept answers
+const mbLastWrite = () => { try { return +localStorage.getItem('mbLastWrite') || 0; } catch (e) { return 0; } };
+function kpWrote() { KP_MEM.clear(); try { localStorage.setItem('mbLastWrite', String(Date.now())); } catch (e) { /* storage blocked: this tab's memory is dropped all the same */ } }
 const kpStore = mode => (kpDb || (kpDb = new Promise((ok, no) => {
     const q = indexedDB.open('eh-kept', 1);
     q.onupgradeneeded = () => q.result.createObjectStore('a', { keyPath: 'k' }).createIndex('at', 'at');
@@ -4389,7 +4388,7 @@ const kpMem = e => { KP_MEM.delete(e.k); KP_MEM.set(e.k, e); if (KP_MEM.size > 2
 async function kpGet(k) {
     let e = KP_MEM.get(k);
     if (!e) try { e = await kpStore('readonly').then(s => new Promise(ok => { const q = s.get(k); q.onsuccess = () => ok(q.result); q.onerror = () => ok(null); })); if (e) kpMem(e); } catch (x) { e = null; }
-    return e && e.at > kpDrop() ? e : null;
+    return e && e.at > mbLastWrite() ? e : null;
 }
 function kpPut(k, t) {
     const e = { k, at: Date.now(), t };
@@ -4451,7 +4450,7 @@ async function keptCover(rel, img) {
     if (KP_COV.has(k)) return { u: KP_COV.get(k), had: true };
     let e = null;
     try { e = await kpStore('readonly').then(st => new Promise(ok => { const q = st.get(k); q.onsuccess = () => ok(q.result); q.onerror = () => ok(null); })); } catch (x) {}
-    if (e && e.b && (img.id !== 'header' || (e.at > kpDrop() && Date.now() - e.at < 86400000))) { const u = URL.createObjectURL(e.b); KP_COV.set(k, u); return { u, had: true }; }
+    if (e && e.b && (img.id !== 'header' || (e.at > mbLastWrite() && Date.now() - e.at < 86400000))) { const u = URL.createObjectURL(e.b); KP_COV.set(k, u); return { u, had: true }; }
     const t0 = performance.now(), r = await fetch(((img.thumbnails || {})['500'] || `https://coverartarchive.org/release/${rel}/front-500`).replace(/^http:/, 'https:'));
     fetchLog('CAA front ' + rel, t0, r);
     if (!r.ok) throw new Error('HTTP ' + r.status);
