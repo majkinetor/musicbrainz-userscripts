@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.001000
+// @version      2026.11.18.003000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3095,7 +3095,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 #eh-pin .pident,#eh-pin .pkk{overflow:hidden}#eh-pin .pkk{display:flex;align-items:center;gap:6px;min-width:0;max-width:40%;color:var(--muted);font-size:10.5px;white-space:nowrap}#eh-pin .pkk svg{width:18px;height:18px;flex:none}#eh-pin .pkk>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 /* Reserve the release identity before fitting actions; format icons must not shrink under the menu. */
 #eh-pin .pident{min-width:min(360px,45%)}#eh-pin .pkk{flex:none}
-#eh-pin.eh-ply{transform:none}#eh-pin.eh-ply>.kicker{min-height:42px}#eh-pin.eh-ply .pident{flex:0 0 auto;min-width:0;max-width:min(40%,520px)}@media(max-width:700px){#eh-pin.eh-ply .pident{max-width:22%}#eh-pin .ply-ctl.pb{flex:1 1 auto;min-width:0}}#eh-pin.eh-ply .ply-ctl.pb~*{margin-left:auto}#eh-pin .ply-ctl.pb{align-self:stretch;margin-top:-6px;margin-bottom:-6px}html.eh-ply-pin body{padding-top:var(--eh-pin-h,0px)}
+#eh-pin.eh-ply{transform:none}#eh-pin.eh-ply>.kicker{min-height:42px}#eh-pin.eh-ply .pident{flex:1 1 0;min-width:0}#eh-pin.eh-ply .ply-ctl.pb~*{flex:1 1 0;min-width:0;justify-content:flex-end}#eh-pin.eh-ply>.kicker:has(>.ply-ctl.pb:last-child)::after{content:"";flex:1 1 0}#eh-pin .ply-ctl.pb{max-width:min(560px,56%);min-width:0}@media(max-width:700px){#eh-pin .ply-ctl.pb{flex:0 1 auto;max-width:70%}#eh-pin.eh-ply>.kicker::after{display:none}}#eh-pin .ply-ctl.pb{align-self:stretch;margin-top:-6px;margin-bottom:-6px}html.eh-ply-pin body{padding-top:var(--eh-pin-h,0px)}
 @media(max-width:700px){#eh-pin .pkk{display:none}}
 .kicker .ab[data-ehsec]:hover,.kicker .srch>.ab:hover,.kicker .ab.eh-home:hover{background:var(--surface)!important;border-color:var(--accent)}
 .ib{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--soft)!important;cursor:pointer;display:grid;place-items:center;position:relative}
@@ -11847,6 +11847,7 @@ const plyState = paused => { if (paused === ply.paused) return; ply.paused = pau
 const plyStep = d => { const i = ply.i + d; if (i >= 0 && i < ply.q.length) plyGo(i); };
 function plyClose() {
     LOG.info('player: closed');
+    try { sessionStorage.removeItem('eh-ply'); } catch (e) {}
     ply.q = []; ply.i = -1; ply.src = '';
     document.getElementById('eh-ply')?.remove();
     document.getElementById('eh-ply-menu')?.remove();
@@ -12001,7 +12002,16 @@ function plyDraw() {
     plyProg();
     plyPin();
     plyMark();
+    plyFit();
 }
+// the chip's position bar spans the title only, not the buttons beside it
+function plyFit() {
+    const pr = plyCtl && plyCtl.classList.contains('pb') && plyCtl.querySelector('.ply-pr'), n = pr && plyCtl.querySelector('.ply-t');
+    if (!n) return;
+    pr.style.left = n.offsetLeft + 'px';
+    pr.style.right = Math.max(0, plyCtl.clientWidth - n.offsetLeft - n.offsetWidth) + 'px';
+}
+addEventListener('resize', () => plyFit());
 // the clock and the line under the track
 function plyProg() {
     const t = ply.q[ply.i]; if (!t || !plyCtl) return;
@@ -12161,7 +12171,7 @@ html.eh-ply-bar body{padding-bottom:60px}
 .pb .ply-pr.sk:hover i::after{content:"";position:absolute;right:-6px;top:50%;width:12px;height:12px;margin-top:-6px;border-radius:50%;background:var(--accent,#ba478f)}
 .pb .ply-hv{display:none;position:absolute;bottom:12px;transform:translateX(-50%);padding:1px 5px;border-radius:4px;background:var(--text,#222);color:var(--surface,#fff);font:600 11px/1.4 system-ui,sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:none}
 .pb .ply-pr.sk:hover .ply-hv:not(:empty){display:block}
-#eh-ply>.ply-ctl.pb .ply-pr{left:18px;right:18px}
+
 #eh-ply>.ply-ctl.pb{position:fixed;right:16px;top:84px;height:40px;max-width:calc(100vw - 32px);box-sizing:border-box;margin:0;padding:0 4px 0 6px;background:var(--surface,#fff);color:var(--text,#222);border:1px solid var(--line,#ddd);border-radius:999px}
 #eh-ply .ply-dock{position:fixed;right:16px;width:360px;max-width:calc(100vw - 32px);background:var(--surface,#fff);border:1px solid var(--line,#ddd);border-radius:8px;overflow:hidden}
 #eh-ply .ply-dock:empty{display:none}
@@ -12215,9 +12225,22 @@ function plyClock(t) {
     t.sent = false; t.ok = null; t.done = false; t.kicked = false; t.at = Math.floor(Date.now() / 1000); t.heard = 0; t.played = 0;
     lbListen(t, 'playing_now');
 }
+let plyResumed = false;
 setInterval(() => {
+    if (!plyResumed && ply.i < 0 && S.player && ehOn && data && data.rel) {
+        plyResumed = true;
+        let v = null; try { v = JSON.parse(sessionStorage.getItem('eh-ply') || 'null'); } catch (e) {}
+        if (v && v.rel === data.rel.id) {
+            LOG.info('player: resumes', v.key, 'at', dur(v.played || 0));
+            plyStart(data.rel, v.key, v.src);
+            const r = ply.q[ply.i]; if (r && r.key === v.key && v.played > 3000) r.resume = v.played;
+        }
+    }
     const t = ply.q[ply.i]; if (!t || ply.paused || !t.at || t.done) return;
     t.played += 1000;
+    // the saved place is sought once the widget has played a moment, so it is ready to take it
+    if (t.resume && t.played >= 2000) { const at = t.resume; t.resume = 0; plySeek(at); }
+    try { sessionStorage.setItem('eh-ply', JSON.stringify({ rel: t.rel, key: t.key, src: t.src, played: t.played })); } catch (e) {}
     plyProg();
     if (!ply.ends && t.len && t.played >= t.len + 1500) { plyEnded('its length has played'); return; }
     if (t.sent || !S.playerScrobble) return;
