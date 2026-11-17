@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011010
+// @version      2026.11.18.011011
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11895,7 +11895,18 @@ if (PLY_BUS) {
         if (before !== after || !plyCtl || !plyCtl.isConnected) plyDraw(); else plyProg();
     });
     if (PLY_WINDOW) {
-        const ready = () => { document.title = 'Event Horizon player'; document.documentElement.classList.add('eh-ply-win'); document.body.replaceChildren(); document.body.style.cssText = 'margin:0;background:var(--surface,#fff);'; plyPublish(); };
+        // the window takes Event Horizon's palette and the page's light or dark theme, which a String Theory theme repaints like the viewer
+        const ready = () => {
+            const de = document.documentElement;
+            document.title = 'Event Horizon player';
+            de.setAttribute('data-eh-theme', mbuTheme());
+            de.classList.add('eh-ply-win');
+            const pal = document.createElement('style'); pal.id = 'eh-ply-pal';
+            pal.textContent = (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-theme=dark\]\{[\s\S]*?\}/) || [''])[0];
+            de.append(pal);
+            document.body.replaceChildren(); document.body.style.cssText = 'margin:0;background:var(--surface,#fff);color:var(--text,#222);';
+            plyPublish();
+        };
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready, { once: true }); else ready();
         addEventListener('beforeunload', () => plySend({ type: 'closed' }));
     } else plySend({ type: 'hello' });
