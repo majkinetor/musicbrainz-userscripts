@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011004
+// @version      2026.11.18.011006
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4348,9 +4348,11 @@ S.fxCur = ''; // the effect preset being worked on: Save writes a change into it
 S.colW = {}; // the widths dragged in a table, by section; the title takes what they leave, and none means the table fits itself
 S.colPick = {}; // the tables' column choice, by section: { order, off }; none is the usual table
 S.pending = false; // MusicBrainz's grey mark on what has edits open; takes one more request per page
-VIEW.push('player', 'playerPlace', 'playerLb', 'playerScrobble', 'playerVideo', 'playerVol');
+VIEW.push('player', 'playerPlace', 'playerWindow', 'playerRepeat', 'playerLb', 'playerScrobble', 'playerVideo', 'playerVol');
 S.player = true; // the play buttons on a release's tracks, and the player they start
 S.playerPlace = 'bar'; // where the player shows: 'bar' at the bottom, 'chip' at the top right
+S.playerWindow = false; // play in a separate browser window which survives closing this tab
+S.playerRepeat = 'off'; // off, all, or one; changed by right-clicking the play/pause button
 S.playerLb = true; // the player's links to the track and the release in ListenBrainz
 S.playerVol = 100; // the player's volume, 0 to 100; 0 is muted
 S.playerVideo = true; // YouTube's video shows above the player; its Hide video button
@@ -11785,6 +11787,82 @@ const PLY_I = {
 // kind: the source playing; ctl: its widget takes play and pause; ends: it says when a track ends (the others end
 // when the track's length has played); gen: which plyGo is current, for Bandcamp's late answer
 const ply = { q: [], i: -1, src: '', pref: '', paused: false, yt: false, kind: '', ctl: false, ends: false, gen: 0 };
+const PLY_WINDOW = location.pathname === '/' && new URLSearchParams(location.search).get('eh-player-window') === '1';
+let PLY_BUS = null;
+try { if (typeof BroadcastChannel === 'function') PLY_BUS = new BroadcastChannel('mbu-event-horizon-player-v1'); } catch (e) { /* unavailable in this browser */ }
+let plyRemote = false, plyOwnerSeen = 0, plyTabSeen = 0, plyProbeAt = 0, plyPending = null, plyWindow = null;
+const PLY_ID = Math.random().toString(36).slice(2) + Date.now().toString(36);
+const plySend = msg => { try { if (PLY_BUS) PLY_BUS.postMessage(msg); } catch (e) { LOG.warn('player: window message failed', e.message); } };
+const plyPublish = () => {
+    if (!PLY_WINDOW) return;
+    plySend({ type: 'state', q: ply.q, i: ply.i, src: ply.src, pref: ply.pref, paused: ply.paused, yt: ply.yt, kind: ply.kind, ctl: ply.ctl, ends: ply.ends, vol: S.playerVol, video: S.playerVideo, repeat: S.playerRepeat });
+};
+function plyWindowStart(q, i, want) {
+    if (!PLY_BUS) { toast('Separate player windows need BroadcastChannel'); return; }
+    let fresh = false;
+    if (!plyRemote && Date.now() - plyOwnerSeen > 4000) {
+        plyWindow = window.open('', 'mbu-event-horizon-player', 'popup=yes,width=520,height=300');
+        if (!plyWindow) { toast('Allow pop-up windows to use the separate player'); return; }
+        try { if (plyWindow.location.origin !== location.origin || new URLSearchParams(plyWindow.location.search).get('eh-player-window') !== '1') { fresh = true; plyWindow.location.href = location.origin + '/?eh-player-window=1'; } }
+        catch (e) { toast('Could not open the player window'); return; }
+    }
+    if (!plyRemote && ply.i >= 0) plyClose();
+    plySend({ type: 'claim', id: PLY_ID, place: 'window', replace: fresh });
+    const id = Date.now().toString(36) + Math.random().toString(36).slice(2);
+    plyPending = { type: 'start', id, q, i, want: want || '', pref: want || ply.pref };
+    plySend(plyPending);
+    let n = 0;
+    const iv = setInterval(() => { if (!plyPending || plyPending.id !== id) { clearInterval(iv); return; } if (++n > 30) { clearInterval(iv); plyPending = null; toast('The player window did not start'); return; } plySend(plyPending); }, 500);
+}
+const plyControl = (action, value) => plySend({ type: 'control', action, value });
+if (PLY_BUS) {
+    const seen = new Set();
+    PLY_BUS.addEventListener('message', ev => {
+        const m = ev.data; if (!m || typeof m !== 'object') return;
+        if (m.type === 'claim' && m.id !== PLY_ID) {
+            plyPending = null;
+            if (PLY_WINDOW && (m.place === 'tab' || m.replace)) { if (ply.i >= 0) plyClose(); window.close(); }
+            else if (!PLY_WINDOW && (m.place === 'tab' || !plyRemote) && ply.i >= 0) { plyRemote = false; plyClose(); }
+            return;
+        }
+        if (PLY_WINDOW) {
+            if (m.type === 'hello') { plyPublish(); return; }
+            if (m.type === 'start' && Array.isArray(m.q) && Number.isInteger(m.i)) {
+                if (!seen.has(m.id)) { seen.add(m.id); if (seen.size > 100) seen.delete(seen.values().next().value); ply.q = m.q; ply.pref = m.pref || ''; plyGo(m.i, m.want); }
+                plySend({ type: 'started', id: m.id }); plyPublish(); return;
+            }
+            if (m.type !== 'control') return;
+            if (m.action === 'go') { if (m.value.want) ply.pref = m.value.want; plyGo(m.value.i, m.value.want); }
+            else if (m.action === 'step') plyStep(m.value);
+            else if (m.action === 'play') { plyCmd(!!m.value); ply.paused = !m.value; plyDraw(); }
+            else if (m.action === 'seek') plySeek(m.value);
+            else if (m.action === 'volume') plyVolSet(m.value);
+            else if (m.action === 'video') plyVideo();
+            else if (m.action === 'repeat') plyRepeat();
+            else if (m.action === 'close') { plyClose(); window.close(); }
+            plyPublish(); return;
+        }
+        if (m.type === 'hello' && !plyRemote && ply.i >= 0) { plySend({ type: 'tab-active', id: PLY_ID }); return; }
+        if (m.type === 'tab-active' && m.id !== PLY_ID) { plyTabSeen = Date.now(); return; }
+        if (m.type === 'started' && plyPending && m.id === plyPending.id) { plyPending = null; return; }
+        if (m.type === 'closed' && plyRemote) { plyRemote = false; plyOwnerSeen = 0; plyClose(); return; }
+        if (m.type !== 'state') return;
+        plyOwnerSeen = Date.now(); plyProbeAt = 0;
+        if (!S.player || (!plyRemote && !plyPending && ply.i >= 0) || !Array.isArray(m.q)) return;
+        if (m.i < 0) { if (plyRemote) { plyRemote = false; plyClose(); } return; }
+        const before = [ply.i, ply.src, ply.paused, ply.q[ply.i]?.title, S.playerVol, S.playerVideo, S.playerRepeat].join('|');
+        plyRemote = true; plyResumed = true; Object.assign(ply, { q: m.q, i: m.i, src: m.src, pref: m.pref, paused: m.paused, yt: m.yt, kind: m.kind, ctl: m.ctl, ends: m.ends });
+        S.playerVol = m.vol; S.playerVideo = m.video; S.playerRepeat = m.repeat || 'off';
+        const after = [ply.i, ply.src, ply.paused, ply.q[ply.i]?.title, S.playerVol, S.playerVideo, S.playerRepeat].join('|');
+        if (before !== after || !plyCtl || !plyCtl.isConnected) plyDraw(); else plyProg();
+    });
+    if (PLY_WINDOW) {
+        const ready = () => { document.title = 'Event Horizon player'; document.body.replaceChildren(); document.body.style.cssText = 'margin:0;background:var(--surface,#fff);'; plyPublish(); };
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready, { once: true }); else ready();
+        addEventListener('beforeunload', () => plySend({ type: 'closed' }));
+    } else plySend({ type: 'hello' });
+}
+if (mbuTestHooks()) window.__ehPlayerTest = { start: (q, i = 0) => plyWindowStart(q, i), startRelease: plyStart, remote: () => plyRemote, popup: () => PLY_WINDOW, state: () => ({ i: ply.i, gen: ply.gen, paused: ply.paused, vol: S.playerVol, repeat: S.playerRepeat }) };
 // Keep playback alive when opening the release editor, including on MusicBrainz's native page.
 document.addEventListener('click', ev => {
     if (ply.i < 0 || ev.defaultPrevented || ev.button !== 0 || ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey) return;
@@ -11841,14 +11919,19 @@ function plyBandcamp(u) {
 }
 function plyStart(r, key, want) {
     if (!S.player) return;
-    ply.q = plyQueue(r);
-    const i = key ? ply.q.findIndex(t => t.key === key) : 0;
+    const q = plyQueue(r);
+    const i = key ? q.findIndex(t => t.key === key) : 0;
     if (i < 0) { toast('Nothing to play this track from'); return; }
+    if (S.playerWindow && !PLY_WINDOW) { plyWindowStart(q, i, want); return; }
+    if (plyRemote) { plyControl('close'); plyRemote = false; }
+    if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' });
+    ply.q = q;
     if (want) ply.pref = want;
     LOG.info('player: start', r.id, key || 'all', ply.q.length + ' playable', want || '');
     plyGo(i, want);
 }
 function plyGo(i, want) {
+    if (plyRemote && !PLY_WINDOW) { plyControl('go', { i, want }); return; }
     const t = ply.q[i]; if (!t) return;
     const p = plyPick(t, want), e = plyEmbed(p), gen = ++ply.gen;
     // a track waits paused until its widget says it plays; YouTube autoplays, Apple's says nothing (see the blur below)
@@ -11858,6 +11941,7 @@ function plyGo(i, want) {
     LOG.info('player: plays', t.key, t.title, 'from', p.key, t.len ? Math.round(t.len / 1000) + ' s' : 'no length');
     plyClock(t);
     plyDraw();
+    plySave();
     if (!e.bc) { plyDock(e); return; }
     plyDock(null);
     plyBandcamp(e.bc).then(url => {
@@ -11872,11 +11956,20 @@ function plyEnded(why) {
     const t = ply.q[ply.i]; if (!t || t.done) return;
     t.done = true;
     LOG.info('player: track ended (' + why + ')', t.title);
-    if (ply.i + 1 < ply.q.length) plyGo(ply.i + 1); else { ply.paused = true; plyDraw(); }
+    if (S.playerRepeat === 'one') plyGo(ply.i, ply.src);
+    else if (ply.i + 1 < ply.q.length) plyGo(ply.i + 1);
+    else if (S.playerRepeat === 'all') plyGo(0);
+    else { ply.paused = true; plyDraw(); }
+}
+function plyRepeat() {
+    if (plyRemote && !PLY_WINDOW) { plyControl('repeat'); return; }
+    S.playerRepeat = S.playerRepeat === 'off' ? 'all' : S.playerRepeat === 'all' ? 'one' : 'off';
+    save(); LOG.info('player: repeat', S.playerRepeat); plyDraw();
 }
 const plyState = paused => { if (paused === ply.paused) return; ply.paused = paused; LOG.debug('player:', paused ? 'paused' : 'plays'); plyDraw(); };
-const plyStep = d => { const i = ply.i + d; if (i >= 0 && i < ply.q.length) plyGo(i); else if (d < 0 && ply.i === 0 && ply.ctl) plySeek(0); };
+const plyStep = d => { if (plyRemote && !PLY_WINDOW) { plyControl('step', d); return; } const i = ply.i + d; if (i >= 0 && i < ply.q.length) plyGo(i); else if (d < 0 && ply.i === 0 && ply.ctl) plySeek(0); };
 function plyClose() {
+    if (plyRemote && !PLY_WINDOW) { plyControl('close'); plyRemote = false; }
     LOG.info('player: closed');
     try { sessionStorage.removeItem('eh-ply'); } catch (e) {}
     ply.q = []; ply.i = -1; ply.src = '';
@@ -11886,6 +11979,7 @@ function plyClose() {
     document.documentElement.classList.remove('eh-ply-bar');
     plyPin();
     plyMark();
+    if (PLY_WINDOW) { plySend({ type: 'closed' }); window.close(); }
 }
 function plyDock(e) {
     const root = plyRoot(), dock = root.querySelector('.ply-dock');
@@ -11902,6 +11996,7 @@ const plyFrame = () => document.querySelector('#eh-ply .ply-dock iframe');
 const plyPost = m => { const f = plyFrame(); if (f) try { f.contentWindow.postMessage(m, '*'); } catch (e) {} };
 // the widget's play and pause, each in its own words
 function plyCmd(play) {
+    if (plyRemote && !PLY_WINDOW) { plyControl('play', play); return; }
     const k = ply.kind;
     LOG.info('player:', play ? 'play' : 'pause', 'asked of', k);
     if (ply.yt) plyPost(JSON.stringify({ event: 'command', func: play ? 'playVideo' : 'pauseVideo', args: [] }));
@@ -11912,6 +12007,7 @@ function plyCmd(play) {
 // the volume, in each widget's words; Spotify's and Apple's can't be told
 const plyHasVol = () => ply.ctl && ply.kind !== 'spotify';
 function plyVol() {
+    if (plyRemote && !PLY_WINDOW) { plyControl('volume', +S.playerVol); return; }
     if (!plyHasVol()) return;
     const v = Math.max(0, Math.min(100, Math.round(+S.playerVol || 0))), k = ply.kind;
     if (ply.yt) { plyPost(JSON.stringify({ event: 'command', func: v ? 'unMute' : 'mute', args: [] })); plyPost(JSON.stringify({ event: 'command', func: 'setVolume', args: [v] })); }
@@ -11933,13 +12029,14 @@ function plyVolSet(v, keep) {
 }
 // a jump to ms into the track, in each widget's words; Apple's can't be told
 function plySeek(ms) {
+    if (plyRemote && !PLY_WINDOW) { plyControl('seek', ms); return; }
     const k = ply.kind, t = ply.q[ply.i]; if (!t || !ply.ctl) return;
     LOG.info('player: seek to', dur(ms), 'in', k);
     if (ply.yt) plyPost(JSON.stringify({ event: 'command', func: 'seekTo', args: [ms / 1000, true] }));
     else if (k === 'spotify') plyPost({ command: 'seek', timestamp: ms / 1000 });
     else if (k === 'soundcloud') plyPost(JSON.stringify({ method: 'seekTo', value: ms }));
     else plyPost({ ehPlyCmd: 'seek', pos: ms / 1000 });
-    t.played = ms; plyProg();
+    t.played = ms; plyProg(); plySave();
 }
 // what the widgets say. YouTube: its state, 0 ended, 1 playing, 2 paused. Spotify: ready, then playback_update with
 // isPaused, position and duration (it doesn't start on its own: told to toggle once ready). SoundCloud: ready, then the
@@ -11990,7 +12087,7 @@ function plyRoot() {
         root.innerHTML = '<div class="ply-dock"></div>';
         document.documentElement.append(root);
     }
-    if (!plyCtl) { plyCtl = document.createElement('div'); plyCtl.addEventListener('click', plyClick); plyCtl.addEventListener('mousemove', plyHover); plyCtl.addEventListener('wheel', plyWheel, { passive: false }); plyCtl.addEventListener('input', ev => { if (ev.target.classList.contains('ply-vol')) plyVolSet(+ev.target.value); }); }
+    if (!plyCtl) { plyCtl = document.createElement('div'); plyCtl.addEventListener('click', plyClick); plyCtl.addEventListener('contextmenu', ev => { if (ev.target.closest('[data-ply="play"],[data-ply="pause"]')) { ev.preventDefault(); plyRepeat(); } }); plyCtl.addEventListener('mousemove', plyHover); plyCtl.addEventListener('wheel', plyWheel, { passive: false }); plyCtl.addEventListener('input', ev => { if (ev.target.classList.contains('ply-vol')) plyVolSet(+ev.target.value); }); }
     return root;
 }
 // B: the controls go into the pinned header, after its title, and the header stays shown; without one, back to the chip
@@ -12015,8 +12112,10 @@ function plyDraw() {
     plyCtl.className = 'mbu-ui ply-ctl pb' + (bar ? ' pa' : '');
     document.documentElement.classList.toggle('eh-ply-bar', bar);
     const p = t.srcs.find(x => x.key === ply.src) || t.srcs[0], lb = S.playerLb || S.playerScrobble;
+    const rep = S.playerRepeat === 'one' ? 'Repeat one' : S.playerRepeat === 'all' ? 'Repeat all' : 'Play once';
+    const play = plyB(ply.paused ? 'play' : 'pause', (ply.paused ? 'Play' : 'Pause') + '\n' + rep + '\nRight-click: change repeat', '', ' big').replace('</button>', S.playerRepeat === 'off' ? '</button>' : `<span class="ply-repeat" aria-hidden="true">↻${S.playerRepeat === 'one' ? '¹' : ''}</span></button>`);
     const nav = plyB('prev', ply.i > 0 ? 'Previous track' : 'Restart track', ply.i > 0 || ply.ctl ? '' : ' disabled')
-        + (ply.ctl ? plyB(ply.paused ? 'play' : 'pause', ply.paused ? 'Play' : 'Pause', '', ' big') : '')
+        + (ply.ctl ? play : '')
         + plyB('next', 'Next track', ply.i + 1 < ply.q.length ? '' : ' disabled');
     const name = `<button type="button" class="ply-t" data-ply="list" aria-haspopup="menu" data-tip="${esc(t.title + ' — ' + t.artist + '\n' + t.relTitle)}\nClick: the playlist"><span class="ply-n">${esc(plyNo(t))}</span><b>${esc(t.title)}</b><span class="ply-ar">· ${esc(t.artist)}</span>${t.relTitle ? `<span class="ply-rl">· ${esc(t.relTitle)}</span>` : ''}</button>`;
     const prog = ply.ctl && t.len ? `<span class="ply-pr sk" data-ply="seek" aria-label="Position"><i></i>${bar ? '' : '<b class="ply-hv"></b>'}</span>` : '<span class="ply-pr" aria-hidden="true"><i></i></span>';
@@ -12045,7 +12144,7 @@ function plyProg() {
     const i = plyCtl.querySelector('.ply-pr i'); if (i) i.style.width = t.len ? Math.min(100, (t.played || 0) / t.len * 100) + '%' : '0';
     // the chip has no clock: the title's tooltip tells the time
     const n = plyCtl.classList.contains('pb') && plyCtl.querySelector('.ply-t');
-    if (n) n.dataset.tip = t.title + ' — ' + t.artist + (t.relTitle ? '\n' + t.relTitle : '') + '\n' + dur(t.played || 0) + (t.len ? ' / ' + dur(t.len) : '') + '\nClick: the playlist';
+    if (n) n.dataset.tip = plyNo(t) + '. ' + t.title + ' — ' + t.artist + (t.relTitle ? '\n' + t.relTitle : '') + '\n' + dur(t.played || 0) + (t.len ? ' / ' + dur(t.len) : '') + '\nClick: the playlist' + (ply.ctl && t.len ? '\nWheel: rewind or fast-forward 5 seconds' : '');
 }
 // the wheel over the volume sets it, anywhere else on the player winds the track
 function plyWheel(ev) {
@@ -12067,7 +12166,7 @@ function plyMark() {
     document.querySelectorAll('.tr.ply-on').forEach(r => { if (!t || r.dataset.row !== t.key || !data || !data.rel || data.rel.id !== t.rel) r.classList.remove('ply-on'); });
     if (t && data && data.rel && data.rel.id === t.rel) document.querySelector(`.tr[data-row="${window.CSS.escape(t.key)}"]`)?.classList.add('ply-on');
 }
-const plyVideo = () => { S.playerVideo = !S.playerVideo; save(); LOG.info('player: video', S.playerVideo ? 'shown' : 'hidden'); plyDraw(); };
+const plyVideo = () => { if (plyRemote && !PLY_WINDOW) { plyControl('video'); return; } S.playerVideo = !S.playerVideo; save(); LOG.info('player: video', S.playerVideo ? 'shown' : 'hidden'); plyDraw(); };
 const plySrc = key => { ply.pref = key; plyGo(ply.i, key); };
 function plyClick(ev) {
     const b = ev.target.closest('[data-ply]'); if (!b || b.disabled) return;
@@ -12102,7 +12201,11 @@ function plyRec(g, eds) {
     if (!S.player || !g) return;
     const e = (eds || [])[0] || {}, srcs = plySources({ links: g.links || [] });
     if (!srcs.length) { toast('Nothing to play this recording from'); return; }
-    ply.q = [{ key: '1-1', n: 1, title: g.title, rid: g.id, artist: acText(g.ac), len: g.len || 0, srcs, rel: e.id || '', relTitle: e.title || '', front: true }];
+    const q = [{ key: '1-1', n: 1, title: g.title, rid: g.id, artist: acText(g.ac), len: g.len || 0, srcs, rel: e.id || '', relTitle: e.title || '', front: true }];
+    if (S.playerWindow && !PLY_WINDOW) { plyWindowStart(q, 0); return; }
+    if (plyRemote) { plyControl('close'); plyRemote = false; }
+    if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' });
+    ply.q = q;
     LOG.info('player: start the recording', g.id);
     plyGo(0);
 }
@@ -12124,6 +12227,12 @@ function plyMenu(btn, html, pick) {
         shut();
         if (b.dataset.k) pick({ k: b.dataset.k }); else if (b.dataset.m) pick({ m: b.dataset.m });
     });
+    m.addEventListener('contextmenu', ev => {
+        const b = ev.target.closest('.ply-ss [data-k]'); if (!b) return;
+        const t = ply.q[ply.i], p = t && t.srcs.find(x => x.key === b.dataset.k), url = p && p.urls[0] && p.urls[0].url;
+        if (!url || !/^https?:\/\//i.test(url)) return;
+        ev.preventDefault(); shut(); window.open(url, '_blank', 'noopener');
+    });
 }
 const plySrcItems = t => t.srcs.map(p => `<button type="button" class="it" role="menuitem" data-k="${p.key}"${ply.q[ply.i] === t && p.key === ply.src ? ' aria-current="true"' : ''}>${icon(p, 18)}<span>${esc(p.name)}</span></button>`).join('');
 // a track's sources
@@ -12139,7 +12248,7 @@ function plyLbMenu(btn) {
         : t.ok != null ? `<i class="d"></i>Listen sent · ${dur(t.ok)} in`
         : t.sent ? 'Sending the listen…' : `Listen sends at ${dur(plyDue(t))}`;
     // the sources first, as a strip of icons (five to a row), the one playing marked
-    const parts = [`<div class="hd">Playing from</div><div class="ply-ss">${t.srcs.map(p => `<button type="button" class="ss" role="menuitem" data-k="${p.key}" data-tip="${esc(p.name)}"${p.key === ply.src ? ' aria-current="true"' : ''}>${icon(p, 20)}<span>${esc(p.name.replace(/ Music$/, ''))}</span></button>`).join('')}</div>`];
+    const parts = [`<div class="hd">Playing from</div><div class="ply-ss">${t.srcs.map(p => `<button type="button" class="ss" role="menuitem" data-k="${p.key}" data-tip="${esc(p.name)}&#10;Right-click: open on ${esc(p.name)}"${p.key === ply.src ? ' aria-current="true"' : ''}>${icon(p, 20)}<span>${esc(p.name.replace(/ Music$/, ''))}</span></button>`).join('')}</div>`];
     if (S.playerLb || S.playerScrobble) parts.push(`<div class="hd">${plyLogo(14)}<span>ListenBrainz</span></div>`
         + (S.playerLb ? it(`https://listenbrainz.org/track/${t.rid}`, 'note', 'This track') + (t.rel ? it(`https://listenbrainz.org/release/${t.rel}`, 'rel', 'This release') : '') : '')
         + (st ? `<hr><div class="st">${st}</div>` : '')
@@ -12157,6 +12266,7 @@ const PLY_CSS = `
 .ply-ctl .ply-b[disabled]{opacity:.35;cursor:default}
 .ply-ctl .ply-b[aria-pressed="true"]{color:var(--accent,#ba478f)}
 .ply-ctl .ply-b.big,.ply-ctl .ply-b.big:hover{width:34px;height:34px;border-radius:50%;background:var(--accent,#ba478f);color:#fff}
+.ply-ctl .ply-b.big{position:relative}.ply-ctl .ply-repeat{position:absolute;right:-3px;bottom:-3px;display:grid;place-items:center;min-width:13px;height:13px;padding:0 1px;border-radius:8px;background:var(--surface,#fff);color:var(--accent,#ba478f);font:bold 11px/1 system-ui,sans-serif}
 .ply-ctl .ply-b.big svg{width:16px;height:16px}
 .ply-ctl .ply-lb{position:relative}
 .ply-ctl .ply-lb.sent::after{content:'';position:absolute;right:3px;top:3px;width:7px;height:7px;border-radius:50%;background:#3fa56b;box-shadow:0 0 0 2px var(--surface,#fff)}
@@ -12267,22 +12377,44 @@ function plyClock(t) {
     t.sent = false; t.ok = null; t.done = false; t.kicked = false; t.at = Math.floor(Date.now() / 1000); t.heard = 0; t.played = 0;
     lbListen(t, 'playing_now');
 }
+// A native MusicBrainz navigation destroys the tab's player. Keep its queue in this tab so it can be restored on any page.
+function plySave() {
+    const t = ply.q[ply.i]; if (!t || plyRemote || PLY_WINDOW) return;
+    try { sessionStorage.setItem('eh-ply', JSON.stringify({ rel: t.rel, key: t.key, src: t.src, played: t.resume || t.played, q: ply.q })); } catch (e) {}
+}
 let plyResumed = false;
 setInterval(() => {
-    if (!plyResumed && ply.i < 0 && S.player && ehOn && data && data.rel) {
-        plyResumed = true;
+    if (PLY_WINDOW) plyPublish();
+    if (plyRemote && !PLY_WINDOW) {
+        if (document.visibilityState === 'visible' && Date.now() - plyOwnerSeen > 5000) {
+            if (!plyProbeAt) { plyProbeAt = Date.now(); plySend({ type: 'hello' }); }
+            else if (Date.now() - plyProbeAt > 10000) { plyRemote = false; plyClose(); }
+        }
+        return;
+    }
+    if (!PLY_WINDOW && ply.i >= 0) plySend({ type: 'tab-active', id: PLY_ID });
+    if (!plyResumed && plyTabSeen && Date.now() - plyTabSeen < 5000) plyResumed = true;
+    if (!plyResumed && !PLY_WINDOW && !S.playerWindow && ply.i < 0 && S.player) {
         let v = null; try { v = JSON.parse(sessionStorage.getItem('eh-ply') || 'null'); } catch (e) {}
-        if (v && v.rel === data.rel.id) {
+        if (v && Array.isArray(v.q) && v.q.length) {
+            plyResumed = true;
+            const i = v.q.findIndex(t => t.key === v.key && t.rel === v.rel);
+            if (i >= 0 && Array.isArray(v.q[i].srcs) && v.q[i].srcs.length) {
+                ply.q = v.q; ply.pref = v.src || ''; if (v.played > 3000) ply.q[i].resume = v.played;
+                plySend({ type: 'claim', id: PLY_ID, place: 'tab' }); plyGo(i, v.src);
+            }
+        } else if (v && ehOn && data && data.rel && v.rel === data.rel.id) {
+            plyResumed = true;
             LOG.info('player: resumes', v.key, 'at', dur(v.played || 0));
             plyStart(data.rel, v.key, v.src);
             const r = ply.q[ply.i]; if (r && r.key === v.key && v.played > 3000) r.resume = v.played;
-        }
+        } else if (!v) plyResumed = true;
     }
     const t = ply.q[ply.i]; if (!t || ply.paused || !t.at || t.done) return;
     t.played += 1000;
     // the saved place is sought once the widget has played a moment, so it is ready to take it
     if (t.resume && ply.kind !== 'bandcamp' && t.played >= 2000) { const at = t.resume; t.resume = 0; plySeek(at); }
-    try { sessionStorage.setItem('eh-ply', JSON.stringify({ rel: t.rel, key: t.key, src: t.src, played: t.played })); } catch (e) {}
+    plySave();
     plyProg();
     if (!ply.ends && t.len && t.played >= t.len + 1500) { plyEnded('its length has played'); return; }
     if (t.sent || !S.playerScrobble) return;
@@ -14698,6 +14830,7 @@ function cfgBody() {
             + ckRow('pending', 'Show pending changes', 'Mark what has edits open, as MusicBrainz does\nTakes one extra MusicBrainz request per page, sent last')
             + `<div class="keys">${ckRow('keysOn', 'Keyboard shortcuts', 'Single keys open the page\'s edit, relationships, history and more\nCtrl+/ lists them\nOn MusicBrainz\'s pages and in Event Horizon alike')}<button type="button" class="btn" data-keys-open>Change keys…</button></div>`,
         player: ckRow('player', 'Enable player', 'A play button on each track of a release that has it on a streaming site\nPlays the release from there, track after track')
+            + ckRow('playerWindow', 'Play in a separate window', 'Keep playing when this tab is closed\nApplies the next time playback starts')
             + row('Player place', [['bar', 'Bottom bar'], ['chip', 'Top bar']].map(([v, l]) => chip('playerPlace', v, S.playerPlace === v, l)).join(''), 'Where the player shows')
             + ckRow('playerLb', 'Show ListenBrainz menu items', 'Links in the player to the track and the release in ListenBrainz')
             + `<div class="player-listens">${ckRow('playerScrobble', 'Send listens to ListenBrainz', 'What the player plays goes to your ListenBrainz listens\nNeeds your user token')}<span class="fx-combo"><input type="password" data-lbtok autocomplete="off" spellcheck="false" placeholder="LB token" aria-label="ListenBrainz token" value="${esc(lbToken())}"></span><a href="https://listenbrainz.org/settings" target="_blank" rel="noopener noreferrer" data-lb-get${lbToken() ? ' hidden' : ''}>Get token</a></div>`,
@@ -14974,7 +15107,7 @@ function cfgWire(panel, b, body) {
             else if (g === 'factOff') { const [kd, fk] = k.split(':'); S.factOff = { ...S.factOff, [kd]: toggle(S.factOff[kd] || [], fk) }; }
             else if (g === 'extra') S.extras = toggle(S.extras, k);
             else if (g === 'prov') { S.prov = toggle(S.prov, k); plFollow(); }
-            else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'arAuto' || g === 'menuTitles' || g === 'keysOn' || g === 'cfgFade' || g === 'player' || g === 'playerLb' || g === 'playerScrobble') S[g] = !S[g];
+            else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'arAuto' || g === 'menuTitles' || g === 'keysOn' || g === 'cfgFade' || g === 'player' || g === 'playerWindow' || g === 'playerLb' || g === 'playerScrobble') S[g] = !S[g];
             else if (g === 'playerPlace') S.playerPlace = k;
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
@@ -15395,7 +15528,7 @@ form[class^=edit-] .no-label,form[class^=edit-] .row.no-label{margin-left:0!impo
 form[class^=edit-] .documentation,#content>.documentation{display:none}`;
     document.documentElement.append(st);
 }
-if (PAGE_ID) {
+if (PAGE_ID && !PLY_WINDOW) {
     // hide MusicBrainz's page before it paints; the style goes once the viewer or the page itself is shown
     if (S.on) {
         const hide = () => { const h = document.documentElement; if (!h) return false; const st = document.createElement('style'); st.id = 'eh-hide'; st.textContent = HIDE; h.appendChild(st); return true; };
@@ -15405,7 +15538,7 @@ if (PAGE_ID) {
     let off = !S.on; try { off = off || !!sessionStorage.getItem('eh-off') || !!sessionStorage.getItem('mc.after'); } catch (e) {}
     if (!off && !/[#&]fc-update=/.test(location.hash)) prefetch(PAGE_ID);
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
-} else {
+} else if (!PLY_WINDOW) {
     // Idle effects work on every MusicBrainz page; no entity fetch or viewer starts here.
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fxWatch); else fxWatch();
 }

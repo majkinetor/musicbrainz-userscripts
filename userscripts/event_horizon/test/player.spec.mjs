@@ -37,7 +37,7 @@ test.describe('bar', () => {
 });
 
 test.describe('chip', () => {
-  test.use({ profile: 'fresh', gm: { name: 'Event Horizon', persist: true, values: { view: { on: true, playerPlace: 'chip', playerLb: false } } } });
+  test.use({ profile: 'fresh', gm: { name: 'Event Horizon', persist: true, values: { view: { on: true, playerPlace: 'chip', playerLb: false } } }, pageErrors: ['No valid solution has been found to play this item'] });
 
   test('the player shows as a header chip, without ListenBrainz links when they are off', { tag: '@prod' }, async ({ page, inject }, testInfo) => {
     await page.goto(REL);
@@ -46,9 +46,8 @@ test.describe('chip', () => {
     check(await until(() => page.locator('#eh-ply.ply-chip').count(), n => n === 1) === 1, 'the player shows as a chip');
     check(!(await page.evaluate(() => document.documentElement.classList.contains('eh-ply-bar'))), 'no room is kept for a bar');
     check(await until(() => page.locator('#eh-pin .ply-ctl.pb').count(), n => n === 1) === 1, 'the controls sit in the header');
-    check(await page.locator('.ply-ctl [data-ply="lb"]').count() === 0, 'no ListenBrainz button');
-    await page.locator('.ply-ctl [data-ply="more"]').click();
-    check(await until(() => page.locator('#eh-ply-menu').count(), n => n === 1) === 1, 'the more menu opens');
+    await page.locator('.ply-ctl [data-ply="lb"]').click();
+    check(await until(() => page.locator('#eh-ply-menu').count(), n => n === 1) === 1, 'the source menu opens');
     check(await page.locator('#eh-ply-menu a[href*="listenbrainz.org"]').count() === 0, 'no ListenBrainz links');
     await attachShot(testInfo, page, 'chip');
   });

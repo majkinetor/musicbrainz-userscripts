@@ -1,0 +1,97 @@
+import { test, expect } from '../../../dev/test/harness.mjs';
+
+test.use({ gm: { name: 'Event Horizon', persist: 'tabs', values: { view: { on: true, player: true, playerWindow: true } } } });
+
+test('separate player survives its opening tab and another tab controls it', { tag: '@sandbox' }, async ({ page, context, inject }) => {
+  test.setTimeout(120000);
+  await context.route('https://www.youtube-nocookie.com/embed/**', route => route.fulfill({ contentType: 'text/html', body: '<p>player fixture</p>' }));
+  await page.goto('https://test.musicbrainz.org/');
+  await inject('event_horizon', { waitFor: '__ehPlayerTest' });
+  const next = context.waitForEvent('page');
+  await page.evaluate(() => window.__ehPlayerTest.start(['First', 'Second'].map((title, i) => ({ key: '1-' + (i + 1), n: i + 1, title, rid: 'rec', artist: 'Artist', len: 100000, rel: 'rel', relTitle: 'Album', srcs: [{ key: 'youtube', name: 'YouTube', urls: [{ url: 'https://www.youtube.com/watch?v=abcdefghijk' }] }] }))));
+  const popup = await next;
+  await popup.waitForURL('**/?eh-player-window=1');
+  await inject('string_theory', { target: popup, waitFor: '__ehPlayerTest' });
+  await expect(popup.locator('#eh-ply iframe')).toHaveCount(1);
+  await expect.poll(() => page.evaluate(() => window.__ehPlayerTest.remote())).toBe(true);
+  await page.close();
+  await expect(popup.locator('#eh-ply iframe')).toHaveCount(1);
+  const other = await context.newPage();
+  await other.goto('https://test.musicbrainz.org/');
+  await inject('event_horizon', { target: other, waitFor: '__ehPlayerTest' });
+  await expect.poll(() => other.evaluate(() => window.__ehPlayerTest.remote())).toBe(true);
+  await other.locator('.ply-ctl [data-ply="pause"]').click();
+  await expect.poll(() => popup.evaluate(() => window.__ehPlayerTest.state().paused)).toBe(true);
+  await other.locator('.ply-ctl [data-ply="play"]').click();
+  await expect.poll(() => popup.evaluate(() => window.__ehPlayerTest.state().paused)).toBe(false);
+  await other.locator('.ply-ctl [data-ply="next"]').click();
+  await expect.poll(() => popup.evaluate(() => window.__ehPlayerTest.state().i)).toBe(1);
+  await expect(other.locator('.ply-ctl .ply-t b')).toHaveText('Second');
+  await other.locator('.ply-ctl .ply-vg button').hover();
+  await other.locator('.ply-ctl .ply-vol').fill('45');
+  await expect.poll(() => popup.evaluate(() => window.__ehPlayerTest.state().vol)).toBe(45);
+  await other.locator('.ply-ctl [data-ply="pause"]').click({ button: 'right' });
+  await expect.poll(() => popup.evaluate(() => window.__ehPlayerTest.state().repeat)).toBe('all');
+  await expect.poll(() => other.locator('.ply-ctl [data-ply="pause"]').getAttribute('data-tip')).toContain('Repeat all');
+  await other.locator('.ply-ctl [data-ply="pause"]').click({ button: 'right' });
+  await expect.poll(() => popup.evaluate(() => window.__ehPlayerTest.state().repeat)).toBe('one');
+  const gen = await popup.evaluate(() => window.__ehPlayerTest.state().gen);
+  await popup.frameLocator('#eh-ply iframe').locator('p').waitFor();
+  await popup.frames().find(f => f.url().includes('youtube-nocookie.com/embed/')).evaluate(() => parent.postMessage(JSON.stringify({ event: 'onStateChange', info: 0 }), '*'));
+  await expect.poll(() => popup.evaluate(() => window.__ehPlayerTest.state().gen)).toBeGreaterThan(gen);
+  expect(await popup.evaluate(() => window.__ehPlayerTest.state().i)).toBe(1);
+  await other.locator('.ply-ctl [data-ply="pause"]').click({ button: 'right' });
+  await expect.poll(() => popup.evaluate(() => window.__ehPlayerTest.state().repeat)).toBe('off');
+  await other.locator('.ply-ctl [data-ply="pause"]').click({ button: 'right' });
+  await expect.poll(() => popup.evaluate(() => window.__ehPlayerTest.state().repeat)).toBe('all');
+  await popup.frameLocator('#eh-ply iframe').locator('p').waitFor();
+  await popup.frames().find(f => f.url().includes('youtube-nocookie.com/embed/')).evaluate(() => parent.postMessage(JSON.stringify({ event: 'onStateChange', info: 0 }), '*'));
+  await expect.poll(() => popup.evaluate(() => window.__ehPlayerTest.state().i)).toBe(0);
+  await other.evaluate(() => { window.__openedPlatform = null; window.open = (url, target) => { window.__openedPlatform = { url, target }; return null; }; });
+  await other.locator('.ply-ctl [data-ply="lb"]').click();
+  await other.locator('#eh-ply-menu .ply-ss [data-k="youtube"]').click({ button: 'right' });
+  expect(await other.evaluate(() => window.__openedPlatform)).toEqual({ url: 'https://www.youtube.com/watch?v=abcdefghijk', target: '_blank' });
+  for (const sub of ['cover-art', 'edit-relationships', 'details', 'discids', 'edit_annotation']) {
+    await other.goto(`https://test.musicbrainz.org/release/54b7bca2-7ed6-4484-bdd3-fe35a3f33dda/${sub}`, { waitUntil: 'domcontentloaded' });
+    await inject('event_horizon', { target: other, waitFor: '__ehPlayerTest' });
+    await expect.poll(() => other.evaluate(() => window.__ehPlayerTest.remote())).toBe(true);
+    await expect(other.locator('#eh-ply iframe')).toHaveCount(0);
+    await expect(popup.locator('#eh-ply iframe')).toHaveCount(1);
+  }
+  await other.evaluate(() => document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: 'event_horizon', cancelable: true })));
+  await other.locator('#eh-cfg [data-tab="player"]').click();
+  await other.locator('#eh-cfg [data-g="playerWindow"]').click();
+  const local = { id: 'rel', title: 'Album', ac: [{ name: 'Artist' }], media: [{ tracks: [{ n: 1, title: 'Local', rid: 'rec', lenMs: 100000, links: [{ key: 'youtube', name: 'YouTube', urls: [{ url: 'https://www.youtube.com/watch?v=abcdefghijk' }] }] }] }] };
+  await other.evaluate(r => window.__ehPlayerTest.startRelease(r), local);
+  await expect.poll(() => popup.isClosed()).toBe(true);
+  await expect(other.locator('#eh-ply iframe')).toHaveCount(1);
+  await expect.poll(() => other.evaluate(() => window.__ehPlayerTest.remote())).toBe(false);
+});
+
+test.describe('tab player', () => {
+  test.use({ gm: { name: 'Event Horizon', persist: 'tabs', values: { view: { on: true, player: true, playerWindow: false } } } });
+  test('starting playback in a second tab stops the first', { tag: '@sandbox' }, async ({ page, context, inject }) => {
+    await context.route('https://www.youtube-nocookie.com/embed/**', route => route.fulfill({ contentType: 'text/html', body: '<p>player fixture</p>' }));
+    await page.goto('https://test.musicbrainz.org/');
+    await inject('event_horizon', { waitFor: '__ehPlayerTest' });
+    const other = await context.newPage();
+    await other.goto('https://test.musicbrainz.org/');
+    await inject('event_horizon', { target: other, waitFor: '__ehPlayerTest' });
+    const release = { id: 'rel', title: 'Album', ac: [{ name: 'Artist' }], media: [{ tracks: [{ n: 1, title: 'Track', rid: 'rec', lenMs: 100000, links: [{ key: 'youtube', name: 'YouTube', urls: [{ url: 'https://www.youtube.com/watch?v=abcdefghijk' }] }] }] }] };
+    await page.evaluate(r => window.__ehPlayerTest.startRelease(r), release);
+    await expect(page.locator('#eh-ply iframe')).toHaveCount(1);
+    await other.evaluate(r => window.__ehPlayerTest.startRelease(r), release);
+    await expect(other.locator('#eh-ply iframe')).toHaveCount(1);
+    await expect(page.locator('#eh-ply iframe')).toHaveCount(0);
+    await page.evaluate(() => document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: 'event_horizon', cancelable: true })));
+    await page.locator('#eh-cfg [data-tab="player"]').click();
+    await page.locator('#eh-cfg [data-g="playerWindow"]').click();
+    const opened = context.waitForEvent('page');
+    await page.evaluate(r => window.__ehPlayerTest.startRelease(r), release);
+    const popup = await opened;
+    await popup.waitForURL('**/?eh-player-window=1');
+    await inject('event_horizon', { target: popup, waitFor: '__ehPlayerTest' });
+    await expect(popup.locator('#eh-ply iframe')).toHaveCount(1);
+    await expect(other.locator('#eh-ply iframe')).toHaveCount(0);
+  });
+});

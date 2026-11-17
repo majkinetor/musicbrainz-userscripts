@@ -167,7 +167,7 @@ const bodies = parts.map(p => {
     // a reload (oblaka). The body stays in a function of its own, so its 'use strict' still counts.
     + `  ${gate}(function(){ try { (function(){\n${p.body}\n})(); } catch (e) { try { console.error('[String Theory] ${p.n} failed while starting — the other scripts carry on:', e); } catch (x) {} } });\n`
     + `}; __stStarters[${JSON.stringify(p.n)}] = { so: ${p.body.includes('MBU_SETTINGS_ONLY')}, soStarted: function(){ return __stSO; }, go: function(){ __stGo(true); } };\n`
-    + `if (__stOff.indexOf(${JSON.stringify(p.n)}) < 0) { if (__stRuns(${JSON.stringify(p.n)}, ${JSON.stringify(urlRules(p.meta))})) __stGo();`
+    + `if ((!__stPlayerOnly || ${JSON.stringify(p.n)} === 'event_horizon') && __stOff.indexOf(${JSON.stringify(p.n)}) < 0) { if (__stRuns(${JSON.stringify(p.n)}, ${JSON.stringify(urlRules(p.meta))})) __stGo();`
     + (FOLLOWS_EH.includes(p.n) ? ` else __stLater(${JSON.stringify(p.n)}, ${JSON.stringify(urlRules(p.meta))}, __stGo);` : '') + ' }'
     + `\n})(typeof GM_info !== 'undefined' ? GM_info : undefined);`;
 }).join('\n\n');
@@ -230,7 +230,8 @@ const CSP_STYLES = readFileSync(resolve(HERE, 'csp-styles.js'), 'utf8').replace(
 const NEWS = readFileSync(resolve(HERE, 'news.js'), 'utf8').replace(/\r\n/g, '\n');   // #896
 const SYNC_DATA = ['sync-data.js', 'sync-policy.js', 'sync-storage.js'].map(f => readFileSync(resolve(HERE, f), 'utf8').replace(/\r\n/g, '\n')).join('\n');
 const SYNC = ['providers.js', 'sync.js', 'sync-google.js', 'sync-webdav.js'].map(f => readFileSync(resolve(HERE, f), 'utf8').replace(/\r\n/g, '\n')).join('\n');
-const toggles = `var __stSyncCallbackOnly = location.origin === 'https://musicbrainz.org' && location.pathname === '/' && /[?&]st-(?:dropbox|google)=callback(?:&|$)/.test(location.search);
+const toggles = `var __stPlayerOnly = location.pathname === '/' && new URLSearchParams(location.search).get('eh-player-window') === '1';
+var __stSyncCallbackOnly = location.origin === 'https://musicbrainz.org' && location.pathname === '/' && /[?&]st-(?:dropbox|google)=callback(?:&|$)/.test(location.search);
 ${SYNC_DATA}
 stSyncStorageInit();
 ${themeRuntime}
@@ -241,6 +242,7 @@ var __stOff = __stReadOff();
 var __stStarters = {};   // #851: per member folder, how String Theory's settings start it only to open its settings
 (function () {
   try { if (window.top !== window.self) return; } catch (e) { return; }
+  if (__stPlayerOnly) return;
   var stMembers = ${JSON.stringify(parts.map(p => [p.n, metaVal(p.meta, 'name') || p.n, verOf(p.meta), metaVal(p.meta, 'icon')]))};
   var ST_VERSION = ${JSON.stringify(version)}, ST_BRANCH = ${JSON.stringify(BRANCH)}, ST_ICON = ${JSON.stringify(ICON)}, ST_HOME = ${JSON.stringify(HOMEPAGE)};
   var ST_ON_MB = /(^|[.])musicbrainz[.]org$/.test(location.hostname);

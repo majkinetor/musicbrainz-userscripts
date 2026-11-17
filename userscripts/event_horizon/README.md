@@ -131,7 +131,9 @@ Point at a track's number and click its play button: the release plays from that
 
 The player plays from YouTube, YouTube Music, Spotify, Deezer, Apple Music, SoundCloud and Bandcamp, in the page, and goes on to the next track when one ends. Apple Music's player can't be started for you: click its play button, and the next track follows when the track's length has played. **Hide the video** is remembered. A track with no such link has no play button; with **Show ListenBrainz menu items** on, it gets a ListenBrainz icon instead.
 
-The player shows at the bottom of the page, or as a chip under the header's actions. It has the track, previous and next, the streaming site, and links to the track and the release in ListenBrainz. On the first track, previous restarts it when the source supports seeking. Close it with ×.
+The player shows at the bottom of the page, or as a chip under the header's actions. It has the track, previous and next, the streaming site, and links to the track and the release in ListenBrainz. On the first track, previous restarts it when the source supports seeking. Right-click Play or Pause to cycle through playing once, repeating the release and repeating the track. The mouse wheel winds the track by five seconds. In the source menu, right-click a platform to open the track there in a new tab. Close the player with ×.
+
+**Play in a separate window** keeps playback going when a MusicBrainz tab reloads or closes. Open another MusicBrainz tab to control the same player there; allow pop-ups if your browser blocks the player window. Only one player plays at a time: starting another stops the previous tab player. In tab mode, the queue is restored after navigating to another MusicBrainz page.
 
 While the player is open, editing a release opens the editor in another tab so playback continues. Successful updates from Mission Control, Platform Check and ISRC Scout refresh the release in place when Event Horizon is showing it.
 
@@ -249,6 +251,7 @@ Right-click the corner icon. Changes apply at once.
 | Menu → Responsive                     | off                                                       | brings items from More into the main menu when space allows                                 |
 | Menu → Items                          | all visible                                               | drag to order, use the eye to show or hide, toggle Title, choose Main or More               |
 | Player → Enable player                | on                                                        | the play buttons and the [player](#player)                                                  |
+| Player → Play in a separate window    | off                                                       | keeps the player running when the MusicBrainz tab closes                                    |
 | Player → Player place                 | Bottom bar                                                | **Bottom bar** or **Top bar**                                                               |
 | Player → Show ListenBrainz menu items | on                                                        | the player's links to ListenBrainz                                                          |
 | Player → Send listens to ListenBrainz | off                                                       | your listens, with the **ListenBrainz token** beside it                                     |
@@ -272,6 +275,9 @@ To keep an effect you like, type a name beside **Preset** and click **Save** (or
 | Click       | the entity icon in the header   | open its copy menu         |
 | Right-click | a release or recording's icon   | send it to Picard          |
 | Right-click | a track's play button           | choose where it plays from |
+| Right-click | player Play or Pause            | cycle the repeat mode      |
+| Wheel       | player                          | rewind or fast-forward     |
+| Right-click | player source menu              | open the platform page     |
 
 ## Notes
 
