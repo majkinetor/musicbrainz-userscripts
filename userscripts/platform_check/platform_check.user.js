@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.17.3
+// @version      2026.11.17.4
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -7660,8 +7660,9 @@ async function scanAmazon({ artist, album, mbTracks, existingUrl, mbid, isVariou
 // language=en_US: a browser set to another language gets the page translated, and the detail names with it
 const AMZS_UA = { 'User-Agent': navigator.userAgent, 'Accept': 'text/html', 'Accept-Language': 'en-US,en;q=0.5' };
 const amzsText = el => (el ? el.textContent.replace(/[\s\u200e\u200f]+/g, ' ').trim() : '');
-async function fetchAmzsProduct(asin, label) {
-    const url = `https://www.amazon.com/dp/${asin}?language=en_US`;
+// host: the store the link points at (amazon.co.uk, .de, …); its own page has the details, .com may not sell it
+async function fetchAmzsProduct(asin, label, host = 'www.amazon.com') {
+    const url = `https://${host}/dp/${asin}?language=${/\.com$/.test(host) ? 'en_US' : 'en_GB'}`;
     // anonymous: the browser's Amazon cookie can pin its own language (Spanish, say) over language=en_US
     const r = await gmGet(url, { headers: AMZS_UA, anonymous: true });
     if (!r.ok || r.status !== 200) { appendLog(label, `Product ${asin}: HTTP ${r.status}`, 'warn'); return null; }
@@ -7684,7 +7685,7 @@ async function fetchAmzsProduct(asin, label) {
     const box = doc.querySelector('#music-tracks') || doc.querySelector('#musicTracks_feature_div');
     let tracks = box ? [...box.querySelectorAll('tr')].filter(tr => [...tr.querySelectorAll('td')].some(td => /\D/.test(amzsText(td)))).length : 0;
     if (!tracks) tracks = [...doc.querySelectorAll('[id^="dmusic_tracklist"] tr')].filter(tr => tr.querySelector('.TitleLink, a[href*="/dp/"]')).length;
-    return { url: `https://www.amazon.com/gp/product/${asin}`, title, artist, format, label: labelName, barcode,
+    return { url: `https://${host}/gp/product/${asin}`, title, artist, format, label: labelName, barcode,
         year: (date.match(/\b(\d{4})\b/) || [])[1] || null, date, tracks: tracks || null };
 }
 async function scanAmazonStore({ artist, album, mbTracks, existingUrl, barcode, mbid, isVariousArtists }) {
@@ -7700,7 +7701,7 @@ async function scanAmazonStore({ artist, album, mbTracks, existingUrl, barcode, 
     if (existingUrl) {
         appendLog(label, `Using existing MB URL: ${existingUrl}`, 'ok');
         const asin = (String(existingUrl).match(/\/(?:dp|gp\/product)\/([A-Z0-9]{10})/i) || [])[1];
-        const meta = asin ? await fetchAmzsProduct(asin.toUpperCase(), label) : null;
+        const meta = asin ? await fetchAmzsProduct(asin.toUpperCase(), label, (() => { try { const h = new URL(existingUrl).hostname; return /(^|\.)amazon\.[a-z.]+$/.test(h) ? h : undefined; } catch { return undefined; } })()) : null;
         if (meta) log(meta); else appendLog(label, `Couldn't read the linked product — shown unverified`, 'warn');
         cacheSet(mbid, 'amazon', { url: existingUrl, tracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, source: 'MB rels' });
         updateRow('amazon', { url: existingUrl, mbTracks, remoteTracks: meta?.tracks ?? null, year: meta?.year ?? null, label: meta?.label ?? null, format: meta?.format ?? null, barcode: meta?.barcode ?? null, source: 'MB rels' });
