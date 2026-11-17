@@ -98,6 +98,19 @@
       "disposition": "accepted",
       "acceptedBy": "majkinetor",
       "decision": "Maintainer verdicts for two scripts, with the Power Vote note, taken from the discussion body because no export was attached; the other two reviews in the title were not listed."
+    },
+    {
+      "id": "chat-2026-11-17-traxsource",
+      "discussionNumber": 1059,
+      "url": "https://github.com/majkinetor/musicbrainz-userscripts/issues/1059",
+      "authorId": "MDQ6VXNlcjg1NzY3",
+      "createdAt": "2026-11-17T09:00:00Z",
+      "updatedAt": "2026-11-17T09:00:00Z",
+      "exportPath": "contributions/chat-2026-11-17.json",
+      "reportVersion": "8fb7efeb0ff2dacd8f6e5bb9ac7402afa3cc7a97f44640a743fe28435a1a13b3",
+      "disposition": "accepted",
+      "acceptedBy": "majkinetor",
+      "decision": "Maintainer verdict given in chat: afro's Traxsource importer is fully replaceable."
     }
   ]
 }
