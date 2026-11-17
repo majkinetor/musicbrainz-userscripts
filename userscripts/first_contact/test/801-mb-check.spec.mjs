@@ -131,6 +131,7 @@ test.describe('on a Deezer album the sandbox has', () => {
     const s = await shelf.boundingBox(), b = await page.locator('#fc-root .fc-go').boundingBox();
     const vh = await page.evaluate(() => innerHeight);
     check(b.y > vh / 2 ? s.y + s.height <= b.y : s.y >= b.y + b.height, `on the side with room (shelf ${Math.round(s.y)}+${Math.round(s.height)}, button ${Math.round(b.y)})`);
+    await shelf.hover();   // compact: Update shows while the pointer is on the shelf
     await row.locator('.fc-shelf-upd').click();
     const upd = await until(() => page.evaluate(() => window.__fcLastUpdate), Boolean);
     check(upd && upd.mbid === RAM, `Update goes to the release (${JSON.stringify(upd)})`);

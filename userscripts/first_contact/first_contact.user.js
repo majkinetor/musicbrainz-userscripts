@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.17.170000
+// @version      2026.11.17.190000
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Amazon (CDs, vinyl and MP3 albums in its store), Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Internet Archive (audio items), Presto Music, RateYourMusic, Album of the Year.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -178,7 +178,7 @@ function settings() {
         delete stored.iaKey; delete stored.iaSecret;
         GM_setValue('fc.settings', stored);
     }
-    const s = Object.assign({ server: 'musicbrainz.org', iconOnly: false, gearHidden: false, closeAfter: false, harmony: false, harmonyHost: HARMONY_HOSTS[0], consolidate: true, archive: true, check: 'import', discogsWorldwide: true }, stored);
+    const s = Object.assign({ server: 'musicbrainz.org', iconOnly: false, gearHidden: false, closeAfter: false, harmony: false, harmonyHost: HARMONY_HOSTS[0], consolidate: true, archive: true, check: 'import', shelf: 'compact', discogsWorldwide: true }, stored);
     if (!SERVERS.includes(s.server)) s.server = 'musicbrainz.org';
     if (!HARMONY_HOSTS.includes(s.harmonyHost)) s.harmonyHost = HARMONY_HOSTS[0];
     // the option that showed ⚙︎ only on hover became Hide the settings button: who had it on keeps ⚙︎ out of sight
@@ -3679,6 +3679,23 @@ function injectStyle() {
 #fc-root .fc-shelf .fc-shelf-upd svg { width: 16px; height: 16px; display: block; }
 #fc-root .fc-shelf-foot { display: flex; align-items: center; gap: 8px; padding: 1px 4px 0; }
 #fc-root .fc-shelf-row + .fc-shelf-foot { margin-top: 2px; border-top: 1px solid var(--mbu-border-soft); }
+#fc-root .fc-shelf .fc-badges { flex: none; }
+/* majkinetor: compact; light, title and +N, the checks and Update while the pointer is on it */
+#fc-root .fc-shelf.fc-compact { font-size: 11px; padding: 1px 0; border-radius: 6px; min-width: 0; }
+#fc-root .fc-shelf.fc-compact .fc-shelf-row { gap: 5px; padding: 1px 3px 1px 6px; min-height: 20px; }
+#fc-root .fc-shelf.fc-compact .fc-light { width: 7px; height: 7px; border-width: 1.5px; }
+#fc-root .fc-shelf.fc-compact .fc-shelf-row a { max-width: 150px; }
+#fc-root .fc-shelf.fc-compact .fc-shelf-x { display: none; }
+#fc-root .fc-shelf.fc-compact:hover .fc-shelf-x, #fc-root .fc-shelf.fc-compact:focus-within .fc-shelf-x { display: contents; }
+#fc-root .fc-shelf.fc-compact .fc-shelf-more { padding: 0 4px; margin-left: auto; }
+#fc-root .fc-shelf.fc-compact:hover .fc-shelf-more, #fc-root .fc-shelf.fc-compact:focus-within .fc-shelf-more { margin-left: 0; }
+#fc-panel label[hidden] { display: none; }
+#fc-root .fc-shelf.fc-compact .fc-ic { width: 18px; height: 18px; }
+#fc-root .fc-shelf.fc-compact .fc-ic svg { width: 12px; height: 12px; }
+#fc-root .fc-shelf.fc-compact .fc-shelf-upd svg { width: 14px; height: 14px; }
+/* majkinetor: with the button's text shown, no wider than the button */
+#fc-root:not(.fc-iconly) .fc-shelf { min-width: 0; max-width: 100%; }
+#fc-root:not(.fc-iconly) .fc-shelf .fc-shelf-row a { max-width: none; flex: 0 1 auto; }
 ` + mbaKeysCss('#fc-panel');
     (document.head || document.documentElement).appendChild(st);
 }
@@ -4099,6 +4116,9 @@ function togglePanel(anchor) {
         + `<label data-tip="Look the album up in MusicBrainz before the release editor opens\nBy its link, its barcode, and its title and artist. If MusicBrainz may have it, you choose: update that release in Mission Control, add only the link, or import anyway.\n- On import: when you click Import\n- On page load: the album is read and checked as the page opens, its light on the button; Import uses that read">Check MusicBrainz <select class="fc-check-mode">`
         + CHECK_MODES.map(([v, t]) => `<option value="${v}"${v === checkMode() ? ' selected' : ''}>${t}</option>`).join('')
         + '</select></label>'
+        + `<label class="fc-shelf-opt"${checkMode() === 'load' ? '' : ' hidden'} data-tip="The releases the check found, beside the button\n- Compact: the light and the title; the checks and Update show while the pointer is on it\n- Full: the year, the tracks, the checks and Update always\n- Off: only the light on the button">Found releases beside the button <select class="fc-shelf-mode">`
+        + SHELF_MODES.map(([v, t]) => `<option value="${v}"${v === shelfMode() ? ' selected' : ''}>${t}</option>`).join('')
+        + '</select></label>'
         + `<label class="fc-check" data-tip="The album's notes on ${here}, as the annotation\n- Bandcamp: about and credits\n- Discogs: notes\n- Qobuz, Apple Music: reviews\n- Beatport, YouTube Music: description\n- Amazon Music: the ℗ line\nA line says where they come from. For ${here} only.\n⚠ A review is the critic's text: check you may copy it before you submit"><input type="checkbox" class="fc-annotation"${here ? '' : ' disabled'}${annotationOn(here) ? ' checked' : ''}> Annotation from ${here}'s notes</label>`
         + (here === 'Discogs' ? `<label class="fc-check"><input type="checkbox" class="fc-discogs-worldwide"${s.discogsWorldwide ? ' checked' : ''}> Set Country as Worldwide for digital releases</label>` : '')
         + `<label class="fc-check" data-tip="Close the platform's tab once the release editor has the release\nOr once the album is sent to Harmony. It stays open when the import fails, or when the browser blocked the new tab and the editor or Harmony opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
@@ -4155,6 +4175,13 @@ function togglePanel(anchor) {
         Log.info(`check MusicBrainz: ${e.target.value}`);
         if (next.check === 'off') showLight(null);
         else if (current) checkOnLoad(current.provider, current.id);
+        panel.querySelector('.fc-shelf-opt').hidden = checkMode() !== 'load';
+        renderShelf();
+    });
+    panel.querySelector('.fc-shelf-mode').addEventListener('change', e => {
+        saveSettings(Object.assign(settings(), { shelf: e.target.value }));
+        Log.info(`found releases beside the button: ${e.target.value}`);
+        renderShelf();
     });
     panel.querySelector('.fc-harmony-host').addEventListener('change', e => {
         const next = Object.assign(settings(), { harmonyHost: e.target.value });
@@ -4192,7 +4219,7 @@ function togglePanel(anchor) {
         const next = Object.assign(settings(), { iconOnly: e.target.checked });
         saveSettings(next);
         const root = document.getElementById('fc-root');
-        if (root) { root.classList.toggle('fc-iconly', next.iconOnly); mbRestackCorner('br'); }
+        if (root) { root.classList.toggle('fc-iconly', next.iconOnly); mbRestackCorner('br'); placeShelf(root); }
         Log.info(`button: ${next.iconOnly ? 'icon only' : 'icon and text'}`);
     });
     panel.querySelector('.fc-annotation').addEventListener('change', e => {
@@ -4514,6 +4541,12 @@ const LIGHTS = {
 };
 const checks = new Map();   // provider id + album id → { light, releases, raw (the album read, unfinished), relP }
 const checkKey = (provider, id) => provider.id + ' ' + id;
+const SHELF_MODES = [
+    ['compact', 'Compact'],
+    ['full', 'Full'],
+    ['off', 'Off'],
+];
+const shelfMode = () => { const m = settings().shelf; return SHELF_MODES.some(([v]) => v === m) ? m : 'compact'; };
 const checkMode = () => { const m = settings().check; return m === 'link' || m === 'read' ? 'load' : CHECK_MODES.some(([v]) => v === m) ? m : 'import'; };
 
 // ws/2 through the manager: the JSON, null for a 404. One request a second, as MusicBrainz asks; a busy
@@ -4692,7 +4725,8 @@ function renderShelf() {
     const c = current && checks.get(checkKey(current.provider, current.id));
     const r = c && c.rel && c.result;   // the final light is drawn before busy is cleared
     const releases = r && r.light !== 'none' && c.rel ? r.releases : [];
-    if (checkMode() !== 'load' || !releases.length) {
+    const mode = shelfMode();
+    if (checkMode() !== 'load' || mode === 'off' || !releases.length) {
         if (shelf) shelf.remove();
         return;
     }
@@ -4705,6 +4739,7 @@ function renderShelf() {
         root.append(shelf);
     }
     shelf.replaceChildren();
+    shelf.classList.toggle('fc-compact', mode === 'compact');
     const same = releases.filter(e => e.same || e.links.length), rows = same.slice(0, 2);
     for (const e of rows) {
         const row = el('div', 'fc-shelf-row');
@@ -4716,7 +4751,8 @@ function renderShelf() {
         a.dataset.tip = [e.title + (e.disamb ? ` (${e.disamb})` : ''), [e.artist, e.date, e.country, e.format, e.labels, e.barcode].filter(Boolean).join(' · ')].filter(Boolean).join('\n');
         const meta = [e.date ? String(e.date).slice(0, 4) : null, e.tracks != null ? `${e.tracks} tracks` : null].filter(Boolean).join(' · ');
         row.append(dot, a);
-        if (meta) row.append(el('span', 'fc-dim', meta));
+        const x = mode === 'compact' ? el('span', 'fc-shelf-x') : row;   // compact: shown while the pointer is on the shelf
+        if (meta) x.append(el('span', 'fc-dim', meta));
         const badges = el('span', 'fc-badges');
         for (const [name, ok, tip] of checkBadges(e, rel, provider)) {
             const bd = el('span', 'fc-ic' + (ok ? '' : ' fc-ic-no'));
@@ -4732,19 +4768,25 @@ function renderShelf() {
         upd.setAttribute('aria-label', 'Update this release in Mission Control');
         upd.addEventListener('click', () => updateRelease(e, rel, provider));
         badges.append(upd);
-        row.append(badges);
+        x.append(badges);
+        if (x !== row) row.append(x);
         shelf.append(row);
     }
     const rest = releases.length - rows.length;
     if (rest) {
-        const foot = el('div', 'fc-shelf-foot');
         const others = releases.length - same.length;
-        const more = el('button', 'fc-shelf-more', `+${rest} ${others === rest ? 'other ' : 'more '}edition${rest === 1 ? '' : 's'}`);
+        const what = `${rest} ${others === rest ? 'other ' : 'more '}edition${rest === 1 ? '' : 's'}`;
+        const short = mode === 'compact' && rows.length;   // compact: a +N at the end of the first row
+        const more = el('button', 'fc-shelf-more', short ? `+${rest}` : '+' + what);
         more.type = 'button';
-        more.dataset.tip = 'Every release the check found\nWith Add link only and Import anyway';
+        more.dataset.tip = (short ? what[0].toUpperCase() + what.slice(1) + '\n' : '') + 'Every release the check found\nWith Add link only and Import anyway';
         more.addEventListener('click', () => importCurrent());
-        foot.append(more);
-        shelf.append(foot);
+        if (short) shelf.querySelector('.fc-shelf-row').append(more);
+        else {
+            const foot = el('div', 'fc-shelf-foot');
+            foot.append(more);
+            shelf.append(foot);
+        }
     }
     Log.debug(`shelf: ${rows.length} release(s) shown, ${rest} more`);
     placeShelf(root);
