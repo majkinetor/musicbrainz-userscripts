@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011002
+// @version      2026.11.18.011003
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -75,9 +75,9 @@ if (window.top !== window && new URLSearchParams(location.search).get('mc_embed'
 // on any other site is left alone: nothing happens until a parent sends {ehPlyCmd}.
 if (window.top !== window && (location.hostname === 'bandcamp.com' && location.pathname.startsWith('/EmbeddedPlayer/') || location.hostname === 'widget.deezer.com')) {
     const BTN = location.hostname === 'bandcamp.com' ? '#big_play_button, #play' : '[data-testid="widget-player-play"]';
-    let armed = false, last = 0, restoring = false;
+    let armed = false, last = 0, restoring = false, restoreMute = null, restoreReady = false;
     const post = (state, a) => { if (armed) try { window.parent.postMessage({ ehPly: state, pos: a ? a.currentTime : 0, dur: a ? a.duration : 0 }, '*'); } catch (e) {} };
-    for (const k of ['play', 'pause', 'ended']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement) post(k, ev.target); }, true);
+    for (const k of ['play', 'pause', 'ended']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement) { if (k === 'play' && restoring && !restoreReady) { if (restoreMute === null) restoreMute = ev.target.muted; ev.target.muted = true; } post(k, ev.target); } }, true);
     document.addEventListener('timeupdate', ev => { if (ev.target instanceof HTMLMediaElement && Date.now() - last > 900) { last = Date.now(); post(ev.target.paused ? 'pause' : 'time', ev.target); } }, true);
     const press = want => {
         const a = document.querySelector('audio');
@@ -93,14 +93,22 @@ if (window.top !== window && (location.hostname === 'bandcamp.com' && location.p
         if (ev.data.ehPlyCmd === 'seek') { const a = document.querySelector('audio'); if (a && ev.data.pos >= 0) a.currentTime = ev.data.pos; return; }
         if (ev.data.ehPlyCmd === 'play' && ev.data.pos > 0) {
             if (restoring) return;
-            restoring = true;
-            let n = 0;
+            restoring = true; restoreReady = false;
+            let n = 0, sought = false;
             const restore = () => {
                 const a = document.querySelector('audio');
-                if (a && a.readyState >= 1) {
-                    try { a.currentTime = ev.data.pos; clearInterval(iv); press(true); post('restored', a); return; } catch (e) {}
+                if (a) {
+                    if (!restoreReady) { if (restoreMute === null) restoreMute = a.muted; a.muted = true; }
+                    if (!sought && a.readyState >= 1) {
+                        try { a.currentTime = ev.data.pos; sought = true; } catch (e) {}
+                    }
+                    if (sought && !a.seeking && !restoreReady) { a.muted = restoreMute; restoreMute = null; restoreReady = true; }
+                    if (restoreReady && !a.paused) {
+                        restoring = false; clearInterval(iv); post('restored', a); return;
+                    }
                 }
-                if (++n > 120) { clearInterval(iv); restoring = false; post('restore-failed'); }
+                if (++n > 120) { clearInterval(iv); restoring = false; if (a && restoreMute !== null) a.muted = restoreMute; restoreMute = null; post('restore-failed'); }
+                else if (n === 1 || n % 4 === 0) press(true);
             };
             const iv = setInterval(restore, 250); restore();
             return;
