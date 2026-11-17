@@ -29,6 +29,8 @@ const img = await ai.find(mbid, urls);
 | `findAll(mbid, urls)`             | every provider's image, in order; `[]` when none                            |
 | `cached(mbid)`                    | the cached answer (an image or `null`), `undefined` when none or it expired |
 | `cachedAll(mbid)`                 | the cached images in order, `undefined` when none or it expired             |
+| `distinct(mbid, urls)`            | `findAll`, one entry per distinct photo, each with its `providers`          |
+| `dedup(images)`                   | the same for images you have                                                |
 | `sorted(images)`                  | the images in the current order                                             |
 | `forget(mbid)`                    | drops the cached answer, so the next `find` asks the providers again        |
 | `ArtistImage.PROVIDERS`           | the providers, in the order they are tried                                  |
@@ -42,6 +44,7 @@ const img = await ai.find(mbid, urls);
 | `providers` | `PROVIDERS`  | a list of your own instead                                       |
 | `order`     | `PROVIDERS`' | provider keys, or a function returning them; one left out is off |
 | `http`      | `fetch`      | `url => Promise<{ ok, json(), text() }>`                         |
+| `blob`      | `fetch`      | `url => Promise<Blob>` (or `null`), loads an image for `distinct` |
 | `log`       | none         | `message => …`, called when a provider fails                     |
 
 ## Cache
@@ -60,6 +63,10 @@ Every provider with a matching URL is asked, and every image found is kept, so a
 | SoundCloud    | `soundcloud.com/<user>`                                                                    | the profile page's `og:image` (500×500), not the default avatar                     |
 | Bandcamp      | `<artist>.bandcamp.com`, `/music`                                                          | the profile's `band-photo`, including when the homepage opens an album              |
 | YouTube Music | `music.youtube.com/channel/UC…`, `/browse/UC…`                                             | the channel's `og:image` avatar (544×544), never a video thumbnail                  |
+
+Two providers often carry the same photo. `distinct` loads each image once per page, compares small fingerprints, and keeps the first of each group in order. Image hosts send no CORS headers either, so pass a `GM_xmlhttpRequest`-based `blob` too.
+
+Event Horizon shares its instance with other scripts as `window.MBU.artistImage` ([DEVELOP](../../DEVELOP.md#shared-kept-answers-and-artist-images)).
 
 Deezer's API and Tidal's, Apple Music's and SoundCloud's pages send no CORS headers: in a userscript, pass a `GM_xmlhttpRequest`-based `http` and `@connect` their hosts.
 

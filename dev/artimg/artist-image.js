@@ -4,6 +4,7 @@
 //   const ai = new ArtistImage({ get: GM_getValue, set: GM_setValue }, { http: gmFetch });
 //   const img = await ai.find(mbid, urls);    // { src, from, key, url } or null
 //   const all = await ai.findAll(mbid, urls); // every provider's image, in order
+//   const one = await ai.distinct(mbid, urls); // the same, one per distinct photo, each with its `providers`
 //
 // Every provider with a matching URL is asked; the order (the option, else PROVIDERS') picks which
 // image comes first, so changing it needs no new requests. The cache keeps the image URLs (the
@@ -19,6 +20,10 @@ class ArtistImage {
         this.order = o.order || null; // provider keys, or a function returning them; one left out is off
         this.http = o.http || (u => fetch(u));
         this.log = o.log || null;
+        // an image as a Blob (null when it can't be had), for telling two providers' copies of one photo apart;
+        // a manager's request reaches image hosts that send no CORS headers
+        this.blob = o.blob || (u => fetch(u).then(r => r.ok ? r.blob() : null));
+        this.prints = new Map(); // src → Promise<fingerprint | null>, the last 100, for this page
     }
 
     // Discogs, Deezer and Wikimedia answer JSON; Spotify, Tidal, Apple Music and SoundCloud are read off their pages' og:image,
@@ -166,6 +171,26 @@ class ArtistImage {
         return this.sorted(all);
     }
     async find(mbid, urls) { return (await this.findAll(mbid, urls))[0] || null; }
+
+    // an image's fingerprint (see `fingerprint`), null when it can't be loaded; each image is loaded once per page
+    print(src) {
+        if (!this.prints.has(src)) {
+            if (this.prints.size >= 100) this.prints.delete(this.prints.keys().next().value);
+            this.prints.set(src, (async () => {
+                let bitmap;
+                try { const b = await this.blob(src); if (!b) return null; bitmap = await createImageBitmap(b); return ArtistImage.fingerprint(bitmap); }
+                catch (e) { return null; }
+                finally { if (bitmap) bitmap.close(); }
+            })());
+        }
+        return this.prints.get(src);
+    }
+    // one entry per distinct photo: the first in order, with `providers` listing every image of it
+    async dedup(images) {
+        const signatures = await Promise.all(images.map(x => this.print(x.src).catch(() => null)));
+        return ArtistImage.groups(images, signatures).map(indices => ({ ...images[indices[0]], providers: indices.map(i => images[i]) }));
+    }
+    async distinct(mbid, urls) { return this.dedup(await this.findAll(mbid, urls)); }
 
     forget(mbid) { const c = this.load(); delete c[mbid]; this.save(c); }
 }

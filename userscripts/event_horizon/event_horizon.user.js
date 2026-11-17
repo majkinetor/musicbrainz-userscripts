@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.17.113000
+// @version      2026.11.17.140000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4376,8 +4376,10 @@ const wsk = path => {
 const KP_TTL = 60000, KP_MAX = 800, KP_MEM = new Map(), KP_FLY = new Map();
 let kpSeen = Date.now(), kpUsed = null, kpDb = null, kpPuts = 0;
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') kpSeen = Date.now(); });
-const kpDrop = () => { try { return +localStorage.getItem('eh.kept.drop') || 0; } catch (e) { return 0; } };
-function kpWrote() { KP_MEM.clear(); try { localStorage.setItem('eh.kept.drop', String(Date.now())); } catch (e) { /* storage blocked: this tab's memory is dropped all the same */ } }
+// `mbu:kept-drop` is shared by the suite and SAED (#938): an edit made with any of them drops every script's kept answers.
+// The old `eh.kept.drop` is still read, for drops written before the shared key existed
+const kpDrop = () => { try { return Math.max(+localStorage.getItem('mbu:kept-drop') || 0, +localStorage.getItem('eh.kept.drop') || 0); } catch (e) { return 0; } };
+function kpWrote() { KP_MEM.clear(); try { localStorage.setItem('mbu:kept-drop', String(Date.now())); } catch (e) { /* storage blocked: this tab's memory is dropped all the same */ } }
 const kpStore = mode => (kpDb || (kpDb = new Promise((ok, no) => {
     const q = indexedDB.open('eh-kept', 1);
     q.onupgradeneeded = () => q.result.createObjectStore('a', { keyPath: 'k' }).createIndex('at', 'at');
@@ -5771,6 +5773,10 @@ class ArtistImage {
         this.order = o.order || null; // provider keys, or a function returning them; one left out is off
         this.http = o.http || (u => fetch(u));
         this.log = o.log || null;
+        // an image as a Blob (null when it can't be had), for telling two providers' copies of one photo apart;
+        // a manager's request reaches image hosts that send no CORS headers
+        this.blob = o.blob || (u => fetch(u).then(r => r.ok ? r.blob() : null));
+        this.prints = new Map(); // src → Promise<fingerprint | null>, the last 100, for this page
     }
 
     // Discogs, Deezer and Wikimedia answer JSON; Spotify, Tidal, Apple Music and SoundCloud are read off their pages' og:image,
@@ -5918,6 +5924,26 @@ class ArtistImage {
         return this.sorted(all);
     }
     async find(mbid, urls) { return (await this.findAll(mbid, urls))[0] || null; }
+
+    // an image's fingerprint (see `fingerprint`), null when it can't be loaded; each image is loaded once per page
+    print(src) {
+        if (!this.prints.has(src)) {
+            if (this.prints.size >= 100) this.prints.delete(this.prints.keys().next().value);
+            this.prints.set(src, (async () => {
+                let bitmap;
+                try { const b = await this.blob(src); if (!b) return null; bitmap = await createImageBitmap(b); return ArtistImage.fingerprint(bitmap); }
+                catch (e) { return null; }
+                finally { if (bitmap) bitmap.close(); }
+            })());
+        }
+        return this.prints.get(src);
+    }
+    // one entry per distinct photo: the first in order, with `providers` listing every image of it
+    async dedup(images) {
+        const signatures = await Promise.all(images.map(x => this.print(x.src).catch(() => null)));
+        return ArtistImage.groups(images, signatures).map(indices => ({ ...images[indices[0]], providers: indices.map(i => images[i]) }));
+    }
+    async distinct(mbid, urls) { return this.dedup(await this.findAll(mbid, urls)); }
 
     forget(mbid) { const c = this.load(); delete c[mbid]; this.save(c); }
 }
@@ -7735,7 +7761,9 @@ function aliasesLoad(n, d) {
 // Tidal's and Apple Music's pages send no CORS headers, nor does Deezer's API: the manager fetches them
 const gmFetch = (u, t0 = performance.now()) => new Promise((ok, no) => GM_xmlhttpRequest({ method: 'GET', url: u, onerror: () => { fetchLog(u, t0, null, 'network'); no(new Error('network')); }, ontimeout: () => { fetchLog(u, t0, null, 'timeout'); no(new Error('timeout')); }, timeout: 15000,
     onload: x => { fetchLog(u, t0, x); ok({ ok: x.status >= 200 && x.status < 300, status: x.status, text: async () => x.responseText, json: async () => JSON.parse(x.responseText) }); } }));
-const ARTIMG = new ArtistImage({ get: GM_getValue, set: GM_setValue }, { http: gmFetch, order: () => imgOrder().filter(k => !S.imgOff.includes(k)), log: m => LOG.warn(m) });
+const gmBlob = u => new Promise(ok => GM_xmlhttpRequest({ method: 'GET', url: u, responseType: 'blob', timeout: 15000,
+    onload: r => ok(r.status >= 200 && r.status < 300 ? r.response : null), onerror: () => ok(null), ontimeout: () => ok(null), onabort: () => ok(null) }));
+const ARTIMG = new ArtistImage({ get: GM_getValue, set: GM_setValue }, { http: gmFetch, blob: gmBlob, order: () => imgOrder().filter(k => !S.imgOff.includes(k)), log: m => LOG.warn(m) });
 const IMG_PROV = ArtistImage.PROVIDERS.map(p => [p.key, p.name]);
 // the saved order, with providers added since appended
 const imgOrder = () => [...S.imgOrder.filter(k => IMG_PROV.some(x => x[0] === k)), ...IMG_PROV.map(x => x[0]).filter(k => !S.imgOrder.includes(k))];
@@ -7746,29 +7774,19 @@ function picHtml(g, cls, none) {
     const more = xs.length > 1;
     return `<div class="picw"><img class="cover ${cls}${more ? ' rot' : ''}" src="${esc(x.src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer"${more ? ` data-rot data-tip="${i + 1} of ${xs.length}: click for ${esc(xs[(i + 1) % xs.length].from)}"` : ''}>${x.badge ? `<img class="imgflag" src="${esc(x.badge)}" alt="" referrerpolicy="no-referrer">` : ''}<a class="imgsrc" href="${esc(x.url)}" target="_blank" rel="noopener" data-tip="${['artist', 'label'].includes(data.kind) ? `Choose image&#10;From ${esc(x.from)}` : `From ${esc(x.from)}`}">${stIcon(x.key, 18)}</a></div>`;
 }
-const imageFingerprints = new Map();
-function imageFingerprint(src) {
-    if (!imageFingerprints.has(src)) {
-        if (imageFingerprints.size >= 100) imageFingerprints.delete(imageFingerprints.keys().next().value);
-        imageFingerprints.set(src, new Promise(resolve => {
-            GM_xmlhttpRequest({ method: 'GET', url: src, responseType: 'blob', timeout: 15000,
-                onload: async r => {
-                    let bitmap;
-                    try {
-                        if (r.status < 200 || r.status >= 300) return resolve(null);
-                        bitmap = await createImageBitmap(r.response);
-                        resolve(ArtistImage.fingerprint(bitmap));
-                    } catch (e) { resolve(null); }
-                    finally { if (bitmap) bitmap.close(); }
-                }, onerror: () => resolve(null), ontimeout: () => resolve(null), onabort: () => resolve(null) });
-        }));
-    }
-    return imageFingerprints.get(src);
-}
-async function dedupArtistImages(images) {
-    const signatures = await Promise.all(images.map(x => imageFingerprint(x.src).catch(() => null)));
-    return ArtistImage.groups(images, signatures).map(indices => ({ ...images[indices[0]], providers: indices.map(i => images[i]) }));
-}
+const dedupArtistImages = images => ARTIMG.dedup(images);
+// Other scripts (SAED, #938) share this instance, so one cache and one set of provider requests serve all: EH's
+// provider order and switched-off providers apply. Answers are copies, so a caller can't change what is cached
+try {
+    const ns = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window, copy = x => x == null ? x : JSON.parse(JSON.stringify(x));
+    if (!ns.MBU) ns.MBU = {};
+    if (!ns.MBU.artistImage) ns.MBU.artistImage = {
+        find: (mbid, urls) => ARTIMG.find(mbid, [...urls]).then(copy),
+        findAll: (mbid, urls) => ARTIMG.findAll(mbid, [...urls]).then(copy),
+        distinct: (mbid, urls) => ARTIMG.distinct(mbid, [...urls]).then(copy),
+        cached: mbid => copy(ARTIMG.cached(mbid)),
+    };
+} catch (e) { /* a page with its own window.MBU: nothing shared */ }
 // The suite's own confirm, in place of the browser's: resolves true on the OK button or Enter, false on Cancel, Escape or a click outside.
 function ehConfirm(msg, ok = 'OK') {
     return new Promise(res => {
