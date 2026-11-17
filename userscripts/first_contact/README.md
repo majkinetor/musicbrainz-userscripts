@@ -93,11 +93,11 @@ With _On page load_, the releases that count as this album show beside the butto
 
 The _Found releases beside the button_ [setting](#settings) says how:
 
-| Found releases beside the button |                                                                        |
-| -------------------------------- | ---------------------------------------------------------------------- |
-| Compact                          | the light, the title and +N; the rest shows while the pointer is on it |
-| Full                             | everything, always                                                     |
-| Off                              | none; only the light on the button                                     |
+| Found releases beside the button |                                                                                                                 |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Compact                          | the light, the title and +N; the release as the panel shows it while the pointer is on it, and a click opens it |
+| Full                             | everything, always                                                                                              |
+| Off                              | none; only the light on the button                                                                              |
 
 ## Consolidate
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.17.190000
+// @version      2026.11.17.210000
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Amazon (CDs, vinyl and MP3 albums in its store), Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Internet Archive (audio items), Presto Music, RateYourMusic, Album of the Year.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -3639,20 +3639,23 @@ function injectStyle() {
 #fc-check .fc-check-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 #fc-check li { margin: 0; padding: 6px 8px; border: 1px solid var(--mbu-border-soft); border-radius: 6px; }
 #fc-check li.fc-other { opacity: .8; }
-#fc-check .fc-check-rel { display: flex; align-items: center; gap: 6px; font-weight: 600; }
-#fc-check .fc-check-rel a { color: var(--mbu-accent-text); }
-#fc-check .fc-dim { color: var(--mbu-text-dim); font-weight: normal; }
-#fc-check .fc-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
-#fc-check .fc-ic { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 20px; color: var(--mbu-ok); cursor: default; }
-#fc-check .fc-ic svg { width: 14px; height: 14px; display: block; }
-#fc-check .fc-ic::after { content: '✓'; position: absolute; right: -1px; bottom: -3px; font-size: 9px; font-weight: 700; line-height: 1; }
-#fc-check .fc-ic-no { color: var(--mbu-warn); }
-#fc-check .fc-ic-no::after { content: '≠'; font-size: 10px; }
-#fc-check .fc-check-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+#fc-check .fc-check-rel, #fc-root .fc-shelf-card .fc-check-rel { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+#fc-check .fc-check-rel a, #fc-root .fc-shelf-card .fc-check-rel a { color: var(--mbu-accent-text); }
+#fc-check .fc-dim, #fc-root .fc-shelf-card .fc-dim { color: var(--mbu-text-dim); font-weight: normal; }
+/* the checks, and Update and Add link only at the end of their row (majkinetor: Update less intrusive, not a row of its own) */
+#fc-check .fc-check-foot, #fc-root .fc-shelf-card .fc-check-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-top: 5px; }
+#fc-check .fc-badges, #fc-root .fc-shelf-card .fc-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+#fc-check .fc-ic, #fc-root .fc-shelf-card .fc-ic { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 20px; color: var(--mbu-ok); cursor: default; }
+#fc-check .fc-ic svg, #fc-root .fc-shelf-card .fc-ic svg { width: 14px; height: 14px; display: block; }
+#fc-check .fc-ic::after, #fc-root .fc-shelf-card .fc-ic::after { content: '✓'; position: absolute; right: -1px; bottom: -3px; font-size: 9px; font-weight: 700; line-height: 1; }
+#fc-check .fc-ic-no, #fc-root .fc-shelf-card .fc-ic-no { color: var(--mbu-warn); }
+#fc-check .fc-ic-no::after, #fc-root .fc-shelf-card .fc-ic-no::after { content: '≠'; font-size: 10px; }
+#fc-check .fc-check-acts, #fc-root .fc-shelf-card .fc-check-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
 #fc-check .fc-warn-b { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
-#fc-check button { all: revert; font: inherit; cursor: pointer; padding: 4px 12px; border-radius: 5px; border: 1px solid var(--mbu-border); background: var(--mbu-bg); color: var(--mbu-text); }
-#fc-check button:hover { background: var(--mbu-bg-hover); }
-#fc-check button.fc-check-upd { background: var(--mbu-accent); border-color: var(--mbu-accent); color: #fff; }
+#fc-check button, #fc-root .fc-shelf-card button { all: revert; font: inherit; cursor: pointer; padding: 4px 12px; border-radius: 5px; border: 1px solid var(--mbu-border); background: var(--mbu-bg); color: var(--mbu-text); }
+#fc-check button:hover, #fc-root .fc-shelf-card button:hover { background: var(--mbu-bg-hover); }
+#fc-check .fc-check-acts button, #fc-root .fc-shelf-card .fc-check-acts button { padding: 2px 9px; font-size: 12px; }
+#fc-check button.fc-check-upd, #fc-root .fc-shelf-card button.fc-check-upd { color: var(--mbu-accent-text); border-color: color-mix(in srgb, var(--mbu-accent-text) 45%, transparent); }
 /* links (? Help, get them) in the readable accent: --mbu-accent is the deep purple that vanishes on the dark panel */
 #fc-panel a { color: var(--mbu-accent-text); }
 /* #1062: the releases the check found, on a shelf above or below the button, wherever there is room */
@@ -3680,19 +3683,19 @@ function injectStyle() {
 #fc-root .fc-shelf-foot { display: flex; align-items: center; gap: 8px; padding: 1px 4px 0; }
 #fc-root .fc-shelf-row + .fc-shelf-foot { margin-top: 2px; border-top: 1px solid var(--mbu-border-soft); }
 #fc-root .fc-shelf .fc-badges { flex: none; }
-/* majkinetor: compact; light, title and +N, the checks and Update while the pointer is on it */
+/* majkinetor: compact; light, title and +N; the release's card while the pointer is on it, a click opens it */
 #fc-root .fc-shelf.fc-compact { font-size: 11px; padding: 1px 0; border-radius: 6px; min-width: 0; }
 #fc-root .fc-shelf.fc-compact .fc-shelf-row { gap: 5px; padding: 1px 3px 1px 6px; min-height: 20px; }
 #fc-root .fc-shelf.fc-compact .fc-light { width: 7px; height: 7px; border-width: 1.5px; }
 #fc-root .fc-shelf.fc-compact .fc-shelf-row a { max-width: 150px; }
-#fc-root .fc-shelf.fc-compact .fc-shelf-x { display: none; }
-#fc-root .fc-shelf.fc-compact:hover .fc-shelf-x, #fc-root .fc-shelf.fc-compact:focus-within .fc-shelf-x { display: contents; }
+#fc-root .fc-shelf.fc-compact .fc-shelf-row { cursor: pointer; }
+#fc-root .fc-shelf.fc-compact .fc-shelf-row:hover { background: var(--mbu-bg-hover); }
 #fc-root .fc-shelf.fc-compact .fc-shelf-more { padding: 0 4px; margin-left: auto; }
-#fc-root .fc-shelf.fc-compact:hover .fc-shelf-more, #fc-root .fc-shelf.fc-compact:focus-within .fc-shelf-more { margin-left: 0; }
+#fc-root .fc-shelf-card { position: absolute; z-index: 1; box-sizing: border-box; width: min(460px, calc(100vw - 16px)); overflow: auto;
+  scrollbar-width: thin; scrollbar-color: var(--mbu-border) transparent; background: var(--mbu-bg); color: var(--mbu-text);
+  border: 1px solid var(--mbu-border); border-radius: 8px; box-shadow: var(--mbu-shadow, 0 4px 18px rgba(0,0,0,.3));
+  font: 12.5px/1.4 system-ui, sans-serif; padding: 6px 8px; cursor: default; touch-action: auto; white-space: normal; }
 #fc-panel label[hidden] { display: none; }
-#fc-root .fc-shelf.fc-compact .fc-ic { width: 18px; height: 18px; }
-#fc-root .fc-shelf.fc-compact .fc-ic svg { width: 12px; height: 12px; }
-#fc-root .fc-shelf.fc-compact .fc-shelf-upd svg { width: 14px; height: 14px; }
 /* majkinetor: with the button's text shown, no wider than the button */
 #fc-root:not(.fc-iconly) .fc-shelf { min-width: 0; max-width: 100%; }
 #fc-root:not(.fc-iconly) .fc-shelf .fc-shelf-row a { max-width: none; flex: 0 1 auto; }
@@ -4084,7 +4087,7 @@ function placePanel(panel, anchor) {
     const w = panel.offsetWidth, h = panel.offsetHeight;
     panel.style.left = Math.round(Math.min(Math.max(M, r.right - w), Math.max(M, vw - w - M))) + 'px';
     panel.style.top = Math.round(up ? Math.max(M, r.top - M - h) : Math.min(r.bottom + M, Math.max(M, vh - h - M))) + 'px';
-    panel.style.right = panel.style.bottom = '';
+    panel.style.right = panel.style.bottom = 'auto';   // #fc-check's stylesheet anchors bottom: with top set too it stretched
     Log.debug(`settings panel ${w}×${h} ${up ? 'above' : 'below'} the button at ${Math.round(r.left)},${Math.round(r.top)} (window ${vw}×${vh})`);
 }
 
@@ -4116,7 +4119,7 @@ function togglePanel(anchor) {
         + `<label data-tip="Look the album up in MusicBrainz before the release editor opens\nBy its link, its barcode, and its title and artist. If MusicBrainz may have it, you choose: update that release in Mission Control, add only the link, or import anyway.\n- On import: when you click Import\n- On page load: the album is read and checked as the page opens, its light on the button; Import uses that read">Check MusicBrainz <select class="fc-check-mode">`
         + CHECK_MODES.map(([v, t]) => `<option value="${v}"${v === checkMode() ? ' selected' : ''}>${t}</option>`).join('')
         + '</select></label>'
-        + `<label class="fc-shelf-opt"${checkMode() === 'load' ? '' : ' hidden'} data-tip="The releases the check found, beside the button\n- Compact: the light and the title; the checks and Update show while the pointer is on it\n- Full: the year, the tracks, the checks and Update always\n- Off: only the light on the button">Found releases beside the button <select class="fc-shelf-mode">`
+        + `<label class="fc-shelf-opt"${checkMode() === 'load' ? '' : ' hidden'} data-tip="The releases the check found, beside the button\n- Compact: the light and the title; the release's card shows while the pointer is on it\n- Full: the year, the tracks, the checks and Update always\n- Off: only the light on the button">Found releases beside the button <select class="fc-shelf-mode">`
         + SHELF_MODES.map(([v, t]) => `<option value="${v}"${v === shelfMode() ? ' selected' : ''}>${t}</option>`).join('')
         + '</select></label>'
         + `<label class="fc-check" data-tip="The album's notes on ${here}, as the annotation\n- Bandcamp: about and credits\n- Discogs: notes\n- Qobuz, Apple Music: reviews\n- Beatport, YouTube Music: description\n- Amazon Music: the ℗ line\nA line says where they come from. For ${here} only.\n⚠ A review is the critic's text: check you may copy it before you submit"><input type="checkbox" class="fc-annotation"${here ? '' : ' disabled'}${annotationOn(here) ? ' checked' : ''}> Annotation from ${here}'s notes</label>`
@@ -4739,6 +4742,7 @@ function renderShelf() {
         root.append(shelf);
     }
     shelf.replaceChildren();
+    shelfCardHide(true);
     shelf.classList.toggle('fc-compact', mode === 'compact');
     const same = releases.filter(e => e.same || e.links.length), rows = same.slice(0, 2);
     for (const e of rows) {
@@ -4751,7 +4755,16 @@ function renderShelf() {
         a.dataset.tip = [e.title + (e.disamb ? ` (${e.disamb})` : ''), [e.artist, e.date, e.country, e.format, e.labels, e.barcode].filter(Boolean).join(' · ')].filter(Boolean).join('\n');
         const meta = [e.date ? String(e.date).slice(0, 4) : null, e.tracks != null ? `${e.tracks} tracks` : null].filter(Boolean).join(' · ');
         row.append(dot, a);
-        const x = mode === 'compact' ? el('span', 'fc-shelf-x') : row;   // compact: shown while the pointer is on the shelf
+        row.addEventListener('click', ev => { if (!ev.target.closest('a, button, .fc-ic')) a.click(); });   // majkinetor: a click goes to the release
+        if (mode === 'compact') {   // the rest is the release's card, while the pointer is on the row
+            delete a.dataset.tip;   // the card says it
+            row.addEventListener('mouseenter', () => shelfCard(root, shelf, e, rel, provider));
+            row.addEventListener('mouseleave', () => shelfCardHide());
+            row.addEventListener('focusin', () => shelfCard(root, shelf, e, rel, provider, true));
+            shelf.append(row);
+            continue;
+        }
+        const x = row;
         if (meta) x.append(el('span', 'fc-dim', meta));
         const badges = el('span', 'fc-badges');
         for (const [name, ok, tip] of checkBadges(e, rel, provider)) {
@@ -4769,7 +4782,6 @@ function renderShelf() {
         upd.addEventListener('click', () => updateRelease(e, rel, provider));
         badges.append(upd);
         x.append(badges);
-        if (x !== row) row.append(x);
         shelf.append(row);
     }
     const rest = releases.length - rows.length;
@@ -4791,12 +4803,45 @@ function renderShelf() {
     Log.debug(`shelf: ${rows.length} release(s) shown, ${rest} more`);
     placeShelf(root);
 }
+// The compact shelf's card: the release as the panel shows it, beyond the shelf on its side of the button.
+// It stays while the pointer goes over to it; moving to another row switches after a moment, so the way
+// from the lower row to the card can cross the upper one.
+let shelfCardShow = 0, shelfCardGone = 0;
+function shelfCardHide(now) {
+    clearTimeout(shelfCardShow); clearTimeout(shelfCardGone);
+    const gone = () => { const c = document.querySelector('#fc-root .fc-shelf-card'); if (c) c.remove(); };
+    if (now) gone(); else shelfCardGone = setTimeout(gone, 250);
+}
+function shelfCard(root, shelf, e, rel, provider, now) {
+    clearTimeout(shelfCardShow); clearTimeout(shelfCardGone);
+    let card = root.querySelector('.fc-shelf-card');
+    if (card && card.dataset.id === e.id) return;
+    shelfCardShow = setTimeout(() => {
+        if (!shelf.isConnected || shelf.hidden) return;
+        if (!card || !card.isConnected) {
+            card = document.createElement('div');
+            card.className = 'fc-shelf-card';
+            for (const t of ['pointerdown', 'contextmenu', 'click']) card.addEventListener(t, ev => ev.stopPropagation());
+            card.addEventListener('mouseenter', () => { clearTimeout(shelfCardShow); clearTimeout(shelfCardGone); });
+            card.addEventListener('mouseleave', () => shelfCardHide());
+            root.append(card);
+        }
+        card.dataset.id = e.id;
+        card.replaceChildren();
+        checkCard(card, e, rel, provider, () => shelfCardHide(true));
+        const r = root.getBoundingClientRect(), s = shelf.getBoundingClientRect(), above = s.top < r.top;
+        Object.assign(card.style, above ? { bottom: Math.round(r.bottom - s.top + 4) + 'px', top: '' } : { top: Math.round(s.bottom - r.top + 4) + 'px', bottom: '' });
+        card.style.maxHeight = Math.max(80, Math.round(above ? s.top - 12 : window.innerHeight - s.bottom - 12)) + 'px';
+        const w = card.offsetWidth;
+        Object.assign(card.style, r.right - w < 4 ? { left: '0', right: '' } : { right: '0', left: '' });
+    }, now ? 0 : card ? 300 : 120);
+}
 // Above the button or below it, whichever side has more room; right-aligned unless that runs off the left edge
 function placeShelf(root) {
     const shelf = root && root.querySelector('.fc-shelf');
     if (!shelf) return;
     shelf.hidden = !!root.style.clipPath || root.style.display === 'none';   // on the page under a scroller: clipped
-    if (shelf.hidden) return;
+    if (shelf.hidden) { shelfCardHide(true); return; }
     const r = root.getBoundingClientRect();
     const above = r.top > window.innerHeight - r.bottom;
     shelf.style.maxHeight = Math.max(80, Math.round((above ? r.top : window.innerHeight - r.bottom) - 14)) + 'px';
@@ -4890,45 +4935,7 @@ function askExisting(result, rel, provider, anchor) {
         const key = e => { if (e.key === 'Escape') { e.stopPropagation(); done(null); } };
         for (const e of result.releases) {
             const li = el('li', e.same || e.links.length ? 'fc-same' : 'fc-other');
-            const dot = el('i', 'fc-light');
-            dot.dataset.light = e.links.length ? 'linked' : !e.same ? 'other' : e.how.includes('barcode') ? 'barcode' : 'similar';
-            const a = el('a', null, e.title);
-            a.href = `https://${settings().server}/release/${e.id}`; a.target = '_blank'; a.rel = 'noopener';
-            const meta = [e.artist, e.date, e.country, e.format, e.tracks != null ? `${e.tracks} tracks` : null, e.labels, e.barcode].filter(Boolean).join(' · ');
-            const line = el('div', 'fc-check-rel');
-            line.append(dot, a);
-            if (e.disamb) line.append(el('span', 'fc-dim', ` (${e.disamb})`));
-            li.append(line, el('div', 'fc-dim', `${meta}${!e.same && !e.links.length ? `${meta ? ' · ' : ''}another edition` : ''}`));
-            // majkinetor: "badges for stuff that matches", as icons: what agrees with the album (✓), and what differs (≠)
-            const badges = el('div', 'fc-badges');
-            for (const [name, ok, tip] of checkBadges(e, rel, provider)) {
-                const bd = el('span', 'fc-ic' + (ok ? '' : ' fc-ic-no'));
-                bd.dataset.name = name;
-                bd.dataset.tip = tip;
-                bd.setAttribute('aria-label', (ok ? '' : '≠ ') + name);
-                bd.innerHTML = mbuHtml(checkIcon(name, e.format));
-                badges.append(bd);
-            }
-            if (badges.childNodes.length) li.append(badges);
-            if (e.same || e.links.length) {
-                const acts = el('div', 'fc-check-acts');
-                const upd = el('button', 'fc-check-upd', 'Update this release');
-                upd.type = 'button';
-                upd.dataset.tip = 'Update this release in Mission Control\nIt opens the release, compares it with the platforms, this album included, and offers what it lacks: the barcode, labels and catalog numbers, release event, track lengths, ISRCs and links.';
-                upd.addEventListener('click', () => { updateRelease(e, rel, provider); done(null); });
-                acts.append(upd);
-                // the album's links the release lacks, in whatever form it has them
-                const has = new Set((e.urls || e.links).map(linkKey));
-                const missing = (rel.urls || []).filter(u => !has.has(linkKey(u.url)));
-                if (missing.length) {
-                    const ln = el('button', 'fc-check-link', 'Add link only');
-                    ln.type = 'button';
-                    ln.dataset.tip = `Add the ${provider.name} link to this release\nIts edit page opens with the link and an edit note; nothing else changes.`;
-                    ln.addEventListener('click', () => { addLinkOnly(e, missing, rel, provider); done(null); });
-                    acts.append(ln);
-                }
-                li.append(acts);
-            }
+            checkCard(li, e, rel, provider, () => done(null));
             list.append(li);
         }
         const b = el('div', 'fc-warn-b');
@@ -4943,6 +4950,52 @@ function askExisting(result, rel, provider, anchor) {
         go.addEventListener('click', () => done('import'));
         (box.querySelector('.fc-check-upd') || go).focus();
     });
+}
+// One release the check found, as the panel shows it: light and title, what MusicBrainz has, the checks, and
+// for this album Update this release and Add link only; done() runs after either. The panel and the shelf's card.
+function checkCard(li, e, rel, provider, done) {
+    const el = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
+    const dot = el('i', 'fc-light');
+    dot.dataset.light = e.links.length ? 'linked' : !e.same ? 'other' : e.how.includes('barcode') ? 'barcode' : 'similar';
+    const a = el('a', null, e.title);
+    a.href = `https://${settings().server}/release/${e.id}`; a.target = '_blank'; a.rel = 'noopener';
+    const meta = [e.artist, e.date, e.country, e.format, e.tracks != null ? `${e.tracks} tracks` : null, e.labels, e.barcode].filter(Boolean).join(' · ');
+    const line = el('div', 'fc-check-rel');
+    line.append(dot, a);
+    if (e.disamb) line.append(el('span', 'fc-dim', ` (${e.disamb})`));
+    li.append(line, el('div', 'fc-dim', `${meta}${!e.same && !e.links.length ? `${meta ? ' · ' : ''}another edition` : ''}`));
+    // majkinetor: "badges for stuff that matches", as icons: what agrees with the album (✓), and what differs (≠)
+    const badges = el('div', 'fc-badges');
+    for (const [name, ok, tip] of checkBadges(e, rel, provider)) {
+        const bd = el('span', 'fc-ic' + (ok ? '' : ' fc-ic-no'));
+        bd.dataset.name = name;
+        bd.dataset.tip = tip;
+        bd.setAttribute('aria-label', (ok ? '' : '≠ ') + name);
+        bd.innerHTML = mbuHtml(checkIcon(name, e.format));
+        badges.append(bd);
+    }
+    const foot = el('div', 'fc-check-foot');
+    if (badges.childNodes.length) foot.append(badges);
+    if (e.same || e.links.length) {
+        const acts = el('div', 'fc-check-acts');
+        const upd = el('button', 'fc-check-upd', 'Update this release');
+        upd.type = 'button';
+        upd.dataset.tip = 'Update this release in Mission Control\nIt opens the release, compares it with the platforms, this album included, and offers what it lacks: the barcode, labels and catalog numbers, release event, track lengths, ISRCs and links.';
+        upd.addEventListener('click', () => { updateRelease(e, rel, provider); done(); });
+        acts.append(upd);
+        // the album's links the release lacks, in whatever form it has them
+        const has = new Set((e.urls || e.links).map(linkKey));
+        const missing = (rel.urls || []).filter(u => !has.has(linkKey(u.url)));
+        if (missing.length) {
+            const ln = el('button', 'fc-check-link', 'Add link only');
+            ln.type = 'button';
+            ln.dataset.tip = `Add the ${provider.name} link to this release\nIts edit page opens with the link and an edit note; nothing else changes.`;
+            ln.addEventListener('click', () => { addLinkOnly(e, missing, rel, provider); done(); });
+            acts.append(ln);
+        }
+        foot.append(acts);
+    }
+    if (foot.childNodes.length) li.append(foot);
 }
 function openMb(url) {
     Log.info(`opening ${url}`);

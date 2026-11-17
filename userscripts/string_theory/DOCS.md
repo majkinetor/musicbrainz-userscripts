@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-17 15:27 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-17 15:37 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1405,11 +1405,11 @@ With _On page load_, the releases that count as this album show beside the butto
 
 The _Found releases beside the button_ [setting](#settings-3) says how:
 
-| Found releases beside the button |                                                                        |
-| -------------------------------- | ---------------------------------------------------------------------- |
-| Compact                          | the light, the title and +N; the rest shows while the pointer is on it |
-| Full                             | everything, always                                                     |
-| Off                              | none; only the light on the button                                     |
+| Found releases beside the button |                                                                                                                 |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Compact                          | the light, the title and +N; the release as the panel shows it while the pointer is on it, and a click opens it |
+| Full                             | everything, always                                                                                              |
+| Off                              | none; only the light on the button                                                                              |
 
 ### Consolidate
 

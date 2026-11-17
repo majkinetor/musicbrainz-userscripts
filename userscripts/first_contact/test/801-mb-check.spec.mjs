@@ -126,13 +126,15 @@ test.describe('on a Deezer album the sandbox has', () => {
     const row = shelf.locator('.fc-shelf-row', { has: page.locator(`a[href$="/release/${RAM}"]`) });
     check(await row.count() === 1, 'the release is on the shelf, linked to the sandbox');
     check(await row.locator('.fc-light').getAttribute('data-light') === 'linked', 'with its light');
-    check(/\d{4} · 13 tracks/.test(await row.textContent()), `year and track count (${await row.textContent()})`);
-    check(await row.locator('.fc-ic').count() >= 4, 'with the match badges');
+    await row.hover();   // compact: the release's card, as the panel shows it
+    const card = page.locator('#fc-root .fc-shelf-card');
+    await card.waitFor({ state: 'visible' });
+    check(/13 tracks/.test(await card.textContent()), `the card has the track count (${await card.textContent()})`);
+    check(await card.locator('.fc-ic').count() >= 4, 'with the match badges');
     const s = await shelf.boundingBox(), b = await page.locator('#fc-root .fc-go').boundingBox();
     const vh = await page.evaluate(() => innerHeight);
     check(b.y > vh / 2 ? s.y + s.height <= b.y : s.y >= b.y + b.height, `on the side with room (shelf ${Math.round(s.y)}+${Math.round(s.height)}, button ${Math.round(b.y)})`);
-    await shelf.hover();   // compact: Update shows while the pointer is on the shelf
-    await row.locator('.fc-shelf-upd').click();
+    await card.locator('.fc-check-upd').click();
     const upd = await until(() => page.evaluate(() => window.__fcLastUpdate), Boolean);
     check(upd && upd.mbid === RAM, `Update goes to the release (${JSON.stringify(upd)})`);
   });
