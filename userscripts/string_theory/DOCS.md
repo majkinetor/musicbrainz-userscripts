@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-17 15:52 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-17 15:54 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1746,7 +1746,7 @@ Drag the buttons anywhere; each platform remembers its place, and **⚙︎ → R
 | Setting                                       | Default                   |                                                                                                                     |
 | --------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | MusicBrainz server                            | musicbrainz.org           | where the release editor opens and the album is [looked up](#already-in-musicbrainz): musicbrainz.org, beta or test |
-| Check MusicBrainz                             | On import                 | when the album is [looked up](#already-in-musicbrainz) in MusicBrainz                                               |
+| Check MusicBrainz                             | On page load              | when the album is [looked up](#already-in-musicbrainz) in MusicBrainz                                               |
 | Found releases beside the button              | on                        | with _On page load_: the [found releases](#found-releases) beside the button                                        |
 | Annotation from _platform_'s notes            | on                        | the album's [notes](#platforms) go into the annotation, with _From <platform>: <album page>_                        |
 | Set Country as Worldwide for digital releases | on                        | on Discogs, use Worldwide for digital releases instead of its country                                               |
