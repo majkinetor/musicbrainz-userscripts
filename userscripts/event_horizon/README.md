@@ -127,7 +127,7 @@ Expanded track contains info about associated recording and works.
 
 ## Player
 
-Point at a track's number and click its play button: the release plays from that track, one track after another. **Play** in the tracklist's header plays the whole release. Right-click a track's play button to choose the streaming site it plays from; the next tracks keep that choice when they have it.
+The player is off until you turn on **Enable player** in the settings. Point at a track's number and click its play button: the release plays from that track, one track after another. **Play** in the tracklist's header plays the whole release. Right-click a track's play button to choose the streaming site it plays from; the next tracks keep that choice when they have it.
 
 The player plays from YouTube, YouTube Music, Spotify, Deezer, Apple Music, SoundCloud and Bandcamp, in the page, and goes on to the next track when one ends. Apple Music's player can't be started for you: click its play button, and the next track follows when the track's length has played. **Hide the video** is remembered. A track with no such link has no play button; with **Show ListenBrainz menu items** on, it gets a ListenBrainz icon instead.
 
@@ -250,8 +250,7 @@ Right-click the corner icon. Changes apply at once.
 | Menu → Show menu titles               | off                                                       | text beside icons in the main menu                                                          |
 | Menu → Responsive                     | off                                                       | brings items from More into the main menu when space allows                                 |
 | Menu → Items                          | all visible                                               | drag to order, use the eye to show or hide, toggle Title, choose Main or More               |
-| Player → Enable player                | on                                                        | the play buttons and the [player](#player)                                                  |
-| Player → Play in a separate window    | off                                                       | keeps the player running when the MusicBrainz tab closes                                    |
+| Player → Enable player                | off                                                       | the play buttons and the [player](#player)                                                  |
 | Player → Player place                 | Bottom bar                                                | **Bottom bar** or **Top bar**                                                               |
 | Player → Show ListenBrainz menu items | on                                                        | the player's links to ListenBrainz                                                          |
 | Player → Send listens to ListenBrainz | off                                                       | your listens, with the **ListenBrainz token** beside it                                     |

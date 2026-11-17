@@ -4,7 +4,7 @@ import { test, check, until, attachShot, answerGm } from '../../../dev/test/harn
 const REL = 'https://musicbrainz.org/release/20d82991-89d9-4143-9f7e-5989e73759e7';
 
 test.describe('bar', () => {
-  test.use({ profile: 'fresh', gm: { name: 'Event Horizon', persist: true, values: { view: { on: true, playerScrobble: true }, lbToken: 'tok' } } });
+  test.use({ profile: 'fresh', gm: { name: 'Event Horizon', persist: true, values: { view: { on: true, player: true, playerScrobble: true }, lbToken: 'tok' } } });
 
   // a track's play button starts the player at the bottom; the listen goes to ListenBrainz as playing_now
   test('a track plays in the bottom bar, and ListenBrainz hears it is playing', { tag: '@prod' }, async ({ page, context, inject }, testInfo) => {
@@ -37,7 +37,7 @@ test.describe('bar', () => {
 });
 
 test.describe('chip', () => {
-  test.use({ profile: 'fresh', gm: { name: 'Event Horizon', persist: true, values: { view: { on: true, playerPlace: 'chip', playerLb: false } } }, pageErrors: ['No valid solution has been found to play this item'] });
+  test.use({ profile: 'fresh', gm: { name: 'Event Horizon', persist: true, values: { view: { on: true, player: true, playerPlace: 'chip', playerLb: false } } }, pageErrors: ['No valid solution has been found to play this item'] });
 
   test('the player shows as a header chip, without ListenBrainz links when they are off', { tag: '@prod' }, async ({ page, inject }, testInfo) => {
     await page.goto(REL);
@@ -54,7 +54,7 @@ test.describe('chip', () => {
 });
 
 test.describe('settings', () => {
-  test.use({ profile: 'fresh', gm: { name: 'Event Horizon', persist: true, values: { view: { on: true } } } });
+  test.use({ profile: 'fresh', gm: { name: 'Event Horizon', persist: true, values: { view: { on: true, player: true } } } });
 
   test('the settings have a Player tab', { tag: '@prod' }, async ({ page, inject }, testInfo) => {
     await page.goto(REL);
