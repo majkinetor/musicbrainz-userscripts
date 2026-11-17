@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-17 10:47 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-17 10:54 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -2917,7 +2917,7 @@ Click a mark to open its page; right-click to take it in or leave it out. **Run 
 | Tidal         | looked up and read                                                         |          |
 | YouTube Music | looked up                                                                  |          |
 | Amazon Music  |                                                                            |          |
-| Amazon        | barcode                                                                    |          |
+| Amazon        | barcode, name                                                              |          |
 | Qobuz         | looked up and read                                                         | optional |
 | Beatport      |                                                                            | optional |
 | Volumo        | looked up and read                                                         |          |
@@ -2936,7 +2936,7 @@ Click a mark to open its page; right-click to take it in or leave it out. **Run 
 - **Discogs**: on a CD release, a CD edition is searched first. The release group's Discogs master is checked too.
 - **YouTube Music** needs no login. It finds most albums by barcode, the rest by artist and title, but shows no barcode and may return another edition: every hit must match on track count and title, and strict barcode mode withholds it. The *other versions* it lists are named in the tooltip, for you to check. The label comes from a song's credits, when the label sends them. Links are added as *stream for free*.
 - **Amazon Music** needs no account. It is searched by artist and title only, taken when title and track count match (of two editions, the release's year wins), and strict barcode mode withholds it. Its catalogue is amazon.com's, so an album sold only elsewhere may be missed. The label comes from the ℗ line.
-- **Amazon** (its store, CDs and vinyl): the row reads the release's Amazon link, or else searches amazon.com for the release's barcode and takes a product that shows that barcode or the album's title, with the same track count. The store often answers a script's search with a bot check; then the row stays a link to that search, and opening amazon.com in the browser once usually lets later scans through.
+- **Amazon** (its store, CDs and vinyl): the row reads the release's Amazon link, or else searches amazon.com for the release's barcode and takes a product that shows that barcode or the album's title, with the same track count. A release with no barcode is searched by artist and title, and a product is taken only when its title, artist and track count all match. The store often answers a script's search with a bot check; then the row stays a link to that search, and opening amazon.com in the browser once usually lets later scans through.
 - **SoundCloud** can't be searched by barcode; it's read from the linked set, and trusted only when the whole set agrees on it.
 - **Audiomack** needs no login. It is searched by artist and title, and fans re-upload albums, so every hit's barcode is read: the release's barcode wins, else a hit with a barcode and the track count. A song link is a one-track release. The label comes from the ℗ line; links are *stream for free*.
 - **7digital** needs no login. It is searched by barcode in the UK store, then the US one, then by artist and title; the link is to the store it was found in.
