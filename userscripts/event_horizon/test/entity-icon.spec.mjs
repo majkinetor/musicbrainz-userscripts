@@ -16,7 +16,10 @@ test('the entity icon copies the MBID and sends to Picard', { tag: ['@sandbox', 
   check(await icon.getAttribute('data-copy') === RG, 'and it holds the MBID');
   check(await icon.getAttribute('data-picard') === null, 'with nothing to send to Picard');
   await icon.click();
-  const copied = await until(() => page.locator('#toast').textContent(), t => /Cop/.test(t)); check(copied === 'Copied the MBID', 'a click copies the MBID, got ' + copied);
+  const menu = page.locator('section.hero .kmkm');
+  check(await until(() => menu.isVisible(), v => v), 'a click opens the copy menu');
+  await menu.locator('button.opt').first().click();
+  const copied = await until(() => page.locator('#toast').textContent(), t => /Cop/.test(t)); check(copied === 'Copied the MBID', 'its first option copies the MBID, got ' + copied);
 
   const rel = (await (await page.request.get(`https://test.musicbrainz.org/ws/2/release?release-group=${RG}&limit=1&fmt=json`)).json()).releases[0].id;
   await page.goto(`https://test.musicbrainz.org/release/${rel}`, { waitUntil: 'domcontentloaded', timeout: 60000 });

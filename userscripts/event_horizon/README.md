@@ -106,7 +106,7 @@ Select the star in an entity's header to keep it on the homepage; select it agai
 
 ## Collections
 
-Click the entity-type label above its title to open **Collections**. The menu shows your own and collaborative collections for that type, including private collections. Select an entry to add or remove the entity in the background. **Add to a new collection** opens MusicBrainz's collection form with the entity selected.
+Click the entity-type label above its title to open **Collections**. The menu shows your own and collaborative collections for that type, including private collections. Select an entry to add or remove the entity in the background. **My collections** opens your collections page. **Add to a new collection** opens MusicBrainz's collection form with the entity selected.
 
 The list is kept for your next visit. **Refresh collections** checks for changes made elsewhere. You must be signed in to MusicBrainz.
 
@@ -248,7 +248,7 @@ To keep an effect you like, type a name beside **Preset** and click **Save** (or
 | Right-click | corner icon                     | open the settings   |
 | Right-click | a card, group or row            | toggle its siblings |
 | Right-click | a platform icon with more links | open its links      |
-| Click       | the entity icon in the header   | copy the MBID       |
+| Click       | the entity icon in the header   | open its copy menu  |
 | Right-click | a release or recording's icon   | send it to Picard   |
 
 ## Notes

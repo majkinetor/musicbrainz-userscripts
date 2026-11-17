@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.17.140001
+// @version      2026.11.17.140003
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3076,7 +3076,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .gear>button:hover,.gear>button[aria-expanded="true"]{border-color:var(--accent);color:var(--text)}
 .gear>button svg{color:inherit}
 .art .under{display:flex;flex-direction:column;gap:14px;padding-top:6px}.gtags{display:flex;flex-wrap:wrap;gap:8px}.gtags.wide{margin:18px 0 0}
-.kmk{all:unset;flex:none;cursor:pointer;display:inline-flex;border-radius:6px}.kmk:hover{color:var(--accent);background:var(--chip)}
+.kmk{all:unset;flex:none;cursor:pointer;display:inline-flex;border-radius:6px}.kmk:hover,.kmk[aria-expanded=true]{color:var(--accent);background:var(--chip)}.kmkw{position:relative;display:inline-flex;flex:none}.kicker>span.kmkw{overflow:visible!important}.kmkw>.pop{font-size:14px;font-weight:400;letter-spacing:0;text-transform:none;white-space:normal;width:max-content;min-width:240px;max-width:min(420px,calc(100vw - 32px))}.kmkw>.pop button.opt>span{min-width:0}.kmkw>.pop small{display:block;font-size:11.5px;font-weight:400;line-height:1.35;color:var(--muted);word-break:break-word}.kmkw>.pop button.opt>svg{flex:none;width:15px!important;height:17px!important}
 .tgi{display:inline-flex;align-items:center;gap:8px}.tgi.mine{color:var(--accent)}.tgi-n{opacity:.6;font-size:.85em;font-variant-numeric:tabular-nums;min-width:2ch;text-align:center}.tgi button{border:0;background:none;color:inherit;opacity:.6;cursor:pointer;padding:0 2px;font:inherit}.tgi button>svg{display:block}.tgi button,.tgi .tgi-ph:not(.tgi-n){min-width:18px;display:inline-grid;place-items:center;padding:0 2px}.tgi-ph{visibility:hidden}.tgi.mine button{padding:4px 2px;margin:-4px 0;border-radius:50%}.tgi button:hover{opacity:1;color:var(--accent)}.tgi-in{border:1px dashed var(--muted, currentColor);background:transparent;color:inherit;border-radius:999px;padding:6px 14px;font:inherit;width:150px;outline:none}.tgi-row{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}.tgi-w{position:relative;display:inline-flex}.tgi-spin{position:absolute;right:12px;top:50%;width:12px;height:12px;margin-top:-6px;border:2px solid var(--muted, currentColor);border-top-color:var(--accent);border-radius:50%;animation:ldspin .8s linear infinite;pointer-events:none}.tgi-w .tg-ac{text-align:left}.tgi-in:focus{border-style:solid;border-color:var(--accent)}
 .gtags a.chip{background:color-mix(in srgb,var(--chip) 50%,transparent);color:inherit;text-decoration:none;cursor:pointer;border:1px solid transparent}.gtags a.chip:hover{color:var(--accent);border-color:var(--accent)}.facts .gtags{align-items:center}.tags-toggle{display:inline-flex;align-items:center;align-self:center;min-height:28px;margin-left:6px;padding:0 4px;background:none!important;border:0;border-radius:0;box-shadow:none;font:500 12px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap;cursor:pointer;filter:none!important}.tags-toggle:hover{color:var(--mbu-text)}
 .meta{display:flex;flex-wrap:wrap;gap:20px;font-size:14px;color:var(--soft);align-items:center}
@@ -3206,7 +3206,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .more-sites .mg .row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .more-sites .mk+.mk{margin-top:6px}
 .more-sites .mflt{box-sizing:border-box;width:100%;margin:0 0 6px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit}
-.pop .h{padding:8px 10px 4px}
+.pop .h{padding:8px 10px 4px}.pop .h a.coll-me{color:inherit;text-decoration:none}.pop .h a.coll-me:hover{color:var(--accent);text-decoration:underline}
 .pop .hint{padding:0 10px 8px;font-size:13px;color:var(--muted)}
 .pop a.row,.pop button.opt{display:flex;align-items:center;gap:10px;width:100%;padding:7px 10px;border-radius:8px;color:var(--text);font-weight:600;font-size:14px;border:0;background:none;cursor:pointer;text-align:left;text-transform:none;letter-spacing:0}
 .pop a.row:hover,.pop button.opt:hover{background:var(--hover);text-decoration:none}
@@ -4965,7 +4965,7 @@ function facts(r) {
 // what Picard's browser integration opens for an entity; it loads nothing else
 // Picard's logo, its two halves and the pick, for the MBID tip
 const PICARD_IC = '<svg class="eh-pcic" viewBox="0 0 127 144" width="15" height="17" aria-hidden="true"><path d="m127 35-61-35v144l61-35z" fill="#eb743b"/><path d="m61 144v-144l-61 35v74z" fill="#771b85"/><path transform="translate(-4.35 -2.82)" d="m41.81 42.9-18 8.66-9.72 52.44 17.17-4.35 14.45 10.24 9.75-52.41zm-3.56 18.5a5.57 5.57 0 1 1 6.49-4.46 5.57 5.57 0 0 1 -6.49 4.46z" fill="#b66bc2"/></svg>';
-mbuTipOn('.kmk[data-picard]', el => mbuTipCard({ title: 'Copy the MBID', body: `<div>${esc(el.dataset.copy)}</div><div class="eh-pctip">${mbuTipKey('Right-click')}${PICARD_IC}<span>Send to Picard</span></div>` }), { card: true });
+mbuTipOn('.kmk[data-picard]:not([data-pop])', el => mbuTipCard({ title: 'Copy the MBID', body: `<div>${esc(el.dataset.copy)}</div><div class="eh-pctip">${mbuTipKey('Right-click')}${PICARD_IC}<span>Send to Picard</span></div>` }), { card: true });
 const PICARD_OPEN = { release: 'openalbum', recording: 'opennat' };
 const picardSend = q => {
     const url = `http://127.0.0.1:8000/${q}`, say = (lvl, m) => { toast(m); LOG[lvl](m); };
@@ -4979,9 +4979,31 @@ function kickerMark(el) {
     const pm = location.pathname.match(/^\/([a-z-]+)\/([0-9a-f-]{36})(?:\/|$)/i) || (a && a.pathname.match(/^\/([a-z-]+)\/([0-9a-f-]{36})(?:\/|$)/i));
     const id = pm && pm[2];
     if (!k || !id) return;
-    const pc = PICARD_OPEN[pm[1].toLowerCase()];
-    k.outerHTML = `<button type="button" class="kmk" data-copy="${id}" data-copylabel="the MBID"${pc ? ` data-picard="${pc}?id=${id}"` : ''} ${pc ? '' : ` data-tip="Copy the MBID&#10;${id}"`} aria-label="Copy the MBID">${k.outerHTML}</button>`;
+    const pc = PICARD_OPEN[pm[1].toLowerCase()], n = ++kmkN;
+    // a click opens the menu: the MBID, "Artist - Title - Year" (filled in as it opens), Picard; a right-click still sends to Picard
+    k.outerHTML = `<span class="popwrap kmkw"><button type="button" class="kmk" data-pop="kmk${n}" aria-expanded="false" data-copy="${id}" data-copylabel="the MBID"${pc ? ` data-picard="${pc}?id=${id}"` : ''} data-tip="Copy menu${pc ? '&#10;Right-click: send to Picard' : ''}" aria-label="Copy menu">${k.outerHTML}</button>`
+        + `<div class="pop kmkm" id="pop-kmk${n}" hidden><button type="button" class="opt" data-copy="${id}" data-copylabel="the MBID"><span>Copy the MBID<small>${id}</small></span></button>`
+        + `<button type="button" class="opt" data-kmkname hidden><span>Copy "Artist - Title - Year"<small></small></span></button>`
+        + (pc ? `<button type="button" class="opt" data-picardgo="${pc}?id=${id}">${PICARD_IC}<span>Send to Picard</span></button>` : '') + '</div></span>';
 }
+let kmkN = 0;
+// "Artist - Title - Year" from the header the icon sits in (the pinned bar's copy reads the hero's): its title, its artist line and its first release's year, whichever it has
+function kmkName(b) {
+    const src = b.dataset.kmkfor && document.querySelector(`.kmk[data-pop="${b.dataset.kmkfor}"]`) || b;
+    let root = src.parentElement; while (root && !root.querySelector('h1')) root = root.parentElement;
+    if (!root) return '';
+    const txt = (el, drop) => { if (!el) return ''; const c = el.cloneNode(true); c.querySelectorAll(drop).forEach(x => x.remove()); return c.textContent.replace(/\s+/g, ' ').trim(); };
+    const title = txt(root.querySelector('h1'), '.disamb,.eh-tx'), artist = txt(root.querySelector('.by'), '.rg-l').replace(/^by\s+/i, '');
+    const when = [...root.querySelectorAll('.facts>div')].find(c => /^(first )?released\b/i.test((c.querySelector('.label') || {}).textContent || ''));
+    const year = when && ((when.querySelector('.v') || when).textContent.match(/\b(1[89]|20)\d\d\b/) || [''])[0];
+    LOG.debug(`Copy menu name: artist "${artist}", title "${title}", year "${year || ''}"`);
+    return artist && title ? [artist, title, year].filter(Boolean).join(' - ') : '';
+}
+function kmkFill(b) {
+    const o = b.parentElement.querySelector('[data-kmkname]'); if (!o) return;
+    const t = kmkName(b); o.hidden = !t; o.dataset.copy = t; o.dataset.copylabel = t; o.querySelector('small').textContent = t;
+}
+const kmkClose = b => { const p = b.closest('.kmkm'); if (!p) return; p.hidden = true; p.parentElement.querySelector('[data-pop]')?.setAttribute('aria-expanded', 'false'); };
 // the hero's facts take their final shape in the markup, before the redraw, so the redraw finds them as they are
 // and leaves them alone: no MBID row, the rating and the tags as facts. live is the hero on the page, for which rows are wide now
 function heroShape(root, live) {
@@ -5136,7 +5158,7 @@ function popFit(p) {
     p.style.translate = p.style.position = p.style.top = p.style.left = p.style.right = '';
     p.classList.remove('pop-fx');
     if (p.hidden) return;
-    const w = document.documentElement.clientWidth, m = 8, bar = p.closest('.tools');
+    const w = document.documentElement.clientWidth, m = 8, bar = p.closest('.tools, #eh-pin .pkk');
     // a toolbar that scrolls sideways (a phone) clips what opens inside it, so the menu is placed against the window
     if (bar && getComputedStyle(bar).overflowX !== 'visible') {
         const t = p.parentElement.querySelector('[data-pop]').getBoundingClientRect();
@@ -10623,9 +10645,11 @@ function collectionKeep(key, x) {
 function collectionPaint(key) {
     const p = $('#pop-collections'); if (!p || p.dataset.key !== key) return;
     const x = COLLECTIONS.get(key); if (!x) return;
-    let group = '';
+    let group = '', first = true;
     p.innerHTML = '<div class="h label">Collections</div>' + (x.rows || []).map(r => {
-        const h = r.group !== group ? '<div class="h label">' + esc(r.group) + '</div>' : ''; group = r.group;
+        // the first group is the user's own: its heading opens their collections page
+        const own = first && ME, h = r.group !== group ? '<div class="h label">' + (own ? '<a class="coll-me" href="' + MB + '/user/' + encodeURIComponent(ME) + '/collections" data-tip="Your collections">' + esc(r.group) + '</a>' : esc(r.group)) + '</div>' : '';
+        if (r.group !== group) first = false; group = r.group;
         return h + (r.id ? '<button type="button" class="row opt" data-collkey="' + key + '" data-collchange="' + r.id + '" aria-pressed="' + r.on + '"' + (x.busy || x.loading ? ' disabled' : '') + '>' + SVG(r.on ? '<path d="m5 12 4 4L19 6"/>' : '<path d="M12 5v14M5 12h14"/>') + '<span>' + esc(r.label) + '</span></button>' : '<a class="row" href="' + esc(MB + r.path) + '">' + esc(r.label) + '</a>');
     }).join('') + (!x.rows ? '<div class="h">Loading collections…</div>' : !x.rows.some(r => r.id) ? '<div class="h">No collections of this type</div>' : '')
         + (x.error ? '<div class="h" role="alert">' + esc(x.error) + '</div>' : '')
@@ -11454,7 +11478,9 @@ function pinBar(app) {
     const details = [...kick.children].filter(el => el !== acts && !el.hidden).map(el => el.outerHTML).join('');
     k.innerHTML = `<span class="pident">${photo ? `<img class="pcv" alt="" src="${esc(photo.src)}">` : ''}<span class="pnm" data-tip="Back to the top">${title ? title.innerHTML : esc(document.title)}</span>${artist ? `<span class="pby">${artist.innerHTML}</span>` : ''}${rg ? rg.outerHTML : ''}${details ? `<span class="pkk">${details}</span>` : ''}</span>`;
     // the bar's copy of the entity icon only copies: the menu stays with the hero's
-    k.querySelectorAll('.pkk .pop, .pkk [data-pop]').forEach(x => x.remove());
+    k.querySelectorAll('.pkk .pop:not(.kmkm), .pkk [data-pop]:not(.kmk)').forEach(x => x.remove());
+    // the bar's entity icon has the same menu as the hero's, under its own id
+    k.querySelectorAll('.pkk .kmk[data-pop]').forEach(x => { const n = ++kmkN, p = x.parentElement.querySelector('.kmkm'); x.dataset.kmkfor = x.dataset.pop; x.dataset.pop = 'kmk' + n; x.setAttribute('aria-expanded', 'false'); if (p) { p.id = 'pop-kmk' + n; p.hidden = true; } });
     const thumb = k.querySelector('.pcv'); if (thumb) thumb.onerror = () => thumb.remove();
     // The page width is configurable; follow its real edges instead of centring a separate fixed-width bar.
     const align = () => { const left = hd.getBoundingClientRect().left, right = kick.getBoundingClientRect().right; k.style.marginLeft = left + 'px'; k.style.width = Math.max(0, right - left) + 'px'; };
@@ -11625,6 +11651,8 @@ function onClick(ev) {
     if ('srch' in d) { const fm = b.form; if (fm.classList.toggle('open')) fm.query.focus(); return; }
     if (d.collchange) { collectionChange(d.collkey, d.collchange); return; }
     if (d.collrefresh) { collectionLoad(d.collrefresh, true); return; }
+    if (d.picardgo) { kmkClose(b); picardSend(d.picardgo); return; }
+    if (d.pop && b.classList.contains('kmk')) kmkFill(b);
     if (d.pop) { const p = document.getElementById('pop-' + d.pop); p.hidden = !p.hidden; b.setAttribute('aria-expanded', String(!p.hidden)); popFit(p); return; }
     if (d.nmuse) {
         const [key, i] = d.nmuse.split('\t'), [kind, sc] = key.split('-'), x = nmList(key)[i]; if (!x) return;
@@ -11649,6 +11677,7 @@ function onClick(ev) {
     if (d.copy) {
         const label = d.copylabel || (b.textContent === d.copy ? d.copy : b.textContent.replace(/^Copy /, ''));
         try { navigator.clipboard.writeText(d.copy).then(() => toast('Copied ' + label), () => toast('Copy failed')); } catch (e) { toast('Copy failed'); }
+        kmkClose(b);
         return;
     }
     // a heading's funnel opens the box with "column:" added, ready for the value
