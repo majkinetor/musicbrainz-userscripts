@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.17.090000
+// @version      2026.11.17.100000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3192,7 +3192,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .qk button.kn:hover::before,.qk button.kn[aria-expanded="true"]::before{background:var(--text)}
 .pop .h.also{border-top:1px solid var(--border);margin-top:4px;padding-top:8px}
 .rl-one .ki{display:flex;gap:4px}
-.rl-one>.popwrap{align-self:flex-end;padding-bottom:4px}
+.rl-one>.popwrap{align-self:flex-end;padding-bottom:4px}.rl-end .row>:first-child{filter:grayscale(1);opacity:.55}.rl-end>.pn{white-space:nowrap}.uchip.end{opacity:.55}.uchip.end>svg,.uchip.end>.mgram{filter:grayscale(1)}.end-pill{font-size:11px;font-weight:600;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:0 7px;white-space:nowrap}.rls .uchips{align-items:center}.rls .row.end>:first-child{filter:grayscale(1);opacity:.55}.rls .u-info{font-size:12px;color:var(--muted)}
 .eh-ac{list-style:none;margin:0;padding:0}.eh-ac li{display:flex;align-items:baseline;gap:12px;padding:6px 0;border-bottom:1px solid var(--line)}.eh-ac bdi{flex:0 1 auto;min-width:0}.eh-ac-u{font-size:13px;color:var(--muted)}.eh-ac-e{margin-left:auto;font-size:13px}
 .eh-edit{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-left:2px;padding:0;border:0;border-radius:6px;background:none;color:var(--muted, currentColor);cursor:pointer;vertical-align:middle}.eh-edit:hover{color:var(--link);background:color-mix(in srgb, var(--link) 14%, transparent)}.eh-edit svg{width:16px;height:16px}#eh-aliases{font:14px Manrope,system-ui,sans-serif}.als-end{opacity:.55;text-decoration:line-through}#eh-aliases .eh-al{width:min(820px,94vw)}#eh-aliases .eh-al-n{font-weight:400;opacity:.6}#eh-aliases .eh-al-tab{margin-left:auto;margin-right:12px;font-size:13px;color:var(--mbu-accent-text, var(--mbu-accent));text-decoration:none}#eh-aliases .eh-al-tab:hover{text-decoration:underline}#eh-aliases #tc-alias{margin:0}
 .lnk{font-size:13px;font-weight:700;background:none;border:0;color:var(--link);cursor:pointer;padding:0 4px}
@@ -4500,18 +4500,20 @@ const KIND = t => /free streaming/.test(t) ? 'free' : /streaming/.test(t) ? 'lis
 const region = u => (u.match(/music\.apple\.com\/(\w\w)\//) || u.match(/amazon\.(co\.uk|de|fr|nl|com)/) || u.match(/qobuz\.com\/(\w\w-\w\w)\//) || [])[1] || '';
 function platforms(urls) {
     const m = new Map();
-    for (const { type, url } of urls) {
+    for (const { type, url, ended, info } of urls) {
         let host = url; try { host = new URL(url).hostname.replace(/^www\./, ''); } catch (e) {}
         const [key, name] = HOSTS.find(([, , re]) => re.test(url)) || ['globe', host];
         const kind = KIND(type), id = key === 'globe' ? name : key;
         const p = m.get(id) || { key, name, kinds: [], urls: [] };
         if (!p.kinds.includes(kind)) p.kinds.push(kind);
-        if (!p.urls.some(x => x.url === url)) p.urls.push({ url, type, region: region(url) });
+        if (!p.urls.some(x => x.url === url)) p.urls.push({ url, type, region: region(url), ended: !!ended, info: info || '' });
         m.set(id, p);
     }
     return [...m.values()];
 }
-const urlsOf = rels => platforms(rels.filter(x => x['target-type'] === 'url').map(x => ({ type: x.type, url: x.url.resource })));
+const urlsOf = rels => platforms(rels.filter(x => x['target-type'] === 'url').map(x => ({ type: x.type, url: x.url.resource, ended: !!x.ended })));
+// a platform list split into its current links and those MusicBrainz marks ended
+const splitEnded = ps => { const f = e => ps.map(p => { const us = p.urls.filter(u => !!u.ended === e); return us.length && { ...p, urls: us, kinds: [...new Set(us.map(u => KIND(u.type)))] }; }).filter(Boolean); return [f(false), f(true)]; };
 const ms = n => n == null ? '' : `${Math.floor(n / 60000)}:${String(Math.round(n / 1000) % 60).padStart(2, '0')}`;
 // a relationship as MB phrases it on its pages: "Guitar", "Assistant engineer", "Vocals"
 const MODS = ['additional', 'assistant', 'associate', 'co', 'executive', 'guest', 'solo'];
@@ -5090,8 +5092,10 @@ function hero(r) {
 }
 // the release group's links a release doesn't have itself: on a release they show as one more kind (majkinetor)
 const rgOnly = r => { if (!r.rg) return []; const own = new Set((r.urlCredits || []).map(u => u.url)); return urlsOf(r.rg.rels.filter(x => x['target-type'] === 'url' && !own.has(x.url.resource))); };
-function rlQuiet(r, scope = '', rgl = []) {
-    if (!r.links.length && !rgl.length) return '—';
+function rlQuiet(r0, scope = '', rgl0 = []) {
+    // ended links leave the icons; "+N ended" lists them (majkinetor)
+    const [live, gone] = splitEnded(r0.links), [rgl, rgGone] = splitEnded(rgl0), r = { ...r0, links: live }, ended = [...gone, ...rgGone];
+    if (!r.links.length && !rgl.length && !ended.length) return '—';
     const KS = rgl.length ? [...KINDS, ['rg', 'Release group']] : KINDS, pk = p => p.rgk ? 'rg' : primaryKind(p);
     const ps = [...KINDS.flatMap(([k]) => sortP(r.links.filter(p => primaryKind(p) === k))), ...sortP(rgl).map(p => ({ ...p, rgk: true }))];
     const kname = k => KS.find(x => x[0] === k)[1], kindOf = p => KINDS.map(x => x[0]).filter(k => p.kinds.includes(k)).map(kname).join(' · ');
@@ -5116,7 +5120,12 @@ function rlQuiet(r, scope = '', rgl = []) {
     // A–Z (majkinetor), the bare hostnames after the named sites
     const az = ([a], [b]) => (a.key === 'globe') - (b.key === 'globe') || a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
     const rows = KS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => pk(p) === k).sort(az); return g.length ? `<div class="mk"><div class="h label">${name}</div><div class="mg">${g.map(([p, i]) => `<a class="row" data-i="${i}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(p.name)}${p.kinds.length > 1 ? ': ' + kindOf(p) : ''}">${icon(p, 22)}<span>${esc(p.name)}</span></a>`).join('')}</div></div>` : ''; }).join('');
-    return `<div class="rl-one quiet${S.plHover ? ' pl-hov' : ''}" style="--rl-size:${S.plSize + 6}px"><span class="icons">${icons}</span><span class="popwrap" hidden><button class="chip pn" type="button" data-pop="rlmore${scope}" aria-expanded="false"></button><div class="pop r more-sites" id="pop-rlmore${scope}" hidden><input class="mflt" type="search" placeholder="Filter sites" aria-label="Filter sites" hidden>${rows}</div></span></div>`;
+    return `<div class="rl-one quiet${S.plHover ? ' pl-hov' : ''}" style="--rl-size:${S.plSize + 6}px"><span class="icons">${icons}</span><span class="popwrap" hidden><button class="chip pn" type="button" data-pop="rlmore${scope}" aria-expanded="false"></button><div class="pop r more-sites" id="pop-rlmore${scope}" hidden><input class="mflt" type="search" placeholder="Filter sites" aria-label="Filter sites" hidden>${rows}</div></span>${ended.length ? rlEnded(ended, scope) : ''}</div>`;
+}
+function rlEnded(ps, scope) {
+    const n = ps.reduce((s, p) => s + p.urls.length, 0);
+    const rows = sortP(ps).flatMap(p => p.urls.map(u => `<a class="row" href="${esc(u.url)}" target="_blank" rel="noopener" data-tip="${esc(u.url)}&#10;No longer current">${icon(p, 22)}<span>${esc(p.name)}<br><small>${esc(u.url.replace(/^https?:[/][/](www[.])?/, ''))}</small></span></a>`)).join('');
+    return `<span class="popwrap rl-end"><button class="chip pn" type="button" data-pop="rlend${scope}" aria-expanded="false" data-tip="Ended links&#10;No longer current on MusicBrainz">+${n} ended</button><div class="pop r" id="pop-rlend${scope}" hidden><div class="h label">Ended</div>${rows}</div></span>`;
 }
 
 // a menu that would run off the window's side is moved back inside it (a narrow phone screen)
@@ -8842,7 +8851,18 @@ function relsParse(html) {
         const rows = [...t.querySelectorAll(':scope > tbody > tr')].map(tr => {
             const th = tr.querySelector('th'), td = tr.querySelector('td'); if (!th || !td) return null;
             const items = [], seg = () => ({ a: null, url: '', dis: '', rest: [] }); let cur = seg();
-            const end = () => { if (cur.url && !cur.a) cur.a = doc.createElement('a'); if (cur.a) items.push({ href: cur.url || cur.a.getAttribute('href') || '', name: cur.url || tx(cur.a), dis: cur.dis, extra: cur.rest.map(relsSafe).join('').replace(/\[\s*<a [^>]*>info<\/a>\s*\]/, '').trim() }); cur = seg(); };
+            const end = () => {
+                if (cur.url && !cur.a) cur.a = doc.createElement('a');
+                if (cur.a) {
+                    // a link's [info] is its URL page; an ended link's address isn't a link, so its info is
+                    const ia = tx(cur.a) === 'info' ? cur.a : cur.rest.map(n => n.nodeName === 'A' ? n : n.querySelector && n.querySelector('a')).find(a => a && tx(a) === 'info');
+                    const href = cur.url || cur.a.getAttribute('href') || '', isUrl = /^(https?:)?\/\//.test(href), rt = cur.rest.map(tx).join(' ');
+                    let extra = cur.rest.map(relsSafe).join('').replace(/\[\s*<a [^>]*>info<\/a>\s*\]/, '').trim();
+                    if (isUrl) extra = extra.replace(/^\]\s*/, '').replace(/\(ended\)/, '').trim();
+                    items.push({ href, name: cur.url || tx(cur.a), dis: cur.dis, extra, ended: isUrl && /\(ended\)/.test(rt), info: ia ? ia.getAttribute('href') || '' : '' });
+                }
+                cur = seg();
+            };
             for (const n of td.childNodes) {
                 if (n.nodeName === 'BR') { end(); continue; }
                 if (!cur.a && !cur.url && n.nodeName !== 'A' && /^(https?:)?\/\/\S+$/.test(tx(n))) { cur.url = tx(n); continue; }
@@ -8857,7 +8877,7 @@ function relsParse(html) {
         }).filter(r => r && r.items.length);
         const k = rows.length && relsKind(rows[0].items[0].href);
         return { kind: k, rows };
-    }).filter(x => x.rows.length);
+    }).filter(x => x.rows.length).reduce((a, x) => { const o = a.find(y => y.kind === x.kind); if (o) o.rows.push(...x.rows); else a.push(x); return a; }, []);
     // the Appearances table: a sub-heading row names the phrase; each row's title links what it is
     const tb = c.querySelector('table.tbl'), apps = [];
     if (tb) {
@@ -8912,7 +8932,7 @@ async function relsLoad(n, key) {
         let html;
         if (d.mode === 'artists') { const t = await (ty === 'label' ? labArts : areaArts)(d, ty, eid); if (n === showing && data === d) { d.t = t; d.err = ''; render(); } return; }
         if (key === PAGE_ID && mbBody) html = '<body>' + mbBody.innerHTML + '</body>';
-        else { const r = await mbnFetch(`${MB}/${ty}/${eid}/${d.mode || 'relationships'}`); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
+        else { const r = await mbnFetch(ty === 'url' ? `${MB}/url/${eid}` : `${MB}/${ty}/${eid}/${d.mode || 'relationships'}`); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
         const t = relsParse(html);
         LOG.debug(`Relationships of ${ty} ${eid}: ${t.cards.reduce((s, c) => s + c.rows.reduce((x, r) => x + r.items.length, 0), 0)} on cards, ${t.apps.length} appearances`);
         if (n === showing && data === d) { d.t = t; d.err = ''; render(); }
@@ -8927,7 +8947,7 @@ function relsCard(c, i) {
     const n = c.rows.reduce((x, r) => x + r.items.length, 0), name = RELS_KINDS[c.kind] || 'Relationships';
     const ent = it => `<div class="rq">${c.kind === 'url' ? '' : mkSvg((HM_KIND[c.kind] || ['', ''])[1])}<a href="${esc(c.kind === 'url' ? it.href.replace(/^\/\//, 'https://') : MB + it.href)}"${c.kind === 'url' ? ' target="_blank" rel="noopener"' : ''}>${esc(it.name)}</a>${it.dis ? ` <span class="rga">(${esc(it.dis)})</span>` : ''}${it.extra ? ` <span class="rga">${it.extra}</span>` : ''}</div>`;
     // a site with several links: the release page's dot beside its chip, right-click or the dot opens them all
-    const url = (r, ri) => `<span class="uchips">${platforms(r.items.map(it => ({ type: r.ph, url: it.href.replace(/^\/\//, 'https://') }))).map((p, j) => { const a = `<a class="uchip rq" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(p.urls[0].url)}${p.urls.length > 1 ? '&#10;Right-click: its ' + p.urls.length + ' links' : ''}">${icon(p, 16)}<span>${esc(p.name)}</span></a>`; if (p.urls.length < 2) return a; const id = `rls${i}-${ri}-${j}`; return `<span class="qk rq" style="--qk-size:22px">${a.replace('uchip rq', 'uchip')}<span class="popwrap"><button class="kn" type="button" data-pop="${id}" aria-expanded="false" aria-label="${p.urls.length} links on ${esc(p.name)}" data-tip="${p.urls.length} links">+${p.urls.length}</button><div class="pop" id="pop-${id}" hidden><div class="h label">${esc(p.name)}</div>${p.urls.map(u => `<a class="row" href="${esc(u.url)}" target="_blank" rel="noopener" data-tip="${esc(u.url)}">${icon(p, 22)}<span>${esc(r.ph)}<br><small>${esc(u.url.replace(/^https?:\/\/(www\.)?/, ''))}</small></span></a>`).join('')}</div></span></span>`; }).join('')}</span>`;
+    const url = (r, ri) => `<span class="uchips">${platforms(r.items.map(it => ({ type: r.ph, url: it.href.replace(/^\/\//, 'https://'), ended: it.ended, info: it.info }))).map((p, j) => { const gone = p.urls.every(u => u.ended), u0 = p.urls[0]; const a = `<a class="uchip rq${gone ? ' end' : ''}" href="${esc(u0.url)}" target="_blank" rel="noopener" data-tip="${esc(u0.url)}${gone ? '&#10;No longer current' : ''}${p.urls.length > 1 ? '&#10;Right-click: its ' + p.urls.length + ' links' : ''}">${icon(p, 16)}<span>${esc(p.name)}</span></a>${gone ? '<span class="end-pill">ended</span>' : ''}${p.urls.length < 2 && u0.info ? ` <a class="u-info" href="${MB}${esc(u0.info)}" data-tip="About this link">info</a>` : ''}`; if (p.urls.length < 2) return a; const id = `rls${i}-${ri}-${j}`; return `<span class="qk rq" style="--qk-size:22px">${a.replace('uchip rq', 'uchip')}<span class="popwrap"><button class="kn" type="button" data-pop="${id}" aria-expanded="false" aria-label="${p.urls.length} links on ${esc(p.name)}" data-tip="${p.urls.length} links">+${p.urls.length}</button><div class="pop" id="pop-${id}" hidden><div class="h label">${esc(p.name)}</div>${p.urls.map(u => `<a class="row${u.ended ? ' end' : ''}" href="${esc(u.url)}" target="_blank" rel="noopener" data-tip="${esc(u.url)}${u.ended ? '&#10;No longer current' : ''}">${icon(p, 22)}<span>${esc(r.ph)}${u.ended ? ' · ended' : ''}<br><small>${esc(u.url.replace(/^https?:\/\/(www\.)?/, ''))}</small></span></a>`).join('')}</div></span></span>`; }).join('')}</span>`;
     const body = `<div class="card"><dl class="rgc rls">${c.rows.map((r, ri) => `<dt class="rqg">${r.ph}</dt><dd class="rqg">${c.kind === 'url' ? url(r, ri) : r.items.map(ent).join('')}</dd>`).join('')}</dl></div>`;
     return sect('rl' + (c.kind || i), `${name} <span class="count">${fmtN(n)}</span>`, '', body, `<div class="folded-note">${fmtN(n)} relationship${n === 1 ? '' : 's'}</div>`);
 }
@@ -8956,14 +8976,16 @@ async function recsMore(d) {
 }
 function relsHtml(d) {
     const t = d.t, [ty, eid] = d.ent.split(':');
-    const acts = actionRow(ty === 'release-group' ? RG_ACTS : ty === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS, ty, eid, d.mode || 'relationships');
-    const head = `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · ' + (HM_KIND[ty] || [ty])[0], title: t && t.name, disamb: t && t.dis, by: t && t.by, acts })}</section>`;
+    const acts = ty === 'url' ? '' : actionRow(ty === 'release-group' ? RG_ACTS : ty === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS, ty, eid, d.mode || 'relationships');
+    const head = `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: ty === 'url' ? 'URL' : (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · ' + (HM_KIND[ty] || [ty])[0], title: t && t.name, disamb: t && t.dis, by: t && t.by, acts })}</section>`;
     if (!t) return head + `<p class="hm-none">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : `Loading the ${d.mode || 'relationships'}…`}</p>`;
     if (!relsN(t)) return head + `<p class="hm-none">No ${d.mode || 'relationships'}.</p>`;
     return head + (d.mode ? relsApps(t, d) : t.cards.map(relsCard).join('') + relsApps(t));
 }
+// a URL's mark, the links icon (HM_KIND has no url: its kinds fill the visit menus)
+const MK_URL = '<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>';
 function entHead({ type, id, img, kick, title, disamb, acts, by }) {
-    const mk = (HM_KIND[type] || ['', CI_TAG])[1];
+    const mk = type === 'url' ? MK_URL : (HM_KIND[type] || ['', CI_TAG])[1];
     return `${img ? `<img class="rhcv" alt="" ${/^https:\/\/coverartarchive.org\//.test(img) ? 'data-cover' : 'src'}="${esc(img)}">` : ''}<span class="rhic"${img ? ' hidden' : ''}>${bigMk(mk)}</span><div class="rhtx"><div class="kicker label">${mkSvg(mk)}<span>${esc(kick)}</span><span class="acts"><a class="ab ov" href="${MB}/${type}/${id}" data-tip="Overview" aria-label="Overview">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>${acts || ''}${SRCH()}</span></div>`
         + (title ? heroH1(title, disamb, `${MB}/${type}/${id}`) : '<h1>&nbsp;</h1>') + (by ? `<div class="by">by ${by}</div>` : '') + '</div>';
 }
@@ -11514,7 +11536,7 @@ function fitQuietBox(box) {
     const more = box.querySelector(':scope>.popwrap'), ic = [...box.querySelectorAll('a.qi')], gs = [...box.querySelectorAll('.kg')];
     const hid = (x, h) => { if (x.hidden !== h) x.hidden = h; }, hide = (x, h) => { hid(x.closest('.qk') || x, h); hid(x, h); };
     ic.forEach(x => hide(x, false)); gs.forEach(g => hid(g, false)); hid(more, true);
-    const left = box.getBoundingClientRect().left, avail = box.getBoundingClientRect().width;
+    const endW = box.querySelector(':scope>.rl-end'), left = box.getBoundingClientRect().left, avail = box.getBoundingClientRect().width - (endW ? endW.getBoundingClientRect().width + 6 : 0);
     let shown = ic.findIndex(x => x.getBoundingClientRect().right - left > avail);
     if (shown >= 0) {
         shown = ic.findIndex(x => x.getBoundingClientRect().right - left > avail - 48);
@@ -11678,6 +11700,9 @@ function navTo(href) {
     // an entity's relationships → "erels/<type>:<mbid>"
     const er = u.origin === location.origin && u.pathname.match(new RegExp('^/(' + RELS_TYPES.join('|') + ')/(' + MBID.source + ')/relationships/?$', 'i'));
     if (er) return 'erels/' + er[1].toLowerCase() + ':' + er[2].toLowerCase();
+    // a URL's page → "erels/url:<mbid>"
+    const eu = u.origin === location.origin && u.pathname.match(new RegExp('^/url/(' + MBID.source + ')/?$', 'i'));
+    if (eu) return 'erels/url:' + eu[1].toLowerCase();
     // an entity's recordings → "erecs/<type>:<mbid>"
     const ec = u.origin === location.origin && u.pathname.match(new RegExp('^/(' + RECS_TYPES.join('|') + ')/(' + MBID.source + ')/recordings/?$', 'i'));
     if (ec) return 'erecs/' + ec[1].toLowerCase() + ':' + ec[2].toLowerCase();
