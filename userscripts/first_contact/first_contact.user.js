@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.17.210000
+// @version      2026.11.17.220000
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Amazon (CDs, vinyl and MP3 albums in its store), Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Internet Archive (audio items), Presto Music, RateYourMusic, Album of the Year.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -3645,6 +3645,7 @@ function injectStyle() {
 /* the checks, and Update and Add link only at the end of their row (majkinetor: Update less intrusive, not a row of its own) */
 #fc-check .fc-check-foot, #fc-root .fc-shelf-card .fc-check-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-top: 5px; }
 #fc-check .fc-badges, #fc-root .fc-shelf-card .fc-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+#fc-check .fc-ic-gap { width: 22px; height: 20px; }
 #fc-check .fc-ic, #fc-root .fc-shelf-card .fc-ic { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 20px; color: var(--mbu-ok); cursor: default; }
 #fc-check .fc-ic svg, #fc-root .fc-shelf-card .fc-ic svg { width: 14px; height: 14px; display: block; }
 #fc-check .fc-ic::after, #fc-root .fc-shelf-card .fc-ic::after { content: '✓'; position: absolute; right: -1px; bottom: -3px; font-size: 9px; font-weight: 700; line-height: 1; }
@@ -4301,13 +4302,22 @@ async function importCurrent() {
     let count = '', phase = `Reading ${provider.name}…`;
     const show = () => { if (label) label.textContent = `${phase}${count ? ' ' + count : ''} · ${Math.round((Date.now() - t0) / 1000)} s`; };
     show();
-    const ticker = setInterval(show, 1000);
+    let ticker = setInterval(show, 1000);
+    // #1062: while a panel asks, nothing is being done: the button rests, without the spinner and the seconds
+    const ask = async q => {
+        clearInterval(ticker);
+        if (go) go.removeAttribute('aria-busy');
+        if (label) label.textContent = 'Import to MusicBrainz';
+        try { return await q; } finally {
+            if (go) go.setAttribute('aria-busy', 'true');
+            ticker = setInterval(show, 1000);
+        }
+    };
     try {
         // #801: an album read as the page opened is taken as it is
         const raw = await readAlbum(provider, id, (n, total) => { count = `${n}/${total}`; show(); });
         if (raw.missing) {
-            count = ''; phase = 'Tracks missing'; show();
-            if (!(await askMissing(raw, provider, go))) { Log.info('import cancelled: tracks missing'); return; }
+            if (!(await ask(askMissing(raw, provider, go)))) { Log.info('import cancelled: tracks missing'); return; }
             Log.info('import anyway, with tracks missing');
         }
         const rel = finishedCopy(raw, provider);
@@ -4328,8 +4338,7 @@ async function importCurrent() {
             }
             showLight(result ? result.light : 'failed');
             if (result && result.releases.some(e => e.same || e.links.length)) {
-                count = ''; phase = 'In MusicBrainz?'; show();
-                if ((await askExisting(result, rel, provider, go)) !== 'import') { Log.info('import not done: MusicBrainz may have the album'); return; }
+                if ((await ask(askExisting(result, rel, provider, go))) !== 'import') { Log.info('import not done: MusicBrainz may have the album'); return; }
                 Log.info('import anyway, though MusicBrainz may have the album');
             }
         }
@@ -4905,6 +4914,7 @@ function checkIcon(name, format) {
     return '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">' + (FORMAT_ICONS[k] || FORMAT_ICONS.disc) + '</svg>';
 }
 // A release's badges in the panel: [name, agrees, tooltip] for each thing both the release and the album give
+const CHECK_ORDER = ['link', 'barcode', 'title', 'tracks', 'format', 'date'];
 function checkBadges(e, rel, provider) {
     const out = [];
     const relDate = rel.date && rel.date.year ? [rel.date.year, rel.date.month, rel.date.day].filter(Boolean).map((n, i) => (i ? String(n).padStart(2, '0') : n)).join('-') : '';
@@ -4933,9 +4943,11 @@ function askExisting(result, rel, provider, anchor) {
         const list = el('ul', 'fc-check-list');
         const done = v => { box.remove(); document.removeEventListener('keydown', key, true); resolve(v); };
         const key = e => { if (e.key === 'Escape') { e.stopPropagation(); done(null); } };
+        // the checks any of the releases shows, so each keeps its column across them
+        const slots = result.releases.length > 1 ? new Set(result.releases.flatMap(e => checkBadges(e, rel, provider).map(b => b[0]))) : null;
         for (const e of result.releases) {
             const li = el('li', e.same || e.links.length ? 'fc-same' : 'fc-other');
-            checkCard(li, e, rel, provider, () => done(null));
+            checkCard(li, e, rel, provider, () => done(null), slots);
             list.append(li);
         }
         const b = el('div', 'fc-warn-b');
@@ -4953,7 +4965,7 @@ function askExisting(result, rel, provider, anchor) {
 }
 // One release the check found, as the panel shows it: light and title, what MusicBrainz has, the checks, and
 // for this album Update this release and Add link only; done() runs after either. The panel and the shelf's card.
-function checkCard(li, e, rel, provider, done) {
+function checkCard(li, e, rel, provider, done, slots) {
     const el = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
     const dot = el('i', 'fc-light');
     dot.dataset.light = e.links.length ? 'linked' : !e.same ? 'other' : e.how.includes('barcode') ? 'barcode' : 'similar';
@@ -4966,7 +4978,13 @@ function checkCard(li, e, rel, provider, done) {
     li.append(line, el('div', 'fc-dim', `${meta}${!e.same && !e.links.length ? `${meta ? ' · ' : ''}another edition` : ''}`));
     // majkinetor: "badges for stuff that matches", as icons: what agrees with the album (✓), and what differs (≠)
     const badges = el('div', 'fc-badges');
-    for (const [name, ok, tip] of checkBadges(e, rel, provider)) {
+    const found = checkBadges(e, rel, provider);
+    // majkinetor: with two releases or more, each check keeps its column, so their icons line up to compare;
+    // a check a release has no data for leaves its slot empty
+    const order = slots ? CHECK_ORDER.filter(n => found.some(b => b[0] === n) || slots.has(n)) : null;
+    const row = order ? order.map(n => found.find(b => b[0] === n) || [n, null]) : found;
+    for (const [name, ok, tip] of row) {
+        if (ok == null) { badges.append(el('span', 'fc-ic-gap')); continue; }
         const bd = el('span', 'fc-ic' + (ok ? '' : ' fc-ic-no'));
         bd.dataset.name = name;
         bd.dataset.tip = tip;
