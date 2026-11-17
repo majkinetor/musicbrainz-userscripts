@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011024
+// @version      2026.11.18.011025
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4897,7 +4897,7 @@ function menuLayout(acts, fold = false) {
 }
 function menuRefresh() {
     document.querySelectorAll('#app .kicker .acts,#eh-pin .acts,#eh-relhd .acts').forEach(a => {
-        if (a.querySelector('[data-menu-key]')) menuLayout(a, !!a.closest('#eh-pin.on') && PIN_NARROW.matches);
+        if (a.querySelector('[data-menu-key]')) menuLayout(a, !!a.closest('#eh-pin') && PIN_NARROW.matches);
         else actsFit(a);
     });
 }
@@ -11596,7 +11596,7 @@ function secRail(app) {
 }
 // once the page's header scrolls away, a slim bar pinned to the top carries its cover, its title and its action row
 // (the very buttons, moved in and back, so their menus and the search keep working)
-let pinIo = null, pinRo = null, pinAlign = null;
+let pinIo = null, pinRo = null, pinAlign = null, pinSync = null;
 function pinMake(bar) {
     if (bar) return bar;
     bar = document.createElement('div'); bar.id = 'eh-pin'; bar.innerHTML = '<div class="kicker label"></div>'; document.body.appendChild(bar);
@@ -11607,11 +11607,12 @@ function pinBar(app) {
     let bar = document.getElementById('eh-pin');
     // the player's header controls (B) go back in once the bar is drawn again, however this returns
     queueMicrotask(plyPin);
+    pinSync = null;
     if (pinIo) { pinIo.disconnect(); pinIo = null; }
     if (pinRo) { pinRo.disconnect(); pinRo = null; }
     if (pinAlign) { removeEventListener('resize', pinAlign); pinAlign = null; }
     // a redraw leaves a shown bar shown, so it doesn't slide out and back in (the filter redraws on every letter)
-    const wasOn = !!bar && bar.classList.contains('on');
+    const wasOn = !!bar && (bar.classList.contains('on') || bar.classList.contains('eh-ply'));
     if (bar) bar.querySelector('.kicker').innerHTML = '';
     const acts = app.querySelector('.kicker .acts'), hero = !acts && app.querySelector('.hm-hero');
     if (hero) {
@@ -11653,14 +11654,22 @@ function pinBar(app) {
     if (wasOn) { k.appendChild(acts); ehDirty(home); }
     if (wasOn) pinFold(acts, true);
     let first = true;
+    // with the player in the bar, the bar shows at the top of the page too, and the action row is in it there as well (majkinetor)
+    const place = () => {
+        const inBar = bar.classList.contains('on') || bar.classList.contains('eh-ply');
+        if (inBar === (acts.parentElement === k)) return false;
+        if (inBar) k.appendChild(acts); else if (home.isConnected && home.nextSibling !== acts) home.after(acts);
+        ehDirty(home);
+        pinFold(acts, inBar);
+        return true;
+    };
+    pinSync = () => { if (place()) { pinH(); railPlace(); } };
     pinIo = new IntersectionObserver(([e]) => {
         const pin = !e.isIntersecting && e.boundingClientRect.top < 0;
         if (pin === bar.classList.contains('on') && !first) return;
         first = false;
         bar.classList.toggle('on', pin);
-        if (pin) { if (k.lastChild !== acts) k.appendChild(acts); } else if (home.isConnected && home.nextSibling !== acts) home.after(acts);
-        ehDirty(home);
-        pinFold(acts, pin);
+        place();
         // the section headers stick just under the bar (majkinetor)
         pinH();
         railPlace();
@@ -11689,8 +11698,8 @@ function pinFold(acts, pin) {
 // a narrow screen: the action row's links that don't fit go into More, the last first, so search, the star and home stay in view (majkinetor)
 // (a row wider than a phone made Firefox widen the whole page and zoom out, leaving an empty column on the right)
 function actsFit(acts) {
-    if (acts?.querySelector('[data-menu-key]')) { menuLayout(acts, !!acts.closest('#eh-pin.on') && PIN_NARROW.matches); return; }
-    if (!acts || !acts.isConnected || acts.closest('#eh-pin.on')) return;
+    if (acts?.querySelector('[data-menu-key]')) { menuLayout(acts, !!acts.closest('#eh-pin') && PIN_NARROW.matches); return; }
+    if (!acts || !acts.isConnected || acts.closest('#eh-pin')) return;
     for (const ph of [...acts.querySelectorAll('[data-fithome]')]) { const a = acts.querySelector('a.ab[data-fitidx="' + ph.dataset.fithome + '"]'); if (a) a.removeAttribute('data-fitidx'); ph.replaceWith(...(a ? [a] : [])); }
     const made = acts.querySelector(':scope>.eh-more[data-fitmade]'); if (made && !made.querySelector('.abm>*')) made.remove();
     const kick = acts.parentElement, wrap = acts.closest('#app') || document.documentElement, edge = () => { const r = wrap.getBoundingClientRect(); return Math.min(r.right - parseFloat(getComputedStyle(wrap).paddingRight || 0), innerWidth, screen.width || 1e9); };
@@ -11706,7 +11715,7 @@ function actsFit(acts) {
     }
 }
 { let t = 0; const refit = () => { clearTimeout(t); t = setTimeout(menuRefresh, 150); }; addEventListener('resize', refit); addEventListener('load', refit); document.fonts?.ready.then(refit); }
-PIN_NARROW.addEventListener('change', () => { const bar = document.getElementById('eh-pin'), acts = bar && bar.querySelector('.acts'); if (acts) pinFold(acts, bar.classList.contains('on')); });
+PIN_NARROW.addEventListener('change', () => { const bar = document.getElementById('eh-pin'), acts = bar && bar.querySelector('.acts'); if (acts) pinFold(acts, true); });
 // lights the section at the top of the window
 // and gives a stuck section header its background, MusicBrainz's releases page's too, which has no rail
 function railSpy() {
@@ -12173,6 +12182,7 @@ function plyPin() {
     html.classList.toggle('eh-ply-pin', !!id);
     if (id) { if (id.nextElementSibling !== plyCtl) id.after(plyCtl); }
     else if (t && plyCtl) { const root = plyRoot(); if (plyCtl.parentElement !== root) root.append(plyCtl); }
+    pinSync?.();
     if (pin) html.style.setProperty('--eh-pin-h', pin.classList.contains('on') || id ? pin.getBoundingClientRect().height + 'px' : '0px');
 }
 const plyB = (k, tip, extra = '', cls = '') => `<button type="button" class="ply-b${cls}" data-ply="${k}" aria-label="${esc(tip.split('\n')[0])}" data-tip="${esc(tip)}"${extra}>${SVG(PLY_I[k])}</button>`;
