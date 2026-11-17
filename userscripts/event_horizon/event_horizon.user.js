@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.17.200000
+// @version      2026.11.17.180000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -55,6 +55,7 @@
 // @connect      wikimedia.org
 // @connect      127.0.0.1
 // @connect      musicbrainz.org
+// @connect      api.listenbrainz.org
 // ==/UserScript==
 
 // Event Horizon takes over MusicBrainz's own release, release group, artist, label, recording, work, series and event pages, and an event's event-art pages, /release/<mbid>, /release-group/<mbid>, /artist/<mbid>, /label/<mbid>, /recording/<mbid> and /work/<mbid>
@@ -3360,7 +3361,13 @@ body.col-dragging,body.col-dragging *{cursor:grabbing!important;user-select:none
 .tl.striped .tr.alt{background:var(--hover)}
 .tl>.disc+.tr{border-top:1px solid var(--line)}
 .tl .tr:hover,.tl.striped .tr.alt:hover{background:color-mix(in srgb,var(--accent) 14%,var(--surface))}
-.tr .n{width:28px;flex:none;color:var(--muted);font-size:14px}
+.tr .n{width:28px;flex:none;color:var(--muted);font-size:14px;position:relative}
+.tr .trp{display:none;position:absolute;left:-6px;top:50%;transform:translateY(-50%);width:28px;height:28px;padding:0;border:0;border-radius:50%;align-items:center;justify-content:center;background:none;color:var(--accent);cursor:pointer}
+.tr .trp:hover{background:color-mix(in srgb,var(--accent) 16%,transparent)}
+.tr:hover .trp,.tr.ply-on .trp{display:inline-flex}
+.tr:hover .n .nn,.tr.ply-on .n .nn{visibility:hidden}
+.tr.ply-on{box-shadow:inset 3px 0 0 var(--accent)}
+.tr.ply-on .t{color:var(--accent)}
 .tr .ti{flex:1 1 0;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;column-gap:10px}
 .tr .ti a.t{font-weight:700;font-size:14px;color:var(--text)}
 .tr .ti .mk{display:inline-flex;align-items:center;gap:8px;align-self:center}
@@ -4290,6 +4297,11 @@ S.fxCur = ''; // the effect preset being worked on: Save writes a change into it
 S.colW = {}; // the widths dragged in a table, by section; the title takes what they leave, and none means the table fits itself
 S.colPick = {}; // the tables' column choice, by section: { order, off }; none is the usual table
 S.pending = false; // MusicBrainz's grey mark on what has edits open; takes one more request per page
+VIEW.push('player', 'playerPlace', 'playerLb', 'playerScrobble');
+S.player = true; // the play buttons on a release's tracks, and the player they start
+S.playerPlace = 'bar'; // where the player shows: 'bar' at the bottom, 'chip' at the top right
+S.playerLb = true; // the player's links to the track and the release in ListenBrainz
+S.playerScrobble = false; // what the player plays goes to ListenBrainz as listens, under the token kept apart in 'lbToken'
 // the page's width; --eh-wn is the same as a length (the screen's for Full), for the launchers' column
 const ehWidth = () => { const s = document.documentElement.style; s.setProperty('--eh-w', S.width ? S.width + 'px' : 'none'); s.setProperty('--eh-wn', S.width ? S.width + 'px' : '100vw'); };
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
@@ -5575,7 +5587,10 @@ function tracklist(r) {
     const va = !S.arAuto ? S.arCol : arCol.has(r.id) ? arCol.get(r.id) : vaAuto;
     const row = (t, i) => {
         const sub = !va && t.feat.length ? 'with ' + t.feat.join(', ') : '';
-        return `<div class="tr${i % 2 ? ' alt' : ''}" data-row="${esc(t.key)}" aria-expanded="${S.open.has(t.key)}"><span class="n mono">${esc(t.n)}</span>
+        const srcs = S.player ? plySources(t) : [];
+        const nb = srcs.length ? `<button type="button" class="trp" data-play="${esc(t.key)}" aria-label="Play ${esc(t.title)}" data-tip="Play from here\nRight-click: choose where from">${SVG(PLY_I.play)}</button>`
+            : S.player && S.playerLb ? `<a class="trp" href="https://listenbrainz.org/track/${t.rid}" target="_blank" rel="noopener" aria-label="${esc(t.title)} in ListenBrainz" data-tip="Nothing here to play it from\nClick: try it in ListenBrainz">${SVG(PLY_I.lb)}</a>` : '';
+        return `<div class="tr${i % 2 ? ' alt' : ''}${plyOn(r, t.key) ? ' ply-on' : ''}" data-row="${esc(t.key)}" aria-expanded="${S.open.has(t.key)}"><span class="n mono">${nb ? nb + '<span class="nn">' + esc(t.n) + '</span>' : esc(t.n)}</span>
             <div class="ti"><a class="t${longC(t.title)}"${longT(t.title)} href="${MB}/recording/${t.rid}">${esc(t.title)}</a>${marks(t)}${(t.genres || []).length + (t.tags || []).length ? `<span class="tg">${[...(t.genres || []).map(x => [x, '']), ...(t.tags || []).map(x => [x, ' tag'])].slice(0, 4).map(([x, c]) => `<a class="chip${c}" href="${MB}/tag/${encodeURIComponent(x.name)}" data-tip="${esc(x.name)}: ${x.count} vote${x.count === 1 ? '' : 's'}">${esc(x.name)}</a>`).join('')}</span>` : ''}${sub ? `<div class="sub">${esc(sub)}</div>` : ''}</div>${va ? `<span class="ar">${acHtml(t.ac)}</span>` : ''}
             <span class="is">${t.isrcs.length ? (t.isrcs.length <= 2 ? t.isrcs.map(isrcHtml).join('') : `<span class="isrow">${isrcHtml(t.isrcs[0])}<span class="popwrap"><button class="more" type="button" data-pop="is-${t.key}" aria-expanded="false" aria-label="${t.isrcs.length - 1} more ISRCs">+${t.isrcs.length - 1}</button><div class="pop" id="pop-is-${t.key}" hidden><div class="h label">ISRCs</div>${t.isrcs.slice(1).map(isrcHtml).join('')}</div></span></span>`) : ''}</span>
             <span class="lk">${trackLinks(t, ctx)}</span>
@@ -5590,7 +5605,9 @@ function tracklist(r) {
     const toggles = `<button class="tx" type="button" data-arcol="${esc(r.id)}" data-va="${va}" aria-pressed="${va}" data-tip="Each track's artist in a column${S.arAuto ? `\n${vaAuto ? 'On by itself' : 'Off by itself'} for this release` : ''}" aria-label="Artist">${TX_ICON.ar}<span class="txl">Artist</span></button>` + [['mk', 'Markers', 'Markers on tracks'], ['isrc', 'ISRCs', "Each track's ISRCs"], ['links', 'Platforms', 'Platform icons on tracks'], ['len', 'Lengths', 'Track lengths'], ['tags', 'Tags', "Each recording's genres and tags"]].filter(([k]) => k !== 'tags' || tracks.some(t => t.genres.length + t.tags.length)).map(([k, n, tip]) => `<button class="tx" type="button" data-col="${k}" aria-pressed="${S.cols[k] !== false}" aria-label="${n}" data-tip="${tip}">${TX_ICON[k]}<span class="txl">${n}</span></button>`).join('');
     rowKeys = tracks.map(t => t.key);
     const plB = `<button class="tx plcfg" type="button" data-plcfg="1" aria-label="Tracklist settings" data-tip="Tracklist settings\nTrack colors and platform icons">${MBU_CFG_ICON}</button>`;
-    const tools = `<span class="label" style="margin-right:2px">Show</span>${toggles}${plB}`;
+    const playable = S.player && tracks.some(t => plySources(t).length);
+    const playB = playable ? `<button class="tx" type="button" data-playall="1" aria-label="Play all" data-tip="Play the release\nTrack after track, from its streaming links">${SVG(PLY_I.play)}<span class="txl">Play</span></button>` : '';
+    const tools = `${playB}<span class="label" style="margin-right:2px">Show</span>${toggles}${plB}`;
     const isrcs = [...new Set(tracks.flatMap(t => t.isrcs))];
     const body = `<div class="tl ${cls}${S.plHover ? ' pl-hov' : ''}${S.trackStripe ? ' striped' : ''}">${rows}
         <div class="tl-foot"><span>${tracks.length} recordings</span><span>${withIsrc === tracks.length ? 'all with ISRCs' : withIsrc + ' with ISRCs'}</span><span>${credits} credits</span><span>${unionMap.size} platforms</span>${isrcs.length ? copyB(isrcs.join('\n'), '', 'Copy ISRCs') : ''}</div></div>`;
@@ -11690,6 +11707,219 @@ function redrawTracks() {
     const links = [...fresh.querySelectorAll('.tr .lk')], width = Math.max(0, ...links.map(e => e.offsetWidth));
     if (width) for (const e of links) e.style.minWidth = width + 'px';
 }
+// ---- the player: a release's tracks played from their streaming links, in a bar at the bottom or a chip at the top right
+// it lives on <html>, outside both bodies, so it plays on through navigation and Event Horizon turned off
+const PLY_SRC = ['youtube', 'ytmusic', 'spotify', 'deezer', 'apple', 'soundcloud', 'bandcamp'];
+const PLY_I = {
+    play: '<path d="M7 5v14l12-7z" fill="currentColor" stroke="none"/>',
+    pause: '<path d="M8 5v14M16 5v14"/>',
+    prev: '<path d="M18 6v12L9 12z" fill="currentColor" stroke="none"/><path d="M6 6v12"/>',
+    next: '<path d="M6 6v12l9-6z" fill="currentColor" stroke="none"/><path d="M18 6v12"/>',
+    video: '<rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/>',
+    lb: '<path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/>',
+    rel: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/>',
+    x: '<path d="M5 5l14 14M19 5L5 19"/>',
+};
+const ply = { q: [], i: -1, src: '', pref: '', paused: false, video: true, yt: false };
+// a link's player: the widget's address and height, or a page to open (Bandcamp has no track widget to point at)
+function plyEmbed(p) {
+    const u = p.urls[0].url;
+    try {
+        const url = new URL(u);
+        if (p.key === 'youtube' || p.key === 'ytmusic') {
+            const id = url.searchParams.get('v') || (url.hostname === 'youtu.be' ? url.pathname.slice(1) : (url.pathname.match(/\/(?:embed|shorts|live)\/([\w-]{11})/) || [])[1]);
+            return id && { yt: true, url: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`, h: 180 };
+        }
+        if (p.key === 'spotify') { const m = url.pathname.match(/\/(track|album)\/(\w+)/); return m && { url: `https://open.spotify.com/embed/${m[1]}/${m[2]}?autoplay=1`, h: 80 }; }
+        if (p.key === 'deezer') { const m = url.pathname.match(/\/(track|album)\/(\d+)/); return m && { url: `https://widget.deezer.com/widget/auto/${m[1]}/${m[2]}?autoplay=true`, h: 92 }; }
+        if (p.key === 'apple') { url.hostname = 'embed.music.apple.com'; return { url: url.href, h: 150 }; }
+        if (p.key === 'soundcloud') return { url: `https://w.soundcloud.com/player/?url=${encodeURIComponent(u)}&auto_play=true&visual=false`, h: 120 };
+        if (p.key === 'bandcamp') return { page: u };
+    } catch (e) {}
+    return null;
+}
+// a track's sources, in the user's platform order
+const plySources = t => plSorted((t.links || []).filter(p => PLY_SRC.includes(p.key) && plyEmbed(p)));
+// the release's tracks as a queue; the ones with nothing to play are left out
+function plyQueue(r) {
+    if (!r || !r.media) return [];
+    const relAc = acText(r.ac || []);
+    return r.media.flatMap((m, mi) => (m.tracks || []).map(t => ({ key: (mi + 1) + '-' + t.n, n: t.n, title: t.title, rid: t.rid, artist: t.ac ? acText(t.ac) : relAc, len: t.lenMs, srcs: plySources(t), rel: r.id, relTitle: r.title, front: r.front })))
+        .filter(t => t.srcs.length);
+}
+const plyPick = (t, want) => t.srcs.find(p => p.key === want) || t.srcs.find(p => p.key === ply.pref) || t.srcs.find(p => p.key !== 'bandcamp') || t.srcs[0];
+function plyStart(r, key, want) {
+    if (!S.player) return;
+    ply.q = plyQueue(r);
+    const i = key ? ply.q.findIndex(t => t.key === key) : 0;
+    if (i < 0) { toast('Nothing to play this track from'); return; }
+    if (want) ply.pref = want;
+    LOG.info('player: start', r.id, key || 'all', ply.q.length + ' playable', want || '');
+    plyGo(i, want);
+}
+function plyGo(i, want) {
+    const t = ply.q[i]; if (!t) return;
+    const p = plyPick(t, want), e = plyEmbed(p);
+    if (e.page) { LOG.info('player: opens', p.key, e.page); window.open(e.page, '_blank', 'noopener'); toast(p.name + ' opens in a new tab'); if (ply.i < 0) return; }
+    ply.i = i; ply.src = p.key; ply.paused = false; ply.yt = !!e.yt;
+    LOG.info('player: plays', t.key, t.title, 'from', p.key);
+    if (!e.page) { t.src = p.key; t.url = p.urls[0].url; plyDock(e); plyClock(t); }
+    plyDraw();
+}
+const plyStep = d => { const i = ply.i + d; if (i >= 0 && i < ply.q.length) plyGo(i); };
+function plyClose() {
+    LOG.info('player: closed');
+    ply.q = []; ply.i = -1; ply.src = '';
+    document.getElementById('eh-ply')?.remove();
+    document.documentElement.classList.remove('eh-ply-bar');
+    plyMark();
+}
+function plyDock(e) {
+    const root = plyRoot(), dock = root.querySelector('.ply-dock');
+    dock.innerHTML = `<iframe src="${esc(e.url)}" height="${e.h}" allow="autoplay; encrypted-media; clipboard-write; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" title="Player"></iframe>`;
+    if (e.yt) dock.querySelector('iframe').addEventListener('load', ev => { try { ev.target.contentWindow.postMessage('{"event":"listening","id":1,"channel":"widget"}', '*'); } catch (x) {} });
+}
+const plyYt = func => { const f = document.querySelector('#eh-ply .ply-dock iframe'); if (f) f.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args: [] }), '*'); };
+// YouTube tells its state: 0 ended (on to the next track), 1 playing, 2 paused
+window.addEventListener('message', ev => {
+    if (!/^https:\/\/www\.youtube(-nocookie)?\.com$/.test(ev.origin) || ply.i < 0 || !ply.yt) return;
+    let m; try { m = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data; } catch (e) { return; }
+    const st = m && (m.event === 'onStateChange' ? m.info : m.event === 'infoDelivery' && m.info ? m.info.playerState : undefined);
+    if (st == null) return;
+    if (st === 0) { LOG.info('player: track ended'); if (ply.i + 1 < ply.q.length) plyGo(ply.i + 1); else { ply.paused = true; plyDraw(); } }
+    else if (st === 1 || st === 2) { const p = st === 2; if (p !== ply.paused) { ply.paused = p; plyDraw(); } }
+});
+function plyRoot() {
+    let root = document.getElementById('eh-ply');
+    if (!root) {
+        if (!document.getElementById('eh-ply-css')) { const s = document.createElement('style'); s.id = 'eh-ply-css'; s.textContent = PLY_CSS; document.documentElement.append(s); }
+        root = document.createElement('div'); root.id = 'eh-ply'; root.className = 'mbu-ui';
+        root.innerHTML = '<div class="ply-dock"></div><div class="ply-ctl"></div>';
+        root.addEventListener('click', plyClick);
+        document.documentElement.append(root);
+    }
+    return root;
+}
+const plyB = (k, tip, extra = '') => `<button type="button" class="ply-b" data-ply="${k}" aria-label="${esc(tip.split('\n')[0])}" data-tip="${esc(tip)}"${extra}>${SVG(PLY_I[k])}</button>`;
+function plyDraw() {
+    if (!S.player && ply.i >= 0) { plyClose(); return; }
+    const t = ply.q[ply.i]; if (!t) return;
+    const root = plyRoot(), bar = S.playerPlace !== 'chip';
+    root.className = 'mbu-ui ' + (bar ? 'ply-bar' : 'ply-chip') + (ply.video || !ply.yt ? '' : ' ply-novid');
+    document.documentElement.classList.toggle('eh-ply-bar', bar);
+    const p = t.srcs.find(x => x.key === ply.src) || t.srcs[0];
+    const lb = S.playerLb ? `<a class="ply-b${t.sent ? ' ply-sent' : ''}" href="https://listenbrainz.org/track/${t.rid}" target="_blank" rel="noopener" data-tip="This track in ListenBrainz${t.sent ? '\nListen sent' : ''}" aria-label="Track in ListenBrainz">${SVG(PLY_I.lb)}</a><a class="ply-b" href="https://listenbrainz.org/release/${t.rel}" target="_blank" rel="noopener" data-tip="This release in ListenBrainz" aria-label="Release in ListenBrainz">${SVG(PLY_I.rel)}</a>` : '';
+    const src = t.srcs.length > 1 ? `<button type="button" class="ply-b ply-src" data-ply="src" aria-label="Source: ${esc(p.name)}" data-tip="Playing from ${esc(p.name)}\nClick: another source">${icon(p, 18)}</button>` : `<span class="ply-b ply-src" data-tip="Playing from ${esc(p.name)}">${icon(p, 18)}</span>`;
+    root.querySelector('.ply-ctl').innerHTML = (bar && t.front ? `<img class="ply-cov" src="https://coverartarchive.org/release/${t.rel}/front-250" alt="" loading="lazy">` : '')
+        + `<a class="ply-t" href="${MB}/recording/${t.rid}" data-tip="${esc(t.title + ' — ' + t.artist + '\n' + t.relTitle)}"><b>${esc(t.title)}</b><span> — ${esc(t.artist)}</span></a>`
+        + `<span class="ply-g">${plyB('prev', 'Previous track', ply.i > 0 ? '' : ' disabled')}${ply.yt ? plyB(ply.paused ? 'play' : 'pause', ply.paused ? 'Play' : 'Pause') : ''}${plyB('next', 'Next track', ply.i + 1 < ply.q.length ? '' : ' disabled')}</span>`
+        + `<span class="ply-g">${src}${ply.yt ? plyB('video', ply.video ? 'Hide the video' : 'Show the video', ` aria-pressed="${ply.video}"`) : ''}${lb}`
+        + `<button type="button" class="mbu-ov-x" data-ply="x" aria-label="Close" data-tip="Close the player"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button></span>`;
+    plyMark();
+}
+// the playing track's row in the tracklist
+function plyMark() {
+    const t = ply.q[ply.i];
+    document.querySelectorAll('.tr.ply-on').forEach(r => { if (!t || r.dataset.row !== t.key || !data || !data.rel || data.rel.id !== t.rel) r.classList.remove('ply-on'); });
+    if (t && data && data.rel && data.rel.id === t.rel) document.querySelector(`.tr[data-row="${window.CSS.escape(t.key)}"]`)?.classList.add('ply-on');
+}
+function plyClick(ev) {
+    const b = ev.target.closest('[data-ply]'); if (!b || b.disabled) return;
+    const k = b.dataset.ply;
+    if (k === 'prev') plyStep(-1);
+    else if (k === 'next') plyStep(1);
+    else if (k === 'play' || k === 'pause') { plyYt(k === 'play' ? 'playVideo' : 'pauseVideo'); ply.paused = k === 'pause'; plyDraw(); }
+    else if (k === 'video') { ply.video = !ply.video; plyDraw(); }
+    else if (k === 'x') plyClose();
+    else if (k === 'src') plySrcMenu(b, ply.q[ply.i], key => { ply.pref = key; plyGo(ply.i, key); });
+}
+// a menu of a track's sources, under or above the button that opened it
+function plySrcMenu(btn, t, pick) {
+    document.getElementById('eh-ply-src')?.remove();
+    if (!t) return;
+    const m = document.createElement('div'); m.id = 'eh-ply-src'; m.className = 'mbu-ui'; m.setAttribute('role', 'menu');
+    m.innerHTML = `<div class="h">Play from</div>` + t.srcs.map(p => `<button type="button" role="menuitem" data-k="${p.key}"${ply.q[ply.i] === t && p.key === ply.src ? ' aria-current="true"' : ''}>${icon(p, 18)}<span>${esc(p.name)}</span>${p.key === 'bandcamp' ? '<span class="r">new tab</span>' : ''}</button>`).join('');
+    document.documentElement.append(m);
+    const r = btn.getBoundingClientRect(), h = m.offsetHeight, w = m.offsetWidth;
+    m.style.left = Math.max(8, Math.min(r.left, innerWidth - w - 8)) + 'px';
+    m.style.top = (r.bottom + h + 6 < innerHeight ? r.bottom + 4 : r.top - h - 4) + 'px';
+    const off = ev => { if (!m.contains(ev.target)) { m.remove(); document.removeEventListener('pointerdown', off, true); } };
+    setTimeout(() => document.addEventListener('pointerdown', off, true));
+    m.addEventListener('click', ev => { const b = ev.target.closest('[data-k]'); if (!b) return; m.remove(); document.removeEventListener('pointerdown', off, true); pick(b.dataset.k); });
+}
+const PLY_CSS = `
+#eh-ply{position:fixed;z-index:9995;font:14px/1.3 system-ui,sans-serif;color:var(--text,#222)}
+#eh-ply .ply-ctl{display:flex;align-items:center;gap:10px;min-width:0}
+#eh-ply .ply-g{display:inline-flex;align-items:center;gap:2px;flex:none}
+#eh-ply .ply-b{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:0;border-radius:6px;background:none;color:inherit;cursor:pointer;text-decoration:none}
+#eh-ply .ply-b:hover:not([disabled]){background:color-mix(in srgb,currentColor 10%,transparent)}
+#eh-ply .ply-b[disabled]{opacity:.35;cursor:default}
+#eh-ply .ply-b[aria-pressed="true"]{color:var(--accent,#ba478f)}
+#eh-ply span.ply-src{cursor:default}
+#eh-ply .ply-sent{color:var(--accent,#ba478f)}
+#eh-ply .ply-src img,#eh-ply .ply-src svg{width:18px;height:18px}
+#eh-ply .ply-t{display:block;flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:inherit;text-decoration:none}
+#eh-ply .ply-t span{color:var(--muted,#777)}
+#eh-ply .ply-cov{width:40px;height:40px;border-radius:4px;object-fit:cover;flex:none}
+#eh-ply .mbu-ov-x{position:static;margin-left:2px}
+#eh-ply .ply-dock{position:fixed;right:16px;width:360px;max-width:calc(100vw - 32px);background:var(--surface,#fff);border:1px solid var(--line,#ddd);border-radius:8px;overflow:hidden}
+#eh-ply .ply-dock:empty{display:none}
+#eh-ply .ply-dock iframe{display:block;width:100%;border:0}
+#eh-ply.ply-novid .ply-dock{width:1px;height:1px;opacity:0;pointer-events:none;border:0}
+#eh-ply.ply-bar .ply-ctl{position:fixed;left:0;right:0;bottom:0;height:56px;padding:0 72px 0 16px;box-sizing:border-box;background:var(--surface,#fff);border-top:1px solid var(--line,#ddd)}
+#eh-ply.ply-bar .ply-dock{bottom:64px}
+html.eh-ply-bar body{padding-bottom:56px}
+#eh-ply.ply-chip .ply-ctl{position:fixed;right:16px;top:calc(var(--eh-pin-h,0px) + 84px);max-width:min(560px,calc(100vw - 32px));height:40px;padding:0 4px 0 14px;box-sizing:border-box;gap:6px;background:var(--surface,#fff);border:1px solid var(--line,#ddd);border-radius:999px;transition:top .18s}
+#eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 132px);transition:top .18s}
+#eh-ply.ply-chip .ply-b{width:28px;height:28px}
+button.tx[data-playall]{display:inline-flex;align-items:center;gap:4px;color:var(--accent);margin-right:6px;padding-right:12px;border-right:1px solid var(--line);border-bottom:0}
+button.tx[data-playall]>svg{width:14px;height:14px;flex:none}
+button.tx[data-playall]:hover{color:var(--text)}
+#eh-ply-src{position:fixed;z-index:9996;min-width:180px;padding:4px;background:var(--surface,#fff);color:var(--text,#222);border:1px solid var(--line,#ddd);border-radius:8px;font:14px system-ui,sans-serif}
+#eh-ply-src .h{padding:4px 8px;color:var(--muted,#777);font-size:12px}
+#eh-ply-src button{display:flex;align-items:center;gap:8px;width:100%;padding:6px 8px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+#eh-ply-src button:hover,#eh-ply-src button[aria-current]{background:color-mix(in srgb,currentColor 10%,transparent)}
+#eh-ply-src .r{margin-left:auto;color:var(--muted,#777);font-size:12px}
+#eh-ply-src img,#eh-ply-src svg{width:18px;height:18px}
+@media(max-width:600px){#eh-ply.ply-bar .ply-cov{display:none}#eh-ply .ply-dock{right:8px;max-width:calc(100vw - 16px)}#eh-ply.ply-chip .ply-ctl{right:8px;left:8px;max-width:none}}
+`;
+// is this release's track the one playing
+const plyOn = (r, key) => { const t = ply.q[ply.i]; return !!t && t.rel === r.id && t.key === key; };
+// ---- listens: what the player plays goes to ListenBrainz under the user's token, as ListenBrainz counts a listen
+// (half the track or four minutes, whichever comes first); YouTube's pauses stop the clock, the other widgets don't say
+const lbToken = v => { if (v === undefined) { try { return GM_getValue('lbToken', '') || ''; } catch (e) { return ''; } } try { GM_setValue('lbToken', v); } catch (e) {} return v; };
+const PLY_SVC = { youtube: 'youtube.com', ytmusic: 'music.youtube.com', spotify: 'spotify.com', deezer: 'deezer.com', apple: 'music.apple.com', soundcloud: 'soundcloud.com' };
+const lbApi = (path, body, token = lbToken()) => new Promise(ok => GM_xmlhttpRequest({
+    method: body ? 'POST' : 'GET', url: 'https://api.listenbrainz.org/1/' + path, timeout: 15000,
+    headers: { Authorization: 'Token ' + token, ...(body ? { 'Content-Type': 'application/json' } : {}) }, data: body ? JSON.stringify(body) : undefined,
+    onload: r => { let j = null; try { j = JSON.parse(r.responseText); } catch (e) {} ok({ status: r.status, j }); },
+    onerror: () => ok({ status: 0 }), ontimeout: () => ok({ status: 0 }),
+}));
+function lbListen(t, type, at) {
+    if (!S.playerScrobble || !lbToken()) return;
+    const meta = { artist_name: t.artist, track_name: t.title, release_name: t.relTitle, additional_info: { recording_mbid: t.rid, release_mbid: t.rel, duration_ms: t.len || undefined, media_player: 'Event Horizon', submission_client: 'Event Horizon', submission_client_version: VERSION, music_service: PLY_SVC[t.src], origin_url: t.url } };
+    lbApi('submit-listens', { listen_type: type, payload: [type === 'single' ? { listened_at: at, track_metadata: meta } : { track_metadata: meta }] }).then(r => {
+        if (r.status === 200) { LOG.info('player: ListenBrainz ' + (type === 'single' ? 'listen' : 'now playing'), t.title); if (type === 'single') { t.sent = true; plyDraw(); } }
+        else { LOG.warn('player: ListenBrainz said ' + r.status, r.j && r.j.error || ''); if (type === 'single' && r.status === 401) toast('ListenBrainz refused the token: check it in the settings'); }
+    });
+}
+// a track's clock starts with it; a tick a second counts the time it plays
+function plyClock(t) {
+    t.sent = false; t.at = Math.floor(Date.now() / 1000); t.heard = 0;
+    lbListen(t, 'playing_now');
+}
+setInterval(() => {
+    const t = ply.q[ply.i]; if (!t || t.sent || ply.paused || !t.at || !S.playerScrobble) return;
+    t.heard += 1000;
+    if (t.heard >= Math.min(t.len ? t.len / 2 : 240000, 240000)) { t.sent = true; lbListen(t, 'single', t.at); }
+}, 1000);
+// a track's play button, right-clicked: where to play it from
+document.addEventListener('contextmenu', ev => {
+    const b = ehOn && ev.target.closest && ev.target.closest('button[data-play]'); if (!b || !data || !data.rel) return;
+    ev.preventDefault();
+    const key = b.dataset.play, t = plyQueue(data.rel).find(x => x.key === key);
+    if (t) plySrcMenu(b, t, k => plyStart(data.rel, key, k));
+});
 function onClick(ev) {
     if (!ehOn) return;
     // a track's recording and work marks copy on a plain click; Ctrl or the middle button still opens them
@@ -11715,6 +11945,8 @@ function onClick(ev) {
     if (!b) return;
     const d = b.dataset;
     let keep;
+    if (d.play) { plyStart(data.rel, d.play); return; }
+    if (d.playall) { plyStart(data.rel); return; }
     if ('srch' in d) { const fm = b.form; if (fm.classList.toggle('open')) fm.query.focus(); return; }
     if (d.collchange) { collectionChange(d.collkey, d.collchange); return; }
     if (d.collrefresh) { collectionLoad(d.collrefresh, true); return; }
@@ -14086,6 +14318,12 @@ function cfgBody() {
         general: '<div class="m-sec">Page</div>'
             + row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen')
             + ckRow('pending', 'Show pending changes', 'Mark what has edits open, as MusicBrainz does\nTakes one extra MusicBrainz request per page, sent last')
+            + '<div class="m-sec">Player</div>'
+            + ckRow('player', 'Player', 'A play button on each track of a release that has it on a streaming site\nPlays the release from there, track after track')
+            + row('Player place', [['bar', 'Bottom bar'], ['chip', 'Header chip']].map(([v, l]) => chip('playerPlace', v, S.playerPlace === v, l)).join(''), 'Where the player shows')
+            + ckRow('playerLb', 'Open in ListenBrainz', 'Links in the player to the track and the release in ListenBrainz')
+            + ckRow('playerScrobble', 'Send listens to ListenBrainz', 'What the player plays goes to your ListenBrainz listens\nNeeds your token, below')
+            + row('ListenBrainz token', `<span class="fx-combo"><input type="password" data-lbtok autocomplete="off" spellcheck="false" placeholder="Your user token" aria-label="ListenBrainz token" value="${esc(lbToken())}"></span>`, 'Your user token, from listenbrainz.org/settings')
             + '<div class="m-sec">Keyboard</div>'
             + `<div class="keys">${ckRow('keysOn', 'Keyboard shortcuts', 'Single keys open the page\'s edit, relationships, history and more\nCtrl+/ lists them\nOn MusicBrainz\'s pages and in Event Horizon alike')}<button type="button" class="btn" data-keys-open>Change keys…</button></div>`,
         menu: menuPane(),
@@ -14361,7 +14599,8 @@ function cfgWire(panel, b, body) {
             else if (g === 'factOff') { const [kd, fk] = k.split(':'); S.factOff = { ...S.factOff, [kd]: toggle(S.factOff[kd] || [], fk) }; }
             else if (g === 'extra') S.extras = toggle(S.extras, k);
             else if (g === 'prov') { S.prov = toggle(S.prov, k); plFollow(); }
-            else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'arAuto' || g === 'menuTitles' || g === 'keysOn' || g === 'cfgFade') S[g] = !S[g];
+            else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'arAuto' || g === 'menuTitles' || g === 'keysOn' || g === 'cfgFade' || g === 'player' || g === 'playerLb' || g === 'playerScrobble') S[g] = !S[g];
+            else if (g === 'playerPlace') S.playerPlace = k;
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
             else if (g === 'bg') { S.bg = k; bgApply(); }
@@ -14387,7 +14626,18 @@ function cfgWire(panel, b, body) {
         }
         save();
         redo();
+        plyDraw();
         if (ehOn) { const sy = scrollY; render(); scrollTo(0, sy); }
+    });
+    // the ListenBrainz token is kept as it's typed, then checked with ListenBrainz
+    panel.addEventListener('change', ev => {
+        const inp = ev.target.closest && ev.target.closest('[data-lbtok]'); if (!inp) return;
+        const v = lbToken(inp.value.trim());
+        if (!v) { LOG.info('player: ListenBrainz token cleared'); return; }
+        lbApi('validate-token', null, v).then(r => {
+            if (r.status === 200 && r.j && r.j.valid) { LOG.info('player: ListenBrainz token of ' + r.j.user_name); toast('ListenBrainz token of ' + r.j.user_name); }
+            else { LOG.warn('player: ListenBrainz token check said ' + r.status, r.j && r.j.message || ''); toast(r.status ? 'ListenBrainz doesn\'t know this token' : 'ListenBrainz didn\'t answer'); }
+        });
     });
 }
 // the open artist's or label's pictures follow a new order: all of them stay cached, the order picks and sorts

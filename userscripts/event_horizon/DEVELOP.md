@@ -124,6 +124,15 @@ ISRC Scout sets the flag for either new ISRCs or links, so `0,7` peeks. Platform
 
 A dock entry whose script didn't start on the loaded page isn't there at all. Platform Check now starts everywhere it may be needed and builds its panel in a hidden host (`#mb-pc-eh-host`) until the dock opens it.
 
+## Player
+
+The player puts each site's own embed in an iframe: `youtube-nocookie.com/embed`, `open.spotify.com/embed`, `widget.deezer.com`, `embed.music.apple.com` and `w.soundcloud.com/player`. Bandcamp has no embed by track URL, so it opens in a tab.
+
+- **Moving on**: only YouTube says what it does. Event Horizon subscribes with `postMessage` (`listening`), goes to the next track on state 0 (ended), and reads pause and play from states 2 and 1. The other widgets don't say, so the player moves on only by its buttons.
+- **The queue** is the release's tracks with something to play, in the order of the platforms in the settings. A source chosen from the right-click menu stays preferred for the next tracks.
+- **Listens**: `POST api.listenbrainz.org/1/submit-listens` with `Authorization: Token …`. `playing_now` goes when a track starts. `single` goes when the track has played half its length or 4 minutes, whichever is shorter. A clock ticking once a second counts the time, and it stops while YouTube is paused; the other widgets' pauses still count. The listen carries `recording_mbid`, `release_mbid`, `duration_ms`, `music_service`, `origin_url` and `submission_client`.
+- **The token** is kept in GM storage under `lbToken`, apart from the settings. It is checked with `validate-token` when it changes.
+
 ## Network usage
 
 All scripts share one gate for MusicBrainz, across tabs: about one ws/2 request a second, and everyone holds when MusicBrainz asks for a wait. Event Horizon adds these rules:
