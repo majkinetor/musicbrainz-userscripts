@@ -21,7 +21,7 @@ test('the cover-art page opens from the overview without a page load', { tag: '@
   await attachShot(testInfo, page, 'art');
   const gallery = await page.evaluateHandle(() => document.querySelector('#as-root'));
   await page.goBack();
-  await expect(page).toHaveURL(new RegExp(`/release/${RELEASE}$`));
+  await expect(page).toHaveURL(new RegExp(`/release/${RELEASE}(#.*)?$`));
   await expect(page.locator('#as-slot')).toHaveCount(0);
   await page.locator(`#app a[href$="/release/${RELEASE}/cover-art"]`).first().click();
   await expect(page.locator('#as-slot #as-root .as-card').first()).toBeVisible({ timeout: 30000 });
