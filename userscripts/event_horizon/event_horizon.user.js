@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011025
+// @version      2026.11.18.011026
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11801,6 +11801,7 @@ const PLY_I = {
     more: '<circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"/>',
     rel: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/>',
     x: '<path d="M5 5l14 14M19 5L5 19"/>',
+    love: '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
     win: '<rect x="3" y="6" width="13" height="13" rx="1.5"/><path d="M13 3h8v8M21 3l-8 8"/>',
     back: '<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>',
     vol: '<path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor" stroke="none"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/>',
@@ -12374,15 +12375,18 @@ function plyLbMenu(btn) {
     const parts = [`<div class="hd">Playing from</div><div class="ply-ss">${t.srcs.map(p => `<button type="button" class="ss" role="menuitem" data-k="${p.key}" data-tip="${esc(p.name)}&#10;Right-click: open on ${esc(p.name)}"${p.key === ply.src ? ' aria-current="true"' : ''}>${icon(p, 20)}<span>${esc(p.name.replace(/ Music$/, ''))}</span></button>`).join('')}</div>`];
     if (S.playerLb || S.playerScrobble) parts.push(`<div class="hd">${plyLogo(14)}<span>ListenBrainz</span></div>`
         + (S.playerLb ? it(`https://listenbrainz.org/track/${t.rid}`, 'note', 'This track') + (t.rel ? it(`https://listenbrainz.org/release/${t.rel}`, 'rel', 'This release') : '') : '')
+        + (lbToken() && t.rid ? `<button type="button" class="it ply-love${t.loved ? ' on' : ''}" role="menuitem" data-m="love">${SVG(PLY_I.love)}<span>${t.loved ? 'Loved · click to unlove' : 'Love this track'}</span></button>` : '')
         + (st ? `<hr><div class="st">${st}</div>` : '')
         + (S.playerLb ? it('https://listenbrainz.org/my/listens/', 'ext', 'Your listens') : ''));
     parts.push((ply.yt ? `<button type="button" class="it" role="menuitem" data-m="video">${SVG(PLY_I.video)}<span>${S.playerVideo ? 'Hide the video' : 'Show the video'}</span></button>` : '')
         + (PLY_WINDOW || plyRemote ? `<button type="button" class="it" role="menuitem" data-m="tab">${SVG(PLY_I.back)}<span>${PLY_WINDOW ? 'Back to tab' : 'Back to this tab'}</span></button>`
             : PLY_BUS ? `<button type="button" class="it" role="menuitem" data-m="win">${SVG(PLY_I.win)}<span>Open in window</span></button>` : '')
         + `<button type="button" class="it" role="menuitem" data-m="x" style="color:var(--mbu-bad,#c2413b)">${SVG(PLY_I.x)}<span>Stop and close</span></button>`);
-    plyMenu(btn, parts.join('<hr>'), v => { if (v.k) plySrc(v.k); else if (v.m === 'video') plyVideo(); else if (v.m === 'win') plyToWindow(); else if (v.m === 'tab') { if (PLY_WINDOW) plyToTab(); else plyControl('to-tab', PLY_ID); } else if (v.m === 'x') plyClose(); });
+    if (lbToken() && t.rid && t.loved === undefined) lbLoved(t);
+    plyMenu(btn, parts.join('<hr>'), v => { if (v.k) plySrc(v.k); else if (v.m === 'love') lbLove(t); else if (v.m === 'video') plyVideo(); else if (v.m === 'win') plyToWindow(); else if (v.m === 'tab') { if (PLY_WINDOW) plyToTab(); else plyControl('to-tab', PLY_ID); } else if (v.m === 'x') plyClose(); });
 }
 const PLY_CSS = `
+.ply-menu .ply-love.on svg{fill:var(--mbu-bad,#c2413b);stroke:var(--mbu-bad,#c2413b)}
 #eh-ply{position:fixed;z-index:9995;font:14px/1.3 system-ui,sans-serif;color:var(--text,#222)}
 .ply-ctl{text-transform:none;letter-spacing:normal;font-weight:normal;min-width:0}
 .ply-ctl .ply-g{display:inline-flex;align-items:center;gap:2px;flex:none}
@@ -12511,6 +12515,34 @@ const lbApi = (path, body, token = lbToken()) => new Promise(ok => GM_xmlhttpReq
     onload: r => { let j = null; try { j = JSON.parse(r.responseText); } catch (e) {} ok({ status: r.status, j }); },
     onerror: () => ok({ status: 0 }), ontimeout: () => ok({ status: 0 }),
 }));
+// the token's user, which reading a track's feedback needs: asked of ListenBrainz once per token, then kept
+async function lbUser() {
+    const tok = lbToken(); if (!tok) return '';
+    let c = null; try { c = GM_getValue('lbUser', null); } catch (e) {}
+    if (c && c.tok === tok && c.name) return c.name;
+    const r = await lbApi('validate-token', null, tok);
+    const name = r.status === 200 && r.j && r.j.valid ? r.j.user_name : '';
+    if (name) try { GM_setValue('lbUser', { tok, name }); } catch (e) {}
+    return name;
+}
+// whether the user loves a track, read when the player's menu first opens on it; the open menu follows the answer
+async function lbLoved(t) {
+    t.loved = null;
+    const u = await lbUser(); if (!u) { t.loved = undefined; return; }
+    const r = await lbApi('feedback/user/' + encodeURIComponent(u) + '/get-feedback-for-recordings?recording_mbids=' + t.rid);
+    if (r.status !== 200 || !r.j) { t.loved = undefined; return; }
+    t.loved = (r.j.feedback || []).some(x => x.recording_mbid === t.rid && x.score === 1);
+    const b = document.querySelector('#eh-ply-menu .ply-love');
+    if (b && ply.q[ply.i] === t) { b.classList.toggle('on', t.loved); b.querySelector('span').textContent = t.loved ? 'Loved · click to unlove' : 'Love this track'; }
+}
+// love the track on ListenBrainz, or take the love back
+function lbLove(t) {
+    const on = !t.loved;
+    lbApi('feedback/recording-feedback', { recording_mbid: t.rid, score: on ? 1 : 0 }).then(r => {
+        if (r.status === 200) { t.loved = on; LOG.info('player: ListenBrainz ' + (on ? 'loved' : 'unloved'), t.title); toast(on ? 'Loved on ListenBrainz: ' + t.title : 'No longer loved on ListenBrainz: ' + t.title); }
+        else { LOG.warn('player: ListenBrainz feedback said ' + r.status, r.j && r.j.error || ''); toast(r.status === 401 ? 'ListenBrainz refused the token: check it in the settings' : 'ListenBrainz didn\'t take the love'); }
+    });
+}
 function lbListen(t, type, at) {
     if (!S.playerScrobble || !lbToken()) return;
     const meta = { artist_name: t.artist, track_name: t.title, release_name: t.relTitle, additional_info: { recording_mbid: t.rid, release_mbid: t.rel, duration_ms: t.len || undefined, media_player: 'Event Horizon', submission_client: 'Event Horizon', submission_client_version: VERSION, music_service: PLY_SVC[t.src], origin_url: t.url } };
