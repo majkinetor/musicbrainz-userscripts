@@ -13441,21 +13441,28 @@ function evArtHead(el, d) {
     cvWire(el);
 }
 let asHome = null;
+// debug: where Art Station's gallery is, for the art page's log lines
+function artState() {
+    const s = $('#as-slot'), r = document.getElementById('as-root');
+    const at = !r ? 'none' : !r.isConnected ? 'detached' : s && s.contains(r) ? 'in the slot' : mbBody && mbBody.contains(r) ? 'in the MusicBrainz page' : 'elsewhere (' + (r.parentElement ? r.parentElement.id || r.parentElement.tagName : '-') + ')';
+    return `slot ${s ? 'yes' : 'no'}${s ? ' (' + s.children.length + ' children)' : ''}, gallery ${at}` + (r ? `, ${r.querySelectorAll('.as-card').length} cards, ${Math.round(r.getBoundingClientRect().height)} px, display ${getComputedStyle(r).display}` : '');
+}
 function artStationPlace(on) {
     const as = (mbBody && mbBody.querySelector('#as-root')) || (ehBody && ehBody.querySelector('#as-root'));
     if (!as) return;
-    if (!on) { if (asHome && asHome.isConnected) asHome.after(as); return; }
+    if (!on) { if (asHome && asHome.isConnected) { LOG.info('art: gallery moved back to the MusicBrainz page'); asHome.after(as); } return; }
     const slot = ehBody && ehBody.querySelector('#as-slot');
     if (!slot || slot.contains(as)) return;
     if (mbBody.contains(as)) {
         if (!asHome) asHome = document.createComment('Art Station native position');
         as.before(asHome);
     }
+    LOG.info('art: gallery moved into the slot');
     slot.append(as);
 }
 function artPage(app, d) {
     const r = d.rel;
-    if (!app.querySelector('#as-slot')) app.innerHTML = '<section class="arthd"></section><div id="as-slot"></div>';
+    if (!app.querySelector('#as-slot')) { if (app.querySelector('#as-root')) LOG.info('art: page rebuilt with the gallery inside it'); app.innerHTML = '<section class="arthd"></section><div id="as-slot"></div>'; }
     const mh = !r && mbBody && PAGE_ID.endsWith('/' + d.id) && mbBody.querySelector('.releaseheader'), mt = mh && mh.querySelector('h1 a'), ma = mh ? [...mh.querySelectorAll('.subheader a[href*="/artist/"]')] : [];
     const early = mt ? `${heroH1(mt.textContent, '', `${MB}/release/${d.id}`)}${ma.length ? `<div class="by">by ${ma.map(a => `<a href="${esc(a.href)}">${esc(a.textContent)}</a>`).join(', ')}</div>` : ''}` : '';
     if (d.ev) { evArtHead(app.querySelector('.arthd'), d); } else app.querySelector('.arthd').innerHTML = subHead(r, d.id, 'cover-art', 'Cover art', d.err ? `<h1>${esc(d.err)}</h1>` : early || '<h1>&nbsp;</h1>'); cvWire(app.querySelector('.arthd'));
@@ -13466,7 +13473,9 @@ function artPage(app, d) {
 }
 async function artLoad(n, id) {
     // Art Station mounts after it reads the release's art: the slot waits for it beside the release's fetch, its note hidden until 20 s pass without it
-    const t0 = Date.now(), wait = () => { if (n !== showing) return; const s = $('#as-slot'); if (s && s.querySelector('#as-root')) { const m = s.querySelector('.as-none'); if (m) m.remove(); return; } if (mbBody && mbBody.querySelector('#as-root')) { render(); return; } if (Date.now() - t0 < 20000) setTimeout(wait, 150); else { const m = $('#as-slot .as-none'); if (m) m.hidden = false; } };
+    const t0 = Date.now(), wait = () => { if (n !== showing) return; const s = $('#as-slot'); if (s && s.querySelector('#as-root')) { const m = s.querySelector('.as-none'); if (m) m.remove(); LOG.info(`art: gallery in the slot after ${Date.now() - t0} ms: ${artState()}`); check(3000); check(10000); return; } if (mbBody && mbBody.querySelector('#as-root')) { LOG.info('art: gallery found in the MusicBrainz page, placing it'); render(); return; } if (Date.now() - t0 < 20000) setTimeout(wait, 150); else { LOG.warn(`art: no gallery after 20 s: ${artState()}`); const m = $('#as-slot .as-none'); if (m) m.hidden = false; } };
+    // debug: the gallery a while after it arrived (a blank page shows here)
+    const check = ms => setTimeout(() => { if (n === showing) LOG.info(`art: after ${ms / 1000} s: ${artState()}`); }, ms);
     wait();
     if (data.ev) { try { const g = event(await ws(`event/${id}?inc=${EV_INC}`)); if (n === showing) { data.g = g; render(); } } catch (e) { LOG.err('Loading event ' + id + ' failed: ' + e.message); if (n === showing) { data.err = e.message; render(); } } return; }
     try { await relHd(id, r => { if (n === showing) { data.rel = r; render(); } }); }
@@ -15578,7 +15587,8 @@ async function show(key, o = {}) {
         // Art Station takes the slot (preventDefault); without it, only the page the tab loaded shows its art
         const ask = new CustomEvent('mbu-art-mount', { cancelable: true, detail: JSON.stringify({ release: kind === 'art' ? id : null }) });
         document.dispatchEvent(ask);
-        if (!ask.defaultPrevented && key !== PAGE_ID) { location.assign(location.href); return; }
+        LOG.info(`art: opens ${key} (loaded page ${PAGE_ID}), Art Station ${ask.defaultPrevented ? 'answered' : 'did not answer'}, player ${ply.i >= 0 ? 'on' : 'off'}: ${artState()}`);
+        if (!ask.defaultPrevented && key !== PAGE_ID) { LOG.info('art: loads the cover-art page'); location.assign(location.href); return; }
         artLoad(n, id); return;
     }
     if (kind === 'hist') { data = { kind: 'hist', id, edits: [], page: 0, more: !esIsSearch(id) || esHasQuery(id), grp: S.hgrp || 'burst', st: '', open: new Set() }; scrollTo(0, 0); render(); histLoad(n); return; }
