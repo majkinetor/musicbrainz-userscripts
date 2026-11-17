@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.009000
+// @version      2026.11.18.010000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11756,6 +11756,8 @@ const PLY_I = {
     rel: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/>',
     x: '<path d="M5 5l14 14M19 5L5 19"/>',
     vol: '<path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor" stroke="none"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/>',
+    vol1: '<path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor" stroke="none"/><path d="M16 9a4 4 0 0 1 0 6"/>',
+    vol0: '<path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor" stroke="none"/>',
     mute: '<path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor" stroke="none"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>',
 };
 // kind: the source playing; ctl: its widget takes play and pause; ends: it says when a track ends (the others end
@@ -11889,13 +11891,16 @@ function plyVol() {
 }
 // once per track, when its widget first answers
 const plyVolOnce = () => { if (ply.volGen !== ply.gen) { ply.volGen = ply.gen; if (+S.playerVol !== 100) plyVol(); } };
+// the speaker loses its waves as the volume drops
+const plyVolIc = v => SVG(PLY_I[!v ? 'mute' : v < 15 ? 'vol0' : v < 50 ? 'vol1' : 'vol']);
 function plyVolSet(v, keep) {
     v = Math.max(0, Math.min(100, Math.round(v)));
     if (v && !keep) ply.lastVol = v;
     S.playerVol = v; save(); plyVol();
-    const r = plyCtl && plyCtl.querySelector('.ply-vol'); if (r && +r.value !== v) r.value = v;
+    const r = plyCtl && plyCtl.querySelector('.ply-vol'); if (r) { if (+r.value !== v) r.value = v; r.style.setProperty('--p', v + '%'); }
+    const n = plyCtl && plyCtl.querySelector('.ply-vn'); if (n) n.textContent = v;
     const b = plyCtl && plyCtl.querySelector('[data-ply="mute"]');
-    if (b) { b.innerHTML = SVG(PLY_I[v ? 'vol' : 'mute']); b.setAttribute('aria-pressed', String(!v)); b.dataset.tip = v ? 'Mute' : 'Unmute'; b.setAttribute('aria-label', b.dataset.tip); }
+    if (b) { b.innerHTML = plyVolIc(v); b.setAttribute('aria-pressed', String(!v)); b.dataset.tip = v ? 'Mute' : 'Unmute'; b.setAttribute('aria-label', b.dataset.tip); }
 }
 // a jump to ms into the track, in each widget's words; Apple's can't be told
 function plySeek(ms) {
@@ -11985,7 +11990,7 @@ function plyDraw() {
     const name = `<button type="button" class="ply-t" data-ply="list" aria-haspopup="menu" data-tip="${esc(t.title + ' — ' + t.artist + '\n' + t.relTitle)}\nClick: the playlist"><span class="ply-n">${esc(plyNo(t))}</span><b>${esc(t.title)}</b><span class="ply-ar">· ${esc(t.artist)}</span>${t.relTitle ? `<span class="ply-rl">· ${esc(t.relTitle)}</span>` : ''}</button>`;
     const prog = ply.ctl && t.len ? `<span class="ply-pr sk" data-ply="seek" aria-label="Position"><i></i>${bar ? '' : '<b class="ply-hv"></b>'}</span>` : '<span class="ply-pr" aria-hidden="true"><i></i></span>';
     const menu = `<button type="button" class="ply-b ply-lb${lb && t.ok != null ? ' sent' : ''}" data-ply="lb" aria-haspopup="menu" aria-label="Playing from ${esc(p.name)}" data-tip="Playing from ${esc(p.name)}${lb && t.ok != null ? '\nListen sent' : ''}\nClick: sources, ListenBrainz, stop">${icon(p, 18)}</button>`;
-    const v = +S.playerVol, vol = plyHasVol() ? `<span class="ply-vg"><button type="button" class="ply-b" data-ply="mute" aria-pressed="${!v}" aria-label="${v ? 'Mute' : 'Unmute'}" data-tip="${v ? 'Mute' : 'Unmute'}">${SVG(PLY_I[v ? 'vol' : 'mute'])}</button><span class="ply-vp"><input type="range" class="ply-vol" min="0" max="100" step="1" value="${v}" aria-label="Volume"></span></span>` : '';
+    const v = +S.playerVol, vol = plyHasVol() ? `<span class="ply-vg"><button type="button" class="ply-b" data-ply="mute" aria-pressed="${!v}" aria-label="${v ? 'Mute' : 'Unmute'}" data-tip="${v ? 'Mute' : 'Unmute'}">${plyVolIc(v)}</button><span class="ply-vp"><b class="ply-vn">${v}</b><input type="range" class="ply-vol" min="0" max="100" step="1" value="${v}" style="--p:${v}%" aria-label="Volume"></span></span>` : '';
     plyCtl.innerHTML = `<span class="ply-g">${nav}</span>${name}${prog}${vol}${menu}`;
     const im = plyCtl.querySelector('.ply-cov img');
     if (im) im.addEventListener('error', () => { if (/-250$/.test(im.src)) { LOG.debug('player: no cover thumbnail, trying the full front'); im.src = im.src.replace(/-250$/, ''); } else im.remove(); });
@@ -12143,8 +12148,15 @@ const PLY_CSS = `
 .ply-ctl .ply-vg{position:relative;display:inline-flex;align-items:center;flex:none}
 .ply-ctl .ply-vp{display:none;position:absolute;left:50%;bottom:100%;transform:translateX(-50%);z-index:3;padding:10px 6px;border:1px solid var(--mbu-border,#8884);border-radius:6px;background:var(--surface,#fff)}
 .pb .ply-vp{bottom:auto;top:100%}
-.ply-ctl .ply-vg:hover .ply-vp,.ply-ctl .ply-vg:focus-within .ply-vp{display:block}
-.ply-ctl .ply-vol{display:block;writing-mode:vertical-lr;direction:rtl;width:18px;height:96px;margin:0;accent-color:var(--accent,#ba478f);cursor:pointer}
+.ply-ctl .ply-vg:hover .ply-vp,.ply-ctl .ply-vg:focus-within .ply-vp{display:flex}
+.ply-ctl .ply-vp{flex-direction:column;align-items:center;gap:8px;padding:10px 8px 12px}
+.ply-ctl .ply-vn{font:600 11px/1 ui-monospace,monospace;font-variant-numeric:tabular-nums;color:var(--muted,#888);min-width:3ch;text-align:center}
+.ply-ctl .ply-vol{display:block;-webkit-appearance:none;appearance:none;writing-mode:vertical-lr;direction:rtl;width:14px;height:100px;margin:0;padding:0;background:linear-gradient(to top,var(--accent,#ba478f) var(--p,50%),color-mix(in srgb,currentColor 18%,transparent) var(--p,50%)) center/4px 100% no-repeat;border-radius:2px;cursor:pointer}
+.ply-ctl .ply-vol::-webkit-slider-runnable-track{background:none;border:0}
+.ply-ctl .ply-vol::-moz-range-track{background:none;border:0}
+.ply-ctl .ply-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border:0;border-radius:50%;background:var(--text,#222);box-shadow:0 0 0 2px var(--surface,#fff)}
+.ply-ctl .ply-vol::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:var(--text,#222);box-shadow:0 0 0 2px var(--surface,#fff)}
+.ply-ctl .ply-vol:focus-visible{outline:2px solid var(--accent,#ba478f);outline-offset:3px}
 .ply-ctl .ply-sc[disabled]{cursor:default}
 .ply-ctl .mbu-ov-x{position:static;flex:none}
 html.eh-ply-bar #eh-secfab{bottom:76px}
