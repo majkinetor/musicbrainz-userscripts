@@ -120,7 +120,7 @@ function shownRelease() {
 // artist. Off the tab's own release page, the release's links and tracks come in MC's probe (MC read them).
 export function startMcAdapter() {
     let sent = null;   // { rel, links }: what MC sent for a release that isn't the page's own
-    const linksOf = rel => rel === PAGE_REL ? releaseLinks() : (sent && sent.rel === rel ? sent.links : []);
+    const linksOf = rel => sent && sent.rel === rel && document.documentElement.getAttribute('data-mbu-release') ? sent.links : rel === PAGE_REL ? releaseLinks() : [];
     const hello = () => { const rel = shownRelease(); if (rel) send('mc:provider', { id: 'ch', name: 'Credit Hoarder', version: version(), release: rel, capabilities: ['probe'], open: openLinks(rel, linksOf(rel)) }); };
     document.addEventListener('mc:discover', () => { log.info('Mission Control asked — answering as provider ch'); hello(); });
     document.addEventListener('mc:probe', async e => {
@@ -128,7 +128,7 @@ export function startMcAdapter() {
         try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
         const rel = shownRelease();
         if (!rel || (d.release && d.release !== rel) || (d.only && !d.only.includes('ch'))) return;
-        const own = rel === PAGE_REL || !Array.isArray(d.tracks);
+        const own = !Array.isArray(d.tracks);
         if (!own) sent = { rel, links: Array.isArray(d.relLinks) ? d.relLinks : [] };
         const links = own ? releaseLinks() : sent.links;
         const done = (findings, summary) => send('mc:findings', { id: 'ch', run: d.run, release: rel, findings, summary, open: openLinks(rel, links) });

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.17.180247
+// @version      2026.11.17.181950
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -4052,6 +4052,24 @@
       _ehUsed.delete(id); RELEASE = null; fetchRelease().catch(() => {});
     }, () => {});
   });
+  // A quiet refresh can finish while the editor or a request is busy. Keep the user's work until it closes,
+  // then replace the stale release with EH's already-fetched copy.
+  let _ehRefreshPending = '';
+  function isSyncEhRefresh() {
+    const id = _ehRefreshPending;
+    if (!id || id !== mbid) { _ehRefreshPending = ''; return; }
+    if (_removalBusy || (typeof modal !== 'undefined' && modal && modal.classList.contains('open'))) return;
+    if (_relInFlight) { _relInFlight.catch(() => {}).then(isSyncEhRefresh); return; }
+    if (!ehShared(id)) return;
+    const pending = (RELEASE && RELEASE.tracks || []).map(t => ({ recId: t.recId, value: t.pending }));
+    _ehRefreshPending = ''; _ehUsed.delete(id); RELEASE = null;
+    fetchRelease().then(r => { if (mbid !== id || RELEASE !== r) return; r.tracks.forEach((t, i) => { if (pending[i]?.recId === t.recId && pending[i].value) t.pending = pending[i].value; }); updateBtnStatus(); notifyMatchCounts(); }, e => Log.warn('Refreshed release could not be read: ' + errText(e)));
+  }
+  document.addEventListener('mbu-release-refreshed', e => {
+    const id = String(e.detail || '').toLowerCase();
+    if (id !== mbid) return;
+    _ehRefreshPending = id; isSyncEhRefresh();
+  });
   function fetchReleaseNow() {
     const id = mbid, shared = !_ehUsed.has(id) && ehShared(id);
     if (shared) {
@@ -6798,6 +6816,7 @@
     overlay.classList.remove('open');
     modal.classList.remove('open');
     notifyMatchCounts();
+    isSyncEhRefresh();
   }
 
   function refreshAuthState() {

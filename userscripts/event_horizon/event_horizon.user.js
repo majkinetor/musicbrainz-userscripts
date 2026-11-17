@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011003
+// @version      2026.11.18.011004
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -15105,7 +15105,7 @@ function prefetch(key) {
 // the release showing, named on <html data-mbu-release> while EH shows: Platform Check follows it (#847), as
 // MusicBrainz's page, kept hidden in the document, stays the one the tab loaded
 var ehRel = null;   // var, and a declaration below: setOn can run before this line
-function ehRelMark() { if (ehOn && ehRel) document.documentElement.setAttribute('data-mbu-release', ehRel); else document.documentElement.removeAttribute('data-mbu-release'); }
+function ehRelMark() { const root = document.documentElement; if (ehOn && ehRel) root.setAttribute('data-mbu-release', ehRel); else root.removeAttribute('data-mbu-release'); if (!ehOn || root.getAttribute('data-mbu-release-refreshed') !== ehRel) root.removeAttribute('data-mbu-release-refreshed'); }
 // and the page showing, on <html data-mbu-page> (path and query): String Theory puts in the dock a script that page is
 // for but the page the tab loaded wasn't, so it never started (#847)
 function ehPageMark() { const r = document.documentElement; if (ehOn) r.setAttribute('data-mbu-page', location.pathname + location.search); else r.removeAttribute('data-mbu-page'); }
@@ -15115,7 +15115,7 @@ document.addEventListener('mbu-refresh-release', ev => {
     const id = ev.detail && ev.detail.release;
     if (!ehOn || !ehRel || typeof id !== 'string' || id.toLowerCase() !== ehRel.toLowerCase()) return;
     ev.preventDefault(); kpWrote(); clearTimeout(ehRefreshTimer);
-    ehRefreshTimer = setTimeout(() => { if (ehOn && ehRel === id.toLowerCase()) show('release/' + ehRel, { quiet: true, y: scrollY }); }, 300);
+    ehRefreshTimer = setTimeout(() => { if (ehOn && ehRel === id.toLowerCase()) show('release/' + ehRel, { quiet: true, y: scrollY, notifyRefresh: true }); }, 300);
 });
 // o.y: where to scroll once the page is all in (Back, Forward, a redraw); o.quiet: a redraw of the page showing, with
 // what MusicBrainz changed since it was kept: no skeleton, drawn once whole, and the page stays where it was on a failure
@@ -15199,7 +15199,7 @@ async function show(key, o = {}) {
         if (d.lists) (LIST_IDS[kind] || LIST_IDS.area).forEach(k => wait.add(k));
         if (kind === 'release') wait.add('art');
         let_('ed', d.eds); let_('wp', d.wiki); let_('dg', d.disc); let_('rc', d.recs); (LIST_IDS[kind] || LIST_IDS.area).forEach(k => let_(k, d.lists)); if (kind === 'release') let_('art', d.covers);
-        if (n === showing) { data = d; render(); visited(key, d); LOG.ok('Loaded in ' + (Date.now() - t0) + ' ms'); }
+        if (n === showing) { data = d; render(); visited(key, d); LOG.ok('Loaded in ' + (Date.now() - t0) + ' ms'); if (o.notifyRefresh && kind === 'release') { document.documentElement.setAttribute('data-mbu-release-refreshed', id); document.dispatchEvent(new CustomEvent('mbu-release-refreshed', { detail: id })); } }
         d.eds.then(x => { if (n === showing && data === d && !x) { d.edErr = true; render(); } if (n === showing && data === d && x) { d.editions = (x.releases || []).map(edition); d.edCount = x['release-count'] || 0; LOG.debug(kind + ' ' + id + ': ' + d.editions.length + ' release(s) to show'); if (d.editions.length > (kind === 'release' ? 1 : 0)) render(); } }).catch(e => LOG.err(kind + ' ' + id + ': showing the releases failed: ' + e.message));
         if (d.rgP) d.rgP.then(rg => { if (n === showing && data === d && rg) { Object.assign(d.rel, { rating: rg.rating || {}, rg: { title: rg.title, rels: rg.relations || [] } }); render(); } });
         if (d.recs) d.recs.then(x => { if (n === showing && data === d && x) { d.recsX = x; render(); } });

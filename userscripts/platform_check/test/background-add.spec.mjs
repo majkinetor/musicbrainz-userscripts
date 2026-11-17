@@ -91,6 +91,36 @@ test('#464, #556: a background add lands on the release, closes its tab, and lea
   check((log.match(/Enter edit clicked/g) || []).length === 1, 'each entry once');
 });
 
+test('a background add refreshes Event Horizon and Platform Check without reloading', { tag: ['@sandbox', '@login'] }, async ({ page, context, inject }) => {
+  const { mbid: rel } = await pristine(page, 'release');
+  await everyTab(context);
+  await page.goto(`${SANDBOX}/release/${rel}`, { waitUntil: 'domcontentloaded' });
+  await requireLogin(page);
+  await page.waitForFunction(() => !!window.__pcTest464 && !!window.__pcTest680);
+  await inject('event_horizon');
+  await page.waitForFunction(id => document.documentElement.getAttribute('data-mbu-release') === id, rel);
+  const url = `https://www.deezer.com/album/${1e9 + Date.now() % 1e9}`;
+  await page.evaluate(([id, u]) => {
+    window.__beforeTheAdd = true;
+    window.__pcTest680.cacheSet(id, 'deezer', { url: u, tracks: 1, source: 'search', credits: {}, _t: Date.now() });
+    localStorage.setItem('pc:pending:' + id, JSON.stringify({ deezer: u }));
+  }, [rel, url]);
+  const opened = context.waitForEvent('page');
+  await page.evaluate(id => window.__pcTest464.openReleaseEditTab(id, { background: true }), rel);
+  const tab = await opened;
+  check(await until(() => tab.isClosed(), 120000), 'the background editor submits and closes');
+  check((await linksOf('release', rel)).includes(url), 'the link is in MusicBrainz');
+  await page.waitForFunction(() => document.querySelector('#row-deezer')?.classList.contains('pc-inmb'), null, { timeout: 60000 });
+  check(await page.evaluate(() => window.__beforeTheAdd === true), 'the opener was not reloaded');
+  check(await page.evaluate(id => window.__pcTest680.mbDataGet(id)?.existing?.deezer, rel) === url, 'Platform Check reads the new link');
+  await inject('mission_control', { waitFor: '__mcTest' });
+  await page.evaluate(() => document.addEventListener('mc:probe', e => { window.__refreshProbe = JSON.parse(e.detail); }));
+  await page.locator('#mc-launch').evaluate(el => el.click());
+  await page.locator('#mc-root').waitFor();
+  await page.locator('#mc-root [data-act="probe"]').click();
+  check(await page.evaluate(u => window.__refreshProbe?.relLinks?.includes(u), url), 'Mission Control started after the refresh sends the new link to its adapters');
+});
+
 test('#559: the Discogs master lands on the release group, in the background', { tag: ['@sandbox', '@login'] }, async ({ page, context }) => {
   const { mbid: REL, releaseGroup: RG } = await pristine(page, 'release');
   const said = await everyTab(context);

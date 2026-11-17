@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.17.180247
+// @version      2026.11.17.181950
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -866,9 +866,17 @@ function mcPage() {
     return mcBody || document;
 }
 mcPage();   // at the start, before Event Horizon can swap the body
-function mcOwnPage() { return !!RELEASE && RELEASE === PAGE_REL && !!mcPage().querySelector('.releaseheader'); }
+let mcRefreshed = document.documentElement.getAttribute('data-mbu-release-refreshed');
+function mcOwnPage() { return !!RELEASE && RELEASE === PAGE_REL && !(mcRefreshed === RELEASE && mcShown() === RELEASE) && !!mcPage().querySelector('.releaseheader'); }
 function mcShown() { const r = document.documentElement.getAttribute('data-mbu-release'); return r && /^[0-9a-f-]{36}$/i.test(r) ? r.toLowerCase() : null; }
 let mcApi = null;   // { id, rel }: the release shown, read from the API
+document.addEventListener('mbu-release-refreshed', e => {
+    const id = String(e.detail || '').toLowerCase();
+    if (id !== RELEASE || id !== mcShown()) return;
+    mcRefreshed = id; mcApi = null;
+    // An open review may contain selections or edits: leave it intact until it is closed.
+    if (!ui && !executing) { rel = null; run = null; Object.keys(results).forEach(k => delete results[k]); Object.keys(picked).forEach(k => delete picked[k]); }
+});
 // the release Event Horizon shows, when it isn't MC's: switched to while MC is shut and idle; false while it can't
 // one read at a time: the launcher starts it on hover, so the click usually finds it done
 let mcFollowing = null;
@@ -2426,6 +2434,7 @@ function close() {
     if (!ui) return;
     if (trackObs) { trackObs.disconnect(); trackObs = null; }
     ui.remove(); ui = null;
+    if (mcRefreshed === RELEASE && !mcApi) { rel = null; run = null; Object.keys(results).forEach(k => delete results[k]); Object.keys(picked).forEach(k => delete picked[k]); }
     document.documentElement.style.overflow = '';
     document.documentElement.classList.remove('mc-open');
     if (openScroll) { scrollTo(openScroll[0], openScroll[1]); openScroll = null; }
