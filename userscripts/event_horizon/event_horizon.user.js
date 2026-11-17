@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011019
+// @version      2026.11.18.011020
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12519,7 +12519,7 @@ function plySave() {
 // saved player too: a tab's first page drops it, and only reloads and in-tab navigation resume
 let plyResumed = false;
 try { const nav = performance.getEntriesByType('navigation')[0]; if (history.length <= 1 && (!nav || nav.type === 'navigate')) sessionStorage.removeItem('eh-ply'); } catch (e) {}
-try { if (!PLY_WINDOW && sessionStorage.getItem('eh-ply')) { document.documentElement.setAttribute('data-eh-ply-hold', ''); setTimeout(plyUnhold, 4000); } } catch (e) {}
+if (!PLY_WINDOW) { document.documentElement.setAttribute('data-eh-ply-hold', ''); setTimeout(plyUnhold, 4000); addEventListener('load', () => setTimeout(() => { if (!ehOn) plyUnhold(); }, 300)); }
 setInterval(() => {
     if (PLY_WINDOW) plyPublish();
     if (plyRemote && !PLY_WINDOW) {
@@ -14484,7 +14484,7 @@ function setOn1(on) {
     const first = on && !ehBody, theme = on && mbuTheme();   // read off MusicBrainz's page, before it goes
     if (first) build();
     ehOn = on;
-    if (!on) hexApply();
+    if (!on) { hexApply(); plyUnhold(); }
     ehRelMark(); ehPageMark();
     // the other scripts' corner launchers sit in whichever body was showing when they started: they move along
     // and fold behind String Theory's dock while EH shows (#847)
