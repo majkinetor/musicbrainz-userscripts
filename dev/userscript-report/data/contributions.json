@@ -111,6 +111,19 @@
       "disposition": "accepted",
       "acceptedBy": "majkinetor",
       "decision": "Maintainer verdict given in chat: afro's Traxsource importer is fully replaceable."
+    },
+    {
+      "id": "chat-2026-11-17-amazon",
+      "discussionNumber": 1060,
+      "url": "https://github.com/majkinetor/musicbrainz-userscripts/issues/1060",
+      "authorId": "MDQ6VXNlcjg1NzY3",
+      "createdAt": "2026-11-17T10:00:00Z",
+      "updatedAt": "2026-11-17T10:00:00Z",
+      "exportPath": "contributions/chat-2026-11-17-amazon.json",
+      "reportVersion": "8fb7efeb0ff2dacd8f6e5bb9ac7402afa3cc7a97f44640a743fe28435a1a13b3",
+      "disposition": "accepted",
+      "acceptedBy": "majkinetor",
+      "decision": "Maintainer verdict given in chat: Goram's and dufferZafar's Amazon importers are fully replaceable."
     }
   ]
 }
