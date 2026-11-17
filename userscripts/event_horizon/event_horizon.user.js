@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011027
+// @version      2026.11.18.011029
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12234,7 +12234,7 @@ function plyWinList(root) {
         root.append(l);
     }
     // the header and the rows are redrawn only when they change, so the cover doesn't reload with every track
-    const head = plyRelHead(ply.q[ply.i]), rows = ply.q.map((x, i) => `<button type="button" class="qi" role="listitem" data-i="${i}"${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span><span class="ql">${x.len ? dur(x.len) : ''}</span></button>`).join('');
+    const head = plyRelHead(ply.q[ply.i]), rows = ply.q.map((x, i) => `<button type="button" class="qi" role="listitem" data-i="${i}"${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span>${plyRowSrc(x, i)}<span class="ql">${x.len ? dur(x.len) : ''}</span></button>`).join('');
     if (l._head !== head) {
         l._head = head; l.querySelector('.ply-rh')?.remove();
         if (head) { l.insertAdjacentHTML('afterbegin', head); l.querySelector('.ply-rh img')?.addEventListener('error', ev => ev.target.remove()); }
@@ -12301,6 +12301,8 @@ function plyClick(ev) {
 // a track's number, with its disc's when the release has more than one
 const plyNo = t => ply.q.some(x => !String(x.key).startsWith('1-')) ? t.key : String(t.n);
 // the queue: a click plays that track
+// a row's platform: the one playing for the current track, the one a click would play from for the rest
+const plyRowSrc = (x, i) => { const p = x.srcs && x.srcs.length ? (i === ply.i && x.srcs.find(q => q.key === ply.src)) || plyPick(x, ply.pref) : null; return p ? `<span class="qp" data-tip="${esc(p.name)}">${icon(p, 16)}</span>` : ''; };
 // the release the playing track comes from: cover, title, artist and year, linked to its page
 function plyRelHead(t) {
     if (!t || !t.rel) return '';
@@ -12308,7 +12310,7 @@ function plyRelHead(t) {
     return `<a class="ply-rh" href="${MB}/release/${t.rel}"${PLY_WINDOW ? ' target="_blank"' : ''}>${t.front ? `<img src="https://coverartarchive.org/release/${t.rel}/front-250" alt="">` : ''}<span class="rt"><b>${esc(t.relTitle || '')}</b><small>${esc(t.relAc || '')}${t.relAc && yr ? ' · ' : ''}${yr}</small></span></a>`;
 }
 function plyListMenu(btn) {
-    plyMenu(btn, plyRelHead(ply.q[ply.i]) + '<div class="hd"><span>Playlist</span>' + (ply.q.length > 1 ? '<input type="search" class="qf" placeholder="Filter" aria-label="Filter the playlist" autocomplete="off">' : '') + '</div>' + ply.q.map((x, i) => `<button type="button" class="it qi" role="menuitem" data-k="q${i}"${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span><span class="ql">${x.len ? dur(x.len) : ''}</span></button>`).join(''),
+    plyMenu(btn, plyRelHead(ply.q[ply.i]) + '<div class="hd"><span>Playlist</span>' + (ply.q.length > 1 ? '<input type="search" class="qf" placeholder="Filter" aria-label="Filter the playlist" autocomplete="off">' : '') + '</div>' + ply.q.map((x, i) => `<button type="button" class="it qi" role="menuitem" data-k="q${i}"${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span>${plyRowSrc(x, i)}<span class="ql">${x.len ? dur(x.len) : ''}</span></button>`).join(''),
         ({ k }) => { const i = +String(k).slice(1); if (i >= 0 && i < ply.q.length && i !== ply.i) { LOG.info('player: picked from the playlist', i + 1); plyGo(i, ply.pref); } }, 'left');
     document.querySelector('#eh-ply-menu [aria-current]')?.scrollIntoView({ block: 'nearest' });
     document.querySelector('#eh-ply-menu .ply-rh img')?.addEventListener('error', ev => ev.target.remove());
@@ -12453,7 +12455,9 @@ html.eh-ply-win .ply-wl{order:2;flex:1;min-height:0;overflow:hidden auto;padding
 .ply-wl .qn{flex:none;min-width:2.2em;color:var(--muted,#777);font-variant-numeric:tabular-nums;text-align:right}
 .ply-wl .qt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ply-wl .qt small{margin-left:6px;color:var(--muted,#777);font-size:12px;font-weight:normal}
-.ply-wl .ql{flex:none;color:var(--muted,#777);font-size:12px;font-variant-numeric:tabular-nums}
+.ply-wl .qp{flex:none;display:inline-grid;place-items:center;width:16px;height:16px;opacity:.85}
+.ply-wl .qp img,.ply-wl .qp svg{width:16px;height:16px}
+.ply-wl .ql{flex:none;min-width:2.6em;text-align:right;color:var(--muted,#777);font-size:12px;font-variant-numeric:tabular-nums}
 .ply-ctl.pb{position:relative;display:flex;align-items:center;gap:6px;flex:0 1 auto;padding:0 10px;margin:0 6px;border-left:1px solid var(--line,#ddd);border-right:1px solid var(--line,#ddd);font-size:13px}
 .pb .ply-b,.pb .ply-b.big,.pb .ply-b.big:hover{width:28px;height:28px}
 .kicker .ply-ctl .ply-b svg{color:inherit}
@@ -12498,7 +12502,9 @@ html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
 .ply-menu .qn{flex:none;min-width:2.2em;color:var(--muted,#777);font-variant-numeric:tabular-nums;text-align:right}
 .ply-menu .qt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ply-menu .qt small{margin-left:6px;color:var(--muted,#777);font-size:12px}
-.ply-menu .ql{flex:none;color:var(--muted,#777);font-size:12px;font-variant-numeric:tabular-nums}
+.ply-menu .qp{flex:none;display:inline-grid;place-items:center;width:16px;height:16px;opacity:.85}
+.ply-menu .qp img,.ply-menu .qp svg{width:16px;height:16px}
+.ply-menu .ql{flex:none;min-width:2.6em;text-align:right;color:var(--muted,#777);font-size:12px;font-variant-numeric:tabular-nums}
 .ply-menu .ply-ss{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;padding:2px 4px 4px}
 .ply-menu .ss{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;padding:7px 2px;border:0;border-radius:6px;background:none;color:var(--muted,#777);font:11px/1.2 system-ui,sans-serif;cursor:pointer}
 .ply-menu .ss span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

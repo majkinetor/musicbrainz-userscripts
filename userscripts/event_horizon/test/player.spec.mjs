@@ -26,6 +26,8 @@ test.describe('bar', () => {
     await page.locator('#eh-ply [data-ply="list"]').click();
     check(await until(() => page.locator('#eh-ply-menu .qi').count(), n => n > 1) > 1, 'the title opens the playlist');
     check(await page.locator('#eh-ply-menu .qi[aria-current]').count() === 1, 'the playing track is marked in it');
+    check(await page.locator('#eh-ply-menu .qi .qp').count() === await page.locator('#eh-ply-menu .qi').count(), 'every row shows the platform it plays from');
+    await attachShot(testInfo, page.locator('#eh-ply-menu'), 'playlist');
     await page.locator('#eh-ply [data-ply="lb"]').click();
     check(await until(() => page.locator('#eh-ply-menu a[href*="listenbrainz.org/track/"]').count(), n => n >= 1) >= 1, 'the ListenBrainz menu links the track');
     const now = await until(() => sent.find(o => /submit-listens/.test(o.url)), v => !!v);
