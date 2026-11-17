@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-17 13:18 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-17 13:45 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -845,7 +845,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 - **[Collections](#collections)** adds or removes an entity from your MusicBrainz collections.
 - **[Recently opened](#recently-opened)** lists the pages you opened last on the homepage, with your choice of view, number and entity types.
 - **[Tracklist](#tracklist-1)**: each track's credits and its streaming links, with platforms deduplicated.
-- **[Releases and discography](#releases-and-discography)** as a grid or a table whose columns you choose, order and resize, grouped by type, with a filter, and with filters and columns saved by name.
+- **[Releases and discography](#releases-and-discography)** as a grid or a table whose columns you choose, order and resize, grouped by type (a label's by release group), with a filter, and with filters and columns saved by name.
 - **[Edit search](#edit-search)**: every MusicBrainz condition in compact rows, filterable choices and named saved searches.
 - **[URL search](#url-search)** finds MusicBrainz's links by address and by what they link to.
 - **[Edit history](#edit-history)** groups edits and votes on a whole group at once.
@@ -955,6 +955,8 @@ Expanded track contains info about associated recording and works.
 ### Releases and discography
 
 A release group lists its releases, and an artist or label its discography, grouped by type, albums first. Switch between a grid of covers and a table; click a table's column to sort it.
+
+A label's releases show by release group, one cover or row per group, grouped by type; **Releases** beside **Groups** lists every release instead, and the choice is remembered. *N releases* counts a group's releases on this label: click it to list them, below the row in a table or in a popup in the grid.
 
 **Columns**, beside the view buttons of a table, chooses what the table shows and in what order, and is remembered for all releases or all discographies. Tick a column to show it, drag its handle or press the arrow keys on it to move it, and Esc during a drag takes the move back. A label's or a recording's releases also have **Type**, their release group's type, such as *Album + Compilation*. Releases also offer Status, Packaging, Language / script and Comment; +N on the button counts the columns left out. A hidden column still sorts and filters. Links is a column like the others. Drag the edge of a column's heading to resize it: the room comes from the columns beside it, and none goes narrower than its content. Double-click the edge to fit that column to its content; the fit button beside **Columns** lets the table size itself again. **Saved**, at the bottom of the menu, keeps the current columns and their widths under a name; pick the name to bring them back, or **Default** for the usual columns.
 

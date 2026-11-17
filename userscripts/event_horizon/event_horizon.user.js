@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.17.150000
+// @version      2026.11.17.160000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3254,6 +3254,10 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .rg-l:hover{color:var(--accent)!important;text-decoration:none}
 .ed-seg button[aria-pressed=true]{background:var(--surface);color:var(--text);box-shadow:0 1px 3px var(--shadow)}
 .ed-seg .n{opacity:.7}
+.lb-sw{margin-right:6px}.lb-sw button{height:26px;padding:0 10px}
+.ed-t.lbg tr.lbg-r td{padding-top:4px;padding-bottom:4px;font-size:13px;color:var(--soft);border-bottom-style:dashed}.ed-t.lbg tr.lbg-r td:nth-child(2){padding-left:22px}
+.lbg-tile{display:flex;flex-direction:column;gap:5px;min-width:0}.lbg-tile>.popwrap>.chip{cursor:pointer}.lbg-pop{text-align:left;max-height:320px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
+.lbg-pop .row{justify-content:flex-start}
 .ed-sw{all:unset;display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}.ed-sw+.ed-div{margin-left:auto}
 .ed-sw i{position:relative;width:32px;height:18px;border-radius:9px;background:var(--border);transition:background .15s}
 .ed-sw i::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s}
@@ -4236,7 +4240,7 @@ function ambientApply(layer, kind) {
     layer._ehPattern = { key, P: p, stop, shift() {} }; document.addEventListener('visibilitychange', vis); vis();
 }
 
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'arAuto', 'arCol', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'fx', 'fxOff', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'bgAmount', 'bgSize', 'bgGlow', 'bgHue', 'auraOpacity', 'auraBlur', 'auraSat', 'auraHeight', 'glowStrength', 'glowSize', 'glowPlace', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'arAuto', 'arCol', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'fx', 'fxOff', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'bgAmount', 'bgSize', 'bgGlow', 'bgHue', 'auraOpacity', 'auraBlur', 'auraSat', 'auraHeight', 'glowStrength', 'glowSize', 'glowPlace', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView', 'lbGroups'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true, tags: false },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -4252,7 +4256,9 @@ const S = {
     extras: ['rating', 'tags'],
     facts: ['released', 'labels', 'barcode', 'length', 'links'],
     secOrder: [], secHide: [], // the rail's section order, and the sections it hides
-    fold: [], discFold: [], grpFold: [], // grpFold: the discography's and releases' folded groups, 'dg:Album' / 'ed:Bootleg' edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date', edSort: '', lmAuto: true, tabView: 'table', // edSort: the releases table's column, '' its own order, a leading '-' reversing it
+    fold: [], discFold: [], grpFold: [], // grpFold: the discography's and releases' folded groups, 'dg:Album' / 'ed:Bootleg'
+    edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date', edSort: '', lmAuto: true, tabView: 'table', // edSort: the releases table's column, '' its own order, a leading '-' reversing it
+    lbGroups: true, // a label's releases shown by release group
     ed: { kinds: new Set(), official: false },
     open: new Set(),
     fxOpen: [], // keys of the recording and work facts boxes that are open
@@ -4588,6 +4594,8 @@ const edition = e => ({
     ac: e['artist-credit'] || [], links: urlsOf(e.relations || []),
     // its release group's types, on a label's or a recording's releases (inc=release-groups, in the same request)
     rgType: e['release-group'] ? [e['release-group']['primary-type'], ...(e['release-group']['secondary-types'] || [])].filter(Boolean).join(' + ') : '',
+    rg: e['release-group'] ? (g => ({ id: g.id, title: g.title || e.title || '', dis: g.disambiguation || '', first: g['first-release-date'] || '', ac: g['artist-credit'] || e['artist-credit'] || [],
+        type: [g['primary-type'] || '', ...(g['secondary-types'] || [])].filter(Boolean).join(' · ') || 'Unspecified' }))(e['release-group']) : null,
     li: (e['label-info'] || []).map(l => ({ id: l.label && l.label.id, name: l.label && l.label.name !== '[no label]' ? l.label.name : '', catno: l['catalog-number'] && !/^\[none\]$/i.test(l['catalog-number']) ? l['catalog-number'] : '' })).filter(l => l.name || l.catno),
 });
 // The edition tile's tooltip: the release info's look, small (majkinetor, from a mock)
@@ -5285,7 +5293,7 @@ function colBtn(sc) {
 }
 // the shown table takes the choice in place: a redraw would close the menu and lose the scroll and the open rows
 function colApply(sc) {
-    const st = colState(sc), t = $(`#s-${sc} table.ed-t`) || $('.eh-release-views table.ed-t'), n = colsOf(st);
+    const st = colState(sc), t = $(`#s-${sc} table.ed-t:not(.lbg)`) || $('.eh-release-views table.ed-t'), n = colsOf(st);
     const b = $(`[data-pop="cols-${sc}"] i`);
     if (b) { b.hidden = !st.off.size; b.textContent = '+' + st.off.size; }
     if (!t) return;
@@ -5304,7 +5312,7 @@ function colApply(sc) {
     colSize(sc);
 }
 function colSize(sc) {
-    const st = colState(sc), t = $(`#s-${sc} table.ed-t`) || $('.eh-release-views table.ed-t'), w = colWs(sc);
+    const st = colState(sc), t = $(`#s-${sc} table.ed-t:not(.lbg)`) || $('.eh-release-views table.ed-t'), w = colWs(sc);
     if (!t) return;
     t.classList.toggle('fix', !!w);
     t.style.minWidth = w ? colMin(sc, st) + 'px' : '';
@@ -5367,7 +5375,8 @@ function edHtml(r, eds, count) {
         const thumb = r.frontFull && front ? front.image : r.frontSrc || `https://coverartarchive.org/release/${r.id}/front-500`;
         eds = eds.map(e => e.id === r.id ? { ...e, thumb } : e);
     }
-    const view = r.id ? S.edView : S.rgView;
+    const lb = !r.id && /^\/label\//.test(r.page || ''), grp = lb && S.lbGroups;
+    const view = r.id ? S.edView : grp && S.rgView === 'format' ? 'grid' : S.rgView;
     // a label's or group's releases past the first 100 load with "Load more" (lmFoot); they come in MusicBrainz's
     // order, so the list keeps it (sorting would reshuffle what is already on screen)
     const paged = !r.id && (count > eds.length || r.native);
@@ -5376,17 +5385,18 @@ function edHtml(r, eds, count) {
     const kindList = Object.entries(kinds).sort((a, b) => b[1] - a[1]);
     const shown = all.filter(e => (!S.ed.kinds.size || S.ed.kinds.has(fmtKind(e.formats[0]))) && (!S.ed.official || r.native || e.status === 'Official') && fltPass('ed', e));
     const covers = all.filter(e => e.thumb).length, unofficial = all.filter(e => e.status !== 'Official').length;
-    const views = '<span class="ed-div"></span>' + viewBs(['grid', 'row', 'format', 'table'], view, 'edview', 'Editions view');
+    const views = '<span class="ed-div"></span>' + viewBs(grp ? ['grid', 'row', 'table'] : ['grid', 'row', 'format', 'table'], view, 'edview', 'Editions view');
     // folded: a format opens the section filtered to it
     const folded = `<div class="ed-folded"><span class="stack">${all.filter(e => e.thumb).slice(0, 7).map(e => `<img src="${edThumb(e)}" alt="" data-edid="${e.id}">`).join('')}</span>
         <span style="display:flex;flex-wrap:wrap;gap:8px">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edjump="${k}" data-tip="Show the ${KIND_NAME[k]} editions">${fmtSvg(k, 14)}${KIND_NAME[k]} ${n}</button>`).join('')}</span>
         <span style="font-size:13px;color:var(--muted)">${covers} with covers · ${unofficial} unofficial</span></div>`;
     let filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}" data-tip="Show only official releases, hiding bootlegs, promotions and other unofficial ones"><i></i>Official</button><span class="ed-div"></span>${fltBtn('ed', all)}${views.replace('<span class="ed-div"></span>', '')}</div>` + fltBar('ed', all);
-    const tools = fltBtn('ed', all) + (view === 'table' ? colBtn('ed') : '') + views;
+    const tools = fltBtn('ed', all) + (view === 'table' && !grp ? colBtn('ed') : '') + views;
     filters = filters.replace(fltBtn('ed', all), '').replace(views.replace('<span class="ed-div"></span>', ''), '');
     if (r.native) filters = filters.replace(/<button class="ed-sw"[\s\S]*?<\/button>/, '');
     let body;
-    if (view === 'table') body = edTable(shown, r.id, paged || r.native, paged);
+    if (grp) body = lbGroupsHtml(shown, view);
+    else if (view === 'table') body = edTable(shown, r.id, paged || r.native, paged);
     else if (view === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id, !r.id)).join('')}</div>`;
     else if (view === 'format') body = `<div class="ed-groups">${kindList.filter(([k]) => shown.some(e => fmtKind(e.formats[0]) === k)).map(([k]) => {
             const es = shown.filter(e => fmtKind(e.formats[0]) === k);
@@ -5395,7 +5405,39 @@ function edHtml(r, eds, count) {
     else body = `<div class="ed-grid">${shown.map(e => edTile(e, r.id, !r.id)).join('')}</div>`;
     const go = `<button class="lnk" type="button" data-mbgo="${MB}${r.page || '/release-group/' + r.rgId}">${paged ? 'Date order' : 'All'} on MusicBrainz's page</button>`;
     const more = r.native ? (r.more ? lmFoot('ed', all.length, 0) : '') : paged ? lmFoot('ed', all.length, count) : count > all.length ? `<div class="folded-note">The first ${all.length} of ${count}. ${go}</div>` : '';
-    return sect('ed', r.id ? 'Editions' : `Releases <span class="count">${count}${r.more ? '+' : ''}</span>`, tools, filters + body + more, folded, r.id ? `<div class="folded-note">${count} edition${count === 1 ? '' : 's'}</div>` : '');
+    const sw = lb ? `<span class="ed-seg lb-sw" role="group" aria-label="Show"><button type="button" data-lbmode="releases" aria-pressed="${!grp}">Releases</button><button type="button" data-lbmode="groups" aria-pressed="${grp}">Groups <span class="n">${lbGroupsOf(all).length}</span></button></span>` : '';
+    return sect('ed', r.id ? 'Editions' : `Releases <span class="count">${count}${r.more ? '+' : ''}</span>`, sw + tools, filters + body + more, folded, r.id ? `<div class="folded-note">${count} edition${count === 1 ? '' : 's'}</div>` : '');
+}
+
+// A label's releases by release group (majkinetor, option A of a mock): grouped by type in the discography's order,
+// one row or cover per group, its releases on this label behind the count. Built from the releases already loaded
+// (inc=release-groups), so the counts are this label's, and grow as more pages load.
+const lbOpen = new Set();
+function lbGroupsOf(es) {
+    const m = new Map();
+    for (const e of es) {
+        const g = e.rg || { id: '', title: e.title, dis: '', first: e.date, ac: e.ac, type: 'Unspecified' }, k = g.id || 'r:' + e.id;
+        const x = m.get(k) || m.set(k, { ...g, es: [] }).get(k);
+        x.es.push(e);
+    }
+    return [...m.values()];
+}
+function lbGroupsHtml(es, view) {
+    const gs = lbGroupsOf(es), m = new Map();
+    for (const g of gs) m.set(g.type, [...(m.get(g.type) || []), g]);
+    const rank = k => { const [p, ...sec] = k.split(' · '), i = DG_ORDER.indexOf(p); return (i < 0 ? 9 : i) * 10 + sec.length; };
+    const byDate = l => l.sort((a, b) => (a.first || '9').localeCompare(b.first || '9') || a.title.localeCompare(b.title));
+    const types = [...m].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0])).map(([k, l]) => [k, byDate(l)]);
+    if (!gs.length) return '<div class="folded-note">No releases match.</div>';
+    const href = g => g.id ? `${MB}/release-group/${g.id}` : relUrl(g.es[0].id);
+    const cover = g => g.id ? `https://coverartarchive.org/release-group/${g.id}/front-250` : g.es[0].thumb;
+    const n = g => `${g.es.length} release${g.es.length === 1 ? '' : 's'}`;
+    const chip = g => g.es.length < 2 ? `<span class="sub">${n(g)}</span>` : `<button class="ed-tr" type="button" data-lbx="${esc(g.id)}" aria-expanded="${lbOpen.has(g.id)}" data-tip="${lbOpen.has(g.id) ? 'Hide' : 'Show'} its releases on this label">${n(g)}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>`;
+    const ed = e => `<tr class="lbg-r"><td></td><td><a href="${esc(relUrl(e.id))}">${esc(e.title)}</a>${e.disambig ? ` <span class="sub">(${esc(e.disambig)})</span>` : ''}${e.status && e.status !== 'Official' ? ` <span class="sub">· ${esc(e.status)}</span>` : ''}</td><td>${esc(fmtSummary(e.formats))}</td><td class="mono">${(e.events[0] || {}).iso ? esc(e.events[0].iso) + ' ' : ''}${e.date ? fdate(e.date) : '—'}</td><td class="mono">${esc(e.li.filter(l => l.catno).map(l => l.catno).join(', ')) || '—'}</td></tr>`;
+    const row = g => `<tr><td class="tc"><a href="${href(g)}" class="tt"><img src="${cover(g)}" alt="" loading="lazy" data-dgcover></a></td><td><a href="${href(g)}">${esc(g.title)}</a>${g.dis ? ` <span class="sub">(${esc(g.dis)})</span>` : ''}</td><td>${acHtml(g.ac)}</td><td class="mono">${g.first ? fdate(g.first) : '—'}</td><td>${chip(g)}</td></tr>` + (lbOpen.has(g.id) && g.es.length > 1 ? g.es.map(ed).join('') : '');
+    const tile = g => `<div class="lbg-tile"><a href="${href(g)}"><img src="${cover(g)}" alt="" loading="lazy" data-dgcover><span class="dt">${esc(g.title)}${g.dis ? ` <span class="rga">(${esc(g.dis)})</span>` : ''}</span><span class="dy">${esc([(g.first || '').slice(0, 4), g.ac.map(c => (c.name || '') + (c.joinphrase || '')).join('')].filter(Boolean).join(' · ') || '—')}</span></a>${g.es.length < 2 ? `<span class="dy">${n(g)}</span>` : `<span class="popwrap"><button class="chip" type="button" data-pop="lbg-${esc(g.id)}" aria-expanded="false">${n(g)}</button><div class="pop lbg-pop" id="pop-lbg-${esc(g.id)}" hidden><div class="h label">On this label</div>${g.es.map(e => `<a class="row" href="${esc(relUrl(e.id))}"><span>${esc(e.title)}<br><small>${esc([fmtSummary(e.formats), e.date && fdate(e.date), e.li.filter(l => l.catno).map(l => l.catno).join(', ')].filter(Boolean).join(' · '))}</small></span></a>`).join('')}</div></span>`}</div>`;
+    if (view === 'table') return `<div class="ed-tw"><table class="ed-t lbg"><thead><tr><th></th><th>Release group</th><th>Artist</th><th>First release</th><th>On this label</th></tr></thead>${types.map(([k, l]) => { const [shut, h] = grpHead('lb:' + k, k, l.length); return `<tbody><tr class="gh"><th colspan="5">${h}</th></tr>${shut ? '' : l.map(row).join('')}</tbody>`; }).join('')}</table></div>`;
+    return types.map(([k, l]) => `<h3 class="disco-h">${grpHead('lb:' + k, k, l.length)[1]}</h3>` + (S.grpFold.includes('lb:' + k) ? '' : `<div class="${view === 'row' ? 'ed-row disco' : 'disco'}">${l.map(tile).join('')}</div>`)).join('');
 }
 
 /* ── tracklist ─────────────────────────────────────── */
@@ -11700,6 +11742,8 @@ function onClick(ev) {
     else if (d.gfold) S.grpFold = toggle(S.grpFold, d.gfold);
     else if ('tagsmore' in d) tagsOpen = !tagsOpen;
     else if (d.dgview) S.dgView = d.dgview;
+    else if (d.lbmode) S.lbGroups = d.lbmode === 'groups';
+    else if ('lbx' in d) lbOpen.has(d.lbx) ? lbOpen.delete(d.lbx) : lbOpen.add(d.lbx);
     else if (d.tabview) S.tabView = d.tabview;
     else if (d.edsort) S.edSort = S.edSort === d.edsort ? '-' + d.edsort : S.edSort === '-' + d.edsort ? '' : d.edsort;
     else if (d.dgsort) S.dgSort = S.dgSort === d.dgsort ? '-' + d.dgsort : d.dgsort; // a second click turns the order round
