@@ -105,7 +105,7 @@ The _Harmony_ setting picks which Harmony opens: [harmony.pulsewidth.org.uk](htt
 | ------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
 | Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy, mora, Melon, Bugs, AllMusic | the album link, at once             |
 | Volumo, HDtracks, SoundCloud, Audiomack, 7digital, Presto Music, Traxsource, Amazon                          | the barcode, once the album is read |
-| YouTube Music, Amazon Music, RateYourMusic, Album of the Year                                                | nothing; the button is greyed out   |
+| YouTube Music, Amazon Music, Internet Archive, RateYourMusic, Album of the Year                              | nothing; the button is greyed out   |
 
 Harmony can't read the last two rows' platforms, so for the middle row First Contact sends the barcode; an album without one (a SoundCloud set that isn't a label's) sends nothing. YouTube Music and Amazon Music show no barcode.
 
@@ -134,6 +134,7 @@ Harmony can't read the last two rows' platforms, so for the middle row First Con
 | [Traxsource](#traxsource)               |                 |    some    | ✓ with catalog number           | description                |
 | [Melon](#melon)                         |                 |            | ✓                               |                            |
 | [Bugs](#bugs)                           |                 |            | ✓                               |                            |
+| [Internet Archive](#internet-archive)   |                 |            |                                 | description                |
 | [AllMusic](#allmusic)                   |        ✓        |     ✓      | ✓ with catalog number           |                            |
 | [Presto Music](#presto-music)           | streamed albums |     ✓      | ✓ with catalog number           | about                      |
 | [RateYourMusic](#rateyourmusic)         |                 |            | an issue's, with catalog number |                            |
@@ -337,6 +338,15 @@ Pages: `music.bugs.co.kr/album/<id>`
 - The label is the album's planning company (기획사), or its distributor (유통사) when there is none.
 - Each track's length is a request to Bugs, so a long album takes a moment.
 - Every artist and every track has its Bugs link.
+
+### Internet Archive
+
+Pages: `archive.org/details/<identifier>`, audio items and Live Music Archive concerts only
+
+- An archive item is an upload, so its data is what the uploader gave: the files' tags (title, artist, album, track number) when they have them, otherwise the item's title (often "Artist - Album") and file names. Check every field.
+- The tracks are the uploaded audio files, in track-number order, with their lengths; the archive's own converted copies are left out.
+- The date is the item's date, when it has one; the upload date is never used.
+- No label, barcode or ISRCs. The release gets the item as its free download and free streaming link.
 
 ### AllMusic
 

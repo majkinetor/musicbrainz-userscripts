@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.17.120100
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Amazon (CDs, vinyl and MP3 albums in its store), Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Presto Music, RateYourMusic, Album of the Year.
+// @version      2026.11.17.120200
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Amazon (CDs, vinyl and MP3 albums in its store), Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Internet Archive (audio items), Presto Music, RateYourMusic, Album of the Year.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
@@ -27,6 +27,7 @@
 // @match        https://mora.jp/package/*
 // @match        https://www.traxsource.com/*
 // @match        https://www.melon.com/album/detail.htm*
+// @match        https://archive.org/details/*
 // @match        https://music.bugs.co.kr/album/*
 // @match        https://www.allmusic.com/album/release/*
 // @match        https://rateyourmusic.com/release/*
@@ -120,6 +121,7 @@
 // @connect      bandcamp.com
 // @connect      cf.mora.jp
 // @connect      m2.melon.com
+// @connect      archive.org
 // @connect      music.bugs.co.kr
 // @connect      tivomusicapi-staging-elb.digitalsmiths.net
 // ==/UserScript==
@@ -2652,6 +2654,80 @@ const AMAZONSTORE = {
 };
 
 
+// Internet Archive (#1061): an audio item (/details/<identifier>). The page says mediatype "audio" in a
+// meta tag, so the button shows on audio items only. Everything comes from the metadata API
+// (archive.org/metadata/<id>); the Live Music Archive's concerts are mediatype "etree": the item's title, creator and date, and a file per track, whose ID3
+// tags (title, artist, album, track) the archive copies into the listing. Only the uploaded
+// ("original") audio files count; the archive's own MP3/OGG copies of them are left out.
+const ARCHIVE = {
+    id: 'archive',
+    name: 'Internet Archive',
+    abbr: 'ia',
+    host: /^archive\.org$/,
+    albumId(loc) {
+        const m = loc.pathname.match(/^\/details\/([^/?#]+)\/?$/);
+        if (!m) return null;
+        if (loc === location && !document.querySelector('meta[property="mediatype"][content="audio"], meta[property="mediatype"][content="etree"]')) return null;
+        return decodeURIComponent(m[1]);
+    },
+    AUDIO: /mp3|flac|ogg|vorbis|wave|wav|aiff|m4a|aac|opus|apple lossless|windows media|shorten/i,
+    secs(v) {
+        const t = String(v || '').trim();
+        if (/^\d+(?:\.\d+)?$/.test(t)) return Math.round(+t * 1000);
+        const p = t.split(':').map(Number);
+        return p.length > 1 && p.every(Number.isFinite) ? p.reduce((a, n) => a * 60 + n, 0) * 1000 : null;
+    },
+    one: v => String(Array.isArray(v) ? v[0] : v || '').trim(),
+    most(list) { const n = new Map(); list.filter(Boolean).forEach(x => n.set(x, (n.get(x) || 0) + 1)); return [...n].sort((a, b) => b[1] - a[1])[0]?.[0] || ''; },
+
+    async fetchRelease(id, progress) {
+        const j = await gmJson(`https://archive.org/metadata/${encodeURIComponent(id)}`);
+        const md = (j && j.metadata) || null;
+        if (!md) throw new Error(`Internet Archive: no item ${id}`);
+        if (!/^(?:audio|etree)$/.test(md.mediatype || "")) throw new Error(`Internet Archive: ${id} is ${md.mediatype || 'no'} media, not audio`);
+        const files = (j.files || []).filter(x => x.source === 'original' && this.AUDIO.test(x.format || ''));
+        const num = x => parseInt(String(x.track || '').split('/')[0], 10);
+        files.sort((a, b) => (num(a) || 1e6) - (num(b) || 1e6) || String(a.name).localeCompare(String(b.name), undefined, { numeric: true }));
+        if (!files.length) throw new Error('Internet Archive: no audio files in this item');
+        // "Artist - Album" is the usual item title when the tags say nothing
+        const itemTitle = this.one(md.title), itemCreator = this.one(md.creator);
+        const dash = itemTitle.match(/^(.+?)\s+[-–]\s+(.+)$/);
+        const albumTitle = this.most(files.map(x => String(x.album || '').trim())) || (dash && !itemCreator ? dash[2] : itemTitle);
+        const albumArtist = this.most(files.map(x => String(x.albumartist || x['album artist'] || '').trim()))
+            || this.most(files.map(x => String(x.artist || x.creator || '').trim())) || itemCreator || (dash ? dash[1] : '');
+        Log.info(`Internet Archive item ${id}: "${itemTitle}" by ${itemCreator || '—'} · date ${md.date || '—'} · ${files.length} original audio file(s) of ${(j.files || []).length}`);
+        const albumArtists = albumArtist ? [{ name: albumArtist, url: null }] : [];
+        const various = /^(?:various artists|various|va|v\.a\.)$/i.test(albumArtist);
+        const tracks = files.map((x, i) => {
+            const tf = splitFeat(String(x.title || '').trim() || String(x.name).replace(/^.*\//, '').replace(/\.[^.]+$/, '').replace(/^\d+\s*[-._]?\s*/, ''));
+            const a = String(x.artist || x.creator || '').trim();
+            const credit = creditFromTitle(a && a !== albumArtist ? [{ name: a, url: null }] : albumArtists, tf.feat);
+            progress && progress(i + 1, files.length);
+            Log.debug(`track ${i + 1}: "${tf.title}" (${x.name}, ${x.format}, ${x.length || '?'} s)`);
+            return { title: tf.title, lengthMs: this.secs(x.length), isrc: null, url: null, credit };
+        });
+        const [y, mo, d] = String(this.one(md.date)).split(/[-/.]/).map(x => parseInt(x, 10));
+        const af = splitFeat(albumTitle);
+        const url = `https://archive.org/details/${id}`;
+        return {
+            source: this.id,
+            annotation: notesText(this.one(md.description) !== itemTitle ? this.one(md.description).replace(/<[^>]+>/g, ' ') : ''),
+            url,
+            title: af.title,
+            credit: various ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }] : creditFromTitle(albumArtists, af.feat),
+            types: [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y > 1000 ? y : null, month: y > 1000 && mo ? mo : null, day: y > 1000 && mo && d ? d : null },
+            country: null,
+            barcode: null,
+            labels: [],
+            urls: [{ url, linkType: 75 }, { url, linkType: 85 }],   // 75 = download for free, 85 = stream for free
+            mediums: [{ format: 'Digital Media', name: '', tracks }],
+        };
+    },
+};
+
 // Melon (#815): Korea's biggest store. The album and its songs come from the app's JSON API on
 // m2.melon.com, read the way Harmony does; no CORS there, so through GM. PLANCNPY is the label
 // (SELLCNPY the distributor). No ISRCs, no barcode.
@@ -3265,7 +3341,7 @@ const PRESTO = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY, MORA, TRAXSOURCE, AMAZONSTORE, MELON, BUGS, ALLMUSIC, PRESTO, RYM, AOTY];
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY, MORA, TRAXSOURCE, AMAZONSTORE, ARCHIVE, MELON, BUGS, ALLMUSIC, PRESTO, RYM, AOTY];
 
 /* ── Harmony (#687): the album sent to Harmony's release lookup instead of the editor ── */
 // The album link in the form Harmony reads, for the platforms Harmony looks up by URL; Harmony then
@@ -3286,7 +3362,7 @@ const HARMONY_URLS = {
     bugs: id => `https://music.bugs.co.kr/album/${id}`,
 };
 // Platforms Harmony doesn't know and whose albums never carry a barcode: nothing to send
-const HARMONY_NONE = new Set(['ytmusic', 'amazonmusic', 'rym', 'aoty']);
+const HARMONY_NONE = new Set(['ytmusic', 'amazonmusic', 'rym', 'aoty', 'archive']);
 // spoonkuh: "it does not follow my harmony settings". A link names its providers itself, and one that
 // names none looks the album up on its own platform only (a barcode alone, on none). category=preferred
 // is the providers ticked in Harmony's settings (its cookies), and with no region in the link Harmony
