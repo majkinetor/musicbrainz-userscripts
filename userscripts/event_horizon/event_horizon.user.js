@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.17.210000
+// @version      2026.11.17.220000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -88,8 +88,9 @@ if (window.top !== window && (location.hostname === 'bandcamp.com' && location.p
     };
     window.addEventListener('message', ev => {
         if (ev.source !== window.parent || !ev.data || typeof ev.data.ehPlyCmd !== 'string') return;
-        const play = ev.data.ehPlyCmd === 'play';
         if (!armed) { armed = true; post('hello'); }
+        if (ev.data.ehPlyCmd === 'seek') { const a = document.querySelector('audio'); if (a && ev.data.pos >= 0) a.currentTime = ev.data.pos; return; }
+        const play = ev.data.ehPlyCmd === 'play';
         if (press(play) === false) { let n = 0; const iv = setInterval(() => { if (press(play) !== false || ++n > 60) clearInterval(iv); }, 250); }
     });
     return;
@@ -11871,6 +11872,16 @@ function plyCmd(play) {
     else if (k === 'soundcloud') plyPost(JSON.stringify({ method: play ? 'play' : 'pause' }));
     else plyPost({ ehPlyCmd: play ? 'play' : 'pause' });
 }
+// a jump to ms into the track, in each widget's words; Apple's can't be told
+function plySeek(ms) {
+    const k = ply.kind, t = ply.q[ply.i]; if (!t || !ply.ctl) return;
+    LOG.info('player: seek to', dur(ms), 'in', k);
+    if (ply.yt) plyPost(JSON.stringify({ event: 'command', func: 'seekTo', args: [ms / 1000, true] }));
+    else if (k === 'spotify') plyPost({ command: 'seek', timestamp: ms / 1000 });
+    else if (k === 'soundcloud') plyPost(JSON.stringify({ method: 'seekTo', value: ms }));
+    else plyPost({ ehPlyCmd: 'seek', pos: ms / 1000 });
+    t.played = ms; plyProg();
+}
 // what the widgets say. YouTube: its state, 0 ended, 1 playing, 2 paused. Spotify: ready, then playback_update with
 // isPaused, position and duration (it doesn't start on its own: told to toggle once ready). SoundCloud: ready, then the
 // events it was asked for. Bandcamp's and Deezer's: what the bridge above posts from their audio.
@@ -11938,27 +11949,29 @@ function plyDraw() {
     if (!S.player && ply.i >= 0) { plyClose(); return; }
     const t = ply.q[ply.i]; if (!t) return;
     const root = plyRoot(), bar = S.playerPlace !== 'chip';
-    root.className = 'mbu-ui ' + (bar ? 'ply-bar' : 'ply-chip') + (S.playerVideo || !ply.yt ? '' : ' ply-novid');
+    root.className = 'mbu-ui ' + (bar ? 'ply-bar' : 'ply-chip') + (ply.ctl && !(ply.yt && S.playerVideo) ? ' ply-novid' : '');
     plyCtl.className = 'mbu-ui ply-ctl ' + (bar ? 'pa' : 'pb');
     document.documentElement.classList.toggle('eh-ply-bar', bar);
     const p = t.srcs.find(x => x.key === ply.src) || t.srcs[0], lb = S.playerLb || S.playerScrobble;
     const nav = plyB('prev', 'Previous track', ply.i > 0 ? '' : ' disabled')
         + (ply.ctl ? plyB(ply.paused ? 'play' : 'pause', ply.paused ? 'Play' : 'Pause', '', ' big') : '')
         + plyB('next', 'Next track', ply.i + 1 < ply.q.length ? '' : ' disabled');
-    const name = `<a class="ply-t" href="${MB}/recording/${t.rid}" data-tip="${esc(t.title + ' — ' + t.artist + '\n' + t.relTitle)}"><b>${esc(t.title)}</b><span class="ply-ar">· ${esc(t.artist)}</span><span class="ply-rl">· ${esc(t.relTitle)}</span></a>`;
-    const prog = '<span class="ply-pr" aria-hidden="true"><i></i></span>';
+    const name = `<button type="button" class="ply-t" data-ply="list" aria-haspopup="menu" data-tip="${esc(t.title + ' — ' + t.artist + '\n' + t.relTitle)}\nClick: the playlist"><span class="ply-n">${esc(plyNo(t))}</span><b>${esc(t.title)}</b><span class="ply-ar">· ${esc(t.artist)}</span><span class="ply-rl">· ${esc(t.relTitle)}</span></button>`;
+    const prog = ply.ctl && t.len ? `<span class="ply-pr sk" data-ply="seek" data-tip="Click: jump there"><i></i></span>` : '<span class="ply-pr" aria-hidden="true"><i></i></span>';
     const menu = lb ? `<button type="button" class="ply-b ply-lb${t.ok != null ? ' sent' : ''}" data-ply="lb" aria-haspopup="menu" aria-label="ListenBrainz" data-tip="ListenBrainz${t.ok != null ? '\nListen sent' : ''}">${plyLogo(18)}</button>`
         : bar ? '' : plyB('more', 'More', ' aria-haspopup="menu"');
     if (bar) {
         const many = t.srcs.length > 1;
         const src = `<button type="button" class="ply-sc" data-ply="src"${many ? '' : ' disabled'} aria-label="Source: ${esc(p.name)}" data-tip="Playing from ${esc(p.name)}${many ? '\nClick: another source' : ''}">${esc(p.name)}</button>`;
-        const cov = t.front ? `<img class="ply-cov" src="https://coverartarchive.org/release/${t.rel}/front-250" alt="" loading="lazy">` : '';
+        const cov = `<img class="ply-cov" src="https://coverartarchive.org/release/${t.rel}/front-250" alt="">`;
         const vid = ply.yt ? plyB('video', S.playerVideo ? 'Hide the video' : 'Show the video', ` aria-pressed="${S.playerVideo}"`) : '';
         plyCtl.innerHTML = `<div class="ply-l">${nav}</div>`
             + `<div class="ply-m"><div class="ply-row">${cov}${name}</div>`
             + `<div class="ply-row ply-pg"><span class="ply-tm" data-tm="at"></span>${prog}<span class="ply-tm">${t.len ? dur(t.len) : ''}</span></div></div>`
             + `<div class="ply-r">${src}${vid}${menu}<button type="button" class="mbu-ov-x" data-ply="x" aria-label="Close" data-tip="Close the player">${SVG(PLY_I.x)}</button></div>`;
     } else plyCtl.innerHTML = `<span class="ply-g">${nav}</span>${name}${prog}${menu}`;
+    const im = plyCtl.querySelector('.ply-cov');
+    if (im) im.addEventListener('error', () => { if (/-250$/.test(im.src)) { LOG.debug('player: no cover thumbnail, trying the full front'); im.src = im.src.replace(/-250$/, ''); } else im.remove(); });
     plyProg();
     plyPin();
     plyMark();
@@ -11980,6 +11993,7 @@ const plySrc = key => { ply.pref = key; plyGo(ply.i, key); };
 function plyClick(ev) {
     const b = ev.target.closest('[data-ply]'); if (!b || b.disabled) return;
     const k = b.dataset.ply;
+    if (k === 'seek') { const t = ply.q[ply.i], r = b.getBoundingClientRect(); if (t && t.len && r.width) plySeek(Math.round(Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)) * t.len)); return; }
     if (k === 'prev') plyStep(-1);
     else if (k === 'next') plyStep(1);
     else if (k === 'play' || k === 'pause') { plyCmd(k === 'play'); ply.paused = k === 'pause'; plyDraw(); }
@@ -11987,6 +12001,15 @@ function plyClick(ev) {
     else if (k === 'x') plyClose();
     else if (k === 'src') plySrcMenu(b, ply.q[ply.i], plySrc);
     else if (k === 'lb' || k === 'more') plyLbMenu(b);
+    else if (k === 'list') plyListMenu(b);
+}
+// a track's number, with its disc's when the release has more than one
+const plyNo = t => ply.q.some(x => !String(x.key).startsWith('1-')) ? t.key : String(t.n);
+// the queue: a click plays that track
+function plyListMenu(btn) {
+    plyMenu(btn, '<div class="hd">Playlist</div>' + ply.q.map((x, i) => `<button type="button" class="it qi" role="menuitem" data-k="q${i}"${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span><span class="ql">${x.len ? dur(x.len) : ''}</span></button>`).join(''),
+        ({ k }) => { const i = +String(k).slice(1); if (i >= 0 && i < ply.q.length && i !== ply.i) { LOG.info('player: picked from the playlist', i + 1); plyGo(i, ply.pref); } });
+    document.querySelector('#eh-ply-menu [aria-current]')?.scrollIntoView({ block: 'nearest' });
 }
 // a menu under or above the button that opened it; pick gets the clicked item's {k} or {m}
 function plyMenu(btn, html, pick) {
@@ -12042,7 +12065,9 @@ const PLY_CSS = `
 .ply-ctl .ply-b.big svg{width:16px;height:16px}
 .ply-ctl .ply-lb{position:relative}
 .ply-ctl .ply-lb.sent::after{content:'';position:absolute;right:3px;top:3px;width:7px;height:7px;border-radius:50%;background:#3fa56b;box-shadow:0 0 0 2px var(--surface,#fff)}
-.ply-ctl .ply-t{display:flex;align-items:baseline;gap:5px;min-width:0;color:inherit;text-decoration:none;white-space:nowrap}
+.ply-ctl .ply-t{display:flex;align-items:baseline;gap:5px;min-width:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;text-decoration:none;white-space:nowrap;cursor:pointer}
+.ply-ctl .ply-t:hover b{text-decoration:underline}
+.ply-ctl .ply-n{flex:none;color:var(--muted,#777);font-variant-numeric:tabular-nums}
 .ply-ctl .ply-t>*{overflow:hidden;text-overflow:ellipsis}
 .ply-ctl .ply-t b{flex:0 1 auto;min-width:3em}
 .ply-ctl .ply-ar{flex:0 2 auto;min-width:2em;color:var(--muted,#777)}
@@ -12050,13 +12075,18 @@ const PLY_CSS = `
 .ply-ctl .ply-tm{flex:none;min-width:2.6em;font-size:11px;font-variant-numeric:tabular-nums;color:var(--muted,#777)}
 .ply-ctl .ply-tm:last-child{text-align:right}
 .ply-ctl .ply-pr{flex:1;height:3px;border-radius:2px;background:color-mix(in srgb,currentColor 15%,transparent);overflow:hidden}
+.ply-ctl .ply-pr.sk{cursor:pointer;background-clip:content-box;padding:6px 0;height:3px;box-sizing:content-box}
+.ply-ctl .ply-pr.sk:hover{height:5px;padding:5px 0}
 .ply-ctl .ply-pr i{display:block;width:0;height:100%;background:var(--accent,#ba478f)}
 .ply-ctl .ply-sc{flex:none;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 7px;margin-right:4px;border:1px solid var(--line,#ddd);border-radius:5px;background:none;color:inherit;font:11px/1.4 system-ui,sans-serif;cursor:pointer}
 .ply-ctl .ply-sc:hover:not([disabled]){border-color:var(--accent,#ba478f)}
 .ply-ctl .ply-sc[disabled]{cursor:default}
 .ply-ctl .mbu-ov-x{position:static;flex:none}
-.ply-ctl.pa{position:fixed;z-index:9995;left:0;right:0;bottom:0;height:60px;padding:0 16px;box-sizing:border-box;display:grid;grid-template-columns:1fr minmax(0,2.2fr) 1fr;align-items:center;gap:16px;background:var(--surface,#fff);border-top:1px solid var(--line,#ddd);font:14px/1.3 system-ui,sans-serif;color:var(--text,#222)}
+.ply-ctl.pa{position:fixed;z-index:9995;left:0;right:0;bottom:0;height:60px;padding:0 16px;box-sizing:border-box;display:grid;grid-template-columns:1fr minmax(0,860px) 1fr;padding-right:68px;align-items:center;gap:16px;background:var(--surface,#fff);border-top:1px solid var(--line,#ddd);font:14px/1.3 system-ui,sans-serif;color:var(--text,#222)}
 .pa .ply-l,.pa .ply-r{display:flex;align-items:center;gap:4px;min-width:0}
+.pa .ply-l{justify-content:flex-end}
+.pa .ply-r{justify-content:flex-start}
+html.eh-ply-bar #eh-secfab{bottom:76px}
 .pa .ply-r{justify-content:flex-end}
 .pa .ply-m{display:flex;flex-direction:column;gap:5px;min-width:0}
 .pa .ply-row{display:flex;align-items:center;gap:8px;min-width:0}
@@ -12080,6 +12110,11 @@ html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
 .ply-menu .it{display:flex;align-items:center;gap:9px;width:100%;box-sizing:border-box;padding:7px 9px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;text-align:left;text-decoration:none;cursor:pointer}
 .ply-menu .it:hover,.ply-menu .it:focus-visible,.ply-menu .it[aria-current]{background:color-mix(in srgb,currentColor 10%,transparent);outline:0}
 .ply-menu .it svg,.ply-menu .it img{width:16px;height:16px;flex:none}
+.ply-menu:has(.qi){width:min(440px,calc(100vw - 16px));max-height:min(60vh,520px)}
+.ply-menu .qn{flex:none;min-width:2.2em;color:var(--muted,#777);font-variant-numeric:tabular-nums;text-align:right}
+.ply-menu .qt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ply-menu .qt small{margin-left:6px;color:var(--muted,#777);font-size:12px}
+.ply-menu .ql{flex:none;color:var(--muted,#777);font-size:12px;font-variant-numeric:tabular-nums}
 .ply-menu hr{margin:5px 4px;border:0;border-top:1px solid var(--line,#ddd)}
 .ply-menu .st{display:flex;align-items:center;gap:8px;padding:5px 9px;color:var(--muted,#777);font-size:12px}
 .ply-menu .st .d{width:7px;height:7px;border-radius:50%;background:#3fa56b;flex:none}

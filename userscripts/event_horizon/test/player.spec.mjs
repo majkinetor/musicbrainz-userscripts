@@ -22,6 +22,9 @@ test.describe('bar', () => {
     check(await until(() => page.locator('#eh-ply.ply-bar').count(), n => n === 1) === 1, 'the player shows as the bottom bar');
     check(await until(() => page.locator('.tr.ply-on').count(), n => n === 1) === 1, 'the playing row is marked');
     check(await page.locator('#eh-ply .ply-ctl.pa').count() === 1, 'the bar has its controls');
+    await page.locator('#eh-ply [data-ply="list"]').click();
+    check(await until(() => page.locator('#eh-ply-menu .qi').count(), n => n > 1) > 1, 'the title opens the playlist');
+    check(await page.locator('#eh-ply-menu .qi[aria-current]').count() === 1, 'the playing track is marked in it');
     await page.locator('#eh-ply [data-ply="lb"]').click();
     check(await until(() => page.locator('#eh-ply-menu a[href*="listenbrainz.org/track/"]').count(), n => n >= 1) >= 1, 'the ListenBrainz menu links the track');
     const now = await until(() => sent.find(o => /submit-listens/.test(o.url)), v => !!v);
