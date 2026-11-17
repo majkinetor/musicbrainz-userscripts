@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011016
+// @version      2026.11.18.011017
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11597,6 +11597,12 @@ function secRail(app) {
 // once the page's header scrolls away, a slim bar pinned to the top carries its cover, its title and its action row
 // (the very buttons, moved in and back, so their menus and the search keep working)
 let pinIo = null, pinRo = null, pinAlign = null;
+function pinMake(bar) {
+    if (bar) return bar;
+    bar = document.createElement('div'); bar.id = 'eh-pin'; bar.innerHTML = '<div class="kicker label"></div>'; document.body.appendChild(bar);
+    bar.addEventListener('click', ev => { if (ev.target.closest('.pnm,.pcv') && !ev.target.closest('a')) scrollTo({ top: 0, behavior: 'smooth' }); });
+    return bar;
+}
 function pinBar(app) {
     let bar = document.getElementById('eh-pin');
     // the player's header controls (B) go back in once the bar is drawn again, however this returns
@@ -11607,13 +11613,19 @@ function pinBar(app) {
     // a redraw leaves a shown bar shown, so it doesn't slide out and back in (the filter redraws on every letter)
     const wasOn = !!bar && bar.classList.contains('on');
     if (bar) bar.querySelector('.kicker').innerHTML = '';
-    const acts = app.querySelector('.kicker .acts'); if (!acts) { if (bar) bar.classList.remove('on'); return; }
+    const acts = app.querySelector('.kicker .acts'), hero = !acts && app.querySelector('.hm-hero');
+    if (hero) {
+        bar = pinMake(bar); bar.classList.remove('on');
+        const k = bar.querySelector('.kicker');
+        k.innerHTML = '<span class="pident"><span class="pnm" data-tip="Back to the top">Event Horizon</span></span>';
+        const align = () => { const r = hero.getBoundingClientRect(); k.style.marginLeft = r.left + 'px'; k.style.width = r.width + 'px'; };
+        align(); pinAlign = align; addEventListener('resize', pinAlign);
+        return;
+    }
+    if (!acts) { if (bar) bar.classList.remove('on'); return; }
     let hd = acts; while (hd.parentElement && hd.parentElement !== app) hd = hd.parentElement;
     if (hd === app) { if (bar) bar.classList.remove('on'); return; }
-    if (!bar) {
-        bar = document.createElement('div'); bar.id = 'eh-pin'; bar.innerHTML = '<div class="kicker label"></div>'; document.body.appendChild(bar);
-        bar.addEventListener('click', ev => { if (ev.target.closest('.pnm,.pcv') && !ev.target.closest('a')) scrollTo({ top: 0, behavior: 'smooth' }); });
-    }
+    bar = pinMake(bar);
     const k = bar.querySelector('.kicker'), h1 = hd.querySelector('h1'), img = hd.querySelector('img.cover,img.rhcv:not([hidden]),.u-av img'), kick = acts.parentElement, by = hd.querySelector('.by');
     const title = h1 && h1.cloneNode(true), artist = by && by.cloneNode(true), rg = hd.querySelector('.rg-l'), photo = img && (!img.complete || img.naturalWidth) ? img : null;
     for (const el of [title, artist]) if (el) el.querySelectorAll('.rg-l').forEach(a => a.remove());
@@ -11888,11 +11900,11 @@ if (PLY_BUS) {
         plyOwnerSeen = Date.now(); plyProbeAt = 0;
         if (!S.player || (!plyRemote && !plyPending && ply.i >= 0) || !Array.isArray(m.q)) return;
         if (m.i < 0) { if (plyRemote) { plyRemote = false; plyClose(); } return; }
-        const before = [ply.i, ply.src, ply.paused, ply.q[ply.i]?.title, S.playerVol, S.playerVideo, S.playerRepeat].join('|');
+        const before = [ply.i, ply.src, ply.paused, ply.q[ply.i]?.title, S.playerVideo, S.playerRepeat].join('|'), vol = S.playerVol;
         plyRemote = true; plyResumed = true; Object.assign(ply, { q: m.q, i: m.i, src: m.src, pref: m.pref, paused: m.paused, yt: m.yt, kind: m.kind, ctl: m.ctl, ends: m.ends });
         S.playerVol = m.vol; S.playerVideo = m.video; S.playerRepeat = m.repeat || 'off';
-        const after = [ply.i, ply.src, ply.paused, ply.q[ply.i]?.title, S.playerVol, S.playerVideo, S.playerRepeat].join('|');
-        if (before !== after || !plyCtl || !plyCtl.isConnected) plyDraw(); else plyProg();
+        const after = [ply.i, ply.src, ply.paused, ply.q[ply.i]?.title, S.playerVideo, S.playerRepeat].join('|');
+        if (before !== after || !plyCtl || !plyCtl.isConnected) plyDraw(); else { plyProg(); if (vol !== S.playerVol) plyVolShow(+S.playerVol || 0); }
     });
     if (PLY_WINDOW) {
         // the window takes Event Horizon's palette and the page's light or dark theme, which a String Theory theme repaints like the viewer
@@ -12070,7 +12082,9 @@ const plyVolIc = v => SVG(PLY_I[!v ? 'mute' : v < 15 ? 'vol0' : v < 50 ? 'vol1' 
 function plyVolSet(v, keep) {
     v = Math.max(0, Math.min(100, Math.round(v)));
     if (v && !keep) ply.lastVol = v;
-    S.playerVol = v; save(); plyVol();
+    S.playerVol = v; save(); plyVol(); plyVolShow(v);
+}
+function plyVolShow(v) {
     const r = plyCtl && plyCtl.querySelector('.ply-vol'); if (r) { if (+r.value !== v) r.value = v; r.style.setProperty('--p', v + '%'); }
     const n = plyCtl && plyCtl.querySelector('.ply-vn'); if (n) n.textContent = v;
     const b = plyCtl && plyCtl.querySelector('[data-ply="mute"]');
@@ -12128,6 +12142,7 @@ window.addEventListener('blur', () => setTimeout(() => {
 }));
 // the controls: one element, at the bottom (A, the bar) or in the pinned header (B); outside the header, as a chip at the top right
 let plyCtl = null;
+let plyVgOpen = false;
 function plyRoot() {
     let root = document.getElementById('eh-ply');
     if (!root) {
@@ -12136,11 +12151,19 @@ function plyRoot() {
         root.innerHTML = '<div class="ply-dock"></div>';
         document.documentElement.append(root);
     }
-    if (!plyCtl) { plyCtl = document.createElement('div'); plyCtl.addEventListener('click', plyClick); plyCtl.addEventListener('contextmenu', ev => { if (ev.target.closest('[data-ply="play"],[data-ply="pause"]')) { ev.preventDefault(); plyRepeat(); } }); plyCtl.addEventListener('mousemove', plyHover); plyCtl.addEventListener('wheel', plyWheel, { passive: false }); plyCtl.addEventListener('input', ev => { if (ev.target.classList.contains('ply-vol')) plyVolSet(+ev.target.value); }); }
+    if (!plyCtl) {
+        plyCtl = document.createElement('div');
+        // the pointer on the volume keeps its pop-up open through a redraw, which a browser's hover would lose until the mouse moves
+        plyCtl.addEventListener('pointerover', ev => { const g = ev.target.closest('.ply-vg'); if (g) { plyVgOpen = true; g.classList.add('vo'); } });
+        plyCtl.addEventListener('pointerout', ev => { const g = ev.target.closest('.ply-vg'); if (g && !(ev.relatedTarget && g.contains(ev.relatedTarget))) { plyVgOpen = false; g.classList.remove('vo'); } });
+        plyCtl.addEventListener('click', plyClick); plyCtl.addEventListener('contextmenu', ev => { if (ev.target.closest('[data-ply="play"],[data-ply="pause"]')) { ev.preventDefault(); plyRepeat(); } }); plyCtl.addEventListener('mousemove', plyHover); plyCtl.addEventListener('wheel', plyWheel, { passive: false }); plyCtl.addEventListener('input', ev => { if (ev.target.classList.contains('ply-vol')) plyVolSet(+ev.target.value); }); }
     return root;
 }
+// a reload hides the resumed player until it stands in its place in Event Horizon's colours, so it doesn't blip elsewhere first
+const plyUnhold = () => document.documentElement.removeAttribute('data-eh-ply-hold');
 // B: the controls go into the pinned header, after its title, and the header stays shown; without one, back to the chip
 function plyPin() {
+    if (ehOn && document.documentElement.hasAttribute('data-eh-theme')) plyUnhold();
     const t = ply.q[ply.i], pin = document.getElementById('eh-pin'), html = document.documentElement;
     const id = t && plyCtl && S.playerPlace === 'chip' && ehOn && pin && !pin.hidden ? pin.querySelector('.pident') : null;
     if (pin) pin.classList.toggle('eh-ply', !!id);
@@ -12173,6 +12196,7 @@ function plyDraw() {
     plyCtl.innerHTML = `<span class="ply-g">${nav}</span>${name}${prog}${vol}${menu}`;
     const im = plyCtl.querySelector('.ply-cov img');
     if (im) im.addEventListener('error', () => { if (/-250$/.test(im.src)) { LOG.debug('player: no cover thumbnail, trying the full front'); im.src = im.src.replace(/-250$/, ''); } else im.remove(); });
+    if (plyVgOpen) plyCtl.querySelector('.ply-vg')?.classList.add('vo');
     plyProg();
     plyPin();
     plyMark();
@@ -12363,7 +12387,8 @@ const PLY_CSS = `
 .ply-ctl .ply-vg{position:relative;display:inline-flex;align-items:center;flex:none}
 .ply-ctl .ply-vp{display:none;position:absolute;left:50%;bottom:100%;transform:translateX(-50%);z-index:3;padding:10px 6px;border:1px solid var(--mbu-border,#8884);border-radius:6px;background:var(--surface,#fff)}
 .pb .ply-vp{bottom:auto;top:100%}
-.ply-ctl .ply-vg:hover .ply-vp,.ply-ctl .ply-vg:focus-within .ply-vp{display:flex}
+html[data-eh-ply-hold] #eh-ply{visibility:hidden}
+.ply-ctl .ply-vg:hover .ply-vp,.ply-ctl .ply-vg:focus-within .ply-vp,.ply-ctl .ply-vg.vo .ply-vp{display:flex}
 .ply-ctl .ply-vp{flex-direction:column;align-items:center;gap:8px;padding:10px 8px 12px}
 .ply-ctl .ply-vn{font:600 11px/1 ui-monospace,monospace;font-variant-numeric:tabular-nums;color:var(--muted,#888);min-width:3ch;text-align:center}
 .ply-ctl .ply-vol{display:block;-webkit-appearance:none;appearance:none;writing-mode:vertical-lr;direction:rtl;width:14px;height:100px;margin:0;padding:0;background:linear-gradient(to top,var(--accent,#ba478f) var(--p,50%),color-mix(in srgb,currentColor 18%,transparent) var(--p,50%)) center/4px 100% no-repeat;border-radius:2px;cursor:pointer}
@@ -12413,7 +12438,6 @@ html.eh-ply-win .ply-wl{order:2;flex:1;min-height:0;overflow:auto;padding:4px;sc
 #eh-ply.ply-bar .ply-dock{bottom:56px}
 #eh-ply.ply-chip .ply-dock{top:132px}
 html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
-html:not(.eh-ply-pin):has(#app .hm-hero) #eh-ply>.ply-ctl.pb:not(.pa){top:auto;bottom:16px}html:not(.eh-ply-pin):has(#app .hm-hero):has(#mbu-dock) #eh-ply>.ply-ctl.pb:not(.pa){right:72px}html:not(.eh-ply-pin):has(#app .hm-hero) #eh-ply>.ply-ctl.pb:not(.pa) .ply-vp{top:auto;bottom:100%}html:not(.eh-ply-pin):has(#app .hm-hero) #eh-ply.ply-chip .ply-dock{top:auto;bottom:64px}
 .ply-menu{position:fixed;z-index:9996;min-width:230px;max-height:calc(100vh - 16px);overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;box-sizing:border-box;padding:5px;background:var(--surface,#fff);color:var(--text,#222);border:1px solid var(--line,#ddd);border-radius:9px;box-shadow:0 6px 20px rgba(0,0,0,.12);font:13px/1.3 system-ui,sans-serif}
 .ply-menu .hd{display:flex;align-items:center;gap:7px;padding:6px 9px 4px;color:var(--muted,#777);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
 .ply-menu .hd .qf{margin-left:auto;width:150px;min-width:0;padding:3px 7px;border:1px solid var(--line,#ddd);border-radius:5px;background:transparent;color:var(--text,#222);font:12px/1.3 system-ui,sans-serif;text-transform:none;letter-spacing:0;outline:0}
@@ -12481,6 +12505,7 @@ function plySave() {
 // saved player too: a tab's first page drops it, and only reloads and in-tab navigation resume
 let plyResumed = false;
 try { const nav = performance.getEntriesByType('navigation')[0]; if (history.length <= 1 && (!nav || nav.type === 'navigate')) sessionStorage.removeItem('eh-ply'); } catch (e) {}
+try { if (!PLY_WINDOW && sessionStorage.getItem('eh-ply')) { document.documentElement.setAttribute('data-eh-ply-hold', ''); setTimeout(plyUnhold, 4000); } } catch (e) {}
 setInterval(() => {
     if (PLY_WINDOW) plyPublish();
     if (plyRemote && !PLY_WINDOW) {
