@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.16
+// @version      2026.11.17.180000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -4036,14 +4036,39 @@
     request.then(() => { if (_relInFlight !== request) return; _relFailed = false; try { updateBtnStatus(); } catch (e) {} notifyMatchCounts(); }, () => { if (_relInFlight !== request) return; _relFailed = true; notifyMatchCounts(); });
     return _relInFlight;
   }
+  // In Event Horizon the release comes from the lookup Event Horizon drew its page from (MBU.ehRelease), which has
+  // everything this one asks for: no request of our own. Only a release's first load: after an edit here a reload asks MusicBrainz
+  let _ehUsed = new Map();   // release → the Event Horizon text it was read from
+  function ehShared(id) {
+    try { const ns = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window; return (ns.MBU && ns.MBU.ehRelease && ns.MBU.ehRelease(id)) || null; } catch (e) { return null; }
+  }
+  // Event Horizon got the release again (a redraw with what MusicBrainz changed): read it again when it differs
+  document.addEventListener('mbu-eh-release', e => {
+    const id = String(e.detail || '').toLowerCase(), p = ehShared(id);
+    if (id !== mbid || !p || !_ehUsed.has(id) || _relInFlight || _removalBusy || (typeof modal !== 'undefined' && modal && modal.classList.contains('open'))) return;
+    Promise.resolve(p).then(t => {
+      if (id !== mbid || String(t) === _ehUsed.get(id) || _relInFlight) return;
+      Log.info('Event Horizon got release ' + id + ' again, changed: reading it again');
+      _ehUsed.delete(id); RELEASE = null; fetchRelease().catch(() => {});
+    }, () => {});
+  });
   function fetchReleaseNow() {
+    const id = mbid, shared = !_ehUsed.has(id) && ehShared(id);
+    if (shared) {
+      _ehUsed.set(id, null);
+      return Promise.resolve(shared).then(t => { _ehUsed.set(id, String(t)); Log.info('Release read from Event Horizon, no request'); return releaseFrom({ status: 200, responseText: String(t) }); },
+        () => { _ehUsed.delete(id); return fetchReleaseNow(); });
+    }
     return gmGet(
       // recording-level-rels folds each recording's URL relationships into this one
       // call (same data the overview's "Display credits inline" shows) — so the
       // #219 track-link icons know what's already linked with no extra request.
       MB_WS2 + 'release/' + mbid + '?inc=recordings+artist-credits+isrcs+url-rels+recording-level-rels+release-groups&fmt=json',
       { 'Accept': 'application/json', 'User-Agent': UA }
-    ).then(async r => {
+    ).then(releaseFrom);
+  }
+  async function releaseFrom(r) {
+    {
       if (r.status !== 200) throw new Error('MB ' + r.status);
       const data = JSON.parse(r.responseText);
       const tracks = [];
@@ -4093,7 +4118,7 @@
       Log.info('Release "' + RELEASE.title + '"' + (releaseYear ? ' (' + releaseYear + ')' : '') + ': ' + tracks.length + ' track(s), ' +
         tracks.filter(t => !t.existing.length).length + ' missing ISRC' + (linkStr ? '; links: ' + linkStr : ''));
       return RELEASE;
-    });
+    }
   }
   function acName(ac) {
     if (!Array.isArray(ac)) return '';
@@ -10088,7 +10113,7 @@
     if (!r || r === mbid || _removalBusy || (typeof modal !== 'undefined' && modal && modal.classList.contains('open'))) return;
     Log.info('Event Horizon shows release ' + r + ': following it');
     try { abortSxWork('Event Horizon moved to another release'); } catch (e) { /* nothing running */ }
-    mbid = r; RELEASE = null; _relInFlight = null; _autoLinksDone = false; _bgIsrcsSeeded = false; _dzListCache = null; _suspectUndo = null; _allEpoch++;
+    mbid = r; RELEASE = null; _relInFlight = null; _ehUsed.delete(r); _autoLinksDone = false; _bgIsrcsSeeded = false; _dzListCache = null; _suspectUndo = null; _allEpoch++;
     BG.generation = (BG.generation || 0) + 1; BG.started = false; BG.running = {};
     const st = btnStatus(); if (st) st.textContent = '';
     btn.classList.add('ii-loading');   // the new release's count is on its way
