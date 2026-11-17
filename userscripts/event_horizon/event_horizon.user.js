@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011018
+// @version      2026.11.18.011019
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12211,9 +12211,17 @@ function plyWinList(root) {
         l.addEventListener('click', ev => { const b = ev.target.closest('.qi'); const i = b ? +b.dataset.i : -1; if (i >= 0 && i < ply.q.length && i !== ply.i) { LOG.info('player: picked from the playlist', i + 1); plyGo(i, ply.pref); } });
         root.append(l);
     }
-    l.innerHTML = plyRelHead(ply.q[ply.i]) + ply.q.map((x, i) => `<button type="button" class="qi" role="listitem" data-i="${i}"${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span><span class="ql">${x.len ? dur(x.len) : ''}</span></button>`).join('');
-    l.querySelector('.ply-rh img')?.addEventListener('error', ev => ev.target.remove());
-    l.querySelector('[aria-current]')?.scrollIntoView({ block: 'nearest' });
+    // the header and the rows are redrawn only when they change, so the cover doesn't reload with every track
+    const head = plyRelHead(ply.q[ply.i]), rows = ply.q.map((x, i) => `<button type="button" class="qi" role="listitem" data-i="${i}"${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span><span class="ql">${x.len ? dur(x.len) : ''}</span></button>`).join('');
+    if (l._head !== head) {
+        l._head = head; l.querySelector('.ply-rh')?.remove();
+        if (head) { l.insertAdjacentHTML('afterbegin', head); l.querySelector('.ply-rh img')?.addEventListener('error', ev => ev.target.remove()); }
+    }
+    if (l._rows !== rows) {
+        l._rows = rows; l.querySelectorAll('.qi').forEach(b => b.remove());
+        l.insertAdjacentHTML('beforeend', rows);
+        l.querySelector('[aria-current]')?.scrollIntoView({ block: 'nearest' });
+    }
 }
 // the chip's position bar spans the title only, not the buttons beside it
 function plyFit() {
