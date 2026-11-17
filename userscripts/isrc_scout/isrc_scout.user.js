@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.17.181950
+// @version      2026.11.17.230741
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -4026,7 +4026,7 @@
     _relInFlight = fetchReleaseNow().catch(err => {
       if (release !== mbid) throw err;
       Log.warn('Release load failed; retrying once: ' + errText(err));
-      return fetchReleaseNow();
+      return fetchReleaseNow(true);
     });
     const request = _relInFlight;
     request.catch(() => {}).then(() => { if (_relInFlight === request) _relInFlight = null; });
@@ -4070,12 +4070,15 @@
     if (id !== mbid) return;
     _ehRefreshPending = id; isSyncEhRefresh();
   });
-  function fetchReleaseNow() {
-    const id = mbid, shared = !_ehUsed.has(id) && ehShared(id);
+  // own: ask MusicBrainz, not Event Horizon. Its lookup can fail (and stays kept failed) or hang; either way this
+  // one asks MusicBrainz itself, after 10 s at most, instead of asking Event Horizon again forever
+  function fetchReleaseNow(own) {
+    const id = mbid, shared = !own && !_ehUsed.has(id) && ehShared(id);
     if (shared) {
       _ehUsed.set(id, null);
-      return Promise.resolve(shared).then(t => { _ehUsed.set(id, String(t)); Log.info('Release read from Event Horizon, no request'); return releaseFrom({ status: 200, responseText: String(t) }); },
-        () => { _ehUsed.delete(id); return fetchReleaseNow(); });
+      const late = new Promise((ok, no) => setTimeout(() => no(new Error('no answer in 10 s')), 10000));
+      return Promise.race([Promise.resolve(shared), late]).then(t => { _ehUsed.set(id, String(t)); Log.info('Release read from Event Horizon, no request'); return releaseFrom({ status: 200, responseText: String(t) }); },
+        e => { _ehUsed.delete(id); Log.info('Event Horizon\'s release lookup failed (' + errText(e) + '): asking MusicBrainz'); return fetchReleaseNow(true); });
     }
     return gmGet(
       // recording-level-rels folds each recording's URL relationships into this one
