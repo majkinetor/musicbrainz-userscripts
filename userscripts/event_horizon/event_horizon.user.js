@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011021
+// @version      2026.11.18.011022
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11924,11 +11924,14 @@ if (PLY_BUS) {
     } else plySend({ type: 'hello' });
 }
 if (mbuTestHooks()) window.__ehPlayerTest = { start: (q, i = 0) => plyWindowStart(q, i), toWindow: plyToWindow, toTab: plyToTab, inWindow: plyInWin, startRelease: plyStart, remote: () => plyRemote, popup: () => PLY_WINDOW, state: () => ({ i: ply.i, gen: ply.gen, paused: ply.paused, vol: S.playerVol, repeat: S.playerRepeat }) };
-// Keep playback alive when opening the release editor, including on MusicBrainz's native page.
+// Keep playback alive when opening the release editor, including on MusicBrainz's native page. Only a player playing in
+// this tab needs it, and only a link that leaves the page: the editor's own step links (#information, which Platform
+// Check clicks while it adds links) stay on it and opened one more editor tab with every click.
 document.addEventListener('click', ev => {
-    if (ply.i < 0 || ev.defaultPrevented || ev.button !== 0 || ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey) return;
+    if (ply.i < 0 || plyRemote || PLY_WINDOW || plyInWin() || ev.defaultPrevented || ev.button !== 0 || ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey) return;
     const a = ev.target.closest && ev.target.closest('a[href]'); if (!a || a.target || a.hasAttribute('download')) return;
     const u = new URL(a.href);
+    if (u.origin === location.origin && u.pathname === location.pathname && u.search === location.search) return;
     if (u.origin === location.origin && /^\/release\/[0-9a-f-]{36}\/edit\/?$/i.test(u.pathname)) { ev.preventDefault(); window.open(u.href, '_blank', 'noopener'); }
 }, true);
 // a link's player: the widget's address and height; Bandcamp's widget wants the track's id, read from its page (bc)
@@ -15538,7 +15541,7 @@ const keyGo = sub => () => {
     const url = `${MB}/${e.type}/${e.id}${sub ? '/' + sub : ''}`;
     // the viewer's own button takes it, so it opens where the viewer would
     const a = ehOn && [...document.querySelectorAll('#app a[href]')].find(x => x.href === url);
-    if (a) a.click(); else if (sub === 'edit' && e.type === 'release' && ply.i >= 0) window.open(url, '_blank', 'noopener'); else location.assign(url);
+    if (a) a.click(); else if (sub === 'edit' && e.type === 'release' && ply.i >= 0 && !plyRemote && !plyInWin()) window.open(url, '_blank', 'noopener'); else location.assign(url);
     return true;
 };
 // the viewer's search box, else MusicBrainz's header one, else its search page
