@@ -12040,7 +12040,7 @@ function plyEmbed(p) {
         const url = new URL(u);
         if (p.key === 'youtube' || p.key === 'ytmusic') {
             const id = url.searchParams.get('v') || (url.hostname === 'youtu.be' ? url.pathname.slice(1) : (url.pathname.match(/\/(?:embed|shorts|live)\/([\w-]{11})/) || [])[1]);
-            return id && { yt: true, url: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`, h: 180 };
+            return id && { yt: true, url: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`, h: 180 };
         }
         if (p.key === 'spotify') { const m = url.pathname.match(/\/(track|album)\/(\w+)/); return m && { url: `https://open.spotify.com/embed/${m[1]}/${m[2]}?autoplay=1`, h: 80 }; }
         if (p.key === 'deezer') { const m = url.pathname.match(/\/(track|album)\/(\d+)/); return m && { url: `https://widget.deezer.com/widget/auto/${m[1]}/${m[2]}?autoplay=true`, h: 92 }; }
@@ -12748,7 +12748,7 @@ function onClick(ev) {
     const nav = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && ev.target.closest('a[href]');
     // Edit search uses MusicBrainz's live form and its native lookup handlers on each search page.
     if (nav && new URL(nav.href).origin === MB && new URL(nav.href).pathname === '/search/edits') return;
-    const navId = nav && !nav.target && (navTo(nav.href) || histKey(nav.href));
+    const navId = nav && !nav.target && (navTo(nav.href) || histKey(nav.href) || artIn(nav.href));
     if (navId) { ev.preventDefault(); ehPush(nav.href); show(navId); return; }
     // a click anywhere on a section's header row, outside its tools, folds the section
     const hd = ev.target.closest('.secthead');
@@ -12899,12 +12899,14 @@ function navTo(href) {
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
 const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? (d.t === 'url' ? (d.q ? d.q + ' · ' : '') + 'URL search' : d.q + ' · Search') + ' · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'colnew' ? 'New collection · Event Horizon' :d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'aliases' ? (d.t && d.t.en || 'Aliases') + ' · Aliases · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + ' · ' + (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
-// a release's cover-art page, or its add-cover-art page → "art/<mbid>"; an event's event-art or add-event-art page → "eart/<mbid>": its title and artist, then Art Station's gallery (#as-slot). Only as the
-// page the tab loaded, as Art Station runs on that page alone: a link to it loads it
+// a release's cover-art page, or its add-cover-art page → "art/<mbid>"; an event's event-art or add-event-art page → "eart/<mbid>": its title and artist, then Art Station's gallery (#as-slot). A release's cover-art
+// page also opens in the tab from any other release page (artIn): Art Station, asked by mbu-art-mount, starts its gallery
+// in the slot without a page load, so the player plays on. The add pages and an event's art load their page
 const artKey = href => {
     const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/(release/(' + MBID.source + ')/(?:add-)?cover-art|event/(' + MBID.source + ')/(?:add-)?event-art)/?$', 'i'));
     return m ? m[2] ? 'art/' + m[2].toLowerCase() : 'eart/' + m[3].toLowerCase() : null;
 };
+const artIn = href => { const k = artKey(href); return k && k.startsWith('art/') && !/\/add-cover-art\/?$/i.test(new URL(href, location.href).pathname) ? k : null; };
 // a release's relationship editor → "relate/<mbid>". MusicBrainz's React app stays where it is: Event Horizon only
 // dresses it (its header, theme and fonts over MusicBrainz's own sheets), never swaps its body, which would kill the editor
 const relKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/edit-relationships/?$', 'i')); return m ? 'relate/' + m[1].toLowerCase() : null; };
@@ -13454,7 +13456,7 @@ function artStationPlace(on) {
 function artPage(app, d) {
     const r = d.rel;
     if (!app.querySelector('#as-slot')) app.innerHTML = '<section class="arthd"></section><div id="as-slot"></div>';
-    const mh = !r && mbBody && mbBody.querySelector('.releaseheader'), mt = mh && mh.querySelector('h1 a'), ma = mh ? [...mh.querySelectorAll('.subheader a[href*="/artist/"]')] : [];
+    const mh = !r && mbBody && PAGE_ID.endsWith('/' + d.id) && mbBody.querySelector('.releaseheader'), mt = mh && mh.querySelector('h1 a'), ma = mh ? [...mh.querySelectorAll('.subheader a[href*="/artist/"]')] : [];
     const early = mt ? `${heroH1(mt.textContent, '', `${MB}/release/${d.id}`)}${ma.length ? `<div class="by">by ${ma.map(a => `<a href="${esc(a.href)}">${esc(a.textContent)}</a>`).join(', ')}</div>` : ''}` : '';
     if (d.ev) { evArtHead(app.querySelector('.arthd'), d); } else app.querySelector('.arthd').innerHTML = subHead(r, d.id, 'cover-art', 'Cover art', d.err ? `<h1>${esc(d.err)}</h1>` : early || '<h1>&nbsp;</h1>'); cvWire(app.querySelector('.arthd'));
     const slot = app.querySelector('#as-slot'), as = mbBody && mbBody.querySelector('#as-root');
@@ -14636,7 +14638,7 @@ function build() {
     addEventListener('scroll', railSpy, { passive: true });
     // MusicBrainz's page is for the release this tab loaded; any other is fetched anew
     try { history.scrollRestoration = 'manual'; } catch (e) {}   // show() puts the page back where it was left, once it's in
-    addEventListener('popstate', () => { const k = navTo(location.href); if (!ehOn || !k) location.reload(); else show(k, { y: history.state && history.state.ehY }); });
+    addEventListener('popstate', () => { const k = navTo(location.href) || artIn(location.href); if (!ehOn || !k) location.reload(); else show(k, { y: history.state && history.state.ehY }); });
 }
 // what you switch to stays: the next page opens the same way (majkinetor)
 const switchOn = on => { S.on = on; save(); setOn(on); };
@@ -15571,7 +15573,14 @@ async function show(key, o = {}) {
     const parts = kind === 'recording' ? ['recording', 'releases', 'works'] : kind === 'work' ? ['work', 'recordings'] : kind === 'area' ? ['area', 'artists, labels, places'] : kind === 'instrument' ? ['instrument', 'artists, releases, recordings'] : kind === 'place' ? ['place', 'events, recordings'] : kind === 'series' ? ['series', 'parts'] : kind === 'collection' ? ['collection', 'items'] : kind === 'event' ? ['event'] : isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
     if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
     if (kind === 'discs' || kind === 'toc') { data = { kind, id }; scrollTo(0, 0); render(); discLoad(n, id); return; }
-    if (kind === 'art' || kind === 'eart') { data = { kind: 'art', id, ev: kind === 'eart' }; render(); artLoad(n, id); return; }
+    if (kind === 'art' || kind === 'eart') {
+        data = { kind: 'art', id, ev: kind === 'eart' }; render();
+        // Art Station takes the slot (preventDefault); without it, only the page the tab loaded shows its art
+        const ask = new CustomEvent('mbu-art-mount', { cancelable: true, detail: JSON.stringify({ release: kind === 'art' ? id : null }) });
+        document.dispatchEvent(ask);
+        if (!ask.defaultPrevented && key !== PAGE_ID) { location.assign(location.href); return; }
+        artLoad(n, id); return;
+    }
     if (kind === 'hist') { data = { kind: 'hist', id, edits: [], page: 0, more: !esIsSearch(id) || esHasQuery(id), grp: S.hgrp || 'burst', st: '', open: new Set() }; scrollTo(0, 0); render(); histLoad(n); return; }
     if (kind === 'gtag') {
         const p = key.split('/').slice(1);

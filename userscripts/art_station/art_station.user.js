@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.17.213554
+// @version      2026.11.18.012000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -746,21 +746,26 @@
   }
 
   const ART_PAGE = location.pathname.match(/\/(release|event)\/([0-9a-f-]{36})\/(add-)?(?:cover|event)-art/i);
-  const VIEW_ONLY = !SETTINGS_ONLY && !ART_PAGE;   // no gallery of its own here: only the full-screen viewer, for another script's images
-  const QUIET = SETTINGS_ONLY || VIEW_ONLY;
+  // let: Event Horizon can start the gallery in-page on a release's overview (mbu-art-mount), which turns these off
+  let VIEW_ONLY = !SETTINGS_ONLY && !ART_PAGE;   // no gallery of its own here: only the full-screen viewer, for another script's images
+  let QUIET = SETTINGS_ONLY || VIEW_ONLY;
+  // the gallery started in Event Horizon's slot on another page (mbu-art-mount); PAGE_DOC is then the fetched
+  // cover-art page, read for its header and notices
+  let _embedded = false, PAGE_DOC = document;
   const M = ART_PAGE || ['', 'release', '', undefined];   // #851: the settings alone, on any page
 
   // mbRestackCorner, the #468 corner slots, is in the ST-UI block (dev/ui/ui-components.mjs).
 
   const IS_EVENT = M[1].toLowerCase() === 'event';
-  const MBID = M[2];
+  let MBID = M[2];
   // #248 the native "add cover art" uploader page (also where integrations like
   // Harmony land, sometimes pre-seeded with images). Art Station fully takes it
   // over: same gallery, plus it harvests any seeded images as staged new covers.
   const IS_ADD = !!M[3];
-  const ENT = IS_EVENT
-    ? { kind: 'event',   base: `/event/${MBID}`,   art: 'event-art', archive: `https://eventartarchive.org/event/${MBID}`, noun: 'event art', Noun: 'Event art' }
-    : { kind: 'release', base: `/release/${MBID}`, art: 'cover-art', archive: `https://coverartarchive.org/release/${MBID}`, noun: 'cover art', Noun: 'Cover art' };
+  const entOf = id => IS_EVENT
+    ? { kind: 'event',   base: `/event/${id}`,   art: 'event-art', archive: `https://eventartarchive.org/event/${id}`, noun: 'event art', Noun: 'Event art' }
+    : { kind: 'release', base: `/release/${id}`, art: 'cover-art', archive: `https://coverartarchive.org/release/${id}`, noun: 'cover art', Noun: 'Cover art' };
+  let ENT = entOf(MBID);
 
   // Deep-link to the current user's Cover/Event Art edit history — the MB edit
   // search pre-filtered to the cover-art + event-art edit types, scoped to "me".
@@ -1239,6 +1244,7 @@
   const _native = [];          // the native cover-art elements mount() hid, so we can show them again
   function mount() {
     if (_mounted) return; _mounted = true;
+    if (_embedded) { const slot = document.getElementById('as-slot'); if (slot) slot.appendChild(root); return; }   // Event Horizon's page: nothing native to hide
     // Mount on MusicBrainz first, even when Event Horizon is showing. It borrows
     // this gallery and returns it here when the native page is selected.
     const anchor = document.querySelector('#content') || document.body;
@@ -1277,7 +1283,7 @@
   // "Show original" (View): un-hide MB's native cover-art UI and collapse our
   // gallery to just the toolbar — like Apollo's native/script switcher. #234
   function applyOriginal() {
-    earlyHide.disabled = _showOrig;                                  // the document-start hiding style
+    earlyHide.disabled = _showOrig || _embedded;                     // the document-start hiding style (not on the overview it was started on)
     if (addHide) addHide.disabled = _showOrig;                       // #248 reveal the native uploader in Original
     _native.forEach(el => { el.style.display = _showOrig ? '' : 'none'; });
     root.classList.toggle('as-orig', _showOrig);                     // hides the whole Art Station UI
@@ -1293,7 +1299,7 @@
   // MB renders the darkened notice as a bare <h2> (+ <p>) directly under #content, in the current UI
   // language — grab it for display, but detection itself keys on the language-independent CAA 403.
   function nativeDarkMsg() {
-    const c = document.getElementById('content'); if (!c) return '';
+    const c = PAGE_DOC.getElementById('content'); if (!c) return '';
     const h2 = [...c.children].find(n => n.tagName === 'H2' && !n.closest('#as-root'));
     if (!h2) return '';
     let m = (h2.textContent || '').replace(/\s+/g, ' ').trim();
@@ -1365,14 +1371,14 @@
   // optional (setup): hide MB's native button row (Add / Reorder / Import from …)
   // under the gallery — redundant with Art Station's own toolbar. Revealed in Original.
   function applyHideFooter() {
-    footerStyle.disabled = !(SETTINGS.hideMbFooter && !_showOrig);
+    footerStyle.disabled = _embedded || !(SETTINGS.hideMbFooter && !_showOrig);
   }
   // #234: a fixed switcher (bottom-right) toggling Original ⇄ Art Station — always visible.
   // #695: the script's round icon like every other corner launcher, in colour while Art
   // Station shows and monochrome while off; a right-click opens the setup.
   function ensureSwitch() {
     let sw = document.getElementById('as-switch');
-    if (!sw) {
+    if (!sw && !_embedded) {   // embedded in Event Horizon's page: no native page to switch to
       sw = document.createElement('button'); sw.type = 'button'; sw.id = 'as-switch';
       sw.dataset.mbCorner = 'br'; sw.dataset.mbCornerOrder = '10'; sw.dataset.mbCornerDock = 'hide'; sw.dataset.mbCornerLabel = 'Art Station';   // Event Horizon replaces its page (#847)
       sw.innerHTML = `<img src="${ICON_URL}" alt="">`;
@@ -1390,6 +1396,7 @@
       item.oncontextmenu = e => { e.preventDefault(); toggleSetup(); };
       mbuAttr(item, 'data-tip', 'Art Station settings');
     }
+    if (!sw) return;
     mbuCls(sw, 'on', !_showOrig);
     mbuAttr(sw, 'data-tip', (_showOrig ? 'Art Station is off\nClick: back to the Art Station gallery' : 'Art Station is on\nClick: show MusicBrainz’s own cover-art page') + '\nRight-click: settings');
   }
@@ -3317,7 +3324,10 @@
   }
   // expose the registry on the page (and a CustomEvent fallback for managers that
   // isolate `window` from other userscripts). Either way is fine to call repeatedly.
-  if (!QUIET) (function exposeApi() {
+  let _apiOut = false;
+  if (!QUIET) exposeApi();
+  function exposeApi() {
+    if (_apiOut) return; _apiOut = true;
     // addImageUrl: bring an image in by URL — the bridge the reverse-image-search
     // picker companion (as_picker.user.js) calls when it lands on the MB page with
     // images the user picked elsewhere. Returns true so the companion knows AS is here.
@@ -3326,7 +3336,7 @@
     try { document.addEventListener('artstation:register-provider', e => { try { registerProvider(e.detail); } catch (x) {} }); } catch (e) {}
     // also accept picks via a DOM event (the companion may prefer this over the API object)
     try { document.addEventListener('artstation:add-image', e => { try { if (e.detail && e.detail.url) api.addImageUrl(e.detail.url, e.detail.prov); } catch (x) {} }); } catch (e) {}
-  })();
+  }
   // prov (optional) = { name, icon } the cover is being sourced from — passed by the
   // "Import from <provider>" buttons, else derived from the URL. Stamped on each new
   // cover so the gallery shows where it came from until commit (#249).
@@ -4311,7 +4321,7 @@
   // a drag we accept: local files, OR an image dragged from another tab/page (a URL — #331).
   // #916 not while Art Station is switched off: these capture-phase listeners would swallow the
   // drop before MusicBrainz's own drop zone, then shown, ever saw it.
-  const isFileDrag = e => { if (QUIET || _showOrig) return false; try { const t = [...((e.dataTransfer && e.dataTransfer.types) || [])]; return t.includes('Files') || t.includes('text/uri-list'); } catch (x) { return false; } };
+  const isFileDrag = e => { if (QUIET || _showOrig || (_embedded && !root.isConnected)) return false; try { const t = [...((e.dataTransfer && e.dataTransfer.types) || [])]; return t.includes('Files') || t.includes('text/uri-list'); } catch (x) { return false; } };
   window.addEventListener('dragover', e => {
     if (_internalDrag || !isFileDrag(e)) return;
     e.preventDefault();
@@ -4671,7 +4681,7 @@
     inp.click();
   }
   // ── Phase 2a: apply staged changes as real MB edits (form-replay) ─────────────
-  const R = ENT.base;          // /release/<mbid> | /event/<gid>
+  let R = ENT.base;            // /release/<mbid> | /event/<gid> (let: mbu-art-mount moves it to another release)
   const ART = ENT.art;         // cover-art | event-art — the MB endpoint + form-field suffix
   // credit the tool in every edit note (user's note first, then the attribution)
   const editNote = m => [m.note && m.note.trim(), ATTRIBUTION].filter(Boolean).join('\n\n');
@@ -5871,7 +5881,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     } catch (err) { asLog.debug('paste handler: ' + (err && err.message)); }
   });
   document.addEventListener('keydown', e => {
-    if (SETTINGS_ONLY || (VIEW_ONLY && !_lb)) return;
+    if (SETTINGS_ONLY || ((VIEW_ONLY || (_embedded && !root.isConnected)) && !_lb)) return;   // embedded: only while Event Horizon shows the art page
     const t = e.target;
     // a popover (type picker / bulk pop) is open → Escape dismisses IT first
     // (wherever focus is), and other keys are swallowed so navigation/zoom/delete
@@ -6078,8 +6088,8 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   // ── #239 postable report (Markdown / HTML) of the selected covers ─────────────
   // release artist(s) + title, linked, parsed from the page header
   function releaseInfo() {
-    const title = (document.querySelector('h1 bdi') || document.querySelector('h1'))?.textContent?.trim() || 'release';
-    const sub = document.querySelector('p.subheader') || document.querySelector('.subheader');
+    const title = (PAGE_DOC.querySelector('h1 bdi') || PAGE_DOC.querySelector('h1'))?.textContent?.trim() || 'release';
+    const sub = PAGE_DOC.querySelector('p.subheader') || PAGE_DOC.querySelector('.subheader');
     const artists = sub ? [...sub.querySelectorAll('a[href*="/artist/"]')]
       .filter(a => !/\/create(\?|$)/.test(a.getAttribute('href')))
       .map(a => ({ name: a.textContent.trim(), url: location.origin + a.getAttribute('href').split(/[?#]/)[0] })) : [];
@@ -9089,6 +9099,39 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     openLightbox(byId(d.start) ? d.start : MODEL[0].id);
     const ov = document.getElementById('as-lb'); if (ov) ov.classList.add('as-lb-ro');
   });
+  // Event Horizon's in-tab art page asks for the gallery (mbu-art-mount, detail {release}), see DEVELOP.md. On the
+  // cover-art page itself it is already there, and Event Horizon moves it. Anywhere else the gallery starts here, in
+  // Event Horizon's #as-slot, from the cover-art page read by a fetch (the one refreshArt makes), so going to the art
+  // loads no page and Event Horizon's player plays on. Left to a page load: an event's art, and another release while
+  // this one has changes staged.
+  document.addEventListener('mbu-art-mount', e => {
+    if (e.defaultPrevented || IS_EVENT) return;
+    let d = null; try { d = JSON.parse(e.detail); } catch (x) { return; }
+    const id = d && d.release; if (!id || !/^[0-9a-f-]{36}$/i.test(id)) return;
+    if (!VIEW_ONLY && !_embedded) { if (id === MBID) e.preventDefault(); return; }
+    if (_embedded && id === MBID) { e.preventDefault(); const slot = document.getElementById('as-slot'); if (slot && root.parentNode !== slot) slot.appendChild(root); return; }
+    if (_embedded && opsCount()) return;
+    e.preventDefault();
+    embedArt(id);
+  });
+  async function embedArt(id) {
+    if (_lb) closeLightbox();
+    MODEL.forEach(it => { if (it._file) try { URL.revokeObjectURL(it._file); } catch (x) {} });
+    MBID = id; ENT = entOf(id); R = ENT.base; CAA = ENT.archive;
+    VIEW_ONLY = QUIET = false; _embedded = true; _showOrig = false;   // not saved: the setting is the cover-art page's
+    _urlRels = _urlRelsInflight = _provLinks = _aiRel = null; _iaDark = _iaDown = ''; _caaDarkened = false;
+    MODEL = []; _mounted = false; _loadingArt = true;
+    render(); applyOriginal();   // the loader in the slot at once
+    let doc = null;
+    try {
+      const r = await mbnFetch(`${ENT.base}/${ENT.art}`, { credentials: 'same-origin' }, { log: (l, m) => asLog[l === 'warn' ? 'warn' : 'info'](m) });
+      if (r && r.ok) doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+    } catch (x) { asLog.debug('Embed: ' + ((x && x.message) || x)); }
+    if (id !== MBID) return;   // another release was asked for meanwhile
+    if (!doc) { location.assign(`${ENT.base}/${ENT.art}`); return; }
+    PAGE_DOC = doc; exposeApi();
+    await loadArt(doc);
+  }
   if (VIEW_ONLY) return;
 
   // ── #248 add page: harvest images seeded into the native uploader ───────────────
