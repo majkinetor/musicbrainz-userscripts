@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011007
+// @version      2026.11.18.011008
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -75,12 +75,13 @@ if (window.top !== window && new URLSearchParams(location.search).get('mc_embed'
 // on any other site is left alone: nothing happens until a parent sends {ehPlyCmd}.
 if (window.top !== window && (location.hostname === 'bandcamp.com' && location.pathname.startsWith('/EmbeddedPlayer/') || location.hostname === 'widget.deezer.com')) {
     const BTN = location.hostname === 'bandcamp.com' ? '#big_play_button, #play' : '[data-testid="widget-player-play"]';
-    let armed = false, last = 0, restoring = false, restoreMute = null, restoreReady = false;
+    let armed = false, last = 0, restoring = false, restoreMute = null, restoreReady = false, vol = -1;   // vol: the page's volume, 0 to 1, put on the audio before it sounds
     const post = (state, a) => { if (armed) try { window.parent.postMessage({ ehPly: state, pos: a ? a.currentTime : 0, dur: a ? a.duration : 0 }, '*'); } catch (e) {} };
-    for (const k of ['play', 'pause', 'ended']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement) { if (k === 'play' && restoring && !restoreReady) { if (restoreMute === null) restoreMute = ev.target.muted; ev.target.muted = true; } post(k, ev.target); } }, true);
+    for (const k of ['play', 'pause', 'ended']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement) { if (k === 'play' && vol >= 0) ev.target.volume = vol; if (k === 'play' && restoring && !restoreReady) { if (restoreMute === null) restoreMute = ev.target.muted; ev.target.muted = true; } post(k, ev.target); } }, true);
     document.addEventListener('timeupdate', ev => { if (ev.target instanceof HTMLMediaElement && Date.now() - last > 900) { last = Date.now(); post(ev.target.paused ? 'pause' : 'time', ev.target); } }, true);
     const press = want => {
         const a = document.querySelector('audio');
+        if (a && vol >= 0) a.volume = vol;
         if (a && a.paused !== want) return;   // already as asked
         const b = document.querySelector(BTN);
         if (b) b.click(); else if (a) want ? a.play().catch(() => {}) : a.pause();
@@ -89,7 +90,8 @@ if (window.top !== window && (location.hostname === 'bandcamp.com' && location.p
     window.addEventListener('message', ev => {
         if (ev.source !== window.parent || !ev.data || typeof ev.data.ehPlyCmd !== 'string') return;
         if (!armed) { armed = true; post('hello'); }
-        if (ev.data.ehPlyCmd === 'vol') { const a = document.querySelector('audio'); if (a && ev.data.v >= 0) a.volume = Math.min(1, ev.data.v); return; }
+        if (ev.data.v >= 0) vol = Math.min(1, ev.data.v);
+        if (ev.data.ehPlyCmd === 'vol') { const a = document.querySelector('audio'); if (a && vol >= 0) a.volume = vol; return; }
         if (ev.data.ehPlyCmd === 'seek') { const a = document.querySelector('audio'); if (a && ev.data.pos >= 0) a.currentTime = ev.data.pos; return; }
         if (ev.data.ehPlyCmd === 'play' && ev.data.pos > 0) {
             if (restoring) return;
@@ -11989,7 +11991,7 @@ function plyDock(e) {
     f.addEventListener('load', () => {
         if (kind === 'youtube' || kind === 'ytmusic') plyPost('{"event":"listening","id":1,"channel":"widget"}');
         // the bridge in Bandcamp's and Deezer's widget may load after the frame does: asked again until it answers
-        if (kind === 'bandcamp' || kind === 'deezer') { const start = () => plyPost({ ehPlyCmd: 'play', pos: kind === 'bandcamp' ? (ply.q[ply.i]?.resume || 0) / 1000 : 0 }); let n = 0; const iv = setInterval(() => { if (gen !== ply.gen || ply.bridged === gen || ++n > 10) { if (n > 10) LOG.warn('player: no answer from the', kind, 'widget; its track ends by its length'); clearInterval(iv); return; } start(); }, 1000); start(); }
+        if (kind === 'bandcamp' || kind === 'deezer') { const start = () => plyPost({ ehPlyCmd: 'play', pos: kind === 'bandcamp' ? (ply.q[ply.i]?.resume || 0) / 1000 : 0, v: Math.max(0, Math.min(100, +S.playerVol || 0)) / 100 }); let n = 0; const iv = setInterval(() => { if (gen !== ply.gen || ply.bridged === gen || ++n > 10) { if (n > 10) LOG.warn('player: no answer from the', kind, 'widget; its track ends by its length'); clearInterval(iv); return; } start(); }, 1000); start(); }
     }, { once: true });
 }
 const plyFrame = () => document.querySelector('#eh-ply .ply-dock iframe');
@@ -12050,7 +12052,7 @@ window.addEventListener('message', ev => {
     if (ply.yt) {
         const st = m.event === 'onStateChange' ? m.info : m.event === 'infoDelivery' && m.info ? m.info.playerState : undefined;
         if (st === 0) plyEnded('YouTube'); else if (st === 1 || st === 2) plyState(st === 2);
-        if (st === 1) plyVolOnce();
+        plyVolOnce();   // on its first word, before it sounds
     } else if (k === 'spotify') {
         if (m.type === 'ready' && !t.kicked) { t.kicked = true; LOG.debug('player: Spotify ready, started'); plyPost({ command: 'toggle' }); }
         else if (m.type === 'playback_update' && m.payload) {
@@ -12060,7 +12062,7 @@ window.addEventListener('message', ev => {
             else plyState(!!isPaused);
         }
     } else if (k === 'soundcloud') {
-        if (m.method === 'ready') { LOG.debug('player: SoundCloud ready, started'); for (const e of ['finish', 'play', 'pause', 'playProgress']) plyPost(JSON.stringify({ method: 'addEventListener', value: e })); plyPost(JSON.stringify({ method: 'play' })); plyVolOnce(); }
+        if (m.method === 'ready') { LOG.debug('player: SoundCloud ready, started'); for (const e of ['finish', 'play', 'pause', 'playProgress']) plyPost(JSON.stringify({ method: 'addEventListener', value: e })); plyVolOnce(); plyPost(JSON.stringify({ method: 'play' })); }
         else if (m.method === 'finish') plyEnded('SoundCloud');
         else if (m.method === 'play' || m.method === 'pause') plyState(m.method === 'pause');
         else if (m.method === 'playProgress' && m.value) t.played = m.value.currentPosition || t.played;
