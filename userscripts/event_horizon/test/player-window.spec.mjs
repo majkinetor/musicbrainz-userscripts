@@ -1,6 +1,6 @@
 import { test, expect } from '../../../dev/test/harness.mjs';
 
-test.use({ gm: { name: 'Event Horizon', persist: 'tabs', values: { view: { on: true, player: true, playerWindow: true } } } });
+test.use({ gm: { name: 'Event Horizon', persist: 'tabs', values: { view: { on: true, player: true }, plyWin: true } } });
 
 test('separate player survives its opening tab and another tab controls it', { tag: '@sandbox' }, async ({ page, context, inject }) => {
   test.setTimeout(120000);
@@ -58,18 +58,18 @@ test('separate player survives its opening tab and another tab controls it', { t
     await expect(other.locator('#eh-ply iframe')).toHaveCount(0);
     await expect(popup.locator('#eh-ply iframe')).toHaveCount(1);
   }
-  await other.evaluate(() => document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: 'event_horizon', cancelable: true })));
-  await other.locator('#eh-cfg [data-tab="player"]').click();
-  await other.locator('#eh-cfg [data-g="playerWindow"]').click();
-  const local = { id: 'rel', title: 'Album', ac: [{ name: 'Artist' }], media: [{ tracks: [{ n: 1, title: 'Local', rid: 'rec', lenMs: 100000, links: [{ key: 'youtube', name: 'YouTube', urls: [{ url: 'https://www.youtube.com/watch?v=abcdefghijk' }] }] }] }] };
-  await other.evaluate(r => window.__ehPlayerTest.startRelease(r), local);
+  await expect(popup.locator('#eh-ply .ply-wl .qi')).toHaveCount(2);
+  await expect(popup.locator('#eh-ply .ply-wl .qi[aria-current]')).toHaveText(/First/);
+  await other.locator('.ply-ctl [data-ply="lb"]').click();
+  await other.locator('#eh-ply-menu [data-m="tab"]').click();
   await expect.poll(() => popup.isClosed()).toBe(true);
   await expect(other.locator('#eh-ply iframe')).toHaveCount(1);
   await expect.poll(() => other.evaluate(() => window.__ehPlayerTest.remote())).toBe(false);
+  expect(await other.evaluate(() => window.__ehPlayerTest.inWindow())).toBe(false);
 });
 
 test.describe('tab player', () => {
-  test.use({ gm: { name: 'Event Horizon', persist: 'tabs', values: { view: { on: true, player: true, playerWindow: false } } } });
+  test.use({ gm: { name: 'Event Horizon', persist: 'tabs', values: { view: { on: true, player: true }, plyWin: false } } });
   test('starting playback in a second tab stops the first', { tag: '@sandbox' }, async ({ page, context, inject }) => {
     await context.route('https://www.youtube-nocookie.com/embed/**', route => route.fulfill({ contentType: 'text/html', body: '<p>player fixture</p>' }));
     await page.goto('https://test.musicbrainz.org/');
@@ -83,15 +83,17 @@ test.describe('tab player', () => {
     await other.evaluate(r => window.__ehPlayerTest.startRelease(r), release);
     await expect(other.locator('#eh-ply iframe')).toHaveCount(1);
     await expect(page.locator('#eh-ply iframe')).toHaveCount(0);
-    await page.evaluate(() => document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: 'event_horizon', cancelable: true })));
-    await page.locator('#eh-cfg [data-tab="player"]').click();
-    await page.locator('#eh-cfg [data-g="playerWindow"]').click();
     const opened = context.waitForEvent('page');
-    await page.evaluate(r => window.__ehPlayerTest.startRelease(r), release);
+    await other.locator('.ply-ctl [data-ply="lb"]').click();
+    await other.locator('#eh-ply-menu [data-m="win"]').click();
     const popup = await opened;
     await popup.waitForURL('**/?eh-player-window=1');
     await inject('event_horizon', { target: popup, waitFor: '__ehPlayerTest' });
     await expect(popup.locator('#eh-ply iframe')).toHaveCount(1);
     await expect(other.locator('#eh-ply iframe')).toHaveCount(0);
+    expect(await page.evaluate(() => window.__ehPlayerTest.inWindow())).toBe(true);
+    await page.evaluate(r => window.__ehPlayerTest.startRelease(r), release);
+    await expect(page.locator('#eh-ply iframe')).toHaveCount(0);
+    await expect(popup.locator('#eh-ply iframe')).toHaveCount(1);
   });
 });

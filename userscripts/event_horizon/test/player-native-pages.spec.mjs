@@ -1,6 +1,6 @@
 import { test, expect } from '../../../dev/test/harness.mjs';
 
-test.use({ gm: { name: 'Event Horizon', persist: 'tabs', values: { view: { on: true, player: true, playerWindow: false } } } });
+test.use({ gm: { name: 'Event Horizon', persist: 'tabs', values: { view: { on: true, player: true } } } });
 test('the tab player restores on release subpages', { tag: '@sandbox' }, async ({ page, context, inject }) => {
   test.setTimeout(120000);
   await context.route('https://www.youtube-nocookie.com/embed/**', route => route.fulfill({ contentType: 'text/html', body: '<p>player fixture</p>' }));

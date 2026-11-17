@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-17 19:40 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-17 19:52 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -961,7 +961,7 @@ The player plays from YouTube, YouTube Music, Spotify, Deezer, Apple Music, Soun
 
 The player shows at the bottom of the page, or as a chip under the header's actions. It has the track, previous and next, the streaming site, and links to the track and the release in ListenBrainz. On the first track, previous restarts it when the source supports seeking. Right-click Play or Pause to cycle through playing once, repeating the release and repeating the track. The mouse wheel winds the track by five seconds. In the source menu, right-click a platform to open the track there in a new tab. Close the player with ×.
 
-**Play in a separate window** keeps playback going when a MusicBrainz tab reloads or closes. Open another MusicBrainz tab to control the same player there; allow pop-ups if your browser blocks the player window. Only one player plays at a time: starting another stops the previous tab player. In tab mode, the queue is restored after navigating to another MusicBrainz page.
+**Open in window**, in the menu of the player's source button, moves the player into a small pop-up window of its own, with the playlist under it, so playback goes on when a MusicBrainz tab reloads or closes. Allow pop-ups if your browser blocks it; browsers offer no true tool window, so it is a pop-up without toolbars. Until you choose **Back to tab** in the same menu, in the window or in any MusicBrainz tab, every new play starts in the window, and other MusicBrainz tabs control it. Only one player plays at a time: starting another stops the previous tab player. In tab mode, the queue is restored after navigating to another MusicBrainz page.
 
 While the player is open, editing a release opens the editor in another tab so playback continues. Successful updates from Mission Control, Platform Check and ISRC Scout refresh the release in place when Event Horizon is showing it.
 

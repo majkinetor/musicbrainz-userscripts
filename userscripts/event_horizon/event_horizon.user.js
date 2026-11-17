@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011009
+// @version      2026.11.18.011010
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4350,10 +4350,9 @@ S.fxCur = ''; // the effect preset being worked on: Save writes a change into it
 S.colW = {}; // the widths dragged in a table, by section; the title takes what they leave, and none means the table fits itself
 S.colPick = {}; // the tables' column choice, by section: { order, off }; none is the usual table
 S.pending = false; // MusicBrainz's grey mark on what has edits open; takes one more request per page
-VIEW.push('player', 'playerPlace', 'playerWindow', 'playerRepeat', 'playerLb', 'playerScrobble', 'playerVideo', 'playerVol');
+VIEW.push('player', 'playerPlace', 'playerRepeat', 'playerLb', 'playerScrobble', 'playerVideo', 'playerVol');
 S.player = true; // the play buttons on a release's tracks, and the player they start
 S.playerPlace = 'bar'; // where the player shows: 'bar' at the bottom, 'chip' at the top right
-S.playerWindow = false; // play in a separate browser window which survives closing this tab
 S.playerRepeat = 'off'; // off, all, or one; changed by right-clicking the play/pause button
 S.playerLb = true; // the player's links to the track and the release in ListenBrainz
 S.playerVol = 100; // the player's volume, 0 to 100; 0 is muted
@@ -11781,6 +11780,8 @@ const PLY_I = {
     more: '<circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"/>',
     rel: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/>',
     x: '<path d="M5 5l14 14M19 5L5 19"/>',
+    win: '<rect x="3" y="6" width="13" height="13" rx="1.5"/><path d="M13 3h8v8M21 3l-8 8"/>',
+    back: '<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>',
     vol: '<path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor" stroke="none"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/>',
     vol1: '<path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor" stroke="none"/><path d="M16 9a4 4 0 0 1 0 6"/>',
     vol0: '<path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor" stroke="none"/>',
@@ -11803,7 +11804,7 @@ function plyWindowStart(q, i, want) {
     if (!PLY_BUS) { toast('Separate player windows need BroadcastChannel'); return; }
     let fresh = false;
     if (!plyRemote && Date.now() - plyOwnerSeen > 4000) {
-        plyWindow = window.open('', 'mbu-event-horizon-player', 'popup=yes,width=520,height=300');
+        plyWindow = window.open('', 'mbu-event-horizon-player', 'popup=yes,width=520,height=480');
         if (!plyWindow) { toast('Allow pop-up windows to use the separate player'); return; }
         try { if (plyWindow.location.origin !== location.origin || new URLSearchParams(plyWindow.location.search).get('eh-player-window') !== '1') { fresh = true; plyWindow.location.href = location.origin + '/?eh-player-window=1'; } }
         catch (e) { toast('Could not open the player window'); return; }
@@ -11817,12 +11818,39 @@ function plyWindowStart(q, i, want) {
     const iv = setInterval(() => { if (!plyPending || plyPending.id !== id) { clearInterval(iv); return; } if (++n > 30) { clearInterval(iv); plyPending = null; toast('The player window did not start'); return; } plySend(plyPending); }, 500);
 }
 const plyControl = (action, value) => plySend({ type: 'control', action, value });
+// once the player moves to its window, every play starts there until Back to tab brings it back
+const plyInWin = () => { try { return !!GM_getValue('plyWin', false); } catch (e) { return false; } };
+const plyWinSet = on => { try { GM_setValue('plyWin', !!on); } catch (e) {} };
+let plyClaimSeen = 0;
+function plyToWindow() {
+    const t = ply.q[ply.i]; if (!t || PLY_WINDOW) return;
+    LOG.info('player: moves to its window');
+    plyWinSet(true);
+    if (t.played > 3000) t.resume = t.played;
+    plyWindowStart(ply.q, ply.i, ply.src);
+}
+// the window hands its queue and place to a tab: the one named, else a visible one, else the first to claim it
+function plyToTab(id) {
+    const t = ply.q[ply.i]; if (!t) return;
+    LOG.info('player: back to a tab');
+    plySend({ type: 'to-tab', to: id || '', q: ply.q, i: ply.i, src: ply.src, pref: ply.pref, played: t.played || 0 });
+    if (PLY_WINDOW) setTimeout(() => { if (!window.closed) toast('No MusicBrainz tab took the player'); }, 3000);
+}
+function plyTakeBack(m) {
+    if (PLY_WINDOW || !S.player || !Array.isArray(m.q) || !m.q[m.i]) return;
+    plyWinSet(false);
+    plyRemote = false; plyOwnerSeen = 0; plyResumed = true;
+    if (m.played > 3000) m.q[m.i].resume = m.played;
+    plySend({ type: 'claim', id: PLY_ID, place: 'tab' });
+    ply.q = m.q; ply.pref = m.pref || m.src || '';
+    plyGo(m.i, m.src);
+}
 if (PLY_BUS) {
     const seen = new Set();
     PLY_BUS.addEventListener('message', ev => {
         const m = ev.data; if (!m || typeof m !== 'object') return;
         if (m.type === 'claim' && m.id !== PLY_ID) {
-            plyPending = null;
+            plyPending = null; plyClaimSeen = Date.now();
             if (PLY_WINDOW && (m.place === 'tab' || m.replace)) { if (ply.i >= 0) plyClose(); window.close(); }
             else if (!PLY_WINDOW && (m.place === 'tab' || !plyRemote) && ply.i >= 0) { plyRemote = false; plyClose(); }
             return;
@@ -11842,10 +11870,18 @@ if (PLY_BUS) {
             else if (m.action === 'video') plyVideo();
             else if (m.action === 'repeat') plyRepeat();
             else if (m.action === 'close') { plyClose(); window.close(); }
+            else if (m.action === 'to-tab') { plyToTab(m.value); return; }
             plyPublish(); return;
         }
         if (m.type === 'hello' && !plyRemote && ply.i >= 0) { plySend({ type: 'tab-active', id: PLY_ID }); return; }
         if (m.type === 'tab-active' && m.id !== PLY_ID) { plyTabSeen = Date.now(); return; }
+        if (m.type === 'to-tab') {
+            if (m.to) { if (m.to === PLY_ID) plyTakeBack(m); return; }
+            const asked = Date.now();
+            if (document.visibilityState === 'visible') plyTakeBack(m);
+            else setTimeout(() => { if (plyClaimSeen < asked) plyTakeBack(m); }, 400 + Math.random() * 400);
+            return;
+        }
         if (m.type === 'started' && plyPending && m.id === plyPending.id) { plyPending = null; return; }
         if (m.type === 'closed' && plyRemote) { plyRemote = false; plyOwnerSeen = 0; plyClose(); return; }
         if (m.type !== 'state') return;
@@ -11859,12 +11895,12 @@ if (PLY_BUS) {
         if (before !== after || !plyCtl || !plyCtl.isConnected) plyDraw(); else plyProg();
     });
     if (PLY_WINDOW) {
-        const ready = () => { document.title = 'Event Horizon player'; document.body.replaceChildren(); document.body.style.cssText = 'margin:0;background:var(--surface,#fff);'; plyPublish(); };
+        const ready = () => { document.title = 'Event Horizon player'; document.documentElement.classList.add('eh-ply-win'); document.body.replaceChildren(); document.body.style.cssText = 'margin:0;background:var(--surface,#fff);'; plyPublish(); };
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready, { once: true }); else ready();
         addEventListener('beforeunload', () => plySend({ type: 'closed' }));
     } else plySend({ type: 'hello' });
 }
-if (mbuTestHooks()) window.__ehPlayerTest = { start: (q, i = 0) => plyWindowStart(q, i), startRelease: plyStart, remote: () => plyRemote, popup: () => PLY_WINDOW, state: () => ({ i: ply.i, gen: ply.gen, paused: ply.paused, vol: S.playerVol, repeat: S.playerRepeat }) };
+if (mbuTestHooks()) window.__ehPlayerTest = { start: (q, i = 0) => plyWindowStart(q, i), toWindow: plyToWindow, toTab: plyToTab, inWindow: plyInWin, startRelease: plyStart, remote: () => plyRemote, popup: () => PLY_WINDOW, state: () => ({ i: ply.i, gen: ply.gen, paused: ply.paused, vol: S.playerVol, repeat: S.playerRepeat }) };
 // Keep playback alive when opening the release editor, including on MusicBrainz's native page.
 document.addEventListener('click', ev => {
     if (ply.i < 0 || ev.defaultPrevented || ev.button !== 0 || ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey) return;
@@ -11924,7 +11960,7 @@ function plyStart(r, key, want) {
     const q = plyQueue(r);
     const i = key ? q.findIndex(t => t.key === key) : 0;
     if (i < 0) { toast('Nothing to play this track from'); return; }
-    if (S.playerWindow && !PLY_WINDOW) { plyWindowStart(q, i, want); return; }
+    if (plyInWin() && !PLY_WINDOW) { plyWindowStart(q, i, want); return; }
     if (plyRemote) { plyControl('close'); plyRemote = false; }
     if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' });
     ply.q = q;
@@ -12109,7 +12145,7 @@ const plyDue = t => Math.min(t.len ? t.len / 2 : 240000, 240000);
 function plyDraw() {
     if (!S.player && ply.i >= 0) { plyClose(); return; }
     const t = ply.q[ply.i]; if (!t) return;
-    const root = plyRoot(), bar = S.playerPlace !== 'chip';
+    const root = plyRoot(), bar = PLY_WINDOW || S.playerPlace !== 'chip';
     root.className = 'mbu-ui ' + (bar ? 'ply-bar' : 'ply-chip') + (ply.ctl && !(ply.yt && S.playerVideo) ? ' ply-novid' : '');
     plyCtl.className = 'mbu-ui ply-ctl pb' + (bar ? ' pa' : '');
     document.documentElement.classList.toggle('eh-ply-bar', bar);
@@ -12130,6 +12166,18 @@ function plyDraw() {
     plyPin();
     plyMark();
     plyFit();
+    if (PLY_WINDOW) plyWinList(root);
+}
+// the window's playlist: every track, the one playing marked; a click plays it
+function plyWinList(root) {
+    let l = root.querySelector('.ply-wl');
+    if (!l) {
+        l = document.createElement('div'); l.className = 'ply-wl'; l.setAttribute('role', 'list');
+        l.addEventListener('click', ev => { const b = ev.target.closest('.qi'); const i = b ? +b.dataset.i : -1; if (i >= 0 && i < ply.q.length && i !== ply.i) { LOG.info('player: picked from the playlist', i + 1); plyGo(i, ply.pref); } });
+        root.append(l);
+    }
+    l.innerHTML = ply.q.map((x, i) => `<button type="button" class="qi" role="listitem" data-i="${i}"${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span><span class="ql">${x.len ? dur(x.len) : ''}</span></button>`).join('');
+    l.querySelector('[aria-current]')?.scrollIntoView({ block: 'nearest' });
 }
 // the chip's position bar spans the title only, not the buttons beside it
 function plyFit() {
@@ -12204,7 +12252,7 @@ function plyRec(g, eds) {
     const e = (eds || [])[0] || {}, srcs = plySources({ links: g.links || [] });
     if (!srcs.length) { toast('Nothing to play this recording from'); return; }
     const q = [{ key: '1-1', n: 1, title: g.title, rid: g.id, artist: acText(g.ac), len: g.len || 0, srcs, rel: e.id || '', relTitle: e.title || '', front: true }];
-    if (S.playerWindow && !PLY_WINDOW) { plyWindowStart(q, 0); return; }
+    if (plyInWin() && !PLY_WINDOW) { plyWindowStart(q, 0); return; }
     if (plyRemote) { plyControl('close'); plyRemote = false; }
     if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' });
     ply.q = q;
@@ -12259,8 +12307,10 @@ function plyLbMenu(btn) {
         + (st ? `<hr><div class="st">${st}</div>` : '')
         + (S.playerLb ? it('https://listenbrainz.org/my/listens/', 'ext', 'Your listens') : ''));
     parts.push((ply.yt ? `<button type="button" class="it" role="menuitem" data-m="video">${SVG(PLY_I.video)}<span>${S.playerVideo ? 'Hide the video' : 'Show the video'}</span></button>` : '')
+        + (PLY_WINDOW || plyRemote ? `<button type="button" class="it" role="menuitem" data-m="tab">${SVG(PLY_I.back)}<span>${PLY_WINDOW ? 'Back to tab' : 'Back to this tab'}</span></button>`
+            : PLY_BUS ? `<button type="button" class="it" role="menuitem" data-m="win">${SVG(PLY_I.win)}<span>Open in window</span></button>` : '')
         + `<button type="button" class="it" role="menuitem" data-m="x" style="color:var(--mbu-bad,#c2413b)">${SVG(PLY_I.x)}<span>Stop and close</span></button>`);
-    plyMenu(btn, parts.join('<hr>'), v => { if (v.k) plySrc(v.k); else if (v.m === 'video') plyVideo(); else if (v.m === 'x') plyClose(); });
+    plyMenu(btn, parts.join('<hr>'), v => { if (v.k) plySrc(v.k); else if (v.m === 'video') plyVideo(); else if (v.m === 'win') plyToWindow(); else if (v.m === 'tab') { if (PLY_WINDOW) plyToTab(); else plyControl('to-tab', PLY_ID); } else if (v.m === 'x') plyClose(); });
 }
 const PLY_CSS = `
 #eh-ply{position:fixed;z-index:9995;font:14px/1.3 system-ui,sans-serif;color:var(--text,#222)}
@@ -12307,6 +12357,19 @@ const PLY_CSS = `
 .ply-ctl .mbu-ov-x{position:static;flex:none}
 html.eh-ply-bar #eh-secfab{bottom:76px}
 html.eh-ply-bar body{padding-bottom:48px}
+html.eh-ply-win body{padding:0!important}
+html.eh-ply-win #eh-ply{inset:0;display:flex;flex-direction:column;background:var(--surface,#fff)}
+html.eh-ply-win #eh-ply>.ply-ctl.pb.pa{position:relative;order:0;flex:none;justify-content:flex-start;border-width:0 0 1px}
+html.eh-ply-win .pa .ply-vp{bottom:auto;top:100%}
+html.eh-ply-win #eh-ply:not(.ply-novid) .ply-dock{position:static;order:1;flex:none;width:auto;max-width:none;margin:8px;}
+html.eh-ply-win .ply-wl{order:2;flex:1;min-height:0;overflow:auto;padding:4px;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
+.ply-wl .qi{display:flex;align-items:center;gap:9px;width:100%;box-sizing:border-box;padding:6px 9px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.ply-wl .qi:hover,.ply-wl .qi:focus-visible{background:color-mix(in srgb,currentColor 10%,transparent);outline:0}
+.ply-wl .qi[aria-current]{background:color-mix(in srgb,var(--accent,#ba478f) 16%,transparent);font-weight:600}
+.ply-wl .qn{flex:none;min-width:2.2em;color:var(--muted,#777);font-variant-numeric:tabular-nums;text-align:right}
+.ply-wl .qt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ply-wl .qt small{margin-left:6px;color:var(--muted,#777);font-size:12px;font-weight:normal}
+.ply-wl .ql{flex:none;color:var(--muted,#777);font-size:12px;font-variant-numeric:tabular-nums}
 .ply-ctl.pb{position:relative;display:flex;align-items:center;gap:6px;flex:0 1 auto;padding:0 10px;margin:0 6px;border-left:1px solid var(--line,#ddd);border-right:1px solid var(--line,#ddd);font-size:13px}
 .pb .ply-b,.pb .ply-b.big,.pb .ply-b.big:hover{width:28px;height:28px}
 .kicker .ply-ctl .ply-b svg{color:inherit}
@@ -12399,7 +12462,7 @@ setInterval(() => {
     }
     if (!PLY_WINDOW && ply.i >= 0) plySend({ type: 'tab-active', id: PLY_ID });
     if (!plyResumed && plyTabSeen && Date.now() - plyTabSeen < 5000) plyResumed = true;
-    if (!plyResumed && !PLY_WINDOW && !S.playerWindow && ply.i < 0 && S.player) {
+    if (!plyResumed && !PLY_WINDOW && ply.i < 0 && S.player && !plyInWin()) {
         let v = null; try { v = JSON.parse(sessionStorage.getItem('eh-ply') || 'null'); } catch (e) {}
         if (v && Array.isArray(v.q) && v.q.length) {
             plyResumed = true;
@@ -14835,7 +14898,6 @@ function cfgBody() {
             + ckRow('pending', 'Show pending changes', 'Mark what has edits open, as MusicBrainz does\nTakes one extra MusicBrainz request per page, sent last')
             + `<div class="keys">${ckRow('keysOn', 'Keyboard shortcuts', 'Single keys open the page\'s edit, relationships, history and more\nCtrl+/ lists them\nOn MusicBrainz\'s pages and in Event Horizon alike')}<button type="button" class="btn" data-keys-open>Change keys…</button></div>`,
         player: ckRow('player', 'Enable player', 'A play button on each track of a release that has it on a streaming site\nPlays the release from there, track after track')
-            + ckRow('playerWindow', 'Play in a separate window', 'Keep playing when this tab is closed\nApplies the next time playback starts')
             + row('Player place', [['bar', 'Bottom bar'], ['chip', 'Top bar']].map(([v, l]) => chip('playerPlace', v, S.playerPlace === v, l)).join(''), 'Where the player shows')
             + ckRow('playerLb', 'Show ListenBrainz menu items', 'Links in the player to the track and the release in ListenBrainz')
             + `<div class="player-listens">${ckRow('playerScrobble', 'Send listens to ListenBrainz', 'What the player plays goes to your ListenBrainz listens\nNeeds your user token')}<span class="fx-combo"><input type="password" data-lbtok autocomplete="off" spellcheck="false" placeholder="LB token" aria-label="ListenBrainz token" value="${esc(lbToken())}"></span><a href="https://listenbrainz.org/settings" target="_blank" rel="noopener noreferrer" data-lb-get${lbToken() ? ' hidden' : ''}>Get token</a></div>`,
@@ -15112,7 +15174,7 @@ function cfgWire(panel, b, body) {
             else if (g === 'factOff') { const [kd, fk] = k.split(':'); S.factOff = { ...S.factOff, [kd]: toggle(S.factOff[kd] || [], fk) }; }
             else if (g === 'extra') S.extras = toggle(S.extras, k);
             else if (g === 'prov') { S.prov = toggle(S.prov, k); plFollow(); }
-            else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'arAuto' || g === 'menuTitles' || g === 'keysOn' || g === 'cfgFade' || g === 'player' || g === 'playerWindow' || g === 'playerLb' || g === 'playerScrobble') S[g] = !S[g];
+            else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'arAuto' || g === 'menuTitles' || g === 'keysOn' || g === 'cfgFade' || g === 'player' || g === 'playerLb' || g === 'playerScrobble') S[g] = !S[g];
             else if (g === 'playerPlace') S.playerPlace = k;
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
