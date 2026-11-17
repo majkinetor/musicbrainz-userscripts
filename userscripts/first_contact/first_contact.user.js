@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.16
+// @version      2026.11.17
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Presto Music, RateYourMusic, Album of the Year.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -25,6 +25,7 @@
 // @match        https://*.7digital.com/artist/*
 // @match        https://ototoy.jp/_/default/p/*
 // @match        https://mora.jp/package/*
+// @match        https://www.traxsource.com/*
 // @match        https://www.melon.com/album/detail.htm*
 // @match        https://music.bugs.co.kr/album/*
 // @match        https://www.allmusic.com/album/release/*
@@ -75,6 +76,7 @@
 // @connect      api-v2.soundcloud.com
 // @connect      api.audiomack.com
 // @connect      api.7digital.com
+// @connect      www.traxsource.com
 // @connect      us.7digital.com
 // @connect      js-cdn.7digital.com
 // @connect      music.amazon.com
@@ -2428,6 +2430,77 @@ const MORA = {
     },
 };
 
+// Traxsource (#1059): the title page, read the way afrocatmusic's Traxsource importer does. "CAT | date"
+// under the title; a UPC only when the description or the catalog number is one. A track's version is its
+// mix ("Original Mix" left out). No ISRCs.
+const TRAXSOURCE = {
+    id: 'traxsource',
+    name: 'Traxsource',
+    abbr: 'trx',
+    host: /^www\.traxsource\.com$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/title\/(\d+)(?:\/|$)/); return m ? m[1] : null; },
+    text: el => (el ? el.textContent.replace(/\s+/g, ' ').trim() : ''),
+    abs: a => (a && a.getAttribute('href') ? new URL(a.getAttribute('href'), 'https://www.traxsource.com/').href.replace(/[?#].*$/, '') : null),
+    hms(t) { const p = String(t || '').replace(/[()]/g, '').trim().split(':').map(Number); return p.length > 1 && p.every(Number.isFinite) ? p.reduce((a, n) => a * 60 + n, 0) * 1000 : null; },
+
+    async fetchRelease(id, progress, doc) {
+        doc = doc || document;
+        const title = this.text(doc.querySelector('h1.title'));
+        if (!title) throw new Error('Traxsource: no title on this page');
+        const head = doc.querySelector('.page-head') || doc;
+        const linked = [...doc.querySelectorAll('h1.artists a')].map(a => ({ name: this.text(a), url: this.abs(a) })).filter(a => a.name);
+        const albumArtists = linked.length ? linked : this.text(doc.querySelector('h1.artists')).split(/,\s*/).filter(Boolean).map(name => ({ name, url: null }));
+        const labelA = head.querySelector('.com-label');
+        const label = this.text(labelA);
+        const [catno = '', date = ''] = this.text(doc.querySelector('.cat-rdate')).split('|').map(x => x.trim());
+        const desc = doc.querySelector('.desc.com-exp-cont');
+        const upc = (this.text(desc).match(/\b\d{12,14}\b/) || [])[0] || (/^\d{12,14}$/.test(catno) ? catno : null);
+        Log.info(`Traxsource title ${id}: "${title}" by ${albumArtists.map(a => a.name).join(', ') || '—'} · label "${label}" ${catno} · ${date || '—'} · UPC ${upc || '—'}`);
+
+        const rows = [...doc.querySelectorAll('.trklist > .trk-row')];
+        const tracks = [];
+        rows.forEach((tr, i) => {
+            const a = tr.querySelector('.trk-cell.title a');
+            const name = this.text(a);
+            if (!name) return;
+            const v = tr.querySelector('.trk-cell.title span.version');
+            const version = v ? [...v.childNodes].filter(n => n.nodeType === 3).map(n => n.nodeValue).join(' ').replace(/\s+/g, ' ').trim() : '';
+            const mix = /^original mix$/i.test(version) ? '' : version;
+            const tf = splitFeat(mix ? `${name} (${mix})` : name);
+            const artists = [...tr.querySelectorAll('.trk-cell.artists a.com-artists')].map(x => ({ name: this.text(x), url: this.abs(x) }));
+            const credit = creditFromTitle(artists.length ? artists : albumArtists, tf.feat);
+            tracks.push({ title: tf.title, lengthMs: this.hms(this.text(v && v.querySelector('span.duration'))), isrc: null, url: this.abs(a), credit });
+            progress && progress(i + 1, rows.length);
+            Log.debug(`track ${tracks.length}: "${tf.title}" — ${credit.map(c => c.name + c.join).join('') || '(no artist)'}`);
+        });
+        if (!tracks.length) throw new Error('Traxsource: no tracks on this page');
+
+        // more than four release artists on Traxsource mean a compilation
+        const various = !albumArtists.length || albumArtists.length > 4 || (albumArtists.length === 1 && /^various artists$/i.test(albumArtists[0].name));
+        const af = splitFeat(title);
+        const credit = various ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }] : creditFromTitle(albumArtists, af.feat);
+        const [y, m, d] = date.split('-').map(x => parseInt(x, 10));
+        const url = `https://www.traxsource.com/title/${id}`;
+        return {
+            source: this.id,
+            annotation: notesText(desc ? desc.innerHTML : ''),
+            url,
+            title: af.title,
+            credit,
+            types: [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'XW',
+            barcode: upc,
+            labels: label ? [{ name: label, catno: catno === upc ? '' : catno, url: this.abs(labelA) }] : [],
+            urls: [{ url, linkType: 74 }],   // 74 = purchase for download
+            mediums: [{ format: 'Digital Media', name: '', tracks }],
+        };
+    },
+};
+
+
 // Melon (#815): Korea's biggest store. The album and its songs come from the app's JSON API on
 // m2.melon.com, read the way Harmony does; no CORS there, so through GM. PLANCNPY is the label
 // (SELLCNPY the distributor). No ISRCs, no barcode.
@@ -3041,7 +3114,7 @@ const PRESTO = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY, MORA, MELON, BUGS, ALLMUSIC, PRESTO, RYM, AOTY];
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY, MORA, TRAXSOURCE, MELON, BUGS, ALLMUSIC, PRESTO, RYM, AOTY];
 
 /* ── Harmony (#687): the album sent to Harmony's release lookup instead of the editor ── */
 // The album link in the form Harmony reads, for the platforms Harmony looks up by URL; Harmony then
@@ -4509,7 +4582,7 @@ function addLinkOnly(e, urls, rel, provider) {
 //   mc:read { url, run }    → mc:read-progress { url, run, n, total } while it reads, then
 //                             mc:read-result { url, run, ok, provider, rel, ms } or { url, run, ok: false, error }
 //   fc:seed { rel, platform, editNote, run } → fc:seeded { run, token }, then the release editor in this tab
-const READ_PAGE = new Set(['bandcamp', 'qobuz', 'beatport', 'sevendigital', 'ototoy', 'mora']);   // the readers that parse the album page
+const READ_PAGE = new Set(['bandcamp', 'qobuz', 'beatport', 'sevendigital', 'ototoy', 'mora', 'traxsource']);   // the readers that parse the album page
 // #995: the album the platform tab stored for this tab. The manager can open this tab before that tab's GM_setValue
 // reaches it (Tampermonkey on Firefox), so an empty read is retried for a few seconds before it counts as missing.
 // A copy in sessionStorage answers a reload once the stored value is taken. done(h, from) with h null when missing.

@@ -104,7 +104,7 @@ The _Harmony_ setting picks which Harmony opens: [harmony.pulsewidth.org.uk](htt
 | Platform                                                                                                     | Sent                                |
 | ------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
 | Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy, mora, Melon, Bugs, AllMusic | the album link, at once             |
-| Volumo, HDtracks, SoundCloud, Audiomack, 7digital, Presto Music                                              | the barcode, once the album is read |
+| Volumo, HDtracks, SoundCloud, Audiomack, 7digital, Presto Music, Traxsource                                  | the barcode, once the album is read |
 | YouTube Music, Amazon Music, RateYourMusic, Album of the Year                                                | nothing; the button is greyed out   |
 
 Harmony can't read the last two rows' platforms, so for the middle row First Contact sends the barcode; an album without one (a SoundCloud set that isn't a label's) sends nothing. YouTube Music and Amazon Music show no barcode.
@@ -130,6 +130,7 @@ Harmony can't read the last two rows' platforms, so for the middle row First Con
 | [7digital](#7digital)                   |        ✓        |     ✓      | ✓                               | ℗ and © lines              |
 | [Ototoy](#ototoy)                       |                 |            | ✓                               | album info                 |
 | [mora](#mora)                           |                 |    some    | ✓                               |                            |
+| [Traxsource](#traxsource)               |                 |    some    | ✓ with catalog number           | description                |
 | [Melon](#melon)                         |                 |            | ✓                               |                            |
 | [Bugs](#bugs)                           |                 |            | ✓                               |                            |
 | [AllMusic](#allmusic)                   |        ✓        |     ✓      | ✓ with catalog number           |                            |
@@ -286,6 +287,16 @@ Pages: `ototoy.jp/_/default/p/<id>`
 - A track's artists are all the artists Ototoy links for it, and the featured ones come from its title's _(feat. …)_. On some compilations those links include the arranger or the label, so check the track artists there.
 - The hi-res and CD-quality editions are separate pages; the format some titles carry (_Disc2(24bit/44.1kHz)_) is left out of the title.
 - The catalog number isn't filled in: Ototoy often shows the CD's or a distributor's code instead.
+
+### Traxsource
+
+Pages: `traxsource.com/title/<id>`
+
+- No Traxsource account is needed.
+- Traxsource shows no ISRCs or type, so the type is guessed. The barcode is filled in only when the description or the catalog number is one.
+- A track's mix is added to its title in parentheses; _Original Mix_ is left out.
+- More than four release artists make it Various Artists.
+- Traxsource is behind a bot check, so [Mission Control](../mission_control/README.md#consolidate-a-new-release) can read a Traxsource album only after you open a Traxsource page in this browser.
 
 ### mora
 
