@@ -87,6 +87,10 @@ The _Check MusicBrainz_ [setting](#settings) says when the album is looked up:
 | On page load      | as the page opens, so the light shows at once; the import uses that read |
 | Off               | never                                                                    |
 
+### Found releases
+
+With _On page load_, the releases that count as this album show beside the button as the page opens, above or below it, wherever there is room, up to two: each with its light, its title linked to the release, year and track count, the same icons, and Mission Control's icon to **update** it. Other editions are only a count, which opens the panel. **Hide** folds them back to the light on that platform; _Found releases beside the button_ in [Settings](#settings) brings them back.
+
 ## Consolidate
 
 The button with [Mission Control](../mission_control/README.md)'s icon opens the release editor with Mission Control over it, which finds the album on the other platforms so you can take the best title, date, label, tracklist and ISRCs of all of them ([Consolidate a new release](../mission_control/README.md#consolidate-a-new-release)).

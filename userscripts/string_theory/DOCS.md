@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-17 13:50 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-17 14:01 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1398,6 +1398,10 @@ The _Check MusicBrainz_ [setting](#settings-3) says when the album is looked up:
 | On import         | when you click **Import to MusicBrainz**                                 |
 | On page load      | as the page opens, so the light shows at once; the import uses that read |
 | Off               | never                                                                    |
+
+#### Found releases
+
+With _On page load_, the releases that count as this album show beside the button as the page opens, above or below it, wherever there is room, up to two: each with its light, its title linked to the release, year and track count, the same icons, and Mission Control's icon to **update** it. Other editions are only a count, which opens the panel. **Hide** folds them back to the light on that platform; _Found releases beside the button_ in [Settings](#settings-3) brings them back.
 
 ### Consolidate
 

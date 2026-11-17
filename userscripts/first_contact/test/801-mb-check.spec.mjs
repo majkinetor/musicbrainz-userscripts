@@ -109,4 +109,34 @@ test.describe('on a Deezer album the sandbox has', () => {
     const tip = await page.locator('#fc-root .fc-go').getAttribute('data-tip');
     check(/MusicBrainz has this album/.test(tip), `the tooltip says so (${tip})`);
   });
+
+  // #1062: the found releases on a shelf beside the button; Hide folds it, per platform, and ⚙︎ brings it back
+  test('On page load: the found release shows beside the button, and Hide folds it', { tag: ['@web', '@sandbox'] }, async ({ page, inject }) => {
+    test.setTimeout(90_000);
+    await page.goto(ALBUM, { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => GM_setValue('fc.settings', { server: 'test.musicbrainz.org', archive: false, check: 'load' }));
+    await inject('first_contact', { waitFor: '__fcTest' });
+    const shelf = page.locator('#fc-root .fc-shelf');
+    await shelf.waitFor({ state: 'visible', timeout: 60_000 });
+    if (process.env.FC_SHOT) {   // the button and the shelf, for the README
+      const [x, y] = [await shelf.boundingBox(), await page.locator('#fc-root').boundingBox()];
+      const l = Math.min(x.x, y.x) - 8, t = Math.min(x.y, y.y) - 8;
+      await page.screenshot({ path: process.env.FC_SHOT, clip: { x: l, y: t, width: Math.max(x.x + x.width, y.x + y.width) - l + 8, height: Math.max(x.y + x.height, y.y + y.height) - t + 8 } });
+    }
+    const row = shelf.locator('.fc-shelf-row', { has: page.locator(`a[href$="/release/${RAM}"]`) });
+    check(await row.count() === 1, 'the release is on the shelf, linked to the sandbox');
+    check(await row.locator('.fc-light').getAttribute('data-light') === 'linked', 'with its light');
+    check(/\d{4} · 13 tracks/.test(await row.textContent()), `year and track count (${await row.textContent()})`);
+    check(await row.locator('.fc-ic').count() >= 4, 'with the match badges');
+    const s = await shelf.boundingBox(), b = await page.locator('#fc-root .fc-go').boundingBox();
+    const vh = await page.evaluate(() => innerHeight);
+    check(b.y > vh / 2 ? s.y + s.height <= b.y : s.y >= b.y + b.height, `on the side with room (shelf ${Math.round(s.y)}+${Math.round(s.height)}, button ${Math.round(b.y)})`);
+    await row.locator('.fc-shelf-upd').click();
+    const upd = await until(() => page.evaluate(() => window.__fcLastUpdate), Boolean);
+    check(upd && upd.mbid === RAM, `Update goes to the release (${JSON.stringify(upd)})`);
+    await shelf.locator('.fc-shelf-hide').click();
+    check(await shelf.count() === 0, 'Hide folds it back to the light');
+    check(await page.locator('#fc-root .fc-go .fc-light[data-light="linked"]').count() === 1, 'the light stays');
+    check(await page.evaluate(() => GM_getValue('fc.shelfHidden', {}).Deezer === true), 'remembered for Deezer');
+  });
 });
