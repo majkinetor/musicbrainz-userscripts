@@ -70,7 +70,7 @@ Before the release editor opens, First Contact looks the album up in MusicBrainz
 | empty circle  | none of these                                                   |
 | dashed circle | the check failed; the import goes on without it                 |
 
-A release counts as this album unless its barcode, format (digital, CD, vinyl…) or track count differs. Other editions are listed too, greyed. Icons under each release say what agrees with the album, marked ✓ (the link, barcode, title, track count, format and date), and what differs, marked ≠ in amber; hover one to compare the two.
+A release counts as this album unless its barcode, format (digital, CD, vinyl…) or track count differs. Other editions are listed too, greyed. Icons under each release say what agrees with the album, marked ✓ (the link, barcode, title, track count, format and date), and what differs, marked ≠ in amber; hover one to compare the two. Each release starts with an icon for its format, and with two releases or more the icons stand in columns, so the releases compare at a glance.
 
 When MusicBrainz may have the album, a panel lists those releases before the editor opens. For each:
 
