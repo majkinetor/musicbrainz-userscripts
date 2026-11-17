@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.011023
+// @version      2026.11.18.011024
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12444,6 +12444,7 @@ html.eh-ply-win .ply-wl{order:2;flex:1;min-height:0;overflow:hidden auto;padding
 .pb .ply-hv{display:none;position:absolute;bottom:12px;transform:translateX(-50%);padding:1px 5px;border-radius:4px;background:var(--text,#222);color:var(--surface,#fff);font:600 11px/1.4 system-ui,sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:none}
 .pb .ply-pr.sk:hover .ply-hv:not(:empty){display:block}
 
+#eh-ply>.ply-ctl.pb:not(.pa){display:none!important}
 #eh-ply>.ply-ctl.pb{position:fixed;right:16px;top:84px;height:40px;max-width:calc(100vw - 32px);box-sizing:border-box;margin:0;padding:0 4px 0 6px;background:var(--surface,#fff);color:var(--text,#222);border:1px solid var(--line,#ddd);border-radius:999px}
 #eh-ply>.ply-ctl.pb.pa{top:auto;bottom:0;left:0;right:0;height:48px;max-width:none;justify-content:center;padding:0 16px;border-width:1px 0 0;border-radius:0}
 .pa.pb .ply-t{max-width:min(900px,60vw)}
