@@ -126,11 +126,17 @@ A dock entry whose script didn't start on the loaded page isn't there at all. Pl
 
 ## Player
 
-The player puts each site's own embed in an iframe: `youtube-nocookie.com/embed`, `open.spotify.com/embed`, `widget.deezer.com`, `embed.music.apple.com` and `w.soundcloud.com/player`. Bandcamp has no embed by track URL, so it opens in a tab.
+The player puts each site's own embed in an iframe: `youtube-nocookie.com/embed`, `open.spotify.com/embed`, `widget.deezer.com`, `embed.music.apple.com`, `w.soundcloud.com/player` and `bandcamp.com/EmbeddedPlayer`. Bandcamp's embed takes the track's id, not its URL: the track page is fetched once and the id read from its `<meta name="bc-page-properties">`.
 
-- **Moving on**: only YouTube says what it does. Event Horizon subscribes with `postMessage` (`listening`), goes to the next track on state 0 (ended), and reads pause and play from states 2 and 1. The other widgets don't say, so the player moves on only by its buttons.
+- **Moving on** and **Play/Pause**, per widget:
+  - YouTube: subscribed with `postMessage` (`listening`); state 0 is ended, 1 playing, 2 paused. `playVideo` / `pauseVideo`.
+  - Spotify: posts `ready`, then `playback_update` with `isPaused`, `position` and `duration`; ended is `position` within a second of `duration`. It doesn't autoplay: `{command:'toggle'}` once ready, and for Play/Pause.
+  - SoundCloud: posts `ready`; then `addEventListener` for `finish`, `play`, `pause`, `playProgress`, and `play` / `pause`.
+  - Bandcamp and Deezer say nothing. The script runs in their widget's frame too (its `@match` for `bandcamp.com/EmbeddedPlayer/*` and `widget.deezer.com/widget/*`), as a bridge: on the parent's `{ehPlyCmd:'play'|'pause'}` it clicks the widget's play button and posts `{ehPly, pos, dur}` from the `<audio>` events. It does nothing until a parent asks, so other sites' embeds are left alone. The parent asks once a second, ten times, after the frame loads.
+  - Apple Music can't be driven. A click into its frame (the window's `blur` with the frame focused) starts the clock.
+  - A widget that doesn't report ends (Apple, or a bridge that never answered) ends the track when the clock passes its length.
 - **The queue** is the release's tracks with something to play, in the order of the platforms in the settings. A source chosen from the right-click menu stays preferred for the next tracks.
-- **Listens**: `POST api.listenbrainz.org/1/submit-listens` with `Authorization: Token …`. `playing_now` goes when a track starts. `single` goes when the track has played half its length or 4 minutes, whichever is shorter. A clock ticking once a second counts the time, and it stops while YouTube is paused; the other widgets' pauses still count. The listen carries `recording_mbid`, `release_mbid`, `duration_ms`, `music_service`, `origin_url` and `submission_client`.
+- **Listens**: `POST api.listenbrainz.org/1/submit-listens` with `Authorization: Token …`. `playing_now` goes when a track starts. `single` goes when the track has played half its length or 4 minutes, whichever is shorter. A clock ticking once a second counts the time, and stops while the widget says it's paused. The listen carries `recording_mbid`, `release_mbid`, `duration_ms`, `music_service`, `origin_url` and `submission_client`.
 - **The token** is kept in GM storage under `lbToken`, apart from the settings. It is checked with `validate-token` when it changes.
 
 ## Network usage

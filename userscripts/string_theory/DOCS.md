@@ -957,7 +957,7 @@ Expanded track contains info about associated recording and works.
 
 Point at a track's number and click its play button: the release plays from that track, one track after another. **Play** in the tracklist's header plays the whole release. Right-click a track's play button to choose the streaming site it plays from; the next tracks keep that choice when they have it.
 
-The player plays from YouTube, YouTube Music, Spotify, Deezer, Apple Music and SoundCloud. Bandcamp opens in a new tab. A track with no such link has no play button; with **Open in ListenBrainz** on, it gets a ListenBrainz icon instead.
+The player plays from YouTube, YouTube Music, Spotify, Deezer, Apple Music, SoundCloud and Bandcamp, in the page, and goes on to the next track when one ends. Apple Music's player can't be started for you: click its play button, and the next track follows when the track's length has played. **Hide the video** is remembered. A track with no such link has no play button; with **Open in ListenBrainz** on, it gets a ListenBrainz icon instead.
 
 The player shows at the bottom of the page, or as a chip under the header's actions. It has the track, previous and next, the streaming site, and links to the track and the release in ListenBrainz. Close it with ×.
 

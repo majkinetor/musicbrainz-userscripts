@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.17.180000
+// @version      2026.11.17.190000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -27,6 +27,8 @@
 // @match        https://*.musicbrainz.org/search*
 // @match        https://*.musicbrainz.org/edit/*
 // @match        https://*.musicbrainz.org/cdtoc/*
+// @match        https://bandcamp.com/EmbeddedPlayer/*
+// @match        https://widget.deezer.com/widget/*
 // @exclude-match https://picard.musicbrainz.org/*
 // @run-at       document-start
 // @grant        GM_getValue
@@ -68,6 +70,30 @@
 // Mission Control's cover-art frame belongs to Art Station. Swapping its body
 // detaches the embedded gallery's dialog observer and traps its viewer in the card.
 if (window.top !== window && new URLSearchParams(location.search).get('mc_embed') === '1') return;
+// Inside Bandcamp's or Deezer's player widget, in the player's frame (#1063): neither starts on its own nor says when a
+// track ends. Once the page asks, this presses the widget's play button and tells the page how its audio plays. A widget
+// on any other site is left alone: nothing happens until a parent sends {ehPlyCmd}.
+if (window.top !== window && (location.hostname === 'bandcamp.com' && location.pathname.startsWith('/EmbeddedPlayer/') || location.hostname === 'widget.deezer.com')) {
+    const BTN = location.hostname === 'bandcamp.com' ? '#big_play_button, #play' : '[data-testid="widget-player-play"]';
+    let armed = false, last = 0;
+    const post = (state, a) => { if (armed) try { window.parent.postMessage({ ehPly: state, pos: a ? a.currentTime : 0, dur: a ? a.duration : 0 }, '*'); } catch (e) {} };
+    for (const k of ['play', 'pause', 'ended']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement) post(k, ev.target); }, true);
+    document.addEventListener('timeupdate', ev => { if (ev.target instanceof HTMLMediaElement && Date.now() - last > 900) { last = Date.now(); post(ev.target.paused ? 'pause' : 'time', ev.target); } }, true);
+    const press = want => {
+        const a = document.querySelector('audio');
+        if (a && a.paused !== want) return;   // already as asked
+        const b = document.querySelector(BTN);
+        if (b) b.click(); else if (a) want ? a.play().catch(() => {}) : a.pause();
+        return !!(b || a);
+    };
+    window.addEventListener('message', ev => {
+        if (ev.source !== window.parent || !ev.data || typeof ev.data.ehPlyCmd !== 'string') return;
+        const play = ev.data.ehPlyCmd === 'play';
+        if (!armed) { armed = true; post('hello'); }
+        if (press(play) === false) { let n = 0; const iv = setInterval(() => { if (press(play) !== false || ++n > 60) clearInterval(iv); }, 250); }
+    });
+    return;
+}
 const SETTINGS_ONLY = typeof MBU_SETTINGS_ONLY !== 'undefined' && !!MBU_SETTINGS_ONLY;   // #851: String Theory started this copy only to open its settings
 const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '?';
 
@@ -3167,7 +3193,7 @@ h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25
 .ev .d+span:not(.iso)::before{content:'· ';color:var(--muted)}
 .lab{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px}
 .lab .cat{font-size:13px;font-weight:500;margin:0}
-button.tx{all:unset;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);padding:4px 2px;border-bottom:2px solid transparent}.tx>.txi{display:none}@media (max-width:700px){.tx:has(>.txi){display:inline-flex;align-items:center;justify-content:center;min-width:30px;min-height:30px}.tx>.txi{display:block}.tx:has(>.txi)>.txl{display:none}}
+button.tx.tx[data-playall]{display:inline-flex;align-items:center;gap:4px;color:var(--accent);margin-right:6px;padding-right:12px;border-right:1px solid var(--line);border-bottom:0}button.tx.tx[data-playall]>svg{width:14px;height:14px;flex:none}button.tx.tx[data-playall]:hover{color:var(--text)}button.tx{all:unset;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);padding:4px 2px;border-bottom:2px solid transparent}.tx>.txi{display:none}@media (max-width:700px){.tx:has(>.txi){display:inline-flex;align-items:center;justify-content:center;min-width:30px;min-height:30px}.tx>.txi{display:block}.tx:has(>.txi)>.txl{display:none}}
 button.tx:hover{color:var(--text)}
 button.tx.plcfg{font-size:17px;line-height:1;margin-left:4px}
 button.tx[aria-pressed=true]{color:var(--text);border-bottom-color:var(--accent)}
@@ -4297,10 +4323,11 @@ S.fxCur = ''; // the effect preset being worked on: Save writes a change into it
 S.colW = {}; // the widths dragged in a table, by section; the title takes what they leave, and none means the table fits itself
 S.colPick = {}; // the tables' column choice, by section: { order, off }; none is the usual table
 S.pending = false; // MusicBrainz's grey mark on what has edits open; takes one more request per page
-VIEW.push('player', 'playerPlace', 'playerLb', 'playerScrobble');
+VIEW.push('player', 'playerPlace', 'playerLb', 'playerScrobble', 'playerVideo');
 S.player = true; // the play buttons on a release's tracks, and the player they start
 S.playerPlace = 'bar'; // where the player shows: 'bar' at the bottom, 'chip' at the top right
 S.playerLb = true; // the player's links to the track and the release in ListenBrainz
+S.playerVideo = true; // YouTube's video shows above the player; its Hide video button
 S.playerScrobble = false; // what the player plays goes to ListenBrainz as listens, under the token kept apart in 'lbToken'
 // the page's width; --eh-wn is the same as a length (the screen's for Full), for the launchers' column
 const ehWidth = () => { const s = document.documentElement.style; s.setProperty('--eh-w', S.width ? S.width + 'px' : 'none'); s.setProperty('--eh-wn', S.width ? S.width + 'px' : '100vw'); };
@@ -11720,8 +11747,10 @@ const PLY_I = {
     rel: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/>',
     x: '<path d="M5 5l14 14M19 5L5 19"/>',
 };
-const ply = { q: [], i: -1, src: '', pref: '', paused: false, video: true, yt: false };
-// a link's player: the widget's address and height, or a page to open (Bandcamp has no track widget to point at)
+// kind: the source playing; ctl: its widget takes play and pause; ends: it says when a track ends (the others end
+// when the track's length has played); gen: which plyGo is current, for Bandcamp's late answer
+const ply = { q: [], i: -1, src: '', pref: '', paused: false, yt: false, kind: '', ctl: false, ends: false, gen: 0 };
+// a link's player: the widget's address and height; Bandcamp's widget wants the track's id, read from its page (bc)
 function plyEmbed(p) {
     const u = p.urls[0].url;
     try {
@@ -11734,7 +11763,7 @@ function plyEmbed(p) {
         if (p.key === 'deezer') { const m = url.pathname.match(/\/(track|album)\/(\d+)/); return m && { url: `https://widget.deezer.com/widget/auto/${m[1]}/${m[2]}?autoplay=true`, h: 92 }; }
         if (p.key === 'apple') { url.hostname = 'embed.music.apple.com'; return { url: url.href, h: 150 }; }
         if (p.key === 'soundcloud') return { url: `https://w.soundcloud.com/player/?url=${encodeURIComponent(u)}&auto_play=true&visual=false`, h: 120 };
-        if (p.key === 'bandcamp') return { page: u };
+        if (p.key === 'bandcamp') return { bc: u, h: 120 };
     } catch (e) {}
     return null;
 }
@@ -11747,7 +11776,27 @@ function plyQueue(r) {
     return r.media.flatMap((m, mi) => (m.tracks || []).map(t => ({ key: (mi + 1) + '-' + t.n, n: t.n, title: t.title, rid: t.rid, artist: t.ac ? acText(t.ac) : relAc, len: t.lenMs, srcs: plySources(t), rel: r.id, relTitle: r.title, front: r.front })))
         .filter(t => t.srcs.length);
 }
-const plyPick = (t, want) => t.srcs.find(p => p.key === want) || t.srcs.find(p => p.key === ply.pref) || t.srcs.find(p => p.key !== 'bandcamp') || t.srcs[0];
+const plyPick = (t, want) => t.srcs.find(p => p.key === want) || t.srcs.find(p => p.key === ply.pref) || t.srcs[0];
+// Bandcamp's track page names the track's id in <meta name="bc-page-properties">; the widget's address, or '' when it doesn't
+const BC_IDS = new Map();
+function plyBandcamp(u) {
+    if (BC_IDS.has(u)) return Promise.resolve(BC_IDS.get(u));
+    return new Promise(ok => GM_xmlhttpRequest({
+        method: 'GET', url: u, timeout: 15000,
+        onload: r => {
+            let v = '';
+            try {
+                const m = (r.responseText || '').match(/<meta name="bc-page-properties" content="([^"]+)"/);
+                const j = m && JSON.parse(m[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&'));
+                if (j && j.item_type === 't' && j.item_id) v = `https://bandcamp.com/EmbeddedPlayer/track=${j.item_id}/size=large/bgcol=ffffff/linkcol=0687f5/tracklist=false/artwork=small/transparent=true/`;
+                else LOG.warn('player: Bandcamp page names no track', u, j && j.item_type);
+            } catch (e) { LOG.warn('player: Bandcamp page unreadable', u, e.message); }
+            if (v) BC_IDS.set(u, v);
+            ok(v);
+        },
+        onerror: () => { LOG.warn('player: Bandcamp did not answer', u); ok(''); }, ontimeout: () => { LOG.warn('player: Bandcamp timed out', u); ok(''); },
+    }));
+}
 function plyStart(r, key, want) {
     if (!S.player) return;
     ply.q = plyQueue(r);
@@ -11759,13 +11808,31 @@ function plyStart(r, key, want) {
 }
 function plyGo(i, want) {
     const t = ply.q[i]; if (!t) return;
-    const p = plyPick(t, want), e = plyEmbed(p);
-    if (e.page) { LOG.info('player: opens', p.key, e.page); window.open(e.page, '_blank', 'noopener'); toast(p.name + ' opens in a new tab'); if (ply.i < 0) return; }
-    ply.i = i; ply.src = p.key; ply.paused = false; ply.yt = !!e.yt;
-    LOG.info('player: plays', t.key, t.title, 'from', p.key);
-    if (!e.page) { t.src = p.key; t.url = p.urls[0].url; plyDock(e); plyClock(t); }
+    const p = plyPick(t, want), e = plyEmbed(p), gen = ++ply.gen;
+    // a track waits paused until its widget says it plays; YouTube autoplays, Apple's says nothing (see the blur below)
+    ply.i = i; ply.src = ply.kind = p.key; ply.paused = !e.yt; ply.yt = !!e.yt;
+    ply.ctl = p.key !== 'apple'; ply.ends = !!e.yt || p.key === 'spotify' || p.key === 'soundcloud';
+    t.src = p.key; t.url = p.urls[0].url;
+    LOG.info('player: plays', t.key, t.title, 'from', p.key, t.len ? Math.round(t.len / 1000) + ' s' : 'no length');
+    plyClock(t);
     plyDraw();
+    if (!e.bc) { plyDock(e); return; }
+    plyDock(null);
+    plyBandcamp(e.bc).then(url => {
+        if (gen !== ply.gen) return;
+        if (url) { LOG.info('player: Bandcamp widget', url); plyDock({ url, h: e.h }); return; }
+        toast('Bandcamp has no player for ' + t.title);
+        plyEnded('no Bandcamp player');
+    });
 }
+// the track is over: the next one, or the player stops at the last
+function plyEnded(why) {
+    const t = ply.q[ply.i]; if (!t || t.done) return;
+    t.done = true;
+    LOG.info('player: track ended (' + why + ')', t.title);
+    if (ply.i + 1 < ply.q.length) plyGo(ply.i + 1); else { ply.paused = true; plyDraw(); }
+}
+const plyState = paused => { if (paused === ply.paused) return; ply.paused = paused; LOG.debug('player:', paused ? 'paused' : 'plays'); plyDraw(); };
 const plyStep = d => { const i = ply.i + d; if (i >= 0 && i < ply.q.length) plyGo(i); };
 function plyClose() {
     LOG.info('player: closed');
@@ -11776,19 +11843,62 @@ function plyClose() {
 }
 function plyDock(e) {
     const root = plyRoot(), dock = root.querySelector('.ply-dock');
+    if (!e) { dock.innerHTML = ''; return; }
     dock.innerHTML = `<iframe src="${esc(e.url)}" height="${e.h}" allow="autoplay; encrypted-media; clipboard-write; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" title="Player"></iframe>`;
-    if (e.yt) dock.querySelector('iframe').addEventListener('load', ev => { try { ev.target.contentWindow.postMessage('{"event":"listening","id":1,"channel":"widget"}', '*'); } catch (x) {} });
+    const f = dock.querySelector('iframe'), gen = ply.gen, kind = ply.kind;
+    f.addEventListener('load', () => {
+        if (kind === 'youtube' || kind === 'ytmusic') plyPost('{"event":"listening","id":1,"channel":"widget"}');
+        // the bridge in Bandcamp's and Deezer's widget may load after the frame does: asked again until it answers
+        if (kind === 'bandcamp' || kind === 'deezer') { let n = 0; const iv = setInterval(() => { if (gen !== ply.gen || ply.bridged === gen || ++n > 10) { if (n > 10) LOG.warn('player: no answer from the', kind, 'widget; its track ends by its length'); clearInterval(iv); return; } plyPost({ ehPlyCmd: 'play' }); }, 1000); plyPost({ ehPlyCmd: 'play' }); }
+    }, { once: true });
 }
-const plyYt = func => { const f = document.querySelector('#eh-ply .ply-dock iframe'); if (f) f.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args: [] }), '*'); };
-// YouTube tells its state: 0 ended (on to the next track), 1 playing, 2 paused
+const plyFrame = () => document.querySelector('#eh-ply .ply-dock iframe');
+const plyPost = m => { const f = plyFrame(); if (f) try { f.contentWindow.postMessage(m, '*'); } catch (e) {} };
+// the widget's play and pause, each in its own words
+function plyCmd(play) {
+    const k = ply.kind;
+    LOG.info('player:', play ? 'play' : 'pause', 'asked of', k);
+    if (ply.yt) plyPost(JSON.stringify({ event: 'command', func: play ? 'playVideo' : 'pauseVideo', args: [] }));
+    else if (k === 'spotify') plyPost({ command: 'toggle' });
+    else if (k === 'soundcloud') plyPost(JSON.stringify({ method: play ? 'play' : 'pause' }));
+    else plyPost({ ehPlyCmd: play ? 'play' : 'pause' });
+}
+// what the widgets say. YouTube: its state, 0 ended, 1 playing, 2 paused. Spotify: ready, then playback_update with
+// isPaused, position and duration (it doesn't start on its own: told to toggle once ready). SoundCloud: ready, then the
+// events it was asked for. Bandcamp's and Deezer's: what the bridge above posts from their audio.
 window.addEventListener('message', ev => {
-    if (!/^https:\/\/www\.youtube(-nocookie)?\.com$/.test(ev.origin) || ply.i < 0 || !ply.yt) return;
-    let m; try { m = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data; } catch (e) { return; }
-    const st = m && (m.event === 'onStateChange' ? m.info : m.event === 'infoDelivery' && m.info ? m.info.playerState : undefined);
-    if (st == null) return;
-    if (st === 0) { LOG.info('player: track ended'); if (ply.i + 1 < ply.q.length) plyGo(ply.i + 1); else { ply.paused = true; plyDraw(); } }
-    else if (st === 1 || st === 2) { const p = st === 2; if (p !== ply.paused) { ply.paused = p; plyDraw(); } }
+    const f = plyFrame(), t = ply.q[ply.i];
+    if (!f || !t || ev.source !== f.contentWindow) return;
+    let m = ev.data; if (typeof m === 'string') { try { m = JSON.parse(m); } catch (e) { return; } }
+    if (!m || typeof m !== 'object') return;
+    const k = ply.kind;
+    if (ply.yt) {
+        const st = m.event === 'onStateChange' ? m.info : m.event === 'infoDelivery' && m.info ? m.info.playerState : undefined;
+        if (st === 0) plyEnded('YouTube'); else if (st === 1 || st === 2) plyState(st === 2);
+    } else if (k === 'spotify') {
+        if (m.type === 'ready' && !t.kicked) { t.kicked = true; LOG.debug('player: Spotify ready, started'); plyPost({ command: 'toggle' }); }
+        else if (m.type === 'playback_update' && m.payload) {
+            const { isPaused, position, duration } = m.payload;
+            if (position > 0) t.played = position;
+            if (duration > 0 && position >= duration - 1000 && t.played) plyEnded('Spotify');
+            else plyState(!!isPaused);
+        }
+    } else if (k === 'soundcloud') {
+        if (m.method === 'ready') { LOG.debug('player: SoundCloud ready, started'); for (const e of ['finish', 'play', 'pause', 'playProgress']) plyPost(JSON.stringify({ method: 'addEventListener', value: e })); plyPost(JSON.stringify({ method: 'play' })); }
+        else if (m.method === 'finish') plyEnded('SoundCloud');
+        else if (m.method === 'play' || m.method === 'pause') plyState(m.method === 'pause');
+        else if (m.method === 'playProgress' && m.value) t.played = m.value.currentPosition || t.played;
+    } else if (typeof m.ehPly === 'string') {
+        if (ply.bridged !== ply.gen) { ply.bridged = ply.gen; ply.ends = true; LOG.debug('player: the', k, 'widget answers'); }
+        if (m.pos > 0) t.played = m.pos * 1000;
+        if (m.ehPly === 'ended') plyEnded(k); else if (m.ehPly !== 'hello') plyState(m.ehPly === 'pause');
+    }
 });
+// Apple's widget says nothing and can't be started: a click into it is taken as its play, and its clock starts
+window.addEventListener('blur', () => setTimeout(() => {
+    const f = plyFrame();
+    if (f && document.activeElement === f && ply.kind === 'apple' && ply.paused) { LOG.info('player: Apple Music widget clicked, its clock runs'); plyState(false); }
+}));
 function plyRoot() {
     let root = document.getElementById('eh-ply');
     if (!root) {
@@ -11805,15 +11915,15 @@ function plyDraw() {
     if (!S.player && ply.i >= 0) { plyClose(); return; }
     const t = ply.q[ply.i]; if (!t) return;
     const root = plyRoot(), bar = S.playerPlace !== 'chip';
-    root.className = 'mbu-ui ' + (bar ? 'ply-bar' : 'ply-chip') + (ply.video || !ply.yt ? '' : ' ply-novid');
+    root.className = 'mbu-ui ' + (bar ? 'ply-bar' : 'ply-chip') + (S.playerVideo || !ply.yt ? '' : ' ply-novid');
     document.documentElement.classList.toggle('eh-ply-bar', bar);
     const p = t.srcs.find(x => x.key === ply.src) || t.srcs[0];
     const lb = S.playerLb ? `<a class="ply-b${t.sent ? ' ply-sent' : ''}" href="https://listenbrainz.org/track/${t.rid}" target="_blank" rel="noopener" data-tip="This track in ListenBrainz${t.sent ? '\nListen sent' : ''}" aria-label="Track in ListenBrainz">${SVG(PLY_I.lb)}</a><a class="ply-b" href="https://listenbrainz.org/release/${t.rel}" target="_blank" rel="noopener" data-tip="This release in ListenBrainz" aria-label="Release in ListenBrainz">${SVG(PLY_I.rel)}</a>` : '';
     const src = t.srcs.length > 1 ? `<button type="button" class="ply-b ply-src" data-ply="src" aria-label="Source: ${esc(p.name)}" data-tip="Playing from ${esc(p.name)}\nClick: another source">${icon(p, 18)}</button>` : `<span class="ply-b ply-src" data-tip="Playing from ${esc(p.name)}">${icon(p, 18)}</span>`;
     root.querySelector('.ply-ctl').innerHTML = (bar && t.front ? `<img class="ply-cov" src="https://coverartarchive.org/release/${t.rel}/front-250" alt="" loading="lazy">` : '')
         + `<a class="ply-t" href="${MB}/recording/${t.rid}" data-tip="${esc(t.title + ' — ' + t.artist + '\n' + t.relTitle)}"><b>${esc(t.title)}</b><span> — ${esc(t.artist)}</span></a>`
-        + `<span class="ply-g">${plyB('prev', 'Previous track', ply.i > 0 ? '' : ' disabled')}${ply.yt ? plyB(ply.paused ? 'play' : 'pause', ply.paused ? 'Play' : 'Pause') : ''}${plyB('next', 'Next track', ply.i + 1 < ply.q.length ? '' : ' disabled')}</span>`
-        + `<span class="ply-g">${src}${ply.yt ? plyB('video', ply.video ? 'Hide the video' : 'Show the video', ` aria-pressed="${ply.video}"`) : ''}${lb}`
+        + `<span class="ply-g">${plyB('prev', 'Previous track', ply.i > 0 ? '' : ' disabled')}${ply.ctl ? plyB(ply.paused ? 'play' : 'pause', ply.paused ? 'Play' : 'Pause') : ''}${plyB('next', 'Next track', ply.i + 1 < ply.q.length ? '' : ' disabled')}</span>`
+        + `<span class="ply-g">${src}${ply.yt ? plyB('video', S.playerVideo ? 'Hide the video' : 'Show the video', ` aria-pressed="${S.playerVideo}"`) : ''}${lb}`
         + `<button type="button" class="mbu-ov-x" data-ply="x" aria-label="Close" data-tip="Close the player"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button></span>`;
     plyMark();
 }
@@ -11828,8 +11938,8 @@ function plyClick(ev) {
     const k = b.dataset.ply;
     if (k === 'prev') plyStep(-1);
     else if (k === 'next') plyStep(1);
-    else if (k === 'play' || k === 'pause') { plyYt(k === 'play' ? 'playVideo' : 'pauseVideo'); ply.paused = k === 'pause'; plyDraw(); }
-    else if (k === 'video') { ply.video = !ply.video; plyDraw(); }
+    else if (k === 'play' || k === 'pause') { plyCmd(k === 'play'); ply.paused = k === 'pause'; plyDraw(); }
+    else if (k === 'video') { S.playerVideo = !S.playerVideo; save(); LOG.info('player: video', S.playerVideo ? 'shown' : 'hidden'); plyDraw(); }
     else if (k === 'x') plyClose();
     else if (k === 'src') plySrcMenu(b, ply.q[ply.i], key => { ply.pref = key; plyGo(ply.i, key); });
 }
@@ -11838,7 +11948,7 @@ function plySrcMenu(btn, t, pick) {
     document.getElementById('eh-ply-src')?.remove();
     if (!t) return;
     const m = document.createElement('div'); m.id = 'eh-ply-src'; m.className = 'mbu-ui'; m.setAttribute('role', 'menu');
-    m.innerHTML = `<div class="h">Play from</div>` + t.srcs.map(p => `<button type="button" role="menuitem" data-k="${p.key}"${ply.q[ply.i] === t && p.key === ply.src ? ' aria-current="true"' : ''}>${icon(p, 18)}<span>${esc(p.name)}</span>${p.key === 'bandcamp' ? '<span class="r">new tab</span>' : ''}</button>`).join('');
+    m.innerHTML = `<div class="h">Play from</div>` + t.srcs.map(p => `<button type="button" role="menuitem" data-k="${p.key}"${ply.q[ply.i] === t && p.key === ply.src ? ' aria-current="true"' : ''}>${icon(p, 18)}<span>${esc(p.name)}</span></button>`).join('');
     document.documentElement.append(m);
     const r = btn.getBoundingClientRect(), h = m.offsetHeight, w = m.offsetWidth;
     m.style.left = Math.max(8, Math.min(r.left, innerWidth - w - 8)) + 'px';
@@ -11872,9 +11982,6 @@ html.eh-ply-bar body{padding-bottom:56px}
 #eh-ply.ply-chip .ply-ctl{position:fixed;right:16px;top:calc(var(--eh-pin-h,0px) + 84px);max-width:min(560px,calc(100vw - 32px));height:40px;padding:0 4px 0 14px;box-sizing:border-box;gap:6px;background:var(--surface,#fff);border:1px solid var(--line,#ddd);border-radius:999px;transition:top .18s}
 #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 132px);transition:top .18s}
 #eh-ply.ply-chip .ply-b{width:28px;height:28px}
-button.tx[data-playall]{display:inline-flex;align-items:center;gap:4px;color:var(--accent);margin-right:6px;padding-right:12px;border-right:1px solid var(--line);border-bottom:0}
-button.tx[data-playall]>svg{width:14px;height:14px;flex:none}
-button.tx[data-playall]:hover{color:var(--text)}
 #eh-ply-src{position:fixed;z-index:9996;min-width:180px;padding:4px;background:var(--surface,#fff);color:var(--text,#222);border:1px solid var(--line,#ddd);border-radius:8px;font:14px system-ui,sans-serif}
 #eh-ply-src .h{padding:4px 8px;color:var(--muted,#777);font-size:12px}
 #eh-ply-src button{display:flex;align-items:center;gap:8px;width:100%;padding:6px 8px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
@@ -11886,9 +11993,9 @@ button.tx[data-playall]:hover{color:var(--text)}
 // is this release's track the one playing
 const plyOn = (r, key) => { const t = ply.q[ply.i]; return !!t && t.rel === r.id && t.key === key; };
 // ---- listens: what the player plays goes to ListenBrainz under the user's token, as ListenBrainz counts a listen
-// (half the track or four minutes, whichever comes first); YouTube's pauses stop the clock, the other widgets don't say
+// (half the track or four minutes, whichever comes first); a pause stops the clock
 const lbToken = v => { if (v === undefined) { try { return GM_getValue('lbToken', '') || ''; } catch (e) { return ''; } } try { GM_setValue('lbToken', v); } catch (e) {} return v; };
-const PLY_SVC = { youtube: 'youtube.com', ytmusic: 'music.youtube.com', spotify: 'spotify.com', deezer: 'deezer.com', apple: 'music.apple.com', soundcloud: 'soundcloud.com' };
+const PLY_SVC = { youtube: 'youtube.com', ytmusic: 'music.youtube.com', spotify: 'spotify.com', deezer: 'deezer.com', apple: 'music.apple.com', soundcloud: 'soundcloud.com', bandcamp: 'bandcamp.com' };
 const lbApi = (path, body, token = lbToken()) => new Promise(ok => GM_xmlhttpRequest({
     method: body ? 'POST' : 'GET', url: 'https://api.listenbrainz.org/1/' + path, timeout: 15000,
     headers: { Authorization: 'Token ' + token, ...(body ? { 'Content-Type': 'application/json' } : {}) }, data: body ? JSON.stringify(body) : undefined,
@@ -11903,13 +12010,17 @@ function lbListen(t, type, at) {
         else { LOG.warn('player: ListenBrainz said ' + r.status, r.j && r.j.error || ''); if (type === 'single' && r.status === 401) toast('ListenBrainz refused the token: check it in the settings'); }
     });
 }
-// a track's clock starts with it; a tick a second counts the time it plays
+// a track's clock starts with it; a tick a second counts the time it plays (played: where it is, which a widget that
+// says corrects; heard: toward the listen). A widget that doesn't say when a track ends ends it when its length has played.
 function plyClock(t) {
-    t.sent = false; t.at = Math.floor(Date.now() / 1000); t.heard = 0;
+    t.sent = false; t.done = false; t.kicked = false; t.at = Math.floor(Date.now() / 1000); t.heard = 0; t.played = 0;
     lbListen(t, 'playing_now');
 }
 setInterval(() => {
-    const t = ply.q[ply.i]; if (!t || t.sent || ply.paused || !t.at || !S.playerScrobble) return;
+    const t = ply.q[ply.i]; if (!t || ply.paused || !t.at || t.done) return;
+    t.played += 1000;
+    if (!ply.ends && t.len && t.played >= t.len + 1500) { plyEnded('its length has played'); return; }
+    if (t.sent || !S.playerScrobble) return;
     t.heard += 1000;
     if (t.heard >= Math.min(t.len ? t.len / 2 : 240000, 240000)) { t.sent = true; lbListen(t, 'single', t.at); }
 }, 1000);
