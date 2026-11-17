@@ -104,7 +104,7 @@ The _Harmony_ setting picks which Harmony opens: [harmony.pulsewidth.org.uk](htt
 | Platform                                                                                                     | Sent                                |
 | ------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
 | Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy, mora, Melon, Bugs, AllMusic | the album link, at once             |
-| Volumo, HDtracks, SoundCloud, Audiomack, 7digital, Presto Music, Traxsource                                  | the barcode, once the album is read |
+| Volumo, HDtracks, SoundCloud, Audiomack, 7digital, Presto Music, Traxsource, Amazon                          | the barcode, once the album is read |
 | YouTube Music, Amazon Music, RateYourMusic, Album of the Year                                                | nothing; the button is greyed out   |
 
 Harmony can't read the last two rows' platforms, so for the middle row First Contact sends the barcode; an album without one (a SoundCloud set that isn't a label's) sends nothing. YouTube Music and Amazon Music show no barcode.
@@ -126,6 +126,7 @@ Harmony can't read the last two rows' platforms, so for the middle row First Con
 | [HDtracks](#hdtracks)                   |        ✓        |     ✓      | ✓                               | description                |
 | [SoundCloud](#soundcloud)               |   label sets    | label sets | ✓                               | description, ℗ and © lines |
 | [Amazon Music](#amazon-music)           |                 |            | from the ℗ line                 | ℗ line                     |
+| [Amazon](#amazon)                       |                 |    some    | ✓ with catalog number           | description                |
 | [Audiomack](#audiomack)                 |        ✓        |     ✓      | from the ℗ line                 | description                |
 | [7digital](#7digital)                   |        ✓        |     ✓      | ✓                               | ℗ and © lines              |
 | [Ototoy](#ototoy)                       |                 |            | ✓                               | album info                 |
@@ -246,6 +247,17 @@ Pages: `soundcloud.com/<user>/sets/<slug>`
 - A set the label distributed (a _label set_ above) has each track's ISRC and the barcode; the set's type (album, EP, single, compilation) is used.
 - The label is the set's; a set without one takes the label its tracks name.
 - Only the uploading account has a SoundCloud link to hand off.
+
+### Amazon
+
+Pages: a CD's, a vinyl's or an MP3 album's product page, `amazon.<country>/…/dp/<id>`, in Amazon's stores (.com, .co.uk, .de, .fr, .it, .es, .ca, .co.jp, .com.au, .com.br, .com.mx, .in, .nl, .se, .pl, .com.be)
+
+- No Amazon account is needed. The button shows only on a music product's page.
+- The release artists are the byline's _(Artist)_ names; every track gets them, since the store's tracklist names no track artists.
+- The store shows no track lengths for a CD or vinyl, and no ISRCs or type, so the type is guessed. A barcode is filled in only when the product details list one.
+- The format is the byline's (_Audio CD_, _Vinyl_, _MP3 Download_); a tracklist split into discs makes one medium per disc.
+- The label and catalog number come from the product details (_Label_, _Manufacturer reference_), and the date from _Original Release Date_, which for a reissue can be the original's.
+- The link added is MusicBrainz's Amazon ASIN one (`amazon.<country>/gp/product/<id>`); the country is left empty, since a store sells imports too.
 
 ### Amazon Music
 

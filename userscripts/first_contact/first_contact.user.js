@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.17
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Presto Music, RateYourMusic, Album of the Year.
+// @version      2026.11.17.120000
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Amazon (CDs, vinyl and MP3 albums in its store), Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Presto Music, RateYourMusic, Album of the Year.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
@@ -31,6 +31,22 @@
 // @match        https://www.allmusic.com/album/release/*
 // @match        https://rateyourmusic.com/release/*
 // @match        https://www.albumoftheyear.org/album/*
+// @match        https://www.amazon.com/*
+// @match        https://www.amazon.co.uk/*
+// @match        https://www.amazon.de/*
+// @match        https://www.amazon.fr/*
+// @match        https://www.amazon.it/*
+// @match        https://www.amazon.es/*
+// @match        https://www.amazon.ca/*
+// @match        https://www.amazon.co.jp/*
+// @match        https://www.amazon.com.au/*
+// @match        https://www.amazon.com.br/*
+// @match        https://www.amazon.com.mx/*
+// @match        https://www.amazon.in/*
+// @match        https://www.amazon.nl/*
+// @match        https://www.amazon.se/*
+// @match        https://www.amazon.pl/*
+// @match        https://www.amazon.com.be/*
 // @match        https://music.amazon.com/*
 // @match        https://music.amazon.co.uk/*
 // @match        https://music.amazon.de/*
@@ -79,6 +95,22 @@
 // @connect      www.traxsource.com
 // @connect      us.7digital.com
 // @connect      js-cdn.7digital.com
+// @connect      www.amazon.com
+// @connect      www.amazon.co.uk
+// @connect      www.amazon.de
+// @connect      www.amazon.fr
+// @connect      www.amazon.it
+// @connect      www.amazon.es
+// @connect      www.amazon.ca
+// @connect      www.amazon.co.jp
+// @connect      www.amazon.com.au
+// @connect      www.amazon.com.br
+// @connect      www.amazon.com.mx
+// @connect      www.amazon.in
+// @connect      www.amazon.nl
+// @connect      www.amazon.se
+// @connect      www.amazon.pl
+// @connect      www.amazon.com.be
 // @connect      music.amazon.com
 // @connect      na.mesk.skill.music.a2z.com
 // @connect      web.archive.org
@@ -2500,6 +2532,125 @@ const TRAXSOURCE = {
     },
 };
 
+// Amazon's store (#1060): a CD's, a vinyl's or an MP3 album's product page (/dp/<ASIN>), read from the page
+// itself; the older importers (Goram's, dufferZafar's) read the same parts. The byline names the artists
+// ("(Artist)") and the format, "Product details" the label, catalogue number ("Manufacturer reference")
+// and date, "Track Listings" the titles (no lengths), disc by disc. The button shows only on a page with a
+// tracklist, so a book or a kettle has none. No barcode, as a rule; the link is MB's Amazon ASIN one.
+const AMAZONSTORE = {
+    id: 'amazon',
+    name: 'Amazon',
+    abbr: 'amzs',
+    host: /^www\.amazon\.(?:com|co\.uk|de|fr|it|es|ca|co\.jp|com\.au|com\.br|com\.mx|in|nl|se|pl|com\.be)$/,
+    albumId(loc) {
+        const m = loc.pathname.match(/\/(?:dp|gp\/product)\/([A-Z0-9]{10})(?:[/?]|$)/i);
+        if (!m) return null;
+        // on the page itself: only a music product (a tracklist, or a music format in the byline)
+        if (loc === location && !document.querySelector('#musicTracks_feature_div, #music-tracks, [id^="dmusic_tracklist"]') && !/\b(?:Audio CD|Vinyl|MP3)\b/i.test(this.text(document.getElementById('bylineInfo')))) return null;
+        return m[1].toUpperCase();
+    },
+    text: el => (el ? el.textContent.replace(/[\s‎‏]+/g, ' ').trim() : ''),
+    FORMATS: [[/vinyl|\bLP\b/i, 'Vinyl'], [/SACD/i, 'SACD'], [/cassette|kassette/i, 'Cassette'], [/blu-?ray/i, 'Blu-ray'], [/DVD/i, 'DVD'], [/MP3|download|digital|streaming/i, 'Digital Media'], [/\bCD\b/i, 'CD']],
+    MONTHS: { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12, janv: 1, févr: 2, mars: 3, avr: 4, mai: 5, juin: 6, juil: 7, août: 8, sept: 9, déc: 12, jän: 1, märz: 3, okt: 10, dez: 12, ene: 1, abr: 4, ago: 8, dic: 12, gen: 1, mag: 5, giu: 6, lug: 7, set: 9, ott: 10 },
+    date(s) {
+        s = String(s || '');
+        const iso = s.match(/\b(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})\b/);
+        if (iso) return { year: +iso[1], month: +iso[2], day: +iso[3] };
+        const y = (s.match(/\b(\d{4})\b/) || [])[1];
+        const mon = (s.toLowerCase().match(/\p{L}+/gu) || []).map(w => this.MONTHS[w] || this.MONTHS[w.slice(0, 3)]).find(Boolean) || null;
+        const d = mon ? (s.replace(/\b\d{4}\b/, '').match(/\b(\d{1,2})\b/) || [])[1] : null;
+        return { year: y ? +y : null, month: y ? mon : null, day: y && d ? +d : null };
+    },
+
+    async fetchRelease(id, progress, doc) {
+        doc = doc || document;
+        const origin = doc.fcOrigin || location.origin;
+        const title = this.text(doc.getElementById('productTitle'));
+        if (!title) throw new Error('Amazon: no product title on this page');
+        const byline = doc.getElementById('bylineInfo');
+        const authors = [...(byline ? byline.querySelectorAll('.author') : [])].map(s => {
+            const a = s.querySelector('a');
+            const role = this.text(s.querySelector('.contribution'));
+            const name = this.text(a) || this.text(s).replace(/\(.*?\)/g, '').replace(/,\s*$/, '').trim();
+            const href = a && a.getAttribute('href');
+            const am = href && href.match(/^(?:https?:\/\/[^/]+)?\/(?:[^/]+\/)?e\/([A-Z0-9]{10})\b/);
+            return { name, role, url: am ? `${origin}/stores/author/${am[1]}` : null };
+        }).filter(a => a.name);
+        const artistsOnly = authors.filter(a => /artist|künstler|interpr|artista|artiest|アーティスト/i.test(a.role));
+        const albumArtists = (artistsOnly.length ? artistsOnly : authors).map(a => ({ name: a.name, url: null }));
+        const fmtText = (this.text(byline).match(/(?:Format|Formato)\s*:\s*(.+)$/i) || [])[1] || '';
+        const format = (this.FORMATS.find(([re]) => re.test(fmtText)) || [])[1] || '';
+
+        // "Product details": "Label ‏ : ‎ Voodoo Funk Records" etc., in the store's language
+        const details = {};
+        for (const li of doc.querySelectorAll('#detailBullets_feature_div li, #productDetails_detailBullets_sections1 tr, #prodDetails tr')) {
+            const t = this.text(li);
+            const m = t.match(/^(.+?)\s*:\s*(.+)$/);
+            if (m && !details[m[1].toLowerCase()]) details[m[1].toLowerCase()] = m[2].trim();
+        }
+        const pick = re => { const k = Object.keys(details).find(x => re.test(x)); return k ? details[k] : ''; };
+        const label = pick(/^(?:label|music label|plattenlabel|étiquette|label discographique|sello|discográfica|etichetta|レーベル)$/) || pick(/^(?:manufacturer|hersteller|fabricant|fabricante|produttore|メーカー)$/);
+        const catno = pick(/^(?:manufacturer reference|herstellerreferenz|référence fabricant|referencia del fabricante|riferimento produttore|型番|item model number|modellnummer)/);
+        const dateText = pick(/^(?:original release date|release date|erscheinungstermin|date de sortie|fecha de lanzamiento|data di uscita|発売日)/) || pick(/^(?:date first available|im angebot von amazon|date de mise en ligne|producto en amazon|disponibile su amazon)/);
+        const ean = (pick(/^(?:ean|upc|gtin|barcode)/).match(/\b\d{12,14}\b/) || [])[0] || null;
+        Log.info(`Amazon product ${id}: "${title}" by ${albumArtists.map(a => a.name).join(', ') || '—'} · ${fmtText || 'no format'} · label "${label}" ${catno} · ${dateText || '—'} · ${Object.keys(details).length} detail(s)`);
+
+        // "Track Listings": one table per disc, under a "Disc: 1" line when there are several
+        const mediums = [];
+        const box = doc.querySelector('#music-tracks') || doc.querySelector('#musicTracks_feature_div');
+        let cur = null;
+        for (const el of box ? box.querySelectorAll('*') : []) {
+            if (el.tagName === 'TR') {
+                const tds = [...el.querySelectorAll('td')].map(td => this.text(td)).filter(Boolean);
+                const name = tds.find(x => !/^\d+$/.test(x));
+                if (!name) continue;
+                if (!cur) mediums.push(cur = { format, name: '', tracks: [] });
+                const tf = splitFeat(name);
+                cur.tracks.push({ title: tf.title, lengthMs: null, isrc: null, url: null, credit: creditFromTitle(albumArtists, tf.feat) });
+            } else if (!el.children.length && /^(?:dis[ck]|disque|disco|cd|ディスク)\s*:?\s*\d+\s*$/i.test(this.text(el))) {
+                mediums.push(cur = { format, name: '', tracks: [] });
+            }
+        }
+        // an MP3 album lists its tracks in the digital player's table
+        if (!mediums.length) {
+            const rows = [...doc.querySelectorAll('[id^="dmusic_tracklist"] tr')];
+            const tracks = rows.map(tr => {
+                const name = this.text(tr.querySelector('.TitleLink, a[href*="/dp/"]'));
+                if (!name) return null;
+                const len = (this.text(tr).match(/\b(\d{1,2}):(\d{2})\b/) || []);
+                const tf = splitFeat(name);
+                return { title: tf.title, lengthMs: len[1] ? (+len[1] * 60 + +len[2]) * 1000 : null, isrc: null, url: null, credit: creditFromTitle(albumArtists, tf.feat) };
+            }).filter(Boolean);
+            if (tracks.length) mediums.push({ format: format || 'Digital Media', name: '', tracks });
+        }
+        const nTracks = mediums.reduce((n, m) => n + m.tracks.length, 0);
+        mediums.forEach((m, i) => m.tracks.forEach((t, j) => Log.debug(`disc ${i + 1} track ${j + 1}: "${t.title}"`)));
+        if (!nTracks) throw new Error('Amazon: no tracklist on this page');
+        progress && progress(nTracks, nTracks);
+
+        const various = !albumArtists.length || (albumArtists.length === 1 && /^(?:various artists|various|varios artistas|artistes divers|verschiedene interpreten|artisti vari)$/i.test(albumArtists[0].name));
+        const af = splitFeat(title);
+        const credit = various ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }] : creditFromTitle(albumArtists, af.feat);
+        const url = `${origin}/dp/${id}`;
+        return {
+            source: this.id,
+            annotation: notesText(this.text(doc.getElementById('productDescription'))),
+            url,
+            title: af.title,
+            credit,
+            types: [],
+            status: 'official',
+            packaging: null,
+            date: this.date(dateText),
+            country: null,
+            barcode: ean,
+            labels: label ? [{ name: label, catno, url: null }] : [],
+            urls: [{ url: `${origin}/gp/product/${id}`, linkType: 77 }],   // 77 = amazon asin
+            mediums,
+        };
+    },
+};
+
 
 // Melon (#815): Korea's biggest store. The album and its songs come from the app's JSON API on
 // m2.melon.com, read the way Harmony does; no CORS there, so through GM. PLANCNPY is the label
@@ -3114,7 +3265,7 @@ const PRESTO = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY, MORA, TRAXSOURCE, MELON, BUGS, ALLMUSIC, PRESTO, RYM, AOTY];
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY, MORA, TRAXSOURCE, AMAZONSTORE, MELON, BUGS, ALLMUSIC, PRESTO, RYM, AOTY];
 
 /* ── Harmony (#687): the album sent to Harmony's release lookup instead of the editor ── */
 // The album link in the form Harmony reads, for the platforms Harmony looks up by URL; Harmony then
@@ -4317,6 +4468,7 @@ function linkKey(url) {
         || m(/^https?:\/\/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/i, 'tidal')
         || m(/^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\/([A-Za-z0-9]{22})/i, 'spotify')
         || m(/^https?:\/\/music\.amazon\.[a-z.]+\/albums\/([A-Z0-9]{10})/i, 'amazon')
+        || m(/^https?:\/\/(?:www\.)?amazon\.[a-z.]+\/(?:.*\/)?(?:dp|gp\/product)\/([A-Z0-9]{10})/i, 'asin')
         || m(/^https?:\/\/(?:www\.|open\.)?qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\/(?:[^/?#]+\/)?([A-Za-z0-9]+)\/?(?:[?#]|$)/i, 'qobuz')
         || m(/^https?:\/\/(?:www\.)?beatport\.com\/(?:[a-z]{2}\/)?release\/[^/]+\/(\d+)/i, 'beatport')
         || m(/^https?:\/\/(?:www\.)?discogs\.com\/(?:[a-z]{2}\/)?release\/(\d+)/i, 'discogs')
@@ -4582,7 +4734,7 @@ function addLinkOnly(e, urls, rel, provider) {
 //   mc:read { url, run }    → mc:read-progress { url, run, n, total } while it reads, then
 //                             mc:read-result { url, run, ok, provider, rel, ms } or { url, run, ok: false, error }
 //   fc:seed { rel, platform, editNote, run } → fc:seeded { run, token }, then the release editor in this tab
-const READ_PAGE = new Set(['bandcamp', 'qobuz', 'beatport', 'sevendigital', 'ototoy', 'mora', 'traxsource']);   // the readers that parse the album page
+const READ_PAGE = new Set(['bandcamp', 'qobuz', 'beatport', 'sevendigital', 'ototoy', 'mora', 'traxsource', 'amazon']);   // the readers that parse the album page
 // #995: the album the platform tab stored for this tab. The manager can open this tab before that tab's GM_setValue
 // reaches it (Tampermonkey on Firefox), so an empty read is retried for a few seconds before it counts as missing.
 // A copy in sessionStorage answers a reload once the stored value is taken. done(h, from) with h null when missing.
