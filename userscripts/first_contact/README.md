@@ -344,9 +344,9 @@ Pages: `music.bugs.co.kr/album/<id>`
 Pages: `archive.org/details/<identifier>`, audio items and Live Music Archive concerts only
 
 - An archive item is an upload, so its data is what the uploader gave: the files' tags (title, artist, album, track number) when they have them, otherwise the item's title (often "Artist - Album") and file names. Check every field.
-- The tracks are the uploaded audio files, in track-number order, with their lengths; the archive's own converted copies are left out.
+- The tracks are the uploaded audio files, in track-number order, with their lengths; a song uploaded in two formats counts once, and the archive's own converted copies are left out.
 - The date is the item's date, when it has one; the upload date is never used.
-- No label, barcode or ISRCs. The release gets the item as its free download and free streaming link.
+- The barcode comes from the item's UPC or barcode field, when it has one (CD rips often do). No label or ISRCs. The release gets the item as its free download and free streaming link.
 
 ### AllMusic
 
