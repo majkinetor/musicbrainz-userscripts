@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.17.160000
+// @version      2026.11.17.170000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -10477,7 +10477,12 @@ function renderDraw(keepPop) {
     for (const im of app.querySelectorAll('img')) { if (imgKey.has(im)) continue; const k = imgKeyOf(im), o = oldImgs.get(k); if (o && !o.isConnected) { im.replaceWith(o); oldImgs.delete(k); } else imgKey.set(im, k); }
     heroFacts(app);
     const gc = app.querySelector('[data-rgcover]');
-    if (gc) gc.onerror = () => { const e = data.editions.find(x => x.thumb); if (e && !gc.dataset.tried) { gc.dataset.tried = 1; gc.src = `https://coverartarchive.org/release/${e.id}/front-500`; } else gc.outerHTML = `<div class="nocover">${LAYERS(96, 1)}</div>`; };
+    // a fresh upload has no thumbnails yet, for days at times: each cover is tried at full size before the next,
+    // the group's, then those of its releases that have one, and only then the empty mark
+    if (gc) {
+        const tries = [`https://coverartarchive.org/release-group/${r.id}/front`, ...data.editions.filter(x => x.thumb).slice(0, 3).flatMap(e => [`https://coverartarchive.org/release/${e.id}/front-500`, `https://coverartarchive.org/release/${e.id}/front`])];
+        gc.onerror = () => { const n = tries.shift(); if (n) { LOG.debug('Group cover failed, trying ' + n); gc.src = n; } else gc.outerHTML = `<div class="nocover">${LAYERS(96, 1)}</div>`; };
+    }
     // the group's cover is a release's: Art Station's viewer opens that release's images, the front first
     if (gc) gc.onclick = async e => {
         e.preventDefault();
