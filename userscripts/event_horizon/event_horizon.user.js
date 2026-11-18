@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.233000
+// @version      2026.11.18.235500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12227,6 +12227,7 @@ function plyGo(i, want) {
     ply.ctl = p.key !== 'apple'; ply.ends = !!e.yt || p.key === 'spotify' || p.key === 'soundcloud';
     t.src = p.key; t.url = p.urls[0].url;
     LOG.info('player: plays', t.key, t.title, 'from', p.key, t.len ? Math.round(t.len / 1000) + ' s' : 'no length');
+    plyWake(true); plyMedia(t);
     plyClock(t);
     plyDraw();
     plySave();
@@ -12238,6 +12239,36 @@ function plyGo(i, want) {
         toast('Bandcamp has no player for ' + t.title);
         plyEnded('no Bandcamp player');
     });
+}
+// a locked phone: a hidden page may go on playing what it plays, but not start a new widget's audio, and its
+// timers sleep. A silent loop in this page keeps it a playing page, so the next track's widget loads and starts;
+// the lock screen's controls (Media Session) are a gesture, so next and play work from there whatever the widget does
+let plyWakeEl = null;
+function plyWake(on) {
+    if (!on) { if (plyWakeEl) { plyWakeEl.pause(); plyWakeEl = null; } return; }
+    if (plyWakeEl) { if (plyWakeEl.paused) plyWakeEl.play().catch(() => {}); return; }
+    const n = 8000, b = new Uint8Array(44 + n), v = new DataView(b.buffer), w = (o, t) => { for (let i = 0; i < t.length; i++) b[o + i] = t.charCodeAt(i); };
+    w(0, 'RIFF'); v.setUint32(4, 36 + n, true); w(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); w(36, 'data'); v.setUint32(40, n, true);
+    b.fill(128, 44);   // 8-bit silence
+    const a = plyWakeEl = new Audio(URL.createObjectURL(new Blob([b], { type: 'audio/wav' })));
+    a.loop = true; a.volume = 0.01; a.setAttribute('aria-hidden', 'true');
+    a.play().then(() => LOG.debug('player: keep-awake on'), e => LOG.debug('player: keep-awake refused', e.message));
+}
+function plyMedia(t) {
+    const ms = navigator.mediaSession; if (!ms || !t) return;
+    try {
+        ms.metadata = new MediaMetadata({ title: t.title || '', artist: t.artist || '', album: t.relTitle || '',
+            artwork: t.front && t.rel ? [{ src: `https://coverartarchive.org/release/${t.rel}/front-250`, sizes: '250x250' }, { src: `https://coverartarchive.org/release/${t.rel}/front-500`, sizes: '500x500' }] : [] });
+        ms.playbackState = 'playing';
+    } catch (e) {}
+    if (plyMedia.set) return; plyMedia.set = true;
+    const on = (k, f) => { try { ms.setActionHandler(k, f); } catch (e) {} };
+    on('play', () => { plyWake(true); plyCmd(true); });
+    on('pause', () => plyCmd(false));
+    on('nexttrack', () => plyStep(1));
+    on('previoustrack', () => plyStep(-1));
+    on('stop', () => plyClose());
 }
 // the track is over: the next one, or the player stops at the last
 function plyEnded(why) {
@@ -12254,11 +12285,12 @@ function plyRepeat() {
     S.playerRepeat = S.playerRepeat === 'off' ? 'all' : S.playerRepeat === 'all' ? 'one' : 'off';
     save(); LOG.info('player: repeat', S.playerRepeat); plyDraw();
 }
-const plyState = paused => { if (paused === ply.paused) return; ply.paused = paused; LOG.debug('player:', paused ? 'paused' : 'plays'); plyDraw(); };
+const plyState = paused => { if (paused === ply.paused) return; ply.paused = paused; try { navigator.mediaSession.playbackState = paused ? 'paused' : 'playing'; } catch (e) {} LOG.debug('player:', paused ? 'paused' : 'plays'); plyDraw(); };
 const plyStep = d => { if (plyRemote && !PLY_WINDOW) { plyControl('step', d); return; } const i = ply.i + d; if (i >= 0 && i < ply.q.length) plyGo(i); else if (d < 0 && ply.i === 0 && ply.ctl) plySeek(0); };
 function plyClose() {
     if (plyRemote && !PLY_WINDOW) { plyControl('close'); plyRemote = false; }
     LOG.info('player: closed');
+    plyWake(false); try { navigator.mediaSession.metadata = null; navigator.mediaSession.playbackState = 'none'; } catch (e) {}
     try { sessionStorage.removeItem('eh-ply'); } catch (e) {}
     ply.q = []; ply.i = -1; ply.src = '';
     document.getElementById('eh-ply')?.remove();
