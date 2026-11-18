@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.093200
+// @version      2026.11.19.100100
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3171,7 +3171,7 @@ h1.eh-tc:not(.open) .eh-tm{display:-webkit-box;-webkit-box-orient:vertical;-webk
 .disamb{font-size:.5em;color:var(--muted);font-weight:500;opacity:.75;letter-spacing:0;white-space:normal}
 h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25em}
 .by{font-size:16px;font-weight:600}
-.col-nav{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:10px}.col-nav>a{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--muted)!important;text-decoration:none!important}.col-nav>a:hover{color:var(--accent)!important}.col-nav svg{width:16px;height:16px;flex:none}
+.cs-list{display:flex;flex-wrap:wrap;gap:6px 8px;list-style:none;padding:0;margin:10px 0}.cs-u{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border-radius:999px;color:var(--text)!important;text-decoration:none!important}.cs-u:hover{background:var(--hover)}.cs-u .hm-av{width:28px;height:28px;font-size:13px}.cs-p{margin:8px 0;color:var(--muted)}.cs-p a{font-weight:600}.col-nav>a[aria-busy=true],.cs-p a[aria-busy=true]{opacity:.5;pointer-events:none}.col-nav{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:10px}.col-nav>a{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--muted)!important;text-decoration:none!important}.col-nav>a:hover{color:var(--accent)!important}.col-nav svg{width:16px;height:16px;flex:none}
 .col-desc{margin-top:12px;max-width:80ch;line-height:1.5;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}.col-desc.cut{cursor:pointer}.col-desc.open{display:block}.col-desc>*{margin:0}.col-desc>*+*{margin-top:0}
 .colh .facts{margin-top:10px;padding-top:0;border-top:0}.colh .facts:empty{display:none}.colh .nocover .col-tmk{position:absolute;right:10px;bottom:10px;width:34px;height:34px;border-radius:50%;background:var(--bg);border:1px solid var(--border);color:var(--accent);display:grid;place-items:center}.colh .col-tmk svg{width:18px;height:18px}
 .hist{margin-top:24px}.hbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}.hbar .lb{color:var(--muted);font-size:13px}
@@ -8927,6 +8927,61 @@ function colHero(d) {
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
     ], g.by, pic, nav + desc).replace('<section class="hero">', '<section class="hero colh">');
 }
+/* ── a collection's subscribers ─────────────────────── */
+// MusicBrainz's /collection/<mbid>/subscribers: the collection's header and sidebar, then its sentences (translated) and the public subscribers between them
+function colsubsParse(html, id) {
+    const doc = new DOMParser().parseFromString(html, 'text/html'), g = colMeta(doc, id), c = doc.querySelector('#content');
+    if (!g || !c) return undefined;
+    const h2 = c.querySelector('h2'), parts = [];
+    for (const el of c.children) {
+        if (el.matches('p')) { for (const a of el.querySelectorAll('a[href^="/"]')) a.setAttribute('href', MB + a.getAttribute('href')); parts.push({ p: el.innerHTML.trim() }); }
+        else if (el.matches('ul')) parts.push({ users: [...el.querySelectorAll('a[href*="/user/"]')].map(a => { const i = a.querySelector('img:not(.no-avatar)'); return { name: (a.querySelector('bdi') || a).textContent.trim(), av: i ? i.getAttribute('src') || '' : '' }; }) });
+    }
+    return { g, h: h2 ? h2.textContent.trim() : 'Subscribers', parts };
+}
+async function colsubsLoad(n, key) {
+    const d = data;
+    try {
+        let html;
+        if (key === PAGE_ID && mbBody) html = '<body>' + mbBody.innerHTML + '</body>';
+        else { const r = await mbnFetch(MB + '/collection/' + d.id + '/subscribers'); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
+        const x = colsubsParse(html, d.id);
+        if (!x) throw new Error('MusicBrainz shows no such collection');
+        if (n === showing && data === d) { Object.assign(d, x); render(); document.title = titleOf(d); }
+    } catch (e) {
+        LOG.err('Loading the collection subscribers failed: ' + e.message);
+        if (n === showing && data === d) { d.err = e.message; render(); }
+    }
+}
+function colsubsHtml(d) {
+    if (!d.g) return heroSk('collection', d.err);
+    LOG.debug('colsubs: ' + d.parts.length + ' parts');
+    const body = d.parts.map(x => x.p != null ? `<p class="cs-p">${x.p}</p>`
+        : `<ul class="cs-list">${x.users.map(u => `<li><a class="cs-u" href="${MB}/user/${encodeURIComponent(u.name)}"><span class="hm-av">${esc((u.name[0] || '?').toUpperCase())}${avOf(u.name, u.av) ? `<img src="${esc(avOf(u.name, u.av).replace(/^\/\//, 'https://'))}" alt="" width="28" height="28" onerror="this.remove()">` : ''}</span><bdi>${esc(u.name)}</bdi></a></li>`).join('')}</ul>`).join('');
+    return colHero(d) + sect('cs', esc(d.h), '', body);
+}
+// Subscribe / Unsubscribe on a collection's page or its subscribers: MusicBrainz's link (a GET that redirects back) runs in the background and the page redraws
+async function colSubToggle(a) {
+    const d = data, n = showing, id = d.g && d.g.id;
+    a.setAttribute('aria-busy', 'true');
+    LOG.debug('colsub: ' + a.href);
+    try {
+        const want = MB + '/collection/' + id + (d.kind === 'colsubs' ? '/subscribers' : '');
+        let r = await mbnFetch(a.href);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        if (/\/login\b/.test(new URL(r.url || MB).pathname)) { location.href = a.href; return; }
+        kpWrote();
+        if (new URL(r.url || MB).pathname !== new URL(want).pathname) { r = await mbnFetch(want); if (!r.ok) throw new Error('HTTP ' + r.status); }
+        const html = await r.text();
+        if (n !== showing || data !== d) return;
+        if (d.kind === 'colsubs') { const x = colsubsParse(html, id); if (!x) throw new Error('MusicBrainz sent no subscribers page'); Object.assign(d, x); }
+        else { const m = colMeta(new DOMParser().parseFromString(html, 'text/html'), id); if (!m) throw new Error('MusicBrainz sent no collection page'); d.g = { ...d.g, side: m.side }; }
+        render();
+    } catch (e) {
+        LOG.err('Changing the collection subscription failed: ' + e.message);
+        a.removeAttribute('aria-busy'); toast('Subscription change failed');
+    }
+}
 const colItems = d => { const g = d.g || {}, x = d.listsX && d.listsX[0], ent = g.ent || ''; return tabSect('cp', COL_NAME[ent] || 'Items', x, `${MB}/collection/${d.id}`, ART_URL[ent] ? ent : undefined); };
 /* ── an editor's collections ─────────────────────── */
 // MusicBrainz's /user/<name>/collections: a table per entity type, under the editor's own and the collaborative ones
@@ -10904,6 +10959,7 @@ function renderDraw(keepPop) {
     if (data.kind === 'rates') { ehMorph(app, ratesHtml(data)); ratesWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'colls') { ehMorph(app, collsHtml(data)); secRail(app); save(); return; }
     if (data.kind === 'colnew') { ehMorph(app, colnewHtml(data)); save(); return; }
+    if (data.kind === 'colsubs') { ehMorph(app, colsubsHtml(data)); secRail(app); save(); return; }
     if (data.kind === 'search') { ehMorph(app, searchHtml(data)); srchWire(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'art') { artPage(app, data); pinBar(app); return; }
     if (data.kind === 'upg') { upgPage(app, data); pinBar(app); return; }
@@ -13256,6 +13312,8 @@ function onClick(ev) {
         try { navigator.clipboard.writeText(mbid.dataset.mbid).then(() => toast('Copied the MBID'), () => toast('Copy failed')); } catch (e) { toast('Copy failed'); }
         return;
     }
+    const sub = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && data && data.g && (data.kind === 'collection' || data.kind === 'colsubs') && ev.target.closest('#app a[href*="/account/subscriptions/collection/"]');
+    if (sub) { ev.preventDefault(); colSubToggle(sub); return; }
     const nav = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && ev.target.closest('a[href]');
     const navId = nav && !nav.target && inTab(nav.href);
     if (navId) { ev.preventDefault(); ehPush(nav.href); show(navId); return; }
@@ -13362,6 +13420,7 @@ function navTo(href) {
     if (u.origin === location.origin && /^\/collection\/create\/?$/.test(u.pathname)) return 'colnew/' + encodeURIComponent(u.search.slice(1));
     // a collection's edit, the same form filled in → "coledit/<mbid>"
     { const m = u.origin === location.origin && u.pathname.match(new RegExp('^/collection/(' + MBID.source + ')/own_collection/edit/?$', 'i')); if (m) return 'coledit/' + m[1].toLowerCase(); }
+    { const m = u.origin === location.origin && u.pathname.match(new RegExp('^/collection/(' + MBID.source + ')/subscribers/?$', 'i')); if (m) return 'colsubs/' + m[1].toLowerCase(); }
     // an editor's tags → "utags/<name>"; an entity's → "etags/<type>:<mbid>"
     const ut = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/tags\/?$/);
     if (ut) return 'utags/' + ut[1];
@@ -13412,7 +13471,7 @@ function navTo(href) {
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
-const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? (d.t === 'url' ? (d.q ? d.q + ' · ' : '') + 'URL search' : d.q + ' · Search') + ' · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'colnew' ? (d.gid ? (d.f && d.f.cur.name ? d.f.cur.name + ' · ' : '') + 'Edit collection' : 'New collection') + ' · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'aliases' ? (d.t && d.t.en || 'Aliases') + ' · Aliases · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + ' · ' + (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
+const titleOf = d => d && d.kind === 'colsubs' ? (d.g ? d.g.title + ' · ' : '') + 'Subscribers · Event Horizon' :d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? (d.t === 'url' ? (d.q ? d.q + ' · ' : '') + 'URL search' : d.q + ' · Search') + ' · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'colnew' ? (d.gid ? (d.f && d.f.cur.name ? d.f.cur.name + ' · ' : '') + 'Edit collection' : 'New collection') + ' · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'aliases' ? (d.t && d.t.en || 'Aliases') + ' · Aliases · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + ' · ' + (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
 // a release's cover-art page, or its add-cover-art page → "art/<mbid>"; an event's event-art or add-event-art page → "eart/<mbid>": its title and artist, then Art Station's gallery (#as-slot). A release's cover-art
 // page also opens in the tab from any other release page (artIn): Art Station, asked by mbu-art-mount, starts its gallery
 // in the slot without a page load, so the player plays on. The add pages and an event's art load their page
@@ -16477,6 +16536,7 @@ async function show(key, o = {}) {
     if (kind === 'colls') { data = { kind: 'colls', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); collsLoad(n, key); return; }
     if (kind === 'colnew') { data = { kind: 'colnew', qs: decodeURIComponent(id || '') }; scrollTo(0, 0); render(); colnewLoad(n, key); return; }
     if (kind === 'coledit') { data = { kind: 'colnew', qs: '', gid: id }; scrollTo(0, 0); render(); colnewLoad(n, key); return; }
+    if (kind === 'colsubs') { data = { kind: 'colsubs', key, id }; scrollTo(0, 0); render(); colsubsLoad(n, key); return; }
     if (kind === 'user') { data = { kind: 'user', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); userLoad(n, key); return; }
     if (kind === 'search') {
         const p = new URLSearchParams(key.slice(7)), q = p.get('query') || '', t = p.get('type') || 'artist';
