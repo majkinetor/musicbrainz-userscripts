@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.235500
+// @version      2026.11.18.235900
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2840,11 +2840,11 @@ const CSS = `
 .u-bio{grid-column:1/-1;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;max-height:320px;overflow:auto;overflow-wrap:anywhere}.u-bio p{margin:0 0 6px}.u-bio *{background:none!important}
 .u-langs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.u-lang{background:var(--chip);color:var(--chip-text);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600}.u-lang small{color:var(--muted);font-weight:500;margin-left:5px}
 .u-nav{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 28px;border-bottom:1px solid var(--border);margin:4px 0 22px;flex-basis:100%}.u-hd{display:flex!important;align-items:center;margin:8px 0 0!important}.u-hd .u-id{flex:1;min-width:0}.u-hd h1{margin:0 0 4px!important}.u-hd h1 a{color:inherit!important;text-decoration:none!important}.u-hd .acts{position:absolute;top:0;right:0;display:flex;align-items:center;gap:6px}.u-hd .u-nav{border-bottom:0;margin:0;min-height:44px}
-.u-pbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:-24px}.u-pbar .u-sub{margin:0}.u-pbar .u-langs{margin-top:0}.u-pbar .u-tabs{margin-top:0}.u-pbar+.u-facts{margin-top:-12px}.u-hd+.u-facts{margin-top:-24px}.u-facts+.u-bio{margin-top:-24px}.u-ng{display:flex;flex-wrap:wrap;gap:0 22px}.u-ng.acc{margin-left:auto;padding-left:22px;border-left:1px solid var(--border);margin-bottom:10px;align-self:stretch;align-items:flex-end}.u-ng.acc .u-nt{margin-bottom:-10px}
+.u-pbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:-24px}.u-pbar .u-sub{margin:0}.u-pbar .u-langs{margin-top:0}.u-pbar .u-tabs{margin-top:0}.u-pbar:has(>.u-tabs){margin-top:0}.u-pbar+.u-facts{margin-top:-12px}.u-hd+.u-facts{margin-top:-24px}.u-facts+.u-bio{margin-top:-24px}.u-ng{display:flex;flex-wrap:wrap;gap:0 22px}.u-ng.acc{margin-left:auto;padding-left:22px;border-left:1px solid var(--border);margin-bottom:10px;align-self:stretch;align-items:flex-end}.u-ng.acc .u-nt{margin-bottom:-10px}
 .cn-form{max-width:640px;margin-top:8px}.cn-form fieldset{border:0;margin:0;padding:0;display:grid;gap:14px}.cn-form legend{font-weight:700;font-size:1.05em;padding:0;margin-bottom:12px}.cn-row{display:grid;gap:5px}.cn-row>span{font-size:.85em;color:var(--muted);font-weight:600}.cn-form input[type=text],.cn-form select,.cn-form textarea{width:100%;box-sizing:border-box;min-height:34px;padding:6px 10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit}.cn-form textarea{min-height:90px;resize:vertical;scrollbar-width:thin;scrollbar-color:var(--border) transparent}.cn-form input:focus,.cn-form select:focus,.cn-form textarea:focus{outline:none;border-color:var(--accent)}.cn-pub{display:flex;align-items:center;gap:8px;cursor:pointer}.cn-pub input{accent-color:var(--accent);margin:0}.cn-err{margin:14px 0 0}.cn-cols{display:flex;flex-wrap:wrap;gap:6px}.cn-col{display:inline-flex;align-items:center;gap:4px;padding:2px 4px 2px 10px;border:1px solid var(--border);border-radius:999px}.cn-col .mbu-ov-x{position:static}.cn-none{color:var(--muted)}.cn-acts{margin-top:18px}.cn-acts button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--accent);background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer}.cn-acts button:disabled{opacity:.6;cursor:default}
 .u-nt{padding:10px 0 9px;font-weight:600;font-size:14px;color:var(--muted)!important;text-decoration:none!important;border-bottom:3px solid transparent;white-space:nowrap}.u-nt:hover{color:var(--text)!important}.u-nt.on{color:var(--text)!important;border-color:var(--accent)}
 .u-av{position:relative;overflow:visible!important}.u-av>img{border-radius:50%}.u-avb{position:absolute;right:-4px;bottom:-4px;width:32px;height:32px;border-radius:50%;background:var(--surface);border:2px solid var(--bg);display:grid;place-items:center;color:var(--accent)}
-.u-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}.u-tab{display:inline-flex;align-items:center;min-height:30px;padding:4px 12px;border-radius:9px;border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important;font-weight:600;font-size:13px}.u-tab:hover{border-color:var(--accent)}
+.u-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}.u-tab{display:inline-flex;align-items:center;min-height:30px;padding:4px 12px;border-radius:9px;border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important;font-weight:600;font-size:13px}.u-tab:hover{border-color:var(--accent)}.u-tab.on{background:var(--accent);border-color:var(--accent);color:#fff!important}
 .u-facts{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;font-size:13px}.u-facts dt{color:var(--muted);font-weight:600}.u-facts dd{margin:0;overflow-wrap:anywhere}
 .u-kpis{display:grid;grid-template-columns:3fr 1fr 1fr 1fr;gap:8px;margin:12px 0}.u-kgrp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.u-kpi{position:relative;overflow:hidden;min-width:0;padding:10px 10px 8px;border-radius:4px;background:var(--mbu-hover,rgba(127,127,127,.08));border-left:3px solid var(--kc,var(--muted));color:var(--text)!important;text-decoration:none!important}.u-kpi svg{position:absolute;right:8px;bottom:6px;width:40px;height:40px;opacity:.2;color:var(--kc,var(--muted));fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.u-kpi b{position:relative;display:block;font-size:clamp(15px,2.6vw,24px);line-height:1.1;font-variant-numeric:tabular-nums}.u-kpi small{position:relative;font-size:12px;color:var(--muted)}a.u-kpi:hover b{color:var(--accent)}.u-k-ed,.u-k-day,.u-k-open{--kc:var(--accent)}.u-k-add{--kc:#3f8f7a}.u-k-vote{--kc:#4a7bc0}.u-k-tag{--kc:#b48a2c}.u-stk{display:flex;height:10px;border-radius:2px;overflow:hidden;background:var(--mbu-border)}.u-stk span{display:block}.u-lgd{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12.5px;margin:8px 0 14px}.u-lgd>*{display:flex;gap:6px;align-items:center;color:var(--text)!important;text-decoration:none!important}.u-lgd a:hover{color:var(--accent)!important}.u-lgd i{width:10px;height:10px;border-radius:2px;flex:none}@media (max-width:640px){.u-kpis{grid-template-columns:1fr 1fr 1fr}.u-kgrp{grid-column:1/-1}}.u-sts{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.u-st b small{font-size:12px;font-weight:400;color:var(--muted);margin-left:6px}.u-st.positive b{color:#3f8f7a}.u-st.negative b{color:#c4466a}span.hm-st:hover{outline:none}
 .u-bars .u-bar{display:grid;grid-template-columns:130px 1fr 100px;gap:8px;align-items:center;font-size:13px;padding:3px 0;color:var(--text)!important;text-decoration:none!important}.u-bar i{height:8px;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.u-bar em{font-style:normal;text-align:right;color:var(--muted)}.u-bar em small{margin-left:6px;opacity:.75}a.u-bar:hover span{color:var(--accent)}
@@ -10709,6 +10709,7 @@ function renderDraw(keepPop) {
     if (data.kind === 'colnew') { ehMorph(app, colnewHtml(data)); save(); return; }
     if (data.kind === 'search') { ehMorph(app, searchHtml(data)); srchWire(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'art') { artPage(app, data); pinBar(app); return; }
+    if (data.kind === 'upg') { upgPage(app, data); return; }
     if (data.kind === 'ann') { document.title = (data.rel ? data.rel.title + ' · ' : '') + 'Annotation · Event Horizon'; annPage(app, data); pinBar(app); return; }
     if (data.kind === 'det') { document.title = (data.rel ? data.rel.title + ' · ' : '') + 'Details · Event Horizon'; detPage(app, data); pinBar(app); return; }
     if (data.kind === 'relate') { relPage(app, data); pinBar(app); return; }
@@ -13706,7 +13707,9 @@ const discKey = href => {
 const detKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/details/?$', 'i')); return m ? 'det/' + m[1].toLowerCase() : null; };
 // a release's Edit annotation → "ann/<mbid>": a click only, like Details (loaded, it is formKey's)
 const annKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/edit_annotation/?$', 'i')); return m ? 'ann/' + m[1].toLowerCase() : null; };
-const inTab = href => navTo(href) || histKey(href) || artIn(href) || discKey(href) || detKey(href) || annKey(href) || relKey(href);
+// an editor's subscriptions and subscribers, and your account's pages, clicked → "upg/<path and query>": fetched into the tab
+const upgKey = href => { const u = new URL(href, location.href), ok = u.origin === location.origin && (/^\/user\/[^/]+\/(subscriptions|subscribers)(\/[a-z_-]+)?\/?$/.test(u.pathname) || /^\/account\/(edit|preferences|donation)\/?$/.test(u.pathname)); return ok ? 'upg/' + encodeURIComponent(u.pathname + u.search) : null; };
+const inTab = href => navTo(href) || histKey(href) || artIn(href) || discKey(href) || detKey(href) || annKey(href) || relKey(href) || upgKey(href);
 const keyOf = href => navTo(href) || artKey(href) || discKey(href) || histKey(href) || relKey(href) || formKey(href);
 // let: the seed confirmation page (another site seeding the release editor, a POST to /release/add or …/edit) shares
 // the editor's address, so it gets its key, "form/seed/-/confirm", only once its .confirm-seed form is in the page
@@ -13935,6 +13938,72 @@ async function annLoad(n, id) {
         d.html = box.innerHTML;
     } catch (e) { LOG.err('Loading the annotation of ' + id + ' failed: ' + e.message); d.err = e.message; }
     if (n === showing && data === d) render();
+}
+// MusicBrainz's "[ Artist | Collection | Label | … ]" line of subscription types → the suite's submenu, the open type lit; the line goes
+function subsNav(root, path) {
+    const p = [...root.querySelectorAll('p')].find(e => /^\s*\[/.test(e.textContent) && e.querySelector('a[href*="/subscriptions/"]'));
+    if (!p) return '';
+    const here = path.replace(/[?#].*$/, '').replace(/\/$/, '').replace(/\/subscriptions$/, '/subscriptions/artist'), items = [];
+    p.childNodes.forEach(x => {
+        if (x.nodeType === 1 && x.matches('a[href]')) items.push([x.textContent.trim(), x.getAttribute('href')]);
+        else x.textContent.replace(/[[\]]/g, '').split('|').map(s => s.trim()).filter(Boolean).forEach(s => items.push([s, '']));
+    });
+    p.remove();
+    const on = h => !h || new URL(h, MB).pathname.replace(/\/$/, '') === here;
+    return `<nav class="u-tabs" aria-label="Subscriptions">${items.map(([t, h]) => on(h) ? `<a class="u-tab on" aria-current="page" href="${esc(MB + here)}">${esc(t)}</a>` : `<a class="u-tab" href="${esc(new URL(h, MB).href)}">${esc(t)}</a>`).join('')}</nav>`;
+}
+// An editor's subscriptions or subscribers, or your Edit profile, Preferences or Donation check, fetched in place of a page load:
+// the editor's header, then what MusicBrainz's page holds under its tabs. Its forms post to MusicBrainz as before; the account
+// forms' own script is loaded again, so MusicBrainz's React takes them over as on its page
+async function upgLoad(n, d) {
+    try {
+        const r = await mbnFetch(MB + d.path, { credentials: 'include' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const doc = new DOMParser().parseFromString(await r.text(), 'text/html'), c = doc.querySelector('#content') || doc.querySelector('#page');
+        const tabs = c && c.querySelector(':scope > .tabs');
+        if (!tabs) throw new Error('not an editor page (logged out?)');
+        const tx = e => e ? e.textContent.replace(/\s+/g, ' ').trim() : '', h1 = c.querySelector('h1'), img = h1 && h1.querySelector('img.avatar:not(.no-avatar)');
+        const tl = [...tabs.querySelectorAll('a[href]')].map(a => [tx(a), a.getAttribute('href'), !!a.closest('li.sel')]), name = tx(h1) || d.name;
+        const acc = d.path.match(/^\/account\/([a-z]+)/);
+        if (name === ME && !tl.some(t => /^(https?:\/\/[^/]+)?\/account\//.test(t[1]))) tl.push(...['edit', 'preferences', 'donation'].map(f => [FORMS[f], '/account/' + f, !!acc && acc[1] === f]));
+        const box = doc.createElement('div');
+        let el = tabs.nextElementSibling;
+        while (el) { const nx = el.nextElementSibling; box.append(el); el = nx; }
+        box.querySelectorAll('form').forEach(f => { f.action = new URL(f.getAttribute('action') || d.path, MB + d.path).href; });
+        const sub = subsNav(box, d.path);
+        d.c = { name, av: img ? img.getAttribute('src') || '' : '', tabs: tl, sub, html: box.innerHTML };
+        LOG.info(`Editor page ${d.path} in the tab`);
+    } catch (e) { LOG.err('Loading ' + d.path + ' failed: ' + e.message); d.err = e.message; }
+    if (n === showing && data === d) render();
+}
+// MB's sheets are off in the viewer, so the fetched page takes MB's own CSS and the loaded page's dress, both scoped to it
+let upgCssOn;
+function upgCss() {
+    if (upgCssOn) return; upgCssOn = 1;
+    const st = document.createElement('style'); st.id = 'eh-upg-css'; (document.head || document.documentElement).append(st);
+    const sheet = new CSSStyleSheet(); sheet.replaceSync(REL_CSS());
+    const keep = rules => [...rules].map(r => {
+        if (r.type === CSSRule.MEDIA_RULE) { const s = keep(r.cssRules); return s ? '@media ' + r.conditionText + '{' + s + '}' : ''; }
+        if (r.type !== CSSRule.STYLE_RULE) return '';
+        // only the selector parts on the page, moved onto #eh-upg: the rest would reach the viewer itself
+        const sel = r.selectorText.split(/,(?![^(]*\))/).filter(s => s.includes(':root[data-eh-rel] #page')).map(s => s.replaceAll(':root[data-eh-rel] #page', '#eh-upg'));
+        return sel.length ? sel.join(',') + '{' + r.style.cssText + '}' : '';
+    }).join('');
+    st.textContent = keep(sheet.cssRules);
+    const l = [...document.querySelectorAll('link[rel~="stylesheet"]')].find(n => /static\.metabrainz\.org\/MB\/common-/.test(n.href));
+    if (l) fetch(l.href).then(r => r.text()).then(s => { st.textContent = '@scope (#eh-upg){' + s + '}' + st.textContent; }).catch(e => LOG.warn('MB stylesheet: ' + e.message));
+}
+function upgPage(app, d) {
+    const c = d.c, seg = d.path.replace(/[?#].*$/, '').split('/').filter(Boolean), what = FORMS[seg[0] === 'account' ? seg[1] : seg[2]] || '';
+    document.title = (c ? c.name : d.name) + (what ? ' · ' + what : '') + ' · Event Horizon';
+    let hd = app.querySelector(':scope > #eh-upghd'), body = app.querySelector(':scope > #eh-upg');
+    if (!body || body.dataset.k !== d.path) { app.innerHTML = '<div id="eh-upghd"></div><div id="eh-upg"></div>'; hd = app.firstElementChild; body = app.lastElementChild; body.dataset.k = d.path; }
+    hd.innerHTML = userHead(c ? c.name : d.name, c && c.av, c && c.tabs) + userBar(d.err ? `<p class="u-sub"><span class="u-err">${esc(d.err)}</span></p>` : !c ? '<p class="u-sub">Loading…</p>' : '', c && c.sub);
+    if (c && !body.dataset.on) {
+        body.dataset.on = '1'; body.innerHTML = c.html; upgCss();
+        // a script put in by innerHTML doesn't run: the page's own (the account forms' React) goes in again as a new one
+        body.querySelectorAll('script[src]').forEach(s => { const e = document.createElement('script'); e.src = s.src; s.replaceWith(e); });
+    }
 }
 async function detLoad(n, id) {
     const d = data;
@@ -14259,7 +14328,7 @@ function userFormHeader(id, form) {
     [ul, h1 && (h1.closest('#content > *, #page > *') || h1)].forEach(x => x && x.classList.add('eh-mbhd'));
     hd.innerHTML = userAv(name, av)
         + `<div class="rhtx"><div class="kicker label u-k"><span class="acts"><a class="ab ov" href="${MB}/user/${encodeURIComponent(name)}" data-tip="Profile" aria-label="Profile">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>${SRCH()}</span></div>`
-        + `<h1><a href="${MB}/user/${encodeURIComponent(name)}">${esc(name)}</a></h1>${userNav(tabs)}</div>`;
+        + `<h1><a href="${MB}/user/${encodeURIComponent(name)}">${esc(name)}</a></h1>${userNav(tabs)}${form === 'subscriptions' && c ? subsNav(c, location.pathname) : ''}</div>`;
     return hd;
 }
 // the header's section; its search opens in place
@@ -16043,6 +16112,10 @@ async function show(key, o = {}) {
     if (kind === 'relate') { data = { kind: 'relate', id }; scrollTo(0, 0); render(); relLoad(n, id); return; }
     if (kind === 'det') { data = { kind, id }; scrollTo(0, 0); render(); detLoad(n, id); return; }
     if (kind === 'ann') { data = { kind, id }; scrollTo(0, 0); render(); annLoad(n, id); return; }
+    if (kind === 'upg') {
+        const path = decodeURIComponent(key.slice(4)), m = path.match(/^\/user\/([^/?]+)/);
+        data = { kind, path, name: m ? decodeURIComponent(m[1]) : ME || '' }; scrollTo(0, 0); render(); upgLoad(n, data); return;
+    }
     if (kind === 'art' || kind === 'eart') {
         data = { kind: 'art', id, ev: kind === 'eart' }; render();
         // Art Station takes the slot (preventDefault); without it, only the page the tab loaded shows its art
