@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.220000
+// @version      2026.11.18.230000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -14045,10 +14045,10 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] .release-relationship-editor>:is(#batch-tools,#medium-toolbox){display:block;border-bottom:0}
 :root[data-eh-rel] .release-relationship-editor:has(>#medium-toolbox){display:grid;grid-template-columns:minmax(0,1fr) auto}
 :root[data-eh-rel] .release-relationship-editor:has(>#medium-toolbox)>*{grid-column:1/-1;min-width:0}
-:root[data-eh-rel] .release-relationship-editor:has(>#medium-toolbox)>h2:first-child{grid-row:1;padding-right:50%}
+:root[data-eh-rel] .release-relationship-editor:has(>#medium-toolbox)>h2:first-child{grid-row:1;padding-right:56px}
 :root[data-eh-rel] .release-relationship-editor>#medium-toolbox{grid-column:2;grid-row:1;align-self:center;justify-self:end;z-index:1;width:auto;margin:8px 16px 0 12px!important;padding:0!important;border:0;background:none!important;font-size:12px;white-space:nowrap}
-:root[data-eh-rel] #page #medium-toolbox button{font-size:inherit}
-@media(max-width:650px){:root[data-eh-rel] .release-relationship-editor>#medium-toolbox{white-space:normal;max-width:45vw;text-align:right}}
+:root[data-eh-rel] #page #medium-toolbox{font-size:0!important}:root[data-eh-rel] #page #medium-toolbox button:not(.eh-mt){display:none!important}:root[data-eh-rel] #page #medium-toolbox button.eh-mt{display:grid;place-items:center;width:32px;height:32px;padding:0;border-radius:8px;cursor:pointer}:root[data-eh-rel] #page #medium-toolbox button.eh-mt:hover{background:var(--chip)!important;color:var(--text)!important}:root[data-eh-rel] #medium-toolbox .eh-mt svg{width:20px;height:20px}
+
 :root[data-eh-rel] .release-relationship-editor>:is(#tracklist,.ars){border-radius:0 0 12px 12px}
 :root[data-eh-rel] #tracklist{border-collapse:separate!important;border-spacing:0 2px!important;overflow:visible!important}
 :root[data-eh-rel] #page #tracklist>thead tr,:root[data-eh-rel] #page #tracklist>thead th{background:transparent!important}
@@ -14254,6 +14254,14 @@ function relCardsApply() {
         h.classList.toggle('eh-fold', !!relFold[k]);
     });
     const f = document.getElementById('relationship-editor-form'); if (f) f.classList.toggle('eh-fold', !!relFold.note);
+    // MusicBrainz's "Expand all mediums | Collapse all mediums" as one icon that toggles them (majkinetor; it fits a phone)
+    const mt = document.getElementById('medium-toolbox'), mbs = mt ? [...mt.querySelectorAll('button:not(.eh-mt)')] : [];
+    if (mbs.length === 2 && !mt.querySelector('.eh-mt')) {
+        const t = document.createElement('button'); t.type = 'button'; t.className = 'eh-mt';
+        const draw = () => { const o = mt.dataset.ehOpen !== '0'; t.dataset.tip = o ? 'Collapse all mediums' : 'Expand all mediums'; t.setAttribute('aria-label', t.dataset.tip); t.innerHTML = SVG(o ? '<path d="M7 20l5-5 5 5M7 4l5 5 5-5"/>' : '<path d="M7 15l5 5 5-5M7 9l5-5 5 5"/>'); };
+        t.addEventListener('click', () => { const o = mt.dataset.ehOpen !== '0', b = [...mt.querySelectorAll('button:not(.eh-mt)')]; (o ? b[1] : b[0]).click(); mt.dataset.ehOpen = o ? '0' : '1'; draw(); });
+        draw(); mt.appendChild(t);
+    }
     const trs = [...ed.querySelectorAll('#tracklist > tbody > tr.track')];
     trs.forEach(tr => tr.classList.toggle('eh-tf', relTrkFold.has(relTrkKey(tr))));
 }
