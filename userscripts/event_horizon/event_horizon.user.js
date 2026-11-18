@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.135808
+// @version      2026.11.18.141000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -70,6 +70,12 @@
 // Mission Control's cover-art frame belongs to Art Station. Swapping its body
 // detaches the embedded gallery's dialog observer and traps its viewer in the card.
 if (window.top !== window && new URLSearchParams(location.search).get('mc_embed') === '1') return;
+// The relationship editor inside Event Horizon's own page (relPage): MusicBrainz's React app mounts only on a page load,
+// so EH loads it in a frame and the player outside keeps playing. Once the editor is submitted (or the frame leaves it),
+// the parent shows where it went. If Event Horizon ever becomes a shell that runs every page in a frame, remove this
+// frame: the relationship editor would then be in a frame inside a frame.
+const EH_EMBED = (() => { try { return window.parent !== window && (new URLSearchParams(location.search).get('eh-embed') === '1' || !!window.frameElement && window.frameElement.hasAttribute('data-eh-embed')); } catch (e) { return false; } })();
+if (EH_EMBED && !/^\/release\/[0-9a-f-]{36}\/edit-relationships\/?$/i.test(location.pathname)) { try { window.parent.postMessage({ ehRelDone: location.href }, location.origin); } catch (e) {} return; }
 // Inside Bandcamp's or Deezer's player widget, in the player's frame (#1063): neither starts on its own nor says when a
 // track ends. Once the page asks, this presses the widget's play button and tells the page how its audio plays. A widget
 // on any other site is left alone: nothing happens until a parent sends {ehPlyCmd}.
@@ -3208,6 +3214,7 @@ h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25
 .hld{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:13px;margin-left:6px}.hld .sk-b{padding:3px 10px;font-size:12px}.hmore{display:flex;gap:10px;align-items:center;justify-content:center;padding:14px;color:var(--muted);font-size:13px}
 #as-slot .as-bar{top:var(--eh-pin-h,0px);transition:top .18s}
 .arthd:has(.pop:not([hidden]),details[open],.abx:hover,.abx:focus-within){position:relative;z-index:40}
+#eh-relframe{display:block;width:100%;height:70vh;margin-top:32px;border:0;background:transparent;color-scheme:normal}
 .arthd{margin:0 0 -16px;display:flex;gap:20px;align-items:center}.arthd>.rhcv{flex:none;width:112px;height:112px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px var(--shadow)}.arthd>.rhcv[hidden]{display:none}.arthd>.rhcv:not([src]){content:url(data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==);background:var(--chip)}.arthd>.rhtx{flex:1;min-width:0}.arthd .kicker.label{font-size:10.5px}.arthd h1{margin:14px 0 10px}.arthd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}.arthd .ab.on svg{stroke:#fff}.arthd h1 a{color:inherit;text-decoration:none}
 @media (max-width:700px){#app .arthd{display:grid;grid-template-columns:min(120px,36%) minmax(0,1fr);gap:6px 16px;align-items:center;margin-bottom:-8px}#app .arthd:not(:has(>:is(.rhcv,.u-av):not([hidden]))){grid-template-columns:56px minmax(0,1fr)}#app .arthd>.rhtx{display:contents}#app .arthd>.rhtx>*{grid-column:1/-1;min-width:0}#app .arthd>.rhtx>.kicker{grid-row:1;flex-wrap:nowrap;margin:0 0 4px}#app .arthd .kicker>span:not(.acts){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#app .arthd .kicker>svg,#app .arthd .kicker .acts{flex:none}#app .arthd .kicker .acts{margin-left:auto;flex-wrap:nowrap}#app .arthd>:is(.rhcv,.rhic,.u-av){grid-column:1;grid-row:2/span 2;width:100%;height:auto;aspect-ratio:1}#app .arthd>.rhic svg{width:48px;height:48px}#app .arthd>.rhtx>h1{grid-column:2;grid-row:2;align-self:end;margin:0;overflow-wrap:anywhere}#app .arthd>.rhtx>.by{grid-column:2;grid-row:3;align-self:start;margin:0}#app .arthd:not(:has(>.rhtx>.by))>.rhtx>h1{grid-row:2/span 2;align-self:center}#app .arthd:not(:has(>:is(.rhcv,.rhic,.u-av):not([hidden])))>.rhtx>:is(h1,.by){grid-column:1/-1}#app .secthead>.tools{flex:1 1 0;contain:inline-size;flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;max-width:100%;min-width:150px;touch-action:pan-x pan-y}#app .secthead>.tools>:first-child{margin-left:auto}#app .secthead>.tools[data-ovr=r]{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent)}#app .secthead>.tools[data-ovr=l]{-webkit-mask-image:linear-gradient(90deg,transparent,#000 32px);mask-image:linear-gradient(90deg,transparent,#000 32px)}#app .secthead>.tools[data-ovr=lr]{-webkit-mask-image:linear-gradient(90deg,transparent,#000 32px,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(90deg,transparent,#000 32px,#000 calc(100% - 32px),transparent)}#app .secthead>.tools::-webkit-scrollbar{display:none}#app .secthead>.tools>*{flex:none}#app .secthead>.tg-tools>.tg-bar{flex-wrap:nowrap;justify-content:flex-start}#app .secthead>.tg-new:has(.tg-tok){flex:1 1 0;min-width:0;margin-left:0}#app .secthead>.tg-new>.tg-tok{max-width:none}}.arthd h1 a:hover{text-decoration:underline}
 .facts{position:relative;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px 24px;align-items:start;border-top:1px solid var(--border);padding-top:18px;margin-top:6px}
@@ -10620,6 +10627,7 @@ function renderDraw(keepPop) {
     if (data.kind === 'colnew') { ehMorph(app, colnewHtml(data)); save(); return; }
     if (data.kind === 'search') { ehMorph(app, searchHtml(data)); srchWire(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'art') { artPage(app, data); pinBar(app); return; }
+    if (data.kind === 'relate') { relPage(app, data); pinBar(app); return; }
     if (data.kind === 'discs' || data.kind === 'toc') { document.title = (data.kind === 'toc' ? 'Disc ID ' + data.id : (data.rel ? data.rel.title + ' · ' : '') + 'Disc IDs') + ' · Event Horizon'; discPage(app, data); pinBar(app); return; }
     if (data.kind === 'hist') { histPage(app, data); entHeadWire(app.querySelector('.arthd') || app); pinBar(app); return; }
     if (data.kind === 'home') { ehMorph(app, homeHtml()); hmWire(app); secRail(app); save(); const p = keepPop && document.getElementById('pop-' + keepPop), t = keepPop && $(`[data-pop="${keepPop}"]`); if (p) { p.hidden = false; if (t) t.setAttribute('aria-expanded', 'true'); } return; }
@@ -12750,7 +12758,7 @@ function onClick(ev) {
     const nav = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && ev.target.closest('a[href]');
     // Edit search uses MusicBrainz's live form and its native lookup handlers on each search page.
     if (nav && new URL(nav.href).origin === MB && new URL(nav.href).pathname === '/search/edits') return;
-    const navId = nav && !nav.target && (navTo(nav.href) || histKey(nav.href));
+    const navId = nav && !nav.target && (navTo(nav.href) || histKey(nav.href) || relKey(nav.href));
     if (navId) { ev.preventDefault(); ehPush(nav.href); show(navId); return; }
     // a click anywhere on a section's header row, outside its tools, folds the section
     const hd = ev.target.closest('.secthead');
@@ -12907,8 +12915,9 @@ const artKey = href => {
     const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/(release/(' + MBID.source + ')/(?:add-)?cover-art|event/(' + MBID.source + ')/(?:add-)?event-art)/?$', 'i'));
     return m ? m[2] ? 'art/' + m[2].toLowerCase() : 'eart/' + m[3].toLowerCase() : null;
 };
-// a release's relationship editor → "relate/<mbid>". MusicBrainz's React app stays where it is: Event Horizon only
-// dresses it (its header, theme and fonts over MusicBrainz's own sheets), never swaps its body, which would kill the editor
+// a release's relationship editor → "relate/<mbid>". MusicBrainz's React app mounts only on a page load: opened inside
+// Event Horizon it runs in a frame under EH's header (relPage), so the player keeps playing; loaded as a page of its own
+// it stays where it is and EH only dresses it (its header, theme and fonts over MusicBrainz's own sheets)
 const relKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/edit-relationships/?$', 'i')); return m ? 'relate/' + m[1].toLowerCase() : null; };
 // a release's edit history → "hist/<mbid>"; MusicBrainz's other edit lists (a release's open edits, open and subscribed
 // edits, an edit search) and a single edit → "hist/<its address, encoded>"
@@ -13931,12 +13940,57 @@ function coverDims() {
         im.src = a.href.replace(/^http:/, 'https:');
     }
 }
+// In Event Horizon's frame (EH_EMBED): the page outside draws the header, the background and the player; the frame
+// shows only the editor, tells the page outside its height, and hands it the links and the shortcut keys
+function relEmbed() {
+    const de = document.documentElement, up = m => { try { window.parent.postMessage(m, location.origin); } catch (e) {} };
+    de.setAttribute('data-eh-embed', '');
+    (document.head || de).insertAdjacentHTML('beforeend', `<style id="eh-embed-css">:root[data-eh-embed],:root[data-eh-embed] body{background:transparent!important;overflow-y:hidden}
+:root[data-eh-embed] body::before,:root[data-eh-embed] #eh-hex{display:none!important}
+:root[data-eh-embed] #page{max-width:none;padding:0 0 24px}</style>`);
+    let h = 0;
+    const tell = () => { const b = document.body; if (!b) return; const v = Math.ceil(Math.max(b.getBoundingClientRect().height, ...[...b.children].map(x => x.getBoundingClientRect().bottom + scrollY))); if (v !== h) { h = v; up({ ehRelH: v }); } };
+    try { new ResizeObserver(tell).observe(document.body); } catch (e) {}
+    new MutationObserver(() => requestAnimationFrame(tell)).observe(document.body, { childList: true, subtree: true });
+    tell();
+    // a plain click on a link of this site opens it in the page outside, as Event Horizon's own links do
+    document.addEventListener('click', ev => {
+        if (ev.defaultPrevented || ev.button !== 0 || ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey) return;
+        const a = ev.target.closest && ev.target.closest('a[href]'); if (!a || a.target) return;
+        const raw = a.getAttribute('href'); if (!raw || raw.startsWith('#') || /^javascript:/i.test(raw)) return;
+        const u = new URL(a.href); if (u.origin !== location.origin) { ev.preventDefault(); window.open(u.href, '_blank', 'noopener'); return; }
+        ev.preventDefault(); up({ ehNav: u.href });
+    });
+}
+// the page outside: the frame's messages
+addEventListener('message', ev => {
+    const fr = document.getElementById('eh-relframe'), m = ev.data;
+    if (EH_EMBED || !fr || ev.origin !== location.origin || ev.source !== fr.contentWindow || !m || typeof m !== 'object') return;
+    if (m.ehRelH) fr.style.height = m.ehRelH + 'px';
+    else if (m.ehRelDone) {   // submitted: the edit changed the release
+        kpWrote();
+        const k = keyOf(m.ehRelDone);
+        if (k) { try { history.replaceState(null, '', m.ehRelDone); } catch (e) {} show(k); } else location.assign(m.ehRelDone);
+    }
+    else if (m.ehNav) { const k = keyOf(m.ehNav);   // what Event Horizon opens in place (art, disc IDs, history, forms); anything else loads
+        if (k) { ehPush(m.ehNav); show(k); } else location.assign(m.ehNav); }
+    else if (m.ehKey) { const c = KEY_CMDS.find(x => keyOfCmd(x) === m.ehKey); if (c) c[3](); }
+});
+function relPage(app, d) {
+    if (!app.querySelector('#eh-relframe')) app.innerHTML = `<section class="arthd"></section><iframe id="eh-relframe" data-eh-embed title="Relationship editor" src="${MB}/release/${d.id}/edit-relationships?eh-embed=1"></iframe>`;
+    app.querySelector('.arthd').innerHTML = subHead(d.rel, d.id, 'edit-relationships', 'Relationships', '<h1>&nbsp;</h1>'); cvWire(app.querySelector('.arthd'));
+}
+async function relLoad(n, id) {
+    try { await relHd(id, r => { if (n === showing) { data.rel = r; render(); } }); }
+    catch (e) { LOG.err('Loading release ' + id + ' failed: ' + e.message); }
+}
 function relSet(on) {
     const de = document.documentElement;
     if (on && !document.getElementById('eh-rel-css')) {
         (document.head || de).insertAdjacentHTML('beforeend', `<link id="eh-font" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"><style id="eh-rel-css">${REL_CSS()}</style>`);
         const rel = PAGE_ID.startsWith('relate/'), c = document.getElementById('content') || document.getElementById('page');
-        if (c) c.prepend(rel ? relHeader(PAGE_ID.split('/')[1]) : formHeader(PAGE_ID));
+        if (c && !EH_EMBED) c.prepend(rel ? relHeader(PAGE_ID.split('/')[1]) : formHeader(PAGE_ID));
+        if (EH_EMBED) relEmbed();
         if (c && PAGE_ID.endsWith('/details')) detailsDress(c);
         if (c && PAGE_ID.endsWith('/releases')) releasesDress(c);
         // a releases or details page pins its header's bar once it scrolls away, as EH's own pages do
@@ -14638,7 +14692,7 @@ function build() {
     addEventListener('scroll', railSpy, { passive: true });
     // MusicBrainz's page is for the release this tab loaded; any other is fetched anew
     try { history.scrollRestoration = 'manual'; } catch (e) {}   // show() puts the page back where it was left, once it's in
-    addEventListener('popstate', () => { const k = navTo(location.href); if (!ehOn || !k) location.reload(); else show(k, { y: history.state && history.state.ehY }); });
+    addEventListener('popstate', () => { const k = navTo(location.href) || relKey(location.href); if (!ehOn || !k) location.reload(); else show(k, { y: history.state && history.state.ehY }); });
 }
 // what you switch to stays: the next page opens the same way (majkinetor)
 const switchOn = on => { S.on = on; save(); setOn(on); };
@@ -15503,7 +15557,7 @@ function start1() {
     const ua = mbBody.querySelector('.header a[href*="/user/"], header a[href*="/user/"]');
     if (ua) ME = decodeURIComponent(ua.getAttribute('href').split('/user/')[1].split('/')[0]);
     ehIn = !!ME; try { if (ME) localStorage.setItem('eh.in', '1'); else localStorage.removeItem('eh.in'); } catch (e) { /* storage blocked */ }
-    launcher();
+    if (!EH_EMBED) launcher();   // in Event Horizon's frame the page outside has it
     // Mission Control opening on a release it just consolidated (its mc.after note) needs MusicBrainz's page
     let off = false; try { off = !!sessionStorage.getItem('eh-off'); sessionStorage.removeItem('eh-off'); } catch (e) {}
     try { if (sessionStorage.getItem('mc.after')) off = true; } catch (e) {}
@@ -15511,7 +15565,7 @@ function start1() {
     if (/[#&]fc-update=/.test(location.hash)) off = true;
     // a tick later (#847): the scripts started with it (String Theory runs them in a row, Platform Check after
     // EH) read MusicBrainz's page first, its sidebar and tracklist, before EH swaps the body for its own
-    setTimeout(() => setOn(S.on && !off), 0);
+    setTimeout(() => setOn(EH_EMBED || S.on && !off), 0);
     // the effect presets for String Theory's theme settings, and the one its theme names
     fxWatch();
 }
@@ -15573,6 +15627,7 @@ async function show(key, o = {}) {
     const parts = kind === 'recording' ? ['recording', 'releases', 'works'] : kind === 'work' ? ['work', 'recordings'] : kind === 'area' ? ['area', 'artists, labels, places'] : kind === 'instrument' ? ['instrument', 'artists, releases, recordings'] : kind === 'place' ? ['place', 'events, recordings'] : kind === 'series' ? ['series', 'parts'] : kind === 'collection' ? ['collection', 'items'] : kind === 'event' ? ['event'] : isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
     if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
     if (kind === 'discs' || kind === 'toc') { data = { kind, id }; scrollTo(0, 0); render(); discLoad(n, id); return; }
+    if (kind === 'relate') { data = { kind: 'relate', id }; scrollTo(0, 0); render(); relLoad(n, id); return; }
     if (kind === 'art' || kind === 'eart') { data = { kind: 'art', id, ev: kind === 'eart' }; render(); artLoad(n, id); return; }
     if (kind === 'hist') { data = { kind: 'hist', id, edits: [], page: 0, more: !esIsSearch(id) || esHasQuery(id), grp: S.hgrp || 'burst', st: '', open: new Set() }; scrollTo(0, 0); render(); histLoad(n); return; }
     if (kind === 'gtag') {
@@ -15802,6 +15857,8 @@ if (!SETTINGS_ONLY) {
         if (t && (t.isContentEditable || /^(input|textarea|select)$/i.test(t.tagName))) return;
         const k = keyCombo(ev); if (!k) return;
         const c = KEY_CMDS.find(x => keyOfCmd(x) === k); if (!c) return;
+        // in Event Horizon's frame the page outside runs it, where its viewer is
+        if (EH_EMBED) { ev.preventDefault(); try { window.parent.postMessage({ ehKey: k }, location.origin); } catch (e) {} return; }
         if (c[3]()) ev.preventDefault();
     });
     document.addEventListener('click', ev => { if (ev.target.closest && ev.target.closest('[data-keys-open]')) { ev.preventDefault(); if (document.getElementById('eh-cfg')) closeCfg(); keysOpen(); } });
