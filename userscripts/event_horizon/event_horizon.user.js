@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.190000
+// @version      2026.11.18.200000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2840,7 +2840,7 @@ const CSS = `
 .u-langs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.u-lang{background:var(--chip);color:var(--chip-text);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600}.u-lang small{color:var(--muted);font-weight:500;margin-left:5px}
 .u-nav{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 28px;border-bottom:1px solid var(--border);margin:4px 0 22px;flex-basis:100%}.u-hd{display:flex!important;align-items:center;margin:8px 0 0!important}.u-hd .u-id{flex:1;min-width:0}.u-hd h1{margin:0 0 4px!important}.u-hd h1 a{color:inherit!important;text-decoration:none!important}.u-hd .acts{position:absolute;top:0;right:0;display:flex;align-items:center;gap:6px}.u-hd .u-nav{border-bottom:0;margin:0;min-height:44px}
 .u-pbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:-24px}.u-pbar .u-sub{margin:0}.u-pbar .u-langs{margin-top:0}.u-pbar .u-tabs{margin-top:0}.u-pbar+.u-facts{margin-top:-12px}.u-hd+.u-facts{margin-top:-24px}.u-facts+.u-bio{margin-top:-24px}.u-ng{display:flex;flex-wrap:wrap;gap:0 22px}.u-ng.acc{margin-left:auto;padding-left:22px;border-left:1px solid var(--border);margin-bottom:10px;align-self:stretch;align-items:flex-end}.u-ng.acc .u-nt{margin-bottom:-10px}
-.cn-form{max-width:640px;margin-top:8px}.cn-form fieldset{border:0;margin:0;padding:0;display:grid;gap:14px}.cn-form legend{font-weight:700;font-size:1.05em;padding:0;margin-bottom:12px}.cn-row{display:grid;gap:5px}.cn-row>span{font-size:.85em;color:var(--muted);font-weight:600}.cn-form input[type=text],.cn-form select,.cn-form textarea{width:100%;box-sizing:border-box;min-height:34px;padding:6px 10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit}.cn-form textarea{min-height:90px;resize:vertical;scrollbar-width:thin;scrollbar-color:var(--border) transparent}.cn-form input:focus,.cn-form select:focus,.cn-form textarea:focus{outline:none;border-color:var(--accent)}.cn-pub{display:flex;align-items:center;gap:8px;cursor:pointer}.cn-pub input{accent-color:var(--accent);margin:0}.cn-err{margin:14px 0 0}.cn-acts{margin-top:18px}.cn-acts button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--accent);background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer}.cn-acts button:disabled{opacity:.6;cursor:default}
+.cn-form{max-width:640px;margin-top:8px}.cn-form fieldset{border:0;margin:0;padding:0;display:grid;gap:14px}.cn-form legend{font-weight:700;font-size:1.05em;padding:0;margin-bottom:12px}.cn-row{display:grid;gap:5px}.cn-row>span{font-size:.85em;color:var(--muted);font-weight:600}.cn-form input[type=text],.cn-form select,.cn-form textarea{width:100%;box-sizing:border-box;min-height:34px;padding:6px 10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit}.cn-form textarea{min-height:90px;resize:vertical;scrollbar-width:thin;scrollbar-color:var(--border) transparent}.cn-form input:focus,.cn-form select:focus,.cn-form textarea:focus{outline:none;border-color:var(--accent)}.cn-pub{display:flex;align-items:center;gap:8px;cursor:pointer}.cn-pub input{accent-color:var(--accent);margin:0}.cn-err{margin:14px 0 0}.cn-cols{display:flex;flex-wrap:wrap;gap:6px}.cn-col{display:inline-flex;align-items:center;gap:4px;padding:2px 4px 2px 10px;border:1px solid var(--border);border-radius:999px}.cn-col .mbu-ov-x{position:static}.cn-none{color:var(--muted)}.cn-acts{margin-top:18px}.cn-acts button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--accent);background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer}.cn-acts button:disabled{opacity:.6;cursor:default}
 .u-nt{padding:10px 0 9px;font-weight:600;font-size:14px;color:var(--muted)!important;text-decoration:none!important;border-bottom:3px solid transparent;white-space:nowrap}.u-nt:hover{color:var(--text)!important}.u-nt.on{color:var(--text)!important;border-color:var(--accent)}
 .u-av{position:relative;overflow:visible!important}.u-av>img{border-radius:50%}.u-avb{position:absolute;right:-4px;bottom:-4px;width:32px;height:32px;border-radius:50%;background:var(--surface);border:2px solid var(--bg);display:grid;place-items:center;color:var(--accent)}
 .u-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}.u-tab{display:inline-flex;align-items:center;min-height:30px;padding:4px 12px;border-radius:9px;border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important;font-weight:600;font-size:13px}.u-tab:hover{border-color:var(--accent)}
@@ -8978,7 +8978,21 @@ function colnewParse(html) {
         lName: lab('edit-list.name'), lType: lab('edit-list.type_id'), lDesc: lab('edit-list.description'), lPub: lab('edit-list.public'),
         types: sel ? [...sel.options].map(o => ({ v: o.value, t: o.textContent.replace(/^[\s ]+/, ''), sub: /^ /.test(o.textContent), on: o.selected })) : [],
         errs: [...new Set(errs)],
+        ...colnewVals(d, f),
     };
+}
+// an edit form's current values: the page's JSON holds them (the collaborators only there, as React draws that field), the inputs are the fallback
+function colnewVals(d, f) {
+    let j = null;
+    for (const s of d.querySelectorAll('script[type="application/json"]')) { try { const o = JSON.parse(s.textContent); if (o && o.form && o.form.field && o.form.field.name) { j = o.form.field; break; } } catch (e) { /* another blob */ } }
+    const inp = n => f.querySelector(`[name="${n}"]`), val = k => j && j[k] ? j[k].value : undefined;
+    const name = val('name') != null ? String(val('name')) : inp('edit-list.name') ? inp('edit-list.name').value : '';
+    const desc = val('description') != null ? String(val('description')) : inp('edit-list.description') ? inp('edit-list.description').value : '';
+    const ty = val('type_id'), pc = inp('edit-list.public');
+    const pub = val('public') != null ? !!val('public') : !!(pc && pc.checked);
+    let collab = (j && j.collaborators && Array.isArray(j.collaborators.field) ? j.collaborators.field : []).map(c => c && c.field ? { id: c.field.id && c.field.id.value, name: c.field.name && c.field.name.value } : null);
+    if (!collab.length) collab = [...f.querySelectorAll('input[name^="edit-list.collaborators."][name$=".id"]')].map(i => ({ id: i.value, name: (inp(i.name.replace(/\.id$/, '.name')) || {}).value }));
+    return { cur: { name, desc, type: ty != null && ty !== '' ? String(ty) : undefined, pub, collab: collab.filter(c => c && c.id && c.name).map(c => ({ id: String(c.id), name: String(c.name) })) } };
 }
 async function colnewLoad(n, key) {
     const d = data;
@@ -8986,36 +9000,42 @@ async function colnewLoad(n, key) {
         let html;
         if (key === PAGE_ID && mbBody) html = '<body>' + mbBody.innerHTML + '</body>';
         else {
-            const r = await mbnFetch(MB + '/collection/create' + (d.qs ? '?' + d.qs : ''));
+            const r = await mbnFetch(colnewUrl(d));
             if (!r.ok) throw new Error('HTTP ' + r.status);
             if (/\/login\b/.test(new URL(r.url || MB).pathname)) throw new Error('Log in to MusicBrainz to add a collection');
             html = await r.text();
         }
         const f = colnewParse(html);
-        if (!f) throw new Error(ME ? 'MusicBrainz sent no collection form' : 'Log in to MusicBrainz to add a collection');
-        if (n === showing && data === d) { d.f = f; render(); const i = $('#app [data-cnname]'); if (i) i.focus(); }
+        if (!f) throw new Error(ME ? 'MusicBrainz sent no collection form' + (d.gid ? ': only the collection\'s owner can edit it' : '') : 'Log in to MusicBrainz to ' + (d.gid ? 'edit' : 'add') + ' a collection');
+        if (d.gid && !d.v) d.v = { ...f.cur, collab: [...f.cur.collab] };
+        if (n === showing && data === d) { d.f = f; render(); document.title = titleOf(d); const i = $('#app [data-cnname]'); if (i) i.focus(); }
     } catch (e) {
-        LOG.err('Loading the new collection form failed: ' + e.message);
+        LOG.err('Loading the ' + (d.gid ? 'collection edit' : 'new collection') + ' form failed: ' + e.message);
         if (n === showing && data === d) { d.err = e.message; render(); }
     }
 }
+// the form's address: a new one (with the entity it starts with) or an existing collection's edit
+const colnewUrl = d => d.gid ? MB + '/collection/' + d.gid + '/own_collection/edit' : MB + '/collection/create' + (d.qs ? '?' + d.qs : '');
 function colnewHtml(d) {
-    const f = d.f, v = d.v || {}, ent = (d.qs.match(/^([a-z_-]+)=/) || [])[1];
-    // it heads as your collections do: you, your tabs, and what this page is in the bar under them
-    const sub = `<p class="u-sub">${d.err && !f ? `<span class="u-err">${esc(d.err)}</span>` : `<b>${esc(f && f.h || 'Add a new collection')}</b>${ent ? ` · the ${esc(ent.replace(/_/g, ' '))} you came from goes in it` : ''}`}</p>`;
+    const f = d.f, v = d.v || {}, ent = !d.gid && (d.qs.match(/^([a-z_-]+)=/) || [])[1];
+    // it heads as your collections do: you, your tabs, and what this page is in the bar under them; an edit names its collection, a link back to it
+    const what = d.gid ? `Edit <a href="${MB}/collection/${d.gid}">${esc(f && f.cur.name || 'collection')}</a>` : esc(f && f.h || 'Add a new collection');
+    const sub = `<p class="u-sub">${d.err && !f ? `<span class="u-err">${esc(d.err)}</span>` : `<b>${what}</b>${ent ? ` · the ${esc(ent.replace(/_/g, ' '))} you came from goes in it` : ''}`}</p>`;
     const hero = (ME ? userHead(ME) : '') + userBar(sub, ME && `<nav class="u-tabs"><a class="u-tab" href="${MB}/user/${encodeURIComponent(ME)}/collections">Your collections</a></nav>`);
     if (!f) return hero + (d.err ? '' : '<p class="u-sub">Loading the form…</p>');
     const errs = [...(f.errs || []), ...(d.err ? [d.err] : [])];
     const type = v.type != null ? v.type : (f.types.find(t => t.on) || f.types[0] || {}).v;
+    // collaborators: those it has stay, and each can be taken off; adding one needs MusicBrainz's editor search, which EH doesn't call
+    const col = d.gid && v.collab ? `<div class="cn-row"><span>Collaborators</span>${v.collab.length ? `<div class="cn-cols">${v.collab.map((c, i) => `<span class="cn-col"><a href="${MB}/user/${encodeURIComponent(c.name)}">${esc(c.name)}</a><button type="button" class="mbu-ov-x" data-cncolx="${i}" aria-label="Remove ${esc(c.name)}">×</button></span>`).join('')}</div>` : '<span class="cn-none">None</span>'}</div>` : '';
     return hero + `<form class="cn-form" data-cnform novalidate>
         <fieldset><legend>${esc(f.legend || 'Collection details')}</legend>
         <label class="cn-row"><span>${esc(f.lName || 'Name')}</span><input type="text" name="edit-list.name" data-cnname required maxlength="255" value="${esc(v.name || '')}"></label>
         ${f.types.length ? `<label class="cn-row"><span>${esc(f.lType || 'Type')}</span><select name="edit-list.type_id">${f.types.map(t => `<option value="${esc(t.v)}"${t.v === type ? ' selected' : ''}>${t.sub ? ' ' : ''}${esc(t.t)}</option>`).join('')}</select></label>` : ''}
         <label class="cn-row"><span>${esc(f.lDesc || 'Description')}</span><textarea name="edit-list.description" rows="4">${esc(v.desc || '')}</textarea></label>
         <label class="cn-pub"><input type="checkbox" name="edit-list.public" value="1"${v.pub ? ' checked' : ''}> ${esc(f.lPub || 'Allow other users to see this collection')}</label>
-        </fieldset>
+        ${col}</fieldset>
         ${errs.length ? `<p class="u-err cn-err" role="alert">${errs.map(esc).join('<br>')}</p>` : ''}
-        <div class="cn-acts"><button type="submit"${d.busy ? ' disabled' : ''}>${esc(d.busy ? 'Adding…' : f.btn || 'Add collection')}</button></div></form>`;
+        <div class="cn-acts"><button type="submit"${d.busy ? ' disabled' : ''}>${esc(d.busy ? (d.gid ? 'Saving…' : 'Adding…') : f.btn || (d.gid ? 'Update collection' : 'Add collection'))}</button></div></form>`;
 }
 document.addEventListener('submit', async ev => {
     const fm = ev.target;
@@ -9023,31 +9043,42 @@ document.addEventListener('submit', async ev => {
     ev.preventDefault();
     const d = data; if (d.busy) return;
     const fd = new FormData(fm);
-    d.v = { name: String(fd.get('edit-list.name') || ''), type: fd.get('edit-list.type_id'), desc: String(fd.get('edit-list.description') || ''), pub: !!fd.get('edit-list.public') };
+    d.v = { name: String(fd.get('edit-list.name') || ''), type: fd.get('edit-list.type_id'), desc: String(fd.get('edit-list.description') || ''), pub: !!fd.get('edit-list.public'), collab: d.v && d.v.collab };
     d.err = ''; if (d.f) d.f.errs = [];
     if (!d.v.name.trim()) { d.err = (d.f && d.f.lName || 'Name') + ' is required'; render(); return; }
     d.busy = true; render();
     const p = new URLSearchParams({ 'edit-list.name': d.v.name, 'edit-list.description': d.v.desc });
     if (d.v.type != null) p.set('edit-list.type_id', d.v.type);
     if (d.v.pub) p.set('edit-list.public', '1');
+    // an edit sends every collaborator it keeps: one left out is taken off
+    (d.v.collab || []).forEach((c, i) => { p.set(`edit-list.collaborators.${i}.id`, c.id); p.set(`edit-list.collaborators.${i}.name`, c.name); });
     try {
-        const r = await mbnFetch(MB + '/collection/create' + (d.qs ? '?' + d.qs : ''), { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: p });
+        const r = await mbnFetch(colnewUrl(d), { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: p });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         const gid = (new URL(r.url || MB).pathname.match(new RegExp('^/collection/(' + MBID.source + ')/?$', 'i')) || [])[1];
         if (!gid) {
             // MusicBrainz sent its form back: it says what is wrong
             const f = colnewParse(await r.text());
-            throw new Error(f && f.errs.length ? f.errs.join(' · ') : 'MusicBrainz didn\'t add the collection');
+            throw new Error(f && f.errs.length ? f.errs.join(' · ') : 'MusicBrainz didn\'t ' + (d.gid ? 'save' : 'add') + ' the collection');
         }
         kpWrote();
         COLLECTIONS.clear(); try { GM_setValue('collections', {}); } catch (e) {}
-        toast('Collection added');
+        toast(d.gid ? 'Collection saved' : 'Collection added');
         if (data === d) { const href = MB + '/collection/' + gid.toLowerCase(); ehPush(href); show(navTo(href)); }
     } catch (e) {
-        LOG.err('Adding the collection failed: ' + e.message);
+        LOG.err((d.gid ? 'Saving' : 'Adding') + ' the collection failed: ' + e.message);
         d.busy = false; d.err = e.message; if (data === d) render();
     }
 });
+// a collaborator's ×: off the list here, and off the collection once the form is saved
+document.addEventListener('click', ev => {
+    const b = ev.target.closest && ev.target.closest('[data-cncolx]');
+    if (!b || !ehOn || !data || data.kind !== 'colnew' || !data.v || !data.v.collab || data.busy) return;
+    ev.preventDefault(); ev.stopPropagation();
+    const fm = b.closest('form'), fd = fm && new FormData(fm), v = data.v;
+    if (fd) Object.assign(v, { name: String(fd.get('edit-list.name') || ''), type: fd.get('edit-list.type_id'), desc: String(fd.get('edit-list.description') || ''), pub: !!fd.get('edit-list.public') });
+    v.collab = v.collab.filter((c, i) => i !== +b.dataset.cncolx); render();
+}, true);
 /* ── tags ─────────────────────────────────────────── */
 // an editor's tags (/user/<name>/tags, its upvotes or downvotes) and an entity's (/<type>/<mbid>/tags), read off MusicBrainz's own
 // pages: the editor's from its genre and tag lists, the entity's from the page's JSON, which also holds your own votes.
@@ -13030,6 +13061,8 @@ function navTo(href) {
     if (cl) return 'colls/' + cl[1];
     // a new collection (MusicBrainz's form, with the entity it starts with in the query) → "colnew/<query>"
     if (u.origin === location.origin && /^\/collection\/create\/?$/.test(u.pathname)) return 'colnew/' + encodeURIComponent(u.search.slice(1));
+    // a collection's edit, the same form filled in → "coledit/<mbid>"
+    { const m = u.origin === location.origin && u.pathname.match(new RegExp('^/collection/(' + MBID.source + ')/own_collection/edit/?$', 'i')); if (m) return 'coledit/' + m[1].toLowerCase(); }
     // an editor's tags → "utags/<name>"; an entity's → "etags/<type>:<mbid>"
     const ut = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/tags\/?$/);
     if (ut) return 'utags/' + ut[1];
@@ -13080,7 +13113,7 @@ function navTo(href) {
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
-const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? (d.t === 'url' ? (d.q ? d.q + ' · ' : '') + 'URL search' : d.q + ' · Search') + ' · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'colnew' ? 'New collection · Event Horizon' :d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'aliases' ? (d.t && d.t.en || 'Aliases') + ' · Aliases · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + ' · ' + (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
+const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? (d.t === 'url' ? (d.q ? d.q + ' · ' : '') + 'URL search' : d.q + ' · Search') + ' · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'colnew' ? (d.gid ? (d.f && d.f.cur.name ? d.f.cur.name + ' · ' : '') + 'Edit collection' : 'New collection') + ' · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'aliases' ? (d.t && d.t.en || 'Aliases') + ' · Aliases · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + ' · ' + (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
 // a release's cover-art page, or its add-cover-art page → "art/<mbid>"; an event's event-art or add-event-art page → "eart/<mbid>": its title and artist, then Art Station's gallery (#as-slot). A release's cover-art
 // page also opens in the tab from any other release page (artIn): Art Station, asked by mbu-art-mount, starts its gallery
 // in the slot without a page load, so the player plays on. The add pages and an event's art load their page
@@ -15991,6 +16024,7 @@ async function show(key, o = {}) {
     if (kind === 'urates') { const p = key.split('/'); data = { kind: 'rates', key, name: decodeURIComponent(p[1]), type: p[2] || '', st: 0 }; scrollTo(0, 0); render(); ratesLoad(n, data); return; }
     if (kind === 'colls') { data = { kind: 'colls', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); collsLoad(n, key); return; }
     if (kind === 'colnew') { data = { kind: 'colnew', qs: decodeURIComponent(id || '') }; scrollTo(0, 0); render(); colnewLoad(n, key); return; }
+    if (kind === 'coledit') { data = { kind: 'colnew', qs: '', gid: id }; scrollTo(0, 0); render(); colnewLoad(n, key); return; }
     if (kind === 'user') { data = { kind: 'user', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); userLoad(n, key); return; }
     if (kind === 'search') {
         const p = new URLSearchParams(key.slice(7)), q = p.get('query') || '', t = p.get('type') || 'artist';
