@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.050003
+// @version      2026.11.19.050004
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3171,6 +3171,9 @@ h1.eh-tc:not(.open) .eh-tm{display:-webkit-box;-webkit-box-orient:vertical;-webk
 .disamb{font-size:.5em;color:var(--muted);font-weight:500;opacity:.75;letter-spacing:0;white-space:normal}
 h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25em}
 .by{font-size:16px;font-weight:600}
+.col-nav{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:10px}.col-nav>a{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--muted)!important;text-decoration:none!important}.col-nav>a:hover{color:var(--accent)!important}.col-nav svg{width:16px;height:16px;flex:none}
+.col-desc{margin-top:12px;max-width:80ch;line-height:1.5;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}.col-desc>*{margin:0}.col-desc>*+*{margin-top:0}
+.colh .facts{margin-top:10px;padding-top:0;border-top:0}.colh .facts:empty{display:none}.colh .nocover .col-tmk{position:absolute;right:10px;bottom:10px;width:34px;height:34px;border-radius:50%;background:var(--bg);border:1px solid var(--border);color:var(--accent);display:grid;place-items:center}.colh .col-tmk svg{width:18px;height:18px}
 .hist{margin-top:24px}.hbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}.hbar .lb{color:var(--muted);font-size:13px}
 .hist>.hbar{position:sticky;top:var(--eh-pin-h,0px);z-index:25;padding:8px 10px;background:var(--eh-bar);box-shadow:0 -12px 0 var(--eh-bar);transition:top .18s}
 /* an open group's header pins under the Group bar, an open run's under it and an open edit's under those, so a group's
@@ -8343,13 +8346,13 @@ const colBack = () => { const o = data && data.g && data.g.owner; return o ? `<a
 const pgActs = (type, id) => (type === 'collection' ? colBack() : '') + actionRow((type === 'collection' ? COL_ACTS.filter(a => a[0] !== 'own_collection/edit' || (data && data.g && data.g.owner === ME)) : type === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS), type, id) + SRCH();
 const bigMk = d => mkSvg(d).replace('width="15" height="15"', 'width="96" height="96"').replace('stroke-width="2"', 'stroke-width=".7"');
 const factsHtml = F => `<div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>`;
-function pgHero(g, type, icon, kind, F, by, pic) {
+function pgHero(g, type, icon, kind, F, by, pic, sub = '') {
     return `<section class="hero">
         <div class="art">${pic || picHtml(g, 'mpic', `<div class="nocover pg">${bigMk(icon)}</div>`)}${under(g)}</div>
         <div class="facts-col">
             <div class="kicker label">${mkSvg(icon)}<span>${esc(kind)}</span><span class="acts">${pgActs(type, g.id)}</span></div>
             ${heroH1(g.title, g.disambig)}
-            ${by ? `<div class="by">${by}</div>` : ''}
+            ${by ? `<div class="by">${by}</div>` : ''}${sub}
             ${factsHtml(F)}
         </div>
     </section>`;
@@ -8864,7 +8867,7 @@ const serParts = d => tabSect('sp', serPartsName(d), d.listsX && d.listsX[0], `$
 /* ── collection ──────────────────────────────────── */
 // an editor's collection: one read of MusicBrainz's own page gives both its facts (header, description, sidebar) and its
 // items, as ws/2 has no private collections and no description. Neither says when an item was added
-const MK_COL = MBU_ENT_ICONS['collection'];
+const MK_COL = '<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/>';
 const COL_ENT = ['release-group', 'release', 'recording', 'artist', 'label', 'work', 'event', 'place', 'area', 'instrument', 'series'];
 const COL_NAME = { 'release-group': 'Release groups', release: 'Releases', recording: 'Recordings', artist: 'Artists', label: 'Labels', work: 'Works', event: 'Events', place: 'Places', area: 'Areas', instrument: 'Instruments', series: 'Series' };
 const COL_ACTS = [['own_collection/edit', 'Edit', 'Edit collection', ACTS[0][3]], ['edits', 'History', 'Edit history', ACTS[3][3]]];
@@ -8900,14 +8903,25 @@ function colActionHref(href, id) {
     if (u.origin === MB && u.pathname === `/collection/${id}/open_edits`) u.searchParams.set('hide_own', '1');
     return u.href;
 }
+// the sidebar's links under the byline, each with an icon picked by its link (MusicBrainz translates the labels); Merge stays on MusicBrainz's page
+const COL_SIDE_I = [
+    [/\/open_edits$/, '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'],
+    [/\/unsubscribe$|\/subscriptions\/[^/]+\/remove$/, '<path d="M8.7 3A6 6 0 0 1 18 8c0 2 .3 3.6.6 5M17 17H3s3-2 3-9c0-.6.1-1.2.3-1.7"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0M2 2l20 20"/>'],
+    [/\/subscribe$|\/subscriptions\/[^/]+\/add$/, '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>'],
+    [/\/subscribers$/, '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.5a6.5 6.5 0 0 1 3 5.5"/>'],
+];
 function colHero(d) {
-    const g = d.g;
+    const g = d.g, side = g.side.filter(([, h]) => !/merge/i.test(h));
+    const ico = h => { const p = new URL(h, MB).pathname, m = COL_SIDE_I.find(([r]) => r.test(p)); return m ? SVG(m[1]) : ''; };
+    const nav = side.length ? `<nav class="col-nav">${side.map(([t, h]) => `<a href="${esc(colActionHref(h, g.id))}">${ico(h)}<span>${esc(t)}</span></a>`).join('')}</nav>` : '';
+    const desc = g.desc ? `<div class="col-desc">${g.desc}</div>` : '';
+    // the cover is the collection icon, marked with the kind of entity it holds
+    const t = (g.type || '').toLowerCase(), k = CL_IK.find(k => t.includes(k.replace(/-/g, ' '))) || g.ent;
+    const pic = `<div class="nocover pg">${bigMk(MK_COL)}${k && MBU_ENT_ICONS[k] ? `<span class="col-tmk">${SVG(MBU_ENT_ICONS[k])}</span>` : ''}</div>`;
     return pgHero(g, 'collection', MK_COL, g.type || 'Collection', [
-        ['', g.desc && `<div class="col-desc">${g.desc}</div>`, 'wide'],
         ...g.facts.map(([l, v]) => [l, v, 'wide']),
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
-        ['', g.side.length && `<nav class="u-tabs">${g.side.map(([t, h]) => `<a class="u-tab" href="${esc(colActionHref(h, g.id))}">${esc(t)}</a>`).join('')}</nav>`, 'wide'],
-    ], g.by);
+    ], g.by, pic, nav + desc).replace('<section class="hero">', '<section class="hero colh">');
 }
 const colItems = d => { const g = d.g || {}, x = d.listsX && d.listsX[0], ent = g.ent || ''; return tabSect('cp', COL_NAME[ent] || 'Items', x, `${MB}/collection/${d.id}`, ART_URL[ent] ? ent : undefined); };
 /* ── an editor's collections ─────────────────────── */
@@ -8952,7 +8966,7 @@ const U_NIC = {
     profile: MBU_ENT_ICONS['artist'],
     subs: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
     fans: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.5a6.5 6.5 0 0 1 3 5.5"/>',
-    collections: MBU_ENT_ICONS['collection'],
+    collections: MK_COL,
     tags: CI_TAG,
     ratings: '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z"/>',
     edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
@@ -9070,7 +9084,7 @@ const CL_LOCK = '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 1
 const CL_GLOBE = '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>';
 // the entity icon of a collection's type, from its type or its group's name ("Release group collection" → release-group; the longest key wins), else a collection's
 const CL_IK = Object.keys(MBU_ENT_ICONS).filter(k => k !== 'collection').sort((a, b) => b.length - a.length);
-const clIco = x => { const t = ((x && (x.ty || x.grp)) || '').toLowerCase(); return `<span class="cl-ico">${SVG(MBU_ENT_ICONS[CL_IK.find(k => t.includes(k.replace(/-/g, ' '))) || 'collection'])}</span>`; };
+const clIco = x => { const t = ((x && (x.ty || x.grp)) || '').toLowerCase(); const k = CL_IK.find(k => t.includes(k.replace(/-/g, ' '))); return `<span class="cl-ico">${SVG(k ? MBU_ENT_ICONS[k] : MK_COL)}</span>`; };
 // a tile (title across the card, the count with the actions beside it, privacy drawn faintly behind) or a row (its type's icon first, then columns of type, privacy and count); a lock is set apart in the accent
 // a collection's type without the word "collection" ("Release collection" → "Release")
 const clTy = x => (x.ty || '').replace(/\s*\bcollection$/i, '') || x.ty || '';
@@ -11108,7 +11122,7 @@ const HM_ADD = [
 ];
 const HM_ME = [
     ['/edit/notes-received', 'Notes received', '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'],
-    ['collections', 'Collections', '<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/>'],
+    ['collections', 'Collections', MK_COL],
     ['subscriptions/artist', 'Subscriptions', '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.300 21a1.900 1.900 0 0 0 3.400 0"/>'],
     ['ratings', 'Ratings', '<path d="m12 3 2.800 5.700 6.200.9-4.500 4.400 1.100 6.200L12 17.300 6.400 20.200l1.100-6.200L3 9.600l6.200-.9z"/>'],
     ['tags', 'Tags', CI_TAG],
