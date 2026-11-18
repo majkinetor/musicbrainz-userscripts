@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.220823
+// @version      2026.11.18.230000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8899,7 +8899,14 @@ function colMeta(d, id) {
     const side = [...d.querySelectorAll('#sidebar ul.links a[href]')].filter(a => !/\/edits$/.test(a.getAttribute('href'))).map(a => [a.textContent.replace(/\s+/g, ' ').trim(), a.getAttribute('href')]);
     const t = d.querySelector('table.tbl tbody'), m = t && t.innerHTML.match(new RegExp('href="/(' + COL_ENT.join('|') + ')/' + MBID.source + '"'));
     return { id, title: tx(h.querySelector('h1')), disambig: '', rating: {}, genres: [], tags: [], imgs: [], type, total, facts,
-        side, owner: tx(own), by: sh ? sh.innerHTML.trim() : '', desc: ds ? ds.innerHTML.trim() : '', ent: m ? m[1] : '' };
+        side, owner: tx(own), by: sh ? sh.innerHTML.trim() : '', ...colCover(ds ? ds.innerHTML.trim() : ''), ent: m ? m[1] : '' };
+}
+// a "_cover: <image URL>" line in the description is the collection's cover; the line itself is not shown
+function colCover(desc) {
+    const re = /(^|<br\s*\/?>|<p>)\s*_cover:\s*(?:<a [^>]*>)?\s*(https?:\/\/[^\s<"]+)\s*(?:<\/a>)?\s*(<br\s*\/?>)?/i, m = desc.match(re);
+    if (!m) return { desc, cover: '' };
+    const cover = m[2].replace(/&amp;/g, '&');
+    return { desc: desc.replace(re, '$1').replace(/^(\s*<br\s*\/?>)+|(<br\s*\/?>\s*)+$/gi, '').replace(/<p>\s*<\/p>/g, '').trim(), cover };
 }
 async function loadCollection(id, step = () => {}) {
     const lists = mbTabK('collection', id, '').then(x => { step('items'); return [x]; }, noSec('tab collection/' + id));
@@ -8925,7 +8932,7 @@ function colHero(d) {
     const desc = g.desc ? `<div class="col-desc">${g.desc}</div>` : '';
     // the cover is the collection icon, marked with the kind of entity it holds
     const t = (g.type || '').toLowerCase(), k = CL_IK.find(k => t.includes(k.replace(/-/g, ' '))) || g.ent;
-    const pic = `<div class="nocover pg">${bigMk(MK_COL)}${k && MBU_ENT_ICONS[k] ? `<span class="col-tmk">${SVG(MBU_ENT_ICONS[k])}</span>` : ''}</div>`;
+    const pic = g.cover ? `<div class="picw"><img class="cover mpic" src="${esc(g.cover)}" alt="${esc(g.title)}" referrerpolicy="no-referrer"></div>` : `<div class="nocover pg">${bigMk(MK_COL)}${k && MBU_ENT_ICONS[k] ? `<span class="col-tmk">${SVG(MBU_ENT_ICONS[k])}</span>` : ''}</div>`;
     return pgHero(g, 'collection', MK_COL, g.type || 'Collection', [
         ...g.facts.map(([l, v]) => [l, v, 'wide']),
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
