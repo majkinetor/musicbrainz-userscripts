@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.235902
+// @version      2026.11.19.004000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3340,6 +3340,23 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-sw[aria-checked=true] i::after{left:16px}
 .ed-div{width:1px;height:20px;background:var(--border)}.ed-ld{display:inline-flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)}
 .ed-views{display:inline-flex;gap:2px}
+.cl-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-left:auto}.cl-tools .seg i{font-style:normal;opacity:.7;margin-left:2px}
+.cl-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.cl-tile{border:1px solid var(--border);border-radius:9px;padding:10px 12px 6px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
+.cl-a{font-weight:600;overflow-wrap:anywhere}
+.cl-big{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.25}
+.cl-meta{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:12px;color:var(--muted);font-weight:400}
+.cl-pv.off{color:var(--accent);font-weight:700}
+.cl-acts{display:inline-flex;align-items:center;flex-wrap:wrap;gap:2px}.cl-tile .cl-acts{margin:2px 0 0 -6px}
+.cl-ib{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:30px;height:30px;padding:0 6px;border-radius:6px;color:var(--muted)!important;text-decoration:none!important;font-size:13px;font-weight:700}
+.cl-ib:hover,.cl-ib:focus-visible{color:var(--link)!important;background:var(--hover)}.cl-ib svg{width:18px;height:18px;flex:none}
+.cl-rm[data-confirm]{color:#c4466a!important}.cl-cancel{min-height:30px}
+.cl-list{list-style:none;margin:0;padding:0}
+.cl-row{display:flex;align-items:center;gap:4px 14px;padding:3px 0;border-bottom:1px solid var(--border)}.cl-row:last-child{border-bottom:0}
+.cl-nm{flex:1;min-width:0;display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 12px}
+.cl-ty{color:var(--muted);font-size:12px}.cl-ct{font-variant-numeric:tabular-nums;min-width:4ch;text-align:right;font-weight:600}
+.cl-row .cl-acts{min-width:66px;justify-content:flex-end}.cl-note{margin-top:14px}
+@media (max-width:600px){.cl-tools{margin-left:0}.cl-row{flex-wrap:wrap}.cl-nm{flex-basis:100%}.cl-ty{flex:1}.cl-row .cl-acts{min-width:0}}
 .ed-views button{all:unset;width:30px;height:30px;display:grid;place-items:center;border-radius:8px;color:var(--muted);cursor:pointer}
 .ed-views button:hover{background:var(--chip);color:var(--text)}
 .ed-views button[aria-pressed=true]{background:var(--chip);color:var(--accent)}
@@ -4320,7 +4337,7 @@ function ambientApply(layer, kind) {
     layer._ehPattern = { key, P: p, stop, shift() {} }; document.addEventListener('visibilitychange', vis); vis();
 }
 
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'arAuto', 'arCol', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'fx', 'fxOff', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'bgAmount', 'bgSize', 'bgGlow', 'bgHue', 'auraOpacity', 'auraBlur', 'auraSat', 'auraHeight', 'glowStrength', 'glowSize', 'glowPlace', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView', 'lbGroups'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'arAuto', 'arCol', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'clView', 'clSort', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'fx', 'fxOff', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'bgAmount', 'bgSize', 'bgGlow', 'bgHue', 'auraOpacity', 'auraBlur', 'auraSat', 'auraHeight', 'glowStrength', 'glowSize', 'glowPlace', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView', 'lbGroups'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true, tags: false },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -4337,7 +4354,7 @@ const S = {
     facts: ['released', 'labels', 'barcode', 'length', 'links'],
     secOrder: [], secHide: [], // the rail's section order, and the sections it hides
     fold: [], discFold: [], grpFold: [], // grpFold: the discography's and releases' folded groups, 'dg:Album' / 'ed:Bootleg'
-    edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date', edSort: '', lmAuto: true, tabView: 'table', // edSort: the releases table's column, '' its own order, a leading '-' reversing it
+    edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date', edSort: '', lmAuto: true, tabView: 'table', clView: 'grid', clSort: 'name', // edSort: the releases table's column, '' its own order, a leading '-' reversing it
     lbGroups: true, // a label's releases shown by release group
     ed: { kinds: new Set(), official: false },
     open: new Set(),
@@ -8940,30 +8957,82 @@ function collsHtml(d) {
     const hero = userHead(c && c.name || d.name, c && c.av, c && c.tabs)
         + userBar(d.err ? `<p class="u-sub"><span class="u-err">${esc(d.err)}</span></p>` : !c ? '<p class="u-sub">Loading the collections…</p>' : '', add && `<nav class="u-tabs">${add}</nav>`);
     if (!c) return hero;
-    // the editor's own tables keep their type's heading; a collaborative one says so
-    return hero + c.secs.map((s, i) => s.note ? sect('cl' + i, esc(s.grp), '', `<p class="hm-none">${esc(s.note)}</p>`, '')
-        : tabSect('cl' + i, esc(s.gi > 0 ? `${s.grp} · ${s.name}` : s.name), s.x, '')).join('');
+    const its = clItems(c), byItems = S.clSort === 'items', grid = S.clView !== 'row';
+    const ord = a => a.slice().sort((x, y) => byItems ? y.n - x.n || x.t.localeCompare(y.t) : x.t.localeCompare(y.t, undefined, { numeric: true }) || y.n - x.n);
+    const grps = [...new Set(its.map(x => x.grp))];
+    if (clType && !grps.includes(clType)) clType = '';
+    const seg = (lbl, xs) => `<span class="seg" role="group" aria-label="${lbl}">${xs.join('')}</span>`;
+    const sort = seg('Sort', [['name', 'Name'], ['items', 'Items']].map(([v, n]) => `<button type="button" data-clsort="${v}" aria-pressed="${(byItems ? 'items' : 'name') === v}">${n}</button>`));
+    const chips = !grid && grps.length > 1 ? seg('Type', [['', 'All', its.length], ...grps.map(g => [g, g, its.filter(x => x.grp === g).length])]
+        .map(([v, n, k]) => `<button type="button" data-cltype="${esc(v)}" aria-pressed="${clType === v}">${esc(n)} <i>${fmtN(k)}</i></button>`)) : '';
+    const tools = its.length ? `<span class="cl-tools">${chips}${sort}${viewBs(['grid', 'row'], grid ? 'grid' : 'row', 'clview', 'View')}</span>` : '';
+    const top = userHead(c.name || d.name, c.av, c.tabs)
+        + userBar(d.err ? `<p class="u-sub"><span class="u-err">${esc(d.err)}</span></p>` : '', add && `<nav class="u-tabs">${add}</nav>`, tools);
+    // what MusicBrainz says of an empty part (no collaborative collections) is one quiet line under the list
+    const notes = c.secs.filter(s => s.note).map(s => `<p class="hm-none cl-note">${esc(s.grp)}: ${esc(s.note)}</p>`).join('');
+    const body = grid
+        ? grps.map((g, i) => { const xs = ord(its.filter(x => x.grp === g)); return sect('cl' + i, `${esc(g)} <span class="count">${fmtN(xs.length)}</span>`, '', `<div class="cl-tiles">${xs.map(x => clItem(x, true)).join('')}</div>` + (i === grps.length - 1 ? notes : ''), ''); }).join('') + (grps.length ? '' : notes)
+        : its.length ? `<ul class="cl-list">${ord(its.filter(x => !clType || x.grp === clType)).map(x => clItem(x, false)).join('')}</ul>` : '';
+    return top + body + (grid ? '' : notes);
+}
+// MusicBrainz's collection tables, one item per collection; it translates the headings, so a cell is known by what it holds:
+// the collection's link, a /user/ link (a collaborative one's owner), its type, the counts of items and collaborators, then subscribed and privacy, and the actions
+let clType = ''; // the flat list's type, '' all of them
+function clItems(c) {
+    const ta = document.createElement('textarea'), out = [];
+    const tx = h => { ta.innerHTML = h.replace(/<[^>]*>/g, ''); return ta.value.replace(/\s+/g, ' ').trim(); }, num = h => /^[\d\s.,'  ]+$/.test(tx(h));
+    for (const s of c.secs) if (s.x) for (const r of s.x.rows) {
+        if (!Array.isArray(r)) continue;
+        const ni = r.findIndex(h => /href="[^"]*\/collection\/[0-9a-f-]{36}"/.test(h));
+        if (ni < 0) continue;
+        const ai = r.findIndex(h => h.includes('/own_collection/')), oi = r.findIndex((h, i) => i !== ni && /href="[^"]*\/user\//.test(h));
+        const rest = r.map((h, i) => i).filter(i => i !== ni && i !== ai && i !== oi && tx(r[i]));
+        const nums = rest.filter(i => num(r[i])), ti = rest.find(i => !num(r[i]) && i > ni), tail = rest.filter(i => !nums.includes(i) && i !== ti && i > (nums[1] ?? nums[0] ?? ni));
+        const href = (h, re) => { const m = re.exec(h); return m ? m[1].replace(/&amp;/g, '&') : ''; };
+        const sub = tail.length ? tail[0] : -1, pv = tail.length > 1 ? tail[1] : -1, hd = i => tx(s.x.head[i] || '');
+        out.push({
+            grp: s.name, gi: s.gi, name: tx(r[ni]), t: tx(r[ni]), href: href(r[ni], /href="([^"]*\/collection\/[0-9a-f-]{36})"/),
+            ty: ti != null ? tx(r[ti]) : '', n: nums.length ? +tx(r[nums[0]]).replace(/\D/g, '') : 0, ns: nums.length ? tx(r[nums[0]]) : '',
+            co: nums.length > 1 && +tx(r[nums[1]]).replace(/\D/g, '') ? `${hd(nums[1])} ${tx(r[nums[1]])}` : '',
+            owner: oi >= 0 ? r[oi] : '', sub: sub < 0 ? '' : /^yes$/i.test(tx(r[sub])) ? hd(sub) : /^no$/i.test(tx(r[sub])) ? '' : `${hd(sub)}: ${tx(r[sub])}`,
+            pv: pv < 0 ? '' : tx(r[pv]), edit: ai >= 0 ? href(r[ai], /href="([^"]*\/own_collection\/edit)"/) : '', del: ai >= 0 ? href(r[ai], /href="([^"]*\/own_collection\/delete)"/) : '',
+        });
+    }
+    return out;
+}
+const CL_TRASH = '<path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/>';
+// a tile (count as the big figure) or a row (its type before the count); privacy always shows, set apart when it isn't public
+function clItem(x, tile) {
+    const abs = h => h.startsWith('/') ? MB + h : h, q = s => esc(s);
+    const name = `<a class="cl-a" href="${q(abs(x.href))}">${q(x.name)}</a>`;
+    const meta = [x.pv && `<span class="cl-pv${/^public$/i.test(x.pv) ? '' : ' off'}">${q(x.pv)}</span>`, x.owner && `<span class="cl-by">${x.owner.replace(/href="\//g, `href="${MB}/`)}</span>`, x.co && `<span>${q(x.co)}</span>`, x.sub && `<span>${q(x.sub)}</span>`].filter(Boolean).join('');
+    const acts = x.edit || x.del ? `<span class="cl-acts">${x.edit ? `<a class="cl-ib" href="${q(abs(x.edit))}" aria-label="Edit ${q(x.name)}" data-tip="Edit">${MBU_EDIT_ICON}</a>` : ''}${x.del ? `<a class="cl-ib cl-rm" href="${q(abs(x.del))}" aria-label="Remove ${q(x.name)}" data-tip="Remove">${SVG(CL_TRASH)}</a>` : ''}</span>` : '';
+    return tile
+        ? `<div class="cl-item cl-tile">${name}<span class="cl-big">${q(x.ns || '0')}</span>${meta ? `<span class="cl-meta">${meta}</span>` : ''}${acts}</div>`
+        : `<li class="cl-item cl-row"><span class="cl-nm">${name}${meta ? `<span class="cl-meta">${meta}</span>` : ''}</span><span class="cl-ty">${q(x.ty)}</span><span class="cl-ct">${q(x.ns || '0')}</span>${acts}</li>`;
 }
 // Confirm in the listing and send the same empty form as MusicBrainz's remove page.
 document.addEventListener('click', async ev => {
     if (!ehOn || !data || data.kind !== 'colls') return;
     const cancel = ev.target.closest && ev.target.closest('#app [data-colcancel]');
-    if (cancel) { const a = cancel.previousElementSibling; if (a) { delete a.dataset.confirm; a.textContent = 'Remove'; a.removeAttribute('aria-label'); } cancel.remove(); return; }
+    // the trash button keeps its icon throughout; what it is about to do is said beside it
+    const say = (a, t) => { let s = a.querySelector('.cl-say'); if (!t) { if (s) s.remove(); return; } if (!s) { s = document.createElement('span'); s.className = 'cl-say'; a.append(s); } s.textContent = t; };
+    const lbl = a => { const n = a.closest('.cl-item'), x = n && n.querySelector('.cl-a'); return x ? x.textContent.trim() : 'collection'; };
+    if (cancel) { const a = cancel.previousElementSibling; if (a) { delete a.dataset.confirm; say(a, ''); a.setAttribute('aria-label', 'Remove ' + lbl(a)); } cancel.remove(); return; }
     const a = ev.target.closest && ev.target.closest('#app a[href]');
     if (!a) return;
     const u = new URL(a.href, location.href), m = u.origin === location.origin && u.pathname.match(/^\/collection\/([0-9a-f-]{36})\/own_collection\/delete\/?$/i);
     if (!m) return;
     ev.preventDefault(); ev.stopImmediatePropagation();
     if (a.dataset.busy) return;
-    const row = a.closest('tr'), name = row && row.querySelector('a[href*="/collection/"]');
     if (!a.dataset.confirm) {
         a.dataset.confirm = '1';
-        a.textContent = 'Confirm removal';
-        a.setAttribute('aria-label', 'Confirm removal of ' + (name ? name.textContent.trim() : 'collection'));
-        const cancel = document.createElement('button'); cancel.type = 'button'; cancel.dataset.colcancel = '1'; cancel.textContent = 'Cancel'; a.after(cancel);
+        say(a, 'Confirm removal');
+        a.setAttribute('aria-label', 'Confirm removal of ' + lbl(a));
+        const cancel = document.createElement('button'); cancel.type = 'button'; cancel.className = 'lnk cl-cancel'; cancel.dataset.colcancel = '1'; cancel.textContent = 'Cancel'; a.after(cancel);
         return;
     }
-    a.dataset.busy = '1'; a.textContent = 'Removing…'; if (a.nextElementSibling && a.nextElementSibling.hasAttribute('data-colcancel')) a.nextElementSibling.remove();
+    a.dataset.busy = '1'; say(a, 'Removing…'); if (a.nextElementSibling && a.nextElementSibling.hasAttribute('data-colcancel')) a.nextElementSibling.remove();
     const d = data;
     try {
         const r = await mbnFetch(u.href, { method: 'POST', credentials: 'include', body: new URLSearchParams() });
@@ -8971,7 +9040,7 @@ document.addEventListener('click', async ev => {
         for (const s of d.c.secs) if (s.x) s.x.rows = s.x.rows.filter(r => !Array.isArray(r) || !r.some(c => c.includes('/collection/' + m[1] + '/own_collection/delete')));
         COLLECTIONS.clear(); try { GM_setValue('collections', {}); } catch (e) {}
         kpWrote(); toast('Collection removed'); if (data === d) render();
-    } catch (e) { a.dataset.busy = ''; a.dataset.confirm = ''; a.textContent = 'Remove'; toast('Could not remove collection: ' + e.message); }
+    } catch (e) { a.dataset.busy = ''; delete a.dataset.confirm; say(a, ''); toast('Could not remove collection: ' + e.message); }
 }, true);
 /* ── a new collection ─────────────────────────────── */
 // /collection/create[?<type>=<id>]: MusicBrainz's form, read for its words and its types (which follow the entity it starts with),
@@ -13084,6 +13153,9 @@ function onClick(ev) {
     else if (d.lbmode) S.lbGroups = d.lbmode === 'groups';
     else if ('lbx' in d) lbOpen.has(d.lbx) ? lbOpen.delete(d.lbx) : lbOpen.add(d.lbx);
     else if (d.tabview) S.tabView = d.tabview;
+    else if (d.clview) S.clView = d.clview;
+    else if (d.clsort) S.clSort = d.clsort;
+    else if ('cltype' in d) clType = d.cltype;
     else if (d.edsort) S.edSort = S.edSort === d.edsort ? '-' + d.edsort : S.edSort === '-' + d.edsort ? '' : d.edsort;
     else if (d.dgsort) S.dgSort = S.dgSort === d.dgsort ? '-' + d.dgsort : d.dgsort; // a second click turns the order round
     else if (d.edview) S[data.rel ? 'edView' : 'rgView'] = d.edview;
