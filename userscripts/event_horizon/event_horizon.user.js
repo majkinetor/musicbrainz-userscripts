@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.060000
+// @version      2026.11.19.061000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3375,7 +3375,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .cl-nm{flex:1;min-width:0;display:flex;align-items:center;flex-wrap:wrap;gap:2px 10px}
 .cl-ty{color:var(--muted);font-size:12px;width:14ch;flex:none;overflow-wrap:anywhere}.cl-ct{font-variant-numeric:tabular-nums;width:7ch;flex:none;text-align:right;font-weight:600}
 .cl-pc{width:10ch;flex:none;display:inline-flex;align-items:center;gap:5px;color:var(--muted);font-size:12px}.cl-pc .cl-pv{opacity:.7}.cl-pc.off{color:var(--accent)}.cl-pc.off .cl-pv{opacity:1}
-.cl-row:not(.cl-th){cursor:pointer}.cl-row:not(.cl-th):hover{background:var(--hover)}
+.cl-row:not(.cl-th){cursor:pointer}.cl-row:not(.cl-th):hover{background:color-mix(in srgb,var(--hover) 40%,transparent)}
 .cl-row.cl-th{font-size:12px;font-weight:600;color:var(--muted);padding:2px 0 4px}.cl-th .cl-nm{padding-left:2px}.cl-th .cl-ty,.cl-th .cl-pc{font-size:inherit;color:inherit}.cl-th .cl-ct{font-weight:inherit}.cl-th .cl-acts{min-height:1px}
 .cl-row .cl-acts{min-width:66px;justify-content:flex-end}.cl-note{margin-top:14px}
 @media (max-width:600px){.cl-tools{margin-left:0}.cl-row{flex-wrap:wrap}.cl-nm{flex-basis:100%}.cl-ty{flex:1;width:auto}.cl-pc{width:auto}.cl-row .cl-acts{min-width:0}.cl-th .cl-nm{flex-basis:auto;flex:1}.cl-th .cl-acts{display:none}}
