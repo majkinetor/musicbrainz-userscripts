@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.130000
+// @version      2026.11.18.180000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2948,6 +2948,14 @@ body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;poin
 @keyframes eh-hex-drift{0%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}25%{-webkit-mask-position:35% 60%,70% 15%,10% 55%;mask-position:35% 60%,70% 15%,10% 55%}50%{-webkit-mask-position:75% 35%,30% 85%,60% 10%;mask-position:75% 35%,30% 85%,60% 10%}75%{-webkit-mask-position:55% 90%,10% 30%,95% 45%;mask-position:55% 90%,10% 30%,95% 45%}100%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}}
 @media (prefers-reduced-motion:reduce){#eh-hex .hex-drift,#eh-hex .hex-drift2,:is(#eh-hex,.eh-amb) .hex-pattern{display:none!important}}
 :root[data-eh-hex] :is(.tl,.card,.u-bio,.u-facts,.u-vcol,.hm-pf,.hgrp,.eh-details){background:color-mix(in srgb,var(--surface) 62%,transparent)!important;backdrop-filter:blur(1px)}
+#app .eh-details{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-top:24px}
+#app .eh-details h2{margin:0 0 18px;font-size:18px}
+#app .eh-details table.details{width:100%;border-collapse:collapse}
+#app .eh-details table.details :is(th,td){padding:2px 0;vertical-align:baseline;line-height:1.45;border:0;background:transparent!important;overflow-wrap:anywhere}
+#app .eh-details table.details th{width:1%;white-space:nowrap;padding-right:12px;color:var(--text);font-weight:700;text-align:right}
+#app .eh-details td>a[href*="/ws/2/"],#app .eh-details td>a[href^="http"]:not([href^="/"]){font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:-.01em}
+#app .eh-details code{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text)}
+@media(max-width:600px){#app .eh-details{padding:16px}#app .eh-details table.details :is(tbody,tr,th,td){display:block;width:auto}#app .eh-details table.details tr+tr{margin-top:10px}#app .eh-details table.details th{white-space:normal;text-align:left;padding:0;font-size:12.5px;font-weight:600;color:var(--muted)}}
 :root[data-eh-hex] :is(.discogs-bar,.gt-toolbar){background:color-mix(in srgb,var(--mbu-bg-raised) 62%,transparent)!important;backdrop-filter:blur(1px)}
 :root[data-eh-hex] .tl .disc{background:color-mix(in srgb,var(--chip) 55%,transparent)!important}
 :root[data-eh-hex] :is(.tl.striped .tr.alt,.tl .detail){background:color-mix(in srgb,var(--hover) 50%,transparent)!important}
@@ -3121,7 +3129,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 #eh-pin .pident,#eh-pin .pkk{overflow:hidden}#eh-pin .pkk{display:flex;align-items:center;gap:6px;min-width:0;max-width:40%;color:var(--muted);font-size:10.5px;white-space:nowrap}#eh-pin .pkk svg{width:18px;height:18px;flex:none}#eh-pin .pkk>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 /* Reserve the release identity before fitting actions; format icons must not shrink under the menu. */
 #eh-pin .pident{min-width:min(360px,45%)}#eh-pin .pkk{flex:none}
-#eh-pin.eh-ply{transform:none}#eh-pin.eh-ply>.kicker{min-height:42px}#eh-pin.eh-ply .pident{flex:1 1 0;min-width:0}#eh-pin.eh-ply .ply-ctl.pb~*{flex:1 1 0;min-width:0;justify-content:flex-end}#eh-pin.eh-ply>.kicker:has(>.ply-ctl.pb:last-child)::after{content:"";flex:1 1 0}#eh-pin .ply-ctl.pb{max-width:min(1000px,52%);min-width:0}@media(max-width:700px){#eh-pin .ply-ctl.pb{flex:0 1 auto;max-width:70%}#eh-pin.eh-ply>.kicker::after{display:none}}#eh-pin .ply-ctl.pb{align-self:stretch;margin-top:-6px;margin-bottom:-6px}html.eh-ply-pin body{padding-top:var(--eh-pin-h,0px)}@media(max-width:600px){#eh-pin.eh-ply>.kicker{flex-wrap:wrap;row-gap:0}#eh-pin.eh-ply .ply-ctl.pb{order:9;flex:1 1 100%;max-width:none;margin:0;justify-content:center}#eh-pin.eh-ply .ply-ctl.pb .ply-t{max-width:none}}
+#eh-pin.eh-ply{transform:none}#eh-pin.eh-ply>.kicker{min-height:42px}#eh-pin.eh-ply .pident{flex:1 1 0;min-width:0}#eh-pin.eh-ply .ply-ctl.pb~*{flex:1 1 0;min-width:0;justify-content:flex-end}#eh-pin.eh-ply .ply-ctl.pb~.acts{min-width:max-content}#eh-pin.eh-ply .ply-ctl.pb{flex-shrink:100}#eh-pin.eh-ply .pident{min-width:min(140px,18%)}#eh-pin.eh-ply>.kicker:has(>.ply-ctl.pb:last-child)::after{content:"";flex:1 1 0}#eh-pin .ply-ctl.pb{max-width:min(1000px,52%);min-width:0}@media(max-width:700px){#eh-pin .ply-ctl.pb{flex:0 1 auto;max-width:70%}#eh-pin.eh-ply>.kicker::after{display:none}}#eh-pin .ply-ctl.pb{align-self:stretch;margin-top:-6px;margin-bottom:-6px}html.eh-ply-pin body{padding-top:var(--eh-pin-h,0px)}@media(max-width:600px){#eh-pin.eh-ply>.kicker{flex-wrap:wrap;row-gap:0}#eh-pin.eh-ply .ply-ctl.pb{order:9;flex:1 1 100%;max-width:none;margin:0;justify-content:center}#eh-pin.eh-ply .ply-ctl.pb .ply-t{max-width:none}}
 @media(max-width:700px){#eh-pin .pkk{display:none}}
 .kicker .ab[data-ehsec]:hover,.kicker .srch>.ab:hover,.kicker .ab.eh-home:hover{background:var(--surface)!important;border-color:var(--accent)}
 .ib{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--soft)!important;cursor:pointer;display:grid;place-items:center;position:relative}
@@ -7894,10 +7902,18 @@ function aliasCredits(doc) {
         return { html: bdi.innerHTML, uses: uses ? uses.getAttribute('href') : '', edit: edit ? edit.getAttribute('href') : '' };
     }).filter(Boolean);
 }
+// A release's tabs keep the header of its other pages (Details, Disc IDs): the format, the release group's count, the
+// cover. Only the overview has its own. The release comes as the header's answer; a cached one is there at once.
+function relTabHd(d, eid, tab, name, title) {
+    if (!('rel' in d)) { d.rel = null; let sync = true; relHd(eid, r => { if (data !== d) return; d.rel = r; if (!sync) render(); }); sync = false; }
+    return `<section class="arthd">${subHead(d.rel, eid, tab, name, `<h1>${esc(title || ' ')}</h1>`)}</section>`;
+}
+// the header's wiring: a release tab's (cover) or an entity's (picture)
+const tabHdWire = app => { const ah = app.querySelector('.arthd'); if (ah) (ah.querySelector('.rhcv') ? cvWire : entHeadWire)(ah); };
 function aliasesHtml(d) {
     const [ty, eid] = d.ent.split(':'), t = d.t || {}, xs = d.credits || [];
     const title = t.en || t.name || 'Aliases';
-    return `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Aliases · ' + (HM_KIND[ty] || [ty])[0], title, disamb: t.ed, by: t.by, acts: entActs(ty, eid, 'aliases') })}</section>
+    return `${ty === 'release' ? relTabHd(d, eid, 'aliases', 'Aliases', t.en || t.name) : `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Aliases · ' + (HM_KIND[ty] || [ty])[0], title, disamb: t.ed, by: t.by, acts: entActs(ty, eid, 'aliases') })}</section>`}
 <section class="sec" id="s-ali"><div class="secthead"><h2>Aliases <span class="count">${d.n == null ? '' : d.n}</span></h2></div><div id="al-body">${d.err ? `<p class="msg">Could not open the alias editor: ${esc(d.err)}</p>` : '<p class="msg">Loading…</p>'}</div></section>
 ${xs.length ? `<section class="sec" id="s-acr"><div class="secthead"><h2>Artist credits <span class="count">${xs.length}</span></h2></div><ul class="eh-ac">${xs.map(x => `<li><bdi>${x.html}</bdi>${x.uses ? `<a class="eh-ac-u" href="${MB}${esc(x.uses)}">See uses</a>` : ''}${x.edit ? `<a class="eh-ac-e" href="${MB}${esc(x.edit)}">Edit</a>` : ''}</li>`).join('')}</ul></section>` : ''}`;
 }
@@ -9243,7 +9259,7 @@ async function recsMore(d) {
 function relsHtml(d) {
     const t = d.t, [ty, eid] = d.ent.split(':');
     const acts = ty === 'url' ? '' : actionRow(ty === 'release-group' ? RG_ACTS : ty === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS, ty, eid, d.mode || 'relationships');
-    const head = `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: ty === 'url' ? 'URL' : (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · ' + (HM_KIND[ty] || [ty])[0], title: t && t.name, disamb: t && t.dis, by: t && t.by, acts })}</section>`;
+    const head = ty === 'release' ? relTabHd(d, eid, d.mode || 'relationships', d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships', t && t.name) : `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: ty === 'url' ? 'URL' : (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · ' + (HM_KIND[ty] || [ty])[0], title: t && t.name, disamb: t && t.dis, by: t && t.by, acts })}</section>`;
     if (!t) return head + `<p class="hm-none">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : `Loading the ${d.mode || 'relationships'}…`}</p>`;
     if (!relsN(t)) return head + `<p class="hm-none">No ${d.mode || 'relationships'}.</p>`;
     return head + (d.mode ? relsApps(t, d) : t.cards.map(relsCard).join('') + relsApps(t));
@@ -9267,7 +9283,7 @@ function tagsHtml(d) {
         : `<section class="u-hero"><span class="hm-av u-av">${mkSvg(CI_TAG).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>Tags</span><span class="acts">${SRCH()}</span></div><h1>${esc(title)}</h1>`
         + `<p class="u-sub">${sub}</p>${back ? `<nav class="u-tabs">${back}</nav>` : ''}</div></section>`;
     const [ty, eid] = d.ent ? d.ent.split(':') : [];
-    const head = d.ent ? `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Tags · ' + (HM_KIND[ty] || [ty])[0], title: t && (t.en || t.name), disamb: t && t.ed, by: t && t.by, acts: entActs(ty, eid, 'tags') })}</section>` : hero;
+    const head = ty === 'release' ? relTabHd(d, eid, 'tags', 'Tags', t && (t.en || t.name)) : d.ent ? `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Tags · ' + (HM_KIND[ty] || [ty])[0], title: t && (t.en || t.name), disamb: t && t.ed, by: t && t.by, acts: entActs(ty, eid, 'tags') })}</section>` : hero;
     return head + `<section class="sec" id="s-tg"><div class="secthead"><h2>Tags${t ? ` <span class="count">${fmtN(all.length)}</span>` : ''}</h2>${d.ent && ME ? `<span class="tg-new">${tgNew(d)}</span>` : ''}<div class="tools tg-tools">${tgTools(d)}</div></div><div id="tg-body">${tgBody(d)}</div></section>`;
 }
 const TG_PLUS = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
@@ -10601,25 +10617,27 @@ function renderDraw(keepPop) {
     if (data.kind === 'tags') {
         // a background redraw leaves the tag being typed as it was, focus included
         const nw = $('#tg-new'), a = document.activeElement, typing = a && (a.id === 'tg-new' || a.id === 'tg-q') ? a.id : '', at = typing ? a.selectionStart : 0, text = nw ? nw.value : '';
-        ehMorph(app, tagsHtml(data)); tagsWire(); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); pinBar(app); document.getElementById('eh-rail')?.remove();
+        ehMorph(app, tagsHtml(data)); tagsWire(); tabHdWire(app); pinBar(app); document.getElementById('eh-rail')?.remove();
         const ni = $('#tg-new'); if (ni && text) ni.value = text;
         const back = typing && document.getElementById(typing); if (back) { back.focus({ preventScroll: true }); back.setSelectionRange(at, at); }
         return;
     }
     if (data.kind === 'aliases') {
         const a = document.activeElement, keep = alBox && alBox.el.contains(a) ? a : null;
-        ehMorph(app, aliasesHtml(data)); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah);
+        ehMorph(app, aliasesHtml(data)); tabHdWire(app);
         if (alBox && alBox.key === data.key) $('#al-body').replaceChildren(alBox.el);
         secRail(app); pinBar(app); save(); if (keep) keep.focus({ preventScroll: true });
         return;
     }
-    if (data.kind === 'rels') { ehMorph(app, relsHtml(data)); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); dgWire(app); secRail(app); pinBar(app); lmWatch(app); shWatch(app); save(); return; }
+    if (data.kind === 'rels') { ehMorph(app, relsHtml(data)); tabHdWire(app); dgWire(app); secRail(app); pinBar(app); lmWatch(app); shWatch(app); save(); return; }
     if (data.kind === 'tagx') { ehMorph(app, tagxHtml(data)); tagxWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'rates') { ehMorph(app, ratesHtml(data)); ratesWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'colls') { ehMorph(app, collsHtml(data)); secRail(app); save(); return; }
     if (data.kind === 'colnew') { ehMorph(app, colnewHtml(data)); save(); return; }
     if (data.kind === 'search') { ehMorph(app, searchHtml(data)); srchWire(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'art') { artPage(app, data); pinBar(app); return; }
+    if (data.kind === 'ann') { document.title = (data.rel ? data.rel.title + ' · ' : '') + 'Annotation · Event Horizon'; annPage(app, data); pinBar(app); return; }
+    if (data.kind === 'det') { document.title = (data.rel ? data.rel.title + ' · ' : '') + 'Details · Event Horizon'; detPage(app, data); pinBar(app); return; }
     if (data.kind === 'discs' || data.kind === 'toc') { document.title = (data.kind === 'toc' ? 'Disc ID ' + data.id : (data.rel ? data.rel.title + ' · ' : '') + 'Disc IDs') + ' · Event Horizon'; discPage(app, data); pinBar(app); return; }
     if (data.kind === 'hist') { histPage(app, data); entHeadWire(app.querySelector('.arthd') || app); pinBar(app); return; }
     if (data.kind === 'home') { ehMorph(app, homeHtml()); hmWire(app); secRail(app); save(); const p = keepPop && document.getElementById('pop-' + keepPop), t = keepPop && $(`[data-pop="${keepPop}"]`); if (p) { p.hidden = false; if (t) t.setAttribute('aria-expanded', 'true'); } return; }
@@ -11704,7 +11722,8 @@ function pinBar(app) {
     if (pinAlign) { removeEventListener('resize', pinAlign); pinAlign = null; }
     // a redraw leaves a shown bar shown, so it doesn't slide out and back in (the filter redraws on every letter)
     const wasOn = !!bar && (bar.classList.contains('on') || bar.classList.contains('eh-ply'));
-    if (bar) bar.querySelector('.kicker').innerHTML = '';
+    // a second draw in a row finds the action row still in the bar: it goes home first, or clearing the bar would lose it
+    if (bar) { const held = bar.querySelector('.kicker .acts'), slot = app.querySelector('.kicker .pin-slot'); if (held && slot && !app.querySelector('.kicker .acts')) slot.after(held); bar.querySelector('.kicker').innerHTML = ''; }
     const acts = app.querySelector('.kicker .acts'), hero = !acts && app.querySelector('.hm-hero');
     if (hero) {
         bar = pinMake(bar); bar.classList.remove('on');
@@ -12045,7 +12064,7 @@ function plyEmbed(p) {
         const url = new URL(u);
         if (p.key === 'youtube' || p.key === 'ytmusic') {
             const id = url.searchParams.get('v') || (url.hostname === 'youtu.be' ? url.pathname.slice(1) : (url.pathname.match(/\/(?:embed|shorts|live)\/([\w-]{11})/) || [])[1]);
-            return id && { yt: true, url: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`, h: 180 };
+            return id && { yt: true, url: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`, h: 180 };
         }
         if (p.key === 'spotify') { const m = url.pathname.match(/\/(track|album)\/(\w+)/); return m && { url: `https://open.spotify.com/embed/${m[1]}/${m[2]}?autoplay=1`, h: 80 }; }
         if (p.key === 'deezer') { const m = url.pathname.match(/\/(track|album)\/(\d+)/); return m && { url: `https://widget.deezer.com/widget/auto/${m[1]}/${m[2]}?autoplay=true`, h: 92 }; }
@@ -12869,9 +12888,7 @@ function onClick(ev) {
         return;
     }
     const nav = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && ev.target.closest('a[href]');
-    // Edit search uses MusicBrainz's live form and its native lookup handlers on each search page.
-    if (nav && new URL(nav.href).origin === MB && new URL(nav.href).pathname === '/search/edits') return;
-    const navId = nav && !nav.target && (navTo(nav.href) || histKey(nav.href));
+    const navId = nav && !nav.target && inTab(nav.href);
     if (navId) { ev.preventDefault(); ehPush(nav.href); show(navId); return; }
     // a click anywhere on a section's header row, outside its tools, folds the section
     const hd = ev.target.closest('.secthead');
@@ -13022,12 +13039,14 @@ function navTo(href) {
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
 const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? (d.t === 'url' ? (d.q ? d.q + ' · ' : '') + 'URL search' : d.q + ' · Search') + ' · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'colnew' ? 'New collection · Event Horizon' :d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'aliases' ? (d.t && d.t.en || 'Aliases') + ' · Aliases · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + ' · ' + (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
-// a release's cover-art page, or its add-cover-art page → "art/<mbid>"; an event's event-art or add-event-art page → "eart/<mbid>": its title and artist, then Art Station's gallery (#as-slot). Only as the
-// page the tab loaded, as Art Station runs on that page alone: a link to it loads it
+// a release's cover-art page, or its add-cover-art page → "art/<mbid>"; an event's event-art or add-event-art page → "eart/<mbid>": its title and artist, then Art Station's gallery (#as-slot). A release's cover-art
+// page also opens in the tab from any other release page (artIn): Art Station, asked by mbu-art-mount, starts its gallery
+// in the slot without a page load, so the player plays on. The add pages and an event's art load their page
 const artKey = href => {
     const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/(release/(' + MBID.source + ')/(?:add-)?cover-art|event/(' + MBID.source + ')/(?:add-)?event-art)/?$', 'i'));
     return m ? m[2] ? 'art/' + m[2].toLowerCase() : 'eart/' + m[3].toLowerCase() : null;
 };
+const artIn = href => { const k = artKey(href); return k && k.startsWith('art/') && !/\/add-cover-art\/?$/i.test(new URL(href, location.href).pathname) ? k : null; };
 // a release's relationship editor → "relate/<mbid>". MusicBrainz's React app stays where it is: Event Horizon only
 // dresses it (its header, theme and fonts over MusicBrainz's own sheets), never swaps its body, which would kill the editor
 const relKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/edit-relationships/?$', 'i')); return m ? 'relate/' + m[1].toLowerCase() : null; };
@@ -13106,6 +13125,9 @@ const EDIT_SEARCH_CSS = `
 .hm-es{display:flex;align-items:center;justify-content:center;flex:none;color:var(--muted);padding:4px 8px;border-left:1px solid var(--border)}.hm-es:hover{color:var(--link)}.hm-es svg{width:19px;height:19px}
 `;
 let esForm = null, esHome = null, esObserver = null, esFocus = null, esSerial = 0, esMoving = false;
+// esFor: the search the form shows (its hist id). esPend: a search page being fetched for its form, whose HTML is also
+// History's first page, so opening a search costs one request
+let esFor = null, esPend = null, esRun = 0, esCode = null;
 const esPicks = new WeakMap();
 const esIsSearch = id => /^\/search\/edits(?:\?|$)/.test(histSrc(id));
 const esHasQuery = id => [...new URL(MB + histSrc(id)).searchParams].some(([k, v]) => /^conditions\.\d+\.field$/.test(k) && v);
@@ -13195,7 +13217,7 @@ function esSavedBar(form) {
             b.firstChild.textContent = s.name;
             b.querySelector('[data-es-row-copy]').onclick = e => { e.stopPropagation(); copyOf(s); };
             b.querySelector('[data-es-row-delete]').onclick = e => { e.stopPropagation(); deleteOf(s.name); };
-            b.onclick = () => { remember(s.name, s.query); location.assign(MB + '/search/edits?' + s.query); }; results.append(b);
+            b.onclick = () => { remember(s.name, s.query); const h = MB + '/search/edits?' + s.query; if (!form.closest('#app')) { location.assign(h); return; } ehPush(h); show(histKey(h)); }; results.append(b);
         });
     };
     const openLibrary = (clear = false) => {
@@ -13240,7 +13262,7 @@ function esSavedBar(form) {
         for (const [key, value] of [['auto_edit_filter', ''], ['order', 'desc'], ['negation', '0'], ['combinator', 'and']]) {
             const s = form.querySelector(`select[name="${key}"]`); if (s) { s.value = value; s.dispatchEvent(new Event('change', { bubbles: true })); }
         }
-        const href = MB + '/search/edits'; ehPush(href); show(histKey(href)); refresh();
+        const href = MB + '/search/edits'; esFor = histKey(href).slice(5); ehPush(href); show(histKey(href)); refresh();
     };
     form.addEventListener('submit', () => { if (selected) remember(selected, esQuery(form)); });
     document.addEventListener('click', e => { if (!bar.contains(e.target)) { closeLibrary(); } });
@@ -13440,17 +13462,61 @@ function esMenus() {
     if (!ehOn || !esForm || !esForm.closest('#app')) return;
     for (const menu of mbBody.querySelectorAll(':scope>ul.ui-autocomplete')) { menu.classList.add('eh-es-autocomplete'); ehBody.append(menu); LOG.debug('Edit search: a lookup menu moved beside the form'); }
 }
+function esWire(form) {
+    esForm = form;
+    esSavedBar(esForm);
+    esForm.addEventListener('change', () => queueMicrotask(esScan));
+    esForm.addEventListener('focusin', esMenus); esForm.addEventListener('input', () => setTimeout(esMenus)); esForm.addEventListener('focusout', () => setTimeout(esPinSum));
+    if (esObserver) esObserver.disconnect();
+    esObserver = new MutationObserver(esScan); esObserver.observe(esForm, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'disabled'] });
+    if (!esWire.on) { esWire.on = true; document.addEventListener('click', e => { if (esForm && !e.target.closest('.eh-es-pick')) esForm.querySelectorAll('.eh-es-pick').forEach(p => p._esClose && p._esClose(false)); }); }
+    // a search runs in the tab (the player plays on): the form's query becomes the search shown, the form stays
+    form.addEventListener('submit', e => {
+        if (e.defaultPrevented || !form.closest('#app')) return;
+        e.preventDefault();
+        const href = MB + '/search/edits?' + esQuery(form), id = histKey(href);
+        esFor = id.slice(5); ehPush(href); show(id);
+    });
+}
+// Another search's form, fetched in place of a page load: MusicBrainz draws its conditions on the server, and its
+// edit_search script makes them work. That script runs once per page, so it runs again, as a chunk of its own, on the
+// new form, after the old form's handlers are taken off.
+function esAdopt(id) {
+    if (esPend && esPend.id === id) return esPend.p;
+    const pend = { id }; esPend = pend;
+    pend.p = (async () => {
+        const sr = histSrc(id), t0 = performance.now(), r = await mbnFetch(`${MB}${sr}`); fetchLog(`${sr} (its form)`, t0, r);
+        if (!r || !r.ok) throw new Error(r ? 'HTTP ' + r.status : 'cancelled');
+        const html = await r.text(), doc = new DOMParser().parseFromString(html, 'text/html');
+        const form = doc.querySelector('#edit-search'), fields = doc.querySelector('#fields'), js = doc.querySelector('script[src*="/edit_search-"]');
+        if (!form || !fields || !js) throw new Error('no search form on the page');
+        if (!esCode || esCode.src !== js.src) { const s = await fetch(js.src); if (!s.ok) throw new Error('its script: HTTP ' + s.status); esCode = { src: js.src, text: await s.text() }; }
+        if (esPend !== pend) return html;
+        const $ = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window).jQuery;
+        if ($) $(document).off('change', '#extra-condition select').off('click', 'ul.conditions li.condition button.remove-item').off('change', 'ul.conditions select.field').off('change', 'ul.conditions select.operator');
+        if (esForm) { esPark(); esForm.remove(); }
+        document.querySelectorAll('#fields').forEach(x => x.remove());
+        if (!esHome || !esHome.isConnected) { const hold = document.createElement('div'); hold.hidden = true; hold.className = 'eh-es-hold'; mbBody.append(hold); esHome = document.createComment('Event Horizon edit search'); hold.append(esHome); }
+        const nf = document.importNode(form, true); esHome.after(nf); nf.after(document.importNode(fields, true));
+        const mod = (esCode.text.match(/\{"([^"]+)"\(/) || [])[1], k = 'ehES' + (++esRun);
+        if (!mod) throw new Error('its script is not the one known');
+        const code = esCode.text.replace(/\.push\(\[\[\d+\]/, `.push([[${990000 + esRun}]`).split(`"${mod}"`).join(`"${k}"`).replace(/\/\/# sourceMappingURL=.*$/m, '');
+        const sc = document.createElement('script'); sc.textContent = code; document.head.append(sc); sc.remove();
+        esWire(nf); esFor = id;
+        LOG.info(`Edit search: the form for ${sr} in the tab, ${nf.querySelectorAll('ul.conditions li.condition').length} condition(s)`);
+        return html;
+    })();
+    pend.p.then(() => { if (esPend === pend && data && data.kind === 'hist' && data.id === id) render(); }, e => { LOG.err('Edit search: the form for ' + histSrc(id) + ' failed: ' + e.message); pend.err = e.message; });
+    return pend.p;
+}
 function esMount(app, d) {
     if (!esIsSearch(d.id)) return;
-    if (!esForm) {
-        esForm = mbBody.querySelector('#edit-search'); if (!esForm) return;
-        esHome = document.createComment('Event Horizon edit search'); esForm.before(esHome);
-        esSavedBar(esForm);
-        esForm.addEventListener('change', () => queueMicrotask(esScan));
-        esForm.addEventListener('focusin', esMenus); esForm.addEventListener('input', () => setTimeout(esMenus)); esForm.addEventListener('focusout', () => setTimeout(esPinSum));
-        esObserver = new MutationObserver(esScan); esObserver.observe(esForm, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'disabled'] });
-        document.addEventListener('click', e => { if (esForm && !e.target.closest('.eh-es-pick')) esForm.querySelectorAll('.eh-es-pick').forEach(p => p._esClose && p._esClose(false)); });
+    if (!esForm && 'hist/' + d.id === PAGE_ID && mbBody.querySelector('#edit-search')) {
+        const f = mbBody.querySelector('#edit-search');
+        esHome = document.createComment('Event Horizon edit search'); f.before(esHome);
+        esWire(f); esFor = d.id;
     }
+    if (esFor !== d.id) { if (!(esPend && esPend.id === d.id)) esAdopt(d.id).catch(() => {}); if (esForm) { esPark(); } return; }
     esForm.classList.add('eh-es');
     esTop(true);
     esForm.querySelectorAll('.eh-es-saved,.eh-es-new').forEach(p => { p.hidden = false; });
@@ -13516,6 +13582,13 @@ const discKey = href => {
     const t = u.pathname.match(/^\/cdtoc\/([A-Za-z0-9._-]{28})\/?$/);
     return t ? 'toc/' + t[1] : null;
 };
+// the pages a click (or Back and Forward) opens in the tab, without a page load
+// a release's Details → "det/<mbid>": only a click (or Back and Forward) opens it in the tab; loaded, it stays MusicBrainz's
+// page, dressed by the relationship-editor styles (keyOf leaves it to formKey)
+const detKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/details/?$', 'i')); return m ? 'det/' + m[1].toLowerCase() : null; };
+// a release's Edit annotation → "ann/<mbid>": a click only, like Details (loaded, it is formKey's)
+const annKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/edit_annotation/?$', 'i')); return m ? 'ann/' + m[1].toLowerCase() : null; };
+const inTab = href => navTo(href) || histKey(href) || artIn(href) || discKey(href) || detKey(href) || annKey(href);
 const keyOf = href => navTo(href) || artKey(href) || discKey(href) || histKey(href) || relKey(href) || formKey(href);
 // let: the seed confirmation page (another site seeding the release editor, a POST to /release/add or …/edit) shares
 // the editor's address, so it gets its key, "form/seed/-/confirm", only once its .confirm-seed form is in the page
@@ -13561,33 +13634,45 @@ function evArtHead(el, d) {
         + (d.err ? `<h1>${esc(d.err)}</h1>` : (name ? heroH1(name, g && g.disambig, `${MB}/event/${d.id}`) : '<h1>&nbsp;</h1>')) + '</div>';
     cvWire(el);
 }
-let asHome = null;
+// asNode: the loaded cover-art page's own gallery once it went into the slot. Another page of the tab drops it with
+// the slot, out of the document, where no query finds it, so coming back to the art (or turning the tab off) takes it from here
+let asHome = null, asNode = null;
+// debug: where Art Station's gallery is, for the art page's log lines
+function artState() {
+    const s = $('#as-slot'), r = document.getElementById('as-root') || asNode;
+    const at = !r ? 'none' : !r.isConnected ? 'detached' : s && s.contains(r) ? 'in the slot' : mbBody && mbBody.contains(r) ? 'in the MusicBrainz page' : 'elsewhere (' + (r.parentElement ? r.parentElement.id || r.parentElement.tagName : '-') + ')';
+    return `slot ${s ? 'yes' : 'no'}${s ? ' (' + s.children.length + ' children)' : ''}, gallery ${at}` + (r ? `, ${r.querySelectorAll('.as-card').length} cards, ${Math.round(r.getBoundingClientRect().height)} px, display ${getComputedStyle(r).display}` : '');
+}
 function artStationPlace(on) {
-    const as = (mbBody && mbBody.querySelector('#as-root')) || (ehBody && ehBody.querySelector('#as-root'));
+    const as = (mbBody && mbBody.querySelector('#as-root')) || (ehBody && ehBody.querySelector('#as-root')) || asNode;
     if (!as) return;
-    if (!on) { if (asHome && asHome.isConnected) asHome.after(as); return; }
+    asNode = as;
+    if (!on) { if (asHome && asHome.isConnected) { LOG.info('art: gallery moved back to the MusicBrainz page'); asHome.after(as); } return; }
     const slot = ehBody && ehBody.querySelector('#as-slot');
     if (!slot || slot.contains(as)) return;
     if (mbBody.contains(as)) {
         if (!asHome) asHome = document.createComment('Art Station native position');
         as.before(asHome);
     }
+    LOG.info('art: gallery moved into the slot');
     slot.append(as);
 }
 function artPage(app, d) {
     const r = d.rel;
-    if (!app.querySelector('#as-slot')) app.innerHTML = '<section class="arthd"></section><div id="as-slot"></div>';
-    const mh = !r && mbBody && mbBody.querySelector('.releaseheader'), mt = mh && mh.querySelector('h1 a'), ma = mh ? [...mh.querySelectorAll('.subheader a[href*="/artist/"]')] : [];
+    if (!app.querySelector('#as-slot')) { if (app.querySelector('#as-root')) LOG.info('art: page rebuilt with the gallery inside it'); app.innerHTML = '<section class="arthd"></section><div id="as-slot"></div>'; }
+    const mh = !r && mbBody && PAGE_ID.endsWith('/' + d.id) && mbBody.querySelector('.releaseheader'), mt = mh && mh.querySelector('h1 a'), ma = mh ? [...mh.querySelectorAll('.subheader a[href*="/artist/"]')] : [];
     const early = mt ? `${heroH1(mt.textContent, '', `${MB}/release/${d.id}`)}${ma.length ? `<div class="by">by ${ma.map(a => `<a href="${esc(a.href)}">${esc(a.textContent)}</a>`).join(', ')}</div>` : ''}` : '';
     if (d.ev) { evArtHead(app.querySelector('.arthd'), d); } else app.querySelector('.arthd').innerHTML = subHead(r, d.id, 'cover-art', 'Cover art', d.err ? `<h1>${esc(d.err)}</h1>` : early || '<h1>&nbsp;</h1>'); cvWire(app.querySelector('.arthd'));
-    const slot = app.querySelector('#as-slot'), as = mbBody && mbBody.querySelector('#as-root');
+    const slot = app.querySelector('#as-slot'), as = (mbBody && mbBody.querySelector('#as-root')) || (asNode && !asNode.isConnected && PAGE_ID.endsWith('/' + d.id) ? asNode : null);
     if (as) artStationPlace(ehOn);
     else if (!slot.firstChild) slot.innerHTML = '<p class="msg as-none" hidden>Art Station shows this ' + (d.ev ? 'event\'s event' : 'release\'s cover') + ' art here: <a href="https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/art_station">install it</a>, or <button class="lnk" type="button" data-mbpage>show MusicBrainz\'s page</button>.</p>';
     const mb = slot.querySelector('[data-mbpage]'); if (mb) mb.onclick = () => switchOn(false);
 }
 async function artLoad(n, id) {
     // Art Station mounts after it reads the release's art: the slot waits for it beside the release's fetch, its note hidden until 20 s pass without it
-    const t0 = Date.now(), wait = () => { if (n !== showing) return; const s = $('#as-slot'); if (s && s.querySelector('#as-root')) { const m = s.querySelector('.as-none'); if (m) m.remove(); return; } if (mbBody && mbBody.querySelector('#as-root')) { render(); return; } if (Date.now() - t0 < 20000) setTimeout(wait, 150); else { const m = $('#as-slot .as-none'); if (m) m.hidden = false; } };
+    const t0 = Date.now(), wait = () => { if (n !== showing) return; const s = $('#as-slot'); if (s && s.querySelector('#as-root')) { const m = s.querySelector('.as-none'); if (m) m.remove(); LOG.info(`art: gallery in the slot after ${Date.now() - t0} ms: ${artState()}`); check(3000); check(10000); return; } if (mbBody && mbBody.querySelector('#as-root')) { LOG.info('art: gallery found in the MusicBrainz page, placing it'); render(); return; } if (Date.now() - t0 < 20000) setTimeout(wait, 150); else { LOG.warn(`art: no gallery after 20 s: ${artState()}`); const m = $('#as-slot .as-none'); if (m) m.hidden = false; } };
+    // debug: the gallery a while after it arrived (a blank page shows here)
+    const check = ms => setTimeout(() => { if (n === showing) LOG.info(`art: after ${ms / 1000} s: ${artState()}`); }, ms);
     wait();
     if (data.ev) { try { const g = event(await ws(`event/${id}?inc=${EV_INC}`)); if (n === showing) { data.g = g; render(); } } catch (e) { LOG.err('Loading event ' + id + ' failed: ' + e.message); if (n === showing) { data.err = e.message; render(); } } return; }
     try { await relHd(id, r => { if (n === showing) { data.rel = r; render(); } }); }
@@ -13599,10 +13684,10 @@ async function artLoad(n, id) {
 // a CD's length from its sectors (75 a second)
 const secLen = n => { const t = Math.round(n / 75), h = Math.floor(t / 3600), m = Math.floor(t / 60) % 60, x = String(t % 60).padStart(2, '0'); return h ? `${h}:${String(m).padStart(2, '0')}:${x}` : `${m}:${x}`; };
 // MusicBrainz's Remove and Move links, by disc ID, off the page the tab loaded (ws/2 has no medium row ids)
-function discActs() {
+function discActs(doc) {
     const o = {};
-    if (!mbBody) return o;
-    mbBody.querySelectorAll('#content tr').forEach(tr => {
+    if (!doc) return o;
+    doc.querySelectorAll('#content tr').forEach(tr => {
         const id = (tr.querySelector('a[href*="/cdtoc/"]') || {}).textContent, as = [...tr.querySelectorAll('a[href*="/cdtoc/remove"], a[href*="/cdtoc/move"]')];
         if (!id || !as.length) return;
         // a disc ID on two releases (the cdtoc page) has a row each, told apart by the release it links to
@@ -13612,12 +13697,15 @@ function discActs() {
     return o;
 }
 // Apollo's "Disc IDs from a rip log", moved from MusicBrainz's page into #dsc-slot, and back when EH goes off
-var dscHome = null;   // var: setOn can reach discApollo before this line
+// Only the loaded page's own box moves; another release's comes from Apollo, asked by mbu-discid-mount (discLoad)
+var dscHome = null, dscBox = null;   // var: setOn can reach discApollo before this line
+const dscFind = () => dscBox || (dscBox = mbBody && mbBody.querySelector('#apollo-discid-box'));
 function discApollo(on) {
-    const box = document.getElementById('apollo-discid-box'); if (!box) return;
+    const box = dscFind(); if (!box) return;
     if (!on) { if (dscHome && dscHome.isConnected) dscHome.after(box); return; }
     const slot = ehBody && ehBody.querySelector('#dsc-slot');
-    if (!slot || slot.contains(box)) return;
+    if (!slot || slot.contains(box) || !data || data.kind !== 'discs' || 'discs/' + data.id !== PAGE_ID) return;
+    slot.querySelectorAll('.dsc-ap').forEach(m => m.remove());
     if (!dscHome) { dscHome = document.createComment('Apollo disc ID box'); box.before(dscHome); }
     slot.append(box);
 }
@@ -13625,8 +13713,9 @@ function discRows(ds, acts, rid) {
     return ds.map(x => `<div class="dsc-row"><a class="dsc-id" href="${MB}/cdtoc/${esc(x.id)}">${esc(x.id)}</a><span class="dsc-n">${x.offsets ? x.offsets.length + ' tracks' : ''}</span><span class="dsc-n">${x.sectors ? secLen(x.sectors) : ''}</span><span class="dsc-a">${acts[x.id + (rid ? '|' + rid : '')] || acts[x.id] || ''}</span></div>`).join('');
 }
 function discPage(app, d) {
-    if (!app.querySelector('#dsc-body')) app.innerHTML = '<section class="arthd"></section><div id="dsc-slot"></div><div id="dsc-body"></div>';
-    const hd = app.querySelector('.arthd'), body = app.querySelector('#dsc-body'), acts = discActs();
+    const own = d.kind + '/' + d.id === PAGE_ID;
+    if (!app.querySelector(`#dsc-body[data-k="${d.kind}/${d.id}"]`)) app.innerHTML = `<section class="arthd"></section><div id="dsc-slot"></div><div id="dsc-body" data-k="${esc(d.kind + '/' + d.id)}"></div>`;
+    const hd = app.querySelector('.arthd'), body = app.querySelector('#dsc-body'), acts = discActs(own ? mbBody : d.doc);
     if (d.kind === 'discs') {
         hd.innerHTML = subHead(d.rel, d.id, 'discids', 'Disc IDs', d.err ? `<h1>${esc(d.err)}</h1>` : '<h1>&nbsp;</h1>'); cvWire(hd);
         const ms = d.media;
@@ -13634,7 +13723,7 @@ function discPage(app, d) {
             const ok = discOk(m.format), ds = m.discs || [], name = `${esc(m.format || 'Medium')} ${m.position}${m.title ? ` <span class="sub">${esc(m.title)}</span>` : ''}`;
             return `<div class="dsc-med${ok ? '' : ' off'}"><div class="dsc-h">${fmtSvg(fmtKind(m.format), 18)}<b>${name}</b><span class="dsc-n">${m['track-count']} track${m['track-count'] === 1 ? '' : 's'}</span></div>${!ok ? `<div class="dsc-none">${esc(m.format)} can't have disc IDs</div>` : ds.length ? discRows(ds, acts) : '<div class="dsc-none">No disc ID yet</div>'}</div>`;
         }).join(''), `<div class="folded-note">${ms.length} media</div>`);
-        if (!document.getElementById('apollo-discid-box') && ms && ms.some(m => discOk(m.format)) && !app.querySelector('#dsc-slot').firstChild) app.querySelector('#dsc-slot').innerHTML = '<p class="msg dsc-ap">Apollo Editor works out a disc ID from a rip log dropped here: <a href="https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/apollo_editor">install it</a>.</p>';
+        if ((own ? !dscFind() : d.ap === false) && ms && ms.some(m => discOk(m.format)) && !app.querySelector('#dsc-slot').firstChild) app.querySelector('#dsc-slot').innerHTML = '<p class="msg dsc-ap">Apollo Editor works out a disc ID from a rip log dropped here: <a href="https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/apollo_editor">install it</a>.</p>';
         discApollo(ehOn);
         return;
     }
@@ -13652,18 +13741,100 @@ function discPage(app, d) {
         + sect('dsc-toc', 'Tracks', `<button class="lnk aside" type="button" data-copy="${toc}" data-tip="Copy the full TOC">Copy TOC</button>`, `<table class="dsc-tbl"><thead><tr><th>#</th><th>Start</th><th>Length</th><th>End</th><th class="sx">Start sector</th><th class="sx">Sectors</th></tr></thead><tbody>${off.map((o, i) => `<tr><td>${i + 1}</td><td>${secLen(o)}</td><td>${secLen(ends[i] - o)}</td><td>${secLen(ends[i])}</td><td class="sx">${o}</td><td class="sx">${ends[i] - o}</td></tr>`).join('')}</tbody></table><div class="dsc-full"><span class="label">Full TOC</span><code>${toc}</code></div>`, '');
     const c = body.querySelector('[data-copy]'); if (c) c.onclick = () => { navigator.clipboard.writeText(c.dataset.copy).then(() => { c.textContent = 'Copied'; setTimeout(() => { c.textContent = 'Copy TOC'; }, 1200); }); };
 }
+// Another release's disc IDs page, fetched in place of a page load (the player plays on): its Remove and Move links
+// are read off it, and Apollo is given its markup for the box it builds in #dsc-slot
+async function discFetch(n, id) {
+    const d = data;
+    let html = '';
+    try {
+        const r = await mbnFetch(`${MB}/release/${id}/discids`, { credentials: 'include' });
+        html = await r.text();
+        d.doc = new DOMParser().parseFromString(html, 'text/html');
+        LOG.debug(`Disc IDs: read the page of ${id}, ${d.doc.querySelectorAll('#content a[href*="/cdtoc/remove"]').length} Remove link(s)`);
+    } catch (e) { LOG.warn('Disc IDs: the page of ' + id + ' could not be read: ' + e.message); }
+    if (n !== showing || data !== d) return;
+    const c = d.doc && d.doc.querySelector('#content');
+    const ask = new CustomEvent('mbu-discid-mount', { cancelable: true, detail: JSON.stringify({ release: id, html: c ? c.outerHTML : '' }) });
+    document.dispatchEvent(ask);
+    d.ap = ask.defaultPrevented;
+    LOG.info(`Disc IDs: ${id} in the tab, Apollo ${d.ap ? 'answered' : 'did not answer'}`);
+    render();
+}
 async function discLoad(n, id) {
     if (data.kind === 'toc') {
+        // another disc ID's page: its Remove and Move links come off the fetched page
+        if ('toc/' + id !== PAGE_ID) { const d = data; mbnFetch(`${MB}/cdtoc/${encodeURIComponent(id)}`, { credentials: 'include' }).then(r => r.text()).then(h => { d.doc = new DOMParser().parseFromString(h, 'text/html'); if (n === showing && data === d) render(); }).catch(e => LOG.warn('Disc ID ' + id + ': its page could not be read: ' + e.message)); }
         try { const t = await ws(`discid/${encodeURIComponent(id)}?inc=artist-credits`); if (n === showing) { data.toc = t; LOG.info(`Disc ID ${id}: ${(t.releases || []).length} release(s)`); render(); } }
         catch (e) { LOG.err('Loading disc ID ' + id + ' failed: ' + e.message); if (n === showing) { data.err = e.message; render(); } }
         return;
     }
     // Apollo builds its box after its own ws/2 read: it moves in when it shows
-    const t0 = Date.now(), wait = () => { if (n !== showing) return; if (document.getElementById('apollo-discid-box')) { const m = $('#dsc-slot .dsc-ap'); if (m) m.remove(); discApollo(ehOn); return; } if (Date.now() - t0 < 20000) setTimeout(wait, 150); };
-    wait();
+    const t0 = Date.now(), wait = () => { if (n !== showing) return; if (dscFind()) { discApollo(ehOn); return; } if (Date.now() - t0 < 20000) setTimeout(wait, 150); };
+    if ('discs/' + id === PAGE_ID) wait();
+    else discFetch(n, id);
     relHd(id, r => { if (n === showing) { data.rel = r; render(); } }).catch(e => LOG.warn('Disc IDs header: ' + e.message));
     try { const r = await ws(`release/${id}?inc=media+discids`); if (n === showing) { data.media = r.media || []; LOG.info(`Disc IDs: ${data.media.length} media, ${data.media.reduce((a, m) => a + (m.discs || []).length, 0)} disc ID(s)`); render(); } }
     catch (e) { LOG.err('Loading the disc IDs of ' + id + ' failed: ' + e.message); if (n === showing) { data.err = e.message; render(); } }
+}
+
+// A release's Details, fetched in place of a page load (the player plays on): MusicBrainz's table, in the card the
+// loaded page dresses it in
+function detPage(app, d) {
+    if (!app.querySelector(`#det-body[data-k="${d.id}"]`)) app.innerHTML = `<section class="arthd"></section><div id="det-body" data-k="${esc(d.id)}"></div>`;
+    const hd = app.querySelector('.arthd'), body = app.querySelector('#det-body');
+    hd.innerHTML = subHead(d.rel, d.id, 'details', 'Details', d.err ? `<h1>${esc(d.err)}</h1>` : '<h1>&nbsp;</h1>'); cvWire(hd);
+    if (body.dataset.on !== String(!!d.html)) { body.dataset.on = String(!!d.html); body.innerHTML = d.html || (d.err ? '' : '<p class="msg">Loading the details…</p>'); }
+}
+// A release's Edit annotation, fetched in place of a page load (the player plays on): MusicBrainz's form goes in
+// #eh-anno, and Apollo, asked by mbu-anno-mount, builds its editor on it. Enter edit posts the form, a page load.
+function annPage(app, d) {
+    if (!app.querySelector(`#eh-anno[data-k="${d.id}"]`)) app.innerHTML = `<section class="arthd"></section><div id="eh-anno" data-k="${esc(d.id)}"></div>`;
+    const hd = app.querySelector('.arthd'), body = app.querySelector('#eh-anno');
+    hd.innerHTML = subHead(d.rel, d.id, 'edit_annotation', 'Annotation', d.err ? `<h1>${esc(d.err)}</h1>` : '<h1>&nbsp;</h1>'); cvWire(hd);
+    if (body.dataset.on !== String(!!d.html)) {
+        body.dataset.on = String(!!d.html);
+        body.innerHTML = d.html || (d.err ? '' : '<p class="msg">Loading the annotation…</p>');
+        if (d.html) {
+            const ask = new CustomEvent('mbu-anno-mount', { cancelable: true, detail: JSON.stringify({ entity: 'release', id: d.id }) });
+            document.dispatchEvent(ask);
+            LOG.info(`Annotation: ${d.id} in the tab, Apollo ${ask.defaultPrevented ? 'answered' : 'did not answer'}`);
+        }
+    }
+}
+async function annLoad(n, id) {
+    const d = data;
+    relHd(id, r => { if (n === showing && data === d) { d.rel = r; render(); } }).catch(e => LOG.warn('Annotation header: ' + e.message));
+    try {
+        const r = await mbnFetch(`${MB}/release/${id}/edit_annotation`, { credentials: 'include' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const doc = new DOMParser().parseFromString(await r.text(), 'text/html'), c = doc.querySelector('#content');
+        if (!c || !c.querySelector('textarea[name="edit-annotation.text"]')) throw new Error('no annotation form on the page (logged out?)');
+        const box = doc.createElement('div'), tabs = c.querySelector(':scope > .tabs');
+        let el = tabs ? tabs.nextElementSibling : c.firstElementChild;
+        while (el) { const nx = el.nextElementSibling; if (!el.matches('.releaseheader, .tabs, script')) box.append(el); el = nx; }
+        // the form posts to where it came from, whatever URL the tab shows
+        box.querySelectorAll('form').forEach(f => { f.action = new URL(f.getAttribute('action') || `/release/${id}/edit_annotation`, `${MB}/release/${id}/edit_annotation`).href; });
+        d.html = box.innerHTML;
+    } catch (e) { LOG.err('Loading the annotation of ' + id + ' failed: ' + e.message); d.err = e.message; }
+    if (n === showing && data === d) render();
+}
+async function detLoad(n, id) {
+    const d = data;
+    relHd(id, r => { if (n === showing && data === d) { d.rel = r; render(); } }).catch(e => LOG.warn('Details header: ' + e.message));
+    try {
+        const r = await mbnFetch(`${MB}/release/${id}/details`, { credentials: 'include' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const doc = new DOMParser().parseFromString(await r.text(), 'text/html'), c = doc.querySelector('#content');
+        if (!c || !c.querySelector('table.details')) throw new Error('no details table on the page');
+        // what follows the tabs is the page's own: its heading and table
+        const box = doc.createElement('div'), tabs = c.querySelector(':scope > .tabs');
+        let el = tabs ? tabs.nextElementSibling : c.firstElementChild;
+        while (el) { const nx = el.nextElementSibling; if (!el.matches('.releaseheader, .tabs, script')) box.append(el); el = nx; }
+        detailsDress(box);
+        d.html = box.innerHTML;
+        LOG.info(`Details: ${id} in the tab, ${box.querySelectorAll('table.details tr').length} row(s)`);
+    } catch (e) { LOG.err('Loading the details of ' + id + ' failed: ' + e.message); d.err = e.message; }
+    if (n === showing && data === d) render();
 }
 
 /* ── relationship editor ───────────────────────────── */
@@ -13837,7 +14008,7 @@ function mbHead() {
 // release group or an event, and its title and credits off MusicBrainz's header
 function formHeader(key) {
     const [, type, id, form] = key.split('/');
-    if (type === 'release' && !['details', 'releases'].includes(form)) return relHeader(id, form, FORMS[form]);
+    if (type === 'release' && form !== 'releases') return relHeader(id, form, FORMS[form]);
     if (type === 'user') return userFormHeader(id, form);
     if (type === 'seed') {
         const hd = hdSect(), h1 = document.querySelector('#content > h1, #page > h1');
@@ -14227,6 +14398,7 @@ async function histLoad(n, all) {
             const p = d.page + 1;
             let html;
             if (p === 1 && 'hist/' + d.id === PAGE_ID && mbBody && new URL(MB + histSrc(d.id)).searchParams.get('hide_own') === new URL(location.href).searchParams.get('hide_own')) html = '<body>' + mbBody.innerHTML + '</body>';
+            else if (p === 1 && esPend && esPend.id === d.id && !esPend.err && !esPend.used && (esPend.used = true) && (html = await esPend.p.catch(() => null))) LOG.debug(`History ${d.id}: page 1 is the page its form came from`);
             else { const sr = histSrc(d.id), t0 = performance.now(), r = await mbnFetch(`${MB}${sr}${sr.includes('?') ? '&' : '?'}page=${p}`); fetchLog(`${sr} page ${p}`, t0, r); if (!r || !r.ok) throw new Error(r ? 'HTTP ' + r.status : 'cancelled'); html = await r.text(); }
             if (n !== showing || data !== d) { LOG.debug(`History ${d.id}: left the page, loading stops`); d.busy = false; return; }
             // an entity's history: its title and credits off MusicBrainz's header, for the entity header
@@ -14759,7 +14931,7 @@ function build() {
     addEventListener('scroll', railSpy, { passive: true });
     // MusicBrainz's page is for the release this tab loaded; any other is fetched anew
     try { history.scrollRestoration = 'manual'; } catch (e) {}   // show() puts the page back where it was left, once it's in
-    addEventListener('popstate', () => { const k = navTo(location.href); if (!ehOn || !k) location.reload(); else show(k, { y: history.state && history.state.ehY }); });
+    addEventListener('popstate', () => { const k = inTab(location.href); if (!ehOn || !k) location.reload(); else show(k, { y: history.state && history.state.ehY }); });
 }
 // what you switch to stays: the next page opens the same way (majkinetor)
 const switchOn = on => { S.on = on; save(); setOn(on); };
@@ -15686,6 +15858,9 @@ document.addEventListener('mbu-refresh-release', ev => {
 // what MusicBrainz changed since it was kept: no skeleton, drawn once whole, and the page stays where it was on a failure
 async function show(key, o = {}) {
     esPark();
+    // a new page in the tab starts at its top: a shown pinned bar goes at once instead of sliding out over it
+    const pb = document.getElementById('eh-pin');
+    if (pb && pb.classList.contains('on') && !pb.classList.contains('eh-ply')) { pb.style.transition = 'none'; pb.classList.remove('on'); pb.getBoundingClientRect(); requestAnimationFrame(() => requestAnimationFrame(() => { pb.style.transition = ''; })); }
     const app = $('#app'), n = ++showing;
     ehCheckDone();
     const kind = key && key.split('/')[0], isRg = kind === 'release-group', isAr = kind === 'artist', isLb = kind === 'label', id = key && key.split('/')[1];
@@ -15694,7 +15869,17 @@ async function show(key, o = {}) {
     const parts = kind === 'recording' ? ['recording', 'releases', 'works'] : kind === 'work' ? ['work', 'recordings'] : kind === 'area' ? ['area', 'artists, labels, places'] : kind === 'instrument' ? ['instrument', 'artists, releases, recordings'] : kind === 'place' ? ['place', 'events, recordings'] : kind === 'series' ? ['series', 'parts'] : kind === 'collection' ? ['collection', 'items'] : kind === 'event' ? ['event'] : isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
     if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
     if (kind === 'discs' || kind === 'toc') { data = { kind, id }; scrollTo(0, 0); render(); discLoad(n, id); return; }
-    if (kind === 'art' || kind === 'eart') { data = { kind: 'art', id, ev: kind === 'eart' }; render(); artLoad(n, id); return; }
+    if (kind === 'det') { data = { kind, id }; scrollTo(0, 0); render(); detLoad(n, id); return; }
+    if (kind === 'ann') { data = { kind, id }; scrollTo(0, 0); render(); annLoad(n, id); return; }
+    if (kind === 'art' || kind === 'eart') {
+        data = { kind: 'art', id, ev: kind === 'eart' }; render();
+        // Art Station takes the slot (preventDefault); without it, only the page the tab loaded shows its art
+        const ask = new CustomEvent('mbu-art-mount', { cancelable: true, detail: JSON.stringify({ release: kind === 'art' ? id : null }) });
+        document.dispatchEvent(ask);
+        LOG.info(`art: opens ${key} (loaded page ${PAGE_ID}), Art Station ${ask.defaultPrevented ? 'answered' : 'did not answer'}, player ${ply.i >= 0 ? 'on' : 'off'}: ${artState()}`);
+        if (!ask.defaultPrevented && key !== PAGE_ID) { LOG.info('art: loads the cover-art page'); location.assign(location.href); return; }
+        artLoad(n, id); return;
+    }
     if (kind === 'hist') { data = { kind: 'hist', id, edits: [], page: 0, more: !esIsSearch(id) || esHasQuery(id), grp: S.hgrp || 'burst', st: '', open: new Set() }; scrollTo(0, 0); render(); histLoad(n); return; }
     if (kind === 'gtag') {
         const p = key.split('/').slice(1);

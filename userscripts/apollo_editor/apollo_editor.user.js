@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.16
+// @version      2026.11.18.1
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15480,20 +15480,20 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-anno-edit{flex:1 1 0;min-width:0;display:flex;flex-direction:column}
     body.tc-ri-on #tc-anno-wrap textarea{display:block;width:100%!important;max-width:none!important;min-height:240px;flex:1 1 auto;border:none!important;border-radius:0;padding:9px 11px;resize:vertical;box-shadow:none;box-sizing:border-box;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;font-size:12px;line-height:1.55;tab-size:4}
     /* standalone Edit annotation page: Changelog + Annotation rows stacked full-width with the label above */
-    body.tc-anno-page #content > form > .row:not(.no-label){display:block;margin:0 0 16px;max-width:1100px}
-    body.tc-anno-page #content > form > .row:not(.no-label) > label{display:block;width:auto;text-align:left;float:none;font:600 12px Arial;letter-spacing:.02em;color:var(--mbu-text-dim);margin:0 0 5px}
-    body.tc-anno-page #content > form > .row > input[type=text]{width:100%;max-width:680px;box-sizing:border-box;padding:5px 8px;border:1px solid var(--mbu-accent);border-radius:5px}
-    body.tc-anno-page #content > form > fieldset.editnote{max-width:1100px}
+    body.tc-anno-page :is(#content,#eh-anno) > form > .row:not(.no-label){display:block;margin:0 0 16px;max-width:1100px}
+    body.tc-anno-page :is(#content,#eh-anno) > form > .row:not(.no-label) > label{display:block;width:auto;text-align:left;float:none;font:600 12px Arial;letter-spacing:.02em;color:var(--mbu-text-dim);margin:0 0 5px}
+    body.tc-anno-page :is(#content,#eh-anno) > form > .row > input[type=text]{width:100%;max-width:680px;box-sizing:border-box;padding:5px 8px;border:1px solid var(--mbu-accent);border-radius:5px}
+    body.tc-anno-page :is(#content,#eh-anno) > form > fieldset.editnote{max-width:1100px}
     /* fill the remaining viewport height (height is set per-resize in JS) */
     body.tc-anno-page #tc-anno-wrap{display:flex;flex-direction:column}
     body.tc-anno-page #tc-anno-wrap > #tc-anno-body,body.tc-anno-page #tc-anno-wrap > #tc-anno-history{flex:1 1 auto;min-height:0;max-height:none}
     body.tc-anno-page #tc-anno-wrap textarea,body.tc-anno-page #tc-anno-wrap #tc-anno-preview{min-height:0}
     /* Changelog row becomes [label above] then [input  +  Enter edit] side by side */
-    body.tc-anno-page #content > form > .row.tc-cl-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
-    body.tc-anno-page #content > form > .row.tc-cl-row > label{flex:1 1 100%;margin-bottom:4px}
-    body.tc-anno-page #content > form > .row.tc-cl-row > input[type=text]{flex:1 1 auto;width:auto;max-width:600px}
+    body.tc-anno-page :is(#content,#eh-anno) > form > .row.tc-cl-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+    body.tc-anno-page :is(#content,#eh-anno) > form > .row.tc-cl-row > label{flex:1 1 100%;margin-bottom:4px}
+    body.tc-anno-page :is(#content,#eh-anno) > form > .row.tc-cl-row > input[type=text]{flex:1 1 auto;width:auto;max-width:600px}
     body.tc-anno-page #tc-anno-submit{flex:0 0 auto;font:600 13px Arial;padding:7px 18px;border:1px solid var(--mbu-ok);border-radius:var(--mbu-radius);background:#3aa55f;color:var(--mbu-text-on-accent);cursor:pointer}
-    body.tc-anno-page #tc-anno-submit:hover{background:#2c8a4d}#tc-anno-submit{display:inline-flex;align-items:center;gap:6px}@media (max-width:700px){body.tc-anno-page #content > form > .row.tc-cl-row > input[type=text]{flex:1 1 0;min-width:0}#tc-anno-submit{padding:7px 14px;font-size:15px}#tc-anno-submit .tc-anno-sub-t{display:none}}
+    body.tc-anno-page #tc-anno-submit:hover{background:#2c8a4d}#tc-anno-submit{display:inline-flex;align-items:center;gap:6px}@media (max-width:700px){body.tc-anno-page :is(#content,#eh-anno) > form > .row.tc-cl-row > input[type=text]{flex:1 1 0;min-width:0}#tc-anno-submit{padding:7px 14px;font-size:15px}#tc-anno-submit .tc-anno-sub-t{display:none}}
     #tc-anno-preview{flex:1 1 0;min-width:0;min-height:240px;padding:10px 13px;background:var(--mbu-bg);border-left:1px solid var(--mbu-accent);font-size:13px;line-height:1.5;color:var(--mbu-text);overflow:auto;word-break:break-word;box-sizing:border-box}
     #tc-anno-preview .tc-anno-empty{color:var(--mbu-text-weak);font-style:italic}
     #tc-anno-preview p{margin:0 0 8px}
@@ -17390,32 +17390,58 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     document.head.appendChild(s);
   }
 
+  // Event Horizon shows a release's Edit annotation without loading its page: its form sits in #eh-anno, and
+  // mbu-anno-mount asks for the editor there. The page's body classes and the launcher go when the tab moves on.
+  let _annoRoot = null;
+  function installAnnoMount() {
+    document.addEventListener('mbu-anno-mount', e => {
+      const root = document.getElementById('eh-anno');
+      if (!root || !root.querySelector('textarea[name="edit-annotation.text"]')) return;
+      e.preventDefault();
+      const cls = ['tc-ri-on', 'tc-anno-page', 'tc-anno-max-open'].filter(c => !document.body.classList.contains(c)), hadL = !!document.getElementById('tc-launch');
+      _annoRoot = root;
+      applyAnnotationPage();
+      Log.cat('Release').info('annotation: the editor is on Event Horizon\'s page');
+      const t = setInterval(() => {
+        if (root.isConnected) return;
+        clearInterval(t);
+        if (_annoRoot === root) _annoRoot = null;
+        if (document.getElementById('eh-anno')) return;   // another annotation took its place: it keeps the page's classes
+        const ta = root.querySelector('textarea[name="edit-annotation.text"]'), w = ta && ta._tcAnnoMounted;
+        if (w && w._tcOutsideHideHelp) document.removeEventListener('mousedown', w._tcOutsideHideHelp, true);
+        if (w && w._tcFill) window.removeEventListener('resize', w._tcFill);
+        cls.forEach(c => document.body.classList.remove(c));
+        if (!hadL) document.getElementById('tc-launch')?.remove();
+      }, 400);
+    });
+  }
   function applyAnnotationPage() {
     if (!ANNO_PAGE_RE.test(location.pathname)) return;
-    const ta = document.querySelector('textarea[name="edit-annotation.text"]'); if (!ta) return;
+    const R = _annoRoot && _annoRoot.isConnected ? _annoRoot : document, C = R === document ? '#content' : ':scope';
+    const ta = R.querySelector('textarea[name="edit-annotation.text"]'); if (!ta) return;
     ensureLauncher();   // the floating Original / Apollo switcher + ⚙ settings, same as the release editor
     const form = ta.closest('form'), hide = annoWant();
     if (hide) {
       document.body.classList.add('tc-ri-on', 'tc-anno-page');
       if (!document.getElementById('tc-ri-style')) riStyle();
       ensureAnnotationToolbar(ta);
-      const annoRow = (ta._tcAnnoMounted || ta).closest('.row'), clRow = document.querySelector('input[name="edit-annotation.changelog"]')?.closest('.row');
+      const annoRow = (ta._tcAnnoMounted || ta).closest('.row'), clRow = R.querySelector('input[name="edit-annotation.changelog"]')?.closest('.row');
       if (annoRow && clRow && clRow !== annoRow && annoRow.previousElementSibling !== clRow) annoRow.parentNode.insertBefore(clRow, annoRow);
     } else { unmountAnnotation(ta); document.body.classList.remove('tc-anno-page'); }
     // hide everything below the editor — the Edit note (the Change note already serves that role), the "Make all
     // edits votable" row, the native Preview button, and MB's formatting guide — keeping only "Enter edit".
     const annoRowEl = (ta._tcAnnoMounted || ta).closest('.row'), els = new Set();
     // #722 #723 the guide is the first h3 after the form (MB translates its "Annotation formatting")
-    const fh = (form && [...document.querySelectorAll('#content > h3')].find(h => form.compareDocumentPosition(h) & Node.DOCUMENT_POSITION_FOLLOWING))
-      || [...document.querySelectorAll('#content h3')].find(h => /annotation formatting/i.test(h.textContent || ''));
+    const fh = (form && [...R.querySelectorAll(C + ' > h3')].find(h => form.compareDocumentPosition(h) & Node.DOCUMENT_POSITION_FOLLOWING))
+      || [...R.querySelectorAll(C + ' h3')].find(h => /annotation formatting/i.test(h.textContent || ''));
     if (fh) { els.add(fh); for (let n = fh.nextElementSibling; n; n = n.nextElementSibling) els.add(n); }   // the guide is the h3 + everything after it (NOT its parent, which is #content!)
-    [...document.querySelectorAll('#content h2')].forEach(h => { if (/^\s*edit note\s*$/i.test((h.textContent || '').trim())) { els.add(h); let n = h.nextElementSibling; while (n && n.tagName === 'P') { els.add(n); n = n.nextElementSibling; } } });
+    [...R.querySelectorAll(C + ' h2')].forEach(h => { if (/^\s*edit note\s*$/i.test((h.textContent || '').trim())) { els.add(h); let n = h.nextElementSibling; while (n && n.tagName === 'P') { els.add(n); n = n.nextElementSibling; } } });
     if (form && annoRowEl) { const kids = [...form.children], ai = kids.indexOf(annoRowEl); kids.forEach((ch, i) => { if (i > ai) els.add(ch); }); }   // everything below the editor, incl. the native buttons
     els.forEach(el => { el.style.display = hide ? 'none' : ''; });
     // our own "Enter edit" (the native one is hidden) — placed to the right of the Changelog input; just clicks
     // the native submit so MB's flow runs
-    const clInput = document.querySelector('input[name="edit-annotation.changelog"]'), clRow = clInput?.closest('.row');
-    let sub = document.getElementById('tc-anno-submit');
+    const clInput = R.querySelector('input[name="edit-annotation.changelog"]'), clRow = clInput?.closest('.row');
+    let sub = R.querySelector('#tc-anno-submit');
     if (hide && !sub && clInput) {
       sub = document.createElement('button'); sub.id = 'tc-anno-submit'; sub.type = 'button'; sub.innerHTML = '<span aria-hidden="true">✓</span><span class="tc-anno-sub-t">Enter edit</span>'; sub.setAttribute('aria-label', 'Enter edit');
       sub.onclick = () => { const b = form && (form.querySelector('button.submit.positive') || [...form.querySelectorAll('button, input[type=submit]')].find(x => x.id !== 'tc-anno-submit' && /enter edit/i.test((x.textContent || x.value || '').trim()))); if (b) b.click(); };   // #722 by its class, as MB translates "Enter edit"   // the NATIVE submit (not ourselves)
@@ -17817,9 +17843,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // links carry it). When it is known the drop can go straight to the
   // confirmation page; when it is not, it goes through MusicBrainz's own medium
   // picker, which is one extra click and no extra request.
-  function scrapeMediumIds() {
+  function scrapeMediumIds(root = document) {
     const byPosition = {};
-    document.querySelectorAll('#content a[href*="medium"]').forEach(a => {
+    root.querySelectorAll('#content a[href*="medium"]').forEach(a => {
       const href = a.getAttribute('href') || '';
       const m = /[?&]medium(?:_id)?=(\d+)/.exec(href);
       if (!m) return;
@@ -17846,14 +17872,35 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     return byPosition;
   }
   let _discIdUiBuilt = false;
-  async function ensureDiscIdUi() {
-    if (_discIdUiBuilt) return;
-    const m = DISCIDS_PATH_RE.exec(location.pathname);
-    if (!m) return;
-    _discIdUiBuilt = true;
-    const mbid = m[1].toLowerCase();
-    const host = document.getElementById('content');
-    if (!host) return;
+  // Event Horizon shows another release's disc IDs without loading its page, and asks for the box with
+  // mbu-discid-mount ({ release, html: that page's #content }); it goes in EH's #dsc-slot, one box per release
+  const _discIdBoxes = new Map();
+  function installDiscIdMount() {
+    document.addEventListener('mbu-discid-mount', e => {
+      let d; try { d = JSON.parse(e.detail); } catch (x) { return; }
+      const slot = document.getElementById('dsc-slot');
+      if (!d || !d.release || !slot) return;
+      e.preventDefault();
+      const mbid = String(d.release).toLowerCase(), had = _discIdBoxes.get(mbid);
+      slot.replaceChildren();
+      if (had) { slot.append(had); return; }
+      const root = new DOMParser().parseFromString(d.html || '', 'text/html');
+      Log.cat('Disc IDs').info(`disc IDs: ${mbid} shown in Event Horizon's page`);
+      ensureDiscIdUi({ mbid, slot, root }).catch(x => Log.cat('Disc IDs').warn('disc IDs: the box failed — ' + ((x && x.message) || x)));
+    });
+  }
+  async function ensureDiscIdUi(into) {
+    let mbid, host, root = document;
+    if (into) { ({ mbid, root } = into); host = into.slot; }
+    else {
+      if (_discIdUiBuilt) return;
+      const m = DISCIDS_PATH_RE.exec(location.pathname);
+      if (!m) return;
+      _discIdUiBuilt = true;
+      mbid = m[1].toLowerCase();
+      host = document.getElementById('content');
+      if (!host) return;
+    }
     /* majkinetor: "Dark theme please". The first cut hardcoded light colours.
        This page has nothing else of Apollo's on it, so the tokens come with the
        box. mbuTheme() is what stamps data-mbu-theme on <html>; calling it here
@@ -17862,6 +17909,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const box = document.createElement('div');
     box.id = 'apollo-discid-box';
     box.className = 'mbu-ui';
+    box.dataset.release = mbid;
     box.innerHTML = `<style>
       ${MBU_TOKENS}
       #apollo-discid-box{margin:10px 0 16px;font:13px var(--mbu-font);color:var(--mbu-text)}
@@ -17884,8 +17932,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     <h2>Disc IDs from a rip log</h2>
     <div class="fd-zones" id="apollo-discid-zones"><div class="fd-s">Reading this release…</div></div>
     <p class="fd-foot">Drop an <strong>EAC</strong>, <strong>XLD</strong>, <strong>fre:ac</strong>, <strong>whipper</strong>, <strong>dBpoweramp</strong> or <strong>cyanrip</strong> log on a medium — or click to pick one — and Apollo works out the disc ID and takes you to MusicBrainz's attach page. Nothing is submitted on your behalf. See <a href="/doc/How_to_Add_Disc_IDs">How to Add Disc IDs</a>.</p>`;
-    const heading = [...host.querySelectorAll('h2')].find(h => /disc ids/i.test(h.textContent || ''));
-    host.insertBefore(box, heading || host.firstChild);
+    if (into) { _discIdBoxes.set(mbid, box); host.append(box); }
+    else {
+      const heading = [...host.querySelectorAll('h2')].find(h => /disc ids/i.test(h.textContent || ''));
+      host.insertBefore(box, heading || host.firstChild);
+    }
     const zones = box.querySelector('#apollo-discid-zones');
 
     let mediums = [];
@@ -17901,7 +17952,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       zones.innerHTML = `<div class="fd-s fd-err">Could not read this release's media (${esc(e.message)}).</div>`;
       return;
     }
-    const ids = scrapeMediumIds();
+    const ids = scrapeMediumIds(root);
     zones.innerHTML = '';
     if (!mediums.length) { zones.innerHTML = '<div class="fd-s">This release has no media.</div>'; return; }
     mediums.forEach(med => {
@@ -18756,6 +18807,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // page Apollo was started on for nothing else: the clone listener goes on every page, and on the
     // ones matched only for it (search, a recording, a collection, home…) Apollo does nothing more
     installCloneRelease();
+    installDiscIdMount();
+    installAnnoMount();
     if (!APOLLO_PAGE_RE.test(location.pathname)) return;
     installDatePaste();             // #960 whole-date paste and type-through, on every page Apollo runs
     if (handleAutoCommit()) { Log.cat('Create').info('auto-commit (background create/link) — submitting the seeded form'); return; }
