@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.135808
+// @version      2026.11.18.130000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -10874,6 +10874,7 @@ function collectionKeep(key, x) {
     } catch (e) { LOG.debug('Collections cache: ' + e.message); }
 }
 function collectionPaint(key) {
+    plyCollPaint(key);
     const p = $('#pop-collections'); if (!p || p.dataset.key !== key) return;
     const x = COLLECTIONS.get(key); if (!x) return;
     let group = '', first = true;
@@ -11892,6 +11893,8 @@ const PLY_I = {
     rel: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/>',
     x: '<path d="M5 5l14 14M19 5L5 19"/>',
     love: '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+    crel: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".6"/>',
+    crec: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/>',
     win: '<rect x="3" y="6" width="13" height="13" rx="1.5"/><path d="M13 3h8v8M21 3l-8 8"/>',
     back: '<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>',
     vol: '<path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor" stroke="none"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/>',
@@ -12341,11 +12344,12 @@ function plyWinList(root) {
         root.append(l);
     }
     // the header and the rows are redrawn only when they change, so the cover doesn't reload with every track
-    const head = plyRelHead(ply.q[ply.i]), rows = ply.q.map((x, i) => `<button type="button" class="qi" role="listitem" data-i="${i}"${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span>${plyRowSrc(x, i)}<span class="ql">${x.len ? dur(x.len) : ''}</span></button>`).join('');
+    const head = plyRelHead(ply.q[ply.i], false), rows = ply.q.map((x, i) => `<button type="button" class="qi" role="listitem" data-i="${i}"${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span>${plyRowSrc(x, i)}<span class="ql">${x.len ? dur(x.len) : ''}</span></button>`).join('');
     if (l._head !== head) {
-        l._head = head; l.querySelector('.ply-rh')?.remove();
-        if (head) { l.insertAdjacentHTML('afterbegin', head); l.querySelector('.ply-rh img')?.addEventListener('error', ev => ev.target.remove()); }
+        l._head = head; l.querySelector('.ply-rhw')?.remove();
+        if (head) { l.insertAdjacentHTML('afterbegin', plyRelHead(ply.q[ply.i])); l.querySelector('.ply-rhw img')?.addEventListener('error', ev => ev.target.remove()); }
     }
+    plyHeadPaint(); plyHeadLoad(ply.q[ply.i]);
     if (l._rows !== rows) {
         l._rows = rows; l.querySelectorAll('.qi').forEach(b => b.remove());
         l.insertAdjacentHTML('beforeend', rows);
@@ -12411,16 +12415,122 @@ const plyNo = t => ply.q.some(x => !String(x.key).startsWith('1-')) ? t.key : St
 // a row's platform: the one playing for the current track, the one a click would play from for the rest
 const plyRowSrc = (x, i) => { const p = x.srcs && x.srcs.length ? (i === ply.i && x.srcs.find(q => q.key === ply.src)) || plyPick(x, ply.pref) : null; return p ? `<span class="qp" data-tip="${esc(p.name)}">${icon(p, 16)}</span>` : ''; };
 // the release the playing track comes from: cover, title, artist and year, linked to its page
-function plyRelHead(t) {
+function plyRelHead(t, btns = true) {
     if (!t || !t.rel) return '';
     const yr = t.relYear ? `<span class="ry">${esc(t.relYear)}</span>` : '';
-    return `<a class="ply-rh" href="${MB}/release/${t.rel}"${PLY_WINDOW ? ' target="_blank"' : ''}>${t.front ? `<img src="https://coverartarchive.org/release/${t.rel}/front-250" alt="">` : ''}<span class="rt"><b>${esc(t.relTitle || '')}</b><small>${esc(t.relAc || '')}${t.relAc && yr ? ' · ' : ''}${yr}</small></span></a>`;
+    return `<div class="ply-rhw"><a class="ply-rh" href="${MB}/release/${t.rel}"${PLY_WINDOW ? ' target="_blank"' : ''}>${t.front ? `<img src="https://coverartarchive.org/release/${t.rel}/front-250" alt="">` : ''}<span class="rt"><b>${esc(t.relTitle || '')}</b><small>${esc(t.relAc || '')}${t.relAc && yr ? ' · ' : ''}${yr}</small></span></a>${btns ? `<span class="ply-ra">${plyHeadBtns(t)}</span>` : ''}</div>`;
 }
+// the head's buttons for the playing track: collect the release, collect the recording (each into that type's default
+// collection, a right-click lists them all), love it on ListenBrainz
+function plyCollKey(t, type) { return t && ME ? (type === 'rel' ? t.rel && 'release/' + t.rel : t.rid && 'recording/' + t.rid) || '' : ''; }
+function plyCollStore(type) { return location.origin + '/' + ME + '/' + type; }
+function plyCollDef(type) { try { return GM_getValue('plyColl', {})[plyCollStore(type)] || null; } catch (e) { return null; } }
+function plyCollDefSet(type, d) {
+    try { const all = GM_getValue('plyColl', {}); if (d) all[plyCollStore(type)] = d; else delete all[plyCollStore(type)]; GM_setValue('plyColl', all); } catch (e) { LOG.debug('Player collection: ' + e.message); }
+}
+function plyHeadBtns(t) {
+    if (!t) return '';
+    let h = '';
+    for (const type of ['rel', 'rec']) {
+        const key = plyCollKey(t, type); if (!key) continue;
+        const what = type === 'rel' ? 'release' : 'recording', d = plyCollDef(type), x = COLLECTIONS.get(key);
+        const row = d && x && x.rows && x.rows.find(r => r.id === d.id), on = !!(row && row.on);
+        const tip = 'Collect ' + what + (d ? ' · "' + d.label + '"\nClick: ' + (on ? 'remove' : 'add') + ' this ' + what : '\nClick: choose a collection') + '\nRight-click: your ' + what + ' collections';
+        h += `<button type="button" class="ply-pa${on ? ' on' : ''}${x && (x.busy || x.loading) ? ' busy' : ''}" data-pa="${type}" aria-pressed="${on}" aria-label="Collect ${what}" data-tip="${esc(tip)}">${SVG(PLY_I['c' + type])}</button>`;
+    }
+    if (t.rid) {
+        const tok = lbToken(), tip = !tok ? 'Love this track on ListenBrainz\nAdd your ListenBrainz token in the settings to use it' : t.loved ? 'Loved on ListenBrainz · click to unlove' : 'Love this track on ListenBrainz';
+        h += `<button type="button" class="ply-pa love${tok && t.loved ? ' on' : ''}" data-pa="love" aria-pressed="${!!(tok && t.loved)}"${tok ? '' : ' aria-disabled="true"'} aria-label="Love" data-tip="${esc(tip)}">${SVG(PLY_I.love)}</button>`;
+    }
+    return h;
+}
+function plyHeadPaint() {
+    const h = plyHeadBtns(ply.q[ply.i]);
+    document.querySelectorAll('.ply-ra').forEach(r => { if (r._h !== h) { r._h = h; r.innerHTML = h; } });
+}
+// what the buttons show is read when the head is drawn: love always (with a token), collections only with a default
+function plyHeadLoad(t) {
+    if (!t) return;
+    if (lbToken() && t.rid && t.loved === undefined) lbLoved(t);
+    for (const type of ['rel', 'rec']) { const key = plyCollKey(t, type); if (key && plyCollDef(type)) collectionLoad(key); }
+}
+function plyCollPaint(key) {
+    const t = ply.q[ply.i];
+    if (t && (key === plyCollKey(t, 'rel') || key === plyCollKey(t, 'rec'))) plyHeadPaint();
+    const p = document.getElementById('eh-ply-coll'); if (p && p.dataset.key === key) plyCollDraw(p);
+}
+async function plyCollClick(btn, type) {
+    const key = plyCollKey(ply.q[ply.i], type), d = plyCollDef(type); if (!key) return;
+    if (!d) { plyCollPick(btn, type); return; }
+    let x = COLLECTIONS.get(key);
+    if (!x || !x.rows || Date.now() - x.at >= 60000) { await collectionLoad(key); x = COLLECTIONS.get(key); }
+    if (x.busy || x.loading) { toast('Reading your collections…'); return; }
+    if (!x.rows) { toast(x.error || 'Could not read your collections'); return; }
+    if (!x.rows.some(r => r.id === d.id)) { plyCollDefSet(type, null); plyHeadPaint(); toast('Your default collection is gone: choose another'); plyCollPick(btn, type); return; }
+    collectionChange(key, d.id);
+}
+// the picker: the user's collections of this type, each toggling the item, and which one a click uses
+let plyCollShut = () => {};
+function plyCollPick(btn, type) {
+    const key = plyCollKey(ply.q[ply.i], type); if (!key) return;
+    plyCollShut();
+    if (!document.getElementById('eh-ply-css')) plyRoot();
+    const m = document.createElement('div'); m.id = 'eh-ply-coll'; m.className = 'mbu-ui ply-menu'; m.setAttribute('role', 'menu');
+    m.dataset.key = key; m.dataset.type = type; m._btn = btn;
+    document.documentElement.append(m);
+    const off = ev => { if (!m.contains(ev.target) && !ev.target.closest?.('[data-pa="' + type + '"]')) plyCollShut(); };
+    const esck = ev => { if (ev.key !== 'Escape' || !m.isConnected) return; ev.preventDefault(); ev.stopPropagation(); plyCollShut(); };
+    plyCollShut = () => { m.remove(); document.removeEventListener('pointerdown', off, true); document.removeEventListener('keydown', esck, true); plyCollShut = () => {}; };
+    setTimeout(() => { if (m.isConnected) document.addEventListener('pointerdown', off, true); });
+    document.addEventListener('keydown', esck, true);
+    m.addEventListener('click', ev => {
+        const b = ev.target.closest('button'); if (!b || b.disabled) return;
+        if (b.dataset.cc) collectionChange(key, b.dataset.cc);
+        else if (b.dataset.cd) {
+            const x = COLLECTIONS.get(key), r = x && x.rows && x.rows.find(v => v.id === b.dataset.cd), d = plyCollDef(type);
+            plyCollDefSet(type, d && d.id === b.dataset.cd || !r ? null : { id: r.id, label: r.label });
+            LOG.info('player: default ' + (type === 'rel' ? 'release' : 'recording') + ' collection', r && d && d.id !== r.id || r && !d ? r.label : 'cleared');
+            plyCollDraw(m); plyHeadPaint();
+        } else if (b.dataset.cr) collectionLoad(key, true);
+    });
+    plyCollDraw(m);
+    collectionLoad(key);
+}
+function plyCollDraw(m) {
+    const key = m.dataset.key, type = m.dataset.type, x = COLLECTIONS.get(key) || {}, d = plyCollDef(type), what = type === 'rel' ? 'release' : 'recording';
+    const off = x.busy || x.loading ? ' disabled' : '', rows = (x.rows || []).filter(r => r.id), create = (x.rows || []).find(r => !r.id);
+    let group = '';
+    m.innerHTML = `<div class="hd">${type === 'rel' ? 'Release' : 'Recording'} collections</div>` + rows.map(r => {
+        const h = rows.length && r.group !== rows[0].group && r.group !== group ? `<div class="hd">${esc(r.group)}</div>` : ''; group = r.group;
+        const def = d && d.id === r.id;
+        return h + `<div class="cr"><button type="button" class="it" role="menuitemcheckbox" data-cc="${esc(r.id)}" aria-checked="${r.on}"${off} data-tip="${esc((r.on ? 'Remove this ' : 'Add this ') + what + (r.on ? ' from ' : ' to ') + '"' + r.label + '"')}">${SVG(r.on ? '<path d="m5 12 4 4L19 6"/>' : '<path d="M12 5v14M5 12h14"/>')}<span>${esc(r.label)}</span></button><button type="button" class="ply-pa dft${def ? ' on' : ''}" data-cd="${esc(r.id)}" aria-pressed="${def}" data-tip="${esc(def ? 'The default: a click on Collect ' + what + ' uses it\nClick: clear the default' : 'Make this the default for a click on Collect ' + what)}">${SVG(def ? '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/>' : '<circle cx="12" cy="12" r="8"/>')}</button></div>`;
+    }).join('')
+        + (!x.rows ? `<div class="st">${x.error ? esc(x.error) : 'Reading your collections…'}</div>` : !rows.length ? `<div class="st">You have no ${what} collections</div>` : '')
+        + (x.rows && x.error ? `<div class="st" role="alert">${esc(x.error)}</div>` : '')
+        + (rows.length && !d ? `<div class="st">Pick a default with ◯ and a click on the button collects into it</div>` : '')
+        + '<hr>' + (create ? `<a class="it" role="menuitem" href="${esc(MB + create.path)}" target="_blank" rel="noopener">${SVG('<path d="M12 5v14M5 12h14"/>')}<span>New collection…</span></a>` : '')
+        + `<button type="button" class="it" role="menuitem" data-cr="1"${off}>${SVG('<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/>')}<span>Refresh</span></button>`;
+    const r = m._btn && m._btn.isConnected ? m._btn.getBoundingClientRect() : null, h = m.offsetHeight, w = m.offsetWidth;
+    if (!r) return;
+    m.style.left = Math.max(8, Math.min(r.right - w, innerWidth - w - 8)) + 'px';
+    m.style.top = Math.max(8, r.bottom + h + 6 < innerHeight ? r.bottom + 4 : r.top - h - 4) + 'px';
+}
+document.addEventListener('click', ev => {
+    const b = ev.target.closest && ev.target.closest('.ply-ra [data-pa]'); if (!b) return;
+    const t = ply.q[ply.i], k = b.dataset.pa; if (!t) return;
+    if (k === 'love') { if (lbToken()) lbLove(t); return; }
+    plyCollClick(b, k);
+});
+document.addEventListener('contextmenu', ev => {
+    const b = ev.target.closest && ev.target.closest('.ply-ra [data-pa="rel"],.ply-ra [data-pa="rec"]'); if (!b) return;
+    ev.preventDefault(); plyCollPick(b, b.dataset.pa);
+});
 function plyListMenu(btn) {
     plyMenu(btn, plyRelHead(ply.q[ply.i]) + '<div class="hd"><span>Playlist</span>' + (ply.q.length > 1 ? '<input type="search" class="qf" placeholder="Filter" aria-label="Filter the playlist" autocomplete="off">' : '') + '</div>' + ply.q.map((x, i) => `<button type="button" class="it qi" role="menuitem" data-k="q${i}"${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span>${plyRowSrc(x, i)}<span class="ql">${x.len ? dur(x.len) : ''}</span></button>`).join(''),
         ({ k }) => { const i = +String(k).slice(1); if (i >= 0 && i < ply.q.length && i !== ply.i) { LOG.info('player: picked from the playlist', i + 1); plyGo(i, ply.pref); } }, 'left');
     document.querySelector('#eh-ply-menu [aria-current]')?.scrollIntoView({ block: 'nearest' });
     document.querySelector('#eh-ply-menu .ply-rh img')?.addEventListener('error', ev => ev.target.remove());
+    plyHeadLoad(ply.q[ply.i]);
     const qf = document.querySelector('#eh-ply-menu .qf'); if (!qf) return;
     const fold = x => String(x).normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
     const rows = [...document.querySelectorAll('#eh-ply-menu .qi')].map(r => [r, fold(r.textContent)]);
@@ -12456,11 +12566,11 @@ function plyMenu(btn, html, pick, align) {
     const r = btn.getBoundingClientRect(), h = m.offsetHeight, w = m.offsetWidth;
     m.style.left = Math.max(8, Math.min(align === 'left' ? r.left : r.right - w, innerWidth - w - 8)) + 'px';
     m.style.top = Math.max(8, r.bottom + h + 6 < innerHeight ? r.bottom + 4 : r.top - h - 4) + 'px';
-    const off = ev => { if (m.contains(ev.target)) return; plyMenuShut = { k: ev.target.closest?.('[data-ply]')?.dataset.ply || '', t: Date.now() }; shut(); };
+    const off = ev => { if (m.contains(ev.target) || ev.target.closest?.('#eh-ply-coll')) return; plyMenuShut = { k: ev.target.closest?.('[data-ply]')?.dataset.ply || '', t: Date.now() }; shut(); };
     // Escape closes the menu (the playlist's filter included) before anything else sees the key
-    const key = ev => { if (ev.key !== 'Escape' || !m.isConnected) return; ev.preventDefault(); ev.stopPropagation(); shut(); btn.focus({ preventScroll: true }); };
+    const key = ev => { if (ev.key !== 'Escape' || !m.isConnected || document.getElementById('eh-ply-coll')) return; ev.preventDefault(); ev.stopPropagation(); shut(); btn.focus({ preventScroll: true }); };
     const blur = () => setTimeout(() => { if (document.activeElement?.tagName === 'IFRAME' || !document.hasFocus()) shut(); });
-    const shut = () => { m.remove(); document.removeEventListener('pointerdown', off, true); document.removeEventListener('keydown', key, true); removeEventListener('blur', blur); };
+    const shut = () => { m.remove(); plyCollShut(); document.removeEventListener('pointerdown', off, true); document.removeEventListener('keydown', key, true); removeEventListener('blur', blur); };
     setTimeout(() => { if (m.isConnected) { document.addEventListener('pointerdown', off, true); addEventListener('blur', blur); } });
     document.addEventListener('keydown', key, true);
     m.addEventListener('click', ev => {
@@ -12492,18 +12602,28 @@ function plyLbMenu(btn) {
     const parts = [`<div class="hd">Playing from</div><div class="ply-ss">${t.srcs.map(p => `<button type="button" class="ss" role="menuitem" data-k="${p.key}" data-tip="${esc(p.name)}&#10;Right-click: open on ${esc(p.name)}"${p.key === ply.src ? ' aria-current="true"' : ''}>${icon(p, 20)}<span>${esc(p.name.replace(/ Music$/, ''))}</span></button>`).join('')}</div>`];
     if (S.playerLb || S.playerScrobble) parts.push(`<div class="hd">${plyLogo(14)}<span>ListenBrainz</span></div>`
         + (S.playerLb ? it(`https://listenbrainz.org/track/${t.rid}`, 'note', 'This track') + (t.rel ? it(`https://listenbrainz.org/release/${t.rel}`, 'rel', 'This release') : '') : '')
-        + (lbToken() && t.rid ? `<button type="button" class="it ply-love${t.loved ? ' on' : ''}" role="menuitem" data-m="love">${SVG(PLY_I.love)}<span>${t.loved ? 'Loved · click to unlove' : 'Love this track'}</span></button>` : '')
         + (st ? `<hr><div class="st">${st}</div>` : '')
         + (S.playerLb ? it('https://listenbrainz.org/my/listens/', 'ext', 'Your listens') : ''));
     parts.push((ply.yt ? `<button type="button" class="it" role="menuitem" data-m="video">${SVG(PLY_I.video)}<span>${S.playerVideo ? 'Hide the video' : 'Show the video'}</span></button>` : '')
         + (PLY_WINDOW || plyRemote ? `<button type="button" class="it" role="menuitem" data-m="tab">${SVG(PLY_I.back)}<span>${PLY_WINDOW ? 'Back to tab' : 'Back to this tab'}</span></button>`
             : PLY_BUS ? `<button type="button" class="it" role="menuitem" data-m="win">${SVG(PLY_I.win)}<span>Open in window</span></button>` : '')
         + `<button type="button" class="it" role="menuitem" data-m="x" style="color:var(--mbu-bad,#c2413b)">${SVG(PLY_I.x)}<span>Stop and close</span></button>`);
-    if (lbToken() && t.rid && t.loved === undefined) lbLoved(t);
-    plyMenu(btn, parts.join('<hr>'), v => { if (v.k) plySrc(v.k); else if (v.m === 'love') lbLove(t); else if (v.m === 'video') plyVideo(); else if (v.m === 'win') plyToWindow(); else if (v.m === 'tab') { if (PLY_WINDOW) plyToTab(); else plyControl('to-tab', PLY_ID); } else if (v.m === 'x') plyClose(); });
+    plyMenu(btn, parts.join('<hr>'), v => { if (v.k) plySrc(v.k); else if (v.m === 'video') plyVideo(); else if (v.m === 'win') plyToWindow(); else if (v.m === 'tab') { if (PLY_WINDOW) plyToTab(); else plyControl('to-tab', PLY_ID); } else if (v.m === 'x') plyClose(); });
 }
 const PLY_CSS = `
-.ply-menu .ply-love.on svg{fill:var(--mbu-bad,#c2413b);stroke:var(--mbu-bad,#c2413b)}
+.ply-pa{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:30px;height:30px;padding:0;border:0;border-radius:7px;background:none;color:var(--muted,#777);cursor:pointer}
+.ply-pa:hover:not([aria-disabled]){background:color-mix(in srgb,currentColor 10%,transparent);color:var(--text,#222)}
+.ply-pa svg{width:18px;height:18px;overflow:visible}
+.ply-pa.on:not(.love){color:var(--accent,#ba478f)}
+.ply-pa.on:not(.love):not(.dft)::after{content:"";position:absolute;left:8px;right:8px;bottom:1px;height:2px;border-radius:2px;background:currentColor}
+.ply-pa.love.on{color:var(--mbu-bad,#c2413b)}.ply-pa.love.on svg{fill:currentColor}
+.ply-pa[aria-disabled]{opacity:.35;cursor:default}
+.ply-pa.busy{opacity:.55;cursor:progress}
+.ply-menu .cr{display:flex;align-items:center;gap:2px}.ply-menu .cr .it{flex:1;min-width:0}.ply-menu .cr .it span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ply-menu .cr .dft svg{width:16px;height:16px}
+#eh-ply-coll{z-index:9997;width:min(300px,calc(100vw - 16px))}
+#eh-ply-coll .st{max-width:100%}
+.ply-menu .it[disabled]{opacity:.5;cursor:default}
 #eh-ply{position:fixed;z-index:9995;font:14px/1.3 system-ui,sans-serif;color:var(--text,#222)}
 .ply-ctl{text-transform:none;letter-spacing:normal;font-weight:normal;min-width:0}
 .ply-ctl .ply-g{display:inline-flex;align-items:center;gap:2px;flex:none}
@@ -12599,7 +12719,9 @@ html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
 .ply-menu .it:hover,.ply-menu .it:focus-visible,.ply-menu .it[aria-current]{background:color-mix(in srgb,currentColor 10%,transparent);outline:0}
 .ply-menu .it svg,.ply-menu .it img{width:16px;height:16px;flex:none}
 .ply-menu:has(.qi){width:min(440px,calc(100vw - 16px));max-height:min(60vh,520px)}
-.ply-rh{display:flex;align-items:center;gap:11px;padding:6px 9px 8px;margin-bottom:2px;border-bottom:1px solid var(--line,#ddd);color:inherit!important;text-decoration:none!important}
+.ply-rhw{display:flex;align-items:center;gap:4px;margin-bottom:2px;border-bottom:1px solid var(--line,#ddd)}
+.ply-ra{display:flex;align-items:center;gap:2px;flex:none;padding-right:6px}
+.ply-rh{flex:1;min-width:0;display:flex;align-items:center;gap:11px;padding:6px 9px 8px;color:inherit!important;text-decoration:none!important}
 .ply-rh img{flex:none;width:52px;height:52px;object-fit:cover;border-radius:4px;background:color-mix(in srgb,currentColor 8%,transparent)}
 .ply-rh .rt{display:flex;flex-direction:column;gap:3px;min-width:0}
 .ply-rh b,.ply-rh small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -12646,21 +12768,20 @@ async function lbUser() {
     if (name) try { GM_setValue('lbUser', { tok, name }); } catch (e) {}
     return name;
 }
-// whether the user loves a track, read when the player's menu first opens on it; the open menu follows the answer
+// whether the user loves a track, read when the playlist's head first shows it; the head's Love follows the answer
 async function lbLoved(t) {
     t.loved = null;
     const u = await lbUser(); if (!u) { t.loved = undefined; return; }
     const r = await lbApi('feedback/user/' + encodeURIComponent(u) + '/get-feedback-for-recordings?recording_mbids=' + t.rid);
     if (r.status !== 200 || !r.j) { t.loved = undefined; return; }
     t.loved = (r.j.feedback || []).some(x => x.recording_mbid === t.rid && x.score === 1);
-    const b = document.querySelector('#eh-ply-menu .ply-love');
-    if (b && ply.q[ply.i] === t) { b.classList.toggle('on', t.loved); b.querySelector('span').textContent = t.loved ? 'Loved · click to unlove' : 'Love this track'; }
+    if (ply.q[ply.i] === t) plyHeadPaint();
 }
 // love the track on ListenBrainz, or take the love back
 function lbLove(t) {
     const on = !t.loved;
     lbApi('feedback/recording-feedback', { recording_mbid: t.rid, score: on ? 1 : 0 }).then(r => {
-        if (r.status === 200) { t.loved = on; LOG.info('player: ListenBrainz ' + (on ? 'loved' : 'unloved'), t.title); toast(on ? 'Loved on ListenBrainz: ' + t.title : 'No longer loved on ListenBrainz: ' + t.title); }
+        if (r.status === 200) { t.loved = on; plyHeadPaint(); LOG.info('player: ListenBrainz ' + (on ? 'loved' : 'unloved'), t.title); toast(on ? 'Loved on ListenBrainz: ' + t.title : 'No longer loved on ListenBrainz: ' + t.title); }
         else { LOG.warn('player: ListenBrainz feedback said ' + r.status, r.j && r.j.error || ''); toast(r.status === 401 ? 'ListenBrainz refused the token: check it in the settings' : 'ListenBrainz didn\'t take the love'); }
     });
 }
