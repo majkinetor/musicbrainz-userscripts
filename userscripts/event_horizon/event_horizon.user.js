@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.013000
+// @version      2026.11.19.020000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3343,20 +3343,28 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-sw[aria-checked=true] i::after{left:16px}
 .ed-div{width:1px;height:20px;background:var(--border)}.ed-ld{display:inline-flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)}
 .ed-views{display:inline-flex;gap:2px}
-.cl-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-left:auto}.cl-tools .seg i{font-style:normal;opacity:.7;margin-left:2px}
+.cl-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin-left:auto}
+.cl-tools .seg{border:0;border-radius:0;background:none;overflow:visible;gap:2px}.cl-tools .seg button,.cl-tools .seg button+button{border:0;padding:0 8px;color:var(--muted);font-weight:500;border-radius:6px}
+.cl-tools .seg button:hover{color:var(--text);background:var(--hover)}.cl-tools .seg button[aria-pressed="true"]{background:none;color:var(--text);box-shadow:inset 0 -2px 0 var(--accent);border-radius:0}
+.cl-tools .seg i{font-style:normal;opacity:.6;margin-left:3px}
 .cl-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
-.cl-tile{border:1px solid var(--border);border-radius:9px;padding:10px 12px 6px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
+.cl-tile{position:relative;border:1px solid var(--border);border-radius:9px;padding:10px 12px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
+.cl-hd{display:flex;align-items:center;gap:6px;min-width:0;max-width:100%}.cl-tile .cl-hd{padding-right:60px}
 .cl-a{font-weight:600;overflow-wrap:anywhere}
 .cl-big{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.25}
 .cl-meta{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:12px;color:var(--muted);font-weight:400}
-.cl-pv.off{color:var(--accent);font-weight:700}
-.cl-acts{display:inline-flex;align-items:center;flex-wrap:wrap;gap:2px}.cl-tile .cl-acts{margin:2px 0 0 -6px}
+.cl-ico{display:inline-flex;color:var(--muted);flex:none}.cl-ico svg{width:16px;height:16px}.sec-h .cl-ico svg,h2 .cl-ico svg{width:18px;height:18px;vertical-align:-.15em;margin-right:4px}
+.cl-pv{display:inline-flex;flex:none;color:var(--muted);opacity:.55}.cl-pv svg{width:14px;height:14px}.cl-pv.off{color:var(--accent);opacity:1}
+.cl-acts{display:inline-flex;align-items:center;flex-wrap:wrap;gap:2px}
+.cl-tile .cl-acts{position:absolute;top:4px;right:4px;opacity:0;transition:opacity .12s}.cl-tile:hover .cl-acts,.cl-tile:focus-within .cl-acts,.cl-tile .cl-acts:has([data-confirm]){opacity:1}
+.cl-tile .cl-acts:has([data-confirm]){position:static;margin:4px 0 0 -6px}
+@media (hover:none){.cl-tile .cl-acts{opacity:1}}@media (prefers-reduced-motion:reduce){.cl-tile .cl-acts{transition:none}}
 .cl-ib{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:30px;height:30px;padding:0 6px;border-radius:6px;color:var(--muted)!important;text-decoration:none!important;font-size:13px;font-weight:700}
 .cl-ib:hover,.cl-ib:focus-visible{color:var(--link)!important;background:var(--hover)}.cl-ib svg{width:18px;height:18px;flex:none}
 .cl-rm[data-confirm]{color:#c4466a!important}.cl-cancel{min-height:30px}
 .cl-list{list-style:none;margin:0;padding:0}
-.cl-row{display:flex;align-items:center;gap:4px 14px;padding:3px 0;border-bottom:1px solid var(--border)}.cl-row:last-child{border-bottom:0}
-.cl-nm{flex:1;min-width:0;display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 12px}
+.cl-row{display:flex;align-items:center;gap:4px 12px;padding:3px 0;border-bottom:1px solid var(--border)}.cl-row:last-child{border-bottom:0}
+.cl-nm{flex:1;min-width:0;display:flex;align-items:center;flex-wrap:wrap;gap:2px 10px}
 .cl-ty{color:var(--muted);font-size:12px}.cl-ct{font-variant-numeric:tabular-nums;min-width:4ch;text-align:right;font-weight:600}
 .cl-row .cl-acts{min-width:66px;justify-content:flex-end}.cl-note{margin-top:14px}
 @media (max-width:600px){.cl-tools{margin-left:0}.cl-row{flex-wrap:wrap}.cl-nm{flex-basis:100%}.cl-ty{flex:1}.cl-row .cl-acts{min-width:0}}
@@ -8974,7 +8982,7 @@ function collsHtml(d) {
     // what MusicBrainz says of an empty part (no collaborative collections) is one quiet line under the list
     const notes = c.secs.filter(s => s.note).map(s => `<p class="hm-none cl-note">${esc(s.grp)}: ${esc(s.note)}</p>`).join('');
     const body = grid
-        ? grps.map((g, i) => { const xs = ord(its.filter(x => x.grp === g)); return sect('cl' + i, `${esc(g)} <span class="count">${fmtN(xs.length)}</span>`, '', `<div class="cl-tiles">${xs.map(x => clItem(x, true)).join('')}</div>` + (i === grps.length - 1 ? notes : ''), ''); }).join('') + (grps.length ? '' : notes)
+        ? grps.map((g, i) => { const xs = ord(its.filter(x => x.grp === g)); return sect('cl' + i, `${clIco(xs[0])}${esc(g)} <span class="count">${fmtN(xs.length)}</span>`, '', `<div class="cl-tiles">${xs.map(x => clItem(x, true)).join('')}</div>` + (i === grps.length - 1 ? notes : ''), ''); }).join('') + (grps.length ? '' : notes)
         : its.length ? `<ul class="cl-list">${ord(its.filter(x => !clType || x.grp === clType)).map(x => clItem(x, false)).join('')}</ul>` : '';
     return top + body + (grid ? '' : notes);
 }
@@ -9004,11 +9012,17 @@ function clItems(c) {
     return out;
 }
 const CL_TRASH = '<path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/>';
-// a tile (count as the big figure) or a row (its type before the count); privacy always shows, set apart when it isn't public
+const CL_LOCK = '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>';
+const CL_GLOBE = '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>';
+// the entity icon of a collection's type, from its type or its group's name ("Release group collection" → release-group; the longest key wins), else a collection's
+const CL_IK = Object.keys(MBU_ENT_ICONS).filter(k => k !== 'collection').sort((a, b) => b.length - a.length);
+const clIco = x => { const t = ((x && (x.ty || x.grp)) || '').toLowerCase(); return `<span class="cl-ico">${SVG(MBU_ENT_ICONS[CL_IK.find(k => t.includes(k.replace(/-/g, ' '))) || 'collection'])}</span>`; };
+// a tile (count as the big figure) or a row (its type's icon first, its type before the count); privacy is an icon after the name, a lock set apart when it isn't public
 function clItem(x, tile) {
-    const abs = h => h.startsWith('/') ? MB + h : h, q = s => esc(s);
-    const name = `<a class="cl-a" href="${q(abs(x.href))}">${q(x.name)}</a>`;
-    const meta = [x.pv && `<span class="cl-pv${/^public$/i.test(x.pv) ? '' : ' off'}">${q(x.pv)}</span>`, x.owner && `<span class="cl-by">${x.owner.replace(/href="\//g, `href="${MB}/`)}</span>`, x.co && `<span>${q(x.co)}</span>`, x.sub && `<span>${q(x.sub)}</span>`].filter(Boolean).join('');
+    const abs = h => h.startsWith('/') ? MB + h : h, q = s => esc(s), pub = /^public$/i.test(x.pv);
+    const pv = x.pv ? `<span class="cl-pv${pub ? '' : ' off'}" role="img" aria-label="${q(x.pv)}" data-tip="${q(x.pv)}">${SVG(pub ? CL_GLOBE : CL_LOCK)}</span>` : '';
+    const name = `<span class="cl-hd">${tile ? '' : clIco(x)}<a class="cl-a" href="${q(abs(x.href))}">${q(x.name)}</a>${pv}</span>`;
+    const meta = [x.owner && `<span class="cl-by">${x.owner.replace(/href="\//g, `href="${MB}/`)}</span>`, x.co && `<span>${q(x.co)}</span>`, x.sub && `<span>${q(x.sub)}</span>`].filter(Boolean).join('');
     const acts = x.edit || x.del ? `<span class="cl-acts">${x.edit ? `<a class="cl-ib" href="${q(abs(x.edit))}" aria-label="Edit ${q(x.name)}" data-tip="Edit">${MBU_EDIT_ICON}</a>` : ''}${x.del ? `<a class="cl-ib cl-rm" href="${q(abs(x.del))}" aria-label="Remove ${q(x.name)}" data-tip="Remove">${SVG(CL_TRASH)}</a>` : ''}</span>` : '';
     return tile
         ? `<div class="cl-item cl-tile">${name}<span class="cl-big">${q(x.ns || '0')}</span>${meta ? `<span class="cl-meta">${meta}</span>` : ''}${acts}</div>`
