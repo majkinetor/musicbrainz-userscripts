@@ -13440,16 +13440,19 @@ function evArtHead(el, d) {
         + (d.err ? `<h1>${esc(d.err)}</h1>` : (name ? heroH1(name, g && g.disambig, `${MB}/event/${d.id}`) : '<h1>&nbsp;</h1>')) + '</div>';
     cvWire(el);
 }
-let asHome = null;
+// asNode: the loaded cover-art page's own gallery once it went into the slot. Another page of the tab drops it with
+// the slot, out of the document, where no query finds it, so coming back to the art (or turning the tab off) takes it from here
+let asHome = null, asNode = null;
 // debug: where Art Station's gallery is, for the art page's log lines
 function artState() {
-    const s = $('#as-slot'), r = document.getElementById('as-root');
+    const s = $('#as-slot'), r = document.getElementById('as-root') || asNode;
     const at = !r ? 'none' : !r.isConnected ? 'detached' : s && s.contains(r) ? 'in the slot' : mbBody && mbBody.contains(r) ? 'in the MusicBrainz page' : 'elsewhere (' + (r.parentElement ? r.parentElement.id || r.parentElement.tagName : '-') + ')';
     return `slot ${s ? 'yes' : 'no'}${s ? ' (' + s.children.length + ' children)' : ''}, gallery ${at}` + (r ? `, ${r.querySelectorAll('.as-card').length} cards, ${Math.round(r.getBoundingClientRect().height)} px, display ${getComputedStyle(r).display}` : '');
 }
 function artStationPlace(on) {
-    const as = (mbBody && mbBody.querySelector('#as-root')) || (ehBody && ehBody.querySelector('#as-root'));
+    const as = (mbBody && mbBody.querySelector('#as-root')) || (ehBody && ehBody.querySelector('#as-root')) || asNode;
     if (!as) return;
+    asNode = as;
     if (!on) { if (asHome && asHome.isConnected) { LOG.info('art: gallery moved back to the MusicBrainz page'); asHome.after(as); } return; }
     const slot = ehBody && ehBody.querySelector('#as-slot');
     if (!slot || slot.contains(as)) return;
@@ -13466,7 +13469,7 @@ function artPage(app, d) {
     const mh = !r && mbBody && PAGE_ID.endsWith('/' + d.id) && mbBody.querySelector('.releaseheader'), mt = mh && mh.querySelector('h1 a'), ma = mh ? [...mh.querySelectorAll('.subheader a[href*="/artist/"]')] : [];
     const early = mt ? `${heroH1(mt.textContent, '', `${MB}/release/${d.id}`)}${ma.length ? `<div class="by">by ${ma.map(a => `<a href="${esc(a.href)}">${esc(a.textContent)}</a>`).join(', ')}</div>` : ''}` : '';
     if (d.ev) { evArtHead(app.querySelector('.arthd'), d); } else app.querySelector('.arthd').innerHTML = subHead(r, d.id, 'cover-art', 'Cover art', d.err ? `<h1>${esc(d.err)}</h1>` : early || '<h1>&nbsp;</h1>'); cvWire(app.querySelector('.arthd'));
-    const slot = app.querySelector('#as-slot'), as = mbBody && mbBody.querySelector('#as-root');
+    const slot = app.querySelector('#as-slot'), as = (mbBody && mbBody.querySelector('#as-root')) || (asNode && !asNode.isConnected && PAGE_ID.endsWith('/' + d.id) ? asNode : null);
     if (as) artStationPlace(ehOn);
     else if (!slot.firstChild) slot.innerHTML = '<p class="msg as-none" hidden>Art Station shows this ' + (d.ev ? 'event\'s event' : 'release\'s cover') + ' art here: <a href="https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/art_station">install it</a>, or <button class="lnk" type="button" data-mbpage>show MusicBrainz\'s page</button>.</p>';
     const mb = slot.querySelector('[data-mbpage]'); if (mb) mb.onclick = () => switchOn(false);
