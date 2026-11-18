@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.180200
+// @version      2026.11.18.180201
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12669,7 +12669,7 @@ const PLY_CSS = `
 .ply-ctl .ply-t>*{overflow:hidden;text-overflow:ellipsis}
 .ply-ctl .ply-t b{flex:0 1 auto;min-width:3em}
 .ply-ctl .ply-ar{flex:0 2 auto;min-width:2em;color:var(--muted,#777)}
-.ply-ctl .ply-rl{flex:0 100 auto;min-width:0;color:var(--muted,#777)}
+.ply-ctl .ply-rl{flex:1 1 0;min-width:0;color:var(--muted,#777)}
 .ply-ctl .ply-tm{flex:none;min-width:2.6em;font-size:11px;font-variant-numeric:tabular-nums;color:var(--muted,#777)}
 .ply-ctl .ply-tm:last-child{text-align:right}
 .ply-ctl .ply-pr{flex:1;height:3px;border-radius:2px;background:color-mix(in srgb,currentColor 15%,transparent);overflow:hidden}
