@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.100600
+// @version      2026.11.18.220447
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3178,7 +3178,7 @@ h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25
 .col-desc{margin-top:12px;max-width:80ch;line-height:1.5;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}.col-desc.cut{cursor:pointer}.col-desc.open{display:block}.col-desc>*{margin:0}.col-desc>*+*{margin-top:0}
 .colh .facts{margin-top:10px;padding-top:0;border-top:0}.colh .facts:empty{display:none}.colh .nocover .col-tmk{position:absolute;right:10px;bottom:10px;width:34px;height:34px;border-radius:50%;background:var(--bg);border:1px solid var(--border);color:var(--accent);display:grid;place-items:center}.colh .col-tmk svg{width:18px;height:18px}
 .hist{margin-top:24px}.hbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}.hbar .lb{color:var(--muted);font-size:13px}
-.hist>.hbar{position:sticky;top:var(--eh-pin-h,0px);z-index:25;padding:8px 10px;background:var(--eh-bar);box-shadow:0 -12px 0 var(--eh-bar);transition:top .18s}
+.hist>.hbar{position:sticky;top:var(--eh-pin-h,0px);z-index:25;padding:2px 10px 14px;background:var(--eh-bar);box-shadow:0 -12px 0 var(--eh-bar);transition:top .18s}
 /* an open group's header pins under the Group bar, an open run's under it and an open edit's under those, so a group's
    votes stay in reach while its edits scroll past (majkinetor) */
 .hist .hgrp.open>.hgh{position:sticky;top:calc(var(--eh-pin-h,0px) + var(--eh-hb,0px) - 1px);z-index:24;background:linear-gradient(var(--surface),var(--surface)),var(--eh-bar);transition:top .18s}
