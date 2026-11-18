@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.000600
+// @version      2026.11.19.100407
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3143,7 +3143,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 #eh-pin .pident,#eh-pin .pkk{overflow:hidden}#eh-pin .pkk{display:flex;align-items:center;gap:6px;min-width:0;max-width:40%;color:var(--muted);font-size:10.5px;white-space:nowrap}#eh-pin .pkk svg{width:18px;height:18px;flex:none}#eh-pin .pkk>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 /* Reserve the release identity before fitting actions; format icons must not shrink under the menu. */
 #eh-pin .pident{min-width:min(360px,45%)}#eh-pin .pkk{flex:none}
-#eh-pin.eh-ply{transform:none}#eh-pin.eh-ply>.kicker{min-height:42px}#eh-pin.eh-ply .pident{flex:1 1 0;min-width:0}#eh-pin.eh-ply .ply-ctl.pb~*{flex:1 1 0;min-width:0;justify-content:flex-end}#eh-pin.eh-ply .ply-ctl.pb~.acts{min-width:max-content}#eh-pin.eh-ply .ply-ctl.pb{flex-shrink:100}#eh-pin.eh-ply .pident{min-width:min(140px,18%)}#eh-pin.eh-ply>.kicker:has(>.ply-ctl.pb:last-child)::after{content:"";flex:1 1 0}#eh-pin .ply-ctl.pb{max-width:min(1000px,52%);min-width:0}@media(max-width:700px){#eh-pin .ply-ctl.pb{flex:0 1 auto;max-width:70%}#eh-pin.eh-ply>.kicker::after{display:none}}#eh-pin .ply-ctl.pb{align-self:stretch;margin-top:-6px;margin-bottom:-6px}html.eh-ply-pin body{padding-top:var(--eh-pin-h,0px)}@media(max-width:600px){#eh-pin.eh-ply>.kicker{flex-wrap:wrap;row-gap:0}#eh-pin.eh-ply .ply-ctl.pb{order:9;flex:1 1 100%;max-width:none;margin:0;justify-content:center}#eh-pin.eh-ply .ply-ctl.pb .ply-t{max-width:none}}
+#eh-pin.eh-ply{transform:none}#eh-pin.eh-ply>.kicker{min-height:42px}#eh-pin.eh-ply .pident{flex:1 1 0;min-width:0}#eh-pin.eh-ply .ply-ctl.pb~*{flex:1 1 0;min-width:0;justify-content:flex-end}#eh-pin.eh-ply .ply-ctl.pb~.acts{min-width:max-content}#eh-pin.eh-ply .ply-ctl.pb{flex-shrink:100}#eh-pin.eh-ply .pident{min-width:min(140px,18%)}#eh-pin.eh-ply>.kicker:has(>.ply-ctl.pb:last-child)::after{content:"";flex:1 1 0}#eh-pin .ply-ctl.pb{max-width:min(1000px,52%);min-width:min(550px,52%)}@media(max-width:700px){#eh-pin .ply-ctl.pb{flex:0 1 auto;max-width:70%;min-width:0}#eh-pin.eh-ply>.kicker::after{display:none}}#eh-pin .ply-ctl.pb{align-self:stretch;margin-top:-6px;margin-bottom:-6px}html.eh-ply-pin body{padding-top:var(--eh-pin-h,0px)}@media(max-width:600px){#eh-pin.eh-ply>.kicker{flex-wrap:wrap;row-gap:0}#eh-pin.eh-ply .ply-ctl.pb{order:9;flex:1 1 100%;max-width:none;margin:0;justify-content:center}#eh-pin.eh-ply .ply-ctl.pb .ply-t{max-width:none}}
 @media(max-width:700px){#eh-pin .pkk{display:none}}
 .kicker .ab[data-ehsec]:hover,.kicker .srch>.ab:hover,.kicker .ab.eh-home:hover{background:var(--surface)!important;border-color:var(--accent)}
 .ib{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--soft)!important;cursor:pointer;display:grid;place-items:center;position:relative}
@@ -3250,6 +3250,7 @@ h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25
 .lab .cat{font-size:13px;font-weight:500;margin:0}
 button.tx.tx[data-playall]{display:inline-flex;align-items:center;gap:4px;color:var(--accent);margin-right:6px;padding-right:12px;border-right:1px solid var(--line);border-bottom:0}button.tx.tx[data-playall]>svg{width:14px;height:14px;flex:none}button.tx.tx[data-playall]:hover{color:var(--text)}button.tx.tx[data-playrec]{display:inline-flex;align-items:center;gap:4px}button.tx.tx[data-playrec]>svg{width:14px;height:14px;flex:none}button.tx{all:unset;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);padding:4px 2px;border-bottom:2px solid transparent}.tx>.txi{display:none}@media (max-width:700px){.tx:has(>.txi){display:inline-flex;align-items:center;justify-content:center;min-width:30px;min-height:30px}.tx>.txi{display:block}.tx:has(>.txi)>.txl{display:none}}
 button.tx:hover{color:var(--text)}
+button.tx[data-colplay] svg{width:14px;height:14px;vertical-align:middle}
 button.tx.plcfg{font-size:17px;line-height:1;margin-left:4px}
 button.tx[aria-pressed=true]{color:var(--text);border-bottom-color:var(--accent)}
 button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -4411,10 +4412,11 @@ S.fxCur = ''; // the effect preset being worked on: Save writes a change into it
 S.colW = {}; // the widths dragged in a table, by section; the title takes what they leave, and none means the table fits itself
 S.colPick = {}; // the tables' column choice, by section: { order, off }; none is the usual table
 S.pending = false; // MusicBrainz's grey mark on what has edits open; takes one more request per page
-VIEW.push('player', 'playerPlace', 'playerClick', 'playerRepeat', 'playerLb', 'playerScrobble', 'playerVideo', 'playerVol');
+VIEW.push('player', 'playerPlace', 'playerClick', 'playerRepeat', 'playerLb', 'playerScrobble', 'playerVideo', 'playerVol', 'playerMax');
 S.player = false; // the play buttons on a release's tracks, and the player they start
 S.playerPlace = 'bar'; // where the player shows: 'bar' at the bottom, 'chip' at the top right
 S.playerClick = 'replace'; // left click replaces the queue; right click appends, or the other way around
+S.playerMax = 1000; // maximum number of tracks loaded from a collection
 S.playerRepeat = 'off'; // off, all, or one; changed by right-clicking the play/pause button
 S.playerLb = true; // the player's links to the track and the release in ListenBrainz
 S.playerVol = 100; // the player's volume, 0 to 100; 0 is muted
@@ -8699,17 +8701,18 @@ function tabSect(sid, name, x, href, cv) {
     // and "column:value" keeps those whose column holds the value
     const q = (TQ[sid] || '').trim(), tqp = q && tqParse(q, x.head.map(tqKey));
     const shown = q ? rows.filter(r => !Array.isArray(r) || tqTest(tqp.tree, n => tqHit(n, n.c == null ? r.map(txt).join(' ') : txt(r[n.c])))) : rows;
-    const view = cv ? S.tabView || 'table' : 'table', yc = cols.find(i => /date|year/i.test(txt(x.head[i])));
+    const playable = sid === 'cp' && S.player && data && data.g && ['release', 'recording'].includes(data.g.ent), ent = playable && data.g.ent;
+    const view = cv && !playable ? S.tabView || 'table' : 'table', yc = cols.find(i => /date|year/i.test(txt(x.head[i])));
     const tlRe = cv && new RegExp('<a href="[^"]*/' + cv + '/(' + MBID.source + ')">([\\s\\S]*?)</a>', 'i');
     const tile = r => { const m = Array.isArray(r) && r.join(' ').match(tlRe); return m ? `<a href="${MB}/${cv}/${m[1]}"><img src="${esc(tabArt(cv, m[1]))}" alt="" loading="lazy" data-dgcover="${cv}" data-aid="${m[1]}" referrerpolicy="no-referrer"><span class="dt">${m[2]}</span><span class="dy">${yc != null ? esc(txt(r[yc]).slice(0, 4)) : ''}</span></a>` : ''; };
     const open = sid in TQ, tools = (open ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-tq="${sid}" value="${esc(TQ[sid])}" placeholder="Filter, or column:value" aria-label="Filter" autocomplete="off"></span>` : '')
         + `<span class="ed-views"><button type="button" data-tqopen="${sid}" aria-pressed="${open}" aria-label="Filter" data-tip="${open ? 'Hide the filter, clearing it' : 'Filter the rows'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`
         + (cv ? viewBs(['grid', 'row', 'table'], view, 'tabview', 'View') : '');
-    const tr = r => Array.isArray(r) ? `<tr>${cvTd(r)}${cols.map(i => `<td>${txt(r[i]) ? r[i] : '—'}</td>`).join('')}</tr>` : `<tr class="tsub"><td colspan="${span}">${esc(r.charAt(0).toUpperCase() + r.slice(1))}</td></tr>`;
+    const tr = r => { const m = playable && Array.isArray(r) && r.join(' ').match(new RegExp('/' + ent + '/(' + MBID.source + ')', 'i')); return Array.isArray(r) ? `<tr>${cvTd(r)}${cols.map((i, j) => `<td>${j === 0 && m ? `<button type="button" class="tx" data-colplay="${m[1]}" data-tip="${plyClickTip('Play this ' + ent)}" aria-label="Play this ${ent}">${SVG(PLY_I.play)}</button> ` : ''}${txt(r[i]) ? r[i] : '—'}</td>`).join('')}</tr>` : `<tr class="tsub"><td colspan="${span}">${esc(r.charAt(0).toUpperCase() + r.slice(1))}</td></tr>`; };
     const more = x.more ? lmFoot('tab:' + sid, n, x.total || 0) : '';
     const body = view === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr>${cv ? '<th></th>' : ''}${cols.map(hb).join('')}</tr></thead><tbody>${shown.map(tr).join('')}</tbody></table></div>`
         : `<div class="${view === 'row' ? 'ed-row disco' : 'disco'}">${shown.map(tile).join('')}</div>`;
-    return sect(sid, `${name} <span class="count">${cnt}</span>`, tools, (q ? `<div class="fbar"><span class="fn">${shown.filter(Array.isArray).length} of ${n}</span></div>` : '') + body + more, `<div class="folded-note">${cnt} ${name.toLowerCase()}</div>`);
+    return sect(sid, `${name} <span class="count">${cnt}</span>`, (playable ? `<button type="button" class="tx" data-colplay="all" data-tip="${plyClickTip('Play the collection')}" aria-label="Play the collection">${SVG(PLY_I.play)} Play</button>` : '') + tools, (q ? `<div class="fbar"><span class="fn">${shown.filter(Array.isArray).length} of ${n}</span></div>` : '') + body + more, `<div class="folded-note">${cnt} ${name.toLowerCase()}</div>`);
 }
 function insList(d, i) {
     const [sid, name, sub] = [['ia', 'Artists', 'artists'], ['ir', 'Releases', 'releases'], ['ic', 'Recordings', 'recordings']][i];
@@ -12568,6 +12571,44 @@ function plyAddRelease(r, key) {
     if (i < 0 || !q.length) { toast('Nothing to play this track from'); return; }
     plyAppend(key ? [{ ...q[i], oneTrack: true }] : q);
 }
+// Resolve collection entries in MusicBrainz order, stopping at the configured queue limit.
+let plyCollectionBusy = false;
+async function plyCollection(id, ent, only, append) {
+    if (plyCollectionBusy) { toast('A collection is already loading'); return; }
+    plyCollectionBusy = true;
+    toast('Loading collection into the player…');
+    const max = Math.max(1, Math.min(5000, +S.playerMax || 1000));
+    const room = Math.max(0, max - (append ? ply.q.length : 0)), ids = only ? [only] : [], q = [];
+    try {
+        if (!room) throw new Error('The playlist has reached its limit');
+        let page = 1, more = !only, read = 0;
+        while ((ids.length || more) && q.length < room) {
+            if (!ids.length) {
+                const x = await mbTab('collection', id, '', page++);
+                if (x.col && x.col.ent && x.col.ent !== ent) throw new Error('This collection has a different type');
+                const re = new RegExp('/' + ent + '/(' + MBID.source + ')', 'i');
+                for (const row of x.rows) { const m = Array.isArray(row) && row.join(' ').match(re); if (m) ids.push(m[1]); }
+                more = x.more;
+                if (!ids.length) continue;
+            }
+            const gid = ids.shift();
+            if (ent === 'recording') {
+                const g = recording(await wsk(`recording/${gid}?inc=artist-credits+url-rels`)), srcs = plySources({ links: g.links });
+                if (srcs.length) q.push({ key: '1-1', n: 1, title: g.title, rid: g.id, artist: acText(g.ac), len: g.len || 0, srcs, rel: '', relTitle: '', standalone: true });
+            } else {
+                const raw = await wsk(`release/${gid}?inc=artist-credits+recordings+url-rels+recording-level-rels+release-groups`);
+                q.push(...plyQueue(release(raw, raw['release-group'] || {}, [])).slice(0, room - q.length).map(t => ({ ...t, oneTrack: true })));
+            }
+            if (++read % 25 === 0) toast('Read ' + read + ' collection items · ' + q.length + ' playable tracks');
+        }
+        if (!q.length) throw new Error('No playable recordings found');
+        if (append) plyAppend(q);
+        else if (plyInWin() && !PLY_WINDOW) plyWindowStart(q, 0);
+        else { if (plyRemote) { plyControl('close'); plyRemote = false; } if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' }); ply.q = q; plyGo(0); }
+        toast('Loaded ' + q.length + ' recordings');
+    } catch (e) { LOG.warn('Player collection: ' + e.message); toast('Could not load collection: ' + e.message); }
+    finally { plyCollectionBusy = false; }
+}
 function plyGo(i, want) {
     if (plyRemote && !PLY_WINDOW) { plyControl('go', { i, want }); return; }
     const t = ply.q[i]; if (!t) return;
@@ -13115,6 +13156,59 @@ const plySrcItems = t => t.srcs.map(p => `<button type="button" class="it" role=
 function plySrcMenu(btn, t, pick) {
     if (t) plyMenu(btn, `<div class="hd">Play from</div>${plySrcItems(t)}`, v => v.k && pick(v.k));
 }
+// A collection is an unordered set on MusicBrainz: repeated recordings are saved once.
+async function plySaveCollection(name) {
+    const ids = [...new Set(ply.q.map(t => t.rid).filter(id => MBID.test(id)))];
+    if (!ME || !name.trim() || !ids.length) { toast('Sign in and provide a name and recordings'); return; }
+    let gid = '', added = 0;
+    try {
+        const url = `${MB}/collection/create?recording=${ids[0]}`, form = await mbnFetch(url, { credentials: 'include' });
+        if (!form.ok) throw new Error('MusicBrainz answered ' + form.status);
+        const f = colnewParse(await form.text()), type = f && (f.cur.type || (f.types.find(t => t.on) || {}).v);
+        if (!type) throw new Error('MusicBrainz did not provide a recording collection form');
+        const body = new URLSearchParams({ 'edit-list.name': name.trim(), 'edit-list.type_id': type, 'edit-list.description': '' });
+        const created = await mbnFetch(MB + '/collection/create', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
+        gid = (new URL(created.url || MB).pathname.match(new RegExp('^/collection/(' + MBID.source + ')/?$', 'i')) || [])[1];
+        if (!created.ok || !gid) throw new Error('MusicBrainz did not create the collection');
+        toast('Saving ' + ids.length + ' recordings to the collection…');
+        for (const id of ids) {
+            const page = await mbnFetch(`${MB}/recording/${id}`, { credentials: 'include' });
+            if (!page.ok) throw new Error('MusicBrainz answered ' + page.status);
+            const choices = collectionParse(new DOMParser().parseFromString(await page.text(), 'text/html'), 'recording/' + id);
+            const row = choices && choices.rows.find(v => v.id === gid);
+            if (!row) throw new Error('Could not find the new collection on recording ' + id);
+            if (row.on) { added++; continue; }
+            const u = new URL(row.path, MB); u.searchParams.set('returnto', '/recording/' + id);
+            const r = await mbnFetch(u.origin + u.pathname, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: u.searchParams });
+            if (!r.ok) throw new Error('MusicBrainz answered ' + r.status);
+            const x = collectionParse(new DOMParser().parseFromString(await r.text(), 'text/html'), 'recording/' + id);
+            if (!x || !x.rows.some(row => row.id === gid && row.on)) throw new Error('Could not verify recording ' + id);
+            added++;
+            if (added % 25 === 0) toast('Saved ' + added + ' of ' + ids.length + ' recordings…');
+        }
+        kpWrote(); COLLECTIONS.clear(); toast('Saved ' + added + ' recordings to the new collection');
+    } catch (e) { LOG.warn('Saving player collection: ' + e.message); toast('Collection save failed after ' + added + ' recordings' + (gid ? ' · ' + gid : '') + ': ' + e.message); }
+}
+function plySaveMenu(btn) {
+    let input;
+    plyMenu(btn, `<div class="hd">Save playlist to a new recording collection</div><div class="st">MusicBrainz collections do not keep order or duplicates.</div><input class="qf" aria-label="Collection name" placeholder="Collection name" maxlength="255"><button type="button" class="it" data-m="save">${SVG(MK_COL)}<span>Save collection</span></button>`, v => { if (v.m === 'save') plySaveCollection(input.value); });
+    input = document.querySelector('#eh-ply-menu input'); if (input) input.focus();
+}
+async function plyLoadMenu(btn) {
+    if (!ME) { toast('Sign in to load your collections'); return; }
+    try {
+        const r = await mbnFetch(`${MB}/user/${encodeURIComponent(ME)}/collections`, { credentials: 'include' });
+        if (!r.ok) throw new Error('MusicBrainz answered ' + r.status);
+        const rows = clItems(collsParse(await r.text()));
+        const html = rows.map((x, i) => `<button type="button" class="it" data-k="${i}">${SVG(MK_COL)}<span>${esc(x.name)} · ${esc(x.ty)}</span></button>`).join('');
+        plyMenu(btn, '<div class="hd">Load a collection</div>' + (html || '<div class="st">No collections</div>'), async v => {
+            const row = rows[+v.k], id = row && (row.href.match(new RegExp('/collection/(' + MBID.source + ')', 'i')) || [])[1];
+            if (!id) return;
+            try { const first = await mbTab('collection', id, ''), ent = first.col && first.col.ent; if (!['recording', 'release'].includes(ent)) throw new Error('Choose a recording or release collection'); plyCollection(id, ent, '', false); }
+            catch (e) { toast(e.message); }
+        });
+    } catch (e) { toast('Could not read collections: ' + e.message); }
+}
 // the player's menu: ListenBrainz (the track and the release there, the listen, the user's listens), the sources, the video and stop
 function plyLbMenu(btn) {
     const t = ply.q[ply.i]; if (!t) return;
@@ -13129,11 +13223,11 @@ function plyLbMenu(btn) {
         + (S.playerLb ? it(`https://listenbrainz.org/track/${t.rid}`, 'note', 'This track') + (t.rel ? it(`https://listenbrainz.org/release/${t.rel}`, 'rel', 'This release') : '') : '')
         + (st ? `<hr><div class="st">${st}</div>` : '')
         + (S.playerLb ? it('https://listenbrainz.org/my/listens/', 'ext', 'Your listens') : ''));
-    parts.push((ply.yt ? `<button type="button" class="it" role="menuitem" data-m="video">${SVG(PLY_I.video)}<span>${S.playerVideo ? 'Hide the video' : 'Show the video'}</span></button>` : '')
+    parts.push((ME ? `<button type="button" class="it" data-m="loadcoll">${SVG(MK_COL)}<span>Load collection…</span></button><button type="button" class="it" data-m="savecoll">${SVG(MK_COL)}<span>Save playlist as collection…</span></button>` : '') + (ply.yt ? `<button type="button" class="it" role="menuitem" data-m="video">${SVG(PLY_I.video)}<span>${S.playerVideo ? 'Hide the video' : 'Show the video'}</span></button>` : '')
         + (PLY_WINDOW || plyRemote ? `<button type="button" class="it" role="menuitem" data-m="tab">${SVG(PLY_I.back)}<span>${PLY_WINDOW ? 'Back to tab' : 'Back to this tab'}</span></button>`
             : PLY_BUS ? `<button type="button" class="it" role="menuitem" data-m="win">${SVG(PLY_I.win)}<span>Open in window</span></button>` : '')
         + `<button type="button" class="it" role="menuitem" data-m="x" style="color:var(--mbu-bad,#c2413b)">${SVG(PLY_I.x)}<span>Stop and close</span></button>`);
-    plyMenu(btn, parts.join('<hr>'), v => { if (v.k) plySrc(v.k); else if (v.m === 'video') plyVideo(); else if (v.m === 'win') plyToWindow(); else if (v.m === 'tab') { if (PLY_WINDOW) plyToTab(); else plyControl('to-tab', PLY_ID); } else if (v.m === 'x') plyClose(); });
+    plyMenu(btn, parts.join('<hr>'), v => { if (v.k) plySrc(v.k); else if (v.m === 'loadcoll') plyLoadMenu(btn); else if (v.m === 'savecoll') plySaveMenu(btn); else if (v.m === 'video') plyVideo(); else if (v.m === 'win') plyToWindow(); else if (v.m === 'tab') { if (PLY_WINDOW) plyToTab(); else plyControl('to-tab', PLY_ID); } else if (v.m === 'x') plyClose(); });
 }
 const PLY_CSS = `
 .ply-pa{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:30px;height:30px;padding:0;border:0;border-radius:7px;background:none;color:var(--muted,#777);cursor:pointer}
@@ -13405,6 +13499,8 @@ setInterval(() => {
 }, 1000);
 // The two mouse buttons do opposite queue actions, as selected in Player settings.
 document.addEventListener('contextmenu', ev => {
+    const cb = ehOn && ev.target.closest && ev.target.closest('button[data-colplay]');
+    if (cb && data && data.kind === 'collection') { ev.preventDefault(); plyCollection(data.id, data.g.ent, cb.dataset.colplay === 'all' ? '' : cb.dataset.colplay, S.playerClick !== 'append'); return; }
     const b = ehOn && ev.target.closest && ev.target.closest('button[data-play],button[data-playall],button[data-playrec]'); if (!b || !data) return;
     ev.preventDefault();
     const append = S.playerClick !== 'append';
@@ -13437,6 +13533,7 @@ function onClick(ev) {
     if (!b) return;
     const d = b.dataset;
     let keep;
+    if (d.colplay && data && data.kind === 'collection') { plyCollection(data.id, data.g.ent, d.colplay === 'all' ? '' : d.colplay, S.playerClick === 'append'); return; }
     if (d.play || d.playall) { if (S.playerClick === 'append') plyAddRelease(data.rel, d.play); else plyStart(data.rel, d.play); return; }
     if (d.playrec) { plyRec(data.g, null, S.playerClick === 'append'); return; }
     if ('srch' in d) { const fm = b.form; if (fm.classList.toggle('open')) fm.query.focus(); return; }
@@ -16202,6 +16299,7 @@ function cfgBody() {
         player: ckRow('player', 'Enable player', 'A play button on each track of a release that has it on a streaming site\nPlays the release from there, track after track')
             + row('Player place', [['bar', 'Bottom bar'], ['chip', 'Top bar']].map(([v, l]) => chip('playerPlace', v, S.playerPlace === v, l)).join(''), 'Where the player shows')
             + row('Left click', [['replace', 'Replace queue'], ['append', 'Add to queue']].map(([v, l]) => chip('playerClick', v, S.playerClick === v, l)).join(''), 'Right-click does the other action')
+            + row('Collection playlist limit', [100, 500, 1000, 5000].map(n => chip('playerMax', n, S.playerMax === n, String(n))).join(''), 'Maximum tracks loaded into the playlist from a collection')
             + ckRow('playerLb', 'Show ListenBrainz menu items', 'Links in the player to the track and the release in ListenBrainz')
             + `<div class="player-listens">${ckRow('playerScrobble', 'Send listens to ListenBrainz', 'What the player plays goes to your ListenBrainz listens\nNeeds your user token')}<span class="fx-combo"><input type="password" data-lbtok autocomplete="off" spellcheck="false" placeholder="LB token" aria-label="ListenBrainz token" value="${esc(lbToken())}"></span><a href="https://listenbrainz.org/settings" target="_blank" rel="noopener noreferrer" data-lb-get${lbToken() ? ' hidden' : ''}>Get token</a></div>`,
         menu: menuPane(),
@@ -16480,6 +16578,7 @@ function cfgWire(panel, b, body) {
             else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'arAuto' || g === 'menuTitles' || g === 'keysOn' || g === 'cfgFade' || g === 'player' || g === 'playerLb' || g === 'playerScrobble') S[g] = !S[g];
             else if (g === 'playerPlace') S.playerPlace = k;
             else if (g === 'playerClick') S.playerClick = k;
+            else if (g === 'playerMax') S.playerMax = +k;
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
             else if (g === 'bg') { S.bg = k; bgApply(); }

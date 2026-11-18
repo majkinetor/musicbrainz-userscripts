@@ -17,7 +17,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 - **[Collections](#collections)** adds or removes an entity from your MusicBrainz collections.
 - **[Recently opened](#recently-opened)** lists the pages you opened last on the homepage, with your choice of view, number and entity types.
 - **[Tracklist](#tracklist)**: each track's credits and its streaming links, with platforms deduplicated.
-- **[Player](#player)** plays a release in the page from its streaming links, and can send your listens to ListenBrainz.
+- **[Player](#player)** plays recordings, releases and collections from their streaming links, and can send your listens to ListenBrainz.
 - **[Releases and discography](#releases-and-discography)** as a grid or a table whose columns you choose, order and resize, grouped by type (a label's by release group), with a filter, and with filters and columns saved by name.
 - **[Edit search](#edit-search)**: every MusicBrainz condition in compact rows, filterable choices and named saved searches.
 - **[URL search](#url-search)** finds MusicBrainz's links by address and by what they link to.
@@ -131,6 +131,8 @@ Expanded track contains info about associated recording and works.
 ## Player
 
 The player is off until you turn on **Enable player** in the settings. Point at a track's number and click its play button to play that recording. **Play** in the tracklist's header plays the whole release. Right-click either button to add its recording or release to the queue; a recording's **Play** works the same way. **Left click** in Player settings swaps the two actions. Choose the streaming site from the player; the next tracks keep that choice when they have it.
+
+On a recording or release collection, **Play** queues the collection and a row's play button queues that recording or release. Player settings limit how many tracks a collection adds, to 1,000 by default. Loading a large collection can take time; recordings without a playable streaming link are skipped. In the player's source menu, **Load collection** replaces the playlist from one of your collections, and **Save playlist as collection** creates a new recording collection. MusicBrainz collections keep each recording once and do not preserve playlist order.
 
 The player plays from YouTube, YouTube Music, Spotify, Deezer, Apple Music, SoundCloud and Bandcamp, in the page, and goes on to the next track when one ends. Apple Music's player can't be started for you: click its play button, and the next track follows when the track's length has played. **Hide the video** is remembered. A track with no such link has no play button; with **Show ListenBrainz menu items** on, it gets a ListenBrainz icon instead.
 
@@ -256,6 +258,7 @@ Right-click the corner icon. Changes apply at once.
 | Player → Enable player                | off                                                       | the play buttons and the [player](#player)                                                  |
 | Player → Player place                 | Bottom bar                                                | **Bottom bar** or **Top bar**                                                               |
 | Player → Left click                   | Replace queue                                             | play buttons replace the queue or add to it; right-click does the other                     |
+| Player → Collection playlist limit    | 1000                                                      | maximum tracks loaded from a collection                                                     |
 | Player → Show ListenBrainz menu items | on                                                        | the player's links to ListenBrainz                                                          |
 | Player → Send listens to ListenBrainz | off                                                       | your listens, with the **ListenBrainz token** beside it                                     |
 | General → Pending changes             | off                                                       | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
