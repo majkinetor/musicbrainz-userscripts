@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.170000
+// @version      2026.11.19.180000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12572,12 +12572,38 @@ function plyAddRelease(r, key) {
     if (i < 0 || !q.length) { toast('Nothing to play this track from'); return; }
     plyAppend(key ? [{ ...q[i], oneTrack: true }] : q);
 }
-// Resolve collection entries in MusicBrainz order, stopping at the configured queue limit.
-let plyCollectionBusy = false;
+// Resolve collection entries in MusicBrainz order, stopping at the configured queue limit. The first playable
+// tracks start at once; the rest join the playlist in the background, a loader row at its end while they come
+let plyCollectionBusy = false, plyCollLoading = false;
+function plyLoaderRow() { return plyCollLoading ? '<div class="ply-loading" role="status"><span class="ply-spin"></span>Loading more from the collection…</div>' : ''; }
+// the open playlist gains the rows added since it opened, and loses its loader when the load ends
+function plyListGrow() {
+    const m = document.querySelector('#eh-ply-menu:has(.ply-list-head)'); if (!m) return;
+    const old = m.querySelector('.ply-loading'), have = m.querySelectorAll('.qi').length, at = old || null;
+    const tmp = document.createElement('div');
+    tmp.innerHTML = ply.q.slice(have).map((x, j) => `<button type="button" class="it qi" role="menuitem" data-k="q${have + j}"><span class="qn">${esc(plyNo(x, have + j))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span>${plyRowSrc(x, have + j)}<span class="ql">${x.len ? dur(x.len) : ''}</span></button>`).join('') + plyLoaderRow();
+    const parent = old ? old.parentNode : m.querySelector('.qi')?.parentNode; if (!parent) return;
+    for (const n of [...tmp.childNodes]) parent.insertBefore(n, at);
+    if (old) old.remove();
+}
 async function plyCollection(id, ent, only, append) {
     if (plyCollectionBusy) { toast('A collection is already loading'); return; }
     plyCollectionBusy = true;
     toast('Loading collection into the player…');
+    let started = false, sent = 0;
+    // the first batch starts the player (or joins the queue); later batches append quietly
+    const flush = () => {
+        if (sent >= q.length) return;
+        const part = q.slice(sent); sent = q.length;
+        if (!started) {
+            started = true;
+            if (append) plyAppend(part);
+            else if (plyInWin() && !PLY_WINDOW) plyWindowStart(part, 0);
+            else { if (plyRemote) { plyControl('close'); plyRemote = false; } if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' }); ply.q = part; plyGo(0); }
+        } else if (plyRemote && !PLY_WINDOW) plyControl('append', part);
+        else { ply.q.push(...part); plyKeep(); plySave(); plyDraw(); plyPublish(); }
+        plyListGrow();
+    };
     const max = Math.max(1, Math.min(5000, +S.playerMax || 1000));
     const room = Math.max(0, max - (append ? ply.q.length : 0)), ids = only ? [only] : [], q = [];
     try {
@@ -12600,15 +12626,14 @@ async function plyCollection(id, ent, only, append) {
                 const raw = await wsk(`release/${gid}?inc=artist-credits+recordings+url-rels+recording-level-rels+release-groups`);
                 q.push(...plyQueue(release(raw, raw['release-group'] || {}, [])).slice(0, room - q.length).map(t => ({ ...t, oneTrack: true })));
             }
-            if (++read % 25 === 0) toast('Read ' + read + ' collection items · ' + q.length + ' playable tracks');
+            ++read;
+            if (q.length - sent >= (started ? 10 : 1)) { plyCollLoading = !only; flush(); }
         }
         if (!q.length) throw new Error('No playable recordings found');
-        if (append) plyAppend(q);
-        else if (plyInWin() && !PLY_WINDOW) plyWindowStart(q, 0);
-        else { if (plyRemote) { plyControl('close'); plyRemote = false; } if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' }); ply.q = q; plyGo(0); }
+        plyCollLoading = false; flush(); plyListGrow();
         toast('Loaded ' + q.length + ' recordings');
-    } catch (e) { LOG.warn('Player collection: ' + e.message); toast('Could not load collection: ' + e.message); }
-    finally { plyCollectionBusy = false; }
+    } catch (e) { LOG.warn('Player collection: ' + e.message); toast((started ? 'Collection load stopped: ' : 'Could not load collection: ') + e.message); }
+    finally { plyCollectionBusy = false; if (plyCollLoading) { plyCollLoading = false; flush(); plyListGrow(); } }
 }
 function plyGo(i, want) {
     if (plyRemote && !PLY_WINDOW) { plyControl('go', { i, want }); return; }
@@ -13074,7 +13099,7 @@ function plyRows(menu) {
         const heading = group !== previous ? `<div class="ply-group">${esc(group === 'recordings' ? 'Recordings' : x.relTitle || 'Release')}</div>` : '';
         previous = group;
         return heading + `<button type="button" class="${menu ? 'it ' : ''}qi" role="${menu ? 'menuitem' : 'listitem'}" ${menu ? 'data-k="q' + i + '"' : 'data-i="' + i + '"'}${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x, i))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span>${plyRowSrc(x, i)}<span class="ql">${x.len ? dur(x.len) : ''}</span></button>`;
-    }).join('');
+    }).join('') + (menu ? plyLoaderRow() : '');
 }
 function plyListPaint() {
     const m = document.querySelector('#eh-ply-menu:has(.ply-list-head)'); if (!m) return;
@@ -13304,6 +13329,7 @@ html.eh-ply-win #eh-ply:not(.ply-novid) .ply-dock{position:static;order:1;flex:n
 html.eh-ply-win .ply-wl{order:2;flex:1;min-height:0;overflow:hidden auto;padding:4px;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
 .ply-wl .qi{display:flex;align-items:center;gap:9px;width:100%;box-sizing:border-box;padding:6px 9px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
 .ply-group{padding:8px 9px 4px;color:var(--muted,#777);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.ply-loading{display:flex;align-items:center;gap:8px;padding:9px 12px;color:var(--muted,#777);font-size:12px}.ply-spin{width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:ply-spin .8s linear infinite}@keyframes ply-spin{to{transform:rotate(360deg)}}
 .ply-wl .qi:hover,.ply-wl .qi:focus-visible{background:color-mix(in srgb,currentColor 10%,transparent);outline:0}
 .ply-wl .qi[aria-current]{background:color-mix(in srgb,var(--accent,#ba478f) 16%,transparent);font-weight:600}
 .ply-wl .qn{flex:none;min-width:2.2em;color:var(--muted,#777);font-variant-numeric:tabular-nums;text-align:right}
