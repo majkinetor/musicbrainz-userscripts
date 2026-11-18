@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.100402
+// @version      2026.11.19.100403
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13018,7 +13018,7 @@ function plyListPaint() {
     plyHeadLoad(ply.q[ply.i]);
 }
 function plyListMenu(btn) {
-    plyMenu(btn, '<div class="ply-list-head"></div><div class="hd"><span>Playlist</span>' + (ply.q.length > 1 ? '<input type="search" class="qf" placeholder="Filter" aria-label="Filter the playlist" autocomplete="off">' : '') + '</div>' + plyRows(true),
+    plyMenu(btn, '<div class="ply-list-head">' + plyRelHead(ply.q[ply.i]) + '</div><div class="hd"><span>Playlist</span>' + (ply.q.length > 1 ? '<input type="search" class="qf" placeholder="Filter" aria-label="Filter the playlist" autocomplete="off">' : '') + '</div>' + plyRows(true),
         ({ k }) => { const i = +String(k).slice(1); if (i >= 0 && i < ply.q.length && i !== ply.i) { LOG.info('player: picked from the playlist', i + 1); plyGo(i, ply.pref); } }, 'player');
     plyListPaint();
     document.querySelector('#eh-ply-menu [aria-current]')?.scrollIntoView({ block: 'nearest' });
@@ -13061,7 +13061,12 @@ function plyMenu(btn, html, pick, align) {
     if (player) { m.style.minWidth = '0'; m.style.width = Math.min(player.width, innerWidth) + 'px'; }
     const h = m.offsetHeight, w = m.offsetWidth;
     m.style.left = player ? Math.max(0, Math.min(player.left, innerWidth - w)) + 'px' : Math.max(8, Math.min(align === 'left' ? r.left : r.right - w, innerWidth - w - 8)) + 'px';
-    m.style.top = Math.max(8, r.bottom + h + 6 < innerHeight ? r.bottom + 4 : r.top - h - 4) + 'px';
+    if (player) {
+        const below = Math.max(0, innerHeight - player.bottom - 12), above = Math.max(0, player.top - 12);
+        const down = h <= below || below >= above;
+        m.style.maxHeight = Math.min(520, innerHeight * 0.6, down ? below : above) + 'px';
+        if (down) m.style.top = player.bottom + 4 + 'px'; else m.style.bottom = innerHeight - player.top + 4 + 'px';
+    } else m.style.top = Math.max(8, r.bottom + h + 6 < innerHeight ? r.bottom + 4 : r.top - h - 4) + 'px';
     const off = ev => { if (m.contains(ev.target) || ev.target.closest?.('#eh-ply-coll')) return; plyMenuShut = { k: ev.target.closest?.('[data-ply]')?.dataset.ply || '', t: Date.now() }; shut(); };
     // Escape closes the menu (the playlist's filter included) before anything else sees the key
     const key = ev => { if (ev.key !== 'Escape' || !m.isConnected || document.getElementById('eh-ply-coll')) return; ev.preventDefault(); ev.stopPropagation(); shut(); btn.focus({ preventScroll: true }); };
