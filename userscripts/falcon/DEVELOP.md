@@ -31,6 +31,8 @@ Entity names resolve through the shared MusicBrainz request gate: a few at a tim
 
 Every candidate is measured, and the largest wins, then the smallest file. A provider's advertised size is used only for a candidate that can't be fetched at all: Harmony's captions don't describe the linked image (Tidal advertised 3000×3000 for a 1280×1280 file, Spotify 2000×2000 for a 640×640 one). A store's URL is first maximised to the largest size the store serves (#719). The edit note names the source URL, its measured size, the candidates it was chosen over, and for a Harmony batch the page it came from, so a voter can judge the pick.
 
+The upload downloads the pick again. When that or the upload's signing fails, the pick is tried once more, then the other candidates, largest first (#1073). A fallback is a warning in the log, and the edit note says which image was the largest, why it failed, and that it isn't what was uploaded.
+
 As soon as a release item is queued, the Cover Art Archive is checked, and the row warns when the release already has art: unlike a link, a cover isn't idempotent.
 
 ## Series

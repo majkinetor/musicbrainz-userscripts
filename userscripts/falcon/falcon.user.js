@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.16
+// @version      2026.11.18.173034
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -6494,12 +6494,25 @@
     // #719: each URL goes through the maximizer, so a cover typed in or queued from a
     // JSON file is uploaded at its largest too; a candidate's own suggestion is the last
     // resort when its maximised URL stops answering.
-    const order = [entry.url, ...((entry.candidates || []).flatMap(c => [c.url, c.original]))]
-      .filter((u, i, arr) => u && arr.indexOf(u) === i);
-    let blob, mime, signed, lastErr = null;
-    for (const asked of order) {
+    // #1073: the picked image is downloaded a second time here, and one failed request
+    // (a 6 MB iTunes 3000×3000 timing out) used to drop to Harmony's first candidate, a
+    // 1400px Spotify, while the note still said "the largest". Now the pick gets a
+    // second try, the fallbacks go largest first, and a fallback is logged and noted.
+    const cands = entry.candidates || [];
+    const pickedUrl = entry.url;
+    const picked = cands.find(c => c.url === pickedUrl || c.original === pickedUrl) || null;
+    const area = c => (c.width || 0) * (c.height || 0);
+    const rest = cands.filter(c => c !== picked).sort((a, b) => area(b) - area(a));
+    const order = [pickedUrl, pickedUrl, ...(picked ? [picked.url, picked.original] : []), ...rest.flatMap(c => [c.url, c.original])]
+      .filter((u, i, arr) => u && (arr.indexOf(u) === i || (i === 1 && u === pickedUrl)));
+    let blob, mime, signed, lastErr = null, pickErr = null;
+    entry.fallback = null;
+    for (const [i, asked] of order.entries()) {
       try {
-        log('info', `${tag} release ${item.mbid} — fetching cover image${asked === entry.url ? '' : ' (fallback candidate)'}`);
+        const retry = i === 1 && asked === pickedUrl;
+        if (retry) log('warn', `${tag} release ${item.mbid} — the picked cover failed (${(lastErr && lastErr.message) || lastErr}), trying it once more`);
+        else if (asked !== pickedUrl) log('warn', `${tag} release ${item.mbid} — fetching a fallback cover: ${asked}`);
+        else log('info', `${tag} release ${item.mbid} — fetching cover image`);
         const got = await fetchLargestCover(asked);
         const url = got.url;
         blob = got.blob;
@@ -6514,14 +6527,19 @@
         const signRes = await mbnFetch(`${MB_ORIGIN}/ws/js/cover-art-upload/${item.mbid}?mime_type=${encodeURIComponent(mime)}`, { credentials: 'same-origin' });
         if (!signRes.ok) throw new Error('sign ' + signRes.status);
         signed = await signRes.json();   // {action, image_id, formdata, nonce}
-        if (asked !== entry.url) dbg(tag, `release ${item.mbid}: fell back to a working candidate (${asked})`);
-        const cand = (entry.candidates || []).find(c => c.url === asked || c.original === asked);
+        const cand = cands.find(c => c.url === asked || c.original === asked);
+        if (asked !== pickedUrl) {
+          // the pick's own unmaximised copy counts as a fallback too: the note must not claim its size
+          entry.fallback = { provider: picked ? picked.provider : '', width: picked && picked.width, height: picked && picked.height, reason: String((pickErr && pickErr.message) || pickErr || 'failed') };
+          log('warn', `${tag} release ${item.mbid} — uploading the fallback ${(cand && cand.provider) || asked} instead of the picked ${entry.fallback.provider || pickedUrl} (${entry.fallback.reason})`);
+        }
         entry.original = got.original || (cand && cand.original) || '';
         entry.url = url;
         break;
       } catch (e) {
         lastErr = e;
-        dbg(tag, `release ${item.mbid}: candidate ${asked} failed — ${e.message || e}`);
+        if (asked === pickedUrl) pickErr = e;
+        log('warn', `${tag} release ${item.mbid} — cover ${asked} failed: ${e.message || e}`);
       }
     }
     if (!signed) throw lastErr || new Error('no cover candidate could be fetched/signed');
@@ -6909,7 +6927,10 @@
     const from = entry.original || (chosen && chosen.original);
     if (from && from !== entry.url) lines.push(`Maximised from: ${from}`);   // #719 what was suggested
     const others = cands.filter(c => c.url !== entry.url).map(c => `${c.provider}${dims(c) ? ` ${dims(c)}` : ''}`);
-    if (others.length) lines.push(`Chosen as the largest of ${cands.length} candidates — also offered: ${others.join(', ')}`);
+    // #1073: "the largest" only when the largest is what was uploaded
+    const fb = entry.fallback;
+    if (fb) lines.push(`Fallback: ${fb.provider || 'the picked image'}${dims(fb) ? ` ${dims(fb)}` : ''} was the largest but could not be fetched (${fb.reason}), so the next working candidate was used`);
+    if (others.length) lines.push(`${fb ? `Candidates (${cands.length})` : `Chosen as the largest of ${cands.length} candidates`} — also offered: ${others.join(', ')}`);
     if (entry.comment) lines.push(`Image comment: ${entry.comment}`);
     lines.push('–');
     lines.push(FALCON_SIGNATURE());
