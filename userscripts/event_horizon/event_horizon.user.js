@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.100100
+// @version      2026.11.19.100200
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4862,7 +4862,7 @@ const SVG = d => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" st
 const SRCH_K = { artist: 'a', work: 'w', release: 'r', series: 's', place: 'p', release_group: 'g', editor: 'e', doc: 'd', tag: 't', instrument: 'i', recording: 'c', annotation: 'n' };
 const SRCH_T = ['artist', 'event', 'recording', 'release', 'release_group', 'series', 'work', 'area', 'instrument', 'label', 'place', 'annotation', 'tag', 'cdstub', 'editor', 'doc'];
 const LENS = '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>';
-const SRCH = () => `<form class="srch" action="${MB}/search" method="get"><span class="sf">${SVG(LENS)}<input name="query" placeholder="Search" required><select name="type" hidden>${SRCH_T.map(t => `<option value="${t}">${srchName(t)}</option>`).join('')}</select><button type="button" class="hm-ty" aria-haspopup="listbox" aria-expanded="false" aria-label="Entity type"><span>Artist</span></button><div class="hm-td" role="listbox" aria-label="Entity type" hidden>${SRCH_T.map(t => `<button type="button" role="option" data-v="${t}" aria-selected="${t === 'artist'}"><span>${srchName(t)}</span>${SRCH_K[t] ? `<kbd>${SRCH_K[t]}</kbd>` : ''}</button>`).join('')}</div><input type="hidden" name="method" value="indexed"><button class="x" type="button" data-srch aria-label="Close search">${SVG('<path d="M6 6l12 12M18 6 6 18"/>')}</button></span><button class="ab" type="button" data-srch data-tip="Search MusicBrainz" aria-label="Search MusicBrainz">${SVG(LENS)}</button></form>${ME ? `<a class="ab eh-home" href="${MB}/" data-tip="Event Horizon's home page" aria-label="Home">${LOGO}</a>` : `<a class="ab eh-home eh-out" href="${MB}/login?returnto=${encodeURIComponent(location.pathname + location.search)}" data-tip="Logged out&#10;Click to log in" aria-label="Log in">${LOGO}</a>`}`;
+const SRCH = () => `<form class="srch" action="${MB}/search" method="get"><span class="sf">${SVG(LENS)}<input name="query" placeholder="Search" required><select name="type" hidden>${SRCH_T.map(t => `<option value="${t}">${srchName(t)}</option>`).join('')}</select><button type="button" class="hm-ty" aria-haspopup="listbox" aria-expanded="false" aria-label="Entity type"><span>Artist</span></button><div class="hm-td" role="listbox" aria-label="Entity type" hidden>${SRCH_T.map(t => `<button type="button" role="option" data-v="${t}" aria-selected="${t === 'artist'}"><span>${srchName(t)}</span>${SRCH_K[t] ? `<kbd>${SRCH_K[t]}</kbd>` : ''}</button>`).join('')}</div><input type="hidden" name="method" value="indexed"><button class="x" type="button" data-srch aria-label="Close search">${SVG('<path d="M6 6l12 12M18 6 6 18"/>')}</button></span><button class="ab" type="button" data-srch data-tip="Search MusicBrainz" aria-label="Search MusicBrainz">${SVG(LENS)}</button></form>${ME ? `<a class="ab eh-home" href="${MB}/" data-tip="Event Horizon's home page&#10;Right-click: Your profile" aria-label="Home">${LOGO}</a>` : `<a class="ab eh-home eh-out" href="${MB}/login?returnto=${encodeURIComponent(location.pathname + location.search)}" data-tip="Logged out&#10;Click to log in" aria-label="Log in">${LOGO}</a>`}`;
 const DISC_IC = '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M16.5 7.5a6 6 0 0 1 1.5 3"/>';
 const ACTS = [
     ['edit', 'Edit', 'Edit release', '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'],
@@ -15470,6 +15470,10 @@ function build() {
     // right-click on a section's chevron: fold every section, or open them all when that one is folded
     document.addEventListener('contextmenu', ev => {
         if (!ehOn || ev.defaultPrevented || !ev.target.closest) return;
+        if (ME && ev.target.closest('.eh-home:not(.eh-out)')) {
+            const href = MB + '/user/' + encodeURIComponent(ME), key = navTo(href);
+            if (key) { ev.preventDefault(); ehPush(href); show(key); return; }
+        }
         // a text field keeps the browser's own menu (spell check, paste), never a fold (#967)
         if (ev.target.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"])')) return;
         const edit = ev.target.closest('button[data-aliases],button[data-tgin="open"]');
