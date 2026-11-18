@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.100408
+// @version      2026.11.19.100409
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3251,7 +3251,7 @@ h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25
 button.tx.tx[data-playall]{display:inline-flex;align-items:center;gap:4px;color:var(--accent);margin-right:6px;padding-right:12px;border-right:1px solid var(--line);border-bottom:0}button.tx.tx[data-playall]>svg{width:14px;height:14px;flex:none}button.tx.tx[data-playall]:hover{color:var(--text)}button.tx.tx[data-playrec]{display:inline-flex;align-items:center;gap:4px}button.tx.tx[data-playrec]>svg{width:14px;height:14px;flex:none}button.tx{all:unset;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);padding:4px 2px;border-bottom:2px solid transparent}.tx>.txi{display:none}@media (max-width:700px){.tx:has(>.txi){display:inline-flex;align-items:center;justify-content:center;min-width:30px;min-height:30px}.tx>.txi{display:block}.tx:has(>.txi)>.txl{display:none}}
 button.tx:hover{color:var(--text)}
 button.tx[data-colplay] svg{width:14px;height:14px;vertical-align:middle}
-.ed-t tbody [data-colplay]{opacity:0;pointer-events:none}.ed-t tbody tr:hover [data-colplay],.ed-t tbody [data-colplay]:focus-visible{opacity:1;pointer-events:auto}
+.ed-t tbody [data-colplay]{clip-path:inset(50%);pointer-events:none}.ed-t tbody tr:hover [data-colplay],.ed-t tbody [data-colplay]:focus-visible{clip-path:none;pointer-events:auto}
 button.tx.plcfg{font-size:17px;line-height:1;margin-left:4px}
 button.tx[aria-pressed=true]{color:var(--text);border-bottom-color:var(--accent)}
 button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -12940,7 +12940,7 @@ function plyClick(ev) {
     else if (k === 'list') plyListMenu(b);
 }
 // a track's number, with its disc's when the release has more than one
-const plyNo = t => ply.q.some(x => !String(x.key).startsWith('1-')) ? t.key : String(t.n);
+const plyNo = (t, i = ply.q.indexOf(t)) => String(i + 1);
 // the queue: a click plays that track
 // a row's platform: the one playing for the current track, the one a click would play from for the rest
 const plyRowSrc = (x, i) => { const p = x.srcs && x.srcs.length ? (i === ply.i && x.srcs.find(q => q.key === ply.src)) || plyPick(x, ply.pref) : null; return p ? `<span class="qp" data-tip="${esc(p.name)}">${icon(p, 16)}</span>` : ''; };
@@ -13073,7 +13073,7 @@ function plyRows(menu) {
         const group = x.standalone || !('relAc' in x) ? 'recordings' : 'release:' + x.rel + ':' + (x.batch || '');
         const heading = group !== previous ? `<div class="ply-group">${esc(group === 'recordings' ? 'Recordings' : x.relTitle || 'Release')}</div>` : '';
         previous = group;
-        return heading + `<button type="button" class="${menu ? 'it ' : ''}qi" role="${menu ? 'menuitem' : 'listitem'}" ${menu ? 'data-k="q' + i + '"' : 'data-i="' + i + '"'}${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span>${plyRowSrc(x, i)}<span class="ql">${x.len ? dur(x.len) : ''}</span></button>`;
+        return heading + `<button type="button" class="${menu ? 'it ' : ''}qi" role="${menu ? 'menuitem' : 'listitem'}" ${menu ? 'data-k="q' + i + '"' : 'data-i="' + i + '"'}${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x, i))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span>${plyRowSrc(x, i)}<span class="ql">${x.len ? dur(x.len) : ''}</span></button>`;
     }).join('');
 }
 function plyListPaint() {

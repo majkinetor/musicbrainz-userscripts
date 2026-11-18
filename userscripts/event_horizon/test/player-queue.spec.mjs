@@ -16,7 +16,9 @@ test('queues releases and recordings and restores the last queue', { tag: '@sand
   expect(state.q.map(t => t.title)).toEqual(['First1', 'First2', 'Second2', 'Single']);
   await page.locator('.ply-ctl [data-ply="list"]').click();
   await expect(page.locator('#eh-ply-menu .ply-group')).toHaveText(['First', 'Second', 'Recordings']);
+  await expect(page.locator('#eh-ply-menu .qi .qn')).toHaveText(['1', '2', '3', '4']);
   await page.locator('#eh-ply-menu .qi[data-k="q2"]').click();
+  await expect(page.locator('.ply-ctl .ply-n').first()).toHaveText('3');
   await expect(page.locator('#eh-ply-menu')).toBeVisible();
   await expect(page.locator('#eh-ply-menu .qi[aria-current]')).toContainText('Second2');
   await expect(page.locator('#eh-ply-menu .ply-rh')).toContainText('Second');
