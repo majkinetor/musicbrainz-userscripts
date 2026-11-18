@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-18 00:22 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-18 10:50 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -935,7 +935,7 @@ Select the star in an entity's header to keep it on the homepage; select it agai
 
 ### Collections
 
-Click the entity-type label above its title to open **Collections**. The menu shows your own and collaborative collections for that type, including private collections. Select an entry to add or remove the entity in the background. **My collections** opens your collections page. **Add to a new collection** opens MusicBrainz's collection form with the entity selected.
+Click the entity-type label above its title to open **Collections**. The menu shows your own and collaborative collections for that type, including private collections. Select an entry to add or remove the entity in the background. **My collections** opens your collections page. **Add to a new collection** opens the new collection form inside Event Horizon, with the entity going into it. **Add collection** saves it without reloading the tab, so the player keeps playing, and opens the new collection. Collaborators are added later, from the collection's **Edit**.
 
 The list is kept for your next visit. **Refresh collections** checks for changes made elsewhere. You must be signed in to MusicBrainz.
 
