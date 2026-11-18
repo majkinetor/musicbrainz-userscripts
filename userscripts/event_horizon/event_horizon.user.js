@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.100407
+// @version      2026.11.18.215530
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12981,16 +12981,19 @@ function plyCollDraw(m) {
     const key = m.dataset.key, type = m.dataset.type, x = COLLECTIONS.get(key) || {}, d = plyCollDef(type), what = type === 'rel' ? 'release' : 'recording';
     const off = x.busy || x.loading ? ' disabled' : '', rows = (x.rows || []).filter(r => r.id), create = (x.rows || []).find(r => !r.id);
     let group = '';
-    m.innerHTML = `<div class="hd">${type === 'rel' ? 'Release' : 'Recording'} collections</div>` + rows.map(r => {
-        const h = rows.length && r.group !== rows[0].group && r.group !== group ? `<div class="hd">${esc(r.group)}</div>` : ''; group = r.group;
-        const def = d && d.id === r.id;
-        return h + `<div class="cr"><button type="button" class="it" role="menuitemcheckbox" data-cc="${esc(r.id)}" aria-checked="${r.on}"${off} data-tip="${esc((r.on ? 'Remove this ' : 'Add this ') + what + (r.on ? ' from ' : ' to ') + '"' + r.label + '"')}">${SVG(r.on ? '<path d="m5 12 4 4L19 6"/>' : '<path d="M12 5v14M5 12h14"/>')}<span>${esc(r.label)}</span></button><button type="button" class="ply-pa dft${def ? ' on' : ''}" data-cd="${esc(r.id)}" aria-pressed="${def}" data-tip="${esc(def ? 'The default: a click on Collect ' + what + ' uses it\nClick: clear the default' : 'Make this the default for a click on Collect ' + what)}">${SVG(def ? '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/>' : '<circle cx="12" cy="12" r="8"/>')}</button></div>`;
+    const names = collectionNames(x.rows || []);
+    // headed like the release page's collections menu: the first group is the user's own and links to their collections
+    m.innerHTML = (rows.length ? '' : `<div class="hd">${type === 'rel' ? 'Release' : 'Recording'} collections</div>`) + rows.map(r => {
+        const own = r.group === rows[0].group && ME;
+        const h = r.group !== group ? `<div class="hd">${own ? `<a class="coll-me" href="${MB}/user/${encodeURIComponent(ME)}/collections" target="_blank" rel="noopener" data-tip="Your collections">${SVG(MK_COL)}${esc(r.group)}</a>` : esc(r.group)}</div>` : ''; group = r.group;
+        const def = d && d.id === r.id, nm = names.get(r.label) || r.label;
+        return h + `<div class="cr"><button type="button" class="it" role="menuitemcheckbox" data-cc="${esc(r.id)}" aria-checked="${r.on}"${off} data-tip="${esc((r.on ? 'Remove this ' : 'Add this ') + what + (r.on ? ' from ' : ' to ') + '"' + nm + '"')}">${SVG(r.on ? '<path d="m5 12 4 4L19 6"/>' : '<path d="M12 5v14M5 12h14"/>')}<span>${esc(nm)}</span></button><button type="button" class="ply-pa dft${def ? ' on' : ''}" data-cd="${esc(r.id)}" aria-pressed="${def}" data-tip="${esc(def ? 'The default: a click on Collect ' + what + ' uses it\nClick: clear the default' : 'Make this the default for a click on Collect ' + what)}">${SVG(def ? '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/>' : '<circle cx="12" cy="12" r="8"/>')}</button></div>`;
     }).join('')
         + (!x.rows ? `<div class="st">${x.error ? esc(x.error) : 'Reading your collections…'}</div>` : !rows.length ? `<div class="st">You have no ${what} collections</div>` : '')
         + (x.rows && x.error ? `<div class="st" role="alert">${esc(x.error)}</div>` : '')
         + (rows.length && !d ? `<div class="st">Pick a default with ◯ and a click on the button collects into it</div>` : '')
-        + '<hr>' + (create ? `<a class="it" role="menuitem" href="${esc(MB + create.path)}" target="_blank" rel="noopener">${SVG('<path d="M12 5v14M5 12h14"/>')}<span>New collection…</span></a>` : '')
-        + `<button type="button" class="it" role="menuitem" data-cr="1"${off}>${SVG('<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/>')}<span>Refresh</span></button>`;
+        + '<hr>' + (create ? `<a class="it ft" role="menuitem" href="${esc(MB + create.path)}" target="_blank" rel="noopener">${SVG('<path d="M12 5v14M5 12h14"/>')}<span>New collection…</span></a>` : '')
+        + `<button type="button" class="it ft" role="menuitem" data-cr="1"${off}>${SVG('<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/>')}<span>Refresh</span></button>`;
     const r = m._btn && m._btn.isConnected ? m._btn.getBoundingClientRect() : null, h = m.offsetHeight, w = m.offsetWidth;
     if (!r) return;
     m.style.left = Math.max(8, Math.min(r.right - w, innerWidth - w - 8)) + 'px';
@@ -13130,6 +13133,11 @@ const PLY_CSS = `
 #eh-ply-coll{z-index:9997;width:min(300px,calc(100vw - 16px))}
 #eh-ply-coll .st{max-width:100%}
 .ply-menu .it[disabled]{opacity:.5;cursor:default}
+.ply-menu .it[aria-checked=true]{color:var(--accent,#ba478f)}
+.ply-menu .it[aria-checked=false] svg,.ply-menu .it.ft{color:var(--muted,#777)}
+.ply-menu .hd a.coll-me{display:inline-flex;align-items:center;gap:6px;color:inherit;text-decoration:none}
+.ply-menu .hd a.coll-me:hover{color:var(--accent,#ba478f);text-decoration:underline}
+.ply-menu .hd a.coll-me svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2}
 #eh-ply{position:fixed;z-index:9995;font:14px/1.3 system-ui,sans-serif;color:var(--text,#222)}
 .ply-ctl{text-transform:none;letter-spacing:normal;font-weight:normal;min-width:0}
 .ply-ctl .ply-g{display:inline-flex;align-items:center;gap:2px;flex:none}
