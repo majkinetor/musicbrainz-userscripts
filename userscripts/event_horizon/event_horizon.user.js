@@ -15680,6 +15680,9 @@ document.addEventListener('mbu-refresh-release', ev => {
 // what MusicBrainz changed since it was kept: no skeleton, drawn once whole, and the page stays where it was on a failure
 async function show(key, o = {}) {
     esPark();
+    // a new page in the tab starts at its top: a shown pinned bar goes at once instead of sliding out over it
+    const pb = document.getElementById('eh-pin');
+    if (pb && pb.classList.contains('on') && !pb.classList.contains('eh-ply')) { pb.style.transition = 'none'; pb.classList.remove('on'); pb.getBoundingClientRect(); requestAnimationFrame(() => requestAnimationFrame(() => { pb.style.transition = ''; })); }
     const app = $('#app'), n = ++showing;
     ehCheckDone();
     const kind = key && key.split('/')[0], isRg = kind === 'release-group', isAr = kind === 'artist', isLb = kind === 'label', id = key && key.split('/')[1];
