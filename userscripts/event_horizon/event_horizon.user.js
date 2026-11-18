@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.180201
+// @version      2026.11.18.180202
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8517,6 +8517,10 @@ function tblParse(t, rated) {
             const ae = e.querySelector('a[href*="/rating/rate"]'), a = rated && ae && /entity_type=(\w+)&(?:amp;)?entity_id=(\d+)/.exec(ae.getAttribute('href') || '');
             if (rated) e.replaceWith(Object.assign(document.createElement('eh-r'), { textContent: [w ? +w[1] / 20 : '', u ? Math.round(+u[1] / 20) : '', a ? a[1] : '', a ? a[2] : ''].join('|') })); else e.remove();
         }
+        for (const e of td.querySelectorAll('.release-country')) {
+            if (/^[-–—]$/.test(e.textContent.trim())) e.remove();
+            else if (e.nextElementSibling && e.nextElementSibling.classList.contains('release-date')) e.after(document.createTextNode(' '));
+        }
         for (const e of td.querySelectorAll('input, script, .artwork-icon, a[href$="/cover-art"]')) e.remove();
         for (const e of td.querySelectorAll('*')) for (const at of [...e.attributes]) if (at.name !== 'href') e.removeAttribute(at.name);
         return td.innerHTML.trim().replace(/<eh-r>([\d.]*)\|(\d*)\|(\w*)\|(\d*)<\/eh-r>/g, (_, v, u, t, id) => rateStars(t, id, { value: v ? +v : null, 'votes-count': null }, true, u ? +u : t ? 0 : null));
@@ -8929,6 +8933,35 @@ function collsHtml(d) {
     return hero + c.secs.map((s, i) => s.note ? sect('cl' + i, esc(s.grp), '', `<p class="hm-none">${esc(s.note)}</p>`, '')
         : tabSect('cl' + i, esc(s.gi > 0 ? `${s.grp} · ${s.name}` : s.name), s.x, '')).join('');
 }
+// Confirm in the listing and send the same empty form as MusicBrainz's remove page.
+document.addEventListener('click', async ev => {
+    if (!ehOn || !data || data.kind !== 'colls') return;
+    const cancel = ev.target.closest && ev.target.closest('#app [data-colcancel]');
+    if (cancel) { const a = cancel.previousElementSibling; if (a) { delete a.dataset.confirm; a.textContent = 'Remove'; a.removeAttribute('aria-label'); } cancel.remove(); return; }
+    const a = ev.target.closest && ev.target.closest('#app a[href]');
+    if (!a) return;
+    const u = new URL(a.href, location.href), m = u.origin === location.origin && u.pathname.match(/^\/collection\/([0-9a-f-]{36})\/own_collection\/delete\/?$/i);
+    if (!m) return;
+    ev.preventDefault(); ev.stopImmediatePropagation();
+    if (a.dataset.busy) return;
+    const row = a.closest('tr'), name = row && row.querySelector('a[href*="/collection/"]');
+    if (!a.dataset.confirm) {
+        a.dataset.confirm = '1';
+        a.textContent = 'Confirm removal';
+        a.setAttribute('aria-label', 'Confirm removal of ' + (name ? name.textContent.trim() : 'collection'));
+        const cancel = document.createElement('button'); cancel.type = 'button'; cancel.dataset.colcancel = '1'; cancel.textContent = 'Cancel'; a.after(cancel);
+        return;
+    }
+    a.dataset.busy = '1'; a.textContent = 'Removing…'; if (a.nextElementSibling && a.nextElementSibling.hasAttribute('data-colcancel')) a.nextElementSibling.remove();
+    const d = data;
+    try {
+        const r = await mbnFetch(u.href, { method: 'POST', credentials: 'include', body: new URLSearchParams() });
+        if (!r.ok || !/\/user\/[^/]+\/collections\/?$/.test(new URL(r.url || MB).pathname)) throw new Error('MusicBrainz did not confirm removal');
+        for (const s of d.c.secs) if (s.x) s.x.rows = s.x.rows.filter(r => !Array.isArray(r) || !r.some(c => c.includes('/collection/' + m[1] + '/own_collection/delete')));
+        COLLECTIONS.clear(); try { GM_setValue('collections', {}); } catch (e) {}
+        kpWrote(); toast('Collection removed'); if (data === d) render();
+    } catch (e) { a.dataset.busy = ''; a.dataset.confirm = ''; a.textContent = 'Remove'; toast('Could not remove collection: ' + e.message); }
+}, true);
 /* ── a new collection ─────────────────────────────── */
 // /collection/create[?<type>=<id>]: MusicBrainz's form, read for its words and its types (which follow the entity it starts with),
 // drawn flat in EH and sent in the background, so the tab never reloads and the player plays on; collaborators are added later, on Edit

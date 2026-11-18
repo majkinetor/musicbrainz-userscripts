@@ -111,6 +111,8 @@ Click the entity-type label above its title to open **Collections**. The menu sh
 
 The list is kept for your next visit. **Refresh collections** checks for changes made elsewhere. You must be signed in to MusicBrainz.
 
+On your collections page, **Remove** asks for confirmation in the list and removes the collection without reloading the tab. **Cancel** leaves it in place.
+
 ## Recently opened
 
 The homepage lists the pages you opened last, as a list by default. The buttons in the section's header offer the same views as starred entities, and its table shows when you last opened each entry. The settings button beside them chooses how many entries to keep and which entity types to keep; a type you turn off stops being recorded and its entries leave the section. Your choices travel with your userscript manager's settings.
