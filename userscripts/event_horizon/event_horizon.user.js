@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.235900
+// @version      2026.11.18.235901
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -23,6 +23,7 @@
 // @match        https://*.musicbrainz.org/account/edit
 // @match        https://*.musicbrainz.org/account/preferences
 // @match        https://*.musicbrainz.org/account/donation
+// @match        https://*.musicbrainz.org/account/applications
 // @match        https://*.musicbrainz.org/tag/*
 // @match        https://*.musicbrainz.org/search*
 // @match        https://*.musicbrainz.org/edit/*
@@ -13680,11 +13681,11 @@ const histName = id => { const s = histSrc(id), pa = s.split('?')[0]; return his
 const histRid = id => histOne(id) ? (data && data.kind === 'hist' && data.id === id && data.rid) || '' : (histSrc(id).match(new RegExp('^/release/(' + MBID.source + ')/', 'i')) || [])[1];
 // a release group's Set cover art, or an entity's Edit annotation → "form/<type>/<mbid>/<form>". Dressed as the
 // relationship editor is: MusicBrainz's form stays, so what other scripts mount on it (Apollo's annotation editor) keeps working
-const FORMS = { releases: 'Releases', details: 'Details', 'set-cover-art': 'Set cover art', edit_annotation: 'Annotation', edit: 'Edit profile', preferences: 'Preferences', donation: 'Donation check', subscriptions: 'Subscriptions', subscribers: 'Subscribers' };
+const FORMS = { releases: 'Releases', details: 'Details', 'set-cover-art': 'Set cover art', edit_annotation: 'Annotation', edit: 'Edit profile', preferences: 'Preferences', donation: 'Donation check', applications: 'Applications', subscriptions: 'Subscriptions', subscribers: 'Subscribers' };
 // an editor's subscriptions and subscribers, and your own profile and preferences (/account/…) → "form/user/<name, or - for yours>/<form>"
 const formKey = href => {
     const u = new URL(href, location.href);
-    const us = u.origin === location.origin && (u.pathname.match(/^\/user\/([^/]+)\/(subscriptions|subscribers)(?:\/[a-z_-]+)?\/?$/) || u.pathname.match(/^\/account\/(edit|preferences|donation)\/?$/));
+    const us = u.origin === location.origin && (u.pathname.match(/^\/user\/([^/]+)\/(subscriptions|subscribers)(?:\/[a-z_-]+)?\/?$/) || u.pathname.match(/^\/account\/(edit|preferences|donation|applications)\/?$/));
     if (us) return us[2] ? `form/user/${us[1]}/${us[2]}` : `form/user/-/${us[1]}`;
     // attaching, moving or removing a disc ID → "form/cdtoc/-/<step>": MusicBrainz's form, under the release's header
     const ct = u.origin === location.origin && u.pathname.match(/^\/cdtoc\/(attach|move|remove)\/?$/);
@@ -14323,8 +14324,10 @@ function userFormHeader(id, form) {
     const name = id === '-' ? ME || (h1 ? h1.textContent.trim() : '') : decodeURIComponent(id), tx = n => n.textContent.replace(/\s+/g, ' ').trim();
     const ul = c && c.querySelector('ul.tabs'), tabs = ul ? [...ul.querySelectorAll('a[href]')].map(a => [tx(a), a.getAttribute('href'), !!a.closest('li.sel')]) : [];
     const img = h1 && h1.querySelector('img.avatar:not(.no-avatar)'), av = img ? (img.getAttribute('src') || '').replace(/^\/\//, 'https://') : '';
-    // your account's pages carry only the public tabs: its own (Edit profile, Preferences, Donation check) join them, the open one lit
-    if (id === '-' && name && !tabs.some(t => /^(https?:\/\/[^/]+)?\/account\//.test(t[1]))) tabs.push(...['edit', 'preferences', 'donation'].map(f => [FORMS[f], '/account/' + f, f === form]));
+    // Add account tabs absent from MusicBrainz's page, marking the open one.
+    if (id === '-' && name) for (const f of ['edit', 'preferences', 'donation', 'applications']) {
+        if (!tabs.some(t => { try { return new URL(t[1], location.href).pathname.replace(/\/$/, '') === '/account/' + f; } catch (_) { return false; } })) tabs.push([FORMS[f], '/account/' + f, f === form]);
+    }
     [ul, h1 && (h1.closest('#content > *, #page > *') || h1)].forEach(x => x && x.classList.add('eh-mbhd'));
     hd.innerHTML = userAv(name, av)
         + `<div class="rhtx"><div class="kicker label u-k"><span class="acts"><a class="ab ov" href="${MB}/user/${encodeURIComponent(name)}" data-tip="Profile" aria-label="Profile">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>${SRCH()}</span></div>`

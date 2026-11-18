@@ -15,7 +15,7 @@ test('an editor\'s profile shows its hero and statistics', { tag: '@sandbox' }, 
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT, fullPage: true });
 });
 
-for (const [path, form] of [['/account/edit', 'Edit profile'], ['/account/preferences', 'Preferences'], ['/account/donation', 'Donation check'], ['/user/majkinetor/subscriptions/artist', 'Subscriptions'], ['/user/majkinetor/subscribers', 'Subscribers']]) {
+for (const [path, form] of [['/account/edit', 'Edit profile'], ['/account/preferences', 'Preferences'], ['/account/donation', 'Donation check'], ['/account/applications', 'Applications'], ['/user/majkinetor/subscriptions/artist', 'Subscriptions'], ['/user/majkinetor/subscribers', 'Subscribers']]) {
   test(`an editor's ${form.toLowerCase()} page keeps MusicBrainz's page under the editor's header`, { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
     await page.goto('https://test.musicbrainz.org' + path);
     await inject('event_horizon');
