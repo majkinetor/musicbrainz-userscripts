@@ -13,7 +13,13 @@ test('a collection is edited in EH without reloading the tab', { tag: ['@sandbox
   const collab = { id: '2077436', name: 'kellnerd' };
   const collabs = async gid => {
     const raw = await (await page.request.get(`${mb}/collection/${gid}/own_collection/edit`)).text();
-    return [...raw.matchAll(/"html_name":"edit-list\.collaborators\.\d+\.name"[^}]*?"value":"([^"]*)"/g)].map(x => x[1]);
+    // the form's JSON blob; MusicBrainz orders its keys differently on every response, so it is parsed, not matched
+    for (const m of raw.matchAll(/<script type="application\/json">([\s\S]*?)<\/script>/g)) {
+      let o; try { o = JSON.parse(m[1]); } catch { continue; }
+      const c = o && o.form && o.form.field && o.form.field.collaborators;
+      if (c) return (c.field || []).map(x => x.field.name.value);
+    }
+    return [];
   };
   let gid;
   try {
