@@ -3129,7 +3129,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 #eh-pin .pident,#eh-pin .pkk{overflow:hidden}#eh-pin .pkk{display:flex;align-items:center;gap:6px;min-width:0;max-width:40%;color:var(--muted);font-size:10.5px;white-space:nowrap}#eh-pin .pkk svg{width:18px;height:18px;flex:none}#eh-pin .pkk>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 /* Reserve the release identity before fitting actions; format icons must not shrink under the menu. */
 #eh-pin .pident{min-width:min(360px,45%)}#eh-pin .pkk{flex:none}
-#eh-pin.eh-ply{transform:none}#eh-pin.eh-ply>.kicker{min-height:42px}#eh-pin.eh-ply .pident{flex:1 1 0;min-width:0}#eh-pin.eh-ply .ply-ctl.pb~*{flex:1 1 0;min-width:0;justify-content:flex-end}#eh-pin.eh-ply>.kicker:has(>.ply-ctl.pb:last-child)::after{content:"";flex:1 1 0}#eh-pin .ply-ctl.pb{max-width:min(1000px,52%);min-width:0}@media(max-width:700px){#eh-pin .ply-ctl.pb{flex:0 1 auto;max-width:70%}#eh-pin.eh-ply>.kicker::after{display:none}}#eh-pin .ply-ctl.pb{align-self:stretch;margin-top:-6px;margin-bottom:-6px}html.eh-ply-pin body{padding-top:var(--eh-pin-h,0px)}@media(max-width:600px){#eh-pin.eh-ply>.kicker{flex-wrap:wrap;row-gap:0}#eh-pin.eh-ply .ply-ctl.pb{order:9;flex:1 1 100%;max-width:none;margin:0;justify-content:center}#eh-pin.eh-ply .ply-ctl.pb .ply-t{max-width:none}}
+#eh-pin.eh-ply{transform:none}#eh-pin.eh-ply>.kicker{min-height:42px}#eh-pin.eh-ply .pident{flex:1 1 0;min-width:0}#eh-pin.eh-ply .ply-ctl.pb~*{flex:1 1 0;min-width:0;justify-content:flex-end}#eh-pin.eh-ply .ply-ctl.pb~.acts{min-width:max-content}#eh-pin.eh-ply .ply-ctl.pb{flex-shrink:100}#eh-pin.eh-ply .pident{min-width:min(140px,18%)}#eh-pin.eh-ply>.kicker:has(>.ply-ctl.pb:last-child)::after{content:"";flex:1 1 0}#eh-pin .ply-ctl.pb{max-width:min(1000px,52%);min-width:0}@media(max-width:700px){#eh-pin .ply-ctl.pb{flex:0 1 auto;max-width:70%}#eh-pin.eh-ply>.kicker::after{display:none}}#eh-pin .ply-ctl.pb{align-self:stretch;margin-top:-6px;margin-bottom:-6px}html.eh-ply-pin body{padding-top:var(--eh-pin-h,0px)}@media(max-width:600px){#eh-pin.eh-ply>.kicker{flex-wrap:wrap;row-gap:0}#eh-pin.eh-ply .ply-ctl.pb{order:9;flex:1 1 100%;max-width:none;margin:0;justify-content:center}#eh-pin.eh-ply .ply-ctl.pb .ply-t{max-width:none}}
 @media(max-width:700px){#eh-pin .pkk{display:none}}
 .kicker .ab[data-ehsec]:hover,.kicker .srch>.ab:hover,.kicker .ab.eh-home:hover{background:var(--surface)!important;border-color:var(--accent)}
 .ib{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--soft)!important;cursor:pointer;display:grid;place-items:center;position:relative}
@@ -11711,7 +11711,8 @@ function pinBar(app) {
     if (pinAlign) { removeEventListener('resize', pinAlign); pinAlign = null; }
     // a redraw leaves a shown bar shown, so it doesn't slide out and back in (the filter redraws on every letter)
     const wasOn = !!bar && (bar.classList.contains('on') || bar.classList.contains('eh-ply'));
-    if (bar) bar.querySelector('.kicker').innerHTML = '';
+    // a second draw in a row finds the action row still in the bar: it goes home first, or clearing the bar would lose it
+    if (bar) { const held = bar.querySelector('.kicker .acts'), slot = app.querySelector('.kicker .pin-slot'); if (held && slot && !app.querySelector('.kicker .acts')) slot.after(held); bar.querySelector('.kicker').innerHTML = ''; }
     const acts = app.querySelector('.kicker .acts'), hero = !acts && app.querySelector('.hm-hero');
     if (hero) {
         bar = pinMake(bar); bar.classList.remove('on');
