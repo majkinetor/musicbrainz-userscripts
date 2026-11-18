@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.080000
+// @version      2026.11.19.090000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3172,7 +3172,7 @@ h1.eh-tc:not(.open) .eh-tm{display:-webkit-box;-webkit-box-orient:vertical;-webk
 h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25em}
 .by{font-size:16px;font-weight:600}
 .col-nav{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:10px}.col-nav>a{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--muted)!important;text-decoration:none!important}.col-nav>a:hover{color:var(--accent)!important}.col-nav svg{width:16px;height:16px;flex:none}
-.col-desc{margin-top:12px;max-width:80ch;line-height:1.5;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}.col-desc>*{margin:0}.col-desc>*+*{margin-top:0}
+.col-desc{margin-top:12px;max-width:80ch;line-height:1.5;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}.col-desc.cut{cursor:pointer}.col-desc.open{display:block}.col-desc>*{margin:0}.col-desc>*+*{margin-top:0}
 .colh .facts{margin-top:10px;padding-top:0;border-top:0}.colh .facts:empty{display:none}.colh .nocover .col-tmk{position:absolute;right:10px;bottom:10px;width:34px;height:34px;border-radius:50%;background:var(--bg);border:1px solid var(--border);color:var(--accent);display:grid;place-items:center}.colh .col-tmk svg{width:18px;height:18px}
 .hist{margin-top:24px}.hbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}.hbar .lb{color:var(--muted);font-size:13px}
 .hist>.hbar{position:sticky;top:var(--eh-pin-h,0px);z-index:25;padding:8px 10px;background:var(--eh-bar);box-shadow:0 -12px 0 var(--eh-bar);transition:top .18s}
@@ -4456,6 +4456,9 @@ const heroH1 = (title, disambig, href) => {
 // a long title in a list: three lines, the whole of it in the tooltip
 const longT = t => String(t || '').length > 120 ? ` data-tip="${esc(t)}"` : '';
 const longC = t => String(t || '').length > 120 ? ' eh-cl' : '';
+// a collection's clamped description: a click on it (its "…" included) shows it whole, another folds it back
+document.addEventListener('mouseover', ev => { const d = ev.target.closest && ev.target.closest('.col-desc'); if (d) d.classList.toggle('cut', d.classList.contains('open') || d.scrollHeight > d.clientHeight + 1); });
+document.addEventListener('click', ev => { const d = ev.target.closest && ev.target.closest('.col-desc.cut'); if (d && !ev.target.closest('a') && !getSelection().toString()) d.classList.toggle('open'); });
 document.addEventListener('click', ev => { const b = ev.target.closest && ev.target.closest('.eh-tx'); if (b) b.textContent = b.closest('h1').classList.toggle('open') ? 'Show less' : 'Show full title'; });
 const MBID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 
@@ -11637,8 +11640,8 @@ async function userLoad(n, key) {
 function userHtml(d) {
     const name = d.name, u = d.u, abs = h => h.startsWith('/') ? MB + h : h;
     const avImg = u && avKept(u.name || name, u.av || (u.gh && `https://gravatar.com/avatar/${u.gh}?s=192&d=404`));
-    const avatar = `<span class="hm-av u-av">${esc((name[0] || '?').toUpperCase())}${avImg ? `<img src="${esc(avImg)}" alt="" width="96" height="96" onerror="this.remove()">` : ''}</span>`;
-    if (!u) return `<section class="u-hero">${avatar}<div class="u-id"><div class="kicker label"><span>Editor</span><span class="acts">${SRCH()}</span></div><h1>${esc(name)}</h1><p class="u-sub">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : 'Loading the profile…'}</p></div></section>`;
+    // while it loads, the header the subpages draw: the avatar this editor showed last and the tabs, so nothing flashes
+    if (!u) return userHead(name, '') + userBar(`<p class="u-sub${d.err ? '' : ' u-load'}">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : 'Loading the profile…'}</p>`);
     const bio = u.info.find(x => x.bio), langs = u.info.find(x => x.langs), loc = u.info.find(x => x.loc);
     const since = (u.info.map(x => x.t.match(/^(\d{4})-\d\d-\d\d \d\d:\d\d/)).find(Boolean) || [])[1], yrs = since ? new Date().getFullYear() - since : 0;
     const sub = [loc && loc.h.replace(/<span class="comment">[\s\S]*?<\/span>/, '').replace(/\s+,/g, ','), since && esc(`member since ${since}${yrs ? ` (${yrs} year${yrs > 1 ? 's' : ''})` : ''}`)].filter(Boolean).join(' · ');
