@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.180000
+// @version      2026.11.19.180001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12909,6 +12909,7 @@ function plyWinList(root) {
         l._rows = rows; l.querySelectorAll('.qi,.ply-group').forEach(b => b.remove());
         l.insertAdjacentHTML('beforeend', rows);
         l.querySelector('[aria-current]')?.scrollIntoView({ block: 'nearest' });
+        plyGroupCovers(l);
     }
 }
 // the chip's position bar spans the title only, not the buttons beside it
@@ -13092,11 +13093,19 @@ document.addEventListener('contextmenu', ev => {
     const b = ev.target.closest && ev.target.closest('.ply-ra [data-pa="rel"],.ply-ra [data-pa="rec"]'); if (!b) return;
     ev.preventDefault(); plyCollPick(b, b.dataset.pa);
 });
+// a release's group heading carries its cover, its title, and its year and track count under it
+function plyGroupHead(x, group, n) {
+    if (group === 'recordings' || !x.rel) return `<div class="ply-group">${esc(group === 'recordings' ? 'Recordings' : x.relTitle || 'Release')}</div>`;
+    if (n < 0) n = ply.q.length - ply.q.indexOf(x);
+    const src = PLY_CV.has(x.rel) ? PLY_CV.get(x.rel) : x.front ? `https://coverartarchive.org/release/${x.rel}/front-250` : '';
+    return `<div class="ply-group cv"><img${src ? ` src="${esc(src)}"` : ''} data-plyrel="${x.rel}" alt="" loading="lazy"><span>${esc(x.relTitle || 'Release')}<small>${x.relYear ? esc(x.relYear) + ' · ' : ''}${n} track${n === 1 ? '' : 's'}</small></span></div>`;
+}
+function plyGroupCovers(root) { root?.querySelectorAll('.ply-group img:not([data-w])').forEach(im => { im.dataset.w = 1; plyCoverWire(im); }); }
 function plyRows(menu) {
     let previous = null;
     return ply.q.map((x, i) => {
         const group = x.standalone || !('relAc' in x) ? 'recordings' : 'release:' + x.rel + ':' + (x.batch || '');
-        const heading = group !== previous ? `<div class="ply-group">${esc(group === 'recordings' ? 'Recordings' : x.relTitle || 'Release')}</div>` : '';
+        const heading = group !== previous ? plyGroupHead(x, group, ply.q.slice(i).findIndex((y, j) => j && (y.standalone || !('relAc' in y) ? 'recordings' : 'release:' + y.rel + ':' + (y.batch || '')) !== group)) : '';
         previous = group;
         return heading + `<button type="button" class="${menu ? 'it ' : ''}qi" role="${menu ? 'menuitem' : 'listitem'}" ${menu ? 'data-k="q' + i + '"' : 'data-i="' + i + '"'}${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x, i))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span>${plyRowSrc(x, i)}<span class="ql">${x.len ? dur(x.len) : ''}</span></button>`;
     }).join('') + (menu ? plyLoaderRow() : '');
@@ -13114,6 +13123,7 @@ function plyListMenu(btn) {
     plyListPaint();
     document.querySelector('#eh-ply-menu [aria-current]')?.scrollIntoView({ block: 'nearest' });
     plyCoverWire(document.querySelector('#eh-ply-menu .ply-rh img'));
+    plyGroupCovers(document.querySelector('#eh-ply-menu'));
     plyHeadLoad(ply.q[ply.i]);
     const qf = document.querySelector('#eh-ply-menu .qf'); if (!qf) return;
     const fold = x => String(x).normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
@@ -13329,6 +13339,10 @@ html.eh-ply-win #eh-ply:not(.ply-novid) .ply-dock{position:static;order:1;flex:n
 html.eh-ply-win .ply-wl{order:2;flex:1;min-height:0;overflow:hidden auto;padding:4px;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
 .ply-wl .qi{display:flex;align-items:center;gap:9px;width:100%;box-sizing:border-box;padding:6px 9px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
 .ply-group{padding:8px 9px 4px;color:var(--muted,#777);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.ply-group.cv{display:flex;align-items:center;gap:10px;padding:12px 9px 6px}
+.ply-group.cv img{width:40px;height:40px;object-fit:cover;border-radius:3px;flex:none}
+.ply-group.cv span{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ply-group.cv small{font-weight:400;text-transform:none;letter-spacing:0}
 .ply-loading{display:flex;align-items:center;gap:8px;padding:9px 12px;color:var(--muted,#777);font-size:12px}.ply-spin{width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:ply-spin .8s linear infinite}@keyframes ply-spin{to{transform:rotate(360deg)}}
 .ply-wl .qi:hover,.ply-wl .qi:focus-visible{background:color-mix(in srgb,currentColor 10%,transparent);outline:0}
 .ply-wl .qi[aria-current]{background:color-mix(in srgb,var(--accent,#ba478f) 16%,transparent);font-weight:600}
