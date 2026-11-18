@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.064000
+// @version      2026.11.19.080000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3128,7 +3128,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .kicker .srch{margin-left:10px}
 .kicker .srch>.ab,.kicker .ab.eh-home,.kicker .ab[data-ehsec],.kicker .ab[data-star]{background:none!important;border-color:transparent;filter:none!important}.kicker .srch>.ab,.kicker .ab[data-ehsec],.kicker .ab[data-star]{color:var(--chip-text)!important}
 .kicker .ab[data-star]{cursor:pointer}
-.eh-collections{position:relative;display:inline-flex;min-width:0}.eh-collections>button{font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}.eh-collections>button:hover{color:var(--accent)}.eh-collections>button::after{content:'▾';margin-left:5px;font-size:10px}.eh-collections .pop{letter-spacing:normal;text-transform:none;font-weight:400;font-size:13px;max-width:min(380px,calc(100vw - 32px));max-height:65vh;overflow:auto;white-space:normal}.eh-collections .row{width:100%;text-align:left;border:0;background:none;color:var(--text);font:inherit;cursor:pointer}.eh-collections .row:hover{background:var(--chip)}.eh-collections .row[aria-pressed=true]{color:var(--accent)}.eh-collections .row:disabled{opacity:.5;cursor:wait}.eh-collections .h{padding:8px 12px}.eh-collections .row svg{flex:none}
+.eh-collections{position:relative;display:inline-flex;min-width:0}.eh-collections>button{font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}.eh-collections>button:hover{color:var(--accent)}.eh-collections>button::after{content:'▾';margin-left:5px;font-size:10px}.eh-collections .pop{letter-spacing:normal;text-transform:none;font-weight:400;font-size:13px;max-width:min(380px,calc(100vw - 32px));max-height:65vh;overflow:auto;white-space:normal}.eh-collections .row{width:100%;text-align:left;border:0;background:none;color:var(--text);font:inherit;cursor:pointer}.eh-collections .row:hover{background:var(--chip)}.eh-collections .row[aria-pressed=true]{color:var(--accent)}.eh-collections .row:disabled{opacity:.5;cursor:wait}.eh-collections .h{padding:8px 12px}.eh-collections .row svg{flex:none;width:14px;height:14px}.eh-collections .row[aria-pressed=false] svg,.eh-collections .coll-ft .row{color:var(--muted)}.eh-collections .coll-ft{border-top:1px solid var(--border);margin-top:4px;padding-top:4px}.eh-collections .coll-gh a{display:inline-flex;align-items:center;gap:6px}.eh-collections .coll-gh svg{width:13px;height:13px}.eh-collections>button .coll-i{display:inline-flex;vertical-align:-1px;margin-left:6px;color:var(--muted)}.eh-collections>button .coll-i svg{width:12px;height:12px}.eh-collections>button.in .coll-i{color:var(--accent)}
 
 .kicker .ab[data-star]:hover{border-color:var(--accent)}
 .kicker .acts > * + .ab[data-star]{margin-left:10px}
@@ -3358,7 +3358,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .cl-a{font-weight:600;overflow-wrap:anywhere}
 .cl-big{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.25}
 .cl-meta{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:12px;color:var(--muted);font-weight:400}
-.cl-ico{display:inline-flex;color:var(--muted);flex:none}.cl-ico svg{width:16px;height:16px}.sec-h .cl-ico svg,h2 .cl-ico svg{width:18px;height:18px;vertical-align:-.15em;margin-right:4px}
+.cl-ico{display:inline-flex;color:var(--muted);flex:none}.cl-ico svg{width:16px;height:16px}h2 .cl-ico{align-self:center;vertical-align:middle;margin-right:6px}.sec-h .cl-ico svg,h2 .cl-ico svg{width:18px;height:18px;display:block}.cl-li{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;color:var(--text)!important;text-decoration:none!important;min-width:0}.cl-li:hover{background:var(--hover)}.cl-li .cl-n{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;flex:none}
 .cl-pv{display:inline-flex;flex:none;color:var(--muted);opacity:.55}.cl-pv svg{width:14px;height:14px}.cl-pv.off{color:var(--accent);opacity:1}
 .cl-acts{position:relative;display:inline-flex;align-items:center;gap:2px}
 .cl-tile:hover{background:color-mix(in srgb,var(--hover) 40%,transparent)}.cl-tile .cl-acts{opacity:0;transition:opacity .12s}.cl-tile:hover .cl-acts,.cl-tile:focus-within .cl-acts,.cl-tile .cl-acts:has(.cl-cfm){opacity:1}
@@ -9031,7 +9031,7 @@ function collsHtml(d) {
     const hero = userHead(c && c.name || d.name, c && c.av, c && c.tabs)
         + userBar(d.err ? `<p class="u-sub"><span class="u-err">${esc(d.err)}</span></p>` : !c ? '<p class="u-sub u-load">Loading the collections…</p>' : '', add && `<nav class="u-tabs">${add}</nav>`);
     if (!c) return hero;
-    const its = clItems(c), grid = S.clView !== 'row';
+    const its = clItems(c), cv = ['grid', 'row', 'table'].includes(S.clView) ? S.clView : 'grid', grid = cv === 'grid';
     // the rows' headings sort, and the tiles follow the same order
     const desc = String(S.clSort || '').startsWith('-'), sk = ['name', 'type', 'pv', 'items'].includes(String(S.clSort || '').replace(/^-/, '')) ? String(S.clSort).replace(/^-/, '') : 'name';
     const byName = (x, y) => x.t.localeCompare(y.t, undefined, { numeric: true, sensitivity: 'base' });
@@ -9044,13 +9044,14 @@ function collsHtml(d) {
     const chips = grps.length > 1 ? (fOn ? `<span class="fchip"><span class="fk">Type</span><select data-clfsel aria-label="Collection type">${[['', 'All', its.length], ...grps.map(g => [g, gName(g), its.filter(x => x.grp === g).length])]
         .map(([v, n, k]) => `<option value="${esc(v)}"${clType === v ? ' selected' : ''}>${esc(n)} (${fmtN(k)})</option>`).join('')}</select></span>` : '')
         + `<span class="ed-views"><button type="button" data-clfo aria-pressed="${fOn}" aria-label="Filter" data-tip="${fOn ? 'Hide the filter, clearing it' : 'Filter by type'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>` : '';
-    const tools = its.length ? `<span class="cl-tools">${chips}${viewBs(['grid', 'row'], grid ? 'grid' : 'row', 'clview', 'View')}</span>` : '';
+    const tools = its.length ? `<span class="cl-tools">${chips}${viewBs(['grid', 'row', 'table'], cv, 'clview', 'View').replaceAll('"Row"', '"List"')}</span>` : '';
     const top = userHead(c.name || d.name, c.av, c.tabs)
         + userBar(d.err ? `<p class="u-sub"><span class="u-err">${esc(d.err)}</span></p>` : '', add && `<nav class="u-tabs">${add}</nav>`, tools);
     // what MusicBrainz says of an empty part (no collaborative collections) is one quiet line under the list
     const notes = c.secs.filter(s => s.note).map(s => `<p class="hm-none cl-note">${esc(s.grp)}: ${esc(s.note)}</p>`).join('');
     const body = grid
         ? grps.map((g, i) => { if (clType && g !== clType) return ''; const xs = ord(its.filter(x => x.grp === g)); return sect('cl' + i, `${clIco(xs[0])}${esc(g)} <span class="count">${fmtN(xs.length)}</span>`, '', `<div class="cl-tiles">${xs.map(x => clItem(x, true)).join('')}</div>` + (i === grps.length - 1 ? notes : ''), ''); }).join('') + (grps.length ? '' : notes)
+        : cv === 'row' ? (its.length ? `<div class="hm-rec cl-rows">${ord(its.filter(x => !clType || x.grp === clType)).map(x => `<a class="cl-li" href="${esc(x.href.startsWith('/') ? MB + x.href : x.href)}" data-tip="${esc(clTy(x))}">${clIco(x)}<span class="hm-rt">${esc(x.name)}</span><span class="cl-n">${esc(x.ns || '0')}</span></a>`).join('')}</div>` : '')
         : its.length ? `<ul class="cl-list">${clHead(sk, desc, its.some(x => x.edit || x.del))}${ord(its.filter(x => !clType || x.grp === clType)).map(x => clItem(x, false)).join('')}</ul>` : '';
     return top + body + (grid ? '' : notes);
 }
@@ -11149,6 +11150,22 @@ function collectionParse(doc, key) {
     }
     return { at: Date.now(), rows };
 }
+// A row's label is one translated sentence ("Add to X"): the name is the part the sentences of one kind don't share.
+function collectionNames(rows) {
+    const out = new Map(), en = /^(?:Add to|Remove from) (.+)$/;
+    const strip = ls => {
+        if (ls.every(l => en.test(l))) { for (const l of ls) out.set(l, l.match(en)[1]); return; }
+        if (ls.length < 2) return;
+        let p = ls[0], x = ls[0];
+        for (const l of ls) { while (!l.startsWith(p)) p = p.slice(0, -1); while (!l.endsWith(x)) x = x.slice(1); }
+        p = p.slice(0, p.lastIndexOf(' ') + 1); x = x.includes(' ') ? x.slice(x.indexOf(' ')) : '';
+        if (!p && !x) return;
+        for (const l of ls) if (l.length > p.length + x.length) out.set(l, l.slice(p.length, l.length - x.length).trim());
+    };
+    // the create row shares the add sentence, which keeps a first word all names share out of the template
+    strip(rows.filter(r => !r.id || !r.on).map(r => r.label)); strip(rows.filter(r => r.id && r.on).map(r => r.label));
+    return out;
+}
 const collectionStoreKey = key => location.origin + '/' + ME + '/' + key;
 function collectionKeep(key, x) {
     try {
@@ -11163,15 +11180,22 @@ function collectionPaint(key) {
     const p = $('#pop-collections'); if (!p || p.dataset.key !== key) return;
     const x = COLLECTIONS.get(key); if (!x) return;
     let group = '', first = true;
-    p.innerHTML = '<div class="h label">Collections</div>' + (x.rows || []).map(r => {
+    const rows = x.rows || [], names = collectionNames(rows), one = new Set(rows.map(r => r.group)).size < 2;
+    const ICK = '<path d="m5 12 5 5 9-10"/>', IPL = '<path d="M12 5v14M5 12h14"/>', IRF = '<path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/>';
+    p.innerHTML = (one ? '' : '<div class="h label">Collections</div>') + rows.filter(r => r.id).map(r => {
         // the first group is the user's own: its heading opens their collections page
-        const own = first && ME, h = r.group !== group ? '<div class="h label">' + (own ? '<a class="coll-me" href="' + MB + '/user/' + encodeURIComponent(ME) + '/collections" data-tip="Your collections">' + esc(r.group) + '</a>' : esc(r.group)) + '</div>' : '';
+        const own = first && ME, h = r.group !== group ? '<div class="h label coll-gh">' + (own ? '<a class="coll-me" href="' + MB + '/user/' + encodeURIComponent(ME) + '/collections" data-tip="Your collections">' + SVG(MK_COL) + esc(r.group) + '</a>' : esc(r.group)) + '</div>' : '';
         if (r.group !== group) first = false; group = r.group;
-        return h + (r.id ? '<button type="button" class="row opt" data-collkey="' + key + '" data-collchange="' + r.id + '" aria-pressed="' + r.on + '"' + (x.busy || x.loading ? ' disabled' : '') + '>' + SVG(r.on ? '<path d="m5 12 4 4L19 6"/>' : '<path d="M12 5v14M5 12h14"/>') + '<span>' + esc(r.label) + '</span></button>' : '<a class="row" href="' + esc(MB + r.path) + '">' + esc(r.label) + '</a>');
+        const nm = names.get(r.label) || r.label;
+        return h + '<button type="button" class="row opt" data-collkey="' + key + '" data-collchange="' + r.id + '" aria-pressed="' + r.on + '"' + (x.busy || x.loading ? ' disabled' : '') + (nm !== r.label ? ' data-tip="' + esc(r.label) + '"' : '') + '>' + SVG(r.on ? ICK : IPL) + '<span>' + esc(nm) + '</span></button>';
     }).join('') + (!x.rows ? '<div class="h">Loading collections…</div>' : !x.rows.some(r => r.id) ? '<div class="h">No collections of this type</div>' : '')
         + (x.error ? '<div class="h" role="alert">' + esc(x.error) + '</div>' : '')
-        + '<button type="button" class="row opt" data-collrefresh="' + key + '"' + (x.loading || x.busy ? ' disabled' : '') + '>Refresh collections</button>';
+        + '<div class="coll-ft">' + rows.filter(r => !r.id).map(r => '<a class="row" href="' + esc(MB + r.path) + '">' + SVG(IPL) + '<span>' + esc(r.label === 'Add to a new collection' ? 'New collection' : r.label) + '</span></a>').join('')
+        + '<button type="button" class="row opt" data-collrefresh="' + key + '"' + (x.loading || x.busy ? ' disabled' : '') + '>' + SVG(IRF) + '<span>Refresh</span></button></div>';
     popFit(p);
+    // the trigger's small icon: accent when the entity is in one of the collections
+    const t = $('[data-pop="collections"]'), n = rows.filter(r => r.id && r.on).length;
+    if (t && x.rows) { t.classList.toggle('in', n > 0); t.dataset.tip = t.dataset.tip.replace(/^[^\n]*/, (t.dataset.kick || '') + (n ? ' · in ' + n + (n === 1 ? ' collection' : ' collections') : '')); }
 }
 async function collectionLoad(key, force = false) {
     let x = COLLECTIONS.get(key);
@@ -11218,7 +11242,7 @@ function collectionButton(app) {
     if (!m || !label || label.closest('.eh-collections') || app.querySelector('.kicker .eh-collections')) return;
     const key = m[1] + '/' + m[2], w = document.createElement('span'); w.className = 'eh-collections';
     label.replaceWith(w);
-    w.innerHTML = '<button type="button" data-pop="collections" aria-expanded="false" aria-label="Collections" data-tip="' + esc(label.textContent + '\nClick: add to or remove from your collections') + '">' + label.innerHTML + '</button><span class="pop" id="pop-collections" data-key="' + key + '" hidden></span>';
+    w.innerHTML = '<button type="button" data-pop="collections" aria-expanded="false" aria-label="Collections" data-kick="' + esc(label.textContent) + '" data-tip="' + esc(label.textContent + '\nClick: add to or remove from your collections') + '">' + label.innerHTML + '<span class="coll-i">' + SVG(MK_COL) + '</span></button><span class="pop" id="pop-collections" data-key="' + key + '" hidden></span>';
     collectionLoad(key);
 }
 
