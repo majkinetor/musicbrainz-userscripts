@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.18.140555
+// @version      2026.11.18.191201
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -6263,8 +6263,8 @@ async function openFusion() {
    window. A group's
    busy state lives in this tab only, so a closed tab never leaves one stuck. */
 const EM_KEY = 'fusion.merge';
-const EM_TYPES = [['artist', 'Artists'], ['release-group', 'Release groups'], ['release', 'Releases'], ['work', 'Works'], ['label', 'Labels'], ['place', 'Places'], ['series', 'Series'], ['event', 'Events']];
-const EM_TYPE_RE = /\/(artist|release-group|release|work|label|place|series|event)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
+const EM_TYPES = [['artist', 'Artists'], ['release-group', 'Release groups'], ['release', 'Releases'], ['work', 'Works'], ['label', 'Labels'], ['place', 'Places'], ['series', 'Series'], ['event', 'Events'], ['collection', 'Collections']];
+const EM_TYPE_RE = /\/(artist|release-group|release|work|label|place|series|event|collection)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
 const EM_BUSY = new Set();
 function emLoad() { let s; try { s = JSON.parse(GM_getValue(EM_KEY, '') || '{}'); } catch (e) { s = {}; } if (!s || typeof s !== 'object') s = {}; s.types = s.types || {}; return s; }
 let EM = emLoad();
@@ -6294,6 +6294,7 @@ const EM_COLS = {
     place: ['Type', 'Area', 'Address'],
     series: ['Type'],
     event: ['Type', 'Date', 'Time'],
+    collection: [],
 };
 const emAc = j => (j['artist-credit'] || []).map(c => (c.name || (c.artist && c.artist.name) || '') + (c.joinphrase || '')).join('');
 function emInfo(type, j) {
@@ -6320,6 +6321,18 @@ function emInfo(type, j) {
 }
 const EM_FETCHING = new Set();
 async function emFetch(type, gid) {
+    if (type === 'collection') {
+        // ws/js/entity does not support collections; the owner's merge link has its internal ID.
+        const r = await mbnFetch('/collection/' + gid, { headers: { Accept: 'text/html' } });
+        if (!r.ok) throw new Error('Collection page: HTTP ' + r.status);
+        const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+        const a = doc.querySelector('a[href*="/collection/merge_queue?"]');
+        const id = a && new URL(a.getAttribute('href'), location.origin).searchParams.get('add-to-merge');
+        const name = doc.querySelector('h1')?.textContent.trim();
+        if (!id || !name) throw new Error('Collection cannot be merged: sign in as its owner');
+        _idCache.set(gid, Number(id));
+        return { name, dis: '', info: [] };
+    }
     const inc = EM_INC[type];
     const j = await wsGet('/ws/2/' + type + '/' + gid + '?fmt=json' + (inc ? '&inc=' + inc : ''));
     const d = { name: j.title || j.name || gid, dis: j.disambiguation || '', info: emInfo(type, j).map(v => v == null ? '' : String(v)) };
@@ -6385,6 +6398,7 @@ function emMerge(type, gid) {
     Log.keep();
     const set = patch => emEdit(() => { const h = emT(type).groups.find(x => x.id === g.id); if (h) Object.assign(h, patch); });
     return (async () => {
+        if (type === 'collection') await Promise.all(members.filter(x => !_idCache.get(x)).map(x => emFetch(type, x)));
         const ids = await ensureInternalIds(members);
         const targetId = ids[members.indexOf(target)];
         return withMergeLock(async () => {
@@ -6783,7 +6797,7 @@ function emCardHtml(type, g, gi, ro, active) {
         + (ro ? '' : (type === 'release' && !done ? '<select class="fs-strat' + (noStrat ? ' fs-strat-unset' : '') + '" data-act="strategy" data-tip="Mediums\nHow the releases’ mediums combine">' + (noStrat ? '<option value="" disabled selected hidden>Mediums…</option>' : '') + '<option value="1"' + (g.strategy === '1' ? ' selected' : '') + '>Append mediums</option><option value="2"' + (g.strategy === '2' ? ' selected' : '') + '>Merge mediums</option></select>' : '')
         + (done ? (g.mergedUrl ? '<a href="' + escapeHtml(g.mergedUrl) + '" target="_blank" rel="noopener">view</a>' : '')
             : '<span class="fs-note-btn' + (hasNote ? ' fs-has-note' : '') + '" data-act="edit-note" data-tip="' + (hasNote ? 'A custom edit note is set\nClick: edit it' : 'Add a custom edit note for this merge') + '">✎</span>')
-        + '<button class="fs-mbtn' + (done ? ' fs-done' : err ? ' fs-err' : '') + '" type="button" data-act="merge-group"' + (busy || done || tooFew || noStrat ? ' disabled' : '') + (err ? ' data-tip="' + escapeHtml('Merge failed\n' + (g.error || '')) + '"' : noStrat && !tooFew ? ' data-tip="Choose how the mediums combine first"' : '') + '>' + mLabel + '</button>'
+        + '<button class="fs-mbtn' + (done ? ' fs-done' : err ? ' fs-err' : '') + '" type="button" data-act="merge-group"' + (busy || done || tooFew || noStrat ? ' disabled' : '') + (err ? ' data-tip="' + escapeHtml('Merge failed\n' + (g.error || '')) + '"' : noStrat && !tooFew ? ' data-tip="Choose how the mediums combine first"' : type === 'collection' ? ' data-tip="Collection merges apply immediately, without a vote"' : '') + '>' + mLabel + '</button>'
         + '<span class="fs-kill" data-act="delete-group" data-tip="' + (done ? 'Remove this group' : 'Delete this group\nIts ' + label.toLowerCase() + ' go back to the pool.') + '">🗑</span>'
         + '</div></div>');
     const colHead = cols.length ? '<div class="fs-emh"><span class="fs-emh-n">' + escapeHtml(emOne(type)) + '</span>' + cols.map(c => '<span class="fs-emc' + (EM_WIDE.has(c) ? ' fs-wide' : '') + '">' + c + '</span>').join('') + (busy || done || ro ? '<span class="fs-acts fs-emh-a"></span>' : '<span class="fs-acts fs-emh-a"><span>↩</span><span>✕</span></span>') + '</div>' : '';
@@ -6807,6 +6821,7 @@ function emCardHtml(type, g, gi, ro, active) {
 // the oldest pill needs every member's internal id: read the missing ones, then draw again
 const EM_ID_ASKED = new Set();
 function emResolveIds(members) {
+    if (EM_TYPE === 'collection') return;
     const need = members.filter(x => !_idCache.has(x.gid) && !EM_ID_ASKED.has(x.gid));
     if (members.length < 2 || !need.length) return;
     need.forEach(x => EM_ID_ASKED.add(x.gid));
