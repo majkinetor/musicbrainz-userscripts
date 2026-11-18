@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.160000
+// @version      2026.11.19.170000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8703,7 +8703,7 @@ function tabSect(sid, name, x, href, cv) {
     const q = (TQ[sid] || '').trim(), tqp = q && tqParse(q, x.head.map(tqKey));
     const shown = q ? rows.filter(r => !Array.isArray(r) || tqTest(tqp.tree, n => tqHit(n, n.c == null ? r.map(txt).join(' ') : txt(r[n.c])))) : rows;
     const playable = sid === 'cp' && S.player && data && data.g && ['release', 'recording'].includes(data.g.ent), ent = playable && data.g.ent;
-    const view = cv && !playable ? S.tabView || 'table' : 'table', yc = cols.find(i => /date|year/i.test(txt(x.head[i])));
+    const view = cv ? S.tabView || 'table' : 'table', yc = cols.find(i => /date|year/i.test(txt(x.head[i])));
     const tlRe = cv && new RegExp('<a href="[^"]*/' + cv + '/(' + MBID.source + ')">([\\s\\S]*?)</a>', 'i');
     const tile = r => { const m = Array.isArray(r) && r.join(' ').match(tlRe); return m ? `<a href="${MB}/${cv}/${m[1]}"><img src="${esc(tabArt(cv, m[1]))}" alt="" loading="lazy" data-dgcover="${cv}" data-aid="${m[1]}" referrerpolicy="no-referrer"><span class="dt">${m[2]}</span><span class="dy">${yc != null ? esc(txt(r[yc]).slice(0, 4)) : ''}</span></a>` : ''; };
     const open = sid in TQ, tools = (open ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-tq="${sid}" value="${esc(TQ[sid])}" placeholder="Filter, or column:value" aria-label="Filter" autocomplete="off"></span>` : '')
