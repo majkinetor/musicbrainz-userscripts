@@ -10626,6 +10626,7 @@ function renderDraw(keepPop) {
     if (data.kind === 'colnew') { ehMorph(app, colnewHtml(data)); save(); return; }
     if (data.kind === 'search') { ehMorph(app, searchHtml(data)); srchWire(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'art') { artPage(app, data); pinBar(app); return; }
+    if (data.kind === 'ann') { document.title = (data.rel ? data.rel.title + ' · ' : '') + 'Annotation · Event Horizon'; annPage(app, data); pinBar(app); return; }
     if (data.kind === 'det') { document.title = (data.rel ? data.rel.title + ' · ' : '') + 'Details · Event Horizon'; detPage(app, data); pinBar(app); return; }
     if (data.kind === 'discs' || data.kind === 'toc') { document.title = (data.kind === 'toc' ? 'Disc ID ' + data.id : (data.rel ? data.rel.title + ' · ' : '') + 'Disc IDs') + ' · Event Horizon'; discPage(app, data); pinBar(app); return; }
     if (data.kind === 'hist') { histPage(app, data); entHeadWire(app.querySelector('.arthd') || app); pinBar(app); return; }
@@ -13408,7 +13409,9 @@ const discKey = href => {
 // a release's Details → "det/<mbid>": only a click (or Back and Forward) opens it in the tab; loaded, it stays MusicBrainz's
 // page, dressed by the relationship-editor styles (keyOf leaves it to formKey)
 const detKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/details/?$', 'i')); return m ? 'det/' + m[1].toLowerCase() : null; };
-const inTab = href => navTo(href) || histKey(href) || artIn(href) || discKey(href) || detKey(href);
+// a release's Edit annotation → "ann/<mbid>": a click only, like Details (loaded, it is formKey's)
+const annKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/edit_annotation/?$', 'i')); return m ? 'ann/' + m[1].toLowerCase() : null; };
+const inTab = href => navTo(href) || histKey(href) || artIn(href) || discKey(href) || detKey(href) || annKey(href);
 const keyOf = href => navTo(href) || artKey(href) || discKey(href) || histKey(href) || relKey(href) || formKey(href);
 // let: the seed confirmation page (another site seeding the release editor, a POST to /release/add or …/edit) shares
 // the editor's address, so it gets its key, "form/seed/-/confirm", only once its .confirm-seed form is in the page
@@ -13604,6 +13607,39 @@ function detPage(app, d) {
     const hd = app.querySelector('.arthd'), body = app.querySelector('#det-body');
     hd.innerHTML = subHead(d.rel, d.id, 'details', 'Details', d.err ? `<h1>${esc(d.err)}</h1>` : '<h1>&nbsp;</h1>'); cvWire(hd);
     if (body.dataset.on !== String(!!d.html)) { body.dataset.on = String(!!d.html); body.innerHTML = d.html || (d.err ? '' : '<p class="msg">Loading the details…</p>'); }
+}
+// A release's Edit annotation, fetched in place of a page load (the player plays on): MusicBrainz's form goes in
+// #eh-anno, and Apollo, asked by mbu-anno-mount, builds its editor on it. Enter edit posts the form, a page load.
+function annPage(app, d) {
+    if (!app.querySelector(`#eh-anno[data-k="${d.id}"]`)) app.innerHTML = `<section class="arthd"></section><div id="eh-anno" data-k="${esc(d.id)}"></div>`;
+    const hd = app.querySelector('.arthd'), body = app.querySelector('#eh-anno');
+    hd.innerHTML = subHead(d.rel, d.id, 'edit_annotation', 'Annotation', d.err ? `<h1>${esc(d.err)}</h1>` : '<h1>&nbsp;</h1>'); cvWire(hd);
+    if (body.dataset.on !== String(!!d.html)) {
+        body.dataset.on = String(!!d.html);
+        body.innerHTML = d.html || (d.err ? '' : '<p class="msg">Loading the annotation…</p>');
+        if (d.html) {
+            const ask = new CustomEvent('mbu-anno-mount', { cancelable: true, detail: JSON.stringify({ entity: 'release', id: d.id }) });
+            document.dispatchEvent(ask);
+            LOG.info(`Annotation: ${d.id} in the tab, Apollo ${ask.defaultPrevented ? 'answered' : 'did not answer'}`);
+        }
+    }
+}
+async function annLoad(n, id) {
+    const d = data;
+    relHd(id, r => { if (n === showing && data === d) { d.rel = r; render(); } }).catch(e => LOG.warn('Annotation header: ' + e.message));
+    try {
+        const r = await mbnFetch(`${MB}/release/${id}/edit_annotation`, { credentials: 'include' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const doc = new DOMParser().parseFromString(await r.text(), 'text/html'), c = doc.querySelector('#content');
+        if (!c || !c.querySelector('textarea[name="edit-annotation.text"]')) throw new Error('no annotation form on the page (logged out?)');
+        const box = doc.createElement('div'), tabs = c.querySelector(':scope > .tabs');
+        let el = tabs ? tabs.nextElementSibling : c.firstElementChild;
+        while (el) { const nx = el.nextElementSibling; if (!el.matches('.releaseheader, .tabs, script')) box.append(el); el = nx; }
+        // the form posts to where it came from, whatever URL the tab shows
+        box.querySelectorAll('form').forEach(f => { f.action = new URL(f.getAttribute('action') || `/release/${id}/edit_annotation`, `${MB}/release/${id}/edit_annotation`).href; });
+        d.html = box.innerHTML;
+    } catch (e) { LOG.err('Loading the annotation of ' + id + ' failed: ' + e.message); d.err = e.message; }
+    if (n === showing && data === d) render();
 }
 async function detLoad(n, id) {
     const d = data;
@@ -15653,6 +15689,7 @@ async function show(key, o = {}) {
     if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
     if (kind === 'discs' || kind === 'toc') { data = { kind, id }; scrollTo(0, 0); render(); discLoad(n, id); return; }
     if (kind === 'det') { data = { kind, id }; scrollTo(0, 0); render(); detLoad(n, id); return; }
+    if (kind === 'ann') { data = { kind, id }; scrollTo(0, 0); render(); annLoad(n, id); return; }
     if (kind === 'art' || kind === 'eart') {
         data = { kind: 'art', id, ev: kind === 'eart' }; render();
         // Art Station takes the slot (preventDefault); without it, only the page the tab loaded shows its art
