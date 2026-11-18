@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.020003
+// @version      2026.11.19.030001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3348,20 +3348,25 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .cl-tools .seg button:hover{color:var(--text);background:var(--hover)}.cl-tools .seg button[aria-pressed="true"]{background:none;color:var(--text);box-shadow:inset 0 -2px 0 var(--accent);border-radius:0}
 .cl-tools .seg i{font-style:normal;opacity:.6;margin-left:3px}
 .cl-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
-.cl-tile{position:relative;border:1px solid var(--border);border-radius:9px;padding:10px 12px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
-.cl-hd{display:flex;align-items:center;gap:6px;min-width:0;max-width:100%}.cl-tile .cl-hd{padding-right:60px}
+.cl-tile{position:relative;border:1px solid var(--border);border-radius:9px;padding:10px 12px;display:flex;flex-direction:column;align-items:stretch;gap:2px;min-width:0}
+.cl-hd{display:flex;align-items:center;gap:6px;min-width:0;max-width:100%}.cl-tile .cl-hd{position:relative}
+.cl-tile .cl-bg{position:absolute;right:8px;bottom:6px;display:flex;color:var(--muted);opacity:.2;pointer-events:none}.cl-tile .cl-bg svg{width:40px;height:40px;stroke-width:1.6}.cl-tile .cl-bg.off{color:var(--accent);opacity:.35}
+.cl-foot{position:relative;display:flex;align-items:center;gap:8px;min-height:30px}
 .cl-a{font-weight:600;overflow-wrap:anywhere}
 .cl-big{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.25}
 .cl-meta{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:12px;color:var(--muted);font-weight:400}
 .cl-ico{display:inline-flex;color:var(--muted);flex:none}.cl-ico svg{width:16px;height:16px}.sec-h .cl-ico svg,h2 .cl-ico svg{width:18px;height:18px;vertical-align:-.15em;margin-right:4px}
 .cl-pv{display:inline-flex;flex:none;color:var(--muted);opacity:.55}.cl-pv svg{width:14px;height:14px}.cl-pv.off{color:var(--accent);opacity:1}
-.cl-acts{display:inline-flex;align-items:center;flex-wrap:wrap;gap:2px}
-.cl-tile .cl-acts{position:absolute;top:4px;right:4px;opacity:0;transition:opacity .12s}.cl-tile:hover .cl-acts,.cl-tile:focus-within .cl-acts,.cl-tile .cl-acts:has([data-confirm]){opacity:1}
-.cl-tile .cl-acts:has([data-confirm]){position:static;margin:4px 0 0 -6px}
+.cl-acts{position:relative;display:inline-flex;align-items:center;gap:2px}
+.cl-tile .cl-acts{opacity:0;transition:opacity .12s}.cl-tile:hover .cl-acts,.cl-tile:focus-within .cl-acts,.cl-tile .cl-acts:has(.cl-cfm){opacity:1}
 @media (hover:none){.cl-tile .cl-acts{opacity:1}}@media (prefers-reduced-motion:reduce){.cl-tile .cl-acts{transition:none}}
 .cl-ib{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:30px;height:30px;padding:0 6px;border-radius:6px;color:var(--muted)!important;text-decoration:none!important;font-size:13px;font-weight:700}
 .cl-ib:hover,.cl-ib:focus-visible{color:var(--link)!important;background:var(--hover)}.cl-ib svg{width:18px;height:18px;flex:none}
-.cl-rm[data-confirm]{color:#c4466a!important}.cl-cancel{min-height:30px}
+.cl-rm[aria-expanded="true"]{color:#c4466a!important;background:var(--hover)}
+.pop.cl-cfm{top:calc(100% + 4px);min-width:0;width:max-content;max-width:min(260px,calc(100vw - 32px));padding:10px 12px;font-size:13px;font-weight:400;color:var(--text)}
+.cl-cfm p{margin:0 0 8px;overflow-wrap:anywhere}.cl-cfm .cl-cfm-b{display:flex;justify-content:flex-end;gap:4px}
+.cl-cfm button{all:unset;cursor:pointer;padding:3px 10px;border-radius:6px;font-weight:600;font-size:12px;color:var(--muted)}.cl-cfm button:hover,.cl-cfm button:focus-visible{background:var(--hover);color:var(--text)}
+.cl-cfm button[data-colgo]{color:#c4466a}.cl-cfm button[data-colgo]:hover,.cl-cfm button[data-colgo]:focus-visible{color:#c4466a}.cl-cfm button:disabled{opacity:.6;cursor:default}
 .cl-list{list-style:none;margin:0;padding:0}
 .cl-row{display:flex;align-items:center;gap:4px 12px;padding:3px 0;border-bottom:1px solid var(--border)}.cl-row:last-child{border-bottom:0}
 .cl-nm{flex:1;min-width:0;display:flex;align-items:center;flex-wrap:wrap;gap:2px 10px}
@@ -9019,47 +9024,57 @@ const CL_GLOBE = '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 
 // the entity icon of a collection's type, from its type or its group's name ("Release group collection" → release-group; the longest key wins), else a collection's
 const CL_IK = Object.keys(MBU_ENT_ICONS).filter(k => k !== 'collection').sort((a, b) => b.length - a.length);
 const clIco = x => { const t = ((x && (x.ty || x.grp)) || '').toLowerCase(); return `<span class="cl-ico">${SVG(MBU_ENT_ICONS[CL_IK.find(k => t.includes(k.replace(/-/g, ' '))) || 'collection'])}</span>`; };
-// a tile (count as the big figure) or a row (its type's icon first, its type before the count); privacy is an icon after the name, a lock set apart when it isn't public
+// a tile (title across the card, the count with the actions beside it, privacy drawn faintly behind) or a row (its type's then privacy's icon first, its type before the count); a lock is set apart in the accent
 function clItem(x, tile) {
     const abs = h => h.startsWith('/') ? MB + h : h, q = s => esc(s), pub = /^public$/i.test(x.pv);
-    const pv = x.pv ? `<span class="cl-pv${pub ? '' : ' off'}" role="img" aria-label="${q(x.pv)}" data-tip="${q(x.pv)}">${SVG(pub ? CL_GLOBE : CL_LOCK)}</span>` : '';
-    const name = `<span class="cl-hd">${tile ? '' : clIco(x)}<a class="cl-a" href="${q(abs(x.href))}">${q(x.name)}</a>${pv}</span>`;
+    const pv = x.pv ? `<span class="${tile ? 'cl-bg' : 'cl-pv'}${pub ? '' : ' off'}" role="img" aria-label="${q(x.pv)}"${tile ? '' : ` data-tip="${q(x.pv)}"`}>${SVG(pub ? CL_GLOBE : CL_LOCK)}</span>` : '';
+    const name = `<span class="cl-hd">${tile ? '' : clIco(x) + pv}<a class="cl-a" href="${q(abs(x.href))}">${q(x.name)}</a></span>`;
     const meta = [x.owner && `<span class="cl-by">${x.owner.replace(/href="\//g, `href="${MB}/`)}</span>`, x.co && `<span>${q(x.co)}</span>`, x.sub && `<span>${q(x.sub)}</span>`].filter(Boolean).join('');
-    const acts = x.edit || x.del ? `<span class="cl-acts">${x.edit ? `<a class="cl-ib" href="${q(abs(x.edit))}" aria-label="Edit ${q(x.name)}" data-tip="Edit">${MBU_EDIT_ICON}</a>` : ''}${x.del ? `<a class="cl-ib cl-rm" href="${q(abs(x.del))}" aria-label="Remove ${q(x.name)}" data-tip="Remove">${SVG(CL_TRASH)}</a>` : ''}</span>` : '';
+    const acts = x.edit || x.del ? `<span class="cl-acts">${x.edit ? `<a class="cl-ib" href="${q(abs(x.edit))}" aria-label="Edit ${q(x.name)}" data-tip="Edit">${MBU_EDIT_ICON}</a>` : ''}${x.del ? `<a class="cl-ib cl-rm" href="${q(abs(x.del))}" aria-label="Remove ${q(x.name)}" aria-haspopup="dialog" aria-expanded="false" data-tip="Remove">${SVG(CL_TRASH)}</a>` : ''}</span>` : '';
     return tile
-        ? `<div class="cl-item cl-tile">${name}<span class="cl-big">${q(x.ns || '0')}</span>${meta ? `<span class="cl-meta">${meta}</span>` : ''}${acts}</div>`
+        ? `<div class="cl-item cl-tile">${pv}${name}<span class="cl-foot"><span class="cl-big">${q(x.ns || '0')}</span>${acts}</span>${meta ? `<span class="cl-meta">${meta}</span>` : ''}</div>`
         : `<li class="cl-item cl-row"><span class="cl-nm">${name}${meta ? `<span class="cl-meta">${meta}</span>` : ''}</span><span class="cl-ty">${q(x.ty)}</span><span class="cl-ct">${q(x.ns || '0')}</span>${acts}</li>`;
 }
-// Confirm in the listing and send the same empty form as MusicBrainz's remove page.
+// Confirm in a small popup under the trash button and send the same empty form as MusicBrainz's remove page.
+const clCfmClose = () => { const p = document.querySelector('#app .cl-cfm'); if (!p) return; const a = p.parentElement.querySelector('.cl-rm'); if (a) a.setAttribute('aria-expanded', 'false'); p.remove(); return a; };
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && document.querySelector('#app .cl-cfm')) { ev.stopPropagation(); const a = clCfmClose(); if (a) a.focus(); } }, true);
 document.addEventListener('click', async ev => {
     if (!ehOn || !data || data.kind !== 'colls') return;
-    const cancel = ev.target.closest && ev.target.closest('#app [data-colcancel]');
-    // the trash button keeps its icon throughout; what it is about to do is said beside it
-    const say = (a, t) => { let s = a.querySelector('.cl-say'); if (!t) { if (s) s.remove(); return; } if (!s) { s = document.createElement('span'); s.className = 'cl-say'; a.append(s); } s.textContent = t; };
-    const lbl = a => { const n = a.closest('.cl-item'), x = n && n.querySelector('.cl-a'); return x ? x.textContent.trim() : 'collection'; };
-    if (cancel) { const a = cancel.previousElementSibling; if (a) { delete a.dataset.confirm; say(a, ''); a.setAttribute('aria-label', 'Remove ' + lbl(a)); } cancel.remove(); return; }
-    const a = ev.target.closest && ev.target.closest('#app a[href]');
-    if (!a) return;
-    const u = new URL(a.href, location.href), m = u.origin === location.origin && u.pathname.match(/^\/collection\/([0-9a-f-]{36})\/own_collection\/delete\/?$/i);
-    if (!m) return;
-    ev.preventDefault(); ev.stopImmediatePropagation();
-    if (a.dataset.busy) return;
-    if (!a.dataset.confirm) {
-        a.dataset.confirm = '1';
-        say(a, 'Confirm removal');
-        a.setAttribute('aria-label', 'Confirm removal of ' + lbl(a));
-        const cancel = document.createElement('button'); cancel.type = 'button'; cancel.className = 'lnk cl-cancel'; cancel.dataset.colcancel = '1'; cancel.textContent = 'Cancel'; a.after(cancel);
+    const t = ev.target.closest ? ev.target : null, open = document.querySelector('#app .cl-cfm');
+    if (t && t.closest('#app [data-colcancel]')) { const a = clCfmClose(); if (a) a.focus(); return; }
+    const go = t && t.closest('#app [data-colgo]');
+    if (go) {
+        ev.preventDefault();
+        const p = go.closest('.cl-cfm'), a = p && p.parentElement.querySelector('.cl-rm');
+        if (!a || go.disabled) return;
+        const u = new URL(a.href, location.href), m = u.pathname.match(/^\/collection\/([0-9a-f-]{36})\/own_collection\/delete\/?$/i);
+        if (!m) return;
+        go.disabled = true; go.textContent = 'Removing…';
+        const d = data;
+        try {
+            const r = await mbnFetch(u.href, { method: 'POST', credentials: 'include', body: new URLSearchParams() });
+            if (!r.ok || !/\/user\/[^/]+\/collections\/?$/.test(new URL(r.url || MB).pathname)) throw new Error('MusicBrainz did not confirm removal');
+            for (const s of d.c.secs) if (s.x) s.x.rows = s.x.rows.filter(r => !Array.isArray(r) || !r.some(c => c.includes('/collection/' + m[1] + '/own_collection/delete')));
+            COLLECTIONS.clear(); try { GM_setValue('collections', {}); } catch (e) {}
+            kpWrote(); toast('Collection removed'); if (data === d) render();
+        } catch (e) { clCfmClose(); toast('Could not remove collection: ' + e.message); }
         return;
     }
-    a.dataset.busy = '1'; say(a, 'Removing…'); if (a.nextElementSibling && a.nextElementSibling.hasAttribute('data-colcancel')) a.nextElementSibling.remove();
-    const d = data;
-    try {
-        const r = await mbnFetch(u.href, { method: 'POST', credentials: 'include', body: new URLSearchParams() });
-        if (!r.ok || !/\/user\/[^/]+\/collections\/?$/.test(new URL(r.url || MB).pathname)) throw new Error('MusicBrainz did not confirm removal');
-        for (const s of d.c.secs) if (s.x) s.x.rows = s.x.rows.filter(r => !Array.isArray(r) || !r.some(c => c.includes('/collection/' + m[1] + '/own_collection/delete')));
-        COLLECTIONS.clear(); try { GM_setValue('collections', {}); } catch (e) {}
-        kpWrote(); toast('Collection removed'); if (data === d) render();
-    } catch (e) { a.dataset.busy = ''; delete a.dataset.confirm; say(a, ''); toast('Could not remove collection: ' + e.message); }
+    if (open && !(t && t.closest('#app .cl-cfm'))) { clCfmClose(); if (!(t && t.closest('#app .cl-rm'))) return; }
+    const a = t && t.closest('#app a.cl-rm[href]');
+    if (!a) return;
+    const u = new URL(a.href, location.href);
+    if (u.origin !== location.origin || !/^\/collection\/[0-9a-f-]{36}\/own_collection\/delete\/?$/i.test(u.pathname)) return;
+    ev.preventDefault(); ev.stopImmediatePropagation();
+    if (open && open.parentElement === a.parentElement) return;   // its own popup was open: the click closed it
+    const n = a.closest('.cl-item'), x = n && n.querySelector('.cl-a'), name = x ? x.textContent.trim() : 'this collection';
+    const p = document.createElement('div');
+    p.className = 'pop cl-cfm' + (a.getBoundingClientRect().left > innerWidth / 2 ? ' r' : '');
+    p.setAttribute('role', 'dialog'); p.setAttribute('aria-label', 'Remove collection');
+    p.innerHTML = `<p>Remove <b>${esc(name)}</b>?</p><div class="cl-cfm-b"><button type="button" data-colcancel>Cancel</button><button type="button" data-colgo>Remove</button></div>`;
+    a.parentElement.append(p); a.setAttribute('aria-expanded', 'true');
+    LOG.debug('collections: confirm removal of', name);
+    p.querySelector('[data-colgo]').focus();
 }, true);
 /* ── a new collection ─────────────────────────────── */
 // /collection/create[?<type>=<id>]: MusicBrainz's form, read for its words and its types (which follow the entity it starts with),

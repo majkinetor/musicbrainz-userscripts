@@ -18,9 +18,12 @@ test('removes a collection inline without reloading', { tag: ['@sandbox', '@logi
     const remove = page.locator(`#app a[href*="${id}/own_collection/delete"]`);
     await expect(remove).toBeVisible();
     await remove.click();
-    await expect(remove).toContainText('Confirm removal');
-    await expect(page.locator('#app [data-colcancel]')).toBeVisible();
+    const pop = page.locator('#app .cl-cfm');
+    await expect(pop).toContainText(name);
+    await pop.locator('[data-colcancel]').click();
+    await expect(pop).toHaveCount(0);
     await remove.click();
+    await pop.locator('[data-colgo]').click();
     await expect(remove).toHaveCount(0);
     expect(await page.evaluate(() => window.__noReload)).toBe(1);
     const list = await (await page.request.get(mb + '/user/majkinetor/collections')).text();
