@@ -1,7 +1,11 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
+<<<<<<< HEAD
 // @version      2026.11.19.004000
+=======
+// @version      2026.11.18.234500
+>>>>>>> 80c60d447 (Event Horizon: the search box's hint names the picked type, and the top bar's search takes the type letters too)
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11335,7 +11339,7 @@ function srchWire(app) {
             td.hidden = !on; tb.setAttribute('aria-expanded', on);
             if (on) { const cp = f.querySelector('.hm-ctl.open'); if (cp) mmShow(false); td.style.right = (cp ? 0 : Math.max(0, f.clientWidth - tb.offsetLeft - tb.offsetWidth)) + 'px'; (td.querySelector('[aria-selected=true]') || opts()[0]).focus(); }
         };
-        const set = v => { f.type.value = v; tb.firstChild.textContent = srchName(v); opts().forEach(b => b.setAttribute('aria-selected', b.dataset.v === v)); f.dispatchEvent(new Event('eh-type')); };
+        const set = v => { f.type.value = v; tb.firstChild.textContent = srchName(v); f.query.placeholder = srchHint(v); opts().forEach(b => b.setAttribute('aria-selected', b.dataset.v === v)); f.dispatchEvent(new Event('eh-type')); };
         const pick = v => { set(v); tshow(false); tb.focus(); };
         // a type's letter and a space at the start of the box picks that type at once and leaves the words: "e " is Editor
         // (capture, so the recent-search list filters on the words alone)
@@ -11652,6 +11656,15 @@ function srchKey(fm) {
     if (!t || ![...ty.options].some(o => o.value === t)) return;
     q.value = m[2]; ty.value = t;
 }
+// the box's hint for a type: "Search artists"
+const srchHint = t => 'Search ' + (t === 'doc' ? 'documentation' : t === 'series' ? 'series' : srchName(t).toLowerCase() + 's');
+// the top bar's search: a type's letter and a space at the start picks the type, like the home search's
+document.addEventListener('input', e => {
+    const f = e.target.closest && e.target.closest('form.srch'); if (!f || e.target !== f.query) return;
+    const m = /^([a-z]) ([sS]*)$/.exec(f.query.value), k = m && Object.keys(SRCH_K).find(t => SRCH_K[t] === m[1]);
+    if (k) { f.query.value = m[2]; f.query.setSelectionRange(0, 0); f.type.value = k; f.query.placeholder = srchHint(k); }
+}, true);
+document.addEventListener('change', e => { const f = e.target.closest && e.target.closest('form.srch'); if (f && e.target === f.type) f.query.placeholder = srchHint(f.type.value); }, true);
 const srchName = t => t === 'doc' ? 'Documentation' : t === 'cdstub' ? 'CD stub' : (t[0].toUpperCase() + t.slice(1)).replace('_', ' ');
 function searchHtml(d) {
     const p = new URLSearchParams(d.qs), s = d.s;
