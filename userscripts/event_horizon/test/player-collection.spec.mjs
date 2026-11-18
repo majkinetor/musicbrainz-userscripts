@@ -41,6 +41,7 @@ test('saves the queue to a new recording collection', { tag: ['@sandbox', '@logi
     await page.locator('#eh-ply-menu [data-m="loadcoll"]').click();
     await page.locator('#eh-ply-menu button').filter({ hasText: name }).click();
     await expect.poll(async () => (await page.evaluate(() => window.__ehPlayerTest.state())).q.length).toBe(2);
+    await page.locator(`[data-colplay="${first.mbid}"]`).locator('..').hover();
     await page.locator(`[data-colplay="${first.mbid}"]`).click();
     await expect.poll(async () => (await page.evaluate(() => window.__ehPlayerTest.state())).q.length).toBe(1);
     await page.locator('[data-colplay="all"]').click();
@@ -71,6 +72,7 @@ test('plays a release collection and an individual release', { tag: ['@sandbox',
     await inject('event_horizon', { waitFor: '__ehPlayerTest' });
     await page.locator('[data-colplay="all"]').click();
     await expect.poll(async () => (await page.evaluate(() => window.__ehPlayerTest.state())).q.length).toBe(2);
+    await page.locator(`[data-colplay="${rel.mbid}"]`).locator('..').hover();
     await page.locator(`[data-colplay="${rel.mbid}"]`).click({ button: 'right' });
     await expect.poll(async () => (await page.evaluate(() => window.__ehPlayerTest.state())).q.length).toBe(4);
   } finally { await page.request.post(`${mb}/collection/${gid}/own_collection/delete`, { form: {} }); }
