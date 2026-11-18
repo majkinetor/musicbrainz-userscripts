@@ -7900,10 +7900,18 @@ function aliasCredits(doc) {
         return { html: bdi.innerHTML, uses: uses ? uses.getAttribute('href') : '', edit: edit ? edit.getAttribute('href') : '' };
     }).filter(Boolean);
 }
+// A release's tabs keep the header of its other pages (Details, Disc IDs): the format, the release group's count, the
+// cover. Only the overview has its own. The release comes as the header's answer; a cached one is there at once.
+function relTabHd(d, eid, tab, name, title) {
+    if (!('rel' in d)) { d.rel = null; let sync = true; relHd(eid, r => { if (data !== d) return; d.rel = r; if (!sync) render(); }); sync = false; }
+    return `<section class="arthd">${subHead(d.rel, eid, tab, name, `<h1>${esc(title || ' ')}</h1>`)}</section>`;
+}
+// the header's wiring: a release tab's (cover) or an entity's (picture)
+const tabHdWire = app => { const ah = app.querySelector('.arthd'); if (ah) (ah.querySelector('.rhcv') ? cvWire : entHeadWire)(ah); };
 function aliasesHtml(d) {
     const [ty, eid] = d.ent.split(':'), t = d.t || {}, xs = d.credits || [];
     const title = t.en || t.name || 'Aliases';
-    return `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Aliases · ' + (HM_KIND[ty] || [ty])[0], title, disamb: t.ed, by: t.by, acts: entActs(ty, eid, 'aliases') })}</section>
+    return `${ty === 'release' ? relTabHd(d, eid, 'aliases', 'Aliases', t.en || t.name) : `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Aliases · ' + (HM_KIND[ty] || [ty])[0], title, disamb: t.ed, by: t.by, acts: entActs(ty, eid, 'aliases') })}</section>`}
 <section class="sec" id="s-ali"><div class="secthead"><h2>Aliases <span class="count">${d.n == null ? '' : d.n}</span></h2></div><div id="al-body">${d.err ? `<p class="msg">Could not open the alias editor: ${esc(d.err)}</p>` : '<p class="msg">Loading…</p>'}</div></section>
 ${xs.length ? `<section class="sec" id="s-acr"><div class="secthead"><h2>Artist credits <span class="count">${xs.length}</span></h2></div><ul class="eh-ac">${xs.map(x => `<li><bdi>${x.html}</bdi>${x.uses ? `<a class="eh-ac-u" href="${MB}${esc(x.uses)}">See uses</a>` : ''}${x.edit ? `<a class="eh-ac-e" href="${MB}${esc(x.edit)}">Edit</a>` : ''}</li>`).join('')}</ul></section>` : ''}`;
 }
@@ -9249,7 +9257,7 @@ async function recsMore(d) {
 function relsHtml(d) {
     const t = d.t, [ty, eid] = d.ent.split(':');
     const acts = ty === 'url' ? '' : actionRow(ty === 'release-group' ? RG_ACTS : ty === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS, ty, eid, d.mode || 'relationships');
-    const head = `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: ty === 'url' ? 'URL' : (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · ' + (HM_KIND[ty] || [ty])[0], title: t && t.name, disamb: t && t.dis, by: t && t.by, acts })}</section>`;
+    const head = ty === 'release' ? relTabHd(d, eid, d.mode || 'relationships', d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships', t && t.name) : `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: ty === 'url' ? 'URL' : (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · ' + (HM_KIND[ty] || [ty])[0], title: t && t.name, disamb: t && t.dis, by: t && t.by, acts })}</section>`;
     if (!t) return head + `<p class="hm-none">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : `Loading the ${d.mode || 'relationships'}…`}</p>`;
     if (!relsN(t)) return head + `<p class="hm-none">No ${d.mode || 'relationships'}.</p>`;
     return head + (d.mode ? relsApps(t, d) : t.cards.map(relsCard).join('') + relsApps(t));
@@ -9273,7 +9281,7 @@ function tagsHtml(d) {
         : `<section class="u-hero"><span class="hm-av u-av">${mkSvg(CI_TAG).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>Tags</span><span class="acts">${SRCH()}</span></div><h1>${esc(title)}</h1>`
         + `<p class="u-sub">${sub}</p>${back ? `<nav class="u-tabs">${back}</nav>` : ''}</div></section>`;
     const [ty, eid] = d.ent ? d.ent.split(':') : [];
-    const head = d.ent ? `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Tags · ' + (HM_KIND[ty] || [ty])[0], title: t && (t.en || t.name), disamb: t && t.ed, by: t && t.by, acts: entActs(ty, eid, 'tags') })}</section>` : hero;
+    const head = ty === 'release' ? relTabHd(d, eid, 'tags', 'Tags', t && (t.en || t.name)) : d.ent ? `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Tags · ' + (HM_KIND[ty] || [ty])[0], title: t && (t.en || t.name), disamb: t && t.ed, by: t && t.by, acts: entActs(ty, eid, 'tags') })}</section>` : hero;
     return head + `<section class="sec" id="s-tg"><div class="secthead"><h2>Tags${t ? ` <span class="count">${fmtN(all.length)}</span>` : ''}</h2>${d.ent && ME ? `<span class="tg-new">${tgNew(d)}</span>` : ''}<div class="tools tg-tools">${tgTools(d)}</div></div><div id="tg-body">${tgBody(d)}</div></section>`;
 }
 const TG_PLUS = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
@@ -10607,19 +10615,19 @@ function renderDraw(keepPop) {
     if (data.kind === 'tags') {
         // a background redraw leaves the tag being typed as it was, focus included
         const nw = $('#tg-new'), a = document.activeElement, typing = a && (a.id === 'tg-new' || a.id === 'tg-q') ? a.id : '', at = typing ? a.selectionStart : 0, text = nw ? nw.value : '';
-        ehMorph(app, tagsHtml(data)); tagsWire(); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); pinBar(app); document.getElementById('eh-rail')?.remove();
+        ehMorph(app, tagsHtml(data)); tagsWire(); tabHdWire(app); pinBar(app); document.getElementById('eh-rail')?.remove();
         const ni = $('#tg-new'); if (ni && text) ni.value = text;
         const back = typing && document.getElementById(typing); if (back) { back.focus({ preventScroll: true }); back.setSelectionRange(at, at); }
         return;
     }
     if (data.kind === 'aliases') {
         const a = document.activeElement, keep = alBox && alBox.el.contains(a) ? a : null;
-        ehMorph(app, aliasesHtml(data)); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah);
+        ehMorph(app, aliasesHtml(data)); tabHdWire(app);
         if (alBox && alBox.key === data.key) $('#al-body').replaceChildren(alBox.el);
         secRail(app); pinBar(app); save(); if (keep) keep.focus({ preventScroll: true });
         return;
     }
-    if (data.kind === 'rels') { ehMorph(app, relsHtml(data)); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); dgWire(app); secRail(app); pinBar(app); lmWatch(app); shWatch(app); save(); return; }
+    if (data.kind === 'rels') { ehMorph(app, relsHtml(data)); tabHdWire(app); dgWire(app); secRail(app); pinBar(app); lmWatch(app); shWatch(app); save(); return; }
     if (data.kind === 'tagx') { ehMorph(app, tagxHtml(data)); tagxWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'rates') { ehMorph(app, ratesHtml(data)); ratesWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'colls') { ehMorph(app, collsHtml(data)); secRail(app); save(); return; }
@@ -13877,7 +13885,7 @@ function mbHead() {
 // release group or an event, and its title and credits off MusicBrainz's header
 function formHeader(key) {
     const [, type, id, form] = key.split('/');
-    if (type === 'release' && !['details', 'releases'].includes(form)) return relHeader(id, form, FORMS[form]);
+    if (type === 'release' && form !== 'releases') return relHeader(id, form, FORMS[form]);
     if (type === 'user') return userFormHeader(id, form);
     if (type === 'seed') {
         const hd = hdSect(), h1 = document.querySelector('#content > h1, #page > h1');
