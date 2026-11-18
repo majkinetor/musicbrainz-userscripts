@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-18 14:04 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-18 14:05 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1907,7 +1907,7 @@ Match never groups:
 
 A group's chips show the signals that hold for **every** member; one that holds for some is partial.
 
-The **( RG )** chip compares the release groups of the releases known for each recording: green when all share one, amber when they do not, and dim when a member has no known release group. The automatic edit note includes the result when known.
+The **RG** chip compares the release groups of the releases known for each recording: green when all share one, amber when they do not, and dim when a member has no known release group. The automatic edit note includes the result when known.
 
 #### Include pending edits
 
@@ -1937,7 +1937,7 @@ Artists, releases, release groups, works, labels, places, events and series are 
 - Add them with the [add menu](#adding), or paste a MusicBrainz link or MBID into the field under **+** in the pool's header.
 - The pool and the groups work as the recordings' do, with the same filter, **Sort** and ◀ fold: select, drag or double-click entries into a group, ★ for the one that's kept, ↩ and ✕, ✎ for the edit note. **Group all** puts the selection, or the pool as filtered, in one group.
 - A group's chips show the fields all its members share, and a value shared by some is tinted alike in the rows. A release group of releases needs a merge strategy before it can merge: append mediums or merge them. None is preselected.
-- The **( RG )** chip on a release group card compares the releases' release groups, and the automatic edit note includes the result when known. Older entries may need to be added again to supply it.
+- The **RG** chip on a release group card compares the releases' release groups, and the automatic edit note includes the result when known. Older entries may need to be added again to supply it.
 - In an artist group, the **Alias** chip says when one member's name is an alias of another: green when it matches exactly, partial when every word of the name is in the alias. The matched alias shows under that name.
 - **Merge** submits one group, **Merge All** every group in turn; **Clear ▾** clears all of this type, empties the pool, returns the groups to the pool, or removes the merged ones.
 
