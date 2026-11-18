@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.233000
+// @version      2026.11.18.235500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -15458,9 +15458,18 @@ function histRuns(es) {
     }).join('');
 }
 function histGroup(key, title, es, av, nm) {
-    const d = data, ents = {}; es.forEach(e => { const k = histEnt(e.tk); ents[k] = (ents[k] || 0) + 1; });
+    const d = data, ents = {}; if (d.hgEs) d.hgEs.set(key, es); es.forEach(e => { const k = histEnt(e.tk); ents[k] = (ents[k] || 0) + 1; });
     const when = histSpan(es[es.length - 1].t, es[0].t);
     return `<div class="hgrp${d.open.has(key) ? ' open' : ''}" data-hg="${esc(key)}"><div class="hgh"><div class="hgi">${av ? `<span class="hav" style="background:hsl(${histHue(nm || '')} 45% 45%)">${esc((nm || '?')[0].toUpperCase())}</span>` : ''}<span class="t">${title}</span><span class="m">${es.length} edit${es.length > 1 ? 's' : ''}${d.grp === 'burst' ? ' · ' + when : ''}</span>${Object.entries(ents).map(([k, c]) => `<span class="htc" data-tip="${c} ${esc(k)}">${SVG(H_ICO[histIk(k)])}${c > 1 ? `<b>${c}</b>` : ''}</span>`).join('')}<span class="sp"></span>${histPills(es)}</div><div class="hga">${histGroupVote(es)}${histGroupCx(es)}</div></div><div class="hgb">${d.open.has(key) ? histRuns(es) : ''}</div></div>`;
+}
+// opens or folds one group where it is, the others untouched
+function histGroupSet(app, d, g, open, many) {
+    const k = g.dataset.hg; if (d.open.has(k) === open && g.classList.contains('open') === open) return;
+    open ? d.open.add(k) : d.open.delete(k);
+    g.classList.toggle('open', open);
+    const b = g.querySelector(':scope>.hgb'); if (b) b.innerHTML = open ? histRuns((d.hgEs && d.hgEs.get(k)) || []) : '';
+    LOG.debug(`History: group ${open ? 'opened' : 'folded'} in place`, k);
+    if (!many) hbWatch(app);
 }
 function histPage(app, d) {
     const r = d.rel, rid = histRid(d.id), src = histSrc(d.id), acts = (rid ? backA(rid) + actionRow(relActs(r), 'release', rid, 'edits') : '') + SRCH();
@@ -15468,7 +15477,7 @@ function histPage(app, d) {
     const kick = r ? `${fmtSvg(fk, 18)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : `<span>${rid ? esc(histName(d.id)) : 'MusicBrainz edits'}</span>`;
     const es = d.st ? d.edits.filter(e => e.st === d.st) : d.edits;
     const name = e => e.ed ? `<a href="${MB}/user/${encodeURIComponent(e.ed)}">${esc(e.ed)}</a>` : 'Editor hidden';
-    let body = '';
+    let body = ''; d.hgEs = new Map();
     if (histOne(d.id)) body = d.edits.map(e => histEdit(e).replace('<details class="hed"', '<details class="hed one" open')).join('');
     else if (d.grp === 'burst' || d.grp === 'day') {
         const gs = d.grp === 'burst' ? histBursts(es) : es.reduce((a, e) => { const g = a[a.length - 1]; if (g && histDay(g.es[0].t) === histDay(e.t)) g.es.push(e); else a.push({ es: [e] }); return a; }, []);
@@ -15506,15 +15515,12 @@ function histPage(app, d) {
         // Load more's caret opens its menu in the page-wide click handler, as on every list: a second toggle here shut it again
         else if (t.closest('[data-lmmenu]')) return;
         else if (t.closest('[data-hmore]')) { d.err = ''; histLoad(showing, +t.closest('[data-hmore]').dataset.hmore || 0); }
-        else if (h && !t.closest('a,button')) { const k = h.parentNode.dataset.hg; d.open.has(k) ? d.open.delete(k) : d.open.add(k);
-            // the render redraws every group: the other groups keep the edits and runs open in them
-            const keep = new Map([...app.querySelectorAll('.hgrp')].map(g => [g.dataset.hg, [...g.querySelectorAll('details')].map(x => x.open)]));
+        else if (h && !t.closest('a,button')) {
+            // the group opens or folds in place: a full render rebuilt every other group too, and Fusion's cards in them redrew and jumped
             // the clicked header stays where it was on screen: a long group folding shortened the page and left it scrolled off the top
-            const y = scrollY, top = h.getBoundingClientRect().top; render();
-            app.querySelectorAll('.hgrp').forEach(g => { const o = g.dataset.hg !== k && keep.get(g.dataset.hg); if (o) g.querySelectorAll('details').forEach((x, i) => { if (i < o.length) x.open = o[i]; }); });
-            scrollTo(0, y);
-            const nh = [...app.querySelectorAll('.hgrp')].find(g => g.dataset.hg === k)?.querySelector('.hgh');
-            if (nh) scrollBy(0, nh.getBoundingClientRect().top - top); }
+            const g = h.parentNode, top = h.getBoundingClientRect().top;
+            histGroupSet(app, d, g, !d.open.has(g.dataset.hg));
+            scrollBy(0, h.getBoundingClientRect().top - top); }
     };
     // right-click on a row: it and its siblings all open, or all close when it is open
     app.oncontextmenu = ev => {
@@ -15525,7 +15531,7 @@ function histPage(app, d) {
         const h = !item && group && group.querySelector('.hgh');
         if (!h && !item) return;
         ev.preventDefault();
-        if (h) { const keys = [...app.querySelectorAll('.hgrp')].map(g => g.dataset.hg), open = !d.open.has(h.parentNode.dataset.hg); keys.forEach(k => open ? d.open.add(k) : d.open.delete(k)); const y = scrollY; render(); scrollTo(0, y); return; }
+        if (h) { const open = !d.open.has(h.parentNode.dataset.hg), top = h.getBoundingClientRect().top; app.querySelectorAll('.hgrp').forEach(g => histGroupSet(app, d, g, open, true)); hbWatch(app); scrollBy(0, h.getBoundingClientRect().top - top); return; }
         const me = item, open = !me.open;
         [...me.parentNode.children].filter(x => x.tagName === 'DETAILS').forEach(x => { x.open = open; });
     };
