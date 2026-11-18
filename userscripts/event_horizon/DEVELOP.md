@@ -40,6 +40,8 @@ Platform Check follows it ([its DEVELOP.md](../platform_check/DEVELOP.md#followi
 
 ## The page shown
 
+Account pages use the cached profile avatar and tabs when both are available; otherwise they fetch the signed-in editor's profile once to fill the header. Applications confirms revocation in the row, posts MusicBrainz's confirmation form and removes the row only after the returned applications page no longer lists the grant.
+
 While Event Horizon shows, `<html>` carries `data-mbu-page` with the page's path and query; off, it is removed. `ehPageMark` sets it, beside `ehRelMark`.
 
 String Theory reads it ([its DEVELOP.md](../string_theory/DEVELOP.md#runtime)): a tab loaded on a page a script isn't for never starts that script, so a release reached inside Event Horizon from the home page had no Platform Check, ISRC Scout or Mission Control at all, though all three can read the release from the API. String Theory starts them there. Falcon, which runs on every page, watches it to put its icon on a release, release group or series.

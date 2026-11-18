@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-18 17:09 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-18 17:12 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -863,7 +863,7 @@ When MB page has Event Horizon redesign available, EH dock button shows on the n
 - **Pictures**: an artist's or label's comes from its linked sites, including Bandcamp and YouTube Music (click for the next, the source icon opens a thumbnail gallery to choose an image, grouping matching photos into one thumbnail with clickable source icons beneath it; cycling uses the same distinct photos), and when none was found, Retry image asks them again; an area's is its Wikidata map with the flag; a place's its Commons or Wikidata image; an event's its front from the Event Art Archive.
 - **History** groups a release's edits, and MusicBrainz's other edit lists, into bursts; **a single edit** opens with its changes under the release it touches.
 - **Art**, the cover-art page and the add-cover-art page alike, holds Art Station's gallery under the release's title; an event's event-art and add-event-art pages hold it under the event's.
-- **Account pages**, including Applications, keep MusicBrainz's controls under your Event Horizon profile header.
+- **Account pages**, including Applications, keep MusicBrainz's controls under your Event Horizon profile header. Revoke an application's access in its row, with confirmation and cancel.
 - **Covers**: click a release's cover, thumbnail or Artwork image to view all its covers full screen in Art Station gallery.
 - **Relate**, the release's relationship editor, stays MusicBrainz's but takes Event Horizon's look; its regions and tracks fold like cards.
 - **Long titles**: a subtitle after a colon or dash sits smaller on its own line, long titles shrink, and very long ones stop at four lines with **Show full title**. Every page header follows this, and titles in grids, tables and track lists stop at three lines.

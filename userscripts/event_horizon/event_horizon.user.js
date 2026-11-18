@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.235901
+// @version      2026.11.18.235902
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8914,6 +8914,14 @@ function userNav(tabs) {
     const acc = tabs.filter(t => /^(https?:\/\/[^/]+)?\/account\//.test(t[1])), pub = tabs.filter(t => !acc.includes(t));
     return `<nav class="u-nav" aria-label="Editor"><span class="u-ng">${pub.map(a).join('')}</span>${acc.length ? `<span class="u-ng acc">${acc.map(a).join('')}</span>` : ''}</nav>`;
 }
+function userTabsComplete(name, tabs) {
+    if (name !== ME) return tabs || [];
+    const base = '/user/' + encodeURIComponent(name), result = (tabs || []).slice();
+    const defaults = [['Profile', base], ['Subscriptions', base + '/subscriptions'], ['Subscribers', base + '/subscribers'], ['Collections', base + '/collections'], ['Tags', base + '/tags'], ['Ratings', base + '/ratings'], ['Edit profile', '/account/edit'], ['Preferences', '/account/preferences'], ['Donation check', '/account/donation'], ['Applications', '/account/applications']];
+    const path = h => { try { return new URL(h, location.href).pathname.replace(/\/$/, ''); } catch (_) { return ''; } };
+    for (const [label, href] of defaults) if (!result.some(t => path(t[1]) === href)) result.push([label, href, path(location.href) === href]);
+    return result;
+}
 // the one header of an editor's pages: avatar, name and tabs; what the page itself says or does sits in a bar under it
 // a page's tabs arrive with its data: until then the editor's last ones stand in, the open one by this address, so the header draws whole at once
 function tabsKept(name, tabs) {
@@ -8924,7 +8932,7 @@ function tabsKept(name, tabs) {
     const path = u => u.replace(/^https?:\/\/[^/]+/, '').replace(/[?#].*$/, '').replace(/\/$/, ''), here = path(location.pathname);
     return t.map(([a, h]) => [a, h, path(h) === here]);
 }
-const userHead = (name, av, tabs, _t = tabsKept(name, tabs)) => `<section class="u-hero u-hd">${userAv(name, av)}<div class="u-id"><div class="kicker label u-k"><span class="acts">${SRCH()}</span></div><h1><a href="${MB}/user/${encodeURIComponent(name)}">${esc(name)}</a></h1>${userNav(_t) || '<nav class="u-nav"></nav>'}</div></section>`;
+const userHead = (name, av, tabs, _t = tabsKept(name, tabs)) => `<section class="u-hero u-hd">${userAv(name, av)}<div class="u-id"><div class="kicker label u-k"><span class="acts">${SRCH()}</span></div><h1><a href="${MB}/user/${encodeURIComponent(name)}">${esc(name)}</a></h1>${userNav(userTabsComplete(name, _t)) || '<nav class="u-nav"></nav>'}</div></section>`;
 const userBar = (...xs) => { xs = xs.filter(Boolean); return xs.length ? `<div class="u-pbar">${xs.join('')}</div>` : ''; };
 function collsHtml(d) {
     const c = d.c, abs = h => h.startsWith('/') ? MB + h : h, mine = d.name === ME;
@@ -13709,7 +13717,7 @@ const detKey = href => { const u = new URL(href, location.href), m = u.origin ==
 // a release's Edit annotation → "ann/<mbid>": a click only, like Details (loaded, it is formKey's)
 const annKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/edit_annotation/?$', 'i')); return m ? 'ann/' + m[1].toLowerCase() : null; };
 // an editor's subscriptions and subscribers, and your account's pages, clicked → "upg/<path and query>": fetched into the tab
-const upgKey = href => { const u = new URL(href, location.href), ok = u.origin === location.origin && (/^\/user\/[^/]+\/(subscriptions|subscribers)(\/[a-z_-]+)?\/?$/.test(u.pathname) || /^\/account\/(edit|preferences|donation)\/?$/.test(u.pathname)); return ok ? 'upg/' + encodeURIComponent(u.pathname + u.search) : null; };
+const upgKey = href => { const u = new URL(href, location.href), ok = u.origin === location.origin && (/^\/user\/[^/]+\/(subscriptions|subscribers)(\/[a-z_-]+)?\/?$/.test(u.pathname) || /^\/account\/(edit|preferences|donation|applications)\/?$/.test(u.pathname)); return ok ? 'upg/' + encodeURIComponent(u.pathname + u.search) : null; };
 const inTab = href => navTo(href) || histKey(href) || artIn(href) || discKey(href) || detKey(href) || annKey(href) || relKey(href) || upgKey(href);
 const keyOf = href => navTo(href) || artKey(href) || discKey(href) || histKey(href) || relKey(href) || formKey(href);
 // let: the seed confirmation page (another site seeding the release editor, a POST to /release/add or …/edit) shares
@@ -13962,17 +13970,35 @@ async function upgLoad(n, d) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
         const doc = new DOMParser().parseFromString(await r.text(), 'text/html'), c = doc.querySelector('#content') || doc.querySelector('#page');
         const tabs = c && c.querySelector(':scope > .tabs');
-        if (!tabs) throw new Error('not an editor page (logged out?)');
+        const applications = /^\/account\/applications\/?(?:\?|$)/.test(d.path);
+        if (!tabs && !applications) throw new Error('not an editor page (logged out?)');
+        if (!c || (applications && !c.querySelector('a[href="/account/applications/register"]'))) throw new Error('not an applications page (logged out?)');
         const tx = e => e ? e.textContent.replace(/\s+/g, ' ').trim() : '', h1 = c.querySelector('h1'), img = h1 && h1.querySelector('img.avatar:not(.no-avatar)');
-        const tl = [...tabs.querySelectorAll('a[href]')].map(a => [tx(a), a.getAttribute('href'), !!a.closest('li.sel')]), name = tx(h1) || d.name;
+        const tl = tabs ? [...tabs.querySelectorAll('a[href]')].map(a => [tx(a), a.getAttribute('href'), !!a.closest('li.sel')]) : [], name = applications ? ME : tx(h1) || d.name;
         const acc = d.path.match(/^\/account\/([a-z]+)/);
         if (name === ME && !tl.some(t => /^(https?:\/\/[^/]+)?\/account\//.test(t[1]))) tl.push(...['edit', 'preferences', 'donation'].map(f => [FORMS[f], '/account/' + f, !!acc && acc[1] === f]));
         const box = doc.createElement('div');
-        let el = tabs.nextElementSibling;
-        while (el) { const nx = el.nextElementSibling; box.append(el); el = nx; }
+        let el = tabs ? tabs.nextElementSibling : c.firstElementChild;
+        while (el) { const nx = el.nextElementSibling; if (el !== h1) box.append(el); el = nx; }
         box.querySelectorAll('form').forEach(f => { f.action = new URL(f.getAttribute('action') || d.path, MB + d.path).href; });
         const sub = subsNav(box, d.path);
         d.c = { name, av: img ? img.getAttribute('src') || '' : '', tabs: tl, sub, html: box.innerHTML };
+        if (acc && name === ME) {
+            let cached = null; try { cached = JSON.parse(sessionStorage.getItem('eh-tabs:' + name)); } catch (_) {}
+            if (!avOf(name, d.c.av) || !Array.isArray(cached) || !cached.length) {
+                try {
+                    const profile = await mbnFetch(`${MB}/user/${encodeURIComponent(name)}`, { credentials: 'include' });
+                    if (!profile.ok) throw new Error('HTTP ' + profile.status);
+                    const u = userParse(await profile.text()); let gh = '';
+                    try { gh = GM_getValue('gravatar', ''); } catch (_) {}
+                    if (!gh && u.mail) gh = await sha256(u.mail);
+                    d.c.av = avKept(name, u.av || (gh && `https://gravatar.com/avatar/${gh}?s=192&d=404`));
+                    cached = (u.tabs || []).map(([label, href]) => [label, href, false]);
+                    if (cached.length) tabsKept(name, cached);
+                } catch (e) { LOG.warn('Profile header: ' + e.message); }
+            }
+            if (Array.isArray(cached) && cached.length) d.c.tabs = cached.map(([label, href]) => [label, href, false]);
+        }
         LOG.info(`Editor page ${d.path} in the tab`);
     } catch (e) { LOG.err('Loading ' + d.path + ' failed: ' + e.message); d.err = e.message; }
     if (n === showing && data === d) render();
@@ -14324,16 +14350,58 @@ function userFormHeader(id, form) {
     const name = id === '-' ? ME || (h1 ? h1.textContent.trim() : '') : decodeURIComponent(id), tx = n => n.textContent.replace(/\s+/g, ' ').trim();
     const ul = c && c.querySelector('ul.tabs'), tabs = ul ? [...ul.querySelectorAll('a[href]')].map(a => [tx(a), a.getAttribute('href'), !!a.closest('li.sel')]) : [];
     const img = h1 && h1.querySelector('img.avatar:not(.no-avatar)'), av = img ? (img.getAttribute('src') || '').replace(/^\/\//, 'https://') : '';
-    // Add account tabs absent from MusicBrainz's page, marking the open one.
-    if (id === '-' && name) for (const f of ['edit', 'preferences', 'donation', 'applications']) {
-        if (!tabs.some(t => { try { return new URL(t[1], location.href).pathname.replace(/\/$/, '') === '/account/' + f; } catch (_) { return false; } })) tabs.push([FORMS[f], '/account/' + f, f === form]);
-    }
     [ul, h1 && (h1.closest('#content > *, #page > *') || h1)].forEach(x => x && x.classList.add('eh-mbhd'));
     hd.innerHTML = userAv(name, av)
         + `<div class="rhtx"><div class="kicker label u-k"><span class="acts"><a class="ab ov" href="${MB}/user/${encodeURIComponent(name)}" data-tip="Profile" aria-label="Profile">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>${SRCH()}</span></div>`
-        + `<h1><a href="${MB}/user/${encodeURIComponent(name)}">${esc(name)}</a></h1>${userNav(tabs)}${form === 'subscriptions' && c ? subsNav(c, location.pathname) : ''}</div>`;
+        + `<h1><a href="${MB}/user/${encodeURIComponent(name)}">${esc(name)}</a></h1>${userNav(userTabsComplete(name, tabs))}${form === 'subscriptions' && c ? subsNav(c, location.pathname) : ''}</div>`;
+    let cachedTabs = null;
+    try { cachedTabs = JSON.parse(sessionStorage.getItem('eh-tabs:' + name)); } catch (_) {}
+    if (id === '-' && name && Array.isArray(cachedTabs) && cachedTabs.length) {
+        const nav = hd.querySelector('.u-nav');
+        if (nav) nav.outerHTML = userNav(userTabsComplete(name, cachedTabs.map(([label, href]) => [label, href, false])));
+    }
+    if (id === '-' && name && (!avOf(name, av) || !Array.isArray(cachedTabs) || !cachedTabs.length)) Promise.resolve().then(async () => {
+        const r = await mbnFetch(`${MB}/user/${encodeURIComponent(name)}`, { credentials: 'include' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const u = userParse(await r.text());
+        let gh = ''; try { gh = GM_getValue('gravatar', ''); } catch (_) {}
+        if (!gh && u.mail) gh = await sha256(u.mail);
+        const image = avKept(name, u.av || (gh && `https://gravatar.com/avatar/${gh}?s=192&d=404`));
+        const old = hd.querySelector('.u-av'); if (old) old.outerHTML = userAv(name, image);
+        const profileTabs = (u.tabs || []).map(([label, href]) => [label, href, false]);
+        if (profileTabs.length) tabsKept(name, profileTabs);
+        const nav = hd.querySelector('.u-nav'); if (nav) nav.outerHTML = userNav(userTabsComplete(name, profileTabs));
+    }).catch(e => LOG.warn('Profile header: ' + e.message));
     return hd;
 }
+// Confirm in the native row and send MusicBrainz's confirmation form without leaving the page.
+document.addEventListener('click', async ev => {
+    if (!ehOn || !/^\/account\/applications\/?$/.test(location.pathname) || !ev.target.closest) return;
+    const cancel = ev.target.closest('[data-eh-revoke-cancel]');
+    if (cancel) {
+        const a = cancel.previousElementSibling;
+        if (a) { a.textContent = a.dataset.revokeLabel; delete a.dataset.revokeConfirm; a.removeAttribute('aria-label'); }
+        cancel.remove(); return;
+    }
+    const a = ev.target.closest('#page a[href], #content a[href], #eh-upg a[href]'); if (!a) return;
+    const u = new URL(a.href, location.href);
+    if (u.origin !== location.origin || !/^\/account\/applications\/revoke-access\/\d+\/\d+\/?$/.test(u.pathname) || ev.button !== 0 || ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.altKey) return;
+    ev.preventDefault(); ev.stopImmediatePropagation();
+    if (a.dataset.revokeBusy) return;
+    const row = a.closest('tr'); if (!row) return;
+    if (!a.dataset.revokeConfirm) {
+        a.dataset.revokeLabel = a.textContent; a.dataset.revokeConfirm = '1'; a.textContent = 'Confirm revoke';
+        a.setAttribute('aria-label', 'Confirm revoking access for ' + row.cells[0].textContent.trim());
+        const b = document.createElement('button'); b.type = 'button'; b.dataset.ehRevokeCancel = '1'; b.textContent = 'Cancel'; a.after(b); return;
+    }
+    a.dataset.revokeBusy = '1'; a.textContent = 'Revoking…'; a.nextElementSibling?.remove();
+    try {
+        const r = await mbnFetch(u.href, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ 'confirm.submit': '1' }) });
+        const end = new URL(r.url || u.href), doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+        if (!r.ok || end.origin !== location.origin || !/^\/account\/applications\/?$/.test(end.pathname) || !doc.querySelector('a[href="/account/applications/register"]') || [...doc.querySelectorAll('a[href]')].some(link => new URL(link.getAttribute('href'), end).pathname.replace(/\/$/, '') === u.pathname.replace(/\/$/, ''))) throw new Error('MusicBrainz did not confirm revocation');
+        row.remove(); kpWrote(); toast('Application access revoked');
+    } catch (e) { delete a.dataset.revokeBusy; delete a.dataset.revokeConfirm; a.textContent = a.dataset.revokeLabel; a.removeAttribute('aria-label'); toast('Could not revoke access: ' + e.message); }
+}, true);
 // the header's section; its search opens in place
 function hdSect() {
     const hd = document.createElement('section'); hd.id = 'eh-relhd'; hd.className = 'arthd';
