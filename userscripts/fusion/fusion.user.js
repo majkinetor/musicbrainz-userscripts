@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.16
+// @version      2026.11.18.133629
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -1756,6 +1756,19 @@ function withMergeLock(fn) {
     return run;
 }
 const uniq = arr => [...new Set(arr)];
+// Recordings can appear on several release groups. A common group must occur on
+// every member; missing data is unknown, not evidence that groups differ.
+function rgComparison(sets) {
+    if (sets.length < 2 || sets.some(s => !s.length)) return 'unknown';
+    return sets[0].some(id => sets.every(s => s.includes(id))) ? 'same' : 'different';
+}
+const recordingRG = members => rgComparison(members.map(m => uniq((m.releases || []).map(r => r.rgGid).filter(Boolean))));
+const releaseRG = members => rgComparison(members.map(m => m.rgGid ? [m.rgGid] : []));
+function rgChip(result) {
+    const tip = result === 'same' ? 'RG: same release group' : result === 'different' ? 'RG: different release groups' : 'RG: release group unknown';
+    return '<span class="' + (result === 'same' ? 'hit' : result === 'different' ? 'warn' : '') + '" data-tip="' + tip + '">( RG )</span>';
+}
+const rgNote = result => result === 'same' ? 'Same release group' : result === 'different' ? 'Different release groups' : '';
 function fmtList(vals, max) {
     max = max || 4;
     const shown = vals.slice(0, max).map(v => '"' + v + '"').join(', ');
@@ -1824,6 +1837,8 @@ function autoEditNote(group) {
     // paragraphs between the bullets, which read like separate sections.
     const bullets = lines.slice();
     if (!bullets.length) bullets.push('Grouped manually; no automatic signal matched across every recording.');
+    const rg = rgNote(recordingRG(members));
+    if (rg) bullets.push(rg);
     // Partial signals are stated as partial rather than silently omitted — and
     // length gets a concrete number instead of a bare "matching only some of
     // them: length", which said nothing about how far apart they actually were.
@@ -4525,7 +4540,7 @@ function fsStyle() {
         + '.fs-conf-high{background:rgba(28,155,99,.12);color:var(--fs-green)}'
         + '.fs-conf-med{background:rgba(168,112,42,.13);color:var(--fs-amber)}'
         + '.fs-conf-manual{background:rgba(47,127,191,.13);color:var(--fs-blue)}'
-        + '.fs-sig{display:flex;gap:3px}'
+        + '.fs-sig{display:flex;align-items:center;gap:3px}'
         // A matched signal has to READ as lit (#529: "chips are still not
         // highlighted, although it says HIGH"). The .hit class was applied all
         // along, but green-text-on-white against grey-text-on-white is nearly
@@ -4542,7 +4557,7 @@ function fsStyle() {
         // at all and stays a bare outline. A first attempt at 22% fill was still
         // too quiet to read at 9.5px on dark — the screenshots showed two nearly
         // identical outlines — so the fill is 42% and the text near-white.
-        + '.fs-sig span{font-size:9.5px;padding:1px 5px;border-radius:4px;background:transparent;border:1px solid var(--mbu-border);color:var(--mbu-text-weak);font-weight:500}'
+        + '.fs-sig span{font-size:9.5px;line-height:normal;white-space:nowrap;padding:1px 5px;border-radius:4px;background:transparent;border:1px solid var(--mbu-border);color:var(--mbu-text-weak);font-weight:500}'
         + '.fs-sig span.warn{background:color-mix(in srgb, var(--mbu-warn) 22%, transparent);border-color:var(--mbu-warn);color:var(--mbu-warn);font-weight:700}'   // #619 lengths past the tolerance
         // #619 follow-up (majkinetor): "Highlighted length is not aligned vertically with
         // normal length". The tint was a centred 44px box, so its digits sat several px right
@@ -5116,7 +5131,7 @@ function groupCardHtml(group, embed) {
     const lenWarnTitle = lenOff ? lengthDiffLabel(members) + ' ' + secs(lenSpread) + 's — more than the ' + secs(lenTol) + 's length tolerance. Check it is really the same take before merging.' : '';
     const sigNames = { isrc: 'ISRC', acoustid: 'AcoustID', length: 'Length', title: 'Title', artist: 'Artist' };
     const sigAll = group.signalsAll || [];
-    const sigChips = Object.keys(sigNames).map(k => {
+    const sigChips = rgChip(recordingRG(members)) + Object.keys(sigNames).map(k => {
         const lit = sigAll.includes(k);
         const partial = !lit && (group.signals || []).includes(k);
         if (k === 'length' && lenOff) return '<span class="warn" data-tip="' + escapeHtml(lenWarnTitle) + '">' + sigNames[k] + '</span>';   // #619
@@ -6265,11 +6280,11 @@ function emAdd(ent) {
     return emEdit(() => {
         const t = emT(ent.type);
         if (emHas(t, ent.gid)) return 'dup';
-        t.pool.push({ gid: ent.gid, name: ent.name || ent.gid, dis: ent.dis || '', info: Array.isArray(ent.info) ? ent.info : null });
+        t.pool.push({ gid: ent.gid, name: ent.name || ent.gid, dis: ent.dis || '', info: Array.isArray(ent.info) ? ent.info : null, rgGid: ent.rgGid || null });
         return 'ok';
     });
 }
-const EM_INC = { release: 'artist-credits+labels+media', 'release-group': 'artist-credits+releases', work: 'artist-rels', event: '', artist: 'aliases' };
+const EM_INC = { release: 'artist-credits+labels+media+release-groups', 'release-group': 'artist-credits+releases', work: 'artist-rels', event: '', artist: 'aliases' };
 const EM_COLS = {
     release: ['Artist', 'Format', 'Tracks', 'Country/Date', 'Label', 'Catalog#', 'Barcode'],
     'release-group': ['Artist', 'Type', 'Year', 'Releases'],
@@ -6308,6 +6323,7 @@ async function emFetch(type, gid) {
     const inc = EM_INC[type];
     const j = await wsGet('/ws/2/' + type + '/' + gid + '?fmt=json' + (inc ? '&inc=' + inc : ''));
     const d = { name: j.title || j.name || gid, dis: j.disambiguation || '', info: emInfo(type, j).map(v => v == null ? '' : String(v)) };
+    if (type === 'release') d.rgGid = (j['release-group'] || {}).id || null;
     if (type === 'artist') d.aliases = [...new Set((j.aliases || []).map(a => a.name).filter(Boolean))];   // #1007
     return d;
 }
@@ -6602,14 +6618,14 @@ function emAddMany(list) {
         for (const x of list) {
             const t = emT(x.type), c = res[x.type] || (res[x.type] = { ok: 0, dup: 0 });
             if (emHas(t, x.gid)) { c.dup++; continue; }
-            t.pool.push({ gid: x.gid, name: x.name || x.gid, dis: x.dis || '', info: Array.isArray(x.info) ? x.info : null });
+            t.pool.push({ gid: x.gid, name: x.name || x.gid, dis: x.dis || '', info: Array.isArray(x.info) ? x.info : null, rgGid: x.rgGid || null });
             c.ok++;
         }
         return res;
     });
 }
 async function addFromPage(sel, gid) {
-    const ent = (type, j) => ({ type, gid: j.id, name: j.title || j.name, dis: j.disambiguation || '', info: emInfo(type, j).map(v => v == null ? '' : String(v)) });
+    const ent = (type, j) => ({ type, gid: j.id, name: j.title || j.name, dis: j.disambiguation || '', info: emInfo(type, j).map(v => v == null ? '' : String(v)), rgGid: type === 'release' ? (j['release-group'] || {}).id || null : null });
     const acArtists = j => (j['artist-credit'] || []).map(c => c.artist).filter(a => a && a.id);
     const sc = detectScope(), here = sc ? sc.type : (location.pathname.match(EM_TYPE_RE) || [])[1]?.toLowerCase();
     const list = [], want = k => sel.includes(k), artists = new Map();
@@ -6629,7 +6645,7 @@ async function addFromPage(sel, gid) {
                 for (let off = 0, total = 1; off < total; off += 100) {
                     const p = await wsGet('/ws/2/release?release-group=' + gid + '&limit=100&offset=' + off + '&inc=artist-credits+labels+media&fmt=json');
                     total = p['release-count'] || 0;
-                    (p.releases || []).forEach(r => list.push(ent('release', r)));
+                    (p.releases || []).forEach(r => list.push(Object.assign(ent('release', r), { rgGid: gid })));
                     if (!(p.releases || []).length) break;
                 }
             }
@@ -6638,7 +6654,7 @@ async function addFromPage(sel, gid) {
         } else if (here === 'artist-recordings') {
             if (want('artist')) list.push(ent('artist', await wsGet('/ws/2/artist/' + gid + '?fmt=json')));
             // #908: the artist's works, releases and release groups, browsed 100 at a time
-            for (const [type, inc] of [['work', 'artist-rels'], ['release', 'artist-credits+labels+media'], ['release-group', 'artist-credits']]) {
+            for (const [type, inc] of [['work', 'artist-rels'], ['release', 'artist-credits+labels+media+release-groups'], ['release-group', 'artist-credits']]) {
                 if (!want(type)) continue;
                 const key = type === 'release-group' ? 'release-groups' : type + 's';
                 for (let off = 0, total = 1; off < total; off += 100) {
@@ -6695,6 +6711,7 @@ function emAutoNote(type, g) {
         const vs = g.members.map(x => x.info ? (x.info[i] || '') : '');
         if (g.members.length > 1 && vs[0] && vs.every(v => v === vs[0])) lines.push('- Same ' + c + ': ' + vs[0]);
     });
+    if (type === 'release') { const rg = rgNote(releaseRG(g.members)); if (rg) lines.push('- ' + rg); }
     return 'Merge ' + g.members.length + ' ' + emLabel(type).toLowerCase() + ' into "' + target.name + '": ' + location.origin + '/' + type + '/' + target.gid + (lines.length ? '\n' + lines.join('\n') : '');
 }
 const emNewId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -6748,6 +6765,7 @@ function emCardHtml(type, g, gi, ro, active) {
         const tip = all ? c + ': the same on all\n' + vs[0] : rep.length ? c + ': shared by ' + rep[0][1] + ' of ' + g.members.length + '\n' + rep[0][0] : c + ': all differ';
         return '<span class="' + cls + '" data-tip="' + escapeHtml(tip) + '">' + c + '</span>';
     }).join('') : '';
+    if (type === 'release' && g.members.length > 1) chips = rgChip(releaseRG(g.members)) + chips;
     const aliasHits = type === 'artist' && g.members.length > 1 ? emAliasHits(g.members) : null;
     if (aliasHits) {
         const hs = [...aliasHits.entries()], anyExact = hs.some(([, h]) => h.exact);
@@ -6780,7 +6798,7 @@ function emCardHtml(type, g, gi, ro, active) {
             return '<span class="fs-emc' + (EM_WIDE.has(c) ? ' fs-wide' : '') + '" data-tip="' + escapeHtml(c + '\n' + (v == null ? 'loading…' : v || '—')) + '">' + (v == null ? '…' : v ? (cc ? '<span class="' + cc + '">' + escapeHtml(v) + '</span>' : escapeHtml(v)) : '') + '</span>';
         }).join('');
         return '<div class="fs-growwrap"><div class="fs-grow' + (isT ? ' fs-target-row' : '') + '"' + (busy || done || ro ? '' : ' draggable="true"') + ' data-gid="' + x.gid + '">' + star
-            + '<span class="fs-t">' + link(x) + oldestBadge(x, oldest, what) + (x.dis ? '<span class="fs-dis">(' + escapeHtml(x.dis) + ')</span>' : '') + aliasLine(x) + '</span>' + cells
+            + '<span class="fs-t" data-tip="' + escapeHtml(x.name + (x.dis ? ' (' + x.dis + ')' : '')) + '">' + link(x) + oldestBadge(x, oldest, what) + (x.dis ? '<span class="fs-dis">(' + escapeHtml(x.dis) + ')</span>' : '') + aliasLine(x) + '</span>' + cells
             + (busy || done || ro ? '<span class="fs-acts"></span>' : '<span class="fs-acts"><span data-act="return" data-tip="Back to the pool">↩</span><span class="fs-rm-x" data-act="remove-both" data-tip="Remove from the group and the pool">✕</span></span>') + '</div></div>';
     }).join('');
     return '<div class="fs-gcard fs-gcard-manual fs-tier-manual' + (ro ? ' fs-emcard' : '') + active + '" data-g="' + g.id + '">' + head + colHead + '<div class="fs-grows">' + rows + '</div>'
