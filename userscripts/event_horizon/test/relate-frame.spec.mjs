@@ -42,3 +42,17 @@ test('the relationship editor opens in a frame, without reloading the tab', { ta
   check(await until(() => page.locator('#app > #eh-relframe').count(), n => n === 1) === 1, 'Back opens the editor again');
   check(await page.evaluate(() => window.__noReload) === 1, 'without a reload');
 });
+
+// String Theory treats the frame as the tab's own page: a member with @noframes (Group Therapy) still starts in it
+test('in String Theory, Group Therapy starts in the editor\'s frame', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  const whenHtml = code => `(() => { const go = () => { ${code}
+}; if (document.documentElement) go(); else new MutationObserver((m, o) => { if (document.documentElement) { o.disconnect(); go(); } }).observe(document, { childList: true }); })();`;
+  await inject('string_theory', { atStart: true, transform: whenHtml });
+  await page.goto(`https://test.musicbrainz.org/release/${RELEASE}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await requireLogin(page);
+  await page.waitForSelector('#app .hero', { timeout: 60000 });
+  await page.locator(`#app a[href$="/release/${RELEASE}/edit-relationships"]`).first().click();
+  const fr = page.frameLocator('#eh-relframe');
+  check(await until(() => fr.locator('#tracklist').isVisible().catch(() => false), v => v) === true, 'the editor loads in the frame');
+  check(await until(() => fr.locator('#gt-css').count(), n => n > 0) > 0, 'Group Therapy runs in it');
+});

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.141000
+// @version      2026.11.18.141100
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -74,7 +74,7 @@ if (window.top !== window && new URLSearchParams(location.search).get('mc_embed'
 // so EH loads it in a frame and the player outside keeps playing. Once the editor is submitted (or the frame leaves it),
 // the parent shows where it went. If Event Horizon ever becomes a shell that runs every page in a frame, remove this
 // frame: the relationship editor would then be in a frame inside a frame.
-const EH_EMBED = (() => { try { return window.parent !== window && (new URLSearchParams(location.search).get('eh-embed') === '1' || !!window.frameElement && window.frameElement.hasAttribute('data-eh-embed')); } catch (e) { return false; } })();
+const EH_EMBED = (() => { try { return window.parent !== window && !!window.frameElement && window.frameElement.hasAttribute('data-eh-embed'); } catch (e) { return false; } })();
 if (EH_EMBED && !/^\/release\/[0-9a-f-]{36}\/edit-relationships\/?$/i.test(location.pathname)) { try { window.parent.postMessage({ ehRelDone: location.href }, location.origin); } catch (e) {} return; }
 // Inside Bandcamp's or Deezer's player widget, in the player's frame (#1063): neither starts on its own nor says when a
 // track ends. Once the page asks, this presses the widget's play button and tells the page how its audio plays. A widget
@@ -13977,7 +13977,7 @@ addEventListener('message', ev => {
     else if (m.ehKey) { const c = KEY_CMDS.find(x => keyOfCmd(x) === m.ehKey); if (c) c[3](); }
 });
 function relPage(app, d) {
-    if (!app.querySelector('#eh-relframe')) app.innerHTML = `<section class="arthd"></section><iframe id="eh-relframe" data-eh-embed title="Relationship editor" src="${MB}/release/${d.id}/edit-relationships?eh-embed=1"></iframe>`;
+    if (!app.querySelector('#eh-relframe')) app.innerHTML = `<section class="arthd"></section><iframe id="eh-relframe" data-eh-embed title="Relationship editor" src="${MB}/release/${d.id}/edit-relationships"></iframe>`;
     app.querySelector('.arthd').innerHTML = subHead(d.rel, d.id, 'edit-relationships', 'Relationships', '<h1>&nbsp;</h1>'); cvWire(app.querySelector('.arthd'));
 }
 async function relLoad(n, id) {
