@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.100401
+// @version      2026.11.19.100402
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12808,6 +12808,7 @@ function plyDraw() {
     plyPin();
     plyMark();
     plyFit();
+    plyListPaint();
     if (PLY_WINDOW) plyWinList(root);
 }
 // the window's playlist: every track, the one playing marked; a click plays it
@@ -13009,9 +13010,17 @@ function plyRows(menu) {
         return heading + `<button type="button" class="${menu ? 'it ' : ''}qi" role="${menu ? 'menuitem' : 'listitem'}" ${menu ? 'data-k="q' + i + '"' : 'data-i="' + i + '"'}${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span>${plyRowSrc(x, i)}<span class="ql">${x.len ? dur(x.len) : ''}</span></button>`;
     }).join('');
 }
+function plyListPaint() {
+    const m = document.querySelector('#eh-ply-menu:has(.ply-list-head)'); if (!m) return;
+    const head = m.querySelector('.ply-list-head'), html = plyRelHead(ply.q[ply.i]);
+    if (head._html !== html) { head._html = html; head.innerHTML = html; head.querySelector('img')?.addEventListener('error', ev => ev.target.remove()); }
+    m.querySelectorAll('.qi').forEach(b => { if (b.dataset.k === 'q' + ply.i) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); });
+    plyHeadLoad(ply.q[ply.i]);
+}
 function plyListMenu(btn) {
-    plyMenu(btn, plyRelHead(ply.q[ply.i]) + '<div class="hd"><span>Playlist</span>' + (ply.q.length > 1 ? '<input type="search" class="qf" placeholder="Filter" aria-label="Filter the playlist" autocomplete="off">' : '') + '</div>' + plyRows(true),
-        ({ k }) => { const i = +String(k).slice(1); if (i >= 0 && i < ply.q.length && i !== ply.i) { LOG.info('player: picked from the playlist', i + 1); plyGo(i, ply.pref); } }, 'left');
+    plyMenu(btn, '<div class="ply-list-head"></div><div class="hd"><span>Playlist</span>' + (ply.q.length > 1 ? '<input type="search" class="qf" placeholder="Filter" aria-label="Filter the playlist" autocomplete="off">' : '') + '</div>' + plyRows(true),
+        ({ k }) => { const i = +String(k).slice(1); if (i >= 0 && i < ply.q.length && i !== ply.i) { LOG.info('player: picked from the playlist', i + 1); plyGo(i, ply.pref); } }, 'player');
+    plyListPaint();
     document.querySelector('#eh-ply-menu [aria-current]')?.scrollIntoView({ block: 'nearest' });
     document.querySelector('#eh-ply-menu .ply-rh img')?.addEventListener('error', ev => ev.target.remove());
     plyHeadLoad(ply.q[ply.i]);
@@ -13048,8 +13057,10 @@ function plyMenu(btn, html, pick, align) {
     const m = document.createElement('div'); m.id = 'eh-ply-menu'; m.className = 'mbu-ui ply-menu'; m.setAttribute('role', 'menu');
     m.innerHTML = html;
     document.documentElement.append(m);
-    const r = btn.getBoundingClientRect(), h = m.offsetHeight, w = m.offsetWidth;
-    m.style.left = Math.max(8, Math.min(align === 'left' ? r.left : r.right - w, innerWidth - w - 8)) + 'px';
+    const r = btn.getBoundingClientRect(), player = align === 'player' && plyCtl ? plyCtl.getBoundingClientRect() : null;
+    if (player) { m.style.minWidth = '0'; m.style.width = Math.min(player.width, innerWidth) + 'px'; }
+    const h = m.offsetHeight, w = m.offsetWidth;
+    m.style.left = player ? Math.max(0, Math.min(player.left, innerWidth - w)) + 'px' : Math.max(8, Math.min(align === 'left' ? r.left : r.right - w, innerWidth - w - 8)) + 'px';
     m.style.top = Math.max(8, r.bottom + h + 6 < innerHeight ? r.bottom + 4 : r.top - h - 4) + 'px';
     const off = ev => { if (m.contains(ev.target) || ev.target.closest?.('#eh-ply-coll')) return; plyMenuShut = { k: ev.target.closest?.('[data-ply]')?.dataset.ply || '', t: Date.now() }; shut(); };
     // Escape closes the menu (the playlist's filter included) before anything else sees the key
@@ -13060,7 +13071,7 @@ function plyMenu(btn, html, pick, align) {
     document.addEventListener('keydown', key, true);
     m.addEventListener('click', ev => {
         const b = ev.target.closest('[data-k],[data-m],a'); if (!b) return;
-        shut();
+        if (!(kind === 'list' && b.classList.contains('qi'))) shut();
         if (b.dataset.k) pick({ k: b.dataset.k }); else if (b.dataset.m) pick({ m: b.dataset.m });
     });
     m.addEventListener('contextmenu', ev => {
