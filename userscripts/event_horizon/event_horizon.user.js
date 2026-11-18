@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.094955
+// @version      2026.11.18.135808
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4695,6 +4695,8 @@ mbuTipOn('[data-ed]', el => { const x = ED_TIP.get(el.getAttribute('data-ed')); 
 const REL_SHARE = new Map(), RG_SHARE = new Map();
 function relShare(id, p, map = REL_SHARE) {
     const t = p.then(j => { if (!j) throw new Error('none'); return JSON.stringify(j); });
+    const kind = map === REL_SHARE ? 'release' : 'release group';
+    t.then(() => LOG.debug('Shared ' + kind + ' ' + id + ' with the scripts'), e => LOG.debug(kind + ' ' + id + ' lookup failed, not shared: ' + ((e && e.message) || e)));
     t.catch(() => { if (map.get(id) === t) map.delete(id); });   // a failed lookup isn't shared: the scripts ask MusicBrainz
     if (map === REL_SHARE) t.then(() => { try { document.dispatchEvent(new CustomEvent('mbu-eh-release', { detail: String(id) })); } catch (e) { /* no event */ } }, () => {});
     map.delete(id); map.set(id, t);
@@ -4704,7 +4706,7 @@ function relShare(id, p, map = REL_SHARE) {
 try {
     const ns = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
     if (!ns.MBU) ns.MBU = {};
-    if (!ns.MBU.ehRelease) ns.MBU.ehRelease = id => REL_SHARE.get(String(id).toLowerCase()) || null;
+    if (!ns.MBU.ehRelease) ns.MBU.ehRelease = id => { const t = REL_SHARE.get(String(id).toLowerCase()) || null; if (!t) LOG.debug('A script asked for release ' + id + ': not shared'); return t; };
     if (!ns.MBU.ehReleaseGroup) ns.MBU.ehReleaseGroup = id => RG_SHARE.get(String(id).toLowerCase()) || null;
 } catch (e) { /* a page with its own window.MBU: nothing shared */ }
 async function load(id, step = () => {}) {

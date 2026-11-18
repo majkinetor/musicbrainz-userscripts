@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.17.230741
+// @version      2026.11.18.135808
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -4023,6 +4023,7 @@
     if (_relInFlight) return _relInFlight;
     _relFailed = false;
     const release = mbid;
+    Log.debug('Loading release ' + release);
     _relInFlight = fetchReleaseNow().catch(err => {
       if (release !== mbid) throw err;
       Log.warn('Release load failed; retrying once: ' + errText(err));
@@ -4033,6 +4034,7 @@
     // #607: the page button's count follows EVERY successful load, not just the
     // page-load one. That one can fail (MB 503s under its rate limit) and leave
     // "?" — and opening the dialog later loaded the release without telling it.
+    request.then(r => Log.debug('Release ' + release + ' loaded: ' + ((r && r.tracks && r.tracks.length) || 0) + ' track(s)' + (release !== mbid ? ', but ' + mbid + ' is shown now' : '')), e => Log.debug('Release ' + release + ' did not load: ' + errText(e)));
     request.then(() => { if (_relInFlight !== request) return; _relFailed = false; try { updateBtnStatus(); } catch (e) {} notifyMatchCounts(); }, () => { if (_relInFlight !== request) return; _relFailed = true; notifyMatchCounts(); });
     return _relInFlight;
   }
@@ -4074,10 +4076,12 @@
   // one asks MusicBrainz itself, after 10 s at most, instead of asking Event Horizon again forever
   function fetchReleaseNow(own) {
     const id = mbid, shared = !own && !_ehUsed.has(id) && ehShared(id);
+    if (!own && document.documentElement.hasAttribute('data-mbu-dock')) Log.debug('Release ' + id + ': ' + (shared ? 'reading Event Horizon\'s lookup' : _ehUsed.has(id) ? 'Event Horizon\'s lookup already read, asking MusicBrainz' : 'Event Horizon shares none, asking MusicBrainz'));
     if (shared) {
       _ehUsed.set(id, null);
       const late = new Promise((ok, no) => setTimeout(() => no(new Error('no answer in 10 s')), 10000));
-      return Promise.race([Promise.resolve(shared), late]).then(t => { _ehUsed.set(id, String(t)); Log.info('Release read from Event Horizon, no request'); return releaseFrom({ status: 200, responseText: String(t) }); },
+      return Promise.race([Promise.resolve(shared), late]).then(t => {
+        if (id !== mbid) Log.debug('Event Horizon\'s lookup of ' + id + ' arrived, ' + mbid + ' is shown now'); _ehUsed.set(id, String(t)); Log.info('Release read from Event Horizon, no request'); return releaseFrom({ status: 200, responseText: String(t) }); },
         e => { _ehUsed.delete(id); Log.info('Event Horizon\'s release lookup failed (' + errText(e) + '): asking MusicBrainz'); return fetchReleaseNow(true); });
     }
     return gmGet(
@@ -10168,7 +10172,18 @@
   function isShown() { const r = document.documentElement.getAttribute('data-mbu-release'); return r && /^[0-9a-f-]{36}$/i.test(r) ? r.toLowerCase() : null; }
   function isFollow() {
     const r = isShown();
-    if (!r || r === mbid || _removalBusy || (typeof modal !== 'undefined' && modal && modal.classList.contains('open'))) return;
+    if (!r) { Log.debug('Event Horizon shows no release'); return; }
+    const busy = _removalBusy ? 'a removal is being sent' : typeof modal !== 'undefined' && modal && modal.classList.contains('open') ? 'the window is open' : '';
+    if (r === mbid) {
+      // back on the release it started on (a release's other page, then its group, then the release): that page
+      // never loaded it, so it loads now; before, the button turned until a reload
+      Log.debug('Event Horizon shows release ' + r + ' again: ' + (RELEASE ? 'already loaded' : _relInFlight ? 'its load is under way' : busy ? 'not loaded, waiting: ' + busy : 'not loaded yet, loading it'));
+      if (RELEASE || _relInFlight || busy) return;
+      btn.classList.add('ii-loading');
+      fetchRelease().catch(e => { Log.warn('Release load failed: ' + errText(e)); const s = btnStatus(); if (s) s.textContent = '?'; btn.classList.remove('ii-loading'); });
+      return;
+    }
+    if (busy) { Log.debug('Event Horizon shows release ' + r + ': staying on ' + mbid + ' while ' + busy); return; }
     Log.info('Event Horizon shows release ' + r + ': following it');
     try { abortSxWork('Event Horizon moved to another release'); } catch (e) { /* nothing running */ }
     mbid = r; RELEASE = null; _relInFlight = null; _ehUsed.delete(r); _autoLinksDone = false; _bgIsrcsSeeded = false; _dzListCache = null; _suspectUndo = null; _allEpoch++;
@@ -10433,6 +10448,7 @@
   }
 
   // initial status fetch (also primes RELEASE for the modal) — overview page only
+  Log.debug('Started on ' + location.pathname + ': ' + (IS_OVERVIEW ? 'loading release ' + mbid : mbid ? 'release ' + mbid + '\'s other page, nothing loaded' : 'no release'));
   if (IS_OVERVIEW) {
     fetchRelease().catch(e => {
       const s = btnStatus(); if (s) s.textContent = '?';
