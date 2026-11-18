@@ -1,7 +1,11 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
+<<<<<<< HEAD
 // @version      2026.11.18.215530
+=======
+// @version      2026.11.19.100500
+>>>>>>> f0d66c8e0 (fix(event horizon): edit search's summary sits after the player in the pinned bar, not before it)
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13953,7 +13957,7 @@ function esPinSum() {
     if (!chips.length && !top) return;
     const span = document.createElement('span'); span.className = 'pes'; span.innerHTML = chips.join('');
     span.onclick = e => { const c = e.target.closest('[data-es-row]'); const r = c && rows[+c.dataset.esRow]; if (r?.isConnected) r.scrollIntoView({ block: 'center', behavior: 'smooth' }); };
-    const id = k.querySelector('.pident'); (id || k.firstChild || k).after(span);
+    const id = k.querySelector(':scope>.ply-ctl') || k.querySelector('.pident'); (id || k.firstChild || k).after(span);
     if (top) { const t = document.createElement('span'); t.className = 'pes-k'; t.innerHTML = top; span.after(t); }
 }
 function esScan() {
