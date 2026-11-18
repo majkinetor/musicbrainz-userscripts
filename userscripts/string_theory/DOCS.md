@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-18 18:03 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-18 18:12 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -974,7 +974,7 @@ While the player is open, editing a release opens the editor in another tab so p
 
 A release group lists its releases, and an artist or label its discography, grouped by type, albums first. Switch between a grid of covers and a table; click a table's column to sort it.
 
-A label's releases show by release group, one cover or row per group, grouped by type; **Releases** beside **Groups** lists every release instead, and the choice is remembered. *N releases* counts a group's releases on this label: click it to list them, below the row in a table or in a popup in the grid.
+A label's releases show by release group, one cover or row per group, grouped by type; **Releases** beside **Groups** lists every release instead, and the choice is remembered. When a group has more than one release on the label, its cover shows a count: click it to list the releases, with their dates, formats and track counts. In a table, click *N releases* to expand them below the row.
 
 **Columns**, beside the view buttons of a table, chooses what the table shows and in what order, and is remembered for all releases or all discographies. Tick a column to show it, drag its handle or press the arrow keys on it to move it, and Esc during a drag takes the move back. A label's or a recording's releases also have **Type**, their release group's type, such as *Album + Compilation*. Releases also offer Status, Packaging, Language / script and Comment; +N on the button counts the columns left out. A hidden column still sorts and filters. Links is a column like the others. Drag the edge of a column's heading to resize it: the room comes from the columns beside it, and none goes narrower than its content. Double-click the edge to fit that column to its content; the fit button beside **Columns** lets the table size itself again. **Saved**, at the bottom of the menu, keeps the current columns and their widths under a name; pick the name to bring them back, or **Default** for the usual columns.
 
