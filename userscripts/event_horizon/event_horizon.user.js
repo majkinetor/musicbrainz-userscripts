@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.100300
+// @version      2026.11.19.100400
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -15594,7 +15594,8 @@ function setOn1(on) {
     // (Mission Control's tracklist, Platform Check's catalog numbers, Art Station's links) and found nothing
     // in a detached one; ours comes first, so document.body is ours
     if (from !== to) {
-        to.append(...from.querySelectorAll(':scope > [data-mb-corner]'));
+        // and Falcon's windows, which it puts in the body it starts in: a batch from Harmony opens its panel on load (#1077)
+        to.append(...from.querySelectorAll(':scope > :is([data-mb-corner], #falcon-panel, #falcon-item-popup, #falcon-add-page)'));
         if (on) { document.documentElement.insertBefore(ehBody, mbBody); mbBody.hidden = true; }
         else { ehBody.remove(); mbBody.hidden = false; }
     }
@@ -16434,8 +16435,6 @@ function start1() {
     try { if (sessionStorage.getItem('mc.after')) off = true; } catch (e) {}
     // and First Contact's Update this release, which opens Mission Control here (#fc-update=<token>)
     if (/[#&]fc-update=/.test(location.hash)) off = true;
-    // and Falcon's batch from Harmony (?falcon=<token>): its panel lives on MusicBrainz's page, which the viewer hides (#1077)
-    if (/[?&]falcon=/.test(location.search)) off = true;
     // a tick later (#847): the scripts started with it (String Theory runs them in a row, Platform Check after
     // EH) read MusicBrainz's page first, its sidebar and tracklist, before EH swaps the body for its own
     setTimeout(() => setOn(EH_EMBED || S.on && !off), 0);
