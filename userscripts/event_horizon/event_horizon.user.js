@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.230000
+// @version      2026.11.18.233000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12904,15 +12904,18 @@ const plyNo = t => ply.q.some(x => !String(x.key).startsWith('1-')) ? t.key : St
 const plyRowSrc = (x, i) => { const p = x.srcs && x.srcs.length ? (i === ply.i && x.srcs.find(q => q.key === ply.src)) || plyPick(x, ply.pref) : null; return p ? `<span class="qp" data-tip="${esc(p.name)}">${icon(p, 16)}</span>` : ''; };
 // the release the playing track comes from: cover, title, artist and year, linked to its page
 // the head's cover: the front's thumbnail, else (no thumbnail yet, or no image flagged front) the archive's full image, as the release page shows it
+// a release's head cover once found, so reopening the playlist draws it at once instead of looking again
+const PLY_CV = new Map();
 function plyCoverWire(im) {
     if (!im) return;
-    const full = () => { const id = im.dataset.plyrel; im.onerror = () => im.remove(); edFull(id).then(u => { if (!im.isConnected) return; if (u) { LOG.debug('player: head cover from the archive listing', u); im.src = u; } else im.remove(); }); };
+    if (!PLY_CV.has(im.dataset.plyrel) && im.getAttribute('src')) im.addEventListener('load', () => PLY_CV.set(im.dataset.plyrel, im.src), { once: true });
+    const full = () => { const id = im.dataset.plyrel; im.onerror = () => im.remove(); edFull(id).then(u => { if (!im.isConnected) return; if (u) { LOG.debug('player: head cover from the archive listing', u); PLY_CV.set(id, u); im.src = u; } else im.remove(); }); };
     im.onerror = full; if (!im.getAttribute('src')) full();
 }
 function plyRelHead(t, btns = true) {
     if (!t || !t.rel) return '';
     const yr = t.relYear ? `<span class="ry">${esc(t.relYear)}</span>` : '';
-    return `<div class="ply-rhw"><a class="ply-rh" href="${MB}/release/${t.rel}"${PLY_WINDOW ? ' target="_blank"' : ''}>${t.rel ? `<img${t.front ? ` src="https://coverartarchive.org/release/${t.rel}/front-250"` : ''} data-plyrel="${t.rel}" alt="">` : ''}<span class="rt"><b>${esc(t.relTitle || '')}</b><small>${esc(t.relAc || '')}${t.relAc && yr ? ' · ' : ''}${yr}</small></span></a>${btns ? `<span class="ply-ra">${plyHeadBtns(t)}</span>` : ''}</div>`;
+    return `<div class="ply-rhw"><a class="ply-rh" href="${MB}/release/${t.rel}"${PLY_WINDOW ? ' target="_blank"' : ''}>${t.rel ? `<img${PLY_CV.has(t.rel) ? ` src="${esc(PLY_CV.get(t.rel))}"` : t.front ? ` src="https://coverartarchive.org/release/${t.rel}/front-250"` : ''} data-plyrel="${t.rel}" alt="">` : ''}<span class="rt"><b>${esc(t.relTitle || '')}</b><small>${esc(t.relAc || '')}${t.relAc && yr ? ' · ' : ''}${yr}</small></span></a>${btns ? `<span class="ply-ra">${plyHeadBtns(t)}</span>` : ''}</div>`;
 }
 // the head's buttons for the playing track: collect the release, collect the recording (each into that type's default
 // collection, a right-click lists them all), love it on ListenBrainz
