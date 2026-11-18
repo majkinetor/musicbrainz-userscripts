@@ -1,0 +1,5 @@
+uuid = "81448c9f-d996-4916-af14-483dbb034e24"
+name = "Bandcamp Info"
+description = "Fetch Bandcamp tags and description into configurable tags."
+api = ["3.0"]
+authors = ["majkinetor"]

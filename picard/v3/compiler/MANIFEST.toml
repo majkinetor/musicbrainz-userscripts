@@ -1,0 +1,5 @@
+uuid = "445a08b6-de51-4281-b475-461da66d4578"
+name = "Compiler"
+description = "Write release compiler relationships to a tag."
+api = ["3.0"]
+authors = ["majkinetor"]

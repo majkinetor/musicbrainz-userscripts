@@ -1,8 +1,10 @@
 # Picard plugins
 
-Plugins for [MusicBrainz Picard](https://picard.musicbrainz.org/), v2.
+Plugins for [MusicBrainz Picard](https://picard.musicbrainz.org/), with separate versions for Picard 2 and 3.
 
-**Install**: copy the `.py` file into Picard's plugin folder (*Options → Plugins → Open plugin folder*, or `%LOCALAPPDATA%\MusicBrainz\Picard\plugins` on Windows), then enable it in *Options → Plugins* and restart Picard.
+**Picard 2:** copy the `.py` file into Picard's plugin folder (*Options → Plugins → Open plugin folder*, or `%LOCALAPPDATA%\MusicBrainz\Picard\plugins` on Windows), then enable it and restart Picard.
+
+**Picard 3:** copy the desired plugin directory from [`v3/`](v3/) into Picard 3's plugin folder, including its `MANIFEST.toml` and `__init__.py`, then enable it in *Options → Plugins*. The Picard 3 versions have separate settings; reconfigure Bandcamp Info and Release Relations Tagger after upgrading.
 
 | Plugin | File | What it does |
 | ------ | ---- | ------------ |

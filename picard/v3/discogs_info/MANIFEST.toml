@@ -1,0 +1,5 @@
+uuid = "9f2f5b4d-dae1-490e-858e-3a2781fe338b"
+name = "Discogs Info"
+description = "Fetch Discogs genres, styles and release identifiers."
+api = ["3.0"]
+authors = ["majkinetor"]

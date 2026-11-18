@@ -1,0 +1,5 @@
+uuid = "dfa736c2-1eda-4210-9a28-54e9435584cd"
+name = "Preserve Tags"
+description = "Preserve selected tags from the original audio file."
+api = ["3.0"]
+authors = ["majkinetor"]

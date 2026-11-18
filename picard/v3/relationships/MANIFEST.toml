@@ -1,0 +1,5 @@
+uuid = "6d541572-c332-4d2a-9eba-2a48ca6d3298"
+name = "Release Relations Tagger"
+description = "Map release relationships to configurable tags."
+api = ["3.0"]
+authors = ["majkinetor"]

@@ -1,0 +1,5 @@
+uuid = "fb6533ce-ffea-4869-add4-9bc9279433ba"
+name = "timestamp"
+description = "Add a timestamp tagger script function."
+api = ["3.0"]
+authors = ["majkinetor"]
