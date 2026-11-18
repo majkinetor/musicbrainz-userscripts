@@ -90,7 +90,7 @@ Match never groups:
 
 A group's chips show the signals that hold for **every** member; one that holds for some is partial.
 
-The **RG** chip compares the release groups of the releases known for each recording: green when all share one, amber when they do not, and dim when a member has no known release group. The automatic edit note includes the result when known.
+The **RG** chip compares the release groups of the releases known for each recording: green when all share one, and dim otherwise. Its tooltip distinguishes different release groups from unknown ones. The automatic edit note includes the result when known.
 
 ### Include pending edits
 
