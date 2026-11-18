@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.012000
+// @version      2026.11.19.013000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2797,6 +2797,9 @@ const CSS = `
 .hm-srch .hm-ty{display:inline-flex;align-items:center;border:0;background:none!important;color:var(--muted)!important;filter:none!important;font:inherit;font-size:13px;border-radius:6px;padding:4px 6px;cursor:pointer;min-width:0}.hm-srch .hm-ty:is(:hover,:focus-visible,[aria-expanded=true]){background:var(--chip)!important;color:var(--chip-text)!important;outline:0}.hm-ty>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hm-ty svg{width:12px;height:12px;flex:none;color:var(--muted)}
 .hm-td{position:absolute;z-index:20;top:calc(100% + 4px);background:var(--surface)!important;border:1px solid var(--border);border-radius:10px;padding:3px;box-shadow:0 8px 24px var(--shadow);max-height:min(70vh,520px);overflow:hidden auto;scrollbar-width:thin;scrollbar-gutter:stable;display:grid;grid-template-columns:auto 12px;column-gap:14px;scrollbar-color:var(--mbu-border) transparent}.hm-td[hidden]{display:none!important}
 .hm-srch .hm-td button{grid-column:1/-1;display:grid;grid-template-columns:subgrid;align-items:center;text-align:left;white-space:nowrap;background:none!important;border:0;border-radius:5px;padding:1px 8px;font:inherit;font-size:13px;font-weight:500;line-height:18px;color:var(--text)!important;cursor:pointer;filter:none!important}.hm-srch .hm-td button:is(:hover,:focus-visible){background:var(--chip)!important;outline:0}.hm-srch .hm-td button[aria-selected=true]{background:var(--chip)!important;color:var(--accent)!important}
+.kicker .srch .hm-ty{display:inline-flex;align-items:center;border:0;background:none!important;color:var(--muted)!important;filter:none!important;font:inherit;font-size:13px;border-radius:6px;padding:4px 6px;cursor:pointer;min-width:0}.kicker .srch .hm-ty:is(:hover,:focus-visible,[aria-expanded=true]){background:var(--chip)!important;color:var(--chip-text)!important;outline:0}.hm-ty>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hm-ty svg{width:12px;height:12px;flex:none;color:var(--muted)}
+.kicker .srch .hm-td button{grid-column:1/-1;display:grid;grid-template-columns:subgrid;align-items:center;text-align:left;white-space:nowrap;background:none!important;border:0;border-radius:5px;padding:1px 8px;font:inherit;font-size:13px;font-weight:500;line-height:18px;color:var(--text)!important;cursor:pointer;filter:none!important}.kicker .srch .hm-td button:is(:hover,:focus-visible){background:var(--chip)!important;outline:0}.kicker .srch .hm-td button[aria-selected=true]{background:var(--chip)!important;color:var(--accent)!important}
+.kicker .srch{position:relative}.kicker .srch .hm-td{right:0}.kicker .srch .hm-ty{flex:none;max-width:110px}.hm-qr a[hidden]{display:none}
 .hm-td kbd{grid-column:2;justify-self:center;font:500 12px 'JetBrains Mono',monospace;color:var(--muted);background:none;border:0;padding:0;box-shadow:none}
 .hm-srch button{filter:none!important;border:0;border-radius:9px;background:#ba478f;color:#fff;font:inherit;font-weight:700;padding:9px 18px;cursor:pointer}
 .hm-adv{flex:1 1 100%;min-width:0;display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;border-top:1px solid var(--border);margin:2px 10px 0 0;padding:10px 0 6px;font-size:13px}.hm-adv>label{white-space:nowrap}.hm-adv>select{max-width:100%;min-width:0}
@@ -4837,7 +4840,7 @@ const SVG = d => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" st
 const SRCH_K = { artist: 'a', work: 'w', release: 'r', series: 's', place: 'p', release_group: 'g', editor: 'e', doc: 'd', tag: 't', instrument: 'i', recording: 'c', annotation: 'n' };
 const SRCH_T = ['artist', 'event', 'recording', 'release', 'release_group', 'series', 'work', 'area', 'instrument', 'label', 'place', 'annotation', 'tag', 'cdstub', 'editor', 'doc'];
 const LENS = '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>';
-const SRCH = () => `<form class="srch" action="${MB}/search" method="get"><span class="sf">${SVG(LENS)}<input name="query" placeholder="Search" required><select name="type">${SRCH_T.map(t => `<option value="${t}">${t === 'doc' ? 'Documentation' : t === 'cdstub' ? 'CD stub' : (t[0].toUpperCase() + t.slice(1)).replace('_', ' ')}</option>`).join('')}</select><input type="hidden" name="method" value="indexed"><button class="x" type="button" data-srch aria-label="Close search">${SVG('<path d="M6 6l12 12M18 6 6 18"/>')}</button></span><button class="ab" type="button" data-srch data-tip="Search MusicBrainz" aria-label="Search MusicBrainz">${SVG(LENS)}</button></form>${ME ? `<a class="ab eh-home" href="${MB}/" data-tip="Event Horizon's home page" aria-label="Home">${LOGO}</a>` : `<a class="ab eh-home eh-out" href="${MB}/login?returnto=${encodeURIComponent(location.pathname + location.search)}" data-tip="Logged out&#10;Click to log in" aria-label="Log in">${LOGO}</a>`}`;
+const SRCH = () => `<form class="srch" action="${MB}/search" method="get"><span class="sf">${SVG(LENS)}<input name="query" placeholder="Search" required><select name="type" hidden>${SRCH_T.map(t => `<option value="${t}">${srchName(t)}</option>`).join('')}</select><button type="button" class="hm-ty" aria-haspopup="listbox" aria-expanded="false" aria-label="Entity type"><span>Artist</span></button><div class="hm-td" role="listbox" aria-label="Entity type" hidden>${SRCH_T.map(t => `<button type="button" role="option" data-v="${t}" aria-selected="${t === 'artist'}"><span>${srchName(t)}</span>${SRCH_K[t] ? `<kbd>${SRCH_K[t]}</kbd>` : ''}</button>`).join('')}</div><input type="hidden" name="method" value="indexed"><button class="x" type="button" data-srch aria-label="Close search">${SVG('<path d="M6 6l12 12M18 6 6 18"/>')}</button></span><button class="ab" type="button" data-srch data-tip="Search MusicBrainz" aria-label="Search MusicBrainz">${SVG(LENS)}</button></form>${ME ? `<a class="ab eh-home" href="${MB}/" data-tip="Event Horizon's home page" aria-label="Home">${LOGO}</a>` : `<a class="ab eh-home eh-out" href="${MB}/login?returnto=${encodeURIComponent(location.pathname + location.search)}" data-tip="Logged out&#10;Click to log in" aria-label="Log in">${LOGO}</a>`}`;
 const DISC_IC = '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M16.5 7.5a6 6 0 0 1 1.5 3"/>';
 const ACTS = [
     ['edit', 'Edit', 'Edit release', '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'],
@@ -11299,12 +11302,15 @@ function srchWire(app) {
     });
     app.querySelector('.hm-qx')?.addEventListener('click', () => { try { GM_setValue('searches', []); } catch (e) { /* storage blocked */ } app.querySelector('.hm-qr')?.remove(); });
     app.querySelectorAll('[data-hm-qs]').forEach(r => r.addEventListener('change', () => { S.hmQs = r.value; save(); render(); }));
+    // the recent searches below the box show only the picked type's
+    const qrF = () => app.querySelectorAll('.hm-qr a').forEach(a => { a.hidden = !a.href.includes('&type=' + f.type.value + '&'); });
+    if (f && f.type) { qrF(); f.addEventListener('eh-type', qrF); }
     // picking a recent search from the field's list brings its entity type back too
     const qd = app.querySelector('.hm-qd');
     if (qd) {
         const show = on => { qd.hidden = !on; f.query.setAttribute('aria-expanded', on); };
         // only the chosen type's searches, those holding the words typed so far
-        const match = () => { const v = f.query.value.trim().toLowerCase(); let n = 0; qd.querySelectorAll('button').forEach(b => { const hit = (!v || b.dataset.q.toLowerCase().includes(v)); b.hidden = !hit; n += hit; }); return n; };
+        const match = () => { const v = f.query.value.trim().toLowerCase(); let n = 0; qd.querySelectorAll('button').forEach(b => { const hit = b.dataset.t === f.type.value && (!v || b.dataset.q.toLowerCase().includes(v)); b.hidden = !hit; n += hit; }); return n; };
         f.addEventListener('eh-type', () => { if (!qd.hidden) show(match() > 0); });
         f.query.addEventListener('input', () => show(match() > 0));
         f.query.addEventListener('blur', () => setTimeout(() => show(false), 150));
@@ -11658,9 +11664,27 @@ const srchHint = t => 'Search ' + (t === 'doc' ? 'documentation' : t === 'series
 document.addEventListener('input', e => {
     const f = e.target.closest && e.target.closest('form.srch'); if (!f || e.target !== f.query) return;
     const m = /^([a-z]) ([sS]*)$/.exec(f.query.value), k = m && Object.keys(SRCH_K).find(t => SRCH_K[t] === m[1]);
-    if (k) { f.query.value = m[2]; f.query.setSelectionRange(0, 0); f.type.value = k; f.query.placeholder = srchHint(k); }
+    if (k) { f.query.value = m[2]; f.query.setSelectionRange(0, 0); if (f.querySelector('.hm-ty')) srchTop.set(f, k); else { f.type.value = k; f.query.placeholder = srchHint(k); } }
 }, true);
-document.addEventListener('change', e => { const f = e.target.closest && e.target.closest('form.srch'); if (f && e.target === f.type) f.query.placeholder = srchHint(f.type.value); }, true);
+const srchTop = {
+    set(f, v) { f.type.value = v; f.query.placeholder = srchHint(v); f.querySelector('.hm-ty>span').textContent = srchName(v); f.querySelectorAll('.hm-td button').forEach(b => b.setAttribute('aria-selected', b.dataset.v === v)); },
+    show(f, on) { const td = f.querySelector('.hm-td'), tb = f.querySelector('.hm-ty'); td.hidden = !on; tb.setAttribute('aria-expanded', on); if (on) (td.querySelector('[aria-selected=true]') || td.querySelector('button')).focus(); },
+};
+document.addEventListener('click', e => {
+    const f = e.target.closest && e.target.closest('form.srch'); if (!f || !f.querySelector('.hm-td')) return;
+    if (e.target.closest('.hm-ty')) return srchTop.show(f, f.querySelector('.hm-td').hidden);
+    const b = e.target.closest('.hm-td button'); if (b) { srchTop.set(f, b.dataset.v); srchTop.show(f, false); f.query.focus(); }
+}, true);
+document.addEventListener('keydown', e => {
+    const td = e.target.closest && e.target.closest('form.srch .hm-td'); if (!td) return;
+    const f = td.closest('form'), bs = [...td.querySelectorAll('button')], i = bs.indexOf(document.activeElement);
+    const k = Object.keys(SRCH_K).find(t => SRCH_K[t] === e.key);
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); srchTop.show(f, false); f.querySelector('.hm-ty').focus(); return; }
+    if (k && !e.ctrlKey && !e.altKey && !e.metaKey) { e.preventDefault(); srchTop.set(f, k); srchTop.show(f, false); f.query.focus(); return; }
+    const j = { ArrowDown: i + 1, ArrowUp: i - 1, Home: 0, End: bs.length - 1 }[e.key]; if (j === undefined) return;
+    e.preventDefault(); bs[(j + bs.length) % bs.length].focus();
+}, true);
+document.addEventListener('pointerdown', e => { document.querySelectorAll('form.srch .hm-td:not([hidden])').forEach(td => { if (!td.parentNode.contains(e.target)) srchTop.show(td.closest('form'), false); }); }, true);
 const srchName = t => t === 'doc' ? 'Documentation' : t === 'cdstub' ? 'CD stub' : (t[0].toUpperCase() + t.slice(1)).replace('_', ' ');
 function searchHtml(d) {
     const p = new URLSearchParams(d.qs), s = d.s;
