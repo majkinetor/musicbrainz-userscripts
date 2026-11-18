@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.100405
+// @version      2026.11.19.100406
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5710,7 +5710,7 @@ function tracklist(r) {
     const row = (t, i) => {
         const sub = !va && t.feat.length ? 'with ' + t.feat.join(', ') : '';
         const srcs = S.player ? plySources(t) : [];
-        const nb = srcs.length ? `<button type="button" class="trp" data-play="${esc(t.key)}" aria-label="Play ${esc(t.title)}" data-tip="${plyClickTip('Play from here')}">${SVG(PLY_I.play)}</button>`
+        const nb = srcs.length ? `<button type="button" class="trp" data-play="${esc(t.key)}" aria-label="Play ${esc(t.title)}" data-tip="${plyClickTip('Play the recording')}">${SVG(PLY_I.play)}</button>`
             : S.player && S.playerLb ? `<a class="trp" href="https://listenbrainz.org/track/${t.rid}" target="_blank" rel="noopener" aria-label="${esc(t.title)} in ListenBrainz" data-tip="Nothing here to play it from\nClick: try it in ListenBrainz">${stIcon('listenbrainz', 18).replace('<svg', '<svg aria-hidden="true"')}</a>` : '';
         return `<div class="tr${i % 2 ? ' alt' : ''}${plyOn(r, t.key) ? ' ply-on' : ''}" data-row="${esc(t.key)}" aria-expanded="${S.open.has(t.key)}"><span class="n mono">${nb ? nb + '<span class="nn">' + esc(t.n) + '</span>' : esc(t.n)}</span>
             <div class="ti"><a class="t${longC(t.title)}"${longT(t.title)} href="${MB}/recording/${t.rid}">${esc(t.title)}</a>${marks(t)}${(t.genres || []).length + (t.tags || []).length ? `<span class="tg">${[...(t.genres || []).map(x => [x, '']), ...(t.tags || []).map(x => [x, ' tag'])].slice(0, 4).map(([x, c]) => `<a class="chip${c}" href="${MB}/tag/${encodeURIComponent(x.name)}" data-tip="${esc(x.name)}: ${x.count} vote${x.count === 1 ? '' : 's'}">${esc(x.name)}</a>`).join('')}</span>` : ''}${sub ? `<div class="sub">${esc(sub)}</div>` : ''}</div>${va ? `<span class="ar">${acHtml(t.ac)}</span>` : ''}
@@ -12490,7 +12490,7 @@ function plyRequeue(rel, fresh) {
         const group = [];
         while (i < ply.q.length && ply.q[i].rel === rel && !ply.q[i].standalone && 'relAc' in ply.q[i] && ply.q[i].batch === first.batch) group.push(ply.q[i++]);
         const old = new Map(group.map(t => [t.key, t])), start = Math.max(0, fresh.findIndex(t => t.key === first.key));
-        for (const t of fresh.slice(start)) {
+        for (const t of first.oneTrack ? fresh.filter(t => old.has(t.key)) : fresh.slice(start)) {
             const prior = old.get(t.key);
             if (t.srcs.length || prior === cur) q.push(prior ? Object.assign(prior, t, { batch: first.batch }) : { ...t, batch: first.batch });
         }
@@ -12528,18 +12528,20 @@ function plyBandcamp(u) {
 }
 function plyStart(r, key, want) {
     if (!S.player) return;
-    const q = plyQueue(r);
+    let q = plyQueue(r);
     const i = key ? q.findIndex(t => t.key === key) : 0;
-    if (i < 0) { toast('Nothing to play this track from'); return; }
-    if (plyInWin() && !PLY_WINDOW) { plyWindowStart(q, i, want); return; }
+    if (i < 0 || !q.length) { toast('Nothing to play this track from'); return; }
+    if (key) q = [{ ...q[i], oneTrack: true }];
+    const start = key ? 0 : i;
+    if (plyInWin() && !PLY_WINDOW) { plyWindowStart(q, start, want); return; }
     if (plyRemote) { plyControl('close'); plyRemote = false; }
     if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' });
     ply.q = q;
     if (want) ply.pref = want;
     LOG.info('player: start', r.id, key || 'all', ply.q.length + ' playable', want || '');
-    plyGo(i, want);
+    plyGo(start, want);
 }
-// Append without interrupting the current track. A track button adds the release from that track onward.
+// Append without interrupting the current track.
 function plyAppend(q) {
     if (!Array.isArray(q) || !q.length) return;
     if (plyRemote && !PLY_WINDOW) { plyControl('append', q); return; }
@@ -12554,7 +12556,7 @@ function plyAppend(q) {
 function plyAddRelease(r, key) {
     const q = plyQueue(r), i = key ? q.findIndex(t => t.key === key) : 0;
     if (i < 0 || !q.length) { toast('Nothing to play this track from'); return; }
-    plyAppend(q.slice(i));
+    plyAppend(key ? [{ ...q[i], oneTrack: true }] : q);
 }
 function plyGo(i, want) {
     if (plyRemote && !PLY_WINDOW) { plyControl('go', { i, want }); return; }

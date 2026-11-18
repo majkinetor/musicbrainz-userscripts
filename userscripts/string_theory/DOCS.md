@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-18 21:32 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-18 21:40 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -958,7 +958,7 @@ Expanded track contains info about associated recording and works.
 
 ### Player
 
-The player is off until you turn on **Enable player** in the settings. Point at a track's number and click its play button: the release plays from that track, one track after another. **Play** in the tracklist's header plays the whole release. Right-click either button to add the tracks to the queue; a recording's **Play** works the same way. **Left click** in Player settings swaps the two actions. Choose the streaming site from the player; the next tracks keep that choice when they have it.
+The player is off until you turn on **Enable player** in the settings. Point at a track's number and click its play button to play that recording. **Play** in the tracklist's header plays the whole release. Right-click either button to add its recording or release to the queue; a recording's **Play** works the same way. **Left click** in Player settings swaps the two actions. Choose the streaming site from the player; the next tracks keep that choice when they have it.
 
 The player plays from YouTube, YouTube Music, Spotify, Deezer, Apple Music, SoundCloud and Bandcamp, in the page, and goes on to the next track when one ends. Apple Music's player can't be started for you: click its play button, and the next track follows when the track's length has played. **Hide the video** is remembered. A track with no such link has no play button; with **Show ListenBrainz menu items** on, it gets a ListenBrainz icon instead.
 

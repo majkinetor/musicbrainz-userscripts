@@ -30,5 +30,21 @@ test('queues releases and recordings and restores the last queue', { tag: '@sand
   const updated = release('two', 'Second');
   updated.media[0].tracks.push({ n: 3, title: 'Second3', rid: 'two3', lenMs: 100000, links: src });
   await page.evaluate(r => window.__ehPlayerTest.refreshRelease(r), updated);
-  expect((await page.evaluate(() => window.__ehPlayerTest.state())).q.map(t => t.title)).toEqual(['First1', 'First2', 'Second2', 'Second3', 'Single']);
+  expect((await page.evaluate(() => window.__ehPlayerTest.state())).q.map(t => t.title)).toEqual(['First1', 'First2', 'Second2', 'Single']);
+});
+
+test('a track replaces or appends only itself, while the release queues all tracks', { tag: '@sandbox' }, async ({ page, context, inject }) => {
+  await context.route('https://www.youtube-nocookie.com/embed/**', route => route.fulfill({ contentType: 'text/html', body: '<p>player fixture</p>' }));
+  await page.goto('https://test.musicbrainz.org/');
+  await inject('event_horizon', { waitFor: '__ehPlayerTest' });
+  const links = [{ key: 'youtube', name: 'YouTube', urls: [{ url: 'https://www.youtube.com/watch?v=abcdefghijk' }] }];
+  const release = { id: 'rel', title: 'Album', ac: [], media: [{ tracks: [1, 2, 3].map(n => ({ n, title: 'Track ' + n, rid: 'rec' + n, lenMs: 100000, links })) }] };
+  await page.evaluate(r => window.__ehPlayerTest.startRelease(r, '1-2'), release);
+  expect((await page.evaluate(() => window.__ehPlayerTest.state())).q.map(t => t.title)).toEqual(['Track 2']);
+  await page.evaluate(r => window.__ehPlayerTest.addRelease(r, '1-1'), release);
+  expect((await page.evaluate(() => window.__ehPlayerTest.state())).q.map(t => t.title)).toEqual(['Track 2', 'Track 1']);
+  await page.evaluate(r => window.__ehPlayerTest.refreshRelease(r), release);
+  expect((await page.evaluate(() => window.__ehPlayerTest.state())).q.map(t => t.title)).toEqual(['Track 2', 'Track 1']);
+  await page.evaluate(r => window.__ehPlayerTest.startRelease(r), release);
+  expect((await page.evaluate(() => window.__ehPlayerTest.state())).q.map(t => t.title)).toEqual(['Track 1', 'Track 2', 'Track 3']);
 });
