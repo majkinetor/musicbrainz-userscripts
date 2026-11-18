@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.010000
+// @version      2026.11.19.011000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -10787,7 +10787,7 @@ function renderDraw(keepPop) {
     if (data.kind === 'colnew') { ehMorph(app, colnewHtml(data)); save(); return; }
     if (data.kind === 'search') { ehMorph(app, searchHtml(data)); srchWire(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'art') { artPage(app, data); pinBar(app); return; }
-    if (data.kind === 'upg') { upgPage(app, data); return; }
+    if (data.kind === 'upg') { upgPage(app, data); pinBar(app); return; }
     if (data.kind === 'ann') { document.title = (data.rel ? data.rel.title + ' · ' : '') + 'Annotation · Event Horizon'; annPage(app, data); pinBar(app); return; }
     if (data.kind === 'det') { document.title = (data.rel ? data.rel.title + ' · ' : '') + 'Details · Event Horizon'; detPage(app, data); pinBar(app); return; }
     if (data.kind === 'relate') { relPage(app, data); pinBar(app); return; }
@@ -11911,6 +11911,8 @@ function pinBar(app) {
     const k = bar.querySelector('.kicker'), h1 = hd.querySelector('h1'), img = hd.querySelector('img.cover,img.rhcv:not([hidden]),.u-av img'), kick = acts.parentElement, by = hd.querySelector('.by');
     const title = h1 && h1.cloneNode(true), artist = by && by.cloneNode(true), rg = hd.querySelector('.rg-l'), photo = img && (!img.complete || img.naturalWidth) ? img : null;
     for (const el of [title, artist]) if (el) el.querySelectorAll('.rg-l').forEach(a => a.remove());
+    // an editor's name is a link, and the bar shows only the title's own text: the link gives way to its text
+    if (title && (hd.matches('.u-hero') || hd.querySelector('.u-hero'))) title.replaceChildren(title.textContent);
     kick.classList.add('pin-home');
     const details = [...kick.children].filter(el => el !== acts && !el.hidden).map(el => el.outerHTML).join('');
     k.innerHTML = `<span class="pident">${photo ? `<img class="pcv" alt="" src="${esc(photo.src)}">` : ''}<span class="pnm" data-tip="Back to the top">${title ? title.innerHTML : esc(document.title)}</span>${artist ? `<span class="pby">${artist.innerHTML}</span>` : ''}${rg ? rg.outerHTML : ''}${details ? `<span class="pkk">${details}</span>` : ''}</span>`;
@@ -14097,7 +14099,10 @@ function upgCss() {
         const sel = r.selectorText.split(/,(?![^(]*\))/).filter(s => s.includes(':root[data-eh-rel] #page')).map(s => s.replaceAll(':root[data-eh-rel] #page', '#eh-upg'));
         return sel.length ? sel.join(',') + '{' + r.style.cssText + '}' : '';
     }).join('');
+    // the viewer's header starts at the left edge, so the page under it does too, not centred in its own width
+    // (its own sheet: parsed beside MB's fetched one, it went unmatched)
     st.textContent = keep(sheet.cssRules);
+    const lay = document.createElement('style'); lay.id = 'eh-upg-lay'; lay.textContent = '#app>#eh-upg{margin:0;max-width:none;padding:24px 0 64px}'; st.after(lay);
     const l = [...document.querySelectorAll('link[rel~="stylesheet"]')].find(n => /static\.metabrainz\.org\/MB\/common-/.test(n.href));
     if (l) fetch(l.href).then(r => r.text()).then(s => { st.textContent = '@scope (#eh-upg){' + s + '}' + st.textContent; }).catch(e => LOG.warn('MB stylesheet: ' + e.message));
 }
@@ -14171,6 +14176,9 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #page button.submit,:root[data-eh-rel] #page .buttons button[type=submit]{background:var(--accent)!important;color:#fff!important;border:0!important;border-radius:9px;padding:6px 16px;font-weight:700}
 :root[data-eh-rel] #content>[class*=header]:not(.releaseheader):not(#eh-relhd){display:none!important}
 :root[data-eh-rel] #page .buttons button:not(.submit){background:transparent!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:9px;padding:6px 16px;font-weight:600}
+:root[data-eh-rel] #page button.styled-button{background:transparent!important;color:var(--text)!important;-webkit-text-fill-color:currentColor!important;filter:none!important;border:1px solid var(--border)!important;border-radius:9px;padding:6px 16px;margin:0 8px 8px 0;font-weight:600;cursor:pointer}
+:root[data-eh-rel] #page button.styled-button:hover{border-color:var(--accent)!important}
+:root[data-eh-rel] #page table.tbl th{font-size:11.5px!important}
 :root[data-eh-rel] #page fieldset.editnote{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin:24px 0 12px}:root[data-eh-rel] #page fieldset.editnote{padding-left:16px!important;padding-right:16px!important}:root[data-eh-rel] #page fieldset.editnote legend{float:left;width:100%;margin:0 0 10px;padding:0;font-size:17px}:root[data-eh-rel] #page fieldset.editnote legend+*{clear:left}:root[data-eh-rel] #page fieldset.editnote .row,:root[data-eh-rel] #page form>.row.no-label,:root[data-eh-rel] #page form>div>.row.no-label{margin-left:0!important;padding-left:0!important}:root[data-eh-rel] #page fieldset.editnote .row>label{display:none}:root[data-eh-rel] #page fieldset.editnote p{margin-left:0;padding-left:0}
 :root[data-eh-rel] #page fieldset.editnote textarea,:root[data-eh-rel] #page textarea[name$=".text"]{width:100%!important;box-sizing:border-box}
 :root[data-eh-rel] #page fieldset.editnote .mmth-wrap{max-width:none!important;margin-left:0!important;margin-right:0!important}
