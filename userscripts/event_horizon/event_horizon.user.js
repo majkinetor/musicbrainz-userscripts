@@ -2948,6 +2948,14 @@ body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;poin
 @keyframes eh-hex-drift{0%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}25%{-webkit-mask-position:35% 60%,70% 15%,10% 55%;mask-position:35% 60%,70% 15%,10% 55%}50%{-webkit-mask-position:75% 35%,30% 85%,60% 10%;mask-position:75% 35%,30% 85%,60% 10%}75%{-webkit-mask-position:55% 90%,10% 30%,95% 45%;mask-position:55% 90%,10% 30%,95% 45%}100%{-webkit-mask-position:8% 20%,85% 70%,40% 95%;mask-position:8% 20%,85% 70%,40% 95%}}
 @media (prefers-reduced-motion:reduce){#eh-hex .hex-drift,#eh-hex .hex-drift2,:is(#eh-hex,.eh-amb) .hex-pattern{display:none!important}}
 :root[data-eh-hex] :is(.tl,.card,.u-bio,.u-facts,.u-vcol,.hm-pf,.hgrp,.eh-details){background:color-mix(in srgb,var(--surface) 62%,transparent)!important;backdrop-filter:blur(1px)}
+#app .eh-details{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-top:24px}
+#app .eh-details h2{margin:0 0 18px;font-size:18px}
+#app .eh-details table.details{width:100%;border-collapse:collapse}
+#app .eh-details table.details :is(th,td){padding:2px 0;vertical-align:baseline;line-height:1.45;border:0;background:transparent!important;overflow-wrap:anywhere}
+#app .eh-details table.details th{width:1%;white-space:nowrap;padding-right:12px;color:var(--text);font-weight:700;text-align:right}
+#app .eh-details td>a[href*="/ws/2/"],#app .eh-details td>a[href^="http"]:not([href^="/"]){font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:-.01em}
+#app .eh-details code{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text)}
+@media(max-width:600px){#app .eh-details{padding:16px}#app .eh-details table.details :is(tbody,tr,th,td){display:block;width:auto}#app .eh-details table.details tr+tr{margin-top:10px}#app .eh-details table.details th{white-space:normal;text-align:left;padding:0;font-size:12.5px;font-weight:600;color:var(--muted)}}
 :root[data-eh-hex] :is(.discogs-bar,.gt-toolbar){background:color-mix(in srgb,var(--mbu-bg-raised) 62%,transparent)!important;backdrop-filter:blur(1px)}
 :root[data-eh-hex] .tl .disc{background:color-mix(in srgb,var(--chip) 55%,transparent)!important}
 :root[data-eh-hex] :is(.tl.striped .tr.alt,.tl .detail){background:color-mix(in srgb,var(--hover) 50%,transparent)!important}
@@ -10618,6 +10626,7 @@ function renderDraw(keepPop) {
     if (data.kind === 'colnew') { ehMorph(app, colnewHtml(data)); save(); return; }
     if (data.kind === 'search') { ehMorph(app, searchHtml(data)); srchWire(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'art') { artPage(app, data); pinBar(app); return; }
+    if (data.kind === 'det') { document.title = (data.rel ? data.rel.title + ' · ' : '') + 'Details · Event Horizon'; detPage(app, data); pinBar(app); return; }
     if (data.kind === 'discs' || data.kind === 'toc') { document.title = (data.kind === 'toc' ? 'Disc ID ' + data.id : (data.rel ? data.rel.title + ' · ' : '') + 'Disc IDs') + ' · Event Horizon'; discPage(app, data); pinBar(app); return; }
     if (data.kind === 'hist') { histPage(app, data); entHeadWire(app.querySelector('.arthd') || app); pinBar(app); return; }
     if (data.kind === 'home') { ehMorph(app, homeHtml()); hmWire(app); secRail(app); save(); const p = keepPop && document.getElementById('pop-' + keepPop), t = keepPop && $(`[data-pop="${keepPop}"]`); if (p) { p.hidden = false; if (t) t.setAttribute('aria-expanded', 'true'); } return; }
@@ -13396,7 +13405,10 @@ const discKey = href => {
     return t ? 'toc/' + t[1] : null;
 };
 // the pages a click (or Back and Forward) opens in the tab, without a page load
-const inTab = href => navTo(href) || histKey(href) || artIn(href) || discKey(href);
+// a release's Details → "det/<mbid>": only a click (or Back and Forward) opens it in the tab; loaded, it stays MusicBrainz's
+// page, dressed by the relationship-editor styles (keyOf leaves it to formKey)
+const detKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/details/?$', 'i')); return m ? 'det/' + m[1].toLowerCase() : null; };
+const inTab = href => navTo(href) || histKey(href) || artIn(href) || discKey(href) || detKey(href);
 const keyOf = href => navTo(href) || artKey(href) || discKey(href) || histKey(href) || relKey(href) || formKey(href);
 // let: the seed confirmation page (another site seeding the release editor, a POST to /release/add or …/edit) shares
 // the editor's address, so it gets its key, "form/seed/-/confirm", only once its .confirm-seed form is in the page
@@ -13583,6 +13595,33 @@ async function discLoad(n, id) {
     relHd(id, r => { if (n === showing) { data.rel = r; render(); } }).catch(e => LOG.warn('Disc IDs header: ' + e.message));
     try { const r = await ws(`release/${id}?inc=media+discids`); if (n === showing) { data.media = r.media || []; LOG.info(`Disc IDs: ${data.media.length} media, ${data.media.reduce((a, m) => a + (m.discs || []).length, 0)} disc ID(s)`); render(); } }
     catch (e) { LOG.err('Loading the disc IDs of ' + id + ' failed: ' + e.message); if (n === showing) { data.err = e.message; render(); } }
+}
+
+// A release's Details, fetched in place of a page load (the player plays on): MusicBrainz's table, in the card the
+// loaded page dresses it in
+function detPage(app, d) {
+    if (!app.querySelector(`#det-body[data-k="${d.id}"]`)) app.innerHTML = `<section class="arthd"></section><div id="det-body" data-k="${esc(d.id)}"></div>`;
+    const hd = app.querySelector('.arthd'), body = app.querySelector('#det-body');
+    hd.innerHTML = subHead(d.rel, d.id, 'details', 'Details', d.err ? `<h1>${esc(d.err)}</h1>` : '<h1>&nbsp;</h1>'); cvWire(hd);
+    if (body.dataset.on !== String(!!d.html)) { body.dataset.on = String(!!d.html); body.innerHTML = d.html || (d.err ? '' : '<p class="msg">Loading the details…</p>'); }
+}
+async function detLoad(n, id) {
+    const d = data;
+    relHd(id, r => { if (n === showing && data === d) { d.rel = r; render(); } }).catch(e => LOG.warn('Details header: ' + e.message));
+    try {
+        const r = await mbnFetch(`${MB}/release/${id}/details`, { credentials: 'include' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const doc = new DOMParser().parseFromString(await r.text(), 'text/html'), c = doc.querySelector('#content');
+        if (!c || !c.querySelector('table.details')) throw new Error('no details table on the page');
+        // what follows the tabs is the page's own: its heading and table
+        const box = doc.createElement('div'), tabs = c.querySelector(':scope > .tabs');
+        let el = tabs ? tabs.nextElementSibling : c.firstElementChild;
+        while (el) { const nx = el.nextElementSibling; if (!el.matches('.releaseheader, .tabs, script')) box.append(el); el = nx; }
+        detailsDress(box);
+        d.html = box.innerHTML;
+        LOG.info(`Details: ${id} in the tab, ${box.querySelectorAll('table.details tr').length} row(s)`);
+    } catch (e) { LOG.err('Loading the details of ' + id + ' failed: ' + e.message); d.err = e.message; }
+    if (n === showing && data === d) render();
 }
 
 /* ── relationship editor ───────────────────────────── */
@@ -15613,6 +15652,7 @@ async function show(key, o = {}) {
     const parts = kind === 'recording' ? ['recording', 'releases', 'works'] : kind === 'work' ? ['work', 'recordings'] : kind === 'area' ? ['area', 'artists, labels, places'] : kind === 'instrument' ? ['instrument', 'artists, releases, recordings'] : kind === 'place' ? ['place', 'events, recordings'] : kind === 'series' ? ['series', 'parts'] : kind === 'collection' ? ['collection', 'items'] : kind === 'event' ? ['event'] : isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
     if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
     if (kind === 'discs' || kind === 'toc') { data = { kind, id }; scrollTo(0, 0); render(); discLoad(n, id); return; }
+    if (kind === 'det') { data = { kind, id }; scrollTo(0, 0); render(); detLoad(n, id); return; }
     if (kind === 'art' || kind === 'eart') {
         data = { kind: 'art', id, ev: kind === 'eart' }; render();
         // Art Station takes the slot (preventDefault); without it, only the page the tab loaded shows its art
