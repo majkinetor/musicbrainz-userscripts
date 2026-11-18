@@ -11,7 +11,7 @@ var __stTheme = (function () {
   // The theme chooser stays open across pages until it is closed: { only, v, n } in this tab's sessionStorage,
   // read here at document-start so the next page opens in the theme it shows, not the saved one first.
   var TC = 'st-tc';
-  function tcRead() { try { var t = JSON.parse(sessionStorage.getItem(TC)); return t && t.v && t.n ? t : null; } catch (e) { return null; } }
+  function tcRead() { if (__stPlayerOnly) return null; try { var t = JSON.parse(sessionStorage.getItem(TC)); return t && t.v && t.n ? t : null; } catch (e) { return null; } }
   function tcPut(t) { try { if (t) sessionStorage.setItem(TC, JSON.stringify(t)); else sessionStorage.removeItem(TC); } catch (e) {} }
 
   function read() {

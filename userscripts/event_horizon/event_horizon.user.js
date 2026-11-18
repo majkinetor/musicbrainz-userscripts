@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.100400
+// @version      2026.11.19.100401
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4408,9 +4408,10 @@ S.fxCur = ''; // the effect preset being worked on: Save writes a change into it
 S.colW = {}; // the widths dragged in a table, by section; the title takes what they leave, and none means the table fits itself
 S.colPick = {}; // the tables' column choice, by section: { order, off }; none is the usual table
 S.pending = false; // MusicBrainz's grey mark on what has edits open; takes one more request per page
-VIEW.push('player', 'playerPlace', 'playerRepeat', 'playerLb', 'playerScrobble', 'playerVideo', 'playerVol');
+VIEW.push('player', 'playerPlace', 'playerClick', 'playerRepeat', 'playerLb', 'playerScrobble', 'playerVideo', 'playerVol');
 S.player = false; // the play buttons on a release's tracks, and the player they start
 S.playerPlace = 'bar'; // where the player shows: 'bar' at the bottom, 'chip' at the top right
+S.playerClick = 'replace'; // left click replaces the queue; right click appends, or the other way around
 S.playerRepeat = 'off'; // off, all, or one; changed by right-clicking the play/pause button
 S.playerLb = true; // the player's links to the track and the release in ListenBrainz
 S.playerVol = 100; // the player's volume, 0 to 100; 0 is muted
@@ -5709,7 +5710,7 @@ function tracklist(r) {
     const row = (t, i) => {
         const sub = !va && t.feat.length ? 'with ' + t.feat.join(', ') : '';
         const srcs = S.player ? plySources(t) : [];
-        const nb = srcs.length ? `<button type="button" class="trp" data-play="${esc(t.key)}" aria-label="Play ${esc(t.title)}" data-tip="Play from here\nRight-click: choose where from">${SVG(PLY_I.play)}</button>`
+        const nb = srcs.length ? `<button type="button" class="trp" data-play="${esc(t.key)}" aria-label="Play ${esc(t.title)}" data-tip="${plyClickTip('Play from here')}">${SVG(PLY_I.play)}</button>`
             : S.player && S.playerLb ? `<a class="trp" href="https://listenbrainz.org/track/${t.rid}" target="_blank" rel="noopener" aria-label="${esc(t.title)} in ListenBrainz" data-tip="Nothing here to play it from\nClick: try it in ListenBrainz">${stIcon('listenbrainz', 18).replace('<svg', '<svg aria-hidden="true"')}</a>` : '';
         return `<div class="tr${i % 2 ? ' alt' : ''}${plyOn(r, t.key) ? ' ply-on' : ''}" data-row="${esc(t.key)}" aria-expanded="${S.open.has(t.key)}"><span class="n mono">${nb ? nb + '<span class="nn">' + esc(t.n) + '</span>' : esc(t.n)}</span>
             <div class="ti"><a class="t${longC(t.title)}"${longT(t.title)} href="${MB}/recording/${t.rid}">${esc(t.title)}</a>${marks(t)}${(t.genres || []).length + (t.tags || []).length ? `<span class="tg">${[...(t.genres || []).map(x => [x, '']), ...(t.tags || []).map(x => [x, ' tag'])].slice(0, 4).map(([x, c]) => `<a class="chip${c}" href="${MB}/tag/${encodeURIComponent(x.name)}" data-tip="${esc(x.name)}: ${x.count} vote${x.count === 1 ? '' : 's'}">${esc(x.name)}</a>`).join('')}</span>` : ''}${sub ? `<div class="sub">${esc(sub)}</div>` : ''}</div>${va ? `<span class="ar">${acHtml(t.ac)}</span>` : ''}
@@ -5727,7 +5728,7 @@ function tracklist(r) {
     rowKeys = tracks.map(t => t.key);
     const plB = `<button class="tx plcfg" type="button" data-plcfg="1" aria-label="Tracklist settings" data-tip="Tracklist settings\nTrack colors and platform icons">${MBU_CFG_ICON}</button>`;
     const playable = S.player && tracks.some(t => plySources(t).length);
-    const playB = playable ? `<button class="tx" type="button" data-playall="1" aria-label="Play all" data-tip="Play the release\nTrack after track, from its streaming links">${SVG(PLY_I.play)}<span class="txl">Play</span></button>` : '';
+    const playB = playable ? `<button class="tx" type="button" data-playall="1" aria-label="Play all" data-tip="${plyClickTip('Play the release')}">${SVG(PLY_I.play)}<span class="txl">Play</span></button>` : '';
     const tools = `${playB}<span class="label" style="margin-right:2px">Show</span>${toggles}${plB}`;
     const isrcs = [...new Set(tracks.flatMap(t => t.isrcs))];
     const body = `<div class="tl ${cls}${S.plHover ? ' pl-hov' : ''}${S.trackStripe ? ' striped' : ''}">${rows}
@@ -8364,7 +8365,7 @@ function pgHero(g, type, icon, kind, F, by, pic, sub = '') {
 const codes = xs => xs.map(i => copyB(i)).join(' ');
 function recHero(d) {
     const g = d.g;
-    const play = S.player && plySources({ links: g.links || [] }).length ? `<button class="tx" type="button" data-playrec="1" aria-label="Play" data-tip="Play the recording\nFrom its streaming links">${SVG(PLY_I.play)}<span class="txl">Play</span></button>` : '';
+    const play = S.player && plySources({ links: g.links || [] }).length ? `<button class="tx" type="button" data-playrec="1" aria-label="Play" data-tip="${plyClickTip('Play the recording')}">${SVG(PLY_I.play)}<span class="txl">Play</span></button>` : '';
     return (h => play ? h.replace('<span class="acts">', '<span class="acts">' + play) : h)(pgHero(g, 'recording', MK_REC, g.video ? 'Video' : 'Recording', [
         ['Length', g.len && `<span>${esc(ms(g.len))}</span>`],
         ['First released', g.first && `<span>${fdate(g.first)}</span>`],
@@ -12292,6 +12293,7 @@ function redrawTracks() {
 // ---- the player: a release's tracks played from their streaming links, in a bar at the bottom or a chip at the top right
 // it lives on <html>, outside both bodies, so it plays on through navigation and Event Horizon turned off
 const PLY_SRC = ['youtube', 'ytmusic', 'spotify', 'deezer', 'apple', 'soundcloud', 'bandcamp'];
+const plyClickTip = lead => lead + (S.playerClick === 'append' ? '\nClick: add to queue\nRight-click: replace queue' : '\nClick: replace queue\nRight-click: add to queue');
 const PLY_I = {
     play: '<path d="M7 5v14l12-7z" fill="currentColor" stroke="none"/>',
     pause: '<path d="M8 5v14M16 5v14"/>',
@@ -12398,6 +12400,7 @@ if (PLY_BUS) {
             else if (m.action === 'close') { plyClose(); window.close(); }
             else if (m.action === 'to-tab') { plyToTab(m.value); return; }
             else if (m.action === 'queue') plyRequeue(m.value && m.value.rel, m.value && m.value.q);
+            else if (m.action === 'append') plyAppend(m.value);
             plyPublish(); return;
         }
         if (m.type === 'hello' && !plyRemote && ply.i >= 0) { plySend({ type: 'tab-active', id: PLY_ID }); return; }
@@ -12415,10 +12418,10 @@ if (PLY_BUS) {
         plyOwnerSeen = Date.now(); plyProbeAt = 0;
         if (!S.player || (!plyRemote && !plyPending && ply.i >= 0) || !Array.isArray(m.q)) return;
         if (m.i < 0) { if (plyRemote) { plyRemote = false; plyClose(); } return; }
-        const before = [ply.i, ply.src, ply.paused, ply.q[ply.i]?.title, S.playerVideo, S.playerRepeat].join('|'), vol = S.playerVol;
+        const before = [ply.i, ply.src, ply.paused, JSON.stringify(ply.q.map(t => [t.key, t.rel, t.title])), S.playerVideo, S.playerRepeat].join('|'), vol = S.playerVol;
         plyRemote = true; plyResumed = true; Object.assign(ply, { q: m.q, i: m.i, src: m.src, pref: m.pref, paused: m.paused, yt: m.yt, kind: m.kind, ctl: m.ctl, ends: m.ends });
         S.playerVol = m.vol; S.playerVideo = m.video; S.playerRepeat = m.repeat || 'off';
-        const after = [ply.i, ply.src, ply.paused, ply.q[ply.i]?.title, S.playerVideo, S.playerRepeat].join('|');
+        const after = [ply.i, ply.src, ply.paused, JSON.stringify(ply.q.map(t => [t.key, t.rel, t.title])), S.playerVideo, S.playerRepeat].join('|');
         if (before !== after || !plyCtl || !plyCtl.isConnected) plyDraw(); else { plyProg(); if (vol !== S.playerVol) plyVolShow(+S.playerVol || 0); }
     });
     if (PLY_WINDOW) {
@@ -12438,7 +12441,7 @@ if (PLY_BUS) {
         addEventListener('beforeunload', () => plySend({ type: 'closed' }));
     } else plySend({ type: 'hello' });
 }
-if (mbuTestHooks()) window.__ehPlayerTest = { start: (q, i = 0) => plyWindowStart(q, i), toWindow: plyToWindow, toTab: plyToTab, inWindow: plyInWin, startRelease: plyStart, remote: () => plyRemote, popup: () => PLY_WINDOW, state: () => ({ i: ply.i, gen: ply.gen, paused: ply.paused, vol: S.playerVol, repeat: S.playerRepeat }) };
+if (mbuTestHooks()) window.__ehPlayerTest = { start: (q, i = 0) => plyWindowStart(q, i), toWindow: plyToWindow, toTab: plyToTab, inWindow: plyInWin, startRelease: plyStart, addRelease: plyAddRelease, refreshRelease: plyRelChanged, recording: plyRec, toggle: plyToggle, remote: () => plyRemote, popup: () => PLY_WINDOW, state: () => ({ i: ply.i, q: ply.q, gen: ply.gen, paused: ply.paused, vol: S.playerVol, repeat: S.playerRepeat }) };
 // Keep playback alive when opening the release editor, including on MusicBrainz's native page. Only a player playing in
 // this tab needs it, and only a link that leaves the page: the editor's own step links (#information, which Platform
 // Check clicks while it adds links) stay on it and opened one more editor tab with every click.
@@ -12471,21 +12474,31 @@ const plySources = t => plSorted((t.links || []).filter(p => PLY_SRC.includes(p.
 // the release's tracks as a queue; the ones with nothing to play are left out
 function plyQueue(r, all) {
     if (!r || !r.media) return [];
-    const relAc = acText(r.ac || []), relYear = ((r.events || []).map(v => v.date || '').filter(Boolean).sort()[0] || '').slice(0, 4);
-    return r.media.flatMap((m, mi) => (m.tracks || []).map(t => ({ key: (mi + 1) + '-' + t.n, n: t.n, title: t.title, rid: t.rid, artist: t.ac ? acText(t.ac) : relAc, len: t.lenMs, srcs: plySources(t), rel: r.id, relTitle: r.title, relAc, relYear, front: r.front })))
+    const relAc = acText(r.ac || []), relYear = ((r.events || []).map(v => v.date || '').filter(Boolean).sort()[0] || '').slice(0, 4), batch = Math.random().toString(36).slice(2);
+    return r.media.flatMap((m, mi) => (m.tracks || []).map(t => ({ key: (mi + 1) + '-' + t.n, n: t.n, title: t.title, rid: t.rid, artist: t.ac ? acText(t.ac) : relAc, len: t.lenMs, srcs: plySources(t), rel: r.id, relTitle: r.title, relAc, relYear, front: r.front, batch })))
         .filter(t => all || t.srcs.length);
 }
 // a release redrawn after another script's write (ISRC Scout adding links): the queue playing from it takes the new
 // sources and the tracks that can now play, and keeps each track's place and clock, and the one playing
 function plyRequeue(rel, fresh) {
-    if (!rel || !Array.isArray(fresh) || !ply.q.length || !ply.q.every(t => t.rel === rel && 'relAc' in t)) return;   // a recording's queue of one has no relAc
-    const cur = ply.q[ply.i], old = new Map(ply.q.map(t => [t.key, t]));
-    const q = fresh.filter(t => t.srcs.length || (cur && t.key === cur.key)).map(t => { const o = old.get(t.key); return o ? Object.assign(o, t) : t; });
+    if (!rel || !Array.isArray(fresh) || !ply.q.some(t => t.rel === rel && !t.standalone && 'relAc' in t)) return;
     const sig = x => x.map(t => t.key + ':' + t.srcs.map(p => p.key + ' ' + (p.urls || []).map(u => u.url).join(' ')).join(',')).join('|');
-    if (sig(q) === sig(ply.q)) return;
+    const before = sig(ply.q), cur = ply.q[ply.i], q = [];
+    for (let i = 0; i < ply.q.length;) {
+        const first = ply.q[i];
+        if (first.rel !== rel || first.standalone || !('relAc' in first)) { q.push(first); i++; continue; }
+        const group = [];
+        while (i < ply.q.length && ply.q[i].rel === rel && !ply.q[i].standalone && 'relAc' in ply.q[i] && ply.q[i].batch === first.batch) group.push(ply.q[i++]);
+        const old = new Map(group.map(t => [t.key, t])), start = Math.max(0, fresh.findIndex(t => t.key === first.key));
+        for (const t of fresh.slice(start)) {
+            const prior = old.get(t.key);
+            if (t.srcs.length || prior === cur) q.push(prior ? Object.assign(prior, t, { batch: first.batch }) : { ...t, batch: first.batch });
+        }
+    }
+    if (sig(q) === before) return;
     LOG.info('player: the release changed, ' + q.length + ' playable (was ' + ply.q.length + ')');
     ply.q = q; ply.i = cur ? q.indexOf(cur) : -1;
-    if (PLY_WINDOW) plyPublish(); else { plySave(); plyDraw(); }
+    plyKeep(); plySave(); plyDraw(); if (PLY_WINDOW) plyPublish();
 }
 function plyRelChanged(r) {
     if (!r || !r.id) return;
@@ -12526,6 +12539,23 @@ function plyStart(r, key, want) {
     LOG.info('player: start', r.id, key || 'all', ply.q.length + ' playable', want || '');
     plyGo(i, want);
 }
+// Append without interrupting the current track. A track button adds the release from that track onward.
+function plyAppend(q) {
+    if (!Array.isArray(q) || !q.length) return;
+    if (plyRemote && !PLY_WINDOW) { plyControl('append', q); return; }
+    if (ply.i < 0) {
+        if (plyInWin() && !PLY_WINDOW) { plyWindowStart(q, 0); return; }
+        if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' });
+        ply.q = q; plyGo(0); return;
+    }
+    ply.q.push(...q); plyKeep(); plySave(); plyDraw(); plyPublish();
+    toast('Added to the player queue');
+}
+function plyAddRelease(r, key) {
+    const q = plyQueue(r), i = key ? q.findIndex(t => t.key === key) : 0;
+    if (i < 0 || !q.length) { toast('Nothing to play this track from'); return; }
+    plyAppend(q.slice(i));
+}
 function plyGo(i, want) {
     if (plyRemote && !PLY_WINDOW) { plyControl('go', { i, want }); return; }
     const t = ply.q[i]; if (!t) return;
@@ -12540,6 +12570,7 @@ function plyGo(i, want) {
     plyClock(t);
     plyDraw();
     plySave();
+    plyKeep();
     if (!e.bc) { plyDock(e); return; }
     plyDock(null);
     plyBandcamp(e.bc).then(url => {
@@ -12788,14 +12819,14 @@ function plyWinList(root) {
         root.append(l);
     }
     // the header and the rows are redrawn only when they change, so the cover doesn't reload with every track
-    const head = plyRelHead(ply.q[ply.i], false), rows = ply.q.map((x, i) => `<button type="button" class="qi" role="listitem" data-i="${i}"${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span>${plyRowSrc(x, i)}<span class="ql">${x.len ? dur(x.len) : ''}</span></button>`).join('');
+    const head = plyRelHead(ply.q[ply.i], false), rows = plyRows(false);
     if (l._head !== head) {
         l._head = head; l.querySelector('.ply-rhw')?.remove();
         if (head) { l.insertAdjacentHTML('afterbegin', plyRelHead(ply.q[ply.i])); l.querySelector('.ply-rhw img')?.addEventListener('error', ev => ev.target.remove()); }
     }
     plyHeadPaint(); plyHeadLoad(ply.q[ply.i]);
     if (l._rows !== rows) {
-        l._rows = rows; l.querySelectorAll('.qi').forEach(b => b.remove());
+        l._rows = rows; l.querySelectorAll('.qi,.ply-group').forEach(b => b.remove());
         l.insertAdjacentHTML('beforeend', rows);
         l.querySelector('[aria-current]')?.scrollIntoView({ block: 'nearest' });
     }
@@ -12969,8 +13000,17 @@ document.addEventListener('contextmenu', ev => {
     const b = ev.target.closest && ev.target.closest('.ply-ra [data-pa="rel"],.ply-ra [data-pa="rec"]'); if (!b) return;
     ev.preventDefault(); plyCollPick(b, b.dataset.pa);
 });
+function plyRows(menu) {
+    let previous = null;
+    return ply.q.map((x, i) => {
+        const group = x.standalone || !('relAc' in x) ? 'recordings' : 'release:' + x.rel + ':' + (x.batch || '');
+        const heading = group !== previous ? `<div class="ply-group">${esc(group === 'recordings' ? 'Recordings' : x.relTitle || 'Release')}</div>` : '';
+        previous = group;
+        return heading + `<button type="button" class="${menu ? 'it ' : ''}qi" role="${menu ? 'menuitem' : 'listitem'}" ${menu ? 'data-k="q' + i + '"' : 'data-i="' + i + '"'}${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span>${plyRowSrc(x, i)}<span class="ql">${x.len ? dur(x.len) : ''}</span></button>`;
+    }).join('');
+}
 function plyListMenu(btn) {
-    plyMenu(btn, plyRelHead(ply.q[ply.i]) + '<div class="hd"><span>Playlist</span>' + (ply.q.length > 1 ? '<input type="search" class="qf" placeholder="Filter" aria-label="Filter the playlist" autocomplete="off">' : '') + '</div>' + ply.q.map((x, i) => `<button type="button" class="it qi" role="menuitem" data-k="q${i}"${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span>${plyRowSrc(x, i)}<span class="ql">${x.len ? dur(x.len) : ''}</span></button>`).join(''),
+    plyMenu(btn, plyRelHead(ply.q[ply.i]) + '<div class="hd"><span>Playlist</span>' + (ply.q.length > 1 ? '<input type="search" class="qf" placeholder="Filter" aria-label="Filter the playlist" autocomplete="off">' : '') + '</div>' + plyRows(true),
         ({ k }) => { const i = +String(k).slice(1); if (i >= 0 && i < ply.q.length && i !== ply.i) { LOG.info('player: picked from the playlist', i + 1); plyGo(i, ply.pref); } }, 'left');
     document.querySelector('#eh-ply-menu [aria-current]')?.scrollIntoView({ block: 'nearest' });
     document.querySelector('#eh-ply-menu .ply-rh img')?.addEventListener('error', ev => ev.target.remove());
@@ -12983,11 +13023,12 @@ function plyListMenu(btn) {
     qf.focus({ preventScroll: true });
 }
 // one recording, from its own page: a queue of one
-function plyRec(g, eds) {
+function plyRec(g, eds, append = false) {
     if (!S.player || !g) return;
     const e = (eds || [])[0] || {}, srcs = plySources({ links: g.links || [] });
     if (!srcs.length) { toast('Nothing to play this recording from'); return; }
-    const q = [{ key: '1-1', n: 1, title: g.title, rid: g.id, artist: acText(g.ac), len: g.len || 0, srcs, rel: e.id || '', relTitle: e.title || '', front: true }];
+    const q = [{ key: '1-1', n: 1, title: g.title, rid: g.id, artist: acText(g.ac), len: g.len || 0, srcs, rel: e.id || '', relTitle: e.title || '', front: true, standalone: true }];
+    if (append) { plyAppend(q); return; }
     if (plyInWin() && !PLY_WINDOW) { plyWindowStart(q, 0); return; }
     if (plyRemote) { plyControl('close'); plyRemote = false; }
     if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' });
@@ -13121,6 +13162,7 @@ html.eh-ply-win .pa .ply-vp{bottom:auto;top:100%}
 html.eh-ply-win #eh-ply:not(.ply-novid) .ply-dock{position:static;order:1;flex:none;width:auto;max-width:none;margin:8px;}
 html.eh-ply-win .ply-wl{order:2;flex:1;min-height:0;overflow:hidden auto;padding:4px;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
 .ply-wl .qi{display:flex;align-items:center;gap:9px;width:100%;box-sizing:border-box;padding:6px 9px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.ply-group{padding:8px 9px 4px;color:var(--muted,#777);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
 .ply-wl .qi:hover,.ply-wl .qi:focus-visible{background:color-mix(in srgb,currentColor 10%,transparent);outline:0}
 .ply-wl .qi[aria-current]{background:color-mix(in srgb,var(--accent,#ba478f) 16%,transparent);font-weight:600}
 .ply-wl .qn{flex:none;min-width:2.2em;color:var(--muted,#777);font-variant-numeric:tabular-nums;text-align:right}
@@ -13246,8 +13288,26 @@ function plyClock(t) {
 // A native MusicBrainz navigation destroys the tab's player. Keep its queue in this tab so it can be restored on any page.
 function plySave() {
     const t = ply.q[ply.i]; if (!t || plyRemote || PLY_WINDOW) return;
-    try { sessionStorage.setItem('eh-ply', JSON.stringify({ tab: PLY_TAB, rel: t.rel, key: t.key, src: t.src, played: t.resume || t.played, q: ply.q })); } catch (e) {}
+    try { sessionStorage.setItem('eh-ply', JSON.stringify({ tab: PLY_TAB, rel: t.rel, key: t.key, i: ply.i, src: t.src, played: t.resume || t.played, q: ply.q })); } catch (e) {}
 }
+// The last queue survives closing the player and the browser; position updates stay in the tab only.
+function plyKeep() {
+    if (plyRemote || !ply.q[ply.i]) return;
+    try { GM_setValue('playerQueue', { q: ply.q, i: ply.i, src: ply.src }); } catch (e) {}
+}
+function plyToggle() {
+    if (ply.i >= 0 || plyRemote) { plyClose(); return; }
+    let v; try { v = GM_getValue('playerQueue', null); } catch (e) {}
+    if (!v || !Array.isArray(v.q) || !v.q[v.i] || !v.q[v.i].srcs?.length) { toast('No player queue saved'); return; }
+    if (!S.player) { S.player = true; save(); }
+    if (plyInWin() && !PLY_WINDOW) { plyWindowStart(v.q, v.i, v.src); return; }
+    plySend({ type: 'claim', id: PLY_ID, place: 'tab' });
+    ply.q = v.q; ply.pref = v.src || ''; plyGo(v.i, v.src);
+}
+try {
+    window.__mbuPalette = window.__mbuPalette || {};
+    window.__mbuPalette['Event Horizon'] = () => [{ id: 'player', label: 'Toggle player', cat: 'Player', run: plyToggle }];
+} catch (e) {}
 // a tab opened from another (Platform Check's add links, a middle-click) gets a copy of its sessionStorage, so the opener's
 // saved player too. The saved player carries its tab's mark, kept in window.name, which survives a reload and in-tab
 // navigation but never goes to a new tab: a player saved under another mark is the opener's and is dropped.
@@ -13273,7 +13333,7 @@ setInterval(() => {
         let v = null; try { v = JSON.parse(sessionStorage.getItem('eh-ply') || 'null'); } catch (e) {}
         if (v && Array.isArray(v.q) && v.q.length) {
             plyResumed = true;
-            const i = v.q.findIndex(t => t.key === v.key && t.rel === v.rel);
+            const i = Number.isInteger(v.i) && v.q[v.i]?.key === v.key && v.q[v.i]?.rel === v.rel ? v.i : v.q.findIndex(t => t.key === v.key && t.rel === v.rel);
             if (i >= 0 && Array.isArray(v.q[i].srcs) && v.q[i].srcs.length) {
                 ply.q = v.q; ply.pref = v.src || ''; if (v.played > 3000) ply.q[i].resume = v.played;
                 plySend({ type: 'claim', id: PLY_ID, place: 'tab' }); plyGo(i, v.src);
@@ -13296,12 +13356,14 @@ setInterval(() => {
     t.heard += 1000;
     if (t.heard >= Math.min(t.len ? t.len / 2 : 240000, 240000)) { t.sent = true; lbListen(t, 'single', t.at); }
 }, 1000);
-// a track's play button, right-clicked: where to play it from
+// The two mouse buttons do opposite queue actions, as selected in Player settings.
 document.addEventListener('contextmenu', ev => {
-    const b = ehOn && ev.target.closest && ev.target.closest('button[data-play]'); if (!b || !data || !data.rel) return;
+    const b = ehOn && ev.target.closest && ev.target.closest('button[data-play],button[data-playall],button[data-playrec]'); if (!b || !data) return;
     ev.preventDefault();
-    const key = b.dataset.play, t = plyQueue(data.rel).find(x => x.key === key);
-    if (t) plySrcMenu(b, t, k => plyStart(data.rel, key, k));
+    const append = S.playerClick !== 'append';
+    if (b.dataset.playrec) plyRec(data.g, null, append);
+    else if (append) plyAddRelease(data.rel, b.dataset.play);
+    else plyStart(data.rel, b.dataset.play);
 });
 function onClick(ev) {
     if (!ehOn) return;
@@ -13328,9 +13390,8 @@ function onClick(ev) {
     if (!b) return;
     const d = b.dataset;
     let keep;
-    if (d.play) { plyStart(data.rel, d.play); return; }
-    if (d.playall) { plyStart(data.rel); return; }
-    if (d.playrec) { plyRec(data.g); return; }
+    if (d.play || d.playall) { if (S.playerClick === 'append') plyAddRelease(data.rel, d.play); else plyStart(data.rel, d.play); return; }
+    if (d.playrec) { plyRec(data.g, null, S.playerClick === 'append'); return; }
     if ('srch' in d) { const fm = b.form; if (fm.classList.toggle('open')) fm.query.focus(); return; }
     if (d.collchange) { collectionChange(d.collkey, d.collchange); return; }
     if (d.collrefresh) { collectionLoad(d.collrefresh, true); return; }
@@ -16069,6 +16130,7 @@ function cfgBody() {
             + `<div class="keys">${ckRow('keysOn', 'Keyboard shortcuts', 'Single keys open the page\'s edit, relationships, history and more\nCtrl+/ lists them\nOn MusicBrainz\'s pages and in Event Horizon alike')}<button type="button" class="btn" data-keys-open>Change keys…</button></div>`,
         player: ckRow('player', 'Enable player', 'A play button on each track of a release that has it on a streaming site\nPlays the release from there, track after track')
             + row('Player place', [['bar', 'Bottom bar'], ['chip', 'Top bar']].map(([v, l]) => chip('playerPlace', v, S.playerPlace === v, l)).join(''), 'Where the player shows')
+            + row('Left click', [['replace', 'Replace queue'], ['append', 'Add to queue']].map(([v, l]) => chip('playerClick', v, S.playerClick === v, l)).join(''), 'Right-click does the other action')
             + ckRow('playerLb', 'Show ListenBrainz menu items', 'Links in the player to the track and the release in ListenBrainz')
             + `<div class="player-listens">${ckRow('playerScrobble', 'Send listens to ListenBrainz', 'What the player plays goes to your ListenBrainz listens\nNeeds your user token')}<span class="fx-combo"><input type="password" data-lbtok autocomplete="off" spellcheck="false" placeholder="LB token" aria-label="ListenBrainz token" value="${esc(lbToken())}"></span><a href="https://listenbrainz.org/settings" target="_blank" rel="noopener noreferrer" data-lb-get${lbToken() ? ' hidden' : ''}>Get token</a></div>`,
         menu: menuPane(),
@@ -16346,6 +16408,7 @@ function cfgWire(panel, b, body) {
             else if (g === 'prov') { S.prov = toggle(S.prov, k); plFollow(); }
             else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'arAuto' || g === 'menuTitles' || g === 'keysOn' || g === 'cfgFade' || g === 'player' || g === 'playerLb' || g === 'playerScrobble') S[g] = !S[g];
             else if (g === 'playerPlace') S.playerPlace = k;
+            else if (g === 'playerClick') S.playerClick = k;
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
             else if (g === 'bg') { S.bg = k; bgApply(); }

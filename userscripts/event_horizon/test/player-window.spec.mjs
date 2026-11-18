@@ -2,6 +2,25 @@ import { test, expect } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Event Horizon', persist: 'tabs', values: { view: { on: true, player: true }, plyWin: true } } });
 
+test('appending from a tab updates the window without restarting playback', { tag: '@sandbox' }, async ({ page, context, inject }) => {
+  await context.route('https://www.youtube-nocookie.com/embed/**', route => route.fulfill({ contentType: 'text/html', body: '<p>player fixture</p>' }));
+  await page.goto('https://test.musicbrainz.org/');
+  await inject('event_horizon', { waitFor: '__ehPlayerTest' });
+  const src = [{ key: 'youtube', name: 'YouTube', urls: [{ url: 'https://www.youtube.com/watch?v=abcdefghijk' }] }];
+  const opened = context.waitForEvent('page');
+  await page.evaluate(src => window.__ehPlayerTest.start([{ key: '1-1', n: 1, title: 'First', rid: 'a', artist: 'Artist', len: 100000, srcs: src }]), src);
+  const popup = await opened;
+  await popup.waitForURL('**/?eh-player-window=1');
+  await inject('event_horizon', { target: popup, waitFor: '__ehPlayerTest' });
+  await expect.poll(() => page.evaluate(() => window.__ehPlayerTest.remote())).toBe(true);
+  const gen = await popup.evaluate(() => window.__ehPlayerTest.state().gen);
+  await page.evaluate(src => window.__ehPlayerTest.recording({ id: 'b', title: 'Second', ac: [], links: src }, [], true), src);
+  await expect.poll(() => popup.evaluate(() => window.__ehPlayerTest.state().q.length)).toBe(2);
+  expect(await popup.evaluate(() => window.__ehPlayerTest.state().gen)).toBe(gen);
+  await expect(popup.locator('.ply-wl .qi')).toHaveCount(2);
+  await popup.close();
+});
+
 test('separate player survives its opening tab and another tab controls it', { tag: '@sandbox' }, async ({ page, context, inject }) => {
   test.setTimeout(120000);
   await context.route('https://www.youtube-nocookie.com/embed/**', route => route.fulfill({ contentType: 'text/html', body: '<p>player fixture</p>' }));

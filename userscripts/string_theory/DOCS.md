@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-18 21:03 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-18 21:10 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -958,11 +958,11 @@ Expanded track contains info about associated recording and works.
 
 ### Player
 
-The player is off until you turn on **Enable player** in the settings. Point at a track's number and click its play button: the release plays from that track, one track after another. **Play** in the tracklist's header plays the whole release. Right-click a track's play button to choose the streaming site it plays from; the next tracks keep that choice when they have it.
+The player is off until you turn on **Enable player** in the settings. Point at a track's number and click its play button: the release plays from that track, one track after another. **Play** in the tracklist's header plays the whole release. Right-click either button to add the tracks to the queue; a recording's **Play** works the same way. **Left click** in Player settings swaps the two actions. Choose the streaming site from the player; the next tracks keep that choice when they have it.
 
 The player plays from YouTube, YouTube Music, Spotify, Deezer, Apple Music, SoundCloud and Bandcamp, in the page, and goes on to the next track when one ends. Apple Music's player can't be started for you: click its play button, and the next track follows when the track's length has played. **Hide the video** is remembered. A track with no such link has no play button; with **Show ListenBrainz menu items** on, it gets a ListenBrainz icon instead.
 
-The player shows at the bottom of the page, or as a chip under the header's actions. It has the track, previous and next, the streaming site, and links to the track and the release in ListenBrainz. On the first track, previous restarts it when the source supports seeking. Right-click Play or Pause to cycle through playing once, repeating the release and repeating the track. The mouse wheel winds the track by five seconds. In the source menu, right-click a platform to open the track there in a new tab. Close the player with ×.
+The player shows at the bottom of the page, or as a chip under the header's actions. It has the track, previous and next, the streaming site, and links to the track and the release in ListenBrainz. Click the track name to see the queue, grouped by release with recordings in their own section. On the first track, previous restarts it when the source supports seeking. Right-click Play or Pause to cycle through playing once, repeating the queue and repeating the track. The mouse wheel winds the track by five seconds. In the source menu, right-click a platform to open the track there in a new tab. Close the player with ×. String Theory's command palette offers **Toggle player** to stop it or start the last queue again.
 
 **Open in window**, in the menu of the player's source button, moves the player into a small pop-up window of its own, with the playlist under it, so playback goes on when a MusicBrainz tab reloads or closes. Allow pop-ups if your browser blocks it; browsers offer no true tool window, so it is a pop-up without toolbars. Until you choose **Back to tab** in the same menu, in the window or in any MusicBrainz tab, every new play starts in the window, and other MusicBrainz tabs control it. Only one player plays at a time: starting another stops the previous tab player. In tab mode, the queue is restored after navigating to another MusicBrainz page.
 
@@ -1083,6 +1083,7 @@ Right-click the corner icon. Changes apply at once.
 | Menu → Items                          | all visible                                               | drag to order, use the eye to show or hide, toggle Title, choose Main or More               |
 | Player → Enable player                | off                                                       | the play buttons and the [player](#player)                                                  |
 | Player → Player place                 | Bottom bar                                                | **Bottom bar** or **Top bar**                                                               |
+| Player → Left click                   | Replace queue                                             | play buttons replace the queue or add to it; right-click does the other                     |
 | Player → Show ListenBrainz menu items | on                                                        | the player's links to ListenBrainz                                                          |
 | Player → Send listens to ListenBrainz | off                                                       | your listens, with the **ListenBrainz token** beside it                                     |
 | General → Pending changes             | off                                                       | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
@@ -1094,21 +1095,21 @@ To keep an effect you like, type a name beside **Preset** and click **Save** (or
 
 ### Shortcuts
 
-| Key         | Where                               |                            |
-| ----------- | ----------------------------------- | -------------------------- |
-| Esc         | filter                              | clear it                   |
-| Esc         | a menu                              | close it                   |
-| Right-click | alias or tag pencil                 | open its page              |
-| Right-click | corner icon                         | open the settings          |
-| Right-click | home icon in the header or homepage | open your profile          |
-| Right-click | a card, group or row                | toggle its siblings        |
-| Right-click | a platform icon with more links     | open its links             |
-| Click       | the entity icon in the header       | open its copy menu         |
-| Right-click | a release or recording's icon       | send it to Picard          |
-| Right-click | a track's play button               | choose where it plays from |
-| Right-click | player Play or Pause                | cycle the repeat mode      |
-| Wheel       | player                              | rewind or fast-forward     |
-| Right-click | player source menu                  | open the platform page     |
+| Key         | Where                               |                              |
+| ----------- | ----------------------------------- | ---------------------------- |
+| Esc         | filter                              | clear it                     |
+| Esc         | a menu                              | close it                     |
+| Right-click | alias or tag pencil                 | open its page                |
+| Right-click | corner icon                         | open the settings            |
+| Right-click | home icon in the header or homepage | open your profile            |
+| Right-click | a card, group or row                | toggle its siblings          |
+| Right-click | a platform icon with more links     | open its links               |
+| Click       | the entity icon in the header       | open its copy menu           |
+| Right-click | a release or recording's icon       | send it to Picard            |
+| Right-click | a release or recording play button  | add to the queue, by default |
+| Right-click | player Play or Pause                | cycle the repeat mode        |
+| Wheel       | player                              | rewind or fast-forward       |
+| Right-click | player source menu                  | open the platform page       |
 
 ### Notes
 
