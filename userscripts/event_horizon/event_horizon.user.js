@@ -12748,7 +12748,7 @@ function onClick(ev) {
     const nav = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && ev.target.closest('a[href]');
     // Edit search uses MusicBrainz's live form and its native lookup handlers on each search page.
     if (nav && new URL(nav.href).origin === MB && new URL(nav.href).pathname === '/search/edits') return;
-    const navId = nav && !nav.target && (navTo(nav.href) || histKey(nav.href) || artIn(nav.href));
+    const navId = nav && !nav.target && inTab(nav.href);
     if (navId) { ev.preventDefault(); ehPush(nav.href); show(navId); return; }
     // a click anywhere on a section's header row, outside its tools, folds the section
     const hd = ev.target.closest('.secthead');
@@ -13395,6 +13395,8 @@ const discKey = href => {
     const t = u.pathname.match(/^\/cdtoc\/([A-Za-z0-9._-]{28})\/?$/);
     return t ? 'toc/' + t[1] : null;
 };
+// the pages a click (or Back and Forward) opens in the tab, without a page load
+const inTab = href => navTo(href) || histKey(href) || artIn(href) || discKey(href);
 const keyOf = href => navTo(href) || artKey(href) || discKey(href) || histKey(href) || relKey(href) || formKey(href);
 // let: the seed confirmation page (another site seeding the release editor, a POST to /release/add or …/edit) shares
 // the editor's address, so it gets its key, "form/seed/-/confirm", only once its .confirm-seed form is in the page
@@ -13490,10 +13492,10 @@ async function artLoad(n, id) {
 // a CD's length from its sectors (75 a second)
 const secLen = n => { const t = Math.round(n / 75), h = Math.floor(t / 3600), m = Math.floor(t / 60) % 60, x = String(t % 60).padStart(2, '0'); return h ? `${h}:${String(m).padStart(2, '0')}:${x}` : `${m}:${x}`; };
 // MusicBrainz's Remove and Move links, by disc ID, off the page the tab loaded (ws/2 has no medium row ids)
-function discActs() {
+function discActs(doc) {
     const o = {};
-    if (!mbBody) return o;
-    mbBody.querySelectorAll('#content tr').forEach(tr => {
+    if (!doc) return o;
+    doc.querySelectorAll('#content tr').forEach(tr => {
         const id = (tr.querySelector('a[href*="/cdtoc/"]') || {}).textContent, as = [...tr.querySelectorAll('a[href*="/cdtoc/remove"], a[href*="/cdtoc/move"]')];
         if (!id || !as.length) return;
         // a disc ID on two releases (the cdtoc page) has a row each, told apart by the release it links to
@@ -13503,12 +13505,15 @@ function discActs() {
     return o;
 }
 // Apollo's "Disc IDs from a rip log", moved from MusicBrainz's page into #dsc-slot, and back when EH goes off
-var dscHome = null;   // var: setOn can reach discApollo before this line
+// Only the loaded page's own box moves; another release's comes from Apollo, asked by mbu-discid-mount (discLoad)
+var dscHome = null, dscBox = null;   // var: setOn can reach discApollo before this line
+const dscFind = () => dscBox || (dscBox = mbBody && mbBody.querySelector('#apollo-discid-box'));
 function discApollo(on) {
-    const box = document.getElementById('apollo-discid-box'); if (!box) return;
+    const box = dscFind(); if (!box) return;
     if (!on) { if (dscHome && dscHome.isConnected) dscHome.after(box); return; }
     const slot = ehBody && ehBody.querySelector('#dsc-slot');
-    if (!slot || slot.contains(box)) return;
+    if (!slot || slot.contains(box) || !data || data.kind !== 'discs' || 'discs/' + data.id !== PAGE_ID) return;
+    slot.querySelectorAll('.dsc-ap').forEach(m => m.remove());
     if (!dscHome) { dscHome = document.createComment('Apollo disc ID box'); box.before(dscHome); }
     slot.append(box);
 }
@@ -13516,8 +13521,9 @@ function discRows(ds, acts, rid) {
     return ds.map(x => `<div class="dsc-row"><a class="dsc-id" href="${MB}/cdtoc/${esc(x.id)}">${esc(x.id)}</a><span class="dsc-n">${x.offsets ? x.offsets.length + ' tracks' : ''}</span><span class="dsc-n">${x.sectors ? secLen(x.sectors) : ''}</span><span class="dsc-a">${acts[x.id + (rid ? '|' + rid : '')] || acts[x.id] || ''}</span></div>`).join('');
 }
 function discPage(app, d) {
-    if (!app.querySelector('#dsc-body')) app.innerHTML = '<section class="arthd"></section><div id="dsc-slot"></div><div id="dsc-body"></div>';
-    const hd = app.querySelector('.arthd'), body = app.querySelector('#dsc-body'), acts = discActs();
+    const own = d.kind + '/' + d.id === PAGE_ID;
+    if (!app.querySelector(`#dsc-body[data-k="${d.kind}/${d.id}"]`)) app.innerHTML = `<section class="arthd"></section><div id="dsc-slot"></div><div id="dsc-body" data-k="${esc(d.kind + '/' + d.id)}"></div>`;
+    const hd = app.querySelector('.arthd'), body = app.querySelector('#dsc-body'), acts = discActs(own ? mbBody : d.doc);
     if (d.kind === 'discs') {
         hd.innerHTML = subHead(d.rel, d.id, 'discids', 'Disc IDs', d.err ? `<h1>${esc(d.err)}</h1>` : '<h1>&nbsp;</h1>'); cvWire(hd);
         const ms = d.media;
@@ -13525,7 +13531,7 @@ function discPage(app, d) {
             const ok = discOk(m.format), ds = m.discs || [], name = `${esc(m.format || 'Medium')} ${m.position}${m.title ? ` <span class="sub">${esc(m.title)}</span>` : ''}`;
             return `<div class="dsc-med${ok ? '' : ' off'}"><div class="dsc-h">${fmtSvg(fmtKind(m.format), 18)}<b>${name}</b><span class="dsc-n">${m['track-count']} track${m['track-count'] === 1 ? '' : 's'}</span></div>${!ok ? `<div class="dsc-none">${esc(m.format)} can't have disc IDs</div>` : ds.length ? discRows(ds, acts) : '<div class="dsc-none">No disc ID yet</div>'}</div>`;
         }).join(''), `<div class="folded-note">${ms.length} media</div>`);
-        if (!document.getElementById('apollo-discid-box') && ms && ms.some(m => discOk(m.format)) && !app.querySelector('#dsc-slot').firstChild) app.querySelector('#dsc-slot').innerHTML = '<p class="msg dsc-ap">Apollo Editor works out a disc ID from a rip log dropped here: <a href="https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/apollo_editor">install it</a>.</p>';
+        if ((own ? !dscFind() : d.ap === false) && ms && ms.some(m => discOk(m.format)) && !app.querySelector('#dsc-slot').firstChild) app.querySelector('#dsc-slot').innerHTML = '<p class="msg dsc-ap">Apollo Editor works out a disc ID from a rip log dropped here: <a href="https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/apollo_editor">install it</a>.</p>';
         discApollo(ehOn);
         return;
     }
@@ -13543,15 +13549,37 @@ function discPage(app, d) {
         + sect('dsc-toc', 'Tracks', `<button class="lnk aside" type="button" data-copy="${toc}" data-tip="Copy the full TOC">Copy TOC</button>`, `<table class="dsc-tbl"><thead><tr><th>#</th><th>Start</th><th>Length</th><th>End</th><th class="sx">Start sector</th><th class="sx">Sectors</th></tr></thead><tbody>${off.map((o, i) => `<tr><td>${i + 1}</td><td>${secLen(o)}</td><td>${secLen(ends[i] - o)}</td><td>${secLen(ends[i])}</td><td class="sx">${o}</td><td class="sx">${ends[i] - o}</td></tr>`).join('')}</tbody></table><div class="dsc-full"><span class="label">Full TOC</span><code>${toc}</code></div>`, '');
     const c = body.querySelector('[data-copy]'); if (c) c.onclick = () => { navigator.clipboard.writeText(c.dataset.copy).then(() => { c.textContent = 'Copied'; setTimeout(() => { c.textContent = 'Copy TOC'; }, 1200); }); };
 }
+// Another release's disc IDs page, fetched in place of a page load (the player plays on): its Remove and Move links
+// are read off it, and Apollo is given its markup for the box it builds in #dsc-slot
+async function discFetch(n, id) {
+    const d = data;
+    let html = '';
+    try {
+        const r = await mbnFetch(`${MB}/release/${id}/discids`, { credentials: 'include' });
+        html = await r.text();
+        d.doc = new DOMParser().parseFromString(html, 'text/html');
+        LOG.debug(`Disc IDs: read the page of ${id}, ${d.doc.querySelectorAll('#content a[href*="/cdtoc/remove"]').length} Remove link(s)`);
+    } catch (e) { LOG.warn('Disc IDs: the page of ' + id + ' could not be read: ' + e.message); }
+    if (n !== showing || data !== d) return;
+    const c = d.doc && d.doc.querySelector('#content');
+    const ask = new CustomEvent('mbu-discid-mount', { cancelable: true, detail: JSON.stringify({ release: id, html: c ? c.outerHTML : '' }) });
+    document.dispatchEvent(ask);
+    d.ap = ask.defaultPrevented;
+    LOG.info(`Disc IDs: ${id} in the tab, Apollo ${d.ap ? 'answered' : 'did not answer'}`);
+    render();
+}
 async function discLoad(n, id) {
     if (data.kind === 'toc') {
+        // another disc ID's page: its Remove and Move links come off the fetched page
+        if ('toc/' + id !== PAGE_ID) { const d = data; mbnFetch(`${MB}/cdtoc/${encodeURIComponent(id)}`, { credentials: 'include' }).then(r => r.text()).then(h => { d.doc = new DOMParser().parseFromString(h, 'text/html'); if (n === showing && data === d) render(); }).catch(e => LOG.warn('Disc ID ' + id + ': its page could not be read: ' + e.message)); }
         try { const t = await ws(`discid/${encodeURIComponent(id)}?inc=artist-credits`); if (n === showing) { data.toc = t; LOG.info(`Disc ID ${id}: ${(t.releases || []).length} release(s)`); render(); } }
         catch (e) { LOG.err('Loading disc ID ' + id + ' failed: ' + e.message); if (n === showing) { data.err = e.message; render(); } }
         return;
     }
     // Apollo builds its box after its own ws/2 read: it moves in when it shows
-    const t0 = Date.now(), wait = () => { if (n !== showing) return; if (document.getElementById('apollo-discid-box')) { const m = $('#dsc-slot .dsc-ap'); if (m) m.remove(); discApollo(ehOn); return; } if (Date.now() - t0 < 20000) setTimeout(wait, 150); };
-    wait();
+    const t0 = Date.now(), wait = () => { if (n !== showing) return; if (dscFind()) { discApollo(ehOn); return; } if (Date.now() - t0 < 20000) setTimeout(wait, 150); };
+    if ('discs/' + id === PAGE_ID) wait();
+    else discFetch(n, id);
     relHd(id, r => { if (n === showing) { data.rel = r; render(); } }).catch(e => LOG.warn('Disc IDs header: ' + e.message));
     try { const r = await ws(`release/${id}?inc=media+discids`); if (n === showing) { data.media = r.media || []; LOG.info(`Disc IDs: ${data.media.length} media, ${data.media.reduce((a, m) => a + (m.discs || []).length, 0)} disc ID(s)`); render(); } }
     catch (e) { LOG.err('Loading the disc IDs of ' + id + ' failed: ' + e.message); if (n === showing) { data.err = e.message; render(); } }
@@ -14650,7 +14678,7 @@ function build() {
     addEventListener('scroll', railSpy, { passive: true });
     // MusicBrainz's page is for the release this tab loaded; any other is fetched anew
     try { history.scrollRestoration = 'manual'; } catch (e) {}   // show() puts the page back where it was left, once it's in
-    addEventListener('popstate', () => { const k = navTo(location.href) || artIn(location.href); if (!ehOn || !k) location.reload(); else show(k, { y: history.state && history.state.ehY }); });
+    addEventListener('popstate', () => { const k = inTab(location.href); if (!ehOn || !k) location.reload(); else show(k, { y: history.state && history.state.ehY }); });
 }
 // what you switch to stays: the next page opens the same way (majkinetor)
 const switchOn = on => { S.on = on; save(); setOn(on); };

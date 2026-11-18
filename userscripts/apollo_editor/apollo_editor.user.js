@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.16
+// @version      2026.11.18
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -17817,9 +17817,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // links carry it). When it is known the drop can go straight to the
   // confirmation page; when it is not, it goes through MusicBrainz's own medium
   // picker, which is one extra click and no extra request.
-  function scrapeMediumIds() {
+  function scrapeMediumIds(root = document) {
     const byPosition = {};
-    document.querySelectorAll('#content a[href*="medium"]').forEach(a => {
+    root.querySelectorAll('#content a[href*="medium"]').forEach(a => {
       const href = a.getAttribute('href') || '';
       const m = /[?&]medium(?:_id)?=(\d+)/.exec(href);
       if (!m) return;
@@ -17846,14 +17846,35 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     return byPosition;
   }
   let _discIdUiBuilt = false;
-  async function ensureDiscIdUi() {
-    if (_discIdUiBuilt) return;
-    const m = DISCIDS_PATH_RE.exec(location.pathname);
-    if (!m) return;
-    _discIdUiBuilt = true;
-    const mbid = m[1].toLowerCase();
-    const host = document.getElementById('content');
-    if (!host) return;
+  // Event Horizon shows another release's disc IDs without loading its page, and asks for the box with
+  // mbu-discid-mount ({ release, html: that page's #content }); it goes in EH's #dsc-slot, one box per release
+  const _discIdBoxes = new Map();
+  function installDiscIdMount() {
+    document.addEventListener('mbu-discid-mount', e => {
+      let d; try { d = JSON.parse(e.detail); } catch (x) { return; }
+      const slot = document.getElementById('dsc-slot');
+      if (!d || !d.release || !slot) return;
+      e.preventDefault();
+      const mbid = String(d.release).toLowerCase(), had = _discIdBoxes.get(mbid);
+      slot.replaceChildren();
+      if (had) { slot.append(had); return; }
+      const root = new DOMParser().parseFromString(d.html || '', 'text/html');
+      Log.cat('Disc IDs').info(`disc IDs: ${mbid} shown in Event Horizon's page`);
+      ensureDiscIdUi({ mbid, slot, root }).catch(x => Log.cat('Disc IDs').warn('disc IDs: the box failed — ' + ((x && x.message) || x)));
+    });
+  }
+  async function ensureDiscIdUi(into) {
+    let mbid, host, root = document;
+    if (into) { ({ mbid, root } = into); host = into.slot; }
+    else {
+      if (_discIdUiBuilt) return;
+      const m = DISCIDS_PATH_RE.exec(location.pathname);
+      if (!m) return;
+      _discIdUiBuilt = true;
+      mbid = m[1].toLowerCase();
+      host = document.getElementById('content');
+      if (!host) return;
+    }
     /* majkinetor: "Dark theme please". The first cut hardcoded light colours.
        This page has nothing else of Apollo's on it, so the tokens come with the
        box. mbuTheme() is what stamps data-mbu-theme on <html>; calling it here
@@ -17862,6 +17883,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const box = document.createElement('div');
     box.id = 'apollo-discid-box';
     box.className = 'mbu-ui';
+    box.dataset.release = mbid;
     box.innerHTML = `<style>
       ${MBU_TOKENS}
       #apollo-discid-box{margin:10px 0 16px;font:13px var(--mbu-font);color:var(--mbu-text)}
@@ -17884,8 +17906,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     <h2>Disc IDs from a rip log</h2>
     <div class="fd-zones" id="apollo-discid-zones"><div class="fd-s">Reading this release…</div></div>
     <p class="fd-foot">Drop an <strong>EAC</strong>, <strong>XLD</strong>, <strong>fre:ac</strong>, <strong>whipper</strong>, <strong>dBpoweramp</strong> or <strong>cyanrip</strong> log on a medium — or click to pick one — and Apollo works out the disc ID and takes you to MusicBrainz's attach page. Nothing is submitted on your behalf. See <a href="/doc/How_to_Add_Disc_IDs">How to Add Disc IDs</a>.</p>`;
-    const heading = [...host.querySelectorAll('h2')].find(h => /disc ids/i.test(h.textContent || ''));
-    host.insertBefore(box, heading || host.firstChild);
+    if (into) { _discIdBoxes.set(mbid, box); host.append(box); }
+    else {
+      const heading = [...host.querySelectorAll('h2')].find(h => /disc ids/i.test(h.textContent || ''));
+      host.insertBefore(box, heading || host.firstChild);
+    }
     const zones = box.querySelector('#apollo-discid-zones');
 
     let mediums = [];
@@ -17901,7 +17926,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       zones.innerHTML = `<div class="fd-s fd-err">Could not read this release's media (${esc(e.message)}).</div>`;
       return;
     }
-    const ids = scrapeMediumIds();
+    const ids = scrapeMediumIds(root);
     zones.innerHTML = '';
     if (!mediums.length) { zones.innerHTML = '<div class="fd-s">This release has no media.</div>'; return; }
     mediums.forEach(med => {
@@ -18756,6 +18781,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // page Apollo was started on for nothing else: the clone listener goes on every page, and on the
     // ones matched only for it (search, a recording, a collection, home…) Apollo does nothing more
     installCloneRelease();
+    installDiscIdMount();
     if (!APOLLO_PAGE_RE.test(location.pathname)) return;
     installDatePaste();             // #960 whole-date paste and type-through, on every page Apollo runs
     if (handleAutoCommit()) { Log.cat('Create').info('auto-commit (background create/link) — submitting the seeded form'); return; }
