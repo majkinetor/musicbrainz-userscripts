@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.100403
+// @version      2026.11.19.100405
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12796,7 +12796,7 @@ function plyDraw() {
     const nav = plyB('prev', ply.i > 0 ? 'Previous track' : 'Restart track', ply.i > 0 || ply.ctl ? '' : ' disabled')
         + (ply.ctl ? play : '')
         + plyB('next', 'Next track', ply.i + 1 < ply.q.length ? '' : ' disabled');
-    const name = `<button type="button" class="ply-t" data-ply="list" aria-haspopup="menu" data-tip="${esc(t.title + ' — ' + t.artist + '\n' + t.relTitle)}\nClick: the playlist"><span class="ply-n">${esc(plyNo(t))}</span><b>${esc(t.title)}</b><span class="ply-ar">· ${esc(t.artist)}</span>${t.relTitle ? `<span class="ply-rl">· ${esc(t.relTitle)}</span>` : ''}</button>`;
+    const name = `<button type="button" class="ply-t" data-ply="list" aria-haspopup="menu" data-tip="${esc(t.title + ' — ' + t.artist + '\n' + t.relTitle)}\nClick: the playlist"><span class="ply-n">${esc(plyNo(t))}</span><span class="ply-line"><b>${esc(t.title)}</b><span class="ply-ar">· ${esc(t.artist)}</span></span>${t.relTitle ? `<span class="ply-rl">${esc(t.relTitle)}${t.relYear ? ` · ${esc(t.relYear)}` : ''}</span>` : ''}</button>`;
     const prog = ply.ctl && t.len ? `<span class="ply-pr sk" data-ply="seek" aria-label="Position"><i></i>${bar ? '' : '<b class="ply-hv"></b>'}</span>` : '<span class="ply-pr" aria-hidden="true"><i></i></span>';
     const menu = `<button type="button" class="ply-b ply-lb${lb && t.ok != null ? ' sent' : ''}" data-ply="lb" aria-haspopup="menu" aria-label="Playing from ${esc(p.name)}" data-tip="Playing from ${esc(p.name)}${lb && t.ok != null ? '\nListen sent' : ''}\nClick: sources, ListenBrainz, stop">${icon(p, 18)}</button>`;
     const v = +S.playerVol, vol = plyHasVol() ? `<span class="ply-vg"><button type="button" class="ply-b" data-ply="mute" aria-pressed="${!v}" aria-label="${v ? 'Mute' : 'Unmute'}" data-tip="${v ? 'Mute' : 'Unmute'}">${plyVolIc(v)}</button><span class="ply-vp"><b class="ply-vn">${v}</b><input type="range" class="ply-vol" min="0" max="100" step="1" value="${v}" style="--p:${v}%" aria-label="Volume"></span></span>` : '';
@@ -13137,13 +13137,14 @@ const PLY_CSS = `
 .ply-ctl .ply-b.big svg{width:16px;height:16px}
 .ply-ctl .ply-lb{position:relative}
 .ply-ctl .ply-lb.sent::after{content:'';position:absolute;right:3px;top:3px;width:7px;height:7px;border-radius:50%;background:#3fa56b;box-shadow:0 0 0 2px var(--surface,#fff)}
-.ply-ctl .ply-t{display:flex;align-items:baseline;gap:5px;min-width:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;text-decoration:none;white-space:nowrap;cursor:pointer}
+.ply-ctl .ply-t{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:5px;align-content:center;min-width:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;text-decoration:none;white-space:nowrap;cursor:pointer}
 .ply-ctl .ply-t:hover b{text-decoration:underline}
 .ply-ctl .ply-n{flex:none;color:var(--muted,#777);font-variant-numeric:tabular-nums}
-.ply-ctl .ply-t>*{overflow:hidden;text-overflow:ellipsis}
+.ply-ctl .ply-line{display:flex;align-items:baseline;gap:5px;min-width:0;overflow:hidden}
+.ply-ctl .ply-line>*{overflow:hidden;text-overflow:ellipsis}
 .ply-ctl .ply-t b{flex:0 1 auto;min-width:3em}
 .ply-ctl .ply-ar{flex:0 2 auto;min-width:2em;color:var(--muted,#777)}
-.ply-ctl .ply-rl{flex:1 1 0;min-width:0;color:var(--muted,#777)}
+.ply-ctl .ply-rl{grid-column:2;min-width:0;overflow:hidden;text-overflow:ellipsis;color:var(--muted,#777);font-size:12px}
 .ply-ctl .ply-tm{flex:none;min-width:2.6em;font-size:11px;font-variant-numeric:tabular-nums;color:var(--muted,#777)}
 .ply-ctl .ply-tm:last-child{text-align:right}
 .ply-ctl .ply-pr{flex:1;height:3px;border-radius:2px;background:color-mix(in srgb,currentColor 15%,transparent);overflow:hidden}
