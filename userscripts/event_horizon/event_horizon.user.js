@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.100406
+// @version      2026.11.19.100407
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3086,6 +3086,9 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .art .picw{position:relative}.chip[data-g=imgP]{cursor:grab;touch-action:none;user-select:none}.art .cover.rot,.art .cover[data-relcover],.art .thumbs img,.art .cover[data-rgcover]{cursor:pointer}
 .art .imgsrc{position:absolute;right:10px;bottom:10px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--surface);box-shadow:0 2px 8px var(--shadow);opacity:.92}.eh-images{width:min(540px,calc(100vw - 32px));min-width:0;max-height:80vh}.eh-image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:20px 16px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.eh-image-option{min-width:0}.eh-image-choice{display:block;position:relative;width:100%;padding:0;border:0;background:transparent;cursor:pointer}.eh-image-choice img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover}.eh-image-choice[aria-pressed="true"]{outline:2px solid var(--mbu-accent);outline-offset:3px}.eh-image-choice:hover{background:var(--mbu-bg)}.eh-image-links{display:flex;flex-wrap:wrap;gap:4px 10px}.eh-image-links>a{display:inline-grid;place-items:center;width:30px;height:30px;margin-top:6px;color:var(--mbu-text);text-decoration:none}.eh-image-links>a:hover{background:var(--mbu-bg-hover)}
 .art .imgsrc:hover{opacity:1;outline:2px solid var(--accent)}
+.art .imgsrc.imgsrc-art{background:none;box-shadow:none;filter:drop-shadow(0 0 1px #111) drop-shadow(0 0 1px #111);transition:opacity .15s,transform .15s}
+.art .imgsrc.imgsrc-art svg{width:26px;height:26px;filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff)}
+.art .imgsrc.imgsrc-art:hover{outline:none;transform:scale(1.1)}
 .art .cover{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px;box-shadow:0 18px 40px var(--shadow);display:block;color:transparent;background:var(--chip)}
 .art .cover.ipic{object-fit:contain;padding:8px;box-sizing:border-box;background:#fff}
 .art .nocover{width:100%;aspect-ratio:1;border-radius:14px;background:var(--chip);color:var(--muted);display:grid;place-items:center}
@@ -8002,7 +8005,7 @@ function picHtml(g, cls, none) {
     const xs = g.imgs || [], i = (g.imgI || 0) % (xs.length || 1), x = xs[i];
     if (!x) return none;
     const more = xs.length > 1;
-    return `<div class="picw"><img class="cover ${cls}${more ? ' rot' : ''}" src="${esc(x.src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer"${more ? ` data-rot data-tip="${i + 1} of ${xs.length}: click for ${esc(xs[(i + 1) % xs.length].from)}"` : ''}>${x.badge ? `<img class="imgflag" src="${esc(x.badge)}" alt="" referrerpolicy="no-referrer">` : ''}<a class="imgsrc" href="${esc(x.url)}" target="_blank" rel="noopener" data-tip="${['artist', 'label'].includes(data.kind) ? `Choose image&#10;From ${esc(x.from)}` : `From ${esc(x.from)}`}">${stIcon(x.key, 18)}</a></div>`;
+    return `<div class="picw"><img class="cover ${cls}${more ? ' rot' : ''}" src="${esc(x.src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer"${more ? ` data-rot data-tip="${i + 1} of ${xs.length}: click for ${esc(xs[(i + 1) % xs.length].from)}"` : ''}>${x.badge ? `<img class="imgflag" src="${esc(x.badge)}" alt="" referrerpolicy="no-referrer">` : ''}<a class="imgsrc${['artist', 'label'].includes(data.kind) ? ' imgsrc-art' : ''}" href="${esc(x.url)}" target="_blank" rel="noopener" data-tip="${['artist', 'label'].includes(data.kind) ? `Choose image&#10;From ${esc(x.from)}` : `From ${esc(x.from)}`}">${stIcon(x.key, 18)}</a></div>`;
 }
 const dedupArtistImages = images => ARTIMG.dedup(images);
 // Other scripts (SAED, #938) share this instance, so one cache and one set of provider requests serve all: EH's
