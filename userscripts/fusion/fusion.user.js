@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.18.193622
+// @version      2026.11.18.194240
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -4349,7 +4349,7 @@ function fsStyle() {
         + '.fs-ctr{position:relative;display:inline-grid;place-items:center;width:26px;height:24px;border-radius:5px;color:var(--mbu-text-weak);cursor:pointer;font-weight:400}'
         + '.fs-ctr svg{width:16px;height:16px;display:block}'
         + '.fs-ctr:hover{color:var(--mbu-text)}'
-        + '.fs-ctr.fs-on{color:var(--mbu-accent,#7b4fa0)}'
+        + '.fs-ctr.fs-on{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);outline:1px solid var(--mbu-accent)}'
         + '.fs-ctr b{position:absolute;right:-4px;top:-4px;min-width:14px;height:14px;padding:0 3px;box-sizing:border-box;border-radius:7px;background:var(--mbu-accent,#7b4fa0);color:var(--mbu-text-on-accent,#fff);font:700 9px/14px var(--mbu-font);text-align:center}'
         + '.fs-ctr b:empty{display:none}'
         + '.fs-launch .fs-lctrs{position:absolute;right:100%;top:50%;transform:translateY(-50%);display:flex;gap:3px;margin-right:4px;pointer-events:none}.fs-launch .fs-lctrs>*{pointer-events:auto}'
@@ -6294,7 +6294,7 @@ const EM_COLS = {
     place: ['Type', 'Area', 'Address'],
     series: ['Type'],
     event: ['Type', 'Date', 'Time'],
-    collection: [],
+    collection: ['Type', 'Entity type', 'Entities', 'Collaborators', 'Privacy'],
 };
 const emAc = j => (j['artist-credit'] || []).map(c => (c.name || (c.artist && c.artist.name) || '') + (c.joinphrase || '')).join('');
 function emInfo(type, j) {
@@ -6331,7 +6331,19 @@ async function emFetch(type, gid) {
         const name = doc.querySelector('h1')?.textContent.trim();
         if (!id || !name) throw new Error('Collection cannot be merged: sign in as its owner');
         _idCache.set(gid, Number(id));
-        return { name, dis: '', info: [] };
+        // The owner-only form exposes stable fields even for private collections, which ws/2 cannot read without OAuth.
+        const edit = await mbnFetch('/collection/' + gid + '/own_collection/edit', { headers: { Accept: 'text/html' } });
+        if (!edit.ok) throw new Error('Collection details: HTTP ' + edit.status);
+        const edoc = new DOMParser().parseFromString(await edit.text(), 'text/html');
+        const select = edoc.querySelector('select[name="edit-list.type_id"]');
+        const option = select && select.querySelector('option[selected]');
+        const privacy = edoc.querySelector('input[name="edit-list.public"]');
+        const count = doc.querySelector('#sidebar dd.type + dt + dd');
+        const data = [...edoc.querySelectorAll('script[type="application/json"]')].map(s => { try { return JSON.parse(s.textContent); } catch (_) { return null; } }).find(j => j?.form?.field?.collaborators);
+        const collabs = data?.form?.field?.collaborators?.field;
+        if (!option || !privacy || !count || !Array.isArray(collabs)) throw new Error('Collection details unavailable');
+        const types = { 1: 'Release', 2: 'Release', 3: 'Release', 4: 'Event', 5: 'Event', 6: 'Event', 7: 'Area', 8: 'Artist', 9: 'Instrument', 10: 'Label', 11: 'Place', 12: 'Recording', 13: 'Release group', 14: 'Series', 15: 'Work', 16: 'Genre', 17: 'Recording' };
+        return { name, dis: '', info: [option.textContent.trim(), types[option.value] || '', count.textContent.trim(), String(collabs.length), privacy.checked ? 'Public' : 'Private'] };
     }
     const inc = EM_INC[type];
     const j = await wsGet('/ws/2/' + type + '/' + gid + '?fmt=json' + (inc ? '&inc=' + inc : ''));

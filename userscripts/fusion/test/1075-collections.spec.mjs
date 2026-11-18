@@ -27,6 +27,10 @@ test('owned collections merge through Fusion', { tag: ['@sandbox', '@login'] }, 
   check(await page.locator('#fs-em-pool .fs-pcard').count() === 2, 'both collections are in the pool');
   await page.press('#fs-em-input', 'Escape');
   await page.click('#fs-em-overlay [data-act="newgroup"]');
+  const rows = page.locator('#fs-em-groups .fs-grow');
+  await until(() => rows.nth(0).locator('.fs-emc').count(), n => n === 5);
+  check((await rows.nth(0).locator('.fs-emc').allTextContents()).join('|') === 'Release collection|Release|0|0|Public', 'public collection details match the native merge table');
+  check((await rows.nth(1).locator('.fs-emc').allTextContents()).join('|') === 'Release collection|Release|0|0|Private', 'private collection details match the native merge table');
   await page.click('#fs-em-groups [data-act="merge-group"]');
   await page.waitForSelector('#fs-em-groups .fs-mbtn.fs-done, #fs-em-groups .fs-mbtn.fs-err', { timeout: 90000 });
   const err = await page.locator('#fs-em-groups .fs-mbtn.fs-err').getAttribute('data-tip').catch(() => null);
