@@ -286,11 +286,14 @@ var __stStarters = {};   // #851: per member folder, how String Theory's setting
 })();
 try { if (__stOff.length) console.log('String Theory: turned off in its settings — ' + __stOff.join(', ')); } catch (e) {}
 var __stInFrame = (function () { try { return window.top !== window.self; } catch (e) { return true; } })();
+// Event Horizon's frame (its relationship editor, an iframe marked data-eh-embed) stands in for the tab's own page,
+// so a member with @noframes (Group Therapy, Fuzzy Logic, …) still starts in it, as it would on that page loaded whole
+var __stEhFrame = (function () { try { return __stInFrame && !!window.frameElement && window.frameElement.hasAttribute('data-eh-embed'); } catch (e) { return false; } })();
 var __stSkipped = [];
 var __stRunsHere = ${runsHere.toString()};
 function __stRuns(name, rules) {
   if (__stSyncCallbackOnly) return false;
-  var yes; try { yes = __stRunsHere(rules, location.href, __stInFrame); } catch (e) { yes = true; }
+  var yes; try { yes = __stRunsHere(rules, location.href, __stInFrame && !__stEhFrame); } catch (e) { yes = true; }
   if (!yes) __stSkipped.push(name);
   return yes;
 }
