@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.040002
+// @version      2026.11.19.050003
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3370,9 +3370,12 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .cl-list{list-style:none;margin:0;padding:0}
 .cl-row{display:flex;align-items:center;gap:4px 12px;padding:3px 0;border-bottom:1px solid var(--border)}.cl-row:last-child{border-bottom:0}
 .cl-nm{flex:1;min-width:0;display:flex;align-items:center;flex-wrap:wrap;gap:2px 10px}
-.cl-ty{color:var(--muted);font-size:12px}.cl-ct{font-variant-numeric:tabular-nums;min-width:4ch;text-align:right;font-weight:600}
+.cl-ty{color:var(--muted);font-size:12px;width:14ch;flex:none;overflow-wrap:anywhere}.cl-ct{font-variant-numeric:tabular-nums;width:7ch;flex:none;text-align:right;font-weight:600}
+.cl-pc{width:10ch;flex:none;display:inline-flex;align-items:center;gap:5px;color:var(--muted);font-size:12px}.cl-pc .cl-pv{opacity:.7}.cl-pc.off{color:var(--accent)}.cl-pc.off .cl-pv{opacity:1}
+.cl-row:not(.cl-th){cursor:pointer}.cl-row:not(.cl-th):hover{background:var(--hover)}
+.cl-row.cl-th{font-size:12px;font-weight:600;color:var(--muted);padding:2px 0 4px}.cl-th .cl-nm{padding-left:2px}.cl-th .cl-ty,.cl-th .cl-pc{font-size:inherit;color:inherit}.cl-th .cl-ct{font-weight:inherit}.cl-th .cl-acts{min-height:1px}
 .cl-row .cl-acts{min-width:66px;justify-content:flex-end}.cl-note{margin-top:14px}
-@media (max-width:600px){.cl-tools{margin-left:0}.cl-row{flex-wrap:wrap}.cl-nm{flex-basis:100%}.cl-ty{flex:1}.cl-row .cl-acts{min-width:0}}
+@media (max-width:600px){.cl-tools{margin-left:0}.cl-row{flex-wrap:wrap}.cl-nm{flex-basis:100%}.cl-ty{flex:1;width:auto}.cl-pc{width:auto}.cl-row .cl-acts{min-width:0}.cl-th .cl-nm{flex-basis:auto;flex:1}.cl-th .cl-acts{display:none}}
 .ed-views button{all:unset;width:30px;height:30px;display:grid;place-items:center;border-radius:8px;color:var(--muted);cursor:pointer}
 .ed-views button:hover{background:var(--chip);color:var(--text)}
 .ed-views button[aria-pressed=true]{background:var(--chip);color:var(--accent)}
@@ -4370,7 +4373,7 @@ const S = {
     facts: ['released', 'labels', 'barcode', 'length', 'links'],
     secOrder: [], secHide: [], // the rail's section order, and the sections it hides
     fold: [], discFold: [], grpFold: [], // grpFold: the discography's and releases' folded groups, 'dg:Album' / 'ed:Bootleg'
-    edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date', edSort: '', lmAuto: true, tabView: 'table', clView: 'grid', clSort: 'name', // edSort: the releases table's column, '' its own order, a leading '-' reversing it
+    edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date', edSort: '', lmAuto: true, tabView: 'table', clView: 'grid', clSort: 'name', // clSort: name, type, privacy (pv) or items, each in its natural order (items most first), a leading '-' reversing it; edSort: the releases table's column, '' its own order, a leading '-' reversing it
     lbGroups: true, // a label's releases shown by release group
     ed: { kinds: new Set(), official: false },
     open: new Set(),
@@ -4904,7 +4907,7 @@ function menuMore(acts) {
     if (!more) {
         more = document.createElement('details'); more.className = 'abx eh-more';
         more.innerHTML = `<summary class="ab" aria-label="More">${SVG('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>')}</summary><span class="abm"></span>`;
-        const util = acts.querySelector(':scope>.srch,:scope>.eh-home'); acts.insertBefore(more, util);
+        const util = acts.querySelector(':scope>[data-star],:scope>.srch,:scope>.eh-home'); acts.insertBefore(more, util);
     }
     return more;
 }
@@ -8335,7 +8338,9 @@ async function loadWork(id, step = () => {}) {
     const gP = wsk(`work/${id}?inc=aliases+genres+tags+ratings+annotation+artist-rels+work-rels+url-rels`).then(w => { step('work'); return work(w); });
     return { kind: 'work', g: null, gP, recs, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
 }
-const pgActs = (type, id) => actionRow((type === 'collection' ? COL_ACTS.filter(a => a[0] !== 'own_collection/edit' || (data && data.g && data.g.owner === ME)) : type === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS), type, id) + SRCH();
+// a collection's row starts with a way back to its owner's collections
+const colBack = () => { const o = data && data.g && data.g.owner; return o ? `<a class="ab ov" href="${MB}/user/${encodeURIComponent(o)}/collections" data-tip="${esc(o)}'s collections" aria-label="Collections">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>` : ''; };
+const pgActs = (type, id) => (type === 'collection' ? colBack() : '') + actionRow((type === 'collection' ? COL_ACTS.filter(a => a[0] !== 'own_collection/edit' || (data && data.g && data.g.owner === ME)) : type === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS), type, id) + SRCH();
 const bigMk = d => mkSvg(d).replace('width="15" height="15"', 'width="96" height="96"').replace('stroke-width="2"', 'stroke-width=".7"');
 const factsHtml = F => `<div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>`;
 function pgHero(g, type, icon, kind, F, by, pic) {
@@ -9012,27 +9017,32 @@ function collsHtml(d) {
     const hero = userHead(c && c.name || d.name, c && c.av, c && c.tabs)
         + userBar(d.err ? `<p class="u-sub"><span class="u-err">${esc(d.err)}</span></p>` : !c ? '<p class="u-sub">Loading the collections…</p>' : '', add && `<nav class="u-tabs">${add}</nav>`);
     if (!c) return hero;
-    const its = clItems(c), byItems = S.clSort === 'items', grid = S.clView !== 'row';
-    const ord = a => a.slice().sort((x, y) => byItems ? y.n - x.n || x.t.localeCompare(y.t) : x.t.localeCompare(y.t, undefined, { numeric: true }) || y.n - x.n);
+    const its = clItems(c), grid = S.clView !== 'row';
+    // the rows' headings sort, and the tiles follow the same order
+    const desc = String(S.clSort || '').startsWith('-'), sk = ['name', 'type', 'pv', 'items'].includes(String(S.clSort || '').replace(/^-/, '')) ? String(S.clSort).replace(/^-/, '') : 'name';
+    const byName = (x, y) => x.t.localeCompare(y.t, undefined, { numeric: true, sensitivity: 'base' });
+    const cmp = { name: (x, y) => byName(x, y) || y.n - x.n, type: (x, y) => clTy(x).localeCompare(clTy(y), undefined, { sensitivity: 'base' }) || byName(x, y), pv: (x, y) => (x.pv || '').localeCompare(y.pv || '', undefined, { sensitivity: 'base' }) || byName(x, y), items: (x, y) => y.n - x.n || byName(x, y) }[sk];
+    const ord = a => a.slice().sort((x, y) => (desc ? -1 : 1) * cmp(x, y));
     const grps = [...new Set(its.map(x => x.grp))];
     if (clType && !grps.includes(clType)) clType = '';
-    const seg = (lbl, xs) => `<span class="seg" role="group" aria-label="${lbl}">${xs.join('')}</span>`;
-    const sort = seg('Sort', [['name', 'Name'], ['items', 'Items']].map(([v, n]) => `<button type="button" data-clsort="${v}" aria-pressed="${(byItems ? 'items' : 'name') === v}">${n}</button>`));
-    const chips = !grid && grps.length > 1 ? seg('Type', [['', 'All', its.length], ...grps.map(g => [g, g, its.filter(x => x.grp === g).length])]
-        .map(([v, n, k]) => `<button type="button" data-cltype="${esc(v)}" aria-pressed="${clType === v}">${esc(n)} <i>${fmtN(k)}</i></button>`)) : '';
-    const tools = its.length ? `<span class="cl-tools">${chips}${sort}${viewBs(['grid', 'row'], grid ? 'grid' : 'row', 'clview', 'View')}</span>` : '';
+    // the funnel opens a type picker, which both views follow; closing it shows every type again
+    const fOn = clFo || !!clType, gName = g => g.replace(/\s*\bcollections?$/i, '') || g;
+    const chips = grps.length > 1 ? (fOn ? `<span class="fchip"><span class="fk">Type</span><select data-clfsel aria-label="Collection type">${[['', 'All', its.length], ...grps.map(g => [g, gName(g), its.filter(x => x.grp === g).length])]
+        .map(([v, n, k]) => `<option value="${esc(v)}"${clType === v ? ' selected' : ''}>${esc(n)} (${fmtN(k)})</option>`).join('')}</select></span>` : '')
+        + `<span class="ed-views"><button type="button" data-clfo aria-pressed="${fOn}" aria-label="Filter" data-tip="${fOn ? 'Hide the filter, clearing it' : 'Filter by type'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>` : '';
+    const tools = its.length ? `<span class="cl-tools">${chips}${viewBs(['grid', 'row'], grid ? 'grid' : 'row', 'clview', 'View')}</span>` : '';
     const top = userHead(c.name || d.name, c.av, c.tabs)
         + userBar(d.err ? `<p class="u-sub"><span class="u-err">${esc(d.err)}</span></p>` : '', add && `<nav class="u-tabs">${add}</nav>`, tools);
     // what MusicBrainz says of an empty part (no collaborative collections) is one quiet line under the list
     const notes = c.secs.filter(s => s.note).map(s => `<p class="hm-none cl-note">${esc(s.grp)}: ${esc(s.note)}</p>`).join('');
     const body = grid
-        ? grps.map((g, i) => { const xs = ord(its.filter(x => x.grp === g)); return sect('cl' + i, `${clIco(xs[0])}${esc(g)} <span class="count">${fmtN(xs.length)}</span>`, '', `<div class="cl-tiles">${xs.map(x => clItem(x, true)).join('')}</div>` + (i === grps.length - 1 ? notes : ''), ''); }).join('') + (grps.length ? '' : notes)
-        : its.length ? `<ul class="cl-list">${ord(its.filter(x => !clType || x.grp === clType)).map(x => clItem(x, false)).join('')}</ul>` : '';
+        ? grps.map((g, i) => { if (clType && g !== clType) return ''; const xs = ord(its.filter(x => x.grp === g)); return sect('cl' + i, `${clIco(xs[0])}${esc(g)} <span class="count">${fmtN(xs.length)}</span>`, '', `<div class="cl-tiles">${xs.map(x => clItem(x, true)).join('')}</div>` + (i === grps.length - 1 ? notes : ''), ''); }).join('') + (grps.length ? '' : notes)
+        : its.length ? `<ul class="cl-list">${clHead(sk, desc, its.some(x => x.edit || x.del))}${ord(its.filter(x => !clType || x.grp === clType)).map(x => clItem(x, false)).join('')}</ul>` : '';
     return top + body + (grid ? '' : notes);
 }
 // MusicBrainz's collection tables, one item per collection; it translates the headings, so a cell is known by what it holds:
 // the collection's link, a /user/ link (a collaborative one's owner), its type, the counts of items and collaborators, then subscribed and privacy, and the actions
-let clType = ''; // the flat list's type, '' all of them
+let clType = '', clFo = false; // the type both views show, '' all of them; whether its picker is open
 function clItems(c) {
     const ta = document.createElement('textarea'), out = [];
     const tx = h => { ta.innerHTML = h.replace(/<[^>]*>/g, ''); return ta.value.replace(/\s+/g, ' ').trim(); }, num = h => /^[\d\s.,'  ]+$/.test(tx(h));
@@ -9061,17 +9071,35 @@ const CL_GLOBE = '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 
 // the entity icon of a collection's type, from its type or its group's name ("Release group collection" → release-group; the longest key wins), else a collection's
 const CL_IK = Object.keys(MBU_ENT_ICONS).filter(k => k !== 'collection').sort((a, b) => b.length - a.length);
 const clIco = x => { const t = ((x && (x.ty || x.grp)) || '').toLowerCase(); return `<span class="cl-ico">${SVG(MBU_ENT_ICONS[CL_IK.find(k => t.includes(k.replace(/-/g, ' '))) || 'collection'])}</span>`; };
-// a tile (title across the card, the count with the actions beside it, privacy drawn faintly behind) or a row (its type's then privacy's icon first, its type before the count); a lock is set apart in the accent
+// a tile (title across the card, the count with the actions beside it, privacy drawn faintly behind) or a row (its type's icon first, then columns of type, privacy and count); a lock is set apart in the accent
+// a collection's type without the word "collection" ("Release collection" → "Release")
+const clTy = x => (x.ty || '').replace(/\s*\bcollection$/i, '') || x.ty || '';
+// the rows' headings: each sorts by its column, a second click turning the order round
+function clHead(sk, desc, acts) {
+    const th = (k, n, c) => `<span class="${c}" role="columnheader" aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-clsort="${k}" data-tip="${sk === k ? 'Reverse the order' : 'Sort by ' + n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button></span>`;
+    return `<li class="cl-row cl-th" role="row">${th('name', 'Name', 'cl-nm')}${th('type', 'Type', 'cl-ty')}${th('pv', 'Privacy', 'cl-pc')}${th('items', 'Items', 'cl-ct')}${acts ? '<span class="cl-acts"></span>' : ''}</li>`;
+}
 function clItem(x, tile) {
     const abs = h => h.startsWith('/') ? MB + h : h, q = s => esc(s), pub = /^public$/i.test(x.pv);
     const pv = x.pv ? `<span class="${tile ? 'cl-bg' : 'cl-pv'}${pub ? '' : ' off'}" role="img" aria-label="${q(x.pv)}"${tile ? '' : ` data-tip="${q(x.pv)}"`}>${SVG(pub ? CL_GLOBE : CL_LOCK)}</span>` : '';
-    const name = `<span class="cl-hd">${tile ? '' : clIco(x) + pv}<a class="cl-a" href="${q(abs(x.href))}">${q(x.name)}</a></span>`;
+    const name = `<span class="cl-hd">${tile ? '' : clIco(x)}<a class="cl-a" href="${q(abs(x.href))}">${q(x.name)}</a></span>`;
     const meta = [x.owner && `<span class="cl-by">${x.owner.replace(/href="\//g, `href="${MB}/`)}</span>`, x.co && `<span>${q(x.co)}</span>`, x.sub && `<span>${q(x.sub)}</span>`].filter(Boolean).join('');
     const acts = x.edit || x.del ? `<span class="cl-acts">${x.edit ? `<a class="cl-ib" href="${q(abs(x.edit))}" aria-label="Edit ${q(x.name)}" data-tip="Edit">${MBU_EDIT_ICON}</a>` : ''}${x.del ? `<a class="cl-ib cl-rm" href="${q(abs(x.del))}" aria-label="Remove ${q(x.name)}" aria-haspopup="dialog" aria-expanded="false" data-tip="Remove">${SVG(CL_TRASH)}</a>` : ''}</span>` : '';
     return tile
         ? `<div class="cl-item cl-tile">${pv}${name}<span class="cl-foot"><span class="cl-big">${q(x.ns || '0')}</span>${acts}</span>${meta ? `<span class="cl-meta">${meta}</span>` : ''}</div>`
-        : `<li class="cl-item cl-row"><span class="cl-nm">${name}${meta ? `<span class="cl-meta">${meta}</span>` : ''}</span><span class="cl-ty">${q(x.ty)}</span><span class="cl-ct">${q(x.ns || '0')}</span>${acts}</li>`;
+        : `<li class="cl-item cl-row"><span class="cl-nm">${name}${meta ? `<span class="cl-meta">${meta}</span>` : ''}</span><span class="cl-ty">${q(clTy(x))}</span><span class="cl-pc${x.pv && !pub ? ' off' : ''}">${x.pv ? `<span class="cl-pv" aria-hidden="true">${SVG(pub ? CL_GLOBE : CL_LOCK)}</span>${q(x.pv)}` : ''}</span><span class="cl-ct">${q(x.ns || '0')}</span>${acts}</li>`;
 }
+// A click anywhere on a row opens its collection, as its name's link would (Ctrl, Cmd or the middle button in a new tab); its links, buttons and popup keep their own.
+const clRowGo = ev => {
+    if (!ehOn || !data || data.kind !== 'colls' || (ev.type === 'click' && ev.button) || (ev.type === 'auxclick' && ev.button !== 1)) return;
+    const t = ev.target.closest ? ev.target : null, r = t && t.closest('#app .cl-row:not(.cl-th)');
+    if (!r || t.closest('a,button,input,label,.cl-cfm') || String(getSelection() || '')) return;
+    const a = r.querySelector('.cl-a'); if (!a) return;
+    LOG.debug('collections: row opens', a.href);
+    if (ev.type === 'auxclick' || ev.ctrlKey || ev.metaKey || ev.shiftKey) window.open(a.href, '_blank'); else location.href = a.href;
+};
+document.addEventListener('change', ev => { const t = ev.target; if (!ehOn || !data || data.kind !== 'colls' || !t.matches || !t.matches('#app [data-clfsel]')) return; clType = t.value; LOG.debug('collections: type', clType || 'all'); render(); });
+document.addEventListener('click', clRowGo); document.addEventListener('auxclick', clRowGo);
 // Confirm in a small popup under the trash button and send the same empty form as MusicBrainz's remove page.
 const clCfmClose = () => { const p = document.querySelector('#app .cl-cfm'); if (!p) return; const a = p.parentElement.querySelector('.cl-rm'); if (a) a.setAttribute('aria-expanded', 'false'); p.remove(); return a; };
 document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && document.querySelector('#app .cl-cfm')) { ev.stopPropagation(); const a = clCfmClose(); if (a) a.focus(); } }, true);
@@ -13258,8 +13286,8 @@ function onClick(ev) {
     else if ('lbx' in d) lbOpen.has(d.lbx) ? lbOpen.delete(d.lbx) : lbOpen.add(d.lbx);
     else if (d.tabview) S.tabView = d.tabview;
     else if (d.clview) S.clView = d.clview;
-    else if (d.clsort) S.clSort = d.clsort;
-    else if ('cltype' in d) clType = d.cltype;
+    else if (d.clsort) S.clSort = String(S.clSort || 'name').replace(/^-/, '') === d.clsort && !String(S.clSort).startsWith('-') ? '-' + d.clsort : d.clsort;
+    else if ('clfo' in d) { clFo = !(clFo || clType); clType = ''; }
     else if (d.edsort) S.edSort = S.edSort === d.edsort ? '-' + d.edsort : S.edSort === '-' + d.edsort ? '' : d.edsort;
     else if (d.dgsort) S.dgSort = S.dgSort === d.dgsort ? '-' + d.dgsort : d.dgsort; // a second click turns the order round
     else if (d.edview) S[data.rel ? 'edView' : 'rgView'] = d.edview;
