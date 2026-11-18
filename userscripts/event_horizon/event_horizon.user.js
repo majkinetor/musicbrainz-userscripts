@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.050004
+// @version      2026.11.19.060000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -9110,7 +9110,8 @@ const clRowGo = ev => {
     if (!r || t.closest('a,button,input,label,.cl-cfm') || String(getSelection() || '')) return;
     const a = r.querySelector('.cl-a'); if (!a) return;
     LOG.debug('collections: row opens', a.href);
-    if (ev.type === 'auxclick' || ev.ctrlKey || ev.metaKey || ev.shiftKey) window.open(a.href, '_blank'); else location.href = a.href;
+    if (ev.type === 'auxclick' || ev.ctrlKey || ev.metaKey || ev.shiftKey) window.open(a.href, '_blank');
+    else { const k = inTab(a.href); if (k) { ehPush(a.href); show(k); } else location.href = a.href; } // in place, as the name's link does
 };
 document.addEventListener('change', ev => { const t = ev.target; if (!ehOn || !data || data.kind !== 'colls' || !t.matches || !t.matches('#app [data-clfsel]')) return; clType = t.value; LOG.debug('collections: type', clType || 'all'); render(); });
 document.addEventListener('click', clRowGo); document.addEventListener('auxclick', clRowGo);
