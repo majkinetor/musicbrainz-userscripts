@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-18 20:09 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-18 20:15 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1094,21 +1094,21 @@ To keep an effect you like, type a name beside **Preset** and click **Save** (or
 
 ### Shortcuts
 
-| Key         | Where                           |                            |
-| ----------- | ------------------------------- | -------------------------- |
-| Esc         | filter                          | clear it                   |
-| Esc         | a menu                          | close it                   |
-| Right-click | alias or tag pencil             | open its page              |
-| Right-click | corner icon                     | open the settings          |
-| Right-click | home icon in the header         | open your profile          |
-| Right-click | a card, group or row            | toggle its siblings        |
-| Right-click | a platform icon with more links | open its links             |
-| Click       | the entity icon in the header   | open its copy menu         |
-| Right-click | a release or recording's icon   | send it to Picard          |
-| Right-click | a track's play button           | choose where it plays from |
-| Right-click | player Play or Pause            | cycle the repeat mode      |
-| Wheel       | player                          | rewind or fast-forward     |
-| Right-click | player source menu              | open the platform page     |
+| Key         | Where                               |                            |
+| ----------- | ----------------------------------- | -------------------------- |
+| Esc         | filter                              | clear it                   |
+| Esc         | a menu                              | close it                   |
+| Right-click | alias or tag pencil                 | open its page              |
+| Right-click | corner icon                         | open the settings          |
+| Right-click | home icon in the header or homepage | open your profile          |
+| Right-click | a card, group or row                | toggle its siblings        |
+| Right-click | a platform icon with more links     | open its links             |
+| Click       | the entity icon in the header       | open its copy menu         |
+| Right-click | a release or recording's icon       | send it to Picard          |
+| Right-click | a track's play button               | choose where it plays from |
+| Right-click | player Play or Pause                | cycle the repeat mode      |
+| Wheel       | player                              | rewind or fast-forward     |
+| Right-click | player source menu                  | open the platform page     |
 
 ### Notes
 
