@@ -14984,6 +14984,10 @@ function relSet(on) {
             pinBar(c);
             document.getElementById('eh-pin')?.addEventListener('click', hdSrch);
             addEventListener('scroll', railSpy, { passive: true });
+            // the header is drawn again once the release loads: the bar is then pinned to the new one, or it keeps the old
+            // header's title and action row and, with the player in it, shows as an empty strip on a fresh load
+            const hd = c.querySelector('#eh-relhd'); let rq = 0;
+            if (hd) new MutationObserver(() => { if (!rq) rq = requestAnimationFrame(() => { rq = 0; if (hd.querySelector('.kicker .acts')) pinBar(c); }); }).observe(hd, { childList: true });
         }
         document.addEventListener('click', ev => { if (ehOn && ev.target.closest && !ev.target.closest('[data-srch],a[href]') && (ev.target.closest('#eh-relhd button,#eh-pin button') || $('#eh-relhd .pop:not([hidden])'))) onClick(ev); });
         document.addEventListener('contextmenu', ev => { const km = ehOn && ev.target.closest && ev.target.closest('.kmk[data-picard]'); if (km) { ev.preventDefault(); picardSend(km.dataset.picard); } });
