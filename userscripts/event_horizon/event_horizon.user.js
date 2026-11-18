@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.150000
+// @version      2026.11.19.160000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8907,10 +8907,10 @@ function colMeta(d, id) {
 }
 // a "_cover: <image URL>" line in the description is the collection's cover; the line itself is not shown
 function colCover(desc) {
-    const re = /(^|<br\s*\/?>|<(?:p|div|span)\b[^>]*>)\s*_cover:\s*(?:<a [^>]*>)?\s*(https?:\/\/[^\s<"]+)\s*(?:<\/a>)?\s*(<br\s*\/?>)?/i, m = desc.match(re);
+    const re = /(^|<br\s*\/?>|<(?:p|div|span|bdi)\b[^>]*>)\s*_cover:\s*(?:<a [^>]*>)?\s*(https?:\/\/[^\s<"]+)\s*(?:<\/a>)?\s*(<br\s*\/?>)?/i, m = desc.match(re);
     if (!m) return { desc, cover: '' };
     const cover = m[2].replace(/&amp;/g, '&');
-    return { desc: desc.replace(re, '$1').replace(/^(\s*<br\s*\/?>)+|(<br\s*\/?>\s*)+$/gi, '').replace(/<(p|div|span)\b[^>]*>\s*<\/\1>/g, '').trim(), cover };
+    return { desc: desc.replace(re, '$1').replace(/^(\s*<br\s*\/?>)+|(<br\s*\/?>\s*)+$/gi, '').replace(/<(p|div|span|bdi)\b[^>]*>\s*<\/\1>/g, '').trim(), cover };
 }
 async function loadCollection(id, step = () => {}) {
     const lists = mbTabK('collection', id, '').then(x => { step('items'); return [x]; }, noSec('tab collection/' + id));
