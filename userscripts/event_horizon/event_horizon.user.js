@@ -12756,8 +12756,6 @@ function onClick(ev) {
         return;
     }
     const nav = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && ev.target.closest('a[href]');
-    // Edit search uses MusicBrainz's live form and its native lookup handlers on each search page.
-    if (nav && new URL(nav.href).origin === MB && new URL(nav.href).pathname === '/search/edits') return;
     const navId = nav && !nav.target && inTab(nav.href);
     if (navId) { ev.preventDefault(); ehPush(nav.href); show(navId); return; }
     // a click anywhere on a section's header row, outside its tools, folds the section
@@ -12995,6 +12993,9 @@ const EDIT_SEARCH_CSS = `
 .hm-es{display:flex;align-items:center;justify-content:center;flex:none;color:var(--muted);padding:4px 8px;border-left:1px solid var(--border)}.hm-es:hover{color:var(--link)}.hm-es svg{width:19px;height:19px}
 `;
 let esForm = null, esHome = null, esObserver = null, esFocus = null, esSerial = 0, esMoving = false;
+// esFor: the search the form shows (its hist id). esPend: a search page being fetched for its form, whose HTML is also
+// History's first page, so opening a search costs one request
+let esFor = null, esPend = null, esRun = 0, esCode = null;
 const esPicks = new WeakMap();
 const esIsSearch = id => /^\/search\/edits(?:\?|$)/.test(histSrc(id));
 const esHasQuery = id => [...new URL(MB + histSrc(id)).searchParams].some(([k, v]) => /^conditions\.\d+\.field$/.test(k) && v);
@@ -13084,7 +13085,7 @@ function esSavedBar(form) {
             b.firstChild.textContent = s.name;
             b.querySelector('[data-es-row-copy]').onclick = e => { e.stopPropagation(); copyOf(s); };
             b.querySelector('[data-es-row-delete]').onclick = e => { e.stopPropagation(); deleteOf(s.name); };
-            b.onclick = () => { remember(s.name, s.query); location.assign(MB + '/search/edits?' + s.query); }; results.append(b);
+            b.onclick = () => { remember(s.name, s.query); const h = MB + '/search/edits?' + s.query; if (!form.closest('#app')) { location.assign(h); return; } ehPush(h); show(histKey(h)); }; results.append(b);
         });
     };
     const openLibrary = (clear = false) => {
@@ -13129,7 +13130,7 @@ function esSavedBar(form) {
         for (const [key, value] of [['auto_edit_filter', ''], ['order', 'desc'], ['negation', '0'], ['combinator', 'and']]) {
             const s = form.querySelector(`select[name="${key}"]`); if (s) { s.value = value; s.dispatchEvent(new Event('change', { bubbles: true })); }
         }
-        const href = MB + '/search/edits'; ehPush(href); show(histKey(href)); refresh();
+        const href = MB + '/search/edits'; esFor = histKey(href).slice(5); ehPush(href); show(histKey(href)); refresh();
     };
     form.addEventListener('submit', () => { if (selected) remember(selected, esQuery(form)); });
     document.addEventListener('click', e => { if (!bar.contains(e.target)) { closeLibrary(); } });
@@ -13329,17 +13330,61 @@ function esMenus() {
     if (!ehOn || !esForm || !esForm.closest('#app')) return;
     for (const menu of mbBody.querySelectorAll(':scope>ul.ui-autocomplete')) { menu.classList.add('eh-es-autocomplete'); ehBody.append(menu); LOG.debug('Edit search: a lookup menu moved beside the form'); }
 }
+function esWire(form) {
+    esForm = form;
+    esSavedBar(esForm);
+    esForm.addEventListener('change', () => queueMicrotask(esScan));
+    esForm.addEventListener('focusin', esMenus); esForm.addEventListener('input', () => setTimeout(esMenus)); esForm.addEventListener('focusout', () => setTimeout(esPinSum));
+    if (esObserver) esObserver.disconnect();
+    esObserver = new MutationObserver(esScan); esObserver.observe(esForm, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'disabled'] });
+    if (!esWire.on) { esWire.on = true; document.addEventListener('click', e => { if (esForm && !e.target.closest('.eh-es-pick')) esForm.querySelectorAll('.eh-es-pick').forEach(p => p._esClose && p._esClose(false)); }); }
+    // a search runs in the tab (the player plays on): the form's query becomes the search shown, the form stays
+    form.addEventListener('submit', e => {
+        if (e.defaultPrevented || !form.closest('#app')) return;
+        e.preventDefault();
+        const href = MB + '/search/edits?' + esQuery(form), id = histKey(href);
+        esFor = id.slice(5); ehPush(href); show(id);
+    });
+}
+// Another search's form, fetched in place of a page load: MusicBrainz draws its conditions on the server, and its
+// edit_search script makes them work. That script runs once per page, so it runs again, as a chunk of its own, on the
+// new form, after the old form's handlers are taken off.
+function esAdopt(id) {
+    if (esPend && esPend.id === id) return esPend.p;
+    const pend = { id }; esPend = pend;
+    pend.p = (async () => {
+        const sr = histSrc(id), t0 = performance.now(), r = await mbnFetch(`${MB}${sr}`); fetchLog(`${sr} (its form)`, t0, r);
+        if (!r || !r.ok) throw new Error(r ? 'HTTP ' + r.status : 'cancelled');
+        const html = await r.text(), doc = new DOMParser().parseFromString(html, 'text/html');
+        const form = doc.querySelector('#edit-search'), fields = doc.querySelector('#fields'), js = doc.querySelector('script[src*="/edit_search-"]');
+        if (!form || !fields || !js) throw new Error('no search form on the page');
+        if (!esCode || esCode.src !== js.src) { const s = await fetch(js.src); if (!s.ok) throw new Error('its script: HTTP ' + s.status); esCode = { src: js.src, text: await s.text() }; }
+        if (esPend !== pend) return html;
+        const $ = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window).jQuery;
+        if ($) $(document).off('change', '#extra-condition select').off('click', 'ul.conditions li.condition button.remove-item').off('change', 'ul.conditions select.field').off('change', 'ul.conditions select.operator');
+        if (esForm) { esPark(); esForm.remove(); }
+        document.querySelectorAll('#fields').forEach(x => x.remove());
+        if (!esHome || !esHome.isConnected) { const hold = document.createElement('div'); hold.hidden = true; hold.className = 'eh-es-hold'; mbBody.append(hold); esHome = document.createComment('Event Horizon edit search'); hold.append(esHome); }
+        const nf = document.importNode(form, true); esHome.after(nf); nf.after(document.importNode(fields, true));
+        const mod = (esCode.text.match(/\{"([^"]+)"\(/) || [])[1], k = 'ehES' + (++esRun);
+        if (!mod) throw new Error('its script is not the one known');
+        const code = esCode.text.replace(/\.push\(\[\[\d+\]/, `.push([[${990000 + esRun}]`).split(`"${mod}"`).join(`"${k}"`).replace(/\/\/# sourceMappingURL=.*$/m, '');
+        const sc = document.createElement('script'); sc.textContent = code; document.head.append(sc); sc.remove();
+        esWire(nf); esFor = id;
+        LOG.info(`Edit search: the form for ${sr} in the tab, ${nf.querySelectorAll('ul.conditions li.condition').length} condition(s)`);
+        return html;
+    })();
+    pend.p.then(() => { if (esPend === pend && data && data.kind === 'hist' && data.id === id) render(); }, e => { LOG.err('Edit search: the form for ' + histSrc(id) + ' failed: ' + e.message); pend.err = e.message; });
+    return pend.p;
+}
 function esMount(app, d) {
     if (!esIsSearch(d.id)) return;
-    if (!esForm) {
-        esForm = mbBody.querySelector('#edit-search'); if (!esForm) return;
-        esHome = document.createComment('Event Horizon edit search'); esForm.before(esHome);
-        esSavedBar(esForm);
-        esForm.addEventListener('change', () => queueMicrotask(esScan));
-        esForm.addEventListener('focusin', esMenus); esForm.addEventListener('input', () => setTimeout(esMenus)); esForm.addEventListener('focusout', () => setTimeout(esPinSum));
-        esObserver = new MutationObserver(esScan); esObserver.observe(esForm, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'disabled'] });
-        document.addEventListener('click', e => { if (esForm && !e.target.closest('.eh-es-pick')) esForm.querySelectorAll('.eh-es-pick').forEach(p => p._esClose && p._esClose(false)); });
+    if (!esForm && 'hist/' + d.id === PAGE_ID && mbBody.querySelector('#edit-search')) {
+        const f = mbBody.querySelector('#edit-search');
+        esHome = document.createComment('Event Horizon edit search'); f.before(esHome);
+        esWire(f); esFor = d.id;
     }
+    if (esFor !== d.id) { if (!(esPend && esPend.id === d.id)) esAdopt(d.id).catch(() => {}); if (esForm) { esPark(); } return; }
     esForm.classList.add('eh-es');
     esTop(true);
     esForm.querySelectorAll('.eh-es-saved,.eh-es-new').forEach(p => { p.hidden = false; });
@@ -14221,6 +14266,7 @@ async function histLoad(n, all) {
             const p = d.page + 1;
             let html;
             if (p === 1 && 'hist/' + d.id === PAGE_ID && mbBody && new URL(MB + histSrc(d.id)).searchParams.get('hide_own') === new URL(location.href).searchParams.get('hide_own')) html = '<body>' + mbBody.innerHTML + '</body>';
+            else if (p === 1 && esPend && esPend.id === d.id && !esPend.err && !esPend.used && (esPend.used = true) && (html = await esPend.p.catch(() => null))) LOG.debug(`History ${d.id}: page 1 is the page its form came from`);
             else { const sr = histSrc(d.id), t0 = performance.now(), r = await mbnFetch(`${MB}${sr}${sr.includes('?') ? '&' : '?'}page=${p}`); fetchLog(`${sr} page ${p}`, t0, r); if (!r || !r.ok) throw new Error(r ? 'HTTP ' + r.status : 'cancelled'); html = await r.text(); }
             if (n !== showing || data !== d) { LOG.debug(`History ${d.id}: left the page, loading stops`); d.busy = false; return; }
             // an entity's history: its title and credits off MusicBrainz's header, for the entity header
