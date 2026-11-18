@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-18 19:43 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-17 18:09 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -863,7 +863,6 @@ When MB page has Event Horizon redesign available, EH dock button shows on the n
 - **Pictures**: an artist's or label's comes from its linked sites, including Bandcamp and YouTube Music (click for the next, the source icon opens a thumbnail gallery to choose an image, grouping matching photos into one thumbnail with clickable source icons beneath it; cycling uses the same distinct photos), and when none was found, Retry image asks them again; an area's is its Wikidata map with the flag; a place's its Commons or Wikidata image; an event's its front from the Event Art Archive.
 - **History** groups a release's edits, and MusicBrainz's other edit lists, into bursts; **a single edit** opens with its changes under the release it touches.
 - **Art**, the cover-art page and the add-cover-art page alike, holds Art Station's gallery under the release's title; an event's event-art and add-event-art pages hold it under the event's.
-- **Account pages**, including Applications, keep MusicBrainz's controls under your Event Horizon profile header. Revoke an application's access in its row, with confirmation and cancel.
 - **Covers**: click a release's cover, thumbnail or Artwork image to view all its covers full screen in Art Station gallery.
 - **Relate**, the release's relationship editor, stays MusicBrainz's but takes Event Horizon's look; its regions and tracks fold like cards.
 - **Long titles**: a subtitle after a colon or dash sits smaller on its own line, long titles shrink, and very long ones stop at four lines with **Show full title**. Every page header follows this, and titles in grids, tables and track lists stop at three lines.
@@ -936,11 +935,9 @@ Select the star in an entity's header to keep it on the homepage; select it agai
 
 ### Collections
 
-Click the entity-type label above its title to open **Collections**. The menu shows your own and collaborative collections for that type, including private collections. Select an entry to add or remove the entity in the background. **My collections** opens your collections page. **Add to a new collection** opens the new collection form inside Event Horizon, with the entity going into it. **Add collection** saves it without reloading the tab, so the player keeps playing, and opens the new collection. A collection's **Edit** opens inside Event Horizon too, filled in, and **Update collection** saves it the same way. You can remove collaborators there; adding one is done on MusicBrainz.
+Click the entity-type label above its title to open **Collections**. The menu shows your own and collaborative collections for that type, including private collections. Select an entry to add or remove the entity in the background. **My collections** opens your collections page. **Add to a new collection** opens MusicBrainz's collection form with the entity selected.
 
 The list is kept for your next visit. **Refresh collections** checks for changes made elsewhere. You must be signed in to MusicBrainz.
-
-On your collections page, **Remove** asks for confirmation in the list and removes the collection without reloading the tab. **Cancel** leaves it in place.
 
 ### Recently opened
 
@@ -958,23 +955,19 @@ Expanded track contains info about associated recording and works.
 
 ### Player
 
-The player is off until you turn on **Enable player** in the settings. Point at a track's number and click its play button: the release plays from that track, one track after another. **Play** in the tracklist's header plays the whole release. Right-click a track's play button to choose the streaming site it plays from; the next tracks keep that choice when they have it.
+Point at a track's number and click its play button: the release plays from that track, one track after another. **Play** in the tracklist's header plays the whole release. Right-click a track's play button to choose the streaming site it plays from; the next tracks keep that choice when they have it.
 
-The player plays from YouTube, YouTube Music, Spotify, Deezer, Apple Music, SoundCloud and Bandcamp, in the page, and goes on to the next track when one ends. Apple Music's player can't be started for you: click its play button, and the next track follows when the track's length has played. **Hide the video** is remembered. A track with no such link has no play button; with **Show ListenBrainz menu items** on, it gets a ListenBrainz icon instead.
+The player plays from YouTube, YouTube Music, Spotify, Deezer, Apple Music, SoundCloud and Bandcamp, in the page, and goes on to the next track when one ends. Apple Music's player can't be started for you: click its play button, and the next track follows when the track's length has played. **Hide the video** is remembered. A track with no such link has no play button; with **Open in ListenBrainz** on, it gets a ListenBrainz icon instead.
 
-The player shows at the bottom of the page, or as a chip under the header's actions. It has the track, previous and next, the streaming site, and links to the track and the release in ListenBrainz. On the first track, previous restarts it when the source supports seeking. Right-click Play or Pause to cycle through playing once, repeating the release and repeating the track. The mouse wheel winds the track by five seconds. In the source menu, right-click a platform to open the track there in a new tab. Close the player with ×.
+The player shows at the bottom of the page, or as a chip under the header's actions. It has the track, previous and next, the streaming site, and links to the track and the release in ListenBrainz. Close it with ×.
 
-**Open in window**, in the menu of the player's source button, moves the player into a small pop-up window of its own, with the playlist under it, so playback goes on when a MusicBrainz tab reloads or closes. Allow pop-ups if your browser blocks it; browsers offer no true tool window, so it is a pop-up without toolbars. Until you choose **Back to tab** in the same menu, in the window or in any MusicBrainz tab, every new play starts in the window, and other MusicBrainz tabs control it. Only one player plays at a time: starting another stops the previous tab player. In tab mode, the queue is restored after navigating to another MusicBrainz page.
-
-While the player is open, editing a release opens the editor in another tab so playback continues. Successful updates from Mission Control, Platform Check and ISRC Scout refresh the release in place when Event Horizon is showing it.
-
-**Send listens to ListenBrainz** adds what the player plays to your listens. Use **Get token** to open [ListenBrainz's settings](https://listenbrainz.org/settings/) and paste your user token into **LB token**; Event Horizon checks it with ListenBrainz. A track shows as playing now when it starts and counts as a listen after half of it or four minutes, whichever comes first. The ListenBrainz icon in the player turns to the accent colour once the listen is sent.
+**Send listens to ListenBrainz** adds what the player plays to your listens. Paste your user token from [ListenBrainz's settings](https://listenbrainz.org/settings/) into **ListenBrainz token**; Event Horizon checks it with ListenBrainz. A track shows as playing now when it starts and counts as a listen after half of it or four minutes, whichever comes first. The ListenBrainz icon in the player turns to the accent colour once the listen is sent.
 
 ### Releases and discography
 
 A release group lists its releases, and an artist or label its discography, grouped by type, albums first. Switch between a grid of covers and a table; click a table's column to sort it.
 
-A label's releases show by release group, one cover or row per group, grouped by type; **Releases** beside **Groups** lists every release instead, and the choice is remembered. When a group has more than one release on the label, its cover shows a count: click it to list the releases, with their dates, formats and track counts. In a table, click *N releases* to expand them below the row.
+A label's releases show by release group, one cover or row per group, grouped by type; **Releases** beside **Groups** lists every release instead, and the choice is remembered. *N releases* counts a group's releases on this label: click it to list them, below the row in a table or in a popup in the grid.
 
 **Columns**, beside the view buttons of a table, chooses what the table shows and in what order, and is remembered for all releases or all discographies. Tick a column to show it, drag its handle or press the arrow keys on it to move it, and Esc during a drag takes the move back. A label's or a recording's releases also have **Type**, their release group's type, such as *Album + Compilation*. Releases also offer Status, Packaging, Language / script and Comment; +N on the button counts the columns left out. A hidden column still sorts and filters. Links is a column like the others. Drag the edge of a column's heading to resize it: the room comes from the columns beside it, and none goes narrower than its content. Double-click the edge to fit that column to its content; the fit button beside **Columns** lets the table size itself again. **Saved**, at the bottom of the menu, keeps the current columns and their widths under a name; pick the name to bring them back, or **Default** for the usual columns.
 
@@ -1063,30 +1056,30 @@ Inside Event Horizon, ISRC Scout, Platform Check, Fuzzy Logic and Mission Contro
 
 Right-click the corner icon. Changes apply at once.
 
-| Setting                               | Default                                                   |                                                                                             |
-| ------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Release → Info                        | released, labels, barcode, length, links                  | the facts shown beside the cover                                                            |
-| Release → Under the cover             | Other covers, Rating, Genres                              | what shows under the cover                                                                  |
-| Tracklist → Tracks                    | Alternating colors, Artist column by itself               | shade every other track; the [Artist column](#tracklist-1) per release                        |
-| Platforms → Show                      | off                                                       | **Names** beside the icons; **Gray icons** until pointed at                                 |
-| Platforms → Icon size                 | 22px                                                      | the size of a platform icon                                                                 |
-| Platforms → Platforms                 | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music | click to show or hide, drag to reorder; the rest go behind +N                               |
-| Artist → Artist images                | all sources                                               | click to turn one off or on, drag to reorder; the first one found is shown                  |
-| Annotation → Show annotation on hover | on                                                        | preview a folded annotation                                                                 |
-| General → Page width                  | Wide                                                      | how wide the page grows on a big screen                                                     |
-| Effects → Preset                      | none                                                      | an effect with its settings, saved by name; shared as JSON from its list                    |
-| Effects → Effects                     | Background: Cover aura                                    | a **Background** (none is flat) and an **Effect** over it; select one for its settings      |
-| Effects → Effect                      | None                                                      | [background effects](#background-effects), each with its own settings                       |
-| Effects → Fade this window            | on                                                        | the window fades while the mouse is away from it                                            |
-| Menu → Show menu titles               | off                                                       | text beside icons in the main menu                                                          |
-| Menu → Responsive                     | off                                                       | brings items from More into the main menu when space allows                                 |
-| Menu → Items                          | all visible                                               | drag to order, use the eye to show or hide, toggle Title, choose Main or More               |
-| Player → Enable player                | off                                                       | the play buttons and the [player](#player)                                                  |
-| Player → Player place                 | Bottom bar                                                | **Bottom bar** or **Top bar**                                                               |
-| Player → Show ListenBrainz menu items | on                                                        | the player's links to ListenBrainz                                                          |
-| Player → Send listens to ListenBrainz | off                                                       | your listens, with the **ListenBrainz token** beside it                                     |
-| General → Pending changes             | off                                                       | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
-| General → Keyboard shortcuts          | on                                                        | the keys below; [keyboard shortcuts](#keyboard-shortcuts); **Change keys** opens their list |
+| Setting                                | Default                                                   |                                                                                             |
+| -------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Release → Info                         | released, labels, barcode, length, links                  | the facts shown beside the cover                                                            |
+| Release → Under the cover              | Other covers, Rating, Genres                              | what shows under the cover                                                                  |
+| Tracklist → Tracks                     | Alternating colors, Artist column by itself               | shade every other track; the [Artist column](#tracklist-1) per release                        |
+| Platforms → Show                       | off                                                       | **Names** beside the icons; **Gray icons** until pointed at                                 |
+| Platforms → Icon size                  | 22px                                                      | the size of a platform icon                                                                 |
+| Platforms → Platforms                  | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music | click to show or hide, drag to reorder; the rest go behind +N                               |
+| Artist → Artist images                 | all sources                                               | click to turn one off or on, drag to reorder; the first one found is shown                  |
+| Annotation → Show annotation on hover  | on                                                        | preview a folded annotation                                                                 |
+| General → Page width                   | Wide                                                      | how wide the page grows on a big screen                                                     |
+| Effects → Preset                       | none                                                      | an effect with its settings, saved by name; shared as JSON from its list                    |
+| Effects → Effects                      | Background: Cover aura                                    | a **Background** (none is flat) and an **Effect** over it; select one for its settings      |
+| Effects → Effect                       | None                                                      | [background effects](#background-effects), each with its own settings                       |
+| Effects → Fade this window             | on                                                        | the window fades while the mouse is away from it                                            |
+| Menu → Show menu titles                | off                                                       | text beside icons in the main menu                                                          |
+| Menu → Responsive                      | off                                                       | brings items from More into the main menu when space allows                                 |
+| Menu → Items                           | all visible                                               | drag to order, use the eye to show or hide, toggle Title, choose Main or More               |
+| General → Player                       | on                                                        | the play buttons and the [player](#player)                                                  |
+| General → Player place                 | Bottom bar                                                | **Bottom bar** or **Header chip**                                                           |
+| General → Open in ListenBrainz         | on                                                        | the player's links to ListenBrainz                                                          |
+| General → Send listens to ListenBrainz | off                                                       | your listens, with the **ListenBrainz token** below it                                      |
+| General → Pending changes              | off                                                       | mark what has edits open; takes one extra MusicBrainz request per page, sent last           |
+| General → Keyboard shortcuts           | on                                                        | the keys below; [keyboard shortcuts](#keyboard-shortcuts); **Change keys** opens their list |
 
 Motions: Static, Drift, Tide, Twinkle, Ripple, Lantern (follows the pointer), Electricity and Neural. Pick Hexagons in the Effects tab and its settings follow; the ones the motion doesn't take (Pace, Trail, How often, Glow, a two-tone Colour) are greyed out. **Depth** scrolls the hexagons slower than the page. All respect reduced motion.
 
@@ -1105,9 +1098,6 @@ To keep an effect you like, type a name beside **Preset** and click **Save** (or
 | Click       | the entity icon in the header   | open its copy menu         |
 | Right-click | a release or recording's icon   | send it to Picard          |
 | Right-click | a track's play button           | choose where it plays from |
-| Right-click | player Play or Pause            | cycle the repeat mode      |
-| Wheel       | player                          | rewind or fast-forward     |
-| Right-click | player source menu              | open the platform page     |
 
 ### Notes
 
@@ -1910,8 +1900,6 @@ Match never groups:
 
 A group's chips show the signals that hold for **every** member; one that holds for some is partial.
 
-The **RG** chip compares the release groups of the releases known for each recording: green when all share one, and dim otherwise. Its tooltip distinguishes different release groups from unknown ones. The automatic edit note includes the result when known.
-
 #### Include pending edits
 
 **Include pending edits**, in the menu beside Match, uses the selected cutoff but also groups recordings marked as having open edits and allows those groups to merge. Check the edits before merging: the flag can indicate a real pending edit, though MusicBrainz can also show it incorrectly.
@@ -1935,14 +1923,11 @@ With **Auto clear merged** on (the default), a merged group leaves the board a f
 
 ### Other entities
 
-Artists, releases, release groups, works, labels, places, events, series and collections are merged in a window like the recordings' one, a window per type. Every type with something waiting shows as an icon with its count, beside Fusion's corner icon and in the window's title; click one to open that type. The title shows every type, so an empty one can be opened too. The trash button in the window's header clears every type's pool and groups, recordings included, after asking. Each row shows what MusicBrainz's own merge page does: for a release its artist, format, tracks, country and date, label, catalog number and barcode; for other types their type, area, dates, ISWCs and the like.
-
-Collections show their type, entity type, number of entities, collaborators and privacy. Only their owner can merge them. MusicBrainz applies a collection merge immediately, without an edit or vote.
+Artists, releases, release groups, works, labels, places, events and series are merged in a window like the recordings' one, a window per type. Every type with something waiting shows as an icon with its count, beside Fusion's corner icon and in the window's title; click one to open that type. The title shows every type, so an empty one can be opened too. The trash button in the window's header clears every type's pool and groups, recordings included, after asking. Each row shows what MusicBrainz's own merge page does: for a release its artist, format, tracks, country and date, label, catalog number and barcode; for other types their type, area, dates, ISWCs and the like.
 
 - Add them with the [add menu](#adding), or paste a MusicBrainz link or MBID into the field under **+** in the pool's header.
 - The pool and the groups work as the recordings' do, with the same filter, **Sort** and ◀ fold: select, drag or double-click entries into a group, ★ for the one that's kept, ↩ and ✕, ✎ for the edit note. **Group all** puts the selection, or the pool as filtered, in one group.
 - A group's chips show the fields all its members share, and a value shared by some is tinted alike in the rows. A release group of releases needs a merge strategy before it can merge: append mediums or merge them. None is preselected.
-- The **RG** chip on a release group card compares the releases' release groups, and the automatic edit note includes the result when known. Older entries may need to be added again to supply it.
 - In an artist group, the **Alias** chip says when one member's name is an alias of another: green when it matches exactly, partial when every word of the name is in the alias. The matched alias shows under that name.
 - **Merge** submits one group, **Merge All** every group in turn; **Clear ▾** clears all of this type, empties the pool, returns the groups to the pool, or removes the merged ones.
 
