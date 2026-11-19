@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.230001
+// @version      2026.11.19.235001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3252,7 +3252,7 @@ h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25
 button.tx.tx[data-playall]{display:inline-flex;align-items:center;gap:4px;color:var(--accent);margin-right:6px;padding-right:12px;border-right:1px solid var(--line);border-bottom:0}button.tx.tx[data-playall]>svg{width:14px;height:14px;flex:none}button.tx.tx[data-playall]:hover{color:var(--text)}button.tx.tx[data-playrec]{display:inline-flex;align-items:center;gap:4px}button.tx.tx[data-playrec]>svg{width:14px;height:14px;flex:none}button.tx{all:unset;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);padding:4px 2px;border-bottom:2px solid transparent}.tx>.txi{display:none}@media (max-width:700px){.tx:has(>.txi){display:inline-flex;align-items:center;justify-content:center;min-width:30px;min-height:30px}.tx>.txi{display:block}.tx:has(>.txi)>.txl{display:none}}
 button.tx:hover{color:var(--text)}
 button.tx[data-colplay] svg{width:14px;height:14px;vertical-align:middle}
-.ed-t tbody [data-colplay]{clip-path:inset(50%);pointer-events:none}.ed-t tbody tr:hover [data-colplay],.ed-t tbody [data-colplay]:focus-visible{clip-path:none;pointer-events:auto}
+.ed-t a.tt,.disco a,.ed-t td.tc,.ed-t td.pb{position:relative}.cvp{position:absolute;inset:0 0 auto;aspect-ratio:1;display:grid;place-items:center;pointer-events:none}.ed-t td.tc>.cvp{inset:0;aspect-ratio:auto}.cvp>button.tx[data-colplay]{pointer-events:auto;width:30px;height:30px;border-radius:50%;padding:0;display:grid;place-items:center;background:rgba(0,0,0,.62)!important;color:#fff!important;border:0;opacity:0}.cvp>button.tx[data-colplay]:hover{background:rgba(0,0,0,.82)!important}.ed-t td.pb{padding-left:28px}.ed-t td.pb>.cvp{inset:0 auto 0 0;width:28px;aspect-ratio:auto}.ed-t td.pb>.cvp>button.tx[data-colplay]{background:none!important;color:inherit!important}tr:hover .cvp>button,.disco a:hover .cvp>button,.cvp>button:focus-visible{opacity:1}@media (hover:none){.cvp>button.tx[data-colplay]{opacity:1}}
 button.tx.plcfg{font-size:17px;line-height:1;margin-left:4px}
 button.tx[aria-pressed=true]{color:var(--text);border-bottom-color:var(--accent)}
 button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -8694,7 +8694,7 @@ function tabSect(sid, name, x, href, cv) {
     const txt = c => (c || '').replace(/<[^>]*>/g, '').trim(), cols = x.head.map((_, i) => i).filter(i => rs.some(r => txt(r[i])));
     const n = rs.length, cnt = x.total ? x.total.toLocaleString('en') : x.more ? `${n}+` : n, span = cols.length + (cv ? 1 : 0);
     const cvRe = cv && new RegExp('href="[^"]*/' + cv + '/(' + MBID.source + ')"', 'i');
-    const cvTd = r => { if (!cv) return ''; const m = r.join(' ').match(cvRe); return m ? `<td class="tc"><a href="${MB}/${cv}/${m[1]}" class="tt"><img src="${esc(tabArt(cv, m[1]))}" alt="" loading="lazy" data-dgcover="${cv}" data-aid="${m[1]}" referrerpolicy="no-referrer"></a></td>` : '<td class="tc"></td>'; };
+    const cvTd = (r, p = '') => { if (!cv) return ''; const m = r.join(' ').match(cvRe); return m ? `<td class="tc"><a href="${MB}/${cv}/${m[1]}" class="tt"><img src="${esc(tabArt(cv, m[1]))}" alt="" loading="lazy" data-dgcover="${cv}" data-aid="${m[1]}" referrerpolicy="no-referrer">${p}</a></td>` : `<td class="tc">${p}</td>`; };
     // a click on a heading sorts the rows by that column, a second turns them round, a third brings back MusicBrainz's order;
     // a table with group rows inside keeps MusicBrainz's order
     const srt = !x.rows.some(r => !Array.isArray(r) && r), [si, sd] = srt && tsGet(sid) || [];
@@ -8708,11 +8708,12 @@ function tabSect(sid, name, x, href, cv) {
     const playable = sid === 'cp' && S.player && data && data.g && ['release', 'recording'].includes(data.g.ent), ent = playable && data.g.ent;
     const view = cv ? S.tabView || 'table' : 'table', yc = cols.find(i => /date|year/i.test(txt(x.head[i])));
     const tlRe = cv && new RegExp('<a href="[^"]*/' + cv + '/(' + MBID.source + ')">([\\s\\S]*?)</a>', 'i');
-    const tile = r => { const m = Array.isArray(r) && r.join(' ').match(tlRe); return m ? `<a href="${MB}/${cv}/${m[1]}"><img src="${esc(tabArt(cv, m[1]))}" alt="" loading="lazy" data-dgcover="${cv}" data-aid="${m[1]}" referrerpolicy="no-referrer"><span class="dt">${m[2]}</span><span class="dy">${yc != null ? esc(txt(r[yc]).slice(0, 4)) : ''}</span></a>` : ''; };
+    const tile = r => { const m = Array.isArray(r) && r.join(' ').match(tlRe); return m ? `<a href="${MB}/${cv}/${m[1]}"><img src="${esc(tabArt(cv, m[1]))}" alt="" loading="lazy" data-dgcover="${cv}" data-aid="${m[1]}" referrerpolicy="no-referrer">${pbt(r)}<span class="dt">${m[2]}</span><span class="dy">${yc != null ? esc(txt(r[yc]).slice(0, 4)) : ''}</span></a>` : ''; };
     const open = sid in TQ, tools = (open ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-tq="${sid}" value="${esc(TQ[sid])}" placeholder="Filter, or column:value" aria-label="Filter" autocomplete="off"></span>` : '')
         + `<span class="ed-views"><button type="button" data-tqopen="${sid}" aria-pressed="${open}" aria-label="Filter" data-tip="${open ? 'Hide the filter, clearing it' : 'Filter the rows'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`
         + (cv ? viewBs(['grid', 'row', 'table'], view, 'tabview', 'View') : '');
-    const tr = r => { const m = playable && Array.isArray(r) && r.join(' ').match(new RegExp('/' + ent + '/(' + MBID.source + ')', 'i')); return Array.isArray(r) ? `<tr>${cvTd(r)}${cols.map((i, j) => `<td>${j === 0 && m ? `<button type="button" class="tx" data-colplay="${m[1]}" data-tip="${plyClickTip('Play this ' + ent)}" aria-label="Play this ${ent}">${SVG(PLY_I.play)}</button> ` : ''}${txt(r[i]) ? r[i] : '—'}</td>`).join('')}</tr>` : `<tr class="tsub"><td colspan="${span}">${esc(r.charAt(0).toUpperCase() + r.slice(1))}</td></tr>`; };
+    const pbt = r => { const m = playable && Array.isArray(r) && r.join(' ').match(new RegExp('/' + ent + '/(' + MBID.source + ')', 'i')); return m ? `<span class="cvp"><button type="button" class="tx" data-colplay="${m[1]}" data-tip="${plyClickTip('Play this ' + ent)}" aria-label="Play this ${ent}">${SVG(PLY_I.play)}</button></span>` : ''; };
+    const tr = r => { const p = pbt(r); return Array.isArray(r) ? `<tr>${cvTd(r, p)}${cols.map((i, j) => `<td${j === 0 && p && !cv ? ' class="pb"' : ''}>${j === 0 && p && !cv ? p : ''}${txt(r[i]) ? r[i] : '—'}</td>`).join('')}</tr>` : `<tr class="tsub"><td colspan="${span}">${esc(r.charAt(0).toUpperCase() + r.slice(1))}</td></tr>`; };
     const more = x.more ? lmFoot('tab:' + sid, n, x.total || 0) : '';
     const body = view === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr>${cv ? '<th></th>' : ''}${cols.map(hb).join('')}</tr></thead><tbody>${shown.map(tr).join('')}</tbody></table></div>`
         : `<div class="${view === 'row' ? 'ed-row disco' : 'disco'}">${shown.map(tile).join('')}</div>`;
