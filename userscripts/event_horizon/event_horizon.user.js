@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.004001
+// @version      2026.11.20.004002
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13090,6 +13090,7 @@ function plyCollPick(btn, type) {
     setTimeout(() => { if (m.isConnected) document.addEventListener('pointerdown', off, true); });
     document.addEventListener('keydown', esck, true);
     m.addEventListener('click', ev => {
+        if (ev.target.closest('.ply-x')) { shut(); btn.focus({ preventScroll: true }); return; }
         const b = ev.target.closest('button'); if (!b || b.disabled) return;
         if (b.dataset.cc) collectionChange(key, b.dataset.cc);
         else if (b.dataset.cd) {
@@ -13159,7 +13160,7 @@ function plyListPaint() {
     plyHeadLoad(ply.q[ply.i]);
 }
 function plyListMenu(btn) {
-    plyMenu(btn, '<div class="ply-top"><div class="ply-list-head">' + plyRelHead(ply.q[ply.i]) + '</div><div class="hd"><span>Playlist</span>' + (ply.q.length > 1 ? '<input type="search" class="qf" placeholder="Filter" aria-label="Filter the playlist" autocomplete="off">' : '') + '</div></div>' + plyRows(true),
+    plyMenu(btn, '<div class="ply-top"><div class="ply-list-head">' + plyRelHead(ply.q[ply.i]) + '</div><div class="hd"><span>Playlist</span>' + (ply.q.length > 1 ? '<input type="search" class="qf" placeholder="Filter" aria-label="Filter the playlist" autocomplete="off">' : '') + '<button type="button" class="mbu-ov-x ply-x" aria-label="Close" data-tip="Close">✕</button></div></div>' + plyRows(true),
         ({ k }) => { const i = +String(k).slice(1); if (i >= 0 && i < ply.q.length && i !== ply.i) { LOG.info('player: picked from the playlist', i + 1); plyGo(i, ply.pref); } }, 'player');
     plyListPaint();
     document.querySelector('#eh-ply-menu [aria-current]')?.scrollIntoView({ block: 'nearest' });
@@ -13431,6 +13432,8 @@ html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
 .ply-menu .it:hover,.ply-menu .it:focus-visible,.ply-menu .it[aria-current]{background:color-mix(in srgb,currentColor 10%,transparent);outline:0}
 .ply-menu .it svg,.ply-menu .it img{width:16px;height:16px;flex:none}
 .ply-menu:has(.qi){width:min(440px,calc(100vw - 16px));max-height:min(60vh,520px)}
+.ply-menu .hd .ply-x{display:none;flex:none;margin-left:auto;width:32px;height:32px;font-size:17px}
+@media(max-width:600px){#eh-ply-menu:has(.ply-list-head){inset:0!important;width:auto!important;max-width:none;max-height:none!important;height:100%;border-radius:0;background:color-mix(in srgb,var(--surface,#fff) 92%,transparent)}#eh-ply-menu:has(.ply-list-head) .ply-x{display:inline-flex}#eh-ply-menu:has(.ply-list-head) .hd .qf{flex:1 1 auto;width:auto}}
 .ply-top{position:sticky;top:-5px;z-index:1;margin:-5px -5px 0;padding:5px 5px 0;background:color-mix(in srgb,var(--surface,#fff) 92%,transparent);backdrop-filter:blur(10px)}
 .ply-rhw{display:flex;align-items:center;gap:4px;margin-bottom:2px;border-bottom:1px solid var(--line,#ddd)}
 .ply-ra{display:flex;align-items:center;gap:2px;flex:none;padding-right:6px}
