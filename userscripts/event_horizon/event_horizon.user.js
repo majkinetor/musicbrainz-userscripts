@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.004002
+// @version      2026.11.20.004003
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12721,8 +12721,15 @@ function plyMedia(t) {
             artwork: t.front && t.rel ? [{ src: `https://coverartarchive.org/release/${t.rel}/front-250`, sizes: '250x250' }, { src: `https://coverartarchive.org/release/${t.rel}/front-500`, sizes: '500x500' }] : [] });
         ms.playbackState = 'playing';
     } catch (e) {}
-    if (plyMedia.set) return; plyMedia.set = true;
+    // the widget's iframe plays too and can take over the lock screen's session, which then shows only its own
+    // pause: the handlers go on again with every track, and the silent loop restarts so this page plays last
+    if (plyWakeEl) { plyWakeEl.pause(); plyWakeEl.play().catch(() => {}); }
+    try { if (t.len) ms.setPositionState({ duration: t.len / 1000, position: Math.min(t.len, t.played || 0) / 1000, playbackRate: 1 }); } catch (e) {}
     const on = (k, f) => { try { ms.setActionHandler(k, f); } catch (e) {} };
+    const by = d => { const c = ply.q[ply.i]; if (c && c.len) plySeek(Math.max(0, Math.min(c.len - 1000, (c.played || 0) + d))); };
+    on('seekbackward', ev => by(-1000 * ((ev && ev.seekOffset) || 10)));
+    on('seekforward', ev => by(1000 * ((ev && ev.seekOffset) || 10)));
+    on('seekto', ev => { const c = ply.q[ply.i]; if (c && c.len && ev && ev.seekTime != null) plySeek(Math.max(0, Math.min(c.len - 1000, ev.seekTime * 1000))); });
     on('play', () => { plyWake(true); plyCmd(true); });
     on('pause', () => plyCmd(false));
     on('nexttrack', () => plyStep(1));
@@ -13090,7 +13097,6 @@ function plyCollPick(btn, type) {
     setTimeout(() => { if (m.isConnected) document.addEventListener('pointerdown', off, true); });
     document.addEventListener('keydown', esck, true);
     m.addEventListener('click', ev => {
-        if (ev.target.closest('.ply-x')) { shut(); btn.focus({ preventScroll: true }); return; }
         const b = ev.target.closest('button'); if (!b || b.disabled) return;
         if (b.dataset.cc) collectionChange(key, b.dataset.cc);
         else if (b.dataset.cd) {
@@ -13219,6 +13225,7 @@ function plyMenu(btn, html, pick, align) {
     setTimeout(() => { if (m.isConnected) { document.addEventListener('pointerdown', off, true); addEventListener('blur', blur); } });
     document.addEventListener('keydown', key, true);
     m.addEventListener('click', ev => {
+        if (ev.target.closest('.ply-x')) { shut(); btn.focus({ preventScroll: true }); return; }
         const b = ev.target.closest('[data-k],[data-m],a'); if (!b) return;
         if (!(kind === 'list' && b.classList.contains('qi'))) shut();
         if (b.dataset.k) pick({ k: b.dataset.k }); else if (b.dataset.m) pick({ m: b.dataset.m });
