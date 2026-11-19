@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.235001
+// @version      2026.11.20.000001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3131,7 +3131,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .kicker .srch{margin-left:10px}
 .kicker .srch>.ab,.kicker .ab.eh-home,.kicker .ab[data-ehsec],.kicker .ab[data-star]{background:none!important;border-color:transparent;filter:none!important}.kicker .srch>.ab,.kicker .ab[data-ehsec],.kicker .ab[data-star]{color:var(--chip-text)!important}
 .kicker .ab[data-star]{cursor:pointer}
-.eh-collections{position:relative;display:inline-flex;min-width:0}.eh-collections>button{font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}.eh-collections>button:hover{color:var(--accent)}.eh-collections>button::after{content:'▾';margin-left:5px;font-size:10px}.eh-collections .pop{letter-spacing:normal;text-transform:none;font-weight:400;font-size:13px;max-width:min(380px,calc(100vw - 32px));max-height:65vh;overflow:auto;white-space:normal}.eh-collections .row{width:100%;text-align:left;border:0;background:none;color:var(--text);font:inherit;cursor:pointer}.eh-collections .row:hover{background:var(--chip)}.eh-collections .row[aria-pressed=true]{color:var(--accent)}.eh-collections .row:disabled{opacity:.5;cursor:wait}.eh-collections .h{padding:8px 12px}.eh-collections .row svg{flex:none;width:14px;height:14px}.eh-collections .row[aria-pressed=false] svg,.eh-collections .coll-ft .row{color:var(--muted)}.eh-collections .coll-ft{border-top:1px solid var(--border);margin-top:4px;padding-top:4px}.eh-collections .coll-gh a{display:inline-flex;align-items:center;gap:6px}.eh-collections .coll-gh svg{width:13px;height:13px}.eh-collections>button .coll-i{display:inline-flex;vertical-align:-1px;margin-left:6px;color:var(--muted)}.eh-collections>button .coll-i svg{width:12px;height:12px}.eh-collections>button.in .coll-i{color:var(--accent)}
+.eh-collections{position:relative;display:inline-flex;min-width:0}.eh-collections>button{font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}.eh-collections>button:hover{color:var(--accent)}.eh-collections>button::after{content:'▾';margin-left:5px;font-size:10px}.eh-collections .pop{letter-spacing:normal;text-transform:none;font-weight:400;font-size:13px;max-width:min(380px,calc(100vw - 32px));max-height:65vh;overflow:auto;white-space:normal}.eh-collections .row{width:100%;text-align:left;border:0;background:none;color:var(--text);font:inherit;cursor:pointer}.eh-collections .row:hover{background:var(--chip)}.eh-collections .row[aria-pressed=true]{color:var(--accent)}.eh-collections .row:disabled{opacity:.5;cursor:wait}.eh-collections .h{padding:8px 12px}.eh-collections .row svg{flex:none;width:14px;height:14px}.eh-collections .row[aria-pressed=false] svg,.eh-collections .coll-ft .row{color:var(--muted)}.eh-collections .coll-ft{border-top:1px solid var(--border);margin-top:4px;padding-top:4px}.eh-collections .coll-gh a{display:inline-flex;align-items:center;gap:6px}.eh-collections .coll-gh svg{width:13px;height:13px}.eh-collections>button .coll-i{display:inline-flex;vertical-align:-1px;margin-left:6px;color:var(--muted)}.eh-collections>button .coll-i svg{width:12px;height:12px}.eh-collections>button.in .coll-i{color:var(--accent)}.eh-collections>button .coll-i{position:relative}.eh-collections>button .coll-i .coll-n{top:-8px;right:-10px}
 
 .kicker .ab[data-star]:hover{border-color:var(--accent)}
 .kicker .acts > * + .ab[data-star]{margin-left:10px}
@@ -11230,6 +11230,9 @@ function collectionParse(doc, key) {
     return { at: Date.now(), rows };
 }
 // A row's label is one translated sentence ("Add to X"): the name is the part the sentences of one kind don't share.
+// the collections an entity is in, by name, for a count badge and its tooltip
+function collectionsIn(x) { const rows = (x && x.rows) || [], nm = collectionNames(rows); return rows.filter(r => r.id && r.on).map(r => nm.get(r.label) || r.label); }
+const collBadge = n => n ? '<span class="coll-n">' + (n > 99 ? '99+' : n) + '</span>' : '';
 function collectionNames(rows) {
     const out = new Map(), en = /^(?:Add to|Remove from) (.+)$/;
     const strip = ls => {
@@ -11273,8 +11276,12 @@ function collectionPaint(key) {
         + '<button type="button" class="row opt" data-collrefresh="' + key + '"' + (x.loading || x.busy ? ' disabled' : '') + '>' + SVG(IRF) + '<span>Refresh</span></button></div>';
     popFit(p);
     // the trigger's small icon: accent when the entity is in one of the collections
-    const t = $('[data-pop="collections"]'), n = rows.filter(r => r.id && r.on).length;
-    if (t && x.rows) { t.classList.toggle('in', n > 0); t.dataset.tip = t.dataset.tip.replace(/^[^\n]*/, (t.dataset.kick || '') + (n ? ' · in ' + n + (n === 1 ? ' collection' : ' collections') : '')); }
+    const t = $('[data-pop="collections"]'), ins = collectionsIn(x), n = ins.length;
+    if (t && x.rows) {
+        t.classList.toggle('in', n > 0);
+        const ci = t.querySelector('.coll-i'); if (ci) ci.innerHTML = SVG(MK_COL) + collBadge(n);
+        t.dataset.tip = (t.dataset.kick || '') + (n ? '\nIn ' + n + (n === 1 ? ' collection: ' : ' collections: ') + ins.join(', ') : '') + '\nClick: add to or remove from your collections';
+    }
 }
 async function collectionLoad(key, force = false) {
     let x = COLLECTIONS.get(key);
@@ -13015,9 +13022,9 @@ function plyHeadBtns(t) {
     for (const type of ['rel', 'rec']) {
         const key = plyCollKey(t, type); if (!key) continue;
         const what = type === 'rel' ? 'release' : 'recording', d = plyCollDef(type), x = COLLECTIONS.get(key);
-        const row = d && x && x.rows && x.rows.find(r => r.id === d.id), on = !!(row && row.on);
-        const tip = 'Collect ' + what + (d ? ' · "' + d.label + '"\nClick: ' + (on ? 'remove' : 'add') + ' this ' + what : '\nClick: choose a collection') + '\nRight-click: your ' + what + ' collections';
-        h += `<button type="button" class="ply-pa${on ? ' on' : ''}${x && (x.busy || x.loading) ? ' busy' : ''}" data-pa="${type}" aria-pressed="${on}" aria-label="Collect ${what}" data-tip="${esc(tip)}">${SVG(PLY_I['c' + type])}</button>`;
+        const row = d && x && x.rows && x.rows.find(r => r.id === d.id), on = !!(row && row.on), ins = collectionsIn(x);
+        const tip = 'Collect ' + what + (d ? ' · "' + d.label + '"' : '') + (ins.length ? '\nIn ' + ins.length + (ins.length === 1 ? ' collection: ' : ' collections: ') + ins.join(', ') : '') + (d ? '\nClick: ' + (on ? 'remove' : 'add') + ' this ' + what : '\nClick: choose a collection') + '\nRight-click: your ' + what + ' collections';
+        h += `<button type="button" class="ply-pa${on ? ' on' : ''}${x && (x.busy || x.loading) ? ' busy' : ''}" data-pa="${type}" aria-pressed="${on}" aria-label="Collect ${what}" data-tip="${esc(tip)}">${SVG(PLY_I['c' + type])}${collBadge(ins.length)}</button>`;
     }
     if (t.rid) {
         const tok = lbToken(), tip = !tok ? 'Love this track on ListenBrainz\nAdd your ListenBrainz token in the settings to use it' : t.loved ? 'Loved on ListenBrainz · click to unlove' : 'Love this track on ListenBrainz';
@@ -13033,7 +13040,7 @@ function plyHeadPaint() {
 function plyHeadLoad(t) {
     if (!t) return;
     if (lbToken() && t.rid && t.loved === undefined) lbLoved(t);
-    for (const type of ['rel', 'rec']) { const key = plyCollKey(t, type); if (key && plyCollDef(type)) collectionLoad(key); }
+    for (const type of ['rel', 'rec']) { const key = plyCollKey(t, type); if (key) collectionLoad(key); }
 }
 function plyCollPaint(key) {
     const t = ply.q[ply.i];
@@ -13286,6 +13293,7 @@ const PLY_CSS = `
 .ply-pa{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:30px;height:30px;padding:0;border:0;border-radius:7px;background:none;color:var(--muted,#777);cursor:pointer}
 .ply-pa:hover:not([aria-disabled]){background:color-mix(in srgb,currentColor 10%,transparent);color:var(--text,#222)}
 .ply-pa svg{width:18px;height:18px;overflow:visible}
+.coll-n{position:absolute;top:0;right:0;min-width:15px;height:15px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:var(--accent,#ba478f);color:#fff;font:700 10px/15px system-ui,sans-serif;letter-spacing:0;text-align:center;pointer-events:none}
 .ply-pa.on:not(.love){color:var(--accent,#ba478f)}
 .ply-pa.on:not(.love):not(.dft)::after{content:"";position:absolute;left:8px;right:8px;bottom:1px;height:2px;border-radius:2px;background:currentColor}
 .ply-pa.love.on{color:var(--mbu-bad,#c2413b)}.ply-pa.love.on svg{fill:currentColor}
