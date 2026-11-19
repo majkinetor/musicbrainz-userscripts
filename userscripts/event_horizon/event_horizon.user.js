@@ -1,7 +1,11 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
+<<<<<<< HEAD
 // @version      2026.11.19.190000
+=======
+// @version      2026.11.19.180002
+>>>>>>> bd0fc5728 (Playlist release headings open the release in a new tab)
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13110,7 +13114,7 @@ function plyGroupHead(x, group, n) {
     if (group === 'recordings' || !x.rel) return `<div class="ply-group">${esc(group === 'recordings' ? 'Recordings' : x.relTitle || 'Release')}</div>`;
     if (n < 0) n = ply.q.length - ply.q.indexOf(x);
     const src = PLY_CV.has(x.rel) ? PLY_CV.get(x.rel) : x.front ? `https://coverartarchive.org/release/${x.rel}/front-250` : '';
-    return `<div class="ply-group cv"><img${src ? ` src="${esc(src)}"` : ''} data-plyrel="${x.rel}" alt="" loading="lazy"><span>${esc(x.relTitle || 'Release')}<small>${x.relYear ? esc(x.relYear) + ' · ' : ''}${n} track${n === 1 ? '' : 's'}</small></span></div>`;
+    return `<a class="ply-group cv" href="${MB}/release/${x.rel}" target="_blank" rel="noopener" data-tip="Open the release in a new tab"><img${src ? ` src="${esc(src)}"` : ''} data-plyrel="${x.rel}" alt="" loading="lazy"><span>${esc(x.relTitle || 'Release')}<small>${x.relYear ? esc(x.relYear) + ' · ' : ''}${n} track${n === 1 ? '' : 's'}</small></span></a>`;
 }
 function plyGroupCovers(root) { root?.querySelectorAll('.ply-group img:not([data-w])').forEach(im => { im.dataset.w = 1; plyCoverWire(im); }); }
 function plyRows(menu) {
@@ -13352,6 +13356,8 @@ html.eh-ply-win #eh-ply:not(.ply-novid) .ply-dock{position:static;order:1;flex:n
 html.eh-ply-win .ply-wl{order:2;flex:1;min-height:0;overflow:hidden auto;padding:4px;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
 .ply-wl .qi{display:flex;align-items:center;gap:9px;width:100%;box-sizing:border-box;padding:6px 9px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
 .ply-group{padding:8px 9px 4px;color:var(--muted,#777);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.ply-group.cv{text-decoration:none}
+.ply-group.cv:hover span{color:var(--text,#ddd);text-decoration:underline}
 .ply-group.cv{display:flex;align-items:center;gap:10px;padding:12px 9px 6px}
 .ply-group.cv img{width:40px;height:40px;object-fit:cover;border-radius:3px;flex:none}
 .ply-group.cv span{display:flex;flex-direction:column;gap:2px;min-width:0}
