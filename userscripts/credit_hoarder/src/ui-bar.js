@@ -2673,7 +2673,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         .discogs-bar.is-importing .discogs-bar-row1,
         .discogs-bar.is-pinned .discogs-bar-row1 {
             position: fixed;
-            top: 0; left: 0; right: 0;
+            /* under Event Horizon's own pinned bar (z 9990 at top 0), which publishes its height here; 0 elsewhere */
+            top: var(--eh-pin-h, 0px); left: 0; right: 0;
             z-index: 9000;
             background: var(--mbu-bg-raised);
             border-bottom: 1px solid var(--mbu-warn);
@@ -3296,7 +3297,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         // visible panel has laid out before we measure).
         requestAnimationFrame(() => {
             const target = (scrollSel && logBody.querySelector(scrollSel)) || logPanel;
-            const headerH = bar.classList.contains('is-pinned') ? row1.getBoundingClientRect().height + 6 : 0;
+            const headerH = bar.classList.contains('is-pinned') ? row1.getBoundingClientRect().bottom + 6 : 0;
             const top = target.getBoundingClientRect().top + window.scrollY - headerH - 10;
             window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
         });

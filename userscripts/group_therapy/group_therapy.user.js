@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.18.193622
+// @version      2026.11.19.120000
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -3048,6 +3048,21 @@
   mbuTipStart();
   // </ST-UI>
 
+  // A fixed full-screen window overlay. On a page where an ancestor of <body> or <body> itself makes
+  // position:fixed measure from the page (a transform, filter or contain from a theme), inset:0 spans the whole
+  // page and the centred window lands far below the screen. Mount on <html>, then, if it still isn't the
+  // viewport, pull it back onto it.
+  function mountOverlay(ov) {
+    (document.documentElement || document.body).appendChild(ov);
+    try {
+      const r = ov.getBoundingClientRect();
+      if (Math.abs(r.top) > 1 || Math.abs(r.left) > 1 || Math.abs(r.height - window.innerHeight) > 1 || Math.abs(r.width - document.documentElement.clientWidth) > 1) {
+        ov.style.inset = 'auto'; ov.style.top = (-r.top) + 'px'; ov.style.left = (-r.left) + 'px';
+        ov.style.width = document.documentElement.clientWidth + 'px'; ov.style.height = window.innerHeight + 'px';
+        LOG().warn('overlay was ' + Math.round(r.width) + 'x' + Math.round(r.height) + ' at ' + Math.round(r.left) + ',' + Math.round(r.top) + ', not the viewport; pinned to it');
+      }
+    } catch (e) {}
+  }
   function injectStyle() {
     const s = el('style');
     s.id = 'gt-css';
@@ -4319,7 +4334,7 @@
       closeDatePicker();
     };
 
-    panel.append(hdr, ctrl, body, foot); dpEl.appendChild(panel); document.body.appendChild(dpEl);
+    panel.append(hdr, ctrl, body, foot); dpEl.appendChild(panel); mountOverlay(dpEl);
     dpEl.addEventListener('mousedown', e => { if (e.target === dpEl) closeDatePicker(); });
     document.addEventListener('keydown', onDpKey, true);
     renderRoles(); renderBody();
@@ -4448,7 +4463,7 @@
     const x = el('button', 'gt-cons-x', '✕'); x.type = 'button'; x.onclick = closeConsolidate; hdr.appendChild(x);
     const body = el('div', 'gt-cons-body'), foot = el('div', 'gt-cons-foot');
     body.appendChild(el('div', 'gt-pop-note', 'Loading release group…'));
-    panel.append(hdr, body, foot); consEl.appendChild(panel); document.body.appendChild(consEl);
+    panel.append(hdr, body, foot); consEl.appendChild(panel); mountOverlay(consEl);
     document.addEventListener('keydown', onConsKey, true);
     consEl.addEventListener('mousedown', e => { if (e.target === consEl) closeConsolidate(); });
     const note = m => { const n = body.querySelector('.gt-pop-note'); if (n) n.textContent = m; };
@@ -4993,7 +5008,7 @@
     const x = el('button', 'gt-cons-x', '✕'); x.type = 'button'; x.onclick = closeWorkMatch; hdr.appendChild(x);
     const body = el('div', 'gt-cons-body'), foot = el('div', 'gt-cons-foot');
     body.appendChild(el('div', 'gt-pop-note', 'Reading recordings…'));
-    panel.append(hdr, body, foot); wmEl.appendChild(panel); document.body.appendChild(wmEl);
+    panel.append(hdr, body, foot); wmEl.appendChild(panel); mountOverlay(wmEl);
     document.addEventListener('keydown', onWmKey, true);
     wmEl.addEventListener('mousedown', e => { if (e.target === wmEl) closeWorkMatch(); });
     const note = m => { const n = body.querySelector('.gt-pop-note'); if (n) n.textContent = m; };
