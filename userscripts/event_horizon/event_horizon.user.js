@@ -12728,7 +12728,7 @@ const msObj = o => typeof cloneInto === 'function' ? cloneInto(o, PW) : o;
 let plyWakeEl = null, plyWakeIv = 0;
 function plyWake(on) {
     if (!on) { clearInterval(plyWakeIv); if (plyWakeEl) { plyWakeEl.pause(); plyWakeEl = null; } return; }
-    if (plyWakeEl) { if (plyWakeEl.paused) plyWakeEl.play().catch(() => {}); return; }
+    if (plyWakeEl) { if (plyWakeEl.paused) plyWakeEl.play().catch(e => LOG.warn('player: keep-awake resume refused:', e.message)); return; }
     const n = 8000 * 6, b = new Uint8Array(44 + n), v = new DataView(b.buffer), w = (o, t) => { for (let i = 0; i < t.length; i++) b[o + i] = t.charCodeAt(i); };
     w(0, 'RIFF'); v.setUint32(4, 36 + n, true); w(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
     v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); w(36, 'data'); v.setUint32(40, n, true);
@@ -12736,20 +12736,22 @@ function plyWake(on) {
     const a = plyWakeEl = new PW.Audio(URL.createObjectURL(new Blob([b], { type: 'audio/wav' })));
     a.loop = true; a.volume = 0.01; a.setAttribute('aria-hidden', 'true');
     plyWakeIv = setInterval(() => { const c = ply.q[ply.i]; if (c && !ply.paused) plyMedia(c, true); }, 4000);
-    a.play().then(() => LOG.debug('player: keep-awake on'), e => LOG.debug('player: keep-awake refused', e.message));
+    a.play().then(() => LOG.info('player: keep-awake audio playing'), e => LOG.warn('player: keep-awake audio refused:', e.message));
 }
 function plyMedia(t, again) {
-    const ms = msPage(); if (!ms || !t) return;
+    const ms = msPage(); if (!ms || !t) { if (!again) LOG.warn('player: Media Session unavailable'); return; }
     try {
         ms.metadata = new (PW.MediaMetadata || MediaMetadata)(msObj({ title: t.title || '', artist: t.artist || '', album: t.relTitle || '',
             artwork: t.front && t.rel ? [{ src: `https://coverartarchive.org/release/${t.rel}/front-250`, sizes: '250x250' }, { src: `https://coverartarchive.org/release/${t.rel}/front-500`, sizes: '500x500' }] : [] }));
         ms.playbackState = 'playing';
-    } catch (e) {}
+        if (!again) LOG.info('player: Media Session metadata set; page context:', PW === window ? 'window' : 'unsafeWindow', 'exportFunction:', typeof exportFunction, 'cloneInto:', typeof cloneInto);
+    } catch (e) { if (!again) LOG.warn('player: Media Session metadata failed:', e.message); }
     // the widget's iframe plays too and can take over the lock screen's session, which then shows only its own
     // pause: the handlers go on again with every track, and the silent loop restarts so this page plays last
-    if (plyWakeEl && !again) { plyWakeEl.pause(); plyWakeEl.play().catch(() => {}); }
-    try { if (t.len) ms.setPositionState(msObj({ duration: t.len / 1000, position: Math.min(t.len, t.played || 0) / 1000, playbackRate: 1 })); } catch (e) {}
-    const on = (k, f) => { try { ms.setActionHandler(k, msFn(ev => f(ev && { seekOffset: ev.seekOffset, seekTime: ev.seekTime }))); } catch (e) {} };
+    if (plyWakeEl && !again) { plyWakeEl.pause(); plyWakeEl.play().catch(e => LOG.warn('player: keep-awake restart refused:', e.message)); }
+    try { if (t.len) ms.setPositionState(msObj({ duration: t.len / 1000, position: Math.min(t.len, t.played || 0) / 1000, playbackRate: 1 })); } catch (e) { if (!again) LOG.warn('player: Media Session position failed:', e.message); }
+    const supported = [], failed = [];
+    const on = (k, f) => { try { ms.setActionHandler(k, msFn(ev => { LOG.info('player: system media action', k, ev && ev.seekOffset != null ? 'offset ' + ev.seekOffset : '', ev && ev.seekTime != null ? 'time ' + ev.seekTime : ''); f(ev && { seekOffset: ev.seekOffset, seekTime: ev.seekTime }); })); supported.push(k); } catch (e) { failed.push(k + ': ' + e.message); } };
     const by = d => { const c = ply.q[ply.i]; if (c && c.len) plySeek(Math.max(0, Math.min(c.len - 1000, (c.played || 0) + d))); };
     on('seekbackward', ev => by(-1000 * ((ev && ev.seekOffset) || 10)));
     on('seekforward', ev => by(1000 * ((ev && ev.seekOffset) || 10)));
@@ -12759,7 +12761,13 @@ function plyMedia(t, again) {
     on('nexttrack', () => plyStep(1));
     on('previoustrack', () => plyStep(-1));
     on('stop', () => plyClose());
+    if (!again) { LOG.info('player: Media Session handlers registered:', supported.join(', ') || 'none'); if (failed.length) LOG.warn('player: Media Session handlers failed:', failed.join('; ')); }
 }
+document.addEventListener('visibilitychange', () => {
+    if (ply.i < 0) return;
+    try { const ms = msPage(); LOG.info('player: page', document.visibilityState, 'source:', ply.kind, 'player:', ply.paused ? 'paused' : 'playing', 'keep-awake:', !plyWakeEl ? 'absent' : plyWakeEl.paused ? 'paused' : 'playing', 'session:', ms ? ms.playbackState : 'unavailable', 'metadata:', ms && ms.metadata ? ms.metadata.title : 'none'); }
+    catch (e) { LOG.warn('player: Media Session status failed:', e.message); }
+});
 // the track is over: the next one, or the player stops at the last
 function plyEnded(why) {
     const t = ply.q[ply.i]; if (!t || t.done) return;
