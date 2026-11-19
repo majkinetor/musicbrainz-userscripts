@@ -5210,8 +5210,11 @@ function ehSharePress(b) {
     const go = () => { LOG.info('Share link: playing the collection'); b.click(); };
     if (navigator.userActivation?.hasBeenActive !== false) { go(); return; }
     LOG.info('Share link: waiting for a click or key before playing');
-    const on = e => { removeEventListener('pointerdown', on, true); removeEventListener('keydown', on, true); if (e.target !== b && !b.contains(e.target)) go(); };
-    toast(b.nodeType ? 'Click anywhere to play the collection' : 'Click anywhere to play');
+    const msg = document.createElement('div'); msg.className = 'eh-share-msg'; msg.setAttribute('role', 'status');
+    msg.textContent = b.nodeType ? 'Click anywhere to play the collection' : 'Click anywhere to play the shared playlist';
+    msg.style.cssText = 'position:fixed;left:50%;bottom:32px;transform:translateX(-50%);z-index:2147483000;padding:12px 20px;border-radius:8px;background:var(--mbu-bg,#222);color:var(--mbu-text,#eee);border:1px solid var(--mbu-border,#555);font-size:15px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.35)';
+    document.body.append(msg);
+    const on = e => { removeEventListener('pointerdown', on, true); removeEventListener('keydown', on, true); msg.remove(); if (e.target !== b && !b.contains(e.target)) go(); };
     addEventListener('pointerdown', on, true); addEventListener('keydown', on, true);
 }
 setTimeout(ehSharePlay, 0);
@@ -14001,7 +14004,7 @@ function onClick(ev) {
 const PAGE = new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument|place|series|event|collection)/(' + MBID.source + ')/?$', 'i');
 function navTo(href) {
     const u = new URL(href, location.href);
-    if (u.origin === location.origin && u.pathname === '/' && !u.search) return 'home';
+    if (u.origin === location.origin && u.pathname === '/' && (!u.search || /^[?]eh-list=[^&]*$/.test(u.search))) return 'home';
     // an editor's collections → "colls/<name as in the path>"
     const cl = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/collections\/?$/);
     if (cl) return 'colls/' + cl[1];
