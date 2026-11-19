@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.090004
+// @version      2026.11.20.090005
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13705,7 +13705,7 @@ html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
 .ply-menu{position:fixed;z-index:9996;min-width:230px;max-height:calc(100vh - 16px);overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;box-sizing:border-box;padding:5px;background:color-mix(in srgb,var(--surface,#fff) 55%,transparent);backdrop-filter:blur(10px);color:var(--text,#222);border:1px solid var(--line,#ddd);border-radius:9px;box-shadow:0 6px 20px rgba(0,0,0,.12);font:13px/1.3 system-ui,sans-serif}
 .ply-menu .hd{display:flex;align-items:center;gap:7px;padding:6px 9px 4px;color:var(--muted,#777);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
 .ply-menu .hd .qf{margin-left:auto;width:150px;min-width:0;padding:3px 7px;border:1px solid var(--line,#ddd);border-radius:5px;background:transparent;color:var(--text,#222);font:12px/1.3 system-ui,sans-serif;text-transform:none;letter-spacing:0;outline:0}
-.ply-menu .hd .qfb{flex:none;margin-left:auto;display:inline-grid;place-items:center;width:30px;height:30px;padding:0;border:0;border-radius:6px;background:none;color:var(--muted,#777);cursor:pointer}.ply-menu .hd .qfb:hover{color:var(--accent,#ba478f)}.ply-menu .hd .qfb svg{width:17px;height:17px}.ply-menu .hd:not(.qo) .qf{display:none}.ply-menu .hd.qo .qfb{display:none}.ply-menu .hd .qfb+.qf{margin-left:auto}.ply-menu .hd .qfb~.ply-x{margin-left:4px}
+.ply-menu .hd .qfb{flex:none;margin-left:auto;display:inline-grid;place-items:center;width:30px;height:30px;padding:0;border:0;border-radius:6px;background:none;color:var(--muted,#777);cursor:pointer}.ply-menu .hd .qfb:hover{color:var(--accent,#ba478f)}.ply-menu .hd .qfb svg{width:17px;height:17px}.ply-menu .hd:not(.qo) .qf{display:none}.ply-menu .hd.qo .qfb:not(.ply-share){display:none}.ply-menu .hd .qfb.ply-share{margin-left:4px}.ply-menu .hd .qfb+.qf{margin-left:auto}.ply-menu .hd .qfb~.ply-x{margin-left:4px}
 .ply-menu .ply-mvol{display:none;align-items:center;gap:8px;padding:4px 9px}.ply-menu .ply-mv{flex:1;min-width:0;accent-color:var(--accent,#ba478f)}@media(max-width:600px){.ply-menu .ply-mvol{display:flex}}
 .ply-menu .hd .qf:focus{border-color:var(--accent,#ba478f)}
 .ply-menu .qi[hidden]{display:none}
