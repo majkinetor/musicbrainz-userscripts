@@ -13,4 +13,7 @@ test('album link fallback requires position, title, length and an unambiguous ma
   check(!albumFuzzyAt([song], track, 0, [track, { ...track }]), 'duplicate MusicBrainz candidates are rejected');
   check(!albumFuzzyAt([{ title: 'Nounignon Ma Klon Other', len: 353 }], track, 0, [track]), 'two changed words are rejected');
   check(!albumFuzzyAt([{ title: 'Live Forever', len: 353 }], { title: 'Love Forever', dur: '5:54' }, 0, [{ title: 'Love Forever' }]), 'short ambiguous titles are rejected');
+  const mb = [{ title: 'End of a Love Affair' }, { title: 'Talk Some Yak-Ee-Dak' }];
+  check(albumFuzzyAt([{ title: 'Ens Of A Love Affair', len: 300 }, mb[1]], { ...mb[0], dur: '5:00' }, 0, mb), 'End/Ens (3-letter word) matches');
+  check(albumFuzzyAt([mb[0], { title: 'Yalk Some Yak-+Ee-Dak', len: 200 }], { ...mb[1], dur: '3:20' }, 1, mb), 'Talk/Yalk (first letter) matches');
 });
