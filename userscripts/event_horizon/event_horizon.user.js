@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.231500
+// @version      2026.11.19.233000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13645,7 +13645,7 @@ function onClick(ev) {
     }
     const sub = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && data && data.g && (data.kind === 'collection' || data.kind === 'colsubs') && ev.target.closest('#app a[href*="/account/subscriptions/collection/"]');
     if (sub) { ev.preventDefault(); colSubToggle(sub); return; }
-    const nav = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && ev.target.closest('a[href]');
+    const nav = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && !ev.target.closest('a[href] button') && ev.target.closest('a[href]');
     const navId = nav && !nav.target && inTab(nav.href);
     if (navId) { ev.preventDefault(); ehPush(nav.href); show(navId); return; }
     // a click anywhere on a section's header row, outside its tools, folds the section
@@ -13659,7 +13659,7 @@ function onClick(ev) {
     if (!b) return;
     const d = b.dataset;
     let keep;
-    if (d.colplay && data && data.kind === 'collection') { plyCollection(data.id, data.g.ent, d.colplay === 'all' ? '' : d.colplay, S.playerClick === 'append'); return; }
+    if (d.colplay && data && data.kind === 'collection') { ev.preventDefault(); plyCollection(data.id, data.g.ent, d.colplay === 'all' ? '' : d.colplay, S.playerClick === 'append'); return; }
     if (d.play || d.playall) { if (S.playerClick === 'append') plyAddRelease(data.rel, d.play); else plyStart(data.rel, d.play); return; }
     if (d.playrec) { plyRec(data.g, null, S.playerClick === 'append'); return; }
     if ('srch' in d) { const fm = b.form; if (fm.classList.toggle('open')) fm.query.focus(); return; }
