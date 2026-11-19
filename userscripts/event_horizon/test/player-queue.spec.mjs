@@ -15,7 +15,7 @@ test('queues releases and recordings and restores the last queue', { tag: '@sand
   expect(state.i).toBe(0);
   expect(state.q.map(t => t.title)).toEqual(['First1', 'First2', 'Second2', 'Single']);
   await page.locator('.ply-ctl [data-ply="list"]').click();
-  await expect(page.locator('#eh-ply-menu .ply-group')).toHaveText(['First', 'Second', 'Recordings']);
+  await expect(page.locator('#eh-ply-menu .ply-group')).toContainText(['First', 'Second', 'Recordings']);
   await expect(page.locator('#eh-ply-menu .qi .qn')).toHaveText(['1', '2', '3', '4']);
   await page.locator('#eh-ply-menu .qi[data-k="q2"]').click();
   await expect(page.locator('.ply-ctl .ply-n').first()).toHaveText('3');
@@ -49,4 +49,37 @@ test('a track replaces or appends only itself, while the release queues all trac
   expect((await page.evaluate(() => window.__ehPlayerTest.state())).q.map(t => t.title)).toEqual(['Track 2', 'Track 1']);
   await page.evaluate(r => window.__ehPlayerTest.startRelease(r), release);
   expect((await page.evaluate(() => window.__ehPlayerTest.state())).q.map(t => t.title)).toEqual(['Track 1', 'Track 2', 'Track 3']);
+});
+
+test('a row or a release heading takes its tracks out of the playlist', { tag: '@sandbox' }, async ({ page, context, inject }) => {
+  await context.route('https://www.youtube-nocookie.com/embed/**', route => route.fulfill({ contentType: 'text/html', body: '<p>player fixture</p>' }));
+  await page.goto('https://test.musicbrainz.org/');
+  await inject('event_horizon', { waitFor: '__ehPlayerTest' });
+  const src = [{ key: 'youtube', name: 'YouTube', urls: [{ url: 'https://www.youtube.com/watch?v=abcdefghijk' }] }];
+  const release = (id, title) => ({ id, title, ac: [{ name: 'Artist' }], media: [{ tracks: [1, 2, 3].map(n => ({ n, title: title + n, rid: id + n, lenMs: 100000, links: src })) }] });
+  await page.evaluate(r => window.__ehPlayerTest.startRelease(r), release('one', 'First'));
+  await page.evaluate(r => window.__ehPlayerTest.addRelease(r), release('two', 'Second'));
+  const titles = async () => (await page.evaluate(() => window.__ehPlayerTest.state())).q.map(t => t.title);
+  await page.locator('.ply-ctl [data-ply="list"]').click();
+  const x = page.locator('#eh-ply-menu .qi[data-k="q1"] .qx');
+  await expect(x).toBeHidden();
+  await page.locator('#eh-ply-menu .qi[data-k="q1"]').hover();
+  await expect(x).toBeVisible();
+  await x.click();
+  expect(await titles()).toEqual(['First1', 'First3', 'Second1', 'Second2', 'Second3']);
+  expect((await page.evaluate(() => window.__ehPlayerTest.state())).i).toBe(0);
+  await expect(page.locator('#eh-ply-menu .qi')).toHaveCount(5);
+  // the release heading's ✕ removes its tracks, and the link doesn't open
+  const head = page.locator('#eh-ply-menu .ply-group').nth(1);
+  await head.hover();
+  await head.locator('.qx').click();
+  expect(await titles()).toEqual(['First1', 'First3']);
+  await expect(page.locator('#eh-ply-menu .qi')).toHaveCount(2);
+  expect(context.pages()).toHaveLength(1);
+  // removing the one playing starts the next
+  await page.locator('#eh-ply-menu .qi[data-k="q0"]').hover();
+  await page.locator('#eh-ply-menu .qi[data-k="q0"] .qx').click();
+  const st = await page.evaluate(() => window.__ehPlayerTest.state());
+  expect(st.q.map(t => t.title)).toEqual(['First3']);
+  expect(st.i).toBe(0);
 });
