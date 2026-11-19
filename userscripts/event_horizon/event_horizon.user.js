@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.235504
+// @version      2026.11.19.235505
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -82,9 +82,26 @@ if (EH_EMBED && !/^\/release\/[0-9a-f-]{36}\/edit-relationships\/?$/i.test(locat
 // on any other site is left alone: nothing happens until a parent sends {ehPlyCmd}.
 if (window.top !== window && (location.hostname === 'bandcamp.com' && location.pathname.startsWith('/EmbeddedPlayer/') || location.hostname === 'widget.deezer.com')) {
     const BTN = location.hostname === 'bandcamp.com' ? '#big_play_button, #play' : '[data-testid="widget-player-play"]';
-    let armed = false, last = 0, restoring = false, restoreMute = null, restoreReady = false, vol = -1;   // vol: the page's volume, 0 to 1, put on the audio before it sounds
+    let armed = false, last = 0, restoring = false, restoreMute = null, restoreReady = false, vol = -1, media = null;   // vol: the page's volume, 0 to 1, put on the audio before it sounds
     const post = (state, a) => { if (armed) try { window.parent.postMessage({ ehPly: state, pos: a ? a.currentTime : 0, dur: a ? a.duration : 0 }, '*'); } catch (e) {} };
-    for (const k of ['play', 'pause', 'ended']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement) { if (k === 'play' && vol >= 0) ev.target.volume = vol; if (k === 'play' && restoring && !restoreReady) { if (restoreMute === null) restoreMute = ev.target.muted; ev.target.muted = true; } post(k, ev.target); } }, true);
+    const mediaSetup = () => {
+        if (!armed || !media) return;
+        try {
+            const w = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window, ms = w.navigator.mediaSession;
+            if (!ms) throw new Error('unavailable');
+            const copy = o => typeof cloneInto === 'function' ? cloneInto(o, w) : o;
+            ms.metadata = new w.MediaMetadata(copy(media));
+            const ok = [], failed = [];
+            for (const k of ['play', 'pause', 'nexttrack', 'previoustrack', 'seekbackward', 'seekforward', 'seekto']) {
+                try {
+                    const fn = ev => { try { window.parent.postMessage({ ehPlyAction: k, seekOffset: ev && ev.seekOffset, seekTime: ev && ev.seekTime }, '*'); } catch (e) {} };
+                    ms.setActionHandler(k, typeof exportFunction === 'function' ? exportFunction(fn, w) : fn); ok.push(k);
+                } catch (e) { failed.push(k + ': ' + e.message); }
+            }
+            window.parent.postMessage({ ehPlyMedia: 'widget handlers: ' + ok.join(', ') + (failed.length ? '; failed: ' + failed.join(', ') : '') }, '*');
+        } catch (e) { try { window.parent.postMessage({ ehPlyMedia: 'widget session failed: ' + e.message }, '*'); } catch (x) {} }
+    };
+    for (const k of ['play', 'pause', 'ended']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement) { if (k === 'play' && vol >= 0) ev.target.volume = vol; if (k === 'play' && restoring && !restoreReady) { if (restoreMute === null) restoreMute = ev.target.muted; ev.target.muted = true; } if (k === 'play') mediaSetup(); post(k, ev.target); } }, true);
     for (const k of ['playing', 'loadedmetadata']) document.addEventListener(k, ev => { if (ev.target instanceof HTMLMediaElement && vol >= 0 && Math.abs(ev.target.volume - vol) > 0.005) ev.target.volume = vol; }, true);
     document.addEventListener('timeupdate', ev => { if (ev.target instanceof HTMLMediaElement && Date.now() - last > 900) { last = Date.now(); post(ev.target.paused ? 'pause' : 'time', ev.target); } }, true);
     const press = want => {
@@ -98,6 +115,7 @@ if (window.top !== window && (location.hostname === 'bandcamp.com' && location.p
     window.addEventListener('message', ev => {
         if (ev.source !== window.parent || !ev.data || typeof ev.data.ehPlyCmd !== 'string') return;
         if (!armed) { armed = true; post('hello'); }
+        if (ev.data.ehPlyCmd === 'media') { media = ev.data.media; mediaSetup(); return; }
         if (ev.data.v >= 0) vol = Math.min(1, ev.data.v);
         if (ev.data.ehPlyCmd === 'vol') { const a = document.querySelector('audio'); if (a && vol >= 0) a.volume = vol; return; }
         if (ev.data.ehPlyCmd === 'seek') { const a = document.querySelector('audio'); if (a && ev.data.pos >= 0) a.currentTime = ev.data.pos; return; }
@@ -12886,6 +12904,20 @@ window.addEventListener('message', ev => {
     let m = ev.data; if (typeof m === 'string') { try { m = JSON.parse(m); } catch (e) { return; } }
     if (!m || typeof m !== 'object') return;
     const k = ply.kind;
+    if (k === 'bandcamp' || k === 'deezer') {
+        if (typeof m.ehPlyMedia === 'string') { LOG.info('player: Media Session', m.ehPlyMedia); return; }
+        if (typeof m.ehPlyAction === 'string') {
+            LOG.info('player: widget system media action', m.ehPlyAction, 'track:', t.title, 'source:', k);
+            if (m.ehPlyAction === 'play') plyCmd(true);
+            else if (m.ehPlyAction === 'pause') plyCmd(false);
+            else if (m.ehPlyAction === 'nexttrack') plyStep(1);
+            else if (m.ehPlyAction === 'previoustrack') plyStep(-1);
+            else if (t.len && m.ehPlyAction === 'seekto' && Number.isFinite(m.seekTime)) plySeek(Math.max(0, Math.min(t.len - 1000, m.seekTime * 1000)));
+            else if (t.len && (m.ehPlyAction === 'seekbackward' || m.ehPlyAction === 'seekforward')) plySeek(Math.max(0, Math.min(t.len - 1000, (t.played || 0) + (m.ehPlyAction === 'seekbackward' ? -1 : 1) * 1000 * (Number.isFinite(m.seekOffset) && m.seekOffset > 0 ? m.seekOffset : 10))));
+            return;
+        }
+        if (m.ehPly === 'hello') plyPost({ ehPlyCmd: 'media', media: { title: t.title || '', artist: t.artist || '', album: t.relTitle || '', artwork: t.front && t.rel ? [{ src: `https://coverartarchive.org/release/${t.rel}/front-250`, sizes: '250x250' }] : [] } });
+    }
     if (ply.yt) {
         const st = m.event === 'onStateChange' ? m.info : m.event === 'infoDelivery' && m.info ? m.info.playerState : undefined;
         if (st === 0) plyEnded('YouTube'); else if (st === 1 || st === 2) plyState(st === 2);
