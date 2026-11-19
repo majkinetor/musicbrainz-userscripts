@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.002001
+// @version      2026.11.20.003001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3142,7 +3142,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 #eh-pin .pes-k{display:inline-flex;gap:12px;align-items:center}#eh-pin .pes-t{display:inline-flex;gap:5px;align-items:center;white-space:nowrap}#eh-pin .pes-t svg{width:13px;height:13px;flex:none}#eh-pin .pes{display:flex;gap:6px;min-width:0;flex:0 1 auto;overflow:hidden}#eh-pin .pes-c{all:unset;box-sizing:border-box;display:inline-flex;gap:4px;max-width:280px;min-width:0;padding:1px 9px;border:1px solid var(--border);border-radius:999px;font-size:12px;line-height:18px;white-space:nowrap;cursor:pointer;color:var(--text);text-transform:none;letter-spacing:0}#eh-pin .pes-c:hover{border-color:var(--accent)}#eh-pin .pes-c i{font-style:normal;color:var(--muted);flex:none}#eh-pin .pes-c b{font-weight:600;overflow:hidden;text-overflow:ellipsis;min-width:0}#eh-pin .pes-k{margin-left:auto;flex:none;font-size:12px;color:var(--muted);white-space:nowrap;text-transform:none;letter-spacing:0}@media(max-width:700px){#eh-pin .pes,#eh-pin .pes-k{display:none}}
 #eh-pin .pident,#eh-pin .pkk{overflow:hidden}#eh-pin .pkk{display:flex;align-items:center;gap:6px;min-width:0;max-width:40%;color:var(--muted);font-size:10.5px;white-space:nowrap}#eh-pin .pkk svg{width:18px;height:18px;flex:none}#eh-pin .pkk>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 /* Reserve the release identity before fitting actions; format icons must not shrink under the menu. */
-#eh-pin .pident{min-width:min(360px,45%)}#eh-pin .pkk{flex:none}
+#eh-pin .pident{min-width:min(360px,45%)}#eh-pin .pcol{flex:none;display:inline-flex;align-items:center;gap:5px;margin-left:14px;padding:0;background:none;border:0;cursor:pointer;color:var(--muted)}#eh-pin .pcol.in{color:var(--accent)}#eh-pin .pcol:hover{color:var(--accent)}#eh-pin .pcol svg{width:20px;height:20px}#eh-pin .pcol .coll-n{position:static;display:inline-block;min-width:15px;height:15px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:var(--accent);color:#fff;font:700 10px/15px system-ui,sans-serif;text-align:center}#eh-pin .pkk{flex:none}
 #eh-pin.eh-ply{transform:none}#eh-pin.eh-ply>.kicker{min-height:42px}#eh-pin.eh-ply .pident{flex:1 1 0;min-width:0}#eh-pin.eh-ply .ply-ctl.pb~*{flex:1 1 0;min-width:0;justify-content:flex-end}#eh-pin.eh-ply .ply-ctl.pb~.acts{min-width:max-content}#eh-pin.eh-ply .ply-ctl.pb{flex-shrink:100}#eh-pin.eh-ply .pident{min-width:min(140px,18%)}#eh-pin.eh-ply>.kicker:has(>.ply-ctl.pb:last-child)::after{content:"";flex:1 1 0}#eh-pin .ply-ctl.pb{max-width:min(1000px,52%);min-width:min(550px,52%)}@media(max-width:700px){#eh-pin .ply-ctl.pb{flex:0 1 auto;max-width:70%;min-width:0}#eh-pin.eh-ply>.kicker::after{display:none}}#eh-pin .ply-ctl.pb{justify-content:center;align-self:stretch;margin-top:-6px;margin-bottom:-6px}html.eh-ply-pin body{padding-top:var(--eh-pin-h,0px)}@media(max-width:600px){#eh-pin.eh-ply>.kicker{flex-wrap:wrap;row-gap:0}#eh-pin.eh-ply .ply-ctl.pb{order:9;flex:1 1 100%;max-width:none;margin:0;justify-content:center}#eh-pin.eh-ply .ply-ctl.pb .ply-t{max-width:none}}
 @media(max-width:700px){#eh-pin .pkk{display:none}}
 #eh-pin.eh-ply .pkk{display:none}#eh-pin.eh-ply .pnm{flex:0 1 auto}#eh-pin.eh-ply .pby{flex:0 100 auto;max-width:none}
@@ -11280,6 +11280,7 @@ function collectionPaint(key) {
     if (t && x.rows) {
         t.classList.toggle('in', n > 0);
         const ci = t.querySelector('.coll-i'); if (ci) ci.innerHTML = SVG(MK_COL) + collBadge(n);
+        pinColl();
         t.dataset.tip = (t.dataset.kick || '') + (n ? '\nIn ' + n + (n === 1 ? ' collection: ' : ' collections: ') + ins.join(', ') : '') + '\nClick: add to or remove from your collections';
     }
 }
@@ -12128,6 +12129,20 @@ function pinMake(bar) {
     bar.addEventListener('click', ev => { if (ev.target.closest('.pnm,.pcv') && !ev.target.closest('a')) scrollTo({ top: 0, behavior: 'smooth' }); });
     return bar;
 }
+// the pinned bar's collection icon and count mirror the header's; a click goes to the top and opens its menu
+function pinColl() {
+    const k = document.querySelector('#eh-pin .pident'), t = document.querySelector('#app [data-pop="collections"]');
+    let b = k && k.querySelector('.pcol');
+    if (!k || !t) { if (b) b.remove(); return; }
+    if (!b) {
+        b = document.createElement('button'); b.type = 'button'; b.className = 'pcol';
+        b.addEventListener('click', ev => { ev.stopPropagation(); scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(() => document.querySelector('#app [data-pop="collections"]')?.click(), 350); });
+        const rg = k.querySelector('.rg-l'); if (rg) rg.after(b); else k.appendChild(b);
+    }
+    b.classList.toggle('in', t.classList.contains('in'));
+    b.dataset.tip = t.dataset.tip || 'Collections';
+    const ci = t.querySelector('.coll-i'); b.innerHTML = ci ? ci.innerHTML : '';
+}
 function pinBar(app) {
     let bar = document.getElementById('eh-pin');
     // the player's header controls (B) go back in once the bar is drawn again, however this returns
@@ -12166,6 +12181,7 @@ function pinBar(app) {
     // the bar's entity icon has the same menu as the hero's, under its own id
     k.querySelectorAll('.pkk .kmk[data-pop]').forEach(x => { const n = ++kmkN, p = x.parentElement.querySelector('.kmkm'); x.dataset.kmkfor = x.dataset.pop; x.dataset.pop = 'kmk' + n; x.setAttribute('aria-expanded', 'false'); if (p) { p.id = 'pop-kmk' + n; p.hidden = true; } });
     const thumb = k.querySelector('.pcv'); if (thumb) thumb.onerror = () => thumb.remove();
+    pinColl();
     // The page width is configurable; follow its real edges instead of centring a separate fixed-width bar.
     const align = () => { const left = hd.getBoundingClientRect().left, right = kick.getBoundingClientRect().right; k.style.marginLeft = left + 'px'; k.style.width = Math.max(0, right - left) + 'px'; };
     align();
