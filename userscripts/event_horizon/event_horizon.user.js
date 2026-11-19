@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.041000
+// @version      2026.11.20.042000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13546,7 +13546,8 @@ const PLY_CSS = `
 .ply-ctl .ply-b{display:inline-flex;align-items:center;justify-content:center;flex:none;width:30px;height:30px;padding:0;border:0;border-radius:7px;background:none;color:inherit;cursor:pointer;text-decoration:none}
 .ply-ctl .ply-b:hover:not([disabled]){background:color-mix(in srgb,currentColor 10%,transparent)}
 .ply-ctl .ply-b[disabled]{opacity:.35;cursor:default}
-.ply-ctl .ply-b[aria-pressed="true"]{color:var(--accent,#ba478f)}
+.ply-ctl .ply-b[aria-pressed="true"]:not([data-ply="shuffle"]){color:var(--accent,#ba478f)}
+.ply-ctl .ply-b[data-ply="shuffle"]{position:relative}.ply-ctl .ply-b[data-ply="shuffle"][aria-pressed="true"]::after{content:"";position:absolute;left:50%;bottom:2px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:currentColor}
 .ply-ctl .ply-b.big,.ply-ctl .ply-b.big:hover{width:34px;height:34px;border-radius:50%;background:var(--accent,#ba478f);color:#fff}
 .ply-ctl .ply-b.big{position:relative}.ply-ctl .ply-repeat{position:absolute;right:-4px;bottom:-4px;display:grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--surface,#fff);color:var(--accent,#ba478f)}.ply-b .ply-repeat>svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.ply-b .ply-repeat text{fill:currentColor;stroke:none;font:bold 10px system-ui,sans-serif}
 .ply-ctl .ply-b.big svg{width:16px;height:16px}
