@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.070000
+// @version      2026.11.20.080000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5161,8 +5161,27 @@ function kickerMark(el) {
     k.outerHTML = `<span class="popwrap kmkw"><button type="button" class="kmk" data-pop="kmk${n}" aria-expanded="false" data-copy="${id}" data-copylabel="the MBID"${pc ? ` data-picard="${pc}?id=${id}"` : ''} data-tip="Copy menu${pc ? '&#10;Right-click: send to Picard' : ''}" aria-label="Copy menu">${k.outerHTML}</button>`
         + `<div class="pop kmkm" id="pop-kmk${n}" hidden><button type="button" class="opt" data-copy="${id}" data-copylabel="the MBID"><span>Copy the MBID<small>${id}</small></span></button>`
         + `<button type="button" class="opt" data-kmkname hidden><span>Copy "Artist - Title - Year"<small></small></span></button>`
+        + (pm[1].toLowerCase() === 'collection' ? kmkShare(el, id) : '')
         + (pc ? `<button type="button" class="opt" data-picardgo="${pc}?id=${id}">${PICARD_IC}<span>Send to Picard</span></button>` : '') + '</div></span>';
 }
+// a collection's share link: Markdown "[name](link)", the link opening the collection in Event Horizon and playing it (ehSharePlay)
+function kmkShare(el, id) {
+    const h = el.querySelector('h1'), name = ((h && h.textContent) || 'Collection').trim().replace(/[[\]]/g, '\\$&');
+    const md = `[${name}](https://musicbrainz.org/collection/${id}?eh-play=1)`;
+    return `<button type="button" class="opt" data-copy="${esc(md)}" data-copylabel="the share link"><span>Share link<small>Markdown link that plays it in Event Horizon</small></span></button>`;
+}
+// ?eh-play=1 on a collection: press its Play once the list renders, then drop the parameter so a reload doesn't replay
+function ehSharePlay() {
+    const u = new URL(location.href);
+    if (u.searchParams.get('eh-play') !== '1' || !/^\/collection\//.test(u.pathname)) return;
+    u.searchParams.delete('eh-play'); history.replaceState(history.state, '', u.href);
+    const t0 = Date.now(), iv = setInterval(() => {
+        const b = ehOn && document.querySelector('#app button[data-colplay="all"]');
+        if (b) { clearInterval(iv); LOG.info('Share link: playing the collection'); b.click(); }
+        else if (Date.now() - t0 > 20000) { clearInterval(iv); LOG.warn('Share link: no Play button on this collection'); }
+    }, 300);
+}
+setTimeout(ehSharePlay, 0);
 let kmkN = 0;
 // "Artist - Title - Year" from the entity's own lookup (ENT), not the header, which other scripts add badges to; the year is its date or first release
 function kmkName(b) {
