@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.090002
+// @version      2026.11.20.090003
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5170,9 +5170,33 @@ function kmkShare(el, id) {
     const md = `[${name}](https://musicbrainz.org/collection/${id}?eh-play=1)`;
     return `<button type="button" class="opt" data-copy="${esc(md)}" data-copylabel="the share link"><span>Share link<small>Markdown link that plays it in Event Horizon</small></span></button>`;
 }
+// the playing list as a link: a release whose tracks the list holds two or more of goes in whole, any other track by its recording
+function plyShareLink() {
+    const n = {}; for (const t of ply.q) if (t.rel && !t.standalone) n[t.rel] = (n[t.rel] || 0) + 1;
+    const seen = new Set(), items = [];
+    for (const t of ply.q) {
+        const k = t.rel && !t.standalone && n[t.rel] > 1 ? 'l' + t.rel : t.rid ? 'r' + t.rid : '';
+        if (k && !seen.has(k)) { seen.add(k); items.push(k); }
+    }
+    return items.length ? 'https://musicbrainz.org/?eh-list=' + items.join(',') : '';
+}
+function plyShare() {
+    const u = plyShareLink(); if (!u) { toast('Nothing to share'); return; }
+    if (u.length > 8000) PLOG.warn('Share link is', u.length, 'characters; some places cut long links');
+    const md = '[Event Horizon playlist](' + u + ')';
+    navigator.clipboard.writeText(md).then(() => toast('Copied the playlist share link'), () => toast('Could not copy the share link'));
+}
 // ?eh-play=1 on a collection: press its Play once the list renders, then drop the parameter so a reload doesn't replay
 function ehSharePlay() {
     const u = new URL(location.href);
+    const list = (u.searchParams.get('eh-list') || '').split(',').map(x => x.match(/^([lr])([0-9a-f-]{36})$/i)).filter(Boolean).map(m => [m[1] === 'l' ? 'release' : 'recording', m[2].toLowerCase()]);
+    if (list.length) {
+        u.searchParams.delete('eh-list'); history.replaceState(history.state, '', u.href);
+        LOG.info('Share link: a playlist of', list.length, 'items');
+        const go = () => { if (!S.player) { S.player = true; save(); } plyCollection(null, 'release', '', false, list); };
+        ehSharePress({ click: go, contains: () => false });
+        return;
+    }
     if (u.searchParams.get('eh-play') !== '1' || !/^\/collection\//.test(u.pathname)) return;
     u.searchParams.delete('eh-play'); history.replaceState(history.state, '', u.href);
     const t0 = Date.now(), iv = setInterval(() => {
@@ -5186,8 +5210,8 @@ function ehSharePress(b) {
     const go = () => { LOG.info('Share link: playing the collection'); b.click(); };
     if (navigator.userActivation?.hasBeenActive !== false) { go(); return; }
     LOG.info('Share link: waiting for a click or key before playing');
-    toast('Click anywhere to play the collection');
     const on = e => { removeEventListener('pointerdown', on, true); removeEventListener('keydown', on, true); if (e.target !== b && !b.contains(e.target)) go(); };
+    toast(b.nodeType ? 'Click anywhere to play the collection' : 'Click anywhere to play');
     addEventListener('pointerdown', on, true); addEventListener('keydown', on, true);
 }
 setTimeout(ehSharePlay, 0);
@@ -12763,7 +12787,8 @@ function plyListGrow() {
     if (old) old.remove();
     m._sig = plyQSig();
 }
-async function plyCollection(id, ent, only, append) {
+// list: [[ent, mbid], …] from a playlist share link, played in that order in place of the collection's pages
+async function plyCollection(id, ent, only, append, list) {
     if (plyCollectionBusy && append) { toast('A collection is already loading'); return; }
     plyCollStop();
     plyCollectionBusy = true;
@@ -12787,10 +12812,10 @@ async function plyCollection(id, ent, only, append) {
         plyListGrow();
     };
     const max = Math.max(1, Math.min(5000, +S.playerMax || 1000));
-    const room = Math.max(0, max - (append ? ply.q.length : 0)), ids = only ? [only] : [], q = [];
+    const room = Math.max(0, max - (append ? ply.q.length : 0)), ids = list ? list.map(x => x[1]) : only ? [only] : [], ents = list ? list.map(x => x[0]) : [], q = [];
     try {
         if (!room) throw new Error('The playlist has reached its limit');
-        let page = 1, more = !only, read = 0;
+        let page = 1, more = !only && !list, read = 0;
         while ((ids.length || more) && q.length < room) {
             if (!ids.length) {
                 const x = await mbTab('collection', id, '', page++);
@@ -12801,9 +12826,9 @@ async function plyCollection(id, ent, only, append) {
                 more = x.more;
                 if (!ids.length) continue;
             }
-            const gid = ids.shift();
+            const gid = ids.shift(), en = ents.shift() || ent;
             if (gone()) return;
-            if (ent === 'recording') {
+            if (en === 'recording') {
                 const g = recording(await wsk(`recording/${gid}?inc=artist-credits+url-rels`)), srcs = plySources({ links: g.links });
                 if (srcs.length) q.push({ key: '1-1', n: 1, title: g.title, rid: g.id, artist: acText(g.ac), len: g.len || 0, srcs, rel: '', relTitle: '', standalone: true });
             } else {
@@ -13397,7 +13422,7 @@ function plyListPaint() {
     plyHeadLoad(ply.q[ply.i]);
 }
 function plyListMenu(btn) {
-    plyMenu(btn, '<div class="ply-top"><div class="ply-list-head">' + plyRelHead(ply.q[ply.i]) + '</div><div class="hd"><span>Playlist</span>' + (ply.q.length > 1 ? '<button type="button" class="qfb" aria-label="Filter the playlist" aria-expanded="false" data-tip="Filter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></button><input type="search" class="qf" tabindex="-1" placeholder="Filter" aria-label="Filter the playlist" autocomplete="off">' : '') + '<button type="button" class="mbu-ov-x ply-x" aria-label="Close" data-tip="Close">✕</button></div></div>' + plyRows(true),
+    plyMenu(btn, '<div class="ply-top"><div class="ply-list-head">' + plyRelHead(ply.q[ply.i]) + '</div><div class="hd"><span>Playlist</span>' + (ply.q.length > 1 ? '<button type="button" class="qfb" aria-label="Filter the playlist" aria-expanded="false" data-tip="Filter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></button><input type="search" class="qf" tabindex="-1" placeholder="Filter" aria-label="Filter the playlist" autocomplete="off">' : '') + '<button type="button" class="qfb ply-share" aria-label="Copy a share link of the playlist" data-tip="Copy a share link&#10;Plays this playlist in Event Horizon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></button><button type="button" class="mbu-ov-x ply-x" aria-label="Close" data-tip="Close">✕</button></div></div>' + plyRows(true),
         ({ k }) => { const i = +String(k).slice(1); if (i >= 0 && i < ply.q.length && i !== ply.i) { PLOG.info('picked from the playlist', i + 1); plyGo(i, ply.pref); } }, 'player');
     document.getElementById('eh-ply-menu')._sig = plyQSig();
     plyListPaint();
@@ -13440,6 +13465,7 @@ function plyRec(g, eds, append = false) {
 // a press anywhere outside it closes it, its own button too (which then doesn't reopen it), and so does a click into the
 // player's frame, which the page never sees but which takes the focus from the window
 let plyMenuShut = { k: '', t: 0 };
+document.addEventListener('click', ev => { if (ev.target.closest?.('#eh-ply-menu .ply-share')) { ev.preventDefault(); ev.stopPropagation(); plyShare(); } }, true);
 function plyMenu(btn, html, pick, align) {
     const kind = btn.dataset.ply || '';
     if (kind && plyMenuShut.k === kind && Date.now() - plyMenuShut.t < 700) { plyMenuShut.k = ''; return; }
