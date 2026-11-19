@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.010500
+// @version      2026.11.20.013000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12696,11 +12696,12 @@ function plyRemove(from, to = from + 1) {
     ply.q = q; ply.i = q.indexOf(cur);
     plyKeep(); plySave(); plyDraw(); if (PLY_WINDOW) plyPublish();
 }
-// a ✕ sits inside its row's button or its release's link: it removes, and neither plays nor opens
-document.addEventListener('click', ev => {
-    const x = ev.target.closest && ev.target.closest('.ply-menu .qx[data-qx],.ply-wl .qx[data-qx]'); if (!x) return;
+// a right-click on a playlist row removes its track, on a release heading all its tracks
+document.addEventListener('contextmenu', ev => {
+    const x = ev.target.closest && ev.target.closest('.ply-menu .qi,.ply-wl .qi,.ply-menu .ply-group[data-qx],.ply-wl .ply-group[data-qx]'); if (!x) return;
+    const [a, b] = (x.dataset.qx || (x.dataset.k || '').replace(/^q/, '') || x.dataset.i || '').split('-').map(Number);
+    if (!Number.isInteger(a)) return;
     ev.preventDefault(); ev.stopPropagation();
-    const [a, b] = x.dataset.qx.split('-').map(Number);
     plyRemove(a, Number.isInteger(b) ? b : a + 1);
 }, true);
 function plyAddRelease(r, key) {
@@ -12719,7 +12720,7 @@ function plyListGrow() {
     const m = document.querySelector('#eh-ply-menu:has(.ply-list-head)'); if (!m) return;
     const old = m.querySelector('.ply-loading'), have = m.querySelectorAll('.qi').length, at = old || null;
     const tmp = document.createElement('div');
-    tmp.innerHTML = ply.q.slice(have).map((x, j) => `<button type="button" class="it qi" role="menuitem" data-k="q${have + j}"><span class="qn">${esc(plyNo(x, have + j))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span>${plyRowSrc(x, have + j)}<span class="ql">${x.len ? dur(x.len) : ''}</span>${plyRowX(have + j)}</button>`).join('') + plyLoaderRow();
+    tmp.innerHTML = ply.q.slice(have).map((x, j) => `<button type="button" class="it qi" role="menuitem" data-k="q${have + j}"><span class="qn">${esc(plyNo(x, have + j))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span>${plyRowSrc(x, have + j)}<span class="ql">${x.len ? dur(x.len) : ''}</span></button>`).join('') + plyLoaderRow();
     const parent = old ? old.parentNode : m.querySelector('.qi')?.parentNode; if (!parent) return;
     for (const n of [...tmp.childNodes]) parent.insertBefore(n, at);
     if (old) old.remove();
@@ -13258,10 +13259,10 @@ document.addEventListener('contextmenu', ev => {
 // a release's group heading carries its cover, its title, and its year and track count under it
 function plyGroupHead(x, group, n, i) {
     if (n < 0) n = ply.q.length - i;
-    const rm = `<span class="qx" role="button" data-qx="${i}-${i + n}" aria-label="Remove these ${n} from the playlist" data-tip="Remove these ${n} from the playlist">✕</span>`;
-    if (group === 'recordings' || !x.rel) return `<div class="ply-group"><span>${esc(group === 'recordings' ? 'Recordings' : x.relTitle || 'Release')}</span>${rm}</div>`;
+    const rm = ` data-qx="${i}-${i + n}"`;
+    if (group === 'recordings' || !x.rel) return `<div class="ply-group"${rm} data-tip="Right-click to remove these ${n} from the playlist"><span>${esc(group === 'recordings' ? 'Recordings' : x.relTitle || 'Release')}</span></div>`;
     const src = PLY_CV.has(x.rel) ? PLY_CV.get(x.rel) : x.front ? `https://coverartarchive.org/release/${x.rel}/front-250` : '';
-    return `<a class="ply-group cv" href="${MB}/release/${x.rel}" target="_blank" rel="noopener" data-tip="Open the release in a new tab"><img${src ? ` src="${esc(src)}"` : ''} data-plyrel="${x.rel}" alt="" loading="lazy"><span>${esc(x.relTitle || 'Release')}<small>${x.relYear ? esc(x.relYear) + ' · ' : ''}${n} track${n === 1 ? '' : 's'}</small></span>${rm}</a>`;
+    return `<a class="ply-group cv"${rm} href="${MB}/release/${x.rel}" target="_blank" rel="noopener" data-tip="Open the release in a new tab; right-click removes its ${n} from the playlist"><img${src ? ` src="${esc(src)}"` : ''} data-plyrel="${x.rel}" alt="" loading="lazy"><span>${esc(x.relTitle || 'Release')}<small>${x.relYear ? esc(x.relYear) + ' · ' : ''}${n} track${n === 1 ? '' : 's'}</small></span></a>`;
 }
 function plyGroupCovers(root) { root?.querySelectorAll('.ply-group img:not([data-w])').forEach(im => { im.dataset.w = 1; plyCoverWire(im); }); }
 function plyRows(menu) {
@@ -13270,11 +13271,10 @@ function plyRows(menu) {
         const group = x.standalone || !('relAc' in x) ? 'recordings' : 'release:' + x.rel + ':' + (x.batch || '');
         const heading = group !== previous ? plyGroupHead(x, group, ply.q.slice(i).findIndex((y, j) => j && (y.standalone || !('relAc' in y) ? 'recordings' : 'release:' + y.rel + ':' + (y.batch || '')) !== group), i) : '';
         previous = group;
-        return heading + `<button type="button" class="${menu ? 'it ' : ''}qi" role="${menu ? 'menuitem' : 'listitem'}" ${menu ? 'data-k="q' + i + '"' : 'data-i="' + i + '"'}${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x, i))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span>${plyRowSrc(x, i)}<span class="ql">${x.len ? dur(x.len) : ''}</span>${plyRowX(i)}</button>`;
+        return heading + `<button type="button" class="${menu ? 'it ' : ''}qi" role="${menu ? 'menuitem' : 'listitem'}" ${menu ? 'data-k="q' + i + '"' : 'data-i="' + i + '"'}${i === ply.i ? ' aria-current="true"' : ''}><span class="qn">${esc(plyNo(x, i))}</span><span class="qt">${esc(x.title)}<small>${esc(x.artist)}</small></span>${plyRowSrc(x, i)}<span class="ql">${x.len ? dur(x.len) : ''}</span></button>`;
     }).join('') + (menu ? plyLoaderRow() : '');
 }
 const plyQSig = () => ply.q.map(t => t.key + ' ' + t.rel + ' ' + (t.batch || '')).join('|');
-const plyRowX = i => `<span class="qx" role="button" data-qx="${i}" aria-label="Remove from the playlist" data-tip="Remove from the playlist">✕</span>`;
 function plyListPaint() {
     const m = document.querySelector('#eh-ply-menu:has(.ply-list-head)'); if (!m) return;
     if (m._sig !== undefined && m._sig !== plyQSig()) {
@@ -13528,14 +13528,10 @@ html.eh-ply-win .ply-wl{order:2;flex:1;min-height:0;overflow:hidden auto;padding
 .ply-group.cv{text-decoration:none}
 .ply-group:not(.cv){display:flex;align-items:center;gap:6px}
 .ply-group:not(.cv)>span:first-child{flex:1;min-width:0}
-.ply-menu .qx,.ply-wl .qx{flex:none;display:inline-grid;place-items:center;width:24px;height:24px;margin:-4px -4px -4px 0;border-radius:4px;color:var(--muted,#777);font:13px/1 system-ui,sans-serif;text-transform:none;letter-spacing:0;visibility:hidden;cursor:pointer}
-.ply-menu .qi:hover .qx,.ply-wl .qi:hover .qx,.ply-group:hover .qx,.qi:focus-visible .qx{visibility:visible}
-.ply-menu .qx:hover,.ply-wl .qx:hover{color:var(--text,#222);background:color-mix(in srgb,currentColor 14%,transparent)}
-@media(hover:none){.ply-menu .qx,.ply-wl .qx{visibility:visible}}
-.ply-group.cv:hover>span:not(.qx){color:var(--text,#ddd);text-decoration:underline}
+.ply-group.cv:hover>span{color:var(--text,#ddd);text-decoration:underline}
 .ply-group.cv{display:flex;align-items:center;gap:10px;padding:12px 9px 6px}
 .ply-group.cv img{width:40px;height:40px;object-fit:cover;border-radius:3px;flex:none}
-.ply-group.cv>span:not(.qx){flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.ply-group.cv>span{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
 .ply-group.cv small{font-weight:400;text-transform:none;letter-spacing:0}
 .ply-loading{display:flex;align-items:center;gap:8px;padding:9px 12px;color:var(--muted,#777);font-size:12px}.ply-spin{width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:ply-spin .8s linear infinite}@keyframes ply-spin{to{transform:rotate(360deg)}}
 .ply-wl .qi:hover,.ply-wl .qi:focus-visible{background:color-mix(in srgb,currentColor 10%,transparent);outline:0}
