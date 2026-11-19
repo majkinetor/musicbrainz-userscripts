@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.003001
+// @version      2026.11.20.004001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4689,7 +4689,7 @@ function release(r, rg, images) {
         script: r['text-representation'] && nameOf('script', r['text-representation'].script),
         tr: r['text-representation'] || {},
         lang: r['text-representation'] && [nameOf('language', r['text-representation'].language), nameOf('script', r['text-representation'].script)].filter(Boolean).join(' / '),
-        title: r.title, ac, type: rg['primary-type'], rgId: rg.id, rating: rg.rating || {}, rg: { title: rg.title, rels: rg.relations || [] },
+        title: r.title, ac, type: rg['primary-type'], types: rgTypes(rg), rgId: rg.id, rating: rg.rating || {}, rg: { title: rg.title, rels: rg.relations || [] },
         credits: [...creditsOf(r.relations || []), ...labelCreditsOf(r.relations || [])], front: (r['cover-art-archive'] || {}).front, images,
         genres: (r.genres || []).sort((a, b) => b.count - a.count).map(g => g.name),
         events: (r['release-events'] || []).map(v => ({ date: v.date, area: v.area && v.area.name.replace(/^\[(.*)\]$/, '$1'), aid: v.area && v.area.id, iso: v.area && (v.area['iso-3166-1-codes'] || [])[0] || '' })),
@@ -5278,7 +5278,7 @@ function hero(r) {
             ${under(r)}
         </div>
         <div class="facts-col">
-            <div class="kicker label">${fmtSvg(fk, 26)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${actionRow(relActs(r), 'release', r.id)}${SRCH()}</span></div>
+            <div class="kicker label">${fmtSvg(fk, 26)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.types || r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${actionRow(relActs(r), 'release', r.id)}${SRCH()}</span></div>
             ${heroH1(r.title, r.disambig)}
             <div class="by">by ${acHtml(r.ac)}${rgLink(r)}</div>
             ${facts(r)}
@@ -11233,6 +11233,8 @@ function collectionParse(doc, key) {
 // the collections an entity is in, by name, for a count badge and its tooltip
 function collectionsIn(x) { const rows = (x && x.rows) || [], nm = collectionNames(rows); return rows.filter(r => r.id && r.on).map(r => nm.get(r.label) || r.label); }
 const collBadge = n => n ? '<span class="coll-n">' + (n > 99 ? '99+' : n) + '</span>' : '';
+// a release group's primary and secondary types, as "Album + Live"
+const rgTypes = g => g ? [g['primary-type'], ...(g['secondary-types'] || [])].filter(Boolean).join(' + ') : '';
 function collectionNames(rows) {
     const out = new Map(), en = /^(?:Add to|Remove from) (.+)$/;
     const strip = ls => {
@@ -14343,7 +14345,7 @@ const backA = id => `<a class="ab ov" href="${MB}/release/${id}" data-tip="Overv
 function subHead(r, id, tab, name, none) {
     const fk = r && fmtKind(r.media && r.media[0] && r.media[0].format);
     const acts = backA(id) + actionRow(relActs(r), 'release', id, tab) + SRCH();
-    const kick = r ? `${fmtSvg(fk, 26)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : `<span>${name}</span>`;
+    const kick = r ? `${fmtSvg(fk, 26)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), rgTypes(r['release-group']), r.status].filter(Boolean).join(' · '))}</span>` : `<span>${name}</span>`;
     return `<img class="rhcv" alt="" data-cover="https://coverartarchive.org/release/${id}/front-250"><div class="rhtx"><div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
         + (r ? `${heroH1(r.title, r.disambiguation, `${MB}/release/${r.id}`)}<div class="by">by ${acHtml(r['artist-credit'] || [])}${r['release-group'] ? `<a class="rg-l" href="${MB}/release-group/${r['release-group'].id}" data-tip="Release group${r.rgCount ? ' · ' + r.rgCount + ' editions' : ''}" aria-label="Release group">${LAYERS(20)}${r.rgCount ? `<span>${r.rgCount}</span>` : ''}</a>` : ''}</div>` : none) + '</div>';
 }
@@ -15657,7 +15659,7 @@ function histGroupSet(app, d, g, open, many) {
 function histPage(app, d) {
     const r = d.rel, rid = histRid(d.id), src = histSrc(d.id), acts = (rid ? backA(rid) + actionRow(relActs(r), 'release', rid, 'edits') : '') + SRCH();
     const fk = r && fmtKind(r.media && r.media[0] && r.media[0].format);
-    const kick = r ? `${fmtSvg(fk, 18)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : `<span>${rid ? esc(histName(d.id)) : 'MusicBrainz edits'}</span>`;
+    const kick = r ? `${fmtSvg(fk, 18)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), rgTypes(r['release-group']), r.status].filter(Boolean).join(' · '))}</span>` : `<span>${rid ? esc(histName(d.id)) : 'MusicBrainz edits'}</span>`;
     const es = d.st ? d.edits.filter(e => e.st === d.st) : d.edits;
     const name = e => e.ed ? `<a href="${MB}/user/${encodeURIComponent(e.ed)}">${esc(e.ed)}</a>` : 'Editor hidden';
     let body = ''; d.hgEs = new Map();
