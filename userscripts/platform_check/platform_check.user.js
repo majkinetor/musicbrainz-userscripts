@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.18.193622
+// @version      2026.11.19.120000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -5206,9 +5206,13 @@ function formatCategories(s) {
     if (/\b(digital|file|stream|lossless|web|wav|flac|mp3|aac|hi-?res)\b/.test(t)) cats.add('digital');
     return cats;
 }
+// The Amazon store sells physical media only (Amazon Music is the digital one): never a match for a
+// digital release, whatever its page says.
+const PHYSICAL_ONLY_PROVIDERS = new Set(['amazon']);
 // Remote format categories with the digital-only default applied.
 function remoteFormatCategories(platform, fmt) {
     const cats = formatCategories(fmt);
+    if (PHYSICAL_ONLY_PROVIDERS.has(platform)) { cats.delete('digital'); if (cats.size === 0) cats.add('physical'); }
     if (cats.size === 0 && DIGITAL_ONLY_PROVIDERS.has(platform)) cats.add('digital');
     return cats;
 }
@@ -5219,6 +5223,7 @@ function formatMismatch(platform, fmt) {
     if (mbCats.size === 0) return false;
     const remote = remoteFormatCategories(platform, fmt);
     if (remote.size === 0) return false;
+    if (remote.has('physical')) return mbCats.size === 1 && mbCats.has('digital');
     return ![...remote].some(x => mbCats.has(x));
 }
 
@@ -10487,6 +10492,7 @@ function formatBlocks(platform) {
     if (!c || !c.url) return false;
     const remote = remoteFormatCategories(platform, c.format);
     if (remote.size === 0) return GM_getValue('pc:format-mode', 'strict') === 'strict';  // unknown → block only in strict
+    if (remote.has('physical')) return mbCats.size === 1 && mbCats.has('digital') || GM_getValue('pc:format-mode', 'strict') === 'strict';
     return ![...remote].some(x => mbCats.has(x));              // known → block iff no shared category
 }
 // #464: how the release editor opens for a queued add.
@@ -10812,7 +10818,7 @@ function pcMcMismatch(p, c) {
     const mbTracks = parseInt(mbDataGet(mbid)?.mbTracks, 10) || null, tracks = c.tracks != null ? parseInt(c.tracks, 10) : null;
     const mismatch = [], fmtOff = formatMismatch(p, c.format);
     if (tracks != null && mbTracks && tracks !== mbTracks) mismatch.push(`${tracks} tracks, the release has ${mbTracks}`);
-    if (fmtOff) mismatch.push(`${c.format || 'Digital'}, the release is ${MB_FORMAT}`);
+    if (fmtOff) mismatch.push(`${c.format || (PHYSICAL_ONLY_PROVIDERS.has(p) ? 'physical media only' : 'Digital')}, the release is ${MB_FORMAT}`);
     return { mismatch, fmtOff, tracks, mbTracks };
 }
 const pcIsLinked = p => !!(mbDataGet(mbid)?.existing?.[p] || cacheGet(mbid, p)?.source === 'MB rels');
