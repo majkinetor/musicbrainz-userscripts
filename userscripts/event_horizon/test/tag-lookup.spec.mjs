@@ -11,3 +11,12 @@ test('a tag lookup shows its fields in a pinned bar over the results', async ({ 
   await expect(page.locator('#app .sr-t tbody tr').first()).toBeVisible({ timeout: 30_000 });
   await page.screenshot({ path: process.env.SHOT || 'tl.png' });
 });
+
+test("Picard's bare fields (artist=, release=) open the same view", async ({ page, inject }) => {
+  await page.goto('https://musicbrainz.org/taglookup?artist=Swayzak&release=Dirty+Dancing');
+  await idle(page); await inject('event_horizon');
+  const bar = page.locator('#app form.tl-bar');
+  await expect(bar.locator('[name="tag-lookup.artist"]')).toHaveValue('Swayzak');
+  await expect(bar.locator('[name="tag-lookup.release"]')).toHaveValue('Dirty Dancing');
+  await expect(page.locator('#app .sr-t tbody tr').first()).toBeVisible({ timeout: 30_000 });
+});
