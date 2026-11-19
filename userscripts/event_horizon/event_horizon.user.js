@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.233001
+// @version      2026.11.19.235501
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -9313,6 +9313,12 @@ function colnewHtml(d) {
         ${errs.length ? `<p class="u-err cn-err" role="alert">${errs.map(esc).join('<br>')}</p>` : ''}
         <div class="cn-acts"><button type="submit"${d.busy ? ' disabled' : ''}>${esc(d.busy ? (d.gid ? 'Saving…' : 'Adding…') : f.btn || (d.gid ? 'Update collection' : 'Add collection'))}</button></div></form>`;
 }
+// Ctrl+Enter in the collection form saves it, from any field
+document.addEventListener('keydown', ev => {
+    if (ev.key !== 'Enter' || !(ev.ctrlKey || ev.metaKey) || ev.altKey || ev.shiftKey || !ehOn || !data || data.kind !== 'colnew') return;
+    const fm = ev.target.closest && ev.target.closest('form[data-cnform]'); if (!fm) return;
+    ev.preventDefault(); fm.requestSubmit();
+});
 document.addEventListener('submit', async ev => {
     const fm = ev.target;
     if (!ehOn || !data || data.kind !== 'colnew' || !fm.matches('[data-cnform]')) return;
@@ -10961,7 +10967,7 @@ function renderDraw(keepPop) {
     ehWidth();
     if (!data) return;
     document.title = titleOf(data);
-    if (data.kind === 'user') { ehMorph(app, userHtml(data)); secRail(app); save(); return; }
+    if (data.kind === 'user') { ehMorph(app, userHtml(data)); secRail(app); pinBar(app); save(); return; }
     if (data.kind === 'tags') {
         // a background redraw leaves the tag being typed as it was, focus included
         const nw = $('#tg-new'), a = document.activeElement, typing = a && (a.id === 'tg-new' || a.id === 'tg-q') ? a.id : '', at = typing ? a.selectionStart : 0, text = nw ? nw.value : '';
@@ -10980,9 +10986,9 @@ function renderDraw(keepPop) {
     if (data.kind === 'rels') { ehMorph(app, relsHtml(data)); tabHdWire(app); dgWire(app); secRail(app); pinBar(app); lmWatch(app); shWatch(app); save(); return; }
     if (data.kind === 'tagx') { ehMorph(app, tagxHtml(data)); tagxWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'rates') { ehMorph(app, ratesHtml(data)); ratesWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
-    if (data.kind === 'colls') { ehMorph(app, collsHtml(data)); secRail(app); save(); return; }
-    if (data.kind === 'colnew') { ehMorph(app, colnewHtml(data)); save(); return; }
-    if (data.kind === 'colsubs') { ehMorph(app, colsubsHtml(data)); secRail(app); save(); return; }
+    if (data.kind === 'colls') { ehMorph(app, collsHtml(data)); secRail(app); pinBar(app); save(); return; }
+    if (data.kind === 'colnew') { ehMorph(app, colnewHtml(data)); pinBar(app); save(); return; }
+    if (data.kind === 'colsubs') { ehMorph(app, colsubsHtml(data)); secRail(app); pinBar(app); save(); return; }
     if (data.kind === 'search') { ehMorph(app, searchHtml(data)); srchWire(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'art') { artPage(app, data); pinBar(app); return; }
     if (data.kind === 'upg') { upgPage(app, data); pinBar(app); return; }
