@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.235502
+// @version      2026.11.19.235503
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12728,7 +12728,7 @@ const msObj = o => typeof cloneInto === 'function' ? cloneInto(o, PW) : o;
 let plyWakeEl = null, plyWakeIv = 0;
 function plyWake(on) {
     if (!on) { clearInterval(plyWakeIv); if (plyWakeEl) { plyWakeEl.pause(); plyWakeEl = null; } return; }
-    if (plyWakeEl) { if (plyWakeEl.paused) plyWakeEl.play().catch(e => LOG.warn('player: keep-awake resume refused:', e.message)); return; }
+    if (plyWakeEl) { if (plyWakeEl.paused) plyWakeEl.play().then(() => LOG.info('player: keep-awake resumed'), e => LOG.warn('player: keep-awake resume refused:', e.message)); return; }
     const n = 8000 * 6, b = new Uint8Array(44 + n), v = new DataView(b.buffer), w = (o, t) => { for (let i = 0; i < t.length; i++) b[o + i] = t.charCodeAt(i); };
     w(0, 'RIFF'); v.setUint32(4, 36 + n, true); w(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
     v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); w(36, 'data'); v.setUint32(40, n, true);
@@ -12768,6 +12768,18 @@ document.addEventListener('visibilitychange', () => {
     try { const ms = msPage(), t = ply.q[ply.i]; LOG.info('player: page', document.visibilityState, 'track:', t ? t.title : 'none', 'artist:', t ? t.artist : '', 'source:', ply.kind, 'player:', ply.paused ? 'paused' : 'playing', 'keep-awake:', !plyWakeEl ? 'absent' : plyWakeEl.paused ? 'paused' : 'playing', 'session:', ms ? ms.playbackState : 'unavailable', 'metadata:', ms && ms.metadata ? ms.metadata.title : 'none'); }
     catch (e) { LOG.warn('player: Media Session status failed:', e.message); }
 });
+// A restored player may start without a user gesture, so Firefox can reject the quiet audio.
+// Retry on a later gesture while playback is active, without restarting it if it is already playing.
+const plyWakeGesture = ev => {
+    if (!ev.isTrusted || !S.player || (plyRemote && !PLY_WINDOW) || (plyInWin() && !PLY_WINDOW)) return;
+    if (ply.i >= 0 && !ply.paused && plyWakeEl && plyWakeEl.paused) plyWake(true);
+    else if (ply.i < 0 && ev.target.closest?.('button[data-play],button[data-playall],button[data-playrec]')) {
+        plyWake(true);
+        setTimeout(() => { if (ply.i < 0) plyWake(false); }, 20000);
+    }
+};
+document.addEventListener('pointerdown', plyWakeGesture, true);
+document.addEventListener('keydown', plyWakeGesture, true);
 // the track is over: the next one, or the player stops at the last
 function plyEnded(why) {
     const t = ply.q[ply.i]; if (!t || t.done) return;
