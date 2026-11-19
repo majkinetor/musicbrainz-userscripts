@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.200000
+// @version      2026.11.19.200001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3091,7 +3091,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .art .imgsrc.imgsrc-art:hover{outline:none;transform:scale(1.1)}
 .art .cover{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px;box-shadow:0 18px 40px var(--shadow);display:block;color:transparent;background:var(--chip)}
 .art .cover.ipic{object-fit:contain;padding:8px;box-sizing:border-box;background:#fff}
-.art .nocover{width:100%;aspect-ratio:1;border-radius:14px;background:var(--chip);color:var(--muted);display:grid;place-items:center}
+.art .nocover{width:100%;aspect-ratio:1;border-radius:14px;background:color-mix(in srgb,var(--chip) 70%,transparent);backdrop-filter:blur(6px);color:var(--muted);display:grid;place-items:center}
 .art .nocover{position:relative}.imgretry{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);height:30px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:var(--chip);color:var(--soft);font-size:13px;font-weight:600;white-space:nowrap;max-width:calc(100% - 16px);overflow:hidden;text-overflow:ellipsis;cursor:pointer;filter:none!important}@media (max-width:700px){.imgretry{bottom:10px;height:26px;padding:0 8px;font-size:12px}}.imgretry:hover:not(:disabled){color:var(--accent);border-color:var(--accent)}.imgretry:disabled{cursor:default}
 @media (min-width:701px){.art:has(>.nocover.pg){flex-basis:clamp(150px,13vw,190px)}}
 .art .rnc{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}.rnc svg{opacity:.55}.rnc small{font-size:13px}
@@ -13393,7 +13393,7 @@ html.eh-ply-win .ply-wl{order:2;flex:1;min-height:0;overflow:hidden auto;padding
 #eh-ply.ply-bar .ply-dock{bottom:56px}
 #eh-ply.ply-chip .ply-dock{top:132px}
 html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
-.ply-menu{position:fixed;z-index:9996;min-width:230px;max-height:calc(100vh - 16px);overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;box-sizing:border-box;padding:5px;background:var(--surface,#fff);color:var(--text,#222);border:1px solid var(--line,#ddd);border-radius:9px;box-shadow:0 6px 20px rgba(0,0,0,.12);font:13px/1.3 system-ui,sans-serif}
+.ply-menu{position:fixed;z-index:9996;min-width:230px;max-height:calc(100vh - 16px);overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;box-sizing:border-box;padding:5px;background:color-mix(in srgb,var(--surface,#fff) 82%,transparent);backdrop-filter:blur(10px);color:var(--text,#222);border:1px solid var(--line,#ddd);border-radius:9px;box-shadow:0 6px 20px rgba(0,0,0,.12);font:13px/1.3 system-ui,sans-serif}
 .ply-menu .hd{display:flex;align-items:center;gap:7px;padding:6px 9px 4px;color:var(--muted,#777);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
 .ply-menu .hd .qf{margin-left:auto;width:150px;min-width:0;padding:3px 7px;border:1px solid var(--line,#ddd);border-radius:5px;background:transparent;color:var(--text,#222);font:12px/1.3 system-ui,sans-serif;text-transform:none;letter-spacing:0;outline:0}
 .ply-menu .hd .qf:focus{border-color:var(--accent,#ba478f)}
@@ -13402,7 +13402,7 @@ html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
 .ply-menu .it:hover,.ply-menu .it:focus-visible,.ply-menu .it[aria-current]{background:color-mix(in srgb,currentColor 10%,transparent);outline:0}
 .ply-menu .it svg,.ply-menu .it img{width:16px;height:16px;flex:none}
 .ply-menu:has(.qi){width:min(440px,calc(100vw - 16px));max-height:min(60vh,520px)}
-.ply-top{position:sticky;top:-5px;z-index:1;margin:-5px -5px 0;padding:5px 5px 0;background:var(--surface,#fff)}
+.ply-top{position:sticky;top:-5px;z-index:1;margin:-5px -5px 0;padding:5px 5px 0;background:color-mix(in srgb,var(--surface,#fff) 92%,transparent);backdrop-filter:blur(10px)}
 .ply-rhw{display:flex;align-items:center;gap:4px;margin-bottom:2px;border-bottom:1px solid var(--line,#ddd)}
 .ply-ra{display:flex;align-items:center;gap:2px;flex:none;padding-right:6px}
 .ply-rh{flex:1;min-width:0;display:flex;align-items:center;gap:11px;padding:6px 9px 8px;color:inherit!important;text-decoration:none!important}
