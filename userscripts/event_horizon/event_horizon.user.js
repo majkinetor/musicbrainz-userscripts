@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.080000
+// @version      2026.11.20.090000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12478,7 +12478,7 @@ const plyPublish = () => {
     if (!PLY_WINDOW) return;
     plySend({ type: 'state', q: ply.q, i: ply.i, src: ply.src, pref: ply.pref, paused: ply.paused, yt: ply.yt, kind: ply.kind, ctl: ply.ctl, ends: ply.ends, vol: S.playerVol, video: S.playerVideo, repeat: S.playerRepeat, shuffle: S.playerShuffle, back: ply.hist.length > 0, made: plyMade });
 };
-function plyWindowStart(q, i, want, made) {
+function plyWindowStart(q, i, want, made, rnd) {
     plyCollStop();
     if (!PLY_BUS) { toast('Separate player windows need BroadcastChannel'); return; }
     let fresh = false;
@@ -12491,7 +12491,7 @@ function plyWindowStart(q, i, want, made) {
     if (!plyRemote && ply.i >= 0) plyClose();
     plySend({ type: 'claim', id: PLY_ID, place: 'window', replace: fresh });
     const id = Date.now().toString(36) + Math.random().toString(36).slice(2);
-    plyPending = { type: 'start', id, q, i, want: want || '', pref: want || ply.pref, made: made || Date.now() };
+    plyPending = { type: 'start', id, q, i, rnd: !!rnd, want: want || '', pref: want || ply.pref, made: made || Date.now() };
     plySend(plyPending);
     let n = 0;
     const iv = setInterval(() => { if (!plyPending || plyPending.id !== id) { clearInterval(iv); return; } if (++n > 30) { clearInterval(iv); plyPending = null; toast('The player window did not start'); return; } plySend(plyPending); }, 500);
@@ -12537,7 +12537,7 @@ if (PLY_BUS) {
         if (PLY_WINDOW) {
             if (m.type === 'hello') { plyPublish(); return; }
             if (m.type === 'start' && Array.isArray(m.q) && Number.isInteger(m.i)) {
-                if (!seen.has(m.id)) { seen.add(m.id); if (seen.size > 100) seen.delete(seen.values().next().value); plyMade = m.made || Date.now(); ply.q = m.q; ply.pref = m.pref || ''; plyGo(m.i, m.want); }
+                if (!seen.has(m.id)) { seen.add(m.id); if (seen.size > 100) seen.delete(seen.values().next().value); plyMade = m.made || Date.now(); ply.q = m.q; ply.pref = m.pref || ''; plyGo(m.rnd ? plyFirst(m.q.length) : m.i, m.want); }
                 plySend({ type: 'started', id: m.id }); plyPublish(); return;
             }
             if (m.type !== 'control') return;
@@ -12679,8 +12679,10 @@ function plyBandcamp(u) {
         onerror: () => { PLOG.warn('Bandcamp did not answer', u); ok(''); }, ontimeout: () => { PLOG.warn('Bandcamp timed out', u); ok(''); },
     }));
 }
-// where a new playlist starts: the first track, or with shuffle on, one at random
-const plyFirst = n => S.playerShuffle && n > 1 ? Math.floor(Math.random() * n) : 0;
+// where a new playlist starts: the first track, or with shuffle on, one at random. Shuffle is read from the saved
+// setting, since it may have been switched in the player window or another tab since this page loaded
+const plyShufOn = () => { try { const v = GM_getValue('view', null); if (v && 'playerShuffle' in v) return !!v.playerShuffle; } catch (e) {} return !!S.playerShuffle; };
+const plyFirst = n => n > 1 && plyShufOn() ? Math.floor(Math.random() * n) : 0;
 function plyStart(r, key, want) {
     if (!S.player) return;
     let q = plyQueue(r);
@@ -12689,7 +12691,7 @@ function plyStart(r, key, want) {
     if (key) q = [{ ...q[i], oneTrack: true }];
     const start = key ? 0 : plyFirst(q.length);
     plyArchive();
-    if (plyInWin() && !PLY_WINDOW) { plyWindowStart(q, start, want); return; }
+    if (plyInWin() && !PLY_WINDOW) { plyWindowStart(q, start, want, 0, !key); return; }
     plyCollStop();
     if (plyRemote) { plyControl('close'); plyRemote = false; }
     if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' });
@@ -12768,7 +12770,7 @@ async function plyCollection(id, ent, only, append) {
             started = true;
             if (!append) plyArchive();
             if (append) plyAppend(part);
-            else if (plyInWin() && !PLY_WINDOW) plyWindowStart(part, plyFirst(part.length));
+            else if (plyInWin() && !PLY_WINDOW) plyWindowStart(part, plyFirst(part.length), '', 0, true);
             else { if (plyRemote) { plyControl('close'); plyRemote = false; } if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' }); plyMade = Date.now(); ply.q = part; plyGo(plyFirst(part.length)); }
             my = plyCollGen; plyCollectionBusy = true;   // its own start replaced the playlist, which stops nothing of its own
         } else if (plyRemote && !PLY_WINDOW) plyControl('append', part);
