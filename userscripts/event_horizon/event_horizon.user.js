@@ -12751,7 +12751,7 @@ function plyMedia(t, again) {
     if (plyWakeEl && !again) { plyWakeEl.pause(); plyWakeEl.play().catch(e => LOG.warn('player: keep-awake restart refused:', e.message)); }
     try { if (t.len) ms.setPositionState(msObj({ duration: t.len / 1000, position: Math.min(t.len, t.played || 0) / 1000, playbackRate: 1 })); } catch (e) { if (!again) LOG.warn('player: Media Session position failed:', e.message); }
     const supported = [], failed = [];
-    const on = (k, f) => { try { ms.setActionHandler(k, msFn(ev => { LOG.info('player: system media action', k, ev && ev.seekOffset != null ? 'offset ' + ev.seekOffset : '', ev && ev.seekTime != null ? 'time ' + ev.seekTime : ''); f(ev && { seekOffset: ev.seekOffset, seekTime: ev.seekTime }); })); supported.push(k); } catch (e) { failed.push(k + ': ' + e.message); } };
+    const on = (k, f) => { try { ms.setActionHandler(k, msFn(ev => { const c = ply.q[ply.i]; LOG.info('player: system media action', k, 'track:', c ? c.title : 'none', 'artist:', c ? c.artist : '', 'source:', ply.kind, ev && ev.seekOffset != null ? 'offset ' + ev.seekOffset : '', ev && ev.seekTime != null ? 'time ' + ev.seekTime : ''); f(ev && { seekOffset: ev.seekOffset, seekTime: ev.seekTime }); })); supported.push(k); } catch (e) { failed.push(k + ': ' + e.message); } };
     const by = d => { const c = ply.q[ply.i]; if (c && c.len) plySeek(Math.max(0, Math.min(c.len - 1000, (c.played || 0) + d))); };
     on('seekbackward', ev => by(-1000 * ((ev && ev.seekOffset) || 10)));
     on('seekforward', ev => by(1000 * ((ev && ev.seekOffset) || 10)));
@@ -12765,7 +12765,7 @@ function plyMedia(t, again) {
 }
 document.addEventListener('visibilitychange', () => {
     if (ply.i < 0) return;
-    try { const ms = msPage(); LOG.info('player: page', document.visibilityState, 'source:', ply.kind, 'player:', ply.paused ? 'paused' : 'playing', 'keep-awake:', !plyWakeEl ? 'absent' : plyWakeEl.paused ? 'paused' : 'playing', 'session:', ms ? ms.playbackState : 'unavailable', 'metadata:', ms && ms.metadata ? ms.metadata.title : 'none'); }
+    try { const ms = msPage(), t = ply.q[ply.i]; LOG.info('player: page', document.visibilityState, 'track:', t ? t.title : 'none', 'artist:', t ? t.artist : '', 'source:', ply.kind, 'player:', ply.paused ? 'paused' : 'playing', 'keep-awake:', !plyWakeEl ? 'absent' : plyWakeEl.paused ? 'paused' : 'playing', 'session:', ms ? ms.playbackState : 'unavailable', 'metadata:', ms && ms.metadata ? ms.metadata.title : 'none'); }
     catch (e) { LOG.warn('player: Media Session status failed:', e.message); }
 });
 // the track is over: the next one, or the player stops at the last
