@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.090006
+// @version      2026.11.20.090007
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5194,7 +5194,11 @@ function ehSharePlay() {
         u.searchParams.delete('eh-list'); history.replaceState(history.state, '', u.href);
         LOG.info('Share link: a playlist of', list.length, 'items');
         const go = () => { if (!S.player) { S.player = true; save(); } plyCollection(null, 'release', '', false, list); };
-        ehSharePress({ click: go, contains: () => false });
+        // the script runs at document-start: wait for Event Horizon's page before starting the player or showing the message
+        const t0 = Date.now(), iv = setInterval(() => {
+            if (ehOn && document.querySelector('#app') && document.body) { clearInterval(iv); ehSharePress({ click: go, contains: () => false }); }
+            else if (Date.now() - t0 > 20000) { clearInterval(iv); LOG.warn('Share link: Event Horizon did not start'); }
+        }, 200);
         return;
     }
     if (u.searchParams.get('eh-play') !== '1' || !/^\/collection\//.test(u.pathname)) return;
@@ -5213,7 +5217,7 @@ function ehSharePress(b) {
     const msg = document.createElement('div'); msg.className = 'eh-share-msg'; msg.setAttribute('role', 'status');
     msg.textContent = b.nodeType ? 'Click anywhere to play the collection' : 'Click anywhere to play the shared playlist';
     msg.style.cssText = 'position:fixed;left:50%;bottom:32px;transform:translateX(-50%);z-index:2147483000;padding:12px 20px;border-radius:8px;background:var(--mbu-bg,#222);color:var(--mbu-text,#eee);border:1px solid var(--mbu-border,#555);font-size:15px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.35)';
-    document.body.append(msg);
+    document.documentElement.append(msg);
     const on = e => { removeEventListener('pointerdown', on, true); removeEventListener('keydown', on, true); msg.remove(); if (e.target !== b && !b.contains(e.target)) go(); };
     addEventListener('pointerdown', on, true); addEventListener('keydown', on, true);
 }
