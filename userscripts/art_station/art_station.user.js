@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.19.185656
+// @version      2026.11.19.185657
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -3478,10 +3478,10 @@
   // told, the page gives nothing and the links come from WS2.
   function pageLinks() {
     try {
-      const own = mbpReleaseLinkList();
-      const skipped = [...document.querySelectorAll('ul.external_links')].filter(ul => ul !== own).flatMap(ul => [...ul.querySelectorAll('li a[href]')].map(a => a.href));
+      const own = mbpReleaseLinkList(PAGE_DOC);   // embedded: the shown release's fetched page, not the host page
+      const skipped = [...PAGE_DOC.querySelectorAll('ul.external_links')].filter(ul => ul !== own).flatMap(ul => [...ul.querySelectorAll('li a[href]')].map(a => a.href));
       if (skipped.length) asLog.debug(`Links: ignoring ${skipped.length} link(s) of another entity, or of a list not told apart (${skipped.join(', ')})`);
-      return [...new Set(mbpReleaseLinks())];
+      return [...new Set(mbpReleaseLinks(PAGE_DOC))];
     } catch (e) { return []; }
   }
   async function releaseUrls() {
@@ -3494,9 +3494,10 @@
       // still ask MB in the background — the sidebar can omit links, and the
       // answer refreshes the count without anyone waiting on it.
       if (!_urlRelsInflight) {
+        const forId = MBID;
         _urlRelsInflight = releaseUrlsRaw().finally(() => { _urlRelsInflight = null; });
         _urlRelsInflight.then(extra => {
-          if (!extra) return;
+          if (!extra || forId !== MBID || !_urlRels) return;   // another release was shown meanwhile
           const merged = [...new Set([..._urlRels, ...extra])];
           if (merged.length !== _urlRels.length) {
             asLog.info(`Links: MusicBrainz added ${merged.length - _urlRels.length} link(s) the page did not list`);
@@ -3510,7 +3511,8 @@
       asLog.debug(`Links: reading ${ENT.kind} relationships from /ws/2/${ENT.kind}/${MBID}?inc=url-rels`);
       _urlRelsInflight = releaseUrlsRaw().finally(() => { _urlRelsInflight = null; });
     }
-    const got = await _urlRelsInflight;
+    const forId = MBID, got = await _urlRelsInflight;
+    if (forId !== MBID) return releaseUrls();   // another release was shown meanwhile
     if (got) _urlRels = got;      // only a real answer is remembered
     return got || [];
   }
@@ -3549,7 +3551,7 @@
       .filter(x => !x.p.match || x.urls.length);
   }
   let _provLinks = null;   // fetched once per page; reused by the button count + the popover
-  function getProvLinks() { return _provLinks ? Promise.resolve(_provLinks) : artProviderLinks().then(l => (_provLinks = l)); }
+  function getProvLinks() { if (_provLinks) return Promise.resolve(_provLinks); const forId = MBID; return artProviderLinks().then(l => forId === MBID ? (_provLinks = l) : getProvLinks()); }
   // the count on the Source button = built-in linked platforms + matched custom providers
   // (#270 — it was only counting the platforms, so "URL (1)" showed beside a 3-button popover).
   // Re-run on render and whenever a provider registers (which may happen after the toolbar built).
@@ -9130,7 +9132,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     MODEL.forEach(it => { if (it._file) try { URL.revokeObjectURL(it._file); } catch (x) {} });
     MBID = id; ENT = entOf(id); R = ENT.base; CAA = ENT.archive;
     VIEW_ONLY = QUIET = false; _embedded = true; _showOrig = false;   // not saved: the setting is the cover-art page's
-    _urlRels = _urlRelsInflight = _provLinks = _aiRel = null; _iaDark = _iaDown = ''; _caaDarkened = false;
+    _urlRels = _urlRelsInflight = _provLinks = _aiRel = null; PAGE_DOC = document.implementation.createHTMLDocument('');   // no links of the last release until this one's page is read _iaDark = _iaDown = ''; _caaDarkened = false;
     MODEL = []; _mounted = false; _loadingArt = true;
     render(); applyOriginal();   // the loader in the slot at once
     let doc = null;
