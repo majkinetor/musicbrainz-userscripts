@@ -1,10 +1,6 @@
 # String Theory — Unified Documentation
 
-<<<<<<< HEAD
-*Built 2026-11-19 01:04 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
-=======
-*Built 2026-11-19 01:06 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
->>>>>>> bd0fc5728 (Playlist release headings open the release in a new tab)
+*Built 2026-11-19 01:07 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
