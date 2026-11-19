@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.090005
+// @version      2026.11.20.090006
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12504,6 +12504,7 @@ const ply = { q: [], i: -1, src: '', pref: '', paused: false, yt: false, kind: '
 const PLY_WINDOW = location.pathname === '/' && new URLSearchParams(location.search).get('eh-player-window') === '1';
 let PLY_BUS = null;
 try { if (typeof BroadcastChannel === 'function') PLY_BUS = new BroadcastChannel('mbu-event-horizon-player-v1'); } catch (e) { /* unavailable in this browser */ }
+let plyMade = 0;   // when the playing playlist was made, which names it in the recent playlists
 let plyRemote = false, plyOwnerSeen = 0, plyTabSeen = 0, plyProbeAt = 0, plyPending = null, plyWindow = null;
 const PLY_ID = Math.random().toString(36).slice(2) + Date.now().toString(36);
 const plySend = msg => { try { if (PLY_BUS) PLY_BUS.postMessage(msg); } catch (e) { PLOG.warn('window message failed', e.message); } };
@@ -12848,7 +12849,6 @@ async function plyCollection(id, ent, only, append, list) {
 let plyBack = false;   // plyGo goes back through shuffle's history, which doesn't grow then
 // The last five playlists a new one replaced, newest first, each named by when it was made (plyMade: the playing one's).
 // A playlist of one track isn't kept, nor a second copy of the same tracks.
-let plyMade = 0;
 const PLY_HIST = 5;
 function plyHist() { try { const h = GM_getValue('playerHistory', []); return Array.isArray(h) ? h.filter(x => x && Array.isArray(x.q) && x.q.length) : []; } catch (e) { return []; } }
 const plySig = q => q.map(t => t.rel + '/' + t.key).join(',');
