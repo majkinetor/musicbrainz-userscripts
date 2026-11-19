@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.050000
+// @version      2026.11.20.051000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12660,13 +12660,15 @@ function plyBandcamp(u) {
         onerror: () => { PLOG.warn('Bandcamp did not answer', u); ok(''); }, ontimeout: () => { PLOG.warn('Bandcamp timed out', u); ok(''); },
     }));
 }
+// where a new playlist starts: the first track, or with shuffle on, one at random
+const plyFirst = n => S.playerShuffle && n > 1 ? Math.floor(Math.random() * n) : 0;
 function plyStart(r, key, want) {
     if (!S.player) return;
     let q = plyQueue(r);
     const i = key ? q.findIndex(t => t.key === key) : 0;
     if (i < 0 || !q.length) { toast('Nothing to play this track from'); return; }
     if (key) q = [{ ...q[i], oneTrack: true }];
-    const start = key ? 0 : i;
+    const start = key ? 0 : plyFirst(q.length);
     plyArchive();
     if (plyInWin() && !PLY_WINDOW) { plyWindowStart(q, start, want); return; }
     plyCollStop();
@@ -12747,8 +12749,8 @@ async function plyCollection(id, ent, only, append) {
             started = true;
             if (!append) plyArchive();
             if (append) plyAppend(part);
-            else if (plyInWin() && !PLY_WINDOW) plyWindowStart(part, 0);
-            else { if (plyRemote) { plyControl('close'); plyRemote = false; } if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' }); plyMade = Date.now(); ply.q = part; plyGo(0); }
+            else if (plyInWin() && !PLY_WINDOW) plyWindowStart(part, plyFirst(part.length));
+            else { if (plyRemote) { plyControl('close'); plyRemote = false; } if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' }); plyMade = Date.now(); ply.q = part; plyGo(plyFirst(part.length)); }
             my = plyCollGen; plyCollectionBusy = true;   // its own start replaced the playlist, which stops nothing of its own
         } else if (plyRemote && !PLY_WINDOW) plyControl('append', part);
         else { ply.q.push(...part); plyKeep(); plySave(); plyDraw(); plyPublish(); }
