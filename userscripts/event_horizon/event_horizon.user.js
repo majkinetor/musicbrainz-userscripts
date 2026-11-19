@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.180000
+// @version      2026.11.19.181000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12138,7 +12138,14 @@ function pinColl() {
     if (!k || !t) { if (b) b.remove(); return; }
     if (!b) {
         b = document.createElement('button'); b.type = 'button'; b.className = 'pcol';
-        b.addEventListener('click', ev => { ev.stopPropagation(); scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(() => document.querySelector('#app [data-pop="collections"]')?.click(), 350); });
+        // the menu opens under the bar's icon, where the click was, not back at the header
+        b.addEventListener('click', ev => {
+            ev.stopPropagation();
+            const t = document.querySelector('#app [data-pop="collections"]'), p = document.getElementById('pop-collections'); if (!t || !p) return;
+            p.removeAttribute('style'); t.click();
+            requestAnimationFrame(() => { if (p.hidden) return; const r = b.getBoundingClientRect(); Object.assign(p.style, { position: 'fixed', top: r.bottom + 6 + 'px', left: Math.max(8, Math.min(r.left, innerWidth - p.offsetWidth - 8)) + 'px', right: 'auto', zIndex: 9995 }); });
+            if (!t.dataset.pinReset) { t.dataset.pinReset = 1; t.addEventListener('click', e => { if (e.isTrusted) p.removeAttribute('style'); }, true); }
+        });
         const at = k.querySelector('.pkk') || k.querySelector('.rg-l'); if (at) at.after(b); else k.appendChild(b);
     }
     b.classList.toggle('in', t.classList.contains('in'));
