@@ -219,7 +219,8 @@ On an entity's page, in the viewer or on MusicBrainz's own page, a key opens one
 | Ctrl+H | back                                         |
 | Ctrl+L | forward                                      |
 | S      | search: the viewer's box, else MusicBrainz's |
-| P      | your profile                                 |
+| P      | plays the release, recording or collection   |
+| U      | your profile                                 |
 | .      | MusicBrainz's home page                      |
 | ,      | the settings (String Theory's, with it)      |
 | Ctrl+/ | this list                                    |

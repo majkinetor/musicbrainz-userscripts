@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.030000
+// @version      2026.11.20.040000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -17237,7 +17237,9 @@ const KEY_CMDS = [
     ['back', 'Back', 'ctrl+h', () => { history.back(); return true; }],
     ['forward', 'Forward', 'ctrl+l', () => { history.forward(); return true; }],
     ['search', 'Search', 's', keySearch],
-    ['profile', 'Your profile', 'p', () => { const a = document.querySelector('.header a[href*="/user/"], #header a[href*="/user/"], header a[href*="/user/"]'); if (!a) return false; const m = a.href.match(/\/user\/[^/?#]+/); location.assign(MB + m[0]); return true; }],
+    // the page's own Play button: the release's, the recording's or the collection's, by the click setting
+    ['play', 'Play in the player', 'p', () => { const b = ehOn && document.querySelector('#app button[data-playall], #app button[data-playrec], #app button[data-colplay="all"]'); if (!b) return false; b.click(); return true; }],
+    ['profile', 'Your profile', 'u', () => { const a = document.querySelector('.header a[href*="/user/"], #header a[href*="/user/"], header a[href*="/user/"]'); if (!a) return false; const m = a.href.match(/\/user\/[^/?#]+/); location.assign(MB + m[0]); return true; }],
     ['home', 'MusicBrainz home page', '.', () => { location.assign(MB + '/'); return true; }],
     // with String Theory, its settings; alone, the script's own
     ['settings', 'Settings', ',', () => { if (document.documentElement.hasAttribute('data-mbu-st') || document.querySelector('[data-mbu-st]')) { document.dispatchEvent(new CustomEvent('mbu-st-settings')); return true; } mbuCss(); if (document.getElementById('eh-cfg')) closeCfg(); else openCfg(); return true; }],
