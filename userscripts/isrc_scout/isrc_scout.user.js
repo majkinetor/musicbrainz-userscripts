@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.19.163500
+// @version      2026.11.19.180000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -4272,6 +4272,7 @@
   const repeatTimes = () => repeatNum('auto_repeat_times', 10, 100);
   const isTransient = e => /\((?:429|50[0234])\)|\bHTTP (?:429|50[0234])\b|network|timed? ?out|busy/i.test((e && e.message) || String(e));
   let repeatWatch = null;
+  let repeatNow = null;   // set while a repeat waits: calling it ends the wait and tries at once
   async function withRepeat(fn, what) {
     const t0 = Date.now();
     for (let n = 0; ; ) {
@@ -4286,7 +4287,9 @@
         const until = Date.now() + delay;
         while (Date.now() < until) {
           if (repeatWatch) repeatWatch(what + ' failed: repeating in ' + Math.ceil((until - Date.now()) / 1000) + ' s (attempt ' + n + ' of ' + max + ')');
-          await new Promise(r => setTimeout(r, Math.min(5000, until - Date.now())));
+          const skipped = await new Promise(r => { repeatNow = () => r(true); setTimeout(() => r(false), Math.min(5000, until - Date.now())); });
+          repeatNow = null;
+          if (skipped) { Log.info(what + ': repeating now, on request'); break; }
         }
       }
     }
@@ -9649,6 +9652,7 @@
   }
 
   async function doSubmitAll() {
+    if (repeatNow) { repeatNow(); return; }   // the button stays live while a repeat waits: a click repeats at once
     // 1) pending ISRC additions (valid, not a cross-track duplicate, not already present)
     const map = {};
     let isrcCount = 0;
@@ -9694,6 +9698,7 @@
         const m = /repeating in (\d+) s \(attempt (\d+) of (\d+)\)/.exec(msg);
         submitBtn.textContent = m ? 'Server busy · again in ' + m[1] + ' s (' + m[2] + '/' + m[3] + ')' : 'Submitting…';
         submitBtn.classList.add('ii-submit-wait');
+        submitBtn.disabled = !m;
       };
       try {
         await submitIsrcs(map, note);
@@ -9708,7 +9713,7 @@
         if (e.authCleared) refreshAuthState();   // shows "Not authorized" and opens ⚙ Setup
         Log.err('ISRC submit failed: ' + e.message);
         toast('ISRC submit failed: ' + e.message, 'err');
-      } finally { repeatWatch = null; submitBtn.classList.remove('ii-submit-wait'); submitBtn.textContent = 'Submitting…'; }
+      } finally { repeatWatch = null; repeatNow = null; submitBtn.disabled = true; submitBtn.classList.remove('ii-submit-wait'); submitBtn.textContent = 'Submitting…'; }
     }
 
     if (linkCount) {
