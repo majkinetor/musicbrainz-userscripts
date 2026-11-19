@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.004004
+// @version      2026.11.20.004005
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3143,7 +3143,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 #eh-pin .pident,#eh-pin .pkk{overflow:hidden}#eh-pin .pkk{display:flex;align-items:center;gap:6px;min-width:0;max-width:40%;color:var(--muted);font-size:10.5px;white-space:nowrap}#eh-pin .pkk svg{width:18px;height:18px;flex:none}#eh-pin .pkk>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 /* Reserve the release identity before fitting actions; format icons must not shrink under the menu. */
 #eh-pin .pident{min-width:min(360px,45%)}#eh-pin .pcol{flex:none;display:inline-flex;align-items:center;gap:5px;margin-left:14px;padding:0;background:none;border:0;cursor:pointer;color:var(--muted)}#eh-pin .pcol.in{color:var(--accent)}#eh-pin .pcol:hover{color:var(--accent)}#eh-pin .pcol svg{width:20px;height:20px}#eh-pin .pcol .coll-n{position:static;display:inline-block;min-width:15px;height:15px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:var(--accent);color:#fff;font:700 10px/15px system-ui,sans-serif;text-align:center}#eh-pin .pkk{flex:none}
-#eh-pin.eh-ply{transform:none}#eh-pin.eh-ply>.kicker{min-height:42px}#eh-pin.eh-ply .pident{flex:1 1 0;min-width:0}#eh-pin.eh-ply .ply-ctl.pb~*{flex:1 1 0;min-width:0;justify-content:flex-end}#eh-pin.eh-ply .ply-ctl.pb~.acts{min-width:max-content}#eh-pin.eh-ply .ply-ctl.pb{flex-shrink:100}#eh-pin.eh-ply .pident{min-width:min(140px,18%)}#eh-pin.eh-ply>.kicker:has(>.ply-ctl.pb:last-child)::after{content:"";flex:1 1 0}#eh-pin .ply-ctl.pb{max-width:min(1000px,52%);min-width:min(550px,52%)}@media(max-width:700px){#eh-pin .ply-ctl.pb{flex:0 1 auto;max-width:70%;min-width:0}#eh-pin.eh-ply>.kicker::after{display:none}}#eh-pin .ply-ctl.pb{justify-content:center;align-self:stretch;margin-top:-6px;margin-bottom:-6px}html.eh-ply-pin body{padding-top:var(--eh-pin-h,0px)}@media(max-width:600px){#eh-pin.eh-ply>.kicker{flex-wrap:wrap;row-gap:0}#eh-pin.eh-ply .ply-ctl.pb{order:9;flex:1 1 100%;max-width:none;margin:0;justify-content:center}#eh-pin.eh-ply .ply-ctl.pb .ply-t{max-width:none}}
+#eh-pin.eh-ply{transform:none}#eh-pin.eh-ply>.kicker{min-height:42px}#eh-pin.eh-ply .pident{flex:1 1 0;min-width:0}#eh-pin.eh-ply .ply-ctl.pb~*{flex:1 1 0;min-width:0;justify-content:flex-end}#eh-pin.eh-ply .ply-ctl.pb~.acts{min-width:max-content}#eh-pin.eh-ply .ply-ctl.pb{flex-shrink:100}#eh-pin.eh-ply .pident{min-width:min(140px,18%)}#eh-pin.eh-ply>.kicker:has(>.ply-ctl.pb:last-child)::after{content:"";flex:1 1 0}#eh-pin .ply-ctl.pb{max-width:min(1000px,52%);min-width:min(550px,52%)}@media(max-width:700px){#eh-pin .ply-ctl.pb{flex:0 1 auto;max-width:70%;min-width:0}#eh-pin.eh-ply>.kicker::after{display:none}}#eh-pin .ply-ctl.pb{justify-content:center;align-self:stretch;margin-top:-6px;margin-bottom:-6px}html.eh-ply-pin body{padding-top:var(--eh-pin-h,0px)}@media(max-width:600px){#eh-pin.eh-ply>.kicker{flex-wrap:wrap;row-gap:0}#eh-pin.eh-ply .ply-ctl.pb{order:9;flex:1 1 100%;max-width:none;margin:0;justify-content:center}#eh-pin.eh-ply .ply-ctl.pb .ply-t{max-width:none}#eh-pin.eh-ply .ply-ctl.pb{border:0;padding:0;gap:2px;justify-content:space-between}#eh-pin.eh-ply .ply-ctl.pb .ply-t{flex:1 1 auto;min-width:0}#eh-pin.eh-ply .ply-ctl.pb .ply-vg{display:none}}
 @media(max-width:700px){#eh-pin .pkk{display:none}}
 #eh-pin.eh-ply .pkk{display:none}#eh-pin.eh-ply .pnm{flex:0 1 auto}#eh-pin.eh-ply .pby{flex:0 100 auto;max-width:none}
 .kicker .ab[data-ehsec]:hover,.kicker .srch>.ab:hover,.kicker .ab.eh-home:hover{background:var(--surface)!important;border-color:var(--accent)}
@@ -12999,10 +12999,11 @@ function plyMark() {
 }
 const plyVideo = () => { if (plyRemote && !PLY_WINDOW) { plyControl('video'); return; } S.playerVideo = !S.playerVideo; save(); LOG.info('player: video', S.playerVideo ? 'shown' : 'hidden'); plyDraw(); };
 const plySrc = key => { ply.pref = key; plyGo(ply.i, key); };
+function plyMute() { const v = +S.playerVol; LOG.info('player:', v ? 'muted' : 'unmuted'); plyVolSet(v ? 0 : ply.lastVol || (() => { try { return GM_getValue('playerVolLast', 100); } catch (e) { return 100; } })(), true); }
 function plyClick(ev) {
     const b = ev.target.closest('[data-ply]'); if (!b || b.disabled) return;
     const k = b.dataset.ply;
-    if (k === 'mute') { const v = +S.playerVol; LOG.info('player:', v ? 'muted' : 'unmuted'); plyVolSet(v ? 0 : ply.lastVol || (() => { try { return GM_getValue('playerVolLast', 100); } catch (e) { return 100; } })(), true); return; }
+    if (k === 'mute') { plyMute(); return; }
     if (k === 'seek') { const t = ply.q[ply.i], r = b.getBoundingClientRect(); if (t && t.len && r.width) plySeek(Math.round(Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)) * t.len)); return; }
     if (k === 'prev') plyStep(-1);
     else if (k === 'next') plyStep(1);
@@ -13320,8 +13321,10 @@ function plyLbMenu(btn) {
     parts.push((ME ? `<button type="button" class="it" data-m="loadcoll">${SVG(MK_COL)}<span>Load collection…</span></button><button type="button" class="it" data-m="savecoll">${SVG(MK_COL)}<span>Save playlist as collection…</span></button>` : '') + (ply.yt ? `<button type="button" class="it" role="menuitem" data-m="video">${SVG(PLY_I.video)}<span>${S.playerVideo ? 'Hide the video' : 'Show the video'}</span></button>` : '')
         + (PLY_WINDOW || plyRemote ? `<button type="button" class="it" role="menuitem" data-m="tab">${SVG(PLY_I.back)}<span>${PLY_WINDOW ? 'Back to tab' : 'Back to this tab'}</span></button>`
             : PLY_BUS ? `<button type="button" class="it" role="menuitem" data-m="win">${SVG(PLY_I.win)}<span>Open in window</span></button>` : '')
+        + (plyHasVol() ? `<div class="ply-mvol"><button type="button" class="ply-b" data-m="mute" aria-label="${+S.playerVol ? 'Mute' : 'Unmute'}">${plyVolIc(+S.playerVol)}</button><input type="range" class="ply-mv" min="0" max="100" step="1" value="${+S.playerVol}" aria-label="Volume"></div>` : '')
         + `<button type="button" class="it" role="menuitem" data-m="x" style="color:var(--mbu-bad,#c2413b)">${SVG(PLY_I.x)}<span>Stop and close</span></button>`);
-    plyMenu(btn, parts.join('<hr>'), v => { if (v.k) plySrc(v.k); else if (v.m === 'loadcoll') plyLoadMenu(btn); else if (v.m === 'savecoll') plySaveMenu(btn); else if (v.m === 'video') plyVideo(); else if (v.m === 'win') plyToWindow(); else if (v.m === 'tab') { if (PLY_WINDOW) plyToTab(); else plyControl('to-tab', PLY_ID); } else if (v.m === 'x') plyClose(); });
+    plyMenu(btn, parts.join('<hr>'), v => { if (v.k) plySrc(v.k); else if (v.m === 'loadcoll') plyLoadMenu(btn); else if (v.m === 'savecoll') plySaveMenu(btn); else if (v.m === 'video') plyVideo(); else if (v.m === 'win') plyToWindow(); else if (v.m === 'tab') { if (PLY_WINDOW) plyToTab(); else plyControl('to-tab', PLY_ID); } else if (v.m === 'x') plyClose(); else if (v.m === 'mute') plyMute(); });
+    document.querySelector('#eh-ply-menu .ply-mv')?.addEventListener('input', ev => plyVolSet(+ev.target.value));
 }
 const PLY_CSS = `
 .ply-pa{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:30px;height:30px;padding:0;border:0;border-radius:7px;background:none;color:var(--muted,#777);cursor:pointer}
@@ -13442,6 +13445,7 @@ html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
 .ply-menu .hd{display:flex;align-items:center;gap:7px;padding:6px 9px 4px;color:var(--muted,#777);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
 .ply-menu .hd .qf{margin-left:auto;width:150px;min-width:0;padding:3px 7px;border:1px solid var(--line,#ddd);border-radius:5px;background:transparent;color:var(--text,#222);font:12px/1.3 system-ui,sans-serif;text-transform:none;letter-spacing:0;outline:0}
 .ply-menu .hd .qfb{flex:none;margin-left:auto;display:inline-grid;place-items:center;width:30px;height:30px;padding:0;border:0;border-radius:6px;background:none;color:var(--muted,#777);cursor:pointer}.ply-menu .hd .qfb:hover{color:var(--accent,#ba478f)}.ply-menu .hd .qfb svg{width:17px;height:17px}.ply-menu .hd:not(.qo) .qf{display:none}.ply-menu .hd.qo .qfb{display:none}.ply-menu .hd .qfb+.qf{margin-left:auto}.ply-menu .hd .qfb~.ply-x{margin-left:4px}
+.ply-menu .ply-mvol{display:none;align-items:center;gap:8px;padding:4px 9px}.ply-menu .ply-mv{flex:1;min-width:0;accent-color:var(--accent,#ba478f)}@media(max-width:600px){.ply-menu .ply-mvol{display:flex}}
 .ply-menu .hd .qf:focus{border-color:var(--accent,#ba478f)}
 .ply-menu .qi[hidden]{display:none}
 .ply-menu .it{display:flex;align-items:center;gap:9px;width:100%;box-sizing:border-box;padding:7px 9px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;text-align:left;text-decoration:none;cursor:pointer}
