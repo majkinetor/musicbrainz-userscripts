@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.235501
+// @version      2026.11.19.203423
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1393,7 +1393,7 @@ function mbRestackCorner(corner) {
 // Categories (#697) are optional. A tagged line shows its category before the
 // message and in the Markdown ("WARN [Spotify] …"). The viewer grows a row of
 // filters only when there is a choice: the levels once two of them have lines
-// (ok counts as info), the categories once there are two. Click one to see only
+// (ok counts as info), the categories once there are two (or one beside untagged lines). Click one to see only
 // those lines, click it again to see all; Copy always takes everything.
 //
 // The floating window (open) and a mounted viewer (mount) are the same viewer;
@@ -1679,12 +1679,13 @@ function mbuLog(o) {
         var qEl = root.querySelector('.mbu-log-q'), q = '', sel = root.querySelector('.mbu-log-ses');
         var fRow = root.querySelector('.mbu-log-f'), fCss = root.querySelector('.mbu-log-fcss');
         // what this viewer shows: the live lines, or a past session (read-only)
-        var past = null, src = buf, cats = [], catIx = {}, sevs = {}, fSev = null, fCat = null;
+        var past = null, src = buf, cats = [], catIx = {}, bare = false, sevs = {}, fSev = null, fCat = null;
         var scope = '.mbu-logpop[data-mbu-lv="' + vid + '"] ';
         var miss = function (e) { return !!q && ((e.cat || '') + ' ' + e.msg).toLowerCase().indexOf(q) < 0; };
         // note a line's level and category; true when the filter row must change
         var note = function (e) {
             var grew = false;
+            if (!e.cat && !bare) { bare = true; grew = true; }
             if (e.cat && !(e.cat in catIx)) { catIx[e.cat] = cats.length; cats.push(e.cat); grew = true; }
             if (!sevs[group(e.sev)]) { sevs[group(e.sev)] = true; grew = true; }
             return grew;
@@ -1705,7 +1706,7 @@ function mbuLog(o) {
         // rule in the viewer's own <style>, not a walk over the rows
         var filters = function () {
             var lv = LEVELS.filter(function (l) { return sevs[l]; });
-            var showL = lv.length > 1, showC = cats.length > 1;
+            var showL = lv.length > 1, showC = cats.length > 1 || cats.length === 1 && bare;
             if (fSev && !sevs[fSev]) fSev = null;
             if (fCat != null && !(fCat in catIx)) fCat = null;
             var b = function (kind, v, on) {
@@ -1728,7 +1729,7 @@ function mbuLog(o) {
         var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
         // all rows at once: on opening, and when the session shown changes
         var draw = function () {
-            cats = []; catIx = {}; sevs = {};
+            cats = []; catIx = {}; bare = false; sevs = {};
             src.forEach(note);
             var frag = document.createDocumentFragment();
             src.forEach(function (e) { frag.appendChild(row(e)); });
@@ -12383,7 +12384,7 @@ let PLY_BUS = null;
 try { if (typeof BroadcastChannel === 'function') PLY_BUS = new BroadcastChannel('mbu-event-horizon-player-v1'); } catch (e) { /* unavailable in this browser */ }
 let plyRemote = false, plyOwnerSeen = 0, plyTabSeen = 0, plyProbeAt = 0, plyPending = null, plyWindow = null;
 const PLY_ID = Math.random().toString(36).slice(2) + Date.now().toString(36);
-const plySend = msg => { try { if (PLY_BUS) PLY_BUS.postMessage(msg); } catch (e) { LOG.warn('player: window message failed', e.message); } };
+const plySend = msg => { try { if (PLY_BUS) PLY_BUS.postMessage(msg); } catch (e) { PLOG.warn('window message failed', e.message); } };
 const plyPublish = () => {
     if (!PLY_WINDOW) return;
     plySend({ type: 'state', q: ply.q, i: ply.i, src: ply.src, pref: ply.pref, paused: ply.paused, yt: ply.yt, kind: ply.kind, ctl: ply.ctl, ends: ply.ends, vol: S.playerVol, video: S.playerVideo, repeat: S.playerRepeat });
@@ -12413,7 +12414,7 @@ const plyWinSet = on => { try { GM_setValue('plyWin', !!on); } catch (e) {} };
 let plyClaimSeen = 0;
 function plyToWindow() {
     const t = ply.q[ply.i]; if (!t || PLY_WINDOW) return;
-    LOG.info('player: moves to its window');
+    PLOG.info('moves to its window');
     plyWinSet(true);
     if (t.played > 3000) t.resume = t.played;
     plyWindowStart(ply.q, ply.i, ply.src);
@@ -12421,7 +12422,7 @@ function plyToWindow() {
 // the window hands its queue and place to a tab: the one named, else a visible one, else the first to claim it
 function plyToTab(id) {
     const t = ply.q[ply.i]; if (!t) return;
-    LOG.info('player: back to a tab');
+    PLOG.info('back to a tab');
     plySend({ type: 'to-tab', to: id || '', q: ply.q, i: ply.i, src: ply.src, pref: ply.pref, played: t.played || 0 });
     if (PLY_WINDOW) setTimeout(() => { if (!window.closed) toast('No MusicBrainz tab took the player'); }, 3000);
 }
@@ -12557,7 +12558,7 @@ function plyRequeue(rel, fresh) {
         }
     }
     if (sig(q) === before) return;
-    LOG.info('player: the release changed, ' + q.length + ' playable (was ' + ply.q.length + ')');
+    PLOG.info('the release changed, ' + q.length + ' playable (was ' + ply.q.length + ')');
     ply.q = q; ply.i = cur ? q.indexOf(cur) : -1;
     plyKeep(); plySave(); plyDraw(); if (PLY_WINDOW) plyPublish();
 }
@@ -12579,12 +12580,12 @@ function plyBandcamp(u) {
                 const m = (r.responseText || '').match(/<meta name="bc-page-properties" content="([^"]+)"/);
                 const j = m && JSON.parse(m[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&'));
                 if (j && j.item_type === 't' && j.item_id) v = `https://bandcamp.com/EmbeddedPlayer/track=${j.item_id}/size=large/bgcol=ffffff/linkcol=0687f5/tracklist=false/artwork=small/transparent=true/`;
-                else LOG.warn('player: Bandcamp page names no track', u, j && j.item_type);
-            } catch (e) { LOG.warn('player: Bandcamp page unreadable', u, e.message); }
+                else PLOG.warn('Bandcamp page names no track', u, j && j.item_type);
+            } catch (e) { PLOG.warn('Bandcamp page unreadable', u, e.message); }
             if (v) BC_IDS.set(u, v);
             ok(v);
         },
-        onerror: () => { LOG.warn('player: Bandcamp did not answer', u); ok(''); }, ontimeout: () => { LOG.warn('player: Bandcamp timed out', u); ok(''); },
+        onerror: () => { PLOG.warn('Bandcamp did not answer', u); ok(''); }, ontimeout: () => { PLOG.warn('Bandcamp timed out', u); ok(''); },
     }));
 }
 function plyStart(r, key, want) {
@@ -12600,7 +12601,7 @@ function plyStart(r, key, want) {
     if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' });
     ply.q = q;
     if (want) ply.pref = want;
-    LOG.info('player: start', r.id, key || 'all', ply.q.length + ' playable', want || '');
+    PLOG.info('start', r.id, key || 'all', ply.q.length + ' playable', want || '');
     plyGo(start, want);
 }
 // Append without interrupting the current track.
@@ -12624,7 +12625,7 @@ function plyAddRelease(r, key) {
 // tracks start at once; the rest join the playlist in the background, a loader row at its end while they come
 let plyCollectionBusy = false, plyCollLoading = false, plyCollGen = 0;
 // a new playlist replaces the old one: a collection still loading into the old one stops
-function plyCollStop() { if (!plyCollectionBusy) return; plyCollGen++; plyCollectionBusy = false; LOG.info('player: background collection load stopped, the playlist was replaced'); if (plyCollLoading) { plyCollLoading = false; plyListGrow(); } }
+function plyCollStop() { if (!plyCollectionBusy) return; plyCollGen++; plyCollectionBusy = false; PLOG.info('background collection load stopped, the playlist was replaced'); if (plyCollLoading) { plyCollLoading = false; plyListGrow(); } }
 function plyLoaderRow() { return plyCollLoading ? '<div class="ply-loading" role="status"><span class="ply-spin"></span>Loading more from the collection…</div>' : ''; }
 // the open playlist gains the rows added since it opened, and loses its loader when the load ends
 function plyListGrow() {
@@ -12689,7 +12690,7 @@ async function plyCollection(id, ent, only, append) {
         if (!q.length) throw new Error('No playable recordings found');
         plyCollLoading = false; flush(); plyListGrow();
         toast('Loaded ' + q.length + ' recordings');
-    } catch (e) { if (gone()) return; LOG.warn('Player collection: ' + e.message); toast((started ? 'Collection load stopped: ' : 'Could not load collection: ') + e.message); }
+    } catch (e) { if (gone()) return; PLOG.warn('Collection: ' + e.message); toast((started ? 'Collection load stopped: ' : 'Could not load collection: ') + e.message); }
     finally { if (!gone()) { plyCollectionBusy = false; if (plyCollLoading) { plyCollLoading = false; flush(); plyListGrow(); } } }
 }
 function plyGo(i, want) {
@@ -12701,7 +12702,7 @@ function plyGo(i, want) {
     ply.i = i; ply.src = ply.kind = p.key; ply.paused = !e.yt; ply.yt = !!e.yt;
     ply.ctl = p.key !== 'apple'; ply.ends = !!e.yt || p.key === 'spotify' || p.key === 'soundcloud';
     t.src = p.key; t.url = p.urls[0].url;
-    LOG.info('player: plays', t.key, t.title, 'from', p.key, t.len ? Math.round(t.len / 1000) + ' s' : 'no length');
+    PLOG.info('plays', t.key, t.title, 'from', p.key, t.len ? Math.round(t.len / 1000) + ' s' : 'no length');
     plyWake(true); plyMedia(t);
     plyClock(t);
     plyDraw();
@@ -12711,7 +12712,7 @@ function plyGo(i, want) {
     plyDock(null);
     plyBandcamp(e.bc).then(url => {
         if (gen !== ply.gen) return;
-        if (url) { LOG.info('player: Bandcamp widget', url); plyDock({ url, h: e.h }); return; }
+        if (url) { PLOG.info('Bandcamp widget', url); plyDock({ url, h: e.h }); return; }
         toast('Bandcamp has no player for ' + t.title);
         plyEnded('no Bandcamp player');
     });
@@ -12736,7 +12737,7 @@ function plyWake(on) {
     const a = plyWakeEl = new PW.Audio(URL.createObjectURL(new Blob([b], { type: 'audio/wav' })));
     a.loop = true; a.volume = 0.01; a.setAttribute('aria-hidden', 'true');
     plyWakeIv = setInterval(() => { const c = ply.q[ply.i]; if (c && !ply.paused) plyMedia(c, true); }, 4000);
-    a.play().then(() => LOG.debug('player: keep-awake on'), e => LOG.debug('player: keep-awake refused', e.message));
+    a.play().then(() => PLOG.debug('keep-awake on'), e => PLOG.debug('keep-awake refused', e.message));
 }
 function plyMedia(t, again) {
     const ms = msPage(); if (!ms || !t) return;
@@ -12764,7 +12765,7 @@ function plyMedia(t, again) {
 function plyEnded(why) {
     const t = ply.q[ply.i]; if (!t || t.done) return;
     t.done = true;
-    LOG.info('player: track ended (' + why + ')', t.title);
+    PLOG.info('track ended (' + why + ')', t.title);
     if (S.playerRepeat === 'one') plyGo(ply.i, ply.src);
     else if (ply.i + 1 < ply.q.length) plyGo(ply.i + 1);
     else if (S.playerRepeat === 'all') plyGo(0);
@@ -12773,14 +12774,14 @@ function plyEnded(why) {
 function plyRepeat() {
     if (plyRemote && !PLY_WINDOW) { plyControl('repeat'); return; }
     S.playerRepeat = S.playerRepeat === 'off' ? 'all' : S.playerRepeat === 'all' ? 'one' : 'off';
-    save(); LOG.info('player: repeat', S.playerRepeat); plyDraw();
+    save(); PLOG.info('repeat', S.playerRepeat); plyDraw();
 }
-const plyState = paused => { if (paused === ply.paused) return; ply.paused = paused; try { msPage().playbackState = paused ? 'paused' : 'playing'; } catch (e) {} LOG.debug('player:', paused ? 'paused' : 'plays'); plyDraw(); };
+const plyState = paused => { if (paused === ply.paused) return; ply.paused = paused; try { msPage().playbackState = paused ? 'paused' : 'playing'; } catch (e) {} PLOG.debug(paused ? 'paused' : 'plays'); plyDraw(); };
 const plyStep = d => { if (plyRemote && !PLY_WINDOW) { plyControl('step', d); return; } const i = ply.i + d; if (i >= 0 && i < ply.q.length) plyGo(i); else if (d < 0 && ply.i === 0 && ply.ctl) plySeek(0); };
 function plyClose() {
     plyCollStop();
     if (plyRemote && !PLY_WINDOW) { plyControl('close'); plyRemote = false; }
-    LOG.info('player: closed');
+    PLOG.info('closed');
     plyWake(false); try { const ms = msPage(); ms.metadata = null; ms.playbackState = 'none'; } catch (e) {}
     try { sessionStorage.removeItem('eh-ply'); } catch (e) {}
     ply.q = []; ply.i = -1; ply.src = '';
@@ -12800,7 +12801,7 @@ function plyDock(e) {
     f.addEventListener('load', () => {
         if (kind === 'youtube' || kind === 'ytmusic') plyPost('{"event":"listening","id":1,"channel":"widget"}');
         // the bridge in Bandcamp's and Deezer's widget may load after the frame does: asked again until it answers
-        if (kind === 'bandcamp' || kind === 'deezer') { const start = () => plyPost({ ehPlyCmd: 'play', pos: kind === 'bandcamp' ? (ply.q[ply.i]?.resume || 0) / 1000 : 0, v: Math.max(0, Math.min(100, +S.playerVol || 0)) / 100 }); let n = 0; const iv = setInterval(() => { if (gen !== ply.gen || ply.bridged === gen || ++n > 10) { if (n > 10) LOG.warn('player: no answer from the', kind, 'widget; its track ends by its length'); clearInterval(iv); return; } start(); }, 1000); start(); }
+        if (kind === 'bandcamp' || kind === 'deezer') { const start = () => plyPost({ ehPlyCmd: 'play', pos: kind === 'bandcamp' ? (ply.q[ply.i]?.resume || 0) / 1000 : 0, v: Math.max(0, Math.min(100, +S.playerVol || 0)) / 100 }); let n = 0; const iv = setInterval(() => { if (gen !== ply.gen || ply.bridged === gen || ++n > 10) { if (n > 10) PLOG.warn('no answer from the', kind, 'widget; its track ends by its length'); clearInterval(iv); return; } start(); }, 1000); start(); }
     }, { once: true });
 }
 const plyFrame = () => document.querySelector('#eh-ply .ply-dock iframe');
@@ -12809,7 +12810,7 @@ const plyPost = m => { const f = plyFrame(); if (f) try { f.contentWindow.postMe
 function plyCmd(play) {
     if (plyRemote && !PLY_WINDOW) { plyControl('play', play); return; }
     const k = ply.kind;
-    LOG.info('player:', play ? 'play' : 'pause', 'asked of', k);
+    PLOG.info(play ? 'play' : 'pause', 'asked of', k);
     if (ply.yt) plyPost(JSON.stringify({ event: 'command', func: play ? 'playVideo' : 'pauseVideo', args: [] }));
     else if (k === 'spotify') plyPost({ command: 'toggle' });
     else if (k === 'soundcloud') plyPost(JSON.stringify({ method: play ? 'play' : 'pause' }));
@@ -12849,7 +12850,7 @@ function plyVolShow(v) {
 function plySeek(ms) {
     if (plyRemote && !PLY_WINDOW) { plyControl('seek', ms); return; }
     const k = ply.kind, t = ply.q[ply.i]; if (!t || !ply.ctl) return;
-    LOG.info('player: seek to', dur(ms), 'in', k);
+    PLOG.info('seek to', dur(ms), 'in', k);
     if (ply.yt) plyPost(JSON.stringify({ event: 'command', func: 'seekTo', args: [ms / 1000, true] }));
     else if (k === 'spotify') plyPost({ command: 'seek', timestamp: ms / 1000 });
     else if (k === 'soundcloud') plyPost(JSON.stringify({ method: 'seekTo', value: ms }));
@@ -12871,7 +12872,7 @@ window.addEventListener('message', ev => {
         plyVolOnce();
         if (st === 1 && ply.volPlay !== ply.gen) { ply.volPlay = ply.gen; plyVol(); }   // on its first word, before it sounds
     } else if (k === 'spotify') {
-        if (m.type === 'ready' && !t.kicked) { t.kicked = true; LOG.debug('player: Spotify ready, started'); plyPost({ command: 'toggle' }); }
+        if (m.type === 'ready' && !t.kicked) { t.kicked = true; PLOG.debug('Spotify ready, started'); plyPost({ command: 'toggle' }); }
         else if (m.type === 'playback_update' && m.payload) {
             const { isPaused, position, duration } = m.payload;
             if (position > 0) t.played = position;
@@ -12879,12 +12880,12 @@ window.addEventListener('message', ev => {
             else plyState(!!isPaused);
         }
     } else if (k === 'soundcloud') {
-        if (m.method === 'ready') { LOG.debug('player: SoundCloud ready, started'); for (const e of ['finish', 'play', 'pause', 'playProgress']) plyPost(JSON.stringify({ method: 'addEventListener', value: e })); plyVolOnce(); plyPost(JSON.stringify({ method: 'play' })); }
+        if (m.method === 'ready') { PLOG.debug('SoundCloud ready, started'); for (const e of ['finish', 'play', 'pause', 'playProgress']) plyPost(JSON.stringify({ method: 'addEventListener', value: e })); plyVolOnce(); plyPost(JSON.stringify({ method: 'play' })); }
         else if (m.method === 'finish') plyEnded('SoundCloud');
         else if (m.method === 'play' || m.method === 'pause') plyState(m.method === 'pause');
         else if (m.method === 'playProgress' && m.value) t.played = m.value.currentPosition || t.played;
     } else if (typeof m.ehPly === 'string') {
-        if (ply.bridged !== ply.gen) { ply.bridged = ply.gen; ply.ends = true; LOG.debug('player: the', k, 'widget answers'); plyVolOnce(); }
+        if (ply.bridged !== ply.gen) { ply.bridged = ply.gen; ply.ends = true; PLOG.debug('the', k, 'widget answers'); plyVolOnce(); }
         if (m.ehPly === 'restored') { t.played = t.resume || m.pos * 1000; t.resume = 0; plyProg(); return; }
         if (m.ehPly === 'restore-failed') { t.resume = 0; toast('Bandcamp could not restore the playback position'); return; }
         if (m.pos > 0) t.played = m.pos * 1000;
@@ -12894,7 +12895,7 @@ window.addEventListener('message', ev => {
 // Apple's widget says nothing and can't be started: a click into it is taken as its play, and its clock starts
 window.addEventListener('blur', () => setTimeout(() => {
     const f = plyFrame();
-    if (f && document.activeElement === f && ply.kind === 'apple' && ply.paused) { LOG.info('player: Apple Music widget clicked, its clock runs'); plyState(false); }
+    if (f && document.activeElement === f && ply.kind === 'apple' && ply.paused) { PLOG.info('Apple Music widget clicked, its clock runs'); plyState(false); }
 }));
 // the controls: one element, at the bottom (A, the bar) or in the pinned header (B); outside the header, as a chip at the top right
 let plyCtl = null;
@@ -12953,7 +12954,7 @@ function plyDraw() {
     const v = +S.playerVol, vol = plyHasVol() ? `<span class="ply-vg"><button type="button" class="ply-b" data-ply="mute" aria-pressed="${!v}" aria-label="${v ? 'Mute' : 'Unmute'}" data-tip="${v ? 'Mute' : 'Unmute'}">${plyVolIc(v)}</button><span class="ply-vp"><b class="ply-vn">${v}</b><input type="range" class="ply-vol" min="0" max="100" step="1" value="${v}" style="--p:${v}%" aria-label="Volume"></span></span>` : '';
     plyCtl.innerHTML = `<span class="ply-g">${nav}</span>${name}${prog}${vol}${menu}`;
     const im = plyCtl.querySelector('.ply-cov img');
-    if (im) im.addEventListener('error', () => { if (/-250$/.test(im.src)) { LOG.debug('player: no cover thumbnail, trying the full front'); im.src = im.src.replace(/-250$/, ''); } else im.remove(); });
+    if (im) im.addEventListener('error', () => { if (/-250$/.test(im.src)) { PLOG.debug('no cover thumbnail, trying the full front'); im.src = im.src.replace(/-250$/, ''); } else im.remove(); });
     if (plyVgOpen) plyCtl.querySelector('.ply-vg')?.classList.add('vo');
     plyProg();
     plyPin();
@@ -12967,7 +12968,7 @@ function plyWinList(root) {
     let l = root.querySelector('.ply-wl');
     if (!l) {
         l = document.createElement('div'); l.className = 'ply-wl'; l.setAttribute('role', 'list');
-        l.addEventListener('click', ev => { const b = ev.target.closest('.qi'); const i = b ? +b.dataset.i : -1; if (i >= 0 && i < ply.q.length && i !== ply.i) { LOG.info('player: picked from the playlist', i + 1); plyGo(i, ply.pref); } });
+        l.addEventListener('click', ev => { const b = ev.target.closest('.qi'); const i = b ? +b.dataset.i : -1; if (i >= 0 && i < ply.q.length && i !== ply.i) { PLOG.info('picked from the playlist', i + 1); plyGo(i, ply.pref); } });
         root.append(l);
     }
     // the header and the rows are redrawn only when they change, so the cover doesn't reload with every track
@@ -13021,9 +13022,9 @@ function plyMark() {
     document.querySelectorAll('.tr.ply-on').forEach(r => { if (!t || r.dataset.row !== t.key || !data || !data.rel || data.rel.id !== t.rel) r.classList.remove('ply-on'); });
     if (t && data && data.rel && data.rel.id === t.rel) document.querySelector(`.tr[data-row="${window.CSS.escape(t.key)}"]`)?.classList.add('ply-on');
 }
-const plyVideo = () => { if (plyRemote && !PLY_WINDOW) { plyControl('video'); return; } S.playerVideo = !S.playerVideo; save(); LOG.info('player: video', S.playerVideo ? 'shown' : 'hidden'); plyDraw(); };
+const plyVideo = () => { if (plyRemote && !PLY_WINDOW) { plyControl('video'); return; } S.playerVideo = !S.playerVideo; save(); PLOG.info('video', S.playerVideo ? 'shown' : 'hidden'); plyDraw(); };
 const plySrc = key => { ply.pref = key; plyGo(ply.i, key); };
-function plyMute() { const v = +S.playerVol; LOG.info('player:', v ? 'muted' : 'unmuted'); plyVolSet(v ? 0 : ply.lastVol || (() => { try { return GM_getValue('playerVolLast', 100); } catch (e) { return 100; } })(), true); }
+function plyMute() { const v = +S.playerVol; PLOG.info(v ? 'muted' : 'unmuted'); plyVolSet(v ? 0 : ply.lastVol || (() => { try { return GM_getValue('playerVolLast', 100); } catch (e) { return 100; } })(), true); }
 function plyClick(ev) {
     const b = ev.target.closest('[data-ply]'); if (!b || b.disabled) return;
     const k = b.dataset.ply;
@@ -13050,7 +13051,7 @@ const PLY_CV = new Map();
 function plyCoverWire(im) {
     if (!im) return;
     if (!PLY_CV.has(im.dataset.plyrel) && im.getAttribute('src')) im.addEventListener('load', () => PLY_CV.set(im.dataset.plyrel, im.src), { once: true });
-    const full = () => { const id = im.dataset.plyrel; im.onerror = () => im.remove(); edFull(id).then(u => { if (!im.isConnected) return; if (u) { LOG.debug('player: head cover from the archive listing', u); PLY_CV.set(id, u); im.src = u; } else im.remove(); }); };
+    const full = () => { const id = im.dataset.plyrel; im.onerror = () => im.remove(); edFull(id).then(u => { if (!im.isConnected) return; if (u) { PLOG.debug('head cover from the archive listing', u); PLY_CV.set(id, u); im.src = u; } else im.remove(); }); };
     im.onerror = full; if (!im.getAttribute('src')) full();
 }
 function plyRelHead(t, btns = true) {
@@ -13064,7 +13065,7 @@ function plyCollKey(t, type) { return t && ME ? (type === 'rel' ? t.rel && 'rele
 function plyCollStore(type) { return location.origin + '/' + ME + '/' + type; }
 function plyCollDef(type) { try { return GM_getValue('plyColl', {})[plyCollStore(type)] || null; } catch (e) { return null; } }
 function plyCollDefSet(type, d) {
-    try { const all = GM_getValue('plyColl', {}); if (d) all[plyCollStore(type)] = d; else delete all[plyCollStore(type)]; GM_setValue('plyColl', all); } catch (e) { LOG.debug('Player collection: ' + e.message); }
+    try { const all = GM_getValue('plyColl', {}); if (d) all[plyCollStore(type)] = d; else delete all[plyCollStore(type)]; GM_setValue('plyColl', all); } catch (e) { PLOG.debug('Collection: ' + e.message); }
 }
 function plyHeadBtns(t) {
     if (!t) return '';
@@ -13127,7 +13128,7 @@ function plyCollPick(btn, type) {
         else if (b.dataset.cd) {
             const x = COLLECTIONS.get(key), r = x && x.rows && x.rows.find(v => v.id === b.dataset.cd), d = plyCollDef(type);
             plyCollDefSet(type, d && d.id === b.dataset.cd || !r ? null : { id: r.id, label: r.label });
-            LOG.info('player: default ' + (type === 'rel' ? 'release' : 'recording') + ' collection', r && d && d.id !== r.id || r && !d ? r.label : 'cleared');
+            PLOG.info('default ' + (type === 'rel' ? 'release' : 'recording') + ' collection', r && d && d.id !== r.id || r && !d ? r.label : 'cleared');
             plyCollDraw(m); plyHeadPaint();
         } else if (b.dataset.cr) collectionLoad(key, true);
     });
@@ -13192,7 +13193,7 @@ function plyListPaint() {
 }
 function plyListMenu(btn) {
     plyMenu(btn, '<div class="ply-top"><div class="ply-list-head">' + plyRelHead(ply.q[ply.i]) + '</div><div class="hd"><span>Playlist</span>' + (ply.q.length > 1 ? '<button type="button" class="qfb" aria-label="Filter the playlist" aria-expanded="false" data-tip="Filter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></button><input type="search" class="qf" tabindex="-1" placeholder="Filter" aria-label="Filter the playlist" autocomplete="off">' : '') + '<button type="button" class="mbu-ov-x ply-x" aria-label="Close" data-tip="Close">✕</button></div></div>' + plyRows(true),
-        ({ k }) => { const i = +String(k).slice(1); if (i >= 0 && i < ply.q.length && i !== ply.i) { LOG.info('player: picked from the playlist', i + 1); plyGo(i, ply.pref); } }, 'player');
+        ({ k }) => { const i = +String(k).slice(1); if (i >= 0 && i < ply.q.length && i !== ply.i) { PLOG.info('picked from the playlist', i + 1); plyGo(i, ply.pref); } }, 'player');
     plyListPaint();
     document.querySelector('#eh-ply-menu [aria-current]')?.scrollIntoView({ block: 'nearest' });
     plyCoverWire(document.querySelector('#eh-ply-menu .ply-rh img'));
@@ -13225,7 +13226,7 @@ function plyRec(g, eds, append = false) {
     if (plyRemote) { plyControl('close'); plyRemote = false; }
     if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' });
     ply.q = q;
-    LOG.info('player: start the recording', g.id);
+    PLOG.info('start the recording', g.id);
     plyGo(0);
 }
 // a menu under or above the button that opened it; pick gets the clicked item's {k} or {m}
@@ -13306,7 +13307,7 @@ async function plySaveCollection(name) {
             if (added % 25 === 0) toast('Saved ' + added + ' of ' + ids.length + ' recordings…');
         }
         kpWrote(); COLLECTIONS.clear(); toast('Saved ' + added + ' recordings to the new collection');
-    } catch (e) { LOG.warn('Saving player collection: ' + e.message); toast('Collection save failed after ' + added + ' recordings' + (gid ? ' · ' + gid : '') + ': ' + e.message); }
+    } catch (e) { PLOG.warn('Saving the collection: ' + e.message); toast('Collection save failed after ' + added + ' recordings' + (gid ? ' · ' + gid : '') + ': ' + e.message); }
 }
 function plySaveMenu(btn) {
     let input;
@@ -13540,16 +13541,16 @@ async function lbLoved(t) {
 function lbLove(t) {
     const on = !t.loved;
     lbApi('feedback/recording-feedback', { recording_mbid: t.rid, score: on ? 1 : 0 }).then(r => {
-        if (r.status === 200) { t.loved = on; plyHeadPaint(); LOG.info('player: ListenBrainz ' + (on ? 'loved' : 'unloved'), t.title); toast(on ? 'Loved on ListenBrainz: ' + t.title : 'No longer loved on ListenBrainz: ' + t.title); }
-        else { LOG.warn('player: ListenBrainz feedback said ' + r.status, r.j && r.j.error || ''); toast(r.status === 401 ? 'ListenBrainz refused the token: check it in the settings' : 'ListenBrainz didn\'t take the love'); }
+        if (r.status === 200) { t.loved = on; plyHeadPaint(); PLOG.info('ListenBrainz ' + (on ? 'loved' : 'unloved'), t.title); toast(on ? 'Loved on ListenBrainz: ' + t.title : 'No longer loved on ListenBrainz: ' + t.title); }
+        else { PLOG.warn('ListenBrainz feedback said ' + r.status, r.j && r.j.error || ''); toast(r.status === 401 ? 'ListenBrainz refused the token: check it in the settings' : 'ListenBrainz didn\'t take the love'); }
     });
 }
 function lbListen(t, type, at) {
     if (!S.playerScrobble || !lbToken()) return;
     const meta = { artist_name: t.artist, track_name: t.title, release_name: t.relTitle, additional_info: { recording_mbid: t.rid, release_mbid: t.rel, duration_ms: t.len || undefined, media_player: 'Event Horizon', submission_client: 'Event Horizon', submission_client_version: VERSION, music_service: PLY_SVC[t.src], origin_url: t.url } };
     lbApi('submit-listens', { listen_type: type, payload: [type === 'single' ? { listened_at: at, track_metadata: meta } : { track_metadata: meta }] }).then(r => {
-        if (r.status === 200) { LOG.info('player: ListenBrainz ' + (type === 'single' ? 'listen' : 'now playing'), t.title); if (type === 'single') { t.sent = true; t.ok = t.played; plyDraw(); } }
-        else { LOG.warn('player: ListenBrainz said ' + r.status, r.j && r.j.error || ''); if (type === 'single' && r.status === 401) toast('ListenBrainz refused the token: check it in the settings'); }
+        if (r.status === 200) { PLOG.info('ListenBrainz ' + (type === 'single' ? 'listen' : 'now playing'), t.title); if (type === 'single') { t.sent = true; t.ok = t.played; plyDraw(); } }
+        else { PLOG.warn('ListenBrainz said ' + r.status, r.j && r.j.error || ''); if (type === 'single' && r.status === 401) toast('ListenBrainz refused the token: check it in the settings'); }
     });
 }
 // a track's clock starts with it; a tick a second counts the time it plays (played: where it is, which a widget that
@@ -13613,7 +13614,7 @@ setInterval(() => {
             }
         } else if (v && ehOn && data && data.rel && v.rel === data.rel.id) {
             plyResumed = true;
-            LOG.info('player: resumes', v.key, 'at', dur(v.played || 0));
+            PLOG.info('resumes', v.key, 'at', dur(v.played || 0));
             plyStart(data.rel, v.key, v.src);
             const r = ply.q[ply.i]; if (r && r.key === v.key && v.played > 3000) r.resume = v.played;
         } else if (!v) plyResumed = true;
@@ -16744,10 +16745,10 @@ function cfgWire(panel, b, body) {
     panel.addEventListener('change', ev => {
         const inp = ev.target.closest && ev.target.closest('[data-lbtok]'); if (!inp) return;
         const v = lbToken(inp.value.trim());
-        if (!v) { LOG.info('player: ListenBrainz token cleared'); return; }
+        if (!v) { PLOG.info('ListenBrainz token cleared'); return; }
         lbApi('validate-token', null, v).then(r => {
-            if (r.status === 200 && r.j && r.j.valid) { LOG.info('player: ListenBrainz token of ' + r.j.user_name); toast('ListenBrainz token of ' + r.j.user_name); }
-            else { LOG.warn('player: ListenBrainz token check said ' + r.status, r.j && r.j.message || ''); toast(r.status ? 'ListenBrainz doesn\'t know this token' : 'ListenBrainz didn\'t answer'); }
+            if (r.status === 200 && r.j && r.j.valid) { PLOG.info('ListenBrainz token of ' + r.j.user_name); toast('ListenBrainz token of ' + r.j.user_name); }
+            else { PLOG.warn('ListenBrainz token check said ' + r.status, r.j && r.j.message || ''); toast(r.status ? 'ListenBrainz doesn\'t know this token' : 'ListenBrainz didn\'t answer'); }
         });
     });
 }
@@ -16784,6 +16785,7 @@ function launcher() {
 // made before start(): the page's own data is asked for at once (prefetch), and its first answers can come before
 // DOMContentLoaded, when start() runs; each logs a line
 const LOG = mbuLog({ name: 'Event Horizon', version: VERSION, key: 'event_horizon.logwin', history: { prefix: 'eh:session:', auto: true } });   // #890: sessions with a vote, a note, a warning or an error
+const PLOG = LOG.cat('player');   // the player's lines, a category of their own
 LOG.info(mbuStartupInfo('Event Horizon'));
 function start() {
     try { start1(); } catch (e) { const h = document.getElementById('eh-hide'); if (h) h.remove(); LOG.error('Start failed: ' + (e && e.stack || e)); throw e; }

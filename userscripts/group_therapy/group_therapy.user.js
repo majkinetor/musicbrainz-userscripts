@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.185656
+// @version      2026.11.19.203508
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -1714,7 +1714,7 @@
   // Categories (#697) are optional. A tagged line shows its category before the
   // message and in the Markdown ("WARN [Spotify] …"). The viewer grows a row of
   // filters only when there is a choice: the levels once two of them have lines
-  // (ok counts as info), the categories once there are two. Click one to see only
+  // (ok counts as info), the categories once there are two (or one beside untagged lines). Click one to see only
   // those lines, click it again to see all; Copy always takes everything.
   //
   // The floating window (open) and a mounted viewer (mount) are the same viewer;
@@ -2000,12 +2000,13 @@
           var qEl = root.querySelector('.mbu-log-q'), q = '', sel = root.querySelector('.mbu-log-ses');
           var fRow = root.querySelector('.mbu-log-f'), fCss = root.querySelector('.mbu-log-fcss');
           // what this viewer shows: the live lines, or a past session (read-only)
-          var past = null, src = buf, cats = [], catIx = {}, sevs = {}, fSev = null, fCat = null;
+          var past = null, src = buf, cats = [], catIx = {}, bare = false, sevs = {}, fSev = null, fCat = null;
           var scope = '.mbu-logpop[data-mbu-lv="' + vid + '"] ';
           var miss = function (e) { return !!q && ((e.cat || '') + ' ' + e.msg).toLowerCase().indexOf(q) < 0; };
           // note a line's level and category; true when the filter row must change
           var note = function (e) {
               var grew = false;
+              if (!e.cat && !bare) { bare = true; grew = true; }
               if (e.cat && !(e.cat in catIx)) { catIx[e.cat] = cats.length; cats.push(e.cat); grew = true; }
               if (!sevs[group(e.sev)]) { sevs[group(e.sev)] = true; grew = true; }
               return grew;
@@ -2026,7 +2027,7 @@
           // rule in the viewer's own <style>, not a walk over the rows
           var filters = function () {
               var lv = LEVELS.filter(function (l) { return sevs[l]; });
-              var showL = lv.length > 1, showC = cats.length > 1;
+              var showL = lv.length > 1, showC = cats.length > 1 || cats.length === 1 && bare;
               if (fSev && !sevs[fSev]) fSev = null;
               if (fCat != null && !(fCat in catIx)) fCat = null;
               var b = function (kind, v, on) {
@@ -2049,7 +2050,7 @@
           var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
           // all rows at once: on opening, and when the session shown changes
           var draw = function () {
-              cats = []; catIx = {}; sevs = {};
+              cats = []; catIx = {}; bare = false; sevs = {};
               src.forEach(note);
               var frag = document.createDocumentFragment();
               src.forEach(function (e) { frag.appendChild(row(e)); });

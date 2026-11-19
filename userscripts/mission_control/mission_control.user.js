@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.19.210000
+// @version      2026.11.19.203508
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -6454,7 +6454,7 @@ function mbRestackCorner(corner) {
 // Categories (#697) are optional. A tagged line shows its category before the
 // message and in the Markdown ("WARN [Spotify] …"). The viewer grows a row of
 // filters only when there is a choice: the levels once two of them have lines
-// (ok counts as info), the categories once there are two. Click one to see only
+// (ok counts as info), the categories once there are two (or one beside untagged lines). Click one to see only
 // those lines, click it again to see all; Copy always takes everything.
 //
 // The floating window (open) and a mounted viewer (mount) are the same viewer;
@@ -6740,12 +6740,13 @@ function mbuLog(o) {
         var qEl = root.querySelector('.mbu-log-q'), q = '', sel = root.querySelector('.mbu-log-ses');
         var fRow = root.querySelector('.mbu-log-f'), fCss = root.querySelector('.mbu-log-fcss');
         // what this viewer shows: the live lines, or a past session (read-only)
-        var past = null, src = buf, cats = [], catIx = {}, sevs = {}, fSev = null, fCat = null;
+        var past = null, src = buf, cats = [], catIx = {}, bare = false, sevs = {}, fSev = null, fCat = null;
         var scope = '.mbu-logpop[data-mbu-lv="' + vid + '"] ';
         var miss = function (e) { return !!q && ((e.cat || '') + ' ' + e.msg).toLowerCase().indexOf(q) < 0; };
         // note a line's level and category; true when the filter row must change
         var note = function (e) {
             var grew = false;
+            if (!e.cat && !bare) { bare = true; grew = true; }
             if (e.cat && !(e.cat in catIx)) { catIx[e.cat] = cats.length; cats.push(e.cat); grew = true; }
             if (!sevs[group(e.sev)]) { sevs[group(e.sev)] = true; grew = true; }
             return grew;
@@ -6766,7 +6767,7 @@ function mbuLog(o) {
         // rule in the viewer's own <style>, not a walk over the rows
         var filters = function () {
             var lv = LEVELS.filter(function (l) { return sevs[l]; });
-            var showL = lv.length > 1, showC = cats.length > 1;
+            var showL = lv.length > 1, showC = cats.length > 1 || cats.length === 1 && bare;
             if (fSev && !sevs[fSev]) fSev = null;
             if (fCat != null && !(fCat in catIx)) fCat = null;
             var b = function (kind, v, on) {
@@ -6789,7 +6790,7 @@ function mbuLog(o) {
         var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
         // all rows at once: on opening, and when the session shown changes
         var draw = function () {
-            cats = []; catIx = {}; sevs = {};
+            cats = []; catIx = {}; bare = false; sevs = {};
             src.forEach(note);
             var frag = document.createDocumentFragment();
             src.forEach(function (e) { frag.appendChild(row(e)); });

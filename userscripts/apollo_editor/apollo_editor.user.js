@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.19.185656
+// @version      2026.11.19.203508
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -5821,7 +5821,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // Categories (#697) are optional. A tagged line shows its category before the
   // message and in the Markdown ("WARN [Spotify] …"). The viewer grows a row of
   // filters only when there is a choice: the levels once two of them have lines
-  // (ok counts as info), the categories once there are two. Click one to see only
+  // (ok counts as info), the categories once there are two (or one beside untagged lines). Click one to see only
   // those lines, click it again to see all; Copy always takes everything.
   //
   // The floating window (open) and a mounted viewer (mount) are the same viewer;
@@ -6107,12 +6107,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           var qEl = root.querySelector('.mbu-log-q'), q = '', sel = root.querySelector('.mbu-log-ses');
           var fRow = root.querySelector('.mbu-log-f'), fCss = root.querySelector('.mbu-log-fcss');
           // what this viewer shows: the live lines, or a past session (read-only)
-          var past = null, src = buf, cats = [], catIx = {}, sevs = {}, fSev = null, fCat = null;
+          var past = null, src = buf, cats = [], catIx = {}, bare = false, sevs = {}, fSev = null, fCat = null;
           var scope = '.mbu-logpop[data-mbu-lv="' + vid + '"] ';
           var miss = function (e) { return !!q && ((e.cat || '') + ' ' + e.msg).toLowerCase().indexOf(q) < 0; };
           // note a line's level and category; true when the filter row must change
           var note = function (e) {
               var grew = false;
+              if (!e.cat && !bare) { bare = true; grew = true; }
               if (e.cat && !(e.cat in catIx)) { catIx[e.cat] = cats.length; cats.push(e.cat); grew = true; }
               if (!sevs[group(e.sev)]) { sevs[group(e.sev)] = true; grew = true; }
               return grew;
@@ -6133,7 +6134,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           // rule in the viewer's own <style>, not a walk over the rows
           var filters = function () {
               var lv = LEVELS.filter(function (l) { return sevs[l]; });
-              var showL = lv.length > 1, showC = cats.length > 1;
+              var showL = lv.length > 1, showC = cats.length > 1 || cats.length === 1 && bare;
               if (fSev && !sevs[fSev]) fSev = null;
               if (fCat != null && !(fCat in catIx)) fCat = null;
               var b = function (kind, v, on) {
@@ -6156,7 +6157,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
           // all rows at once: on opening, and when the session shown changes
           var draw = function () {
-              cats = []; catIx = {}; sevs = {};
+              cats = []; catIx = {}; bare = false; sevs = {};
               src.forEach(note);
               var frag = document.createDocumentFragment();
               src.forEach(function (e) { frag.appendChild(row(e)); });

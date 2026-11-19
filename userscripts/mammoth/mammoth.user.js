@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.19.185656
+// @version      2026.11.19.203508
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg==
@@ -1171,7 +1171,7 @@
   // Categories (#697) are optional. A tagged line shows its category before the
   // message and in the Markdown ("WARN [Spotify] …"). The viewer grows a row of
   // filters only when there is a choice: the levels once two of them have lines
-  // (ok counts as info), the categories once there are two. Click one to see only
+  // (ok counts as info), the categories once there are two (or one beside untagged lines). Click one to see only
   // those lines, click it again to see all; Copy always takes everything.
   //
   // The floating window (open) and a mounted viewer (mount) are the same viewer;
@@ -1457,12 +1457,13 @@
           var qEl = root.querySelector('.mbu-log-q'), q = '', sel = root.querySelector('.mbu-log-ses');
           var fRow = root.querySelector('.mbu-log-f'), fCss = root.querySelector('.mbu-log-fcss');
           // what this viewer shows: the live lines, or a past session (read-only)
-          var past = null, src = buf, cats = [], catIx = {}, sevs = {}, fSev = null, fCat = null;
+          var past = null, src = buf, cats = [], catIx = {}, bare = false, sevs = {}, fSev = null, fCat = null;
           var scope = '.mbu-logpop[data-mbu-lv="' + vid + '"] ';
           var miss = function (e) { return !!q && ((e.cat || '') + ' ' + e.msg).toLowerCase().indexOf(q) < 0; };
           // note a line's level and category; true when the filter row must change
           var note = function (e) {
               var grew = false;
+              if (!e.cat && !bare) { bare = true; grew = true; }
               if (e.cat && !(e.cat in catIx)) { catIx[e.cat] = cats.length; cats.push(e.cat); grew = true; }
               if (!sevs[group(e.sev)]) { sevs[group(e.sev)] = true; grew = true; }
               return grew;
@@ -1483,7 +1484,7 @@
           // rule in the viewer's own <style>, not a walk over the rows
           var filters = function () {
               var lv = LEVELS.filter(function (l) { return sevs[l]; });
-              var showL = lv.length > 1, showC = cats.length > 1;
+              var showL = lv.length > 1, showC = cats.length > 1 || cats.length === 1 && bare;
               if (fSev && !sevs[fSev]) fSev = null;
               if (fCat != null && !(fCat in catIx)) fCat = null;
               var b = function (kind, v, on) {
@@ -1506,7 +1507,7 @@
           var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
           // all rows at once: on opening, and when the session shown changes
           var draw = function () {
-              cats = []; catIx = {}; sevs = {};
+              cats = []; catIx = {}; bare = false; sevs = {};
               src.forEach(note);
               var frag = document.createDocumentFragment();
               src.forEach(function (e) { frag.appendChild(row(e)); });

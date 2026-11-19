@@ -1030,7 +1030,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // Categories (#697) are optional. A tagged line shows its category before the
     // message and in the Markdown ("WARN [Spotify] …"). The viewer grows a row of
     // filters only when there is a choice: the levels once two of them have lines
-    // (ok counts as info), the categories once there are two. Click one to see only
+    // (ok counts as info), the categories once there are two (or one beside untagged lines). Click one to see only
     // those lines, click it again to see all; Copy always takes everything.
     //
     // The floating window (open) and a mounted viewer (mount) are the same viewer;
@@ -1316,12 +1316,13 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             var qEl = root.querySelector('.mbu-log-q'), q = '', sel = root.querySelector('.mbu-log-ses');
             var fRow = root.querySelector('.mbu-log-f'), fCss = root.querySelector('.mbu-log-fcss');
             // what this viewer shows: the live lines, or a past session (read-only)
-            var past = null, src = buf, cats = [], catIx = {}, sevs = {}, fSev = null, fCat = null;
+            var past = null, src = buf, cats = [], catIx = {}, bare = false, sevs = {}, fSev = null, fCat = null;
             var scope = '.mbu-logpop[data-mbu-lv="' + vid + '"] ';
             var miss = function (e) { return !!q && ((e.cat || '') + ' ' + e.msg).toLowerCase().indexOf(q) < 0; };
             // note a line's level and category; true when the filter row must change
             var note = function (e) {
                 var grew = false;
+                if (!e.cat && !bare) { bare = true; grew = true; }
                 if (e.cat && !(e.cat in catIx)) { catIx[e.cat] = cats.length; cats.push(e.cat); grew = true; }
                 if (!sevs[group(e.sev)]) { sevs[group(e.sev)] = true; grew = true; }
                 return grew;
@@ -1342,7 +1343,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             // rule in the viewer's own <style>, not a walk over the rows
             var filters = function () {
                 var lv = LEVELS.filter(function (l) { return sevs[l]; });
-                var showL = lv.length > 1, showC = cats.length > 1;
+                var showL = lv.length > 1, showC = cats.length > 1 || cats.length === 1 && bare;
                 if (fSev && !sevs[fSev]) fSev = null;
                 if (fCat != null && !(fCat in catIx)) fCat = null;
                 var b = function (kind, v, on) {
@@ -1365,7 +1366,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
             // all rows at once: on opening, and when the session shown changes
             var draw = function () {
-                cats = []; catIx = {}; sevs = {};
+                cats = []; catIx = {}; bare = false; sevs = {};
                 src.forEach(note);
                 var frag = document.createDocumentFragment();
                 src.forEach(function (e) { frag.appendChild(row(e)); });
