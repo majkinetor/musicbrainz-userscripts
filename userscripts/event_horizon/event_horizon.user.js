@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.235600
+// @version      2026.11.20.001500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3252,6 +3252,7 @@ h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25
 .lab .cat{font-size:13px;font-weight:500;margin:0}
 button.tx.tx[data-playall]{display:inline-flex;align-items:center;gap:4px;color:var(--accent);margin-right:6px;padding-right:12px;border-right:1px solid var(--line);border-bottom:0}button.tx.tx[data-playall]>svg{width:14px;height:14px;flex:none}button.tx.tx[data-playall]:hover{color:var(--text)}button.tx.tx[data-playrec]{display:inline-flex;align-items:center;gap:4px}button.tx.tx[data-playrec]>svg{width:14px;height:14px;flex:none}button.tx{all:unset;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);padding:4px 2px;border-bottom:2px solid transparent}.tx>.txi{display:none}@media (max-width:700px){.tx:has(>.txi){display:inline-flex;align-items:center;justify-content:center;min-width:30px;min-height:30px}.tx>.txi{display:block}.tx:has(>.txi)>.txl{display:none}}
 button.tx:hover{color:var(--text)}
+.ed-t tbody tr.crm-on td,.ed-t tbody tr.crm-on:hover td{background:color-mix(in srgb,var(--accent) 22%,transparent)}button.tx.crm-go{color:var(--accent);margin-right:6px}button.tx.crm-go[hidden]{display:none}button.tx.crm-go[aria-busy]{opacity:.5;cursor:progress}
 button.tx[data-colplay] svg{width:14px;height:14px;vertical-align:middle}
 .ed-t a.tt,.disco a,.ed-t td.tc,.ed-t td.pb{position:relative}.cvp{position:absolute;inset:0 0 auto;aspect-ratio:1;display:grid;place-items:center;pointer-events:none}.ed-t td.tc>.cvp{inset:0;aspect-ratio:auto}.cvp>button.tx[data-colplay]{pointer-events:auto;width:30px;height:30px;border-radius:50%;padding:0;display:grid;place-items:center;background:rgba(0,0,0,.62)!important;color:#fff!important;border:0;opacity:0}.cvp>button.tx[data-colplay]:hover{background:rgba(0,0,0,.82)!important}.ed-t td.pb{padding-left:28px}.ed-t td.pb>.cvp{inset:0 auto 0 0;width:28px;aspect-ratio:auto}.ed-t td.pb>.cvp>button.tx[data-colplay]{background:none!important;color:inherit!important}tr:hover .cvp>button,.disco a:hover .cvp>button,.cvp>button:focus-visible{opacity:1}@media (hover:none){.cvp>button.tx[data-colplay]{opacity:1}}
 button.tx.plcfg{font-size:17px;line-height:1;margin-left:4px}
@@ -8590,7 +8591,9 @@ function tblParse(t, rated) {
     };
     // a row of headings inside the body names the group below it (a place's "recording location for"): kept as its text
     const row = tr => tr.querySelector('td') ? [...tr.children].filter((_, i) => keep[i]).map(cell) : tr.textContent.trim().replace(/\s+/g, ' ');
-    return { head: ths.filter((_, i) => keep[i]).map(th => esc(th.textContent.replace(/\s*▴\/▾/g, '').replace(/\s+/g, ' ').trim())), rows: [...t.querySelectorAll('tbody tr')].map(row) };
+    // a collection its viewer can change has a "remove" checkbox per row, its item's id: kept beside the rows
+    const trs = [...t.querySelectorAll('tbody tr')], ids = trs.map(tr => { const i = tr.querySelector('input[name="remove"]'); return i ? i.value : ''; });
+    return { head: ths.filter((_, i) => keep[i]).map(th => esc(th.textContent.replace(/\s*▴\/▾/g, '').replace(/\s+/g, ' ').trim())), rows: trs.map(row), ...(ids.some(Boolean) ? { ids } : {}) };
 }
 // the page shows as soon as either the instrument or its lists are in: lists first give a page
 // named from MusicBrainz's subpage, and its facts fill in when the instrument arrives (d.gP)
@@ -8718,11 +8721,13 @@ function tabSect(sid, name, x, href, cv) {
         + `<span class="ed-views"><button type="button" data-tqopen="${sid}" aria-pressed="${open}" aria-label="Filter" data-tip="${open ? 'Hide the filter, clearing it' : 'Filter the rows'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`
         + (cv ? viewBs(['grid', 'row', 'table'], view, 'tabview', 'View') : '');
     const pbt = r => { const m = playable && Array.isArray(r) && r.join(' ').match(new RegExp('/' + ent + '/(' + MBID.source + ')', 'i')); return m ? `<span class="cvp"><button type="button" class="tx" data-colplay="${m[1]}" data-tip="${plyClickTip('Play this ' + ent)}" aria-label="Play this ${ent}">${SVG(PLY_I.play)}</button></span>` : ''; };
-    const tr = r => { const p = pbt(r); return Array.isArray(r) ? `<tr>${cvTd(r, p)}${cols.map((i, j) => `<td${j === 0 && p && !cv ? ' class="pb"' : ''}>${j === 0 && p && !cv ? p : ''}${txt(r[i]) ? r[i] : '—'}</td>`).join('')}</tr>` : `<tr class="tsub"><td colspan="${span}">${esc(r.charAt(0).toUpperCase() + r.slice(1))}</td></tr>`; };
+    const rid = sid === 'cp' && x.ids && new Map(x.rows.map((r, i) => [r, x.ids[i]]));
+    const trO = r => { const id = rid && rid.get(r); return id ? `<tr data-colrm="${esc(id)}"${COLRM.has(id) ? ' class="crm-on"' : ''}>` : '<tr>'; };
+    const tr = r => { const p = pbt(r); return Array.isArray(r) ? `${trO(r)}${cvTd(r, p)}${cols.map((i, j) => `<td${j === 0 && p && !cv ? ' class="pb"' : ''}>${j === 0 && p && !cv ? p : ''}${txt(r[i]) ? r[i] : '—'}</td>`).join('')}</tr>` : `<tr class="tsub"><td colspan="${span}">${esc(r.charAt(0).toUpperCase() + r.slice(1))}</td></tr>`; };
     const more = x.more ? lmFoot('tab:' + sid, n, x.total || 0) : '';
     const body = view === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr>${cv ? '<th></th>' : ''}${cols.map(hb).join('')}</tr></thead><tbody>${shown.map(tr).join('')}</tbody></table></div>`
         : `<div class="${view === 'row' ? 'ed-row disco' : 'disco'}">${shown.map(tile).join('')}</div>`;
-    return sect(sid, `${name} <span class="count">${cnt}</span>`, (playable ? `<button type="button" class="tx" data-colplay="all" data-tip="${plyClickTip('Play the collection')}" aria-label="Play the collection">${SVG(PLY_I.play)} Play</button>` : '') + tools, (q ? `<div class="fbar"><span class="fn">${shown.filter(Array.isArray).length} of ${n}</span></div>` : '') + body + more, `<div class="folded-note">${cnt} ${name.toLowerCase()}</div>`);
+    return sect(sid, `${name} <span class="count">${cnt}</span>`, (playable ? `<button type="button" class="tx" data-colplay="all" data-tip="${plyClickTip('Play the collection')}" aria-label="Play the collection">${SVG(PLY_I.play)} Play</button>` : '') + (rid && view === 'table' ? colrmBtn() : '') + tools, (q ? `<div class="fbar"><span class="fn">${shown.filter(Array.isArray).length} of ${n}</span></div>` : '') + body + more, `<div class="folded-note">${cnt} ${name.toLowerCase()}</div>`);
 }
 function insList(d, i) {
     const [sid, name, sub] = [['ia', 'Artists', 'artists'], ['ir', 'Releases', 'releases'], ['ic', 'Recordings', 'recordings']][i];
@@ -9006,7 +9011,68 @@ async function colSubToggle(a) {
         a.removeAttribute('aria-busy'); toast('Subscription change failed');
     }
 }
-const colItems = d => { const g = d.g || {}, x = d.listsX && d.listsX[0], ent = g.ent || ''; return tabSect('cp', COL_NAME[ent] || 'Items', x, `${MB}/collection/${d.id}`, ART_URL[ent] ? ent : undefined); };
+// Right-dragging over a collection's rows picks them (a right-click picks one; dragging from a picked row unpicks), and the
+// header's Remove takes them out of the collection, as MusicBrainz's "Remove selected items" does; Escape drops the pick.
+// Only a collection its viewer can change has the ids that make this possible.
+const COLRM = new Set();
+let colrmFor = '';
+const colrmBtn = () => `<button type="button" class="tx crm-go" data-colrm-go${COLRM.size ? '' : ' hidden'}>Remove <span>${COLRM.size}</span> from the collection</button>`;
+const colrmSync = () => {
+    for (const r of document.querySelectorAll('#app tr[data-colrm]')) r.classList.toggle('crm-on', COLRM.has(r.dataset.colrm));
+    const b = document.querySelector('#app [data-colrm-go]');
+    if (b) { b.hidden = !COLRM.size; b.querySelector('span').textContent = COLRM.size; }
+};
+document.addEventListener('mousedown', ev => {
+    if (!ehOn || ev.button !== 2 || !data || data.kind !== 'collection' || !ev.target.closest) return;
+    const r0 = ev.target.closest('#app tr[data-colrm]');
+    if (!r0 || ev.target.closest('button[data-colplay],input,textarea')) return;
+    if (colrmFor !== data.id) { COLRM.clear(); colrmFor = data.id; }
+    ev.preventDefault();
+    const rows = [...r0.closest('tbody').querySelectorAll('tr[data-colrm]')], on = !COLRM.has(r0.dataset.colrm);
+    let last = rows.indexOf(r0);
+    const set = r => { if (on) COLRM.add(r.dataset.colrm); else COLRM.delete(r.dataset.colrm); };
+    set(r0); colrmSync();
+    // a fast drag skips rows between two mouseovers: the rows in between are taken too
+    const over = e => {
+        const r = e.target.closest && e.target.closest('#app tr[data-colrm]'), i = r ? rows.indexOf(r) : -1;
+        if (i < 0 || i === last) return;
+        for (let k = Math.min(i, last); k <= Math.max(i, last); k++) set(rows[k]);
+        last = i; colrmSync();
+    };
+    const up = e => {
+        if (e.button !== 2) return;
+        document.removeEventListener('mouseover', over); document.removeEventListener('mouseup', up, true);
+        // Windows opens the menu on the release, Linux and macOS on the press (the fold handler steps aside for these rows)
+        const eat = c => { c.preventDefault(); c.stopPropagation(); };
+        document.addEventListener('contextmenu', eat, true); setTimeout(() => document.removeEventListener('contextmenu', eat, true), 400);
+        LOG.debug('collection: picked for removal', COLRM.size);
+    };
+    document.addEventListener('mouseover', over); document.addEventListener('mouseup', up, true);
+});
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && ehOn && COLRM.size && data && data.kind === 'collection' && !ev.target.closest('input,textarea,select')) { COLRM.clear(); colrmSync(); } });
+document.addEventListener('click', async ev => {
+    const b = ehOn && ev.target.closest && ev.target.closest('#app [data-colrm-go]');
+    if (!b || !data || data.kind !== 'collection' || !COLRM.size || b.getAttribute('aria-busy')) return;
+    const d = data, n = showing, ids = [...COLRM];
+    b.setAttribute('aria-busy', 'true');
+    try {
+        const r = await mbnFetch(`${MB}/collection/${d.id}`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: ids.map(i => 'remove=' + encodeURIComponent(i)).join('&'), credentials: 'include' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        if (/\/login\b/.test(new URL(r.url || MB).pathname)) throw new Error('logged out');
+        kpWrote();
+        const y = await mbTab('collection', d.id, '');
+        LOG.info('collection: removed', ids.length);
+        COLRM.clear();
+        if (n !== showing || data !== d) return;
+        d.listsX = [y]; if (y.col && d.g) Object.assign(d.g, y.col);
+        const sy = scrollY; render(); scrollTo(0, sy);
+        toast(`Removed ${ids.length} from the collection`);
+    } catch (e) {
+        LOG.err('Removing from the collection failed: ' + e.message);
+        b.removeAttribute('aria-busy'); toast('Removing failed');
+    }
+});
+const colItems = d => { if (colrmFor !== d.id) { COLRM.clear(); colrmFor = d.id; } const g = d.g || {}, x = d.listsX && d.listsX[0], ent = g.ent || ''; return tabSect('cp', COL_NAME[ent] || 'Items', x, `${MB}/collection/${d.id}`, ART_URL[ent] ? ent : undefined); };
 /* ── an editor's collections ─────────────────────── */
 // MusicBrainz's /user/<name>/collections: a table per entity type, under the editor's own and the collaborative ones
 function collsParse(html) {
@@ -11184,6 +11250,7 @@ async function tabMore(d, sid) {
     if (x.recs) { await recsMore(d); return; }
     const y = await mbTab(...x.src, x.page + 1);
     if (data !== d) return;
+    if (x.ids || y.ids) x.ids = (x.ids || x.rows.map(() => '')).concat(y.ids || y.rows.map(() => ''));
     x.rows = x.rows.concat(y.rows); x.page = y.page; x.more = y.more && y.rows.length > 0;
 }
 // a ws/2 list's next 100
@@ -15838,6 +15905,8 @@ function build() {
         }
         // a text field keeps the browser's own menu (spell check, paste), never a fold (#967)
         if (ev.target.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"])')) return;
+        // a collection's row: the right button picks it for removal, never folds every section
+        if (ev.target.closest('#app tr[data-colrm]')) { ev.preventDefault(); return; }
         const edit = ev.target.closest('button[data-aliases],button[data-tgin="open"]');
         if (edit) {
             const base = aliasesHref(); if (!base) return;
