@@ -3022,6 +3022,17 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         if (h) stickySpacer.style.height = h + 'px';
     };
     window.addEventListener('resize', () => { if (bar.classList.contains('is-pinned')) bar._pin(); });
+    // Event Horizon's pinned bar (the player in it) sits on top of the page: row1 pins right under its real bottom edge,
+    // read from the bar itself, because the height Event Horizon publishes can lag behind the bar on some pages
+    const underPin = () => {
+        if (!bar.matches('.is-pinned, .is-importing')) { if (row1.style.top) row1.style.top = ''; return; }
+        const p = document.getElementById('eh-pin');
+        let top = 0;
+        if (p && !p.hidden && getComputedStyle(p).display !== 'none') { const r = p.getBoundingClientRect(); if (r.top <= 1 && r.bottom > 0) top = Math.round(r.bottom); }
+        if (row1.style.top !== top + 'px') row1.style.top = top + 'px';
+    };
+    window.addEventListener('scroll', underPin, { passive: true });
+    setInterval(underPin, 400);
 
     // ── Options (inline in the single bar — #139). No "Options:" label: the
     //    toggles are self-evident and the "Options ▾" popover already names itself.

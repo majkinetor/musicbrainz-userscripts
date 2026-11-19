@@ -8,7 +8,8 @@ test('the tab player restores on release subpages', { tag: '@sandbox' }, async (
   await page.goto('https://test.musicbrainz.org/');
   await page.evaluate(id => {
     const q = [{ key: '1-1', n: 1, title: 'Track', rid: 'rec', artist: 'Artist', len: 100000, rel: id, relTitle: 'Album', srcs: [{ key: 'youtube', name: 'YouTube', urls: [{ url: 'https://www.youtube.com/watch?v=abcdefghijk' }] }] }];
-    sessionStorage.setItem('eh-ply', JSON.stringify({ rel: id, key: '1-1', src: 'youtube', played: 10000, q }));
+    window.name = 'eh-ply-test';
+    sessionStorage.setItem('eh-ply', JSON.stringify({ tab: 'eh-ply-test', rel: id, key: '1-1', src: 'youtube', played: 10000, q }));
   }, rel);
   for (const sub of ['cover-art', 'edit-relationships', 'details', 'discids', 'edit_annotation']) {
     await page.goto(`https://test.musicbrainz.org/release/${rel}/${sub}`, { waitUntil: 'domcontentloaded' });
