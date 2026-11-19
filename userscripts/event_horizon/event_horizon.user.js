@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.235501
+// @version      2026.11.19.235502
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12748,7 +12748,7 @@ function plyMedia(t, again) {
     } catch (e) { if (!again) LOG.warn('player: Media Session metadata failed:', e.message); }
     // the widget's iframe plays too and can take over the lock screen's session, which then shows only its own
     // pause: the handlers go on again with every track, and the silent loop restarts so this page plays last
-    if (plyWakeEl && !again) { plyWakeEl.pause(); plyWakeEl.play().catch(e => LOG.warn('player: keep-awake restart refused:', e.message)); }
+    if (plyWakeEl && !again && !plyWakeEl.paused) { plyWakeEl.pause(); plyWakeEl.play().then(() => LOG.info('player: keep-awake restarted'), e => LOG.warn('player: keep-awake restart refused:', e.message)); }
     try { if (t.len) ms.setPositionState(msObj({ duration: t.len / 1000, position: Math.min(t.len, t.played || 0) / 1000, playbackRate: 1 })); } catch (e) { if (!again) LOG.warn('player: Media Session position failed:', e.message); }
     const supported = [], failed = [];
     const on = (k, f) => { try { ms.setActionHandler(k, msFn(ev => { const c = ply.q[ply.i]; LOG.info('player: system media action', k, 'track:', c ? c.title : 'none', 'artist:', c ? c.artist : '', 'source:', ply.kind, ev && ev.seekOffset != null ? 'offset ' + ev.seekOffset : '', ev && ev.seekTime != null ? 'time ' + ev.seekTime : ''); f(ev && { seekOffset: ev.seekOffset, seekTime: ev.seekTime }); })); supported.push(k); } catch (e) { failed.push(k + ': ' + e.message); } };
@@ -12783,7 +12783,7 @@ function plyRepeat() {
     S.playerRepeat = S.playerRepeat === 'off' ? 'all' : S.playerRepeat === 'all' ? 'one' : 'off';
     save(); LOG.info('player: repeat', S.playerRepeat); plyDraw();
 }
-const plyState = paused => { if (paused === ply.paused) return; ply.paused = paused; try { msPage().playbackState = paused ? 'paused' : 'playing'; } catch (e) {} LOG.debug('player:', paused ? 'paused' : 'plays'); plyDraw(); };
+const plyState = paused => { if (paused === ply.paused) return; ply.paused = paused; try { msPage().playbackState = paused ? 'paused' : 'playing'; } catch (e) {} if (!paused && plyWakeEl) { plyWakeEl.pause(); plyWakeEl.play().then(() => LOG.info('player: keep-awake restarted after widget played'), e => LOG.warn('player: keep-awake restart after widget refused:', e.message)); } LOG.debug('player:', paused ? 'paused' : 'plays'); plyDraw(); };
 const plyStep = d => { if (plyRemote && !PLY_WINDOW) { plyControl('step', d); return; } const i = ply.i + d; if (i >= 0 && i < ply.q.length) plyGo(i); else if (d < 0 && ply.i === 0 && ply.ctl) plySeek(0); };
 function plyClose() {
     plyCollStop();
