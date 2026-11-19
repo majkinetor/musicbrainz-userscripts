@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.220001
+// @version      2026.11.19.230001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5090,15 +5090,17 @@ function byRole(cr) { const m = new Map(); for (const c of cr) { const l = m.get
 const relUrl = id => '/release/' + id;
 
 /* ── sections fold ─────────────────────────────────── */
+// a release group's Releases fold apart from a release's: the same section id, remembered per page kind (majkinetor)
+const foldKey = id => id === 'ed' && location.pathname.startsWith('/release-group/') ? 'rg-ed' : id;
 function sect(id, title, tools, body, folded, headerNote = '') {
     // folded, a one-line summary sits beside the title and anything bigger (the editions' covers) below it
-    const shut = S.fold.includes(id), inl = shut && folded.startsWith('<div class="folded-note"');
+    const fk = foldKey(id), shut = S.fold.includes(fk), inl = shut && folded.startsWith('<div class="folded-note"');
     // a paged list's Auto sits in the header too, where it stays put while pages load below (majkinetor)
     // with it, how many are in and Load more with its menu of batches, the same on every paged list
     const lm = /data-lm="([^"]+)" data-lmn="([0-9]+)"/.exec(body);
     if (lm) tools = `<span class="ed-ld aside" data-tip="Sorting and filters cover only what is loaded so far">${lm[2]} loaded so far<span class="dwrap lmw"><button class="lnk" type="button" data-lmgo="${lm[1]}">${LM_BUSY.has(lm[1]) ? 'Loading…' : 'Load more'}</button>${lmMenu('lnk', b => `data-lmgo="${lm[1]}+${b}"`)}</span></span>` + tools;
     if (body.includes('data-lm="')) tools = `<label class="lm-auto aside" data-tip="Load more as the list's end comes into view"><input type="checkbox" data-lmauto${S.lmAuto ? ' checked' : ''}>Auto</label>` + tools;
-    return `<section class="sec" id="s-${id}"><div class="secthead"><button class="fold" type="button" data-fold="${id}" aria-expanded="${!shut}" data-tip="${shut ? 'Open' : 'Fold'} this section&#10;Right-click: ${shut ? 'open' : 'fold'} every section">${CHEV}<h2>${title}</h2></button>${headerNote}${inl ? folded : shut ? '' : `<div class="tools">${tools}</div>`}</div>${inl ? '' : shut ? folded : body}</section>`;
+    return `<section class="sec" id="s-${id}"><div class="secthead"><button class="fold" type="button" data-fold="${fk}" aria-expanded="${!shut}" data-tip="${shut ? 'Open' : 'Fold'} this section&#10;Right-click: ${shut ? 'open' : 'fold'} every section">${CHEV}<h2>${title}</h2></button>${headerNote}${inl ? folded : shut ? '' : `<div class="tools">${tools}</div>`}</div>${inl ? '' : shut ? folded : body}</section>`;
 }
 
 /* ── hero ──────────────────────────────────────────── */
@@ -12027,7 +12029,7 @@ function secSorted(secs) {
     return [...secs].sort((a, b) => at(a) - at(b));
 }
 function secRail(app) {
-    const secs = secSorted([...app.querySelectorAll(':scope>section.sec')]), id = x => x.id.slice(2);
+    const secs = secSorted([...app.querySelectorAll(':scope>section.sec')]), id = x => foldKey(x.id.slice(2));
     // A release's Editions and a release group's Releases are separate sections for visibility.
     const hideKey = k => k === 'ed' && data.kind === 'rg' ? 'rg-ed' : k;
     secs.forEach(x => { x.hidden = S.secHide.includes(hideKey(id(x))); });
@@ -12056,11 +12058,11 @@ function secRail(app) {
             if (ev.target.closest('[data-top]')) { rail.classList.remove('open'); scrollTo({ top: 0, behavior: 'smooth' }); return; }
             // the last row folds every shown section, or opens them all when they all are folded
             const fa = ev.target.closest('[data-foldall]');
-            if (fa) { const ks = [...document.querySelectorAll('#app>section.sec:not([hidden])')].map(x => x.id.slice(2)); S.fold = fa.dataset.foldall === '1' ? [...new Set([...S.fold, ...ks])] : S.fold.filter(x => !ks.includes(x)); const y = scrollY; render(); scrollTo(0, y); return; }
+            if (fa) { const ks = [...document.querySelectorAll('#app>section.sec:not([hidden])')].map(x => foldKey(x.id.slice(2))); S.fold = fa.dataset.foldall === '1' ? [...new Set([...S.fold, ...ks])] : S.fold.filter(x => !ks.includes(x)); const y = scrollY; render(); scrollTo(0, y); return; }
             const row = ev.target.closest('[data-sec]'); if (!row) return;
             const k = row.dataset.sec;
             if (ev.target.closest('.eye')) { S.secHide = toggle(S.secHide, hideKey(k)); const y = scrollY; render(); scrollTo(0, y); return; }
-            S.secHide = S.secHide.filter(x => x !== hideKey(k)); S.fold = S.fold.filter(x => x !== k);
+            S.secHide = S.secHide.filter(x => x !== hideKey(k)); S.fold = S.fold.filter(x => x !== foldKey(k));
             rail.classList.remove('open'); render();
             const el = document.getElementById('s-' + k); if (el) el.scrollIntoView({ behavior: 'smooth' });
         });
@@ -13654,7 +13656,7 @@ function onClick(ev) {
     else if (d.edsort) S.edSort = S.edSort === d.edsort ? '-' + d.edsort : S.edSort === '-' + d.edsort ? '' : d.edsort;
     else if (d.dgsort) S.dgSort = S.dgSort === d.dgsort ? '-' + d.dgsort : d.dgsort; // a second click turns the order round
     else if (d.edview) S[data.rel ? 'edView' : 'rgView'] = d.edview;
-    else if (d.edjump) { S.fold = S.fold.filter(x => x !== 'ed'); S.ed.kinds = new Set([d.edjump]); }
+    else if (d.edjump) { S.fold = S.fold.filter(x => x !== foldKey('ed')); S.ed.kinds = new Set([d.edjump]); }
     else if ('edkind' in d) S.ed.kinds = new Set(d.edkind ? [d.edkind] : []);
     else if ('crtracks' in d) S.crTracks = !S.crTracks;
     else if ('byname' in d) { S.byName = !S.byName; save(); }
