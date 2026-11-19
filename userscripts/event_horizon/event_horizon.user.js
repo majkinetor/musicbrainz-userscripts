@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.180001
+// @version      2026.11.19.190000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12343,6 +12343,7 @@ const plyPublish = () => {
     plySend({ type: 'state', q: ply.q, i: ply.i, src: ply.src, pref: ply.pref, paused: ply.paused, yt: ply.yt, kind: ply.kind, ctl: ply.ctl, ends: ply.ends, vol: S.playerVol, video: S.playerVideo, repeat: S.playerRepeat });
 };
 function plyWindowStart(q, i, want) {
+    plyCollStop();
     if (!PLY_BUS) { toast('Separate player windows need BroadcastChannel'); return; }
     let fresh = false;
     if (!plyRemote && Date.now() - plyOwnerSeen > 4000) {
@@ -12548,6 +12549,7 @@ function plyStart(r, key, want) {
     if (key) q = [{ ...q[i], oneTrack: true }];
     const start = key ? 0 : i;
     if (plyInWin() && !PLY_WINDOW) { plyWindowStart(q, start, want); return; }
+    plyCollStop();
     if (plyRemote) { plyControl('close'); plyRemote = false; }
     if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' });
     ply.q = q;
@@ -12574,7 +12576,9 @@ function plyAddRelease(r, key) {
 }
 // Resolve collection entries in MusicBrainz order, stopping at the configured queue limit. The first playable
 // tracks start at once; the rest join the playlist in the background, a loader row at its end while they come
-let plyCollectionBusy = false, plyCollLoading = false;
+let plyCollectionBusy = false, plyCollLoading = false, plyCollGen = 0;
+// a new playlist replaces the old one: a collection still loading into the old one stops
+function plyCollStop() { if (!plyCollectionBusy) return; plyCollGen++; plyCollectionBusy = false; LOG.info('player: background collection load stopped, the playlist was replaced'); if (plyCollLoading) { plyCollLoading = false; plyListGrow(); } }
 function plyLoaderRow() { return plyCollLoading ? '<div class="ply-loading" role="status"><span class="ply-spin"></span>Loading more from the collection…</div>' : ''; }
 // the open playlist gains the rows added since it opened, and loses its loader when the load ends
 function plyListGrow() {
@@ -12587,8 +12591,11 @@ function plyListGrow() {
     if (old) old.remove();
 }
 async function plyCollection(id, ent, only, append) {
-    if (plyCollectionBusy) { toast('A collection is already loading'); return; }
+    if (plyCollectionBusy && append) { toast('A collection is already loading'); return; }
+    plyCollStop();
     plyCollectionBusy = true;
+    let my = ++plyCollGen;
+    const gone = () => my !== plyCollGen;
     toast('Loading collection into the player…');
     let started = false, sent = 0;
     // the first batch starts the player (or joins the queue); later batches append quietly
@@ -12600,6 +12607,7 @@ async function plyCollection(id, ent, only, append) {
             if (append) plyAppend(part);
             else if (plyInWin() && !PLY_WINDOW) plyWindowStart(part, 0);
             else { if (plyRemote) { plyControl('close'); plyRemote = false; } if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' }); ply.q = part; plyGo(0); }
+            my = plyCollGen;   // its own start replaced the playlist, which stops nothing of its own
         } else if (plyRemote && !PLY_WINDOW) plyControl('append', part);
         else { ply.q.push(...part); plyKeep(); plySave(); plyDraw(); plyPublish(); }
         plyListGrow();
@@ -12612,6 +12620,7 @@ async function plyCollection(id, ent, only, append) {
         while ((ids.length || more) && q.length < room) {
             if (!ids.length) {
                 const x = await mbTab('collection', id, '', page++);
+                if (gone()) return;
                 if (x.col && x.col.ent && x.col.ent !== ent) throw new Error('This collection has a different type');
                 const re = new RegExp('/' + ent + '/(' + MBID.source + ')', 'i');
                 for (const row of x.rows) { const m = Array.isArray(row) && row.join(' ').match(re); if (m) ids.push(m[1]); }
@@ -12619,6 +12628,7 @@ async function plyCollection(id, ent, only, append) {
                 if (!ids.length) continue;
             }
             const gid = ids.shift();
+            if (gone()) return;
             if (ent === 'recording') {
                 const g = recording(await wsk(`recording/${gid}?inc=artist-credits+url-rels`)), srcs = plySources({ links: g.links });
                 if (srcs.length) q.push({ key: '1-1', n: 1, title: g.title, rid: g.id, artist: acText(g.ac), len: g.len || 0, srcs, rel: '', relTitle: '', standalone: true });
@@ -12626,14 +12636,15 @@ async function plyCollection(id, ent, only, append) {
                 const raw = await wsk(`release/${gid}?inc=artist-credits+recordings+url-rels+recording-level-rels+release-groups`);
                 q.push(...plyQueue(release(raw, raw['release-group'] || {}, [])).slice(0, room - q.length).map(t => ({ ...t, oneTrack: true })));
             }
+            if (gone()) return;
             ++read;
             if (q.length - sent >= (started ? 10 : 1)) { plyCollLoading = !only; flush(); }
         }
         if (!q.length) throw new Error('No playable recordings found');
         plyCollLoading = false; flush(); plyListGrow();
         toast('Loaded ' + q.length + ' recordings');
-    } catch (e) { LOG.warn('Player collection: ' + e.message); toast((started ? 'Collection load stopped: ' : 'Could not load collection: ') + e.message); }
-    finally { plyCollectionBusy = false; if (plyCollLoading) { plyCollLoading = false; flush(); plyListGrow(); } }
+    } catch (e) { if (gone()) return; LOG.warn('Player collection: ' + e.message); toast((started ? 'Collection load stopped: ' : 'Could not load collection: ') + e.message); }
+    finally { if (!gone()) { plyCollectionBusy = false; if (plyCollLoading) { plyCollLoading = false; flush(); plyListGrow(); } } }
 }
 function plyGo(i, want) {
     if (plyRemote && !PLY_WINDOW) { plyControl('go', { i, want }); return; }
@@ -12707,6 +12718,7 @@ function plyRepeat() {
 const plyState = paused => { if (paused === ply.paused) return; ply.paused = paused; try { navigator.mediaSession.playbackState = paused ? 'paused' : 'playing'; } catch (e) {} LOG.debug('player:', paused ? 'paused' : 'plays'); plyDraw(); };
 const plyStep = d => { if (plyRemote && !PLY_WINDOW) { plyControl('step', d); return; } const i = ply.i + d; if (i >= 0 && i < ply.q.length) plyGo(i); else if (d < 0 && ply.i === 0 && ply.ctl) plySeek(0); };
 function plyClose() {
+    plyCollStop();
     if (plyRemote && !PLY_WINDOW) { plyControl('close'); plyRemote = false; }
     LOG.info('player: closed');
     plyWake(false); try { navigator.mediaSession.metadata = null; navigator.mediaSession.playbackState = 'none'; } catch (e) {}
@@ -13140,6 +13152,7 @@ function plyRec(g, eds, append = false) {
     const q = [{ key: '1-1', n: 1, title: g.title, rid: g.id, artist: acText(g.ac), len: g.len || 0, srcs, rel: e.id || '', relTitle: e.title || '', front: true, standalone: true }];
     if (append) { plyAppend(q); return; }
     if (plyInWin() && !PLY_WINDOW) { plyWindowStart(q, 0); return; }
+    plyCollStop();
     if (plyRemote) { plyControl('close'); plyRemote = false; }
     if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' });
     ply.q = q;
