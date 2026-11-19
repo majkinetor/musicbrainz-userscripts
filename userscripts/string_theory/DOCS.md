@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-19 22:25 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-19 22:26 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1047,8 +1047,7 @@ On an entity's page, in the viewer or on MusicBrainz's own page, a key opens one
 | Ctrl+H | back                                         |
 | Ctrl+L | forward                                      |
 | S      | search: the viewer's box, else MusicBrainz's |
-| P      | plays the release, recording or collection   |
-| U      | your profile                                 |
+| P      | your profile                                 |
 | .      | MusicBrainz's home page                      |
 | ,      | the settings (String Theory's, with it)      |
 | Ctrl+/ | this list                                    |
