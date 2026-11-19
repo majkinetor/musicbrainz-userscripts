@@ -12607,7 +12607,7 @@ async function plyCollection(id, ent, only, append) {
             if (append) plyAppend(part);
             else if (plyInWin() && !PLY_WINDOW) plyWindowStart(part, 0);
             else { if (plyRemote) { plyControl('close'); plyRemote = false; } if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' }); ply.q = part; plyGo(0); }
-            my = plyCollGen;   // its own start replaced the playlist, which stops nothing of its own
+            my = plyCollGen; plyCollectionBusy = true;   // its own start replaced the playlist, which stops nothing of its own
         } else if (plyRemote && !PLY_WINDOW) plyControl('append', part);
         else { ply.q.push(...part); plyKeep(); plySave(); plyDraw(); plyPublish(); }
         plyListGrow();
