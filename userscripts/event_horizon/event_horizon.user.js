@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.194500
+// @version      2026.11.19.231500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3460,6 +3460,8 @@ body.col-dragging,body.col-dragging *{cursor:grabbing!important;user-select:none
 .tile .c img{width:100%;height:100%;object-fit:cover;border-radius:10px;display:block}
 .tile.cur .c{outline:3px solid var(--accent);outline-offset:3px}
 .tile .fb{position:absolute;left:6px;bottom:6px;width:24px;height:24px;border-radius:7px;background:rgba(20,14,24,.72);color:#fff;display:grid;place-items:center}
+.tile .tn{position:absolute;right:6px;bottom:6px;font:700 11px Manrope,system-ui,sans-serif;padding:3px 7px;border-radius:7px;background:rgba(20,14,24,.72);color:#fff;font-variant-numeric:tabular-nums}
+.tile .lb{display:block;font-size:12px;line-height:1.35;color:var(--text);opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tile .st{position:absolute;right:6px;top:6px;font:700 10px Manrope,system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:5px;background:var(--warn-bg);color:var(--warn)}
 .tile .nc[hidden]{display:none}.tile .nc{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:600}
 .tile .t1{font-weight:700;font-size:14px;line-height:1.25}
@@ -5380,11 +5382,13 @@ function edTile(e, curId, titled = false) {
     const k = fmtKind(e.formats[0]);
     const st = e.status && e.status !== 'Official' ? `<span class="st">${esc((e.status || 'No status').replace('Pseudo-Release', 'Pseudo'))}</span>` : '';
     const where = e.where.length > 2 ? e.where.slice(0, 2).join(' ') + ` +${e.where.length - 2}` : e.where.join(' ');
+    const tn = e.counts.reduce((s, x) => s + (+x || 0), 0);
     ED_TIP.set(e.id, { e, cur: e.id === curId });
     return `<a class="tile${e.id === curId ? ' cur' : ''}" href="${esc(relUrl(e.id))}" data-ed="${e.id}">
-        <span class="c">${e.thumb ? `<img src="${edThumb(e)}" alt="" loading="lazy" data-edimg>` : ''}<span class="nc"${e.thumb ? ' hidden' : ''}>${fmtSvg(k, 40, 1.8)}${e.thumb ? 'cover pending' : 'no cover'}</span>${e.thumb ? `<span class="fb">${fmtSvg(k, 15, 2.6)}</span>` : ''}${st}</span>
+        <span class="c">${e.thumb ? `<img src="${edThumb(e)}" alt="" loading="lazy" data-edimg>` : ''}<span class="nc"${e.thumb ? ' hidden' : ''}>${fmtSvg(k, 40, 1.8)}${e.thumb ? 'cover pending' : 'no cover'}</span>${e.thumb ? `<span class="fb">${fmtSvg(k, 15, 2.6)}</span>` : ''}${tn ? `<span class="tn">${tn}</span>` : ''}${st}</span>
         ${titled ? `<span class="dt">${esc(e.title)}</span>` : `<span class="t1">${esc(fmtSummary(e.formats))}</span>`}
         <span class="cap">${esc([titled && fmtSummary(e.formats), where, (e.date || '').slice(0, 4)].filter(Boolean).join(' · ') || '—')}${e.id === curId ? ' · you are here' : ''}${e.disambig ? `<i>${esc(e.disambig)}</i>` : ''}</span>
+        ${e.labels.length ? `<span class="lb" title="${esc(e.labels.join(', '))}">${esc(e.labels.join(', '))}</span>` : ''}
     </a>`;
 }
 // a table row's tracklist, fetched when it is first opened: release id → media | 'loading' | 'error'
