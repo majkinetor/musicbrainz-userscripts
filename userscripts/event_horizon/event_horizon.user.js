@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.090001
+// @version      2026.11.20.090002
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12851,6 +12851,8 @@ function plyGo(i, want) {
     if (plyRemote && !PLY_WINDOW) { plyControl('go', { i, want }); return; }
     const t = ply.q[i]; if (!t) return;
     const p = plyPick(t, want), e = plyEmbed(p), gen = ++ply.gen;
+    // loaded with no click behind it (a share link, a restore): the widget refuses sound, so Play reloads it under the click
+    ply.cold = navigator.userActivation?.isActive === false ? gen : 0;
     plyVolLoad();
     // a track waits paused until its widget says it plays; YouTube autoplays, Apple's says nothing (see the blur below)
     if (ply.cur && !ply.q.includes(ply.cur)) { ply.cur = null; ply.hist = []; }   // a new playlist starts shuffle afresh
@@ -12994,6 +12996,7 @@ const plyPost = m => { const f = plyFrame(); if (f) try { f.contentWindow.postMe
 function plyCmd(play) {
     if (plyRemote && !PLY_WINDOW) { plyControl('play', play); return; }
     const k = ply.kind;
+    if (play && ply.cold === ply.gen && ply.i >= 0) { PLOG.info('play: reloading the', k, 'widget loaded without a click'); plyGo(ply.i, ply.src); return; }
     PLOG.info(play ? 'play' : 'pause', 'asked of', k);
     if (ply.yt) plyPost(JSON.stringify({ event: 'command', func: play ? 'playVideo' : 'pauseVideo', args: [] }));
     else if (k === 'spotify') plyPost({ command: 'toggle' });
