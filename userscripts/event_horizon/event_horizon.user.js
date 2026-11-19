@@ -1,7 +1,11 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
+<<<<<<< HEAD
 // @version      2026.11.19.190500
+=======
+// @version      2026.11.19.170000
+>>>>>>> 38386437a (fix(event horizon): the keep-awake loop is audible again and the page's media session is set again every few seconds while playing)
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12715,19 +12719,20 @@ const PW = (typeof unsafeWindow !== 'undefined' && unsafeWindow) || window;
 const msPage = () => { try { return PW.navigator.mediaSession; } catch (e) { return navigator.mediaSession; } };
 const msFn = f => typeof exportFunction === 'function' ? exportFunction(f, PW) : f;
 const msObj = o => typeof cloneInto === 'function' ? cloneInto(o, PW) : o;
-let plyWakeEl = null;
+let plyWakeEl = null, plyWakeIv = 0;
 function plyWake(on) {
-    if (!on) { if (plyWakeEl) { plyWakeEl.pause(); plyWakeEl = null; } return; }
+    if (!on) { clearInterval(plyWakeIv); if (plyWakeEl) { plyWakeEl.pause(); plyWakeEl = null; } return; }
     if (plyWakeEl) { if (plyWakeEl.paused) plyWakeEl.play().catch(() => {}); return; }
-    const n = 8000, b = new Uint8Array(44 + n), v = new DataView(b.buffer), w = (o, t) => { for (let i = 0; i < t.length; i++) b[o + i] = t.charCodeAt(i); };
+    const n = 8000 * 6, b = new Uint8Array(44 + n), v = new DataView(b.buffer), w = (o, t) => { for (let i = 0; i < t.length; i++) b[o + i] = t.charCodeAt(i); };
     w(0, 'RIFF'); v.setUint32(4, 36 + n, true); w(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
     v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); w(36, 'data'); v.setUint32(40, n, true);
-    b.fill(128, 44);   // 8-bit silence
+    b.fill(128, 44); for (let i = 44; i < b.length; i += 2) b[i] = 129;   // all but silent: Firefox hands the controls only to audible media
     const a = plyWakeEl = new PW.Audio(URL.createObjectURL(new Blob([b], { type: 'audio/wav' })));
     a.loop = true; a.volume = 0.01; a.setAttribute('aria-hidden', 'true');
+    plyWakeIv = setInterval(() => { const c = ply.q[ply.i]; if (c && !ply.paused) plyMedia(c, true); }, 4000);
     a.play().then(() => LOG.debug('player: keep-awake on'), e => LOG.debug('player: keep-awake refused', e.message));
 }
-function plyMedia(t) {
+function plyMedia(t, again) {
     const ms = msPage(); if (!ms || !t) return;
     try {
         ms.metadata = new (PW.MediaMetadata || MediaMetadata)(msObj({ title: t.title || '', artist: t.artist || '', album: t.relTitle || '',
@@ -12736,7 +12741,7 @@ function plyMedia(t) {
     } catch (e) {}
     // the widget's iframe plays too and can take over the lock screen's session, which then shows only its own
     // pause: the handlers go on again with every track, and the silent loop restarts so this page plays last
-    if (plyWakeEl) { plyWakeEl.pause(); plyWakeEl.play().catch(() => {}); }
+    if (plyWakeEl && !again) { plyWakeEl.pause(); plyWakeEl.play().catch(() => {}); }
     try { if (t.len) ms.setPositionState(msObj({ duration: t.len / 1000, position: Math.min(t.len, t.played || 0) / 1000, playbackRate: 1 })); } catch (e) {}
     const on = (k, f) => { try { ms.setActionHandler(k, msFn(ev => f(ev && { seekOffset: ev.seekOffset, seekTime: ev.seekTime }))); } catch (e) {} };
     const by = d => { const c = ply.q[ply.i]; if (c && c.len) plySeek(Math.max(0, Math.min(c.len - 1000, (c.played || 0) + d))); };
