@@ -18,7 +18,8 @@ test.describe('recent playlists', () => {
     check(await until(() => page.evaluate(() => window.__ehPlayerTest.state().q.length), v => v === 1) === 1, 'a recording replaces the playlist');
     check(await page.evaluate(() => window.__ehPlayerTest.history().length) === 1, 'the replaced playlist is kept');
     await page.locator('#eh-ply [data-ply="lb"]').click();
-    const item = page.locator('#eh-ply-menu [data-m="hist0"]');
+    await page.locator('#eh-ply-menu [data-m="hist"]').click();
+    const item = page.locator('#eh-ply-menu [data-k="0"]');
     const text = await until(() => item.textContent().catch(() => ''), t => !!t);
     check(/^\d{4}-\d\d-\d\dT\d\d:\d\d · \d+ tracks$/.test(text.trim()), 'the menu names it by its ISO 8601 time: ' + text);
     await attachShot(testInfo, page.locator('#eh-ply-menu'), 'recent playlists');

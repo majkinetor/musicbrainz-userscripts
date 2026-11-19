@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.044000
+// @version      2026.11.20.050000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13512,13 +13512,12 @@ function plyLbMenu(btn) {
         + (st ? `<hr><div class="st">${st}</div>` : '')
         + (S.playerLb ? it('https://listenbrainz.org/my/listens/', 'ext', 'Your listens') : ''));
     const hist = plyHist();
-    if (hist.length) parts.push('<div class="hd">Recent playlists</div>' + hist.map((x, k) => `<button type="button" class="it" role="menuitem" data-m="hist${k}">${SVG(PLY_I.note)}<span>${plyStamp(x.made)} · ${x.q.length} tracks</span></button>`).join(''));
-    parts.push((ME ? `<button type="button" class="it" data-m="loadcoll">${SVG(MK_COL)}<span>Load collection…</span></button><button type="button" class="it" data-m="savecoll">${SVG(MK_COL)}<span>Save playlist as collection…</span></button>` : '') + (ply.yt ? `<button type="button" class="it" role="menuitem" data-m="video">${SVG(PLY_I.video)}<span>${S.playerVideo ? 'Hide the video' : 'Show the video'}</span></button>` : '')
+    parts.push((hist.length ? `<button type="button" class="it" role="menuitem" data-m="hist">${SVG(PLY_I.note)}<span>Recent playlists…</span></button>` : '') + (ME ? `<button type="button" class="it" data-m="loadcoll">${SVG(MK_COL)}<span>Load collection…</span></button><button type="button" class="it" data-m="savecoll">${SVG(MK_COL)}<span>Save playlist as collection…</span></button>` : '') + (ply.yt ? `<button type="button" class="it" role="menuitem" data-m="video">${SVG(PLY_I.video)}<span>${S.playerVideo ? 'Hide the video' : 'Show the video'}</span></button>` : '')
         + (PLY_WINDOW || plyRemote ? `<button type="button" class="it" role="menuitem" data-m="tab">${SVG(PLY_I.back)}<span>${PLY_WINDOW ? 'Back to tab' : 'Back to this tab'}</span></button>`
             : PLY_BUS ? `<button type="button" class="it" role="menuitem" data-m="win">${SVG(PLY_I.win)}<span>Open in window</span></button>` : '')
         + (plyHasVol() ? `<div class="ply-mvol"><button type="button" class="ply-b" data-m="mute" aria-label="${+S.playerVol ? 'Mute' : 'Unmute'}">${plyVolIc(+S.playerVol)}</button><input type="range" class="ply-mv" min="0" max="100" step="1" value="${+S.playerVol}" aria-label="Volume"></div>` : '')
         + `<button type="button" class="it" role="menuitem" data-m="x" style="color:var(--mbu-bad,#c2413b)">${SVG(PLY_I.x)}<span>Stop and close</span></button>`);
-    plyMenu(btn, parts.join('<hr>'), v => { if (v.k) plySrc(v.k); else if (/^hist\d+$/.test(v.m || '')) plyRestore(+v.m.slice(4)); else if (v.m === 'loadcoll') plyLoadMenu(btn); else if (v.m === 'savecoll') plySaveMenu(btn); else if (v.m === 'video') plyVideo(); else if (v.m === 'win') plyToWindow(); else if (v.m === 'tab') { if (PLY_WINDOW) plyToTab(); else plyControl('to-tab', PLY_ID); } else if (v.m === 'x') plyClose(); else if (v.m === 'mute') plyMute(); });
+    plyMenu(btn, parts.join('<hr>'), v => { if (v.k) plySrc(v.k); else if (v.m === 'hist') plyMenu(btn, '<div class="hd">Recent playlists</div>' + hist.map((x, k) => `<button type="button" class="it" role="menuitem" data-k="${k}">${SVG(PLY_I.note)}<span>${plyStamp(x.made)} · ${x.q.length} tracks</span></button>`).join(''), w => plyRestore(+w.k)); else if (v.m === 'loadcoll') plyLoadMenu(btn); else if (v.m === 'savecoll') plySaveMenu(btn); else if (v.m === 'video') plyVideo(); else if (v.m === 'win') plyToWindow(); else if (v.m === 'tab') { if (PLY_WINDOW) plyToTab(); else plyControl('to-tab', PLY_ID); } else if (v.m === 'x') plyClose(); else if (v.m === 'mute') plyMute(); });
     document.querySelector('#eh-ply-menu .ply-mv')?.addEventListener('input', ev => plyVolSet(+ev.target.value));
 }
 const PLY_CSS = `
