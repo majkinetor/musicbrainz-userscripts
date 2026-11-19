@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.090000
+// @version      2026.11.20.090001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5177,9 +5177,18 @@ function ehSharePlay() {
     u.searchParams.delete('eh-play'); history.replaceState(history.state, '', u.href);
     const t0 = Date.now(), iv = setInterval(() => {
         const b = ehOn && document.querySelector('#app button[data-colplay="all"]');
-        if (b) { clearInterval(iv); LOG.info('Share link: playing the collection'); b.click(); }
+        if (b) { clearInterval(iv); ehSharePress(b); }
         else if (Date.now() - t0 > 20000) { clearInterval(iv); LOG.warn('Share link: no Play button on this collection'); }
     }, 300);
+}
+// the browser lets a player sound only after the visitor has touched the page: a link opened fresh waits for the first click or key
+function ehSharePress(b) {
+    const go = () => { LOG.info('Share link: playing the collection'); b.click(); };
+    if (navigator.userActivation?.hasBeenActive !== false) { go(); return; }
+    LOG.info('Share link: waiting for a click or key before playing');
+    toast('Click anywhere to play the collection');
+    const on = e => { removeEventListener('pointerdown', on, true); removeEventListener('keydown', on, true); if (e.target !== b && !b.contains(e.target)) go(); };
+    addEventListener('pointerdown', on, true); addEventListener('keydown', on, true);
 }
 setTimeout(ehSharePlay, 0);
 let kmkN = 0;
