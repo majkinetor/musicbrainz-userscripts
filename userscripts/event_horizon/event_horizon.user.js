@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.200000
+// @version      2026.11.20.201000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11179,6 +11179,7 @@ function renderDraw(keepPop) {
     if (data.kind === 'search') { ehMorph(app, searchHtml(data)); srchWire(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'art') { artPage(app, data); pinBar(app); return; }
     if (data.kind === 'upg') { upgPage(app, data); pinBar(app); return; }
+    if (data.kind === 'esub') { subPage(app, data); pinBar(app); return; }
     if (data.kind === 'ann') { document.title = (data.rel ? data.rel.title + ' · ' : '') + 'Annotation · Event Horizon'; annPage(app, data); pinBar(app); return; }
     if (data.kind === 'det') { document.title = (data.rel ? data.rel.title + ' · ' : '') + 'Details · Event Horizon'; detPage(app, data); pinBar(app); return; }
     if (data.kind === 'relate') { relPage(app, data); pinBar(app); return; }
@@ -14713,7 +14714,13 @@ const detKey = href => { const u = new URL(href, location.href), m = u.origin ==
 const annKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/edit_annotation/?$', 'i')); return m ? 'ann/' + m[1].toLowerCase() : null; };
 // an editor's subscriptions and subscribers, and your account's pages, clicked → "upg/<path and query>": fetched into the tab
 const upgKey = href => { const u = new URL(href, location.href), ok = u.origin === location.origin && (/^\/user\/[^/]+\/(subscriptions|subscribers)(\/[a-z_-]+)?\/?$/.test(u.pathname) || /^\/account\/(edit|preferences|donation|applications)\/?$/.test(u.pathname)); return ok ? 'upg/' + encodeURIComponent(u.pathname + u.search) : null; };
-const inTab = href => navTo(href) || histKey(href) || artIn(href) || discKey(href) || detKey(href) || annKey(href) || relKey(href) || upgKey(href);
+// an entity's Releases, Details, Annotation or Set cover art → "esub/<path>": fetched in place of a page load, so the player
+// plays on (a release's own Details and Annotation keep detKey and annKey)
+const subKey = href => {
+    const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/(release-group|artist|label|recording|work|area|instrument|place|series|event)/(' + MBID.source + ')/(releases|details|edit_annotation|set-cover-art)/?$', 'i'));
+    return m && (m[3] !== 'set-cover-art' || m[1].toLowerCase() === 'release-group') ? 'esub/' + encodeURIComponent(u.pathname.replace(/\/$/, '') + u.search) : null;
+};
+const inTab = href => navTo(href) || histKey(href) || artIn(href) || discKey(href) || detKey(href) || annKey(href) || relKey(href) || upgKey(href) || subKey(href);
 const keyOf = href => navTo(href) || artKey(href) || discKey(href) || histKey(href) || relKey(href) || formKey(href);
 // let: the seed confirmation page (another site seeding the release editor, a POST to /release/add or …/edit) shares
 // the editor's address, so it gets its key, "form/seed/-/confirm", only once its .confirm-seed form is in the page
@@ -15032,6 +15039,38 @@ function upgPage(app, d) {
         body.dataset.on = '1'; body.innerHTML = c.html; upgCss();
         // a script put in by innerHTML doesn't run: the page's own (the account forms' React) goes in again as a new one
         body.querySelectorAll('script[src]').forEach(s => { const e = document.createElement('script'); e.src = s.src; s.replaceWith(e); });
+    }
+}
+const SUB_NAMES = { releases: 'Releases', details: 'Details', edit_annotation: 'Annotation', 'set-cover-art': 'Set cover art' };
+async function subLoad(n, d) {
+    try {
+        const r = await mbnFetch(MB + d.path, { credentials: 'include' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const doc = new DOMParser().parseFromString(await r.text(), 'text/html'), c = doc.querySelector('#content');
+        const tabs = c && c.querySelector(':scope > .tabs');
+        if (!tabs) throw new Error('not an entity page');
+        const tx = e => e ? e.textContent.replace(/\s+/g, ' ').trim() : '', h1 = c.querySelector('h1');
+        d.name = tx(h1 && (h1.querySelector('bdi') || h1.querySelector('a') || h1)); d.dis = tx(h1 && h1.querySelector('.comment')).replace(/^\(|\)$/g, '');
+        const box = doc.createElement('div');
+        let el = tabs.nextElementSibling;
+        while (el) { const nx = el.nextElementSibling; if (!el.matches('.tabs, script')) box.append(el); el = nx; }
+        box.querySelectorAll('form').forEach(f => { f.action = new URL(f.getAttribute('action') || d.path, MB + d.path).href; });
+        if (d.page === 'details') detailsDress(box);
+        d.html = box.innerHTML;
+        LOG.info(`${SUB_NAMES[d.page]} of ${d.ty} ${d.eid} in the tab`);
+    } catch (e) { LOG.err('Loading ' + d.path + ' failed: ' + e.message); d.err = e.message; }
+    if (n === showing && data === d) render();
+}
+function subPage(app, d) {
+    const what = SUB_NAMES[d.page];
+    document.title = (d.name ? d.name + ' · ' : '') + what + ' · Event Horizon';
+    let body = app.querySelector(':scope > #eh-upg');
+    if (!body || body.dataset.k !== d.path) { app.innerHTML = '<section class="arthd"></section><div id="eh-upg"></div>'; body = app.lastElementChild; body.dataset.k = d.path; }
+    const hd = app.querySelector(':scope > .arthd');
+    hd.innerHTML = entHead({ type: d.ty, id: d.eid, img: visitImg({ key: d.ty + '/' + d.eid }), kick: what + ' · ' + (HM_KIND[d.ty] || [d.ty])[0], title: d.name, disamb: d.dis, acts: entActs(d.ty, d.eid, d.page) }); entHeadWire(hd);
+    if (body.dataset.on !== String(!!d.html)) {
+        body.dataset.on = String(!!d.html); upgCss();
+        body.innerHTML = d.html || (d.err ? `<p class="hm-none"><span class="u-err">${esc(d.err)}</span></p>` : `<p class="hm-none">Loading the ${what.toLowerCase()}…</p>`);
     }
 }
 async function detLoad(n, id) {
@@ -17231,6 +17270,10 @@ async function show(key, o = {}) {
     if (kind === 'relate') { data = { kind: 'relate', id }; scrollTo(0, 0); render(); relLoad(n, id); return; }
     if (kind === 'det') { data = { kind, id }; scrollTo(0, 0); render(); detLoad(n, id); return; }
     if (kind === 'ann') { data = { kind, id }; scrollTo(0, 0); render(); annLoad(n, id); return; }
+    if (kind === 'esub') {
+        const path = decodeURIComponent(key.slice(5)), seg = path.replace(/\?.*$/, '').split('/');
+        data = { kind, path, ty: seg[1], eid: seg[2], page: seg[3] }; scrollTo(0, 0); render(); subLoad(n, data); return;
+    }
     if (kind === 'upg') {
         const path = decodeURIComponent(key.slice(4)), m = path.match(/^\/user\/([^/?]+)/);
         data = { kind, path, name: m ? decodeURIComponent(m[1]) : ME || '' }; scrollTo(0, 0); render(); upgLoad(n, data); return;
