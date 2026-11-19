@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.19.235600
+// @version      2026.11.20.001500
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -7279,16 +7279,26 @@
       }
       // 2. the ISRC, searched
       if (!isrc) return null;
+      // one search per ISRC, however often a probe asks (a probe can ask for the same track twice)
+      const key = isrc + '|' + idx;
+      if (!ytIsrcSeen.has(key)) ytIsrcSeen.set(key, ytIsrcSearch(isrc, t));
+      return ytIsrcSeen.get(key);
+    }
+    const ytIsrcSeen = new Map();
+    async function ytIsrcSearch(isrc, t) {
       const j = await ytCall('search', { query: isrc, params: YTM_SONGS_FILTER });
       if (!j) return null;
       const songs = ytSongs(j).slice(0, 3);
+      const others = [];   // YouTube Music's search answers an unknown ISRC with unrelated songs: one line for them all
       for (const s of songs) {
+        if (s.type === 'ATV' && !ytSame(s.title, t.title)) { others.push('"' + s.title + '"'); continue; }
         const why = s.type !== 'ATV' ? 'not official audio (' + (s.type || '?') + ')'
           : ytMismatch(s, t) || (!ytSame(s.album, RELEASE.title) ? 'from the album "' + (s.album || '?') + '", not "' + RELEASE.title + '" — the ISRC may be shared with another version' : '');
         Log.info('YouTube Music ' + isrc + ' → "' + s.title + '" by ' + (s.artist || '?') + ' ' + (s.len == null ? '' : msToMmSs(s.len * 1000)) + (s.album ? ' on "' + s.album + '"' : '') + (why ? ' — skipped: ' + why : ' — matches "' + t.title + '"'));
         if (!why) { const url = ytWatch(s.vid); ytSource.set(url, { album: s.album, albumUrl: s.albumId ? 'https://music.youtube.com/browse/' + s.albumId : null, how: 'ISRC ' + isrc }); return url; }
       }
       if (!songs.length) Log.info('YouTube Music ' + isrc + ': no songs');
+      else if (others.length) Log.info('YouTube Music ' + isrc + ' "' + t.title + '": not found (search gave only other titles: ' + others.join(', ') + ')');
       return null;
     }
 
