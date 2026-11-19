@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.004003
+// @version      2026.11.20.004004
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13166,7 +13166,7 @@ function plyListPaint() {
     plyHeadLoad(ply.q[ply.i]);
 }
 function plyListMenu(btn) {
-    plyMenu(btn, '<div class="ply-top"><div class="ply-list-head">' + plyRelHead(ply.q[ply.i]) + '</div><div class="hd"><span>Playlist</span>' + (ply.q.length > 1 ? '<input type="search" class="qf" placeholder="Filter" aria-label="Filter the playlist" autocomplete="off">' : '') + '<button type="button" class="mbu-ov-x ply-x" aria-label="Close" data-tip="Close">✕</button></div></div>' + plyRows(true),
+    plyMenu(btn, '<div class="ply-top"><div class="ply-list-head">' + plyRelHead(ply.q[ply.i]) + '</div><div class="hd"><span>Playlist</span>' + (ply.q.length > 1 ? '<button type="button" class="qfb" aria-label="Filter the playlist" aria-expanded="false" data-tip="Filter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></button><input type="search" class="qf" tabindex="-1" placeholder="Filter" aria-label="Filter the playlist" autocomplete="off">' : '') + '<button type="button" class="mbu-ov-x ply-x" aria-label="Close" data-tip="Close">✕</button></div></div>' + plyRows(true),
         ({ k }) => { const i = +String(k).slice(1); if (i >= 0 && i < ply.q.length && i !== ply.i) { LOG.info('player: picked from the playlist', i + 1); plyGo(i, ply.pref); } }, 'player');
     plyListPaint();
     document.querySelector('#eh-ply-menu [aria-current]')?.scrollIntoView({ block: 'nearest' });
@@ -13178,7 +13178,15 @@ function plyListMenu(btn) {
     const rows = [...document.querySelectorAll('#eh-ply-menu .qi')].map(r => [r, fold(r.textContent)]);
     qf.addEventListener('input', () => { const w = fold(qf.value).trim().split(/\s+/).filter(Boolean); for (const [r, tx] of rows) r.hidden = !w.every(x => tx.includes(x)); });
     qf.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); rows.find(([r]) => !r.hidden)?.[0].click(); } });
-    qf.focus({ preventScroll: true });
+    // the filter stays folded until asked for: focusing it at once would bring up a phone's keyboard
+    const hd = qf.parentElement, qb = hd.querySelector('.qfb');
+    const open = on => { hd.classList.toggle('qo', on); qb.setAttribute('aria-expanded', on); qf.tabIndex = on ? 0 : -1; if (on) qf.focus({ preventScroll: true }); };
+    qb.addEventListener('click', () => open(true));
+    qf.addEventListener('blur', () => setTimeout(() => { if (!qf.value && document.activeElement !== qb) open(false); }));
+    // a typed letter opens it, as the filter used to take keys at once
+    const typed = ev => { const m = document.getElementById('eh-ply-menu'); if (!m || !m.contains(qf)) { document.removeEventListener('keydown', typed, true); return; }
+        if (hd.classList.contains('qo') || ev.key.length !== 1 || ev.ctrlKey || ev.metaKey || ev.altKey || /^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName)) return; open(true); };
+    document.addEventListener('keydown', typed, true);
 }
 // one recording, from its own page: a queue of one
 function plyRec(g, eds, append = false) {
@@ -13433,6 +13441,7 @@ html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
 .ply-menu{position:fixed;z-index:9996;min-width:230px;max-height:calc(100vh - 16px);overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;box-sizing:border-box;padding:5px;background:color-mix(in srgb,var(--surface,#fff) 55%,transparent);backdrop-filter:blur(10px);color:var(--text,#222);border:1px solid var(--line,#ddd);border-radius:9px;box-shadow:0 6px 20px rgba(0,0,0,.12);font:13px/1.3 system-ui,sans-serif}
 .ply-menu .hd{display:flex;align-items:center;gap:7px;padding:6px 9px 4px;color:var(--muted,#777);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
 .ply-menu .hd .qf{margin-left:auto;width:150px;min-width:0;padding:3px 7px;border:1px solid var(--line,#ddd);border-radius:5px;background:transparent;color:var(--text,#222);font:12px/1.3 system-ui,sans-serif;text-transform:none;letter-spacing:0;outline:0}
+.ply-menu .hd .qfb{flex:none;margin-left:auto;display:inline-grid;place-items:center;width:30px;height:30px;padding:0;border:0;border-radius:6px;background:none;color:var(--muted,#777);cursor:pointer}.ply-menu .hd .qfb:hover{color:var(--accent,#ba478f)}.ply-menu .hd .qfb svg{width:17px;height:17px}.ply-menu .hd:not(.qo) .qf{display:none}.ply-menu .hd.qo .qfb{display:none}.ply-menu .hd .qfb+.qf{margin-left:auto}.ply-menu .hd .qfb~.ply-x{margin-left:4px}
 .ply-menu .hd .qf:focus{border-color:var(--accent,#ba478f)}
 .ply-menu .qi[hidden]{display:none}
 .ply-menu .it{display:flex;align-items:center;gap:9px;width:100%;box-sizing:border-box;padding:7px 9px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;text-align:left;text-decoration:none;cursor:pointer}
