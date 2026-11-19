@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.235503
+// @version      2026.11.19.235504
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12768,8 +12768,8 @@ document.addEventListener('visibilitychange', () => {
     try { const ms = msPage(), t = ply.q[ply.i]; LOG.info('player: page', document.visibilityState, 'track:', t ? t.title : 'none', 'artist:', t ? t.artist : '', 'source:', ply.kind, 'player:', ply.paused ? 'paused' : 'playing', 'keep-awake:', !plyWakeEl ? 'absent' : plyWakeEl.paused ? 'paused' : 'playing', 'session:', ms ? ms.playbackState : 'unavailable', 'metadata:', ms && ms.metadata ? ms.metadata.title : 'none'); }
     catch (e) { LOG.warn('player: Media Session status failed:', e.message); }
 });
-// A restored player may start without a user gesture, so Firefox can reject the quiet audio.
-// Retry on a later gesture while playback is active, without restarting it if it is already playing.
+// Firefox may reject the quiet audio on a restored player or a touch's pointerdown.
+// Retry on click or keydown while playback is active, without restarting audio that is already playing.
 const plyWakeGesture = ev => {
     if (!ev.isTrusted || !S.player || (plyRemote && !PLY_WINDOW) || (plyInWin() && !PLY_WINDOW)) return;
     if (ply.i >= 0 && !ply.paused && plyWakeEl && plyWakeEl.paused) plyWake(true);
@@ -12778,7 +12778,7 @@ const plyWakeGesture = ev => {
         setTimeout(() => { if (ply.i < 0) plyWake(false); }, 20000);
     }
 };
-document.addEventListener('pointerdown', plyWakeGesture, true);
+document.addEventListener('click', plyWakeGesture, true);
 document.addEventListener('keydown', plyWakeGesture, true);
 // the track is over: the next one, or the player stops at the last
 function plyEnded(why) {
@@ -12828,6 +12828,7 @@ const plyPost = m => { const f = plyFrame(); if (f) try { f.contentWindow.postMe
 // the widget's play and pause, each in its own words
 function plyCmd(play) {
     if (plyRemote && !PLY_WINDOW) { plyControl('play', play); return; }
+    if (play) plyWake(true);
     const k = ply.kind;
     LOG.info('player:', play ? 'play' : 'pause', 'asked of', k);
     if (ply.yt) plyPost(JSON.stringify({ event: 'command', func: play ? 'playVideo' : 'pauseVideo', args: [] }));
