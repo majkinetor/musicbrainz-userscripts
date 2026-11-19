@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.161000
+// @version      2026.11.19.163000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12702,6 +12702,12 @@ function plyGo(i, want) {
 // a locked phone: a hidden page may go on playing what it plays, but not start a new widget's audio, and its
 // timers sleep. A silent loop in this page keeps it a playing page, so the next track's widget loads and starts;
 // the lock screen's controls (Media Session) are a gesture, so next and play work from there whatever the widget does
+// Firefox runs this script in a sandbox, and a media session set up there may not count as the page's own: the
+// phone's controls then fall to the widget's iframe (pause alone). The page's session, with exported handlers, as a web app sets it
+const PW = (typeof unsafeWindow !== 'undefined' && unsafeWindow) || window;
+const msPage = () => { try { return PW.navigator.mediaSession; } catch (e) { return navigator.mediaSession; } };
+const msFn = f => typeof exportFunction === 'function' ? exportFunction(f, PW) : f;
+const msObj = o => typeof cloneInto === 'function' ? cloneInto(o, PW) : o;
 let plyWakeEl = null;
 function plyWake(on) {
     if (!on) { if (plyWakeEl) { plyWakeEl.pause(); plyWakeEl = null; } return; }
@@ -12710,22 +12716,22 @@ function plyWake(on) {
     w(0, 'RIFF'); v.setUint32(4, 36 + n, true); w(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
     v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); w(36, 'data'); v.setUint32(40, n, true);
     b.fill(128, 44);   // 8-bit silence
-    const a = plyWakeEl = new Audio(URL.createObjectURL(new Blob([b], { type: 'audio/wav' })));
+    const a = plyWakeEl = new PW.Audio(URL.createObjectURL(new Blob([b], { type: 'audio/wav' })));
     a.loop = true; a.volume = 0.01; a.setAttribute('aria-hidden', 'true');
     a.play().then(() => LOG.debug('player: keep-awake on'), e => LOG.debug('player: keep-awake refused', e.message));
 }
 function plyMedia(t) {
-    const ms = navigator.mediaSession; if (!ms || !t) return;
+    const ms = msPage(); if (!ms || !t) return;
     try {
-        ms.metadata = new MediaMetadata({ title: t.title || '', artist: t.artist || '', album: t.relTitle || '',
-            artwork: t.front && t.rel ? [{ src: `https://coverartarchive.org/release/${t.rel}/front-250`, sizes: '250x250' }, { src: `https://coverartarchive.org/release/${t.rel}/front-500`, sizes: '500x500' }] : [] });
+        ms.metadata = new (PW.MediaMetadata || MediaMetadata)(msObj({ title: t.title || '', artist: t.artist || '', album: t.relTitle || '',
+            artwork: t.front && t.rel ? [{ src: `https://coverartarchive.org/release/${t.rel}/front-250`, sizes: '250x250' }, { src: `https://coverartarchive.org/release/${t.rel}/front-500`, sizes: '500x500' }] : [] }));
         ms.playbackState = 'playing';
     } catch (e) {}
     // the widget's iframe plays too and can take over the lock screen's session, which then shows only its own
     // pause: the handlers go on again with every track, and the silent loop restarts so this page plays last
     if (plyWakeEl) { plyWakeEl.pause(); plyWakeEl.play().catch(() => {}); }
-    try { if (t.len) ms.setPositionState({ duration: t.len / 1000, position: Math.min(t.len, t.played || 0) / 1000, playbackRate: 1 }); } catch (e) {}
-    const on = (k, f) => { try { ms.setActionHandler(k, f); } catch (e) {} };
+    try { if (t.len) ms.setPositionState(msObj({ duration: t.len / 1000, position: Math.min(t.len, t.played || 0) / 1000, playbackRate: 1 })); } catch (e) {}
+    const on = (k, f) => { try { ms.setActionHandler(k, msFn(ev => f(ev && { seekOffset: ev.seekOffset, seekTime: ev.seekTime }))); } catch (e) {} };
     const by = d => { const c = ply.q[ply.i]; if (c && c.len) plySeek(Math.max(0, Math.min(c.len - 1000, (c.played || 0) + d))); };
     on('seekbackward', ev => by(-1000 * ((ev && ev.seekOffset) || 10)));
     on('seekforward', ev => by(1000 * ((ev && ev.seekOffset) || 10)));
@@ -12751,13 +12757,13 @@ function plyRepeat() {
     S.playerRepeat = S.playerRepeat === 'off' ? 'all' : S.playerRepeat === 'all' ? 'one' : 'off';
     save(); LOG.info('player: repeat', S.playerRepeat); plyDraw();
 }
-const plyState = paused => { if (paused === ply.paused) return; ply.paused = paused; try { navigator.mediaSession.playbackState = paused ? 'paused' : 'playing'; } catch (e) {} LOG.debug('player:', paused ? 'paused' : 'plays'); plyDraw(); };
+const plyState = paused => { if (paused === ply.paused) return; ply.paused = paused; try { msPage().playbackState = paused ? 'paused' : 'playing'; } catch (e) {} LOG.debug('player:', paused ? 'paused' : 'plays'); plyDraw(); };
 const plyStep = d => { if (plyRemote && !PLY_WINDOW) { plyControl('step', d); return; } const i = ply.i + d; if (i >= 0 && i < ply.q.length) plyGo(i); else if (d < 0 && ply.i === 0 && ply.ctl) plySeek(0); };
 function plyClose() {
     plyCollStop();
     if (plyRemote && !PLY_WINDOW) { plyControl('close'); plyRemote = false; }
     LOG.info('player: closed');
-    plyWake(false); try { navigator.mediaSession.metadata = null; navigator.mediaSession.playbackState = 'none'; } catch (e) {}
+    plyWake(false); try { const ms = msPage(); ms.metadata = null; ms.playbackState = 'none'; } catch (e) {}
     try { sessionStorage.removeItem('eh-ply'); } catch (e) {}
     ply.q = []; ply.i = -1; ply.src = '';
     document.getElementById('eh-ply')?.remove();
