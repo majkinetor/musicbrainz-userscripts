@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.090007
+// @version      2026.11.20.090008
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12589,7 +12589,7 @@ if (PLY_BUS) {
             else if (m.action === 'volume') plyVolSet(m.value);
             else if (m.action === 'video') plyVideo();
             else if (m.action === 'repeat') plyRepeat();
-            else if (m.action === 'shuffle') plyShuffle();
+            else if (m.action === 'shuffle') { PLOG.info('shuffle: a tab asks to toggle it'); plyShuffle(); }
             else if (m.action === 'close') { plyClose(); window.close(); }
             else if (m.action === 'to-tab') { plyToTab(m.value); return; }
             else if (m.action === 'queue') plyRequeue(m.value && m.value.rel, m.value && m.value.q);
@@ -12613,6 +12613,7 @@ if (PLY_BUS) {
         if (!S.player || (!plyRemote && !plyPending && ply.i >= 0) || !Array.isArray(m.q)) return;
         if (m.i < 0) { if (plyRemote) { plyRemote = false; plyClose(); } return; }
         const before = [ply.i, ply.src, ply.paused, JSON.stringify(ply.q.map(t => [t.key, t.rel, t.title])), S.playerVideo, S.playerRepeat, S.playerShuffle, m.back].join('|'), vol = S.playerVol;
+        if (S.playerShuffle !== !!m.shuffle) PLOG.info('shuffle: the player window says', m.shuffle ? 'on' : 'off');
         plyRemote = true; plyResumed = true; Object.assign(ply, { q: m.q, i: m.i, src: m.src, pref: m.pref, paused: m.paused, yt: m.yt, kind: m.kind, ctl: m.ctl, ends: m.ends });
         S.playerVol = m.vol; S.playerVideo = m.video; S.playerRepeat = m.repeat || 'off'; S.playerShuffle = !!m.shuffle; ply.back = !!m.back; plyMade = m.made || plyMade;
         const after = [ply.i, ply.src, ply.paused, JSON.stringify(ply.q.map(t => [t.key, t.rel, t.title])), S.playerVideo, S.playerRepeat, S.playerShuffle, m.back].join('|');
@@ -12975,11 +12976,13 @@ function plyShufBack() {
     return -1;
 }
 function plyShuffle() {
-    if (plyRemote && !PLY_WINDOW) { plyControl('shuffle'); return; }
+    PLOG.info('shuffle: asked, now', S.playerShuffle ? 'on' : 'off', '| remote', plyRemote, '| window', !!PLY_WINDOW, '| track', ply.i, 'of', ply.q.length);
+    if (plyRemote && !PLY_WINDOW) { PLOG.info('shuffle: sent to the player window'); plyControl('shuffle'); return; }
     S.playerShuffle = !S.playerShuffle;
     ply.q.forEach(x => { x.sh = false; }); ply.hist = [];
     if (ply.q[ply.i]) ply.q[ply.i].sh = true;
     save(); PLOG.info('shuffle', S.playerShuffle ? 'on' : 'off'); plyDraw(); plyPublish();
+    PLOG.info('shuffle: after redraw', S.playerShuffle ? 'on' : 'off', '| button', plyCtl && plyCtl.querySelector('[data-ply="shuffle"]')?.getAttribute('aria-pressed'), '| saved', plyShufOn() ? 'on' : 'off');
 }
 function plyRepeat() {
     if (plyRemote && !PLY_WINDOW) { plyControl('repeat'); return; }
@@ -13258,7 +13261,7 @@ function plyClick(ev) {
     if (k === 'seek') { const t = ply.q[ply.i], r = b.getBoundingClientRect(); if (t && t.len && r.width) plySeek(Math.round(Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)) * t.len)); return; }
     if (k === 'prev') plyStep(-1);
     else if (k === 'next') plyStep(1);
-    else if (k === 'shuffle') plyShuffle();
+    else if (k === 'shuffle') { PLOG.info('shuffle: button clicked, shows', b.getAttribute('aria-pressed')); plyShuffle(); }
     else if (k === 'play' || k === 'pause') { plyCmd(k === 'play'); ply.paused = k === 'pause'; plyDraw(); }
     else if (k === 'video') plyVideo();
     else if (k === 'x') plyClose();
