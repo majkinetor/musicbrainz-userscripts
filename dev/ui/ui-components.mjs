@@ -848,7 +848,7 @@ function mbuDock() {
         .filter(function (el) { return el.id !== 'mbu-dock' && el.dataset.mbCornerDock !== 'no'; });
     if (!document.getElementById('mbu-dock-css')) {
         var css = document.createElement('style'); css.id = 'mbu-dock-css';
-        css.textContent = '[data-mbu-docked]{z-index:2147482990!important}[data-mbu-docked=hide],[data-mbu-docked=off],:root:not([data-mbu-dock]):not([data-mbu-st]) [data-mb-corner-dock=only]{display:none!important}'
+        css.textContent = '[data-mbu-docked]{z-index:2147482990!important}[data-mbu-docked=hide],[data-mbu-docked=off],:root:not([data-mbu-dock]) [data-mb-corner-dock=only]{display:none!important}'
             // No transform on an entry, ever: its count badge is drawn inside it, and Chrome cut seams through the
             // badge's border under a fractional scale (a peek's .8, a hover's 1.08). The hover grows the icon only, a
             // folded entry is laid out smaller in whole pixels, and a bigger icon (mbuDockItem's scale) is its size
