@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-20 20:55 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-20 20:58 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -926,7 +926,7 @@ The header's **Show** menu picks the columns: **Artist** shows by itself on a Va
 
 ### Player
 
-Turn on **Enable player** in the settings. The play button on a track number plays that recording; **Play** in the tracklist's header plays the release; right-click either to add to the queue. On a recording or release collection, **Play** queues the collection.
+The player is on unless **Enable player** is turned off in the settings. The play button on a track number plays that recording; **Play** in the tracklist's header plays the release; right-click either to add to the queue. On a recording or release collection, **Play** queues the collection.
 
 It plays from YouTube, YouTube Music, Spotify, Deezer, Apple Music, SoundCloud and Bandcamp. Apple Music needs a click on its own play button. On YouTube and Bandcamp the next track loads ahead and **Crossfade** blends them.
 
@@ -1028,10 +1028,10 @@ Right-click the corner icon.
 | Effects                               | Cover aura                                                | [background and effects](#background-effects) |
 | Menu → Show menu titles               | off                                                       | text beside main menu icons                   |
 | Menu → Responsive                     | off                                                       | items from More move up when they fit         |
-| Player → Enable player                | off                                                       | the [player](#player)                         |
+| Player → Enable player                | on                                                        | the [player](#player)                         |
 | Player → Player place                 | Bottom bar                                                | **Bottom bar** or **Top bar**                 |
-| Player → Show cover                   | off                                                       | the playing track's cover, in the top bar     |
-| Player → Show playlist track number   | on                                                        | the playing track's number in the playlist    |
+| Player → Show cover                   | on                                                        | the playing track's cover, in the top bar     |
+| Player → Show playlist track number   | off                                                       | the playing track's number in the playlist    |
 | Player → Left click                   | Replace queue                                             | replace the queue or add to it                |
 | Player → Crossfade                    | 5 s                                                       | **Off** for none                              |
 | Player → Collection playlist limit    | 1000                                                      | most tracks taken from a collection           |
