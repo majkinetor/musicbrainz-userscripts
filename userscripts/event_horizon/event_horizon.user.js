@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.130000
+// @version      2026.11.21.140000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13744,26 +13744,33 @@ function plyGroupHead(x, group, n, i) {
     const src = PLY_CV.has(x.rel) ? PLY_CV.get(x.rel) : x.front ? `https://coverartarchive.org/release/${x.rel}/front-250` : '';
     return `<a class="ply-group cv"${rm} data-grel="${x.rel}" href="${MB}/release/${x.rel}" target="_blank" rel="noopener" data-tip="Open the release in a new tab; right-click removes its ${n} from the playlist"><img${src ? ` src="${esc(src)}"` : ''} data-plyrel="${x.rel}" alt="" loading="lazy"><span>${esc(x.relTitle || 'Release')}<small>${x.relYear ? esc(x.relYear) + ' · ' : ''}${n} track${n === 1 ? '' : 's'}</small></span></a>`;
 }
-// the playlist head's counts: its releases (a click shows their covers in the line, a cover's click goes to its release)
+// the playlist head's counts: its releases (a click shows their covers as a grid in place of the rows, a cover's click goes to its release)
 // and its loose recordings (a click goes to their section, the next one on each click)
 function plyCountRels() { const m = new Map(); for (const x of ply.q) if (!(x.standalone || !('relAc' in x)) && x.rel && !m.has(x.rel)) m.set(x.rel, x); return m; }
 function plyCounts(open) {
     const rels = plyCountRels(), recs = ply.q.filter(x => x.standalone || !('relAc' in x)).length;
     if (rels.size + recs < 2 && !(rels.size && recs)) return '<span class="ply-cnt"></span>';
-    const strip = open && rels.size ? '<span class="ply-strip">' + [...rels.values()].map(x => {
-        const src = PLY_CV.has(x.rel) ? PLY_CV.get(x.rel) : x.front ? `https://coverartarchive.org/release/${x.rel}/front-250` : '';
-        return `<button type="button" class="ply-sc" data-grel="${x.rel}" aria-label="${esc(x.relTitle || 'Release')}" data-tip="${esc((x.relTitle || 'Release') + (x.relYear ? ' · ' + x.relYear : ''))}">${SVG(MK_RELEASE)}<img${src ? ` src="${esc(src)}"` : ''} data-plyrel="${x.rel}" alt="" loading="lazy"></button>`;
-    }).join('') + '</span>' : '';
+    const strip = open && rels.size;
     return '<span class="ply-cnt">'
         + (rels.size ? `<button type="button" class="ply-cb" data-pc="rel" aria-expanded="${!!strip}" aria-label="${rels.size} release${rels.size === 1 ? '' : 's'}" data-tip="${rels.size} release${rels.size === 1 ? '' : 's'}\nClick: ${strip ? 'hide' : 'show'} their covers, a cover goes to its release">${rels.size}${SVG(MK_RELEASE)}</button>` : '')
         + (recs ? `<button type="button" class="ply-cb" data-pc="rec" aria-label="${recs} recording${recs === 1 ? '' : 's'}" data-tip="${recs} recording${recs === 1 ? '' : 's'} not from a release\nClick: go to them">${recs}${SVG(MK_REC)}</button>` : '')
-        + '</span>' + strip;
+        + '</span>';
+}
+// the playlist's release covers as a grid in place of its rows, the playing release's marked
+function plyGrid() {
+    const cur = ply.q[ply.i]?.rel;
+    return '<div class="ply-grid" role="list">' + [...plyCountRels().values()].map(x => {
+        const src = PLY_CV.has(x.rel) ? PLY_CV.get(x.rel) : x.front ? `https://coverartarchive.org/release/${x.rel}/front-250` : '';
+        return `<button type="button" class="ply-sc" role="listitem" data-grel="${x.rel}"${x.rel === cur ? ' aria-current="true"' : ''} aria-label="${esc(x.relTitle || 'Release')}" data-tip="${esc((x.relTitle || 'Release') + (x.relYear ? ' · ' + x.relYear : '') + '\nClick: go to its tracks')}">${SVG(MK_RELEASE)}<img${src ? ` src="${esc(src)}"` : ''} data-plyrel="${x.rel}" alt="" loading="lazy"></button>`;
+    }).join('') + '</div>';
 }
 function plyCountsPaint(m, open) {
     const hd = m.querySelector('.ply-top .hd'), old = hd?.querySelector('.ply-cnt'); if (!old) return;
-    hd.querySelector('.ply-strip')?.remove();
+    m.querySelector('.ply-grid')?.remove();
     old.outerHTML = plyCounts(open);
-    hd.querySelectorAll('.ply-strip img').forEach(plyCoverWire);
+    if (!hd.querySelector('.ply-cb[aria-expanded="true"]')) return;
+    m.querySelector('.ply-top').insertAdjacentHTML('afterend', plyGrid());
+    m.querySelectorAll('.ply-grid img').forEach(plyCoverWire);
 }
 // scrolls the playlist so a heading sits right under its sticky head, and flashes it
 function plyListTo(m, el) {
@@ -13780,6 +13787,7 @@ document.addEventListener('click', ev => {
         const to = all.find(g => g.getBoundingClientRect().top > top + 4) || all[0];
         PLOG.debug('to the recordings section', all.indexOf(to) + 1, 'of', all.length); plyListTo(m, to); return;
     }
+    plyCountsPaint(m, false);
     const g = m.querySelector(`.ply-group[data-grel="${b.dataset.grel}"]`);
     PLOG.debug('to the release', b.dataset.grel, !!g); plyListTo(m, g);
 });
@@ -13801,7 +13809,7 @@ function plyListPaint() {
         const at = m.querySelector('.qi,.ply-group,.ply-loading')?.parentNode || m;
         plyKeepCovers(at, () => { at.querySelectorAll('.qi,.ply-group,.ply-loading').forEach(n => n.remove()); at.insertAdjacentHTML('beforeend', plyRows(true)); }); m._sig = plyQSig();
         plyGroupCovers(m); m.scrollTop = top;
-        plyCountsPaint(m, !!m.querySelector('.ply-strip'));
+        plyCountsPaint(m, !!m.querySelector('.ply-grid'));
         m.querySelector('.qf')?.dispatchEvent(new Event('input'));
     }
     const head = m.querySelector('.ply-list-head'), html = plyRelHead(ply.q[ply.i]);
@@ -14134,13 +14142,15 @@ html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
 .ply-menu .hd .ply-cb{display:inline-flex;align-items:center;gap:3px;height:26px;padding:0 6px;border:0;border-radius:6px;background:none;color:var(--muted,#777);font:12px/1 system-ui,sans-serif;cursor:pointer}
 .ply-menu .hd .ply-cb:hover,.ply-menu .hd .ply-cb[aria-expanded="true"]{color:var(--accent,#ba478f)}
 .ply-menu .hd .ply-cb svg{width:15px;height:15px}
-.ply-menu .hd .ply-strip{flex:1 1 auto;min-width:0;display:flex;gap:5px;overflow-x:auto;padding:2px 0;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
-.ply-menu .hd .ply-sc{position:relative;flex:none;display:grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:3px;background:color-mix(in srgb,var(--muted,#777) 18%,transparent);color:var(--muted,#777);cursor:pointer;overflow:hidden}
-.ply-menu .hd .ply-sc svg{width:14px;height:14px}
-.ply-menu .hd .ply-sc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.ply-menu .hd .ply-sc:hover{outline:2px solid var(--accent,#ba478f);outline-offset:-2px}.ply-menu .hd .ply-sc:hover img{opacity:.85}
+.ply-menu .ply-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px;padding:10px 12px}
+.ply-menu .ply-grid .ply-sc{position:relative;display:grid;place-items:center;aspect-ratio:1;width:100%;height:auto;padding:0;border:0;border-radius:4px;background:color-mix(in srgb,var(--muted,#777) 18%,transparent);color:var(--muted,#777);cursor:pointer;overflow:hidden}
+.ply-menu .ply-grid .ply-sc svg{width:22px;height:22px}
+.ply-menu .ply-grid .ply-sc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ply-menu .ply-grid .ply-sc:hover,.ply-menu .ply-grid .ply-sc:focus-visible{outline:2px solid var(--accent,#ba478f);outline-offset:-2px}.ply-menu .ply-grid .ply-sc:hover img{opacity:.85}
+.ply-menu .ply-grid .ply-sc[aria-current]{outline:2px solid var(--accent,#ba478f);outline-offset:2px}
+.ply-menu:has(.ply-grid):not(:has(.hd.qo)) :is(.qi,.ply-group,.ply-loading){display:none}.ply-menu:has(.hd.qo) .ply-grid{display:none}
 .ply-menu .hd .ply-load{display:inline-flex;align-items:center;gap:6px;margin-left:8px;color:var(--muted,#777);font:12px/1 system-ui,sans-serif;text-transform:none;letter-spacing:0;font-variant-numeric:tabular-nums}.ply-menu .hd .ply-load[hidden]{display:none}
-.ply-menu .hd.qo .ply-cnt,.ply-menu .hd.qo .ply-strip,.ply-menu .hd.qo .ply-load{display:none}
+.ply-menu .hd.qo .ply-cnt,.ply-menu .hd.qo .ply-load{display:none}
 .ply-group.ply-flash{animation:ply-flash 1.2s ease-out}
 @keyframes ply-flash{from{background:color-mix(in srgb,var(--accent,#ba478f) 25%,transparent)}to{background:transparent}}
 .ply-top{position:sticky;top:-5px;z-index:1;margin:-5px -5px 0;padding:5px 5px 0;background:color-mix(in srgb,var(--surface,#fff) 92%,transparent);backdrop-filter:blur(10px)}

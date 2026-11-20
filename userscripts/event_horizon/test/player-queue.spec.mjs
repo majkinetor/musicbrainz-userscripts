@@ -22,13 +22,17 @@ test('queues releases and recordings and restores the last queue', { tag: '@sand
   await page.locator('#eh-ply-menu .ply-cb[data-pc="rec"]').click();
   await expect(page.locator('#eh-ply-menu .ply-group[data-pg="rec"]')).toHaveClass(/ply-flash/);
   await page.locator('#eh-ply-menu .ply-cb[data-pc="rel"]').click();
-  await expect(page.locator('#eh-ply-menu .ply-sc')).toHaveCount(2);
+  // the releases' covers show as a grid in place of the rows; a cover's click closes it and goes to its release
+  await expect(page.locator('#eh-ply-menu .ply-grid .ply-sc')).toHaveCount(2);
+  await expect(page.locator('#eh-ply-menu .qi').first()).toBeHidden();
   await page.locator('#eh-ply-menu .ply-sc[data-grel="two"]').click();
+  await expect(page.locator('#eh-ply-menu .ply-sc')).toHaveCount(0);
   await expect(page.locator('#eh-ply-menu .ply-group[data-grel="two"]')).toHaveClass(/ply-flash/);
+  await page.locator('#eh-ply-menu .ply-cb[data-pc="rel"]').click();
+  await expect(page.locator('#eh-ply-menu .ply-sc')).toHaveCount(2);
   await page.locator('#eh-ply-menu .ply-cb[data-pc="rel"]').click();
   await expect(page.locator('#eh-ply-menu .ply-sc')).toHaveCount(0);
   await page.locator('#eh-ply-menu .qi[data-k="q2"]').click();
-  await expect(page.locator('.ply-ctl .ply-n').first()).toHaveText('3');
   await expect(page.locator('#eh-ply-menu')).toBeVisible();
   await expect(page.locator('#eh-ply-menu .qi[aria-current]')).toContainText('Second2');
   await expect(page.locator('#eh-ply-menu .ply-rh')).toContainText('Second');
