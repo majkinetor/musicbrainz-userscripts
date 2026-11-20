@@ -18,8 +18,17 @@ test('keyboard shortcuts open pages, and Ctrl+/ lists and rebinds them', { tag: 
   await attachShot(page, testInfo, 'palette');
   await page.keyboard.type('relat');
   check(await page.locator('#eh-keys li').count() === 1, 'typing filters the list');
+  // a key another command has warns and names it; the same key again moves it
+  const btn = page.locator('#eh-keys li button').first();
+  await btn.click();
+  await page.keyboard.press('a');
+  const warn = page.locator('#eh-keys .eh-k-warn');
+  check(/already the key for Aliases/.test(await until(() => warn.innerText().catch(() => ''), t => t.includes('Aliases'))), 'a taken key warns and names its command');
+  check((await btn.innerText()).includes('Press a key'), 'the warning keeps the key unchanged');
+  await page.keyboard.press('a');
+  check((await btn.innerText()).trim() === 'A' && await warn.count() === 0, 'the same key again moves it here');
   // rebind: click its key, press another
-  await page.locator('#eh-keys li button').first().click();
+  await btn.click();
   await page.keyboard.press('q');
   check((await page.locator('#eh-keys li button').first().innerText()).trim() === 'Q', 'the new key shows');
   await page.keyboard.press('Escape');

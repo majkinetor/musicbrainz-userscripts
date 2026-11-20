@@ -203,7 +203,7 @@ With _Show pending changes_ on in settings, titles, tracks, credits and links wi
 
 ## Keyboard shortcuts
 
-On an entity's page, in the viewer or on MusicBrainz's own page, a key opens one of its pages; a few work on any page. **Ctrl+/** lists the commands: type to find one, **Enter** runs it, and clicking a command's key and pressing another changes it (**Backspace** leaves it without one, **Default keys** puts them all back). Keys do nothing while you type in a field.
+On an entity's page, in the viewer or on MusicBrainz's own page, a key opens one of its pages; a few work on any page. **Ctrl+/** lists the commands: type to find one, **Enter** runs it, and clicking a command's key and pressing another changes it. If another command already has that key, the window names that command, and the same key pressed again moves it here (**Backspace** leaves it without one, **Default keys** puts them all back). Keys do nothing while you type in a field.
 
 | Key             | Opens                                                     |
 | --------------- | --------------------------------------------------------- |
