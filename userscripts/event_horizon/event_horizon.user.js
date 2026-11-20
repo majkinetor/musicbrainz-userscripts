@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.233000
+// @version      2026.11.22.002000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12205,9 +12205,12 @@ function searchHtml(d) {
 }
 // MusicBrainz's own /search page: the search form (query, type, results per page, method) and the tag lookup's fields, in the bars the other searches use
 const TL_F = [['artist', 'Artist'], ['release', 'Release'], ['tracknum', 'Track number'], ['track', 'Track'], ['duration', 'Duration'], ['filename', 'Filename']];
+// the other lookups that land on a page the viewer lacks, as the search that finds the same: [type, field]
+const OL_SEARCH = { isrc: ['recording', 'isrc'], iswc: ['work', 'iswc'], discid: ['release', 'discid'], 'artist-ipi': ['artist', 'ipi'], 'artist-isni': ['artist', 'isni'], 'label-ipi': ['label', 'ipi'], 'label-isni': ['label', 'isni'] };
 const OTHER_LOOKUPS = [['catno', 'Catalog number'], ['barcode', 'Barcode'], ['url', 'URL'], ['isrc', 'ISRC'], ['iswc', 'ISWC'], ['artist-ipi', 'Artist IPI'], ['artist-isni', 'Artist ISNI'], ['label-ipi', 'Label IPI'], ['label-isni', 'Label ISNI'], ['freedbid', 'FreeDB ID'], ['mbid', 'MBID'], ['discid', 'Disc ID']];
-// MusicBrainz's own /search page as the edit search is built: pick a lookup, then its criteria in compact rows; Add criteria brings the optional ones
-// field: [form name, label, control, 2 = always shown | 1 = shown, can be removed | 0 = added on demand]
+// MusicBrainz's own /search page as the edit search is built: criteria in compact rows, and one Add criteria list with every criterion of the page, grouped as MusicBrainz groups them
+// MusicBrainz sends each lookup to its own address, so a criterion of another lookup switches the form to it: its rows replace the others
+// field: [form name, label, control, 2 = shown, kept | 1 = shown, can be removed | 0 = added on demand]
 const SL_OPTS = {
     type: SRCH_T.filter(t => t !== 'doc').concat('doc').map(t => [t, srchName(t)]),
     limit: [['25', 'Up to 25'], ['50', 'Up to 50'], ['100', 'Up to 100']],
@@ -12215,18 +12218,24 @@ const SL_OPTS = {
 };
 const SL_MODES = {
     search: ['Search', '/search', [['query', 'Query', 'text', 2], ['type', 'Type', 'type', 2], ['limit', 'Results per page', 'limit', 0], ['method', 'Search method', 'method', 0]]],
-    taglookup: ['Tag lookup', '/taglookup/index', TL_F.map(([k, l], i) => ['tag-lookup.' + k, l, 'text', i < 2 ? 1 : 0])],
-    ...Object.fromEntries(OTHER_LOOKUPS.map(([k, l]) => [k, [l, '/otherlookup/' + k, [['other-lookup.' + k, l, 'text', 2]]]])),
+    taglookup: ['Tag lookup', '/taglookup/index', TL_F.map(([k, l]) => ['tag-lookup.' + k, l, 'text', 0])],
+    ...Object.fromEntries(OTHER_LOOKUPS.map(([k, l]) => [k, [l, '/otherlookup/' + k, [['other-lookup.' + k, l, 'text', 1]]]])),
 };
+// the Add criteria list's groups, as the native page heads them
+const SL_GROUPS = [['Search', ['search']], ['Tag lookup', ['taglookup']], ['Other lookups', OTHER_LOOKUPS.map(o => o[0])]];
+const slModeOf = n => Object.keys(SL_MODES).find(k => SL_MODES[k][2].some(f => f[0] === n));
 const slRow = (f, val = '') => {
     const [n, l, c, lock] = f, o = SL_OPTS[c];
     const ctl = o ? '<select name="' + n + '">' + o.map(([v, t]) => '<option value="' + v + '"' + (v === val ? ' selected' : '') + '>' + t + '</option>').join('') + '</select>' : '<input name="' + n + '" value="' + esc(val) + '" autocomplete="off"' + (lock === 2 ? ' required' : '') + '>';
     return '<div class="sl-row" data-f="' + n + '"><span>' + l + '</span>' + ctl + (lock === 2 ? '<i></i>' : '<button type="button" data-sl-x aria-label="Remove ' + l + '" data-tip="Remove">×</button>') + '</div>';
 };
-// the optional criteria not on the form yet, as the Add criteria list
+// every criterion not on the form yet, as the Add criteria list
 const slAddList = form => {
-    const m = SL_MODES[form.dataset.slMode], on = new Set([...form.querySelectorAll('.sl-row[data-f]')].map(r => r.dataset.f)), left = m[2].filter(f => !on.has(f[0]));
-    return left.length ? '<select data-sl-add aria-label="Add criteria"><option value="">Add criteria…</option>' + left.map(f => '<option value="' + f[0] + '">' + f[1] + '</option>').join('') + '</select>' : '';
+    const on = new Set([...form.querySelectorAll('.sl-row[data-f]')].map(r => r.dataset.f));
+    return '<select data-sl-add aria-label="Add criteria"><option value="">Add criteria…</option>' + SL_GROUPS.map(([g, ks]) => {
+        const left = ks.flatMap(k => SL_MODES[k][2]).filter(f => !on.has(f[0]));
+        return left.length ? '<optgroup label="' + g + '">' + left.map(f => '<option value="' + f[0] + '">' + f[1] + '</option>').join('') + '</optgroup>' : '';
+    }).join('') + '</select>';
 };
 function slMode(form, k, vals) {
     const m = SL_MODES[k]; form.dataset.slMode = k; form.action = MB + m[1];
@@ -12235,19 +12244,22 @@ function slMode(form, k, vals) {
 }
 document.addEventListener('change', e => {
     const form = e.target.closest && e.target.closest('form[data-sl]'); if (!form) return;
-    if (e.target.matches('[data-sl-mode]')) { slMode(form, e.target.value); form.querySelector('.sl-row input')?.focus(); return; }
     if (e.target.matches('[data-sl-add]') && e.target.value) {
-        const f = SL_MODES[form.dataset.slMode][2].find(x => x[0] === e.target.value); if (!f) return;
-        form.querySelector('[data-sl-rows]').insertAdjacentHTML('beforeend', slRow(f)); form.querySelector('[data-sl-addwrap]').innerHTML = slAddList(form);
-        form.querySelector('.sl-row[data-f="' + f[0] + '"] input, .sl-row[data-f="' + f[0] + '"] select')?.focus();
+        const n = e.target.value, k = slModeOf(n), f = k && SL_MODES[k][2].find(x => x[0] === n); if (!f) return;
+        if (k !== form.dataset.slMode) { LOG.debug('Search page: ' + n + ' switches the form to ' + k); slMode(form, k); }
+        if (!form.querySelector('.sl-row[data-f="' + n + '"]')) form.querySelector('[data-sl-rows]').insertAdjacentHTML('beforeend', slRow(f));
+        form.querySelector('[data-sl-addwrap]').innerHTML = slAddList(form);
+        form.querySelector('.sl-row[data-f="' + n + '"] input, .sl-row[data-f="' + n + '"] select')?.focus();
     }
 });
 document.addEventListener('click', e => {
     const x = e.target.closest && e.target.closest('[data-sl-x]'); if (!x) return;
-    const form = x.closest('form[data-sl]'); x.closest('.sl-row').remove(); form.querySelector('[data-sl-addwrap]').innerHTML = slAddList(form);
+    const form = x.closest('form[data-sl]'); x.closest('.sl-row').remove();
+    // the last row gone: back to the plain search
+    if (!form.querySelector('.sl-row[data-f]')) slMode(form, 'search'); else form.querySelector('[data-sl-addwrap]').innerHTML = slAddList(form);
 });
 function searchForm(p) {
-    const t = p.get('type'), tmp = '<form class="sl" data-sl action="' + MB + '/search" method="get"><div class="sl-row"><span>Lookup</span><select data-sl-mode aria-label="Lookup">' + Object.entries(SL_MODES).map(([k, m]) => '<option value="' + k + '">' + m[0] + '</option>').join('') + '</select><i></i></div><div data-sl-rows></div><div class="sl-foot"><span data-sl-addwrap></span><button type="submit" class="hm-go" data-tip="Search" aria-label="Search">' + SVG(LENS) + '</button></div></form>';
+    const t = p.get('type'), tmp = '<form class="sl" data-sl action="' + MB + '/search" method="get"><div data-sl-rows></div><div class="sl-foot"><span data-sl-addwrap></span><button type="submit" class="hm-go" data-tip="Search" aria-label="Search">' + SVG(LENS) + '</button></div></form>';
     // the rows are built from SL_MODES when the page is placed (slMode), so the form and its rows share one source
     const d = new DOMParser().parseFromString(tmp, 'text/html'), form = d.querySelector('form'); slMode(form, 'search', { type: SL_OPTS.type.some(o => o[0] === t) ? t : 'artist', query: p.get('query') || '' });
     return '<div class="sr-page"><section class="arthd"><div class="rhtx"><div class="kicker label"><span>MusicBrainz</span><span class="acts">' + SRCH() + '</span></div><h1>Search</h1></div></section>' + form.outerHTML + '<p class="u-sub sr-sub">For more information, check the <a href="' + MB + '/doc/Search">documentation</a>.</p></div>';
@@ -16719,8 +16731,12 @@ function build() {
         const fm = ev.target; if (!ehOn || ev.defaultPrevented || !fm.action || !/^\/otherlookup\/[\w-]+$/.test(new URL(fm.action).pathname)) return;
         ev.preventDefault();
         const u = new URL(fm.action); u.search = new URLSearchParams(new FormData(fm)).toString();
-        try { const r = await mbnFetch(u.href), k = r.ok && r.url && navTo(r.url); if (k) { ehPush(r.url); show(k); return; } } catch (e) { LOG.warn('Other lookup: ' + e.message); }
-        location.assign(u.href);
+        // the codes MusicBrainz sends to a page of its own (an ISRC's, an ISWC's, a disc ID's) are asked of its search, which the viewer shows, so the player plays on
+        const ol = u.pathname.split('/').pop(), v = (u.searchParams.get('other-lookup.' + ol) || '').trim(), sq = v && OL_SEARCH[ol];
+        if (sq) { const to = MB + '/search?' + new URLSearchParams({ query: sq[1] + ':"' + v.replace(/"/g, '') + '"', type: sq[0], method: 'advanced' }); LOG.info('Other lookup ' + ol + ' ' + v + ' as a search'); ehPush(to); show(navTo(to)); return; }
+        try { const r = await mbnFetch(u.href), k = r.ok && r.url && navTo(r.url); if (k) { ehPush(r.url); show(k); return; } LOG.info('Other lookup ' + ol + ' ' + v + ': no page the viewer shows (' + r.status + ' ' + r.url + ')'); } catch (e) { LOG.warn('Other lookup: ' + e.message); }
+        // nothing the viewer can open: say so and stay, so the player plays on
+        toast('Nothing found for ' + (v || ol));
     });
     listFilters(document);
     // the search field folds away once focus leaves it
