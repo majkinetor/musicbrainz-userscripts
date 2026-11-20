@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.233000
+// @version      2026.11.20.234000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -17497,7 +17497,8 @@ const KEY_CMDS = [
     ['palette', 'Shortcuts', 'ctrl+/', () => { keysOpen(); return true; }],
 ];
 const plyKeyOn = () => (ply.i >= 0 || plyRemote) && !document.activeElement?.closest?.('[role=menu],[role=listbox],[role=slider]');
-const plyKeySeek = d => { const t = plyKeyOn() && ply.ctl && ply.q[ply.i]; if (!t || !t.len) return false; plySeek(Math.max(0, Math.min(t.len - 1000, (t.played || 0) + d))); return true; };
+const plyKeySeek = d => { const t = plyKeyOn() && ply.ctl && ply.q[ply.i]; if (!t || !t.len) return false; const p = Math.max(0, Math.min(t.len - 1000, (t.played || 0) + d)); plySeek(p); t.played = p; return true; };
+const KEY_REPEAT = new Set(['back5', 'fwd5']);
 const plyKeyPa = k => { const b = [...document.querySelectorAll(`.ply-ra [data-pa="${k}"]`)].find(x => x.getClientRects().length); if (!b) return false; b.click(); return true; };
 const keyOfCmd = c => S.keys[c[0]] != null ? S.keys[c[0]] : c[2];
 // a key press as it is stored: modifiers, then the key; Shift only where the key itself doesn't show it
@@ -17558,11 +17559,13 @@ function keysOpen() {
 }
 if (!SETTINGS_ONLY) {
     document.addEventListener('keydown', ev => {
-        if (!S.keysOn || ev.defaultPrevented || ev.repeat || document.getElementById('eh-keys')) return;
+        if (!S.keysOn || ev.defaultPrevented || document.getElementById('eh-keys')) return;
         const t = ev.target;
         if (t && (t.isContentEditable || /^(input|textarea|select)$/i.test(t.tagName))) return;
         const k = keyCombo(ev); if (!k) return;
         const c = KEY_CMDS.find(x => keyOfCmd(x) === k); if (!c) return;
+        // a held key repeats only the seek keys, 5 seconds a step
+        if (ev.repeat && !KEY_REPEAT.has(c[0])) return;
         // #938: keys-off suspends every command; data-mbu-keys-keep="toggle" leaves the on/off one (V, or its rebound key) working
         const h = document.documentElement;
         if (h.hasAttribute('data-mbu-keys-off') && !(c[0] === 'view' && /(^|\s)toggle(\s|$)/.test(h.getAttribute('data-mbu-keys-keep') || ''))) return;
