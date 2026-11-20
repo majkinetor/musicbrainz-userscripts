@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.220000
+// @version      2026.11.20.230000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13364,9 +13364,11 @@ function plyCoverWire(im) {
     im.onerror = full; if (!im.getAttribute('src')) full();
 }
 function plyRelHead(t, btns = true) {
-    if (!t || !t.rel) return '';
+    if (!t) return '';
+    // a recording with no release: the head names the track itself and links to the recording
+    if (!t.rel) return t.rid ? `<div class="ply-rhw"><a class="ply-rh" href="${MB}/recording/${t.rid}" target="_blank" rel="noopener"><span class="ply-rhi">${SVG(PLY_I.crec)}</span><span class="rt"><b>${esc(t.title || '')}</b><small>${esc(t.artist || '')}</small></span></a>${btns ? `<span class="ply-ra">${plyHeadBtns(t)}</span>` : ''}</div>` : '';
     const yr = t.relYear ? `<span class="ry">${esc(t.relYear)}</span>` : '';
-    return `<div class="ply-rhw"><a class="ply-rh" href="${MB}/release/${t.rel}"${PLY_WINDOW ? ' target="_blank"' : ''}>${t.rel ? `<img${PLY_CV.has(t.rel) ? ` src="${esc(PLY_CV.get(t.rel))}"` : t.front ? ` src="https://coverartarchive.org/release/${t.rel}/front-250"` : ''} data-plyrel="${t.rel}" alt="">` : ''}<span class="rt"><b>${esc(t.relTitle || '')}</b><small>${esc(t.relAc || '')}${t.relAc && yr ? ' · ' : ''}${yr}</small></span></a>${btns ? `<span class="ply-ra">${plyHeadBtns(t)}</span>` : ''}</div>`;
+    return `<div class="ply-rhw"><a class="ply-rh" href="${MB}/release/${t.rel}" target="_blank" rel="noopener">${t.rel ? `<img${PLY_CV.has(t.rel) ? ` src="${esc(PLY_CV.get(t.rel))}"` : t.front ? ` src="https://coverartarchive.org/release/${t.rel}/front-250"` : ''} data-plyrel="${t.rel}" alt="">` : ''}<span class="rt"><b>${esc(t.relTitle || '')}</b><small>${esc(t.relAc || '')}${t.relAc && yr ? ' · ' : ''}${yr}</small></span></a>${btns ? `<span class="ply-ra">${plyHeadBtns(t)}</span>` : ''}</div>`;
 }
 // the head's buttons for the playing track: collect the release, collect the recording (each into that type's default
 // collection, a right-click lists them all), love it on ListenBrainz
@@ -13380,7 +13382,9 @@ function plyHeadBtns(t) {
     if (!t) return '';
     let h = '';
     for (const type of ['rel', 'rec']) {
-        const key = plyCollKey(t, type); if (!key) continue;
+        const key = plyCollKey(t, type);
+        if (!key && type === 'rel' && ME && t.rid && !t.rel) { h += `<button type="button" class="ply-pa" data-pa="rel" aria-disabled="true" aria-label="Collect release" data-tip="Collect release&#10;This recording plays without a release">${SVG(PLY_I.crel)}</button>`; continue; }
+        if (!key) continue;
         const what = type === 'rel' ? 'release' : 'recording', d = plyCollDef(type), x = COLLECTIONS.get(key);
         const row = d && x && x.rows && x.rows.find(r => r.id === d.id), on = !!(row && row.on), ins = collectionsIn(x);
         const tip = 'Collect ' + what + (d ? ' · "' + d.label + '"' : '') + (ins.length ? '\nIn ' + ins.length + (ins.length === 1 ? ' collection: ' : ' collections: ') + ins.join(', ') : '') + (d ? '\nClick: ' + (on ? 'remove' : 'add') + ' this ' + what : '\nClick: choose a collection') + '\nRight-click: your ' + what + ' collections';
@@ -13467,14 +13471,14 @@ function plyCollDraw(m) {
     m.style.top = Math.max(8, r.bottom + h + 6 < innerHeight ? r.bottom + 4 : r.top - h - 4) + 'px';
 }
 document.addEventListener('click', ev => {
-    const b = ev.target.closest && ev.target.closest('.ply-ra [data-pa]'); if (!b) return;
+    const b = ev.target.closest && ev.target.closest('.ply-ra [data-pa]'); if (!b || b.dataset.pa !== 'love' && b.hasAttribute('aria-disabled')) return;
     const t = ply.q[ply.i], k = b.dataset.pa; if (!t) return;
     if (k === 'love') { if (lbToken()) lbLove(t); return; }
     plyCollClick(b, k);
 });
 document.addEventListener('contextmenu', ev => {
     const b = ev.target.closest && ev.target.closest('.ply-ra [data-pa="rel"],.ply-ra [data-pa="rec"]'); if (!b) return;
-    ev.preventDefault(); plyCollPick(b, b.dataset.pa);
+    ev.preventDefault(); if (b.hasAttribute('aria-disabled')) return; plyCollPick(b, b.dataset.pa);
 });
 // a release's group heading carries its cover, its title, and its year and track count under it
 function plyGroupHead(x, group, n, i) {
@@ -13810,6 +13814,7 @@ html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
 .ply-ra{display:flex;align-items:center;gap:2px;flex:none;padding-right:6px}
 .ply-rh{flex:1;min-width:0;display:flex;align-items:center;gap:11px;padding:6px 9px 8px;color:inherit!important;text-decoration:none!important}
 .ply-rh img{flex:none;width:52px;height:52px;object-fit:cover;border-radius:4px;background:color-mix(in srgb,currentColor 8%,transparent)}
+.ply-rhi{flex:none;display:grid;place-items:center;width:52px;height:52px;border-radius:4px;background:color-mix(in srgb,currentColor 8%,transparent);color:var(--muted,#777)}.ply-rhi svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.6}
 .ply-rh .rt{display:flex;flex-direction:column;gap:3px;min-width:0}
 .ply-rh b,.ply-rh small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ply-rh b{font-size:14px}
