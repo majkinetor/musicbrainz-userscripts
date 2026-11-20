@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.234000
+// @version      2026.11.20.241000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13417,12 +13417,12 @@ function plyCollPaint(key) {
 }
 async function plyCollClick(btn, type) {
     const key = plyCollKey(ply.q[ply.i], type), d = plyCollDef(type); if (!key) return;
-    if (!d) { plyCollPick(btn, type); return; }
+    if (!d) { if (btn) plyCollPick(btn, type); return; }
     let x = COLLECTIONS.get(key);
     if (!x || !x.rows || Date.now() - x.at >= 60000) { await collectionLoad(key); x = COLLECTIONS.get(key); }
     if (x.busy || x.loading) { toast('Reading your collections…'); return; }
     if (!x.rows) { toast(x.error || 'Could not read your collections'); return; }
-    if (!x.rows.some(r => r.id === d.id)) { plyCollDefSet(type, null); plyHeadPaint(); toast('Your default collection is gone: choose another'); plyCollPick(btn, type); return; }
+    if (!x.rows.some(r => r.id === d.id)) { plyCollDefSet(type, null); plyHeadPaint(); toast('Your default collection is gone: choose another'); if (btn) plyCollPick(btn, type); return; }
     collectionChange(key, d.id);
 }
 // the picker: the user's collections of this type, each toggling the item, and which one a click uses
@@ -13527,6 +13527,18 @@ function plyListMenu(btn) {
     plyCoverWire(document.querySelector('#eh-ply-menu .ply-rh img'));
     plyGroupCovers(document.querySelector('#eh-ply-menu'));
     plyHeadLoad(ply.q[ply.i]);
+    // Up and Down walk the shown rows, from the filter too; Enter on a row plays it, as a click does
+    const me = document.getElementById('eh-ply-menu'), walk = ev => {
+        const m = document.getElementById('eh-ply-menu'); if (m !== me || !m.isConnected) { document.removeEventListener('keydown', walk, true); return; }
+        if ((ev.key !== 'ArrowUp' && ev.key !== 'ArrowDown') || ev.altKey || ev.ctrlKey || ev.metaKey || ev.shiftKey) return;
+        const a = document.activeElement; if (!m.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a?.tagName)) return;
+        const rs = [...m.querySelectorAll('.qi')].filter(r => !r.hidden); if (!rs.length) return;
+        const f = m.querySelector('.hd.qo .qf'), i = rs.indexOf(a), d = ev.key === 'ArrowDown' ? 1 : -1;
+        ev.preventDefault(); ev.stopPropagation();
+        const to = i < 0 ? (a === f || d > 0 ? rs[0] : rs[rs.length - 1]) : i + d < 0 ? f || rs[0] : rs[Math.min(rs.length - 1, i + d)];
+        to.focus({ preventScroll: true }); to.scrollIntoView({ block: 'nearest' });
+    };
+    document.addEventListener('keydown', walk, true);
     const qf = document.querySelector('#eh-ply-menu .qf'); if (!qf) return;
     const fold = x => String(x).normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
     const rows = () => [...document.querySelectorAll('#eh-ply-menu .qi')];
@@ -13539,7 +13551,7 @@ function plyListMenu(btn) {
     qf.addEventListener('blur', () => setTimeout(() => { if (!qf.value && document.activeElement !== qb) open(false); }));
     // a typed letter opens it, as the filter used to take keys at once
     const typed = ev => { const m = document.getElementById('eh-ply-menu'); if (!m || !m.contains(qf)) { document.removeEventListener('keydown', typed, true); return; }
-        if (hd.classList.contains('qo') || ev.key.length !== 1 || ev.ctrlKey || ev.metaKey || ev.altKey || /^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName)) return; open(true); };
+        if (ev.key.length !== 1 || ev.key === ' ' && !qf.value || ev.ctrlKey || ev.metaKey || ev.altKey || /^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName)) return; if (hd.classList.contains('qo')) qf.focus({ preventScroll: true }); else open(true); };
     document.addEventListener('keydown', typed, true);
 }
 // one recording, from its own page: a queue of one
@@ -17490,6 +17502,8 @@ const KEY_CMDS = [
     ['collrel', 'Collect the playing release', 'alt+1', () => plyKeyPa('rel')],
     ['collrec', 'Collect the playing recording', 'alt+2', () => plyKeyPa('rec')],
     ['love', 'Love the playing track', 'alt+3', () => plyKeyPa('love')],
+    // the playlist under the player's title, with the focus on the playing track for Up, Down and Enter
+    ['playlist', 'Show or hide the playlist', 'alt+space', () => plyKeyList()],
     ['profile', 'Your profile', 'u', () => { const a = document.querySelector('.header a[href*="/user/"], #header a[href*="/user/"], header a[href*="/user/"]'); if (!a) return false; const m = a.href.match(/\/user\/[^/?#]+/); location.assign(MB + m[0]); return true; }],
     ['home', 'MusicBrainz home page', '.', () => { location.assign(MB + '/'); return true; }],
     // with String Theory, its settings; alone, the script's own
@@ -17498,8 +17512,30 @@ const KEY_CMDS = [
 ];
 const plyKeyOn = () => (ply.i >= 0 || plyRemote) && !document.activeElement?.closest?.('[role=menu],[role=listbox],[role=slider]');
 const plyKeySeek = d => { const t = plyKeyOn() && ply.ctl && ply.q[ply.i]; if (!t || !t.len) return false; const p = Math.max(0, Math.min(t.len - 1000, (t.played || 0) + d)); plySeek(p); t.played = p; return true; };
+const plyKeyList = () => {
+    const m = document.querySelector('#eh-ply-menu:has(.ply-list-head)');
+    if (m) { m.querySelector('.ply-x')?.click(); return true; }
+    const b = [...document.querySelectorAll('[data-ply="list"]')].find(x => x.getClientRects().length); if (!b) return false;
+    b.click();
+    const n = document.querySelector('#eh-ply-menu:has(.ply-list-head)');
+    (n?.querySelector('.qi[aria-current]') || n?.querySelector('.qi'))?.focus({ preventScroll: true });
+    return true;
+};
 const KEY_REPEAT = new Set(['back5', 'fwd5']);
-const plyKeyPa = k => { const b = [...document.querySelectorAll(`.ply-ra [data-pa="${k}"]`)].find(x => x.getClientRects().length); if (!b) return false; b.click(); return true; };
+// the head's buttons when the playlist shows them, else their actions without a button, with a toast to tell what happened
+const plyKeyPa = k => {
+    const t = ply.q[ply.i]; if (!t) return false;
+    const b = [...document.querySelectorAll(`.ply-ra [data-pa="${k}"]`)].find(x => x.getClientRects().length);
+    if (b) { b.click(); return true; }
+    if (k === 'love') { if (!lbToken()) toast('Connect ListenBrainz to love tracks'); else if (t.rid) lbLove(t); return true; }
+    const what = k === 'rel' ? 'release' : 'recording', key = plyCollKey(t, k), d = plyCollDef(k);
+    if (!key) { toast('This track has no ' + what); return true; }
+    if (!d) { toast('Pick a default ' + what + ' collection in the playlist first'); return true; }
+    const x = COLLECTIONS.get(key), r = x && x.rows && x.rows.find(v => v.id === d.id);
+    if (r) toast((r.on ? 'Removed from ' : 'Added to ') + d.label);
+    plyCollClick(null, k);
+    return true;
+};
 const keyOfCmd = c => S.keys[c[0]] != null ? S.keys[c[0]] : c[2];
 // a key press as it is stored: modifiers, then the key; Shift only where the key itself doesn't show it
 const keyCombo = ev => {

@@ -227,6 +227,7 @@ On an entity's page, in the viewer or on MusicBrainz's own page, a key opens one
 | Alt+1           | the playing release in or out of its default collection   |
 | Alt+2           | the playing recording in or out of its default collection |
 | Alt+3           | loves or unloves the playing track on ListenBrainz        |
+| Alt+Space       | shows or hides the playlist: Up, Down and Enter pick a song, typing filters |
 | U               | your profile                                              |
 | .               | MusicBrainz's home page                                   |
 | ,               | the settings (String Theory's, with it)                   |
