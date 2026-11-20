@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.060100
+// @version      2026.11.21.070000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13413,6 +13413,7 @@ function plyDraw() {
     const im = plyCtl.querySelector('.ply-cov img');
     if (im?.dataset.plyrel) plyCoverWire(im); else if (im) im.onerror = () => im.closest('.ply-cov')?.remove();
     if (plyVgOpen) plyCtl.querySelector('.ply-vg')?.classList.add('vo');
+    if (cov) plyCovNext();
     plyProg();
     plyPin();
     plyMark();
@@ -13511,6 +13512,21 @@ function plyCoverWire(im) {
     if (!PLY_CV.has(im.dataset.plyrel) && im.getAttribute('src')) im.addEventListener('load', () => PLY_CV.set(im.dataset.plyrel, im.src), { once: true });
     const full = () => { const id = im.dataset.plyrel; im.onerror = () => im.remove(); edFull(id).then(u => { if (!im.isConnected) return; if (u) { PLOG.debug('head cover from the archive listing', u); PLY_CV.set(id, u); im.src = u; } else im.remove(); }); };
     im.onerror = full; if (!im.getAttribute('src')) full();
+}
+// the next track's top-bar cover, loaded ahead so the bar shows no blank when it starts
+function plyCovNext() {
+    const n = plyNextIdx(), t = ply.q[n]; if (n < 0 || n === ply.i || !t) return;
+    const load = (url, ok, bad) => { const im = new Image(); im.onload = () => ok(url); im.onerror = bad; im.src = url; };
+    if (t.rel) {
+        const id = t.rel; if (PLY_CV.has(id)) return;
+        const full = () => edFull(id).then(u => u && load(u, v => PLY_CV.set(id, v), () => {}));
+        if (t.front) load(`https://coverartarchive.org/release/${id}/front-250`, v => PLY_CV.set(id, v), full); else full();
+        PLOG.debug('preloads the next cover', t.title);
+    } else if (t.rg && !PLY_RGCV.has(t.rg)) {
+        const rg = t.rg, u = `https://coverartarchive.org/release-group/${rg}/front`;
+        load(u + '-250', v => PLY_RGCV.set(rg, v), () => load(u, v => PLY_RGCV.set(rg, v), () => PLY_RGCV.set(rg, false)));
+        PLOG.debug('preloads the next cover', t.title);
+    }
 }
 function plyRelHead(t, btns = true) {
     if (!t) return '';
@@ -13891,7 +13907,7 @@ const PLY_CSS = `
 .ply-ctl .ply-lb{position:relative}
 .ply-ctl .ply-lb.sent::after{content:'';position:absolute;right:3px;top:3px;width:7px;height:7px;border-radius:50%;background:#3fa56b;box-shadow:0 0 0 2px var(--surface,#fff)}
 .ply-ctl .ply-t{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:5px;align-content:center;min-width:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;text-decoration:none;white-space:nowrap;cursor:pointer}
-.ply-ctl .ply-n{flex:none;color:var(--muted,#777);font-variant-numeric:tabular-nums}
+.ply-ctl .ply-n{flex:none;grid-row:1 / span 2;align-self:center;color:var(--muted,#777);font-variant-numeric:tabular-nums}
 .ply-ctl .ply-line{display:flex;align-items:baseline;gap:5px;min-width:0;overflow:hidden}
 .ply-ctl .ply-line>*{overflow:hidden;text-overflow:ellipsis}
 .ply-ctl .ply-t b{flex:0 1 auto;min-width:3em}
@@ -13952,7 +13968,7 @@ html.eh-ply-win .ply-wl{order:2;flex:1;min-height:0;overflow:hidden auto;padding
 .ply-ctl.pb{position:relative;display:flex;align-items:center;gap:6px;flex:0 1 auto;padding:0 10px;margin:0 6px;border-left:1px solid var(--line,#ddd);border-right:1px solid var(--line,#ddd);font-size:13px}
 .pb .ply-b,.pb .ply-b.big,.pb .ply-b.big:hover{width:28px;height:28px}
 .kicker .ply-ctl .ply-b svg{color:inherit}
-.pb .ply-cov{flex:none;display:block;width:30px;height:30px;border-radius:3px;overflow:hidden;background:color-mix(in srgb,currentColor 8%,transparent)}.pb .ply-cov:not(:has(img)){display:none}.pb .ply-cov img{display:block;width:100%;height:100%;object-fit:cover}.pb .ply-cov:hover{outline:2px solid var(--accent,#ba478f);outline-offset:1px}.pb .ply-t{max-width:260px}#eh-pin .pb .ply-t{max-width:none;flex:0 1 auto}
+.pb .ply-cov{flex:none;display:block;position:relative;align-self:stretch;height:auto;aspect-ratio:1;border-radius:0;overflow:hidden;background:color-mix(in srgb,currentColor 8%,transparent)}.pb .ply-cov:not(:has(img)){display:none}.pb .ply-cov img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover}.pb .ply-cov:hover{outline:2px solid var(--accent,#ba478f);outline-offset:1px}.pb .ply-t{max-width:260px}#eh-pin .pb .ply-t{max-width:none;flex:0 1 auto}
 .pb .ply-pr{position:absolute;left:0;right:0;bottom:0;width:auto;height:3px;border-radius:0;overflow:visible}
 .pb .ply-pr.sk{padding:8px 0 0;height:3px}
 .pb .ply-pr.sk:hover{height:5px;padding:6px 0 0}

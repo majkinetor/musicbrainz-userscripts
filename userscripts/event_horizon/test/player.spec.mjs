@@ -66,7 +66,8 @@ test.describe('chip cover', () => {
     check(await until(() => cov.count(), n => n === 1) === 1, 'the cover sits in the top bar');
     check(/\/release\/[0-9a-f-]{36}$/.test(await cov.getAttribute('href')), 'the cover links to the release');
     check(await until(() => cov.locator('img').evaluate(im => im.complete && im.naturalWidth > 0).catch(() => false), v => v) === true, 'the cover image loads');
-    await attachShot(testInfo, page, 'chip-cover');
+    check(await until(() => page.locator('#eh-pin .ply-n').evaluate(n => { const t = n.closest('.ply-t').getBoundingClientRect(), r = n.getBoundingClientRect(); return Math.abs((r.top + r.bottom) / 2 - (t.top + t.bottom) / 2); }), d => d < 3) < 3, 'the track number sits midway between the two rows');
+    await attachShot(testInfo, page.locator('#eh-pin'), 'chip-cover');
   });
 });
 
