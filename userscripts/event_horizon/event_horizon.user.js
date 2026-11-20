@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.200000
+// @version      2026.11.21.210000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12737,7 +12737,7 @@ if (PLY_BUS) {
             else if (m.action === 'to-tab') { plyToTab(m.value); return; }
             else if (m.action === 'queue') plyRequeue(m.value && m.value.rel, m.value && m.value.q);
             else if (m.action === 'append') plyAppend(m.value);
-            else if (m.action === 'remove' && m.value) plyRemove(m.value.from, m.value.to);
+            else if (m.action === 'remove' && m.value) { if (m.value.rel) plyRemoveRel(m.value.rel); else plyRemove(m.value.from, m.value.to); }
             plyPublish(); return;
             }
             if (PLY_WINDOW) return;
@@ -12916,8 +12916,24 @@ function plyRemove(from, to = from + 1) {
     ply.q = q; ply.i = q.indexOf(cur);
     plyKeep(); plySave(); plyDraw(); plyPublish();
 }
-// a right-click on a playlist row removes its track, on a release heading all its tracks
+// Take a release's tracks out of the queue, wherever they sit (a right-click on its cover in the playlist head's grid).
+// The tracks counted as loose recordings stay. When the one playing goes, the next track left after it starts.
+function plyRemoveRel(rel) {
+    if (!rel) return;
+    if (plyRemote && !PLY_WINDOW) { plyControl('remove', { rel }); return; }
+    const out = t => !(t.standalone || !('relAc' in t)) && t.rel === rel;
+    const cur = ply.q[ply.i], q = ply.q.filter(t => !out(t));
+    if (q.length === ply.q.length) return;
+    PLOG.info('removed a release from the playlist', rel, ply.q.length - q.length);
+    if (!q.length) { plyClose(); return; }
+    if (cur && out(cur)) { const next = ply.q.slice(ply.i + 1).find(t => !out(t)); ply.q = q; plyGo(next ? q.indexOf(next) : q.length - 1, ply.pref); return; }
+    ply.q = q; ply.i = q.indexOf(cur);
+    plyKeep(); plySave(); plyDraw(); plyPublish();
+}
+// a right-click on a playlist row removes its track, on a release heading or a cover in the head's grid all its tracks
 document.addEventListener('contextmenu', ev => {
+    const c = ev.target.closest && ev.target.closest('.ply-menu .ply-grid .ply-sc[data-grel]');
+    if (c) { ev.preventDefault(); ev.stopPropagation(); plyRemoveRel(c.dataset.grel); return; }
     const x = ev.target.closest && ev.target.closest('.ply-menu .qi,.ply-wl .qi,.ply-menu .ply-group[data-qx],.ply-wl .ply-group[data-qx]'); if (!x) return;
     const [a, b] = (x.dataset.qx || (x.dataset.k || '').replace(/^q/, '') || x.dataset.i || '').split('-').map(Number);
     if (!Number.isInteger(a)) return;
@@ -13783,7 +13799,7 @@ function plyGrid() {
     const cur = ply.q[ply.i]?.rel;
     return '<div class="ply-grid" role="list">' + [...plyCountRels().values()].map(x => {
         const src = PLY_CV.has(x.rel) ? PLY_CV.get(x.rel) : x.front ? `https://coverartarchive.org/release/${x.rel}/front-250` : '';
-        return `<button type="button" class="ply-sc" role="listitem" data-grel="${x.rel}"${x.rel === cur ? ' aria-current="true"' : ''} aria-label="${esc(x.relTitle || 'Release')}" data-tip="${esc((x.relTitle || 'Release') + (x.relYear ? ' · ' + x.relYear : '') + '\nClick: go to its tracks')}">${SVG(MK_RELEASE)}<img${src ? ` src="${esc(src)}"` : ''} data-plyrel="${x.rel}" alt="" loading="lazy"></button>`;
+        return `<button type="button" class="ply-sc" role="listitem" data-grel="${x.rel}"${x.rel === cur ? ' aria-current="true"' : ''} aria-label="${esc(x.relTitle || 'Release')}" data-tip="${esc((x.relTitle || 'Release') + (x.relYear ? ' · ' + x.relYear : '') + '\nClick: go to its tracks\nRight-click: remove it from the playlist')}">${SVG(MK_RELEASE)}<img${src ? ` src="${esc(src)}"` : ''} data-plyrel="${x.rel}" alt="" loading="lazy"></button>`;
     }).join('') + '</div>';
 }
 function plyCountsPaint(m, open) {

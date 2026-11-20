@@ -102,7 +102,7 @@ The player is on unless **Enable player** is turned off in the settings. The pla
 
 It plays from YouTube, YouTube Music, Spotify, Deezer, Apple Music, SoundCloud and Bandcamp. Apple Music needs a click on its own play button. On YouTube and Bandcamp the next track loads ahead and **Crossfade** blends them.
 
-Click the track name for the queue. Its head counts the releases and loose recordings: the releases count shows their covers as a grid in place of the tracks, and a cover jumps to its release; the recordings count jumps to them. While a collection loads, the head shows how many of its entries are loaded. Right-click Play to cycle repeat; **Shuffle** plays each track once in random order; the wheel winds five seconds. The source menu also has:
+Click the track name for the queue. Its head counts the releases and loose recordings: the releases count shows their covers as a grid in place of the tracks, and a cover jumps to its release, right-click removes its tracks; the recordings count jumps to them. While a collection loads, the head shows how many of its entries are loaded. Right-click Play to cycle repeat; **Shuffle** plays each track once in random order; the wheel winds five seconds. The source menu also has:
 
 - **Open in window**: the player moves to a pop-up, so playback survives reloading or closing a tab. **Back to tab** returns it.
 - **Load collection** and **Save playlist as collection**.
