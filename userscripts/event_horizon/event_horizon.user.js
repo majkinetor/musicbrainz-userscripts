@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.180000
+// @version      2026.11.20.183000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -10249,7 +10249,7 @@ function discoHtml(d) {
     // each type sorts by the chosen column (date by default), a leading '-' reversing it
     const sk = (S.dgSort || 'date').replace(/^-/, ''), desc = (S.dgSort || '').startsWith('-');
     // the table's columns, as MB's own (Rating, Releases) and the group's links; its release counts come from d.rcX, once the search is in
-    const rv = g => (g.rating || {}).value, rc = g => d.rcX && d.rcX.get(g.id);
+    const rv = g => (g.rating || {}).value, rc = g => (d.rcX && d.rcX.get(g.id)) || (d.dgRel && d.dgRel.get(g.id) && d.dgRel.get(g.id).length) || (d.discX ? '?' : 0);
     const kv = { title: g => g.title || '', artist: g => (g['artist-credit'] || []).map(c => (c.name || '') + (c.joinphrase || '')).join(''), date: g => g['first-release-date'] || '9',
         rating: g => rv(g) == null ? '' : String(rv(g)), releases: g => rc(g) == null ? '' : String(rc(g)) }[sk] || (g => g['first-release-date'] || '9');
     const bySort = l => l.sort((a, b) => (desc ? -1 : 1) * kv(a).localeCompare(kv(b), undefined, { sensitivity: 'base', numeric: true }) || (a['first-release-date'] || '9').localeCompare(b['first-release-date'] || '9'));
