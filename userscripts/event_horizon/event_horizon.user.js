@@ -5460,20 +5460,21 @@ window.addEventListener('contextmenu', ev => {
 }, true);
 
 /* ── editions ──────────────────────────────────────── */
-// one cover lookup for every view: a release's or group's front from the Cover Art Archive. A thumbnail can lag behind its
+// one cover lookup for every view: a release's or group's front from the Cover Art Archive, an event's from the Event Art Archive. A thumbnail can lag behind its
 // upload (often until its edit is approved) or go missing while the full image loads, so a failed front-250/500 tries the
 // archive's listing, smallest first, before the view gives up. The answer is kept per release or group ('' when none
 // loads), so every view and every redraw starts from the address that worked.
 const CAA_LIST = new Map(), CAA_CV = new Map(), CAA_TRIED = new WeakSet();
-const CAA_RE = /^https:\/\/coverartarchive\.org\/(release|release-group)\/([0-9a-f-]{36})\/front(?:-(\d+))?$/;
-// an address's release or group, and the size it asked for; null for an address that isn't a front
-const caaOf = u => { const m = (u || '').match(CAA_RE); return m ? { k: m[1], id: m[2], size: m[3] || '' } : null; };
+const CAA_RE = /^https:\/\/(?:coverartarchive\.org\/(release|release-group)|eventartarchive\.org\/(event))\/([0-9a-f-]{36})\/front(?:-(\d+))?$/;
+const caaHost = k => k === 'event' ? 'https://eventartarchive.org' : 'https://coverartarchive.org';
+// an address's release, group or event, and the size it asked for; null for an address that isn't a front
+const caaOf = u => { const m = (u || '').match(CAA_RE); return m ? { k: m[1] || m[2], id: m[3], size: m[4] || '' } : null; };
 // the front's address once found, else its thumbnail at that size
-const caaSrc = (k, id, size = 250) => CAA_CV.get(k + '/' + id) || `https://coverartarchive.org/${k}/${id}/front-${size}`;
+const caaSrc = (k, id, size = 250) => CAA_CV.get(k + '/' + id) || `${caaHost(k)}/${k}/${id}/front-${size}`;
 // the front's images from the archive listing, smallest first; [] when it has none
 const caaList = (k, id) => {
     const key = k + '/' + id;
-    if (!CAA_LIST.has(key)) CAA_LIST.set(key, fetch(`https://coverartarchive.org/${key}`).then(r => r.ok ? r.json() : null)
+    if (!CAA_LIST.has(key)) CAA_LIST.set(key, fetch(`${caaHost(k)}/${key}`).then(r => r.ok ? r.json() : null)
         .then(j => { const im = j && j.images && (j.images.find(i => i.front) || j.images[0]), th = im && (im.thumbnails || {}); return im ? [...new Set([th['250'] || th.small, th['500'] || th.large, im.image].filter(Boolean).map(u => u.replace(/^http:/, 'https:')))] : []; })
         .catch(() => []));
     return CAA_LIST.get(key);
@@ -11685,9 +11686,10 @@ function hmFront() {
     if (!doc) { hmFetch(); return { rel: [], ev: [], blog: [] }; }
     doc.querySelectorAll('.artwork-cont a[href]').forEach(a => {
         const m = a.getAttribute('href').match(/^\/(release|event)\/([0-9a-f-]{36})/); if (!m) return;
-        const sp = a.querySelector('[data-small-thumbnail]'), img = sp ? sp.getAttribute('data-small-thumbnail') : (a.querySelector('img') || {}).src;
+        // the front page lists only what has art: its cover comes through the shared lookup, not the page's thumbnail, read at
+        // each redraw, so one the lookup gave up on stays its letter instead of being tried again (a settings change redraws the page)
         const t = a.getAttribute('title') || '', i = m[1] === 'release' ? t.lastIndexOf(' by ') : -1;
-        art[m[1]].push({ href: `${MB}/${m[1]}/${m[2]}`, img: img ? (img.startsWith('//') ? 'https:' + img : img) : '', t: i > 0 ? t.slice(0, i) : t, by: i > 0 ? t.slice(i + 4) : '' });
+        art[m[1]].push({ href: `${MB}/${m[1]}/${m[2]}`, get img() { return CAA_CV.get(m[1] + '/' + m[2]) === '' ? '' : caaSrc(m[1], m[2]); }, t: i > 0 ? t.slice(0, i) : t, by: i > 0 ? t.slice(i + 4) : '' });
     });
     const blog = [...doc.querySelectorAll('#blog-feed li a[href]')].map(a => ({ href: a.href, t: a.textContent.trim() }));
     return (hmFr = { rel: art.release.slice(0, 12), ev: art.event.slice(0, 12), blog });
@@ -11866,6 +11868,8 @@ function srchWire(app) {
 function hmWire(app) {
     if (!srchWire(app)) return;
     for (const im of app.querySelectorAll('[data-hmimg]')) hmImg(im);
+    // the recently added covers: a missing thumbnail tries the archive listing, then the letter placeholder shows
+    for (const im of app.querySelectorAll('[data-hmcv]')) { im.onerror = () => caaRetry(im, () => im.remove()); if (im.complete && !im.naturalWidth && im.getAttribute('src')) im.onerror(); }
     app.addEventListener('click', e => { if (e.target.closest('button.hm-av')) gravForm(app); });
     app.querySelectorAll('[data-star-view]').forEach(b => b.addEventListener('click', () => { S.starView = b.dataset.starView; save(); render(); }));
     app.querySelectorAll('[data-star-sort]').forEach(b => b.addEventListener('click', () => { const key = b.dataset.starSort; S.starSort = S.starSort === key ? '-' + key : key; save(); render(); }));
@@ -11917,7 +11921,7 @@ function homeHtml() {
     const hi = (h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + (ME ? `, <em>${esc(ME)}</em>` : '');
     const hero = srchHero(hi, '', '', 'artist', 'indexed', `<nav class="hm-add"><span>Add</span>${HM_ADD.map(([p, n, ic], i) => `<a href="${MB}/${p}" style="--c:${HM_CLR[i]}" data-tip="Add ${n.toLowerCase()}" aria-label="Add ${n.toLowerCase()}">${SVG(ic)}</a>`).join('')}</nav>`);
     const hmPh = t => { let h = 0; for (const c of t) h = (h * 31 + c.codePointAt(0)) >>> 0; return `--h1:${h % 360};--h2:${(h % 360 + 40 + (h >> 9) % 80) % 360}`; };
-    const fr = hmFront(), cov = xs => `<div class="hm-covers">${xs.map(x => `<a class="hm-cv" href="${x.href}" data-tip="${esc(x.t + (x.by ? ' by ' + x.by : ''))}"><span class="hm-art" style="${hmPh(x.t)}"><span class="hm-ph"><i>${esc((x.t.match(/[\p{L}\p{N}]/u) || ['?'])[0].toUpperCase())}</i></span>${x.img ? `<img src="${esc(x.img)}" loading="lazy" alt="" onerror="this.remove()">` : ''}</span><b>${esc(x.t)}</b>${x.by ? `<small>${esc(x.by)}</small>` : ''}</a>`).join('')}</div>`;
+    const fr = hmFront(), cov = xs => `<div class="hm-covers">${xs.map(x => `<a class="hm-cv" href="${x.href}" data-tip="${esc(x.t + (x.by ? ' by ' + x.by : ''))}"><span class="hm-art" style="${hmPh(x.t)}"><span class="hm-ph"><i>${esc((x.t.match(/[\p{L}\p{N}]/u) || ['?'])[0].toUpperCase())}</i></span>${x.img ? `<img src="${esc(x.img)}" loading="lazy" alt="" data-hmcv>` : ''}</span><b>${esc(x.t)}</b>${x.by ? `<small>${esc(x.by)}</small>` : ''}</a>`).join('')}</div>`;
     const nrel = fr.rel.length ? sect('hnew', 'Recently added releases', '', cov(fr.rel), '') : '';
     const nev = fr.ev.length ? sect('hnev', 'Recently added events', '', cov(fr.ev), '') : '';
     const me = ME ? sect('hme', esc(ME), '', `<div class="hm-you"><div class="hm-pf"><div class="hm-pid"><span class="hm-av">${esc(ME[0]).toUpperCase()}</span><div><b>${esc(ME)}</b><small>Loading your profile…</small></div></div></div><div class="hm-me">${HM_ME.map(([p, n, ic]) => hmChip(p[0] === '/' ? MB + p : u + p, n, ic)).join('')}</div></div>`, '')
