@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.080000
+// @version      2026.11.21.090000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2928,6 +2928,7 @@ const CSS = `
 /* a scrollbar that comes and goes (a section hidden from the contents) would shift the whole page sideways; keep its gutter */
 html{scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
 body{margin:0;background:var(--eh-page);color:var(--text);font-family:Manrope,system-ui,sans-serif;font-size:15px}
+img:not([src]),img[src=""],img.eh-nimg{content:url("data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==")}img::before{content:"";display:block;width:100%;height:100%}
 /* Aura is blurred into a canvas once: a live CSS filter leaves rectangular seams on partial repaints. */
 /* no isolation: it made <body> its own layer, so every window in it (Fusion, Mission Control, What is new) sat under the launchers on <html>; the backgrounds behind (z-index:-1) paint the same without it, since <html> has no background */
 body{position:relative;overflow-x:clip}
@@ -5466,6 +5467,9 @@ const edFull = id => {
         .catch(() => ''));
     return ED_FULL.get(id);
 };
+// a failed image shows nothing until another src loads, not the browser's frame and broken icon (Firefox has no CSS hook for a failed image)
+document.addEventListener('error', ev => { if (ev.target instanceof HTMLImageElement) ev.target.classList.add('eh-nimg'); }, true);
+document.addEventListener('load', ev => { if (ev.target instanceof HTMLImageElement) ev.target.classList.remove('eh-nimg'); }, true);
 const edCoverGone = im => {
     if (!im.matches('img[data-edimg]')) { im.remove(); return; }
     const c = im.parentNode; im.remove(); if (!c) return; const fb = c.querySelector('.fb'); if (fb) fb.remove(); const nc = c.querySelector('.nc'); if (nc) nc.hidden = false;
