@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.190000
+// @version      2026.11.21.200000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13794,6 +13794,15 @@ function plyCountsPaint(m, open) {
     m.querySelector('.ply-top').insertAdjacentHTML('afterend', plyGrid());
     m.querySelectorAll('.ply-grid img').forEach(plyCoverWire);
 }
+// brings a playlist row into view below the sticky head (scrollIntoView ignores it, so a row walked up to stayed under it);
+// a row's release heading comes along with it, and the list's first row scrolls back to the very top
+function plyRowShow(m, r) {
+    const top = m.querySelector('.ply-top'); if (!r || !top) return;
+    const rs = [...m.querySelectorAll('.qi')].filter(x => !x.hidden), h = r.previousElementSibling?.matches('.ply-group') ? r.previousElementSibling : r;
+    if (rs[0] === r) { m.scrollTop = 0; return; }
+    const lo = top.getBoundingClientRect().bottom, hi = m.getBoundingClientRect().bottom, a = h.getBoundingClientRect().top, b = r.getBoundingClientRect().bottom;
+    if (a < lo) m.scrollTop += a - lo; else if (b > hi) m.scrollTop += b - hi;
+}
 // scrolls the playlist so a heading sits right under its sticky head, and flashes it
 function plyListTo(m, el) {
     const top = m.querySelector('.ply-top'); if (!el || !top) return;
@@ -13844,7 +13853,7 @@ function plyListMenu(btn) {
         ({ k }) => { const i = +String(k).slice(1); if (i >= 0 && i < ply.q.length && i !== ply.i) { PLOG.info('picked from the playlist', i + 1); plyGo(i, ply.pref); } }, 'player');
     document.getElementById('eh-ply-menu')._sig = plyQSig();
     plyListPaint();
-    document.querySelector('#eh-ply-menu [aria-current]')?.scrollIntoView({ block: 'nearest' });
+    plyRowShow(document.getElementById('eh-ply-menu'), document.querySelector('#eh-ply-menu [aria-current]'));
     plyCoverWire(document.querySelector('#eh-ply-menu .ply-rh img'));
     plyGroupCovers(document.querySelector('#eh-ply-menu'));
     plyHeadLoad(ply.q[ply.i]);
@@ -13864,7 +13873,7 @@ function plyListMenu(btn) {
         const f = m.querySelector('.hd.qo .qf'), i = rs.indexOf(a), d = ev.key === 'ArrowDown' ? 1 : -1;
         ev.preventDefault(); ev.stopPropagation();
         const to = i < 0 ? (a === f || d > 0 ? rs[0] : rs[rs.length - 1]) : i + d < 0 ? f || rs[0] : rs[Math.min(rs.length - 1, i + d)];
-        to.focus({ preventScroll: true }); to.scrollIntoView({ block: 'nearest' });
+        to.focus({ preventScroll: true }); if (to === f) m.scrollTop = 0; else plyRowShow(m, to);
     };
     document.addEventListener('keydown', walk, true);
     const qf = document.querySelector('#eh-ply-menu .qf'); if (!qf) return;
