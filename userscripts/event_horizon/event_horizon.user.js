@@ -13515,6 +13515,7 @@ function plyDraw() {
     if (im?.dataset.plyrel) plyCoverWire(im); else if (im) im.onerror = () => im.closest('.ply-cov')?.remove();
     if (plyVgOpen) plyCtl.querySelector('.ply-vg')?.classList.add('vo');
     if (cov) plyCovNext();
+    plyBarColl(t);
     plyProg();
     plyPin();
     plyMark();
@@ -13694,7 +13695,27 @@ function plyHeadBtns(t) {
     }
     return h;
 }
+// is the track's release or recording in that type's default collection? (null: no default, or not read yet)
+function plyCollOn(t, type) {
+    const key = plyCollKey(t, type), d = key && plyCollDef(type), x = d && COLLECTIONS.get(key);
+    const row = x && x.rows && x.rows.find(r => r.id === d.id);
+    return row ? { on: !!row.on, name: plyCollName(d, x) } : null;
+}
+// the top bar marks what is in the default collections: an accent line under the release's cover, the title underlined for the recording
+let plyBarKey = '';
+function plyBarColl(t) {
+    const k = t && ME ? (t.rel || '') + '/' + (t.rid || '') : '';
+    if (k && k !== plyBarKey) { plyBarKey = k; for (const type of ['rel', 'rec']) { const key = plyCollKey(t, type); if (key && plyCollDef(type)) collectionLoad(key); } }
+    plyBarMark();
+}
+function plyBarMark() {
+    const t = ply.q[ply.i], rel = t && t.rel && plyCollOn(t, 'rel'), rec = t && plyCollOn(t, 'rec');
+    const cv = plyCtl?.querySelector('.ply-cov[href*="/release/"]'), b = plyCtl?.querySelector('.ply-t .ply-line b');
+    if (cv) { cv.classList.toggle('in', !!(rel && rel.on)); cv.dataset.tip = (t.relTitle || 'Release') + (rel && rel.on ? '\nIn your collection "' + rel.name + '"' : '') + '\nClick: open the release in a new tab'; }
+    if (b) b.classList.toggle('in', !!(rec && rec.on));
+}
 function plyHeadPaint() {
+    plyBarMark();
     const h = plyHeadBtns(ply.q[ply.i]);
     document.querySelectorAll('.ply-ra').forEach(r => { if (r._h !== h) { r._h = h; r.innerHTML = h; } });
 }
@@ -14092,6 +14113,10 @@ const PLY_CSS = `
 .ply-ctl .ply-line{display:flex;align-items:baseline;gap:5px;min-width:0;overflow:hidden}
 .ply-ctl .ply-line>*{overflow:hidden;text-overflow:ellipsis}
 .ply-ctl .ply-t b{flex:0 1 auto;min-width:3em}
+.ply-ctl .ply-t b.in{text-decoration:underline 2px var(--accent,#ba478f);text-underline-offset:3px;text-decoration-skip-ink:none}
+.pb .ply-cov.in{overflow:visible}
+.ply-cov.in img{border-radius:2px}
+.ply-cov.in::after{content:"";position:absolute;left:8px;right:8px;bottom:-3px;height:2px;border-radius:1px;background:var(--accent,#ba478f)}
 .ply-ctl .ply-ar{flex:0 2 auto;min-width:2em;color:var(--muted,#777)}
 .ply-ctl .ply-rl{grid-column:2;min-width:0;overflow:hidden;text-overflow:ellipsis;color:var(--muted,#777);font-size:12px}
 .ply-ctl .ply-t:not(:has(.ply-n)){grid-template-columns:minmax(0,1fr)}.ply-ctl .ply-t:not(:has(.ply-n)) .ply-rl{grid-column:1}
