@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.180000
+// @version      2026.11.21.190000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -14121,7 +14121,7 @@ html.eh-ply-win .ply-wl{order:2;flex:1;min-height:0;overflow:hidden auto;overscr
 .ply-ctl.pb{position:relative;display:flex;align-items:center;gap:6px;flex:0 1 auto;padding:0 10px;margin:0 6px;border-left:1px solid var(--line,#ddd);border-right:1px solid var(--line,#ddd);font-size:13px}
 .pb .ply-b,.pb .ply-b.big,.pb .ply-b.big:hover{width:28px;height:28px}
 .kicker .ply-ctl .ply-b svg{color:inherit}
-.pb .ply-cov{flex:none;display:block;position:relative;align-self:stretch;height:auto;margin:5px 0 0;aspect-ratio:1;border-radius:2px;overflow:hidden;background:color-mix(in srgb,currentColor 8%,transparent)}.pb .ply-cov:not(:has(img[src])){display:none}.pb .ply-cov img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover}.pb .ply-cov:hover{outline:2px solid var(--accent,#ba478f);outline-offset:1px}.pb .ply-t{max-width:260px}#eh-pin .pb .ply-t{max-width:none;flex:0 1 auto}
+.pb .ply-cov{flex:none;display:block;position:relative;align-self:stretch;height:auto;margin:5px 0 2px;aspect-ratio:1;border-radius:2px;overflow:hidden;background:color-mix(in srgb,currentColor 8%,transparent)}.pb .ply-cov:not(:has(img[src])){display:none}.pb .ply-cov img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover}.pb .ply-cov:hover{outline:2px solid var(--accent,#ba478f);outline-offset:1px}.pb .ply-t{max-width:260px}#eh-pin .pb .ply-t{max-width:none;flex:0 1 auto}
 .pb .ply-pr{position:absolute;left:0;right:0;bottom:0;width:auto;height:3px;border-radius:0;overflow:visible}
 .pb .ply-pr.sk{padding:8px 0 0;height:3px}
 .pb .ply-pr.sk:hover{height:5px;padding:6px 0 0}
