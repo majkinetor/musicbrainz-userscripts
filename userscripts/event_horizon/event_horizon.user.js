@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.120000
+// @version      2026.11.20.150000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -15249,8 +15249,8 @@ async function nativeMore(d) {
     const table = c && [...c.querySelectorAll('table.tbl')].find(t => t.querySelector('a[href*="/release/"]'));
     if (data !== d) return;
     const seen = new Set(d.editions.map(e => e.id)), add = table ? releaseRows(table).filter(e => !seen.has(e.id)) : [];
-    if (d.linkMap) add.forEach(e => { if (d.linkMap.has(e.id)) e.links = d.linkMap.get(e.id); });
     d.editions = d.editions.concat(add); d.page++; d.more = !!add.length && pageMore(c, d.page);
+    nativeLinks();
 }
 function releasesDress(c) {
     edNoLinks = true;
@@ -15292,20 +15292,22 @@ function releasesDress(c) {
     releasePageDraw();
     nativeLinks();
 }
-// MusicBrainz's releases list has no links: one ws/2 browse per 100 releases brings them (majkinetor), up to 500
-const NL_MAX = 5;
+// MusicBrainz's releases list has no links: ws/2 brings them 100 at a time, paged as the list is,
+// only as far as the releases loaded so far need (majkinetor)
 async function nativeLinks() {
     const m = /^\/(artist|label|release-group|recording)\/([0-9a-f-]{36})\/releases/.exec(location.pathname); if (!m) return;
-    const d = data, map = new Map();
+    const d = data, L = d.links || (d.links = { map: new Map(), off: 0, total: Infinity, busy: false });
+    if (L.busy) return; L.busy = true;
     try {
-        for (let off = 0, n = 0; n < NL_MAX; n++, off += 100) {
-            const j = await wsk(`release?${m[1]}=${m[2]}&inc=url-rels&limit=100&offset=${off}`);
-            (j.releases || []).forEach(r => map.set(r.id, urlsOf(r.relations || [])));
-            if (off + 100 >= (j['release-count'] || 0)) break;
+        while (L.off < L.total && d.editions.some(e => !L.map.has(e.id))) {
+            const j = await wsk(`release?${m[1]}=${m[2]}&inc=url-rels&limit=100&offset=${L.off}`);
+            (j.releases || []).forEach(r => L.map.set(r.id, urlsOf(r.relations || [])));
+            L.total = j['release-count'] || 0; L.off += 100;
+            if (!(j.releases || []).length) break;
         }
-    } catch { return; }
-    if (data !== d || !map.size) return;
-    d.linkMap = map; d.editions.forEach(e => { if (map.has(e.id)) e.links = map.get(e.id); });
+    } catch { /* the column stays hidden */ } finally { L.busy = false; }
+    if (data !== d || !L.map.size) return;
+    d.editions.forEach(e => { if (L.map.has(e.id)) e.links = L.map.get(e.id); });
     edNoLinks = false; releasePageDraw();
 }
 // A click on a release or release group row, outside its controls, is a click on the row's first link.
