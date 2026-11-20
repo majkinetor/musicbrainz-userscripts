@@ -33,7 +33,7 @@ test('saves the queue to a new recording collection', { tag: ['@sandbox', '@logi
     await page.route('**/ws/2/recording/*', route => {
       const id = new URL(route.request().url()).pathname.split('/').pop();
       if (![first.mbid, second.mbid].includes(id)) return route.continue();
-      return route.fulfill({ json: { id, title: id, 'artist-credit': [], relations: [{ 'target-type': 'url', type: 'streaming', url: { resource: 'https://www.youtube.com/watch?v=abcdefghijk' } }] } });
+      return route.fulfill({ json: { id, title: id, 'artist-credit': [], releases: [{ id: 'n', title: 'Newer', date: '2020', 'release-group': { id: 'g2' } }, { id: 'o', title: 'Oldest', date: '1999-05', 'release-group': { id: 'g1' } }], relations: [{ 'target-type': 'url', type: 'streaming', url: { resource: 'https://www.youtube.com/watch?v=abcdefghijk' } }] } });
     });
     await inject('event_horizon', { waitFor: '__ehPlayerTest' });
     await page.evaluate(({ first, links }) => window.__ehPlayerTest.recording({ id: first.mbid, title: 'First', ac: [], links }, []), { first, links });
@@ -41,6 +41,8 @@ test('saves the queue to a new recording collection', { tag: ['@sandbox', '@logi
     await page.locator('#eh-ply-menu [data-m="loadcoll"]').click();
     await page.locator('#eh-ply-menu button').filter({ hasText: name }).click();
     await expect.poll(async () => (await page.evaluate(() => window.__ehPlayerTest.state())).q.length).toBe(2);
+    // a loose recording's second row names the oldest release, whose release group gives the cover
+    await expect(page.locator('.ply-ctl .ply-rl')).toHaveText('Oldest · 1999');
     await page.locator(`[data-colplay="${first.mbid}"]`).locator('..').hover();
     await page.locator(`[data-colplay="${first.mbid}"]`).click();
     await expect.poll(async () => (await page.evaluate(() => window.__ehPlayerTest.state())).q.length).toBe(1);
