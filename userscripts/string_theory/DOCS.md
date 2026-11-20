@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-20 20:53 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-20 20:55 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1030,7 +1030,8 @@ Right-click the corner icon.
 | Menu → Responsive                     | off                                                       | items from More move up when they fit         |
 | Player → Enable player                | off                                                       | the [player](#player)                         |
 | Player → Player place                 | Bottom bar                                                | **Bottom bar** or **Top bar**                 |
-| Player → Show cover in the top bar    | off                                                       | the playing track's cover, before its title   |
+| Player → Show cover                   | off                                                       | the playing track's cover, in the top bar     |
+| Player → Show playlist track number   | on                                                        | the playing track's number in the playlist    |
 | Player → Left click                   | Replace queue                                             | replace the queue or add to it                |
 | Player → Crossfade                    | 5 s                                                       | **Off** for none                              |
 | Player → Collection playlist limit    | 1000                                                      | most tracks taken from a collection           |
