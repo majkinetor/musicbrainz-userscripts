@@ -55,6 +55,21 @@ test.describe('chip', () => {
   });
 });
 
+test.describe('chip cover', () => {
+  test.use({ profile: 'fresh', gm: { name: 'Event Horizon', persist: true, values: { view: { on: true, player: true, playerPlace: 'chip', playerLb: false, playerCover: true } } }, pageErrors: ['No valid solution has been found to play this item'] });
+
+  test('the top bar shows the playing cover, which opens the release', { tag: '@prod' }, async ({ page, inject }, testInfo) => {
+    await page.goto(REL);
+    await inject('event_horizon');
+    await page.locator('button[data-playall]').click();
+    const cov = page.locator('#eh-pin .ply-ctl.pb .ply-cov');
+    check(await until(() => cov.count(), n => n === 1) === 1, 'the cover sits in the top bar');
+    check(/\/release\/[0-9a-f-]{36}$/.test(await cov.getAttribute('href')), 'the cover links to the release');
+    check(await until(() => cov.locator('img').evaluate(im => im.complete && im.naturalWidth > 0).catch(() => false), v => v) === true, 'the cover image loads');
+    await attachShot(testInfo, page, 'chip-cover');
+  });
+});
+
 test.describe('settings', () => {
   test.use({ profile: 'fresh', gm: { name: 'Event Horizon', persist: true, values: { view: { on: true, player: true } } } });
 
