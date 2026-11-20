@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.183000
+// @version      2026.11.20.190000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -15270,7 +15270,7 @@ function releaseRows(table) {
         if (!li.length && text(6)) li.push({name:'',catno:text(6)});
         const id = link.getAttribute('href').split('/').pop();
         const ac = [...(cells[at+1]?.querySelectorAll('a[href*="/artist/"]') || [])].map((l,i,ls)=>({name:l.textContent.trim(),artist:{id:l.getAttribute('href').split('/').pop(),name:l.textContent.trim()},joinphrase:i < ls.length-1 ? ', ' : ''}));
-        return [{id, title:link.textContent.trim(), disambig:cells[at].querySelector('.comment')?.textContent.trim() || '', formats:[text(2)], counts:text(3).split('+').map(n=>+n.trim() || 0), events, date:events[0]?.date || '', where:events.map(e=>e.iso).filter(Boolean), li, labels:li.map(l=>l.name).filter(Boolean), barcode:text(7), ac, links:[], thumb:'https://coverartarchive.org/release/'+id+'/front-250', status:''}];
+        return [{id, title:link.textContent.trim(), disambig:(cells[at].querySelector('.comment')?.textContent.trim() || '').replace(/^\((.*)\)$/, '$1'), formats:[text(2)], counts:text(3).split('+').map(n=>+n.trim() || 0), events, date:events[0]?.date || '', where:events.map(e=>e.iso).filter(Boolean), li, labels:li.map(l=>l.name).filter(Boolean), barcode:text(7), ac, links:[], thumb:'https://coverartarchive.org/release/'+id+'/front-250', status:''}];
     });
 }
 // MusicBrainz's page links go on past this page
