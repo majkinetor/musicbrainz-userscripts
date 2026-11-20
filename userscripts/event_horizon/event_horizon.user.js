@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.090009
+// @version      2026.11.20.100000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3690,6 +3690,28 @@ body.col-dragging,body.col-dragging *{cursor:grabbing!important;user-select:none
 .sk-sec{margin-top:48px}.sk.h{width:260px;height:26px}
 .sk-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;margin-top:16px}.sk-tiles .sk{aspect-ratio:1;border-radius:12px}
 .sk-rows{margin-top:16px;display:grid}.sk-r{display:grid;grid-template-columns:28px 1fr 120px 60px;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.sk-r .sk{height:14px}
+/* the editor's profile on a phone: the avatar beside the name, the tabs one scrolling row under both, the facts stacked */
+@media (max-width:700px){
+  .u-hd{display:grid!important;grid-template-columns:64px minmax(0,1fr);gap:4px 14px!important;align-items:center}
+  .u-hd>.u-av{width:64px;height:64px;font-size:28px}
+  .u-hd .u-id{display:contents}
+  .u-hd .u-k{grid-column:1/-1;margin:0}
+  .u-hd h1{grid-column:2;font-size:24px!important;line-height:1.15;overflow-wrap:anywhere;padding-right:36px}
+  .u-hd .u-nav{grid-column:1/-1;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;gap:0 20px;min-height:0}
+  .u-hd .u-ng{flex-wrap:nowrap;gap:0 18px}
+  .u-hd .u-ng.acc{margin-left:0;padding-left:18px;margin-bottom:0}
+  .u-hd .u-ng.acc .u-nt{margin-bottom:0}
+  .u-pbar{margin-top:10px}
+  .u-pbar>.u-load{padding-left:0}
+  .u-facts{grid-template-columns:minmax(0,1fr);gap:0;padding:12px 14px}
+  .u-facts dt{margin-top:8px;font-size:12px}
+  .u-facts dt:first-child{margin-top:0}
+  .u-hd+.u-facts,.u-pbar+.u-facts{margin-top:0}
+  .u-facts+.u-bio{margin-top:0}
+  .u-bars .u-bar{grid-template-columns:minmax(0,90px) 1fr 74px}
+  .u-vr{grid-template-columns:62px 1fr 78px}
+  .u-sts{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 @media (max-width:700px){.sk-r{grid-template-columns:20px 1fr 50px}.sk-r .sk:nth-child(3){display:none}}
 @media (prefers-reduced-motion:reduce){.sk,.sk-orbit path,.sk-dot,:root[data-eh-checking] .eh-home svg path{animation:none}}
 #mbu-tip:has(.ehtip){width:340px;padding:10px 12px 11px;background:var(--surface);color:var(--text);border-color:var(--border);border-radius:10px;font-family:Manrope,system-ui,sans-serif}
