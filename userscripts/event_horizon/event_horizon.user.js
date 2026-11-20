@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.110000
+// @version      2026.11.20.120000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3695,12 +3695,15 @@ body.col-dragging,body.col-dragging *{cursor:grabbing!important;user-select:none
   .u-hd{display:grid!important;grid-template-columns:64px minmax(0,1fr);gap:4px 14px!important;align-items:center}
   .u-hd>.u-av{width:64px;height:64px;font-size:28px}
   .u-hd .u-id{display:contents}
-  .u-hd .u-k{grid-column:1/-1;margin:0}
-  .u-hd h1{grid-column:2;font-size:24px!important;line-height:1.15;overflow-wrap:anywhere;padding-right:36px}
+  .u-hd .u-k{position:absolute;top:0;right:0;margin:0}
+  .u-hd h1{grid-column:2;font-size:24px!important;line-height:1.15;overflow-wrap:anywhere;grid-row:1;align-self:end;margin:0!important}
+  .u-hd>.u-av{grid-row:1;grid-column:1}
   .u-hd .u-nav{grid-column:1/-1;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;gap:0 20px;min-height:0}
   .u-hd .u-ng{flex-wrap:nowrap;gap:0 18px}
   .u-hd .u-ng.acc{margin-left:0;padding-left:18px;margin-bottom:0}
   .u-hd .u-ng.acc .u-nt{margin-bottom:0}
+  .u-hd .u-nt:has(svg)>.u-ntl{display:none}
+  .u-hd .u-nt svg{width:20px;height:20px}
   .u-pbar{margin-top:10px}
   .u-pbar>.u-load{padding-left:0}
   .u-facts{grid-template-columns:minmax(0,1fr);gap:0;padding:12px 14px}
@@ -9219,7 +9222,7 @@ function userNav(tabs) {
     const a = ([t, h, on]) => {
         const k = userNavKind(h), acc = /^(https?:\/\/[^/]+)?\/account\//.test(h), ic = U_NIC[k];
         if (acc && ic) return `<a class="u-nt u-nti${k === 'donation' ? ' u-love' : ''}${on ? ' on' : ''}"${cur(on)} href="${href(h)}" aria-label="${esc(t)}" data-tip="${esc(t)}">${SVG(ic)}</a>`;
-        return `<a class="u-nt${on ? ' on' : ''}"${cur(on)} href="${href(h)}">${ic ? SVG(ic) : ''}${esc(t)}</a>`;
+        return `<a class="u-nt${on ? ' on' : ''}"${cur(on)} href="${href(h)}"${ic ? ` aria-label="${esc(t)}" data-tip="${esc(t)}"` : ''}>${ic ? SVG(ic) : ''}<span class="u-ntl">${esc(t)}</span></a>`;
     };
     const acc = tabs.filter(t => /^(https?:\/\/[^/]+)?\/account\//.test(t[1])).sort((x, y) => (userNavKind(x[1]) === 'donation') - (userNavKind(y[1]) === 'donation'));
     const pub = tabs.filter(t => !acc.includes(t)), subs = pub.find(t => userNavKind(t[1]) === 'subs'), fans = pub.find(t => userNavKind(t[1]) === 'fans');
@@ -9228,7 +9231,7 @@ function userNav(tabs) {
         const m = (subs || fans)[1].match(/\/user\/([^/?#]+)/), own = !!ME && !!m && decodeURIComponent(m[1]) === ME;
         const it = (t, k, lead, sub) => t ? `<a class="${t[2] ? 'on' : ''}"${cur(t[2])} href="${href(t[1])}">${SVG(U_NIC[k])}<span>${lead}</span><small>${sub}</small></a>` : '';
         const on = !!((subs && subs[2]) || (fans && fans[2]));
-        return `<span class="u-dd"><a class="u-nt${on ? ' on' : ''}" href="${href((subs || fans)[1])}" aria-haspopup="true">${SVG(U_NIC.subs)}${esc(subs ? subs[0] : 'Subscriptions')}${U_CARET}</a><span class="u-ddm">`
+        return `<span class="u-dd"><a class="u-nt${on ? ' on' : ''}" href="${href((subs || fans)[1])}" aria-haspopup="true" aria-label="${esc(subs ? subs[0] : 'Subscriptions')}">${SVG(U_NIC.subs)}<span class="u-ntl">${esc(subs ? subs[0] : 'Subscriptions')}</span>${U_CARET}</a><span class="u-ddm">`
             + it(subs, 'subs', own ? 'Mine' : 'Theirs', own ? 'Who and what I follow' : 'Who and what they follow')
             + it(fans, 'fans', 'Others', own ? 'Who follows me' : 'Who follows them') + '</span></span>';
     };
