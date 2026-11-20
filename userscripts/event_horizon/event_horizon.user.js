@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.173000
+// @version      2026.11.20.180000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -10256,7 +10256,7 @@ function discoHtml(d) {
     const gs = [...m].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0])).map(([k, l]) => [k, bySort(l)]);
     const st = colState('dg');
     const th = (k, c) => { const n = COLS.dg.names[k]; if (k === 'links') return `<th${colAttr(st, k)}>${n}${colGrip('dg', st, k)}</th>`; return `<th${c ? ` class="${c}"` : ''}${colAttr(st, k)} aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-dgsort="${k}" data-tip="Sort by ${n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button>${fFun('dg', DG_FUN[k], n.toLowerCase())}${colGrip('dg', st, k)}</th>`; };
-    const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover></a></td>${colTds(st, { title: [`<a class="${longC(g.title)}"${longT(g.title)} href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}`], artist: [acHtml(g['artist-credit'] || [])], date: [g['first-release-date'] ? fdate(g['first-release-date']) : '—', 'mono'], rating: [rateStars('release_group', g.id, g.rating, true)], releases: [rc(g) ? `<button class="ed-tr" type="button" data-dgx="${g.id}" aria-expanded="${dgOpen.has(g.id)}" data-tip="${dgOpen.has(g.id) ? 'Hide' : 'Show'} its releases">${rc(g)}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="${dgOpen.has(g.id) ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6'}"/></svg></button>` : rc(g) != null ? rc(g) : '—', 'num'], links: [sortP(urlsOf(g.relations || [])).map(p => plA(p, 18, 'ti')).join(''), 'lk'] })}</tr>` + (dgOpen.has(g.id) ? dgSub(g) : '');
+    const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover></a></td>${colTds(st, { title: [`<a class="${longC(g.title)}"${longT(g.title)} href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}`], artist: [acHtml(g['artist-credit'] || [])], date: [g['first-release-date'] ? fdate(g['first-release-date']) : '—', 'mono'], rating: [rateStars('release_group', g.id, g.rating, true)], releases: [rc(g) ? `<button class="ed-tr" type="button" data-dgx="${g.id}" aria-expanded="${dgOpen.has(g.id)}" data-tip="${dgOpen.has(g.id) ? 'Hide' : 'Show'} its releases · right click: every one of this type">${rc(g)}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="${dgOpen.has(g.id) ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6'}"/></svg></button>` : rc(g) != null ? rc(g) : '—', 'num'], links: [sortP(urlsOf(g.relations || [])).map(p => plA(p, 18, 'ti')).join(''), 'lk'] })}</tr>` + (dgOpen.has(g.id) ? dgSub(g) : '');
     const dgSub = g => {
         const es = d.dgRel && d.dgRel.get(g.id), span = colsOf(st);
         if (!es) return `<tr class="dg-r"><td></td><td colspan="${span}" class="sub">Loading its releases…</td></tr>`;
@@ -13955,6 +13955,15 @@ document.addEventListener('contextmenu', ev => {
     if (b.dataset.playrec) plyRec(data.g, null, append);
     else if (append) plyAddRelease(data.rel, b.dataset.play);
     else plyStart(data.rel, b.dataset.play);
+});
+// A right click on a discography row's release count opens, or closes, every group of that type.
+document.addEventListener('contextmenu', ev => {
+    const b = ehOn && data && ev.target.closest && ev.target.closest('button[data-dgx]'); if (!b) return;
+    ev.preventDefault();
+    const ids = [...(b.closest('tbody') || b.closest('table')).querySelectorAll('button[data-dgx]')].map(x => x.dataset.dgx);
+    const open = !dgOpen.has(b.dataset.dgx);
+    for (const id of ids) { if (!open) { dgOpen.delete(id); continue; } dgOpen.add(id); if (!(data.dgRel && data.dgRel.get(id))) dgLoad(data, id); }
+    const y = scrollY; render(); scrollTo(0, y);
 });
 function onClick(ev) {
     if (!ehOn) return;
