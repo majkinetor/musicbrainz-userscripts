@@ -5374,7 +5374,7 @@ const thumbOf = i =>(i.thumbnails && (i.thumbnails['250'] || i.thumbnails.small)
 // the release group's link after the artist: its layers and how many editions it has, muted
 const rgLink = r => `<a class="rg-l" href="${MB}/release-group/${r.rgId}" data-tip="Release group${data && data.edCount ? ' · ' + data.edCount + ' editions' : ''}" aria-label="Release group">${LAYERS(20)}${data && data.edCount ? `<span>${data.edCount}</span>` : ''}</a>`;
 // no front cover (none on the CAA, or it failed to load): the format's mark, a word, and a way to add one
-const relNoCover = (r, fk) => r.front ? `<div class="nocover rnc">${fmtSvg(fk, 96, 1.4)}<small>Cover pending</small></div>` : `<div class="nocover rnc">${fmtSvg(fk, 96, 1.4)}<small>No cover art</small><a class="rnc-add" href="${MB}/release/${r.id}/add-cover-art">+ Add cover art</a></div>`;
+const relNoCover = (r, fk) => r.front ? `<div class="nocover rnc">${bigMark('release', fk)}<small>Cover pending</small></div>` : `<div class="nocover rnc">${bigMark('release', fk)}<small>No cover art</small><a class="rnc-add" href="${MB}/release/${r.id}/add-cover-art">+ Add cover art</a></div>`;
 function hero(r) {
     const fk = fmtKind(r.media[0] && r.media[0].format);
     const rest = r.images.filter(i => !i.front), front = r.images.find(i => i.front);
@@ -8399,7 +8399,7 @@ function lbHero(d) {
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide', 'mbid'],
         ['', g.links.length && rlQuiet(g), 'wide', 'links'],
     ];
-    const pic = picHtml(g, 'lpic', `<div class="nocover">${SVG(CI_LABEL).replace(/width="18" height="18"/, 'width="96" height="96"').replace('stroke-width="2"', 'stroke-width=".8"')}${imgRetryBtn(g)}</div>`);
+    const pic = picHtml(g, 'lpic', `<div class="nocover">${bigMark('label')}${imgRetryBtn(g)}</div>`);
     return `<section class="hero">
         <div class="art">${pic}${under(g)}</div>
         <div class="facts-col">
@@ -8468,7 +8468,7 @@ function arHero(d) {
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide', 'mbid'],
         ['', g.links.length && rlQuiet(g), 'wide', 'links'],
     ];
-    const pic = picHtml(g, 'apic', `<div class="nocover">${IC_NAME.replace('width="16" height="16"', 'width="96" height="96"').replace('stroke-width="1.6"', 'stroke-width=".6"')}${imgRetryBtn(g)}</div>`);
+    const pic = picHtml(g, 'apic', `<div class="nocover">${bigMark('artist')}${imgRetryBtn(g)}</div>`);
     return `<section class="hero">
         <div class="art">${pic}${under(g)}</div>
         <div class="facts-col">
@@ -8522,6 +8522,8 @@ async function loadWork(id, step = () => {}) {
 const colBack = () => { const o = data && data.g && data.g.owner; return o ? `<a class="ab ov" href="${MB}/user/${encodeURIComponent(o)}/collections" data-tip="${esc(o)}'s collections" aria-label="Collections">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>` : ''; };
 const pgActs = (type, id) => (type === 'collection' ? colBack() : '') + actionRow((type === 'collection' ? COL_ACTS.filter(a => a[0] !== 'own_collection/edit' || (data && data.g && data.g.owner === ME)) : type === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS), type, id) + SRCH();
 const bigMk = d => mkSvg(d).replace('width="15" height="15"', 'width="96" height="96"').replace('stroke-width="2"', 'stroke-width=".7"');
+// the one big mark for an entity without a picture: a release's format (fk), a group's layers, else its kind's mark
+const bigMark = (type, fk) => type === 'release' ? fmtSvg(fk, 96, 1.4) : type === 'release-group' ? LAYERS(96, 1) : bigMk(type === 'url' ? MK_URL : (HM_KIND[type] || ['', CI_TAG])[1]);
 const factsHtml = F => `<div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>`;
 function pgHero(g, type, icon, kind, F, by, pic, sub = '') {
     return `<section class="hero">
@@ -8960,7 +8962,7 @@ function placeHero(d) {
         [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide'],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
         ['', g.links.length && rlQuiet(g), 'wide'],
-    ], '', picHtml(g, 'ipic', `<div class="nocover pg">${bigMk(MK_PLACE)}</div>`));
+    ], '', picHtml(g, 'ipic', `<div class="nocover pg">${bigMark('place')}</div>`));
 }
 /* ── event ───────────────────────────────────────── */
 // an event (a concert, a festival, …): when and where, who performed, its series and what was recorded there, its Event Art Archive
@@ -9878,10 +9880,14 @@ function relsHtml(d) {
 }
 // a URL's mark, the links icon (HM_KIND has no url: its kinds fill the visit menus)
 const MK_URL = '<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>';
-function entHead({ type, id, img, kick, title, disamb, acts, by }) {
+// a sub-page's way back to its entity's overview: an arrow left of the actions
+const ovA = (type, id) => `<a class="ab ov" href="${MB}/${type}/${id}" data-tip="Overview" aria-label="Overview">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>`;
+// every sub-page's header: the entity's picture, else its big mark (a release's, its format's), the kicker, the title.
+// An archive front loads through the kept cover (cvWire); kickHtml: a kicker drawn by the caller; none: the heading without a title
+function entHead({ type, id, img, kick, kickHtml, mark, title, disamb, acts, by, none }) {
     const mk = type === 'url' ? MK_URL : (HM_KIND[type] || ['', CI_TAG])[1];
-    return `${img ? `<img class="rhcv" alt="" ${/^https:\/\/coverartarchive.org\//.test(img) ? 'data-cover' : 'src'}="${esc(img)}">` : ''}<span class="rhic"${img ? ' hidden' : ''}>${bigMk(mk)}</span><div class="rhtx"><div class="kicker label">${mkSvg(mk)}<span>${esc(kick)}</span><span class="acts"><a class="ab ov" href="${MB}/${type}/${id}" data-tip="Overview" aria-label="Overview">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>${acts || ''}${SRCH()}</span></div>`
-        + (title ? heroH1(title, disamb, `${MB}/${type}/${id}`) : '<h1>&nbsp;</h1>') + (by ? `<div class="by">by ${by}</div>` : '') + '</div>';
+    return `${img ? `<img class="rhcv" alt="" ${CAA_RE.test(img) ? 'data-cover' : 'src'}="${esc(img)}">` : ''}<span class="rhic"${img ? ' hidden' : ''}>${mark || bigMark(type)}</span><div class="rhtx"><div class="kicker label">${kickHtml || `${mkSvg(mk)}<span>${esc(kick)}</span>`}<span class="acts">${ovA(type, id)}${acts || ''}${SRCH()}</span></div>`
+        + (title ? heroH1(title, disamb, `${MB}/${type}/${id}`) : none || '<h1>&nbsp;</h1>') + (by ? `<div class="by">by ${by}</div>` : '') + '</div>';
 }
 const entHeadWire = el => cvWire(el);
 const entActs = (ty, eid, active) => actionRow(ty === 'release' ? ACTS : ty === 'release-group' ? RG_ACTS : ty === 'label' ? LB_ACTS : ty === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS, ty, eid, active);
@@ -11308,7 +11314,7 @@ function renderDraw(keepPop) {
     // a fresh upload has no thumbnails yet, for days at times: each cover is tried at full size before the next,
     // the group's, then those of its releases that have one, and only then the empty mark
     if (gc) {
-        const none = () => { if (gc.isConnected) gc.outerHTML = `<div class="nocover">${LAYERS(96, 1)}</div>`; };
+        const none = () => { if (gc.isConnected) gc.outerHTML = `<div class="nocover">${bigMark('release-group')}</div>`; };
         gc.onerror = async () => {
             gc.onerror = none;
             let u = await caaFind('release-group', r.id, gc.getAttribute('src'));
@@ -11346,12 +11352,12 @@ function renderDraw(keepPop) {
     if (rc) rc.onerror = () => { if (!rc.isConnected) return; if (rc.dataset.full && rc.src !== rc.dataset.full) { r.frontFull = true; rc.src = rc.dataset.full; return; } LOG.debug('release cover failed to load', r.id); r.frontFailed = true; rc.outerHTML = relNoCover(r, fmtKind(r.media[0] && r.media[0].format)); };
     // a Commons picture that won't load: the instrument's mark
     const ii = app.querySelector('[data-insimg]');
-    if (ii) ii.onerror = () => { ii.closest('.picw').outerHTML = `<div class="nocover">${bigMk(MK_INS)}</div>`; };
+    if (ii) ii.onerror = () => { ii.closest('.picw').outerHTML = `<div class="nocover pg">${bigMark('instrument')}</div>`; };
     // and a place's: its pin
     const ec = app.querySelector('[data-evcover]');
-    if (ec) ec.onerror = () => { ec.closest('.picw').outerHTML = `<div class="nocover pg">${bigMk(MK_EVENT)}</div>`; };
+    if (ec) ec.onerror = () => { ec.closest('.picw').outerHTML = `<div class="nocover pg">${bigMark('event')}</div>`; };
     const pi = data.kind === 'place' && app.querySelector('.art img.cover');
-    if (pi) pi.onerror = () => { pi.closest('.picw').outerHTML = `<div class="nocover pg">${bigMk(MK_PLACE)}</div>`; };
+    if (pi) pi.onerror = () => { pi.closest('.picw').outerHTML = `<div class="nocover pg">${bigMark('place')}</div>`; };
     const rot = app.querySelector('[data-rot]');
     const source = app.querySelector('.art .imgsrc');
     if (source && ['artist', 'label'].includes(data.kind)) source.onclick = e => { e.preventDefault(); openImageGallery(); };
@@ -11643,7 +11649,7 @@ const hmChip = (href, name, ic) => `<a class="hm-chip" href="${href}">${SVG(ic)}
 const visits = () => { try { return GM_getValue('visits', []) || []; } catch (e) { return []; } };
 // a visit's picture: its cover from the archive (a missing one falls back to the icon), else the one kept with the visit
 // or an artist's or label's cached image
-const visitImg = v => { const [k, id] = v.key.split('/'); if (k === 'release' || k === 'release-group') return caaSrc(k, id); if (v.img) return v.img; const a = (k === 'artist' || k === 'label') && ARTIMG.cached(id); return a ? a.src : ''; };
+const visitImg = v => { const [k, id] = v.key.split('/'); if (k === 'release' || k === 'release-group' || k === 'event') return caaSrc(k, id); if (v.img) return v.img; const a = (k === 'artist' || k === 'label') && ARTIMG.cached(id); return a ? a.src : ''; };
 // the picture a loaded page gives its visit: an artist's, label's or place's image, an area's flag (else its first picture),
 // an instrument's Commons image, a recording's first release with a cover; '' for none
 async function visitPic(kind, d) {
@@ -15322,13 +15328,12 @@ let PAGE_ID = keyOf(location.href);
 // MusicBrainz's page when it came first. The slot is drawn once: a redraw would drop the gallery
 // a release subpage's header: the release page's kicker, the open tab `tab` lit, and its title and credits without the facts
 // a release subpage's way back to the release's overview: an arrow left of Edit
-const backA = id => `<a class="ab ov" href="${MB}/release/${id}" data-tip="Overview" aria-label="Overview">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>`;
+const backA = id => ovA('release', id);
 function subHead(r, id, tab, name, none) {
     const fk = r && fmtKind(r.media && r.media[0] && r.media[0].format);
-    const acts = backA(id) + actionRow(relActs(r), 'release', id, tab) + SRCH();
-    const kick = r ? `${fmtSvg(fk, 26)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), rgTypes(r['release-group']), r.status].filter(Boolean).join(' · '))}</span>` : `<span>${name}</span>`;
-    return `<img class="rhcv" alt="" data-cover="https://coverartarchive.org/release/${id}/front-250"><div class="rhtx"><div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
-        + (r ? `${heroH1(r.title, r.disambiguation, `${MB}/release/${r.id}`)}<div class="by">by ${acHtml(r['artist-credit'] || [])}${r['release-group'] ? `<a class="rg-l" href="${MB}/release-group/${r['release-group'].id}" data-tip="Release group${r.rgCount ? ' · ' + r.rgCount + ' editions' : ''}" aria-label="Release group">${LAYERS(20)}${r.rgCount ? `<span>${r.rgCount}</span>` : ''}</a>` : ''}</div>` : none) + '</div>';
+    const kickHtml = r ? `${fmtSvg(fk, 26)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), rgTypes(r['release-group']), r.status].filter(Boolean).join(' · '))}</span>` : `<span>${name}</span>`;
+    const by = r && acHtml(r['artist-credit'] || []) + (r['release-group'] ? `<a class="rg-l" href="${MB}/release-group/${r['release-group'].id}" data-tip="Release group${r.rgCount ? ' · ' + r.rgCount + ' editions' : ''}" aria-label="Release group">${LAYERS(20)}${r.rgCount ? `<span>${r.rgCount}</span>` : ''}</a>` : '');
+    return entHead({ type: 'release', id, img: caaSrc('release', id), kickHtml, mark: bigMark('release', fk), acts: actionRow(relActs(r), 'release', id, tab), title: r && r.title, disamb: r && r.disambiguation, by, none });
 }
 // a release without a front cover drops the header's image, and keeps it dropped when the header redraws, so the title holds still
 const cvGone = new Set();
@@ -15351,9 +15356,7 @@ function evArtHead(el, d) {
     const g = d.g, mh = !g && mbBody && mbBody.querySelector('.eventheader h1 a');
     const name = g ? g.title : mh ? mh.textContent : '';
     const when = g && g.begin ? fdate(g.begin) + (g.end && g.end !== g.begin ? ' – ' + fdate(g.end) : '') : '';
-    const acts = `<a class="ab ov" href="${MB}/event/${d.id}" data-tip="Overview" aria-label="Overview">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>` + SRCH();
-    el.innerHTML = `<img class="rhcv" alt="" src="https://eventartarchive.org/event/${d.id}/front-250"><div class="rhtx"><div class="kicker label">${mkSvg(MK_EVENT)}<span>${esc(['Event art', g && g.type, when].filter(Boolean).join(' · '))}</span><span class="acts">${acts}</span></div>`
-        + (d.err ? `<h1>${esc(d.err)}</h1>` : (name ? heroH1(name, g && g.disambig, `${MB}/event/${d.id}`) : '<h1>&nbsp;</h1>')) + '</div>';
+    el.innerHTML = entHead({ type: 'event', id: d.id, img: caaSrc('event', d.id), kick: ['Event art', g && g.type, when].filter(Boolean).join(' · '), title: !d.err && name, disamb: g && g.disambig, none: d.err && `<h1>${esc(d.err)}</h1>` });
     cvWire(el);
 }
 // asNode: the loaded cover-art page's own gallery once it went into the slot. Another page of the tab drops it with
@@ -15803,7 +15806,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #set-cover-art-images .release-description li{display:inline;margin-left:4px}
 :root[data-eh-rel] #set-cover-art-images .release-description strong{display:inline-block;margin-top:6px;padding:2px 8px;border-radius:6px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);font-size:11.5px}
 :root[data-eh-rel] :is(.ui-dialog,.dialog,[role=dialog]){background:var(--surface)!important;color:var(--text)!important;border-color:var(--border)!important}
-#eh-relhd:has(.pop:not([hidden]),details[open],.abx:hover,.abx:focus-within,.u-dd:hover,.u-dd:focus-within){z-index:40}#eh-relhd.u-fhd~h2:first-of-type{margin-top:16px!important}#eh-relhd{font-family:Manrope,system-ui,sans-serif;color:var(--text);margin:16px 0 8px;display:flex;flex-wrap:wrap;gap:20px;align-items:center}#eh-relhd>.u-nav{margin:0}#eh-relhd .u-k{position:absolute;top:0;right:0}#eh-relhd{position:relative}#eh-relhd .u-nav{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 28px;margin:0 0 -21px;flex-basis:100%}#eh-relhd .u-ng{display:flex;flex-wrap:wrap;gap:0 22px}#eh-relhd .u-ng.acc{margin-left:auto;padding-left:22px;border-left:1px solid var(--border);margin-bottom:10px;align-self:stretch;align-items:flex-end}#eh-relhd .u-ng.acc .u-nt{margin-bottom:-10px}#eh-relhd .u-nt{padding:10px 0 9px;font-weight:600;font-size:14px;color:var(--muted)!important;text-decoration:none!important;border-bottom:3px solid transparent;white-space:nowrap}#eh-relhd .u-nt:hover{color:var(--text)!important}#eh-relhd .u-nt.on{color:var(--text)!important;border-color:var(--accent)}#eh-relhd .u-nt{display:inline-flex;align-items:center;gap:6px}#eh-relhd .u-nt svg{width:16px;height:16px;flex:none}#eh-relhd .u-nt.u-nti svg{width:18px;height:18px}#eh-relhd .u-nt .u-car{width:14px;height:14px;margin-left:-2px;opacity:.7}#eh-relhd .u-ng.acc{gap:0 16px}#eh-relhd .u-nt.u-love:hover,#eh-relhd .u-nt.u-love.on{color:#e0457b!important}#eh-relhd .u-dd{position:relative;display:flex}#eh-relhd .u-ddm{display:none;position:absolute;top:100%;left:-10px;z-index:30;flex-direction:column;gap:2px;padding:4px;min-width:250px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px var(--shadow)}#eh-relhd .u-dd:is(:hover,:focus-within)>.u-ddm{display:flex}#eh-relhd .u-ddm>a{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid transparent;border-radius:8px;font-size:14px;font-weight:600;color:var(--text)!important;text-decoration:none!important;white-space:nowrap}#eh-relhd .u-ddm>a svg{width:16px;height:16px;flex:none;color:var(--muted)}#eh-relhd .u-ddm>a small{margin-left:auto;padding-left:14px;font-size:12px;font-weight:500;color:var(--muted)}#eh-relhd .u-ddm>a:hover{border-color:var(--accent);color:var(--accent)!important}#eh-relhd .u-ddm>a:hover svg,#eh-relhd .u-ddm>a.on svg{color:var(--accent)}#eh-relhd .u-ddm>a.on{color:var(--accent)!important}.u-nt.u-nti svg{display:block}#eh-relhd .u-av{position:relative;overflow:visible!important}#eh-relhd.u-fhd{margin:24px 0 8px;gap:24px;align-items:flex-start}#eh-relhd.u-fhd h1{margin:6px 0 4px!important}#eh-relhd.u-fhd .u-nav{min-height:44px;margin:0}#eh-relhd .u-av>img{border-radius:50%}#eh-relhd .u-avb{position:absolute;right:-4px;bottom:-4px;width:32px;height:32px;border-radius:50%;background:var(--surface);border:2px solid var(--bg);display:grid;place-items:center;color:var(--accent)}#eh-relhd>.rhcv:not([src]){content:url(data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==);background:var(--chip)}#eh-relhd>.rhcv{flex:none;width:112px;height:112px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px var(--shadow)}#eh-relhd>.rhcv[hidden]{display:none}#eh-relhd>.rhtx{flex:1;min-width:0}#eh-relhd .kicker.label{font-size:10.5px}#eh-relhd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}#eh-relhd .ab.on svg{stroke:#fff}#eh-relhd h1{white-space:normal!important;overflow-wrap:anywhere;margin:14px 0 10px!important}#eh-relhd h1 a{white-space:normal!important}
+#eh-relhd:has(.pop:not([hidden]),details[open],.abx:hover,.abx:focus-within,.u-dd:hover,.u-dd:focus-within){z-index:40}#eh-relhd.u-fhd~h2:first-of-type{margin-top:16px!important}#eh-relhd{font-family:Manrope,system-ui,sans-serif;color:var(--text);margin:16px 0 8px;display:flex;flex-wrap:wrap;gap:20px;align-items:center}#eh-relhd>.u-nav{margin:0}#eh-relhd .u-k{position:absolute;top:0;right:0}#eh-relhd{position:relative}#eh-relhd .u-nav{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 28px;margin:0 0 -21px;flex-basis:100%}#eh-relhd .u-ng{display:flex;flex-wrap:wrap;gap:0 22px}#eh-relhd .u-ng.acc{margin-left:auto;padding-left:22px;border-left:1px solid var(--border);margin-bottom:10px;align-self:stretch;align-items:flex-end}#eh-relhd .u-ng.acc .u-nt{margin-bottom:-10px}#eh-relhd .u-nt{padding:10px 0 9px;font-weight:600;font-size:14px;color:var(--muted)!important;text-decoration:none!important;border-bottom:3px solid transparent;white-space:nowrap}#eh-relhd .u-nt:hover{color:var(--text)!important}#eh-relhd .u-nt.on{color:var(--text)!important;border-color:var(--accent)}#eh-relhd .u-nt{display:inline-flex;align-items:center;gap:6px}#eh-relhd .u-nt svg{width:16px;height:16px;flex:none}#eh-relhd .u-nt.u-nti svg{width:18px;height:18px}#eh-relhd .u-nt .u-car{width:14px;height:14px;margin-left:-2px;opacity:.7}#eh-relhd .u-ng.acc{gap:0 16px}#eh-relhd .u-nt.u-love:hover,#eh-relhd .u-nt.u-love.on{color:#e0457b!important}#eh-relhd .u-dd{position:relative;display:flex}#eh-relhd .u-ddm{display:none;position:absolute;top:100%;left:-10px;z-index:30;flex-direction:column;gap:2px;padding:4px;min-width:250px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px var(--shadow)}#eh-relhd .u-dd:is(:hover,:focus-within)>.u-ddm{display:flex}#eh-relhd .u-ddm>a{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid transparent;border-radius:8px;font-size:14px;font-weight:600;color:var(--text)!important;text-decoration:none!important;white-space:nowrap}#eh-relhd .u-ddm>a svg{width:16px;height:16px;flex:none;color:var(--muted)}#eh-relhd .u-ddm>a small{margin-left:auto;padding-left:14px;font-size:12px;font-weight:500;color:var(--muted)}#eh-relhd .u-ddm>a:hover{border-color:var(--accent);color:var(--accent)!important}#eh-relhd .u-ddm>a:hover svg,#eh-relhd .u-ddm>a.on svg{color:var(--accent)}#eh-relhd .u-ddm>a.on{color:var(--accent)!important}.u-nt.u-nti svg{display:block}#eh-relhd .u-av{position:relative;overflow:visible!important}#eh-relhd.u-fhd{margin:24px 0 8px;gap:24px;align-items:flex-start}#eh-relhd.u-fhd h1{margin:6px 0 4px!important}#eh-relhd.u-fhd .u-nav{min-height:44px;margin:0}#eh-relhd .u-av>img{border-radius:50%}#eh-relhd .u-avb{position:absolute;right:-4px;bottom:-4px;width:32px;height:32px;border-radius:50%;background:var(--surface);border:2px solid var(--bg);display:grid;place-items:center;color:var(--accent)}#eh-relhd>.rhcv:not([src]){content:url(data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==);background:var(--chip)}#eh-relhd>.rhcv{flex:none;width:112px;height:112px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px var(--shadow)}#eh-relhd>.rhcv[hidden]{display:none}#eh-relhd>.rhic{flex:none;width:112px;height:112px;border-radius:10px;display:grid;place-items:center;background:var(--chip);color:var(--muted)}#eh-relhd>.rhic[hidden]{display:none}#eh-relhd>.rhic svg{width:64px;height:64px}#eh-relhd>.rhtx{flex:1;min-width:0}#eh-relhd .kicker.label{font-size:10.5px}#eh-relhd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}#eh-relhd .ab.on svg{stroke:#fff}#eh-relhd h1{white-space:normal!important;overflow-wrap:anywhere;margin:14px 0 10px!important}#eh-relhd h1 a{white-space:normal!important}
 #eh-pin{font-family:Manrope,system-ui,sans-serif;color:var(--text)}#eh-pin .pnm a{color:inherit;text-decoration:none}
 :root[data-eh-rel] .release-relationship-editor button:not(.submit),:root[data-eh-rel] #page button.add-item{filter:none!important;background-color:transparent!important;color:var(--soft)!important;-webkit-text-fill-color:currentColor!important;border-color:var(--border)!important}
 :root[data-eh-rel] #relationship-editor-form{padding:14px 18px 16px;margin-top:28px}:root[data-eh-rel] #relationship-editor-form :is(div,fieldset,form){margin-left:0!important;padding-left:0!important;padding-top:0!important}:root[data-eh-rel] #relationship-editor-form>:first-child,:root[data-eh-rel] #relationship-editor-form>:first-child>:first-child{margin-top:0!important}
@@ -15898,7 +15901,7 @@ function formHeader(key) {
     }
     const { t, by } = mbHead(), hd = hdSect();
     // the entity header the tags page wears: its picture, else its kind's mark, and the kind beside the form's name
-    const img = type === 'event' ? `https://eventartarchive.org/event/${id}/front-250` : visitImg({ key: type + '/' + id });
+    const img = visitImg({ key: type + '/' + id });
     const acts = ['details', 'releases'].includes(form) ? actionRow((type === 'release' ? ACTS : type === 'release-group' ? RG_ACTS : AR_ACTS), type, id, form) : '';
     hd.innerHTML = entHead({ type, id, img, acts, kick: FORMS[form] + ' · ' + (HM_KIND[type] || [type])[0], title: t ? t.textContent : document.title });
     if (by) hd.querySelector('.rhtx').insertAdjacentHTML('beforeend', `<div class="by">by ${by}</div>`);
@@ -16743,7 +16746,7 @@ function histPage(app, d) {
     const en = histEntOf(d.id);
     // the entity's own action row, as on its page, History lit
     const enActs = en && actionRow((en[0] === 'release-group' ? RG_ACTS : en[0] === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS), en[0], en[1], 'edits');
-    const enHd = en && entHead({ type: en[0], id: en[1], acts: enActs,img: en[0] === 'event' ? `https://eventartarchive.org/event/${en[1]}/front-250` : visitImg({ key: en.join('/') }), kick: histName(d.id) + ' · ' + (HM_KIND[en[0]] || [en[0]])[0], title: d.ent && d.ent.title }).replace(/<\/div>$/, (d.ent && d.ent.by ? `<div class="by">by ${d.ent.by}</div>` : '') + '</div>');
+    const enHd = en && entHead({ type: en[0], id: en[1], acts: enActs,img: visitImg({ key: en.join('/') }), kick: histName(d.id) + ' · ' + (HM_KIND[en[0]] || [en[0]])[0], title: d.ent && d.ent.title }).replace(/<\/div>$/, (d.ent && d.ent.by ? `<div class="by">by ${d.ent.by}</div>` : '') + '</div>');
     app.innerHTML = `<section class="arthd">${en ? enHd : r || rid ? subHead(r, r ? r.id : rid, 'edits', esc(histName(d.id)), '<h1>&nbsp;</h1>') : `<div class="rhtx"><div class="kicker label">${kick}<span class="acts">${acts}</span></div><h1>${esc(histName(d.id))}</h1>${owner ? `<div class="by">by <a href="${MB}/user/${owner}">${esc(decodeURIComponent(owner))}</a></div>` : ''}</div>`}</section><section class="hist">${esIsSearch(d.id) ? '<div id="eh-edit-search"></div>' : ''}${!histOne(d.id) && (!esIsSearch(d.id) || esHasQuery(d.id)) ? bar : ''}${body}${histOne(d.id) && d.edits.length ? '' : foot}</section>`;
     hbWatch(app);
     esMount(app, d);
