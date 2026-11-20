@@ -1,11 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-<<<<<<< HEAD
-// @version      2026.11.21.010000
-=======
-// @version      2026.11.20.252000
->>>>>>> 1cbbb63e8 (style(event horizon): the collections list's tile play button looks as the cover play button inside a collection)
+// @version      2026.11.21.020000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8751,13 +8747,29 @@ function insHero(d) {
 // a table per subpage, as MusicBrainz shows its first page; with cv ("release-group", "release" or "event"), each row
 // leads with the front of the first such entity it links to, from the Cover Art Archive or the Event Art Archive
 const ART_URL = { 'release-group': 'https://coverartarchive.org/release-group/', release: 'https://coverartarchive.org/release/', event: 'https://eventartarchive.org/event/' };
-const tabArt = (cv, id) => cv === 'artist' ? ((TGX_ART[id] || ARTIMG.cached(id) || {}).src || '') : `${ART_URL[cv]}${id}/front-250`;
+// a recording's cover is its release group's, as the player's: the group of its oldest release (undated ones last). REC_RG
+// holds the group by recording ('' none), from one ws/2 search per page of a recording collection (recRgLoad)
+const REC_RG = new Map(), REC_RG_FLY = new Set();
+const tabArt = (cv, id) => cv === 'artist' ? ((TGX_ART[id] || ARTIMG.cached(id) || {}).src || '') : cv === 'recording' ? (REC_RG.get(id) ? `${ART_URL['release-group']}${REC_RG.get(id)}/front-250` : '') : `${ART_URL[cv]}${id}/front-250`;
+function recRgLoad(ids) {
+    const want = [...new Set(ids)].filter(id => !REC_RG.has(id) && !REC_RG_FLY.has(id));
+    for (let i = 0; i < want.length; i += 50) {
+        const part = want.slice(i, i + 50);
+        part.forEach(id => REC_RG_FLY.add(id));
+        ws(`recording?query=${encodeURIComponent('rid:(' + part.join(' OR ') + ')')}&limit=100`).then(j => {
+            for (const r of j.recordings || []) { const old = (r.releases || []).filter(x => x['release-group']).sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'))[0]; REC_RG.set(r.id, old ? old['release-group'].id : ''); }
+        }, e => LOG.debug('No release groups for the recordings: ' + e.message)).finally(() => {
+            for (const id of part) { REC_RG_FLY.delete(id); if (!REC_RG.has(id)) REC_RG.set(id, '');
+                for (const im of document.querySelectorAll(`img[data-dgcover="recording"][data-aid="${id}"]`)) { const u = tabArt('recording', id); if (u) im.src = u; else if (im.onerror) im.onerror(); } }
+        });
+    }
+}
 const TSORT = {}, TABX = {}, TQ = {};
 const tsKey = sid => 'eh-tsort:' + location.pathname + ':' + sid;
 const tsGet = sid => { if (!(sid in TSORT)) { try { const v = JSON.parse(sessionStorage.getItem(tsKey(sid)) || 'null'); if (v) TSORT[sid] = v; } catch {} } return TSORT[sid]; };
 const tsSet = (sid, v) => { TSORT[sid] = v; try { v.length ? sessionStorage.setItem(tsKey(sid), JSON.stringify(v)) : sessionStorage.removeItem(tsKey(sid)); } catch {} };
 // a cover that doesn't load is its kind's mark
-const dgWire = app => { for (const im of app.querySelectorAll('[data-dgcover]')) { const fb = () => { if (!im.parentNode) return; const look = im.dataset.dgcover === 'artist' && !im.getAttribute('src') && ARTIMG.cached(im.dataset.aid) === undefined && TGX_ART[im.dataset.aid] === undefined; const src = im.getAttribute('src'); im.outerHTML = `<span class="dn"${src ? ` data-dgsrc="${esc(src)}"` : ''}${look ? ` data-tgxart="artist:${im.dataset.aid}"` : ''}>${['artist', 'release'].includes(im.dataset.dgcover) ? mkSvg(im.dataset.dgcover === 'artist' ? MK_CR : MK_RELEASE).replace(/width="15" height="15"/, im.closest('.tt') ? 'width="18" height="18"' : 'width="36" height="36"') : im.closest('.tt') ? LAYERS(18) : LAYERS(36, 1)}</span>`; }; /* a fresh upload's thumbnails can lag behind its image for days: the full front stands in before the kind's mark */ im.onerror = () => { const src = im.getAttribute('src') || ''; if (/\/front-(250|500)$/.test(src)) { LOG.debug('No thumbnail yet, trying the full front: ' + src); im.src = src.replace(/-(250|500)$/, ''); } else if (im.dataset.lbcovers) { const ids = im.dataset.lbcovers.split(' '); const id = ids.shift(); im.dataset.lbcovers = ids.join(' '); edFull(id).then(u => { if (!im.isConnected) return; if (u && u !== im.src) { ED_FULL_URL.set(id, u); im.src = u; } else im.onerror(); }); } else fb(); }; if (!im.getAttribute('src')) fb(); } if (app.querySelector('[data-tgxart]')) tagxArt(app); };    // TQ: a table's filter text, absent while its box is shut
+const dgWire = app => { for (const im of app.querySelectorAll('[data-dgcover]')) { const fb = () => { if (!im.parentNode) return; const look = im.dataset.dgcover === 'artist' && !im.getAttribute('src') && ARTIMG.cached(im.dataset.aid) === undefined && TGX_ART[im.dataset.aid] === undefined; const src = im.getAttribute('src'); im.outerHTML = `<span class="dn"${src ? ` data-dgsrc="${esc(src)}"` : ''}${look ? ` data-tgxart="artist:${im.dataset.aid}"` : ''}>${['artist', 'release'].includes(im.dataset.dgcover) ? mkSvg(im.dataset.dgcover === 'artist' ? MK_CR : MK_RELEASE).replace(/width="15" height="15"/, im.closest('.tt') ? 'width="18" height="18"' : 'width="36" height="36"') : im.closest('.tt') ? LAYERS(18) : LAYERS(36, 1)}</span>`; }; /* a fresh upload's thumbnails can lag behind its image for days: the full front stands in before the kind's mark */ im.onerror = () => { const src = im.getAttribute('src') || ''; if (/\/front-(250|500)$/.test(src)) { LOG.debug('No thumbnail yet, trying the full front: ' + src); im.src = src.replace(/-(250|500)$/, ''); } else if (im.dataset.lbcovers) { const ids = im.dataset.lbcovers.split(' '); const id = ids.shift(); im.dataset.lbcovers = ids.join(' '); edFull(id).then(u => { if (!im.isConnected) return; if (u && u !== im.src) { ED_FULL_URL.set(id, u); im.src = u; } else im.onerror(); }); } else fb(); }; if (!im.getAttribute('src') && !(im.dataset.dgcover === 'recording' && !REC_RG.has(im.dataset.aid))) fb(); } if (app.querySelector('[data-tgxart]')) tagxArt(app); };    // TQ: a table's filter text, absent while its box is shut
 // a column's key in the filter box: its heading, folded, without spaces ("artist:elvis"; a prefix will do)
 const tqKey = h => fltFold((h || '').replace(/<[^>]*>/g, '')).replace(/[^a-z0-9#]+/g, '');
 // a year or date column's value as a range (2022-2024, 2022-, -2024), or null; a year's end still being typed leaves that end open,
@@ -9195,7 +9207,7 @@ document.addEventListener('click', async ev => {
         b.removeAttribute('aria-busy'); toast('Removing failed');
     }
 });
-const colItems = d => { if (colrmFor !== d.id) { COLRM.clear(); colrmFor = d.id; } const g = d.g || {}, x = d.listsX && d.listsX[0], ent = g.ent || ''; return tabSect('cp', COL_NAME[ent] || 'Items', x, `${MB}/collection/${d.id}`, ART_URL[ent] ? ent : undefined); };
+const colItems = d => { if (colrmFor !== d.id) { COLRM.clear(); colrmFor = d.id; } const g = d.g || {}, x = d.listsX && d.listsX[0], ent = g.ent || ''; if (ent === 'recording' && x) recRgLoad(x.rows.filter(Array.isArray).map(r => (r.join(' ').match(new RegExp('/recording/(' + MBID.source + ')', 'i')) || [])[1]).filter(Boolean)); return tabSect('cp', COL_NAME[ent] || 'Items', x, `${MB}/collection/${d.id}`, ART_URL[ent] || ent === 'recording' ? ent : undefined); };
 /* ── an editor's collections ─────────────────────── */
 // MusicBrainz's /user/<name>/collections: a table per entity type, under the editor's own and the collaborative ones
 function collsParse(html) {
