@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.232000
+// @version      2026.11.21.233000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12204,6 +12204,7 @@ function searchHtml(d) {
     return hero + sect('sr', `Results <span class="count">${fmtN(s.rows.length)}${s.total > s.rows.length ? '/' + fmtN(s.total) : ''}</span>`, '', table + more, `<div class="folded-note">${esc(s.found)}</div>`);
 }
 // MusicBrainz's own /search page: the search form (query, type, results per page, method) and the tag lookup's fields, in the bars the other searches use
+const TL_F = [['artist', 'Artist'], ['release', 'Release'], ['tracknum', 'Track number'], ['track', 'Track'], ['duration', 'Duration'], ['filename', 'Filename']];
 const OTHER_LOOKUPS = [['catno', 'Catalog number'], ['barcode', 'Barcode'], ['url', 'URL'], ['isrc', 'ISRC'], ['iswc', 'ISWC'], ['artist-ipi', 'Artist IPI'], ['artist-isni', 'Artist ISNI'], ['label-ipi', 'Label IPI'], ['label-isni', 'Label ISNI'], ['freedbid', 'FreeDB ID'], ['mbid', 'MBID'], ['discid', 'Disc ID']];
 // MusicBrainz's own /search page as the edit search is built: pick a lookup, then its criteria in compact rows; Add criteria brings the optional ones
 // field: [form name, label, control, 2 = always shown | 1 = shown, can be removed | 0 = added on demand]
@@ -12252,7 +12253,6 @@ function searchForm(p) {
     return '<div class="sr-page"><section class="arthd"><div class="rhtx"><div class="kicker label"><span>MusicBrainz</span><span class="acts">' + SRCH() + '</span></div><h1>Search</h1></div></section>' + form.outerHTML + '<p class="u-sub sr-sub">For more information, check the <a href="' + MB + '/doc/Search">documentation</a>.</p></div>';
 }
 // a tag lookup's page: the tagger's six fields in a bar pinned under the header, sent to /taglookup as MusicBrainz's own form sends them
-const TL_F = [['artist', 'Artist'], ['release', 'Release'], ['tracknum', 'Track number'], ['track', 'Track'], ['duration', 'Duration'], ['filename', 'Filename']];
 function tlHero(v, sub) {
     const f = TL_F.map(([k, l]) => `<label><span>${l}</span><input name="tag-lookup.${k}" value="${esc(v.get('tag-lookup.' + k) || '')}"></label>`).join('');
     return `${srchHero('', sub ? `<p class="u-sub sr-sub">${sub}</p>` : '', '', 'release')}<form class="tl-bar" aria-label="Tag lookup" action="${MB}/taglookup/index" method="get">${f}<button type="submit" class="hm-go" data-tip="Look up" aria-label="Look up">${SVG(LENS)}</button></form>`;
