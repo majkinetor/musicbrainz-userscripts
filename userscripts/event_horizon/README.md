@@ -223,7 +223,7 @@ On an entity's page, in the viewer or on MusicBrainz's own page, a key opens one
 | Space           | plays or pauses the player                                |
 | ← / →           | back or forward 5 seconds in the player                   |
 | Ctrl+← / Ctrl+→ | the previous or next track                                |
-| Ctrl+P          | shows or hides the player                                 |
+| Ctrl+P          | opens or closes the player                                |
 | Alt+1           | the playing release in or out of its default collection   |
 | Alt+2           | the playing recording in or out of its default collection |
 | Alt+3           | loves or unloves the playing track on ListenBrainz        |
