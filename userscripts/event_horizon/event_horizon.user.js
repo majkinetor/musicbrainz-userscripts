@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.244000
+// @version      2026.11.20.252000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13368,7 +13368,7 @@ function plyCoverWire(im) {
 function plyRelHead(t, btns = true) {
     if (!t) return '';
     // a recording with no release: the head names the track itself and links to the recording
-    if (!t.rel) return t.rid ? `<div class="ply-rhw"><a class="ply-rh" href="${MB}/recording/${t.rid}" target="_blank" rel="noopener"><span class="ply-rhi">${SVG(PLY_I.crec)}${t.rg ? `<img class="ply-rhc" src="https://coverartarchive.org/release-group/${t.rg}/front-250" alt="">` : ''}</span><span class="rt"><b>${esc(t.title || '')}</b><small>${esc(t.artist || '')}</small></span></a>${btns ? `<span class="ply-ra">${plyHeadBtns(t)}</span>` : ''}</div>` : '';
+    if (!t.rel) return t.rid ? `<div class="ply-rhw"><a class="ply-rh" href="${MB}/recording/${t.rid}" target="_blank" rel="noopener"><span class="ply-rhi">${SVG(PLY_I.crec)}${t.rg && PLY_RGCV.get(t.rg) !== false ? `<img class="ply-rhc" data-rg="${t.rg}" src="${PLY_RGCV.get(t.rg) || `https://coverartarchive.org/release-group/${t.rg}/front-250`}" alt="">` : ''}</span><span class="rt"><b>${esc(t.title || '')}</b><small>${esc(t.artist || '')}</small></span></a>${btns ? `<span class="ply-ra">${plyHeadBtns(t)}</span>` : ''}</div>` : '';
     const yr = t.relYear ? `<span class="ry">${esc(t.relYear)}</span>` : '';
     return `<div class="ply-rhw"><a class="ply-rh" href="${MB}/release/${t.rel}" target="_blank" rel="noopener">${t.rel ? `<img${PLY_CV.has(t.rel) ? ` src="${esc(PLY_CV.get(t.rel))}"` : t.front ? ` src="https://coverartarchive.org/release/${t.rel}/front-250"` : ''} data-plyrel="${t.rel}" alt="">` : ''}<span class="rt"><b>${esc(t.relTitle || '')}</b><small>${esc(t.relAc || '')}${t.relAc && yr ? ' · ' : ''}${yr}</small></span></a>${btns ? `<span class="ply-ra">${plyHeadBtns(t)}</span>` : ''}</div>`;
 }
@@ -13384,7 +13384,10 @@ function plyCollDefSet(type, d) {
 }
 // a recording head's cover that the archive doesn't have leaves the recording icon
 // a recording's cover: archive.org can miss a thumbnail CAA still points at, so the full front stands in before the icon
-document.addEventListener('error', ev => { const im = ev.target; if (!im.matches?.('img.ply-rhc')) return; const src = im.getAttribute('src'); if (/\/front-250$/.test(src)) im.src = src.replace(/-250$/, ''); else im.remove(); }, true);
+// the URL that worked (false: none did) per release group, so a redrawn head does not try the missing thumbnail again
+const PLY_RGCV = new Map();
+document.addEventListener('load', ev => { const im = ev.target; if (im.matches?.('img.ply-rhc')) PLY_RGCV.set(im.dataset.rg, im.src); }, true);
+document.addEventListener('error', ev => { const im = ev.target; if (!im.matches?.('img.ply-rhc')) return; const src = im.getAttribute('src'); if (/\/front-250$/.test(src)) im.src = src.replace(/-250$/, ''); else { PLY_RGCV.set(im.dataset.rg, false); im.remove(); } }, true);
 function plyHeadBtns(t) {
     if (!t) return '';
     let h = '';
