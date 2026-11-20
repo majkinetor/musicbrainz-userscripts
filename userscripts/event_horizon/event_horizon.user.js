@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.070000
+// @version      2026.11.21.080000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11545,6 +11545,7 @@ async function collectionLoad(key, force = false) {
 async function collectionChange(key, id) {
     const x = COLLECTIONS.get(key), row = x && x.rows && x.rows.find(r => r.id === id);
     if (!row || x.busy || x.loading) return;
+    const name = collectionNames(x.rows).get(row.label);
     x.busy = true; x.error = ''; collectionPaint(key);
     try {
         const u = new URL(row.path, MB);
@@ -11554,7 +11555,7 @@ async function collectionChange(key, id) {
         const fresh = collectionParse(new DOMParser().parseFromString(await r.text(), 'text/html'), key), changed = fresh && fresh.rows.find(v => v.id === id);
         if (!changed || changed.on === row.on) throw new Error('Collection change could not be verified. Refresh to try again.');
         Object.assign(x, fresh); collectionKeep(key, x); kpWrote();
-        LOG.info('Collections: ' + row.label); toast(row.on ? 'Removed from collection' : 'Added to collection');
+        LOG.info('Collections: ' + row.label); toast((row.on ? 'Removed from ' : 'Added to ') + (name || 'collection'));
     } catch (e) { x.error = e.message; LOG.warn('Collections: ' + e.message); toast('Collection change failed'); }
     finally { x.busy = false; collectionPaint(key); }
 }
@@ -17722,8 +17723,6 @@ const plyKeyPa = k => {
     const what = k === 'rel' ? 'release' : 'recording', key = plyCollKey(t, k), d = plyCollDef(k);
     if (!key) { toast('This track has no ' + what); return true; }
     if (!d) { toast('Pick a default ' + what + ' collection in the playlist first'); return true; }
-    const x = COLLECTIONS.get(key), r = x && x.rows && x.rows.find(v => v.id === d.id);
-    if (r) toast((r.on ? 'Removed from ' : 'Added to ') + plyCollName(d, x));
     plyCollClick(null, k);
     return true;
 };
