@@ -4647,7 +4647,7 @@ async function keptCover(rel, img) {
     let e = null;
     try { e = await kpStore('readonly').then(st => new Promise(ok => { const q = st.get(k); q.onsuccess = () => ok(q.result); q.onerror = () => ok(null); })); } catch (x) {}
     if (e && e.b && (img.id !== 'header' || (e.at > mbLastWrite() && Date.now() - e.at < 86400000))) { const u = URL.createObjectURL(e.b); KP_COV.set(k, u); return { u, had: true }; }
-    const t0 = performance.now(), r = await fetch(((img.thumbnails || {})['500'] || `https://coverartarchive.org/release/${rel}/front-500`).replace(/^http:/, 'https:'));
+    const t0 = performance.now(), r = await fetch(((img.thumbnails || {})['500'] || caaSrc('release', rel, 500)).replace(/^http:/, 'https:'));
     fetchLog('CAA front ' + rel, t0, r);
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const b = await r.blob(), u = URL.createObjectURL(b);
@@ -4769,7 +4769,7 @@ function release(r, rg, images) {
 }
 const edition = e => ({
     id: e.id, status: e.status, disambig: e.disambiguation,
-    thumb: (e['cover-art-archive'] || {}).front ? `https://coverartarchive.org/release/${e.id}/front-250` : '',
+    thumb: (e['cover-art-archive'] || {}).front ? caaSrc('release', e.id) : '',
     formats: (e.media || []).map(m => m.format), date: e.date || '',
     where: (e['release-events'] || []).map(v => v.area && ((v.area['iso-3166-1-codes'] || [])[0] || v.area.name)).filter(Boolean),
     labels: [...new Set((e['label-info'] || []).map(l => l.label && l.label.name).filter(Boolean))],
@@ -5381,7 +5381,7 @@ function hero(r) {
     const thumbs = rest.length ? rest.slice(0, 3).map(i => `<img src="${esc(thumbOf(i))}" data-full="${esc(i.image)}" alt="${esc(i.types.join(', ') || 'Image')}">`).join('') + (rest.length > 3 ? `<button type="button" data-goart aria-label="All ${rest.length + 1} images">+${rest.length - 3}</button>` : '') : '';
     return `<section class="hero">
         <div class="art">
-            ${r.front && !r.frontFailed ? `<img class="cover" data-relcover="${r.id}" src="${r.frontFull && front ? esc(front.image) : r.frontSrc || `https://coverartarchive.org/release/${r.id}/front-500`}"${front ? ` data-full="${esc(front.image)}"` : ''} alt="Front cover">` : relNoCover(r, fk)}
+            ${r.front && !r.frontFailed ? `<img class="cover" data-relcover="${r.id}" src="${r.frontFull && front ? esc(front.image) : r.frontSrc || caaSrc('release', r.id, 500)}"${front ? ` data-full="${esc(front.image)}"` : ''} alt="Front cover">` : relNoCover(r, fk)}
             ${thumbs ? `<div class="thumbs"${S.thumbs ? '' : ' hidden'}>${thumbs}</div>` : ''}
             ${under(r)}
         </div>
@@ -5472,9 +5472,16 @@ const caaOf = u => { const m = (u || '').match(CAA_RE); return m ? { k: m[1] || 
 // the front's address once found, else its thumbnail at that size
 const caaSrc = (k, id, size = 250) => CAA_CV.get(k + '/' + id) || `${caaHost(k)}/${k}/${id}/front-${size}`;
 // the front's images from the archive listing, smallest first; [] when it has none
+const CAA_JSON = new Map();
+// the archive's listing of a release, group or event, fetched once; null when it has none
+const caaJson = (k, id) => {
+    const key = k + '/' + id;
+    if (!CAA_JSON.has(key)) CAA_JSON.set(key, fetch(`${caaHost(k)}/${key}`).then(r => r.ok ? r.json() : null).catch(() => null));
+    return CAA_JSON.get(key);
+};
 const caaList = (k, id) => {
     const key = k + '/' + id;
-    if (!CAA_LIST.has(key)) CAA_LIST.set(key, fetch(`${caaHost(k)}/${key}`).then(r => r.ok ? r.json() : null)
+    if (!CAA_LIST.has(key)) CAA_LIST.set(key, caaJson(k, id)
         .then(j => { const im = j && j.images && (j.images.find(i => i.front) || j.images[0]), th = im && (im.thumbnails || {}); return im ? [...new Set([th['250'] || th.small, th['500'] || th.large, im.image].filter(Boolean).map(u => u.replace(/^http:/, 'https:')))] : []; })
         .catch(() => []));
     return CAA_LIST.get(key);
@@ -5667,7 +5674,7 @@ function edHtml(r, eds, count) {
     // The current edition already has a hero cover: reuse it instead of asking for another thumbnail.
     if (r.id && r.front && !r.frontFailed) {
         const front = (r.images || []).find(i => i.front);
-        const thumb = r.frontFull && front ? front.image : r.frontSrc || `https://coverartarchive.org/release/${r.id}/front-500`;
+        const thumb = r.frontFull && front ? front.image : r.frontSrc || caaSrc('release', r.id, 500);
         eds = eds.map(e => e.id === r.id ? { ...e, thumb } : e);
     }
     const lb = !r.id && /^\/label\//.test(r.page || ''), grp = lb && S.lbGroups;
@@ -5746,7 +5753,7 @@ function lbGroupsHtml(es, view) {
     const types = [...m].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0])).map(([k, l]) => [k, byDate(l)]);
     if (!gs.length) return '<div class="folded-note">No releases match.</div>';
     const href = g => g.id ? `${MB}/release-group/${g.id}` : relUrl(g.es[0].id);
-    const cover = g => g.id ? `https://coverartarchive.org/release-group/${g.id}/front-250` : g.es[0].thumb;
+    const cover = g => g.id ? caaSrc('release-group', g.id) : g.es[0].thumb;
     const coverIds = g => g.es.filter(e => e.thumb).map(e => e.id).join(' ');
     const n = g => `${g.es.length} release${g.es.length === 1 ? '' : 's'}`;
     const chip = g => g.es.length < 2 ? `<span class="sub">${n(g)}</span>` : `<button class="ed-tr" type="button" data-lbx="${esc(g.id)}" aria-expanded="${lbOpen.has(g.id)}" data-tip="${lbOpen.has(g.id) ? 'Hide' : 'Show'} its releases on this label">${n(g)}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>`;
@@ -6098,7 +6105,7 @@ function rgHero(d) {
     ];
     return `<section class="hero">
         <div class="art">
-            <div class="picw"><img class="cover" data-rgcover src="https://coverartarchive.org/release-group/${g.id}/front-500" alt="Front cover"><a class="cvact" href="${MB}/release-group/${g.id}/set-cover-art">${SVG('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>')}Set cover art</a></div>
+            <div class="picw"><img class="cover" data-rgcover src="${esc(caaSrc('release-group', g.id, 500))}" alt="Front cover"><a class="cvact" href="${MB}/release-group/${g.id}/set-cover-art">${SVG('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>')}Set cover art</a></div>
             ${under(g)}
         </div>
         <div class="facts-col">
@@ -8786,11 +8793,11 @@ function insHero(d) {
 }
 // a table per subpage, as MusicBrainz shows its first page; with cv ("release-group", "release" or "event"), each row
 // leads with the front of the first such entity it links to, from the Cover Art Archive or the Event Art Archive
-const ART_URL = { 'release-group': 'https://coverartarchive.org/release-group/', release: 'https://coverartarchive.org/release/', event: 'https://eventartarchive.org/event/' };
+const ART_URL = { 'release-group': 1, release: 1, event: 1 };
 // a recording's cover is its release group's, as the player's: the group of its oldest release (undated ones last). REC_RG
 // holds the group by recording ('' none), from one ws/2 search per page of a recording collection (recRgLoad)
 const REC_RG = new Map(), REC_RG_FLY = new Set();
-const tabArt = (cv, id) => cv === 'artist' ? ((TGX_ART[id] || ARTIMG.cached(id) || {}).src || '') : cv === 'recording' ? (REC_RG.get(id) ? `${ART_URL['release-group']}${REC_RG.get(id)}/front-250` : '') : `${ART_URL[cv]}${id}/front-250`;
+const tabArt = (cv, id) => cv === 'artist' ? ((TGX_ART[id] || ARTIMG.cached(id) || {}).src || '') : cv === 'recording' ? (REC_RG.get(id) ? caaSrc('release-group', REC_RG.get(id)) : '') : caaSrc(cv, id);
 function recRgLoad(ids) {
     const want = [...new Set(ids)].filter(id => !REC_RG.has(id) && !REC_RG_FLY.has(id));
     for (let i = 0; i < want.length; i += 50) {
@@ -9000,7 +9007,7 @@ function evHero(d) {
     const g = d.g, cnt = xs => xs.length > 1 ? ` <span class="count">${xs.length}</span>` : '';
     const rl = xs => `<span class="arl">${xs.map(x => `<span>${entA(x.kind, x.id, x.name)}${x.dis ? ` <span class="sub">(${esc(x.dis)})</span>` : ''}${x.at ? ` <span class="sub">${esc(x.at)}</span>` : ''}</span>`).join('')}</span>`;
     const when = g.begin ? fdate(g.begin) + (g.end && g.end !== g.begin ? ' – ' + fdate(g.end) : '') : '';
-    const pic = `<div class="picw"><img class="cover ipic" data-evcover src="https://eventartarchive.org/event/${g.id}/front-500" alt="${esc(g.title)}"><a class="cvact" href="${MB}/event/${g.id}/event-art" data-tip="Event art">${SVG(ACTS.find(x => x[0] === 'cover-art')[3])}</a></div>`;
+    const pic = `<div class="picw"><img class="cover ipic" data-evcover src="${esc(caaSrc('event', g.id, 500))}" alt="${esc(g.title)}"><a class="cvact" href="${MB}/event/${g.id}/event-art" data-tip="Event art">${SVG(ACTS.find(x => x[0] === 'cover-art')[3])}</a></div>`;
     return pgHero(g, 'event', MK_EVENT, g.type || 'Event', [
         ['Date', when],
         ['Time', g.time && esc(g.time)],
@@ -10070,7 +10077,7 @@ document.addEventListener('error', ev => { const im = ev.target; if (im.matches?
 function tgxPic(u) {
     const m = (u || '').match(/\/(release-group|release|artist|label|recording|work|area|place|instrument|series|event)\/([0-9a-f-]{36})/), k = m && m[1], mk = (HM_KIND[k] || ['', CI_TAG])[1];
     const pic = k === 'artist' || k === 'label' ? (a => a ? `<img src="${esc(a.src)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<span class="tgx-mk"${a === undefined ? ` data-tgxart="${k}:${m[2]}"` : ''}>${bigMk(mk)}</span>`)(TGX_ART[m[2]] !== undefined ? TGX_ART[m[2]] : ARTIMG.cached(m[2])) : null;
-    return `<a class="tgx-p" href="${esc(u)}" tabindex="-1" aria-hidden="true">${pic !== null ? pic : k === 'release' || k === 'release-group' || k === 'event' ? `<img data-tgxsrc="${k === 'event' ? 'https://eventartarchive.org' : 'https://coverartarchive.org'}/${k}/${m[2]}/front-250" alt="" data-mk="${esc(bigMk(mk))}">` : `<span class="tgx-mk">${bigMk(mk)}</span>`}</a>`;
+    return `<a class="tgx-p" href="${esc(u)}" tabindex="-1" aria-hidden="true">${pic !== null ? pic : k === 'release' || k === 'release-group' || k === 'event' ? `<img data-tgxsrc="${esc(caaSrc(k, m[2]))}" alt="" data-mk="${esc(bigMk(mk))}">` : `<span class="tgx-mk">${bigMk(mk)}</span>`}</a>`;
 }
 function tagxHtml(d) {
     const t = d.t, q = (d.q || '').trim().toLowerCase(), U = encodeURIComponent(d.name), T = encodeURIComponent(d.tag);
@@ -10339,7 +10346,7 @@ function discoHtml(d) {
     const allRgs = x['release-groups'] || [], rgs = fltApply('dg', allRgs), m = new Map();
     for (const g of rgs) { const k = [g['primary-type'] || '', ...(g['secondary-types'] || [])].filter(Boolean).join(' · ') || 'Unspecified'; const l = m.get(k) || []; l.push(g); m.set(k, l); }
     const rank = k => { const [p, ...sec] = k.split(' · '), i = DG_ORDER.indexOf(p); return (i < 0 ? 9 : i) * 10 + sec.length; };
-    const tile = g => `<a href="${MB}/release-group/${g.id}"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover><span class="dt">${esc(g.title)}${g.disambiguation ? ` <span class="rga">(${esc(g.disambiguation)})</span>` : ''}</span><span class="dy">${esc((g['first-release-date'] || '').slice(0, 4) || '—')}</span></a>`;
+    const tile = g => `<a href="${MB}/release-group/${g.id}"><img src="${esc(caaSrc('release-group', g.id))}" alt="" loading="lazy" data-dgcover><span class="dt">${esc(g.title)}${g.disambiguation ? ` <span class="rga">(${esc(g.disambiguation)})</span>` : ''}</span><span class="dy">${esc((g['first-release-date'] || '').slice(0, 4) || '—')}</span></a>`;
     // each type sorts by the chosen column (date by default), a leading '-' reversing it
     const sk = (S.dgSort || 'date').replace(/^-/, ''), desc = (S.dgSort || '').startsWith('-');
     // the table's columns, as MB's own (Rating, Releases) and the group's links; its release counts come from d.rcX, once the search is in
@@ -10350,7 +10357,7 @@ function discoHtml(d) {
     const gs = [...m].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0])).map(([k, l]) => [k, bySort(l)]);
     const st = colState('dg');
     const th = (k, c) => { const n = COLS.dg.names[k]; if (k === 'links') return `<th${colAttr(st, k)}>${n}${colGrip('dg', st, k)}</th>`; return `<th${c ? ` class="${c}"` : ''}${colAttr(st, k)} aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-dgsort="${k}" data-tip="Sort by ${n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button>${fFun('dg', DG_FUN[k], n.toLowerCase())}${colGrip('dg', st, k)}</th>`; };
-    const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover></a></td>${colTds(st, { title: [`<a class="${longC(g.title)}"${longT(g.title)} href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}`], artist: [acHtml(g['artist-credit'] || [])], date: [g['first-release-date'] ? fdate(g['first-release-date']) : '—', 'mono'], rating: [rateStars('release_group', g.id, g.rating, true)], releases: [rc(g) ? `<button class="ed-tr" type="button" data-dgx="${g.id}" aria-expanded="${dgOpen.has(g.id)}" data-tip="${dgOpen.has(g.id) ? 'Hide' : 'Show'} its releases · right click: every one of this type">${rc(g)}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="${dgOpen.has(g.id) ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6'}"/></svg></button>` : rc(g) != null ? rc(g) : '—', 'num'], links: [sortP(urlsOf(g.relations || [])).map(p => plA(p, 18, 'ti')).join(''), 'lk'] })}</tr>` + (dgOpen.has(g.id) ? dgSub(g) : '');
+    const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="${esc(caaSrc('release-group', g.id))}" alt="" loading="lazy" data-dgcover></a></td>${colTds(st, { title: [`<a class="${longC(g.title)}"${longT(g.title)} href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}`], artist: [acHtml(g['artist-credit'] || [])], date: [g['first-release-date'] ? fdate(g['first-release-date']) : '—', 'mono'], rating: [rateStars('release_group', g.id, g.rating, true)], releases: [rc(g) ? `<button class="ed-tr" type="button" data-dgx="${g.id}" aria-expanded="${dgOpen.has(g.id)}" data-tip="${dgOpen.has(g.id) ? 'Hide' : 'Show'} its releases · right click: every one of this type">${rc(g)}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="${dgOpen.has(g.id) ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6'}"/></svg></button>` : rc(g) != null ? rc(g) : '—', 'num'], links: [sortP(urlsOf(g.relations || [])).map(p => plA(p, 18, 'ti')).join(''), 'lk'] })}</tr>` + (dgOpen.has(g.id) ? dgSub(g) : '');
     const dgSub = g => {
         const es = d.dgRel && d.dgRel.get(g.id), span = colsOf(st);
         if (!es) return `<tr class="dg-r"><td></td><td colspan="${span}" class="sub">Loading its releases…</td></tr>`;
@@ -11327,7 +11334,7 @@ function renderDraw(keepPop) {
         e.preventDefault();
         const rel = gc.src.match(/(?:\/release\/|\/mbid-)([0-9a-f-]{36})\//), rid = rel ? rel[1] : null;
         try {
-            const j = rid ? await fetch('https://coverartarchive.org/release/' + rid).then(x => x.ok ? x.json() : null) : await fetch('https://coverartarchive.org/release-group/' + r.id).then(x => x.ok ? x.json() : null);
+            const j = await (rid ? caaJson('release', rid) : caaJson('release-group', r.id));
             const imgs = (j && j.images) || [], id = rid || ((j && j.release) || '').split('/').pop();
             if (!imgs.length) return;
             const images = imgs.map(i => ({ id: i.id, types: i.types, comment: i.comment, image: i.image })), f = imgs.find(i => i.front) || imgs[0];
@@ -11656,7 +11663,7 @@ async function visitPic(kind, d) {
     if (kind === 'artist' || kind === 'label' || kind === 'place') { const x = await d.img; return x && x[0] ? x[0].src : ''; }
     if (kind === 'area') { const x = (await d.img) || []; return ((x.find(y => y.from === 'Flag') || x[0]) || {}).src || ''; }
     if (kind === 'instrument') return commonsImg(d.g.img, 120) || (/^https?:\/\//.test(d.g.img) ? d.g.img : '');
-    if (kind === 'recording') { const x = await d.eds, r = x && (x.releases || []).find(y => (y['cover-art-archive'] || {}).front); return r ? `https://coverartarchive.org/release/${r.id}/front-250` : ''; }
+    if (kind === 'recording') { const x = await d.eds, r = x && (x.releases || []).find(y => (y['cover-art-archive'] || {}).front); return r ? caaSrc('release', r.id) : ''; }
     return '';
 }
 const VISIT_PIC = ['artist', 'label', 'area', 'instrument', 'place', 'recording'];
@@ -13220,7 +13227,7 @@ function plyMedia(t, again) {
     const ms = msPage(); if (!ms || !t) return;
     try {
         ms.metadata = new (PW.MediaMetadata || MediaMetadata)(msObj({ title: t.title || '', artist: t.artist || '', album: t.relTitle || '',
-            artwork: t.front && t.rel ? [{ src: `https://coverartarchive.org/release/${t.rel}/front-250`, sizes: '250x250' }, { src: `https://coverartarchive.org/release/${t.rel}/front-500`, sizes: '500x500' }] : [] }));
+            artwork: t.front && t.rel ? [{ src: caaSrc('release', t.rel), sizes: '250x250' }, { src: caaSrc('release', t.rel, 500), sizes: '500x500' }] : [] }));
         ms.playbackState = 'playing';
     } catch (e) {}
     // the widget's iframe plays too and can take over the lock screen's session, which then shows only its own
@@ -13566,8 +13573,8 @@ function plyDraw() {
     const name = `<button type="button" class="ply-t" data-ply="list" aria-haspopup="menu" data-tip="${esc(t.title + ' — ' + t.artist + '\n' + rl)}${rl && !t.relTitle ? ' (its first release)' : ''}\nClick: the playlist">${S.playerNo ? `<span class="ply-n">${esc(plyNo(t))}</span>` : ''}<span class="ply-line"><b>${esc(t.title)}</b><span class="ply-ar">· ${esc(t.artist)}</span></span>${rl ? `<span class="ply-rl">${esc(rl)}${ry ? ` · ${esc(ry)}` : ''}</span>` : ''}</button>`;
     // the top bar's cover: the release's front, else the release group's for a recording on none; a click opens it
     const cov = !bar && S.playerCover && (t.rel || t.rg) && !(t.rel && PLY_CV.get(t.rel) === '') ? (t.rel
-        ? `<a class="ply-cov" href="${MB}/release/${t.rel}" target="_blank" rel="noopener" aria-label="Open the release" data-tip="${esc((t.relTitle || 'Release') + '\nClick: open the release in a new tab')}"><img${PLY_CV.has(t.rel) ? ` src="${esc(PLY_CV.get(t.rel))}"` : t.front ? ` src="https://coverartarchive.org/release/${t.rel}/front-250"` : ''} data-plyrel="${t.rel}" alt=""></a>`
-        : PLY_RGCV.get(t.rg) !== '' ? `<a class="ply-cov" href="${MB}/recording/${t.rid}" target="_blank" rel="noopener" aria-label="Open the recording" data-tip="${esc(t.title + '\nClick: open the recording in a new tab')}"><img src="${esc(PLY_RGCV.get(t.rg) || `https://coverartarchive.org/release-group/${t.rg}/front-250`)}" alt=""></a>` : '') : '';
+        ? `<a class="ply-cov" href="${MB}/release/${t.rel}" target="_blank" rel="noopener" aria-label="Open the release" data-tip="${esc((t.relTitle || 'Release') + '\nClick: open the release in a new tab')}"><img${PLY_CV.has(t.rel) ? ` src="${esc(PLY_CV.get(t.rel))}"` : t.front ? ` src="${esc(caaSrc('release', t.rel))}"` : ''} data-plyrel="${t.rel}" alt=""></a>`
+        : PLY_RGCV.get(t.rg) !== '' ? `<a class="ply-cov" href="${MB}/recording/${t.rid}" target="_blank" rel="noopener" aria-label="Open the recording" data-tip="${esc(t.title + '\nClick: open the recording in a new tab')}"><img src="${esc(PLY_RGCV.get(t.rg) || caaSrc('release-group', t.rg))}" alt=""></a>` : '') : '';
     const prog = ply.ctl && t.len ? `<span class="ply-pr sk" data-ply="seek" aria-label="Position"><i></i>${bar ? '' : '<b class="ply-hv"></b>'}</span>` : '<span class="ply-pr" aria-hidden="true"><i></i></span>';
     const menu = `<button type="button" class="ply-b ply-lb${lb && t.ok != null ? ' sent' : ''}" data-ply="lb" aria-haspopup="menu" aria-label="Playing from ${esc(p.name)}" data-tip="Playing from ${esc(p.name)}${lb && t.ok != null ? '\nListen sent' : ''}\nClick: sources, ListenBrainz, stop">${icon(p, 18)}</button>`;
     const v = +S.playerVol, vol = plyHasVol() ? `<span class="ply-vg"><button type="button" class="ply-b" data-ply="mute" aria-pressed="${!v}" aria-label="${v ? 'Mute' : 'Unmute'}" data-tip="${v ? 'Mute' : 'Unmute'}">${plyVolIc(v)}</button><span class="ply-vp"><b class="ply-vn">${v}</b><input type="range" class="ply-vol" min="0" max="100" step="1" value="${v}" style="--p:${v}%" aria-label="Volume"></span></span>` : '';
@@ -13706,11 +13713,11 @@ function plyCovNext() {
     const load = (url, ok, bad) => { const im = new Image(); im.onload = () => ok(url); im.onerror = bad; im.src = url; };
     if (t.rel) {
         const id = t.rel; if (PLY_CV.has(id)) return;
-        const u = `https://coverartarchive.org/release/${id}/front-250`;
+        const u = caaSrc('release', id);
         if (t.front) load(u, v => PLY_CV.set(id, v), () => caaFind('release', id, u)); else caaFind('release', id);
         PLOG.debug('preloads the next cover', t.title);
     } else if (t.rg && !PLY_RGCV.has(t.rg)) {
-        const rg = t.rg, u = `https://coverartarchive.org/release-group/${rg}/front-250`;
+        const rg = t.rg, u = caaSrc('release-group', rg);
         load(u, v => PLY_RGCV.set(rg, v), () => caaFind('release-group', rg, u));
         PLOG.debug('preloads the next cover', t.title);
     }
@@ -13718,9 +13725,9 @@ function plyCovNext() {
 function plyRelHead(t, btns = true) {
     if (!t) return '';
     // a recording with no release: the head names the track itself and links to the recording
-    if (!t.rel) return t.rid ? `<div class="ply-rhw"><a class="ply-rh" href="${MB}/recording/${t.rid}" target="_blank" rel="noopener"><span class="ply-rhi">${SVG(PLY_I.crec)}${t.rg && PLY_RGCV.get(t.rg) !== '' ? `<img class="ply-rhc" data-rg="${t.rg}" src="${PLY_RGCV.get(t.rg) || `https://coverartarchive.org/release-group/${t.rg}/front-250`}" alt="">` : ''}</span><span class="rt"><b>${esc(t.title || '')}</b><small>${esc(t.artist || '')}</small></span></a>${btns ? `<span class="ply-ra">${plyHeadBtns(t)}</span>` : ''}</div>` : '';
+    if (!t.rel) return t.rid ? `<div class="ply-rhw"><a class="ply-rh" href="${MB}/recording/${t.rid}" target="_blank" rel="noopener"><span class="ply-rhi">${SVG(PLY_I.crec)}${t.rg && PLY_RGCV.get(t.rg) !== '' ? `<img class="ply-rhc" data-rg="${t.rg}" src="${PLY_RGCV.get(t.rg) || caaSrc('release-group', t.rg)}" alt="">` : ''}</span><span class="rt"><b>${esc(t.title || '')}</b><small>${esc(t.artist || '')}</small></span></a>${btns ? `<span class="ply-ra">${plyHeadBtns(t)}</span>` : ''}</div>` : '';
     const yr = t.relYear ? `<span class="ry">${esc(t.relYear)}</span>` : '';
-    return `<div class="ply-rhw"><a class="ply-rh" href="${MB}/release/${t.rel}" target="_blank" rel="noopener">${t.rel ? `<img${PLY_CV.has(t.rel) ? ` src="${esc(PLY_CV.get(t.rel))}"` : t.front ? ` src="https://coverartarchive.org/release/${t.rel}/front-250"` : ''} data-plyrel="${t.rel}" alt="">` : ''}<span class="rt"><b>${esc(t.relTitle || '')}</b><small>${esc(t.relAc || '')}${t.relAc && yr ? ' · ' : ''}${yr}</small></span></a>${btns ? `<span class="ply-ra">${plyHeadBtns(t)}</span>` : ''}</div>`;
+    return `<div class="ply-rhw"><a class="ply-rh" href="${MB}/release/${t.rel}" target="_blank" rel="noopener">${t.rel ? `<img${PLY_CV.has(t.rel) ? ` src="${esc(PLY_CV.get(t.rel))}"` : t.front ? ` src="${esc(caaSrc('release', t.rel))}"` : ''} data-plyrel="${t.rel}" alt="">` : ''}<span class="rt"><b>${esc(t.relTitle || '')}</b><small>${esc(t.relAc || '')}${t.relAc && yr ? ' · ' : ''}${yr}</small></span></a>${btns ? `<span class="ply-ra">${plyHeadBtns(t)}</span>` : ''}</div>`;
 }
 // the head's buttons for the playing track: collect the release, collect the recording (each into that type's default
 // collection, a right-click lists them all), love it on ListenBrainz
@@ -13937,7 +13944,7 @@ function plyGroupHead(x, group, n, i) {
     if (n < 0) n = ply.q.length - i;
     const rm = ` data-qx="${i}-${i + n}"`;
     if (group === 'recordings' || !x.rel) return `<div class="ply-group"${rm}${group === 'recordings' ? ' data-pg="rec"' : ''} data-tip="Right-click to remove these ${n} from the playlist"><span>${esc(group === 'recordings' ? 'Recordings' : x.relTitle || 'Release')}</span></div>`;
-    const src = PLY_CV.has(x.rel) ? PLY_CV.get(x.rel) : x.front ? `https://coverartarchive.org/release/${x.rel}/front-250` : '';
+    const src = PLY_CV.has(x.rel) ? PLY_CV.get(x.rel) : x.front ? caaSrc('release', x.rel) : '';
     return `<a class="ply-group cv"${rm} data-grel="${x.rel}" href="${MB}/release/${x.rel}" target="_blank" rel="noopener" data-tip="Open the release in a new tab; right-click removes its ${n} from the playlist"><img${src ? ` src="${esc(src)}"` : ''} data-plyrel="${x.rel}" alt="" loading="lazy"><span>${esc(x.relTitle || 'Release')}<small>${x.relYear ? esc(x.relYear) + ' · ' : ''}${n} track${n === 1 ? '' : 's'}</small></span></a>`;
 }
 // the playlist head's counts: its releases (a click shows their covers as a grid in place of the rows, a cover's click goes to its release)
@@ -13956,7 +13963,7 @@ function plyCounts(open) {
 function plyGrid() {
     const cur = ply.q[ply.i]?.rel;
     return '<div class="ply-grid" role="list">' + [...plyCountRels().values()].map(x => {
-        const src = PLY_CV.has(x.rel) ? PLY_CV.get(x.rel) : x.front ? `https://coverartarchive.org/release/${x.rel}/front-250` : '';
+        const src = PLY_CV.has(x.rel) ? PLY_CV.get(x.rel) : x.front ? caaSrc('release', x.rel) : '';
         return `<button type="button" class="ply-sc" role="listitem" data-grel="${x.rel}"${x.rel === cur ? ' aria-current="true"' : ''} aria-label="${esc(x.relTitle || 'Release')}" data-tip="${esc((x.relTitle || 'Release') + (x.relYear ? ' · ' + x.relYear : '') + '\nClick: go to its tracks\nRight-click: remove it from the playlist')}">${SVG(MK_RELEASE)}<img${src ? ` src="${esc(src)}"` : ''} data-plyrel="${x.rel}" alt="" loading="lazy"></button>`;
     }).join('') + '</div>';
 }
