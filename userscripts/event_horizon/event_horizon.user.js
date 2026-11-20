@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.020000
+// @version      2026.11.21.030000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13750,13 +13750,15 @@ function plyMenu(btn, html, pick, align) {
     } else m.style.top = Math.max(8, r.bottom + h + 6 < innerHeight ? r.bottom + 4 : r.top - h - 4) + 'px';
     const off = ev => { if (m.contains(ev.target) || ev.target.closest?.('#eh-ply-coll')) return; plyMenuShut = { k: ev.target.closest?.('[data-ply]')?.dataset.ply || '', t: Date.now() }; shut(); };
     // Escape closes the menu (the playlist's filter included) before anything else sees the key
-    const key = ev => { if (ev.key !== 'Escape' || !m.isConnected || document.getElementById('eh-ply-coll')) return; ev.preventDefault(); ev.stopPropagation(); shut(); btn.focus({ preventScroll: true }); };
+    const key = ev => { if (ev.key !== 'Escape' || !m.isConnected || document.getElementById('eh-ply-coll')) return; ev.preventDefault(); ev.stopPropagation(); shut(); back(); };
+    // focus goes back where it was: the menu's button, or, for a menu the keyboard opened, what had the focus before it
+    const back = () => { const r = m._back; if (r === undefined) return btn.focus({ preventScroll: true }); if (r && r.isConnected && r !== document.body) r.focus({ preventScroll: true }); else document.activeElement?.blur?.(); };
     const blur = () => setTimeout(() => { if (document.activeElement?.tagName === 'IFRAME' || !document.hasFocus()) shut(); });
     const shut = () => { m.remove(); plyCollShut(); document.removeEventListener('pointerdown', off, true); document.removeEventListener('keydown', key, true); removeEventListener('blur', blur); };
     setTimeout(() => { if (m.isConnected) { document.addEventListener('pointerdown', off, true); addEventListener('blur', blur); } });
     document.addEventListener('keydown', key, true);
     m.addEventListener('click', ev => {
-        if (ev.target.closest('.ply-x')) { shut(); btn.focus({ preventScroll: true }); return; }
+        if (ev.target.closest('.ply-x')) { shut(); back(); return; }
         const b = ev.target.closest('[data-k],[data-m],a'); if (!b) return;
         if (!(kind === 'list' && b.classList.contains('qi'))) shut();
         if (b.dataset.k) pick({ k: b.dataset.k }); else if (b.dataset.m) pick({ m: b.dataset.m });
@@ -17676,8 +17678,10 @@ const plyKeyList = () => {
     const m = document.querySelector('#eh-ply-menu:has(.ply-list-head)');
     if (m) { m.querySelector('.ply-x')?.click(); return true; }
     const b = [...document.querySelectorAll('[data-ply="list"]')].find(x => x.getClientRects().length); if (!b) return false;
+    const prev = document.activeElement;
     b.click();
     const n = document.querySelector('#eh-ply-menu:has(.ply-list-head)');
+    if (n) n._back = prev;
     (n?.querySelector('.qi[aria-current]') || n?.querySelector('.qi'))?.focus({ preventScroll: true });
     return true;
 };
