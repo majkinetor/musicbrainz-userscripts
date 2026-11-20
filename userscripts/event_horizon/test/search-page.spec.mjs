@@ -4,7 +4,7 @@ test.use({ gm: { name: 'Event Horizon' } });
 // picks an entry of a filterable list by typing part of it
 const pick = async (inp, text) => { await inp.click(); await inp.fill(text); await inp.press('Enter'); };
 
-test('the home search links to the search page, where a category is picked first and its criteria added', { tag: '@sandbox' }, async ({ page, inject }) => {
+test('the home search links to the search page, where a category is picked first and shows all its criteria', { tag: '@sandbox' }, async ({ page, inject }) => {
   const errs = []; page.on('pageerror', e => errs.push(e.message));
   await page.goto('https://test.musicbrainz.org/');
   await idle(page); await inject('event_horizon');
@@ -14,29 +14,22 @@ test('the home search links to the search page, where a category is picked first
   await expect(form).toBeVisible();
   expect(await page.evaluate(() => window.__kept)).toBe(1);
   expect(page.url()).toMatch(/\/search$/);
-  const cat = form.locator('[data-sl-cat]'), add = form.locator('[data-sl-add]');
+  const cat = form.locator('[data-sl-cat]');
   await expect(cat).toHaveValue('Search');
-  // Add criteria lists only the search's own criteria, and adds to the rows
-  await add.click();
-  expect(await page.locator('.eh-cb-pop .eh-cb-opt').allTextContents()).toEqual(['Results per page', 'Search method']);
-  await add.press('Escape');
-  await pick(add, 'method');
-  await expect(form.locator('.sl-row[data-f="method"] select')).toBeFocused();
-  await expect(form.locator('.sl-row[data-f="query"]')).toHaveCount(1);
-  // the category list filters, and a category brings its own criteria
+  // every criterion of the category is on the form
+  await expect(form.locator('[data-sl-rows] .sl-row')).toHaveCount(4);
+  // the category list filters, and a category brings all its own criteria
   await cat.click(); await cat.fill('tag');
   expect(await page.locator('.eh-cb-pop .eh-cb-opt').count()).toBe(1);
   await cat.press('Enter');
   await expect(form).toHaveAttribute('action', /\/taglookup\/index$/);
   await expect(cat).toHaveValue('Tag lookup');
   await expect(form.locator('.sl-row[data-f="query"]')).toHaveCount(0);
-  await expect(form.locator('.sl-row[data-f="tag-lookup.artist"]')).toHaveCount(1);
-  await pick(add, 'dur');
-  await expect(form.locator('.sl-row')).toHaveCount(1 + 3);
-  // a barcode: one criterion, nothing more to add
+  await expect(form.locator('[data-sl-rows] .sl-row')).toHaveCount(6);
+  // a barcode: its one criterion
   await pick(cat, 'barcode');
   await expect(form).toHaveAttribute('action', /\/otherlookup\/barcode$/);
-  await expect(form.locator('[data-sl-addwrap]')).toBeHidden();
+  await expect(form.locator('[data-sl-rows] .sl-row')).toHaveCount(1);
   // each kind of submit stays in the viewer
   await pick(cat, 'search');
   await form.locator('.sl-row[data-f="query"] input').fill('Radiohead');
