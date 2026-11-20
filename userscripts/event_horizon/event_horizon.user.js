@@ -12190,6 +12190,7 @@ document.addEventListener('keydown', e => {
 document.addEventListener('pointerdown', e => { document.querySelectorAll('form.srch .hm-td:not([hidden])').forEach(td => { if (!td.parentNode.contains(e.target)) srchTop.show(td.closest('form'), false); }); }, true);
 const srchName = t => t === 'doc' ? 'Documentation' : t === 'cdstub' ? 'CD stub' : (t[0].toUpperCase() + t.slice(1)).replace('_', ' ');
 function searchHtml(d) {
+    if (d.idle) return searchForm(new URLSearchParams(d.qs));
     const p = new URLSearchParams(d.qs), s = d.s;
     // the count goes on the Results heading; above the form only while searching, or when nothing came
     const sub = d.err ? `<span class="u-err">${esc(d.err)}</span>` : !s ? 'Searching…' : s.rows.length ? '' : esc(s.found || s.err || 'No results');
@@ -12201,6 +12202,18 @@ function searchHtml(d) {
     // MusicBrainz's next page comes in under these, by Load more or Auto, as every paged list's does
     const more = s.next ? lmFoot('sr', s.rows.length, s.total ? fmtN(s.total) : 0) : '';
     return hero + sect('sr', `Results <span class="count">${fmtN(s.rows.length)}${s.total > s.rows.length ? '/' + fmtN(s.total) : ''}</span>`, '', table + more, `<div class="folded-note">${esc(s.found)}</div>`);
+}
+// MusicBrainz's own /search page: the search form (query, type, results per page, method) and the tag lookup's fields, in the bars the other searches use
+function searchForm(p) {
+    const sel = (n, l, os, cur) => `<label><span>${l}</span><select name="${n}">${os.map(([v, t]) => `<option value="${v}"${v === cur ? ' selected' : ''}>${t}</option>`).join('')}</select></label>`;
+    const f = TL_F.map(([k, l]) => `<label><span>${l}</span><input name="tag-lookup.${k}"></label>`).join('');
+    return `<section class="arthd"><div class="rhtx"><div class="kicker label"><span>MusicBrainz</span><span class="acts">${SRCH()}</span></div><h1>Search</h1></div></section>
+        <form class="tl-bar url-bar" aria-label="Search" action="${MB}/search" method="get"><label><span>Query</span><input name="query" required autofocus></label>
+        ${sel('type', 'Type', [...SRCH_T, 'doc'].map(t => [t, srchName(t)]), p.get('type') || 'artist')}${sel('limit', 'Results per page', [['25', 'Up to 25'], ['50', 'Up to 50'], ['100', 'Up to 100']], p.get('limit') || '25')}
+        ${sel('method', 'Search method', [['indexed', 'Indexed search'], ['advanced', 'Indexed search with advanced query syntax'], ['direct', 'Direct database search']], p.get('method') || 'indexed')}<button type="submit" class="hm-go" data-tip="Search" aria-label="Search">${SVG(LENS)}</button></form>
+        <p class="u-sub sr-sub">For more information, check the <a href="${MB}/doc/Indexed_Search_Syntax">documentation</a>.</p>
+        <section class="arthd"><div class="rhtx"><h1>Tag lookup</h1></div></section>
+        <form class="tl-bar" aria-label="Tag lookup" action="${MB}/taglookup/index" method="get">${f}<button type="submit" class="hm-go" data-tip="Look up" aria-label="Look up">${SVG(LENS)}</button></form>`;
 }
 // a tag lookup's page: the tagger's six fields in a bar pinned under the header, sent to /taglookup as MusicBrainz's own form sends them
 const TL_F = [['artist', 'Artist'], ['release', 'Release'], ['tracknum', 'Track number'], ['track', 'Track'], ['duration', 'Duration'], ['filename', 'Filename']];
@@ -14579,7 +14592,7 @@ function navTo(href) {
     const e = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/?$/);
     if (e) return 'user/' + e[1];
     // a search → "search/<its query string>"; a documentation search stays MusicBrainz's, whose results Google's script draws in the page
-    if (u.origin === location.origin && /^\/search\/?$/.test(u.pathname) && (u.searchParams.get('query') || u.searchParams.get('type') === 'url') && u.searchParams.get('type') !== 'doc') return 'search/' + u.search.slice(1);
+    if (u.origin === location.origin && /^\/search\/?$/.test(u.pathname) && u.searchParams.get('type') !== 'doc') return 'search/' + u.search.slice(1);
     // a tag lookup (the tagger's search) → a release search whose rows come from /taglookup: "search/query=<artist – release>&type=release&tl=<its query string>"
     // Picard's "lookup in browser" and older taggers send the fields bare (artist=, release=, …): they become tag-lookup.<field>, as MusicBrainz's form sends them
     if (u.origin === location.origin && /^\/taglookup(\/index)?\/?$/.test(u.pathname)) {
@@ -14592,7 +14605,7 @@ function navTo(href) {
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
-const titleOf = d => d && d.kind === 'colsubs' ? (d.g ? d.g.title + ' · ' : '') + 'Subscribers · Event Horizon' :d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? (d.t === 'url' ? (d.q ? d.q + ' · ' : '') + 'URL search' : d.q + ' · Search') + ' · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'colnew' ? (d.gid ? (d.f && d.f.cur.name ? d.f.cur.name + ' · ' : '') + 'Edit collection' : 'New collection') + ' · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'aliases' ? (d.t && d.t.en || 'Aliases') + ' · Aliases · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + ' · ' + (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
+const titleOf = d => d && d.kind === 'colsubs' ? (d.g ? d.g.title + ' · ' : '') + 'Subscribers · Event Horizon' :d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? (d.idle ? 'Search' : d.t === 'url' ? (d.q ? d.q + ' · ' : '') + 'URL search' : d.q + ' · Search') + ' · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'colnew' ? (d.gid ? (d.f && d.f.cur.name ? d.f.cur.name + ' · ' : '') + 'Edit collection' : 'New collection') + ' · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'aliases' ? (d.t && d.t.en || 'Aliases') + ' · Aliases · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + ' · ' + (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
 // a release's cover-art page, or its add-cover-art page → "art/<mbid>"; an event's event-art or add-event-art page → "eart/<mbid>": its title and artist, then Art Station's gallery (#as-slot). A release's cover-art
 // page also opens in the tab from any other release page (artIn): Art Station, asked by mbu-art-mount, starts its gallery
 // in the slot without a page load, so the player plays on. The add pages and an event's art load their page
@@ -17763,8 +17776,9 @@ async function show(key, o = {}) {
     if (kind === 'user') { data = { kind: 'user', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); userLoad(n, key); return; }
     if (kind === 'search') {
         const p = new URLSearchParams(key.slice(7)), q = p.get('query') || '', t = p.get('type') || 'artist';
-        if (!p.get('tl') && t !== 'url') searchKeep(q, t);   // a tag lookup's chip would reopen it as a plain search
-        data = { kind: 'search', qs: key.slice(7), q, t }; scrollTo(0, 0); render(); searchLoad(n, key); return;
+        if (!p.get('tl') && t !== 'url' && q) searchKeep(q, t);   // a tag lookup's chip would reopen it as a plain search
+        const idle = !q && t !== 'url';   // MusicBrainz's search page with nothing typed yet: its two forms, no results
+        data = { kind: 'search', qs: key.slice(7), q, t, idle }; scrollTo(0, 0); render(); if (!idle) searchLoad(n, key); return;
     }
     if (!id) { data = null; app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }
     // the skeleton takes the page's width, so the page doesn't move when the release arrives
