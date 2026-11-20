@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.19.235600
+// @version      2026.11.20.200000
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -47,6 +47,11 @@
           else if (!s || typeof s !== 'object') s = { tat: 0, cool: 0, hot: 0 };   // none yet (or cleared): a fresh schedule
           if (s.version != null && s.version !== MBN_VERSION) throw new Error('Unsupported MusicBrainz gate version: ' + s.version);
           s.version = MBN_VERSION;
+          // #938: no writer sets a hold past MBN_MAX_HOLD or a lead past MBN_MAX_LEAD, so a value
+          // beyond them is broken (a bug, a clock that jumped): bring it back, for every tab after us
+          const now = Date.now();
+          if ((s.cool || 0) > now + MBN_MAX_HOLD) s.cool = now + MBN_MAX_HOLD;
+          if ((s.leadUntil || 0) > now + MBN_MAX_LEAD) s.leadUntil = now + MBN_MAX_LEAD;
           const out = fn(s);
           Object.assign(g, s);
           try { localStorage.setItem(MBN_KEY, JSON.stringify({ ...s, tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
@@ -155,10 +160,13 @@
       o = o || {};
       const t0 = Date.now(), background = o.background !== false;
       // someone else's lead: a background request books its slot only once it ends or lapses
+      // #938: a cap counted from each new `now` moves with it and never caps; count it from when
+      // this wait first saw the value, so a broken one holds at most the longest real one
+      const seen = (v, cap) => { if (v !== seen[cap + 'v']) { seen[cap + 'v'] = v; seen[cap + 't'] = Date.now(); } return Math.min(v, seen[cap + 't'] + cap); };
       for (let told = false; background;) {
           let s = null;
           try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { s = globalThis.__mbnGate; }
-          const left = s && s.lead && s.lead !== o.lead ? Math.min((s.leadUntil || 0) - Date.now(), MBN_MAX_LEAD) : 0;
+          const left = s && s.lead && s.lead !== o.lead ? seen(s.leadUntil || 0, MBN_MAX_LEAD) - Date.now() : 0;
           if (left <= 0) break;
           if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
           if (!told && o.log) { told = true; o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + ' waits for a page being drawn'); }
@@ -179,7 +187,7 @@
           let cool = 0;
           try { cool = (JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}).cool || 0; } catch (e) { cool = (globalThis.__mbnGate || {}).cool || 0; }
           const now = Date.now();
-          cool = Math.min(cool, now + MBN_MAX_HOLD);   // a hold is never longer than the longest one the gate sets
+          cool = seen(cool, MBN_MAX_HOLD);   // a hold is never longer than the longest one the gate sets
           const until = Math.max(booked.at, cool), left = until - now;   // a hold that appeared while we queued
           if (left <= 0) break;
           if (o.log && until - t0 > 1000 && (!toldAt || until > toldUntil + 1000 || now - toldAt >= 10000)) {
@@ -4359,6 +4367,7 @@
         const txt = await res.text().catch(() => ''); let j = null; try { j = JSON.parse(txt); } catch (e) {}
         if (!res.ok || (j && j.error)) throw new Error((((j && (j.error.message || j.error)) || ('HTTP ' + res.status)) + '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160));
         okRel++; okEdits += edits.length;
+        try { localStorage.setItem('mbLastWrite', String(Date.now())); } catch (e) {}   // #938: tell other scripts an edit just went in
         // reflect success: drop the proposal and cache the new rel on this release so the render's rebuild shows it present
         rowsFor.forEach(row => { row.propose.delete(gid); if (rel && rel._rels) rel._rels.push(row.sample); });
       } catch (e) { failed.push(`${rel ? rel.letter : gid}: ${(e && e.message) || e}`); }
@@ -9322,6 +9331,7 @@ Cleared the annotation: its credits were entered as ${applied} relationship${app
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body,
     });
     if (!r.ok) throw new Error(`MusicBrainz rejected the annotation edit (HTTP ${r.status})`);
+    try { localStorage.setItem('mbLastWrite', String(Date.now())); } catch (e) {}   // #938: tell other scripts an edit just went in
     // read it back — the POST returning 200 is not evidence the annotation is gone
     const after = await txpFetchAnnotationForm(gid);
     if (after.text.trim()) throw new Error('MusicBrainz accepted the request but the annotation is still there');

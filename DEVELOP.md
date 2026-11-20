@@ -177,7 +177,8 @@ Other userscripts can opt into these conventions. No marker means the usual beha
 | Signal                        | Scope                     | Effect                                                                                                                                         |
 | ----------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | `data-mbu-foreign="<owner>"`  | rendered section or table | ISRC Scout leaves its columns and colspans alone; the shared tooltip handler ignores the region, including copied `data-tip` attributes        |
-| `data-mbu-keys-off="<owner>"` | `<html>`                  | suspends Event Horizon's command shortcuts, bare keys and modified keys alike, including V and Ctrl+L; ordinary controls and Escape still work |
+| `data-mbu-keys-off="<owner>"` | `<html>`                  | suspends Event Horizon's command shortcuts, bare keys and modified keys alike, including V and Ctrl+L, unless `data-mbu-keys-keep` says otherwise; ordinary controls and Escape still work |
+| `data-mbu-keys-keep="toggle"` | `<html>`                  | with `data-mbu-keys-off` set, keeps Event Horizon's on/off command (V, or the key it is rebound to) working; a space-separated list, `toggle` its only value so far |
 | `data-mbu-quiet="<owner>"`    | `<html>`                  | temporarily hides corner launchers, the dock and its shelf; scans, counts and the saved dock state continue                                    |
 
 The foreign marker protects a rendered copy, not its native source. Keep ISRC Scout's original rows outside it. A script can listen for `is:counts-changed` and update its own copy; ISRC Scout does not push changes into a foreign region. This is a contract for the consumers named above, not a promise that every script ignores the region.
@@ -207,7 +208,7 @@ Readers accept an absent version as version 1; writers stamp `version: 1`, prese
 
 ### Shared kept answers and artist images
 
-A script that keeps MusicBrainz answers across page loads treats every entry kept before `localStorage['mbLastWrite']` (Unix milliseconds) as a miss, and sets that key to `Date.now()` after each write it makes to MusicBrainz. An edit made with any participating script then drops every script's kept answers.
+A script that keeps MusicBrainz answers across page loads treats every entry kept before `localStorage['mbLastWrite']` (Unix milliseconds) as a miss, and sets that key to `Date.now()` after each write it makes to MusicBrainz. An edit made with any participating script then drops every script's kept answers. Apollo, Group Therapy and Falcon only set the key, after each edit they submit; they keep nothing themselves.
 
 Event Horizon publishes its artist-image instance as `window.MBU.artistImage`: `find(mbid, urls)`, `findAll(mbid, urls)`, `distinct(mbid, urls)` and `cached(mbid)`, as in [`dev/artimg`](dev/artimg/README.md). One cache and one set of provider requests then serve every script, with Event Horizon's provider order and switched-off providers. Answers are copies. Check for it when you call, since Event Horizon may load later or not at all, and keep your own lookup as the fallback.
 
