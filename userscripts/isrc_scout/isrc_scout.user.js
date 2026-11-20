@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.20.001500
+// @version      2026.11.20.141555
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -10087,8 +10087,11 @@
     if (dock) { btn.remove(); btnGap.remove(); } else injectButton();
   }
   // In Event Horizon, which replaces this page, the badge's state and the editor are in String Theory's dock (#847)
-  whenDomReady(() => {
-    if (!IS_OVERVIEW) return;
+  // Made once: on a release's main page, or when Event Horizon shows a release. A tab that opened on another page
+  // and reached a release in Event Horizon used to get the button beside the title but no dock item.
+  function iiDockMake(why) {
+    if (iiDockItem) return;
+    Log.debug('Dock item made: ' + why);
     const item = iiDockItem = mbuDockItem({ id: 'ii-dock', label: 'ISRC Scout', icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=',
       busyIcon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8Zz4KICAgIDxwYXRoIGQ9Ik02NCA2NCBMNjQgMjQgQTQwIDQwIDAgMCAxIDk5IDg0IFoiIGZpbGw9IiM2ZjQyYzEiIGZpbGwtb3BhY2l0eT0iLjIyIi8+CiAgICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDxjaXJjbGUgY3g9Ijg2IiBjeT0iNTAiIHI9IjciIGZpbGw9IiM0YjJlODMiLz4KICA8L2c+Cjwvc3ZnPgo=', busySpin: 1.6, order: 62,
       scale: 1.15, paths: '^/release/[0-9a-fA-F-]{36}/?$', click: () => { isFollow(); openModal(); } });
@@ -10119,6 +10122,10 @@
     new MutationObserver(mirror).observe(btn, { childList: true, subtree: true, characterData: true });
     document.addEventListener('is:counts-changed', mirror);
     mirror();
+  }
+  whenDomReady(() => {
+    if (IS_OVERVIEW) iiDockMake('started on release ' + mbid);
+    else if (isShown()) iiDockMake('started in Event Horizon on release ' + isShown());
   });
   whenDomReady(() => {
     // kept running: Event Horizon swaps the page and re-renders its hero, dropping the button
@@ -10211,7 +10218,10 @@
     fetchRelease().catch(e => { Log.warn('Release load failed: ' + errText(e)); const s = btnStatus(); if (s) s.textContent = '?'; btn.classList.remove('ii-loading'); });
   }
   // once the page has its root: at document-start it can have none yet ("parameter 1 is not of type 'Node'"), which stopped the script
-  whenDomReady(() => new MutationObserver(isFollow).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-release'] }));
+  whenDomReady(() => new MutationObserver(() => {
+    if (isShown()) iiDockMake('Event Horizon shows release ' + isShown());
+    isFollow();
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-release'] }));
   // when Find links runs by itself: 'off', 'start' (opening the window) or 'background' (the release
   // page); the old "Check links in the background" checkbox (bg_links) carries over as 'background'
   function linksAuto() {
