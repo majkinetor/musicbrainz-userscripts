@@ -13408,13 +13408,13 @@ function plyDraw() {
         + plyB('shuffle', (sh ? 'Shuffle on' : 'Shuffle off') + '\nClick: ' + (sh ? 'play in order' : 'play at random'), ` aria-pressed="${sh}"`);
     const name = `<button type="button" class="ply-t" data-ply="list" aria-haspopup="menu" data-tip="${esc(t.title + ' — ' + t.artist + '\n' + t.relTitle)}\nClick: the playlist"><span class="ply-n">${esc(plyNo(t))}</span><span class="ply-line"><b>${esc(t.title)}</b><span class="ply-ar">· ${esc(t.artist)}</span></span>${t.relTitle ? `<span class="ply-rl">${esc(t.relTitle)}${t.relYear ? ` · ${esc(t.relYear)}` : ''}</span>` : ''}</button>`;
     // the top bar's cover: the release's front, else the release group's for a recording on none; a click opens it
-    const cov = !bar && S.playerCover && (t.rel || t.rg) ? (t.rel
+    const cov = !bar && S.playerCover && (t.rel || t.rg) && !(t.rel && PLY_CV.get(t.rel) === '') ? (t.rel
         ? `<a class="ply-cov" href="${MB}/release/${t.rel}" target="_blank" rel="noopener" aria-label="Open the release" data-tip="${esc((t.relTitle || 'Release') + '\nClick: open the release in a new tab')}"><img${PLY_CV.has(t.rel) ? ` src="${esc(PLY_CV.get(t.rel))}"` : t.front ? ` src="https://coverartarchive.org/release/${t.rel}/front-250"` : ''} data-plyrel="${t.rel}" alt=""></a>`
         : PLY_RGCV.get(t.rg) !== false ? `<a class="ply-cov" href="${MB}/recording/${t.rid}" target="_blank" rel="noopener" aria-label="Open the recording" data-tip="${esc(t.title + '\nClick: open the recording in a new tab')}"><img src="${esc(PLY_RGCV.get(t.rg) || `https://coverartarchive.org/release-group/${t.rg}/front-250`)}" alt=""></a>` : '') : '';
     const prog = ply.ctl && t.len ? `<span class="ply-pr sk" data-ply="seek" aria-label="Position"><i></i>${bar ? '' : '<b class="ply-hv"></b>'}</span>` : '<span class="ply-pr" aria-hidden="true"><i></i></span>';
     const menu = `<button type="button" class="ply-b ply-lb${lb && t.ok != null ? ' sent' : ''}" data-ply="lb" aria-haspopup="menu" aria-label="Playing from ${esc(p.name)}" data-tip="Playing from ${esc(p.name)}${lb && t.ok != null ? '\nListen sent' : ''}\nClick: sources, ListenBrainz, stop">${icon(p, 18)}</button>`;
     const v = +S.playerVol, vol = plyHasVol() ? `<span class="ply-vg"><button type="button" class="ply-b" data-ply="mute" aria-pressed="${!v}" aria-label="${v ? 'Mute' : 'Unmute'}" data-tip="${v ? 'Mute' : 'Unmute'}">${plyVolIc(v)}</button><span class="ply-vp"><b class="ply-vn">${v}</b><input type="range" class="ply-vol" min="0" max="100" step="1" value="${v}" style="--p:${v}%" aria-label="Volume"></span></span>` : '';
-    plyCtl.innerHTML = `<span class="ply-g">${nav}</span>${cov}${name}${prog}${vol}${menu}`;
+    plyKeepCovers(plyCtl, () => { plyCtl.innerHTML = `<span class="ply-g">${nav}</span>${cov}${name}${prog}${vol}${menu}`; });
     const im = plyCtl.querySelector('.ply-cov img');
     if (im?.dataset.plyrel) plyCoverWire(im); else if (im) im.onerror = () => im.closest('.ply-cov')?.remove();
     if (plyVgOpen) plyCtl.querySelector('.ply-vg')?.classList.add('vo');
@@ -13437,13 +13437,14 @@ function plyWinList(root) {
     // the header and the rows are redrawn only when they change, so the cover doesn't reload with every track
     const head = plyRelHead(ply.q[ply.i], false), rows = plyRows(false);
     if (l._head !== head) {
-        l._head = head; l.querySelector('.ply-rhw')?.remove();
-        if (head) { l.insertAdjacentHTML('afterbegin', plyRelHead(ply.q[ply.i])); plyCoverWire(l.querySelector('.ply-rhw img')); }
+        l._head = head;
+        plyKeepCovers(l, () => { l.querySelector('.ply-rhw')?.remove(); if (head) l.insertAdjacentHTML('afterbegin', plyRelHead(ply.q[ply.i])); });
+        if (head) plyCoverWire(l.querySelector('.ply-rhw img'));
     }
     plyHeadPaint(); plyHeadLoad(ply.q[ply.i]);
     if (l._rows !== rows) {
-        l._rows = rows; l.querySelectorAll('.qi,.ply-group').forEach(b => b.remove());
-        l.insertAdjacentHTML('beforeend', rows);
+        l._rows = rows;
+        plyKeepCovers(l, () => { l.querySelectorAll('.qi,.ply-group').forEach(b => b.remove()); l.insertAdjacentHTML('beforeend', rows); });
         l.querySelector('[aria-current]')?.scrollIntoView({ block: 'nearest' });
         plyGroupCovers(l);
     }
@@ -13512,11 +13513,42 @@ const plyRowSrc = (x, i) => { const p = x.srcs && x.srcs.length ? (i === ply.i &
 // the head's cover: the front's thumbnail, else (no thumbnail yet, or no image flagged front) the archive's full image, as the release page shows it
 // a release's head cover once found, so reopening the playlist draws it at once instead of looking again
 const PLY_CV = new Map();
+// redraws a part of the player keeping its covers that already show: a rebuilt row or head gets the loaded image back
+// instead of a new one, which would fetch the cover again through the archive's redirect and blink while it does
+const plyCovKey = im => (im.closest('.ply-group') ? 'g' : im.closest('.ply-cov') ? 'c' : 'h') + (im.dataset.plyrel || im.dataset.rg || '');
+function plyKeepCovers(root, redraw) {
+    const sel = 'img[data-plyrel],img.ply-rhc', old = new Map();
+    root?.querySelectorAll(sel).forEach(im => { if (im.getAttribute('src') && !(im.complete && !im.naturalWidth)) { const k = plyCovKey(im); if (!old.has(k)) old.set(k, []); old.get(k).push(im); } });
+    redraw();
+    if (!old.size) return;
+    root.querySelectorAll(sel).forEach(im => {
+        const list = old.get(plyCovKey(im)), o = list && list.find(x => !x.isConnected);
+        if (!o || im.complete && im.naturalWidth) return;
+        list.splice(list.indexOf(o), 1); im.replaceWith(o);
+    });
+}
+// a release's covers from the archive listing, smallest first, for one whose front thumbnail fails: a thumbnail can lag
+// behind its upload or go missing, and the full image can weigh megabytes and take seconds to show; [] when it has none
+const PLY_THUMB = new Map();
+const plyThumbs = id => {
+    if (!PLY_THUMB.has(id)) PLY_THUMB.set(id, fetch(`https://coverartarchive.org/release/${id}`).then(r => r.ok ? r.json() : null)
+        .then(j => { const im = j && j.images && (j.images.find(i => i.front) || j.images[0]), th = im && (im.thumbnails || {}); return im ? [...new Set([th['250'] || th.small, th['500'] || th.large, im.image].filter(Boolean).map(u => u.replace(/^http:/, 'https:')))] : []; })
+        .catch(() => []));
+    return PLY_THUMB.get(id);
+};
+// the first of a release's covers that loads, skipping the 250 one when its front-250 has just failed; '' when none does
+const plyCovFind = (id, skip250) => plyThumbs(id).then(list => {
+    const left = skip250 ? list.filter(u => !/-250\.jpg$/.test(u)) : list;
+    const next = () => { const u = left.shift(); if (!u) return Promise.resolve(''); return new Promise(ok => { const im = new Image(); im.onload = () => ok(u); im.onerror = () => ok(null); im.src = u; }).then(v => v || next()); };
+    return next();
+});
 function plyCoverWire(im) {
     if (!im?.dataset.plyrel) return;
-    if (!PLY_CV.has(im.dataset.plyrel) && im.getAttribute('src')) im.addEventListener('load', () => PLY_CV.set(im.dataset.plyrel, im.src), { once: true });
-    const full = () => { const id = im.dataset.plyrel; im.onerror = () => im.remove(); edFull(id).then(u => { if (!im.isConnected) return; if (u) { PLOG.debug('head cover from the archive listing', u); PLY_CV.set(id, u); im.src = u; } else im.remove(); }); };
-    im.onerror = full; if (!im.getAttribute('src')) full();
+    const id = im.dataset.plyrel;
+    if (!im.getAttribute('src') && PLY_CV.get(id) === '') { im.remove(); return; }
+    if (!PLY_CV.has(id) && im.getAttribute('src')) im.addEventListener('load', () => PLY_CV.set(id, im.src), { once: true });
+    const full = skip => { im.onerror = null; plyCovFind(id, skip).then(u => { PLY_CV.set(id, u); if (!im.isConnected) return; if (u) { PLOG.debug('cover from the archive listing', u); im.src = u; } else im.remove(); }); };
+    im.onerror = () => full(/front-250$/.test(im.getAttribute('src') || '')); if (!im.getAttribute('src')) full(false);
 }
 // the next track's top-bar cover, loaded ahead so the bar shows no blank when it starts
 function plyCovNext() {
@@ -13524,8 +13556,8 @@ function plyCovNext() {
     const load = (url, ok, bad) => { const im = new Image(); im.onload = () => ok(url); im.onerror = bad; im.src = url; };
     if (t.rel) {
         const id = t.rel; if (PLY_CV.has(id)) return;
-        const full = () => edFull(id).then(u => u && load(u, v => PLY_CV.set(id, v), () => {}));
-        if (t.front) load(`https://coverartarchive.org/release/${id}/front-250`, v => PLY_CV.set(id, v), full); else full();
+        const full = skip => plyCovFind(id, skip).then(u => PLY_CV.set(id, u));
+        if (t.front) load(`https://coverartarchive.org/release/${id}/front-250`, v => PLY_CV.set(id, v), () => full(true)); else full(false);
         PLOG.debug('preloads the next cover', t.title);
     } else if (t.rg && !PLY_RGCV.has(t.rg)) {
         const rg = t.rg, u = `https://coverartarchive.org/release-group/${rg}/front`;
@@ -13682,13 +13714,12 @@ function plyListPaint() {
     if (m._sig !== undefined && m._sig !== plyQSig()) {
         const top = m.scrollTop;
         const at = m.querySelector('.qi,.ply-group,.ply-loading')?.parentNode || m;
-        at.querySelectorAll('.qi,.ply-group,.ply-loading').forEach(n => n.remove());
-        at.insertAdjacentHTML('beforeend', plyRows(true)); m._sig = plyQSig();
+        plyKeepCovers(at, () => { at.querySelectorAll('.qi,.ply-group,.ply-loading').forEach(n => n.remove()); at.insertAdjacentHTML('beforeend', plyRows(true)); }); m._sig = plyQSig();
         plyGroupCovers(m); m.scrollTop = top;
         m.querySelector('.qf')?.dispatchEvent(new Event('input'));
     }
     const head = m.querySelector('.ply-list-head'), html = plyRelHead(ply.q[ply.i]);
-    if (head._html !== html) { head._html = html; head.innerHTML = html; plyCoverWire(head.querySelector('img')); }
+    if (head._html !== html) { head._html = html; plyKeepCovers(head, () => { head.innerHTML = html; }); plyCoverWire(head.querySelector('img')); }
     m.querySelectorAll('.qi').forEach(b => { if (b.dataset.k === 'q' + ply.i) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); });
     plyHeadLoad(ply.q[ply.i]);
 }
@@ -13973,7 +14004,7 @@ html.eh-ply-win .ply-wl{order:2;flex:1;min-height:0;overflow:hidden auto;padding
 .ply-ctl.pb{position:relative;display:flex;align-items:center;gap:6px;flex:0 1 auto;padding:0 10px;margin:0 6px;border-left:1px solid var(--line,#ddd);border-right:1px solid var(--line,#ddd);font-size:13px}
 .pb .ply-b,.pb .ply-b.big,.pb .ply-b.big:hover{width:28px;height:28px}
 .kicker .ply-ctl .ply-b svg{color:inherit}
-.pb .ply-cov{flex:none;display:block;position:relative;align-self:stretch;height:auto;aspect-ratio:1;border-radius:0;overflow:hidden;background:color-mix(in srgb,currentColor 8%,transparent)}.pb .ply-cov:not(:has(img)){display:none}.pb .ply-cov img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover}.pb .ply-cov:hover{outline:2px solid var(--accent,#ba478f);outline-offset:1px}.pb .ply-t{max-width:260px}#eh-pin .pb .ply-t{max-width:none;flex:0 1 auto}
+.pb .ply-cov{flex:none;display:block;position:relative;align-self:stretch;height:auto;margin:5px 0;aspect-ratio:1;border-radius:2px;overflow:hidden;background:color-mix(in srgb,currentColor 8%,transparent)}.pb .ply-cov:not(:has(img[src])){display:none}.pb .ply-cov img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover}.pb .ply-cov:hover{outline:2px solid var(--accent,#ba478f);outline-offset:1px}.pb .ply-t{max-width:260px}#eh-pin .pb .ply-t{max-width:none;flex:0 1 auto}
 .pb .ply-pr{position:absolute;left:0;right:0;bottom:0;width:auto;height:3px;border-radius:0;overflow:visible}
 .pb .ply-pr.sk{padding:8px 0 0;height:3px}
 .pb .ply-pr.sk:hover{height:5px;padding:6px 0 0}
