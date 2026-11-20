@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.160000
+// @version      2026.11.21.170000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5460,17 +5460,37 @@ window.addEventListener('contextmenu', ev => {
 }, true);
 
 /* ── editions ──────────────────────────────────────── */
-// a cover just added has no thumbnail until the archive makes it (often not before its edit is approved):
-// the full image stands in, found once per release in the archive's listing, and later redraws start from it;
-// a cover with no image at all shows the placeholder instead of an empty frame
-const ED_FULL = new Map(), ED_FULL_URL = new Map();
-const edThumb = e => ED_FULL_URL.get(e.id) || e.thumb;
-const edFull = id => {
-    if (!ED_FULL.has(id)) ED_FULL.set(id, fetch(`https://coverartarchive.org/release/${id}`).then(r => r.ok ? r.json() : null)
-        .then(j => { const im = j && j.images && (j.images.find(i => i.front) || j.images[0]); return im && im.image ? im.image.replace(/^http:/, 'https:') : ''; })
-        .catch(() => ''));
-    return ED_FULL.get(id);
+// one cover lookup for every view: a release's or group's front from the Cover Art Archive. A thumbnail can lag behind its
+// upload (often until its edit is approved) or go missing while the full image loads, so a failed front-250/500 tries the
+// archive's listing, smallest first, before the view gives up. The answer is kept per release or group ('' when none
+// loads), so every view and every redraw starts from the address that worked.
+const CAA_LIST = new Map(), CAA_CV = new Map(), CAA_TRIED = new WeakSet();
+const CAA_RE = /^https:\/\/coverartarchive\.org\/(release|release-group)\/([0-9a-f-]{36})\/front(?:-(\d+))?$/;
+// an address's release or group, and the size it asked for; null for an address that isn't a front
+const caaOf = u => { const m = (u || '').match(CAA_RE); return m ? { k: m[1], id: m[2], size: m[3] || '' } : null; };
+// the front's address once found, else its thumbnail at that size
+const caaSrc = (k, id, size = 250) => CAA_CV.get(k + '/' + id) || `https://coverartarchive.org/${k}/${id}/front-${size}`;
+// the front's images from the archive listing, smallest first; [] when it has none
+const caaList = (k, id) => {
+    const key = k + '/' + id;
+    if (!CAA_LIST.has(key)) CAA_LIST.set(key, fetch(`https://coverartarchive.org/${key}`).then(r => r.ok ? r.json() : null)
+        .then(j => { const im = j && j.images && (j.images.find(i => i.front) || j.images[0]), th = im && (im.thumbnails || {}); return im ? [...new Set([th['250'] || th.small, th['500'] || th.large, im.image].filter(Boolean).map(u => u.replace(/^http:/, 'https:')))] : []; })
+        .catch(() => []));
+    return CAA_LIST.get(key);
 };
+// the first of the listing's images that loads, past the one that just failed (and its size); '' when none does
+const caaFind = (k, id, failed = '') => caaList(k, id).then(list => {
+    const f = caaOf(failed), left = list.filter(u => u !== failed && !(f && f.size && u.endsWith('-' + f.size + '.jpg')));
+    const next = () => { const u = left.shift(); if (!u) return Promise.resolve(''); return new Promise(ok => { const im = new Image(); im.onload = () => ok(u); im.onerror = () => ok(null); im.src = u; }).then(v => v || next()); };
+    return next();
+}).then(u => { CAA_CV.set(k + '/' + id, u); return u; });
+// a failed <img>: once, the listing's image in its place; gone() when none loads, it fails again, or it isn't the archive's
+const caaRetry = (im, gone, c = caaOf(im.getAttribute('src'))) => {
+    if (!c || CAA_TRIED.has(im)) { gone(); return; }
+    CAA_TRIED.add(im); LOG.debug('Cover thumbnail missing, trying the archive listing', c.k + '/' + c.id);
+    caaFind(c.k, c.id, im.getAttribute('src')).then(u => { if (!im.isConnected) return; if (u) im.src = u; else gone(); });
+};
+const edThumb = e => CAA_CV.get('release/' + e.id) || e.thumb;
 // a failed image shows nothing until another src loads, not the browser's frame and broken icon (Firefox has no CSS hook for a failed image)
 document.addEventListener('error', ev => { if (ev.target instanceof HTMLImageElement) ev.target.classList.add('eh-nimg'); }, true);
 document.addEventListener('load', ev => { if (ev.target instanceof HTMLImageElement) ev.target.classList.remove('eh-nimg'); }, true);
@@ -5484,8 +5504,7 @@ document.addEventListener('error', ev => {
     const host = im.closest('[data-ed]'), id = im.dataset.edid || (host && host.dataset.ed);
     if (!id || im.dataset.fullTried) { edCoverGone(im); return; }
     im.dataset.fullTried = 1;
-    const failed = im.src;
-    edFull(id).then(u => { if (!im.isConnected) return; if (!u || u === failed) { edCoverGone(im); return; } ED_FULL_URL.set(id, u); im.src = u; });
+    caaFind('release', id, im.getAttribute('src')).then(u => { if (!im.isConnected) return; if (!u) { edCoverGone(im); return; } im.src = u; });
 }, true);
 function edTile(e, curId, titled = false) {
     const k = fmtKind(e.formats[0]);
@@ -8778,7 +8797,7 @@ const tsKey = sid => 'eh-tsort:' + location.pathname + ':' + sid;
 const tsGet = sid => { if (!(sid in TSORT)) { try { const v = JSON.parse(sessionStorage.getItem(tsKey(sid)) || 'null'); if (v) TSORT[sid] = v; } catch {} } return TSORT[sid]; };
 const tsSet = (sid, v) => { TSORT[sid] = v; try { v.length ? sessionStorage.setItem(tsKey(sid), JSON.stringify(v)) : sessionStorage.removeItem(tsKey(sid)); } catch {} };
 // a cover that doesn't load is its kind's mark
-const dgWire = app => { for (const im of app.querySelectorAll('[data-dgcover]')) { const fb = () => { if (!im.parentNode) return; const look = im.dataset.dgcover === 'artist' && !im.getAttribute('src') && ARTIMG.cached(im.dataset.aid) === undefined && TGX_ART[im.dataset.aid] === undefined; const src = im.getAttribute('src'); im.outerHTML = `<span class="dn"${src ? ` data-dgsrc="${esc(src)}"` : ''}${look ? ` data-tgxart="artist:${im.dataset.aid}"` : ''}>${['artist', 'release'].includes(im.dataset.dgcover) ? mkSvg(im.dataset.dgcover === 'artist' ? MK_CR : MK_RELEASE).replace(/width="15" height="15"/, im.closest('.tt') ? 'width="18" height="18"' : 'width="36" height="36"') : im.closest('.tt') ? LAYERS(18) : LAYERS(36, 1)}</span>`; }; /* a fresh upload's thumbnails can lag behind its image for days: the full front stands in before the kind's mark */ im.onerror = () => { const src = im.getAttribute('src') || ''; if (/\/front-(250|500)$/.test(src)) { LOG.debug('No thumbnail yet, trying the full front: ' + src); im.src = src.replace(/-(250|500)$/, ''); } else if (im.dataset.lbcovers) { const ids = im.dataset.lbcovers.split(' '); const id = ids.shift(); im.dataset.lbcovers = ids.join(' '); edFull(id).then(u => { if (!im.isConnected) return; if (u && u !== im.src) { ED_FULL_URL.set(id, u); im.src = u; } else im.onerror(); }); } else fb(); }; if (!im.getAttribute('src') && im.dataset.dgcover === 'recording' && REC_RG.get(im.dataset.aid)) im.src = tabArt('recording', im.dataset.aid); /* the lookup can answer before its rows render */ else if (!im.getAttribute('src') && !(im.dataset.dgcover === 'recording' && !REC_RG.has(im.dataset.aid))) fb(); } if (app.querySelector('[data-tgxart]')) tagxArt(app); };    // TQ: a table's filter text, absent while its box is shut
+const dgWire = app => { for (const im of app.querySelectorAll('[data-dgcover]')) { const fb = () => { if (!im.parentNode) return; const look = im.dataset.dgcover === 'artist' && !im.getAttribute('src') && ARTIMG.cached(im.dataset.aid) === undefined && TGX_ART[im.dataset.aid] === undefined; const src = im.getAttribute('src'); im.outerHTML = `<span class="dn"${src ? ` data-dgsrc="${esc(src)}"` : ''}${look ? ` data-tgxart="artist:${im.dataset.aid}"` : ''}>${['artist', 'release'].includes(im.dataset.dgcover) ? mkSvg(im.dataset.dgcover === 'artist' ? MK_CR : MK_RELEASE).replace(/width="15" height="15"/, im.closest('.tt') ? 'width="18" height="18"' : 'width="36" height="36"') : im.closest('.tt') ? LAYERS(18) : LAYERS(36, 1)}</span>`; }; /* a fresh upload's thumbnails can lag behind its image for days: the full front stands in before the kind's mark */ im.onerror = () => { const c = caaOf(im.getAttribute('src')); if (c && !CAA_TRIED.has(im)) caaRetry(im, () => im.onerror(), c); else if (im.dataset.lbcovers) { const ids = im.dataset.lbcovers.split(' '); const id = ids.shift(); im.dataset.lbcovers = ids.join(' '); caaFind('release', id).then(u => { if (!im.isConnected) return; if (u && u !== im.src) im.src = u; else im.onerror(); }); } else fb(); }; if (!im.getAttribute('src') && im.dataset.dgcover === 'recording' && REC_RG.get(im.dataset.aid)) im.src = tabArt('recording', im.dataset.aid); /* the lookup can answer before its rows render */ else if (!im.getAttribute('src') && !(im.dataset.dgcover === 'recording' && !REC_RG.has(im.dataset.aid))) fb(); } if (app.querySelector('[data-tgxart]')) tagxArt(app); };    // TQ: a table's filter text, absent while its box is shut
 // a column's key in the filter box: its heading, folded, without spaces ("artist:elvis"; a prefix will do)
 const tqKey = h => fltFold((h || '').replace(/<[^>]*>/g, '')).replace(/[^a-z0-9#]+/g, '');
 // a year or date column's value as a range (2022-2024, 2022-, -2024), or null; a year's end still being typed leaves that end open,
@@ -10026,10 +10045,12 @@ function tagxArt(app) {
     for (const el of app.querySelectorAll('[data-tgxart], img[data-tgxsrc]')) tgxIo.observe(el);
 }
 // a grid card's picture, linking to its entity: a cover or poster, an artist's or label's picture (found once on screen), else the kind's mark
+// a card's cover that won't load, even from the archive listing: the kind's mark
+document.addEventListener('error', ev => { const im = ev.target; if (im.matches?.('.tgx-p img[data-mk]')) caaRetry(im, () => im.replaceWith(Object.assign(document.createElement('span'), { className: 'tgx-mk', innerHTML: im.dataset.mk }))); }, true);
 function tgxPic(u) {
     const m = (u || '').match(/\/(release-group|release|artist|label|recording|work|area|place|instrument|series|event)\/([0-9a-f-]{36})/), k = m && m[1], mk = (HM_KIND[k] || ['', CI_TAG])[1];
     const pic = k === 'artist' || k === 'label' ? (a => a ? `<img src="${esc(a.src)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<span class="tgx-mk"${a === undefined ? ` data-tgxart="${k}:${m[2]}"` : ''}>${bigMk(mk)}</span>`)(TGX_ART[m[2]] !== undefined ? TGX_ART[m[2]] : ARTIMG.cached(m[2])) : null;
-    return `<a class="tgx-p" href="${esc(u)}" tabindex="-1" aria-hidden="true">${pic !== null ? pic : k === 'release' || k === 'release-group' || k === 'event' ? `<img data-tgxsrc="${k === 'event' ? 'https://eventartarchive.org' : 'https://coverartarchive.org'}/${k}/${m[2]}/front-250" alt="" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'tgx-mk',innerHTML:this.dataset.mk}))" data-mk="${esc(bigMk(mk))}">` : `<span class="tgx-mk">${bigMk(mk)}</span>`}</a>`;
+    return `<a class="tgx-p" href="${esc(u)}" tabindex="-1" aria-hidden="true">${pic !== null ? pic : k === 'release' || k === 'release-group' || k === 'event' ? `<img data-tgxsrc="${k === 'event' ? 'https://eventartarchive.org' : 'https://coverartarchive.org'}/${k}/${m[2]}/front-250" alt="" data-mk="${esc(bigMk(mk))}">` : `<span class="tgx-mk">${bigMk(mk)}</span>`}</a>`;
 }
 function tagxHtml(d) {
     const t = d.t, q = (d.q || '').trim().toLowerCase(), U = encodeURIComponent(d.name), T = encodeURIComponent(d.tag);
@@ -11272,13 +11293,18 @@ function renderDraw(keepPop) {
     // a fresh upload has no thumbnails yet, for days at times: each cover is tried at full size before the next,
     // the group's, then those of its releases that have one, and only then the empty mark
     if (gc) {
-        const tries = [`https://coverartarchive.org/release-group/${r.id}/front`, ...data.editions.filter(x => x.thumb).slice(0, 3).flatMap(e => [`https://coverartarchive.org/release/${e.id}/front-500`, `https://coverartarchive.org/release/${e.id}/front`])];
-        gc.onerror = () => { const n = tries.shift(); if (n) { LOG.debug('Group cover failed, trying ' + n); gc.src = n; } else gc.outerHTML = `<div class="nocover">${LAYERS(96, 1)}</div>`; };
+        const none = () => { if (gc.isConnected) gc.outerHTML = `<div class="nocover">${LAYERS(96, 1)}</div>`; };
+        gc.onerror = async () => {
+            gc.onerror = none;
+            let u = await caaFind('release-group', r.id, gc.getAttribute('src'));
+            for (const e of data.editions.filter(x => x.thumb).slice(0, 3)) { if (u) break; LOG.debug('Group cover failed, trying release ' + e.id); u = await caaFind('release', e.id); }
+            if (!gc.isConnected) return; if (u) gc.src = u; else none();
+        };
     }
     // the group's cover is a release's: Art Station's viewer opens that release's images, the front first
     if (gc) gc.onclick = async e => {
         e.preventDefault();
-        const rel = gc.src.match(/\/release\/([0-9a-f-]{36})\//), rid = rel ? rel[1] : null;
+        const rel = gc.src.match(/(?:\/release\/|\/mbid-)([0-9a-f-]{36})\//), rid = rel ? rel[1] : null;
         try {
             const j = rid ? await fetch('https://coverartarchive.org/release/' + rid).then(x => x.ok ? x.json() : null) : await fetch('https://coverartarchive.org/release-group/' + r.id).then(x => x.ok ? x.json() : null);
             const imgs = (j && j.images) || [], id = rid || ((j && j.release) || '').split('/').pop();
@@ -11602,7 +11628,7 @@ const hmChip = (href, name, ic) => `<a class="hm-chip" href="${href}">${SVG(ic)}
 const visits = () => { try { return GM_getValue('visits', []) || []; } catch (e) { return []; } };
 // a visit's picture: its cover from the archive (a missing one falls back to the icon), else the one kept with the visit
 // or an artist's or label's cached image
-const visitImg = v => { const [k, id] = v.key.split('/'); if (k === 'release' || k === 'release-group') return HM_CV.get(id) || `https://coverartarchive.org/${k}/${id}/front-250`; if (v.img) return v.img; const a = (k === 'artist' || k === 'label') && ARTIMG.cached(id); return a ? a.src : ''; };
+const visitImg = v => { const [k, id] = v.key.split('/'); if (k === 'release' || k === 'release-group') return caaSrc(k, id); if (v.img) return v.img; const a = (k === 'artist' || k === 'label') && ARTIMG.cached(id); return a ? a.src : ''; };
 // the picture a loaded page gives its visit: an artist's, label's or place's image, an area's flag (else its first picture),
 // an instrument's Commons image, a recording's first release with a cover; '' for none
 async function visitPic(kind, d) {
@@ -11636,7 +11662,7 @@ async function visitFill(app) {
             const ri = img && app.querySelector(`.hm-r[href$="/${k}/${id}"] .hm-ri`);
             if (ri && !ri.querySelector('img')) { const im = document.createElement('img'); im.src = img; im.alt = ''; ri.prepend(im); hmImg(im); }
             app.querySelectorAll(`[data-star-pic="${k}/${id}"]`).forEach(pic => { if (img && !pic.querySelector('img')) { const im = document.createElement('img'); im.src = img; im.alt = ''; pic.prepend(im); hmImg(im); } });
-            if (img) app.querySelectorAll(`.hm-star-grid a[href$="/${k}/${id}"] .dn`).forEach(tile => { if (!tile.querySelector('img')) { const im = document.createElement('img'); im.src = img; im.alt = ''; im.onerror = () => im.remove(); tile.append(im); } });
+            if (img) app.querySelectorAll(`.hm-star-grid a[href$="/${k}/${id}"] .dn`).forEach(tile => { if (!tile.querySelector('img')) { const im = document.createElement('img'); im.src = img; im.alt = ''; im.onerror = () => caaRetry(im, () => im.remove()); tile.append(im); } });
         } catch (e) { LOG.debug('Visit picture for ' + v.key + ' failed: ' + e.message); }
     }
 }
@@ -11868,17 +11894,10 @@ function hmWire(app) {
     visitFill(app);
     if (ME) profLoad(app);
 }
-// a home list's picture; a release's or group's missing front-250 (a thumbnail can lag behind its upload or go missing,
-// while the entity's own page shows the full image) tries the archive listing's covers before the icon
-const HM_CV = new Map();
+// a home list's picture: a failed cover tries the archive listing, then the icon shows
 function hmImg(im) {
     const fallback = im.nextElementSibling; if (fallback) fallback.style.display = 'none';
-    const gone = () => { if (fallback) fallback.style.display = ''; im.remove(); };
-    const m = (im.getAttribute('src') || '').match(/^https:\/\/coverartarchive\.org\/(release|release-group)\/([0-9a-f-]{36})\/front-250$/);
-    im.onerror = !m ? gone : () => {
-        im.onerror = null; LOG.debug('Home cover thumbnail missing, trying the archive listing', m[1] + '/' + m[2]);
-        plyCovFind(m[2], true, m[1]).then(u => { if (!u) return gone(); HM_CV.set(m[2], u); im.onerror = gone; im.src = u; });
-    };
+    im.onerror = () => caaRetry(im, () => { if (fallback) fallback.style.display = ''; im.remove(); });
 }
 // the home page's hero: the logo, a heading, the search form (filled in on the search page), the recent searches, and the search's state under them
 function srchHero(hi, sub, q = '', ty = 'artist', meth = 'indexed', add = '') {
@@ -13467,7 +13486,7 @@ function plyDraw() {
     // the top bar's cover: the release's front, else the release group's for a recording on none; a click opens it
     const cov = !bar && S.playerCover && (t.rel || t.rg) && !(t.rel && PLY_CV.get(t.rel) === '') ? (t.rel
         ? `<a class="ply-cov" href="${MB}/release/${t.rel}" target="_blank" rel="noopener" aria-label="Open the release" data-tip="${esc((t.relTitle || 'Release') + '\nClick: open the release in a new tab')}"><img${PLY_CV.has(t.rel) ? ` src="${esc(PLY_CV.get(t.rel))}"` : t.front ? ` src="https://coverartarchive.org/release/${t.rel}/front-250"` : ''} data-plyrel="${t.rel}" alt=""></a>`
-        : PLY_RGCV.get(t.rg) !== false ? `<a class="ply-cov" href="${MB}/recording/${t.rid}" target="_blank" rel="noopener" aria-label="Open the recording" data-tip="${esc(t.title + '\nClick: open the recording in a new tab')}"><img src="${esc(PLY_RGCV.get(t.rg) || `https://coverartarchive.org/release-group/${t.rg}/front-250`)}" alt=""></a>` : '') : '';
+        : PLY_RGCV.get(t.rg) !== '' ? `<a class="ply-cov" href="${MB}/recording/${t.rid}" target="_blank" rel="noopener" aria-label="Open the recording" data-tip="${esc(t.title + '\nClick: open the recording in a new tab')}"><img src="${esc(PLY_RGCV.get(t.rg) || `https://coverartarchive.org/release-group/${t.rg}/front-250`)}" alt=""></a>` : '') : '';
     const prog = ply.ctl && t.len ? `<span class="ply-pr sk" data-ply="seek" aria-label="Position"><i></i>${bar ? '' : '<b class="ply-hv"></b>'}</span>` : '<span class="ply-pr" aria-hidden="true"><i></i></span>';
     const menu = `<button type="button" class="ply-b ply-lb${lb && t.ok != null ? ' sent' : ''}" data-ply="lb" aria-haspopup="menu" aria-label="Playing from ${esc(p.name)}" data-tip="Playing from ${esc(p.name)}${lb && t.ok != null ? '\nListen sent' : ''}\nClick: sources, ListenBrainz, stop">${icon(p, 18)}</button>`;
     const v = +S.playerVol, vol = plyHasVol() ? `<span class="ply-vg"><button type="button" class="ply-b" data-ply="mute" aria-pressed="${!v}" aria-label="${v ? 'Mute' : 'Unmute'}" data-tip="${v ? 'Mute' : 'Unmute'}">${plyVolIc(v)}</button><span class="ply-vp"><b class="ply-vn">${v}</b><input type="range" class="ply-vol" min="0" max="100" step="1" value="${v}" style="--p:${v}%" aria-label="Volume"></span></span>` : '';
@@ -13569,7 +13588,7 @@ const plyRowSrc = (x, i) => { const p = x.srcs && x.srcs.length ? (i === ply.i &
 // the release the playing track comes from: cover, title, artist and year, linked to its page
 // the head's cover: the front's thumbnail, else (no thumbnail yet, or no image flagged front) the archive's full image, as the release page shows it
 // a release's head cover once found, so reopening the playlist draws it at once instead of looking again
-const PLY_CV = new Map();
+const PLY_CV = { has: id => CAA_CV.has('release/' + id), get: id => CAA_CV.get('release/' + id), set: (id, u) => CAA_CV.set('release/' + id, u) };
 // redraws a part of the player keeping its covers that already show: a rebuilt row or head gets the loaded image back
 // instead of a new one, which would fetch the cover again through the archive's redirect and blink while it does
 const plyCovKey = im => (im.closest('.ply-group') ? 'g' : im.closest('.ply-cov') ? 'c' : 'h') + (im.dataset.plyrel || im.dataset.rg || '');
@@ -13584,27 +13603,12 @@ function plyKeepCovers(root, redraw) {
         list.splice(list.indexOf(o), 1); im.replaceWith(o);
     });
 }
-// a release's covers from the archive listing, smallest first, for one whose front thumbnail fails: a thumbnail can lag
-// behind its upload or go missing, and the full image can weigh megabytes and take seconds to show; [] when it has none
-const PLY_THUMB = new Map();
-const plyThumbs = (id, k = 'release') => {
-    if (!PLY_THUMB.has(id)) PLY_THUMB.set(id, fetch(`https://coverartarchive.org/${k}/${id}`).then(r => r.ok ? r.json() : null)
-        .then(j => { const im = j && j.images && (j.images.find(i => i.front) || j.images[0]), th = im && (im.thumbnails || {}); return im ? [...new Set([th['250'] || th.small, th['500'] || th.large, im.image].filter(Boolean).map(u => u.replace(/^http:/, 'https:')))] : []; })
-        .catch(() => []));
-    return PLY_THUMB.get(id);
-};
-// the first of a release's covers that loads, skipping the 250 one when its front-250 has just failed; '' when none does
-const plyCovFind = (id, skip250, k) => plyThumbs(id, k).then(list => {
-    const left = skip250 ? list.filter(u => !/-250\.jpg$/.test(u)) : list;
-    const next = () => { const u = left.shift(); if (!u) return Promise.resolve(''); return new Promise(ok => { const im = new Image(); im.onload = () => ok(u); im.onerror = () => ok(null); im.src = u; }).then(v => v || next()); };
-    return next();
-});
 function plyCoverWire(im) {
     if (!im?.dataset.plyrel) return;
     const id = im.dataset.plyrel;
     if (!im.getAttribute('src') && PLY_CV.get(id) === '') { im.remove(); return; }
     if (!PLY_CV.has(id) && im.getAttribute('src')) im.addEventListener('load', () => PLY_CV.set(id, im.src), { once: true });
-    const full = skip => { im.onerror = null; plyCovFind(id, skip).then(u => { PLY_CV.set(id, u); if (!im.isConnected) return; if (u) { PLOG.debug('cover from the archive listing', u); im.src = u; } else im.remove(); }); };
+    const full = skip => { im.onerror = null; caaFind('release', id, skip ? im.getAttribute('src') : '').then(u => { if (!im.isConnected) return; if (u) { PLOG.debug('cover from the archive listing', u); im.src = u; } else im.remove(); }); };
     im.onerror = () => full(/front-250$/.test(im.getAttribute('src') || '')); if (!im.getAttribute('src')) full(false);
 }
 // the next track's top-bar cover, loaded ahead so the bar shows no blank when it starts
@@ -13613,19 +13617,19 @@ function plyCovNext() {
     const load = (url, ok, bad) => { const im = new Image(); im.onload = () => ok(url); im.onerror = bad; im.src = url; };
     if (t.rel) {
         const id = t.rel; if (PLY_CV.has(id)) return;
-        const full = skip => plyCovFind(id, skip).then(u => PLY_CV.set(id, u));
-        if (t.front) load(`https://coverartarchive.org/release/${id}/front-250`, v => PLY_CV.set(id, v), () => full(true)); else full(false);
+        const u = `https://coverartarchive.org/release/${id}/front-250`;
+        if (t.front) load(u, v => PLY_CV.set(id, v), () => caaFind('release', id, u)); else caaFind('release', id);
         PLOG.debug('preloads the next cover', t.title);
     } else if (t.rg && !PLY_RGCV.has(t.rg)) {
-        const rg = t.rg, u = `https://coverartarchive.org/release-group/${rg}/front`;
-        load(u + '-250', v => PLY_RGCV.set(rg, v), () => load(u, v => PLY_RGCV.set(rg, v), () => PLY_RGCV.set(rg, false)));
+        const rg = t.rg, u = `https://coverartarchive.org/release-group/${rg}/front-250`;
+        load(u, v => PLY_RGCV.set(rg, v), () => caaFind('release-group', rg, u));
         PLOG.debug('preloads the next cover', t.title);
     }
 }
 function plyRelHead(t, btns = true) {
     if (!t) return '';
     // a recording with no release: the head names the track itself and links to the recording
-    if (!t.rel) return t.rid ? `<div class="ply-rhw"><a class="ply-rh" href="${MB}/recording/${t.rid}" target="_blank" rel="noopener"><span class="ply-rhi">${SVG(PLY_I.crec)}${t.rg && PLY_RGCV.get(t.rg) !== false ? `<img class="ply-rhc" data-rg="${t.rg}" src="${PLY_RGCV.get(t.rg) || `https://coverartarchive.org/release-group/${t.rg}/front-250`}" alt="">` : ''}</span><span class="rt"><b>${esc(t.title || '')}</b><small>${esc(t.artist || '')}</small></span></a>${btns ? `<span class="ply-ra">${plyHeadBtns(t)}</span>` : ''}</div>` : '';
+    if (!t.rel) return t.rid ? `<div class="ply-rhw"><a class="ply-rh" href="${MB}/recording/${t.rid}" target="_blank" rel="noopener"><span class="ply-rhi">${SVG(PLY_I.crec)}${t.rg && PLY_RGCV.get(t.rg) !== '' ? `<img class="ply-rhc" data-rg="${t.rg}" src="${PLY_RGCV.get(t.rg) || `https://coverartarchive.org/release-group/${t.rg}/front-250`}" alt="">` : ''}</span><span class="rt"><b>${esc(t.title || '')}</b><small>${esc(t.artist || '')}</small></span></a>${btns ? `<span class="ply-ra">${plyHeadBtns(t)}</span>` : ''}</div>` : '';
     const yr = t.relYear ? `<span class="ry">${esc(t.relYear)}</span>` : '';
     return `<div class="ply-rhw"><a class="ply-rh" href="${MB}/release/${t.rel}" target="_blank" rel="noopener">${t.rel ? `<img${PLY_CV.has(t.rel) ? ` src="${esc(PLY_CV.get(t.rel))}"` : t.front ? ` src="https://coverartarchive.org/release/${t.rel}/front-250"` : ''} data-plyrel="${t.rel}" alt="">` : ''}<span class="rt"><b>${esc(t.relTitle || '')}</b><small>${esc(t.relAc || '')}${t.relAc && yr ? ' · ' : ''}${yr}</small></span></a>${btns ? `<span class="ply-ra">${plyHeadBtns(t)}</span>` : ''}</div>`;
 }
@@ -13641,10 +13645,10 @@ function plyCollDefSet(type, d) {
 }
 // a recording head's cover that the archive doesn't have leaves the recording icon
 // a recording's cover: archive.org can miss a thumbnail CAA still points at, so the full front stands in before the icon
-// the URL that worked (false: none did) per release group, so a redrawn head does not try the missing thumbnail again
-const PLY_RGCV = new Map();
+// the URL that worked ('': none did) per release group, so a redrawn head does not try the missing thumbnail again
+const PLY_RGCV = { has: id => CAA_CV.has('release-group/' + id), get: id => CAA_CV.get('release-group/' + id), set: (id, u) => CAA_CV.set('release-group/' + id, u) };
 document.addEventListener('load', ev => { const im = ev.target; if (im.matches?.('img.ply-rhc')) PLY_RGCV.set(im.dataset.rg, im.src); }, true);
-document.addEventListener('error', ev => { const im = ev.target; if (!im.matches?.('img.ply-rhc')) return; const src = im.getAttribute('src'); if (/\/front-250$/.test(src)) im.src = src.replace(/-250$/, ''); else { PLY_RGCV.set(im.dataset.rg, false); im.remove(); } }, true);
+document.addEventListener('error', ev => { const im = ev.target; if (!im.matches?.('img.ply-rhc')) return; caaRetry(im, () => { PLY_RGCV.set(im.dataset.rg, ''); im.remove(); }); }, true);
 function plyHeadBtns(t) {
     if (!t) return '';
     let h = '';
@@ -15129,11 +15133,11 @@ const cvWire = el => {
     const src = c.dataset.cover || c.getAttribute('src');
     const fail = () => { cvGone.add(src); c.hidden = true; const i = el.querySelector('.rhic'); if (i) i.hidden = false; LOG.debug('Header: no front cover'); };
     if (cvGone.has(src)) { fail(); return; }
-    c.onerror = fail;
+    c.onerror = () => caaRetry(c, fail, caaOf(src));
     if (c.dataset.cover) {
         const id = src.split('/')[4];
         if (!cvPending.has(src)) cvPending.set(src, keptCover(id, { id: 'header', thumbnails: { 500: src } }));
-        cvPending.get(src).then(x => { c.src = x.u; }, fail);
+        cvPending.get(src).then(x => { c.src = x.u; }, () => c.onerror());
     }
 };
 // an event-art page's header: the event's front, its type and date, its name back to it
@@ -15735,7 +15739,7 @@ function releasesDress(c) {
         const d = data;
         host.innerHTML = edHtml({page:location.pathname, native:true, more:d.more}, d.editions, d.editions.length);
         // a release without a front cover shows its format, as a tile without one does
-        host.querySelectorAll('.tile img').forEach(im => { im.onerror = () => { const tile = im.closest('.tile'); if (!tile) return; const e = d.editions.find(x => x.id === tile.dataset.ed); im.outerHTML = '<span class="nc">' + fmtSvg(fmtKind(e && e.formats[0]), 40, 1.8) + 'no cover</span>'; tile.querySelector('.fb')?.remove(); }; });
+        host.querySelectorAll('.tile img:not([data-edimg])').forEach(im => { im.onerror = () => { const tile = im.closest('.tile'); if (!tile) return; const e = d.editions.find(x => x.id === tile.dataset.ed); im.outerHTML = '<span class="nc">' + fmtSvg(fmtKind(e && e.formats[0]), 40, 1.8) + 'no cover</span>'; tile.querySelector('.fb')?.remove(); }; });
         lmWatch(host);
         // the table's head sticks under the section's, as on EH's own pages
         for (const h of host.querySelectorAll('section.sec>.secthead')) h.parentNode.style.setProperty('--eh-sh', h.offsetHeight + 'px');
