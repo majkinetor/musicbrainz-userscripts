@@ -8291,7 +8291,7 @@ function openImageGallery() {
     addEventListener('keydown', key, true);
     ov.querySelector('[aria-pressed="true"]').focus();
 }
-const artistImage = async (mbid, rels) => dedupArtistImages(await ARTIMG.findAll(mbid, rels.filter(x => x['target-type'] === 'url').map(x => x.url.resource)));
+const artistImage = async (mbid, rels) => { const xs = await dedupArtistImages(await ARTIMG.findAll(mbid, rels.filter(x => x['target-type'] === 'url').map(x => x.url.resource))); TGX_ART[mbid] = ARTIMG.cached(mbid) || xs[0] || null; return xs; };
 
 // an artist or label left without a picture asks its linked sites again, over the cached miss; no site an image provider reads, nothing to ask
 const imgAskable = g => g.rels.some(x => x['target-type'] === 'url' && ARTIMG.providers.some(p => !S.imgOff.includes(p.key) && [].concat(p.re).some(re => re.test(x.url.resource))));
@@ -8299,7 +8299,7 @@ const imgRetryBtn = g => g.imgs && !g.imgs.length && imgAskable(g) ? `<button ty
 async function imgRetry() {
     const d = data, g = d.g, draw = () => { if (data === d) { const y = scrollY; render(); scrollTo(0, y); } };
     g.imgBusy = true; draw();
-    ARTIMG.forget(g.id);
+    picForget(g.id);
     const x = await artistImage(g.id, g.rels).catch(() => []);
     g.imgBusy = false; g.imgsAll = ARTIMG.cachedAll(g.id) || x; g.imgs = x; g.imgI = 0;
     draw();
@@ -9666,8 +9666,8 @@ async function tagsLoad(n, key, down) {
         const t = tagsParse(html, kind === 'etags');
         if (n === showing && data === d) { if (down) d.down = t.tags; else d.t = t; d.err = ''; render(); }
         const [ty, eid] = kind === 'etags' ? id.split(':') : [];
-        // no picture cached: the page's links, else the entity's own (fetched once; the picture, found or not, is cached)
-        if ((ty === 'artist' || ty === 'label') && ARTIMG.cached(eid) === undefined) (t.links.length ? Promise.resolve(t.links) : ws(`${ty}/${eid}?inc=url-rels`).then(g => (g.relations || []).filter(x => x.url).map(x => x.url.resource))).then(ls => ARTIMG.findAll(eid, ls)).then(x => { if (x[0] && n === showing && data === d) { d.img = x[0].src; render(); } }).catch(() => {});
+        // no picture cached: the shared lookup, from the page's links first
+        if ((ty === 'artist' || ty === 'label') && ARTIMG.cached(eid) === undefined) entPic(ty, eid, t.links).then(a => { if (a && n === showing && data === d) { d.img = a.src; render(); } });
     } catch (e) {
         LOG.err('Loading the tags of ' + d.name + ' failed: ' + e.message);
         if (n === showing && data === d) { d.err = e.message; render(); }
@@ -9839,7 +9839,7 @@ async function relsLoad(n, key) {
         const t = relsParse(html);
         LOG.debug(`Relationships of ${ty} ${eid}: ${t.cards.reduce((s, c) => s + c.rows.reduce((x, r) => x + r.items.length, 0), 0)} on cards, ${t.apps.length} appearances`);
         if (n === showing && data === d) { d.t = t; d.err = ''; render(); }
-        if ((ty === 'artist' || ty === 'label') && ARTIMG.cached(eid) === undefined) ws(`${ty}/${eid}?inc=url-rels`).then(g => (g.relations || []).filter(x => x.url).map(x => x.url.resource)).then(ls => ARTIMG.findAll(eid, ls)).then(x => { if (x[0] && n === showing && data === d) { d.img = x[0].src; render(); } }).catch(() => {});
+        if ((ty === 'artist' || ty === 'label') && ARTIMG.cached(eid) === undefined) entPic(ty, eid).then(a => { if (a && n === showing && data === d) { d.img = a.src; render(); } });
     } catch (e) {
         LOG.err('Loading the relationships failed: ' + e.message);
         if (n === showing && data === d) { d.err = e.message; render(); }
@@ -10053,15 +10053,27 @@ async function tagxLoad(n, d) {
         if (n === showing && data === d) { d.err = e.message; render(); }
     }
 }
-const TGX_ART = {};
+const TGX_ART = {}, PIC_ASK = new Map();
+// an artist's or label's first picture, or null: the cached one, else asked once from the given links, a grid's, or its own url-rels.
+// Every page asks here, so a picture found anywhere shows everywhere
+const entPic = (k, id, links) => {
+    const c = ARTIMG.cached(id);
+    if (c !== undefined) return Promise.resolve(c);
+    if (TGX_ART[id] !== undefined) return Promise.resolve(TGX_ART[id]);
+    if (!PIC_ASK.has(id)) PIC_ASK.set(id, (links && links.length ? Promise.resolve(links) : ART_LINKS[id] ? Promise.resolve(ART_LINKS[id]) : ws(`${k}/${id}?inc=url-rels`).then(g => (g.relations || []).filter(x => x.url).map(x => x.url.resource)))
+        .then(ls => ARTIMG.findAll(id, ls)).then(xs => xs[0] || null, () => null).then(a => { TGX_ART[id] = a; PIC_ASK.delete(id); return a; }));
+    return PIC_ASK.get(id);
+};
+// a retry forgets the session's answer as well as the cached one
+const picForget = id => { ARTIMG.forget(id); delete TGX_ART[id]; PIC_ASK.delete(id); };
 let tgxIo = null;
 // a grid's artists and labels without a cached picture: their links once on screen, a few at a time
 function tagxArt(app) {
     if (tgxIo) tgxIo.disconnect();
     const q = [], busy = { n: 0 };
     const next = () => { while (busy.n < 6 && q.length) { const i = q.findIndex(e => ART_LINKS[e.dataset.tgxart.split(':')[1]]), el = q.splice(i < 0 ? 0 : i, 1)[0], [k, id] = el.dataset.tgxart.split(':'); tgxIo.unobserve(el); if (TGX_ART[id] !== undefined) continue; if (!ART_LINKS[id] && busy.ws >= 2) { q.unshift(el); break; } busy.n++; const viaWs = !ART_LINKS[id]; if (viaWs) busy.ws = (busy.ws || 0) + 1;
-        (ART_LINKS[id] ? Promise.resolve(ART_LINKS[id]) : ws(`${k}/${id}?inc=url-rels`).then(g => (g.relations || []).filter(x => x.url).map(x => x.url.resource))).then(ls => ARTIMG.findAll(id, ls)).then(xs => xs[0] || null, () => null)
-            .then(a => { TGX_ART[id] = a; for (const t of document.querySelectorAll(`[data-tgxart$=":${id}"]`)) { t.removeAttribute('data-tgxart'); if (a) t.outerHTML = `<img src="${esc(a.src)}" alt="" referrerpolicy="no-referrer">`; } })
+        entPic(k, id)
+            .then(a => { for (const t of document.querySelectorAll(`[data-tgxart$=":${id}"]`)) { t.removeAttribute('data-tgxart'); if (a) t.outerHTML = `<img src="${esc(a.src)}" alt="" referrerpolicy="no-referrer">`; } })
             .finally(() => { busy.n--; if (viaWs) busy.ws--; next(); }); } };
     // a card loads only once it stays in view a moment: a fast scroll past it loads nothing, so the cards
     // stopped on aren't queued behind the ones flown over; one that leaves before its turn drops out of the queue
