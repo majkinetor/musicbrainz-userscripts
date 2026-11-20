@@ -22,3 +22,12 @@ For a baby on your own field, add `class="mmth-pin"`:
 ```
 
 `data-mmth-key` (fields sharing a key share values), `data-mmth-label` (the panel title) and `data-mmth-dx` (pin nudge, px) are optional.
+
+## What History records
+
+History saves a note only from a field the user wrote in, so a note another script fills in by itself stays out, whether it comes from the suite (Falcon's links, Art Station's cover upload) or a third-party script ([#1082](https://github.com/majkinetor/musicbrainz-userscripts/issues/1082)).
+
+- A capturing `input` listener adds a `textarea.edit-note` to a `WeakSet` (`touchedNotes`) when the event's `isTrusted` is true, which the browser sets only for the user's own typing, pasting, dropping or deleting. A script that sets `.value` and dispatches its own `input` sends `isTrusted: false`, and a page can't fake it.
+- Mammoth's own `setValue` adds the field too, so a note applied from Mammoth counts as the user's.
+- On submit, `captureNote` records only the fields in the set. The set lasts as long as the page.
+- So a note the user edited is saved whole, automatic text included; a browser extension that types (autofill, text expanders) counts as the user; a note pre-filled from a seed (Harmony) is skipped unless edited.

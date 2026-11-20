@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-20 16:18 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-20 16:40 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -2452,7 +2452,7 @@ Reusable edit notes in a panel beside the edit-note field of every edit form, an
 ### Saved notes
 
 - **＋** saves the current text. In **History**, ★ moves a note to the saved ones.
-- History keeps only notes you wrote: a note another script fills in by itself (Falcon's links, Art Station's cover upload) is left out unless you edit it.
+- History keeps only notes you wrote: a note another script fills in by itself (Falcon's links, Art Station's cover upload, or any other script's) is left out unless you edit it ([how](../mammoth/DEVELOP.md#what-history-records)).
 - ★ on a saved note pins it as a **button** under the field.
 - Sort **manually** (drag ⠿), by **most used** or by **recent**.
 - Click applies a note, replacing or appending ([Shortcuts](#shortcuts-6)); appending skips a line that's already there.
