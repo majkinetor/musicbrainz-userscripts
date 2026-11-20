@@ -2882,7 +2882,7 @@ const CSS = `
 .hm-news{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:0 16px;font-size:13px}
 .hm-news a{padding:3px 8px;border-radius:6px;color:var(--text)!important;text-decoration:none!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hm-news a:hover{background:var(--hover)}
 .hm-news .hm-more{color:var(--accent)!important}
-.hm-none{color:var(--muted);margin:0}
+.hm-none{color:var(--muted);margin:0}.st-err{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0}
 .tgx-ic{display:inline-flex}.tgx-ic a{display:inline-flex;align-items:center;justify-content:center;width:40px;height:34px}.tgx-ic a[aria-pressed="true"]{background:var(--accent);color:#fff}.tgx-ic svg{width:18px;height:18px}
 .tgx-l{columns:300px 3;min-width:0;overflow-wrap:anywhere;column-gap:28px;margin:0;padding:0;list-style:none}.tgx-l li{break-inside:avoid;margin:0 0 6px;display:flex;gap:8px;align-items:baseline}.tgx-l li>b{flex:none;font:400 11px 'JetBrains Mono',ui-monospace,monospace;background:var(--chip);border-radius:9px;padding:0 7px}.tgx-cm{color:var(--muted)}
 .tgx-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px}.tgx-c{min-width:0;display:grid;gap:4px;align-content:start}.tgx-p{display:block}.tgx-c img,.tgx-mk{width:100%;aspect-ratio:1;border-radius:10px;object-fit:cover;background:var(--chip)}.tgx-mk{display:grid;place-items:center;color:var(--muted)}.tgx-mk svg{width:44%;height:44%}.tgx-n{font-weight:600;overflow-wrap:anywhere}.tgx-n b{font:400 11px 'JetBrains Mono',ui-monospace,monospace;background:var(--chip);border-radius:9px;padding:0 6px}.tgx-by{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
@@ -8091,7 +8091,7 @@ function openAliases() {
     const m = location.pathname.match(/^\/([a-z-]+)\/([0-9a-f-]{36})/i); if (!m || document.getElementById('eh-aliases')) return;
     const ent = m[1].toLowerCase(), gid = m[2];
     const ov = document.createElement('div'); ov.className = 'mbu-ov'; ov.id = 'eh-aliases';
-    ov.innerHTML = '<div class="mbu-ov-panel mbu-ui eh-al" role="dialog" aria-label="Aliases"><div class="mbu-ov-h"><span class="mbu-ov-title">Aliases <span class="count eh-al-n"></span></span><a class="eh-al-tab" target="_blank" data-tip="Open the Aliases tab">Aliases tab \u2197</a><button type="button" class="mbu-ov-x" aria-label="Close">\u2715</button></div><div class="mbu-ov-body"><p class="msg">Loading the aliases\u2026</p></div></div>';
+    ov.innerHTML = '<div class="mbu-ov-panel mbu-ui eh-al" role="dialog" aria-label="Aliases"><div class="mbu-ov-h"><span class="mbu-ov-title">Aliases <span class="count eh-al-n"></span></span><a class="eh-al-tab" target="_blank" data-tip="Open the Aliases tab">Aliases tab \u2197</a><button type="button" class="mbu-ov-x" aria-label="Close">\u2715</button></div><div class="mbu-ov-body">' + stLoad('the aliases') + '</div></div>';
     document.documentElement.append(ov);
     const panel = ov.firstChild, body = panel.querySelector('.mbu-ov-body');
     let entered = 0;
@@ -8113,7 +8113,7 @@ function openAliases() {
         heading: () => panel.querySelector('.mbu-ov-h'),
         onCount: n => { panel.querySelector('.eh-al-n').textContent = n; },
         mount: box => { body.textContent = ''; body.append(box); box.querySelector('.tc-al-n')?.focus(); },
-    }).catch(e => { LOG.warn('alias editor failed', e.message); body.innerHTML = '<p class="msg">Could not open the alias editor: ' + esc(e.message) + '</p>'; });
+    }).catch(e => { LOG.warn('alias editor failed', e.message); body.innerHTML = stErr('Could not open the alias editor: ' + e.message, 'data-alretry'); body.querySelector('[data-alretry]').onclick = () => { close(true); openAliases(); }; });
 }
 // an entity's Aliases page → "ealiases/<type>:<mbid>": the shared alias editor in its own section, and an artist's credits.
 // The editor's box outlives a redraw, so what is being typed stays
@@ -8138,7 +8138,7 @@ function aliasesHtml(d) {
     const [ty, eid] = d.ent.split(':'), t = d.t || {}, xs = d.credits || [];
     const title = t.en || t.name || 'Aliases';
     return `${ty === 'release' ? relTabHd(d, eid, 'aliases', 'Aliases', t.en || t.name) : `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Aliases · ' + (HM_KIND[ty] || [ty])[0], title, disamb: t.ed, by: t.by, acts: entActs(ty, eid, 'aliases') })}</section>`}
-<section class="sec" id="s-ali"><div class="secthead"><h2>Aliases <span class="count">${d.n == null ? '' : d.n}</span></h2></div><div id="al-body">${d.err ? `<p class="msg">Could not open the alias editor: ${esc(d.err)}</p>` : '<p class="msg">Loading…</p>'}</div></section>
+<section class="sec" id="s-ali"><div class="secthead"><h2>Aliases <span class="count">${d.n == null ? '' : d.n}</span></h2></div><div id="al-body">${d.err ? stErr('Could not open the alias editor: ' + d.err) : stLoad('the aliases')}</div></section>
 ${xs.length ? `<section class="sec" id="s-acr"><div class="secthead"><h2>Artist credits <span class="count">${xs.length}</span></h2></div><ul class="eh-ac">${xs.map(x => `<li><bdi>${x.html}</bdi>${x.uses ? `<a class="eh-ac-u" href="${MB}${esc(x.uses)}">See uses</a>` : ''}${x.edit ? `<a class="eh-ac-e" href="${MB}${esc(x.edit)}">Edit</a>` : ''}</li>`).join('')}</ul></section>` : ''}`;
 }
 function aliasesLoad(n, d) {
@@ -9687,9 +9687,9 @@ function tgVoteBs(t, i) {
 }
 function tgBody(d) {
     const xs = tgList(d), v = d.view, vote = d.ent && !!ME, idx = t => d.t.tags.indexOf(t);
-    if (!d.t) return `<p class="hm-none">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : 'Loading the tags…'}</p>`;
-    if (d.dn && !d.down) return '<p class="hm-none">Loading the downvotes…</p>';
-    if (!xs.length) return `<p class="hm-none">${d.q ? 'No tag matches the filter.' : 'No tags.'}</p>`;
+    if (!d.t) return d.err ? stErr(d.err) : stLoad('the tags');
+    if (d.dn && !d.down) return stLoad('the downvotes');
+    if (!xs.length) return stNone(d.q, 'No tags.');
     const max = Math.max(...xs.map(t => t.c), 1), a = t => `<a href="${esc(tgHref(d, t))}"${t.g ? ' class="tg-g"' : ''}>${esc(t.n)}</a>`, cnt = t => `<span class="tg-c">${fmtN(t.c)}</span>`;
     const mine = t => t.v > 0 ? ' tg-mine' : t.v < 0 ? ' tg-mine tg-neg' : '';
     if (v === 'cloud') return `<div class="tg-cloud">${[...xs].sort((x, y) => x.n.localeCompare(y.n)).map(t => `<a href="${esc(tgHref(d, t))}" class="${t.g ? 'tg-g' : ''}${mine(t)}" style="font-size:${(12 + Math.sqrt(t.c / max) * 22).toFixed(1)}px" data-tip="${esc(t.n)}: ${fmtN(t.c)}${t.g ? ' · genre' : ''}">${esc(t.n)}</a>`).join(' ')}</div>`;
@@ -9881,7 +9881,7 @@ function relsHtml(d) {
     const t = d.t, [ty, eid] = d.ent.split(':');
     const acts = ty === 'url' ? '' : actionRow(ty === 'release-group' ? RG_ACTS : ty === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS, ty, eid, d.mode || 'relationships');
     const head = ty === 'release' ? relTabHd(d, eid, d.mode || 'relationships', d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships', t && t.name) : `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: ty === 'url' ? 'URL' : (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · ' + (HM_KIND[ty] || [ty])[0], title: t && t.name, disamb: t && t.dis, by: t && t.by, acts })}</section>`;
-    if (!t) return head + `<p class="hm-none">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : `Loading the ${d.mode || 'relationships'}…`}</p>`;
+    if (!t) return head + (d.err ? stErr(d.err) : stLoad(`the ${d.mode || 'relationships'}`));
     if (!relsN(t)) return head + `<p class="hm-none">No ${d.mode || 'relationships'}.</p>`;
     return head + (d.mode ? relsApps(t, d) : t.cards.map(relsCard).join('') + relsApps(t));
 }
@@ -10106,7 +10106,7 @@ function tagxHtml(d) {
     const view = S.tgxView || 'row', qs = d.qs || (d.qs = {}), fo = d.fo || (d.fo = {});
     const secs = t.groups.map(g => { const id = 'tgx-' + g.t.toLowerCase().replace(/\W+/g, '-'), q = (qs[id] || '').trim().toLowerCase(), xs = g.items.filter(x => !q || x.h.replace(/<[^>]+>/g, ' ').toLowerCase().includes(q)), cnt = g.items.some(x => x.c);
         const fb = `${q ? `<span class="fdone"><button type="button" class="lnk" data-tgxf="clr:${id}">Clear</button><span class="fn">${xs.length} of ${g.items.length}</span></span>` : ''}${fo[id] || q ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-tgxq="${id}" value="${esc(qs[id] || '')}" placeholder="Filter" aria-label="Filter ${esc(g.t)}" autocomplete="off"></span>` : ''}<span class="ed-views"><button type="button" data-tgxf="open:${id}" aria-pressed="${!!(fo[id] || q)}" aria-label="Filter" data-tip="${fo[id] || q ? 'Hide the filter, clearing it' : 'Filter the rows'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`;
-        const body = !xs.length ? '<p class="hm-none">Nothing matches the filter.</p>'
+        const body = !xs.length ? stNone(true)
             : view === 'grid' ? `<div class="tgx-g">${xs.map(x => `<div class="tgx-c">${tgxPic(x.u)}<div class="tgx-n">${x.a}${x.c ? ` <b>${x.c}</b>` : ''}</div>${x.by ? `<div class="tgx-by">${x.by}</div>` : x.cm ? `<div class="tgx-by">${esc(x.cm)}</div>` : ''}</div>`).join('')}</div>`
             : view === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th>${esc(g.t.replace(/s$/, ''))}</th>${xs.some(x => x.by) ? '<th>By</th>' : ''}<th>Disambiguation</th>${cnt ? '<th>Count</th>' : ''}</tr></thead><tbody>${xs.map(x => `<tr><td>${x.a}</td>${xs.some(y => y.by) ? `<td>${x.by}</td>` : ''}<td class="tgx-cm">${esc(x.cm)}</td>${cnt ? `<td>${x.c}</td>` : ''}</tr>`).join('')}</tbody></table></div>`
             : `<ul class="tgx-l">${xs.map(x => `<li>${x.c ? `<b>${x.c}</b>` : ''}<span>${x.a}${x.by ? ' by ' + x.by : ''}${x.cm ? ` <span class="comment">(${esc(x.cm)})</span>` : ''}</span></li>`).join('')}</ul>`;
@@ -10212,7 +10212,7 @@ function ratesHtml(d) {
     const secs = t.groups.map(g => { const id = 'rt-' + g.t.toLowerCase().replace(/\W+/g, '-'), q = (qs[id] || '').trim().toLowerCase(), xs = g.items.filter(x => (!d.st || x.r === d.st) && (!q || (x.n + ' ' + x.by.replace(/<[^>]+>/g, ' ') + ' ' + x.cm).toLowerCase().includes(q)));
         const fb = `${q ? `<span class="fdone"><button type="button" class="lnk" data-rtf="clr:${id}">Clear</button><span class="fn">${xs.length} of ${g.items.length}</span></span>` : ''}${fo[id] || q ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-rtq="${id}" value="${esc(qs[id] || '')}" placeholder="Filter" aria-label="Filter ${esc(g.t)}" autocomplete="off"></span>` : ''}<span class="ed-views"><button type="button" data-rtf="open:${id}" aria-pressed="${!!(fo[id] || q)}" aria-label="Filter" data-tip="${fo[id] || q ? 'Hide the filter, clearing it' : 'Filter the rows'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`;
         const by = xs.some(x => x.by);
-        const body = !xs.length ? `<p class="hm-none">${q ? 'Nothing matches the filter.' : d.st ? 'Nothing rated ' + d.st + '★ here.' : 'Nothing rated.'}</p>`
+        const body = !xs.length ? stNone(q, d.st ? 'Nothing rated ' + d.st + '★ here.' : 'Nothing rated.')
             : view === 'grid' ? `<div class="tgx-g">${xs.map(x => `<div class="tgx-c">${tgxPic(x.u)}${rtStars(x.r, x)}<div class="tgx-n">${x.a}</div>${x.by ? `<div class="tgx-by">${x.by}</div>` : x.cm ? `<div class="tgx-by">${esc(x.cm)}</div>` : ''}</div>`).join('')}</div>`
             : view === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th>Rating</th><th>${esc(g.t.replace(/s$/, ''))}</th>${by ? '<th>By</th>' : ''}<th>Disambiguation</th></tr></thead><tbody>${xs.map(x => `<tr><td>${rtStars(x.r, x)}</td><td>${x.a}</td>${by ? `<td>${x.by}</td>` : ''}<td class="tgx-cm">${esc(x.cm)}</td></tr>`).join('')}</tbody></table></div>`
             : `<ul class="tgx-l rt-l">${xs.map(x => `<li>${rtStars(x.r, x)}<span>${x.a}${x.by ? ' by ' + x.by : ''}${x.cm ? ` <span class="comment">(${esc(x.cm)})</span>` : ''}</span></li>`).join('')}</ul>`;
@@ -14651,6 +14651,7 @@ function onClick(ev) {
     if (d.tqopen) { const k = d.tqopen; if (k in TQ) delete TQ[k]; else TQ[k] = ''; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-tq="${k}"]`); if (i) i.focus(); return; }
     if ('lmmenu' in d) { const m = b.nextElementSibling, o = !m.classList.contains('open'); document.querySelectorAll('.dmenu.open').forEach(x => x.classList.remove('open')); m.classList.toggle('open', o); return; }
     if (d.lmgo) { lmMore(d.lmgo); return; }
+    if ('reload' in d) { const k = inTab(location.href); if (k) show(k); else location.reload(); return; }
     if (d.aliases) { openAliases(); return; }
     if ('imgretry' in d) { imgRetry(); return; }
     if (d.tsort) { const sid = b.closest('section').id.slice(2), i = +d.tsort, t = tsGet(sid) || []; tsSet(sid, t[0] !== i ? [i, 1] : t[1] > 0 ? [i, -1] : []); const y = scrollY; render(); scrollTo(0, y); return; }
@@ -15463,7 +15464,7 @@ function discPage(app, d) {
     if (d.kind === 'discs') {
         hd.innerHTML = subHead(d.rel, d.id, 'discids', 'Disc IDs', d.err ? `<h1>${esc(d.err)}</h1>` : '<h1>&nbsp;</h1>'); cvWire(hd);
         const ms = d.media;
-        body.innerHTML = !ms ? (d.err ? '' : '<p class="msg">Loading the disc IDs…</p>') : sect('dsc', `Disc IDs <span class="count">${ms.reduce((a, m) => a + (m.discs || []).length, 0)}</span>`, `<a class="lnk aside" href="${MB}/doc/How_to_Add_Disc_IDs">How to add disc IDs</a>`, ms.map(m => {
+        body.innerHTML = !ms ? (d.err ? stErr('') : stLoad('the disc IDs')) : sect('dsc', `Disc IDs <span class="count">${ms.reduce((a, m) => a + (m.discs || []).length, 0)}</span>`, `<a class="lnk aside" href="${MB}/doc/How_to_Add_Disc_IDs">How to add disc IDs</a>`, ms.map(m => {
             const ok = discOk(m.format), ds = m.discs || [], name = `${esc(m.format || 'Medium')} ${m.position}${m.title ? ` <span class="sub">${esc(m.title)}</span>` : ''}`;
             return `<div class="dsc-med${ok ? '' : ' off'}"><div class="dsc-h">${fmtSvg(fmtKind(m.format), 18)}<b>${name}</b><span class="dsc-n">${m['track-count']} track${m['track-count'] === 1 ? '' : 's'}</span></div>${!ok ? `<div class="dsc-none">${esc(m.format)} can't have disc IDs</div>` : ds.length ? discRows(ds, acts) : '<div class="dsc-none">No disc ID yet</div>'}</div>`;
         }).join(''), `<div class="folded-note">${ms.length} media</div>`);
@@ -15474,7 +15475,7 @@ function discPage(app, d) {
     // one disc ID: its TOC, track by track, and the releases it is on
     const t = d.toc, kick = `<div class="kicker label">${mkSvg(DISC_IC)}<span>Disc ID</span><span class="acts">${SRCH()}</span></div>`;
     hd.innerHTML = `<div class="rhtx">${kick}<h1 class="dsc-t">${esc(d.id)}</h1>${t ? `<div class="by">${t.offsets.length} tracks · ${secLen(t.sectors)}</div>` : d.err ? `<div class="by">${esc(d.err)}</div>` : ''}</div>`;
-    if (!t) { body.innerHTML = d.err ? '' : '<p class="msg">Loading the disc ID…</p>'; return; }
+    if (!t) { body.innerHTML = d.err ? stErr('') : stLoad('the disc ID'); return; }
     const off = t.offsets, ends = off.slice(1).concat(t.sectors);
     const toc = [1, off.length, t.sectors, ...off].join(' ');
     const rels = (t.releases || []).map(r => {
@@ -15527,7 +15528,7 @@ function detPage(app, d) {
     if (!app.querySelector(`#det-body[data-k="${d.id}"]`)) app.innerHTML = `<section class="arthd"></section><div id="det-body" data-k="${esc(d.id)}"></div>`;
     const hd = app.querySelector('.arthd'), body = app.querySelector('#det-body');
     hd.innerHTML = subHead(d.rel, d.id, 'details', 'Details', d.err ? `<h1>${esc(d.err)}</h1>` : '<h1>&nbsp;</h1>'); cvWire(hd);
-    if (body.dataset.on !== String(!!d.html)) { body.dataset.on = String(!!d.html); body.innerHTML = d.html || (d.err ? '' : '<p class="msg">Loading the details…</p>'); }
+    if (body.dataset.on !== String(!!d.html)) { body.dataset.on = String(!!d.html); body.innerHTML = d.html || (d.err ? stErr('') : stLoad('the details')); }
 }
 // A release's Edit annotation, fetched in place of a page load (the player plays on): MusicBrainz's form goes in
 // #eh-anno, and Apollo, asked by mbu-anno-mount, builds its editor on it. Enter edit posts the form, a page load.
@@ -15537,7 +15538,7 @@ function annPage(app, d) {
     hd.innerHTML = subHead(d.rel, d.id, 'edit_annotation', 'Annotation', d.err ? `<h1>${esc(d.err)}</h1>` : '<h1>&nbsp;</h1>'); cvWire(hd);
     if (body.dataset.on !== String(!!d.html)) {
         body.dataset.on = String(!!d.html);
-        body.innerHTML = d.html || (d.err ? '' : '<p class="msg">Loading the annotation…</p>');
+        body.innerHTML = d.html || (d.err ? stErr('') : stLoad('the annotation'));
         if (d.html) {
             const ask = new CustomEvent('mbu-anno-mount', { cancelable: true, detail: JSON.stringify({ entity: 'release', id: d.id }) });
             document.dispatchEvent(ask);
@@ -15705,7 +15706,7 @@ function subPage(app, d) {
     hd.innerHTML = entHead({ type: d.ty, id: d.eid, img: visitImg({ key: d.ty + '/' + d.eid }), kick: what + ' · ' + (HM_KIND[d.ty] || [d.ty])[0], title: d.name, disamb: d.dis, acts: entActs(d.ty, d.eid, d.page) }); entHeadWire(hd);
     if (body.dataset.on !== String(!!d.html)) {
         body.dataset.on = String(!!d.html); upgCss();
-        body.innerHTML = d.html || (d.err ? `<p class="hm-none"><span class="u-err">${esc(d.err)}</span></p>` : `<p class="hm-none">Loading the ${what.toLowerCase()}…</p>`);
+        body.innerHTML = d.html || (d.err ? stErr(d.err) : stLoad('the ' + what.toLowerCase()));
     }
 }
 async function detLoad(n, id) {
@@ -17854,6 +17855,11 @@ function start1() {
     fxWatch();
 }
 let showing = 0;
+// a load's three states, the same on every page (#1085): loading, failed with a Retry (the error left out where the
+// header already shows it), and nothing to show, where a filter that hides everything says so in one wording
+function stLoad(what) { return `<p class="hm-none" role="status">Loading ${what}…</p>`; }
+function stErr(err, at = 'data-reload') { return `<div class="st-err">${err ? `<span class="u-err">${esc(err)}</span>` : ''}<button type="button" class="sk-b" ${at}>Retry</button></div>`; }
+function stNone(q, empty) { return `<p class="hm-none">${q ? 'Nothing matches the filter.' : empty}</p>`; }
 // the page's shape while it loads, so nothing jumps when the data lands
 // the skeleton's hero alone, for a page whose sections came before its entity
 function heroSk(kind, err) {
