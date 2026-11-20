@@ -17424,7 +17424,7 @@ const keyGo = sub => () => {
     const url = `${MB}/${e.type}/${e.id}${sub ? '/' + sub : ''}`;
     // the viewer's own button takes it, so it opens where the viewer would
     const a = ehOn && [...document.querySelectorAll('#app a[href]')].find(x => x.href === url);
-    if (a) a.click(); else if (sub === 'edit' && e.type === 'release' && ply.i >= 0 && !plyRemote && !plyInWin()) window.open(url, '_blank', 'noopener'); else location.assign(url);
+    if (a) a.click(); else if (sub === 'edit' && ply.i >= 0 && !plyRemote && !plyInWin()) window.open(url, '_blank', 'noopener'); else location.assign(url);
     return true;
 };
 // the viewer's search box, else MusicBrainz's header one, else its search page
