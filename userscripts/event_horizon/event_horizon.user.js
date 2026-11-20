@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.060000
+// @version      2026.11.21.060100
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -17629,8 +17629,10 @@ if (/^\/account\//.test(location.pathname)) cspMirror();
 /* ── keyboard shortcuts (#907) ─────────────────────── */
 // one key per command, on MusicBrainz's page and in the viewer alike; Ctrl+/ lists them, runs one and changes its key
 const KEY_ENT = () => { const m = location.pathname.match(/^\/([a-z-]+)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i); return m && { type: m[1], id: m[2].toLowerCase() }; };
-const keyGo = sub => () => {
-    const e = KEY_ENT(); if (!e) return false;
+// ok: the entity types that have the tab; a collection has none of aliases, tags, details, history and relationships
+const KEY_NOCOLL = t => t !== 'collection';
+const keyGo = (sub, ok) => () => {
+    const e = KEY_ENT(); if (!e || (ok && !ok(e.type))) return false;
     const url = `${MB}/${e.type}/${e.id}${sub ? '/' + sub : ''}`;
     // the viewer's own button takes it, so it opens where the viewer would
     const a = ehOn && [...document.querySelectorAll('#app a[href]')].find(x => x.href === url);
@@ -17648,12 +17650,12 @@ function keySearch() {
 const KEY_CMDS = [
     ['page', 'Overview', 'o', keyGo('')],
     ['edit', 'Edit', 'e', keyGo('edit')],
-    ['rels', 'Edit relationships', 'r', keyGo('edit-relationships')],
+    ['rels', 'Edit relationships', 'r', keyGo('edit-relationships', KEY_NOCOLL)],
     ['covers', 'Cover art', 'c', () => KEY_ENT() && KEY_ENT().type === 'release' && keyGo('cover-art')()],
-    ['history', 'Editing history', 'h', keyGo('edits')],
-    ['tags', 'Tags', 't', keyGo('tags')],
-    ['details', 'Details', 'd', keyGo('details')],
-    ['aliases', 'Aliases', 'a', keyGo('aliases')],
+    ['history', 'Editing history', 'h', keyGo('edits', KEY_NOCOLL)],
+    ['tags', 'Tags', 't', keyGo('tags', t => ALIASES_TYPES.includes(t))],
+    ['details', 'Details', 'd', keyGo('details', KEY_NOCOLL)],
+    ['aliases', 'Aliases', 'a', keyGo('aliases', t => ALIASES_TYPES.includes(t))],
     ['view', 'Toggle Event Horizon', 'v', () => { if (!PAGE_ID) return false; switchOn(!ehOn); return true; }],
     ['back', 'Back', 'ctrl+h', () => { history.back(); return true; }],
     ['forward', 'Forward', 'ctrl+l', () => { history.forward(); return true; }],
