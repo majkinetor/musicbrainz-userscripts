@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.002500
+// @version      2026.11.22.003000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2796,7 +2796,7 @@ const CSS = `
 .hm-hi{position:relative;font-size:30px;font-weight:800;margin:6px 0 16px}.hm-hi em{font-style:normal;background:linear-gradient(90deg,#f07dbf,#f5a06b);-webkit-background-clip:text;background-clip:text;color:transparent}
 .eh-cb-pop{position:fixed;z-index:1002;max-height:280px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:6px;padding:4px;color:var(--text);font-size:14px}.eh-cb-opt{padding:4px 8px;border-radius:4px;cursor:pointer;white-space:nowrap}.eh-cb-opt small{color:var(--muted);margin-left:6px}.eh-cb-opt:hover,.eh-cb-opt.on{background:var(--hover)}.tl-bar input[data-ehcombo]{padding-right:28px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 8px center!important;background-size:14px!important}.eh-cb-none{padding:4px 8px;color:var(--muted)}
 .url-bar+.sr-sub{margin:8px 0 0}
-.tl-hero{padding-top:0;padding-bottom:0;margin:-6px 0 0}.tl-hero .hm-hi{font-size:18px;margin:0;line-height:1.2}.tl-bar{position:sticky;top:var(--eh-pin-h,0px);z-index:21;display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px 10px;margin:16px 0 6px;padding:6px 10px;border-radius:8px;background:color-mix(in srgb,var(--eh-bar) 70%,transparent);backdrop-filter:blur(6px);transition:top .18s}.tl-bar label{display:flex;flex-direction:column;gap:2px;flex:1 1 140px;min-width:0;font-size:11px;color:var(--muted)}.tl-bar input{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:8px;background-color:color-mix(in srgb,var(--surface) 55%,transparent)!important;color:var(--text);font-size:14px}.tl-bar input:focus{outline:none;border-color:var(--accent)}.tl-bar label:has([name$=tracknum]),.tl-bar label:has([name$=duration]){flex:0 1 90px}.tl-bar select{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface)!important;color:var(--text);font-size:14px}.url-bar label:has([name=query]){flex:2 1 240px}.sr-out{color:var(--muted);text-decoration:none}.tl-bar>.hm-go{flex:none;width:34px;height:31px}.sl{max-width:760px;margin:18px 0 8px}.sl-row{display:grid;grid-template-columns:150px minmax(0,1fr) 28px;gap:8px;align-items:center;padding:3px 0}.sl-row>span{color:var(--muted);font-size:13px;text-align:right}.sl input,.sl select{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:8px;background-color:color-mix(in srgb,var(--surface) 55%,transparent)!important;color:var(--text);font-size:14px}.sl input:focus,.sl select:focus{outline:none;border-color:var(--accent)}.sl-row>button{border:0;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}.sl-row>button:hover{color:var(--text)}.sl-foot{display:flex;align-items:center;gap:12px;margin:8px 0 0 158px}.sl-foot select{width:auto;min-width:170px}.sl-foot .hm-go{flex:none;width:34px;height:31px}.hm-all{margin-left:10px;white-space:nowrap}
+.tl-hero{padding-top:0;padding-bottom:0;margin:-6px 0 0}.tl-hero .hm-hi{font-size:18px;margin:0;line-height:1.2}.tl-bar{position:sticky;top:var(--eh-pin-h,0px);z-index:21;display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px 10px;margin:16px 0 6px;padding:6px 10px;border-radius:8px;background:color-mix(in srgb,var(--eh-bar) 70%,transparent);backdrop-filter:blur(6px);transition:top .18s}.tl-bar label{display:flex;flex-direction:column;gap:2px;flex:1 1 140px;min-width:0;font-size:11px;color:var(--muted)}.tl-bar input{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:8px;background-color:color-mix(in srgb,var(--surface) 55%,transparent)!important;color:var(--text);font-size:14px}.tl-bar input:focus{outline:none;border-color:var(--accent)}.tl-bar label:has([name$=tracknum]),.tl-bar label:has([name$=duration]){flex:0 1 90px}.tl-bar select{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface)!important;color:var(--text);font-size:14px}.url-bar label:has([name=query]){flex:2 1 240px}.sr-out{color:var(--muted);text-decoration:none}.tl-bar>.hm-go{flex:none;width:34px;height:31px}.sl{max-width:760px;margin:18px 0 8px}.sl-row{display:grid;grid-template-columns:150px minmax(0,1fr) 28px;gap:8px;align-items:center;padding:3px 0}.sl-row>span{color:var(--muted);font-size:13px;text-align:right}.sl input,.sl select{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border);border-radius:8px;background-color:color-mix(in srgb,var(--surface) 55%,transparent)!important;color:var(--text);font-size:14px}.sl input:focus,.sl select:focus{outline:none;border-color:var(--accent)}.sl-row>button{border:0;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}.sl-row>button:hover{color:var(--text)}.sl-foot{display:flex;align-items:center;gap:12px;margin:8px 0 0 158px}.sl-foot select,.sl-foot input{width:auto;min-width:200px}.sl-cat{margin-bottom:6px;padding-bottom:9px;border-bottom:1px solid var(--border)}.sl-cat input,.sl-foot input{cursor:pointer}.sl-cat input:focus,.sl-foot input:focus{cursor:text}.sl-foot .hm-go{flex:none;width:34px;height:31px}.hm-all{margin-left:10px;white-space:nowrap}
 .hm-srch{position:relative;max-width:820px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--surface)!important;border:1px solid var(--border);border-radius:14px;padding:6px 6px 6px 16px;color:var(--muted);box-shadow:0 6px 22px var(--shadow)}
 .hm-srch:focus-within{border-color:var(--accent)}
 .hm-ctl{display:contents}.hm-srch button.hm-mm,.hm-ml{display:none}
@@ -11911,7 +11911,7 @@ function srchHero(hi, sub, q = '', ty = 'artist', meth = 'indexed', add = '') {
     const ss = S.hmQs === 'off' ? [] : searches(), qs = S.hmQs !== 'below' ? '' : ss.map(x => `<a href="${MB}/search?query=${encodeURIComponent(x.q)}&type=${x.t}&method=indexed">${x.t === 'artist' ? '' : `<b>${x.t.replace('_', ' ')}:</b> `}${esc(x.q)}</a>`).join('');
     return `<header class="hm-hero">${ME ? `<a class="hm-home" href="${MB}/" data-tip="Event Horizon's home&#10;Right-click: Your profile" aria-label="Event Horizon's home">` : `<a class="hm-home eh-out" href="${MB}/login?returnto=%2F" data-tip="Logged out&#10;Click to log in" aria-label="Log in">`}${LOGO.replace('<svg', '<svg class="hm-orb"')}<div class="hm-wm"><b>Event<br>Horizon</b><small>MUSICBRAINZ</small></div></a><div class="hm-hi">${hi}</div>
         <form class="hm-srch" action="${MB}/search" method="get"><button type="submit" class="hm-go" data-tip="Search" aria-label="Search">${SVG(LENS)}</button><input name="query" value="${esc(q)}" placeholder="${matchMedia('(max-width:700px)').matches ? 'Search' : 'Search MusicBrainz'}"${S.hmQs === 'combo' && ss.length ? ' autocomplete="off" role="combobox" aria-expanded="false" aria-controls="hm-ql"' : ''} required${q ? '' : ' autofocus'}>${S.hmQs === 'combo' && ss.length ? `<button type="button" class="hm-qc" data-tip="Recent searches" aria-label="Recent searches">${SVG('<path d="M6 9l6 6 6-6"/>')}</button>` : ''}<select name="type" hidden>${kinds}</select><button type="button" class="hm-mm" aria-haspopup="menu" aria-expanded="false" data-tip="Search options" aria-label="Search options">${SVG('<circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>')}</button><span class="hm-ctl"><button type="button" class="hm-ty" aria-haspopup="listbox" aria-expanded="false" aria-label="Entity type"><span>${srchName(ty)}</span></button><button type="button" class="hm-tg${S.hmAdv ? ' on' : ''}" data-tip="Advanced search" aria-label="Advanced search">${SVG('<path d="M4 6h10M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>')}<i class="hm-ml">Advanced search</i></button>
-        <a class="hm-es" href="${MB}/search/edits" data-tip="Search for edits" aria-label="Search for edits">${SVG('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>')}<i class="hm-ml">Search for edits</i></a><a class="hm-es" href="${MB}/search?type=url&query=" data-tip="Search for URLs" aria-label="Search for URLs">${SVG('<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>')}<i class="hm-ml">Search for URLs</i></a></span><div class="hm-td" role="listbox" aria-label="Entity type" hidden>${tlist}</div>
+        <a class="hm-es" href="${MB}/search/edits" data-tip="Search for edits" aria-label="Search for edits">${SVG('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>')}<i class="hm-ml">Search for edits</i></a><a class="hm-es" href="${MB}/search?type=url&query=" data-tip="Search for URLs" aria-label="Search for URLs">${SVG('<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>')}<i class="hm-ml">Search for URLs</i></a><a class="hm-es" href="${MB}/search" data-tip="All of MusicBrainz's search forms: tag lookup, barcode, ISRC and more" aria-label="More search options">${SVG('<path d="M4 6h16M4 12h7M4 18h7"/><circle cx="16.5" cy="15.5" r="3.5"/><path d="M19 18l2.5 2.5"/>')}<i class="hm-ml">More search options</i></a></span><div class="hm-td" role="listbox" aria-label="Entity type" hidden>${tlist}</div>
         <div class="hm-adv"${S.hmAdv ? '' : ' hidden'}><label>Search method</label><select name="method">${[['indexed', 'Indexed'], ['advanced', 'Indexed, with advanced query syntax'], ['direct', 'Direct database search']].map(([v, l]) => `<option value="${v}"${v === meth ? ' selected' : ''}>${l}</option>`).join('')}</select>
         <span class="hm-hint">Advanced syntax: <code>artist:"Hania Rani" AND date:2023</code> · <a href="${MB}/doc/Indexed_Search_Syntax" target="_blank">syntax help</a></span><a class="hm-all" href="${MB}/search" data-tip="All of MusicBrainz's search forms: tag lookup, barcode, ISRC and more">More search options</a><label>Recent searches</label><span class="hm-seg" role="radiogroup" aria-label="Recent searches">${[['off', 'Off'], ['below', 'Below search'], ['combo', 'In combobox']].map(([v, l]) => `<label><input type="radio" name="hm-qs" form="hm-noform" value="${v}" data-hm-qs${v === S.hmQs ? ' checked' : ''}><span>${l}</span></label>`).join('')}</span></div>${S.hmQs === 'combo' && ss.length ? `<div class="hm-qd" id="hm-ql" role="listbox" hidden>${ss.map(x => `<button type="button" role="option" data-q="${esc(x.q)}" data-t="${x.t}"><span>${x.t === 'artist' ? '' : `<b>${x.t.replace('_', ' ')}:</b> `}${esc(x.q)}</span></button>`).join('')}</div>` : ''}</form>
         ${qs ? `<div class="hm-qr">${qs}<button type="button" class="hm-qx" data-tip="Forget these searches">Clear</button></div>` : ''}${sub}${add}</header>`;
@@ -12206,8 +12206,8 @@ function searchHtml(d) {
 // MusicBrainz's own /search page: the search form (query, type, results per page, method) and the tag lookup's fields, in the bars the other searches use
 const TL_F = [['artist', 'Artist'], ['release', 'Release'], ['tracknum', 'Track number'], ['track', 'Track'], ['duration', 'Duration'], ['filename', 'Filename']];
 const OTHER_LOOKUPS = [['catno', 'Catalog number'], ['barcode', 'Barcode'], ['url', 'URL'], ['isrc', 'ISRC'], ['iswc', 'ISWC'], ['artist-ipi', 'Artist IPI'], ['artist-isni', 'Artist ISNI'], ['label-ipi', 'Label IPI'], ['label-isni', 'Label ISNI'], ['freedbid', 'FreeDB ID'], ['mbid', 'MBID'], ['discid', 'Disc ID']];
-// MusicBrainz's own /search page as the edit search is built: criteria in compact rows, and one Add criteria list with every criterion of the page, grouped as MusicBrainz groups them
-// MusicBrainz sends each lookup to its own address, so a criterion of another lookup switches the form to it: its rows replace the others
+// MusicBrainz's own /search page as the edit search is built: a category first (the search, the tag lookup, one of the other lookups), then that category's criteria in compact rows and an Add criteria list with the rest of them
+// MusicBrainz sends each category to its own address, so the form holds one category at a time
 // field: [form name, label, control, 2 = shown, kept | 1 = shown, can be removed | 0 = added on demand]
 const SL_OPTS = {
     type: SRCH_T.filter(t => t !== 'doc').concat('doc').map(t => [t, srchName(t)]),
@@ -12216,48 +12216,29 @@ const SL_OPTS = {
 };
 const SL_MODES = {
     search: ['Search', '/search', [['query', 'Query', 'text', 2], ['type', 'Type', 'type', 2], ['limit', 'Results per page', 'limit', 0], ['method', 'Search method', 'method', 0]]],
-    taglookup: ['Tag lookup', '/taglookup/index', TL_F.map(([k, l]) => ['tag-lookup.' + k, l, 'text', 0])],
-    ...Object.fromEntries(OTHER_LOOKUPS.map(([k, l]) => [k, [l, '/otherlookup/' + k, [['other-lookup.' + k, l, 'text', 1]]]])),
+    taglookup: ['Tag lookup', '/taglookup/index', TL_F.map(([k, l], i) => ['tag-lookup.' + k, l, 'text', i < 2 ? 1 : 0])],
+    ...Object.fromEntries(OTHER_LOOKUPS.map(([k, l]) => [k, [l, '/otherlookup/' + k, [['other-lookup.' + k, l, 'text', 2]]]])),
 };
-// the Add criteria list's groups, as the native page heads them
-const SL_GROUPS = [['Search', ['search']], ['Tag lookup', ['taglookup']], ['Other lookups', OTHER_LOOKUPS.map(o => o[0])]];
-const slModeOf = n => Object.keys(SL_MODES).find(k => SL_MODES[k][2].some(f => f[0] === n));
 const slRow = (f, val = '') => {
     const [n, l, c, lock] = f, o = SL_OPTS[c];
     const ctl = o ? '<select name="' + n + '">' + o.map(([v, t]) => '<option value="' + v + '"' + (v === val ? ' selected' : '') + '>' + t + '</option>').join('') + '</select>' : '<input name="' + n + '" value="' + esc(val) + '" autocomplete="off"' + (lock === 2 ? ' required' : '') + '>';
     return '<div class="sl-row" data-f="' + n + '"><span>' + l + '</span>' + ctl + (lock === 2 ? '<i></i>' : '<button type="button" data-sl-x aria-label="Remove ' + l + '" data-tip="Remove">×</button>') + '</div>';
 };
-// every criterion not on the form yet, as the Add criteria list
-const slAddList = form => {
-    const on = new Set([...form.querySelectorAll('.sl-row[data-f]')].map(r => r.dataset.f));
-    return '<select data-sl-add aria-label="Add criteria"><option value="">Add criteria…</option>' + SL_GROUPS.map(([g, ks]) => {
-        const left = ks.flatMap(k => SL_MODES[k][2]).filter(f => !on.has(f[0]));
-        return left.length ? '<optgroup label="' + g + '">' + left.map(f => '<option value="' + f[0] + '">' + f[1] + '</option>').join('') + '</optgroup>' : '';
-    }).join('') + '</select>';
-};
+// the category's criteria not on the form yet; Add criteria shows only while there are some
+const slLeft = form => { const on = new Set([...form.querySelectorAll('.sl-row[data-f]')].map(r => r.dataset.f)); return SL_MODES[form.dataset.slMode][2].filter(f => !on.has(f[0])); };
+const slAddSync = form => { form.querySelector('[data-sl-addwrap]').hidden = !slLeft(form).length; };
 function slMode(form, k, vals) {
     const m = SL_MODES[k]; form.dataset.slMode = k; form.action = MB + m[1];
+    form.querySelector('[data-sl-cat]').setAttribute('value', m[0]); form.querySelector('[data-sl-cat]').value = m[0];
     form.querySelector('[data-sl-rows]').innerHTML = m[2].filter(f => f[3]).map(f => slRow(f, vals && vals[f[0]])).join('');
-    form.querySelector('[data-sl-addwrap]').innerHTML = slAddList(form);
+    slAddSync(form);
 }
-document.addEventListener('change', e => {
-    const form = e.target.closest && e.target.closest('form[data-sl]'); if (!form) return;
-    if (e.target.matches('[data-sl-add]') && e.target.value) {
-        const n = e.target.value, k = slModeOf(n), f = k && SL_MODES[k][2].find(x => x[0] === n); if (!f) return;
-        if (k !== form.dataset.slMode) { LOG.debug('Search page: ' + n + ' switches the form to ' + k); slMode(form, k); }
-        if (!form.querySelector('.sl-row[data-f="' + n + '"]')) form.querySelector('[data-sl-rows]').insertAdjacentHTML('beforeend', slRow(f));
-        form.querySelector('[data-sl-addwrap]').innerHTML = slAddList(form);
-        form.querySelector('.sl-row[data-f="' + n + '"] input, .sl-row[data-f="' + n + '"] select')?.focus();
-    }
-});
 document.addEventListener('click', e => {
     const x = e.target.closest && e.target.closest('[data-sl-x]'); if (!x) return;
-    const form = x.closest('form[data-sl]'); x.closest('.sl-row').remove();
-    // the last row gone: back to the plain search
-    if (!form.querySelector('.sl-row[data-f]')) slMode(form, 'search'); else form.querySelector('[data-sl-addwrap]').innerHTML = slAddList(form);
+    const form = x.closest('form[data-sl]'); x.closest('.sl-row').remove(); slAddSync(form);
 });
 function searchForm(p) {
-    const t = p.get('type'), tmp = '<form class="sl" data-sl action="' + MB + '/search" method="get"><div data-sl-rows></div><div class="sl-foot"><span data-sl-addwrap></span><button type="submit" class="hm-go" data-tip="Search" aria-label="Search">' + SVG(LENS) + '</button></div></form>';
+    const t = p.get('type'), tmp = '<form class="sl" data-sl action="' + MB + '/search" method="get"><div class="sl-row sl-cat"><span>Category</span><input data-sl-cat data-ehcombo="slcat" autocomplete="off" aria-label="Category"><i></i></div><div data-sl-rows></div><div class="sl-foot"><span data-sl-addwrap><input data-sl-add data-ehcombo="sladd" autocomplete="off" placeholder="Add criteria…" aria-label="Add criteria"></span><button type="submit" class="hm-go" data-tip="Search" aria-label="Search">' + SVG(LENS) + '</button></div></form>';
     // the rows are built from SL_MODES when the page is placed (slMode), so the form and its rows share one source
     const d = new DOMParser().parseFromString(tmp, 'text/html'), form = d.querySelector('form'); slMode(form, 'search', { type: SL_OPTS.type.some(o => o[0] === t) ? t : 'artist', query: p.get('query') || '' });
     return '<div class="sr-page"><section class="arthd"><div class="rhtx"><div class="kicker label"><span>MusicBrainz</span><span class="acts">' + SRCH() + '</span></div><h1>Search</h1></div></section>' + form.outerHTML + '<p class="u-sub sr-sub">For more information, check the <a href="' + MB + '/doc/Search">documentation</a>.</p></div>';
@@ -12280,9 +12261,23 @@ document.addEventListener('click', ev => {
 });
 // a filterable list under a URL search field, in the suite's look instead of the browser's datalist
 const EH_COMBO = { tt: () => URL_TT.map(v => ({ v, t: srchName(v.replace('-', '_')) })), rt: () => URL_RT.map(v => ({ v, t: v })) };
+// a list with an action: picking runs it instead of filling the field (the search page's category and Add criteria)
+EH_COMBO.slcat = () => Object.keys(SL_MODES).map(k => ({ v: k, t: SL_MODES[k][0], h: k === 'search' || k === 'taglookup' ? '' : 'Other lookup' }));
+EH_COMBO.sladd = inp => slLeft(inp.closest('form')).map(f => ({ v: f[0], t: f[1], h: '' }));
+const EH_CB_ACT = {
+    slcat: (inp, o) => {
+        const form = inp.closest('form'); if (o.v !== form.dataset.slMode) { LOG.debug('Search page: category ' + o.v); slMode(form, o.v); } else inp.value = SL_MODES[o.v][0];
+        form.querySelector('[data-sl-rows] input, [data-sl-rows] select')?.focus();
+    },
+    sladd: (inp, o) => {
+        const form = inp.closest('form'), f = SL_MODES[form.dataset.slMode][2].find(x => x[0] === o.v); inp.value = ''; if (!f) return;
+        if (!form.querySelector('.sl-row[data-f="' + o.v + '"]')) form.querySelector('[data-sl-rows]').insertAdjacentHTML('beforeend', slRow(f));
+        slAddSync(form); form.querySelector('.sl-row[data-f="' + o.v + '"] input, .sl-row[data-f="' + o.v + '"] select')?.focus();
+    },
+};
 let ehCbIn = null, ehCbHit = [], ehCbAt = 0, ehCbPop = null;
 const ehCbDraw = () => {
-    ehCbPop.innerHTML = ehCbHit.map((o, i) => `<div class="eh-cb-opt${i === ehCbAt ? ' on' : ''}" data-i="${i}">${esc(o.t)}${o.t !== o.v ? ` <small>${esc(o.v)}</small>` : ''}</div>`).join('') || '<div class="eh-cb-none">No match</div>';
+    ehCbPop.innerHTML = ehCbHit.map((o, i) => `<div class="eh-cb-opt${i === ehCbAt ? ' on' : ''}" data-i="${i}">${esc(o.t)}${(o.h ?? (o.t !== o.v ? o.v : '')) ? ` <small>${esc(o.h ?? o.v)}</small>` : ''}</div>`).join('') || '<div class="eh-cb-none">No match</div>';
     ehCbPop.querySelector('.on')?.scrollIntoView({ block: 'nearest' });
 };
 const ehCbOpen = (inp, all) => {
@@ -12291,7 +12286,7 @@ const ehCbOpen = (inp, all) => {
         ehCbPop.addEventListener('mousedown', ev => { ev.preventDefault(); const d = ev.target.closest('.eh-cb-opt'); if (d) ehCbPick(ehCbHit[+d.dataset.i]); });
     }
     ehCbIn = inp; const t = all ? '' : inp.value.trim().toLowerCase();
-    ehCbHit = EH_COMBO[inp.dataset.ehcombo]().filter(o => !t || o.t.toLowerCase().includes(t) || o.v.includes(t));
+    ehCbHit = EH_COMBO[inp.dataset.ehcombo](inp).filter(o => !t || o.t.toLowerCase().includes(t) || o.v.includes(t));
     ehCbHit.sort((a, b) => t ? (a.t.toLowerCase().startsWith(t) ? 0 : 1) - (b.t.toLowerCase().startsWith(t) ? 0 : 1) : 0);
     ehCbAt = Math.max(0, ehCbHit.findIndex(o => o.v === inp.value)); ehCbDraw();
     const r = inp.getBoundingClientRect();
@@ -12299,16 +12294,17 @@ const ehCbOpen = (inp, all) => {
     ehCbPop.hidden = false;
 };
 const ehCbClose = () => { if (ehCbPop) ehCbPop.hidden = true; ehCbIn = null; };
-const ehCbPick = o => { const inp = ehCbIn; ehCbClose(); if (inp && o) inp.value = o.v; };
-document.addEventListener('click', ev => { const i = ev.target.closest?.('input[data-ehcombo]'); if (i && ehCbIn !== i) ehCbOpen(i, true); }, true);
+const ehCbPick = o => { const inp = ehCbIn; ehCbClose(); if (!inp || !o) return; const a = EH_CB_ACT[inp.dataset.ehcombo]; if (a) a(inp, o); else inp.value = o.v; };
+document.addEventListener('click', ev => { const i = ev.target.closest?.('input[data-ehcombo]'); if (i && ehCbIn !== i) { if (EH_CB_ACT[i.dataset.ehcombo]) i.select(); ehCbOpen(i, true); } }, true);
 document.addEventListener('input', ev => { if (ev.target.dataset?.ehcombo) ehCbOpen(ev.target); }, true);
-document.addEventListener('focusout', ev => { if (ev.target === ehCbIn) ehCbClose(); }, true);
+document.addEventListener('focusout', ev => { if (ev.target === ehCbIn) ehCbClose(); if (ev.target.matches?.('[data-sl-cat]')) ev.target.value = ev.target.getAttribute('value') || ''; if (ev.target.matches?.('[data-sl-add]')) ev.target.value = ''; }, true);
 document.addEventListener('scroll', () => { if (ehCbIn) ehCbClose(); }, true);
 document.addEventListener('keydown', ev => {
     const inp = ev.target; if (!inp.dataset?.ehcombo) return;
-    if (ehCbIn !== inp) { if (ev.key === 'ArrowDown') { ehCbOpen(inp, true); ev.preventDefault(); } return; }
+    const act = EH_CB_ACT[inp.dataset.ehcombo];
+    if (ehCbIn !== inp) { if (ev.key === 'ArrowDown') { ehCbOpen(inp, true); ev.preventDefault(); } else if (ev.key === 'Enter' && act) ev.preventDefault(); return; }
     if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') { ehCbAt = Math.min(ehCbHit.length - 1, Math.max(0, ehCbAt + (ev.key === 'ArrowDown' ? 1 : -1))); ehCbDraw(); ev.preventDefault(); }
-    else if (ev.key === 'Enter' && ehCbHit[ehCbAt] && inp.value !== ehCbHit[ehCbAt].v) { ehCbPick(ehCbHit[ehCbAt]); ev.preventDefault(); }
+    else if (ev.key === 'Enter' && (act || (ehCbHit[ehCbAt] && inp.value !== ehCbHit[ehCbAt].v))) { ev.preventDefault(); if (ehCbHit[ehCbAt]) ehCbPick(ehCbHit[ehCbAt]); }
     else if (ev.key === 'Escape') { ehCbClose(); ev.stopPropagation(); }
 }, true);
 function urlHero(p, sub) {

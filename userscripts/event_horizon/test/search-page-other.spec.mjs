@@ -7,10 +7,9 @@ for (const [k, v] of [['barcode', '5099749994324'], ['catno', 'CDP 7 46185 2'], 
     await page.goto('https://test.musicbrainz.org/');
     await idle(page); await inject('event_horizon');
     await page.evaluate(() => { window.__kept = 1; });
-    if (!(await page.locator('#app a.hm-all').isVisible())) await page.locator('#app .hm-tg').first().click();
-    await page.locator('#app a.hm-all').click();
-    const form = page.locator('#app form[data-sl]');
-    await form.locator('[data-sl-add]').selectOption('other-lookup.' + k);
+    await page.locator('#app .hm-ctl a.hm-es[href$="/search"]').click();
+    const form = page.locator('#app form[data-sl]'), cat = form.locator('[data-sl-cat]');
+    await cat.click(); await cat.fill(k === 'mbid' ? 'MBID' : k === 'catno' ? 'catalog' : k); await cat.press('Enter');
     await form.locator('.sl-row[data-f="other-lookup.' + k + '"] input').fill(v);
     await form.locator('.sl-row[data-f="other-lookup.' + k + '"] input').press('Enter');
     await page.waitForTimeout(6000);
