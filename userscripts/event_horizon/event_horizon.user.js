@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.253000
+// @version      2026.11.20.244000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13533,10 +13533,17 @@ function plyListMenu(btn) {
     plyCoverWire(document.querySelector('#eh-ply-menu .ply-rh img'));
     plyGroupCovers(document.querySelector('#eh-ply-menu'));
     plyHeadLoad(ply.q[ply.i]);
-    // Up and Down walk the shown rows, from the filter too; Enter on a row plays it, as a click does
+    // Up and Down walk the shown rows, from the filter too; Enter plays the row (the filter's first) and closes the playlist
     const me = document.getElementById('eh-ply-menu'), walk = ev => {
         const m = document.getElementById('eh-ply-menu'); if (m !== me || !m.isConnected) { document.removeEventListener('keydown', walk, true); return; }
-        if ((ev.key !== 'ArrowUp' && ev.key !== 'ArrowDown') || ev.altKey || ev.ctrlKey || ev.metaKey || ev.shiftKey) return;
+        if ((ev.key !== 'ArrowUp' && ev.key !== 'ArrowDown' && ev.key !== 'Enter') || ev.altKey || ev.ctrlKey || ev.metaKey || ev.shiftKey) return;
+        if (ev.key === 'Enter') {
+            const a = document.activeElement, r = a && m.contains(a) && (a.closest('.qi') || (a.matches('.qf') && [...m.querySelectorAll('.qi')].find(x => !x.hidden)));
+            if (!r) return;
+            ev.preventDefault(); ev.stopPropagation(); r.click();
+            document.querySelector('#eh-ply-menu .ply-x')?.click();
+            return;
+        }
         const a = document.activeElement; if (!m.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a?.tagName)) return;
         const rs = [...m.querySelectorAll('.qi')].filter(r => !r.hidden); if (!rs.length) return;
         const f = m.querySelector('.hd.qo .qf'), i = rs.indexOf(a), d = ev.key === 'ArrowDown' ? 1 : -1;
@@ -17509,7 +17516,7 @@ const KEY_CMDS = [
     ['collrec', 'Collect the playing recording', 'alt+2', () => plyKeyPa('rec')],
     ['love', 'Love the playing track', 'alt+3', () => plyKeyPa('love')],
     // the playlist under the player's title, with the focus on the playing track for Up, Down and Enter
-    ['playlist', 'Show or hide the playlist', 'alt+space', () => plyKeyList()],
+    ['playlist', 'Show or hide the playlist', 'ctrl+space', () => plyKeyList()],
     ['profile', 'Your profile', 'u', () => { const a = document.querySelector('.header a[href*="/user/"], #header a[href*="/user/"], header a[href*="/user/"]'); if (!a) return false; const m = a.href.match(/\/user\/[^/?#]+/); location.assign(MB + m[0]); return true; }],
     ['home', 'MusicBrainz home page', '.', () => { location.assign(MB + '/'); return true; }],
     // with String Theory, its settings; alone, the script's own
