@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.19.235600
+// @version      2026.11.20.120000
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg==
@@ -179,7 +179,9 @@
   // `execCommand` also fires a genuine `input` event, so the React-controlled
   // edit-note field (release editor) still updates. Falls back to the native
   // value setter + synthetic events if execCommand is unavailable or no-ops.
+  const touchedNotes = new WeakSet();   // edit-note fields you wrote in (#1082), see captureNote
   function setValue(ta, val) {
+    touchedNotes.add(ta);   // a note applied from Mammoth counts as yours (#1082)
     let ok = false;
     try {
       ta.focus();
@@ -242,7 +244,11 @@
   }
 
   // ── capture on submit ────────────────────────────────────────────────────────
-  const captureNote = () => document.querySelectorAll('textarea.edit-note').forEach(ta => recordHistory(ta.value));
+  // Only a note you wrote yourself (typed, pasted, or applied from Mammoth) goes to History:
+  // another script's automatic note (Falcon's links, Art Station's cover upload) is set from
+  // code, which fires no trusted input, so a field nobody touched is skipped (#1082).
+  document.addEventListener('input', e => { if (e.isTrusted && e.target.matches && e.target.matches('textarea.edit-note')) touchedNotes.add(e.target); }, true);
+  const captureNote = () => document.querySelectorAll('textarea.edit-note').forEach(ta => { if (touchedNotes.has(ta)) recordHistory(ta.value); });
   document.addEventListener('submit', captureNote, true);
   document.addEventListener('click', e => {
     const b = e.target.closest && e.target.closest('button, input[type="submit"]'); if (!b) return;

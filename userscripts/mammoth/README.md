@@ -16,6 +16,7 @@ Reusable edit notes in a panel beside the edit-note field of every edit form, an
 ## Saved notes
 
 - **＋** saves the current text. In **History**, ★ moves a note to the saved ones.
+- History keeps only notes you wrote: a note another script fills in by itself (Falcon's links, Art Station's cover upload) is left out unless you edit it.
 - ★ on a saved note pins it as a **button** under the field.
 - Sort **manually** (drag ⠿), by **most used** or by **recent**.
 - Click applies a note, replacing or appending ([Shortcuts](#shortcuts)); appending skips a line that's already there.
