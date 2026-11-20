@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.202000
+// @version      2026.11.20.210000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12574,23 +12574,28 @@ let PLY_BUS = null;
 try { if (typeof BroadcastChannel === 'function') PLY_BUS = new BroadcastChannel('mbu-event-horizon-player-v1'); } catch (e) { /* unavailable in this browser */ }
 let plyMade = 0;   // when the playing playlist was made, which names it in the recent playlists
 let plyRemote = false, plyOwnerSeen = 0, plyTabSeen = 0, plyProbeAt = 0, plyPending = null, plyWindow = null;
+// what this tab mirrors: the host's id, whether it is the window, when a window last spoke, when the host tab left its page
+let plyHostId = '', plyHostWin = false, plyWinSeen = 0, plyGone = 0;
 const PLY_ID = Math.random().toString(36).slice(2) + Date.now().toString(36);
 const plySend = msg => { try { if (PLY_BUS) PLY_BUS.postMessage(msg); } catch (e) { PLOG.warn('window message failed', e.message); } };
+// the player that plays: the window, or a tab playing it itself; every other tab mirrors it as a remote control
+const plyHost = () => PLY_WINDOW || (ply.i >= 0 && !plyRemote);
 const plyPublish = () => {
-    if (!PLY_WINDOW) return;
-    plySend({ type: 'state', q: ply.q, i: ply.i, src: ply.src, pref: ply.pref, paused: ply.paused, yt: ply.yt, kind: ply.kind, ctl: ply.ctl, ends: ply.ends, vol: S.playerVol, video: S.playerVideo, repeat: S.playerRepeat, shuffle: S.playerShuffle, back: ply.hist.length > 0, made: plyMade });
+    if (!plyHost()) return;
+    plySend({ type: 'state', id: PLY_ID, place: PLY_WINDOW ? 'window' : 'tab', q: ply.q, i: ply.i, src: ply.src, pref: ply.pref, paused: ply.paused, yt: ply.yt, kind: ply.kind, ctl: ply.ctl, ends: ply.ends, vol: S.playerVol, video: S.playerVideo, repeat: S.playerRepeat, shuffle: S.playerShuffle, back: ply.hist.length > 0, made: plyMade });
 };
 function plyWindowStart(q, i, want, made, rnd) {
     plyCollStop();
     if (!PLY_BUS) { toast('Separate player windows need BroadcastChannel'); return; }
     let fresh = false;
-    if (!plyRemote && Date.now() - plyOwnerSeen > 4000) {
+    if (Date.now() - plyWinSeen > 4000) {
         plyWindow = window.open('', 'mbu-event-horizon-player', 'popup=yes,width=520,height=480');
         if (!plyWindow) { toast('Allow pop-up windows to use the separate player'); return; }
         try { if (plyWindow.location.origin !== location.origin || new URLSearchParams(plyWindow.location.search).get('eh-player-window') !== '1') { fresh = true; plyWindow.location.href = location.origin + '/?eh-player-window=1'; } }
         catch (e) { toast('Could not open the player window'); return; }
     }
     if (!plyRemote && ply.i >= 0) plyClose();
+    plyHostId = ''; plyGone = 0;
     plySend({ type: 'claim', id: PLY_ID, place: 'window', replace: fresh });
     const id = Date.now().toString(36) + Math.random().toString(36).slice(2);
     plyPending = { type: 'start', id, q, i, rnd: !!rnd, want: want || '', pref: want || ply.pref, made: made || Date.now() };
@@ -12631,18 +12636,19 @@ if (PLY_BUS) {
     PLY_BUS.addEventListener('message', ev => {
         const m = ev.data; if (!m || typeof m !== 'object') return;
         if (m.type === 'claim' && m.id !== PLY_ID) {
-            plyPending = null; plyClaimSeen = Date.now();
+            plyPending = null; plyClaimSeen = Date.now(); plyHostId = m.place === 'tab' ? m.id : ''; plyGone = 0;
             if (PLY_WINDOW && (m.place === 'tab' || m.replace)) { if (ply.i >= 0) plyClose(); window.close(); }
-            else if (!PLY_WINDOW && (m.place === 'tab' || !plyRemote) && ply.i >= 0) { plyRemote = false; plyClose(); }
+            // a player playing here stops; a mirror stays and follows the new player
+            else if (!PLY_WINDOW && !plyRemote && ply.i >= 0) plyClose();
             return;
         }
-        if (PLY_WINDOW) {
-            if (m.type === 'hello') { plyPublish(); return; }
-            if (m.type === 'start' && Array.isArray(m.q) && Number.isInteger(m.i)) {
+        if (PLY_WINDOW || plyHost()) {
+            if (m.type === 'hello') { plyPublish(); if (!PLY_WINDOW) plySend({ type: 'tab-active', id: PLY_ID }); return; }
+            if (PLY_WINDOW && m.type === 'start' && Array.isArray(m.q) && Number.isInteger(m.i)) {
                 if (!seen.has(m.id)) { seen.add(m.id); if (seen.size > 100) seen.delete(seen.values().next().value); plyMade = m.made || Date.now(); ply.q = m.q; ply.pref = m.pref || ''; plyGo(m.rnd ? plyFirst(m.q.length) : m.i, m.want); }
                 plySend({ type: 'started', id: m.id }); plyPublish(); return;
             }
-            if (m.type !== 'control') return;
+            if (m.type === 'control') {
             if (m.action === 'go') { if (m.value.want) ply.pref = m.value.want; plyGo(m.value.i, m.value.want); }
             else if (m.action === 'step') plyStep(m.value);
             else if (m.action === 'play') { plyCmd(!!m.value); ply.paused = !m.value; plyDraw(); }
@@ -12651,12 +12657,14 @@ if (PLY_BUS) {
             else if (m.action === 'video') plyVideo();
             else if (m.action === 'repeat') plyRepeat();
             else if (m.action === 'shuffle') { PLOG.info('shuffle: a tab asks to toggle it'); plyShuffle(); }
-            else if (m.action === 'close') { plyClose(); window.close(); }
+            else if (m.action === 'close') { plyClose(); if (PLY_WINDOW) window.close(); }
             else if (m.action === 'to-tab') { plyToTab(m.value); return; }
             else if (m.action === 'queue') plyRequeue(m.value && m.value.rel, m.value && m.value.q);
             else if (m.action === 'append') plyAppend(m.value);
             else if (m.action === 'remove' && m.value) plyRemove(m.value.from, m.value.to);
             plyPublish(); return;
+            }
+            if (PLY_WINDOW) return;
         }
         if (m.type === 'hello' && !plyRemote && ply.i >= 0) { plySend({ type: 'tab-active', id: PLY_ID }); return; }
         if (m.type === 'tab-active' && m.id !== PLY_ID) { plyTabSeen = Date.now(); return; }
@@ -12668,9 +12676,11 @@ if (PLY_BUS) {
             return;
         }
         if (m.type === 'started' && plyPending && m.id === plyPending.id) { plyPending = null; return; }
-        if (m.type === 'closed' && plyRemote) { plyRemote = false; plyOwnerSeen = 0; plyClose(); return; }
+        // a host tab that leaves its page says soon: the next page resumes the player, so the mirror waits for it a while
+        if (m.type === 'closed') { if (plyRemote && m.id === plyHostId) { if (m.soon) plyGone = Date.now(); else { plyRemote = false; plyOwnerSeen = 0; plyClose(); } } return; }
         if (m.type !== 'state') return;
-        plyOwnerSeen = Date.now(); plyProbeAt = 0;
+        plyOwnerSeen = Date.now(); plyProbeAt = 0; plyGone = 0;
+        plyHostId = m.id || ''; plyHostWin = m.place !== 'tab'; if (plyHostWin) plyWinSeen = Date.now();
         if (!S.player || (!plyRemote && !plyPending && ply.i >= 0) || !Array.isArray(m.q)) return;
         if (m.i < 0) { if (plyRemote) { plyRemote = false; plyClose(); } return; }
         const before = [ply.i, ply.src, ply.paused, JSON.stringify(ply.q.map(t => [t.key, t.rel, t.title])), S.playerVideo, S.playerRepeat, S.playerShuffle, m.back].join('|'), vol = S.playerVol;
@@ -12694,8 +12704,11 @@ if (PLY_BUS) {
             plyPublish();
         };
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready, { once: true }); else ready();
-        addEventListener('beforeunload', () => plySend({ type: 'closed' }));
-    } else plySend({ type: 'hello' });
+        addEventListener('beforeunload', () => plySend({ type: 'closed', id: PLY_ID }));
+    } else {
+        addEventListener('pagehide', () => { if (plyHost()) plySend({ type: 'closed', id: PLY_ID, soon: true }); });
+        plySend({ type: 'hello' });
+    }
 }
 if (mbuTestHooks()) window.__ehPlayerTest = { start: (q, i = 0) => plyWindowStart(q, i), toWindow: plyToWindow, toTab: plyToTab, inWindow: plyInWin, startRelease: plyStart, addRelease: plyAddRelease, refreshRelease: plyRelChanged, recording: plyRec, toggle: plyToggle, restore: plyRestore, history: plyHist, remote: () => plyRemote, popup: () => PLY_WINDOW, state: () => ({ i: ply.i, q: ply.q, gen: ply.gen, paused: ply.paused, vol: S.playerVol, repeat: S.playerRepeat }) };
 // Keep playback alive when opening the release editor, including on MusicBrainz's native page. Only a player playing in
@@ -12754,7 +12767,7 @@ function plyRequeue(rel, fresh) {
     if (sig(q) === before) return;
     PLOG.info('the release changed, ' + q.length + ' playable (was ' + ply.q.length + ')');
     ply.q = q; ply.i = cur ? q.indexOf(cur) : -1;
-    plyKeep(); plySave(); plyDraw(); if (PLY_WINDOW) plyPublish();
+    plyKeep(); plySave(); plyDraw(); plyPublish();
 }
 function plyRelChanged(r) {
     if (!r || !r.id) return;
@@ -12825,7 +12838,7 @@ function plyRemove(from, to = from + 1) {
     if (!q.length) { plyClose(); return; }
     if (ply.i >= from && ply.i < to) { ply.q = q; plyGo(Math.min(from, q.length - 1), ply.pref); return; }
     ply.q = q; ply.i = q.indexOf(cur);
-    plyKeep(); plySave(); plyDraw(); if (PLY_WINDOW) plyPublish();
+    plyKeep(); plySave(); plyDraw(); plyPublish();
 }
 // a right-click on a playlist row removes its track, on a release heading all its tracks
 document.addEventListener('contextmenu', ev => {
@@ -12938,8 +12951,9 @@ function plyRestore(n) {
     const i = v.q[v.i] ? v.i : 0;
     plyArchive();
     PLOG.info('playlist restored', plyStamp(v.made), v.q.length);
-    if ((plyInWin() || plyRemote) && !PLY_WINDOW) { plyWindowStart(v.q, i, v.src, v.made); return; }
+    if ((plyInWin() || (plyRemote && plyHostWin)) && !PLY_WINDOW) { plyWindowStart(v.q, i, v.src, v.made); return; }
     plyCollStop();
+    if (plyRemote) { plyControl('close'); plyRemote = false; }
     if (!PLY_WINDOW) plySend({ type: 'claim', id: PLY_ID, place: 'tab' });
     plyMade = v.made || Date.now(); ply.q = v.q; ply.pref = v.src || ''; plyGo(i, v.src);
 }
@@ -13063,6 +13077,7 @@ const plyStep = d => {
     }
     const i = ply.i + d; if (i >= 0 && i < ply.q.length) plyGo(i); else if (d < 0 && ply.i === 0 && ply.ctl) plySeek(0); };
 function plyClose() {
+    const wasHost = plyHost();
     plyCollStop();
     if (plyRemote && !PLY_WINDOW) { plyControl('close'); plyRemote = false; }
     PLOG.info('closed');
@@ -13075,7 +13090,8 @@ function plyClose() {
     document.documentElement.classList.remove('eh-ply-bar');
     plyPin();
     plyMark();
-    if (PLY_WINDOW) { plySend({ type: 'closed' }); window.close(); }
+    if (PLY_WINDOW) { plySend({ type: 'closed', id: PLY_ID }); window.close(); }
+    else if (wasHost) plySend({ type: 'closed', id: PLY_ID });
 }
 function plyDock(e) {
     const root = plyRoot(), dock = root.querySelector('.ply-dock');
@@ -13651,7 +13667,8 @@ function plyLbMenu(btn) {
         + (S.playerLb ? it('https://listenbrainz.org/my/listens/', 'ext', 'Your listens') : ''));
     const hist = plyHist();
     parts.push((hist.length ? `<button type="button" class="it" role="menuitem" data-m="hist">${SVG(PLY_I.note)}<span>Recent playlists…</span></button>` : '') + (ME ? `<button type="button" class="it" data-m="loadcoll">${SVG(MK_COL)}<span>Load collection…</span></button><button type="button" class="it" data-m="savecoll">${SVG(MK_COL)}<span>Save playlist as collection…</span></button>` : '') + (ply.yt ? `<button type="button" class="it" role="menuitem" data-m="video">${SVG(PLY_I.video)}<span>${S.playerVideo ? 'Hide the video' : 'Show the video'}</span></button>` : '')
-        + (PLY_WINDOW || plyRemote ? `<button type="button" class="it" role="menuitem" data-m="tab">${SVG(PLY_I.back)}<span>${PLY_WINDOW ? 'Back to tab' : 'Back to this tab'}</span></button>`
+        + (PLY_WINDOW || plyRemote ? `<button type="button" class="it" role="menuitem" data-m="tab">${SVG(PLY_I.back)}<span>${PLY_WINDOW ? 'Back to tab' : plyHostWin ? 'Back to this tab' : 'Move to this tab'}</span></button>` : '')
+        + (PLY_WINDOW || (plyRemote && plyHostWin) ? ''
             : PLY_BUS ? `<button type="button" class="it" role="menuitem" data-m="win">${SVG(PLY_I.win)}<span>Open in window</span></button>` : '')
         + (plyHasVol() ? `<div class="ply-mvol"><button type="button" class="ply-b" data-m="mute" aria-label="${+S.playerVol ? 'Mute' : 'Unmute'}">${plyVolIc(+S.playerVol)}</button><input type="range" class="ply-mv" min="0" max="100" step="1" value="${+S.playerVol}" aria-label="Volume"></div>` : '')
         + `<button type="button" class="it" role="menuitem" data-m="x" style="color:var(--mbu-bad,#c2413b)">${SVG(PLY_I.x)}<span>Stop and close</span></button>`);
@@ -13903,8 +13920,9 @@ try {
 } catch (e) {}
 if (!PLY_WINDOW) { document.documentElement.setAttribute('data-eh-ply-hold', ''); setTimeout(plyUnhold, 4000); addEventListener('load', () => setTimeout(() => { if (!ehOn) plyUnhold(); }, 300)); }
 setInterval(() => {
-    if (PLY_WINDOW) plyPublish();
+    plyPublish();
     if (plyRemote && !PLY_WINDOW) {
+        if (plyGone && Date.now() - plyGone > 8000) { plyRemote = false; plyGone = 0; plyOwnerSeen = 0; plyClose(); return; }
         if (document.visibilityState === 'visible' && Date.now() - plyOwnerSeen > 5000) {
             if (!plyProbeAt) { plyProbeAt = Date.now(); plySend({ type: 'hello' }); }
             else if (Date.now() - plyProbeAt > 10000) { plyRemote = false; plyClose(); }
