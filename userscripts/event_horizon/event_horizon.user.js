@@ -1,7 +1,11 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
+<<<<<<< HEAD
 // @version      2026.11.21.010000
+=======
+// @version      2026.11.20.252000
+>>>>>>> 1cbbb63e8 (style(event horizon): the collections list's tile play button looks as the cover play button inside a collection)
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3395,7 +3399,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .cl-row.cl-th{font-size:12px;font-weight:600;color:var(--muted);padding:2px 0 4px}.cl-th .cl-nm{padding-left:2px}.cl-th .cl-ty,.cl-th .cl-pc{font-size:inherit;color:inherit}.cl-th .cl-ct{font-weight:inherit}.cl-th .cl-acts{min-height:1px}
 .cl-row .cl-acts{min-width:66px;justify-content:flex-end}
 .clp-w{position:relative;display:inline-flex;flex:none}.clp{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;cursor:pointer;visibility:hidden;flex:none}.clp svg{width:16px;height:16px}.clp-w>.clp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:var(--text)}.clp-w>.clp:hover,.clp-w>.clp:focus-visible{color:var(--link)}
-.cl-foot>.clp{background:transparent;color:var(--text)}.cl-foot>.clp:hover,.cl-foot>.clp:focus-visible{background:rgba(0,0,0,.62);color:#fff}.cl-foot>.clp svg{width:14px;height:14px}
+.cl-foot>.clp{background:rgba(0,0,0,.62);color:#fff}.cl-foot>.clp:hover,.cl-foot>.clp:focus-visible{background:rgba(0,0,0,.82)}.cl-foot>.clp svg{width:14px;height:14px}
 .cl-tile:hover .clp,.cl-li:hover .clp,.cl-row:hover .clp,.cvp-on .clp,.clp:focus-visible{visibility:visible}.cl-li:hover .clp-w>.cl-ico,.cl-row:hover .clp-w>.cl-ico,.cvp-on .clp-w>.cl-ico,.clp-w:focus-within>.cl-ico{visibility:hidden}
 @media (hover:none){.clp{pointer-events:none}.cvp-on .clp{pointer-events:auto}}.cl-note{margin-top:14px}
 @media (max-width:600px){.cl-tools{margin-left:0}.cl-row{flex-wrap:wrap}.cl-nm{flex-basis:100%}.cl-ty{flex:1;width:auto}.cl-pc{width:auto}.cl-row .cl-acts{min-width:0}.cl-th .cl-nm{flex-basis:auto;flex:1}.cl-th .cl-acts{display:none}}
