@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.040000
+// @version      2026.11.22.050000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4407,7 +4407,7 @@ function ambientApply(layer, kind) {
     layer._ehPattern = { key, P: p, stop, shift() {} }; document.addEventListener('visibilitychange', vis); vis();
 }
 
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'arAuto', 'arCol', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'clView', 'clSort', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'fx', 'fxOff', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'bgAmount', 'bgSize', 'bgGlow', 'bgHue', 'auraOpacity', 'auraBlur', 'auraSat', 'auraHeight', 'glowStrength', 'glowSize', 'glowPlace', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView', 'lbGroups'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'arAuto', 'arCol', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'clView', 'clSort', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'fx', 'fxOff', 'hex', 'hexOpacity', 'hexIntensity', 'hexMotion', 'hexFx', 'hexPace', 'hexTrail', 'hexOften', 'hexGlow', 'hexTwo', 'hexDepth', 'bgUrl', 'bgArt', 'bgSeed', 'bgBlur', 'bgBright', 'bgSat', 'bgOpacity', 'bgFit', 'bgVig', 'bgTone', 'bgAmount', 'bgSize', 'bgGlow', 'bgHue', 'auraOpacity', 'auraBlur', 'auraSat', 'auraHeight', 'glowStrength', 'glowSize', 'glowPlace', 'tagView', 'tgxView', 'etagView', 'atagView', 'tagSort', 'tagScope', 'releaseListView', 'lbGroups'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true, tags: false },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -4432,7 +4432,7 @@ const S = {
     imgOrder: ['discogs', 'wikipedia', 'deezer', 'spotify', 'tidal', 'apple', 'soundcloud'], // whose artist image or label logo comes first
     imgOff: [], // the image providers not used
     hgrp: 'burst', // the history page's grouping
-    tagView: 'bars', etagView: 'chips', tagSort: 'count', tagScope: 'a', tgxView: 'row', // the tags pages' view (an editor's, an entity's), order and kind
+    tagView: 'bars', etagView: 'chips', atagView: 'cloud', tagSort: 'count', tagScope: 'a', tgxView: 'row', // the tags pages' view (an editor's, an entity's), order and kind
 };
 VIEW.push(...AMBIENT_KEYS, 'hexColours');
 Object.assign(S, { effect: 'hexagons', ambientOpacity: 65, ...AMBIENT_DEFAULTS, ...FX_OWN, hexColours: [] });
@@ -9631,16 +9631,19 @@ function tagsParse(html, ent) {
         for (const u of j.userTags || []) if (!tags.some(t => t.n === u.tag.name)) tags.push({ n: u.tag.name, c: u.count || 0, g: !!u.tag.genre, v: u.vote });
         break;
     }
+    // MusicBrainz's most used tags (/tags): two clouds, the genres first, each count only in its tooltip
+    const clouds = ent ? [] : [...d.querySelectorAll('ul.tag-cloud')];
+    if (!tags && clouds.length) tags = clouds.flatMap((ul, i) => [...ul.children].map(li => ({ n: tx(li.querySelector('a')), c: +((li.getAttribute('title') || '').match(/\d[\d.,\s\u00a0\u202f']*\d|\d/g) || ['0']).pop().replace(/\D/g, ''), g: clouds.length > 1 && i === 0, v: 0 }))).filter(t => t.n);
     if (!tags) tags = [...d.querySelectorAll('ul.genre-list > li, ul.tag-list > li')].map(li => ({ n: tx(li.querySelector('a')), c: +tx(li.querySelector('.tag-count')) || 0, g: !!li.closest('.genre-list'), v: 0 })).filter(t => t.n);
     const hn = h1 && (h1.querySelector('a bdi') || h1.querySelector('a')), hc = h1 && h1.querySelector('.comment');
     return { av: avi ? avi.getAttribute('src') || '' : '', links, gen, name: h1 ? tx(h1) : '', en: hn ? tx(hn) : '', ed: hc ? tx(hc).replace(/^\(|\)$/g, '') : '', by, tabs, tags };
 }
 async function tagsLoad(n, key, down) {
     const d = data, [kind, id] = [key.split('/')[0], key.slice(key.indexOf('/') + 1)];
-    const url = kind === 'utags' ? `${MB}/user/${id}/tags${down ? '?show_downvoted=1' : ''}` : `${MB}/${id.replace(':', '/')}/tags`;
+    const url = kind === 'atags' ? `${MB}/tags` : kind === 'utags' ? `${MB}/user/${id}/tags${down ? '?show_downvoted=1' : ''}` : `${MB}/${id.replace(':', '/')}/tags`;
     try {
         let html;
-        if (key === PAGE_ID && mbBody && !down && !/show_downvoted=1/.test(location.search)) html = '<body>' + mbBody.innerHTML + '</body>';
+        if (key === PAGE_ID && mbBody && !down && !/show_downvoted=1|show_list=1/.test(location.search)) html = '<body>' + mbBody.innerHTML + '</body>';
         else { const r = await mbnFetch(url); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
         const t = tagsParse(html, kind === 'etags');
         if (n === showing && data === d) { if (down) d.down = t.tags; else d.t = t; d.err = ''; render(); }
@@ -9652,7 +9655,7 @@ async function tagsLoad(n, key, down) {
         if (n === showing && data === d) { d.err = e.message; render(); }
     }
 }
-const tgHref = (d, t) => d.ent ? `${MB}/tag/${encodeURIComponent(t.n)}` : `${MB}/user/${encodeURIComponent(d.name)}/tag/${encodeURIComponent(t.n)}`;
+const tgHref = (d, t) => d.ent || d.all ? `${MB}/tag/${encodeURIComponent(t.n)}` : `${MB}/user/${encodeURIComponent(d.name)}/tag/${encodeURIComponent(t.n)}`;
 function tgList(d) {
     const q = (d.q || '').trim().toLowerCase(), all = d.ent || !d.dn ? (d.t ? d.t.tags : []) : d.down || [];
     // as on MusicBrainz, a tag scored zero or below is left out, unless it carries your vote
@@ -9691,7 +9694,7 @@ function tgTools(d) {
         + (fo ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" id="tg-q" data-tgq value="${esc(d.q || '')}" placeholder="Filter tags" aria-label="Filter tags" autocomplete="off"></span>` : '')
         + `<span class="ed-views"><button type="button" data-tgf="open" aria-pressed="${!!fo}" aria-label="Filter" data-tip="${fo ? 'Hide the filter, clearing it' : 'Filter the tags'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`
         + ch('Genres', gs, g, g ? 'o' : 'a') + ch('Other', all.length - gs, o, o ? 'g' : 'a')
-        + (d.ent ? '' : `<button type="button" class="tg-sw" role="switch" data-tgset="dn:${d.dn ? 0 : 1}" aria-checked="${d.dn}"><u></u>Downvotes</button>`)
+        + (d.ent || d.all ? '' : `<button type="button" class="tg-sw" role="switch" data-tgset="dn:${d.dn ? 0 : 1}" aria-checked="${d.dn}"><u></u>Downvotes</button>`)
         + `<span class="seg tg-vw" role="group" aria-label="View">${TG_VIEWS.map(([v, t]) => `<button type="button" data-tgset="view:${v}" aria-pressed="${d.view === v}" aria-label="${t}" data-tip="${t}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${TG_IC[v]}</svg></button>`).join('')}</span></div>`;
 }
 // an entity's Relationships page → "erels/<type>:<mbid>": MusicBrainz's own page read (its phrases, dates and credits as it
@@ -9879,7 +9882,8 @@ function tagsHtml(d) {
     const title = d.ent ? (t && t.name || 'Tags') : (t && t.name || d.name);
     const all = t ? t.tags : [], gs = all.filter(x => x.g).length;
     const sub = d.err && t ? `<span class="u-err">${esc(d.err)}</span>` : t ? `${fmtN(all.length)} tag${all.length === 1 ? '' : 's'}${gs ? `, ${fmtN(gs)} of them genres` : ''}` : '';
-    const hero = !d.ent ? userHead(d.name, t && t.av, t && t.tabs) + userBar(`<p class="u-sub">${d.dn ? 'Downvoted' : 'Upvoted'}${sub ? ' · ' + sub : ''}</p>`)
+    const hero = d.all ? `<section class="u-hero"><span class="hm-av u-av">${mkSvg(CI_TAG).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>MusicBrainz</span><span class="acts">${SRCH()}</span></div><h1>${esc(t && t.name || 'Tags')}</h1><p class="u-sub">The most used${sub ? ' · ' + sub : ''}</p></div></section>`
+        : !d.ent ? userHead(d.name, t && t.av, t && t.tabs) + userBar(`<p class="u-sub">${d.dn ? 'Downvoted' : 'Upvoted'}${sub ? ' · ' + sub : ''}</p>`)
         : `<section class="u-hero"><span class="hm-av u-av">${mkSvg(CI_TAG).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>Tags</span><span class="acts">${SRCH()}</span></div><h1>${esc(title)}</h1>`
         + `<p class="u-sub">${sub}</p>${back ? `<nav class="u-tabs">${back}</nav>` : ''}</div></section>`;
     const [ty, eid] = d.ent ? d.ent.split(':') : [];
@@ -9971,7 +9975,7 @@ function tagsWire() {
         const [k, v] = b.dataset.tgset.split(':');
         if (k === 'dn') { d.dn = v === '1'; if (d.dn && !d.down) tagsLoad(showing, d.key, true); render(); return; }
         d[k] = v;
-        if (k === 'view') { S[d.ent ? 'etagView' : 'tagView'] = v; save(); }
+        if (k === 'view') { S[d.ent ? 'etagView' : d.all ? 'atagView' : 'tagView'] = v; save(); }
         if (k === 'so' || k === 'sc') { S.tagSort = d.so; S.tagScope = d.sc; save(); }
         const tl = $('.tg-tools'); if (tl) { tl.innerHTML = tgTools(d); } tagsDraw();
     });
@@ -11911,7 +11915,7 @@ function srchHero(hi, sub, q = '', ty = 'artist', meth = 'indexed', add = '') {
     const ss = S.hmQs === 'off' ? [] : searches(), qs = S.hmQs !== 'below' ? '' : ss.map(x => `<a href="${MB}/search?query=${encodeURIComponent(x.q)}&type=${x.t}&method=indexed">${x.t === 'artist' ? '' : `<b>${x.t.replace('_', ' ')}:</b> `}${esc(x.q)}</a>`).join('');
     return `<header class="hm-hero">${ME ? `<a class="hm-home" href="${MB}/" data-tip="Event Horizon's home&#10;Right-click: Your profile" aria-label="Event Horizon's home">` : `<a class="hm-home eh-out" href="${MB}/login?returnto=%2F" data-tip="Logged out&#10;Click to log in" aria-label="Log in">`}${LOGO.replace('<svg', '<svg class="hm-orb"')}<div class="hm-wm"><b>Event<br>Horizon</b><small>MUSICBRAINZ</small></div></a><div class="hm-hi">${hi}</div>
         <form class="hm-srch" action="${MB}/search" method="get"><button type="submit" class="hm-go" data-tip="Search" aria-label="Search">${SVG(LENS)}</button><input name="query" value="${esc(q)}" placeholder="${matchMedia('(max-width:700px)').matches ? 'Search' : 'Search MusicBrainz'}"${S.hmQs === 'combo' && ss.length ? ' autocomplete="off" role="combobox" aria-expanded="false" aria-controls="hm-ql"' : ''} required${q ? '' : ' autofocus'}>${S.hmQs === 'combo' && ss.length ? `<button type="button" class="hm-qc" data-tip="Recent searches" aria-label="Recent searches">${SVG('<path d="M6 9l6 6 6-6"/>')}</button>` : ''}<select name="type" hidden>${kinds}</select><button type="button" class="hm-mm" aria-haspopup="menu" aria-expanded="false" data-tip="Search options" aria-label="Search options">${SVG('<circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>')}</button><span class="hm-ctl"><button type="button" class="hm-ty" aria-haspopup="listbox" aria-expanded="false" aria-label="Entity type"><span>${srchName(ty)}</span></button><button type="button" class="hm-tg${S.hmAdv ? ' on' : ''}" data-tip="Advanced search" aria-label="Advanced search">${SVG('<path d="M4 6h10M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>')}<i class="hm-ml">Advanced search</i></button>
-        <a class="hm-es" href="${MB}/search/edits" data-tip="Search for edits" aria-label="Search for edits">${SVG('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>')}<i class="hm-ml">Search for edits</i></a><a class="hm-es" href="${MB}/search?type=url&query=" data-tip="Search for URLs" aria-label="Search for URLs">${SVG('<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>')}<i class="hm-ml">Search for URLs</i></a><a class="hm-es" href="${MB}/search" data-tip="All of MusicBrainz's search forms: tag lookup, barcode, ISRC and more" aria-label="More search options">${SVG('<path d="M4 6h16M4 12h7M4 18h7"/><circle cx="16.5" cy="15.5" r="3.5"/><path d="M19 18l2.5 2.5"/>')}<i class="hm-ml">More search options</i></a></span><div class="hm-td" role="listbox" aria-label="Entity type" hidden>${tlist}</div>
+        <a class="hm-es" href="${MB}/search/edits" data-tip="Search for edits" aria-label="Search for edits">${SVG('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>')}<i class="hm-ml">Search for edits</i></a><a class="hm-es" href="${MB}/search?type=url&query=" data-tip="Search for URLs" aria-label="Search for URLs">${SVG('<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>')}<i class="hm-ml">Search for URLs</i></a><a class="hm-es" href="${MB}/tags" data-tip="MusicBrainz's most used tags and genres" aria-label="Tags">${SVG(CI_TAG)}<i class="hm-ml">Tags</i></a><a class="hm-es" href="${MB}/search" data-tip="All of MusicBrainz's search forms: tag lookup, barcode, ISRC and more" aria-label="More search options">${SVG('<path d="M4 6h16M4 12h7M4 18h7"/><circle cx="16.5" cy="15.5" r="3.5"/><path d="M19 18l2.5 2.5"/>')}<i class="hm-ml">More search options</i></a></span><div class="hm-td" role="listbox" aria-label="Entity type" hidden>${tlist}</div>
         <div class="hm-adv"${S.hmAdv ? '' : ' hidden'}><label>Search method</label><select name="method">${[['indexed', 'Indexed'], ['advanced', 'Indexed, with advanced query syntax'], ['direct', 'Direct database search']].map(([v, l]) => `<option value="${v}"${v === meth ? ' selected' : ''}>${l}</option>`).join('')}</select>
         <span class="hm-hint">Advanced syntax: <code>artist:"Hania Rani" AND date:2023</code> · <a href="${MB}/doc/Indexed_Search_Syntax" target="_blank">syntax help</a></span><a class="hm-all" href="${MB}/search" data-tip="All of MusicBrainz's search forms: tag lookup, barcode, ISRC and more">More search options</a><label>Recent searches</label><span class="hm-seg" role="radiogroup" aria-label="Recent searches">${[['off', 'Off'], ['below', 'Below search'], ['combo', 'In combobox']].map(([v, l]) => `<label><input type="radio" name="hm-qs" form="hm-noform" value="${v}" data-hm-qs${v === S.hmQs ? ' checked' : ''}><span>${l}</span></label>`).join('')}</span></div>${S.hmQs === 'combo' && ss.length ? `<div class="hm-qd" id="hm-ql" role="listbox" hidden>${ss.map(x => `<button type="button" role="option" data-q="${esc(x.q)}" data-t="${x.t}"><span>${x.t === 'artist' ? '' : `<b>${x.t.replace('_', ' ')}:</b> `}${esc(x.q)}</span></button>`).join('')}</div>` : ''}</form>
         ${qs ? `<div class="hm-qr">${qs}<button type="button" class="hm-qx" data-tip="Forget these searches">Clear</button></div>` : ''}${sub}${add}</header>`;
@@ -14579,6 +14583,8 @@ function navTo(href) {
     // a collection's edit, the same form filled in → "coledit/<mbid>"
     { const m = u.origin === location.origin && u.pathname.match(new RegExp('^/collection/(' + MBID.source + ')/own_collection/edit/?$', 'i')); if (m) return 'coledit/' + m[1].toLowerCase(); }
     { const m = u.origin === location.origin && u.pathname.match(new RegExp('^/collection/(' + MBID.source + ')/subscribers/?$', 'i')); if (m) return 'colsubs/' + m[1].toLowerCase(); }
+    // MusicBrainz's most used tags → "atags/all"
+    if (u.origin === location.origin && /^\/tags\/?$/.test(u.pathname)) return 'atags/all';
     // an editor's tags → "utags/<name>"; an entity's → "etags/<type>:<mbid>"
     const ut = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/tags\/?$/);
     if (ut) return 'utags/' + ut[1];
@@ -17795,6 +17801,10 @@ async function show(key, o = {}) {
         const p = key.split('/').slice(1), dn = p[p.length - 1] === '-'; if (dn) p.pop();
         data = { kind: 'tagx', key, name: decodeURIComponent(p[0]), tag: decodeURIComponent(p[1]), type: p[2] || '', dn, q: '' };
         scrollTo(0, 0); render(); tagxLoad(n, data); return;
+    }
+    if (kind === 'atags') {
+        data = { kind: 'tags', key, ent: '', all: true, name: 'Tags', view: S.atagView || 'cloud', so: S.tagSort || 'count', sc: S.tagScope || 'a', q: '', dn: false };
+        scrollTo(0, 0); render(); tagsLoad(n, key); return;
     }
     if (kind === 'utags' || kind === 'etags') {
         const ent = kind === 'etags' ? id : '';

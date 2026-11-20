@@ -21,6 +21,7 @@ A clean, modern redesign of MusicBrainz's pages, with themes, automatic light an
 - **[Releases and discography](#releases-and-discography)** as a grid or a table, with columns, filters and saved views.
 - **[Edit search](#edit-search)**: every MusicBrainz condition in compact rows, with saved searches.
 - **[URL search](#url-search)** finds links by address and by what they link to.
+- **[Tags](#tags)** shows an editor's, an entity's or MusicBrainz's most used tags as bars, a cloud, chips, A–Z or a table.
 - **[Edit history](#edit-history)** groups edits and votes on a group at once.
 - **[Pending changes](#pending-changes)** marks what has edits open.
 - **[Keyboard shortcuts](#keyboard-shortcuts)** open an entity's pages and drive the player.
@@ -134,6 +135,10 @@ The arrow at the end of the box saves a filter by name.
 ## URL search
 
 **Search for URLs**, the link icon beside it, finds links by **URL** (`*` for any text: `*bandcamp.com*`), **Linked entity type**, **Relationship type** or **Linked entity MBID**. ↗ opens the site itself.
+
+## Tags
+
+An editor's tags, an entity's tags and MusicBrainz's most used tags show as **Bars**, **Cloud**, **Chips**, **A–Z** or **Table**, with a filter and the **Genres** and **Other** toggles. **Tags**, the tag icon in the homepage search bar, opens the most used ones.
 
 ## Edit history
 
