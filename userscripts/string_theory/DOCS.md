@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-20 17:16 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-20 17:44 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -976,9 +976,9 @@ While the player is open, editing a release opens the editor in another tab so p
 
 A release group lists its releases, and an artist or label its discography, grouped by type, albums first. Switch between a grid of covers and a table; click a table's column to sort it.
 
-A label's releases show by release group, one cover or row per group, grouped by type; **Releases** beside **Groups** lists every release instead, and the choice is remembered. When a group has more than one release on the label, its cover shows a count: click it to list the releases, with their dates, formats and track counts. In a table, click *N releases* to expand them below the row.
+A label's releases show by release group, one cover or row per group, grouped by type; **Releases** beside **Groups** lists every release instead, and the choice is remembered. When a group has more than one release on the label, its cover shows a count: click it to list the releases, with their dates, formats and track counts. In a table, click _N releases_ to expand them below the row.
 
-**Columns**, beside the view buttons of a table, chooses what the table shows and in what order, and is remembered for all releases or all discographies. Tick a column to show it, drag its handle or press the arrow keys on it to move it, and Esc during a drag takes the move back. A label's or a recording's releases also have **Type**, their release group's type, such as *Album + Compilation*. Releases also offer Status, Packaging, Language / script and Comment; +N on the button counts the columns left out. A hidden column still sorts and filters. Links is a column like the others. Drag the edge of a column's heading to resize it: the room comes from the columns beside it, and none goes narrower than its content. Double-click the edge to fit that column to its content; the fit button beside **Columns** lets the table size itself again. **Saved**, at the bottom of the menu, keeps the current columns and their widths under a name; pick the name to bring them back, or **Default** for the usual columns.
+**Columns**, beside the view buttons of a table, chooses what the table shows and in what order, and is remembered for all releases or all discographies. Tick a column to show it, drag its handle or press the arrow keys on it to move it, and Esc during a drag takes the move back. A label's or a recording's releases also have **Type**, their release group's type, such as _Album + Compilation_. Releases also offer Status, Packaging, Language / script and Comment; +N on the button counts the columns left out. A hidden column still sorts and filters. Links is a column like the others. Drag the edge of a column's heading to resize it: the room comes from the columns beside it, and none goes narrower than its content. Double-click the edge to fit that column to its content; the fit button beside **Columns** lets the table size itself again. **Saved**, at the bottom of the menu, keeps the current columns and their widths under a name; pick the name to bring them back, or **Default** for the usual columns.
 
 The funnel icon opens a filter: type part of a title, or add a filter by artist, year and so on. Esc clears it.
 
@@ -1033,25 +1033,32 @@ With _Show pending changes_ on in settings, titles, tracks, credits and links wi
 
 On an entity's page, in the viewer or on MusicBrainz's own page, a key opens one of its pages; a few work on any page. **Ctrl+/** lists the commands: type to find one, **Enter** runs it, and clicking a command's key and pressing another changes it (**Backspace** leaves it without one, **Default keys** puts them all back). Keys do nothing while you type in a field.
 
-| Key    | Opens                                        |
-| ------ | -------------------------------------------- |
-| O      | the entity's page                            |
-| E      | Edit                                         |
-| R      | Edit relationships                           |
-| C      | Cover art (a release)                        |
-| H      | Editing history                              |
-| T      | Tags                                         |
-| D      | Details                                      |
-| A      | Aliases                                      |
-| V      | toggles Event Horizon                        |
-| Ctrl+H | back                                         |
-| Ctrl+L | forward                                      |
-| S      | search: the viewer's box, else MusicBrainz's |
-| P      | plays the release, recording or collection   |
-| U      | your profile                                 |
-| .      | MusicBrainz's home page                      |
-| ,      | the settings (String Theory's, with it)      |
-| Ctrl+/ | this list                                    |
+| Key             | Opens                                                     |
+| --------------- | --------------------------------------------------------- |
+| O               | the entity's page                                         |
+| E               | Edit                                                      |
+| R               | Edit relationships                                        |
+| C               | Cover art (a release)                                     |
+| H               | Editing history                                           |
+| T               | Tags                                                      |
+| D               | Details                                                   |
+| A               | Aliases                                                   |
+| V               | toggles Event Horizon                                     |
+| Ctrl+H          | back                                                      |
+| Ctrl+L          | forward                                                   |
+| S               | search: the viewer's box, else MusicBrainz's              |
+| P               | plays the release, recording or collection                |
+| Space           | plays or pauses the player                                |
+| ← / →           | back or forward 5 seconds in the player                   |
+| Ctrl+← / Ctrl+→ | the previous or next track                                |
+| Ctrl+P          | shows or hides the player                                 |
+| Alt+1           | the playing release in or out of its default collection   |
+| Alt+2           | the playing recording in or out of its default collection |
+| Alt+3           | loves or unloves the playing track on ListenBrainz        |
+| U               | your profile                                              |
+| .               | MusicBrainz's home page                                   |
+| ,               | the settings (String Theory's, with it)                   |
+| Ctrl+/          | this list                                                 |
 
 ### Other scripts
 
