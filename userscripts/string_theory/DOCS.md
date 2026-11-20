@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-20 22:28 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-20 22:33 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -864,7 +864,7 @@ On a page Event Horizon can show, its dock button replaces MusicBrainz's page. L
 - **Account pages** keep MusicBrainz's controls under your profile header. Revoke an application in its row.
 - **Relate**, the relationship editor, takes Event Horizon's look, with folding cards.
 - **Long titles**: a subtitle drops to its own line, long titles shrink, and very long ones stop at four lines with **Show full title**.
-- **Search**: a type's letter and a space search that type: `w yesterday` searches works. The letters are **a** artist, **g** release group, **r** release, **w** work, **s** series, **p** place and **e** editor. MusicBrainz's own **Search** page (`/search`, with its Tag lookup) opens here too.
+- **Search**: a type's letter and a space search that type: `w yesterday` searches works. The letters are **a** artist, **g** release group, **r** release, **w** work, **s** series, **p** place and **e** editor. MusicBrainz's own **Search** page (`/search`, with its Tag lookup and Other lookups) opens here too.
 - **Logged out**: the corner logo turns grey with an amber dot; click it to log in and come back.
 - **Pinned header**: once the header scrolls away, a bar keeps the cover, title, artist and actions in reach.
 
