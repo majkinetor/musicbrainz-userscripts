@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.050000
+// @version      2026.11.21.060000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4455,9 +4455,10 @@ S.fxCur = ''; // the effect preset being worked on: Save writes a change into it
 S.colW = {}; // the widths dragged in a table, by section; the title takes what they leave, and none means the table fits itself
 S.colPick = {}; // the tables' column choice, by section: { order, off }; none is the usual table
 S.pending = false; // MusicBrainz's grey mark on what has edits open; takes one more request per page
-VIEW.push('player', 'playerPlace', 'playerClick', 'playerRepeat', 'playerShuffle', 'playerLb', 'playerScrobble', 'playerVideo', 'playerVol', 'playerMax', 'playerFade');
+VIEW.push('player', 'playerPlace', 'playerCover', 'playerClick', 'playerRepeat', 'playerShuffle', 'playerLb', 'playerScrobble', 'playerVideo', 'playerVol', 'playerMax', 'playerFade');
 S.player = false; // the play buttons on a release's tracks, and the player they start
 S.playerPlace = 'bar'; // where the player shows: 'bar' at the bottom, 'chip' at the top right
+S.playerCover = false; // the top bar's player shows the playing track's cover before its title
 S.playerClick = 'replace'; // left click replaces the queue; right click appends, or the other way around
 S.playerMax = 1000; // maximum number of tracks loaded from a collection
 S.playerRepeat = 'off'; // off, all, or one; changed by right-clicking the play/pause button
@@ -13401,12 +13402,16 @@ function plyDraw() {
         + plyB('next', sh ? 'Next track, at random' : 'Next track', more ? '' : ' disabled')
         + plyB('shuffle', (sh ? 'Shuffle on' : 'Shuffle off') + '\nClick: ' + (sh ? 'play in order' : 'play at random'), ` aria-pressed="${sh}"`);
     const name = `<button type="button" class="ply-t" data-ply="list" aria-haspopup="menu" data-tip="${esc(t.title + ' — ' + t.artist + '\n' + t.relTitle)}\nClick: the playlist"><span class="ply-n">${esc(plyNo(t))}</span><span class="ply-line"><b>${esc(t.title)}</b><span class="ply-ar">· ${esc(t.artist)}</span></span>${t.relTitle ? `<span class="ply-rl">${esc(t.relTitle)}${t.relYear ? ` · ${esc(t.relYear)}` : ''}</span>` : ''}</button>`;
+    // the top bar's cover: the release's front, else the release group's for a recording on none; a click opens it
+    const cov = !bar && S.playerCover && (t.rel || t.rg) ? (t.rel
+        ? `<a class="ply-cov" href="${MB}/release/${t.rel}" target="_blank" rel="noopener" aria-label="Open the release" data-tip="${esc((t.relTitle || 'Release') + '\nClick: open the release in a new tab')}"><img${PLY_CV.has(t.rel) ? ` src="${esc(PLY_CV.get(t.rel))}"` : t.front ? ` src="https://coverartarchive.org/release/${t.rel}/front-250"` : ''} data-plyrel="${t.rel}" alt=""></a>`
+        : PLY_RGCV.get(t.rg) !== false ? `<a class="ply-cov" href="${MB}/recording/${t.rid}" target="_blank" rel="noopener" aria-label="Open the recording" data-tip="${esc(t.title + '\nClick: open the recording in a new tab')}"><img src="${esc(PLY_RGCV.get(t.rg) || `https://coverartarchive.org/release-group/${t.rg}/front-250`)}" alt=""></a>` : '') : '';
     const prog = ply.ctl && t.len ? `<span class="ply-pr sk" data-ply="seek" aria-label="Position"><i></i>${bar ? '' : '<b class="ply-hv"></b>'}</span>` : '<span class="ply-pr" aria-hidden="true"><i></i></span>';
     const menu = `<button type="button" class="ply-b ply-lb${lb && t.ok != null ? ' sent' : ''}" data-ply="lb" aria-haspopup="menu" aria-label="Playing from ${esc(p.name)}" data-tip="Playing from ${esc(p.name)}${lb && t.ok != null ? '\nListen sent' : ''}\nClick: sources, ListenBrainz, stop">${icon(p, 18)}</button>`;
     const v = +S.playerVol, vol = plyHasVol() ? `<span class="ply-vg"><button type="button" class="ply-b" data-ply="mute" aria-pressed="${!v}" aria-label="${v ? 'Mute' : 'Unmute'}" data-tip="${v ? 'Mute' : 'Unmute'}">${plyVolIc(v)}</button><span class="ply-vp"><b class="ply-vn">${v}</b><input type="range" class="ply-vol" min="0" max="100" step="1" value="${v}" style="--p:${v}%" aria-label="Volume"></span></span>` : '';
-    plyCtl.innerHTML = `<span class="ply-g">${nav}</span>${name}${prog}${vol}${menu}`;
+    plyCtl.innerHTML = `<span class="ply-g">${nav}</span>${cov}${name}${prog}${vol}${menu}`;
     const im = plyCtl.querySelector('.ply-cov img');
-    if (im) im.addEventListener('error', () => { if (/-250$/.test(im.src)) { PLOG.debug('no cover thumbnail, trying the full front'); im.src = im.src.replace(/-250$/, ''); } else im.remove(); });
+    if (im?.dataset.plyrel) plyCoverWire(im); else if (im) im.onerror = () => im.closest('.ply-cov')?.remove();
     if (plyVgOpen) plyCtl.querySelector('.ply-vg')?.classList.add('vo');
     plyProg();
     plyPin();
@@ -13947,7 +13952,7 @@ html.eh-ply-win .ply-wl{order:2;flex:1;min-height:0;overflow:hidden auto;padding
 .ply-ctl.pb{position:relative;display:flex;align-items:center;gap:6px;flex:0 1 auto;padding:0 10px;margin:0 6px;border-left:1px solid var(--line,#ddd);border-right:1px solid var(--line,#ddd);font-size:13px}
 .pb .ply-b,.pb .ply-b.big,.pb .ply-b.big:hover{width:28px;height:28px}
 .kicker .ply-ctl .ply-b svg{color:inherit}
-.pb .ply-t{max-width:260px}#eh-pin .pb .ply-t{max-width:none;flex:0 1 auto}
+.pb .ply-cov{flex:none;display:block;width:30px;height:30px;border-radius:3px;overflow:hidden;background:color-mix(in srgb,currentColor 8%,transparent)}.pb .ply-cov:not(:has(img)){display:none}.pb .ply-cov img{display:block;width:100%;height:100%;object-fit:cover}.pb .ply-cov:hover{outline:2px solid var(--accent,#ba478f);outline-offset:1px}.pb .ply-t{max-width:260px}#eh-pin .pb .ply-t{max-width:none;flex:0 1 auto}
 .pb .ply-pr{position:absolute;left:0;right:0;bottom:0;width:auto;height:3px;border-radius:0;overflow:visible}
 .pb .ply-pr.sk{padding:8px 0 0;height:3px}
 .pb .ply-pr.sk:hover{height:5px;padding:6px 0 0}
@@ -17031,6 +17036,7 @@ function cfgBody() {
             + `<div class="keys">${ckRow('keysOn', 'Keyboard shortcuts', 'Single keys open the page\'s edit, relationships, history and more\nCtrl+/ lists them\nOn MusicBrainz\'s pages and in Event Horizon alike')}<button type="button" class="btn" data-keys-open>Change keys…</button></div>`,
         player: ckRow('player', 'Enable player', 'A play button on each track of a release that has it on a streaming site\nPlays the release from there, track after track')
             + row('Player place', [['bar', 'Bottom bar'], ['chip', 'Top bar']].map(([v, l]) => chip('playerPlace', v, S.playerPlace === v, l)).join(''), 'Where the player shows')
+            + ckRow('playerCover', 'Show cover in the top bar', 'The playing track\'s cover before its title, when the player is in the top bar\nClick it: open the release')
             + row('Left click', [['replace', 'Replace queue'], ['append', 'Add to queue']].map(([v, l]) => chip('playerClick', v, S.playerClick === v, l)).join(''), 'Right-click does the other action')
             + row('Crossfade', [[0, 'Off'], [1, '1 s'], [2, '2 s'], [3, '3 s'], [5, '5 s'], [8, '8 s']].map(([n, l]) => chip('playerFade', n, S.playerFade === n, l)).join(''), 'Fades one track into the next\nYouTube and Bandcamp\nOther sources start the next track as before')
             + row('Collection playlist limit', [100, 500, 1000, 5000].map(n => chip('playerMax', n, S.playerMax === n, String(n))).join(''), 'Maximum tracks loaded into the playlist from a collection')
@@ -17309,7 +17315,7 @@ function cfgWire(panel, b, body) {
             else if (g === 'factOff') { const [kd, fk] = k.split(':'); S.factOff = { ...S.factOff, [kd]: toggle(S.factOff[kd] || [], fk) }; }
             else if (g === 'extra') S.extras = toggle(S.extras, k);
             else if (g === 'prov') { S.prov = toggle(S.prov, k); plFollow(); }
-            else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'arAuto' || g === 'menuTitles' || g === 'keysOn' || g === 'cfgFade' || g === 'player' || g === 'playerLb' || g === 'playerScrobble') S[g] = !S[g];
+            else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'arAuto' || g === 'menuTitles' || g === 'keysOn' || g === 'cfgFade' || g === 'player' || g === 'playerLb' || g === 'playerCover' || g === 'playerScrobble') S[g] = !S[g];
             else if (g === 'playerPlace') S.playerPlace = k;
             else if (g === 'playerClick') S.playerClick = k;
             else if (g === 'playerMax') S.playerMax = +k;
