@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.150000
+// @version      2026.11.20.160000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3400,7 +3400,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-t tbody tr:not(.gh):hover{background:color-mix(in srgb,var(--hover) 60%,transparent)}
 .ra-pop{width:320px;max-height:360px;overflow:auto;line-height:1.6;color:var(--text);font-weight:400}.ev-pop{max-width:340px;max-height:360px;overflow:auto}.ev-pop .evs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}.chip.pn{height:22px;padding:0 9px;font-size:12px;cursor:pointer;vertical-align:middle}.chip.pn:hover,.chip.pn[aria-expanded="true"]{border-color:var(--accent)}.ed-t caption{text-align:left;padding:4px 0 8px}
 .ed-t tr.cur td{background:color-mix(in srgb,var(--chip) 60%,transparent)}
-.ed-t .ed-tr{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;font:inherit}
+.ed-t tr.dg-r td{padding-top:3px;padding-bottom:3px;font-size:13px;border-bottom-style:dashed}.dg-rl{display:flex;flex-wrap:wrap;align-items:center;gap:4px 16px;padding-left:12px}.dg-rl .lk{display:inline-flex;gap:6px;flex-wrap:wrap}.ed-t .ed-tr{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;font:inherit}
 .ed-t .ed-tr:hover{background:var(--chip)}
 .ed-t .ed-tr svg{transition:transform .15s}
 .ed-t .ed-tr[aria-expanded="true"] svg{transform:rotate(180deg)}
@@ -5666,6 +5666,27 @@ function edHtml(r, eds, count) {
 // one row or cover per group, its releases on this label behind the count. Built from the releases already loaded
 // (inc=release-groups), so the counts are this label's, and grow as more pages load.
 const lbOpen = new Set();
+// A discography row's releases, behind its Releases count (majkinetor): asked only when the first row opens, then
+// one ws/2 browse per 100 of the artist's releases (their links in the same request), grouped by release group.
+// A group the browse doesn't hold (various artists) asks for its own releases.
+const dgOpen = new Set();
+async function dgLoad(d, rg) {
+    const x = d.discX, m = d.dgRel || (d.dgRel = new Map()), redraw = () => { if (data === d) { const y = scrollY; render(); scrollTo(0, y); } };
+    const add = r => { const g = r['release-group']; if (!g) return; (m.get(g.id) || m.set(g.id, []).get(g.id)).push(edition(r)); };
+    if (!d.dgAll && x && x.aid && !x.vaAsked) d.dgAll = (async () => {
+        for (let o = 0, n = 1; o < n && o < 2000; o += 100) {
+            const j = await ws(`release?artist=${x.aid}&inc=media+labels+url-rels+release-groups&limit=100&offset=${o}`);
+            n = j['release-count'] || 0; (j.releases || []).forEach(add); redraw();
+        }
+    })().catch(e => LOG.err('discography releases: ' + e.message));
+    if (d.dgAll) await d.dgAll;
+    if (!m.has(rg)) {
+        m.set(rg, null); redraw();
+        try { const j = await ws(`release?release-group=${rg}&inc=media+labels+url-rels+release-groups&limit=100`); m.set(rg, []); (j.releases || []).forEach(add); }
+        catch (e) { m.delete(rg); LOG.err('release group ' + rg + ' releases: ' + e.message); }
+    }
+    redraw();
+}
 function lbGroupsOf(es) {
     const m = new Map();
     for (const e of es) {
@@ -10235,7 +10256,13 @@ function discoHtml(d) {
     const gs = [...m].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0])).map(([k, l]) => [k, bySort(l)]);
     const st = colState('dg');
     const th = (k, c) => { const n = COLS.dg.names[k]; if (k === 'links') return `<th${colAttr(st, k)}>${n}${colGrip('dg', st, k)}</th>`; return `<th${c ? ` class="${c}"` : ''}${colAttr(st, k)} aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-dgsort="${k}" data-tip="Sort by ${n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button>${fFun('dg', DG_FUN[k], n.toLowerCase())}${colGrip('dg', st, k)}</th>`; };
-    const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover></a></td>${colTds(st, { title: [`<a class="${longC(g.title)}"${longT(g.title)} href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}`], artist: [acHtml(g['artist-credit'] || [])], date: [g['first-release-date'] ? fdate(g['first-release-date']) : '—', 'mono'], rating: [rateStars('release_group', g.id, g.rating, true)], releases: [rc(g) != null ? rc(g) : '—', 'num'], links: [sortP(urlsOf(g.relations || [])).map(p => plA(p, 18, 'ti')).join(''), 'lk'] })}</tr>`;
+    const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover></a></td>${colTds(st, { title: [`<a class="${longC(g.title)}"${longT(g.title)} href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}`], artist: [acHtml(g['artist-credit'] || [])], date: [g['first-release-date'] ? fdate(g['first-release-date']) : '—', 'mono'], rating: [rateStars('release_group', g.id, g.rating, true)], releases: [rc(g) ? `<button class="ed-tr" type="button" data-dgx="${g.id}" aria-expanded="${dgOpen.has(g.id)}" data-tip="${dgOpen.has(g.id) ? 'Hide' : 'Show'} its releases">${rc(g)}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="${dgOpen.has(g.id) ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6'}"/></svg></button>` : rc(g) != null ? rc(g) : '—', 'num'], links: [sortP(urlsOf(g.relations || [])).map(p => plA(p, 18, 'ti')).join(''), 'lk'] })}</tr>` + (dgOpen.has(g.id) ? dgSub(g) : '');
+    const dgSub = g => {
+        const es = d.dgRel && d.dgRel.get(g.id), span = colsOf(st);
+        if (!es) return `<tr class="dg-r"><td></td><td colspan="${span}" class="sub">Loading its releases…</td></tr>`;
+        const one = e => `<tr class="dg-r"><td></td><td colspan="${span}"><div class="dg-rl"><a class="dg-rt" href="${esc(relUrl(e.id))}">${esc(e.title)}</a>${e.disambig ? ` <span class="sub">(${esc(e.disambig)})</span>` : ''}${e.status && e.status !== 'Official' ? ` <span class="sub">· ${esc(e.status)}</span>` : ''}<span class="sub">${esc(fmtSummary(e.formats))}</span><span class="mono sub">${(e.events[0] || {}).iso ? esc(e.events[0].iso) + ' ' : ''}${e.date ? fdate(e.date) : '—'}</span><span class="mono sub">${esc(e.li.map(l => [l.name, l.catno].filter(Boolean).join(' ')).join(', '))}</span><span class="lk">${sortP(e.links).map(p => plA(p, 16, 'ti')).join('')}</span></div></td></tr>`;
+        return es.length ? [...es].sort((a, b) => (a.date || '9').localeCompare(b.date || '9')).map(one).join('') : `<tr class="dg-r"><td></td><td colspan="${span}" class="sub">No releases found.</td></tr>`;
+    };
     const head = (k, l) => `<h3 class="disco-h">${grpHead('dg:' + k, k, l.length)[1]}</h3>`;
     const body = (S.dgView === 'table' ? `<div class="ed-tw"><table ${colTbl('dg', st)}>${colGroup('dg', st)}<thead><tr><th></th>${st.order.map(k => th(k, k === 'releases' ? 'num' : '')).join('')}</tr></thead>${gs.map(([k, l]) => { const [shut, h] = grpHead('dg:' + k, k, l.length); return `<tbody><tr class="gh"><th colspan="${colsOf(st) + 1}">${h}</th></tr>${shut ? '' : l.map(trow).join('')}</tbody>`; }).join('')}</table></div>`
         : gs.map(([k, l]) => head(k, l) + (S.grpFold.includes('dg:' + k) ? '' : `<div class="${S.dgView === 'row' ? 'ed-row disco' : 'disco'}">${l.map(tile).join('')}</div>`)).join(''));
@@ -14010,6 +14037,7 @@ function onClick(ev) {
     else if ('tagsmore' in d) tagsOpen = !tagsOpen;
     else if (d.dgview) S.dgView = d.dgview;
     else if (d.lbmode) S.lbGroups = d.lbmode === 'groups';
+    else if (d.dgx) { if (dgOpen.has(d.dgx)) dgOpen.delete(d.dgx); else { dgOpen.add(d.dgx); if (!(data.dgRel && data.dgRel.get(d.dgx))) dgLoad(data, d.dgx); } }
     else if ('lbx' in d) lbOpen.has(d.lbx) ? lbOpen.delete(d.lbx) : lbOpen.add(d.lbx);
     else if (d.tabview) S.tabView = d.tabview;
     else if (d.clview) S.clView = d.clview;
