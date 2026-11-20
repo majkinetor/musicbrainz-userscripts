@@ -17,6 +17,16 @@ test('queues releases and recordings and restores the last queue', { tag: '@sand
   await page.locator('.ply-ctl [data-ply="list"]').click();
   await expect(page.locator('#eh-ply-menu .ply-group')).toContainText(['First', 'Second', 'Recordings']);
   await expect(page.locator('#eh-ply-menu .qi .qn')).toHaveText(['1', '2', '3', '4']);
+  // the head counts the releases and the loose recordings; each jumps to its part of the playlist
+  await expect(page.locator('#eh-ply-menu .ply-cb')).toHaveText(['2', '1']);
+  await page.locator('#eh-ply-menu .ply-cb[data-pc="rec"]').click();
+  await expect(page.locator('#eh-ply-menu .ply-group[data-pg="rec"]')).toHaveClass(/ply-flash/);
+  await page.locator('#eh-ply-menu .ply-cb[data-pc="rel"]').click();
+  await expect(page.locator('#eh-ply-menu .ply-sc')).toHaveCount(2);
+  await page.locator('#eh-ply-menu .ply-sc[data-grel="two"]').click();
+  await expect(page.locator('#eh-ply-menu .ply-group[data-grel="two"]')).toHaveClass(/ply-flash/);
+  await page.locator('#eh-ply-menu .ply-cb[data-pc="rel"]').click();
+  await expect(page.locator('#eh-ply-menu .ply-sc')).toHaveCount(0);
   await page.locator('#eh-ply-menu .qi[data-k="q2"]').click();
   await expect(page.locator('.ply-ctl .ply-n').first()).toHaveText('3');
   await expect(page.locator('#eh-ply-menu')).toBeVisible();

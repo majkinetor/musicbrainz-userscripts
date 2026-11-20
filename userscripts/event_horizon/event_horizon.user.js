@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.090000
+// @version      2026.11.21.100100
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12897,10 +12897,16 @@ function plyAddRelease(r, key) {
 }
 // Resolve collection entries in MusicBrainz order, stopping at the configured queue limit. The first playable
 // tracks start at once; the rest join the playlist in the background, a loader row at its end while they come
-let plyCollectionBusy = false, plyCollLoading = false, plyCollGen = 0;
+let plyCollectionBusy = false, plyCollLoading = false, plyCollGen = 0, plyCollRead = 0, plyCollTotal = 0;
 // a new playlist replaces the old one: a collection still loading into the old one stops
 function plyCollStop() { if (!plyCollectionBusy) return; plyCollGen++; plyCollectionBusy = false; PLOG.info('background collection load stopped, the playlist was replaced'); if (plyCollLoading) { plyCollLoading = false; plyListGrow(); } }
-function plyLoaderRow() { return plyCollLoading ? '<div class="ply-loading" role="status"><span class="ply-spin"></span>Loading more from the collection…</div>' : ''; }
+function plyLoaderRow() { return ''; }
+function plyLoadHead() {
+    if (!plyCollLoading) return '<span class="ply-load" hidden></span>';
+    const of = plyCollTotal ? '/' + plyCollTotal : '';
+    return `<span class="ply-load" role="status" aria-label="Loaded ${plyCollRead}${of ? ' of ' + plyCollTotal : ''} from the collection" data-tip="Loading the collection\n${plyCollRead}${of ? ' of ' + plyCollTotal : ''} entries read"><span class="ply-spin"></span>${plyCollRead}${of}</span>`;
+}
+function plyLoadPaint(m) { const o = m.querySelector('.ply-top .hd .ply-load'); if (o) o.outerHTML = plyLoadHead(); }
 // the open playlist gains the rows added since it opened, and loses its loader when the load ends
 function plyListGrow() {
     const m = document.querySelector('#eh-ply-menu:has(.ply-list-head)'); if (!m) return;
@@ -12910,6 +12916,7 @@ function plyListGrow() {
     const parent = old ? old.parentNode : m.querySelector('.qi')?.parentNode; if (!parent) return;
     for (const n of [...tmp.childNodes]) parent.insertBefore(n, at);
     if (old) old.remove();
+    plyLoadPaint(m);
     m._sig = plyQSig();
 }
 // list: [[ent, mbid], …] from a playlist share link, played in that order in place of the collection's pages
@@ -12941,11 +12948,13 @@ async function plyCollection(id, ent, only, append, list) {
     try {
         if (!room) throw new Error('The playlist has reached its limit');
         let page = 1, more = !only && !list, read = 0;
+        plyCollRead = 0; plyCollTotal = list ? list.length : 0;
         while ((ids.length || more) && q.length < room) {
             if (!ids.length) {
                 const x = await mbTab('collection', id, '', page++);
                 if (gone()) return;
                 if (x.col && x.col.ent && x.col.ent !== ent) throw new Error('This collection has a different type');
+                if (x.total) plyCollTotal = +x.total;
                 const re = new RegExp('/' + ent + '/(' + MBID.source + ')', 'i');
                 for (const row of x.rows) { const m = Array.isArray(row) && row.join(' ').match(re); if (m) ids.push(m[1]); }
                 more = x.more;
@@ -12965,7 +12974,7 @@ async function plyCollection(id, ent, only, append, list) {
                 q.push(...plyQueue(release(raw, raw['release-group'] || {}, [])).slice(0, room - q.length).map(t => ({ ...t, oneTrack: true })));
             }
             if (gone()) return;
-            ++read;
+            ++read; plyCollRead = read; if (plyCollLoading) { const lm = document.querySelector("#eh-ply-menu:has(.ply-list-head)"); if (lm) plyLoadPaint(lm); }
             if (q.length - sent >= (started ? 10 : 1)) { plyCollLoading = !only; flush(); }
         }
         if (!q.length) throw new Error('No playable recordings found');
@@ -13694,10 +13703,49 @@ document.addEventListener('contextmenu', ev => {
 function plyGroupHead(x, group, n, i) {
     if (n < 0) n = ply.q.length - i;
     const rm = ` data-qx="${i}-${i + n}"`;
-    if (group === 'recordings' || !x.rel) return `<div class="ply-group"${rm} data-tip="Right-click to remove these ${n} from the playlist"><span>${esc(group === 'recordings' ? 'Recordings' : x.relTitle || 'Release')}</span></div>`;
+    if (group === 'recordings' || !x.rel) return `<div class="ply-group"${rm}${group === 'recordings' ? ' data-pg="rec"' : ''} data-tip="Right-click to remove these ${n} from the playlist"><span>${esc(group === 'recordings' ? 'Recordings' : x.relTitle || 'Release')}</span></div>`;
     const src = PLY_CV.has(x.rel) ? PLY_CV.get(x.rel) : x.front ? `https://coverartarchive.org/release/${x.rel}/front-250` : '';
-    return `<a class="ply-group cv"${rm} href="${MB}/release/${x.rel}" target="_blank" rel="noopener" data-tip="Open the release in a new tab; right-click removes its ${n} from the playlist"><img${src ? ` src="${esc(src)}"` : ''} data-plyrel="${x.rel}" alt="" loading="lazy"><span>${esc(x.relTitle || 'Release')}<small>${x.relYear ? esc(x.relYear) + ' · ' : ''}${n} track${n === 1 ? '' : 's'}</small></span></a>`;
+    return `<a class="ply-group cv"${rm} data-grel="${x.rel}" href="${MB}/release/${x.rel}" target="_blank" rel="noopener" data-tip="Open the release in a new tab; right-click removes its ${n} from the playlist"><img${src ? ` src="${esc(src)}"` : ''} data-plyrel="${x.rel}" alt="" loading="lazy"><span>${esc(x.relTitle || 'Release')}<small>${x.relYear ? esc(x.relYear) + ' · ' : ''}${n} track${n === 1 ? '' : 's'}</small></span></a>`;
 }
+// the playlist head's counts: its releases (a click shows their covers in the line, a cover's click goes to its release)
+// and its loose recordings (a click goes to their section, the next one on each click)
+function plyCountRels() { const m = new Map(); for (const x of ply.q) if (!(x.standalone || !('relAc' in x)) && x.rel && !m.has(x.rel)) m.set(x.rel, x); return m; }
+function plyCounts(open) {
+    const rels = plyCountRels(), recs = ply.q.filter(x => x.standalone || !('relAc' in x)).length;
+    if (rels.size + recs < 2 && !(rels.size && recs)) return '<span class="ply-cnt"></span>';
+    const strip = open && rels.size ? '<span class="ply-strip">' + [...rels.values()].map(x => {
+        const src = PLY_CV.has(x.rel) ? PLY_CV.get(x.rel) : x.front ? `https://coverartarchive.org/release/${x.rel}/front-250` : '';
+        return `<button type="button" class="ply-sc" data-grel="${x.rel}" aria-label="${esc(x.relTitle || 'Release')}" data-tip="${esc((x.relTitle || 'Release') + (x.relYear ? ' · ' + x.relYear : ''))}">${SVG(MK_RELEASE)}<img${src ? ` src="${esc(src)}"` : ''} data-plyrel="${x.rel}" alt="" loading="lazy"></button>`;
+    }).join('') + '</span>' : '';
+    return '<span class="ply-cnt">'
+        + (rels.size ? `<button type="button" class="ply-cb" data-pc="rel" aria-expanded="${!!strip}" aria-label="${rels.size} release${rels.size === 1 ? '' : 's'}" data-tip="${rels.size} release${rels.size === 1 ? '' : 's'}\nClick: ${strip ? 'hide' : 'show'} their covers, a cover goes to its release">${rels.size}${SVG(MK_RELEASE)}</button>` : '')
+        + (recs ? `<button type="button" class="ply-cb" data-pc="rec" aria-label="${recs} recording${recs === 1 ? '' : 's'}" data-tip="${recs} recording${recs === 1 ? '' : 's'} not from a release\nClick: go to them">${recs}${SVG(MK_REC)}</button>` : '')
+        + '</span>' + strip;
+}
+function plyCountsPaint(m, open) {
+    const hd = m.querySelector('.ply-top .hd'), old = hd?.querySelector('.ply-cnt'); if (!old) return;
+    hd.querySelector('.ply-strip')?.remove();
+    old.outerHTML = plyCounts(open);
+    hd.querySelectorAll('.ply-strip img').forEach(plyCoverWire);
+}
+// scrolls the playlist so a heading sits right under its sticky head, and flashes it
+function plyListTo(m, el) {
+    const top = m.querySelector('.ply-top'); if (!el || !top) return;
+    m.scrollTo({ top: m.scrollTop + el.getBoundingClientRect().top - top.getBoundingClientRect().bottom, behavior: 'smooth' });
+    el.classList.remove('ply-flash'); void el.offsetWidth; el.classList.add('ply-flash');
+}
+document.addEventListener('click', ev => {
+    const b = ev.target.closest?.('#eh-ply-menu [data-pc],#eh-ply-menu .ply-sc'); if (!b) return;
+    const m = b.closest('#eh-ply-menu'); ev.preventDefault();
+    if (b.dataset.pc === 'rel') { const open = b.getAttribute('aria-expanded') !== 'true'; PLOG.debug('release covers in the playlist head', open ? 'shown' : 'hidden'); plyCountsPaint(m, open); m.querySelector('.ply-cb[data-pc="rel"]')?.focus({ preventScroll: true }); return; }
+    if (b.dataset.pc === 'rec') {
+        const top = m.querySelector('.ply-top').getBoundingClientRect().bottom, all = [...m.querySelectorAll('.ply-group[data-pg="rec"]')];
+        const to = all.find(g => g.getBoundingClientRect().top > top + 4) || all[0];
+        PLOG.debug('to the recordings section', all.indexOf(to) + 1, 'of', all.length); plyListTo(m, to); return;
+    }
+    const g = m.querySelector(`.ply-group[data-grel="${b.dataset.grel}"]`);
+    PLOG.debug('to the release', b.dataset.grel, !!g); plyListTo(m, g);
+});
 function plyGroupCovers(root) { root?.querySelectorAll('.ply-group img:not([data-w])').forEach(im => { im.dataset.w = 1; plyCoverWire(im); }); }
 function plyRows(menu) {
     let previous = null;
@@ -13716,6 +13764,7 @@ function plyListPaint() {
         const at = m.querySelector('.qi,.ply-group,.ply-loading')?.parentNode || m;
         plyKeepCovers(at, () => { at.querySelectorAll('.qi,.ply-group,.ply-loading').forEach(n => n.remove()); at.insertAdjacentHTML('beforeend', plyRows(true)); }); m._sig = plyQSig();
         plyGroupCovers(m); m.scrollTop = top;
+        plyCountsPaint(m, !!m.querySelector('.ply-strip'));
         m.querySelector('.qf')?.dispatchEvent(new Event('input'));
     }
     const head = m.querySelector('.ply-list-head'), html = plyRelHead(ply.q[ply.i]);
@@ -13724,7 +13773,7 @@ function plyListPaint() {
     plyHeadLoad(ply.q[ply.i]);
 }
 function plyListMenu(btn) {
-    plyMenu(btn, '<div class="ply-top"><div class="ply-list-head">' + plyRelHead(ply.q[ply.i]) + '</div><div class="hd"><span>Playlist</span>' + (ply.q.length > 1 ? '<button type="button" class="qfb" aria-label="Filter the playlist" aria-expanded="false" data-tip="Filter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></button><input type="search" class="qf" tabindex="-1" placeholder="Filter" aria-label="Filter the playlist" autocomplete="off">' : '') + '<button type="button" class="qfb ply-share" aria-label="Copy a share link of the playlist" data-tip="Copy a share link&#10;Plays this playlist in Event Horizon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></button><button type="button" class="mbu-ov-x ply-x" aria-label="Close" data-tip="Close">✕</button></div></div>' + plyRows(true),
+    plyMenu(btn, '<div class="ply-top"><div class="ply-list-head">' + plyRelHead(ply.q[ply.i]) + '</div><div class="hd"><span>Playlist</span>' + plyCounts(false) + plyLoadHead() + (ply.q.length > 1 ? '<button type="button" class="qfb" aria-label="Filter the playlist" aria-expanded="false" data-tip="Filter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></button><input type="search" class="qf" tabindex="-1" placeholder="Filter" aria-label="Filter the playlist" autocomplete="off">' : '') + '<button type="button" class="qfb ply-share" aria-label="Copy a share link of the playlist" data-tip="Copy a share link&#10;Plays this playlist in Event Horizon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></button><button type="button" class="mbu-ov-x ply-x" aria-label="Close" data-tip="Close">✕</button></div></div>' + plyRows(true),
         ({ k }) => { const i = +String(k).slice(1); if (i >= 0 && i < ply.q.length && i !== ply.i) { PLOG.info('picked from the playlist', i + 1); plyGo(i, ply.pref); } }, 'player');
     document.getElementById('eh-ply-menu')._sig = plyQSig();
     plyListPaint();
@@ -14043,6 +14092,19 @@ html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
 .ply-menu:has(.qi){width:min(440px,calc(100vw - 16px));max-height:min(60vh,520px)}
 .ply-menu .hd .ply-x{display:none;flex:none;margin-left:auto;width:32px;height:32px;font-size:17px}
 @media(max-width:600px){#eh-ply-menu:has(.ply-list-head){inset:0!important;width:auto!important;max-width:none;max-height:none!important;height:100%;border-radius:0;background:color-mix(in srgb,var(--surface,#fff) 92%,transparent)}#eh-ply-menu:has(.ply-list-head) .ply-x{display:inline-flex}#eh-ply-menu:has(.ply-list-head) .hd .qf{flex:1 1 auto;width:auto}}
+.ply-menu .hd .ply-cnt{display:inline-flex;align-items:center;gap:2px;margin-left:10px;text-transform:none;letter-spacing:0}
+.ply-menu .hd .ply-cb{display:inline-flex;align-items:center;gap:3px;height:26px;padding:0 6px;border:0;border-radius:6px;background:none;color:var(--muted,#777);font:12px/1 system-ui,sans-serif;cursor:pointer}
+.ply-menu .hd .ply-cb:hover,.ply-menu .hd .ply-cb[aria-expanded="true"]{color:var(--accent,#ba478f)}
+.ply-menu .hd .ply-cb svg{width:15px;height:15px}
+.ply-menu .hd .ply-strip{flex:1 1 auto;min-width:0;display:flex;gap:5px;overflow-x:auto;padding:2px 0;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
+.ply-menu .hd .ply-sc{position:relative;flex:none;display:grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:3px;background:color-mix(in srgb,var(--muted,#777) 18%,transparent);color:var(--muted,#777);cursor:pointer;overflow:hidden}
+.ply-menu .hd .ply-sc svg{width:14px;height:14px}
+.ply-menu .hd .ply-sc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ply-menu .hd .ply-sc:hover{outline:2px solid var(--accent,#ba478f);outline-offset:-2px}.ply-menu .hd .ply-sc:hover img{opacity:.85}
+.ply-menu .hd .ply-load{display:inline-flex;align-items:center;gap:6px;margin-left:8px;color:var(--muted,#777);font:12px/1 system-ui,sans-serif;text-transform:none;letter-spacing:0;font-variant-numeric:tabular-nums}.ply-menu .hd .ply-load[hidden]{display:none}
+.ply-menu .hd.qo .ply-cnt,.ply-menu .hd.qo .ply-strip,.ply-menu .hd.qo .ply-load{display:none}
+.ply-group.ply-flash{animation:ply-flash 1.2s ease-out}
+@keyframes ply-flash{from{background:color-mix(in srgb,var(--accent,#ba478f) 25%,transparent)}to{background:transparent}}
 .ply-top{position:sticky;top:-5px;z-index:1;margin:-5px -5px 0;padding:5px 5px 0;background:color-mix(in srgb,var(--surface,#fff) 92%,transparent);backdrop-filter:blur(10px)}
 .ply-rhw{display:flex;align-items:center;gap:4px;margin-bottom:2px;border-bottom:1px solid var(--line,#ddd)}
 .ply-ra{display:flex;align-items:center;gap:2px;flex:none;padding-right:6px}
