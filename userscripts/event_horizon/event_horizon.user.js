@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.231000
+// @version      2026.11.21.232000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -17880,8 +17880,10 @@ const keyGo = (sub, ok) => () => {
 };
 // the viewer's search box, else MusicBrainz's header one, else its search page
 function keySearch() {
-    const b = ehOn && document.querySelector('#app .srch button.ab[data-srch]');
-    if (b) { b.click(); const i = b.closest('.srch').querySelector('input[name=query]'); setTimeout(() => i && i.focus(), 0); return true; }
+    // any bar's box (the viewer's, the pinned bar's, a kept page's header), the pinned one first; opened, never toggled shut
+    const fs = ehOn ? [...document.querySelectorAll('form.srch')].filter(f => f.getClientRects().length && f.querySelector('input[name=query]')) : [];
+    const f = fs.find(x => x.closest('#eh-pin.on')) || fs.find(x => !x.closest('#eh-pin'));
+    if (f) { f.classList.add('open'); const i = f.querySelector('input[name=query]'); setTimeout(() => { i.focus(); i.select(); }, 0); return true; }
     const i = document.querySelector('.header input[name=query], #header input[name=query], header input[name=query]');
     if (i && i.offsetParent) { i.focus(); i.select(); return true; }
     location.assign(MB + '/search'); return true;
