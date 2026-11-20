@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.243000
+// @version      2026.11.20.244000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13360,7 +13360,7 @@ const plyRowSrc = (x, i) => { const p = x.srcs && x.srcs.length ? (i === ply.i &
 // a release's head cover once found, so reopening the playlist draws it at once instead of looking again
 const PLY_CV = new Map();
 function plyCoverWire(im) {
-    if (!im) return;
+    if (!im?.dataset.plyrel) return;
     if (!PLY_CV.has(im.dataset.plyrel) && im.getAttribute('src')) im.addEventListener('load', () => PLY_CV.set(im.dataset.plyrel, im.src), { once: true });
     const full = () => { const id = im.dataset.plyrel; im.onerror = () => im.remove(); edFull(id).then(u => { if (!im.isConnected) return; if (u) { PLOG.debug('head cover from the archive listing', u); PLY_CV.set(id, u); im.src = u; } else im.remove(); }); };
     im.onerror = full; if (!im.getAttribute('src')) full();
@@ -13368,7 +13368,7 @@ function plyCoverWire(im) {
 function plyRelHead(t, btns = true) {
     if (!t) return '';
     // a recording with no release: the head names the track itself and links to the recording
-    if (!t.rel) return t.rid ? `<div class="ply-rhw"><a class="ply-rh" href="${MB}/recording/${t.rid}" target="_blank" rel="noopener"><span class="ply-rhi">${SVG(PLY_I.crec)}${t.rg ? `<img src="https://coverartarchive.org/release-group/${t.rg}/front-250" alt="">` : ''}</span><span class="rt"><b>${esc(t.title || '')}</b><small>${esc(t.artist || '')}</small></span></a>${btns ? `<span class="ply-ra">${plyHeadBtns(t)}</span>` : ''}</div>` : '';
+    if (!t.rel) return t.rid ? `<div class="ply-rhw"><a class="ply-rh" href="${MB}/recording/${t.rid}" target="_blank" rel="noopener"><span class="ply-rhi">${SVG(PLY_I.crec)}${t.rg ? `<img class="ply-rhc" src="https://coverartarchive.org/release-group/${t.rg}/front-250" alt="">` : ''}</span><span class="rt"><b>${esc(t.title || '')}</b><small>${esc(t.artist || '')}</small></span></a>${btns ? `<span class="ply-ra">${plyHeadBtns(t)}</span>` : ''}</div>` : '';
     const yr = t.relYear ? `<span class="ry">${esc(t.relYear)}</span>` : '';
     return `<div class="ply-rhw"><a class="ply-rh" href="${MB}/release/${t.rel}" target="_blank" rel="noopener">${t.rel ? `<img${PLY_CV.has(t.rel) ? ` src="${esc(PLY_CV.get(t.rel))}"` : t.front ? ` src="https://coverartarchive.org/release/${t.rel}/front-250"` : ''} data-plyrel="${t.rel}" alt="">` : ''}<span class="rt"><b>${esc(t.relTitle || '')}</b><small>${esc(t.relAc || '')}${t.relAc && yr ? ' · ' : ''}${yr}</small></span></a>${btns ? `<span class="ply-ra">${plyHeadBtns(t)}</span>` : ''}</div>`;
 }
@@ -13383,7 +13383,8 @@ function plyCollDefSet(type, d) {
     try { const all = GM_getValue('plyColl', {}); if (d) all[plyCollStore(type)] = d; else delete all[plyCollStore(type)]; GM_setValue('plyColl', all); } catch (e) { PLOG.debug('Collection: ' + e.message); }
 }
 // a recording head's cover that the archive doesn't have leaves the recording icon
-document.addEventListener('error', ev => { if (ev.target.matches?.('.ply-rhi img')) ev.target.remove(); }, true);
+// a recording's cover: archive.org can miss a thumbnail CAA still points at, so the full front stands in before the icon
+document.addEventListener('error', ev => { const im = ev.target; if (!im.matches?.('img.ply-rhc')) return; const src = im.getAttribute('src'); if (/\/front-250$/.test(src)) im.src = src.replace(/-250$/, ''); else im.remove(); }, true);
 function plyHeadBtns(t) {
     if (!t) return '';
     let h = '';
