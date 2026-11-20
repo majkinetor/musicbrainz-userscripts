@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.251000
+// @version      2026.11.21.010000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4455,7 +4455,7 @@ S.fxCur = ''; // the effect preset being worked on: Save writes a change into it
 S.colW = {}; // the widths dragged in a table, by section; the title takes what they leave, and none means the table fits itself
 S.colPick = {}; // the tables' column choice, by section: { order, off }; none is the usual table
 S.pending = false; // MusicBrainz's grey mark on what has edits open; takes one more request per page
-VIEW.push('player', 'playerPlace', 'playerClick', 'playerRepeat', 'playerShuffle', 'playerLb', 'playerScrobble', 'playerVideo', 'playerVol', 'playerMax');
+VIEW.push('player', 'playerPlace', 'playerClick', 'playerRepeat', 'playerShuffle', 'playerLb', 'playerScrobble', 'playerVideo', 'playerVol', 'playerMax', 'playerFade');
 S.player = false; // the play buttons on a release's tracks, and the player they start
 S.playerPlace = 'bar'; // where the player shows: 'bar' at the bottom, 'chip' at the top right
 S.playerClick = 'replace'; // left click replaces the queue; right click appends, or the other way around
@@ -4464,6 +4464,7 @@ S.playerRepeat = 'off'; // off, all, or one; changed by right-clicking the play/
 S.playerShuffle = false; // the player picks the next track at random, each once until all have played
 S.playerLb = true; // the player's links to the track and the release in ListenBrainz
 S.playerVol = 100; // the player's volume, 0 to 100; 0 is muted
+S.playerFade = 5; // seconds of crossfade from one track into the next; 0 is off
 S.playerVideo = true; // YouTube's video shows above the player; its Hide video button
 S.playerScrobble = false; // what the player plays goes to ListenBrainz as listens, under the token kept apart in 'lbToken'
 // the page's width; --eh-wn is the same as a length (the screen's for Full), for the launchers' column
@@ -12587,7 +12588,7 @@ const PLY_I = {
 // kind: the source playing; ctl: its widget takes play and pause; ends: it says when a track ends (the others end
 // when the track's length has played); gen: which plyGo is current, for Bandcamp's late answer
 // cur: the track plyGo played last; hist: the tracks shuffle played before it, for previous
-const ply = { q: [], i: -1, src: '', pref: '', paused: false, yt: false, kind: '', ctl: false, ends: false, gen: 0, cur: null, hist: [] };
+const ply = { q: [], i: -1, src: '', pref: '', paused: false, yt: false, kind: '', ctl: false, ends: false, gen: 0, cur: null, hist: [], nx: null, nxShuf: -1, fadeIn: 1, fadeIv: 0, fadeOld: null, pos: null };
 const PLY_WINDOW = location.pathname === '/' && new URLSearchParams(location.search).get('eh-player-window') === '1';
 let PLY_BUS = null;
 try { if (typeof BroadcastChannel === 'function') PLY_BUS = new BroadcastChannel('mbu-event-horizon-player-v1'); } catch (e) { /* unavailable in this browser */ }
@@ -12982,6 +12983,13 @@ function plyGo(i, want) {
     if (plyRemote && !PLY_WINDOW) { plyControl('go', { i, want }); return; }
     const t = ply.q[i]; if (!t) return;
     const p = plyPick(t, want), e = plyEmbed(p), gen = ++ply.gen;
+    // the next track's widget, loaded in advance (#1084): taken when it is this track from the same source, else dropped
+    const old = ply.fadeOld; ply.fadeOld = null;
+    plyFadeStop();
+    const nx = ply.nx; ply.nx = null;
+    const pre = nx && nx.i === i && nx.t === t && nx.key === p.key && nx.f && nx.loaded ? nx : null;
+    if (nx && !pre) nx.f?.remove();
+    ply.nxShuf = -1; ply.pos = null;
     // loaded with no click behind it (a share link, a restore): the widget refuses sound, so Play reloads it under the click
     ply.cold = navigator.userActivation?.isActive === false ? gen : 0;
     plyVolLoad();
@@ -12998,6 +13006,7 @@ function plyGo(i, want) {
     plyDraw();
     plySave();
     plyKeep();
+    if (pre) { plySwap(pre, old); return; }
     if (!e.bc) { plyDock(e); return; }
     plyDock(null);
     plyBandcamp(e.bc).then(url => {
@@ -13056,11 +13065,21 @@ function plyEnded(why) {
     const t = ply.q[ply.i]; if (!t || t.done) return;
     t.done = true;
     PLOG.info('track ended (' + why + ')', t.title);
-    if (S.playerRepeat === 'one') plyGo(ply.i, ply.src);
-    else if (S.playerShuffle) { const n = plyShufNext(); if (n >= 0) plyGo(n); else { ply.paused = true; plyDraw(); } }
-    else if (ply.i + 1 < ply.q.length) plyGo(ply.i + 1);
-    else if (S.playerRepeat === 'all') plyGo(0);
-    else { ply.paused = true; plyDraw(); }
+    if (S.playerRepeat === 'one') { plyGo(ply.i, ply.src); return; }
+    const n = plyNextIdx();
+    if (n >= 0) plyGo(n); else { ply.paused = true; plyDraw(); }
+}
+// the track that plays after this one, or -1; shuffle's choice is made once, so the preloaded widget is the one that plays
+function plyNextIdx() {
+    if (S.playerRepeat === 'one') return ply.i;
+    if (S.playerShuffle) return plyShufPick();
+    if (ply.i + 1 < ply.q.length) return ply.i + 1;
+    return S.playerRepeat === 'all' && ply.q.length ? 0 : -1;
+}
+function plyShufPick() {
+    const c = ply.nxShuf;
+    if (!(c >= 0 && c < ply.q.length && c !== ply.i && !ply.q[c].sh)) ply.nxShuf = plyShufNext();
+    return ply.nxShuf;
 }
 // shuffle's next track: one at random that hasn't played this round; with repeat all, a new round when all have
 const plyShufLeft = () => ply.q.some((x, k) => k !== ply.i && !x.sh);
@@ -13092,7 +13111,7 @@ const plyStep = d => {
     if (plyRemote && !PLY_WINDOW) { plyControl('step', d); return; }
     const t = ply.q[ply.i]; if (d < 0 && ply.ctl && t && (t.played || 0) > 3000) { plySeek(0); return; }
     if (S.playerShuffle) {
-        if (d > 0) { const n = plyShufNext(); if (n >= 0) plyGo(n); return; }
+        if (d > 0) { const n = plyShufPick(); if (n >= 0) plyGo(n); return; }
         const b = plyShufBack(); if (b >= 0) { plyBack = true; try { plyGo(b); } finally { plyBack = false; } } else if (ply.ctl) plySeek(0);
         return;
     }
@@ -13102,6 +13121,7 @@ function plyClose() {
     plyCollStop();
     if (plyRemote && !PLY_WINDOW) { plyControl('close'); plyRemote = false; }
     PLOG.info('closed');
+    plyFadeStop(); ply.nx = null;
     plyWake(false); try { const ms = msPage(); ms.metadata = null; ms.playbackState = 'none'; } catch (e) {}
     try { sessionStorage.removeItem('eh-ply'); } catch (e) {}
     ply.q = []; ply.i = -1; ply.src = '';
@@ -13117,19 +13137,95 @@ function plyClose() {
 function plyDock(e) {
     const root = plyRoot(), dock = root.querySelector('.ply-dock');
     if (!e) { dock.innerHTML = ''; return; }
-    dock.innerHTML = `<iframe src="${esc(e.url)}" height="${e.h}" allow="autoplay; encrypted-media; clipboard-write; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" title="Player"></iframe>`;
+    ply.nx = null;
+    dock.innerHTML = plyIframe(e.url, e.h);
     const f = dock.querySelector('iframe'), gen = ply.gen, kind = ply.kind;
     f.addEventListener('load', () => {
         if (kind === 'youtube' || kind === 'ytmusic') plyPost('{"event":"listening","id":1,"channel":"widget"}');
-        // the bridge in Bandcamp's and Deezer's widget may load after the frame does: asked again until it answers
-        if (kind === 'bandcamp' || kind === 'deezer') { const start = () => plyPost({ ehPlyCmd: 'play', pos: kind === 'bandcamp' ? (ply.q[ply.i]?.resume || 0) / 1000 : 0, v: Math.max(0, Math.min(100, +S.playerVol || 0)) / 100 }); let n = 0; const iv = setInterval(() => { if (gen !== ply.gen || ply.bridged === gen || ++n > 10) { if (n > 10) PLOG.warn('no answer from the', kind, 'widget; its track ends by its length'); clearInterval(iv); return; } start(); }, 1000); start(); }
+        if (kind === 'bandcamp' || kind === 'deezer') plyArm(gen, kind, kind === 'bandcamp' ? (ply.q[ply.i]?.resume || 0) / 1000 : 0);
     }, { once: true });
 }
-const plyFrame = () => document.querySelector('#eh-ply .ply-dock iframe');
+const plyIframe = (url, h, cls) => `<iframe src="${esc(url)}" height="${h}"${cls ? ` class="${cls}"` : ''} allow="autoplay; encrypted-media; clipboard-write; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" title="Player"></iframe>`;
+// the bridge in Bandcamp's and Deezer's widget may load after the frame does: asked again until it answers
+function plyArm(gen, kind, pos) {
+    const start = () => plyPost({ ehPlyCmd: 'play', pos, v: plyVolNow() / 100 });
+    let n = 0; const iv = setInterval(() => { if (gen !== ply.gen || ply.bridged === gen || ++n > 10) { if (n > 10) PLOG.warn('no answer from the', kind, 'widget; its track ends by its length'); clearInterval(iv); return; } start(); }, 1000);
+    start();
+}
+// Gapless start and crossfade (#1084). While a track plays, the next one's widget loads in a hidden second iframe
+// (YouTube and Bandcamp only: their widgets take play and volume). At the end it becomes the current widget and gets
+// play at once. With a crossfade set, it starts that many seconds before the end at volume 0, and the two volumes
+// cross; the old widget is then removed.
+const PLY_PRE = ['youtube', 'ytmusic', 'bandcamp'];
+function plyPreload() {
+    if (plyRemote && !PLY_WINDOW) return;
+    const t = ply.q[ply.i]; if (!t || t.done) return;
+    const n = plyNextIdx(), nt = ply.q[n];
+    if (ply.nx && (ply.nx.i !== n || ply.nx.t !== nt)) { PLOG.debug('preload dropped: the next track changed'); ply.nx.f?.remove(); ply.nx = null; }
+    if (ply.nx || n < 0 || n === ply.i || !nt || (t.played || 0) < 3000) return;
+    const tried = ply.gen + ':' + n; if (ply.nxTried === tried) return; ply.nxTried = tried;
+    const p = plyPick(nt), e = plyEmbed(p); if (!e || !PLY_PRE.includes(p.key)) return;
+    const nx = ply.nx = { i: n, t: nt, key: p.key, yt: !!e.yt, h: e.h, f: null, loaded: false, ready: false };
+    const make = url => {
+        const dock = plyRoot().querySelector('.ply-dock'); if (ply.nx !== nx || !dock) return;
+        dock.insertAdjacentHTML('beforeend', plyIframe(url, 1, 'ply-nx'));
+        nx.f = dock.lastElementChild;
+        nx.f.addEventListener('load', () => {
+            nx.loaded = true;
+            try { nx.f.contentWindow.postMessage(nx.yt ? '{"event":"listening","id":1,"channel":"widget"}' : { ehPlyCmd: 'vol' }, '*'); } catch (x) {}
+        }, { once: true });
+        PLOG.debug('preloads', nt.key, nt.title, 'from', p.key);
+    };
+    if (e.yt) make(e.url.replace('autoplay=1', 'autoplay=0'));
+    else plyBandcamp(e.bc).then(url => { if (url) make(url); else if (ply.nx === nx) ply.nx = null; });
+}
+// the crossfade starts when the current track has fade seconds left and the next widget answered
+function plyFadeCheck() {
+    const fade = +S.playerFade || 0, nx = ply.nx, t = ply.q[ply.i];
+    if (!fade || !nx || !nx.ready || ply.fadeIv || !t || t.done || ply.paused || !plyHasVol() || (plyRemote && !PLY_WINDOW)) return;
+    if (nx.i !== plyNextIdx()) return;
+    const ps = ply.pos && ply.pos.gen === ply.gen ? ply.pos : null;
+    const total = ps && ps.dur > 0 ? ps.dur : (t.len || 0) / 1000;
+    const left = ps && ps.dur > 0 ? ps.dur - ps.pos - (Date.now() - ps.when) / 1000 : ((t.len || 0) - (t.played || 0)) / 1000;
+    if (!total || total < 3 * fade || !(left > 0.3 && left <= fade)) return;
+    PLOG.info('crossfade into', nx.t.title, Math.round(left * 10) / 10 + ' s before the end');
+    ply.fadeOld = { f: plyFrame(), kind: ply.kind, yt: ply.yt };
+    plyEnded('crossfade');
+}
+// the preloaded widget becomes the current one; with old, the one it fades from
+function plySwap(nx, old) {
+    const dock = plyRoot().querySelector('.ply-dock');
+    if (old && old.f && old.f.isConnected) old.f.classList.add('ply-old'); else old = null;
+    for (const x of dock.querySelectorAll('iframe')) if (x !== nx.f && !(old && x === old.f)) x.remove();
+    nx.f.classList.remove('ply-nx'); nx.f.height = nx.h;
+    ply.fadeIn = old ? 0 : 1;
+    PLOG.info(old ? 'crossfade' : 'gapless start', 'with the preloaded', nx.key, 'widget');
+    if (nx.yt) { plyVol(); plyPost(JSON.stringify({ event: 'command', func: 'playVideo', args: [] })); }
+    else plyArm(ply.gen, nx.key, 0);
+    if (old) plyFadeRun(old);
+}
+function plyFadeRun(old) {
+    const ms = Math.max(300, (+S.playerFade || 0) * 1000), t0 = Date.now();
+    ply.fadeIv = setInterval(() => {
+        const k = Math.min(1, (Date.now() - t0) / ms);
+        ply.fadeIn = k;
+        if (plyHasVol()) plyVolTo(plyFrame(), ply.kind, ply.yt, plyVolNow());
+        if (old.f.isConnected) plyVolTo(old.f, old.kind, old.yt, Math.round((+S.playerVol || 0) * (1 - k)));
+        if (k >= 1) plyFadeStop(true);
+    }, 100);
+}
+function plyFadeStop(vol) {
+    const was = !!ply.fadeIv;
+    clearInterval(ply.fadeIv); ply.fadeIv = 0; ply.fadeIn = 1;
+    document.querySelectorAll('#eh-ply .ply-dock iframe.ply-old').forEach(x => x.remove());
+    if (vol && was) plyVol();
+}
+const plyFrame = () => document.querySelector('#eh-ply .ply-dock iframe:not(.ply-nx):not(.ply-old)');
 const plyPost = m => { const f = plyFrame(); if (f) try { f.contentWindow.postMessage(m, '*'); } catch (e) {} };
 // the widget's play and pause, each in its own words
 function plyCmd(play) {
     if (plyRemote && !PLY_WINDOW) { plyControl('play', play); return; }
+    if (!play) plyFadeStop(true);
     const k = ply.kind;
     if (play && ply.cold === ply.gen && ply.i >= 0) { PLOG.info('play: reloading the', k, 'widget loaded without a click'); plyGo(ply.i, ply.src); return; }
     PLOG.info(play ? 'play' : 'pause', 'asked of', k);
@@ -13143,10 +13239,15 @@ const plyHasVol = () => ply.ctl && ply.kind !== 'spotify';
 function plyVol() {
     if (plyRemote && !PLY_WINDOW) { plyControl('volume', +S.playerVol); return; }
     if (!plyHasVol()) return;
-    const v = Math.max(0, Math.min(100, Math.round(+S.playerVol || 0))), k = ply.kind;
-    if (ply.yt) { plyPost(JSON.stringify({ event: 'command', func: v ? 'unMute' : 'mute', args: [] })); plyPost(JSON.stringify({ event: 'command', func: 'setVolume', args: [v] })); }
-    else if (k === 'soundcloud') plyPost(JSON.stringify({ method: 'setVolume', value: v }));
-    else plyPost({ ehPlyCmd: 'vol', v: v / 100 });
+    plyVolTo(plyFrame(), ply.kind, ply.yt, plyVolNow());
+}
+// the volume now: the setting, times how far a crossfade has brought the new track in
+const plyVolNow = () => Math.max(0, Math.min(100, Math.round((+S.playerVol || 0) * ply.fadeIn)));
+function plyVolTo(f, k, yt, v) {
+    const post = m => { if (f) try { f.contentWindow.postMessage(m, '*'); } catch (e) {} };
+    if (yt) { post(JSON.stringify({ event: 'command', func: v ? 'unMute' : 'mute', args: [] })); post(JSON.stringify({ event: 'command', func: 'setVolume', args: [v] })); }
+    else if (k === 'soundcloud') post(JSON.stringify({ method: 'setVolume', value: v }));
+    else post({ ehPlyCmd: 'vol', v: v / 100 });
 }
 // once per track, when its widget first answers (100 included: a widget can start at its own remembered volume)
 const plyVolOnce = () => { if (ply.volGen !== ply.gen) { ply.volGen = ply.gen; plyVol(); } };
@@ -13183,11 +13284,17 @@ function plySeek(ms) {
 // isPaused, position and duration (it doesn't start on its own: told to toggle once ready). SoundCloud: ready, then the
 // events it was asked for. Bandcamp's and Deezer's: what the bridge above posts from their audio.
 window.addEventListener('message', ev => {
+    // the preloaded widget's first word: it is ready to start
+    if (ply.nx && ply.nx.f && ev.source === ply.nx.f.contentWindow) { if (!ply.nx.ready) { ply.nx.ready = true; PLOG.debug('the preloaded', ply.nx.key, 'widget answers'); } return; }
     const f = plyFrame(), t = ply.q[ply.i];
     if (!f || !t || ev.source !== f.contentWindow) return;
     let m = ev.data; if (typeof m === 'string') { try { m = JSON.parse(m); } catch (e) { return; } }
     if (!m || typeof m !== 'object') return;
     const k = ply.kind;
+    // the widget's own clock, for the crossfade's start
+    const pi = m.event === 'infoDelivery' && m.info ? m.info : typeof m.ehPly === 'string' ? { currentTime: m.pos, duration: m.dur } : null;
+    if (pi && typeof pi.currentTime === 'number') ply.pos = { gen: ply.gen, pos: pi.currentTime, dur: pi.duration > 0 ? pi.duration : ply.pos?.gen === ply.gen ? ply.pos.dur : 0, when: Date.now() };
+    if (pi) setTimeout(plyFadeCheck);
     if (ply.yt) {
         const st = m.event === 'onStateChange' ? m.info : m.event === 'infoDelivery' && m.info ? m.info.playerState : undefined;
         if (st === 0) plyEnded('YouTube'); else if (st === 1 || st === 2) plyState(st === 2);
@@ -13841,6 +13948,7 @@ html.eh-ply-win .ply-wl{order:2;flex:1;min-height:0;overflow:hidden auto;padding
 #eh-ply .ply-dock:empty{display:none}
 #eh-ply .ply-dock iframe{display:block;width:100%;border:0}
 #eh-ply.ply-novid .ply-dock{width:1px;height:1px;opacity:0;pointer-events:none;border:0}
+#eh-ply .ply-dock iframe.ply-nx,#eh-ply .ply-dock iframe.ply-old{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none}
 #eh-ply.ply-bar .ply-dock{bottom:56px}
 #eh-ply.ply-chip .ply-dock{top:132px}
 html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
@@ -14006,6 +14114,8 @@ setInterval(() => {
     if (t.resume && ply.kind !== 'bandcamp' && t.played >= 2000) { const at = t.resume; t.resume = 0; plySeek(at); }
     plySave();
     plyProg();
+    plyPreload(); plyFadeCheck();
+    if (t.done) return;
     if (!ply.ends && t.len && t.played >= t.len + 1500) { plyEnded('its length has played'); return; }
     if (t.sent || !S.playerScrobble) return;
     t.heard += 1000;
@@ -16901,6 +17011,7 @@ function cfgBody() {
         player: ckRow('player', 'Enable player', 'A play button on each track of a release that has it on a streaming site\nPlays the release from there, track after track')
             + row('Player place', [['bar', 'Bottom bar'], ['chip', 'Top bar']].map(([v, l]) => chip('playerPlace', v, S.playerPlace === v, l)).join(''), 'Where the player shows')
             + row('Left click', [['replace', 'Replace queue'], ['append', 'Add to queue']].map(([v, l]) => chip('playerClick', v, S.playerClick === v, l)).join(''), 'Right-click does the other action')
+            + row('Crossfade', [[0, 'Off'], [1, '1 s'], [2, '2 s'], [3, '3 s'], [5, '5 s'], [8, '8 s']].map(([n, l]) => chip('playerFade', n, S.playerFade === n, l)).join(''), 'Fades one track into the next\nYouTube and Bandcamp\nOther sources start the next track as before')
             + row('Collection playlist limit', [100, 500, 1000, 5000].map(n => chip('playerMax', n, S.playerMax === n, String(n))).join(''), 'Maximum tracks loaded into the playlist from a collection')
             + ckRow('playerLb', 'Show ListenBrainz menu items', 'Links in the player to the track and the release in ListenBrainz')
             + `<div class="player-listens">${ckRow('playerScrobble', 'Send listens to ListenBrainz', 'What the player plays goes to your ListenBrainz listens\nNeeds your user token')}<span class="fx-combo"><input type="password" data-lbtok autocomplete="off" spellcheck="false" placeholder="LB token" aria-label="ListenBrainz token" value="${esc(lbToken())}"></span><a href="https://listenbrainz.org/settings" target="_blank" rel="noopener noreferrer" data-lb-get${lbToken() ? ' hidden' : ''}>Get token</a></div>`,
@@ -17181,6 +17292,7 @@ function cfgWire(panel, b, body) {
             else if (g === 'playerPlace') S.playerPlace = k;
             else if (g === 'playerClick') S.playerClick = k;
             else if (g === 'playerMax') S.playerMax = +k;
+            else if (g === 'playerFade') S.playerFade = +k;
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
             else if (g === 'bg') { S.bg = k; bgApply(); }
