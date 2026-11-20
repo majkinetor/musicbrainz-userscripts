@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.242000
+// @version      2026.11.20.243000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13376,6 +13376,8 @@ function plyRelHead(t, btns = true) {
 // collection, a right-click lists them all), love it on ListenBrainz
 function plyCollKey(t, type) { return t && ME ? (type === 'rel' ? t.rel && 'release/' + t.rel : t.rid && 'recording/' + t.rid) || '' : ''; }
 function plyCollStore(type) { return location.origin + '/' + ME + '/' + type; }
+// the default collection's name: its stored label is MB's row sentence ("Remove from X"), so take the name from the rows
+function plyCollName(d, x) { const r = x && x.rows && x.rows.find(v => v.id === d.id); return (r && collectionNames(x.rows).get(r.label)) || d.label.replace(/^(?:Add to|Remove from) /, ''); }
 function plyCollDef(type) { try { return GM_getValue('plyColl', {})[plyCollStore(type)] || null; } catch (e) { return null; } }
 function plyCollDefSet(type, d) {
     try { const all = GM_getValue('plyColl', {}); if (d) all[plyCollStore(type)] = d; else delete all[plyCollStore(type)]; GM_setValue('plyColl', all); } catch (e) { PLOG.debug('Collection: ' + e.message); }
@@ -13391,7 +13393,7 @@ function plyHeadBtns(t) {
         if (!key) continue;
         const what = type === 'rel' ? 'release' : 'recording', d = plyCollDef(type), x = COLLECTIONS.get(key);
         const row = d && x && x.rows && x.rows.find(r => r.id === d.id), on = !!(row && row.on), ins = collectionsIn(x);
-        const tip = 'Collect ' + what + (d ? ' · "' + d.label + '"' : '') + (ins.length ? '\nIn ' + ins.length + (ins.length === 1 ? ' collection: ' : ' collections: ') + ins.join(', ') : '') + (d ? '\nClick: ' + (on ? 'remove' : 'add') + ' this ' + what : '\nClick: choose a collection') + '\nRight-click: your ' + what + ' collections';
+        const tip = 'Collect ' + what + (d ? ' · "' + plyCollName(d, x) + '"' : '') + (ins.length ? '\nIn ' + ins.length + (ins.length === 1 ? ' collection: ' : ' collections: ') + ins.join(', ') : '') + (d ? '\nClick: ' + (on ? 'remove' : 'add') + ' this ' + what : '\nClick: choose a collection') + '\nRight-click: your ' + what + ' collections';
         h += `<button type="button" class="ply-pa${on ? ' on' : ''}${x && (x.busy || x.loading) ? ' busy' : ''}" data-pa="${type}" aria-pressed="${on}" aria-label="Collect ${what}" data-tip="${esc(tip)}">${SVG(PLY_I['c' + type])}${collBadge(ins.length)}</button>`;
     }
     if (t.rid) {
@@ -13444,7 +13446,7 @@ function plyCollPick(btn, type) {
         if (b.dataset.cc) collectionChange(key, b.dataset.cc);
         else if (b.dataset.cd) {
             const x = COLLECTIONS.get(key), r = x && x.rows && x.rows.find(v => v.id === b.dataset.cd), d = plyCollDef(type);
-            plyCollDefSet(type, d && d.id === b.dataset.cd || !r ? null : { id: r.id, label: r.label });
+            plyCollDefSet(type, d && d.id === b.dataset.cd || !r ? null : { id: r.id, label: collectionNames(x.rows).get(r.label) || r.label });
             PLOG.info('default ' + (type === 'rel' ? 'release' : 'recording') + ' collection', r && d && d.id !== r.id || r && !d ? r.label : 'cleared');
             plyCollDraw(m); plyHeadPaint();
         } else if (b.dataset.cr) collectionLoad(key, true);
@@ -17532,7 +17534,7 @@ const plyKeyPa = k => {
     if (!key) { toast('This track has no ' + what); return true; }
     if (!d) { toast('Pick a default ' + what + ' collection in the playlist first'); return true; }
     const x = COLLECTIONS.get(key), r = x && x.rows && x.rows.find(v => v.id === d.id);
-    if (r) toast((r.on ? 'Removed from ' : 'Added to ') + d.label);
+    if (r) toast((r.on ? 'Removed from ' : 'Added to ') + plyCollName(d, x));
     plyCollClick(null, k);
     return true;
 };
