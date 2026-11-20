@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.100100
+// @version      2026.11.21.110000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4517,7 +4517,7 @@ const MBID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 
 /* ── data ──────────────────────────────────────────── */
 // every fetch leaves a debug line: what, how it answered, how long it took
-const fetchLog = (what, t0, r, e) => LOG.debug(`Fetch ${what}: ${e ? 'failed, ' + (e.message || e) : r ? r.status : 'cancelled'} in ${Math.round(performance.now() - t0)} ms`);
+const fetchLog = (what, t0, r, e, L = LOG) => L.debug(`Fetch ${what}: ${e ? 'failed, ' + (e.message || e) : r ? r.status : 'cancelled'} in ${Math.round(performance.now() - t0)} ms`);
 // the page being drawn in this tab leads the shared gate (#847): other scripts' and tabs' background requests wait
 // for it; a tab the reader isn't looking at doesn't lead, and a lead not renewed lapses on its own
 let ehLead = '';
@@ -4528,12 +4528,13 @@ function leadOn() {
 }
 function leadOff(t) { if (!t) return; if (ehLead === t) ehLead = ''; mbnLead(t, 0).catch(() => {}); }
 // bg: a kept answer asked again, which doesn't lead
-async function wsText(path, bg) {
+// L: the logger its fetch line goes to (the player's are its own category)
+async function wsText(path, bg, L) {
     const t0 = performance.now(), lead = bg ? '' : ehLead;
     if (lead) mbnLead(lead, 8000).catch(() => {});
     let r;
-    try { r = await mbnFetch(MB + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json', { headers: { Accept: 'application/json' } }, lead ? { lead } : undefined); } catch (e) { fetchLog('ws/2 ' + path, t0, null, e); throw e; }
-    fetchLog('ws/2 ' + path, t0, r);
+    try { r = await mbnFetch(MB + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json', { headers: { Accept: 'application/json' } }, lead ? { lead } : undefined); } catch (e) { fetchLog('ws/2 ' + path, t0, null, e, L); throw e; }
+    fetchLog('ws/2 ' + path, t0, r, undefined, L);
     if (!r) throw new Error('cancelled');
     if (r.status === 404) throw new Error('MusicBrainz has no such ' + path.split('/')[0].replace('-', ' ') + '.');
     if (!r.ok) throw Object.assign(new Error('MusicBrainz answered ' + r.status + '.'), { status: r.status });
@@ -4545,6 +4546,8 @@ const entKeep = (path, j) => { const m = String(path).match(/^[a-z-]+\/([0-9a-f-
 const ws = path => wsText(path).then(JSON.parse).then(j => entKeep(path, j));
 // a page loader's request: drawn from its kept answer when there is one (kept)
 const wskAs = path => kept('ws:' + path, bg => wsText(path, bg)).then(JSON.parse).then(j => entKeep(path, j));
+// the player's lookups: the same kept answers, their fetch lines logged as the player's
+const plyWsk = path => kept('ws:' + path, bg => wsText(path, bg, PLOG)).then(JSON.parse).then(j => entKeep(path, j));
 // Your own votes ride along an entity's lookup (user-tags, user-genres: no request of their own) once you're known to be
 // signed in: eh.in, from the last start(), since the page's first lookup goes before MusicBrainz's header is read. Signed out
 // they answer 401, and the lookup goes again without them. MINE: the names you voted for, by type/mbid, for Fuzzy Logic
@@ -8682,9 +8685,9 @@ function instrument(a) {
     };
 }
 // one of MusicBrainz's subpages (an instrument's or a place's tab): its table as headings and rows, without the merge checkboxes and the ratings
-async function mbTab(type, id, sub, page = 1) {
+async function mbTab(type, id, sub, page = 1, L) {
     const t0 = performance.now(), r = await mbnFetch(`${MB}/${type}/${id}${sub ? '/' + sub : ''}${page > 1 ? '?page=' + page : ''}`);
-    fetchLog(`${type}/${id}/${sub}`, t0, r);
+    fetchLog(`${type}/${id}/${sub}`, t0, r, undefined, L);
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = new DOMParser().parseFromString(await r.text(), 'text/html'), c = d.querySelector('#content') || d.querySelector('#page') || d, t = c.querySelector('table.tbl');
     const more = [...c.querySelectorAll('ul.pagination a[href]')].some(a => { const m = /[?&]page=(\d+)/.exec(a.getAttribute('href')); return m && +m[1] > page; }), src = [type, id, sub], h = d.querySelector(`.${type}header h1`), name = h ? h.textContent.trim() : '';
@@ -12949,9 +12952,41 @@ async function plyCollection(id, ent, only, append, list) {
         if (!room) throw new Error('The playlist has reached its limit');
         let page = 1, more = !only && !list, read = 0;
         plyCollRead = 0; plyCollTotal = list ? list.length : 0;
+        const painted = () => { plyCollRead = read; if (plyCollLoading) { const lm = document.querySelector("#eh-ply-menu:has(.ply-list-head)"); if (lm) plyLoadPaint(lm); } };
+        // A release collection comes by browse: whole releases, about 500 tracks a request, where one lookup a release through
+        // the gate's one request a second took minutes for a hundred. Its order is MusicBrainz's, not the collection page's. A
+        // collection ws/2 won't show (a private one: it answers 401, the site's sign-in doesn't reach it) goes the old way
+        if (more && ent === 'release') {
+            const inc = 'artist-credits+recordings+url-rels+recording-level-rels+release-groups';
+            try {
+                for (let off = 0; q.length < room;) {
+                    const j = JSON.parse(await wsText(`release?collection=${id}&inc=${inc}&limit=100&offset=${off}`, false, PLOG));
+                    if (gone()) return;
+                    const rs = j.releases || [];
+                    plyCollTotal = +j['release-count'] || plyCollTotal;
+                    PLOG.debug(`Collection ${id}: ${rs.length} release(s) at ${off} of ${plyCollTotal}`);
+                    if (!rs.length) break;
+                    off += rs.length;
+                    if (!append && plyShufOn()) for (let k = rs.length - 1; k > 0; k--) { const i = Math.floor(Math.random() * (k + 1)); [rs[k], rs[i]] = [rs[i], rs[k]]; }
+                    for (const raw of rs) {
+                        if (q.length >= room) break;
+                        q.push(...plyQueue(release(raw, raw['release-group'] || {}, [])).slice(0, room - q.length).map(t => ({ ...t, oneTrack: true })));
+                        ++read;
+                    }
+                    painted();
+                    if (q.length > sent) { plyCollLoading = true; flush(); }
+                    if (off >= plyCollTotal) break;
+                }
+                more = false;
+            } catch (e) {
+                if (gone() || q.length) throw e;
+                PLOG.info(`Collection ${id}: browse failed (${e.message}), reading it a release at a time`);
+                read = 0; plyCollTotal = 0;
+            }
+        }
         while ((ids.length || more) && q.length < room) {
             if (!ids.length) {
-                const x = await mbTab('collection', id, '', page++);
+                const x = await mbTab('collection', id, '', page++, PLOG);
                 if (gone()) return;
                 if (x.col && x.col.ent && x.col.ent !== ent) throw new Error('This collection has a different type');
                 if (x.total) plyCollTotal = +x.total;
@@ -12965,16 +13000,16 @@ async function plyCollection(id, ent, only, append, list) {
             const gid = ids.shift(), en = ents.shift() || ent;
             if (gone()) return;
             if (en === 'recording') {
-                const raw = await wsk(`recording/${gid}?inc=artist-credits+url-rels+releases+release-groups`), g = recording(raw), srcs = plySources({ links: g.links });
+                const raw = await plyWsk(`recording/${gid}?inc=artist-credits+url-rels+releases+release-groups`), g = recording(raw), srcs = plySources({ links: g.links });
                 // the head's cover: the release group of the recording's oldest release (undated ones last)
                 const old = (raw.releases || []).filter(r => r['release-group']).sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'))[0];
                 if (srcs.length) q.push({ key: '1-1', n: 1, title: g.title, rid: g.id, artist: acText(g.ac), len: g.len || 0, srcs, rel: '', relTitle: '', rg: old ? old['release-group'].id : '', standalone: true });
             } else {
-                const raw = await wsk(`release/${gid}?inc=artist-credits+recordings+url-rels+recording-level-rels+release-groups`);
+                const raw = await plyWsk(`release/${gid}?inc=artist-credits+recordings+url-rels+recording-level-rels+release-groups`);
                 q.push(...plyQueue(release(raw, raw['release-group'] || {}, [])).slice(0, room - q.length).map(t => ({ ...t, oneTrack: true })));
             }
             if (gone()) return;
-            ++read; plyCollRead = read; if (plyCollLoading) { const lm = document.querySelector("#eh-ply-menu:has(.ply-list-head)"); if (lm) plyLoadPaint(lm); }
+            ++read; painted();
             if (q.length - sent >= (started ? 10 : 1)) { plyCollLoading = !only; flush(); }
         }
         if (!q.length) throw new Error('No playable recordings found');
@@ -13929,7 +13964,7 @@ async function plyLoadMenu(btn) {
         plyMenu(btn, '<div class="hd">Load a collection</div>' + (html || '<div class="st">No collections</div>'), async v => {
             const row = rows[+v.k], id = row && (row.href.match(new RegExp('/collection/(' + MBID.source + ')', 'i')) || [])[1];
             if (!id) return;
-            try { const first = await mbTab('collection', id, ''), ent = first.col && first.col.ent; if (!['recording', 'release'].includes(ent)) throw new Error('Choose a recording or release collection'); plyCollection(id, ent, '', false); }
+            try { const first = await mbTab('collection', id, '', 1, PLOG), ent = first.col && first.col.ent; if (!['recording', 'release'].includes(ent)) throw new Error('Choose a recording or release collection'); plyCollection(id, ent, '', false); }
             catch (e) { toast(e.message); }
         });
     } catch (e) { toast('Could not read collections: ' + e.message); }
