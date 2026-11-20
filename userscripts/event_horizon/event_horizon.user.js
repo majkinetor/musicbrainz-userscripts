@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.002000
+// @version      2026.11.22.002500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12205,8 +12205,6 @@ function searchHtml(d) {
 }
 // MusicBrainz's own /search page: the search form (query, type, results per page, method) and the tag lookup's fields, in the bars the other searches use
 const TL_F = [['artist', 'Artist'], ['release', 'Release'], ['tracknum', 'Track number'], ['track', 'Track'], ['duration', 'Duration'], ['filename', 'Filename']];
-// the other lookups that land on a page the viewer lacks, as the search that finds the same: [type, field]
-const OL_SEARCH = { isrc: ['recording', 'isrc'], iswc: ['work', 'iswc'], discid: ['release', 'discid'], 'artist-ipi': ['artist', 'ipi'], 'artist-isni': ['artist', 'isni'], 'label-ipi': ['label', 'ipi'], 'label-isni': ['label', 'isni'] };
 const OTHER_LOOKUPS = [['catno', 'Catalog number'], ['barcode', 'Barcode'], ['url', 'URL'], ['isrc', 'ISRC'], ['iswc', 'ISWC'], ['artist-ipi', 'Artist IPI'], ['artist-isni', 'Artist ISNI'], ['label-ipi', 'Label IPI'], ['label-isni', 'Label ISNI'], ['freedbid', 'FreeDB ID'], ['mbid', 'MBID'], ['discid', 'Disc ID']];
 // MusicBrainz's own /search page as the edit search is built: criteria in compact rows, and one Add criteria list with every criterion of the page, grouped as MusicBrainz groups them
 // MusicBrainz sends each lookup to its own address, so a criterion of another lookup switches the form to it: its rows replace the others
@@ -16731,12 +16729,8 @@ function build() {
         const fm = ev.target; if (!ehOn || ev.defaultPrevented || !fm.action || !/^\/otherlookup\/[\w-]+$/.test(new URL(fm.action).pathname)) return;
         ev.preventDefault();
         const u = new URL(fm.action); u.search = new URLSearchParams(new FormData(fm)).toString();
-        // the codes MusicBrainz sends to a page of its own (an ISRC's, an ISWC's, a disc ID's) are asked of its search, which the viewer shows, so the player plays on
-        const ol = u.pathname.split('/').pop(), v = (u.searchParams.get('other-lookup.' + ol) || '').trim(), sq = v && OL_SEARCH[ol];
-        if (sq) { const to = MB + '/search?' + new URLSearchParams({ query: sq[1] + ':"' + v.replace(/"/g, '') + '"', type: sq[0], method: 'advanced' }); LOG.info('Other lookup ' + ol + ' ' + v + ' as a search'); ehPush(to); show(navTo(to)); return; }
-        try { const r = await mbnFetch(u.href), k = r.ok && r.url && navTo(r.url); if (k) { ehPush(r.url); show(k); return; } LOG.info('Other lookup ' + ol + ' ' + v + ': no page the viewer shows (' + r.status + ' ' + r.url + ')'); } catch (e) { LOG.warn('Other lookup: ' + e.message); }
-        // nothing the viewer can open: say so and stay, so the player plays on
-        toast('Nothing found for ' + (v || ol));
+        try { const r = await mbnFetch(u.href), k = r.ok && r.url && navTo(r.url); if (k) { ehPush(r.url); show(k); return; } } catch (e) { LOG.warn('Other lookup: ' + e.message); }
+        location.assign(u.href);
     });
     listFilters(document);
     // the search field folds away once focus leaves it
