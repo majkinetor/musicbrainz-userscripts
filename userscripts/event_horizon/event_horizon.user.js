@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.20.244000
+// @version      2026.11.20.250000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3393,7 +3393,11 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .cl-pc{width:10ch;flex:none;display:inline-flex;align-items:center;gap:5px;color:var(--muted);font-size:12px}.cl-pc .cl-pv{opacity:.7}.cl-pc.off{color:var(--accent)}.cl-pc.off .cl-pv{opacity:1}
 .cl-row:not(.cl-th){cursor:pointer}.cl-row:not(.cl-th):hover{background:color-mix(in srgb,var(--hover) 40%,transparent)}
 .cl-row.cl-th{font-size:12px;font-weight:600;color:var(--muted);padding:2px 0 4px}.cl-th .cl-nm{padding-left:2px}.cl-th .cl-ty,.cl-th .cl-pc{font-size:inherit;color:inherit}.cl-th .cl-ct{font-weight:inherit}.cl-th .cl-acts{min-height:1px}
-.cl-row .cl-acts{min-width:66px;justify-content:flex-end}.cl-note{margin-top:14px}
+.cl-row .cl-acts{min-width:66px;justify-content:flex-end}
+.clp-w{position:relative;display:inline-flex;flex:none}.clp{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;cursor:pointer;visibility:hidden;flex:none}.clp svg{width:16px;height:16px}.clp-w>.clp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:var(--text)}.clp-w>.clp:hover,.clp-w>.clp:focus-visible{color:var(--link)}
+.cl-foot>.clp{background:rgba(0,0,0,.62);color:#fff}.cl-foot>.clp:hover{background:rgba(0,0,0,.82)}.cl-foot>.clp svg{width:14px;height:14px}
+.cl-tile:hover .clp,.cl-li:hover .clp,.cl-row:hover .clp,.cvp-on .clp,.clp:focus-visible{visibility:visible}.cl-li:hover .clp-w>.cl-ico,.cl-row:hover .clp-w>.cl-ico,.cvp-on .clp-w>.cl-ico,.clp-w:focus-within>.cl-ico{visibility:hidden}
+@media (hover:none){.clp{pointer-events:none}.cvp-on .clp{pointer-events:auto}}.cl-note{margin-top:14px}
 @media (max-width:600px){.cl-tools{margin-left:0}.cl-row{flex-wrap:wrap}.cl-nm{flex-basis:100%}.cl-ty{flex:1;width:auto}.cl-pc{width:auto}.cl-row .cl-acts{min-width:0}.cl-th .cl-nm{flex-basis:auto;flex:1}.cl-th .cl-acts{display:none}}
 .ed-views button{all:unset;width:30px;height:30px;display:grid;place-items:center;border-radius:8px;color:var(--muted);cursor:pointer}
 .ed-views button:hover{background:var(--chip);color:var(--text)}
@@ -9314,7 +9318,7 @@ function collsHtml(d) {
     const notes = c.secs.filter(s => s.note).map(s => `<p class="hm-none cl-note">${esc(s.grp)}: ${esc(s.note)}</p>`).join('');
     const body = grid
         ? grps.map((g, i) => { if (clType && g !== clType) return ''; const xs = ord(its.filter(x => x.grp === g)); return sect('cl' + i, `${clIco(xs[0])}${esc(g)} <span class="count">${fmtN(xs.length)}</span>`, '', `<div class="cl-tiles">${xs.map(x => clItem(x, true)).join('')}</div>` + (i === grps.length - 1 ? notes : ''), ''); }).join('') + (grps.length ? '' : notes)
-        : cv === 'row' ? (its.length ? `<div class="hm-rec cl-rows">${ord(its.filter(x => !clType || x.grp === clType)).map(x => `<a class="cl-li" href="${esc(x.href.startsWith('/') ? MB + x.href : x.href)}" data-tip="${esc(clTy(x))}">${clIco(x)}<span class="hm-rt">${esc(x.name)}</span><span class="cl-n">${esc(x.ns || '0')}</span></a>`).join('')}</div>` : '')
+        : cv === 'row' ? (its.length ? `<div class="hm-rec cl-rows">${ord(its.filter(x => !clType || x.grp === clType)).map(x => `<a class="cl-li" href="${esc(x.href.startsWith('/') ? MB + x.href : x.href)}" data-tip="${esc(clTy(x))}">${clIcoP(x)}<span class="hm-rt">${esc(x.name)}</span><span class="cl-n">${esc(x.ns || '0')}</span></a>`).join('')}</div>` : '')
         : its.length ? `<ul class="cl-list">${clHead(sk, desc, its.some(x => x.edit || x.del))}${ord(its.filter(x => !clType || x.grp === clType)).map(x => clItem(x, false)).join('')}</ul>` : '';
     return top + body + (grid ? '' : notes);
 }
@@ -9357,14 +9361,18 @@ function clHead(sk, desc, acts) {
     const th = (k, n, c) => `<span class="${c}" role="columnheader" aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-clsort="${k}" data-tip="${sk === k ? 'Reverse the order' : 'Sort by ' + n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button></span>`;
     return `<li class="cl-row cl-th" role="row">${th('name', 'Name', 'cl-nm')}${th('type', 'Type', 'cl-ty')}${th('pv', 'Privacy', 'cl-pc')}${th('items', 'Items', 'cl-ct')}${acts ? '<span class="cl-acts"></span>' : ''}</li>`;
 }
+// A release or recording collection gets a play button, shown on hover as inside a collection; a span with role button, as the list view's row is a link.
+const clPlayEnt = x => { const t = (x.ty || x.grp || '').toLowerCase(), e = /^release(?! group)/.test(t) ? 'release' : /^recording/.test(t) ? 'recording' : ''; return S.player && ['release', 'recording'].includes(e) && /\/collection\/([0-9a-f-]{36})/i.test(x.href || '') ? e : ''; };
+const clPlay = x => { const e = clPlayEnt(x); if (!e) return ''; const id = x.href.match(/\/collection\/([0-9a-f-]{36})/i)[1], tip = plyClickTip('Play this collection'); return `<span class="clp" role="button" tabindex="0" data-clplay="${id}" data-clent="${e}" data-tip="${esc(tip)}" aria-label="Play ${esc(x.name)}">${SVG(PLY_I.play)}</span>`; };
+const clIcoP = x => { const p = clPlay(x); return p ? `<span class="clp-w">${clIco(x)}${p}</span>` : clIco(x); };
 function clItem(x, tile) {
     const abs = h => h.startsWith('/') ? MB + h : h, q = s => esc(s), pub = /^public$/i.test(x.pv);
     const pv = x.pv ? `<span class="${tile ? 'cl-bg' : 'cl-pv'}${pub ? '' : ' off'}" role="img" aria-label="${q(x.pv)}"${tile ? '' : ` data-tip="${q(x.pv)}"`}>${SVG(pub ? CL_GLOBE : CL_LOCK)}</span>` : '';
-    const name = `<span class="cl-hd">${tile ? '' : clIco(x)}<a class="cl-a" href="${q(abs(x.href))}">${q(x.name)}</a></span>`;
+    const name = `<span class="cl-hd">${tile ? '' : clIcoP(x)}<a class="cl-a" href="${q(abs(x.href))}">${q(x.name)}</a></span>`;
     const meta = [x.owner && `<span class="cl-by">${x.owner.replace(/href="\//g, `href="${MB}/`)}</span>`, x.co && `<span>${q(x.co)}</span>`, x.sub && `<span>${q(x.sub)}</span>`].filter(Boolean).join('');
     const acts = x.edit || x.del ? `<span class="cl-acts">${x.edit ? `<a class="cl-ib" href="${q(abs(x.edit))}" aria-label="Edit ${q(x.name)}" data-tip="Edit">${MBU_EDIT_ICON}</a>` : ''}${x.del ? `<a class="cl-ib cl-rm" href="${q(abs(x.del))}" aria-label="Remove ${q(x.name)}" aria-haspopup="dialog" aria-expanded="false" data-tip="Remove">${SVG(CL_TRASH)}</a>` : ''}</span>` : '';
     return tile
-        ? `<div class="cl-item cl-tile">${pv}${name}<span class="cl-foot"><span class="cl-big">${q(x.ns || '0')}</span>${acts}</span>${meta ? `<span class="cl-meta">${meta}</span>` : ''}</div>`
+        ? `<div class="cl-item cl-tile">${pv}${name}<span class="cl-foot"><span class="cl-big">${q(x.ns || '0')}</span>${clPlay(x)}${acts}</span>${meta ? `<span class="cl-meta">${meta}</span>` : ''}</div>`
         : `<li class="cl-item cl-row"><span class="cl-nm">${name}${meta ? `<span class="cl-meta">${meta}</span>` : ''}</span><span class="cl-ty">${q(clTy(x))}</span><span class="cl-pc${x.pv && !pub ? ' off' : ''}">${x.pv ? `<span class="cl-pv" aria-hidden="true">${SVG(pub ? CL_GLOBE : CL_LOCK)}</span>${q(x.pv)}` : ''}</span><span class="cl-ct">${q(x.ns || '0')}</span>${acts}</li>`;
 }
 // A click anywhere on a row or a card opens its collection, as its name's link would (Ctrl, Cmd or the middle button in a new tab); its links, buttons and popup keep their own.
@@ -9378,6 +9386,17 @@ const clRowGo = ev => {
     else { const k = inTab(a.href); if (k) { ehPush(a.href); show(k); } else location.href = a.href; } // in place, as the name's link does
 };
 document.addEventListener('change', ev => { const t = ev.target; if (!ehOn || !data || data.kind !== 'colls' || !t.matches || !t.matches('#app [data-clfsel]')) return; clType = t.value; LOG.debug('collections: type', clType || 'all'); render(); });
+// The collections list's play button: on window, before the row's or the link's own click; the two mouse buttons do opposite queue actions, as in a collection.
+const clPlayGo = (ev, opp) => {
+    const b = ehOn && data && data.kind === 'colls' && ev.target.closest && ev.target.closest('#app [data-clplay]'); if (!b) return;
+    ev.preventDefault(); ev.stopImmediatePropagation();
+    const append = (S.playerClick === 'append') !== !!opp;
+    LOG.debug('collections: play', b.dataset.clplay, b.dataset.clent, append ? 'append' : 'replace');
+    plyCollection(b.dataset.clplay, b.dataset.clent, '', append);
+};
+window.addEventListener('click', ev => { if (!ev.button) clPlayGo(ev); }, true);
+window.addEventListener('contextmenu', ev => { if (!cvpTouch) clPlayGo(ev, true); }, true);
+window.addEventListener('keydown', ev => { if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches && ev.target.matches('#app [data-clplay]')) clPlayGo(ev); }, true);
 document.addEventListener('click', clRowGo); document.addEventListener('auxclick', clRowGo);
 // Confirm in a small popup under the trash button and send the same empty form as MusicBrainz's remove page.
 const clCfmClose = () => { const p = document.querySelector('#app .cl-cfm'); if (!p) return; const a = p.parentElement.querySelector('.cl-rm'); if (a) a.setAttribute('aria-expanded', 'false'); p.remove(); return a; };
@@ -13999,9 +14018,9 @@ document.addEventListener('pointerdown', ev => {
     if (cvpTouch && !(ev.target.closest && ev.target.closest('.cvp-on'))) for (const e of document.querySelectorAll('#app .cvp-on')) e.classList.remove('cvp-on');
 }, true);
 document.addEventListener('contextmenu', ev => {
-    if (!ehOn || !cvpTouch || !ev.target.closest || ev.target.closest('button[data-colplay]')) return;
-    const h = ev.target.closest('#app tr,#app .disco a');
-    if (!h || !h.querySelector('.cvp')) return;
+    if (!ehOn || !cvpTouch || !ev.target.closest || ev.target.closest('button[data-colplay],[data-clplay]')) return;
+    const h = ev.target.closest('#app tr,#app .disco a,#app .cl-li,#app .cl-row,#app .cl-tile');
+    if (!h || !h.querySelector('.cvp,.clp')) return;
     ev.preventDefault(); ev.stopImmediatePropagation();
     for (const e of document.querySelectorAll('#app .cvp-on')) if (e !== h) e.classList.remove('cvp-on');
     h.classList.add('cvp-on');
