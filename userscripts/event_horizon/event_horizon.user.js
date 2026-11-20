@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.110100
+// @version      2026.11.21.120000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4456,10 +4456,11 @@ S.fxCur = ''; // the effect preset being worked on: Save writes a change into it
 S.colW = {}; // the widths dragged in a table, by section; the title takes what they leave, and none means the table fits itself
 S.colPick = {}; // the tables' column choice, by section: { order, off }; none is the usual table
 S.pending = false; // MusicBrainz's grey mark on what has edits open; takes one more request per page
-VIEW.push('player', 'playerPlace', 'playerCover', 'playerClick', 'playerRepeat', 'playerShuffle', 'playerLb', 'playerScrobble', 'playerVideo', 'playerVol', 'playerMax', 'playerFade');
+VIEW.push('player', 'playerPlace', 'playerCover', 'playerNo', 'playerClick', 'playerRepeat', 'playerShuffle', 'playerLb', 'playerScrobble', 'playerVideo', 'playerVol', 'playerMax', 'playerFade');
 S.player = false; // the play buttons on a release's tracks, and the player they start
 S.playerPlace = 'bar'; // where the player shows: 'bar' at the bottom, 'chip' at the top right
 S.playerCover = false; // the top bar's player shows the playing track's cover before its title
+S.playerNo = true; // the player shows the playing track's number in the playlist before its title
 S.playerClick = 'replace'; // left click replaces the queue; right click appends, or the other way around
 S.playerMax = 1000; // maximum number of tracks loaded from a collection
 S.playerRepeat = 'off'; // off, all, or one; changed by right-clicking the play/pause button
@@ -14034,6 +14035,7 @@ const PLY_CSS = `
 .ply-ctl .ply-t b{flex:0 1 auto;min-width:3em}
 .ply-ctl .ply-ar{flex:0 2 auto;min-width:2em;color:var(--muted,#777)}
 .ply-ctl .ply-rl{grid-column:2;min-width:0;overflow:hidden;text-overflow:ellipsis;color:var(--muted,#777);font-size:12px}
+.ply-ctl .ply-t:not(:has(.ply-n)){grid-template-columns:minmax(0,1fr)}.ply-ctl .ply-t:not(:has(.ply-n)) .ply-rl{grid-column:1}
 .ply-ctl .ply-tm{flex:none;min-width:2.6em;font-size:11px;font-variant-numeric:tabular-nums;color:var(--muted,#777)}
 .ply-ctl .ply-tm:last-child{text-align:right}
 .ply-ctl .ply-pr{flex:1;height:3px;border-radius:2px;background:color-mix(in srgb,currentColor 15%,transparent);overflow:hidden}
@@ -17186,7 +17188,8 @@ function cfgBody() {
             + `<div class="keys">${ckRow('keysOn', 'Keyboard shortcuts', 'Single keys open the page\'s edit, relationships, history and more\nCtrl+/ lists them\nOn MusicBrainz\'s pages and in Event Horizon alike')}<button type="button" class="btn" data-keys-open>Change keys…</button></div>`,
         player: ckRow('player', 'Enable player', 'A play button on each track of a release that has it on a streaming site\nPlays the release from there, track after track')
             + row('Player place', [['bar', 'Bottom bar'], ['chip', 'Top bar']].map(([v, l]) => chip('playerPlace', v, S.playerPlace === v, l)).join(''), 'Where the player shows')
-            + ckRow('playerCover', 'Show cover in the top bar', 'The playing track\'s cover before its title, when the player is in the top bar\nClick it: open the release')
+            + ckRow('playerCover', 'Show cover', 'The playing track\'s cover before its title, when the player is in the top bar\nClick it: open the release')
+            + ckRow('playerNo', 'Show playlist track number', 'The playing track\'s number in the playlist, before its title')
             + row('Left click', [['replace', 'Replace queue'], ['append', 'Add to queue']].map(([v, l]) => chip('playerClick', v, S.playerClick === v, l)).join(''), 'Right-click does the other action')
             + row('Crossfade', [[0, 'Off'], [1, '1 s'], [2, '2 s'], [3, '3 s'], [5, '5 s'], [8, '8 s']].map(([n, l]) => chip('playerFade', n, S.playerFade === n, l)).join(''), 'Fades one track into the next\nYouTube and Bandcamp\nOther sources start the next track as before')
             + row('Collection playlist limit', [100, 500, 1000, 5000].map(n => chip('playerMax', n, S.playerMax === n, String(n))).join(''), 'Maximum tracks loaded into the playlist from a collection')
@@ -17465,7 +17468,7 @@ function cfgWire(panel, b, body) {
             else if (g === 'factOff') { const [kd, fk] = k.split(':'); S.factOff = { ...S.factOff, [kd]: toggle(S.factOff[kd] || [], fk) }; }
             else if (g === 'extra') S.extras = toggle(S.extras, k);
             else if (g === 'prov') { S.prov = toggle(S.prov, k); plFollow(); }
-            else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'arAuto' || g === 'menuTitles' || g === 'keysOn' || g === 'cfgFade' || g === 'player' || g === 'playerLb' || g === 'playerCover' || g === 'playerScrobble') S[g] = !S[g];
+            else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'arAuto' || g === 'menuTitles' || g === 'keysOn' || g === 'cfgFade' || g === 'player' || g === 'playerLb' || g === 'playerCover' || g === 'playerNo' || g === 'playerScrobble') S[g] = !S[g];
             else if (g === 'playerPlace') S.playerPlace = k;
             else if (g === 'playerClick') S.playerClick = k;
             else if (g === 'playerMax') S.playerMax = +k;
