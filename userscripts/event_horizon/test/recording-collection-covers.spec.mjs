@@ -18,13 +18,14 @@ test('recording collection rows show their release group cover', { tag: ['@sandb
     expect(status).toBe(200);
     const oldRg = '11111111-1111-4111-8111-111111111111', newRg = '22222222-2222-4222-8222-222222222222';
     let searches = 0;
-    await page.route('**/ws/2/recording?query=*', route => {
+    // the search goes through the page's own fetch: a fresh recording is not in the sandbox's search index yet
+    await page.route(/\/ws\/2\/recording\?query=/, route => {
       searches++;
       expect(decodeURIComponent(route.request().url())).toContain(rec);
-      return route.fulfill({ json: { count: 1, recordings: [{ id: rec, releases: [
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ count: 1, recordings: [{ id: rec, releases: [
         { id: 'a', date: '2020', 'release-group': { id: newRg } },
         { id: 'b', 'release-group': { id: newRg } },
-        { id: 'c', date: '1999-05', 'release-group': { id: oldRg } }] }] } });
+        { id: 'c', date: '1999-05', 'release-group': { id: oldRg } }] }] }) });
     });
     const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
     await page.route('https://coverartarchive.org/release-group/**', route => route.fulfill({ contentType: 'image/png', body: png }));
