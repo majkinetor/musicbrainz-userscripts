@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.154510
+// @version      2026.11.21.155443
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3424,7 +3424,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-t tbody tr:not(.gh):hover{background:color-mix(in srgb,var(--hover) 60%,transparent)}
 .ra-pop{width:320px;max-height:360px;overflow:auto;line-height:1.6;color:var(--text);font-weight:400}.ev-pop{max-width:340px;max-height:360px;overflow:auto}.ev-pop .evs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}.chip.pn{height:22px;padding:0 9px;font-size:12px;cursor:pointer;vertical-align:middle}.chip.pn:hover,.chip.pn[aria-expanded="true"]{border-color:var(--accent)}.ed-t caption{text-align:left;padding:4px 0 8px}
 .ed-t tr.cur td{background:color-mix(in srgb,var(--chip) 60%,transparent)}
-.ed-t tr.dg-r td{padding-top:3px;padding-bottom:3px;font-size:13px;border-bottom-style:dashed}.ed-t tr.dg-w>td{padding:0 0 6px;border-bottom:0}.dg-sc{overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;padding-left:12px}.dg-in{border-collapse:collapse;width:100%;min-width:760px;table-layout:fixed}.dg-in th:nth-child(1){width:30%}.dg-in th:nth-child(2){width:10%}.dg-in th:nth-child(3){width:7%}.dg-in th:nth-child(4){width:11%}.dg-in th:nth-child(5){width:17%}.dg-in th:nth-child(6){width:11%}.dg-in th:nth-child(7){width:14%}.ed-t .dg-in th,.dg-in th{border:0!important;position:static!important;top:auto!important;background:none!important;box-shadow:none!important;backdrop-filter:none!important;z-index:auto!important;text-align:left;font-weight:500;font-size:11px;opacity:.7;padding:3px 6px;white-space:nowrap}.dg-in td{overflow:hidden;text-overflow:ellipsis;font-size:13px;padding:3px 6px;border-bottom:1px dashed var(--mbu-border);vertical-align:middle}.dg-in td.mono{white-space:nowrap;font-variant-numeric:tabular-nums}.dg-in .lk{display:inline-flex;gap:6px;flex-wrap:wrap}.ed-t .ed-tr{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;font:inherit}
+.ed-t tr.dg-r td{padding-top:3px;padding-bottom:3px;font-size:13px;border-bottom-style:dashed}.ed-t tr.dg-w>td{padding:0 0 6px;border-bottom:0}.dg-sc{overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;padding-left:12px}.dg-in{border-collapse:collapse;width:100%;min-width:760px;table-layout:fixed}.dg-in th:nth-child(1){width:40px}.dg-in th:nth-child(2){width:28%}.dg-in th:nth-child(3){width:10%}.dg-in th:nth-child(4){width:7%}.dg-in th:nth-child(5){width:11%}.dg-in th:nth-child(6){width:16%}.dg-in th:nth-child(7){width:11%}.dg-in th:nth-child(8){width:14%}.dg-in td.dc{position:relative;padding:2px 6px 2px 0}.ed-t .dg-in a.tt{width:32px;height:32px}.dg-in td.dc .cvp>button.tx[data-colplay]{width:26px;height:26px}.dg-w:hover .dg-in tr:not(:hover) .cvp>button.tx[data-colplay]{visibility:hidden}.tile:hover .cvp>button.tx[data-colplay]{visibility:visible}.ed-t .dg-in th,.dg-in th{border:0!important;position:static!important;top:auto!important;background:none!important;box-shadow:none!important;backdrop-filter:none!important;z-index:auto!important;text-align:left;font-weight:500;font-size:11px;opacity:.7;padding:3px 6px;white-space:nowrap}.dg-in td{overflow:hidden;text-overflow:ellipsis;font-size:13px;padding:3px 6px;border-bottom:1px dashed var(--mbu-border);vertical-align:middle}.dg-in td.mono{white-space:nowrap;font-variant-numeric:tabular-nums}.dg-in .lk{display:inline-flex;gap:6px;flex-wrap:wrap}.ed-t .ed-tr{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;font:inherit}
 .ed-t .ed-tr:hover{background:var(--chip)}
 .ed-t .ed-tr svg{transition:transform .15s}
 .ed-t .ed-tr[aria-expanded="true"] svg{transform:rotate(180deg)}
@@ -5534,7 +5534,7 @@ function edTile(e, curId, titled = false) {
     const tn = e.counts.reduce((s, x) => s + (+x || 0), 0);
     ED_TIP.set(e.id, { e, cur: e.id === curId });
     return `<a class="tile${e.id === curId ? ' cur' : ''}" href="${esc(relUrl(e.id))}" data-ed="${e.id}">
-        <span class="c">${e.thumb ? `<img src="${edThumb(e)}" alt="" loading="lazy" data-edimg>` : ''}<span class="nc"${e.thumb ? ' hidden' : ''}>${fmtSvg(k, 40, 1.8)}${e.thumb ? 'cover pending' : 'no cover'}</span>${e.thumb ? `<span class="fb">${fmtSvg(k, 15, 2.6)}</span>` : ''}${tn ? `<span class="tn">${tn}</span>` : ''}${st}</span>
+        <span class="c">${e.thumb ? `<img src="${edThumb(e)}" alt="" loading="lazy" data-edimg>` : ''}<span class="nc"${e.thumb ? ' hidden' : ''}>${fmtSvg(k, 40, 1.8)}${e.thumb ? 'cover pending' : 'no cover'}</span>${e.thumb ? `<span class="fb">${fmtSvg(k, 15, 2.6)}</span>` : ''}${tn ? `<span class="tn">${tn}</span>` : ''}${st}${relPlay(e.id)}</span>
         ${titled ? `<span class="dt">${esc(e.title)}</span>` : `<span class="t1">${esc(fmtSummary(e.formats))}</span>`}
         <span class="cap">${esc([titled && fmtSummary(e.formats), where, (e.date || '').slice(0, 4)].filter(Boolean).join(' · ') || '—')}${e.id === curId ? ' · you are here' : ''}${e.disambig ? `<i>${esc(e.disambig)}</i>` : ''}</span>
         ${e.labels.length ? `<span class="lb" title="${esc(e.labels.join(', '))}">${esc(e.labels.join(', '))}</span>` : ''}
@@ -5655,7 +5655,7 @@ function edTable(es, curId, flat, part) {
         ED_TIP.set(e.id, { e, cur: e.id === curId });
         const k = fmtKind(e.formats[0]);
         return `<tr class="ed-r${e.id === curId ? ' cur' : ''}" data-edhref="${esc(relUrl(e.id))}">
-            <td class="tc"><a href="${esc(relUrl(e.id))}" data-ed="${e.id}" class="tt">${e.thumb ? `<img src="${edThumb(e)}" alt="" loading="lazy">` : fmtSvg(k, 20, 2)}</a></td>
+            <td class="tc"><a href="${esc(relUrl(e.id))}" data-ed="${e.id}" class="tt">${e.thumb ? `<img src="${edThumb(e)}" alt="" loading="lazy">` : fmtSvg(k, 20, 2)}${relPlay(e.id)}</a></td>
             ${colTds(st, {
                 title: [`<a class="${longC(e.title)}"${longT(e.title)} href="${esc(relUrl(e.id))}">${esc(e.title)}</a>${e.disambig ? ` <span class="sub">(${esc(e.disambig)})</span>` : ''}`],
                 artist: [acHtml(e.ac)],
@@ -5769,8 +5769,8 @@ function lbGroupsHtml(es, view) {
     const cover = g => g.id ? caaSrc('release-group', g.id) : g.es[0].thumb;
     const coverIds = g => g.es.filter(e => e.thumb).map(e => e.id).join(' ');
     const n = g => `${g.es.length} release${g.es.length === 1 ? '' : 's'}`;
-    const chip = g => !g.es.length ? `<span class="sub">${n(g)}</span>` : `<button class="ed-tr" type="button" data-lbx="${esc(g.id)}" aria-expanded="${lbOpen.has(g.id)}" data-tip="${lbOpen.has(g.id) ? 'Hide' : 'Show'} its releases on this label">${n(g)}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>`;
-    const ed = e => `<tr class="lbg-r"><td></td><td><a href="${esc(relUrl(e.id))}">${esc(e.title)}</a>${e.disambig ? ` <span class="sub">(${esc(e.disambig)})</span>` : ''}${e.status && e.status !== 'Official' ? ` <span class="sub">· ${esc(e.status)}</span>` : ''}</td><td>${esc(fmtSummary(e.formats))}</td><td class="mono">${(e.events[0] || {}).iso ? esc(e.events[0].iso) + ' ' : ''}${e.date ? fdate(e.date) : '—'}</td><td class="mono">${esc(e.li.filter(l => l.catno).map(l => l.catno).join(', ')) || '—'} <span class="lk">${sortP(e.links).map(p => plA(p, 16, 'ti')).join('')}</span></td></tr>`;
+    const chip = g => !g.es.length ? `<span class="sub">${n(g)}</span>` : `<button class="ed-tr" type="button" data-lbx="${esc(g.id)}" aria-expanded="${lbOpen.has(g.id)}" data-tip="${lbOpen.has(g.id) ? 'Hide' : 'Show'} its releases on this label&#10;Right-click: ${lbOpen.has(g.id) ? 'hide' : 'show'} every group's releases">${n(g)}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>`;
+    const ed = e => `<tr class="lbg-r">${relCv(e)}<td><a href="${esc(relUrl(e.id))}">${esc(e.title)}</a>${e.disambig ? ` <span class="sub">(${esc(e.disambig)})</span>` : ''}${e.status && e.status !== 'Official' ? ` <span class="sub">· ${esc(e.status)}</span>` : ''}</td><td>${esc(fmtSummary(e.formats))}</td><td class="mono">${(e.events[0] || {}).iso ? esc(e.events[0].iso) + ' ' : ''}${e.date ? fdate(e.date) : '—'}</td><td class="mono">${esc(e.li.filter(l => l.catno).map(l => l.catno).join(', ')) || '—'} <span class="lk">${sortP(e.links).map(p => plA(p, 16, 'ti')).join('')}</span></td></tr>`;
     const row = g => `<tr><td class="tc"><a href="${href(g)}" class="tt"><img src="${cover(g)}" alt="" loading="lazy" data-dgcover data-lbcovers="${coverIds(g)}"></a></td><td><a href="${href(g)}">${esc(g.title)}</a>${g.dis ? ` <span class="sub">(${esc(g.dis)})</span>` : ''}</td><td>${acHtml(g.ac)}</td><td class="mono">${g.first ? fdate(g.first) : '—'}</td><td>${chip(g)}</td></tr>` + (lbOpen.has(g.id) && g.es.length ? g.es.map(ed).join('') : '');
     const tile = g => `<div class="lbg-tile"><div class="lbg-cover"><a href="${href(g)}"><img src="${cover(g)}" alt="" loading="lazy" data-dgcover data-lbcovers="${coverIds(g)}"></a>${!g.es.length ? '' : `<span class="popwrap"><button class="lbg-count" type="button" data-pop="lbg-${esc(g.id)}" aria-expanded="false" aria-label="${n(g)} on this label" data-tip="Show ${n(g)} on this label">${g.es.length}</button><div class="pop r lbg-pop" id="pop-lbg-${esc(g.id)}" hidden><div class="h label">On this label</div><div class="lbg-list">${g.es.map(e => { const tracks = e.counts.reduce((sum, count) => sum + count, 0); return `<a class="row" href="${esc(relUrl(e.id))}"><span class="lbg-title">${fmtSvg(fmtKind(e.formats[0]), 18)}<span class="lbg-date">${esc(e.date || '—')}</span><span class="lbg-name">${esc(e.title)}</span></span><small>${esc([fmtSummary(e.formats), tracks && e.counts.every(Boolean) ? `${tracks} track${tracks === 1 ? '' : 's'}` : '', e.li.filter(l => l.catno).map(l => l.catno).join(', ')].filter(Boolean).join(' · ') || '—')}</small></a>`; }).join('')}</div></div></span>`}</div><a href="${href(g)}"><span class="dt">${esc(g.title)}${g.dis ? ` <span class="rga">(${esc(g.dis)})</span>` : ''}</span><span class="dy">${esc([(g.first || '').slice(0, 4), g.ac.map(c => (c.name || '') + (c.joinphrase || '')).join('')].filter(Boolean).join(' · ') || '—')}</span></a></div>`;
     if (view === 'table') return `<div class="ed-tw"><table class="ed-t lbg"><thead><tr><th></th><th>Release group</th><th>Artist</th><th>First release</th><th>On this label</th></tr></thead>${types.map(([k, l]) => { const [shut, h] = grpHead('lb:' + k, k, l.length); return `<tbody><tr class="gh"><th colspan="5">${h}</th></tr>${shut ? '' : l.map(row).join('')}</tbody>`; }).join('')}</table></div>`;
@@ -8893,12 +8893,33 @@ const tqHit = (n, t) => {
 // a release group series' table: a group's release count opens its releases under it, as a label's groups do,
 // read from ws/2 on the first open
 const srOpen = new Set(), SRX = new Map();
-function srLoad(rg) {
-    if (SRX.has(rg)) return;
-    SRX.set(rg, null);
-    const redraw = () => { const y = scrollY; render(); scrollTo(0, y); };
-    ws(`release?release-group=${rg}&inc=media+labels+url-rels&limit=100`).then(j => { SRX.set(rg, (j.releases || []).map(edition).sort((a, b) => (a.date || '9').localeCompare(b.date || '9'))); redraw(); },
-        e => { SRX.set(rg, 'err'); LOG.err('series releases: ' + e.message); redraw(); });
+// up: the group already shows its releases from the search, without their links; this adds them
+const srRedraw = () => { const y = scrollY; render(); scrollTo(0, y); }, srSort = l => l.sort((a, b) => (a.date || '9').localeCompare(b.date || '9'));
+function srLoad(rg, up) {
+    if (SRX.has(rg) && !up) return;
+    if (!up) SRX.set(rg, null);
+    return ws(`release?release-group=${rg}&inc=media+labels+url-rels&limit=100`).then(j => { SRX.set(rg, srSort((j.releases || []).map(edition))); srRedraw(); },
+        e => { if (!up) SRX.set(rg, 'err'); LOG.err('series releases: ' + e.message); srRedraw(); });
+}
+// a right click opens every group: one search per 40 groups shows their releases at once, then each group's links follow in the background
+async function srBatch(ids) {
+    ids = ids.filter(g => !Array.isArray(SRX.get(g)));
+    if (!ids.length) return;
+    ids.forEach(g => SRX.set(g, null));
+    const got = new Map(ids.map(g => [g, []]));
+    try {
+        for (let i = 0; i < ids.length; i += 40) {
+            const q = encodeURIComponent('rgid:(' + ids.slice(i, i + 40).join(' OR ') + ')');
+            for (let o = 0, n = 1; o < n && o < 1000; o += 100) {
+                const j = await ws(`release?query=${q}&limit=100&offset=${o}`);
+                n = j.count || 0;
+                for (const r of j.releases || []) { const g = r['release-group'] && r['release-group'].id; if (got.has(g)) got.get(g).push(edition(r)); }
+            }
+        }
+    } catch (e) { LOG.err('series releases: ' + e.message); ids.forEach(g => SRX.delete(g)); ids.forEach(g => srOpen.has(g) && srLoad(g)); srRedraw(); return; }
+    for (const [g, l] of got) SRX.set(g, srSort(l));
+    srRedraw();
+    for (const g of ids) if (got.get(g).length) await srLoad(g, true); else { SRX.delete(g); srLoad(g); }
 }
 function tabSect(sid, name, x, href, cv) {
     const rs = x ? x.rows.filter(r => Array.isArray(r)) : [];
@@ -8932,10 +8953,10 @@ function tabSect(sid, name, x, href, cv) {
     // a release group's count of releases: the last column of whole numbers (MusicBrainz translates its heading)
     const rc = cv === 'release-group' ? [...cols].reverse().find(i => i !== cols[0] && rs.every(r => /^\d+$/.test(txt(r[i])))) : undefined;
     const rgOf = r => { const m = cvRe && r.join(' ').match(cvRe); return m ? m[1] : ''; };
-    const srChip = (r, i) => { const g = rgOf(r), k = +txt(r[i]); if (!g || !k) return r[i]; const o = srOpen.has(g); return `<button class="ed-tr" type="button" data-srx="${g}" aria-expanded="${o}" data-tip="${o ? 'Hide' : 'Show'} its releases">${k} release${k === 1 ? "" : "s"}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>`; };
-    const srSub = r => { const g = rc != null && rgOf(r); if (!g || !srOpen.has(g) || !+txt(r[rc])) return ''; const l = SRX.get(g), span = cols.length; if (!SRX.has(g)) srLoad(g); if (!Array.isArray(l)) return `<tr class="dg-r"><td></td><td colspan="${span}" class="sub">${l === 'err' ? 'Could not load its releases.' : 'Loading its releases…'}</td></tr>`;
-        const one = e => `<tr><td><a href="${esc(relUrl(e.id))}">${esc(e.title)}</a>${e.disambig ? ` <span class="sub">(${esc(e.disambig)})</span>` : ''}${e.status && e.status !== 'Official' ? ` <span class="sub">· ${esc(e.status)}</span>` : ''}</td><td>${esc(fmtSummary(e.formats))}</td><td class="mono">${esc((e.events[0] || {}).iso || '')}</td><td class="mono">${e.date ? fdate(e.date) : '—'}</td><td>${esc(e.li.map(x => x.name).filter(Boolean).join(', '))}</td><td class="mono sub">${esc(e.li.map(x => x.catno).filter(Boolean).join(', '))}</td><td><span class="lk">${sortP(e.links).map(p => plA(p, 16, 'ti')).join('')}</span></td></tr>`;
-        return `<tr class="dg-r dg-w"><td></td><td colspan="${span}"><div class="dg-sc"><table class="dg-in"><thead><tr><th>Release</th><th>Format</th><th>Country</th><th>Date</th><th>Label</th><th>Cat#</th><th>Links</th></tr></thead><tbody>${l.map(one).join('')}</tbody></table></div></td></tr>`; };
+    const srChip = (r, i) => { const g = rgOf(r), k = +txt(r[i]); if (!g || !k) return r[i]; const o = srOpen.has(g); return `<button class="ed-tr" type="button" data-srx="${g}" aria-expanded="${o}" data-tip="${o ? 'Hide' : 'Show'} its releases&#10;Right-click: ${o ? 'hide' : 'show'} every group's releases">${k} release${k === 1 ? "" : "s"}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>`; };
+    const srSub = r => { const g = rc != null && rgOf(r); if (!g || !srOpen.has(g) || !+txt(r[rc])) return ''; const l = SRX.get(g), span = cols.length; if (!SRX.has(g)) srLoad(g); if (!Array.isArray(l)) return `<tr class="dg-r"><td></td><td colspan="${span}" class="sub">${l === 'err' ? `Could not load its releases. <button type="button" class="ed-tr" data-srretry="${g}">Retry</button>` : 'Loading its releases…'}</td></tr>`;
+        const one = e => `<tr>${relCv(e, 'dc')}<td><a href="${esc(relUrl(e.id))}">${esc(e.title)}</a>${e.disambig ? ` <span class="sub">(${esc(e.disambig)})</span>` : ''}${e.status && e.status !== 'Official' ? ` <span class="sub">· ${esc(e.status)}</span>` : ''}</td><td>${esc(fmtSummary(e.formats))}</td><td class="mono">${esc((e.events[0] || {}).iso || '')}</td><td class="mono">${e.date ? fdate(e.date) : '—'}</td><td>${esc(e.li.map(x => x.name).filter(Boolean).join(', '))}</td><td class="mono sub">${esc(e.li.map(x => x.catno).filter(Boolean).join(', '))}</td><td><span class="lk">${sortP(e.links).map(p => plA(p, 16, 'ti')).join('')}</span></td></tr>`;
+        return `<tr class="dg-r dg-w"><td></td><td colspan="${span}"><div class="dg-sc"><table class="dg-in"><thead><tr><th></th><th>Release</th><th>Format</th><th>Country</th><th>Date</th><th>Label</th><th>Cat#</th><th>Links</th></tr></thead><tbody>${l.map(one).join('')}</tbody></table></div></td></tr>`; };
     const tr = r => { const p = pbt(r); return Array.isArray(r) ? `${trO(r)}${cvTd(r, p)}${cols.map((i, j) => `<td${j === 0 && p && !cv ? ' class="pb"' : ''}>${j === 0 && p && !cv ? p : ''}${i === rc ? srChip(r, i) : txt(r[i]) ? r[i] : '—'}</td>`).join('')}</tr>${srSub(r)}` : `<tr class="tsub"><td colspan="${span}">${esc(r.charAt(0).toUpperCase() + r.slice(1))}</td></tr>`; };
     const more = x.more ? lmFoot('tab:' + sid, n, x.total || 0) : '';
     const body = view === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr>${cv ? '<th></th>' : ''}${cols.map(hb).join('')}</tr></thead><tbody>${shown.map(tr).join('')}</tbody></table></div>`
@@ -10401,12 +10422,12 @@ function discoHtml(d) {
     const gs = [...m].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0])).map(([k, l]) => [k, bySort(l)]);
     const st = colState('dg');
     const th = (k, c) => { const n = COLS.dg.names[k]; if (k === 'links') return `<th${colAttr(st, k)}>${n}${colGrip('dg', st, k)}</th>`; return `<th${c ? ` class="${c}"` : ''}${colAttr(st, k)} aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-dgsort="${k}" data-tip="Sort by ${n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button>${fFun('dg', DG_FUN[k], n.toLowerCase())}${colGrip('dg', st, k)}</th>`; };
-    const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="${esc(caaSrc('release-group', g.id))}" alt="" loading="lazy" data-dgcover></a></td>${colTds(st, { title: [`<a class="${longC(g.title)}"${longT(g.title)} href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}`], artist: [acHtml(g['artist-credit'] || [])], date: [g['first-release-date'] ? fdate(g['first-release-date']) : '—', 'mono'], rating: [rateStars('release_group', g.id, g.rating, true)], releases: [rc(g) ? `<button class="ed-tr" type="button" data-dgx="${g.id}" aria-expanded="${dgOpen.has(g.id)}" data-tip="${dgOpen.has(g.id) ? 'Hide' : 'Show'} its releases · right click: every one of this type">${rc(g)}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="${dgOpen.has(g.id) ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6'}"/></svg></button>` : rc(g) != null ? rc(g) : '—', 'num'], links: [sortP(urlsOf(g.relations || [])).map(p => plA(p, 18, 'ti')).join(''), 'lk'] })}</tr>` + (dgOpen.has(g.id) ? dgSub(g) : '');
+    const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="${esc(caaSrc('release-group', g.id))}" alt="" loading="lazy" data-dgcover></a></td>${colTds(st, { title: [`<a class="${longC(g.title)}"${longT(g.title)} href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}`], artist: [acHtml(g['artist-credit'] || [])], date: [g['first-release-date'] ? fdate(g['first-release-date']) : '—', 'mono'], rating: [rateStars('release_group', g.id, g.rating, true)], releases: [rc(g) ? `<button class="ed-tr" type="button" data-dgx="${g.id}" aria-expanded="${dgOpen.has(g.id)}" data-tip="${dgOpen.has(g.id) ? 'Hide' : 'Show'} its releases&#10;Right-click: ${dgOpen.has(g.id) ? 'hide' : 'show'} the releases of every group of this type">${rc(g)}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="${dgOpen.has(g.id) ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6'}"/></svg></button>` : rc(g) != null ? rc(g) : '—', 'num'], links: [sortP(urlsOf(g.relations || [])).map(p => plA(p, 18, 'ti')).join(''), 'lk'] })}</tr>` + (dgOpen.has(g.id) ? dgSub(g) : '');
     const dgSub = g => {
         const es = d.dgRel && d.dgRel.get(g.id), span = colsOf(st);
         if (!es) return `<tr class="dg-r"><td></td><td colspan="${span}" class="sub">Loading its releases…</td></tr>`;
-        const one = e => `<tr><td><a href="${esc(relUrl(e.id))}">${esc(e.title)}</a>${e.disambig ? ` <span class="sub">(${esc(e.disambig)})</span>` : ''}${e.status && e.status !== 'Official' ? ` <span class="sub">· ${esc(e.status)}</span>` : ''}</td><td>${esc(fmtSummary(e.formats))}</td><td class="mono">${esc((e.events[0] || {}).iso || '')}</td><td class="mono">${e.date ? fdate(e.date) : '—'}</td><td>${esc(e.li.map(l => l.name).filter(Boolean).join(', '))}</td><td class="mono sub">${esc(e.li.map(l => l.catno).filter(Boolean).join(', '))}</td><td><span class="lk">${sortP(e.links).map(p => plA(p, 16, 'ti')).join('')}</span></td></tr>`;
-        return es.length ? `<tr class="dg-r dg-w"><td></td><td colspan="${span}"><div class="dg-sc"><table class="dg-in"><thead><tr><th>Release</th><th>Format</th><th>Country</th><th>Date</th><th>Label</th><th>Cat#</th><th>Links</th></tr></thead><tbody>${[...es].sort((a, b) => (a.date || '9').localeCompare(b.date || '9')).map(one).join('')}</tbody></table></div></td></tr>` : `<tr class="dg-r"><td></td><td colspan="${span}" class="sub">No releases found.</td></tr>`;
+        const one = e => `<tr>${relCv(e, 'dc')}<td><a href="${esc(relUrl(e.id))}">${esc(e.title)}</a>${e.disambig ? ` <span class="sub">(${esc(e.disambig)})</span>` : ''}${e.status && e.status !== 'Official' ? ` <span class="sub">· ${esc(e.status)}</span>` : ''}</td><td>${esc(fmtSummary(e.formats))}</td><td class="mono">${esc((e.events[0] || {}).iso || '')}</td><td class="mono">${e.date ? fdate(e.date) : '—'}</td><td>${esc(e.li.map(l => l.name).filter(Boolean).join(', '))}</td><td class="mono sub">${esc(e.li.map(l => l.catno).filter(Boolean).join(', '))}</td><td><span class="lk">${sortP(e.links).map(p => plA(p, 16, 'ti')).join('')}</span></td></tr>`;
+        return es.length ? `<tr class="dg-r dg-w"><td></td><td colspan="${span}"><div class="dg-sc"><table class="dg-in"><thead><tr><th></th><th>Release</th><th>Format</th><th>Country</th><th>Date</th><th>Label</th><th>Cat#</th><th>Links</th></tr></thead><tbody>${[...es].sort((a, b) => (a.date || '9').localeCompare(b.date || '9')).map(one).join('')}</tbody></table></div></td></tr>` : `<tr class="dg-r"><td></td><td colspan="${span}" class="sub">No releases found.</td></tr>`;
     };
     const head = (k, l) => `<h3 class="disco-h">${grpHead('dg:' + k, k, l.length)[1]}</h3>`;
     const body = (S.dgView === 'table' ? `<div class="ed-tw"><table ${colTbl('dg', st)}>${colGroup('dg', st)}<thead><tr><th></th>${st.order.map(k => th(k, k === 'releases' ? 'num' : '')).join('')}</tr></thead>${gs.map(([k, l]) => { const [shut, h] = grpHead('dg:' + k, k, l.length); return `<tbody><tr class="gh"><th colspan="${colsOf(st) + 1}">${h}</th></tr>${shut ? '' : l.map(trow).join('')}</tbody>`; }).join('')}</table></div>`
@@ -12742,6 +12763,9 @@ function redrawTracks() {
 // ---- the player: a release's tracks played from their streaming links, in a bar at the bottom or a chip at the top right
 // it lives on <html>, outside both bodies, so it plays on through navigation and Event Horizon turned off
 const PLY_SRC = ['youtube', 'ytmusic', 'spotify', 'deezer', 'apple', 'soundcloud', 'bandcamp', 'archive'];
+// a release's cover with the hover play button, as on a collection's table; c = its cell's class
+const relPlay = id => `<span class="cvp"><button type="button" class="tx" data-colplay data-relplay="${id}" data-tip="${plyClickTip('Play this release')}" aria-label="Play this release">${SVG(PLY_I.play)}</button></span>`;
+const relCv = (e, c = 'tc') => `<td class="${c}"><a href="${esc(relUrl(e.id))}" class="tt"><img src="${esc(e.thumb || caaSrc('release', e.id))}" alt="" loading="lazy" data-dgcover>${relPlay(e.id)}</a></td>`;
 const plyClickTip = lead => lead + (S.playerClick === 'append' ? '\nClick: add to queue\nRight-click: replace queue' : '\nClick: replace queue\nRight-click: add to queue');
 const PLY_I = {
     play: '<path d="M7 5v14l12-7z" fill="currentColor" stroke="none"/>',
@@ -13156,7 +13180,7 @@ async function plyCollection(id, ent, only, append, list) {
     plyCollectionBusy = true;
     let my = ++plyCollGen;
     const gone = () => my !== plyCollGen;
-    toast('Loading collection into the player…');
+    toast(!id && only ? 'Loading the release into the player…' : 'Loading collection into the player…');
     let started = false, sent = 0;
     // the first batch starts the player (or joins the queue); later batches append quietly
     const flush = () => {
@@ -14740,6 +14764,7 @@ document.addEventListener('contextmenu', ev => {
 // The two mouse buttons do opposite queue actions, as selected in Player settings.
 document.addEventListener('contextmenu', ev => {
     const cb = ehOn && ev.target.closest && ev.target.closest('button[data-colplay]');
+    if (cb && cb.dataset.relplay) { ev.preventDefault(); ev.stopPropagation(); plyCollection('', 'release', cb.dataset.relplay, S.playerClick !== 'append'); return; }
     if (cb && data && data.kind === 'collection') { ev.preventDefault(); plyCollection(data.id, data.g.ent, cb.dataset.colplay === 'all' ? '' : cb.dataset.colplay, S.playerClick !== 'append'); return; }
     const b = ehOn && ev.target.closest && ev.target.closest('button[data-play],button[data-playall],button[data-playrec]'); if (!b || !data) return;
     ev.preventDefault();
@@ -14764,11 +14789,15 @@ document.addEventListener('contextmenu', ev => {
     if (!ehOn) return; const b = rxBtn(ev.composedPath()[0]); if (!b) return;
     ev.preventDefault(); ev.stopPropagation();
     const k = 'srx' in b.dataset ? 'srx' : 'lbx', set = k === 'srx' ? srOpen : lbOpen, open = !set.has(b.dataset[k]);
-    b.closest('table').querySelectorAll(`[data-${k}]`).forEach(x => open ? set.add(x.dataset[k]) : set.delete(x.dataset[k]));
+    const all = [...b.closest('table').querySelectorAll(`[data-${k}]`)].map(x => x.dataset[k]);
+    all.forEach(x => open ? set.add(x) : set.delete(x));
+    if (open && k === 'srx') srBatch(all);
     const y = scrollY; render(); scrollTo(0, y);
 }, true);
 function onClick(ev) {
     if (!ehOn) return;
+    const rp = ev.target.closest && ev.target.closest('button[data-relplay]');
+    if (rp) { ev.preventDefault(); ev.stopPropagation(); plyCollection('', 'release', rp.dataset.relplay, S.playerClick === 'append'); return; }
     // a track's recording and work marks copy on a plain click; Ctrl or the middle button still opens them
     const mbid = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && ev.target.closest('a[data-mbid]');
     if (mbid) {
@@ -14854,7 +14883,8 @@ function onClick(ev) {
     else if (d.lbmode) S.lbGroups = d.lbmode === 'groups';
     else if (d.dgx) { if (dgOpen.has(d.dgx)) dgOpen.delete(d.dgx); else { dgOpen.add(d.dgx); if (!(data.dgRel && data.dgRel.get(d.dgx))) dgLoad(data, d.dgx); } }
     else if ('lbx' in d) lbOpen.has(d.lbx) ? lbOpen.delete(d.lbx) : lbOpen.add(d.lbx);
-    else if (d.srx) srOpen.has(d.srx) ? srOpen.delete(d.srx) : srOpen.add(d.srx);
+    else if (d.srx) { if (srOpen.has(d.srx)) srOpen.delete(d.srx); else { srOpen.add(d.srx); if (SRX.get(d.srx) === 'err') SRX.delete(d.srx); } }
+    else if (d.srretry) { SRX.delete(d.srretry); srLoad(d.srretry); }
     else if (d.tabview) S.tabView = d.tabview;
     else if (d.clview) S.clView = d.clview;
     else if (d.clsort) S.clSort = String(S.clSort || 'name').replace(/^-/, '') === d.clsort && !String(S.clSort).startsWith('-') ? '-' + d.clsort : d.clsort;
