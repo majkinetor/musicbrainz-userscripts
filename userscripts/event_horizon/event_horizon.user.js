@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.091000
+// @version      2026.11.22.120000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11260,6 +11260,7 @@ function renderDraw(keepPop) {
     if (data.kind === 'art') { artPage(app, data); pinBar(app); return; }
     if (data.kind === 'upg') { upgPage(app, data); pinBar(app); return; }
     if (data.kind === 'esub') { subPage(app, data); pinBar(app); return; }
+    if (data.kind === 'erlz') { rlzPage(app, data); pinBar(app); return; }
     if (data.kind === 'ann') { document.title = (data.rel ? data.rel.title + ' · ' : '') + 'Annotation · Event Horizon'; annPage(app, data); pinBar(app); return; }
     if (data.kind === 'det') { document.title = (data.rel ? data.rel.title + ' · ' : '') + 'Details · Event Horizon'; detPage(app, data); pinBar(app); return; }
     if (data.kind === 'relate') { relPage(app, data); pinBar(app); return; }
@@ -11441,8 +11442,8 @@ async function lmMore(k) {
 // the next 100 releases
 async function edMore(d) {
     if (d.edCount <= d.editions.length) return;
-    const id = (d.rel || d.g).id, q = (d.kind === 'label' ? 'label=' : d.kind === 'recording' ? 'recording=' : 'release-group=') + id;
-    const x = await ws(`release?${q}&inc=media+labels+artist-credits+url-rels${d.kind === 'label' || d.kind === 'recording' ? '+release-groups' : ''}&limit=100&offset=${d.editions.length}`);
+    const q = d.kind === 'erlz' ? d.ty + '=' + d.eid : (d.kind === 'label' ? 'label=' : d.kind === 'recording' ? 'recording=' : 'release-group=') + (d.rel || d.g).id;
+    const x = await ws(`release?${q}&inc=media+labels+artist-credits+url-rels${d.kind === 'label' || d.kind === 'recording' || d.kind === 'erlz' ? '+release-groups' : ''}&limit=100&offset=${d.editions.length}`);
     if (data !== d) return;
     const seen = new Set(d.editions.map(e => e.id));
     const add = (x.releases || []).map(edition).filter(e => !seen.has(e.id));
@@ -14733,7 +14734,7 @@ function navTo(href) {
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
-const titleOf = d => d && d.kind === 'colsubs' ? (d.g ? d.g.title + ' · ' : '') + 'Subscribers · Event Horizon' :d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? (d.idle ? 'Search' : d.t === 'url' ? (d.q ? d.q + ' · ' : '') + 'URL search' : d.q + ' · Search') + ' · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'colnew' ? (d.gid ? (d.f && d.f.cur.name ? d.f.cur.name + ' · ' : '') + 'Edit collection' : 'New collection') + ' · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'aliases' ? (d.t && d.t.en || 'Aliases') + ' · Aliases · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + ' · ' + (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
+const titleOf = d => d && d.kind === 'erlz' ? (d.name ? d.name + ' · ' : '') + 'Releases · Event Horizon' : d && d.kind === 'colsubs' ? (d.g ? d.g.title + ' · ' : '') + 'Subscribers · Event Horizon' :d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? (d.idle ? 'Search' : d.t === 'url' ? (d.q ? d.q + ' · ' : '') + 'URL search' : d.q + ' · Search') + ' · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'colnew' ? (d.gid ? (d.f && d.f.cur.name ? d.f.cur.name + ' · ' : '') + 'Edit collection' : 'New collection') + ' · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'aliases' ? (d.t && d.t.en || 'Aliases') + ' · Aliases · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + ' · ' + (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
 // a release's cover-art page, or its add-cover-art page → "art/<mbid>"; an event's event-art or add-event-art page → "eart/<mbid>": its title and artist, then Art Station's gallery (#as-slot). A release's cover-art
 // page also opens in the tab from any other release page (artIn): Art Station, asked by mbu-art-mount, starts its gallery
 // in the slot without a page load, so the player plays on. The add pages and an event's art load their page
@@ -15301,14 +15302,16 @@ const annKey = href => { const u = new URL(href, location.href), m = u.origin ==
 // an editor's subscriptions and subscribers, and your account's pages, clicked → "upg/<path and query>": fetched into the tab
 const upgKey = href => { const u = new URL(href, location.href), ok = u.origin === location.origin && (/^\/user\/[^/]+\/(subscriptions|subscribers)(\/[a-z_-]+)?\/?$/.test(u.pathname) || /^\/account\/(edit|preferences|donation|applications)\/?$/.test(u.pathname)); return ok ? 'upg/' + encodeURIComponent(u.pathname + u.search) : null; };
 // an entity's Details, Annotation or Set cover art → "esub/<path>": fetched in place of a page load, so the player
-// plays on (a release's own Details and Annotation keep detKey and annKey). Releases is left out: its page loads, so a
-// click shows the same Event Horizon table as a reload (releasesDress), not MusicBrainz's raw table
+// plays on (a release's own Details and Annotation keep detKey and annKey). Releases has rlzKey
 const subKey = href => {
     const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/(release-group|artist|label|recording|work|area|instrument|place|series|event)/(' + MBID.source + ')/(details|edit_annotation|set-cover-art)/?$', 'i'));
     return m && (m[3] !== 'set-cover-art' || m[1].toLowerCase() === 'release-group') ? 'esub/' + encodeURIComponent(u.pathname.replace(/\/$/, '') + u.search) : null;
 };
-const inTab = href => navTo(href) || histKey(href) || artIn(href) || discKey(href) || detKey(href) || annKey(href) || relKey(href) || upgKey(href) || subKey(href);
-const keyOf = href => navTo(href) || artKey(href) || discKey(href) || histKey(href) || relKey(href) || formKey(href);
+// an artist's, label's, release group's or recording's Releases → "erlz/<type>:<mbid>": drawn from ws/2 in the tab, on a
+// click (the player plays on) and on a load alike
+const rlzKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/(artist|label|release-group|recording)/(' + MBID.source + ')/releases/?$', 'i')); return m ? 'erlz/' + m[1].toLowerCase() + ':' + m[2].toLowerCase() : null; };
+const inTab = href => navTo(href) || histKey(href) || artIn(href) || discKey(href) || detKey(href) || annKey(href) || relKey(href) || upgKey(href) || rlzKey(href) || subKey(href);
+const keyOf = href => navTo(href) || artKey(href) || discKey(href) || histKey(href) || relKey(href) || rlzKey(href) || formKey(href);
 // let: the seed confirmation page (another site seeding the release editor, a POST to /release/add or …/edit) shares
 // the editor's address, so it gets its key, "form/seed/-/confirm", only once its .confirm-seed form is in the page
 let PAGE_ID = keyOf(location.href);
@@ -15629,6 +15632,29 @@ function upgPage(app, d) {
     }
 }
 const SUB_NAMES = { releases: 'Releases', details: 'Details', edit_annotation: 'Annotation', 'set-cover-art': 'Set cover art' };
+async function rlzLoad(n, d) {
+    d.err = null; d.wait = new Set(['ed']);
+    try {
+        const [e, x] = await Promise.all([ws(`${d.ty}/${d.eid}`), ws(`release?${d.ty}=${d.eid}&inc=media+labels+artist-credits+url-rels+release-groups&limit=100`)]);
+        d.name = e.name || e.title || ''; d.dis = e.disambiguation || '';
+        d.editions = (x.releases || []).map(edition); d.edCount = x['release-count'] || d.editions.length;
+        LOG.info(`Releases of ${d.ty} ${d.eid} in the tab: ${d.editions.length} of ${d.edCount}`);
+    } catch (e) { LOG.err('Loading the releases of ' + d.ty + ' ' + d.eid + ' failed: ' + e.message); d.err = e.message; }
+    d.wait = null;
+    if (n === showing && data === d) render();
+}
+function rlzPage(app, d) {
+    // another page starts unfiltered
+    if (FLT.of !== d.key) { FLT.of = d.key; LM_ERR.clear(); for (const k in TSORT) delete TSORT[k]; for (const k in TQ) delete TQ[k]; FLT.ed = { q: '', f: {} }; }
+    const hd = entHead({ type: d.ty, id: d.eid, img: visitImg({ key: d.ty + '/' + d.eid }), kick: 'Releases · ' + (HM_KIND[d.ty] || [d.ty])[0], title: d.name, disamb: d.dis, acts: entActs(d.ty, d.eid, 'releases') });
+    const body = d.wait ? pend('ed', 'Releases')
+        : d.err ? `<p class="hm-none"><span class="u-err">${esc(d.err)}</span> <button type="button" class="sk-b" data-rlzretry>Retry</button></p>`
+        : d.editions.length ? edHtml({ id: null, page: `/${d.ty}/${d.eid}/releases`, type: d.ty }, d.editions, d.edCount) : '<p class="hm-none">No releases.</p>';
+    ehMorph(app, `<section class="arthd">${hd}</section>` + body);
+    entHeadWire(app.querySelector(':scope > .arthd'));
+    const rt = app.querySelector('[data-rlzretry]'); if (rt) rt.onclick = () => { const n = ++showing; render(); rlzLoad(n, d); };
+    secRail(app); lmWatch(app); save();
+}
 async function subLoad(n, d) {
     try {
         const r = await mbnFetch(MB + d.path, { credentials: 'include' });
@@ -17872,6 +17898,10 @@ async function show(key, o = {}) {
     if (kind === 'esub') {
         const path = decodeURIComponent(key.slice(5)), seg = path.replace(/\?.*$/, '').split('/');
         data = { kind, path, ty: seg[1], eid: seg[2], page: seg[3] }; scrollTo(0, 0); render(); subLoad(n, data); return;
+    }
+    if (kind === 'erlz') {
+        const [ty, eid] = id.split(':');
+        data = { kind, key, ty, eid, name: '', dis: '', editions: [], edCount: 0, wait: new Set(['ed']) }; scrollTo(0, 0); render(); rlzLoad(n, data); return;
     }
     if (kind === 'upg') {
         const path = decodeURIComponent(key.slice(4)), m = path.match(/^\/user\/([^/?]+)/);
