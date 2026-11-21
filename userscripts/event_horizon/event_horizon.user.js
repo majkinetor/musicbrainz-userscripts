@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.150000
+// @version      2026.11.22.160000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5433,6 +5433,7 @@ function rlEnded(ps, scope) {
 
 // a menu that would run off the window's side is moved back inside it (a narrow phone screen)
 function popFit(p) {
+    if (p._pinAt) { if (p._pinAt.getClientRects().length && !p.hidden) { pinCollPlace(p); return; } p._pinAt = null; p.removeAttribute('style'); }
     p.style.translate = p.style.position = p.style.top = p.style.left = p.style.right = '';
     p.classList.remove('pop-fx');
     if (p.hidden) return;
@@ -12506,14 +12507,19 @@ function pinColl() {
             ev.stopPropagation();
             const t = document.querySelector('#app [data-pop="collections"]'), p = document.getElementById('pop-collections'); if (!t || !p) return;
             p.removeAttribute('style'); t.click();
-            requestAnimationFrame(() => { if (p.hidden) return; const r = b.getBoundingClientRect(); Object.assign(p.style, { position: 'fixed', top: r.bottom + 6 + 'px', left: Math.max(8, Math.min(r.left, innerWidth - p.offsetWidth - 8)) + 'px', right: 'auto', zIndex: 9995 }); });
-            if (!t.dataset.pinReset) { t.dataset.pinReset = 1; t.addEventListener('click', e => { if (e.isTrusted) p.removeAttribute('style'); }, true); }
+            p._pinAt = b; requestAnimationFrame(() => { if (!p.hidden) pinCollPlace(p); });
+            if (!t.dataset.pinReset) { t.dataset.pinReset = 1; t.addEventListener('click', e => { if (e.isTrusted) { p._pinAt = null; p.removeAttribute('style'); } }, true); }
         });
         const at = k.querySelector('.pkk') || k.querySelector('.rg-l'); if (at) at.after(b); else k.appendChild(b);
     }
     b.classList.toggle('in', t.classList.contains('in'));
     b.dataset.tip = t.dataset.tip || 'Collections';
     const ci = t.querySelector('.coll-i'); b.innerHTML = ci ? ci.innerHTML : '';
+}
+// under the bar's icon; popFit keeps it there when the menu redraws (a new collection form), not back at the header
+function pinCollPlace(p) {
+    const r = p._pinAt.getBoundingClientRect();
+    Object.assign(p.style, { position: 'fixed', top: r.bottom + 6 + 'px', left: Math.max(8, Math.min(r.left, innerWidth - p.offsetWidth - 8)) + 'px', right: 'auto', zIndex: 9995 });
 }
 function pinBar(app) {
     let bar = document.getElementById('eh-pin');
@@ -13942,10 +13948,14 @@ function plyCollDraw(m) {
         + '<hr>' + (cn ? plyCollNewHtml(cn) : (create ? `<button type="button" class="it ft" role="menuitem" data-cnew="1">${SVG('<path d="M12 5v14M5 12h14"/>')}<span>New collection…</span></button>` : '')
         + `<button type="button" class="it ft" role="menuitem" data-cr="1"${off}>${SVG('<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/>')}<span>Refresh</span></button>`);
     collNewPut(m, focus);
-    // a head repaint replaces the button: find its successor, or the picker stays where the loading line put it
-    if (!m._btn?.isConnected) m._btn = [...document.querySelectorAll('.ply-ra [data-pa="' + m.dataset.type + '"]')].find(x => x.getClientRects().length) || m._btn;
+    // a repaint replaces the button: its successor is the one of this type nearest where it was (the page can show several), or the picker stays where the loading line put it
+    if (!m._btn?.isConnected && m._at) {
+        const near = x => { const q = x.getBoundingClientRect(); return Math.hypot(q.left - m._at.left, q.top - m._at.top); };
+        m._btn = [...document.querySelectorAll('[data-pa="' + m.dataset.type + '"]')].filter(x => x.getClientRects().length && !m.contains(x)).sort((x, y) => near(x) - near(y))[0] || m._btn;
+    }
     const r = m._btn && m._btn.isConnected ? m._btn.getBoundingClientRect() : null, h = m.offsetHeight, w = m.offsetWidth;
     if (!r) return;
+    m._at = { left: r.left, top: r.top };
     m.style.left = Math.max(8, Math.min(r.right - w, innerWidth - w - 8)) + 'px';
     m.style.top = Math.max(8, r.bottom + h + 6 < innerHeight ? r.bottom + 4 : r.top - h - 4) + 'px';
 }

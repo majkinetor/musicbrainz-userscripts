@@ -44,3 +44,27 @@ test('a new collection is added from the collections menu without leaving the pa
     if (gid) await page.request.post(`${mb}/collection/${gid}/own_collection/delete`, { form: {} });
   }
 });
+
+// opened from the pinned bar, the menu stays under the bar's icon when it turns into the form, not back at the header
+test('the collections menu opened from the pinned bar stays there for a new collection', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  const mb = 'https://test.musicbrainz.org';
+  await page.goto(mb);
+  await requireLogin(page);
+  const { mbid: id } = await pristine(page, 'artist');
+  await page.goto(`${mb}/artist/${id}`);
+  await inject('event_horizon');
+  await page.evaluate(() => { document.body.style.minHeight = '4000px'; scrollTo(0, 1500); });
+  const pc = page.locator('#eh-pin.on .pcol');
+  await expect(pc).toBeVisible();
+  await pc.click();
+  const pop = page.locator('#pop-collections');
+  await expect(pop).toBeVisible();
+  const under = async () => {
+    const [b, p] = await Promise.all([pc.boundingBox(), pop.boundingBox()]);
+    expect(Math.abs(p.y - (b.y + b.height + 6))).toBeLessThan(3);
+  };
+  await under();
+  await pop.locator('[data-cnew]').click();
+  await expect(pop.locator('form.cn')).toBeVisible();
+  await under();
+});
