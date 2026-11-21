@@ -58,3 +58,25 @@ test('an artist\'s Releases sits in the action row', { tag: ['@sandbox'] }, asyn
   check(await row.locator(`> a.ab[href$="/releases"] svg rect`).count() === 1, 'its icon is the case');
   await attachShot(testInfo, row, 'artist-row');
 });
+
+// Releases opens in the tab (the page does not load, so the player plays on) and draws the releases from ws/2; a reload shows the same view
+test('an artist\'s Releases opens in the tab', { tag: ['@sandbox'] }, async ({ page, inject }, testInfo) => {
+  const AR = 'a74b1b7f-71a5-4011-9441-d0b5e4122711';
+  await page.goto(`https://test.musicbrainz.org/artist/${AR}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await settled(page);
+  await inject('event_horizon');
+  const link = page.locator(`.hero .kicker .acts > a.ab[href$="/artist/${AR}/releases"]`);
+  await until(() => link.count(), n => n === 1);
+  await page.evaluate(() => { window.ehMark = 1; });
+  await link.click();
+  check(await until(() => page.locator('table.ed-t a[href*="/release/"]').count(), n => n > 0) > 0, 'the releases show');
+  check(page.url().endsWith(`/artist/${AR}/releases`), 'the address is the Releases page');
+  check(await page.evaluate(() => window.ehMark) === 1, 'the page did not load');
+  check(/Releases/.test(await page.locator('.arthd .kicker').first().textContent()), 'the header names Releases');
+  await attachShot(testInfo, page, 'releases-click');
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await settled(page);
+  await inject('event_horizon');
+  check(await until(() => page.locator('table.ed-t a[href*="/release/"]').count(), n => n > 0) > 0, 'a reload shows the same view');
+  check(/Releases/.test(await page.locator('.arthd .kicker').first().textContent()), 'with the same header');
+});
