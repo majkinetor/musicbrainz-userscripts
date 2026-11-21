@@ -9,6 +9,7 @@
 // @match        https://tidal.com/album/*
 // @match        https://listen.tidal.com/album/*
 // @match        https://www.metal-archives.com/albums/*
+// @match        https://vgmdb.net/album/*
 // @license      MIT
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md
 // @supportURL   https://github.com/majkinetor/musicbrainz-userscripts/issues

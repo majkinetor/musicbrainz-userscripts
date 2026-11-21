@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.11.21.205637
+// @version      2026.11.21.210223
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -9,6 +9,7 @@
 // @match        https://tidal.com/album/*
 // @match        https://listen.tidal.com/album/*
 // @match        https://www.metal-archives.com/albums/*
+// @match        https://vgmdb.net/album/*
 // @license      MIT
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md
 // @supportURL   https://github.com/majkinetor/musicbrainz-userscripts/issues
@@ -339,7 +340,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       note();
       for (const f of Array.from(w.all)) f();
     };
-    return new Promise((resolve) => {
+    return new Promise((resolve2) => {
       let done = false;
       const tok = {};
       const me = () => {
@@ -370,7 +371,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
           }
           w.ticking = false;
         }
-        resolve(Math.max(0, now - end));
+        resolve2(Math.max(0, now - end));
       };
       const tick = () => {
         if (Date.now() - (w.due.get(tok) || Infinity) > 2e3) note();
@@ -581,7 +582,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     } catch (e) {
     }
     headers["User-Agent"] = mbnUA();
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       const sig = init.signal;
       if (sig && sig.aborted) {
         reject(new DOMException("Aborted", "AbortError"));
@@ -640,7 +641,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
             Object.defineProperty(r, "url", { value: x.finalUrl || abs });
           } catch (e) {
           }
-          resolve(r);
+          resolve2(r);
         },
         onerror: fail("network error"),
         ontimeout: fail("timed out"),
@@ -690,7 +691,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     const src = method === "GET" ? target.href : location.origin + "/ws/js/entity/89ad4ac3-39f7-470e-963a-56509c546377";
     const t0 = Date.now();
     log2("warn", 'MusicBrainz asked to verify the browser again ("Verifying your browser") \u2014 passing it in a hidden frame');
-    g.busy = new Promise((resolve) => {
+    g.busy = new Promise((resolve2) => {
       const fr = document.createElement("iframe");
       fr.setAttribute("aria-hidden", "true");
       fr.setAttribute("data-mbn-check", "");
@@ -712,7 +713,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
           } catch (e) {
           }
         }
-        resolve(ok);
+        resolve2(ok);
       };
       fr.onload = () => {
         loads++;
@@ -831,8 +832,8 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       item.resolve(null);
     }
     function _enqueue(url, retries, wantJson, nf = false) {
-      return new Promise((resolve) => {
-        _queue.push({ url, retries, wantJson, nf, resolve });
+      return new Promise((resolve2) => {
+        _queue.push({ url, retries, wantJson, nf, resolve: resolve2 });
         _drain();
       });
     }
@@ -924,6 +925,8 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         // #435; iTunes URLs #436
         metalArchives: href((rel) => /(^|\/\/)(www\.)?metal-archives\.com\/albums\/[^/]+\/[^/]+\/\d+/i.test(rel.target?.href_url || "")),
         // #453
+        vgmdb: href((rel) => /(^|\/\/)vgmdb\.net\/album\/\d+/i.test(rel.target?.href_url || "")),
+        // #1090
         ytmusic: href((rel) => /(^|\/\/)((music|www|m)\.)?youtube\.com\/(?:playlist\?(?:[^#]*&)?list=OLAK5uy_|browse\/MPREb_)/i.test(rel.target?.href_url || ""))
         // #648; www.youtube.com #679
       };
@@ -1006,21 +1009,21 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     return `${MB}/${entityType}/${mbid}`;
   }
   function readIdbRecord(key) {
-    return new Promise((resolve) => {
-      if (!key || !db) return resolve(null);
+    return new Promise((resolve2) => {
+      if (!key || !db) return resolve2(null);
       try {
         const tx = db.transaction([STORE], "readonly");
         const req = tx.objectStore(STORE).get(key);
-        req.onsuccess = () => resolve(req.result || null);
-        req.onerror = () => resolve(null);
+        req.onsuccess = () => resolve2(req.result || null);
+        req.onerror = () => resolve2(null);
       } catch (e) {
-        resolve(null);
+        resolve2(null);
       }
     });
   }
   function writeIdbRecord(key, partial) {
-    return new Promise((resolve) => {
-      if (!key || !db) return resolve(null);
+    return new Promise((resolve2) => {
+      if (!key || !db) return resolve2(null);
       try {
         const tx = db.transaction([STORE], "readwrite");
         const store = tx.objectStore(STORE);
@@ -1032,26 +1035,26 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
             merged.mbUrl = mbUrlOf(merged.entityType, merged.mbid);
           }
           const putReq = store.put(merged);
-          putReq.onsuccess = () => resolve(merged);
-          putReq.onerror = () => resolve(null);
+          putReq.onsuccess = () => resolve2(merged);
+          putReq.onerror = () => resolve2(null);
         };
-        getReq.onerror = () => resolve(null);
+        getReq.onerror = () => resolve2(null);
       } catch (e) {
-        resolve(null);
+        resolve2(null);
       }
     });
   }
   function deleteIdbRecord(key) {
-    return new Promise((resolve) => {
-      if (!key || !db) return resolve(false);
+    return new Promise((resolve2) => {
+      if (!key || !db) return resolve2(false);
       try {
         const tx = db.transaction([STORE], "readwrite");
         const store = tx.objectStore(STORE);
         const req = store.delete(key);
-        req.onsuccess = () => resolve(true);
-        req.onerror = () => resolve(false);
+        req.onsuccess = () => resolve2(true);
+        req.onerror = () => resolve2(false);
       } catch (e) {
-        resolve(false);
+        resolve2(false);
       }
     });
   }
@@ -4493,7 +4496,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       const tab = window.open(harvestUrl, "_blank");
       if (!tab) return Promise.reject(new Error("Popup blocked \u2014 allow popups for musicbrainz.org and retry"));
     }
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       let listenerId = null;
       let pollTimer = null;
       const done = (fn, arg) => {
@@ -4510,7 +4513,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         fn(arg);
       };
       const check = (value) => {
-        if (value && typeof value === "object") done(resolve, value);
+        if (value && typeof value === "object") done(resolve2, value);
       };
       if (typeof GM_addValueChangeListener === "function") {
         listenerId = GM_addValueChangeListener(key, (_n, _o, value) => check(value));
@@ -4676,7 +4679,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     return { tracklistRels, artistRoles, tracklist, skipped, multiVolume };
   }
   function fetchQobuzAlbumPage(pageUrl) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       if (typeof GM_xmlhttpRequest !== "function") {
         reject(new Error("GM_xmlhttpRequest unavailable"));
         return;
@@ -4686,7 +4689,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         url: pageUrl,
         headers: { "Accept": "text/html,application/xhtml+xml", "Accept-Language": "en-US,en;q=0.8" },
         timeout: 2e4,
-        onload: (r) => r.status >= 200 && r.status < 400 && r.responseText ? resolve(r.responseText) : reject(new Error(`Qobuz page returned ${r.status}`)),
+        onload: (r) => r.status >= 200 && r.status < 400 && r.responseText ? resolve2(r.responseText) : reject(new Error(`Qobuz page returned ${r.status}`)),
         onerror: () => reject(new Error("Qobuz page fetch failed (network)")),
         ontimeout: () => reject(new Error("Qobuz page fetch timed out"))
       });
@@ -4730,7 +4733,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     return [json.title, json.artist && json.artist.name].filter(Boolean).join(", ");
   }
   function fetchQobuzApiAlbum(albumId, token) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       if (typeof GM_xmlhttpRequest !== "function") {
         reject(new Error("GM_xmlhttpRequest unavailable"));
         return;
@@ -4750,7 +4753,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
             return;
           }
           try {
-            resolve(JSON.parse(r.responseText));
+            resolve2(JSON.parse(r.responseText));
           } catch (e) {
             reject(new Error("Qobuz album/get: malformed JSON"));
           }
@@ -5034,7 +5037,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       const tab = window.open(harvestUrl, "_blank");
       if (!tab) return Promise.reject(new Error("Popup blocked \u2014 allow popups for musicbrainz.org and retry"));
     }
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       let listenerId = null, pollTimer = null;
       const done = (fn, arg) => {
         if (pollTimer) clearInterval(pollTimer);
@@ -5050,7 +5053,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         fn(arg);
       };
       const check = (value) => {
-        if (value && typeof value === "object") done(resolve, value);
+        if (value && typeof value === "object") done(resolve2, value);
       };
       if (typeof GM_addValueChangeListener === "function") listenerId = GM_addValueChangeListener(key, (_n, _o, value) => check(value));
       pollTimer = setInterval(() => {
@@ -5146,6 +5149,264 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     return { artists, publishers: [], companies: [], skipped };
   }
 
+  // src/sources/vgmdb.js
+  var VGM_ALBUM_RE = /^https?:\/\/(?:www\.)?vgmdb\.net\/album\/(\d+)/i;
+  var VGM_ARTIST_RE = /^https?:\/\/(?:www\.)?vgmdb\.net\/artist\/(\d+)/i;
+  function parseVgmdbAlbumUrl(url) {
+    const m = String(url || "").match(VGM_ALBUM_RE);
+    return m ? { id: m[1], albumUrl: `https://vgmdb.net/album/${m[1]}` } : null;
+  }
+  function parseVgmdbArtistUrl(url) {
+    const m = String(url || "").match(VGM_ARTIST_RE);
+    return m ? { id: m[1], key: `vgmdb-${m[1]}`, cleanUrl: `https://vgmdb.net/artist/${m[1]}` } : null;
+  }
+  var VGM_TRACK_ROLE = {
+    "music": "Composed By",
+    "composer": "Composed By",
+    "composition": "Composed By",
+    "composed by": "Composed By",
+    "arrangement": "Arranged By",
+    "arranger": "Arranged By",
+    "arranged by": "Arranged By",
+    "lyricist": "Lyrics By",
+    "lyrics": "Lyrics By",
+    "lyrics by": "Lyrics By",
+    "performer": "Performer",
+    "performed by": "Performer",
+    "performers": "Performer",
+    "vocals": "Vocals",
+    "vocal": "Vocals",
+    "chorus": "Chorus",
+    "backing vocals": "Backing Vocals",
+    "orchestra": "Orchestra",
+    "conductor": "Conductor",
+    "conducted by": "Conductor",
+    "synthesizer programming": "Programmed By",
+    "synthesizer programmer": "Programmed By",
+    "programming": "Programmed By",
+    "sound programming": "Programmed By",
+    "assistant synthesizer programmer": "Programmed By"
+  };
+  var VGM_RELEASE_ROLE = {
+    "producer": "Producer",
+    "produced by": "Producer",
+    "sound producer": "Producer",
+    "music producer": "Producer",
+    "executive producer": "Executive-Producer",
+    "directed by": "Directed By",
+    "director": "Directed By",
+    "sound director": "Directed By",
+    "recorded by": "Recorded By",
+    "recording engineer": "Recorded By",
+    "recording": "Recorded By",
+    "mixed by": "Mixed By",
+    "mixing engineer": "Mixed By",
+    "mixing": "Mixed By",
+    "mastered by": "Mastered By",
+    "mastering engineer": "Mastered By",
+    "mastering": "Mastered By",
+    "engineer": "Engineer",
+    "sound engineer": "Engineer",
+    "illustration": "Illustration",
+    "illustrator": "Illustration",
+    "cover illustration": "Illustration",
+    "jacket illustration": "Illustration",
+    "art direction": "Art Direction",
+    "art director": "Art Direction",
+    "design": "Design",
+    "designer": "Design",
+    "graphic design": "Design",
+    "package design": "Design",
+    "photography": "Photography By",
+    "photographer": "Photography By",
+    "liner notes": "Liner Notes"
+  };
+  function normRole(s) {
+    return String(s || "").toLowerCase().replace(/\s+/g, " ").replace(/[:：]\s*$/, "").trim();
+  }
+  function extractCredits(doc) {
+    const out = [];
+    for (const tr of doc.querySelectorAll("#collapse_credits tr.maincred, #collapse_credits tr.credit")) {
+      const tds = tr.querySelectorAll("td");
+      if (tds.length < 2) continue;
+      const label = tds[0].querySelector("span.label") || tds[0];
+      const en = label.querySelector("span.artistname[lang=en]");
+      const role = (en || label.querySelector("b") || label).textContent.replace(/\s+/g, " ").trim();
+      const sub = /^[\s00a0]+/.test(label.textContent);
+      const artists = [];
+      const cell = tds[1];
+      for (const a of cell.querySelectorAll('a[href*="/artist/"], a[href*="/org/"]')) {
+        const n = a.querySelector("span.artistname[lang=en]") || a;
+        artists.push({ name: n.textContent.replace(/\s+/g, " ").trim(), url: a.href, org: /\/org\//.test(a.getAttribute("href")) });
+      }
+      const clone = cell.cloneNode(true);
+      clone.querySelectorAll("a, span.artistname:not([lang=en])").forEach((e) => e.remove());
+      for (const part of clone.textContent.split(/[\/,、]/)) {
+        const name = part.replace(/\(.*?\)/g, "").replace(/\s+/g, " ").trim();
+        if (name && name.length > 1 && !artists.some((x) => x.name === name)) artists.push({ name, url: "", org: false });
+      }
+      if (role && artists.length) out.push({ role, sub, artists });
+    }
+    return out;
+  }
+  function extractTracklist2(doc) {
+    const tl = doc.querySelector("#tracklist span.tl");
+    const tracks = [];
+    if (!tl) return { tracks, multiDisc: false };
+    const tables = [...tl.querySelectorAll("table.role, table")];
+    const multiDisc = tables.length > 1;
+    tables.forEach((table, i) => {
+      for (const tr of table.querySelectorAll("tr.rolebit, tr")) {
+        const tds = tr.querySelectorAll("td");
+        const num = tds[0] && tds[0].textContent.trim().match(/^(\d+)$/);
+        if (!num || !tds[1]) continue;
+        const n = +num[1];
+        const title = tds[1].textContent.replace(/\s+/g, " ").trim();
+        tracks.push({ position: multiDisc ? `${i + 1}-${n}` : String(n), title, type_: "track" });
+      }
+    });
+    return { tracks, multiDisc };
+  }
+  function extractVgmdbDom(doc) {
+    const { tracks, multiDisc } = extractTracklist2(doc);
+    return { credits: extractCredits(doc), tracks, multiDisc };
+  }
+  var HARVEST_KEY3 = (reqId) => `ch-vgm-result:${reqId}`;
+  var HARVEST_TIMEOUT_MS3 = 45e3;
+  function runVgmdbHarvestPage() {
+    const m = location.hash.match(/ch-req=([a-z0-9.-]+)/i);
+    if (!m) return;
+    const reqId = m[1];
+    const albumId = (location.pathname.match(/\/album\/(\d+)/) || [])[1] || null;
+    const post = (payload) => {
+      try {
+        GM_setValue(HARVEST_KEY3(reqId), { albumId, ts: Date.now(), ...payload });
+      } catch (e) {
+      }
+    };
+    const started = Date.now();
+    const timer = setInterval(() => {
+      const challenged = /just a moment|attention required|checking your browser/i.test(document.title);
+      const ready = document.querySelector("#tracklist, #collapse_credits, #albumtools");
+      if (ready && !challenged) {
+        clearInterval(timer);
+        try {
+          post({ ok: true, ...extractVgmdbDom(document) });
+        } catch (e) {
+          post({ ok: false, error: "extract failed: " + (e && e.message) });
+        }
+        setTimeout(() => window.close(), 250);
+        return;
+      }
+      if (Date.now() - started > HARVEST_TIMEOUT_MS3 - 3e3) {
+        clearInterval(timer);
+        post({ ok: false, error: challenged ? "Cloudflare challenge did not clear in the tab" : "album page never rendered" });
+        setTimeout(() => window.close(), 250);
+      }
+    }, 300);
+  }
+  function harvestVgmdbAlbum(albumUrl) {
+    const parsed = parseVgmdbAlbumUrl(albumUrl);
+    if (!parsed) return Promise.reject(new Error(`Not a VGMdb album URL: ${albumUrl}`));
+    const reqId = `${parsed.id}.${Date.now().toString(36)}`;
+    const key = HARVEST_KEY3(reqId);
+    const harvestUrl = `${parsed.albumUrl}#ch-req=${reqId}`;
+    if (typeof GM_openInTab === "function") {
+      GM_openInTab(harvestUrl, { active: false, insert: true, setParent: true });
+    } else {
+      const tab = window.open(harvestUrl, "_blank");
+      if (!tab) return Promise.reject(new Error("Popup blocked \u2014 allow popups for musicbrainz.org and retry"));
+    }
+    return new Promise((resolve2, reject) => {
+      let listenerId = null, pollTimer = null;
+      const done = (fn, arg) => {
+        if (pollTimer) clearInterval(pollTimer);
+        clearTimeout(deadline);
+        try {
+          if (listenerId !== null && typeof GM_removeValueChangeListener === "function") GM_removeValueChangeListener(listenerId);
+        } catch (e) {
+        }
+        try {
+          GM_deleteValue(key);
+        } catch (e) {
+        }
+        fn(arg);
+      };
+      const check = (value) => {
+        if (value && typeof value === "object") done(resolve2, value);
+      };
+      if (typeof GM_addValueChangeListener === "function") listenerId = GM_addValueChangeListener(key, (_n, _o, value) => check(value));
+      pollTimer = setInterval(() => {
+        try {
+          check(GM_getValue(key));
+        } catch (e) {
+        }
+      }, 700);
+      const deadline = setTimeout(() => done(reject, new Error("VGMdb harvest timed out \u2014 is the album tab open and loading?")), HARVEST_TIMEOUT_MS3);
+    });
+  }
+  function vgmArtist(a, discogsRole) {
+    const parsed = parseVgmdbArtistUrl(a.url);
+    return {
+      id: parsed ? parsed.key : void 0,
+      name: a.name,
+      anv: "",
+      role: discogsRole,
+      resource_url: parsed ? parsed.cleanUrl : ""
+    };
+  }
+  function trackRoleFor(c) {
+    const r = normRole(c.role);
+    if (VGM_TRACK_ROLE[r]) return VGM_TRACK_ROLE[r];
+    if (c.sub && !VGM_RELEASE_ROLE[r]) return c.role;
+    return null;
+  }
+  function resolve(a, role) {
+    let roles = getArtistRoles(vgmArtist(a, role));
+    if (!roles.length && /s$/i.test(role)) roles = getArtistRoles(vgmArtist(a, role.replace(/s$/i, "")));
+    return roles;
+  }
+  function vgmdbToEngine(harvest) {
+    const tracklist = (harvest.tracks || []).map((t) => ({ position: t.position, title: t.title, type_: "track" }));
+    const skipped = [], tracklistRels = [];
+    for (const c of harvest.credits || []) {
+      const role = trackRoleFor(c);
+      if (!role) continue;
+      for (const a of c.artists) {
+        if (a.org) {
+          skipped.push(`${c.role} \u2014 ${a.name} (organization)`);
+          continue;
+        }
+        const resolved = resolve(a, role);
+        if (!resolved.length) {
+          skipped.push(`${c.role} \u2014 ${a.name}`);
+          continue;
+        }
+        for (const track of tracklist) for (const r of resolved) {
+          tracklistRels.push({ linkType: r.linkType, entityType: "artist", attributes: [...r.attributes || []], artist: r.artist, track });
+        }
+      }
+    }
+    return { tracklistRels, tracklist, skipped, multiVolume: !!harvest.multiDisc };
+  }
+  function vgmdbReleaseArtists(harvest) {
+    const artists = [], skipped = [];
+    for (const c of harvest.credits || []) {
+      if (trackRoleFor(c)) continue;
+      const role = VGM_RELEASE_ROLE[normRole(c.role)];
+      for (const a of c.artists) {
+        if (!role || a.org) {
+          skipped.push(`release: ${c.role} \u2014 ${a.name}`);
+          continue;
+        }
+        const x = vgmArtist(a, role);
+        x.vgmRole = c.role;
+        artists.push(x);
+      }
+    }
+    return { artists, publishers: [], companies: [], skipped };
+  }
+
   // src/sources/allmusic.js
   var TIVO_API = "https://tivomusicapi-staging-elb.digitalsmiths.net/sd/tivomusicapi/taps/v3";
   var ALLMUSIC_RELEASE_RE = /^(?:https?:)?\/\/(?:www\.)?allmusic\.com\/album\/release\/(?:[^/?#]*-)?(mr\d{10})/i;
@@ -5204,7 +5465,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     return { tracklistRels, artistRoles: [], tracklist, skipped, multiVolume };
   }
   function tivoGet(path, timeout = 25e3) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       if (typeof GM_xmlhttpRequest !== "function") {
         reject(new Error("GM_xmlhttpRequest unavailable"));
         return;
@@ -5219,7 +5480,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
             return;
           }
           try {
-            resolve(JSON.parse(r.responseText));
+            resolve2(JSON.parse(r.responseText));
           } catch {
             reject(new Error("AllMusic API: malformed JSON"));
           }
@@ -5237,7 +5498,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
   // src/sources/registry.js
   function parseSourceEntityUrl(url) {
     if (!url) return null;
-    return parseDiscogsUrl(url) || parseTidalArtistUrl(url) || parseQobuzArtistUrl(url) || parseMetalArchivesArtistUrl(url) || parseAllMusicArtistUrl(url);
+    return parseDiscogsUrl(url) || parseTidalArtistUrl(url) || parseQobuzArtistUrl(url) || parseMetalArchivesArtistUrl(url) || parseVgmdbArtistUrl(url) || parseAllMusicArtistUrl(url);
   }
   function idbKeyForEntity(entity) {
     if (!entity) return null;
@@ -5252,6 +5513,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     if (/allmusic\.com\//i.test(url || "")) return "AllMusic";
     if (/(?:music|itunes)\.apple\.com\//i.test(url || "")) return "Apple";
     if (/metal-archives\.com\//i.test(url || "")) return "Metal Archives";
+    if (/vgmdb\.net\//i.test(url || "")) return "VGMdb";
     if (/music\.youtube\.com\/|youtube\.com\/playlist\?(?:[^#]*&)?list=OLAK5uy_/i.test(url || "")) return "YouTube Music";
     return "Discogs";
   }
@@ -5262,6 +5524,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     if (src === "Tidal") return entityType === "artist" ? "978" : null;
     if (src === "Qobuz") return entityType === "artist" ? "978" : null;
     if (src === "AllMusic") return entityType === "artist" ? "283" : null;
+    if (src === "VGMdb") return entityType === "artist" ? "188" : null;
     if (src === "Metal Archives") return entityType === "artist" ? "188" : null;
     return entityType === "label" ? "217" : entityType === "place" ? "705" : "180";
   }
@@ -6119,8 +6382,8 @@ ${ourBlock}` : ourBlock;
       } catch (e) {
       }
     }
-    return new Promise((resolve) => {
-      opts?.registerAbort?.(() => resolve(null));
+    return new Promise((resolve2) => {
+      opts?.registerAbort?.(() => resolve2(null));
       const rowState = /* @__PURE__ */ new Map();
       let cutoff = loadCutoff();
       function applyCutoff(r) {
@@ -6198,8 +6461,8 @@ ${ourBlock}` : ourBlock;
       let urlCheckRunning = 0;
       let urlCheckStarted = false;
       function queuedUrlCheck(fn) {
-        return new Promise((resolve2, reject) => {
-          urlCheckPending.push({ fn, resolve: resolve2, reject });
+        return new Promise((resolve3, reject) => {
+          urlCheckPending.push({ fn, resolve: resolve3, reject });
           if (urlCheckRunning < URL_CHECK_CONCURRENCY) {
             runUrlCheckWorker();
           }
@@ -6208,9 +6471,9 @@ ${ourBlock}` : ourBlock;
       async function runUrlCheckWorker() {
         urlCheckRunning++;
         while (urlCheckPending.length > 0) {
-          const { fn, resolve: resolve2, reject } = urlCheckPending.shift();
+          const { fn, resolve: resolve3, reject } = urlCheckPending.shift();
           try {
-            resolve2(await fn());
+            resolve3(await fn());
           } catch (e) {
             reject(e);
           }
@@ -6353,7 +6616,7 @@ ${ourBlock}` : ourBlock;
           (panelLi || panel).remove();
           if (headerSlot) headerSlot.replaceChildren();
           onRefresh().then((freshResults) => {
-            showReviewTable(freshResults, rolesMap, companiesRolesMap, opts).then((confirmedMap) => resolve(confirmedMap));
+            showReviewTable(freshResults, rolesMap, companiesRolesMap, opts).then((confirmedMap) => resolve2(confirmedMap));
           });
         });
         heading.appendChild(refreshBtn);
@@ -7870,7 +8133,7 @@ Its \u{1F517} chip adds the link.`;
         confirmedMap.matchCounts = matchCounts;
         (panelLi || panel).remove();
         if (headerSlot) headerSlot.replaceChildren();
-        resolve(confirmedMap);
+        resolve2(confirmedMap);
       });
       if (headerSlot) {
         headerSlot.replaceChildren(importBtn, issueNote, linksNote);
@@ -8913,7 +9176,7 @@ Its \u{1F517} chip adds the link.`;
     return { tracklistRels, tracklist, skipped, multiVolume };
   }
   function appleGet(url, headers) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       if (typeof GM_xmlhttpRequest !== "function") {
         reject(new Error("GM_xmlhttpRequest unavailable"));
         return;
@@ -8923,7 +9186,7 @@ Its \u{1F517} chip adds the link.`;
         url,
         headers: headers || {},
         timeout: 2e4,
-        onload: (r) => resolve({ status: r.status, text: r.responseText || "" }),
+        onload: (r) => resolve2({ status: r.status, text: r.responseText || "" }),
         onerror: () => reject(new Error("Apple request failed (network)")),
         ontimeout: () => reject(new Error("Apple request timed out"))
       });
@@ -9087,7 +9350,7 @@ Its \u{1F517} chip adds the link.`;
   }
   function ytmPost(endpoint, body) {
     const what = body.browseId || endpoint;
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       if (typeof GM_xmlhttpRequest !== "function") {
         reject(new Error("GM_xmlhttpRequest unavailable"));
         return;
@@ -9112,7 +9375,7 @@ Its \u{1F517} chip adds the link.`;
             reject(new Error(`YouTube Music ${endpoint} ${what} \u2192 HTTP ${r.status}${r.status === 200 ? ", not JSON" : ""} \u2014 YouTube Music's API may have changed`));
             return;
           }
-          resolve(json);
+          resolve2(json);
         },
         onerror: () => reject(new Error(`YouTube Music ${endpoint} ${what}: network error`)),
         ontimeout: () => reject(new Error(`YouTube Music ${endpoint} ${what}: timed out`))
@@ -9292,7 +9555,7 @@ Its \u{1F517} chip adds the link.`;
     return { tracklistRels, tracklist, skipped, multiVolume };
   }
   function fetchDeezerAlbumPage(pageUrl) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       if (typeof GM_xmlhttpRequest !== "function") {
         reject(new Error("GM_xmlhttpRequest unavailable"));
         return;
@@ -9302,7 +9565,7 @@ Its \u{1F517} chip adds the link.`;
         url: pageUrl,
         headers: { "Accept": "text/html,application/xhtml+xml", "Accept-Language": "en-US,en;q=0.8" },
         timeout: 2e4,
-        onload: (r) => r.status >= 200 && r.status < 400 && r.responseText ? resolve(r.responseText) : reject(new Error(`Deezer page returned ${r.status}`)),
+        onload: (r) => r.status >= 200 && r.status < 400 && r.responseText ? resolve2(r.responseText) : reject(new Error(`Deezer page returned ${r.status}`)),
         onerror: () => reject(new Error("Deezer page fetch failed (network)")),
         ontimeout: () => reject(new Error("Deezer page fetch timed out"))
       });
@@ -9364,7 +9627,7 @@ Its \u{1F517} chip adds the link.`;
     return { tracklistRels, tracklist, skipped: [], multiVolume };
   }
   function gmGet(url, what) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       if (typeof GM_xmlhttpRequest !== "function") {
         reject(new Error("GM_xmlhttpRequest unavailable"));
         return;
@@ -9373,7 +9636,7 @@ Its \u{1F517} chip adds the link.`;
         method: "GET",
         url,
         timeout: 2e4,
-        onload: (r) => r.status >= 200 && r.status < 400 && r.responseText ? resolve(r.responseText) : reject(new Error(`mora ${what} returned ${r.status}`)),
+        onload: (r) => r.status >= 200 && r.status < 400 && r.responseText ? resolve2(r.responseText) : reject(new Error(`mora ${what} returned ${r.status}`)),
         onerror: () => reject(new Error(`mora ${what} fetch failed (network)`)),
         ontimeout: () => reject(new Error(`mora ${what} fetch timed out`))
       });
@@ -9437,7 +9700,7 @@ Its \u{1F517} chip adds the link.`;
     return { tracklistRels, tracklist, skipped: [], multiVolume };
   }
   function gmGet2(url, what) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       if (typeof GM_xmlhttpRequest !== "function") {
         reject(new Error("GM_xmlhttpRequest unavailable"));
         return;
@@ -9446,7 +9709,7 @@ Its \u{1F517} chip adds the link.`;
         method: "GET",
         url,
         timeout: 2e4,
-        onload: (r) => r.status >= 200 && r.status < 400 && r.responseText ? resolve(r.responseText) : reject(new Error(`Melon ${what} returned ${r.status}`)),
+        onload: (r) => r.status >= 200 && r.status < 400 && r.responseText ? resolve2(r.responseText) : reject(new Error(`Melon ${what} returned ${r.status}`)),
         onerror: () => reject(new Error(`Melon ${what} fetch failed (network)`)),
         ontimeout: () => reject(new Error(`Melon ${what} fetch timed out`))
       });
@@ -9706,6 +9969,7 @@ Its \u{1F517} chip adds the link.`;
   var _discogsJson = null;
   var _tidalJson = null;
   var _maJson = null;
+  var _vgmJson = null;
   var _qobuzJson = null;
   var _deezerJson = null;
   var _moraJson = null;
@@ -9736,6 +10000,8 @@ Its \u{1F517} chip adds the link.`;
     Apple: stIcon("apple", 16),
     "YouTube Music": stIcon("ytmusic", 16),
     // #648 — the All review's per-entity source badge
+    VGMdb: stIcon("vgmdb", 16),
+    // #1090
     "Metal Archives": '<img src="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAQAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADw+ODwAAbmwAAGe3AAByzAAAfswQEI+9DAyKeBgYlxUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB2ZgAAeO0AAG3/AAAk/wAAAP8AAAD/AAAk/yUlpP8AADH7AAAA/wAAAP8AAACWAAAAAAAAAAAAAAAAAAB+jQAAaP8AAHH/AABr/wAAAP9wfpf/cH6X/wAAAP8AAHr/AAAA/3B+l/9wfpf/AAAA/wAAAAAAAAAAAAB+ZgAAWP8BAYD/DAyK/wAAev8AAAD/fYyo/32MqP8AAAD/AAAA/wAAAP99jKj/fYyo/wAAAP8AAAAAAQGAEhMTku0AAGz/AABk/wMDgv8AAGv/AAAt/wAAAP+LnLv/i5y7/4ucu/+LnLv/i5y7/4ucu/8AAAD/AAB/JAAAZWkICIf/BgaF/wAAef8AAEz/AABx/wEBgP8EBDj/AAAA/5qt0P8AAAD/AAAA/5qt0P+ardD/AAAA/wAAbocAAHKxAABe/wAAc/8REZD/AABl/wwMiv8VFZT/AABv/wAALf8AAAD/qL3j/wAAAP+oveP/qL3j/wAAAP8AAHHPAAAe7AAAAP8AAAD/AAAy/wAAev8NDUH/AAAA/wAAAP8BATb/AAAh/wAAAP+1y/T/tcv0/7XL9P8AAAD/AQGA+QAAAP9ygJr/coCa/wAAAP8CAoH/AAAA/3KAmv9ygJr/AAAA/wAAfP8GBjr/AAAA/73U//+91P//AAAA/wAAcvYAAAD/gZGu/4GRrv8AAAD/AAAA/wAAAP+Bka7/gZGu/wAAAP8AAHj/AABu/wAAM/8AAAD/AAAA/wEBNv8AAHPYAAAA/5Olxv+Tpcb/AAAA/5Olxv8AAAD/k6XG/5Olxv8AAAD/Dw+O/wAAaP8AAHn/AABe/wAAWv8AAGv/AAB0lgAAAP+kuN3/pLjd/wAAAP+kuN3/AAAA/6S43f+kuN3/AAAA/wAAW/8AAHL/AAB//wICgf8AAHH/AABy/AAAbTAAAAD/s8nx/7PJ8f+zyfH/AAAA/7PJ8f+zyfH/s8nx/wAAAP8AAH7/AAB//wAAe/8AAGv/AAB7/wAAepwAAAAAAAAA/73U//+91P//AAAA/wAAMP8AAAD/vdT//73U//8AAAD/BweG/wkJiP8AAHX/AABt/wAAfMMcHJsGAAAAAAAAAJYAAAD/AAAA/wAAFbsWFpXwAAAs/wAAAP8AAAD/CAg8/xcXlv8AAF7/AAB49gAAZHUREZADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABhGw8PjoQAAGrJAQGA+QkJiP8TE5LMAAB2jQ0NjCcAAAAAAAAAAAAAAAAAAAAA8A8AAOABAADAAQAAgAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAABAAAAAwAA8A8AAA==" width="16" height="16" alt="Metal Archives" style="display:inline-block;vertical-align:middle">',
     // #453 real MA favicon
     Titles: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 11h16M4 16h10"/></svg>'
@@ -12687,6 +12953,7 @@ Its \u{1F517} chip adds the link.`;
     if (sources.allmusic) importSources.push({ name: "AllMusic", url: sources.allmusic, run: (g, c, collect) => runAllMusicImport(sources.allmusic, g, c, collect) });
     if (sources.apple) importSources.push({ name: "Apple", url: sources.apple, run: (g, c, collect) => runAppleImport(sources.apple, g, c, collect) });
     if (sources.metalArchives) importSources.push({ name: "Metal Archives", url: sources.metalArchives, run: (g, c, collect) => runMetalArchivesImport(sources.metalArchives, g, c, collect) });
+    if (sources.vgmdb) importSources.push({ name: "VGMdb", url: sources.vgmdb, run: (g, c, collect) => runVgmdbImport(sources.vgmdb, g, c, collect) });
     if (sources.ytmusic) importSources.push({ name: "YouTube Music", url: sources.ytmusic, run: (g, c, collect) => runYtmImport(sources.ytmusic, g, c, collect) });
     if ((meta.titlesRemixCount || 0) > 0) {
       importSources.push({ name: "Titles", url: "", run: (g, c, collect) => runTitlesImport(g, c, collect) });
@@ -13612,6 +13879,46 @@ ${lines}
       log.error(err.message || String(err));
     });
   }
+  function runVgmdbImport(vgmUrl, getOpts, cancelled, collect) {
+    log.info(`Opening the VGMdb tab \u2014 it closes itself once harvested (a few seconds)\u2026`);
+    return harvestVgmdbAlbum(vgmUrl).then((harvest) => {
+      _vgmJson = harvest;
+      if (!harvest.ok) throw new Error(`VGMdb harvest failed: ${harvest.error || "unknown error"}`);
+      const li = document.createElement("li");
+      const pre = document.createElement("pre");
+      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid var(--mbu-border);border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;";
+      pre.textContent = JSON.stringify(harvest, null, 2);
+      li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${(harvest.tracks || []).length} tracks, ${(harvest.credits || []).length} credit roles \u2014 raw VGMdb harvest</strong></summary></details>`;
+      li.querySelector("details").appendChild(pre);
+      _logs2.appendChild(li);
+      const processTracklist = !!getOpts().processTracklist;
+      const { tracklistRels: ptRels, tracklist, skipped, multiVolume } = vgmdbToEngine(harvest);
+      const tracklistRels = processTracklist ? ptRels : [];
+      const { artists: relArtists, skipped: relSkipped } = vgmdbReleaseArtists(harvest);
+      const artistRoles = [];
+      for (const a of relArtists) {
+        const roles = getArtistRoles(a);
+        if (!roles.length) {
+          relSkipped.push(`release: ${a.vgmRole} \u2014 ${a.name}`);
+          continue;
+        }
+        artistRoles.push(...roles);
+      }
+      log.info(`VGMdb: ${tracklistRels.length} per-track + ${artistRoles.length} release-level relationship(s) across ${tracklist.length} track(s)`);
+      if (!processTracklist) log.info(`Per-track credits disabled \u2014 importing release-level credits only${getOpts().applyToTracks ? " (applied to tracks)" : ""}.`);
+      (processTracklist ? skipped.concat(relSkipped) : relSkipped).forEach((s) => log.info(`Not imported: ${s}`));
+      if (multiVolume) log.warn(`Multi-disc release \u2014 positions are "disc-track"; verify they line up with this release's mediums.`);
+      if (!tracklistRels.length && !artistRoles.length) {
+        log.warn("No importable credits found on the VGMdb page.");
+        stopMsg(collect, "No importable credits found");
+        return;
+      }
+      const parts = { companies: [], artistRoles, tracklistRels, tracklist, sourceUrl: vgmUrl, processTracklist };
+      return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
+    }).catch((err) => {
+      log.error(err.message || String(err));
+    });
+  }
   function runQobuzImport(qobuzUrl, getOpts, cancelled, collect) {
     const parsed = parseQobuzAlbumUrl(qobuzUrl);
     if (!parsed) {
@@ -14431,6 +14738,9 @@ ${lines}
   if (/(^|\.)metal-archives\.com$/i.test(location.hostname)) {
     runMetalArchivesHarvestPage();
   }
+  if (/(^|\.)vgmdb\.net$/i.test(location.hostname)) {
+    runVgmdbHarvestPage();
+  }
   (function handleCreatePageAutoCommit() {
     const onCreate = /\/(artist|label|place)\/create\b/i.test(location.pathname);
     const onEdit = /\/(artist|label|place)\/[a-f0-9-]{36}\/edit\b/i.test(location.pathname);
@@ -14534,12 +14844,12 @@ ${lines}
       log.warn(`Titles: remix probe failed \u2014 ${e.message}`);
       return null;
     });
-    const domReady = new Promise((resolve) => {
-      if (document.readyState === "interactive" || document.readyState === "complete") return resolve();
-      document.addEventListener("DOMContentLoaded", () => resolve(), { once: true });
+    const domReady = new Promise((resolve2) => {
+      if (document.readyState === "interactive" || document.readyState === "complete") return resolve2();
+      document.addEventListener("DOMContentLoaded", () => resolve2(), { once: true });
     }).then(() => log.info(`Boot: DOM ready (+${since()}ms)`));
     Promise.all([sourceProbe, domReady]).then(([probe]) => {
-      const known = !!(probe.sources.discogs || probe.sources.tidal || probe.sources.qobuz || probe.sources.deezer || probe.sources.mora || probe.sources.melon || probe.sources.allmusic || probe.sources.apple || probe.sources.metalArchives || probe.sources.ytmusic);
+      const known = !!(probe.sources.discogs || probe.sources.tidal || probe.sources.qobuz || probe.sources.deezer || probe.sources.mora || probe.sources.melon || probe.sources.allmusic || probe.sources.apple || probe.sources.metalArchives || probe.sources.vgmdb || probe.sources.ytmusic);
       if (known || probe.failed) {
         bootstrapBar(probe, null, m[1]);
         remixProbe.then((remix) => {
@@ -14558,7 +14868,7 @@ ${lines}
   function bootstrapBar(probe, remix, releaseMbid) {
     {
       const sources = probe.sources;
-      const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.mora || sources.melon || sources.allmusic || sources.apple || sources.metalArchives || sources.ytmusic);
+      const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.mora || sources.melon || sources.allmusic || sources.apple || sources.metalArchives || sources.vgmdb || sources.ytmusic);
       const remixCount = remix?.count || 0;
       if (!probe.failed) logSourceProbe(sources);
       log.info(`Toolbar: ${probe.failed ? "source probe FAILED" : hasProvider ? "linked source(s) found" : "no linked sources"}, ${remixCount} title-derived remixer(s) \u2014 ${probe.failed || hasProvider || remixCount ? "mounting" : "not mounting (nothing to import)"}`);

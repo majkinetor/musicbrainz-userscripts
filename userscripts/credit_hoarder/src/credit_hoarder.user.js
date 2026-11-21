@@ -20,6 +20,7 @@ import { MB, DISCOGS_CHANNEL }       from './constants.js';
 import { mbnFetch }                  from '../../../dev/net/mb-gate.mjs';
 import { runTidalHarvestPage }   from './sources/tidal.js';
 import { runMetalArchivesHarvestPage } from './sources/metal_archives.js';
+import { runVgmdbHarvestPage } from './sources/vgmdb.js';
 import                                './storage.js';   // opens IndexedDB on load
 import { resolveAll, ARTIST_KIND }   from './preflight.js';
 import { buildReleaseContext, releaseArtistMbids } from './match-context.js';
@@ -43,6 +44,10 @@ if (/(^|\.)tidal\.com$/i.test(location.hostname)) {
 // ── metal-archives.com: same background-tab credits harvest (#453) ────────────
 if (/(^|\.)metal-archives\.com$/i.test(location.hostname)) {
     runMetalArchivesHarvestPage();
+}
+// ── vgmdb.net: same background-tab credits harvest (#1090) ────────────────────
+if (/(^|\.)vgmdb\.net$/i.test(location.hostname)) {
+    runVgmdbHarvestPage();
 }
 
 // ── BroadcastChannel: cross-tab artist creation signalling ────────────────────
@@ -220,7 +225,7 @@ if (/musicbrainz\.org$/i.test(location.hostname)) (function () {
         // Titles probe is the only thing that could justify a toolbar, so that
         // is the one case worth waiting for.
         const known = !!(probe.sources.discogs || probe.sources.tidal || probe.sources.qobuz
-            || probe.sources.deezer || probe.sources.mora || probe.sources.melon || probe.sources.allmusic || probe.sources.apple || probe.sources.metalArchives || probe.sources.ytmusic);
+            || probe.sources.deezer || probe.sources.mora || probe.sources.melon || probe.sources.allmusic || probe.sources.apple || probe.sources.metalArchives || probe.sources.vgmdb || probe.sources.ytmusic);
         if (known || probe.failed) {
             bootstrapBar(probe, null, m[1]);
             remixProbe.then(remix => {
@@ -253,7 +258,7 @@ function bootstrapBar(probe, remix, releaseMbid) {
     // a refresh appeared to fix it. The lookup retries now; if it still fails we
     // mount ANYWAY rather than silently deciding there is nothing to do.
         const sources = probe.sources;
-        const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.mora || sources.melon || sources.allmusic || sources.apple || sources.metalArchives || sources.ytmusic);
+        const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.mora || sources.melon || sources.allmusic || sources.apple || sources.metalArchives || sources.vgmdb || sources.ytmusic);
         const remixCount  = remix?.count || 0;
         if (!probe.failed) logSourceProbe(sources);
         log.info(`Toolbar: ${probe.failed ? 'source probe FAILED' : hasProvider ? 'linked source(s) found' : 'no linked sources'}`

@@ -292,6 +292,7 @@ export async function getSourceUrlsForRelease(mbid) {
                 allmusic: href(rel => /(^|\/\/)(www\.)?allmusic\.com\/album\/release\/(?:[^/?#]*-)?mr\d{10}/i.test(rel.target?.href_url || '')),   // #814
                 apple:   href(rel => /(^|\/\/)(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/?#]+\/)?(?:id)?\d+/i.test(rel.target?.href_url || '')),   // #435; iTunes URLs #436
                 metalArchives: href(rel => /(^|\/\/)(www\.)?metal-archives\.com\/albums\/[^/]+\/[^/]+\/\d+/i.test(rel.target?.href_url || '')),   // #453
+                vgmdb: href(rel => /(^|\/\/)vgmdb\.net\/album\/\d+/i.test(rel.target?.href_url || '')),   // #1090
                 ytmusic: href(rel => /(^|\/\/)((music|www|m)\.)?youtube\.com\/(?:playlist\?(?:[^#]*&)?list=OLAK5uy_|browse\/MPREb_)/i.test(rel.target?.href_url || '')),   // #648; www.youtube.com #679
             };
     }
@@ -308,7 +309,7 @@ export function logSourceProbe(sources, urlCount) {
     const found = Object.entries(sources || {}).filter(([, v]) => v);
     // ⚠ #531 (majkinetor: "Not sure why it says 6 links"): the caller used to
     // pass Object.keys(sources).length — the number of provider SLOTS this
-    // function looks for (discogs/tidal/qobuz/deezer/apple/metalArchives), not
+    // function looks for (discogs/tidal/qobuz/deezer/apple/metalArchives/vgmdb), not
     // links on the release. It read as "6 links" on a release with one. The
     // count now comes from the probe itself, which is the only place that has
     // seen the relationships.

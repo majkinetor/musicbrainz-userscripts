@@ -48,6 +48,7 @@ import { ENTITY_TYPE_MAP }                from './data/entity-map.js';
 import { parseSourceEntityUrl, sourceNameForUrl } from './sources/registry.js';
 import { harvestTidalAlbum, tidalToEngine, tidalReleaseArtists } from './sources/tidal.js';
 import { harvestMetalArchivesAlbum, metalArchivesToEngine, metalArchivesReleaseArtists } from './sources/metal_archives.js';
+import { harvestVgmdbAlbum, vgmdbToEngine, vgmdbReleaseArtists } from './sources/vgmdb.js';
 import { parseQobuzAlbumUrl, fetchQobuzAlbumPage, extractQobuzCredits, extractQobuzAlbumInfo, qobuzToEngine, qobuzToken, fetchQobuzApiAlbum, parseQobuzApiTracks, qobuzApiAlbumInfo } from './sources/qobuz.js';
 import { parseAppleAlbumUrl, fetchAppleCredits, appleToEngine } from './sources/apple.js';
 import { fetchYtmCredits, ytmToEngine } from './sources/ytmusic.js';
@@ -66,6 +67,7 @@ let _discogsJson = null;
 let _tidalJson = null;
 // Raw Metal Archives harvest of the current run (#453).
 let _maJson = null;
+let _vgmJson = null;   // #1090
 // Parsed Qobuz credits of the current run — same contract for "Copy Qobuz".
 let _qobuzJson = null;
 // Parsed Deezer credits of the current run — same contract for "Copy Deezer".
@@ -104,6 +106,7 @@ const SRC_ICON = {
     AllMusic: stIcon('allmusic', 16),
     Apple:   stIcon('apple', 16),
     'YouTube Music': stIcon('ytmusic', 16),   // #648 — the All review's per-entity source badge
+    VGMdb: stIcon('vgmdb', 16),   // #1090
     'Metal Archives': '<img src="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAQAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADw+ODwAAbmwAAGe3AAByzAAAfswQEI+9DAyKeBgYlxUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB2ZgAAeO0AAG3/AAAk/wAAAP8AAAD/AAAk/yUlpP8AADH7AAAA/wAAAP8AAACWAAAAAAAAAAAAAAAAAAB+jQAAaP8AAHH/AABr/wAAAP9wfpf/cH6X/wAAAP8AAHr/AAAA/3B+l/9wfpf/AAAA/wAAAAAAAAAAAAB+ZgAAWP8BAYD/DAyK/wAAev8AAAD/fYyo/32MqP8AAAD/AAAA/wAAAP99jKj/fYyo/wAAAP8AAAAAAQGAEhMTku0AAGz/AABk/wMDgv8AAGv/AAAt/wAAAP+LnLv/i5y7/4ucu/+LnLv/i5y7/4ucu/8AAAD/AAB/JAAAZWkICIf/BgaF/wAAef8AAEz/AABx/wEBgP8EBDj/AAAA/5qt0P8AAAD/AAAA/5qt0P+ardD/AAAA/wAAbocAAHKxAABe/wAAc/8REZD/AABl/wwMiv8VFZT/AABv/wAALf8AAAD/qL3j/wAAAP+oveP/qL3j/wAAAP8AAHHPAAAe7AAAAP8AAAD/AAAy/wAAev8NDUH/AAAA/wAAAP8BATb/AAAh/wAAAP+1y/T/tcv0/7XL9P8AAAD/AQGA+QAAAP9ygJr/coCa/wAAAP8CAoH/AAAA/3KAmv9ygJr/AAAA/wAAfP8GBjr/AAAA/73U//+91P//AAAA/wAAcvYAAAD/gZGu/4GRrv8AAAD/AAAA/wAAAP+Bka7/gZGu/wAAAP8AAHj/AABu/wAAM/8AAAD/AAAA/wEBNv8AAHPYAAAA/5Olxv+Tpcb/AAAA/5Olxv8AAAD/k6XG/5Olxv8AAAD/Dw+O/wAAaP8AAHn/AABe/wAAWv8AAGv/AAB0lgAAAP+kuN3/pLjd/wAAAP+kuN3/AAAA/6S43f+kuN3/AAAA/wAAW/8AAHL/AAB//wICgf8AAHH/AABy/AAAbTAAAAD/s8nx/7PJ8f+zyfH/AAAA/7PJ8f+zyfH/s8nx/wAAAP8AAH7/AAB//wAAe/8AAGv/AAB7/wAAepwAAAAAAAAA/73U//+91P//AAAA/wAAMP8AAAD/vdT//73U//8AAAD/BweG/wkJiP8AAHX/AABt/wAAfMMcHJsGAAAAAAAAAJYAAAD/AAAA/wAAFbsWFpXwAAAs/wAAAP8AAAD/CAg8/xcXlv8AAF7/AAB49gAAZHUREZADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABhGw8PjoQAAGrJAQGA+QkJiP8TE5LMAAB2jQ0NjCcAAAAAAAAAAAAAAAAAAAAA8A8AAOABAADAAQAAgAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAABAAAAAwAA8A8AAA==" width="16" height="16" alt="Metal Archives" style="display:inline-block;vertical-align:middle">',   // #453 real MA favicon
     Titles:  '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 11h16M4 16h10"/></svg>',
 };
@@ -2785,6 +2788,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     if (sources.allmusic) importSources.push({ name: 'AllMusic', url: sources.allmusic, run: (g, c, collect) => runAllMusicImport(sources.allmusic, g, c, collect) });
     if (sources.apple)  importSources.push({ name: 'Apple',  url: sources.apple,  run: (g, c, collect) => runAppleImport(sources.apple, g, c, collect) });
     if (sources.metalArchives) importSources.push({ name: 'Metal Archives', url: sources.metalArchives, run: (g, c, collect) => runMetalArchivesImport(sources.metalArchives, g, c, collect) });   // #453
+    if (sources.vgmdb) importSources.push({ name: 'VGMdb', url: sources.vgmdb, run: (g, c, collect) => runVgmdbImport(sources.vgmdb, g, c, collect) });   // #1090
     if (sources.ytmusic) importSources.push({ name: 'YouTube Music', url: sources.ytmusic, run: (g, c, collect) => runYtmImport(sources.ytmusic, g, c, collect) });   // #648
     // #271: "Titles" — derive remixer credits from the track titles. Offered
     // ONLY when the titles actually yield ≥1 remixer (probed at page load), so
@@ -3876,6 +3880,43 @@ function runMetalArchivesImport(maUrl, getOpts, cancelled, collect) {
             if (multiVolume) log.warn(`Multi-disc release — positions are "disc-track"; verify they line up with this release's mediums.`);
             if (!tracklistRels.length && !artistRoles.length) { log.warn('No importable credits found on the Metal Archives page.'); stopMsg(collect, 'No importable credits found'); return; }
             const parts = { companies, artistRoles, tracklistRels, tracklist, sourceUrl: maUrl, processTracklist };
+            return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
+        })
+        .catch(err => { log.error(err.message || String(err)); });
+}
+
+// VGMdb import (#1090): the album opens in a background tab (Cloudflare), which
+// reads the credits table and the tracklist. Work and performance roles go on
+// every track, production/engineering/art roles on the release.
+function runVgmdbImport(vgmUrl, getOpts, cancelled, collect) {
+    log.info(`Opening the VGMdb tab — it closes itself once harvested (a few seconds)…`);
+    return harvestVgmdbAlbum(vgmUrl)
+        .then(harvest => {
+            _vgmJson = harvest;
+            if (!harvest.ok) throw new Error(`VGMdb harvest failed: ${harvest.error || 'unknown error'}`);
+            const li = document.createElement('li');
+            const pre = document.createElement('pre');
+            pre.style.cssText = 'max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid var(--mbu-border);border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;';
+            pre.textContent = JSON.stringify(harvest, null, 2);
+            li.innerHTML = `<details><summary style="cursor:pointer;user-select:none;"><strong>${(harvest.tracks || []).length} tracks, ${(harvest.credits || []).length} credit roles — raw VGMdb harvest</strong></summary></details>`;
+            li.querySelector('details').appendChild(pre);
+            _logs.appendChild(li);
+            const processTracklist = !!getOpts().processTracklist;
+            const { tracklistRels: ptRels, tracklist, skipped, multiVolume } = vgmdbToEngine(harvest);
+            const tracklistRels = processTracklist ? ptRels : [];
+            const { artists: relArtists, skipped: relSkipped } = vgmdbReleaseArtists(harvest);
+            const artistRoles = [];
+            for (const a of relArtists) {
+                const roles = getArtistRoles(a);
+                if (!roles.length) { relSkipped.push(`release: ${a.vgmRole} — ${a.name}`); continue; }
+                artistRoles.push(...roles);
+            }
+            log.info(`VGMdb: ${tracklistRels.length} per-track + ${artistRoles.length} release-level relationship(s) across ${tracklist.length} track(s)`);
+            if (!processTracklist) log.info(`Per-track credits disabled — importing release-level credits only${getOpts().applyToTracks ? ' (applied to tracks)' : ''}.`);
+            (processTracklist ? skipped.concat(relSkipped) : relSkipped).forEach(s => log.info(`Not imported: ${s}`));
+            if (multiVolume) log.warn(`Multi-disc release — positions are "disc-track"; verify they line up with this release's mediums.`);
+            if (!tracklistRels.length && !artistRoles.length) { log.warn('No importable credits found on the VGMdb page.'); stopMsg(collect, 'No importable credits found'); return; }
+            const parts = { companies: [], artistRoles, tracklistRels, tracklist, sourceUrl: vgmUrl, processTracklist };
             return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
         })
         .catch(err => { log.error(err.message || String(err)); });

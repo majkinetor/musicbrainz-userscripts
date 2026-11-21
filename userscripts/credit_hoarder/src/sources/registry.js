@@ -13,6 +13,7 @@ import { parseDiscogsUrl }      from '../api-discogs.js';
 import { parseTidalArtistUrl }  from './tidal.js';
 import { parseQobuzArtistUrl }  from './qobuz.js';
 import { parseMetalArchivesArtistUrl } from './metal_archives.js';
+import { parseVgmdbArtistUrl } from './vgmdb.js';
 import { parseAllMusicArtistUrl } from './allmusic.js';
 
 /** Parse a credited entity's external URL into `{ key, cleanUrl, … }` via
@@ -20,7 +21,7 @@ import { parseAllMusicArtistUrl } from './allmusic.js';
  *  `parseDiscogsUrl` (Discogs URLs return the exact same shape). */
 export function parseSourceEntityUrl(url) {
     if (!url) return null;
-    return parseDiscogsUrl(url) || parseTidalArtistUrl(url) || parseQobuzArtistUrl(url) || parseMetalArchivesArtistUrl(url) || parseAllMusicArtistUrl(url);
+    return parseDiscogsUrl(url) || parseTidalArtistUrl(url) || parseQobuzArtistUrl(url) || parseMetalArchivesArtistUrl(url) || parseVgmdbArtistUrl(url) || parseAllMusicArtistUrl(url);
 }
 
 /** The IDB `entity_cache` key for an entity. Normally derived from its source
@@ -44,6 +45,7 @@ export function sourceNameForUrl(url) {
     if (/allmusic\.com\//i.test(url || '')) return 'AllMusic';   // #814
     if (/(?:music|itunes)\.apple\.com\//i.test(url || '')) return 'Apple';   // #435; iTunes URLs #436
     if (/metal-archives\.com\//i.test(url || '')) return 'Metal Archives';   // #453
+    if (/vgmdb\.net\//i.test(url || '')) return 'VGMdb';   // #1090
     if (/music\.youtube\.com\/|youtube\.com\/playlist\?(?:[^#]*&)?list=OLAK5uy_/i.test(url || '')) return 'YouTube Music';   // #648; www.youtube.com album #679
     return 'Discogs';
 }
@@ -64,6 +66,7 @@ export function sourceUrlLinkTypeId(url, entityType) {
     if (src === 'Tidal') return entityType === 'artist' ? '978' : null;
     if (src === 'Qobuz') return entityType === 'artist' ? '978' : null;   // #353 Qobuz artist page = "streaming" (978), same as Tidal
     if (src === 'AllMusic') return entityType === 'artist' ? '283' : null;   // #814 artist → "has an AllMusic page at"
+    if (src === 'VGMdb') return entityType === 'artist' ? '188' : null;   // #1090 other databases
     if (src === 'Metal Archives') return entityType === 'artist' ? '188' : null;   // #453 artist → "has a page in a database at" (other databases); seeds the MA URL on create
     return entityType === 'label' ? '217' : entityType === 'place' ? '705' : '180';
 }
