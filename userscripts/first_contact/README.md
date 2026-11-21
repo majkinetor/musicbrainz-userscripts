@@ -111,7 +111,7 @@ The _Harmony_ setting picks which Harmony opens: [harmony.pulsewidth.org.uk](htt
 | ------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
 | Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy, mora, Melon, Bugs, AllMusic | the album link, at once             |
 | Volumo, HDtracks, SoundCloud, Audiomack, 7digital, Presto Music, Traxsource, Amazon                          | the barcode, once the album is read |
-| YouTube Music, Amazon Music, Internet Archive, RateYourMusic, Album of the Year                              | nothing; the button is greyed out   |
+| YouTube Music, Amazon Music, Internet Archive, RateYourMusic, Album of the Year, VGMdb | nothing; the button is greyed out   |
 
 Harmony can't read the last two rows' platforms, so for the middle row First Contact sends the barcode; an album without one (a SoundCloud set that isn't a label's) sends nothing. YouTube Music and Amazon Music show no barcode.
 
@@ -145,6 +145,7 @@ Harmony can't read the last two rows' platforms, so for the middle row First Con
 | [Presto Music](#presto-music)           | streamed albums |     ✓      | ✓ with catalog number           | about                      |
 | [RateYourMusic](#rateyourmusic)         |                 |            | an issue's, with catalog number |                            |
 | [Album of the Year](#album-of-the-year) |                 |            | ✓                               |                            |
+| [VGMdb](#vgmdb)                         |                 |     ✓      | ✓ with catalog number           |                            |
 
 ### Deezer
 
@@ -377,6 +378,14 @@ Pages: `www.albumoftheyear.org/album/<id>-<slug>.php`
 - Like RYM, it's behind a browser check: the open page is read, never fetched, and it stays out of Mission Control.
 - Title, artists, date, label and the tracklist (with lengths when AOTY has them); AOTY's "No Label" becomes MusicBrainz's `[no label]`; the type comes from AOTY's format (LP, EP, Single, Compilation, Mixtape, Live, Remix, Soundtrack).
 - No link is added: MusicBrainz takes these sites only on release groups and artists (the edit note names the page). No barcode, no catalog number, no ISRCs.
+
+### VGMdb
+
+Pages: `vgmdb.net/album/<id>`
+
+- VGMdb is behind a browser check, so First Contact reads the open page and never fetches it. It stays out of Mission Control and Harmony.
+- Title, date, label with catalog number, barcode, format, and the tracklist with discs and lengths. The artists come from the Performer credit, else the Composer credit. A soundtrack gets the Soundtrack type.
+- The VGMdb link is added to the release.
 
 ### Presto Music
 

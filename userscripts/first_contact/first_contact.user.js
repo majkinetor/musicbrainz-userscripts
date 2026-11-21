@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.21.183019
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Amazon (CDs, vinyl and MP3 albums in its store), Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Internet Archive (audio items), Presto Music, RateYourMusic, Album of the Year.
+// @version      2026.11.21.204022
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Amazon (CDs, vinyl and MP3 albums in its store), Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Internet Archive (audio items), Presto Music, RateYourMusic, Album of the Year, VGMdb.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
@@ -32,6 +32,7 @@
 // @match        https://www.allmusic.com/album/release/*
 // @match        https://rateyourmusic.com/release/*
 // @match        https://www.albumoftheyear.org/album/*
+// @match        https://vgmdb.net/album/*
 // @match        https://www.amazon.com/*
 // @match        https://www.amazon.co.uk/*
 // @match        https://www.amazon.de/*
@@ -3358,7 +3359,87 @@ const PRESTO = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY, MORA, TRAXSOURCE, AMAZONSTORE, ARCHIVE, MELON, BUGS, ALLMUSIC, PRESTO, RYM, AOTY];
+
+// VGMdb (#1090): behind Cloudflare, so the open album page is read, never fetched, and it stays out of
+// Mission Control. The info table has the catalog number, barcode, date, format and label; the first
+// tracklist tab (English, else the first one) has the discs, titles and lengths. Artists come from the
+// Performer credit, else the Composer one.
+const VGMDB = {
+    id: 'vgmdb',
+    name: 'VGMdb',
+    abbr: 'vgmdb',
+    host: /^(www\.)?vgmdb\.net$/,
+    consolidate: false,
+    albumId(loc) { const m = loc.pathname.match(/^\/album\/(\d+)/); return m ? m[1] : null; },
+    MONTHS: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
+
+    async fetchRelease(id, progress, doc) {
+        doc = doc || document;
+        const lang = el => el && (el.querySelector('[lang="en"]') || el.querySelector('[lang]') || el);
+        const clean = s => (s || '').replace(/\s+/g, ' ').trim();
+        const titleEl = lang(doc.querySelector('#innermain h1'));
+        if (!titleEl) throw new Error('VGMdb: no album on this page');
+        const title = clean(titleEl.textContent);
+        const info = {};
+        for (const table of doc.querySelectorAll('table#album_infobit_large'))
+            for (const tr of table.querySelectorAll('tr')) {
+                const tds = tr.querySelectorAll(':scope > td');
+                if (tds.length < 2) continue;
+                const k = clean(lang(tds[0]).textContent).toLowerCase();
+                if (k && !info[k]) info[k] = tds[1];
+            }
+        const names = td => td ? [...td.querySelectorAll('a')].map(a => ({ name: clean(lang(a).textContent), url: a.href.startsWith('http') ? a.href : null })).filter(a => a.name)
+            .concat(td.querySelector('a') ? [] : clean(td.textContent).split(/\s*,\s*/).filter(Boolean).map(name => ({ name, url: null }))) : [];
+        const artists = names(info.performer || info.performers || info.composer || info.composers || info.artist);
+        const txt = k => info[k] ? clean(info[k].textContent) : '';
+        const rel = txt('release date');
+        const dm = rel.match(/^(?:([a-z]{3})[a-z]*\s+)?(?:(\d{1,2}),\s*)?(\d{4})/i) || [];
+        const mi = dm[1] ? this.MONTHS.indexOf(dm[1].toLowerCase()) + 1 : 0;
+        const catno = (txt('catalog number').match(/^\S+(?:\s*~\s*\S+)?/) || [''])[0];
+        const barcode = (txt('barcode').match(/\d{8,14}/) || [])[0] || null;
+        const labelTd = info.label || info.publisher || info['published by'] || info.manufacturer;
+        const labelName = labelTd ? clean(lang(labelTd.querySelector('a') || labelTd).textContent) : '';
+        const fmt = txt('media format');
+        const format = /blu-?ray/i.test(fmt) ? 'Blu-ray' : /dvd/i.test(fmt) ? 'DVD' : /vinyl|lp/i.test(fmt) ? 'Vinyl' : /cassette/i.test(fmt) ? 'Cassette' : /digital/i.test(fmt) ? 'Digital Media' : /cd/i.test(fmt) ? 'CD' : '';
+        const tl = doc.querySelector('#tracklist span.tl');
+        const mediums = [];
+        let cur = null;
+        for (const el of tl ? tl.querySelectorAll('b, table.role') : []) {
+            if (el.tagName === 'B') { if (/^disc\s*\d+/i.test(clean(el.textContent))) { cur = { format, name: '', tracks: [] }; mediums.push(cur); } continue; }
+            if (!cur) { cur = { format, name: '', tracks: [] }; mediums.push(cur); }
+            for (const tr of el.querySelectorAll('tr.rolebit')) {
+                const tds = tr.querySelectorAll(':scope > td');
+                if (tds.length < 2) continue;
+                const t = clean(tds[1].textContent);
+                if (!t) continue;
+                const tm = clean((tr.querySelector('.time') || {}).textContent || '').match(/^(?:(\d+):)?(\d+):(\d\d)$/);
+                const ms = tm ? (((+tm[1] || 0) * 60 + +tm[2]) * 60 + +tm[3]) * 1000 : null;
+                const tf = splitFeat(t);
+                cur.tracks.push({ title: tf.title, lengthMs: ms || null, isrc: null, url: null, credit: creditFromTitle(artists, tf.feat) });
+            }
+        }
+        progress && progress(1, 1);
+        const url = `https://vgmdb.net/album/${id}`;
+        const various = artists.length > 4;
+        Log.info(`VGMdb ${id}: "${title}" by ${artists.map(a => a.name).join(', ') || '—'} · ${rel || '—'} · ${labelName || '—'} · ${catno || '—'} · ${barcode || '—'} · ${mediums.reduce((n, m) => n + m.tracks.length, 0)} tracks`);
+        return {
+            source: this.id,
+            url,
+            title,
+            credit: various || !artists.length ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }] : creditFromTitle(artists, []),
+            types: /soundtrack/i.test(txt('classification')) ? ['Album', 'Soundtrack'] : ['Album'],
+            status: /bootleg/i.test(txt('publish format')) ? 'bootleg' : /promo/i.test(txt('publish format')) ? 'promotion' : 'official',
+            packaging: null,
+            date: { year: +dm[3] || null, month: mi || null, day: mi && dm[2] ? +dm[2] : null },
+            country: null,
+            barcode,
+            labels: labelName ? [noLabel({ name: labelName, catno, url: null })] : [],
+            urls: [{ url, linkType: 86 }],   // 86 = vgmdb
+            mediums,
+        };
+    },
+};
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY, MORA, TRAXSOURCE, AMAZONSTORE, ARCHIVE, MELON, BUGS, ALLMUSIC, PRESTO, RYM, AOTY, VGMDB];
 
 /* ── Harmony (#687): the album sent to Harmony's release lookup instead of the editor ── */
 // The album link in the form Harmony reads, for the platforms Harmony looks up by URL; Harmony then
@@ -3379,7 +3460,7 @@ const HARMONY_URLS = {
     bugs: id => `https://music.bugs.co.kr/album/${id}`,
 };
 // Platforms Harmony doesn't know and whose albums never carry a barcode: nothing to send
-const HARMONY_NONE = new Set(['ytmusic', 'amazonmusic', 'rym', 'aoty', 'archive']);
+const HARMONY_NONE = new Set(['ytmusic', 'amazonmusic', 'rym', 'aoty', 'archive', 'vgmdb']);
 // spoonkuh: "it does not follow my harmony settings". A link names its providers itself, and one that
 // names none looks the album up on its own platform only (a barcode alone, on none). category=preferred
 // is the providers ticked in Harmony's settings (its cookies), and with no region in the link Harmony
