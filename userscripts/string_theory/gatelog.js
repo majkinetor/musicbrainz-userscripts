@@ -323,12 +323,12 @@ function stGateBuild() {
     + '<button type="button" id="st-gate-mine" data-tip="Show only the requests of this tab">This tab only</button></div>'
     + '<div id="st-gate-body"><table><thead><tr><th>Time</th><th>Tab</th><th>Script</th><th>Request</th><th>Tries</th><th>Result</th><th>Wait</th><th>Rate limit</th></tr></thead><tbody></tbody></table></div>'
     + '<div class="mbu-logpop-grip" data-tip="Resize"></div>';
-  (document.body || document.documentElement).appendChild(pop);
+  document.documentElement.appendChild(pop);   // outside the body, which Event Horizon swaps
   var $ = function (s) { return pop.querySelector(s); };
   var body = $('tbody'), qEl = $('#st-gate-q'), mineBtn = $('#st-gate-mine'), scroller = $('#st-gate-body');
   var seg = function () { Array.prototype.forEach.call(pop.querySelectorAll('.st-gate-seg button'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.m === mode)); }); };
   seg(); mineBtn.setAttribute('aria-pressed', String(mine));
-  var drawFailed = '';
+  var drawFailed = '', lanesHeld = false, shownIds = [];
   var draw = function () {
     try { drawNow(); } catch (e) {
       var msg = String(e && e.message || e);
@@ -343,13 +343,14 @@ function stGateBuild() {
     if (pop.classList.contains('min')) return;
     $('#st-gate-state').innerHTML = stGateStateHtml(stGateState(), me);
     $('#st-gate-sum').innerHTML = stGateSumHtml(groups, now);
-    $('#st-gate-lanes').innerHTML = stGateLanesHtml(groups, all, now, me);
+    if (!lanesHeld) $('#st-gate-lanes').innerHTML = stGateLanesHtml(groups, all, now, me);   // held still under the mouse, so a tip stays put
     var shown = groups.filter(function (g) {
       if (mine && g.tab !== me) return false;
       if (mode === 'bad' && g.cls !== 'bad') return false;
       if (mode === 're' && (g.sys || g.tries.length < 2)) return false;
       return !q || ((g.l || '') + ' ' + (g.s || '') + ' ' + g.tab + ' ' + (g.label || '')).toLowerCase().indexOf(q) >= 0;
     });
+    shownIds = shown.filter(function (g) { return !g.sys; }).map(function (g) { return g.id; });
     var key = shown.map(function (g) { return g.id + ':' + g.evs.length + ':' + g.label; }).join('|') + '#' + Object.keys(opened).join('|') + '#' + me;
     if (key === sig) return;
     sig = key;
@@ -365,6 +366,18 @@ function stGateBuild() {
     if (opened[id]) delete opened[id]; else opened[id] = 1;
     draw();
   });
+  // a right click on a row opens every row, or closes them all when every one is open
+  body.addEventListener('contextmenu', function (e) {
+    if (!e.target.closest('tr.rq, tr.steps')) return;
+    e.preventDefault();
+    var allOpen = shownIds.length && shownIds.every(function (id) { return opened[id]; });
+    opened = {};
+    if (!allOpen) shownIds.forEach(function (id) { opened[id] = 1; });
+    draw();
+  });
+  var lanes = $('#st-gate-lanes');
+  lanes.addEventListener('mouseenter', function () { lanesHeld = true; });
+  lanes.addEventListener('mouseleave', function () { lanesHeld = false; draw(); });
   qEl.addEventListener('input', function () { q = qEl.value.trim().toLowerCase(); draw(); });
   $('.st-gate-seg').addEventListener('click', function (e) {
     var b = e.target.closest('button');

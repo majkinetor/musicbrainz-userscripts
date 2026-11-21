@@ -15,7 +15,7 @@ const seed = page => page.evaluate(() => {
   ]));
 });
 const openLog = async (page, inject) => {
-  await page.locator('body').click({ position: { x: 5, y: 5 } });
+  await page.locator('body:not([hidden])').click({ position: { x: 5, y: 5 } });
   await page.keyboard.press('Control+k');
   await page.waitForSelector('#st-pal-q', { timeout: 10000 });
   await page.keyboard.type('gate log');
@@ -40,9 +40,18 @@ test.describe('gate log', () => {
     check(pills.includes('error'), 'the failed request shows its error');
     await page.click('#st-gate tr.rq');
     check(await page.$('#st-gate tr.steps'), 'a click shows the steps');
+    await page.click('#st-gate tr.rq', { button: 'right' });
+    const rq = await page.$$eval('#st-gate tr.rq', l => l.length), steps = await page.$$eval('#st-gate tr.steps', l => l.length);
+    check(steps === rq, `a right click shows the steps of every row (${steps} of ${rq})`);
+    await page.click('#st-gate tr.rq', { button: 'right' });
+    check(!(await page.$('#st-gate tr.steps')), 'a second right click hides them all');
+    await page.hover('#st-gate-lanes');
+    const bar = await page.$('#st-gate-lanes .st-gl-lane *');
+    await page.waitForTimeout(1200);
+    check(bar && await bar.evaluate(e => e.isConnected), 'the lanes do not redraw under the mouse');
     await page.click('#st-gate .st-gate-seg [data-m=bad]');
-    const bad = await page.$$eval('#st-gate tr.rq', l => l.length);
-    check(bad === 1, `Failed shows only the failed one (${bad})`);
+    const bad = await page.$$eval('#st-gate tr.rq .st-gate-pill', l => l.map(x => x.classList.contains('bad') ? 'bad' : x.textContent));
+    check(bad.length >= 1 && bad.every(x => x === 'bad'), `Failed shows only failed requests (${bad.join(', ')})`);
     await page.click('#st-gate .st-gate-seg [data-m=all]');
     await attachShot(testInfo, page.locator('#st-gate'), 'gate log');
     if (process.env.SHOT) await page.locator('#st-gate').screenshot({ path: process.env.SHOT });
@@ -71,5 +80,25 @@ test.describe('gate log, a bad saved window', () => {
     const r = await page.evaluate(() => { const b = document.getElementById('st-gate').getBoundingClientRect(); return { l: b.left, t: b.top, w: b.width, h: b.height, vw: innerWidth, vh: innerHeight, min: document.getElementById('st-gate').classList.contains('min') }; });
     check(!r.min, 'an open from the palette is not the minimised bar');
     check(r.l >= 0 && r.t >= 0 && r.l + r.w <= r.vw && r.t + r.h <= r.vh, `it is on screen (${JSON.stringify(r)})`);
+  });
+});
+
+test.describe('gate log with Event Horizon', () => {
+  // Event Horizon swaps the body: a window restored at start must not stay in the old one
+  test.use({ gm: { name: 'String Theory', persist: true, values: {} } });
+  test('stays on top of Event Horizon after a reload', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+    await page.goto(`${SANDBOX}/artist/f27ec8db-af05-4f36-916e-3d57f91ecf5e`, { waitUntil: 'load', timeout: 60000 });
+    await inject('string_theory');
+    await page.waitForTimeout(3000);
+    await openLog(page, inject);
+    await page.reload({ waitUntil: 'load' });
+    await inject('string_theory');
+    await until(() => page.$('#st-gate'), x => !!x, { timeout: 10000 });
+    await page.waitForTimeout(4000);
+    const r = await page.evaluate(() => {
+      const g = document.getElementById('st-gate'), b = g.getBoundingClientRect();
+      return { w: b.width, h: b.height, top: g.contains(document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2)) };
+    });
+    check(r.w > 100 && r.h > 60 && r.top, `the window shows and is on top (${JSON.stringify(r)})`);
   });
 });
