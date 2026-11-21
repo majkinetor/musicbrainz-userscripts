@@ -102,6 +102,8 @@
           const now = Date.now();
           if ((s.cool || 0) > now + MBN_MAX_HOLD) s.cool = now + MBN_MAX_HOLD;
           if ((s.leadUntil || 0) > now + MBN_MAX_LEAD) s.leadUntil = now + MBN_MAX_LEAD;
+          // nor a queue longer than a minute: slots that waits left behind (a closed tab) are dropped
+          if ((s.tat || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s.tat = Math.max(now, s.cool || 0) + 60 * MBN_GAP;
           const out = fn(s);
           Object.assign(g, s);
           try { localStorage.setItem(MBN_KEY, JSON.stringify({ ...s, tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
@@ -227,17 +229,21 @@
       let booked = null, rebooked = false;
       const book = () => mbnState(s => {
           const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
-          let at = rebooked ? Math.max(now, tat) : background ? Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP) : now;
+          // an interactive request (the page's own) never queues behind the budget, a rebooking included
+          let at = !background ? now : rebooked ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP);
           at = Math.max(at, cool);
           s.tat = Math.max(tat, at) + MBN_GAP;
           return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second' };
       });
       booked = await book();
+      // a cancelled wait hands its slot back when it is still the last one booked, so a page that
+      // drops a queue of lookups (a Stop, a new page) does not leave every later request behind it
+      const giveBack = () => mbnState(s => { if (s.tat === booked.at + MBN_GAP && booked.at > Date.now()) s.tat -= MBN_GAP; });
       // #999: the wait logs again whenever its end moves later (a hold another tab or script set
       // while we queued) and every 10s it goes on, so a long wait is never silent
       let toldUntil = 0, toldAt = 0;
       for (;;) {
-          if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
+          if (o.cancelled && o.cancelled()) { await giveBack(); return { ok: false, waited: Date.now() - t0 }; }
           let cool = 0;
           try { cool = (JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}).cool || 0; } catch (e) { cool = (globalThis.__mbnGate || {}).cool || 0; }
           const now = Date.now();
