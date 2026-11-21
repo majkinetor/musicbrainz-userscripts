@@ -13,7 +13,7 @@ pnpm lint
 - **`main`** is latest; the *latest* install links point at it. It must always be releasable, because a release ships all of it.
 - **`stable`** is the official release; the *stable* install links point at it. Userscript managers update from whichever branch the script was installed from.
 - Which work goes straight to `main` and which on a feature branch: [Standard 13](dev/agents/STANDARDS.general.md#standard-13).
-- Each script has its own `@version`, bumped with every change by `node dev/bump-version.mjs [<script>…]` (no names: every script with uncommitted changes), never typed by hand: it writes the local date and time (`2026.09.28.214729`), or one second past the version already in the file or on `origin/main` when that is higher, so a guessed time can't push versions into the next day. Built files (`dist/`, the String Theory bundle) are stamped by their build.
+- Each script has its own `@version`, bumped with every change by `node dev/bump-version.mjs [<script>…]` (no names: every script with uncommitted changes), never typed by hand (the pre-commit hook refuses a version that is not a real date and time, or that is more than 10 minutes ahead of both the clock and the version already out): it writes the local date and time (`2026.09.28.214729`), or one second past the version already in the file or on `origin/main` when that is higher, so a guessed time can't push versions into the next day. Built files (`dist/`, the String Theory bundle) are stamped by their build.
 
 ## Checks
 
@@ -70,6 +70,7 @@ Nothing here ships. A script belongs in its subsystem's folder, next to that fol
 | `templates/`                                                | starting points: a script's README in the [compact style](STANDARDS.md#script-readmes)                   |
 | `publish.mjs`                                               | the release (run by `release.yml`)                                                                       |
 | `bump-version.mjs`                                          | raises a script's `@version` from the clock, never below what's out                                      |
+| `check-version.mjs`                                         | pre-commit: refuses an `@version` that is not a real time or is ahead of the clock and of what is out    |
 | `regen.mjs`                                                 | rebuilds everything the pre-commit hook builds; `--check` fails if that changes anything                 |
 | [`issue-label/`](dev/issue-label/README.md)                 | labels a new issue by the scripts its title names (the `issue-label` workflow)                           |
 | `gh-inbox.mjs`                                              | every issue comment newer than the bot's last reply                                                      |
@@ -174,12 +175,12 @@ A new shared setting gets a row here.
 
 Other userscripts can opt into these conventions. No marker means the usual behaviour. These are DOM signals, not saved settings; keep page-wide markers on `document.documentElement`, which survives Event Horizon's body swaps.
 
-| Signal                        | Scope                     | Effect                                                                                                                                         |
-| ----------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `data-mbu-foreign="<owner>"`  | rendered section or table | ISRC Scout leaves its columns and colspans alone; the shared tooltip handler ignores the region, including copied `data-tip` attributes        |
-| `data-mbu-keys-off="<owner>"` | `<html>`                  | suspends Event Horizon's command shortcuts, bare keys and modified keys alike, including V and Ctrl+L, unless `data-mbu-keys-keep` says otherwise; ordinary controls and Escape still work |
-| `data-mbu-keys-keep="toggle"` | `<html>`                  | with `data-mbu-keys-off` set, keeps Event Horizon's on/off command (V, or the key it is rebound to) working; a space-separated list, `toggle` its only value so far |
-| `data-mbu-quiet="<owner>"`    | `<html>`                  | temporarily hides corner launchers, the dock and its shelf; scans, counts and the saved dock state continue                                    |
+| Signal | Scope | Effect |
+| --- | --- | --- |
+| `data-mbu-foreign="<owner>"` | rendered section or table | ISRC Scout leaves its columns and colspans alone; the shared tooltip handler ignores the region, including copied `data-tip` attributes |
+| `data-mbu-keys-off="<owner>"` | `<html>` | suspends Event Horizon's command shortcuts, bare keys and modified keys alike, including V and Ctrl+L, unless `data-mbu-keys-keep` says otherwise; ordinary controls and Escape still work |
+| `data-mbu-keys-keep="toggle"` | `<html>` | with `data-mbu-keys-off` set, keeps Event Horizon's on/off command (V, or the key it is rebound to) working; a space-separated list, `toggle` its only value so far |
+| `data-mbu-quiet="<owner>"` | `<html>` | temporarily hides corner launchers, the dock and its shelf; scans, counts and the saved dock state continue |
 
 The foreign marker protects a rendered copy, not its native source. Keep ISRC Scout's original rows outside it. A script can listen for `is:counts-changed` and update its own copy; ISRC Scout does not push changes into a foreign region. This is a contract for the consumers named above, not a promise that every script ignores the region.
 

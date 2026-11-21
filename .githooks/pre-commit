@@ -31,6 +31,8 @@ if [ -n "$USER_JS" ]; then
         node --check "$f" || { echo "[pre-commit] $f does not parse — nothing committed"; exit 1; }
         PRESENT="$PRESENT $f"
     done
+    # @version comes from dev/bump-version.mjs, never typed by hand
+    [ -n "$PRESENT" ] && { node dev/check-version.mjs $PRESENT || exit 1; }
     if [ -n "$PRESENT" ] && [ -f node_modules/eslint/bin/eslint.js ]; then
         node node_modules/eslint/bin/eslint.js --quiet $PRESENT || { echo "[pre-commit] lint errors above — nothing committed"; exit 1; }
     elif [ -n "$PRESENT" ]; then
