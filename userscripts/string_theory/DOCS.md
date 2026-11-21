@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-21 13:47 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-21 14:34 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -929,7 +929,7 @@ The header's **Show** menu picks the columns: **Artist** shows by itself on a Va
 
 The player is on unless **Enable player** is turned off in the settings. The play button on a track number plays that recording; **Play** in the tracklist's header plays the release; right-click either to add to the queue. On a recording or release collection, **Play** queues the collection.
 
-It plays from YouTube, YouTube Music, Spotify, Deezer, Apple Music, SoundCloud and Bandcamp. Apple Music needs a click on its own play button. On YouTube and Bandcamp the next track loads ahead and **Crossfade** blends them.
+It plays from YouTube, YouTube Music, Spotify, Deezer, Apple Music, SoundCloud, Bandcamp and the Internet Archive. A release linked to an Internet Archive item plays each track from the item, in the best quality that your browser plays (FLAC first). Apple Music needs a click on its own play button. On YouTube and Bandcamp the next track loads ahead and **Crossfade** blends them.
 
 Click the track name for the queue. Its head counts the releases and loose recordings: the releases count shows their covers as a grid in place of the tracks, and a cover jumps to its release, right-click removes its tracks; the recordings count jumps to them. While a collection loads, the head shows how many of its entries are loaded. Right-click Play to cycle repeat; **Shuffle** plays each track once in random order; the wheel winds five seconds. The source menu also has:
 

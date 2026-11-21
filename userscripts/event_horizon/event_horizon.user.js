@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.184100
+// @version      2026.11.22.190000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -59,6 +59,7 @@
 // @connect      127.0.0.1
 // @connect      musicbrainz.org
 // @connect      api.listenbrainz.org
+// @connect      archive.org
 // ==/UserScript==
 
 // Event Horizon takes over MusicBrainz's own release, release group, artist, label, recording, work, series and event pages, and an event's event-art pages, /release/<mbid>, /release-group/<mbid>, /artist/<mbid>, /label/<mbid>, /recording/<mbid> and /work/<mbid>
@@ -5882,7 +5883,7 @@ function tracklist(r) {
     const va = !S.arAuto ? S.arCol : arCol.has(r.id) ? arCol.get(r.id) : vaAuto;
     const row = (t, i) => {
         const sub = !va && t.feat.length ? 'with ' + t.feat.join(', ') : '';
-        const srcs = S.player ? plySources(t) : [];
+        const srcs = S.player ? plySources(t, r, tracks.indexOf(t) + 1) : [];
         const nb = srcs.length ? `<button type="button" class="trp" data-play="${esc(t.key)}" aria-label="Play ${esc(t.title)}" data-tip="${plyClickTip('Play the recording')}">${SVG(PLY_I.play)}</button>`
             : S.player && S.playerLb ? `<a class="trp" href="https://listenbrainz.org/track/${t.rid}" target="_blank" rel="noopener" aria-label="${esc(t.title)} in ListenBrainz" data-tip="Nothing here to play it from\nClick: try it in ListenBrainz">${stIcon('listenbrainz', 18).replace('<svg', '<svg aria-hidden="true"')}</a>` : '';
         return `<div class="tr${i % 2 ? ' alt' : ''}${plyOn(r, t.key) ? ' ply-on' : ''}" data-row="${esc(t.key)}" aria-expanded="${S.open.has(t.key)}"><span class="n mono">${nb ? nb + '<span class="nn">' + esc(t.n) + '</span>' : esc(t.n)}</span>
@@ -5900,7 +5901,7 @@ function tracklist(r) {
     const toggles = `<button class="tx" type="button" data-arcol="${esc(r.id)}" data-va="${va}" aria-pressed="${va}" data-tip="Each track's artist in a column${S.arAuto ? `\n${vaAuto ? 'On by itself' : 'Off by itself'} for this release` : ''}" aria-label="Artist">${TX_ICON.ar}<span class="txl">Artist</span></button>` + [['mk', 'Markers', 'Markers on tracks'], ['isrc', 'ISRCs', "Each track's ISRCs"], ['links', 'Platforms', 'Platform icons on tracks'], ['len', 'Lengths', 'Track lengths'], ['tags', 'Tags', "Each recording's genres and tags"]].filter(([k]) => k !== 'tags' || tracks.some(t => t.genres.length + t.tags.length)).map(([k, n, tip]) => `<button class="tx" type="button" data-col="${k}" aria-pressed="${S.cols[k] !== false}" aria-label="${n}" data-tip="${tip}">${TX_ICON[k]}<span class="txl">${n}</span></button>`).join('');
     rowKeys = tracks.map(t => t.key);
     const plB = `<button class="tx plcfg" type="button" data-plcfg="1" aria-label="Tracklist settings" data-tip="Tracklist settings\nTrack colors and platform icons">${MBU_CFG_ICON}</button>`;
-    const playable = S.player && tracks.some(t => plySources(t).length);
+    const playable = S.player && tracks.some((t, i) => plySources(t, r, i + 1).length);
     const playB = playable ? `<button class="tx" type="button" data-playall="1" aria-label="Play all" data-tip="${plyClickTip('Play the release')}">${SVG(PLY_I.play)}<span class="txl">Play</span></button>`
         : S.player && S.playerLb && r.rgId ? `<a class="tx" href="https://listenbrainz.org/album/${r.rgId}" target="_blank" rel="noopener" aria-label="Album in ListenBrainz" data-tip="Nothing here to play it from\nClick: try the album in ListenBrainz">${stIcon('listenbrainz', 18).replace('<svg', '<svg aria-hidden="true"')}<span class="txl">Play</span></a>` : '';
     const tools = `${playB}<span class="label" style="margin-right:2px">Show</span>${toggles}${plB}`;
@@ -12714,7 +12715,7 @@ function redrawTracks() {
 }
 // ---- the player: a release's tracks played from their streaming links, in a bar at the bottom or a chip at the top right
 // it lives on <html>, outside both bodies, so it plays on through navigation and Event Horizon turned off
-const PLY_SRC = ['youtube', 'ytmusic', 'spotify', 'deezer', 'apple', 'soundcloud', 'bandcamp'];
+const PLY_SRC = ['youtube', 'ytmusic', 'spotify', 'deezer', 'apple', 'soundcloud', 'bandcamp', 'archive'];
 const plyClickTip = lead => lead + (S.playerClick === 'append' ? '\nClick: add to queue\nRight-click: replace queue' : '\nClick: replace queue\nRight-click: add to queue');
 const PLY_I = {
     play: '<path d="M7 5v14l12-7z" fill="currentColor" stroke="none"/>',
@@ -12908,16 +12909,25 @@ function plyEmbed(p) {
         if (p.key === 'apple') { url.hostname = 'embed.music.apple.com'; return { url: url.href, h: 150 }; }
         if (p.key === 'soundcloud') return { url: `https://w.soundcloud.com/player/?url=${encodeURIComponent(u)}&auto_play=true&visual=false`, h: 120 };
         if (p.key === 'bandcamp') return { bc: u, h: 120 };
+        if (p.key === 'archive') { const m = url.pathname.match(/^\/details\/([^/]+)(?:\/(.+?))?\/?$/); return m && (m[2] || p.iaPos) && { ia: { id: m[1], file: m[2] ? decodeURIComponent(m[2]) : '', pos: p.iaPos || 0 }, h: 0 }; }
     } catch (e) {}
     return null;
 }
 // a track's sources, in the user's platform order
-const plySources = t => plSorted((t.links || []).filter(p => PLY_SRC.includes(p.key) && plyEmbed(p)));
+// a release's Internet Archive item (its archive.org/details link) plays each track by its place in the release,
+// unless the track has an archive.org link of its own (#1086)
+const plyIaItem = r => { for (const p of (r && r.links) || []) if (p.key === 'archive') for (const x of p.urls) if (/archive\.org\/details\/[^/?#]+\/?$/.test(x.url) && !x.ended) return x.url; return ''; };
+const plySources = (t, r, pos) => {
+    let ls = t.links || []; const item = pos && plyIaItem(r);
+    if (item && !ls.some(p => p.key === 'archive' && plyEmbed(p))) ls = [...ls.filter(p => p.key !== 'archive'), { key: 'archive', name: 'Internet Archive', kinds: [], urls: [{ url: item }], iaPos: pos }];
+    return plSorted(ls.filter(p => PLY_SRC.includes(p.key) && plyEmbed(p)));
+};
 // the release's tracks as a queue; the ones with nothing to play are left out
 function plyQueue(r, all) {
     if (!r || !r.media) return [];
     const relAc = acText(r.ac || []), relYear = ((r.events || []).map(v => v.date || '').filter(Boolean).sort()[0] || '').slice(0, 4), batch = Math.random().toString(36).slice(2);
-    return r.media.flatMap((m, mi) => (m.tracks || []).map(t => ({ key: (mi + 1) + '-' + t.n, n: t.n, title: t.title, rid: t.rid, artist: t.ac ? acText(t.ac) : relAc, len: t.lenMs, srcs: plySources(t), rel: r.id, relTitle: r.title, relAc, relYear, front: r.front, batch })))
+    let pos = 0;
+    return r.media.flatMap((m, mi) => (m.tracks || []).map(t => ({ key: (mi + 1) + '-' + t.n, n: t.n, title: t.title, rid: t.rid, artist: t.ac ? acText(t.ac) : relAc, len: t.lenMs, srcs: plySources(t, r, ++pos), rel: r.id, relTitle: r.title, relAc, relYear, front: r.front, batch })))
         .filter(t => all || t.srcs.length);
 }
 // a release redrawn after another script's write (ISRC Scout adding links): the queue playing from it takes the new
@@ -12948,6 +12958,53 @@ function plyRelChanged(r) {
     else if (!PLY_WINDOW) plyRequeue(r.id, plyQueue(r, true));
 }
 const plyPick = (t, want) => t.srcs.find(p => p.key === want) || t.srcs.find(p => p.key === ply.pref) || t.srcs[0];
+// an Internet Archive item's files (archive.org/metadata, open to any page): the track's best file the browser plays.
+// Each source file and its derivatives are one track; a file with no track number is not a track and is skipped.
+// Best first: FLAC, then MP3 by bitrate, with Ogg Vorbis above the low MP3s
+const IA_META = new Map(), IA_Q = ['24bit Flac', 'Flac', '320Kbps MP3', 'VBR MP3', '256Kbps MP3', 'Ogg Vorbis', '192Kbps MP3', '160Kbps MP3', '128Kbps MP3', '64Kbps MP3'];
+const iaPlays = (() => { const a = document.createElement('audio'), m = new Map(); return f => { const t = /flac/i.test(f) ? 'audio/flac' : /ogg/i.test(f) ? 'audio/ogg' : 'audio/mpeg'; if (!m.has(t)) m.set(t, !!a.canPlayType(t)); return m.get(t); }; })();
+async function plyIaFile(ia) {
+    if (!IA_META.has(ia.id)) IA_META.set(ia.id, fetch('https://archive.org/metadata/' + encodeURIComponent(ia.id)).then(r => r.json()).then(j => j.files || []).catch(e => { PLOG.warn('Internet Archive item unreadable', ia.id, e.message); IA_META.delete(ia.id); return []; }));
+    const files = await IA_META.get(ia.id), groups = new Map();
+    for (const f of files) {
+        if (!IA_Q.includes(f.format) || !iaPlays(f.format)) continue;
+        const k = f.source === 'derivative' && f.original ? f.original : f.name, g = groups.get(k) || { name: k, n: 0, files: [] };
+        g.n = g.n || parseInt(f.track, 10) || 0; g.files.push(f); groups.set(k, g);
+    }
+    const all = [...groups.values()];
+    let g = ia.file && all.find(x => x.name === ia.file || x.files.some(f => f.name === ia.file));
+    if (!g && ia.pos) {
+        const ts = all.filter(x => x.n > 0).sort((a, b) => a.n - b.n || a.name.localeCompare(b.name));
+        const uniq = new Set(ts.map(x => x.n)).size === ts.length;
+        g = uniq ? ts.find(x => x.n === ia.pos) : ts[ia.pos - 1];
+    }
+    if (!g) return '';
+    const f = g.files.sort((a, b) => IA_Q.indexOf(a.format) - IA_Q.indexOf(b.format))[0];
+    PLOG.info('Internet Archive file', ia.id, f.name, f.format);
+    return 'https://archive.org/download/' + encodeURIComponent(ia.id) + '/' + f.name.split('/').map(encodeURIComponent).join('/');
+}
+// the Internet Archive's audio plays in a blank frame of this page, which speaks the bridge's words (see the top):
+// commands come as the frame's messages, its words go to this window marked with the frame's token
+function plyAudio(f, src) {
+    const d = f.contentDocument, w = f.contentWindow, a = d.createElement('audio'), tok = f.ehIa = Math.random().toString(36).slice(2);
+    a.preload = 'auto'; a.src = src; d.body.append(a);
+    let armed = false, last = 0;
+    const post = st => { if (armed) window.postMessage({ ehPly: st, ehIa: tok, pos: a.currentTime || 0, dur: a.duration || 0 }, '*'); };
+    for (const k of ['play', 'pause', 'ended']) a.addEventListener(k, () => post(k));
+    a.addEventListener('timeupdate', () => { if (Date.now() - last > 900) { last = Date.now(); post(a.paused ? 'pause' : 'time'); } });
+    a.addEventListener('error', () => { if (f.isConnected && f === plyFrame()) { PLOG.warn('Internet Archive file failed', src); toast('The Internet Archive file does not play'); plyEnded('no Internet Archive file'); } });
+    w.addEventListener('message', ev => {
+        const m = ev.data; if (!m || typeof m.ehPlyCmd !== 'string') return;
+        if (!armed) { armed = true; post('hello'); }
+        if (m.v >= 0) a.volume = Math.min(1, m.v);
+        if (m.ehPlyCmd === 'seek' && m.pos >= 0) a.currentTime = m.pos;
+        else if (m.ehPlyCmd === 'pause') a.pause();
+        else if (m.ehPlyCmd === 'play') {
+            if (m.pos > 0 && !a.ehRestored) { a.ehRestored = true; const go = () => { a.currentTime = m.pos; a.play().then(() => post('restored')).catch(() => {}); }; if (a.readyState >= 1) go(); else a.addEventListener('loadedmetadata', go, { once: true }); }
+            else a.play().catch(() => {});
+        }
+    });
+}
 // Bandcamp's track page names the track's id in <meta name="bc-page-properties">; the widget's address, or '' when it doesn't
 const BC_IDS = new Map();
 function plyBandcamp(u) {
@@ -13264,6 +13321,16 @@ function plyGo(i, want) {
     plySave();
     plyKeep();
     if (pre) { plySwap(pre, old); return; }
+    if (e.ia) {
+        plyDock(null);
+        plyIaFile(e.ia).then(url => {
+            if (gen !== ply.gen) return;
+            if (url) { plyDock({ iaUrl: url }); return; }
+            toast('The Internet Archive has no file for ' + t.title);
+            plyEnded('no Internet Archive file');
+        });
+        return;
+    }
     if (!e.bc) { plyDock(e); return; }
     plyDock(null);
     plyBandcamp(e.bc).then(url => {
@@ -13395,6 +13462,12 @@ function plyDock(e) {
     const root = plyRoot(), dock = root.querySelector('.ply-dock');
     if (!e) { dock.innerHTML = ''; return; }
     ply.nx = null;
+    if (e.iaUrl) {
+        dock.innerHTML = '<iframe height="0" title="Player"></iframe>';
+        plyAudio(dock.querySelector('iframe'), e.iaUrl);
+        plyArm(ply.gen, 'archive', (ply.q[ply.i]?.resume || 0) / 1000);
+        return;
+    }
     dock.innerHTML = plyIframe(e.url, e.h);
     const f = dock.querySelector('iframe'), gen = ply.gen, kind = ply.kind;
     f.addEventListener('load', () => {
@@ -13544,7 +13617,7 @@ window.addEventListener('message', ev => {
     // the preloaded widget's first word: it is ready to start
     if (ply.nx && ply.nx.f && ev.source === ply.nx.f.contentWindow) { if (!ply.nx.ready) { ply.nx.ready = true; PLOG.debug('the preloaded', ply.nx.key, 'widget answers'); } return; }
     const f = plyFrame(), t = ply.q[ply.i];
-    if (!f || !t || ev.source !== f.contentWindow) return;
+    if (!f || !t || (ev.source !== f.contentWindow && !(f.ehIa && ev.data && ev.data.ehIa === f.ehIa))) return;
     let m = ev.data; if (typeof m === 'string') { try { m = JSON.parse(m); } catch (e) { return; } }
     if (!m || typeof m !== 'object') return;
     const k = ply.kind;
@@ -13573,7 +13646,7 @@ window.addEventListener('message', ev => {
     } else if (typeof m.ehPly === 'string') {
         if (ply.bridged !== ply.gen) { ply.bridged = ply.gen; ply.ends = true; PLOG.debug('the', k, 'widget answers'); plyVolOnce(); }
         if (m.ehPly === 'restored') { t.played = t.resume || m.pos * 1000; t.resume = 0; plyProg(); return; }
-        if (m.ehPly === 'restore-failed') { t.resume = 0; toast('Bandcamp could not restore the playback position'); return; }
+        if (m.ehPly === 'restore-failed') { t.resume = 0; toast((k === 'archive' ? 'The Internet Archive' : 'Bandcamp') + ' could not restore the playback position'); return; }
         if (m.pos > 0) t.played = m.pos * 1000;
         if (m.ehPly === 'ended') plyEnded(k); else if (m.ehPly !== 'hello') plyState(m.ehPly === 'pause');
     }
