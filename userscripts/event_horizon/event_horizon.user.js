@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.173000
+// @version      2026.11.22.180000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8481,7 +8481,7 @@ function arHero(d) {
     return `<section class="hero">
         <div class="art">${pic}${under(g)}</div>
         <div class="facts-col">
-            <div class="kicker label">${IC_NAME}<span>${esc(g.type || 'Artist')}</span><span class="acts">${S.player && S.playerLb ? `<a class="tx" href="https://listenbrainz.org/artist/${g.id}/" target="_blank" rel="noopener" aria-label="Artist in ListenBrainz" data-tip="Click: play the artist in ListenBrainz">${stIcon('listenbrainz', 18).replace('<svg', '<svg aria-hidden="true"')}<span class="txl">Play</span></a>` : ''}${actionRow(AR_ACTS, 'artist', g.id)}${SRCH()}</span></div>
+            <div class="kicker label">${IC_NAME}<span>${esc(g.type || 'Artist')}</span><span class="acts">${S.player && S.playerLb ? `<a class="tx" href="https://listenbrainz.org/artist/${g.id}/" target="_blank" rel="noopener" aria-label="Artist in ListenBrainz" data-tip="Click: play the artist in ListenBrainz">${SVG(PLY_I.play)}<span class="txl">Play</span></a>` : ''}${actionRow(AR_ACTS, 'artist', g.id)}${SRCH()}</span></div>
             ${heroH1(g.title, g.disambig)}
             ${g.sort && g.sort !== g.title ? `<div class="by">${esc(g.sort)}</div>` : ''}
             <div class="facts"><button class="tx plcfg hdcfg" type="button" data-plcfg="artist" aria-label="Header settings" data-tip="Header settings
