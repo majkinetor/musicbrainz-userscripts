@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.155443
+// @version      2026.11.21.155958
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8919,7 +8919,11 @@ async function srBatch(ids) {
     } catch (e) { LOG.err('series releases: ' + e.message); ids.forEach(g => SRX.delete(g)); ids.forEach(g => srOpen.has(g) && srLoad(g)); srRedraw(); return; }
     for (const [g, l] of got) SRX.set(g, srSort(l));
     srRedraw();
-    for (const g of ids) if (got.get(g).length) await srLoad(g, true); else { SRX.delete(g); srLoad(g); }
+    // the groups the search missed load first, then the links follow
+    const miss = ids.filter(g => !got.get(g).length);
+    miss.forEach(g => SRX.delete(g));
+    await Promise.all(miss.map(g => srLoad(g)));
+    for (const g of ids) if (!miss.includes(g)) await srLoad(g, true);
 }
 function tabSect(sid, name, x, href, cv) {
     const rs = x ? x.rows.filter(r => Array.isArray(r)) : [];
@@ -14773,24 +14777,17 @@ document.addEventListener('contextmenu', ev => {
     else if (append) plyAddRelease(data.rel, b.dataset.play);
     else plyStart(data.rel, b.dataset.play);
 });
-// A right click on a discography row's release count opens, or closes, every group of that type.
-document.addEventListener('contextmenu', ev => {
-    const b = ehOn && data && ev.target.closest && ev.target.closest('button[data-dgx]'); if (!b) return;
-    ev.preventDefault();
-    const ids = [...(b.closest('tbody') || b.closest('table')).querySelectorAll('button[data-dgx]')].map(x => x.dataset.dgx);
-    const open = !dgOpen.has(b.dataset.dgx);
-    for (const id of ids) { if (!open) { dgOpen.delete(id); continue; } dgOpen.add(id); if (!(data.dgRel && data.dgRel.get(id))) dgLoad(data, id); }
-    const y = scrollY; render(); scrollTo(0, y);
-});
-// a series' or a label's release count: the whole cell opens its releases, and a right click opens or closes them for every group in the table
-const rxBtn = t => { if (t && t.nodeType !== 1) t = t.parentElement; const td = t && t.closest('td'); return td && td.querySelector(':scope > [data-srx], :scope > [data-lbx]'); };
+// a release count on a series, a label or an artist: the whole cell opens its releases, and a right click opens or closes them for every group in the table
+const rxBtn = t => { if (t && t.nodeType !== 1) t = t.parentElement; const td = t && t.closest('td'); return td && td.querySelector(':scope > [data-srx], :scope > [data-lbx], :scope > [data-dgx]'); };
 document.addEventListener('click', ev => { if (!ehOn) return; const b = rxBtn(ev.composedPath()[0]); if (!b || ev.target.closest('a, button, input')) return; ev.preventDefault(); ev.stopPropagation(); b.click(); }, true);
 document.addEventListener('contextmenu', ev => {
     if (!ehOn) return; const b = rxBtn(ev.composedPath()[0]); if (!b) return;
     ev.preventDefault(); ev.stopPropagation();
-    const k = 'srx' in b.dataset ? 'srx' : 'lbx', set = k === 'srx' ? srOpen : lbOpen, open = !set.has(b.dataset[k]);
-    const all = [...b.closest('table').querySelectorAll(`[data-${k}]`)].map(x => x.dataset[k]);
+    const k = 'srx' in b.dataset ? 'srx' : 'lbx' in b.dataset ? 'lbx' : 'dgx', set = { srx: srOpen, lbx: lbOpen, dgx: dgOpen }[k], open = !set.has(b.dataset[k]);
+    // an artist's groups: those of this type only, its own table body
+    const all = [...(k === 'dgx' && b.closest('tbody') || b.closest('table')).querySelectorAll(`[data-${k}]`)].map(x => x.dataset[k]);
     all.forEach(x => open ? set.add(x) : set.delete(x));
+    if (open && k === 'dgx' && data) all.forEach(x => { if (!(data.dgRel && data.dgRel.get(x))) dgLoad(data, x); });
     if (open && k === 'srx') srBatch(all);
     const y = scrollY; render(); scrollTo(0, y);
 }, true);
