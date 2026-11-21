@@ -272,7 +272,7 @@ function stGateRemember(patch) { try { GM_setValue(ST_GATE_WIN, JSON.stringify(O
 // at start: the window comes back if it was left open (top frame only)
 function stGateReopen() {
   try { if (window.top !== window || !stGateWinState().open) return; } catch (e) { return; }
-  var go = function () { try { stGateOpen(); } catch (e) { /* no window */ } };
+  var go = function () { try { stGateOpen(true); } catch (e) { /* no window */ } };
   if (document.body) go(); else document.addEventListener('DOMContentLoaded', go, { once: true });
 }
 function stGateClose() {
@@ -280,8 +280,25 @@ function stGateClose() {
   stGateRemember({ open: false });
 }
 
-function stGateOpen() {
+// asked for (the palette): it opens whole, a minimised one too. At start (again) it comes back as it was left
+function stGateOpen(again) {
+  if (again !== true) stGateRemember({ min: false });
   if (stGateWin && stGateWin.el.isConnected) { stGateWin.show(); return; }
+  stGateWin = null;
+  var old = document.getElementById('st-gate');
+  if (old) old.remove();   // a window left behind by a failed open
+  try { stGateBuild(); } catch (e) {
+    // a saved state this build cannot use (a size or place from an older screen, say): forget it and try once more
+    try { console.error('String Theory: the Gate log failed to open', e); } catch (x) { /* no console */ }
+    if (stGateWin) { try { stGateWin.off(); } catch (x) { /* gone */ } stGateWin = null; }
+    var left = document.getElementById('st-gate');
+    if (left) left.remove();
+    try { GM_setValue(ST_GATE_WIN, '{}'); } catch (x) { /* no storage */ }
+    stGateBuild();
+  }
+}
+
+function stGateBuild() {
   var U = stUI(), T = stTokens();
   if (!document.getElementById('st-gate-css')) {
     var css = document.createElement('style'); css.id = 'st-gate-css';
@@ -311,7 +328,16 @@ function stGateOpen() {
   var body = $('tbody'), qEl = $('#st-gate-q'), mineBtn = $('#st-gate-mine'), scroller = $('#st-gate-body');
   var seg = function () { Array.prototype.forEach.call(pop.querySelectorAll('.st-gate-seg button'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.m === mode)); }); };
   seg(); mineBtn.setAttribute('aria-pressed', String(mine));
+  var drawFailed = '';
   var draw = function () {
+    try { drawNow(); } catch (e) {
+      var msg = String(e && e.message || e);
+      if (msg !== drawFailed) { drawFailed = msg; try { console.error('String Theory: the Gate log could not show its events', e); } catch (x) { /* no console */ } }
+      sig = '';
+      try { body.innerHTML = '<tr><td class="none" colspan="8">The gate log could not show its events (' + msg.replace(/[<&]/g, '') + '). Clear it to start again.</td></tr>'; } catch (x) { /* no body */ }
+    }
+  };
+  var drawNow = function () {
     var me = stGateTab(), all = stGateEvents(), now = Date.now(), groups = stGateGroups(all, now), n = stGateCount(groups).n;
     $('.st-gate-n').textContent = n + ' request' + (n === 1 ? '' : 's');
     if (pop.classList.contains('min')) return;
@@ -356,6 +382,11 @@ function stGateOpen() {
   // the window: placed, minimised, full screen and sized as it was left
   if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.transform = 'none'; }
   if (st.w && st.h) { pop.style.width = st.w; pop.style.height = st.h; }
+  var r0 = pop.getBoundingClientRect();
+  if (!(r0.width > 100 && r0.height > 60) || r0.width > window.innerWidth || r0.height > window.innerHeight) { pop.style.width = ''; pop.style.height = ''; r0 = pop.getBoundingClientRect(); }
+  if (r0.top < 0 || r0.left < -r0.width + 80 || r0.left > window.innerWidth - 80 || r0.top > window.innerHeight - 40) {
+    pop.style.left = ''; pop.style.top = ''; pop.style.transform = '';   // off screen: back to the middle
+  }
   var restore = { left: pop.style.left, top: pop.style.top, bottom: '', transform: pop.style.transform };
   var minBtn = $('.mbu-logpop-min'), fullBtn = $('.mbu-logpop-full');
   var setMin = function (m) {

@@ -60,3 +60,16 @@ test.describe('gate log', () => {
     check(!(await page.$('#st-gate')), 'once closed, it stays closed');
   });
 });
+
+test.describe('gate log, a bad saved window', () => {
+  // a place off screen, a size too big and the minimised bar: an open from the palette still shows the window
+  test.use({ gm: { name: 'String Theory', persist: true, values: { 'string_theory.off': ['event_horizon'], 'st:gatelog-win': JSON.stringify({ open: false, min: true, left: '5000px', top: '-900px', w: '9000px', h: '9000px' }) } } });
+  test('opens on screen and whole', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+    await page.goto(`${SANDBOX}/search/edits`, { waitUntil: 'load', timeout: 60000 });
+    await inject('string_theory');
+    await openLog(page, inject);
+    const r = await page.evaluate(() => { const b = document.getElementById('st-gate').getBoundingClientRect(); return { l: b.left, t: b.top, w: b.width, h: b.height, vw: innerWidth, vh: innerHeight, min: document.getElementById('st-gate').classList.contains('min') }; });
+    check(!r.min, 'an open from the palette is not the minimised bar');
+    check(r.l >= 0 && r.t >= 0 && r.l + r.w <= r.vw && r.t + r.h <= r.vh, `it is on screen (${JSON.stringify(r)})`);
+  });
+});
