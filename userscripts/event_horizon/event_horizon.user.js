@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.152609
+// @version      2026.11.21.154510
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -14758,8 +14758,15 @@ document.addEventListener('contextmenu', ev => {
     const y = scrollY; render(); scrollTo(0, y);
 });
 // a series' or a label's release count: the whole cell opens its releases, and a right click opens or closes them for every group in the table
-const rxBtn = t => { const td = t.closest && t.closest('td'); return td && td.querySelector(':scope > [data-srx], :scope > [data-lbx]'); };
-document.addEventListener('click', ev => { if (!ehOn) return; const t = ev.composedPath()[0], b = rxBtn(t); if (!b || t.closest('a, button, input')) return; ev.preventDefault(); ev.stopPropagation(); b.click(); }, true);
+const rxBtn = t => { if (t && t.nodeType !== 1) t = t.parentElement; const td = t && t.closest('td'); return td && td.querySelector(':scope > [data-srx], :scope > [data-lbx]'); };
+document.addEventListener('click', ev => { if (!ehOn) return; const b = rxBtn(ev.composedPath()[0]); if (!b || ev.target.closest('a, button, input')) return; ev.preventDefault(); ev.stopPropagation(); b.click(); }, true);
+document.addEventListener('contextmenu', ev => {
+    if (!ehOn) return; const b = rxBtn(ev.composedPath()[0]); if (!b) return;
+    ev.preventDefault(); ev.stopPropagation();
+    const k = 'srx' in b.dataset ? 'srx' : 'lbx', set = k === 'srx' ? srOpen : lbOpen, open = !set.has(b.dataset[k]);
+    b.closest('table').querySelectorAll(`[data-${k}]`).forEach(x => open ? set.add(x.dataset[k]) : set.delete(x.dataset[k]));
+    const y = scrollY; render(); scrollTo(0, y);
+}, true);
 function onClick(ev) {
     if (!ehOn) return;
     // a track's recording and work marks copy on a plain click; Ctrl or the middle button still opens them
@@ -16441,14 +16448,7 @@ function relSet(on) {
             if (hd) new MutationObserver(() => { if (!rq) rq = requestAnimationFrame(() => { rq = 0; if (hd.querySelector('.kicker .acts')) pinBar(c); }); }).observe(hd, { childList: true });
         }
         document.addEventListener('click', ev => { if (ehOn && ev.target.closest && !ev.target.closest('[data-srch],a[href]') && (ev.target.closest('#eh-relhd button,#eh-pin button') || $('#eh-relhd .pop:not([hidden])'))) onClick(ev); });
-        document.addEventListener('contextmenu', ev => {
-    if (!ehOn) return; const b = rxBtn(ev.composedPath()[0]); if (!b) return;
-    ev.preventDefault(); ev.stopPropagation();
-    const k = 'srx' in b.dataset ? 'srx' : 'lbx', set = k === 'srx' ? srOpen : lbOpen, open = !set.has(b.dataset[k]);
-    b.closest('table').querySelectorAll(`[data-${k}]`).forEach(x => open ? set.add(x.dataset[k]) : set.delete(x.dataset[k]));
-    const y = scrollY; render(); scrollTo(0, y);
-}, true);
-document.addEventListener('contextmenu', ev => { const km = ehOn && ev.target.closest && ev.target.closest('.kmk[data-picard]'); if (km) { ev.preventDefault(); picardSend(km.dataset.picard); } });
+        document.addEventListener('contextmenu', ev => { const km = ehOn && ev.target.closest && ev.target.closest('.kmk[data-picard]'); if (km) { ev.preventDefault(); picardSend(km.dataset.picard); } });
         LOG.info(rel ? 'Dressing the relationship editor of ' + PAGE_ID.split('/')[1] : 'Dressing the form ' + PAGE_ID.slice(5));
         if (rel) relCards();
         else coverDims();
