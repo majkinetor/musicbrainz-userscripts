@@ -187,6 +187,8 @@ Set the page-wide flags only while your interface needs them, and remove them on
 
 Event Horizon accepts [external menu launchers](userscripts/event_horizon/DEVELOP.md#external-menu-items). ISRC Scout exposes [platform metadata](userscripts/isrc_scout/DEVELOP.md#track-link-metadata) separately from tooltip text.
 
+To find out which of these signals the page honors, read the version marks on `<html>`. String Theory sets `data-mbu-st` to its version. A standalone Event Horizon sets `data-mbu-eh` to its version. Inside String Theory, Event Horizon sets no mark of its own.
+
 ### Shared request-gate protocol
 
 [`dev/net/mb-gate.mjs`](dev/net/mb-gate.mjs) is the reference implementation. Other scripts should bundle its `mbnFetch`, or inline `MBN_INLINE` as our sync tool does, rather than maintain a second scheduler. It books ws/2 starts, reports 429/503 answers and retries through the same budget. Call `mbnSlot` and `mbnAnswer` around a custom transport if `fetch` cannot be used; report every answer. Bulk reads use the default background mode and respect an active lead; reserve `background: false` for an immediate user action.
