@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.060000
+// @version      2026.11.22.090000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -15291,10 +15291,11 @@ const detKey = href => { const u = new URL(href, location.href), m = u.origin ==
 const annKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/edit_annotation/?$', 'i')); return m ? 'ann/' + m[1].toLowerCase() : null; };
 // an editor's subscriptions and subscribers, and your account's pages, clicked → "upg/<path and query>": fetched into the tab
 const upgKey = href => { const u = new URL(href, location.href), ok = u.origin === location.origin && (/^\/user\/[^/]+\/(subscriptions|subscribers)(\/[a-z_-]+)?\/?$/.test(u.pathname) || /^\/account\/(edit|preferences|donation|applications)\/?$/.test(u.pathname)); return ok ? 'upg/' + encodeURIComponent(u.pathname + u.search) : null; };
-// an entity's Releases, Details, Annotation or Set cover art → "esub/<path>": fetched in place of a page load, so the player
-// plays on (a release's own Details and Annotation keep detKey and annKey)
+// an entity's Details, Annotation or Set cover art → "esub/<path>": fetched in place of a page load, so the player
+// plays on (a release's own Details and Annotation keep detKey and annKey). Releases is left out: its page loads, so a
+// click shows the same Event Horizon table as a reload (releasesDress), not MusicBrainz's raw table
 const subKey = href => {
-    const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/(release-group|artist|label|recording|work|area|instrument|place|series|event)/(' + MBID.source + ')/(releases|details|edit_annotation|set-cover-art)/?$', 'i'));
+    const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/(release-group|artist|label|recording|work|area|instrument|place|series|event)/(' + MBID.source + ')/(details|edit_annotation|set-cover-art)/?$', 'i'));
     return m && (m[3] !== 'set-cover-art' || m[1].toLowerCase() === 'release-group') ? 'esub/' + encodeURIComponent(u.pathname.replace(/\/$/, '') + u.search) : null;
 };
 const inTab = href => navTo(href) || histKey(href) || artIn(href) || discKey(href) || detKey(href) || annKey(href) || relKey(href) || upgKey(href) || subKey(href);
