@@ -31,7 +31,7 @@ export function parseVgmdbArtistUrl(url) {
 
 // Per-track roles (performance and work). Value = the Discogs role name.
 const VGM_TRACK_ROLE = {
-    'music': 'Composed By', 'composer': 'Composed By', 'composition': 'Composed By', 'composed by': 'Composed By',
+    'music': 'Composed By', 'bgm': 'Composed By', 'background music': 'Composed By', 'composer': 'Composed By', 'composition': 'Composed By', 'composed by': 'Composed By',
     'arrangement': 'Arranged By', 'arranger': 'Arranged By', 'arranged by': 'Arranged By',
     'lyricist': 'Lyrics By', 'lyrics': 'Lyrics By', 'lyrics by': 'Lyrics By',
     'performer': 'Performer', 'performed by': 'Performer', 'performers': 'Performer',
