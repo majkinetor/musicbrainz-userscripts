@@ -31,14 +31,14 @@ var ST_GATE_CSS = ''
   + '#st-gate-lanes{position:relative;flex:0 0 auto;margin:4px 13px 8px;padding-left:180px}'
   + '.st-gl-bands{position:absolute;top:0;bottom:16px;left:180px;right:0}'
   + '.st-gl-band{position:absolute;top:0;bottom:0;background:var(--mbu-error-bg)}'
-  + '.st-gl-lane{position:relative;height:22px;border-top:1px solid var(--mbu-divider)}'
-  + '.st-gl-name{position:absolute;left:-180px;width:172px;top:0;line-height:22px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--mbu-text-weak)}'
+  + '.st-gl-lane{position:relative;height:30px;border-top:1px solid var(--mbu-divider)}'
+  + '.st-gl-name{position:absolute;left:-180px;width:172px;top:0;line-height:30px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--mbu-text-weak)}'
   + '.st-gl-name b{color:var(--mbu-text);font-weight:600}.st-gl-lane.me .st-gl-name b{color:var(--mbu-accent-text)}'
-  + '.st-gl-w,.st-gl-f{position:absolute;top:7px;height:8px;min-width:2px;border-radius:2px}'
+  + '.st-gl-w,.st-gl-f{position:absolute;top:5px;height:20px;min-width:5px;border-radius:3px;box-shadow:inset 1px 0 0 var(--mbu-bg)}.st-gl-w:hover,.st-gl-f:hover{filter:brightness(1.25)}'
   + '.st-gl-w{background:var(--mbu-border)}.st-gl-f{background:var(--mbu-ok)}.st-gl-f.bad{background:var(--mbu-error)}.st-gl-f.re{background:var(--mbu-warn)}.st-gl-f.go{background:var(--mbu-info)}'
   + '.st-gl-ax{position:relative;height:16px;border-top:1px solid var(--mbu-border-soft);font-size:11px;color:var(--mbu-text-weak)}'
   + '.st-gl-ax span{position:absolute;top:1px;transform:translateX(-50%);white-space:nowrap}.st-gl-ax span:first-child{transform:none}.st-gl-ax span:last-child{transform:translateX(-100%)}'
-  + '.st-gl-none{line-height:22px;font-size:12px;color:var(--mbu-text-weak)}'
+  + '.st-gl-none{line-height:30px;font-size:12px;color:var(--mbu-text-weak)}'
   // the filter row
   + '#st-gate-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:0 13px 8px}'
   + '#st-gate-q{flex:0 1 260px;min-width:120px;min-height:30px;box-sizing:border-box}'
@@ -209,13 +209,14 @@ function stGateLanesHtml(groups, all, now, me) {
     if (!lanes[g.tab]) { lanes[g.tab] = { s: {}, bars: [] }; order.push(g.tab); }
     var L = lanes[g.tab], from = g.t;
     if (g.s) L.s[g.s] = 1;
+    var who = (g.s ? g.s + '\n' : '') + g.l;
     g.tries.forEach(function (x) {
       var end = x.end || now;
-      if (x.t > from) L.bars.push(bar('st-gl-w', from, x.t, g.l + '\nWaits in the gate'));
-      L.bars.push(bar('st-gl-f ' + stGateTryCls(x.st), x.t, end, g.l + '\n' + stGateTryTip(x.st) + ' · ' + stGateSec(end - x.t)));
+      if (x.t > from) L.bars.push(bar('st-gl-w', from, x.t, who + '\nWaits in the gate'));
+      L.bars.push(bar('st-gl-f ' + stGateTryCls(x.st), x.t, end, who + '\n' + stGateTryTip(x.st) + ' · ' + stGateSec(end - x.t)));
       from = end;
     });
-    if (g.res === 'waiting') L.bars.push(bar('st-gl-w', from, now, g.l + '\nWaits in the gate'));
+    if (g.res === 'waiting') L.bars.push(bar('st-gl-w', from, now, who + '\nWaits in the gate'));
   });
   if (me && !lanes[me]) { lanes[me] = { s: {}, bars: [] }; order.push(me); }
   order.sort(function (a, b) { return (b === me) - (a === me); });   // this tab first
