@@ -4339,7 +4339,13 @@
               return og ? [{ url: og }] : [];
           } },
           { id: 'vgmdb', name: 'VGMdb', host: /(^|\.)vgmdb\.net$/, async find(u) {
-              const html = await this._text(u.href);
+              let html;
+              try { html = await this._text(u.href); }
+              catch (e) {
+                  if (!/Cloudflare/.test(e.message)) throw e;
+                  if (!this.openPage) throw new Error('Cloudflare check; paste the VGMdb link in Art Station to open it in a tab');
+                  html = await this.openPage(u.href);
+              }
               const out = [], seen = new Set();
               const gallery = (html.match(/id="cover_gallery"[\s\S]*?(?=<\/table>|<div id="(?!cover)|$)/) || [''])[0];
               for (const m of gallery.matchAll(/<a[^>]*id="thumb_\d+"[^>]*href="([^"]+)"[^>]*>[\s\S]*?class="label"[^>]*>([^<]*)</g)) {
@@ -4375,7 +4381,7 @@
           const map = { front: 'Front', cover: 'Front', back: 'Back', booklet: 'Booklet', disc: 'Medium', disk: 'Medium', cd: 'Medium', medium: 'Medium', vinyl: 'Medium',
               obi: 'Obi', spine: 'Spine', tray: 'Tray', inside: 'Tray', sticker: 'Sticker', poster: 'Poster', liner: 'Liner', inlay: 'Liner', insert: 'Liner', jacket: 'Front', matrix: 'Matrix/Runout' };
           const word = (String(caption).match(/^[A-Za-z]+/) || [''])[0].toLowerCase();
-          const type = map[word];
+          const type = /^(booklet|jacket|digipak|slipcase)\s+front\b/i.test(caption) ? 'Front' : map[word];   // #1090 "Booklet Front" is the cover
           return type ? { types: [type], comment: caption.toLowerCase() === word ? '' : caption } : { types: [], comment: caption };
       }
 
@@ -4386,6 +4392,7 @@
           opts = opts || {};
           this.request = opts.request || ImageMaximizer.fetchRequest;
           this.log = opts.log || null;
+          this.openPage = opts.openPage || null;   // #1090 url -> Promise<html>, read in a real tab; interactive use only
       }
       _log(level, msg) { try { if (this.log) this.log(level, msg); } catch (e) { /* a broken logger must not break a fetch */ }}
       async _get(url, type, headers) {

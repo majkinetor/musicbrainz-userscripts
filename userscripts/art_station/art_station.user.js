@@ -10,10 +10,13 @@
 // @match        *://*.musicbrainz.org/release/*/add-cover-art*
 // @match        *://*.musicbrainz.org/event/*/event-art*
 // @match        *://*.musicbrainz.org/event/*/add-event-art*
+// @match        *://vgmdb.net/album/*
+// @match        *://*.vgmdb.net/album/*
 // @grant        GM.xmlHttpRequest
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_openInTab
 // @grant        unsafeWindow
 // @connect      *
 // @run-at       document-start
@@ -24,6 +27,22 @@
 // page), no uploads yet (Add/Enter-edit submission land next).
 (function () {
   'use strict';
+  // #1090 VGMdb is behind Cloudflare, which a GM request can't pass: Art Station opens the album in a tab
+  // (#mbu-as=<token>), and this copy, running there, hands the page back through GM storage
+  if (/(^|\.)vgmdb\.net$/.test(location.hostname)) {
+    const tok = (location.hash.match(/mbu-as=([\w-]+)/) || [])[1];
+    if (!tok || typeof GM_setValue === 'undefined') return;
+    const t0 = Date.now();
+    const look = () => {
+      if (document.getElementById('cover_gallery') || document.getElementById('coverart')) {
+        GM_setValue('as:vgmdb:' + tok, { html: document.documentElement.outerHTML, url: location.href.split('#')[0] });
+        return;
+      }
+      if (Date.now() - t0 < 120000) setTimeout(look, 500);
+    };
+    look();
+    return;
+  }
   // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
   const SETTINGS_ONLY = typeof MBU_SETTINGS_ONLY !== 'undefined' && !!MBU_SETTINGS_ONLY;   // #851: String Theory started this copy only to open its settings
   if (!SETTINGS_ONLY && !mbuClaim('art_station', 'Art Station')) return;
@@ -474,7 +493,7 @@
     { re: /(^|\.)deezer\.com$/i, name: 'Deezer', domain: 'deezer.com' },
     { re: /(^|\.)tidal\.com$/i, name: 'Tidal', domain: 'tidal.com' },
     { re: /(^|\.)qobuz\.com$/i, name: 'Qobuz', domain: 'qobuz.com' },
-    { re: /(^|\.)vgmdb\.net$/i, name: 'VGMdb', domain: 'vgmdb.net' },
+    { re: /(^|\.)vgmdb\.net$/i, name: 'VGMdb', domain: 'vgmdb.net', interactive: true },
     { re: /7digital\./i, name: '7digital', domain: '7digital.com' },
     { re: /(^|\.)beatport\.com$/i, name: 'Beatport', domain: 'beatport.com' },
     // Audiomack (#664): an album's or a song's page; its cover is WebP, converted on adding
@@ -2944,7 +2963,13 @@
               return og ? [{ url: og }] : [];
           } },
           { id: 'vgmdb', name: 'VGMdb', host: /(^|\.)vgmdb\.net$/, async find(u) {
-              const html = await this._text(u.href);
+              let html;
+              try { html = await this._text(u.href); }
+              catch (e) {
+                  if (!/Cloudflare/.test(e.message)) throw e;
+                  if (!this.openPage) throw new Error('Cloudflare check; paste the VGMdb link in Art Station to open it in a tab');
+                  html = await this.openPage(u.href);
+              }
               const out = [], seen = new Set();
               const gallery = (html.match(/id="cover_gallery"[\s\S]*?(?=<\/table>|<div id="(?!cover)|$)/) || [''])[0];
               for (const m of gallery.matchAll(/<a[^>]*id="thumb_\d+"[^>]*href="([^"]+)"[^>]*>[\s\S]*?class="label"[^>]*>([^<]*)</g)) {
@@ -2980,7 +3005,7 @@
           const map = { front: 'Front', cover: 'Front', back: 'Back', booklet: 'Booklet', disc: 'Medium', disk: 'Medium', cd: 'Medium', medium: 'Medium', vinyl: 'Medium',
               obi: 'Obi', spine: 'Spine', tray: 'Tray', inside: 'Tray', sticker: 'Sticker', poster: 'Poster', liner: 'Liner', inlay: 'Liner', insert: 'Liner', jacket: 'Front', matrix: 'Matrix/Runout' };
           const word = (String(caption).match(/^[A-Za-z]+/) || [''])[0].toLowerCase();
-          const type = map[word];
+          const type = /^(booklet|jacket|digipak|slipcase)\s+front\b/i.test(caption) ? 'Front' : map[word];   // #1090 "Booklet Front" is the cover
           return type ? { types: [type], comment: caption.toLowerCase() === word ? '' : caption } : { types: [], comment: caption };
       }
 
@@ -2991,6 +3016,7 @@
           opts = opts || {};
           this.request = opts.request || ImageMaximizer.fetchRequest;
           this.log = opts.log || null;
+          this.openPage = opts.openPage || null;   // #1090 url -> Promise<html>, read in a real tab; interactive use only
       }
       _log(level, msg) { try { if (this.log) this.log(level, msg); } catch (e) { /* a broken logger must not break a fetch */ }}
       async _get(url, type, headers) {
@@ -3237,7 +3263,26 @@
       return gx ? ImageMaximizer.gmRequest(gx, 60000)(url, o) : ImageMaximizer.fetchRequest(url, o);
     },
     log: (level, msg) => asLog(level === 'warn' ? 'warn' : 'debug', 'Maximizer: ' + msg),
+    openPage: url => openPageInTab(url),
   });
+  // #1090 a page behind a browser check (VGMdb): open it in a background tab, where Art Station's copy reads
+  // it and hands the HTML back through GM storage. Interactive only: never for MC, Falcon or the bulk imports.
+  function openPageInTab(url) {
+    if (mbuAutomated() || typeof GM_openInTab === 'undefined') return Promise.reject(new Error('Cloudflare check; this source works only when you add it by hand'));
+    const tok = Math.random().toString(36).slice(2, 10), key = 'as:vgmdb:' + tok;
+    asLog.info('VGMdb is behind a browser check; reading it in a background tab');
+    const tab = GM_openInTab(url.split('#')[0] + '#mbu-as=' + tok, { active: false, insert: true });
+    return new Promise((resolve, reject) => {
+      const t0 = Date.now();
+      const poll = () => {
+        const v = GM_getValue(key, null);
+        if (v && v.html) { GM_setValue(key, null); try { tab && tab.close && tab.close(); } catch (e) {} resolve(v.html); return; }
+        if (Date.now() - t0 > 90000) { GM_setValue(key, null); reject(new Error('Cloudflare check; solve it in the VGMdb tab, then retry')); return; }
+        setTimeout(poll, 700);
+      };
+      poll();
+    });
+  }
   if (mbuTestHooks()) (window.__asTest || (window.__asTest = {})).imgmax = IMGMAX;   // test hook only (#717): specs stub its request
   // #566 test hook — the auto-repeat state machine, so its semantics can be
   // driven without provoking real archive.org failures. No behaviour change.
@@ -3619,7 +3664,13 @@
   // Both go through here now, so the count, the button and the right click agree.
   function allSources() {
     return Promise.all([getProvLinks(), matchedCustomProviders()])
-      .then(([provs, custom]) => ({ provs: provs || [], custom: custom || [], total: (provs || []).length + (custom || []).length }));
+      .then(([provs, custom]) => {
+        // #1090 an interactive source (it opens a tab) is for the popover only, never the bulk imports or MC
+        const skip = (provs || []).filter(p => (providerOf(p.url) || {}).interactive);
+        if (skip.length) asLog.debug(`Skipping interactive source(s) in bulk import: ${skip.map(p => p.name).join(', ')}`);
+        provs = (provs || []).filter(p => !skip.includes(p));
+        return { provs, custom: custom || [], total: provs.length + (custom || []).length };
+      });
   }
   function sourceFromAll(all) {
     all.provs.forEach(p => sourceFromUrl(p.url, { name: p.name, icon: p.icon }));   // one sourcing slot per provider

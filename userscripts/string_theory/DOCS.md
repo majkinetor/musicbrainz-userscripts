@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-21 20:38 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-21 20:56 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -672,7 +672,7 @@ The answer is the credits as printed, each line with its [pattern](../group_ther
 
 Another userscript can add its own image source, shown as **Import from &lt;name&gt;** in the URL panel; how is in [DEVELOP.md](../art_station/DEVELOP.md#plugin-api).
 
-Discogs' full-size images, Amazon, VGMdb, Juno and 7digital check for bots: when an import asks, open the store page once in the same browser and import again. How each store is read is in [DEVELOP.md](../art_station/DEVELOP.md#sourcing-art-from-a-store).
+Discogs' full-size images, Amazon, Juno and 7digital check for bots: when an import asks, open the store page once in the same browser and import again. VGMdb checks every request. If you add a VGMdb link by hand, Art Station opens the album in a background tab, reads the scans there and closes the tab. If the tab shows a check, solve it there. The bulk imports and Mission Control skip VGMdb, because they cannot open a tab. How each store is read is in [DEVELOP.md](../art_station/DEVELOP.md#sourcing-art-from-a-store).
 
 ---
 
