@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.140000
+// @version      2026.11.22.150000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3141,7 +3141,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .kicker .srch{margin-left:10px}
 .kicker .srch>.ab,.kicker .ab.eh-home,.kicker .ab[data-ehsec],.kicker .ab[data-star]{background:none!important;border-color:transparent;filter:none!important}.kicker .srch>.ab,.kicker .ab[data-ehsec],.kicker .ab[data-star]{color:var(--chip-text)!important}
 .kicker .ab[data-star]{cursor:pointer}
-.eh-collections{position:relative;display:inline-flex;min-width:0}.eh-collections>button{font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}.eh-collections>button:hover{color:var(--accent)}.eh-collections>button::after{content:'▾';margin-left:5px;font-size:10px}.eh-collections .pop{letter-spacing:normal;text-transform:none;font-weight:400;font-size:13px;max-width:min(380px,calc(100vw - 32px));max-height:65vh;overflow:auto;white-space:normal}.eh-collections .row{width:100%;text-align:left;border:0;background:none;color:var(--text);font:inherit;cursor:pointer}.eh-collections .row:hover{background:var(--chip)}.eh-collections .row[aria-pressed=true]{color:var(--accent)}.eh-collections .row:disabled{opacity:.5;cursor:wait}.eh-collections .h{padding:8px 12px}.eh-collections .row svg{flex:none;width:14px;height:14px}.eh-collections .row[aria-pressed=false] svg,.eh-collections .coll-ft .row{color:var(--muted)}.eh-collections .coll-ft{border-top:1px solid var(--border);margin-top:4px;padding-top:4px}.eh-collections .coll-gh a{display:inline-flex;align-items:center;gap:6px}.eh-collections .coll-gh svg{width:13px;height:13px}.eh-collections>button .coll-i{display:inline-flex;vertical-align:-1px;margin-left:6px;color:var(--muted)}.eh-collections>button .coll-i svg{width:12px;height:12px}.eh-collections>button.in .coll-i{color:var(--accent)}.eh-collections>button .coll-i{position:relative;align-items:center;vertical-align:middle}.eh-collections>button .coll-i svg{display:block}.eh-collections>button .coll-i .coll-n{background:none;color:var(--muted);font:inherit;font-weight:700;min-width:0;height:auto;padding:0;margin-left:5px;border-radius:0;line-height:1}.eh-collections>button .coll-i .coll-n{position:static;display:inline-block;margin-left:4px;align-self:center;min-width:15px;height:15px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:var(--accent);color:#fff;font:700 10px/15px system-ui,sans-serif;letter-spacing:0;text-transform:none;text-align:center;pointer-events:none}
+.eh-collections{position:relative;display:inline-flex;min-width:0}.eh-collections>button{font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}.eh-collections>button:hover{color:var(--accent)}.eh-collections>button::after{content:'▾';margin-left:5px;font-size:10px}.eh-collections .pop{letter-spacing:normal;text-transform:none;font-weight:400;font-size:13px;max-width:min(380px,calc(100vw - 32px));max-height:65vh;overflow:auto;white-space:normal}.eh-collections .row{width:100%;text-align:left;border:0;background:none;color:var(--text);font:inherit;cursor:pointer}.eh-collections .row:hover{background:var(--chip)}.eh-collections .row[aria-pressed=true]{color:var(--accent)}.eh-collections .row:disabled{opacity:.5;cursor:wait}.eh-collections .h{padding:8px 12px}.eh-collections .row svg{flex:none;width:14px;height:14px}.eh-collections .row[aria-pressed=false] svg,.eh-collections .coll-ft .row{color:var(--muted)}.eh-collections .coll-ft{border-top:1px solid var(--border);margin-top:4px;padding-top:4px}.eh-collections .coll-gh a{display:inline-flex;align-items:center;gap:6px}.eh-collections .coll-gh svg{width:13px;height:13px}.eh-collections>button .coll-i{display:inline-flex;vertical-align:-1px;margin-left:6px;color:var(--muted)}.eh-collections>button .coll-i svg{width:12px;height:12px}.eh-collections>button.in .coll-i{color:var(--accent)}.eh-collections>button .coll-i{position:relative;align-items:center;vertical-align:middle}.eh-collections>button .coll-i svg{display:block}.eh-collections>button .coll-i .coll-n{background:none;color:var(--muted);font:inherit;font-weight:700;min-width:0;height:auto;padding:0;margin-left:5px;border-radius:0;line-height:1}.eh-collections .cn{display:flex;flex-direction:column;gap:6px;padding:4px 6px 6px}.eh-collections .cn .hd{padding:4px 3px 0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.eh-collections .cn input[type=text],.eh-collections .cn textarea{box-sizing:border-box;width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text);font:13px/1.35 system-ui,sans-serif;outline:0;resize:vertical;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.eh-collections .cn input[type=text]:focus,.eh-collections .cn textarea:focus{border-color:var(--accent)}.eh-collections .cn .pb{display:flex;align-items:center;gap:6px;color:var(--text);font-size:13px;cursor:pointer}.eh-collections .cn .pb input{margin:0;accent-color:var(--accent)}.eh-collections .cn .st{padding:0 3px;color:#c0392b}.eh-collections .cn .bt{display:flex;justify-content:flex-end;gap:6px}.eh-collections .cn .bt button{padding:5px 12px;border:0;border-radius:6px;background:transparent;color:var(--muted);font:13px/1.3 system-ui,sans-serif;cursor:pointer}.eh-collections .cn .bt button:hover:not(:disabled){color:var(--text)}.eh-collections .cn .bt .ok{background:var(--accent);color:#fff}.eh-collections .cn .bt .ok:hover:not(:disabled){color:#fff;filter:brightness(1.1)}.eh-collections .cn .bt button:disabled{opacity:.6;cursor:default}.eh-collections>button .coll-i .coll-n{position:static;display:inline-block;margin-left:4px;align-self:center;min-width:15px;height:15px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:var(--accent);color:#fff;font:700 10px/15px system-ui,sans-serif;letter-spacing:0;text-transform:none;text-align:center;pointer-events:none}
 
 .kicker .ab[data-star]:hover{border-color:var(--accent)}
 .kicker .acts > * + .ab[data-star]{margin-left:10px}
@@ -9583,6 +9583,7 @@ document.addEventListener('keydown', ev => {
     const fm = ev.target.closest && ev.target.closest('form[data-cnform]'); if (!fm) return;
     ev.preventDefault(); fm.requestSubmit();
 });
+document.addEventListener('submit', ev => { const p = ev.target.closest?.('#pop-collections'); if (p && ev.target.matches('form.cn')) { ev.preventDefault(); plyCollNewSave(p, ev.target); } });
 document.addEventListener('submit', async ev => {
     const fm = ev.target;
     if (!ehOn || !data || data.kind !== 'colnew' || !fm.matches('[data-cnform]')) return;
@@ -11575,6 +11576,8 @@ function collectionPaint(key) {
     const x = COLLECTIONS.get(key); if (!x) return;
     let group = '', first = true;
     const rows = x.rows || [], names = collectionNames(rows), one = new Set(rows.map(r => r.group)).size < 2;
+    p._draw = () => collectionPaint(key);
+    const cn = p._cn, kept = collNewKeep(p);
     const ICK = '<path d="m5 12 5 5 9-10"/>', IPL = '<path d="M12 5v14M5 12h14"/>', IRF = '<path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/>';
     p.innerHTML = (one ? '' : '<div class="h label">Collections</div>') + rows.filter(r => r.id).map(r => {
         // the first group is the user's own: its heading opens their collections page
@@ -11584,8 +11587,9 @@ function collectionPaint(key) {
         return h + '<button type="button" class="row opt" data-collkey="' + key + '" data-collchange="' + r.id + '" aria-pressed="' + r.on + '"' + (x.busy || x.loading ? ' disabled' : '') + (nm !== r.label ? ' data-tip="' + esc(r.label) + '"' : '') + '>' + SVG(r.on ? ICK : IPL) + '<span>' + esc(nm) + '</span></button>';
     }).join('') + (!x.rows ? '<div class="h">Loading collections…</div>' : !x.rows.some(r => r.id) ? '<div class="h">No collections of this type</div>' : '')
         + (x.error ? '<div class="h" role="alert">' + esc(x.error) + '</div>' : '')
-        + '<div class="coll-ft">' + rows.filter(r => !r.id).map(r => '<a class="row" href="' + esc(MB + r.path) + '">' + SVG(IPL) + '<span>' + esc(r.label === 'Add to a new collection' ? 'New collection' : r.label) + '</span></a>').join('')
-        + '<button type="button" class="row opt" data-collrefresh="' + key + '"' + (x.loading || x.busy ? ' disabled' : '') + '>' + SVG(IRF) + '<span>Refresh</span></button></div>';
+        + '<div class="coll-ft">' + (cn ? plyCollNewHtml(cn) : rows.filter(r => !r.id).map(r => '<button type="button" class="row opt" data-cnew="1">' + SVG(IPL) + '<span>New collection…</span></button>').join('')
+        + '<button type="button" class="row opt" data-collrefresh="' + key + '"' + (x.loading || x.busy ? ' disabled' : '') + '>' + SVG(IRF) + '<span>Refresh</span></button>') + '</div>';
+    collNewPut(p, kept);
     popFit(p);
     // the trigger's small icon: accent when the entity is in one of the collections
     const t = $('[data-pop="collections"]'), ins = collectionsIn(x), n = ins.length;
@@ -13827,7 +13831,7 @@ function plyCollPick(btn, type) {
     plyCollShut();
     if (!document.getElementById('eh-ply-css')) plyRoot();
     const m = document.createElement('div'); m.id = 'eh-ply-coll'; m.className = 'mbu-ui ply-menu'; m.setAttribute('role', 'menu');
-    m.dataset.key = key; m.dataset.type = type; m._btn = btn;
+    m.dataset.key = key; m.dataset.type = type; m._btn = btn; m._draw = () => plyCollDraw(m);
     document.documentElement.append(m);
     const off = ev => { if (!m.contains(ev.target) && !ev.target.closest?.('[data-pa="' + type + '"]')) plyCollShut(); };
     const esck = ev => { if (ev.key !== 'Escape' || !m.isConnected) return; ev.preventDefault(); ev.stopPropagation(); plyCollShut(); };
@@ -13850,6 +13854,17 @@ function plyCollPick(btn, type) {
     plyCollDraw(m);
     collectionLoad(key);
 }
+// a redraw keeps what is typed in the new collection form, and the box being typed in
+function collNewKeep(m) {
+    const cn = m._cn, old = cn && m.querySelector('form.cn'), a = document.activeElement;
+    if (old) cn.v = { n: old.elements.n.value, d: old.elements.d.value, p: old.elements.p.checked };
+    return old && old.contains(a) && a.name ? { name: a.name, sel: a.type === 'checkbox' ? null : [a.selectionStart, a.selectionEnd] } : null;
+}
+function collNewPut(m, focus) {
+    const cn = m._cn, fm = cn && m.querySelector('form.cn'); if (!fm) return;
+    fm.elements.n.value = cn.v.n; fm.elements.d.value = cn.v.d; fm.elements.p.checked = cn.v.p;
+    if (focus && fm.elements[focus.name]) { const e = fm.elements[focus.name]; e.focus({ preventScroll: true }); if (focus.sel) try { e.setSelectionRange(...focus.sel); } catch (er) { /* a checkbox */ } }
+}
 function plyCollNewHtml(cn) {
     const f = cn.f || {}, dis = cn.busy ? ' disabled' : '';
     return `<form class="cn" autocomplete="off"><div class="hd">New collection</div>`
@@ -13865,8 +13880,8 @@ function plyCollNewOpen(m) {
     const x = COLLECTIONS.get(m.dataset.key), c = x && x.rows && x.rows.find(r => !r.id); if (!c) return;
     const cn = m._cn = { path: c.path, f: null, v: { n: '', d: '', p: false } };
     PLOG.debug('new collection form', c.path);
-    plyCollDraw(m); m.querySelector('.cn [name=n]')?.focus();
-    plyCollNewForm(cn).then(() => { if (m._cn === cn && m.isConnected) plyCollDraw(m); }, e => PLOG.warn('Reading the new collection form: ' + e.message));
+    m._draw(); m.querySelector('.cn [name=n]')?.focus();
+    plyCollNewForm(cn).then(() => { if (m._cn === cn && m.isConnected) m._draw(); }, e => PLOG.warn('Reading the new collection form: ' + e.message));
 }
 async function plyCollNewForm(cn) {
     if (cn.f) return cn.f;
@@ -13880,8 +13895,8 @@ async function plyCollNewSave(m, fm) {
     const cn = m._cn, key = m.dataset.key; if (!cn || cn.busy || !fm.matches('.cn')) return;
     const fd = new FormData(fm), name = String(fd.get('n') || '').trim(), desc = String(fd.get('d') || ''), pub = !!fd.get('p');
     cn.v = { n: name, d: desc, p: pub };
-    if (!name) { cn.err = (cn.f && cn.f.lName || 'Name') + ' is required'; plyCollDraw(m); m.querySelector('.cn [name=n]')?.focus(); return; }
-    cn.busy = true; cn.err = ''; plyCollDraw(m);
+    if (!name) { cn.err = (cn.f && cn.f.lName || 'Name') + ' is required'; m._draw(); m.querySelector('.cn [name=n]')?.focus(); return; }
+    cn.busy = true; cn.err = ''; m._draw();
     try {
         const f = await plyCollNewForm(cn), type = f.cur.type || (f.types.find(t => t.on) || {}).v;
         if (!type) throw new Error('MusicBrainz sent no collection type');
@@ -13902,20 +13917,18 @@ async function plyCollNewSave(m, fm) {
             x.at = 0;
         }
         m._cn = null; toast('Added to the new collection "' + name + '"');
-        plyCollPaint(key);
+        collectionKeep(key, x); collectionPaint(key);
         collectionLoad(key, true);
     } catch (e) {
         PLOG.warn('Adding the collection: ' + e.message);
-        cn.busy = false; cn.err = e.message; if (m._cn === cn && m.isConnected) plyCollDraw(m);
+        cn.busy = false; cn.err = e.message; if (m._cn === cn && m.isConnected) m._draw();
     }
 }
 function plyCollDraw(m) {
     const key = m.dataset.key, type = m.dataset.type, x = COLLECTIONS.get(key) || {}, d = plyCollDef(type), what = type === 'rel' ? 'release' : 'recording';
     const off = x.busy || x.loading ? ' disabled' : '', rows = (x.rows || []).filter(r => r.id), create = (x.rows || []).find(r => !r.id);
     let group = '';
-    const names = collectionNames(x.rows || []), cn = m._cn, old = cn && m.querySelector('form.cn'), a = document.activeElement;
-    if (old) cn.v = { n: old.elements.n.value, d: old.elements.d.value, p: old.elements.p.checked };
-    const focus = old && old.contains(a) && a.name ? { name: a.name, sel: a.type === 'checkbox' ? null : [a.selectionStart, a.selectionEnd] } : null;
+    const names = collectionNames(x.rows || []), cn = m._cn, focus = collNewKeep(m);
     // headed like the release page's collections menu: the first group is the user's own and links to their collections
     m.innerHTML = (rows.length ? '' : `<div class="hd">${type === 'rel' ? 'Release' : 'Recording'} collections</div>`) + rows.map(r => {
         const own = r.group === rows[0].group && ME;
@@ -13928,12 +13941,7 @@ function plyCollDraw(m) {
         + (rows.length && !d ? `<div class="st">Pick a default with ◯ and a click on the button collects into it</div>` : '')
         + '<hr>' + (cn ? plyCollNewHtml(cn) : (create ? `<button type="button" class="it ft" role="menuitem" data-cnew="1">${SVG('<path d="M12 5v14M5 12h14"/>')}<span>New collection…</span></button>` : '')
         + `<button type="button" class="it ft" role="menuitem" data-cr="1"${off}>${SVG('<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/>')}<span>Refresh</span></button>`);
-    // a redraw keeps what is typed, and the box being typed in
-    if (cn) {
-        const fm = m.querySelector('form.cn');
-        fm.elements.n.value = cn.v.n; fm.elements.d.value = cn.v.d; fm.elements.p.checked = cn.v.p;
-        if (focus && fm.elements[focus.name]) { const e = fm.elements[focus.name]; e.focus({ preventScroll: true }); if (focus.sel) try { e.setSelectionRange(...focus.sel); } catch (er) { /* a checkbox */ } }
-    }
+    collNewPut(m, focus);
     // a head repaint replaces the button: find its successor, or the picker stays where the loading line put it
     if (!m._btn?.isConnected) m._btn = [...document.querySelectorAll('.ply-ra [data-pa="' + m.dataset.type + '"]')].find(x => x.getClientRects().length) || m._btn;
     const r = m._btn && m._btn.isConnected ? m._btn.getBoundingClientRect() : null, h = m.offsetHeight, w = m.offsetWidth;
@@ -14615,6 +14623,9 @@ function onClick(ev) {
     if ('srch' in d) { const fm = b.form; if (fm.classList.toggle('open')) fm.query.focus(); return; }
     if (d.collchange) { collectionChange(d.collkey, d.collchange); return; }
     if (d.collrefresh) { collectionLoad(d.collrefresh, true); return; }
+    const cpop = b.closest('#pop-collections');
+    if (cpop && d.cnew) { plyCollNewOpen(cpop); return; }
+    if (cpop && d.cnx) { cpop._cn = null; cpop._draw(); popFit(cpop); return; }
     if (d.picardgo) { kmkClose(b); picardSend(d.picardgo); return; }
     if (d.pop && b.classList.contains('kmk')) kmkFill(b);
     if (d.pop) { const p = document.getElementById('pop-' + d.pop); p.hidden = !p.hidden; b.setAttribute('aria-expanded', String(!p.hidden)); popFit(p); return; }

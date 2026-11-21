@@ -2,9 +2,9 @@ import { test, expect, pristine, requireLogin, attachShot } from '../../../dev/t
 
 test.use({ gm: { name: 'Event Horizon', persist: true } });
 
-// MusicBrainz's "Add a new collection" opens in EH and is sent in the background: the tab never reloads (the player
-// plays on), and EH moves on to the new collection, with the entity it was opened from in it
-test('a new collection is added in EH without reloading the tab', { tag: ['@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
+// "New collection" in an entity's collections menu opens a form in the menu, as in the player's picker: the collection
+// is added in the background with the entity in it, the tab stays where it is and never reloads
+test('a new collection is added from the collections menu without leaving the page', { tag: ['@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
   const mb = 'https://test.musicbrainz.org';
   await page.goto(mb);
   await requireLogin(page);
@@ -15,26 +15,28 @@ test('a new collection is added in EH without reloading the tab', { tag: ['@sand
     await page.goto(`${mb}/artist/${id}`);
     await inject('event_horizon');
     await page.evaluate(() => { window.__noReload = 1; });
+    const url = page.url();
     const trigger = page.locator('#app [data-pop="collections"]');
     await expect(trigger).toBeVisible();
     await trigger.click();
-    const create = page.locator('#pop-collections a[href*="/collection/create"]');
-    await expect(create).toBeVisible();
-    await create.click();
-    const form = page.locator('#app form[data-cnform]');
+    const pop = page.locator('#pop-collections');
+    await pop.locator('[data-cnew]').click();
+    const form = pop.locator('form.cn');
     await expect(form).toBeVisible();
-    expect(page.url()).toMatch(/\/collection\/create\?artist=\d+$/);
-    // MusicBrainz's own form says nothing EH sends empty: the name is asked for before anything is sent
+    await expect(form.locator('[name=n]')).toBeFocused();
+    // nothing is sent without a name
     await form.locator('button[type=submit]').click();
     await expect(form.locator('[role=alert]')).toBeVisible();
-    await form.locator('[name="edit-list.name"]').fill(name);
-    await form.locator('[name="edit-list.description"]').fill('Automated sandbox test: EH collection create');
+    await form.locator('[name=n]').fill(name);
+    await form.locator('[name=d]').fill('Automated sandbox test: EH collection create');
     await attachShot(testInfo, page, 'collection-create');
     await form.locator('button[type=submit]').click();
-    await expect(page).toHaveURL(/\/collection\/[0-9a-f-]{36}$/);
-    gid = page.url().match(/\/collection\/([0-9a-f-]{36})$/)[1];
+    await expect(form).toHaveCount(0);
+    const row = pop.locator('[data-collchange]', { hasText: name });
+    await expect(row).toHaveAttribute('aria-pressed', 'true');
+    gid = await row.getAttribute('data-collchange');
+    expect(page.url()).toBe(url);
     expect(await page.evaluate(() => window.__noReload)).toBe(1);
-    await expect(page.locator('#app h1')).toContainText(name);
     const html = await (await page.request.get(`${mb}/collection/${gid}`)).text();
     expect(html).toContain(`/artist/${id}`);
     await attachShot(testInfo, page, 'collection-created');
