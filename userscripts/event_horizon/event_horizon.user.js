@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.191000
+// @version      2026.11.22.191001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8881,6 +8881,16 @@ const tqHit = (n, t) => {
     const s = fltFold(t || '');
     return n.r ? (s.match(/\b\d{4}\b/g) || []).some(y => (!n.r[0] || y >= n.r[0]) && (!n.r[1] || y <= n.r[1])) : s.includes(n.v);
 };
+// a release group series' table: a group's release count opens its releases under it, as a label's groups do,
+// read from ws/2 on the first open
+const srOpen = new Set(), SRX = new Map();
+function srLoad(rg) {
+    if (SRX.has(rg)) return;
+    SRX.set(rg, null);
+    const redraw = () => { const y = scrollY; render(); scrollTo(0, y); };
+    ws(`release?release-group=${rg}&inc=media+labels&limit=100`).then(j => { SRX.set(rg, (j.releases || []).map(edition).sort((a, b) => (a.date || '9').localeCompare(b.date || '9'))); redraw(); },
+        e => { SRX.set(rg, 'err'); LOG.err('series releases: ' + e.message); redraw(); });
+}
 function tabSect(sid, name, x, href, cv) {
     const rs = x ? x.rows.filter(r => Array.isArray(r)) : [];
     if (!rs.length) return '';
@@ -8910,9 +8920,15 @@ function tabSect(sid, name, x, href, cv) {
     const pbt = r => { const m = playable && Array.isArray(r) && r.join(' ').match(new RegExp('/' + ent + '/(' + MBID.source + ')', 'i')); return m ? `<span class="cvp"><button type="button" class="tx" data-colplay="${m[1]}" data-tip="${plyClickTip('Play this ' + ent)}" aria-label="Play this ${ent}">${SVG(PLY_I.play)}</button></span>` : ''; };
     const rid = sid === 'cp' && x.ids && new Map(x.rows.map((r, i) => [r, x.ids[i]]));
     const trO = r => { const id = rid && rid.get(r); return id ? `<tr data-colrm="${esc(id)}"${COLRM.has(id) ? ' class="crm-on"' : ''}>` : '<tr>'; };
-    const tr = r => { const p = pbt(r); return Array.isArray(r) ? `${trO(r)}${cvTd(r, p)}${cols.map((i, j) => `<td${j === 0 && p && !cv ? ' class="pb"' : ''}>${j === 0 && p && !cv ? p : ''}${txt(r[i]) ? r[i] : '—'}</td>`).join('')}</tr>` : `<tr class="tsub"><td colspan="${span}">${esc(r.charAt(0).toUpperCase() + r.slice(1))}</td></tr>`; };
+    // a release group's count of releases: the last column of whole numbers (MusicBrainz translates its heading)
+    const rc = cv === 'release-group' ? [...cols].reverse().find(i => i !== cols[0] && rs.every(r => /^\d+$/.test(txt(r[i])))) : undefined;
+    const rgOf = r => { const m = cvRe && r.join(' ').match(cvRe); return m ? m[1] : ''; };
+    const srChip = (r, i) => { const g = rgOf(r), k = +txt(r[i]); if (!g || k < 2) return r[i]; const o = srOpen.has(g); return `<button class="ed-tr" type="button" data-srx="${g}" aria-expanded="${o}" data-tip="${o ? 'Hide' : 'Show'} its releases">${k} releases<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>`; };
+    const srRow = e => { const tracks = e.counts.reduce((a, c) => a + c, 0); return `<tr class="lbg-r"><td></td><td colspan="${cols.length}"><a href="${esc(relUrl(e.id))}">${esc(e.title)}</a>${e.disambig ? ` <span class="sub">(${esc(e.disambig)})</span>` : ''}${e.status && e.status !== 'Official' ? ` <span class="sub">· ${esc(e.status)}</span>` : ''} <span class="sub">· ${esc([fmtSummary(e.formats), tracks && e.counts.every(Boolean) ? `${tracks} track${tracks === 1 ? '' : 's'}` : '', [(e.events[0] || {}).iso, e.date && fdate(e.date)].filter(Boolean).join(' '), e.li.map(l => [l.name, l.catno].filter(Boolean).join(' ')).join(', ')].filter(Boolean).join(' · '))}</span></td></tr>`; };
+    const srSub = r => { const g = rc != null && rgOf(r); if (!g || !srOpen.has(g) || +txt(r[rc]) < 2) return ''; const l = SRX.get(g); if (!SRX.has(g)) srLoad(g); return Array.isArray(l) ? l.map(srRow).join('') : `<tr class="lbg-r"><td></td><td colspan="${cols.length}">${l === 'err' ? 'Could not load its releases.' : 'Loading…'}</td></tr>`; };
+    const tr = r => { const p = pbt(r); return Array.isArray(r) ? `${trO(r)}${cvTd(r, p)}${cols.map((i, j) => `<td${j === 0 && p && !cv ? ' class="pb"' : ''}>${j === 0 && p && !cv ? p : ''}${i === rc ? srChip(r, i) : txt(r[i]) ? r[i] : '—'}</td>`).join('')}</tr>${srSub(r)}` : `<tr class="tsub"><td colspan="${span}">${esc(r.charAt(0).toUpperCase() + r.slice(1))}</td></tr>`; };
     const more = x.more ? lmFoot('tab:' + sid, n, x.total || 0) : '';
-    const body = view === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr>${cv ? '<th></th>' : ''}${cols.map(hb).join('')}</tr></thead><tbody>${shown.map(tr).join('')}</tbody></table></div>`
+    const body = view === 'table' ? `<div class="ed-tw"><table class="ed-t${rc != null ? ' lbg' : ''}"><thead><tr>${cv ? '<th></th>' : ''}${cols.map(hb).join('')}</tr></thead><tbody>${shown.map(tr).join('')}</tbody></table></div>`
         : `<div class="${view === 'row' ? 'ed-row disco' : 'disco'}">${shown.map(tile).join('')}</div>`;
     return sect(sid, `${name} <span class="count">${cnt}</span>`, (playable ? `<button type="button" class="tx" data-colplay="all" data-tip="${plyClickTip('Play the collection')}" aria-label="Play the collection">${SVG(PLY_I.play)} Play</button>` : '') + (rid && view === 'table' ? colrmBtn() : '') + tools, (q ? `<div class="fbar"><span class="fn">${shown.filter(Array.isArray).length} of ${n}</span></div>` : '') + body + more, `<div class="folded-note">${cnt} ${name.toLowerCase()}</div>`);
 }
@@ -14818,6 +14834,7 @@ function onClick(ev) {
     else if (d.lbmode) S.lbGroups = d.lbmode === 'groups';
     else if (d.dgx) { if (dgOpen.has(d.dgx)) dgOpen.delete(d.dgx); else { dgOpen.add(d.dgx); if (!(data.dgRel && data.dgRel.get(d.dgx))) dgLoad(data, d.dgx); } }
     else if ('lbx' in d) lbOpen.has(d.lbx) ? lbOpen.delete(d.lbx) : lbOpen.add(d.lbx);
+    else if (d.srx) srOpen.has(d.srx) ? srOpen.delete(d.srx) : srOpen.add(d.srx);
     else if (d.tabview) S.tabView = d.tabview;
     else if (d.clview) S.clView = d.clview;
     else if (d.clsort) S.clSort = String(S.clSort || 'name').replace(/^-/, '') === d.clsort && !String(S.clSort).startsWith('-') ? '-' + d.clsort : d.clsort;
