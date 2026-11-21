@@ -102,8 +102,11 @@ const CSS = [
     'background:var(--mbu-accent-deep);color:var(--mbu-text-on-accent);padding:10px 16px;border-radius:9px;',
     'font:13px/1.35 var(--mbu-font);box-shadow:var(--mbu-shadow-lg);opacity:0;transition:opacity .2s;',
     'pointer-events:none;max-width:80vw;text-align:center;white-space:pre-wrap}',
-    '#mbu-toast.mbu-toast-on{opacity:1}',
-    '#mbu-toast.mbu-toast-act{pointer-events:auto}',
+    // The fade-out is also a CSS animation, so a toast leaves even when the script's
+    // timer never fires (a script context torn down by a manager's update left one up for good).
+    // While it shows, a click closes it.
+    '#mbu-toast.mbu-toast-on{opacity:1;pointer-events:auto;cursor:pointer;animation:mbu-toast-life var(--mbu-toast-ms,3s) linear forwards}',
+    '@keyframes mbu-toast-life{0%,94%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden}}',
     '#mbu-toast .mbu-toast-btn{width:auto;margin-left:10px;padding:2px 9px;border:1px solid currentColor;border-radius:5px;background:transparent;color:inherit;font:inherit;cursor:pointer}',
     '#mbu-toast .mbu-toast-btn:hover{background:rgba(255,255,255,.18)}',
     '#mbu-toast.mbu-toast-ok{background:var(--mbu-ok)}',
@@ -615,7 +618,12 @@ function mbuToast(msg, opts) {
         el.id = 'mbu-toast';
         (document.body || document.documentElement).appendChild(el);
     }
+    var ms = opts.ms || (opts.action ? 12000 : 2600);
+    el.className = '';
+    void el.offsetWidth;   // restart the life animation for a toast that replaces a showing one
+    el.style.setProperty('--mbu-toast-ms', (ms + 200) + 'ms');
     el.className = 'mbu-toast-on' + (kind !== 'info' ? ' mbu-toast-' + kind : '') + (opts.action ? ' mbu-toast-act' : '');
+    el.onclick = function (e) { if (e.target === el) { clearTimeout(_mbuToastT); el.className = ''; } };
     el.textContent = s;
     if (opts.action) {
         var b = document.createElement('button');
@@ -638,7 +646,7 @@ function mbuToast(msg, opts) {
         el.style.left = ''; el.style.top = ''; el.style.bottom = ''; el.style.transform = '';
     }
     clearTimeout(_mbuToastT);
-    _mbuToastT = setTimeout(function () { el.className = ''; }, opts.ms || (opts.action ? 12000 : 2600));
+    _mbuToastT = setTimeout(function () { el.className = ''; }, ms);
     return el;
 }
 
