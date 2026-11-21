@@ -11,7 +11,7 @@ A clean, modern redesign of MusicBrainz's pages, with themes, automatic light an
 - **[The viewer](#the-viewer)** replaces a MusicBrainz page and moves between pages without reloading.
 - **[Header menu](#header-menu)**: which actions show, in what order, and which go under More.
 - **[Background effects](#background-effects)**: Hexagons, Tron, Stars, Aurora and Rain over the cover, a glow, generated artwork or any picture.
-- **Sections(#sections**: a page's data in cards you fold, hide and reorder.
+- **Sections**: a page's data in cards you fold, hide and reorder.
 - **Starred entities** keeps favourites on the homepage.
 - **Collections**: in-place interface to add an entity to your collections or remove it.
 - **Recently opened** lists the pages you opened last on the homepage.
