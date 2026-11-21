@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.232300
+// @version      2026.11.21.234311
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm, RateYourMusic and Album of the Year, read when you open their pages), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjI4Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMxNmNjZjgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjZmZhZTM4Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -3017,30 +3017,32 @@
   // Event Horizon's tag editor, and its in-page navigation, switch them (below)
   let TYPE = em ? em[1] : null, MBID = em ? em[2] : null, PATH = location.pathname;
 
-  async function ws(path) {
-    const r = await mbnFetch(location.origin + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json');
+  // with a run's gen, a read still waiting in the gate is dropped once the page moves on (Event Horizon's navigation)
+  async function ws(path, gen) {
+    const o = gen === undefined ? undefined : { cancelled: () => gen !== S.gen };
+    const r = await mbnFetch(location.origin + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json', undefined, o);
     if (!r || !r.ok) throw new Error('ws/2 ' + path + ': ' + (r ? r.status : 'gate'));
     return r.json();
   }
   const urlsOf = o => (o.relations || []).filter(x => x.url && x.url.resource).map(x => x.url.resource);
   // In Event Horizon a release or release group comes from the lookup Event Horizon drew its page from (MBU.ehRelease,
   // MBU.ehReleaseGroup), which has everything asked for here: no request of our own. Without it, MusicBrainz is asked
-  async function wsEh(type, id, path) {
+  async function wsEh(type, id, path, gen) {
     try {
       const ns = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
       const fn = type === 'release' ? 'ehRelease' : type === 'release-group' ? 'ehReleaseGroup' : null;
       const p = fn && ns.MBU && ns.MBU[fn] && ns.MBU[fn](id);
       if (p) { const j = JSON.parse(String(await p)); LOG.info(type + ' read from Event Horizon, no request'); return j; }
     } catch (e) { /* not shared: ask MusicBrainz */ }
-    return ws(path);
+    return ws(path, gen);
   }
 
-  async function links() {
-    const own = await wsEh(TYPE, MBID, TYPE + '/' + MBID + '?inc=url-rels');
+  async function links(gen) {
+    const own = await wsEh(TYPE, MBID, TYPE + '/' + MBID + '?inc=url-rels', gen);
     const set = new Set(urlsOf(own));
     if (TYPE === 'release-group') {
       // the maintainer: "RG could use all links from releases"
-      const rs = await ws('release?release-group=' + MBID + '&inc=url-rels&limit=100');
+      const rs = await ws('release?release-group=' + MBID + '&inc=url-rels&limit=100', gen);
       for (const rel of rs.releases || []) urlsOf(rel).forEach(u => set.add(u));
     }
     return [...set];
@@ -3249,7 +3251,7 @@
     // a run is worth reading back: keep the session in the log's history, named after the entity
     LOG.keep(); LOG.name(TYPE + ': ' + (document.title.replace(/s+[-–]s+MusicBrainz.*$/, '') || MBID));
     try {
-      const [g, ls] = await Promise.all([genres(), links()]);
+      const [g, ls] = await Promise.all([genres(), links(gen)]);
       S.genres = g;
       const queues = {};
       for (const u of ls) {
