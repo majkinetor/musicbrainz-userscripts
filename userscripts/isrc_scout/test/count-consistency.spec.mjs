@@ -15,8 +15,8 @@ test('the open editor and dock show the same pending ISRC counts', { tag: '@sand
 test('only a successful submit expires the Match cache', { tag: '@unit' }, async () => {
   const src = await functionSource('isrc_scout', ['submitIsrcs']);
   let fail = false, invalidations = 0;
-  const submit = new Function('withRepeat', 'submitIsrcsOnce', 'invalidateMatchCache', src + '\nreturn submitIsrcs;')(
-    async () => { if (fail) throw Error('offline'); }, () => {}, () => { invalidations++; });
+  const submit = new Function('withRepeat', 'submitIsrcsOnce', 'invalidateMatchCache', 'refreshEhRelease', src + '\nreturn submitIsrcs;')(
+    async () => { if (fail) throw Error('offline'); }, () => {}, () => { invalidations++; }, () => {});
   await submit({}, ''); fail = true; await submit({}, '').catch(() => {});
   check(invalidations === 1, 'successful submits invalidate; failed submits do not');
 });
@@ -52,7 +52,7 @@ test('release loading retries once and reports only the final result', { tag: '@
   const src = await functionSource('isrc_scout', ['fetchRelease']);
   let calls = 0, notifications = 0, failures = 1;
   const api = new Function('attempt', 'notify', `let RELEASE = null, _relInFlight = null, _relFailed = false, mbid = 'release';
-    const fetchReleaseNow = attempt, notifyMatchCounts = notify, updateBtnStatus = () => {}, Log = { warn() {} }, errText = e => e.message;
+    const fetchReleaseNow = attempt, notifyMatchCounts = notify, updateBtnStatus = () => {}, Log = { warn() {}, debug() {} }, errText = e => e.message;
     ${src}
     return { fetchRelease, failed: () => _relFailed };`)(() => { calls++; return calls <= failures ? Promise.reject(Error('offline')) : Promise.resolve({}); }, () => { notifications++; });
   await api.fetchRelease();

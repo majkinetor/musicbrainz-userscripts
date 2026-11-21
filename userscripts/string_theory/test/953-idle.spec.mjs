@@ -14,7 +14,7 @@ function runtime(idle, extra = {}, effects = ['Night']) {
   const root = { classList: { toggle() {} }, appendChild(n) { n.isConnected = true; }, setAttribute(k, v) { attrs.set(k, v); }, removeAttribute(k) { attrs.delete(k); }, toggleAttribute(k, v) { if (v) attrs.set(k, ''); else attrs.delete(k); } };
   const on = (name, fn) => listeners.set(name, fn);
   const context = vm.createContext({
-    location: { hostname: 'test.musicbrainz.org' },
+    location: { hostname: 'test.musicbrainz.org' }, __stPlayerOnly: false,   // the bundle's own flag (build.mjs): the full String Theory, not the player alone
     document: { documentElement: root, readyState: 'complete', createElement: tag => tag === 'div' ? pill : styles++ ? fade : style, addEventListener: on },
     localStorage: { getItem: () => JSON.stringify(effects) }, sessionStorage: { getItem: () => null },
     GM_getValue: () => structuredClone(saved), GM_setValue: (k, v) => Object.assign(saved, v),

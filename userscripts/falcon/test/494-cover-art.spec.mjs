@@ -261,9 +261,10 @@ test("#494: cover art", { tag: ['@sandbox', '@login'] }, async ({ context, page 
     await page2.route('**/ws/js/cover-art-upload/**', route => {
       const mime = new URL(route.request().url()).searchParams.get('mime_type');
       signCalls.push(mime);
-      // first sign attempt (the octet-stream-served candidate) fails outright —
-      // exercises the candidate-fallback path regardless of what mime it sent.
-      if (signCalls.length === 1) return route.fulfill({ status: 400, body: 'bad mime' });
+      // the first two sign attempts (the octet-stream-served candidate, and its one retry
+      // since #1073) fail outright — exercises the candidate-fallback path regardless of
+      // what mime it sent.
+      if (signCalls.length <= 2) return route.fulfill({ status: 400, body: 'bad mime' });
       route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ action: 'https://fake-archive.invalid/upload2', image_id: 555, nonce: 'n2', formdata: {} }) });
     });
     await page2.route('https://fake-archive.invalid/upload2', route => route.fulfill({ status: 200, body: 'ok' }));

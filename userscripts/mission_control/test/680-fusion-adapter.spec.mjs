@@ -52,7 +52,7 @@ test('#680: Fusion runs on Fetch RG and marks the tracks with duplicates', { tag
   const card = det.locator('[data-mc-slot="fusion"] .fs-embed .fs-gcard');
   await card.waitFor();
   check(await card.locator('.fs-grow').count() >= 2, 'Fusion\'s card lists this recording and its match');
-  check(await card.locator('.fs-sig span').count() === 5, 'with the five signal chips');
+  check(JSON.stringify(await card.locator('.fs-sig span').allTextContents()) === JSON.stringify(['RG', 'ISRC', 'AcoustID', 'Length', 'Title', 'Artist']), 'with the RG chip and the five signal chips');
   check(await card.locator('.fs-sig span.hit').count() > 0, 'and at least one lit');
   check(await card.locator('.fs-star-on').count() === 1, 'the merge target is starred');
   check(await card.locator('[data-act="merge-group"], [data-act="delete-group"], [data-act="return"], [data-act="toggle-card"]').count() === 0, 'none of the board\'s own actions: MC\'s Execute merges');

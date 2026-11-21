@@ -168,7 +168,7 @@ test('a release with a barcode is offered none', { tag: ['@sandbox'] }, async ({
 });
 
 test('found barcodes are grouped, and ordered by format and count', { tag: '@unit' }, async () => {
-  const src = await functionSource('platform_check', ['normBarcode', 'formatCategories', 'remoteFormatCategories', 'DIGITAL_ONLY_PROVIDERS', 'pcFoundBarcodes']);
+  const src = await functionSource('platform_check', ['normBarcode', 'formatCategories', 'remoteFormatCategories', 'DIGITAL_ONLY_PROVIDERS', 'PHYSICAL_ONLY_PROVIDERS', 'pcFoundBarcodes']);
   const run = (mbFormat, found) => new Function('MB_FORMAT', 'PROVIDER_ORDER', 'PC_FOUND_BC', src + '\nreturn pcFoundBarcodes();')(
     mbFormat, ['discogs', 'bandcamp', 'apple', 'deezer', 'qobuz'], new Map(Object.entries(found)));
   const found = {

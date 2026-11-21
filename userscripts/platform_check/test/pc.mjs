@@ -18,6 +18,10 @@ export async function openPc(page, inject, { release, replay = null, links = nul
   // Apple's token (#627) is cached in localStorage across runs: without one, every run asks for
   // it the same way, so a recording made here replays anywhere (a fresh CI profile too)
   if (replay) await page.context().addInitScript(() => { try { localStorage.removeItem('mbtools:apple-token'); } catch (e) {} });
+  // Amazon's store is searched by barcode (a physical release only), and a release's own Amazon link is read:
+  // never the live store, which answers a robot with a captcha page, and no fixture records it. An empty page
+  // is what it finds here.
+  if (replay) answerGm(page.context(), ({ url }) => /^https:\/\/www\.amazon\.[a-z.]+\//.test(url) ? { status: 200, body: '<!doctype html><html><body><div class="s-main-slot"></div></body></html>' } : null);
   if (links) editLinks(page.context(), ws, links);
   if (before) await before();   // after the replay: an answerGm registered here is asked first
   for (let a = 1; ; a++) {

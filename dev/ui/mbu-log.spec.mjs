@@ -118,7 +118,7 @@ test('categories: tagged lines, a filter row only when needed, one-click filters
   await page.evaluate(() => { window.L = mk(); L.info('plain'); L.ok('done'); L.open(); });
   check(await row() === null, 'info and ok alone: no filter row');
   await page.evaluate(() => { L.cat('Spotify').info('sp one'); L.cat('Spotify').warn('sp two'); });
-  check(await row() === 'warn info', `a second level brings the level filters, ok counted as info (${await row()})`);
+  check(await row() === 'warn info Spotify', `a second level brings the level filters, ok counted as info, and a lone category beside untagged lines gets its button (${await row()})`);
   await page.evaluate(() => { L.cat('Deezer').err('dz'); });
   check(await row() === 'error warn info Spotify Deezer', `a second category brings the category filters (${await row()})`);
   check(await page.evaluate(() => L.cat('Spotify') === L.cat('Spotify')), 'the same category gives the same logger');
