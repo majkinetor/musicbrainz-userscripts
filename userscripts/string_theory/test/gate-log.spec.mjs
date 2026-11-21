@@ -40,6 +40,7 @@ test.describe('gate log', () => {
     check(pills.includes('error'), 'the failed request shows its error');
     await page.click('#st-gate tr.rq');
     check(await page.$('#st-gate tr.steps'), 'a click shows the steps');
+    check(await page.$$eval('#st-gate tr.steps .st-gl-req .st-gl-f', l => l.length) >= 1, 'an open row shows its own lane');
     await page.click('#st-gate tr.rq', { button: 'right' });
     const rq = await page.$$eval('#st-gate tr.rq', l => l.length), steps = await page.$$eval('#st-gate tr.steps', l => l.length);
     check(steps === rq, `a right click shows the steps of every row (${steps} of ${rq})`);
@@ -52,7 +53,8 @@ test.describe('gate log', () => {
     await page.click('#st-gate .st-gate-seg [data-m=bad]');
     const bad = await page.$$eval('#st-gate tr.rq .st-gate-pill', l => l.map(x => x.classList.contains('bad') ? 'bad' : x.textContent));
     check(bad.length >= 1 && bad.every(x => x === 'bad'), `Failed shows only failed requests (${bad.join(', ')})`);
-    await page.click('#st-gate .st-gate-seg [data-m=all]');
+    await page.click('#st-gate .st-gate-seg [data-m=bad]');
+    check(await page.getAttribute('#st-gate .st-gate-seg [data-m=all]', 'aria-pressed') === 'true', 'a second click on Failed shows all again');
     await attachShot(testInfo, page.locator('#st-gate'), 'gate log');
     if (process.env.SHOT) await page.locator('#st-gate').screenshot({ path: process.env.SHOT });
     await page.click('#st-gate .mbu-logpop-min');

@@ -69,6 +69,7 @@ var ST_GATE_CSS = ''
   + '#st-gate tr.steps td{padding:4px 8px 10px 28px;background:var(--mbu-bg-hover)}'
   + '#st-gate tr.steps ol{margin:0;padding:0;list-style:none;font-size:12px}#st-gate tr.steps li{display:flex;gap:10px}'
   + '#st-gate tr.steps li .t{color:var(--mbu-text-weak);white-space:nowrap}#st-gate tr.steps li .e{min-width:56px;font-weight:600}#st-gate tr.steps li.bad .e{color:var(--mbu-error)}'
+  + '.st-gl-req{position:relative;margin:2px 0 8px;max-width:640px}.st-gl-req .st-gl-lane{border-top:0;background:var(--mbu-bg)}.st-gl-req .st-gl-ax span:nth-child(2){transform:translateX(-50%)}'
   + '#st-gate td.none{padding:24px;text-align:center;color:var(--mbu-text-weak)}'
   // a phone: the whole screen, whatever was saved
   + '@media (max-width:600px){#st-gate,#st-gate.full{top:0!important;left:0!important;right:0!important;bottom:0!important;width:auto!important;height:auto!important;transform:none!important;border-radius:0;border:0}'
@@ -229,7 +230,26 @@ function stGateLanesHtml(groups, all, now, me) {
   return '<div class="st-gl-bands">' + bands + '</div>' + rows
     + '<div class="st-gl-ax"><span style="left:0">−60 s</span><span style="left:25%">−45 s</span><span style="left:50%">−30 s</span><span style="left:75%">−15 s</span><span style="left:100%">now</span></div>';
 }
-function stGateRowHtml(g, me, isOpen) {
+// one request on its own time line: its gate waits weak, each try in its result's colour
+function stGateReqLaneHtml(g, now) {
+  if (!g.tries.length && g.res !== 'waiting') return '';
+  var end = g.end;
+  g.tries.forEach(function (x) { end = Math.max(end, x.end || now); });
+  if (g.res === 'waiting') end = now;
+  var span = Math.max(end - g.t, 1), pct = function (t) { return Math.max(0, Math.min(100, (t - g.t) / span * 100)); };
+  var bar = function (cls, a, b, tip) { return '<i class="' + cls + '" data-tip="' + stEsc(tip) + '" style="left:' + pct(a).toFixed(2) + '%;width:' + (pct(b) - pct(a)).toFixed(2) + '%"></i>'; };
+  var bars = [], from = g.t;
+  g.tries.forEach(function (x, i) {
+    var e = x.end || now;
+    if (x.t > from) bars.push(bar('st-gl-w', from, x.t, 'Waits in the gate · ' + stGateSec(x.t - from)));
+    bars.push(bar('st-gl-f ' + stGateTryCls(x.st), x.t, e, 'Try ' + (i + 1) + ': ' + stGateTryTip(x.st) + ' · ' + stGateSec(e - x.t)));
+    from = e;
+  });
+  if (g.res === 'waiting') bars.push(bar('st-gl-w', from, now, 'Waits in the gate · ' + stGateSec(now - from)));
+  return '<div class="st-gl-req"><div class="st-gl-lane">' + bars.join('') + '</div>'
+    + '<div class="st-gl-ax"><span style="left:0">0</span><span style="left:50%">' + stGateSec(span / 2) + '</span><span style="left:100%">' + stGateSec(span) + '</span></div></div>';
+}
+function stGateRowHtml(g, me, isOpen, now) {
   var tab = '<td class="tab">' + stEsc(g.tab === me ? 'this tab' : String(g.tab).slice(0, 8)) + '</td>';
   if (g.sys) {
     return '<tr class="sys' + (g.tab === me ? ' me' : '') + '"><td class="t">' + stGateTime(g.t) + '</td>' + tab + '<td class="s">' + stEsc(g.s || '') + '</td>'
@@ -248,7 +268,7 @@ function stGateRowHtml(g, me, isOpen) {
     + '<td><span class="st-gate-pill ' + g.cls + '">' + stEsc(g.label) + '</span></td>'
     + '<td class="w" data-tip="Waited in the gate + on the way to MusicBrainz">' + stGateSec(g.wait) + (flight ? ' + ' + stGateSec(flight) : '') + '</td><td>' + meter + '</td></tr>';
   if (!isOpen) return row;
-  return row + '<tr class="steps"><td colspan="8"><ol>' + g.evs.map(function (ev) {
+  return row + '<tr class="steps"><td colspan="8">' + stGateReqLaneHtml(g, now || Date.now()) + '<ol>' + g.evs.map(function (ev) {
     return '<li' + (stGateBad(ev) ? ' class="bad"' : '') + '><span class="t">' + stGateTime(ev.t) + '</span><span class="e">' + stEsc(ev.e) + '</span><span>' + stEsc(stGateWhat(ev)) + '</span></li>';
   }).join('') + '</ol></td></tr>';
 }
@@ -355,7 +375,7 @@ function stGateBuild() {
     if (key === sig) return;
     sig = key;
     var top = scroller.scrollTop;
-    body.innerHTML = shown.length ? shown.slice().reverse().map(function (g) { return stGateRowHtml(g, me, !!opened[g.id]); }).join('')
+    body.innerHTML = shown.length ? shown.slice().reverse().map(function (g) { return stGateRowHtml(g, me, !!opened[g.id], now); }).join('')
       : '<tr><td class="none" colspan="8">' + (all.length ? 'No request matches.' : 'No requests went through the gate yet. Open or reload a MusicBrainz page that uses a script, then look again.') + '</td></tr>';
     scroller.scrollTop = top;
   };
@@ -382,7 +402,7 @@ function stGateBuild() {
   $('.st-gate-seg').addEventListener('click', function (e) {
     var b = e.target.closest('button');
     if (!b) return;
-    mode = b.dataset.m; seg(); stGateRemember({ mode: mode }); draw();
+    mode = b.dataset.m === mode ? 'all' : b.dataset.m; seg(); stGateRemember({ mode: mode }); draw();
   });
   mineBtn.onclick = function () { mine = !mine; mineBtn.setAttribute('aria-pressed', String(mine)); stGateRemember({ mine: mine }); draw(); };
   $('.mbu-logpop-copy').onclick = function () {
