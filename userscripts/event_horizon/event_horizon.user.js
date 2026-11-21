@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.172000
+// @version      2026.11.22.173000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13643,8 +13643,8 @@ function plyDraw() {
     const name = `<button type="button" class="ply-t" data-ply="list" aria-haspopup="menu" data-tip="${esc(t.title + ' — ' + t.artist + '\n' + rl)}${rl && !t.relTitle ? ' (its first release)' : ''}\nClick: the playlist">${S.playerNo ? `<span class="ply-n">${esc(plyNo(t))}</span>` : ''}<span class="ply-line"><b>${esc(t.title)}</b><span class="ply-ar">· ${esc(t.artist)}</span></span>${rl ? `<span class="ply-rl">${esc(rl)}${ry ? ` · ${esc(ry)}` : ''}</span>` : ''}</button>`;
     // the top bar's cover: the release's front, else the release group's for a recording on none; a click opens it
     const cov = !bar && S.playerCover && (t.rel || t.rg) && !(t.rel && PLY_CV.get(t.rel) === '') ? (t.rel
-        ? `<a class="ply-cov" href="${MB}/release/${t.rel}" target="_blank" rel="noopener" aria-label="Open the release" data-tip="${esc((t.relTitle || 'Release') + '\nClick: open the release in a new tab')}"><img${PLY_CV.has(t.rel) ? ` src="${esc(PLY_CV.get(t.rel))}"` : t.front ? ` src="${esc(caaSrc('release', t.rel))}"` : ''} data-plyrel="${t.rel}" alt=""></a>`
-        : PLY_RGCV.get(t.rg) !== '' ? `<a class="ply-cov" href="${MB}/recording/${t.rid}" target="_blank" rel="noopener" aria-label="Open the recording" data-tip="${esc(t.title + '\nClick: open the recording in a new tab')}"><img src="${esc(PLY_RGCV.get(t.rg) || caaSrc('release-group', t.rg))}" alt=""></a>` : '') : '';
+        ? `<a class="ply-cov" href="${MB}/release/${t.rel}" target="_blank" rel="noopener" aria-label="Open the release" data-tip="${esc((t.relTitle || 'Release') + '\nClick: open the release in a new tab\nRight-click: copy “title - artist”')}" data-plycopy="${esc(t.title + ' - ' + t.artist)}"><img${PLY_CV.has(t.rel) ? ` src="${esc(PLY_CV.get(t.rel))}"` : t.front ? ` src="${esc(caaSrc('release', t.rel))}"` : ''} data-plyrel="${t.rel}" alt=""></a>`
+        : PLY_RGCV.get(t.rg) !== '' ? `<a class="ply-cov" href="${MB}/recording/${t.rid}" target="_blank" rel="noopener" aria-label="Open the recording" data-tip="${esc(t.title + '\nClick: open the recording in a new tab\nRight-click: copy “title - artist”')}" data-plycopy="${esc(t.title + ' - ' + t.artist)}"><img src="${esc(PLY_RGCV.get(t.rg) || caaSrc('release-group', t.rg))}" alt=""></a>` : '') : '';
     const prog = ply.ctl && t.len ? `<span class="ply-pr sk" data-ply="seek" aria-label="Position"><i></i>${bar ? '' : '<b class="ply-hv"></b>'}</span>` : '<span class="ply-pr" aria-hidden="true"><i></i></span>';
     const menu = `<button type="button" class="ply-b ply-lb${lb && t.ok != null ? ' sent' : ''}" data-ply="lb" aria-haspopup="menu" aria-label="Playing from ${esc(p.name)}" data-tip="Playing from ${esc(p.name)}${lb && t.ok != null ? '\nListen sent' : ''}\nClick: sources, ListenBrainz, stop">${icon(p, 18)}</button>`;
     const v = +S.playerVol, vol = plyHasVol() ? `<span class="ply-vg"><button type="button" class="ply-b" data-ply="mute" aria-pressed="${!v}" aria-label="${v ? 'Mute' : 'Unmute'}" data-tip="${v ? 'Mute' : 'Unmute'}">${plyVolIc(v)}</button><span class="ply-vp"><b class="ply-vn">${v}</b><input type="range" class="ply-vol" min="0" max="100" step="1" value="${v}" style="--p:${v}%" aria-label="Volume"></span></span>` : '';
@@ -13698,6 +13698,12 @@ function plyFit() {
     plyFitRo.observe(n); if (c) plyFitRo.observe(c);
 }
 let plyFitRo = null;
+// right-click on the top bar's cover copies "title - artist"
+document.addEventListener('contextmenu', e => {
+    const c = e.target.closest?.('.ply-cov[data-plycopy]'); if (!c) return;
+    e.preventDefault();
+    try { navigator.clipboard.writeText(c.dataset.plycopy).then(() => toast('Copied ' + c.dataset.plycopy), () => toast('Copy failed')); } catch (err) { toast('Copy failed'); }
+});
 addEventListener('resize', () => plyFit());
 // the clock and the line under the track
 function plyProg() {
