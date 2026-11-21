@@ -40,6 +40,7 @@ A Platform Check link withheld for a barcode or format mismatch isn't used by de
 | Beatport, Volumo | album: it carries every track's ISRC and id, so the track URL is matched by ISRC | purchase for download |
 | Qobuz | album: `album/get` carries every track's ISRC and id; the link is the id-only `open.qobuz.com/track/<id>`, matched by ISRC | purchase for download |
 | Bandcamp, Apple Music | album page (or Bandcamp standalone track page): every track URL (Apple's from the page's `ld+json`), by position and title; a title mismatch is skipped, never guessed | free streaming / streaming |
+| Internet Archive ([#1086](https://github.com/majkinetor/musicbrainz-userscripts/issues/1086)) | item (`archive.org/metadata/<id>`): each source file and its derivatives are one track. A file without a `track` number is skipped. Tracks match by number, or by order when numbers repeat. The file's `title`, when it has one, must match. The link is `archive.org/details/<id>/<source file>`. One URL takes two relationships, so the providers `ia` and `id` are told apart by link type (`relType`, `recKinds`) | free streaming and download for free |
 | SoundCloud | set: every track's permalink, by position and title | free streaming |
 
 A provider is offered for a track only when it can be resolved (Deezer and Tidal need the track's ISRC, the others the release's album link) or the recording already links it.

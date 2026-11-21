@@ -59,6 +59,9 @@ export const PLATFORM_ICONS = {
     //    (the viewBox crops to it; Platform Check's ring pads it to keep its corners inside)
     bandcamp: { color: '#629AA9', svg: '<svg viewBox="2.25 2.25 19.5 19.5" fill="#629AA9"><path transform="translate(12 12) scale(.8) translate(-12 -12)" d="M0 18.75l7.437-13.5H24l-7.438 13.5z"/></svg>' },
 
+    // ── Internet Archive — the temple ──
+    archive: { color: '#666666', svg: '<svg viewBox="0 0 24 24" fill="#666666"><path d="M1 7.5 12 1l11 6.5z"/><rect x="2" y="8.5" width="20" height="2"/><rect x="3.6" y="11.8" width="2.4" height="7.6"/><rect x="8.2" y="11.8" width="2.4" height="7.6"/><rect x="13.4" y="11.8" width="2.4" height="7.6"/><rect x="18" y="11.8" width="2.4" height="7.6"/><rect x="1" y="20.6" width="22" height="2.4"/></svg>' },
+
     // ── Volumo — violet disc + V (stand-in) ──
     volumo: { color: '#7c4dff', svg: '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#7c4dff"/><path d="M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z" fill="#fff"/></svg>' },
 

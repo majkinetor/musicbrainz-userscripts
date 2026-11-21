@@ -19,24 +19,25 @@ Shows a release's ISRCs, fills in the missing ones from several providers, and f
 
 ## Providers
 
-| Provider                        | ISRC import | Track links | Resolved by                                                                           |
-| ------------------------------- | :---------: | :---------: | ------------------------------------------------------------------------------------- |
-| Deezer                          |      ✓      |      ✓      | ISRC, on any release                                                                  |
-| Tidal                           |      ✓      |      ✓      | ISRC, on any release                                                                  |
-| Beatport                        |      ✓      |      ✓      | the album, matched by ISRC                                                            |
-| Volumo                          |      ✓      |      ✓      | the album, matched by ISRC                                                            |
-| Qobuz                           |      ✓      |      ✓      | the album; ISRCs by position, links by ISRC                                           |
-| Apple Music                     |      ✓      |      ✓      | the album; by position (+ title for links)                                            |
-| SoundCloud                      |      ✓      |      ✓      | the set (a track URL counts as a one-track release); by position (+ title for links)  |
-| Audiomack                       |      ✓      |      ✓      | the album (a song URL counts as a one-track release); by position (+ title for links) |
-| Spotify                         |      ✓      |      ✓      | ISRCs through [a lookup service](#spotify); links from the album, by position + title |
-| Bandcamp                        |             |      ✓      | the album or standalone track page, by position + title                               |
-| [YouTube Music](#youtube-music) |             |      ✓      | the album, when linked (by position + title); else ISRC, on any release               |
-| [Amazon Music](#amazon-music)   |             |      ✓      | the album, when linked (by position + title)                                          |
-| HDtracks                        |      ✓      |             | the album                                                                             |
-| [Presto Music](#presto-music)   |      ✓      |             | the album, shop or streaming link; by position                                        |
-| [7digital](#7digital)           |      ✓      |             | the album: each track searched by title                                               |
-| SoundExchange                   |      ✓      |             | a title and artist search                                                             |
+| Provider                        | ISRC import | Track links | Resolved by                                                                            |
+| ------------------------------- | :---------: | :---------: | -------------------------------------------------------------------------------------- |
+| Deezer                          |      ✓      |      ✓      | ISRC, on any release                                                                   |
+| Tidal                           |      ✓      |      ✓      | ISRC, on any release                                                                   |
+| Beatport                        |      ✓      |      ✓      | the album, matched by ISRC                                                             |
+| Volumo                          |      ✓      |      ✓      | the album, matched by ISRC                                                             |
+| Qobuz                           |      ✓      |      ✓      | the album; ISRCs by position, links by ISRC                                            |
+| Apple Music                     |      ✓      |      ✓      | the album; by position (+ title for links)                                             |
+| SoundCloud                      |      ✓      |      ✓      | the set (a track URL counts as a one-track release); by position (+ title for links)   |
+| Audiomack                       |      ✓      |      ✓      | the album (a song URL counts as a one-track release); by position (+ title for links)  |
+| Spotify                         |      ✓      |      ✓      | ISRCs through [a lookup service](#spotify); links from the album, by position + title  |
+| Bandcamp                        |             |      ✓      | the album or standalone track page, by position + title                                |
+| Internet Archive                |             |      ✓      | the item, by track number + title; each file gets a free streaming and a download link |
+| [YouTube Music](#youtube-music) |             |      ✓      | the album, when linked (by position + title); else ISRC, on any release                |
+| [Amazon Music](#amazon-music)   |             |      ✓      | the album, when linked (by position + title)                                           |
+| HDtracks                        |      ✓      |             | the album                                                                              |
+| [Presto Music](#presto-music)   |      ✓      |             | the album, shop or streaming link; by position                                         |
+| [7digital](#7digital)           |      ✓      |             | the album: each track searched by title                                                |
+| SoundExchange                   |      ✓      |             | a title and artist search                                                              |
 
 An album-based provider needs the release's album link: already in MusicBrainz, found by Platform Check, or pasted with **(+)**. No login is needed anywhere except Qobuz outside the countries it serves (see [Qobuz](#qobuz)).
 
@@ -112,7 +113,7 @@ The **Links** tab shows, per track, what each recording already links to (**Link
 
 <img width="1000" src="./screenshots/links.png" />
 
-**Find links** resolves every track on every available provider, in parallel. A provider matched by position (Apple Music, Bandcamp, SoundCloud, Audiomack, Spotify, YouTube Music, Amazon Music) must also have the track's title, allowing a typo, a *feat.* or another apostrophe. A Deezer track that no longer plays anywhere isn't offered. **➕ Add links** adds everything found, with no authorizing needed.
+**Find links** resolves every track on every available provider, in parallel. A provider matched by position (Apple Music, Bandcamp, SoundCloud, Audiomack, Spotify, YouTube Music, Amazon Music, Internet Archive) must also have the track's title, allowing a typo, a *feat.* or another apostrophe. A Deezer track that no longer plays anywhere isn't offered. **➕ Add links** adds everything found, with no authorizing needed.
 
 Bandcamp and YouTube Music also accept a small spelling difference in a short word when the track counts, position and length agree and the match is unambiguous. The log records these matches.
 
