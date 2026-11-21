@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.160000
+// @version      2026.11.22.170000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13125,6 +13125,38 @@ async function plyCollection(id, ent, only, append, list) {
                 read = 0; plyCollTotal = 0;
             }
         }
+        // A recording collection comes by browse too: 100 recordings a request instead of one lookup each, two seconds apart
+        // behind the gate. Browse can't include releases, so the covers come after, one lookup a recording, while it plays
+        const noCover = [];
+        if (more && ent === 'recording') {
+            try {
+                for (let off = 0; q.length < room;) {
+                    const j = JSON.parse(await wsText(`recording?collection=${id}&inc=artist-credits+url-rels&limit=100&offset=${off}`, false, PLOG));
+                    if (gone()) return;
+                    const rs = j.recordings || [];
+                    plyCollTotal = +j['recording-count'] || plyCollTotal;
+                    PLOG.debug(`Collection ${id}: ${rs.length} recording(s) at ${off} of ${plyCollTotal}`);
+                    if (!rs.length) break;
+                    off += rs.length;
+                    if (!append && plyShufOn()) for (let k = rs.length - 1; k > 0; k--) { const i = Math.floor(Math.random() * (k + 1)); [rs[k], rs[i]] = [rs[i], rs[k]]; }
+                    for (const raw of rs) {
+                        if (q.length >= room) break;
+                        const g = recording(raw), srcs = plySources({ links: g.links });
+                        if (srcs.length) { const t = { key: '1-1', n: 1, title: g.title, rid: g.id, artist: acText(g.ac), len: g.len || 0, srcs, rel: '', relTitle: '', rg: '', rgRel: '', rgYear: '', standalone: true }; q.push(t); noCover.push(t); }
+                        ++read;
+                    }
+                    painted();
+                    if (q.length > sent) { plyCollLoading = true; flush(); }
+                    if (off >= plyCollTotal) break;
+                }
+                more = false;
+            } catch (e) {
+                if (gone() || q.length) throw e;
+                PLOG.info(`Collection ${id}: browse failed (${e.message}), reading it a recording at a time`);
+                read = 0; plyCollTotal = 0; noCover.length = 0;
+            }
+        }
+        if (noCover.length) setTimeout(() => plyCollCovers(noCover, my), 0);
         while ((ids.length || more) && q.length < room) {
             if (!ids.length) {
                 const x = await mbTab('collection', id, '', page++, PLOG);
@@ -13158,6 +13190,21 @@ async function plyCollection(id, ent, only, append, list) {
         toast('Loaded ' + q.length + ' recordings');
     } catch (e) { if (gone()) return; PLOG.warn('Collection: ' + e.message); toast((started ? 'Collection load stopped: ' : 'Could not load collection: ') + e.message); }
     finally { if (!gone()) { plyCollectionBusy = false; if (plyCollLoading) { plyCollLoading = false; flush(); plyListGrow(); } } }
+}
+// Fills in the covers of recordings a collection browse queued: the release group of each one's oldest release (undated ones last)
+async function plyCollCovers(ts, gen) {
+    for (const t of ts) {
+        if (gen !== plyCollGen && !ply.q.some(x => x.rid === t.rid && !x.rg)) return;
+        try {
+            const raw = await plyWsk(`recording/${t.rid}?inc=releases+release-groups`);
+            const old = (raw.releases || []).filter(r => r['release-group']).sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'))[0];
+            if (!old) continue;
+            const f = { rg: old['release-group'].id, rgRel: old.title || '', rgYear: old.date ? old.date.slice(0, 4) : '' };
+            let hit = false;
+            for (const x of [t, ...ply.q]) if (x.rid === t.rid && x.standalone && !x.rg) { Object.assign(x, f); hit = true; }
+            if (hit && !plyRemote) { plySave(); plyDraw(); plyPublish(); }
+        } catch (e) { PLOG.debug(`Cover of recording ${t.rid}: ${e.message}`); }
+    }
 }
 let plyBack = false;   // plyGo goes back through shuffle's history, which doesn't grow then
 // The last five playlists a new one replaced, newest first, each named by when it was made (plyMade: the playing one's).
