@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.170000
+// @version      2026.11.22.171000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5899,7 +5899,8 @@ function tracklist(r) {
     rowKeys = tracks.map(t => t.key);
     const plB = `<button class="tx plcfg" type="button" data-plcfg="1" aria-label="Tracklist settings" data-tip="Tracklist settings\nTrack colors and platform icons">${MBU_CFG_ICON}</button>`;
     const playable = S.player && tracks.some(t => plySources(t).length);
-    const playB = playable ? `<button class="tx" type="button" data-playall="1" aria-label="Play all" data-tip="${plyClickTip('Play the release')}">${SVG(PLY_I.play)}<span class="txl">Play</span></button>` : '';
+    const playB = playable ? `<button class="tx" type="button" data-playall="1" aria-label="Play all" data-tip="${plyClickTip('Play the release')}">${SVG(PLY_I.play)}<span class="txl">Play</span></button>`
+        : S.player && S.playerLb && r.rgId ? `<a class="tx" href="https://listenbrainz.org/album/${r.rgId}" target="_blank" rel="noopener" aria-label="Album in ListenBrainz" data-tip="Nothing here to play it from\nClick: try the album in ListenBrainz">${stIcon('listenbrainz', 18).replace('<svg', '<svg aria-hidden="true"')}<span class="txl">Play</span></a>` : '';
     const tools = `${playB}<span class="label" style="margin-right:2px">Show</span>${toggles}${plB}`;
     const isrcs = [...new Set(tracks.flatMap(t => t.isrcs))];
     const body = `<div class="tl ${cls}${S.plHover ? ' pl-hov' : ''}${S.trackStripe ? ' striped' : ''}">${rows}
