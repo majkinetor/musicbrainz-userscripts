@@ -28,3 +28,18 @@ test('the annotation editor opens from the overview without a page load', { tag:
   expect(await page.evaluate(() => window.__stay)).toBe(1);
   await page.screenshot({ path: process.env.SHOT || 'ann.png' });
 });
+
+// #1085 moved another entity's Annotation into the tab too: Apollo must be asked to build its editor there as well
+const LABEL = 'b4d3280a-184b-4a22-bc08-158052450d38';
+test("a label's annotation editor opens in the tab with Apollo's editor", { tag: '@sandbox' }, async ({ page, inject }) => {
+  await page.goto(`https://test.musicbrainz.org/label/${LABEL}`, { waitUntil: 'domcontentloaded' });
+  await idle(page);
+  await inject('event_horizon');
+  await inject('apollo_editor');
+  await expect(page.locator('#app')).toBeVisible();
+  await page.evaluate(() => { window.__stay = 1; });
+  await page.locator(`#app a[href$="/label/${LABEL}/edit_annotation"]`).first().evaluate(a => a.click());
+  await expect(page).toHaveURL(new RegExp(`/label/${LABEL}/edit_annotation$`));
+  await expect(page.locator('#eh-anno #tc-anno-wrap')).toBeVisible({ timeout: 30000 });
+  expect(await page.evaluate(() => window.__stay)).toBe(1);
+});
