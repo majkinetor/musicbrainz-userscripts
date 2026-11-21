@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.230925
+// @version      2026.11.21.232300
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -72,6 +72,7 @@
           // beyond them is broken (a bug, a clock that jumped): bring it back, for every tab after us
           const now = Date.now();
           if ((s.cool || 0) > now + MBN_MAX_HOLD) s.cool = now + MBN_MAX_HOLD;
+          if ((s.scool || 0) > now + MBN_MAX_HOLD) s.scool = now + MBN_MAX_HOLD;
           if ((s.leadUntil || 0) > now + MBN_MAX_LEAD) s.leadUntil = now + MBN_MAX_LEAD;
           // nor a queue longer than a minute: slots that waits left behind (a closed tab) are dropped
           if ((s.tat || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s.tat = Math.max(now, s.cool || 0) + 60 * MBN_GAP;
@@ -261,8 +262,11 @@
       let toldUntil = 0, toldAt = 0;
       for (;;) {
           if (o.cancelled && o.cancelled()) { await giveBack(); tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
-          let cool = 0;
-          try { cool = (JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}).cool || 0; } catch (e) { cool = (globalThis.__mbnGate || {}).cool || 0; }
+          let cool = 0, scool = 0;
+          try { const g = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; cool = g.cool || 0; scool = g.scool || 0; } catch (e) { const g = globalThis.__mbnGate || {}; cool = g.cool || 0; scool = g.scool || 0; }
+          // a search also waits out the hold MusicBrainz set for searches
+          const shed = !!o.search && scool > cool;
+          if (o.search) cool = Math.max(cool, scool);
           const now = Date.now();
           cool = seen(cool, MBN_MAX_HOLD);   // a hold is never longer than the longest one the gate sets
           const until = Math.max(booked.at, cool), left = until - now;   // a hold that appeared while we queued
@@ -271,7 +275,7 @@
               break;
           }
           if (o.log && until - t0 > 1000 && (!toldAt || until > toldUntil + 1000 || now - toldAt >= 10000)) {
-              const why = cool > booked.at ? 'MusicBrainz asked everyone to wait' : booked.why;
+              const why = cool > booked.at ? (shed ? 'MusicBrainz asked searches to wait' : 'MusicBrainz asked everyone to wait') : booked.why;
               o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + (toldAt ? ' still waits, ' + Math.round(left / 100) / 10 + 's to go' : ' waits ' + Math.round((until - t0) / 100) / 10 + 's') + ' (' + why + ')');
               toldUntil = until; toldAt = now;
           }
@@ -305,6 +309,20 @@
           const raw = header ? header('Retry-After') : null;
           const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
           const ra = Number.isFinite(secs) ? secs * 1000 : Number.isFinite(date) ? Math.max(0, date - Date.now()) : 0;
+          // MusicBrainz shed searches, not this client: only searches wait, and the shared hot is untouched
+          if (status === 503 && /^search-shed$/i.test(String(rl.who || '').trim())) {
+              const hold = await mbnState(s => {
+                  const now = Date.now();
+                  if (now > (s.scool || 0) + 30000) s.shot = 0;
+                  if (now >= (s.scool || 0)) s.shot = Math.min((s.shot || 0) + 1, 6);
+                  const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.shot), MBN_MAX_HOLD);
+                  s.scool = Math.max(s.scool || 0, now + ms);
+                  tr({ ra: raw == null ? undefined : String(raw).slice(0, 40), shold: s.scool - now, shot: s.shot }, s);
+                  return s.scool - now;
+              });
+              if (o.log) o.log('warn', 'MusicBrainz gate: HTTP 503 (search-shed) — searches hold ' + Math.round(hold / 100) / 10 + 's');
+              return { throttled: true, hold };
+          }
           const hold = await mbnState(s => {
               const now = Date.now();
               // One throttle, one step: the requests already in flight when it began all answer
@@ -323,7 +341,11 @@
           if (o.log) o.log('warn', 'MusicBrainz gate: HTTP ' + status + (raw != null ? ' (Retry-After: ' + raw + ')' : '') + ' — every script holds ' + Math.round(hold / 100) / 10 + 's');
           return { throttled: true, hold };
       }
-      if (status >= 200 && status < 500) await mbnState(s => { if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1; tr({}, s); });
+      if (status >= 200 && status < 500) await mbnState(s => {
+          if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1;
+          if (o.search && s.shot) s.shot = Date.now() > (s.scool || 0) + 30000 ? 0 : s.shot - 1;
+          tr({}, s);
+      });
       else tr({});
       return { throttled: false, hold: 0 };
   }
@@ -341,6 +363,11 @@
           let p = String(url);
           try { const u = new URL(p, location.href); p = u.pathname.replace(/^\/ws\/2\//, '') + u.search.replace(/[?&]fmt=json\b/, '').replace(/^&/, '?'); } catch (e) {}
           o = Object.assign({}, o, { label: p.slice(0, 120) });
+      }
+      if (o.search === undefined) {   // a search (?query=) waits out a search-shed hold, nothing else does
+          let q = false;
+          try { q = new URL(String(url), location.href).searchParams.has('query'); } catch (e) {}
+          o = Object.assign({}, o, { search: q });
       }
       // `at` gives the URL at the moment the request leaves: a queued read's inc list can still grow
       const go = async at => {

@@ -115,6 +115,7 @@ function stGateWhat(ev) {
       x.push('HTTP ' + ev.st);
       if (ev.ra != null) x.push('Retry-After ' + ev.ra);
       if (ev.hold) x.push('everyone holds ' + stGateSec(ev.hold));
+      if (ev.shold) x.push('searches hold ' + stGateSec(ev.shold));
       if (ev.hot) x.push('hot ' + ev.hot);
       if (ev.who || ev.rem != null || ev.lim) x.push('rate limit' + (ev.who ? ' ' + ev.who : '') + (ev.rem != null ? ', ' + ev.rem + ' left' : '') + (ev.lim ? ' of ' + ev.lim : '') + (ev.rst ? ', reset ' + ev.rst : ''));
       break;

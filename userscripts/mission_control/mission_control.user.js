@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.21.230925
+// @version      2026.11.21.232300
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -2758,6 +2758,7 @@ async function mbnState(fn) {
         // beyond them is broken (a bug, a clock that jumped): bring it back, for every tab after us
         const now = Date.now();
         if ((s.cool || 0) > now + MBN_MAX_HOLD) s.cool = now + MBN_MAX_HOLD;
+        if ((s.scool || 0) > now + MBN_MAX_HOLD) s.scool = now + MBN_MAX_HOLD;
         if ((s.leadUntil || 0) > now + MBN_MAX_LEAD) s.leadUntil = now + MBN_MAX_LEAD;
         // nor a queue longer than a minute: slots that waits left behind (a closed tab) are dropped
         if ((s.tat || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s.tat = Math.max(now, s.cool || 0) + 60 * MBN_GAP;
@@ -2947,8 +2948,11 @@ async function mbnSlot(o) {
     let toldUntil = 0, toldAt = 0;
     for (;;) {
         if (o.cancelled && o.cancelled()) { await giveBack(); tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
-        let cool = 0;
-        try { cool = (JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}).cool || 0; } catch (e) { cool = (globalThis.__mbnGate || {}).cool || 0; }
+        let cool = 0, scool = 0;
+        try { const g = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; cool = g.cool || 0; scool = g.scool || 0; } catch (e) { const g = globalThis.__mbnGate || {}; cool = g.cool || 0; scool = g.scool || 0; }
+        // a search also waits out the hold MusicBrainz set for searches
+        const shed = !!o.search && scool > cool;
+        if (o.search) cool = Math.max(cool, scool);
         const now = Date.now();
         cool = seen(cool, MBN_MAX_HOLD);   // a hold is never longer than the longest one the gate sets
         const until = Math.max(booked.at, cool), left = until - now;   // a hold that appeared while we queued
@@ -2957,7 +2961,7 @@ async function mbnSlot(o) {
             break;
         }
         if (o.log && until - t0 > 1000 && (!toldAt || until > toldUntil + 1000 || now - toldAt >= 10000)) {
-            const why = cool > booked.at ? 'MusicBrainz asked everyone to wait' : booked.why;
+            const why = cool > booked.at ? (shed ? 'MusicBrainz asked searches to wait' : 'MusicBrainz asked everyone to wait') : booked.why;
             o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + (toldAt ? ' still waits, ' + Math.round(left / 100) / 10 + 's to go' : ' waits ' + Math.round((until - t0) / 100) / 10 + 's') + ' (' + why + ')');
             toldUntil = until; toldAt = now;
         }
@@ -2991,6 +2995,20 @@ async function mbnAnswer(status, header, o) {
         const raw = header ? header('Retry-After') : null;
         const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
         const ra = Number.isFinite(secs) ? secs * 1000 : Number.isFinite(date) ? Math.max(0, date - Date.now()) : 0;
+        // MusicBrainz shed searches, not this client: only searches wait, and the shared hot is untouched
+        if (status === 503 && /^search-shed$/i.test(String(rl.who || '').trim())) {
+            const hold = await mbnState(s => {
+                const now = Date.now();
+                if (now > (s.scool || 0) + 30000) s.shot = 0;
+                if (now >= (s.scool || 0)) s.shot = Math.min((s.shot || 0) + 1, 6);
+                const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.shot), MBN_MAX_HOLD);
+                s.scool = Math.max(s.scool || 0, now + ms);
+                tr({ ra: raw == null ? undefined : String(raw).slice(0, 40), shold: s.scool - now, shot: s.shot }, s);
+                return s.scool - now;
+            });
+            if (o.log) o.log('warn', 'MusicBrainz gate: HTTP 503 (search-shed) — searches hold ' + Math.round(hold / 100) / 10 + 's');
+            return { throttled: true, hold };
+        }
         const hold = await mbnState(s => {
             const now = Date.now();
             // One throttle, one step: the requests already in flight when it began all answer
@@ -3009,7 +3027,11 @@ async function mbnAnswer(status, header, o) {
         if (o.log) o.log('warn', 'MusicBrainz gate: HTTP ' + status + (raw != null ? ' (Retry-After: ' + raw + ')' : '') + ' — every script holds ' + Math.round(hold / 100) / 10 + 's');
         return { throttled: true, hold };
     }
-    if (status >= 200 && status < 500) await mbnState(s => { if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1; tr({}, s); });
+    if (status >= 200 && status < 500) await mbnState(s => {
+        if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1;
+        if (o.search && s.shot) s.shot = Date.now() > (s.scool || 0) + 30000 ? 0 : s.shot - 1;
+        tr({}, s);
+    });
     else tr({});
     return { throttled: false, hold: 0 };
 }
@@ -3027,6 +3049,11 @@ async function mbnFetch(url, init, o) {
         let p = String(url);
         try { const u = new URL(p, location.href); p = u.pathname.replace(/^\/ws\/2\//, '') + u.search.replace(/[?&]fmt=json\b/, '').replace(/^&/, '?'); } catch (e) {}
         o = Object.assign({}, o, { label: p.slice(0, 120) });
+    }
+    if (o.search === undefined) {   // a search (?query=) waits out a search-shed hold, nothing else does
+        let q = false;
+        try { q = new URL(String(url), location.href).searchParams.has('query'); } catch (e) {}
+        o = Object.assign({}, o, { search: q });
     }
     // `at` gives the URL at the moment the request leaves: a queued read's inc list can still grow
     const go = async at => {

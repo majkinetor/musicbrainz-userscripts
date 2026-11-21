@@ -92,7 +92,7 @@ export const mbThrottle = (() => {
         const gateLog = (lv, m) => (lv === 'warn' ? log.warn(m) : logDebug(m));
         for (let attempt = 0; attempt <= item.retries; attempt++) {
             await _waitForPause();
-            if (gated) await mbnSlot({ label: shortUrl, log: gateLog });
+            if (gated) await mbnSlot({ label: shortUrl, log: gateLog, search: /[?&]query=/.test(item.url) });
             _totalRequests++;
             const attemptTag = attempt === 0 ? '' : ` (retry ${attempt})`;
             // #87 diagnostic: log request start with in-flight + queued
@@ -107,7 +107,7 @@ export const mbThrottle = (() => {
                 const res = gated ? await mbnWsFetch(item.url, { signal: ctrl.signal }) : await mbnFetch(item.url, { signal: ctrl.signal }, { log: gateLog });
                 const elapsed = Date.now() - t0;
                 if (gated) {
-                    const a = await mbnAnswer(res.status, n => res.headers.get(n), { log: gateLog });
+                    const a = await mbnAnswer(res.status, n => res.headers.get(n), { log: gateLog, search: /[?&]query=/.test(item.url) });
                     if (a.throttled) { _rateLimited++; logDebug(`${tag} <- ${res.status} in ${elapsed}ms; the shared gate holds ${a.hold}ms`); continue; }
                 }
                 if (res.status === 429 || res.status === 503) {

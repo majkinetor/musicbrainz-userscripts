@@ -79,7 +79,7 @@ The window lists the latest 20 posts and loads older ones as you scroll to the e
 
 ## Gate log
 
-The scripts send their MusicBrainz requests through one shared queue, the gate. It spaces them out across all tabs, and when MusicBrainz answers 503 or 429, every script waits. If a request is asked again while the first one is still on its way, both share one answer (**shared** in the log). If two waiting requests differ only in what extra data they ask for, the gate sends one request for both (**merge** in the log). Open **Gate log** from the [command palette](#command-palette) to see what goes through it.
+The scripts send their MusicBrainz requests through one shared queue, the gate. It spaces them out across all tabs, and when MusicBrainz answers 503 or 429, every script waits. If a request is asked again while the first one is still on its way, both share one answer (**join** in the log). If two waiting requests differ only in what extra data they ask for, the gate sends one request for both (**merge** in the log). Open **Gate log** from the [command palette](#command-palette) to see what goes through it.
 
 The window works like the Activity log. You move it by its title bar, minimize it to that bar, and resize it by its corner. A double-click on the title bar makes it full screen. It stays open, in its place and size, when you reload the page or open another one.
 
@@ -87,7 +87,7 @@ The top line shows the gate now: the wait after a 503 (**Hold**), how many 503s 
 
 Under it, the last 60 seconds show as one lane per tab, with the scripts of that tab and this tab first. Each try is a bar: gray while it waits in the gate, then green, yellow (busy, tried again) or red. A red band across all lanes is a hold that MusicBrainz asked for.
 
-The table lists the requests of every tab, newest first: the script, the request, one square per try, the result, the wait and the rate limit. A click on a row shows its own time line and its steps, and a right click shows or hides the steps of all rows. The lanes stop moving while the mouse is over them, so you can read a tip. The rate limit shows when MusicBrainz sends its headers: `search-shed` means that MusicBrainz sheds load for every user, not only for you. **Failed** and **Retried** show only those requests, and a second click shows all again. **This tab only** hides the other tabs, **Copy** copies it all as Markdown for an issue, and **Clear** deletes it. Each tab keeps its last 400 events.
+The table lists the requests of every tab, newest first: the script, the request, one square per try, the result, the wait and the rate limit. A click on a row shows its own time line and its steps, and a right click shows or hides the steps of all rows. The lanes stop moving while the mouse is over them, so you can read a tip. The rate limit shows when MusicBrainz sends its headers: `search-shed` means that MusicBrainz refuses searches for every user, not only for you. Then only searches wait, and other requests go on. **Failed** and **Retried** show only those requests, and a second click shows all again. **This tab only** hides the other tabs, **Copy** copies it all as Markdown for an issue, and **Clear** deletes it. Each tab keeps its last 400 events.
 
 ## Command palette
 

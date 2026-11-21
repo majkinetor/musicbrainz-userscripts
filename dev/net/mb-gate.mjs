@@ -12,6 +12,8 @@
 //   - a 429/503 anywhere holds everyone: `cool` is the time nobody starts before, and
 //     `hot` stretches it while the throttling goes on (Retry-After is a floor, since
 //     MusicBrainz sends "Retry-After: 0");
+//   - but a 503 with X-RateLimit-Who: search-shed refuses searches only, so it holds only
+//     searches (`scool`, stretched by `shot`): lookups and browses go on at their pace;
 //   - an interactive request (a click, a picker search) is not queued behind background
 //     work: it starts as soon as the hold allows, and still counts against the budget;
 //   - a page drawing what its reader asked for (Event Horizon) takes the lead (#847): while it
@@ -20,7 +22,7 @@
 // Pacing is by request STARTS, not completions (#575): a slow search must not stall the
 // ones behind it. Only /ws/2 is gated; /ws/js and the website's forms are not rate-limited
 // the same way. The X-RateLimit-* headers MusicBrainz sends are server-wide budgets
-// (X-RateLimit-Who: search-shed), not this client's, so the gate doesn't steer by them.
+// (global, search-shed), not this client's, so the gate doesn't steer by how much is left.
 //
 // The website side has its own guard instead, the "Verifying your browser" check: mbnFetch
 // passes it again when it answers a request (#733), so route every /ws/js call through it.
@@ -70,6 +72,7 @@ export async function mbnState(fn) {
         // beyond them is broken (a bug, a clock that jumped): bring it back, for every tab after us
         const now = Date.now();
         if ((s.cool || 0) > now + MBN_MAX_HOLD) s.cool = now + MBN_MAX_HOLD;
+        if ((s.scool || 0) > now + MBN_MAX_HOLD) s.scool = now + MBN_MAX_HOLD;
         if ((s.leadUntil || 0) > now + MBN_MAX_LEAD) s.leadUntil = now + MBN_MAX_LEAD;
         // nor a queue longer than a minute: slots that waits left behind (a closed tab) are dropped
         if ((s.tat || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s.tat = Math.max(now, s.cool || 0) + 60 * MBN_GAP;
@@ -234,6 +237,7 @@ export function mbnTrace(ev) {
  *   o.cancelled   () => true stops the wait (a superseded search, a Stop): resolves { ok: false }
  *   o.log         (level, message) for waits worth mentioning (over a second)
  *   o.label       what the request is, for the log
+ *   o.search      a search (?query=): it also waits out a search-shed hold (mbnFetch sets it)
  * Resolves { ok: true, waited } when the request may start.
  */
 export async function mbnSlot(o) {
@@ -287,8 +291,11 @@ export async function mbnSlot(o) {
     let toldUntil = 0, toldAt = 0;
     for (;;) {
         if (o.cancelled && o.cancelled()) { await giveBack(); tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
-        let cool = 0;
-        try { cool = (JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}).cool || 0; } catch (e) { cool = (globalThis.__mbnGate || {}).cool || 0; }
+        let cool = 0, scool = 0;
+        try { const g = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; cool = g.cool || 0; scool = g.scool || 0; } catch (e) { const g = globalThis.__mbnGate || {}; cool = g.cool || 0; scool = g.scool || 0; }
+        // a search also waits out the hold MusicBrainz set for searches
+        const shed = !!o.search && scool > cool;
+        if (o.search) cool = Math.max(cool, scool);
         const now = Date.now();
         cool = seen(cool, MBN_MAX_HOLD);   // a hold is never longer than the longest one the gate sets
         const until = Math.max(booked.at, cool), left = until - now;   // a hold that appeared while we queued
@@ -297,7 +304,7 @@ export async function mbnSlot(o) {
             break;
         }
         if (o.log && until - t0 > 1000 && (!toldAt || until > toldUntil + 1000 || now - toldAt >= 10000)) {
-            const why = cool > booked.at ? 'MusicBrainz asked everyone to wait' : booked.why;
+            const why = cool > booked.at ? (shed ? 'MusicBrainz asked searches to wait' : 'MusicBrainz asked everyone to wait') : booked.why;
             o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + (toldAt ? ' still waits, ' + Math.round(left / 100) / 10 + 's to go' : ' waits ' + Math.round((until - t0) / 100) / 10 + 's') + ' (' + why + ')');
             toldUntil = until; toldAt = now;
         }
@@ -328,6 +335,7 @@ export async function mbnLead(token, ms) {
 /**
  * Tell the gate how MusicBrainz answered. `header(name)` returns a response header or null.
  * A 429/503 holds every caller on the origin; a clean answer earns some room back.
+ * A 503 with X-RateLimit-Who: search-shed holds only searches (o.search marks one).
  * Resolves { throttled, hold } — hold is how long everyone now waits, in ms.
  */
 export async function mbnAnswer(status, header, o) {
@@ -342,6 +350,20 @@ export async function mbnAnswer(status, header, o) {
         const raw = header ? header('Retry-After') : null;
         const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
         const ra = Number.isFinite(secs) ? secs * 1000 : Number.isFinite(date) ? Math.max(0, date - Date.now()) : 0;
+        // MusicBrainz shed searches, not this client: only searches wait, and the shared hot is untouched
+        if (status === 503 && /^search-shed$/i.test(String(rl.who || '').trim())) {
+            const hold = await mbnState(s => {
+                const now = Date.now();
+                if (now > (s.scool || 0) + 30000) s.shot = 0;
+                if (now >= (s.scool || 0)) s.shot = Math.min((s.shot || 0) + 1, 6);
+                const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.shot), MBN_MAX_HOLD);
+                s.scool = Math.max(s.scool || 0, now + ms);
+                tr({ ra: raw == null ? undefined : String(raw).slice(0, 40), shold: s.scool - now, shot: s.shot }, s);
+                return s.scool - now;
+            });
+            if (o.log) o.log('warn', 'MusicBrainz gate: HTTP 503 (search-shed) — searches hold ' + Math.round(hold / 100) / 10 + 's');
+            return { throttled: true, hold };
+        }
         const hold = await mbnState(s => {
             const now = Date.now();
             // One throttle, one step: the requests already in flight when it began all answer
@@ -360,7 +382,11 @@ export async function mbnAnswer(status, header, o) {
         if (o.log) o.log('warn', 'MusicBrainz gate: HTTP ' + status + (raw != null ? ' (Retry-After: ' + raw + ')' : '') + ' — every script holds ' + Math.round(hold / 100) / 10 + 's');
         return { throttled: true, hold };
     }
-    if (status >= 200 && status < 500) await mbnState(s => { if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1; tr({}, s); });
+    if (status >= 200 && status < 500) await mbnState(s => {
+        if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1;
+        if (o.search && s.shot) s.shot = Date.now() > (s.scool || 0) + 30000 ? 0 : s.shot - 1;
+        tr({}, s);
+    });
     else tr({});
     return { throttled: false, hold: 0 };
 }
@@ -390,6 +416,11 @@ export async function mbnFetch(url, init, o) {
         let p = String(url);
         try { const u = new URL(p, location.href); p = u.pathname.replace(/^\/ws\/2\//, '') + u.search.replace(/[?&]fmt=json\b/, '').replace(/^&/, '?'); } catch (e) {}
         o = Object.assign({}, o, { label: p.slice(0, 120) });
+    }
+    if (o.search === undefined) {   // a search (?query=) waits out a search-shed hold, nothing else does
+        let q = false;
+        try { q = new URL(String(url), location.href).searchParams.has('query'); } catch (e) {}
+        o = Object.assign({}, o, { search: q });
     }
     // `at` gives the URL at the moment the request leaves: a queued read's inc list can still grow
     const go = async at => {

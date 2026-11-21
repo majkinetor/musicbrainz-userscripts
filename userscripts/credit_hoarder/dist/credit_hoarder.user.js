@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.11.21.231105
+// @version      2026.11.21.232328
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -286,6 +286,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       s.version = MBN_VERSION;
       const now = Date.now();
       if ((s.cool || 0) > now + MBN_MAX_HOLD) s.cool = now + MBN_MAX_HOLD;
+      if ((s.scool || 0) > now + MBN_MAX_HOLD) s.scool = now + MBN_MAX_HOLD;
       if ((s.leadUntil || 0) > now + MBN_MAX_LEAD) s.leadUntil = now + MBN_MAX_LEAD;
       if ((s.tat || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s.tat = Math.max(now, s.cool || 0) + 60 * MBN_GAP;
       if ((s.itat || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s.itat = Math.max(now, s.cool || 0) + 60 * MBN_GAP;
@@ -541,12 +542,18 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         tr("cancel", { w: Date.now() - t0 });
         return { ok: false, waited: Date.now() - t0 };
       }
-      let cool = 0;
+      let cool = 0, scool = 0;
       try {
-        cool = (JSON.parse(localStorage.getItem(MBN_KEY) || "null") || {}).cool || 0;
+        const g = JSON.parse(localStorage.getItem(MBN_KEY) || "null") || {};
+        cool = g.cool || 0;
+        scool = g.scool || 0;
       } catch (e) {
-        cool = (globalThis.__mbnGate || {}).cool || 0;
+        const g = globalThis.__mbnGate || {};
+        cool = g.cool || 0;
+        scool = g.scool || 0;
       }
+      const shed = !!o.search && scool > cool;
+      if (o.search) cool = Math.max(cool, scool);
       const now = Date.now();
       cool = seen(cool, MBN_MAX_HOLD);
       const until = Math.max(booked.at, cool), left = until - now;
@@ -559,7 +566,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         break;
       }
       if (o.log && until - t0 > 1e3 && (!toldAt || until > toldUntil + 1e3 || now - toldAt >= 1e4)) {
-        const why = cool > booked.at ? "MusicBrainz asked everyone to wait" : booked.why;
+        const why = cool > booked.at ? shed ? "MusicBrainz asked searches to wait" : "MusicBrainz asked everyone to wait" : booked.why;
         o.log("info", "MusicBrainz gate: " + (o.label || "request") + (toldAt ? " still waits, " + Math.round(left / 100) / 10 + "s to go" : " waits " + Math.round((until - t0) / 100) / 10 + "s") + " (" + why + ")");
         toldUntil = until;
         toldAt = now;
@@ -589,6 +596,19 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       const raw = header ? header("Retry-After") : null;
       const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
       const ra = Number.isFinite(secs) ? secs * 1e3 : Number.isFinite(date) ? Math.max(0, date - Date.now()) : 0;
+      if (status === 503 && /^search-shed$/i.test(String(rl.who || "").trim())) {
+        const hold2 = await mbnState((s) => {
+          const now = Date.now();
+          if (now > (s.scool || 0) + 3e4) s.shot = 0;
+          if (now >= (s.scool || 0)) s.shot = Math.min((s.shot || 0) + 1, 6);
+          const ms = Math.min(Math.max(1e3, ra) * Math.max(1, s.shot), MBN_MAX_HOLD);
+          s.scool = Math.max(s.scool || 0, now + ms);
+          tr({ ra: raw == null ? void 0 : String(raw).slice(0, 40), shold: s.scool - now, shot: s.shot }, s);
+          return s.scool - now;
+        });
+        if (o.log) o.log("warn", "MusicBrainz gate: HTTP 503 (search-shed) \u2014 searches hold " + Math.round(hold2 / 100) / 10 + "s");
+        return { throttled: true, hold: hold2 };
+      }
       const hold = await mbnState((s) => {
         const now = Date.now();
         if (now > (s.cool || 0) + 3e4) s.hot = 0;
@@ -603,6 +623,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     }
     if (status >= 200 && status < 500) await mbnState((s) => {
       if (s.hot) s.hot = Date.now() > (s.cool || 0) + 3e4 ? 0 : s.hot - 1;
+      if (o.search && s.shot) s.shot = Date.now() > (s.scool || 0) + 3e4 ? 0 : s.shot - 1;
       tr({}, s);
     });
     else tr({});
@@ -624,6 +645,14 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       } catch (e) {
       }
       o = Object.assign({}, o, { label: p.slice(0, 120) });
+    }
+    if (o.search === void 0) {
+      let q = false;
+      try {
+        q = new URL(String(url), location.href).searchParams.has("query");
+      } catch (e) {
+      }
+      o = Object.assign({}, o, { search: q });
     }
     const go = async (at) => {
       for (let attempt = 1; ; attempt++) {
@@ -950,7 +979,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       const gateLog = (lv, m) => lv === "warn" ? log.warn(m) : logDebug(m);
       for (let attempt = 0; attempt <= item.retries; attempt++) {
         await _waitForPause();
-        if (gated) await mbnSlot({ label: shortUrl, log: gateLog });
+        if (gated) await mbnSlot({ label: shortUrl, log: gateLog, search: /[?&]query=/.test(item.url) });
         _totalRequests++;
         const attemptTag = attempt === 0 ? "" : ` (retry ${attempt})`;
         logDebug(`${tag} [running=${_running} queued=${_queue.length}] GET ${shortUrl}${attemptTag}`);
@@ -961,7 +990,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
           const res = gated ? await mbnWsFetch(item.url, { signal: ctrl.signal }) : await mbnFetch(item.url, { signal: ctrl.signal }, { log: gateLog });
           const elapsed = Date.now() - t0;
           if (gated) {
-            const a = await mbnAnswer(res.status, (n) => res.headers.get(n), { log: gateLog });
+            const a = await mbnAnswer(res.status, (n) => res.headers.get(n), { log: gateLog, search: /[?&]query=/.test(item.url) });
             if (a.throttled) {
               _rateLimited++;
               logDebug(`${tag} <- ${res.status} in ${elapsed}ms; the shared gate holds ${a.hold}ms`);

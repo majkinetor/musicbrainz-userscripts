@@ -154,7 +154,7 @@ After *Open in window* a small MusicBrainz window (`/?eh-player-window=1`) owns 
 
 ## Network usage
 
-All scripts share one gate for MusicBrainz, across tabs: about one ws/2 request a second, and everyone holds when MusicBrainz asks for a wait. Event Horizon adds these rules:
+All scripts share one gate for MusicBrainz, across tabs: about one ws/2 request a second, and everyone holds when MusicBrainz asks for a wait (only searches, when MusicBrainz refuses searches). Event Horizon adds these rules:
 
 | Request                          | Place                                                                |
 | -------------------------------- | -------------------------------------------------------------------- |
