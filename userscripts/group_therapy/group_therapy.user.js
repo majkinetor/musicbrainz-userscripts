@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.223115
+// @version      2026.11.21.224315
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -162,17 +162,20 @@
   }
   function mbnTrace(ev) {
       try {
-          const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', script: '', swept: 0 });
+          const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', swept: 0 });
           if (!g.tab) {
               try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
               if (!g.tab) { g.tab = Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5); try { sessionStorage.setItem(MBN_KEY + '-tab', g.tab); } catch (e) {} }
-              try { g.script = String(GM_info.script.name || ''); } catch (e) {}
           }
+          // the name is read per call, never kept in the shared object: in String Theory's bundle every
+          // member runs its own copy of the gate with its own GM_info, but globalThis is the bundle's one
+          let script = '';
+          try { script = String(GM_info.script.name || ''); } catch (e) {}
           const pre = MBN_KEY + '-trace:', key = pre + g.tab, now = Date.now();
           let list = [];
           try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}
           if (!Array.isArray(list)) list = [];
-          list.push(Object.assign({ t: now, s: g.script }, ev));
+          list.push(Object.assign({ t: now, s: script }, ev));
           if (list.length > MBN_TRACE_MAX) list = list.slice(-MBN_TRACE_MAX);
           localStorage.setItem(key, JSON.stringify(list));
           if (now - g.swept > 60000) {   // once a minute: drop the traces of tabs gone quiet for an hour

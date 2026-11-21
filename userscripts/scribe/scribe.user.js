@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.223115
+// @version      2026.11.21.224315
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the corner button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBkPSJNNDYgMjQgTDI2IDI0IEwyNiAxMDQgTDQ2IDEwNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04MiAyNCBMMTAyIDI0IEwxMDIgMTA0IEw4MiAxMDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJmNmY1NCIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNjQgNDAgTDUxIDY2IEw2NCA5NCBMNzcgNjYgWiIgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iNjQiIHkxPSI3NCIgeDI9IjY0IiB5Mj0iOTIiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==
@@ -159,17 +159,20 @@
   }
   function mbnTrace(ev) {
       try {
-          const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', script: '', swept: 0 });
+          const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', swept: 0 });
           if (!g.tab) {
               try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
               if (!g.tab) { g.tab = Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5); try { sessionStorage.setItem(MBN_KEY + '-tab', g.tab); } catch (e) {} }
-              try { g.script = String(GM_info.script.name || ''); } catch (e) {}
           }
+          // the name is read per call, never kept in the shared object: in String Theory's bundle every
+          // member runs its own copy of the gate with its own GM_info, but globalThis is the bundle's one
+          let script = '';
+          try { script = String(GM_info.script.name || ''); } catch (e) {}
           const pre = MBN_KEY + '-trace:', key = pre + g.tab, now = Date.now();
           let list = [];
           try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}
           if (!Array.isArray(list)) list = [];
-          list.push(Object.assign({ t: now, s: g.script }, ev));
+          list.push(Object.assign({ t: now, s: script }, ev));
           if (list.length > MBN_TRACE_MAX) list = list.slice(-MBN_TRACE_MAX);
           localStorage.setItem(key, JSON.stringify(list));
           if (now - g.swept > 60000) {   // once a minute: drop the traces of tabs gone quiet for an hour

@@ -194,17 +194,20 @@ export function mbnSleep(ms, cancelled) {
  */
 export function mbnTrace(ev) {
     try {
-        const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', script: '', swept: 0 });
+        const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', swept: 0 });
         if (!g.tab) {
             try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
             if (!g.tab) { g.tab = Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5); try { sessionStorage.setItem(MBN_KEY + '-tab', g.tab); } catch (e) {} }
-            try { g.script = String(GM_info.script.name || ''); } catch (e) {}
         }
+        // the name is read per call, never kept in the shared object: in String Theory's bundle every
+        // member runs its own copy of the gate with its own GM_info, but globalThis is the bundle's one
+        let script = '';
+        try { script = String(GM_info.script.name || ''); } catch (e) {}
         const pre = MBN_KEY + '-trace:', key = pre + g.tab, now = Date.now();
         let list = [];
         try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}
         if (!Array.isArray(list)) list = [];
-        list.push(Object.assign({ t: now, s: g.script }, ev));
+        list.push(Object.assign({ t: now, s: script }, ev));
         if (list.length > MBN_TRACE_MAX) list = list.slice(-MBN_TRACE_MAX);
         localStorage.setItem(key, JSON.stringify(list));
         if (now - g.swept > 60000) {   // once a minute: drop the traces of tabs gone quiet for an hour
