@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.155958
+// @version      2026.11.21.161450
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5563,6 +5563,38 @@ function edTracksHtml(e) {
         return `<tr><td class="n">${esc(t.number || String(t.position))}</td><td>${entA('recording', t.recording && t.recording.id, t.title)}${ac && ac !== rel ? ` <span class="sub">· ${ac}</span>` : ''}</td><td class="num">${t.length ? dur(t.length) : ''}</td></tr>`;
     }).join('')}</table>`).join('');
 }
+// a right click opens every row: the rows of one release group load their tracklists together
+async function edBatch(rows) {
+    const redraw = () => { const y = scrollY; render(); scrollTo(0, y); };
+    rows = rows.filter(([i]) => !Array.isArray(edTracks.get(i)) && edTracks.get(i) !== 'loading');
+    rows.forEach(([i]) => { edOpen.add(i); edTracks.set(i, 'loading'); });
+    redraw();
+    const by = new Map();
+    for (const [i, g] of rows) (by.get(g) || by.set(g, []).get(g)).push(i);
+    const alone = [];
+    for (const [g, ids] of by) {
+        if (!g || ids.length < 2) { alone.push(...ids); continue; }
+        const want = new Set(ids);
+        try {
+            for (let o = 0, n = 1; o < n && want.size && o < 1000; o += 25) {
+                const j = await ws(`release?release-group=${g}&inc=recordings+artist-credits&limit=25&offset=${o}`);
+                n = j['release-count'] || 0;
+                for (const r of j.releases || []) {
+                    if (!want.has(r.id)) continue;
+                    const ms = r.media || [];
+                    if (ms.some(m => (m.tracks || []).length < (m['track-count'] || 0))) continue;
+                    edTracks.set(r.id, ms); want.delete(r.id);
+                }
+                redraw();
+            }
+        } catch (x) { LOG.err('tracklists: ' + x.message); }
+        alone.push(...want);
+    }
+    for (const i of alone) {
+        try { edTracks.set(i, (await ws(`release/${i}?inc=recordings+artist-credits`)).media || []); } catch (x) { edTracks.set(i, 'error'); }
+        redraw();
+    }
+}
 async function edToggle(id) {
     if (edOpen.delete(id)) return;
     edOpen.add(id);
@@ -5655,7 +5687,7 @@ function evCell(e) {
     for (const v of rest) { const k = v.date || ''; by.set(k, [...(by.get(k) || []), v.iso || '?']); }
     return evOne(vs[0], ` <span class="popwrap"><button class="chip pn" type="button" data-pop="ev-${e.id}" aria-expanded="false" data-tip="${rest.length} more release events">+${rest.length}</button><div class="pop ev-pop" id="pop-ev-${e.id}" hidden>${[...by].map(([d, isos]) => `<div class="h label">${d ? fdate(d) : 'No date'} · ${isos.length}</div><div class="evs">${isos.map(i => `<span class="iso">${esc(i)}</span>`).join('')}</div>`).join('')}</div></span>`);
 }
-function edTable(es, curId, flat, part) {
+function edTable(es, curId, flat, part, edRg) {
     const sk = (S.edSort || '').replace(/^-/, ''), desc = (S.edSort || '').startsWith('-'), col = ED_COLS.find(c => c[0] === sk);
     if (col) es = [...es].sort((a, b) => (desc ? -1 : 1) * col[2](a).localeCompare(col[2](b), undefined, { sensitivity: 'base', numeric: true }) || (a.date || '9').localeCompare(b.date || '9'));
     const st = colState('ed');
@@ -5672,7 +5704,7 @@ function edTable(es, curId, flat, part) {
                 artist: [acHtml(e.ac)],
                 format: [esc(fmtSummary(e.formats))],
                 rgtype: [esc(e.rgType || '')],
-                tracks: [`<button class="ed-tr" type="button" data-edtr="${e.id}" aria-expanded="${edOpen.has(e.id)}" data-tip="${edOpen.has(e.id) ? 'Hide' : 'Show'} the tracklist&#10;Right-click: ${edOpen.has(e.id) ? 'hide' : 'show'} every row's tracklist">${e.counts.join(' + ')}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>`, 'num'],
+                tracks: [`<button class="ed-tr" type="button" data-edtr="${e.id}" data-edrg="${(e.rg && e.rg.id) || edRg || ''}" aria-expanded="${edOpen.has(e.id)}" data-tip="${edOpen.has(e.id) ? 'Hide' : 'Show'} the tracklist&#10;Right-click: ${edOpen.has(e.id) ? 'hide' : 'show'} every row's tracklist">${e.counts.join(' + ')}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>`, 'num'],
                 date: [evCell(e)],
                 label: [e.li.map(l => `<div>${l.name ? entA('label', l.id, l.name) : ''}</div>`).join('')],
                 catno: [e.li.map(l => `<div>${esc(l.catno)}</div>`).join(''), 'mono'],
@@ -5722,7 +5754,7 @@ function edHtml(r, eds, count) {
     if (r.native) filters = filters.replace(/<button class="ed-sw"[\s\S]*?<\/button>/, '');
     let body;
     if (grp) body = lbGroupsHtml(shown, view);
-    else if (view === 'table') body = edTable(shown, r.id, paged || r.native, paged);
+    else if (view === 'table') body = edTable(shown, r.id, paged || r.native, paged, r.rgId);
     else if (view === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id, !r.id)).join('')}</div>`;
     else if (view === 'format') body = `<div class="ed-groups">${kindList.filter(([k]) => shown.some(e => fmtKind(e.formats[0]) === k)).map(([k]) => {
             const es = shown.filter(e => fmtKind(e.formats[0]) === k);
@@ -17128,9 +17160,9 @@ function build() {
         const t = ev.target.closest('.ed-tr[data-edtr]') || (erow && erow.querySelector('.ed-tr[data-edtr]'));
         if (t) {
             ev.preventDefault();
-            const ids = [...t.closest('tbody').querySelectorAll('.ed-tr[data-edtr]')].map(x => x.dataset.edtr);
+            const bs = [...t.closest('tbody').querySelectorAll('.ed-tr[data-edtr]')], ids = bs.map(x => x.dataset.edtr);
             if (edOpen.has(t.dataset.edtr)) { ids.forEach(i => edOpen.delete(i)); const y = scrollY; render(); scrollTo(0, y); }
-            else (async () => { for (const i of ids) if (!edOpen.has(i)) await edToggle(i); })();
+            else { ids.forEach(i => edOpen.add(i)); edBatch(bs.map(x => [x.dataset.edtr, x.dataset.edrg])); }
             return;
         }
         // a platform icon with more links: right-click opens its menu, the dot beside it is a small target (majkinetor)
