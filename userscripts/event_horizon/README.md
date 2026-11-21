@@ -69,10 +69,6 @@ While you tune, the settings window fades when the mouse leaves it, so you see t
 > [!NOTE]
 > Motion pauses in a hidden tab and respects reduced motion.
 
-## Sections
-
-Click a card's header to fold it; right-click to fold its siblings too. Reorder and hide cards from the header menu; each entity remembers its cards' state. Some cards have their own options at the right.
-
 ## Tracklist
 
 Open a track for its recording and work credits. The icons after a title copy its MBID; Ctrl-click opens it. Streaming platforms show as icons, your favourites first and the rest behind **+N**; a dotted icon has several links, right-click it for the list.
