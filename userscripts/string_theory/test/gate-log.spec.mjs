@@ -1,0 +1,62 @@
+// The Gate log window: requests grouped from the gate's trace events, one lane per tab, the count,
+// and the window kept like the Activity log (minimised, and open again after a reload).
+import { test, check, until, attachShot, SANDBOX } from '../../../dev/test/harness.mjs';
+
+const seed = page => page.evaluate(() => {
+  const now = Date.now(), ev = (t, e, x) => Object.assign({ t: now - t, s: 'ISRC Scout', e, l: 'GET /ws/2/recording?isrc', b: 1 }, x);
+  localStorage.setItem('mbu:mb-gate-trace:aaaa1111', JSON.stringify([
+    ev(20000, 'book', { w: 400 }), ev(19600, 'start', { w: 400 }), ev(19100, 'answer', { st: 200, lim: 300, rem: 280, who: 'ws' }),
+    ev(15000, 'start', { l: 'GET /ws/2/release/x' }), ev(14500, 'answer', { l: 'GET /ws/2/release/x', st: 503, hold: 3000, hot: 1 }),
+    ev(14400, 'book', { l: 'GET /ws/2/release/x', w: 3000, why: 'hold', re: 1 }), ev(11400, 'start', { l: 'GET /ws/2/release/x' }),
+    ev(11000, 'answer', { l: 'GET /ws/2/release/x', st: 200 }),
+  ]));
+  localStorage.setItem('mbu:mb-gate-trace:bbbb2222', JSON.stringify([
+    { t: now - 9000, s: 'Credit Hoarder', e: 'start', l: 'GET /ws/2/artist/y', b: 0 }, { t: now - 8000, s: 'Credit Hoarder', e: 'error', l: 'GET /ws/2/artist/y', b: 0, err: 'network error' },
+  ]));
+});
+const openLog = async (page, inject) => {
+  await page.locator('body').click({ position: { x: 5, y: 5 } });
+  await page.keyboard.press('Control+k');
+  await page.waitForSelector('#st-pal-q', { timeout: 10000 });
+  await page.keyboard.type('gate log');
+  await page.keyboard.press('Enter');
+  await page.waitForSelector('#st-gate', { timeout: 10000 });
+};
+
+test.describe('gate log', () => {
+  test.use({ gm: { name: 'String Theory', persist: true, values: { 'string_theory.off': ['event_horizon'] } } });
+  test('groups requests into lanes, counts them, and keeps its window', { tag: ['@sandbox'] }, async ({ page, inject }, testInfo) => {
+    await page.goto(`${SANDBOX}/search/edits`, { waitUntil: 'load', timeout: 60000 });
+    await seed(page);
+    await inject('string_theory');
+    await openLog(page, inject);
+    const n = await page.textContent('#st-gate .st-gate-n');
+    check(/^\d+ requests$/.test(n) && parseInt(n) >= 3, `the title counts the requests (${n})`);
+    const lanes = await page.$$eval('#st-gate-lanes .st-gl-lane', l => l.length);
+    check(lanes >= 2, `one lane per tab (${lanes})`);
+    check(await page.$$eval('#st-gate-lanes .st-gl-band', l => l.length) >= 1, 'the hold is shaded');
+    const pills = await page.$$eval('#st-gate .st-gate-pill', l => l.map(x => x.textContent));
+    check(pills.includes('ok after 2 tries'), `the retried request is one row (${pills.join(', ')})`);
+    check(pills.includes('error'), 'the failed request shows its error');
+    await page.click('#st-gate tr.rq');
+    check(await page.$('#st-gate tr.steps'), 'a click shows the steps');
+    await page.click('#st-gate .st-gate-seg [data-m=bad]');
+    const bad = await page.$$eval('#st-gate tr.rq', l => l.length);
+    check(bad === 1, `Failed shows only the failed one (${bad})`);
+    await page.click('#st-gate .st-gate-seg [data-m=all]');
+    await attachShot(testInfo, page.locator('#st-gate'), 'gate log');
+    if (process.env.SHOT) await page.locator('#st-gate').screenshot({ path: process.env.SHOT });
+    await page.click('#st-gate .mbu-logpop-min');
+    check(await page.$('#st-gate.min'), 'it minimises');
+    await page.reload({ waitUntil: 'load' });
+    await inject('string_theory');
+    await until(() => page.$('#st-gate.min'), x => !!x, { timeout: 10000 });
+    await page.click('#st-gate .mbu-logpop-min');
+    check(!(await page.$('#st-gate.min')), 'it comes back minimised after a reload, and restores');
+    await page.click('#st-gate .mbu-logpop-x');
+    await page.reload({ waitUntil: 'load' });
+    await inject('string_theory');
+    await page.waitForTimeout(1500);
+    check(!(await page.$('#st-gate')), 'once closed, it stays closed');
+  });
+});

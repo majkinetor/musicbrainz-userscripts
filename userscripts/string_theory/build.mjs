@@ -269,6 +269,7 @@ var __stStarters = {};   // #851: per member folder, how String Theory's setting
   ${NEWS.replace(/\n/g, '\n  ').trimEnd()}
   ${GATELOG.replace(/\n/g, '\n  ').trimEnd()}
   stPalListen();
+  stGateReopen();
   var open = function () { try { stSettings(); } catch (e) { try { console.error('[String Theory] settings failed:', e); } catch (x) {} } };
   document.addEventListener('mbu-st-settings', open);
   stCfgWarmSoon();
