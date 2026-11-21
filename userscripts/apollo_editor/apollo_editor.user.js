@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.20.200000
+// @version      2026.11.21.120000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15501,8 +15501,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     body.tc-anno-page :is(#content,#eh-anno) > form > .row.tc-cl-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
     body.tc-anno-page :is(#content,#eh-anno) > form > .row.tc-cl-row > label{flex:1 1 100%;margin-bottom:4px}
     body.tc-anno-page :is(#content,#eh-anno) > form > .row.tc-cl-row > input[type=text]{flex:1 1 auto;width:auto;max-width:600px}
-    body.tc-anno-page #tc-anno-submit{flex:0 0 auto;font:600 13px Arial;padding:7px 18px;border:1px solid var(--mbu-ok);border-radius:var(--mbu-radius);background:#3aa55f;color:var(--mbu-text-on-accent);cursor:pointer}
-    body.tc-anno-page #tc-anno-submit:hover{background:#2c8a4d}#tc-anno-submit{display:inline-flex;align-items:center;gap:6px}@media (max-width:700px){body.tc-anno-page :is(#content,#eh-anno) > form > .row.tc-cl-row > input[type=text]{flex:1 1 0;min-width:0}#tc-anno-submit{padding:7px 14px;font-size:15px}#tc-anno-submit .tc-anno-sub-t{display:none}}
+    body.tc-anno-page #tc-anno-submit{flex:0 0 auto;font:600 13px Arial;padding:6px 14px;border:1px solid transparent;border-radius:var(--mbu-radius);background:none;color:var(--mbu-ok);cursor:pointer}
+    body.tc-anno-page #tc-anno-submit:hover{background:var(--mbu-ok-bg);border-color:var(--mbu-ok)}#tc-anno-submit{display:inline-flex;align-items:center;gap:6px}@media (max-width:700px){body.tc-anno-page :is(#content,#eh-anno) > form > .row.tc-cl-row > input[type=text]{flex:1 1 0;min-width:0}#tc-anno-submit{padding:7px 14px;font-size:15px}#tc-anno-submit .tc-anno-sub-t{display:none}}
     #tc-anno-preview{flex:1 1 0;min-width:0;min-height:240px;padding:10px 13px;background:var(--mbu-bg);border-left:1px solid var(--mbu-accent);font-size:13px;line-height:1.5;color:var(--mbu-text);overflow:auto;word-break:break-word;box-sizing:border-box}
     #tc-anno-preview .tc-anno-empty{color:var(--mbu-text-weak);font-style:italic}
     #tc-anno-preview p{margin:0 0 8px}
