@@ -107,7 +107,7 @@ export const mbThrottle = (() => {
                 const res = gated ? await mbnWsFetch(item.url, { signal: ctrl.signal }) : await mbnFetch(item.url, { signal: ctrl.signal }, { log: gateLog });
                 const elapsed = Date.now() - t0;
                 if (gated) {
-                    const a = await mbnAnswer(res.status, n => res.headers.get(n), { log: gateLog, search: /[?&]query=/.test(item.url) });
+                    const a = await mbnAnswer(res.status, n => res.headers.get(n), { log: gateLog, label: shortUrl, search: /[?&]query=/.test(item.url) });   // the Gate log pairs it with its start by the label
                     if (a.throttled) { _rateLimited++; logDebug(`${tag} <- ${res.status} in ${elapsed}ms; the shared gate holds ${a.hold}ms`); continue; }
                 }
                 if (res.status === 429 || res.status === 503) {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.21.232300
+// @version      2026.11.22.000842
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -3265,7 +3265,8 @@ Click: open the label`;
     });
   }
   // tell the gate how MusicBrainz answered: a 429/503 holds everybody, a clean answer earns room back
-  const wsAnswer = r => mbnAnswer(r.status, n => (r.headers && r.headers.get ? r.headers.get(n) : null), { log: wsGateLog });
+  // with the label its slot had (wsGet's): the Gate log pairs the answer with its start by it
+  const wsAnswer = (r, label, background) => mbnAnswer(r.status, n => (r.headers && r.headers.get ? r.headers.get(n) : null), { log: wsGateLog, label: label || 'ws2', background });
   // EVERY /ws/2 read goes through here. MusicBrainz answers a throttled request
   // with HTTP 503 (or 429) and a body of `{"error":"…"}` — no `recordings` /
   // `artists` key. Callers that did `fetch(url).then(r => r.json())` therefore
@@ -3321,7 +3322,7 @@ Click: open the label`;
       catch (e) { Log.cat('MusicBrainz').warn(label + ': network error —', e.message, '(attempt ' + attempt + '/' + WS_TRIES + ')', url); await _sleep(600 * attempt); continue; }
       if (!r || (!o.stale && gen !== _stopGen)) { Log.cat('MusicBrainz').debug(label + ': superseded while queued, dropped —', url); return { stale: true }; }
       Log.cat('MusicBrainz').debug(label + ': HTTP', r.status, url);
-      const a = await wsAnswer(r);
+      const a = await wsAnswer(r, o.label, !o.stale);
       if (a.throttled) {
         // #575 round 3: hold every lane, not just this one. wsGet waits in the gate for
         // the shared deadline, so the retry needs no sleep of its own — sleeping here
@@ -3353,8 +3354,9 @@ Click: open the label`;
       try { r = await wsGet(`${ORIGIN}/ws/2/url?resource=${encodeURIComponent(discogsUrl)}&inc=artist-rels&fmt=json`); }
       catch (e) { await _sleep(1200); continue; }                 // network error → retry, don't cache
       if (!r) return null;                                        // stopped while it queued → unknown, not cached
+      const a = await wsAnswer(r);                                // first, a 404 included: an answer never told leaves its start "on its way" in the Gate log
       if (r.status === 404) { _discogsResolveCache.set(discogsUrl, []); _dput('resolve', discogsUrl, []); return []; }   // URL not in MB → 0 owners (cacheable)
-      if ((await wsAnswer(r)).throttled) continue;                // rate limited → the shared hold, don't cache (#575, #633)
+      if (a.throttled) continue;                // rate limited → the shared hold, don't cache (#575, #633)
       if (!r.ok) { await _sleep(1200); continue; }                // other transient error → retry, don't cache
       let j; try { j = await r.json(); } catch (e) { await _sleep(1200); continue; }
       const seen = new Set();

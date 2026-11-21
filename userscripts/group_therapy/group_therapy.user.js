@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.232300
+// @version      2026.11.22.000842
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -4346,7 +4346,7 @@
       let r;
       try { r = await mbnWsFetch(url, { headers: { Accept: 'application/json' } }); }
       catch (e) { last = (e && e.message) || 'network error'; console.debug('[Group Therapy] consolidate:', url, 'failed:', last); await sleep(700 * (i + 1)); continue; }
-      if ((await mbnAnswer(r.status, n => r.headers.get(n), { log: gtGateLog })).throttled) {
+      if ((await mbnAnswer(r.status, n => r.headers.get(n), { log: gtGateLog, label: url })).throttled) {   // the Gate log pairs it with its start by the label
         last = 'MusicBrainz is rate-limiting (HTTP ' + r.status + ')';
         console.debug(`[Group Therapy] consolidate: ${url} → ${r.status}` + (i < tries - 1 ? `, retry ${i + 1}/${tries - 1} after the hold` : ', giving up'));
         if (i < tries - 1) continue;   // the next slot waits out the shared hold
@@ -4985,7 +4985,7 @@
         const gated = url.startsWith('/ws/2/');   // only the public API is rate-limited; /ws/js is the editor's own
         if (gated && !(await mbnSlot({ label: url, log: gtGateLog, cancelled: () => !!(sig && sig.aborted) })).ok) return null;
         const r = await (gated ? mbnWsFetch : fetch)(url, { credentials: 'include', headers: { Accept: 'application/json' }, signal: sig });
-        if (gated && (await mbnAnswer(r.status, n => r.headers.get(n), { log: gtGateLog })).throttled && i < 4) continue;   // the next slot waits out the shared hold
+        if (gated && (await mbnAnswer(r.status, n => r.headers.get(n), { log: gtGateLog, label: url })).throttled && i < 4) continue;   // the next slot waits out the shared hold
         if ((r.status === 429 || r.status === 503) && i < 4) { await sleep(900 * (i + 1)); continue; }
         if (!r.ok) return null; return await r.json();
       } catch (e) { if ((sig && sig.aborted) || i === 4) return null; await sleep(500 * (i + 1)); }
