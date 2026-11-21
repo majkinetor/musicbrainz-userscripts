@@ -32,7 +32,7 @@ test('background findings reach an already open editor', { tag: '@sandbox' }, as
 });
 
 test('launcher counts only cached links the editor can offer', { tag: '@unit' }, async () => {
-  const src = await functionSource('isrc_scout', ['bgLinksToAdd', 'providersFor', 'linkedUrl']);
+  const src = await functionSource('isrc_scout', ['bgLinksToAdd', 'providersFor', 'kindOk', 'linkedUrl']);
   const PROV = [
     { code: 'sp', album: true, urlKey: 'spotifyId', test: u => u.startsWith('spotify:') },
     { code: 'qz', album: true, urlKey: 'qobuzId', test: u => u.startsWith('qobuz:') },

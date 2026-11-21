@@ -102,12 +102,15 @@ test('a toast with an action is clickable, runs it, and closes', { tag: ['@unit'
     const clickable = getComputedStyle(el).pointerEvents !== 'none';
     btn.click();
     await new Promise(z => setTimeout(z, 1100));
+    const closed = !el.classList.contains('mbu-toast-on');
     const plain = mbuToast('plain');
-    return { label: btn.textContent, clickable, ran, closed: !el.classList.contains('mbu-toast-on') || el.textContent === 'plain', plainInert: getComputedStyle(plain).pointerEvents === 'none', plainNoBtn: !plain.querySelector('.mbu-toast-btn') };
+    const plainNoBtn = !plain.querySelector('.mbu-toast-btn'), plainOn = plain.classList.contains('mbu-toast-on');
+    plain.click();
+    return { label: btn.textContent, clickable, ran, closed, plainNoBtn, plainOn, plainClosed: !plain.classList.contains('mbu-toast-on') };
   });
   check(r.label === 'Copy log' && r.clickable, `the toast carries the button and takes clicks (${JSON.stringify(r)})`);
   check(r.ran === 1 && r.closed, 'the button runs its action, and the toast closes');
-  check(r.plainInert && r.plainNoBtn, 'a toast without an action stays click-through, with no button');
+  check(r.plainNoBtn && r.plainOn && r.plainClosed, 'a toast without an action has no button, and a click closes it');
 });
 
 // #697: a line can carry a category; the window filters by level and by category,
