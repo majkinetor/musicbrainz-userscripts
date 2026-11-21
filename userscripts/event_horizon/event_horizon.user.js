@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21
+// @version      2026.11.21.215658
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3731,7 +3731,7 @@ body.col-dragging,body.col-dragging *{cursor:grabbing!important;user-select:none
 .sk-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:22px;margin-top:40px}.sk-f{display:grid;gap:10px}.sk-f .l{width:70px;height:10px}.sk-f .v{width:120px;height:18px}
 .sk-st{margin-top:36px;color:var(--muted);font-size:13px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sk-st b{color:var(--text);font-weight:600}
 .sk-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:skp 1s ease-in-out infinite}@keyframes skp{50%{opacity:.25}}
-.sk-st.err{color:var(--warn)}
+.sk-st.err{color:var(--warn)}.sk-busy{color:var(--warn)}
 .sk-b{font:600 13px Manrope,system-ui,sans-serif;height:30px;padding:0 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}.sk-b:hover{border-color:var(--accent)}
 .sk-sec{margin-top:48px}.sk.h{width:260px;height:26px}
 .sk-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;margin-top:16px}.sk-tiles .sk{aspect-ratio:1;border-radius:12px}
@@ -4565,12 +4565,15 @@ function leadOff(t) { if (!t) return; if (ehLead === t) ehLead = ''; mbnLead(t, 
 // L: the logger its fetch line goes to (the player's are its own category)
 async function wsText(path, bg, L) {
     // the page's own request goes ahead of the queued background ones; a gate wait is logged, so a page that hangs says why
-    const t0 = performance.now(), lead = bg ? '' : ehLead;
+    const t0 = performance.now(), lead = bg ? '' : ehLead, mine = showing;
     if (lead) mbnLead(lead, 8000).catch(() => {});
+    // a page's lookup that MusicBrainz keeps throttling says so on the loading page, with a Stop (wsStopped)
+    const stopped = () => wsStopped >= mine;
     let r;
-    try { r = await mbnFetch(MB + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json', { headers: { Accept: 'application/json' } }, { lead: lead || undefined, background: !lead, label: 'ws/2 ' + path, log: (lv, m) => (L || LOG)[lv](m) }); } catch (e) { fetchLog('ws/2 ' + path, t0, null, e, L); throw e; }
+    try { r = await mbnFetch(MB + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json', { headers: { Accept: 'application/json' } }, { lead: lead || undefined, background: !lead, label: 'ws/2 ' + path, cancelled: lead ? stopped : undefined, log: (lv, m) => { (L || LOG)[lv](m); if (lead && lv === 'warn' && /HTTP (429|503)/.test(m)) skBusy(mine); } }); } catch (e) { fetchLog('ws/2 ' + path, t0, null, e, L); throw e; }
     fetchLog('ws/2 ' + path, t0, r, undefined, L);
-    if (!r) throw new Error('cancelled');
+    if (!r) throw new Error(lead && stopped() ? 'Stopped: MusicBrainz was busy.' : 'cancelled');
+    if (r.status === 503 || r.status === 429) throw Object.assign(new Error('MusicBrainz is busy (HTTP ' + r.status + '). Try again in a moment.'), { status: r.status });
     if (r.status === 404) throw new Error('MusicBrainz has no such ' + path.split('/')[0].replace('-', ' ') + '.');
     if (!r.ok) throw Object.assign(new Error('MusicBrainz answered ' + r.status + '.'), { status: r.status });
     return r.text();
@@ -18149,6 +18152,20 @@ function start1() {
     fxWatch();
 }
 let showing = 0;
+// wsStopped: the last page load whose throttled lookups the reader stopped; skBusy tells the loading page MusicBrainz is busy
+let wsStopped = 0;
+function skBusy(n) {
+    const st = n === showing && document.querySelector('#app .sk-st');
+    if (!st || st.classList.contains('err')) return;
+    let b = st.querySelector('.sk-busy');
+    if (!b) {
+        st.insertAdjacentHTML('beforeend', '<span class="sk-busy"></span><button type="button" class="sk-b" data-skstop>Stop</button>');
+        b = st.querySelector('.sk-busy');
+        st.querySelector('[data-skstop]').onclick = () => { wsStopped = n; };
+    }
+    b.dataset.n = +(b.dataset.n || 0) + 1;
+    b.textContent = 'MusicBrainz is busy, asking again (' + b.dataset.n + ')…';
+}
 // a load's three states, the same on every page (#1085): loading, failed with a Retry (the error left out where the
 // header already shows it), and nothing to show, where a filter that hides everything says so in one wording
 function stLoad(what) { return `<p class="hm-none" role="status">Loading ${what}…</p>`; }
