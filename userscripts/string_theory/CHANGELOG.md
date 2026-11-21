@@ -1,5 +1,109 @@
 # String Theory Changelog
 
+## [2026.11.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.21)
+
+### [Apollo Editor](../apollo_editor/README.md)
+
+1. Small improvements
+
+### [Art Station](../art_station/README.md)
+
+#### Features
+
+1. VGMdb support ([#1090](https://github.com/majkinetor/musicbrainz-userscripts/issues/1090))
+
+### [Credit Hoarder](../credit_hoarder/README.md)
+
+#### Features
+
+1. VGMdb support ([#1090](https://github.com/majkinetor/musicbrainz-userscripts/issues/1090))
+
+### [Event Horizon](../event_horizon/README.md)
+
+#### Features
+
+1. Page loading performance improvements ([#1089](https://github.com/majkinetor/musicbrainz-userscripts/issues/1089))
+1. Internet Archive support ([#1086](https://github.com/majkinetor/musicbrainz-userscripts/issues/1086))
+1. Same behavior across pages for headers, missing pictures, artist pictures and load states ([#1085](https://github.com/majkinetor/musicbrainz-userscripts/issues/1085))
+1. Player gapless track change and crossfade ([#1084](https://github.com/majkinetor/musicbrainz-userscripts/issues/1084))
+1. Player keyboard shortcuts ([#1083](https://github.com/majkinetor/musicbrainz-userscripts/issues/1083))
+1. More advanced player ([#1079](https://github.com/majkinetor/musicbrainz-userscripts/issues/1079))
+1. Profile pages redesign ([#1076](https://github.com/majkinetor/musicbrainz-userscripts/issues/1076))
+1. Collections page redesign ([#1074](https://github.com/majkinetor/musicbrainz-userscripts/issues/1074))
+1. Label releases grouped by release group ([#1070](https://github.com/majkinetor/musicbrainz-userscripts/issues/1070))
+1. Player collections ([#1069](https://github.com/majkinetor/musicbrainz-userscripts/issues/1069))
+1. Shared MusicBrainz lookups and silent refresh ([#1064](https://github.com/majkinetor/musicbrainz-userscripts/issues/1064))
+1. Built-in player ([#1063](https://github.com/majkinetor/musicbrainz-userscripts/issues/1063))
+
+#### Fixes
+
+1. Falcon window does not appear when sending items from Harmony ([#1077](https://github.com/majkinetor/musicbrainz-userscripts/issues/1077))
+1. Search type menu goes off screen on mobile ([#1068](https://github.com/majkinetor/musicbrainz-userscripts/issues/1068))
+1. Edit search quirks ([#1058](https://github.com/majkinetor/musicbrainz-userscripts/issues/1058))
+1. Collapsed cells not expanded ([#1057](https://github.com/majkinetor/musicbrainz-userscripts/issues/1057))
+
+### [Falcon](../falcon/README.md)
+
+#### Fixes
+
+1. Best cover not chosen even though edit note says it is ([#1073](https://github.com/majkinetor/musicbrainz-userscripts/issues/1073))
+
+### [First Contact](../first_contact/README.md)
+
+#### Features
+
+1. VGMdb support ([#1090](https://github.com/majkinetor/musicbrainz-userscripts/issues/1090))
+1. Releases found on MB shown beside the HUD ([#1062](https://github.com/majkinetor/musicbrainz-userscripts/issues/1062))
+1. Internet Archive support ([#1061](https://github.com/majkinetor/musicbrainz-userscripts/issues/1061))
+1. Traxsource support ([#1059](https://github.com/majkinetor/musicbrainz-userscripts/issues/1059))
+
+### [Fusion](../fusion/README.md)
+
+#### Features
+
+1. Merge collections ([#1075](https://github.com/majkinetor/musicbrainz-userscripts/issues/1075))
+1. Release group comparison in merge cards ([#1071](https://github.com/majkinetor/musicbrainz-userscripts/issues/1071))
+
+### [Fuzzy Logic](../fuzzy_logic/README.md)
+
+1. Small improvements
+
+### [Group Therapy](../group_therapy/README.md)
+
+1. Small improvements
+
+### [ISRC Scout](../isrc_scout/README.md)
+
+#### Features
+
+1. Internet Archive support ([#1086](https://github.com/majkinetor/musicbrainz-userscripts/issues/1086))
+
+#### Fixes
+
+1. Find Youtube/Bandcamp links with small track title differences ([#1065](https://github.com/majkinetor/musicbrainz-userscripts/issues/1065))
+
+### [Mammoth](../mammoth/README.md)
+
+#### Features
+
+1. Skip automatic edit notes in history ([#1082](https://github.com/majkinetor/musicbrainz-userscripts/issues/1082))
+
+### [Mission Control](../mission_control/README.md)
+
+#### Features
+
+1. "Take all in" In MC add release consolidation ([#1088](https://github.com/majkinetor/musicbrainz-userscripts/issues/1088))
+
+#### Fixes
+
+1. Provider icons are hard to see on certain cover art ([#1066](https://github.com/majkinetor/musicbrainz-userscripts/issues/1066))
+
+### [Platform Check](../platform_check/README.md)
+
+#### Fixes
+
+1. Unrelated artist selected  ([#1081](https://github.com/majkinetor/musicbrainz-userscripts/issues/1081))
+
 ## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
 
 ### Features

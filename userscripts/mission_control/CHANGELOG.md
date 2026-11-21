@@ -1,5 +1,15 @@
 # Mission Control Changelog
 
+## [2026.11.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.21)
+
+### Features
+
+1. "Take all in" In MC add release consolidation ([#1088](https://github.com/majkinetor/musicbrainz-userscripts/issues/1088))
+
+### Fixes
+
+1. Provider icons are hard to see on certain cover art ([#1066](https://github.com/majkinetor/musicbrainz-userscripts/issues/1066))
+
 ## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
 
 ### Fixes

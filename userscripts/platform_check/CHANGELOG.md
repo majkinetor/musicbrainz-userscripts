@@ -1,5 +1,11 @@
 # Platform Check Changelog
 
+## [2026.11.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.21)
+
+### Fixes
+
+1. Unrelated artist selected  ([#1081](https://github.com/majkinetor/musicbrainz-userscripts/issues/1081))
+
 ## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
 
 ### Fixes

@@ -1,5 +1,12 @@
 # Fusion Changelog
 
+## [2026.11.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.21)
+
+### Features
+
+1. Merge collections ([#1075](https://github.com/majkinetor/musicbrainz-userscripts/issues/1075))
+1. Release group comparison in merge cards ([#1071](https://github.com/majkinetor/musicbrainz-userscripts/issues/1071))
+
 ## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
 
 ### Features

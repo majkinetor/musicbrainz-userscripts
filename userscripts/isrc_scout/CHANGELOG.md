@@ -1,5 +1,15 @@
 # ISRC Scout Changelog
 
+## [2026.11.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.21)
+
+### Features
+
+1. Internet Archive support ([#1086](https://github.com/majkinetor/musicbrainz-userscripts/issues/1086))
+
+### Fixes
+
+1. Find Youtube/Bandcamp links with small track title differences ([#1065](https://github.com/majkinetor/musicbrainz-userscripts/issues/1065))
+
 ## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
 
 ### Features

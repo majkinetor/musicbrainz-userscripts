@@ -1,5 +1,11 @@
 # Falcon 
 
+## [2026.11.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.21)
+
+### Fixes
+
+1. Best cover not chosen even though edit note says it is ([#1073](https://github.com/majkinetor/musicbrainz-userscripts/issues/1073))
+
 ## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
 
 ### Features

@@ -1,5 +1,14 @@
 # First Contact Changelog
 
+## [2026.11.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.21)
+
+### Features
+
+1. VGMdb support ([#1090](https://github.com/majkinetor/musicbrainz-userscripts/issues/1090))
+1. Releases found on MB shown beside the HUD ([#1062](https://github.com/majkinetor/musicbrainz-userscripts/issues/1062))
+1. Internet Archive support ([#1061](https://github.com/majkinetor/musicbrainz-userscripts/issues/1061))
+1. Traxsource support ([#1059](https://github.com/majkinetor/musicbrainz-userscripts/issues/1059))
+
 ## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
 
 ### Features

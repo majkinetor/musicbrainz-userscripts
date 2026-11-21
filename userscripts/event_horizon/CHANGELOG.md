@@ -1,5 +1,29 @@
 # Event Horizon Changelog
 
+## [2026.11.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.21)
+
+### Features
+
+1. Page loading performance improvements ([#1089](https://github.com/majkinetor/musicbrainz-userscripts/issues/1089))
+1. Internet Archive support ([#1086](https://github.com/majkinetor/musicbrainz-userscripts/issues/1086))
+1. Same behavior across pages for headers, missing pictures, artist pictures and load states ([#1085](https://github.com/majkinetor/musicbrainz-userscripts/issues/1085))
+1. Player gapless track change and crossfade ([#1084](https://github.com/majkinetor/musicbrainz-userscripts/issues/1084))
+1. Player keyboard shortcuts ([#1083](https://github.com/majkinetor/musicbrainz-userscripts/issues/1083))
+1. More advanced player ([#1079](https://github.com/majkinetor/musicbrainz-userscripts/issues/1079))
+1. Profile pages redesign ([#1076](https://github.com/majkinetor/musicbrainz-userscripts/issues/1076))
+1. Collections page redesign ([#1074](https://github.com/majkinetor/musicbrainz-userscripts/issues/1074))
+1. Label releases grouped by release group ([#1070](https://github.com/majkinetor/musicbrainz-userscripts/issues/1070))
+1. Player collections ([#1069](https://github.com/majkinetor/musicbrainz-userscripts/issues/1069))
+1. Shared MusicBrainz lookups and silent refresh ([#1064](https://github.com/majkinetor/musicbrainz-userscripts/issues/1064))
+1. Built-in player ([#1063](https://github.com/majkinetor/musicbrainz-userscripts/issues/1063))
+
+### Fixes
+
+1. Falcon window does not appear when sending items from Harmony ([#1077](https://github.com/majkinetor/musicbrainz-userscripts/issues/1077))
+1. Search type menu goes off screen on mobile ([#1068](https://github.com/majkinetor/musicbrainz-userscripts/issues/1068))
+1. Edit search quirks ([#1058](https://github.com/majkinetor/musicbrainz-userscripts/issues/1058))
+1. Collapsed cells not expanded ([#1057](https://github.com/majkinetor/musicbrainz-userscripts/issues/1057))
+
 ## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
 
 ### Features

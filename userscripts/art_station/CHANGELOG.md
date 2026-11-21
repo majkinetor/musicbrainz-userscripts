@@ -1,5 +1,11 @@
 # Art Station Changelog
 
+## [2026.11.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.21)
+
+### Features
+
+1. VGMdb support ([#1090](https://github.com/majkinetor/musicbrainz-userscripts/issues/1090))
+
 ## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
 
 ### Features

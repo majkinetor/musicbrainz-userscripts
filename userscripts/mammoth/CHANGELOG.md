@@ -1,5 +1,11 @@
 # Mammoth Changelog
 
+## [2026.11.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.21)
+
+### Features
+
+1. Skip automatic edit notes in history ([#1082](https://github.com/majkinetor/musicbrainz-userscripts/issues/1082))
+
 ## [2026.11.16](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.16)
 
 - Small improvements
