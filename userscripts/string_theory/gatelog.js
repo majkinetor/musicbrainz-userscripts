@@ -107,7 +107,8 @@ function stGateWhat(ev) {
     case 'lead+': x.push('takes the lead for ' + stGateSec(ev.w) + ' (' + (ev.by || '?') + ')'); break;
     case 'lead-': x.push('ends the lead (' + (ev.by || '?') + ')'); break;
     case 'cancel': x.push('cancelled after ' + stGateSec(ev.w)); break;
-    case 'join': x.push('the same request is already on its way: shares its answer'); break;
+    case 'join': x.push('a request that covers this one is already on its way' + (ev.with ? ' (' + ev.with + ')' : '') + ': shares its answer'); break;
+    case 'merge': x.push('asks together with a waiting request' + (ev.with ? ' (' + ev.with + ')' : '') + (ev.add ? ', which adds ' + ev.add : '') + ': one answer for both'); break;
     case 'error': x.push(ev.err || 'network error'); break;
     case 'check': x.push('browser check ' + (ev.ok ? 'passed' : 'failed') + ' in ' + stGateSec(ev.w)); break;
     case 'answer':

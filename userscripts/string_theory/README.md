@@ -79,7 +79,7 @@ The window lists the latest 20 posts and loads older ones as you scroll to the e
 
 ## Gate log
 
-The scripts send their MusicBrainz requests through one shared queue, the gate. It spaces them out across all tabs, and when MusicBrainz answers 503 or 429, every script waits. If a request is asked again while the first one is still on its way, both share one answer (**shared** in the log). Open **Gate log** from the [command palette](#command-palette) to see what goes through it.
+The scripts send their MusicBrainz requests through one shared queue, the gate. It spaces them out across all tabs, and when MusicBrainz answers 503 or 429, every script waits. If a request is asked again while the first one is still on its way, both share one answer (**shared** in the log). If two waiting requests differ only in what extra data they ask for, the gate sends one request for both (**merge** in the log). Open **Gate log** from the [command palette](#command-palette) to see what goes through it.
 
 The window works like the Activity log. You move it by its title bar, minimize it to that bar, and resize it by its corner. A double-click on the title bar makes it full screen. It stays open, in its place and size, when you reload the page or open another one.
 

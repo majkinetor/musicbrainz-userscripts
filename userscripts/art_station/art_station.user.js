@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.21.224645
+// @version      2026.11.21.230223
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -56,6 +56,7 @@
   const MBN_MAX_HOLD = 60000;
   const MBN_MAX_LEAD = 10000;
   const MBN_TRACE_MAX = 400;
+  const MBN_INC_ALONE = new Set(["user-tags","user-genres","user-ratings","recordings","recording-level-rels","work-level-rels","release-group-level-rels","discids","isrcs"]);
   function mbnGated(url) {
       const s = String(url || '');
       return /^\/ws\/2\//.test(s) || /^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org\/ws\/2\//i.test(s);
@@ -343,55 +344,89 @@
           try { const u = new URL(p, location.href); p = u.pathname.replace(/^\/ws\/2\//, '') + u.search.replace(/[?&]fmt=json\b/, '').replace(/^&/, '?'); } catch (e) {}
           o = Object.assign({}, o, { label: p.slice(0, 120) });
       }
-      const go = async () => {
+      // `at` gives the URL at the moment the request leaves: a queued read's inc list can still grow
+      const go = async at => {
           for (let attempt = 1; ; attempt++) {
               const slot = await mbnSlot(o);
               if (!slot.ok) return null;
               let r;
-              try { r = await mbnWsFetch(url, init); }
+              try { r = await mbnWsFetch(at ? at() : url, init); }
               catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
               const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
               if (!a.throttled || give(attempt)) return r;
           }
       };
-      // The same read asked again while the first is still queued or running shares its fetch: each
-      // caller gets its own clone of the one answer. Two members of String Theory's bundle, or one
-      // page drawn twice, otherwise send it twice. A write (POST, a body) always goes on its own.
+      // Reads of the same thing share one fetch, and each caller gets its own clone of the answer.
+      // Two members of String Theory's bundle, or one page drawn twice, otherwise send it twice.
+      //   join   a read whose inc list the running or queued one already covers waits for its answer
+      //   merge  a read that differs only in inc joins one still queued: that one then leaves
+      //          asking for both inc lists (one page's scripts all ask for its entity at load)
+      // A write (POST, a body) always goes on its own. MBN_INC_ALONE incs change what an answer
+      // costs or needs (a login, a smaller page), so they are never added to a read that lacks them.
       const m = String((init && init.method) || 'GET').toUpperCase();
-      let key = '';
+      let key = '', want = null, base = null;
       if ((m === 'GET' || m === 'HEAD') && !(init && init.body)) {
           try {
               const h = init && init.headers, hs = h ? JSON.stringify(typeof h.entries === 'function' ? Array.from(h.entries()) : h) : '';
-              key = m + ' ' + new URL(String(url), location.href).href + ' ' + hs + ' ' + (o.background === false ? 'i' : 'b');
+              base = new URL(String(url), location.href);
+              want = new Set((base.searchParams.get('inc') || '').split(/[\s+]+/).filter(Boolean));
+              const rest = Array.from(base.searchParams.entries()).filter(([k]) => k !== 'inc').sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] < b[1] ? -1 : 1);
+              key = m + ' ' + base.origin + base.pathname + '?' + new URLSearchParams(rest) + ' ' + hs + ' ' + (o.background === false ? 'i' : 'b');
           } catch (e) { key = ''; }
       }
       if (!key) return go();
       const live = globalThis.__mbnLive || (globalThis.__mbnLive = new Map());
       const sig = init && init.signal;
       const mine = () => !(o.cancelled && o.cancelled()) && !(sig && sig.aborted);
+      const covers = run => { for (const i of want) if (!run.inc.has(i)) return false; return true; };
+      const fits = run => { for (const i of MBN_INC_ALONE) if (run.inc.has(i) !== want.has(i)) return false; return true; };
       for (;;) {
-          const run = live.get(key);
+          const runs = live.get(key) || [];
+          let run = runs.find(x => covers(x) && fits(x)), how = 'join';
+          if (!run) { run = runs.find(x => !x.sent && fits(x)); how = 'merge'; }
           if (!run) break;
-          mbnTrace({ e: 'join', l: o.label, b: o.background === false ? 0 : 1 });
+          const add = how === 'merge' ? Array.from(want).filter(i => !run.inc.has(i)) : [];
+          for (const i of add) run.inc.add(i);
+          mbnTrace({ e: how, l: o.label, b: o.background === false ? 0 : 1, with: run.label, add: add.join(' ') || undefined });
+          const p = run.p;
           // this caller's own Stop or abort still ends its wait, whatever the first caller does
           const stop = new Promise(res => {
               if (sig) sig.addEventListener('abort', () => res('stop'), { once: true });
-              if (o.cancelled) { const t = setInterval(() => { if (o.cancelled()) { clearInterval(t); res('stop'); } }, 250); run.then(() => clearInterval(t), () => clearInterval(t)); }
+              if (o.cancelled) { const t = setInterval(() => { if (o.cancelled()) { clearInterval(t); res('stop'); } }, 250); p.then(() => clearInterval(t), () => clearInterval(t)); }
           });
           let r;
-          try { r = await Promise.race([run, stop]); } catch (e) { if (!mine()) throw e; r = null; }
+          try { r = await Promise.race([p, stop]); } catch (e) { if (!mine()) throw e; r = null; }
           if (r === 'stop') {
               if (sig && sig.aborted) throw (sig.reason instanceof Error ? sig.reason : new DOMException('The operation was aborted.', 'AbortError'));
               return null;
           }
+          // a wider read MusicBrainz refused (a 400 for an inc it won't take here) might not refuse
+          // this one's own: it asks alone
+          if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();
           if (r) return r.clone();
           if (!mine()) return null;
           // the first caller was cancelled or aborted, this one wasn't: it asks for itself
       }
-      const p = go();
-      live.set(key, p);
-      try { const r = await p; return r ? r.clone() : r; }
-      finally { if (live.get(key) === p) live.delete(key); }
+      const run = { inc: new Set(want), sent: false, label: o.label, p: null };
+      run.p = go(() => {
+          run.sent = true;
+          if (run.inc.size === want.size) return url;   // nothing merged: as asked
+          const u = new URL(base.href);
+          u.searchParams.set('inc', Array.from(run.inc).join(' '));
+          return u.href;
+      });
+      const runs = live.get(key) || [];
+      runs.push(run);
+      live.set(key, runs);
+      try {
+          const r = await run.p;
+          if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();   // as for a joiner, above
+          return r ? r.clone() : r;
+      } finally {
+          const l = live.get(key) || [], i = l.indexOf(run);
+          if (i >= 0) l.splice(i, 1);
+          if (!l.length) live.delete(key);
+      }
   }
   function mbnHot() {
       let s;

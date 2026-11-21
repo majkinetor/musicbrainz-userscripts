@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.224645
+// @version      2026.11.21.230223
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -54,6 +54,7 @@
   const MBN_MAX_HOLD = 60000;
   const MBN_MAX_LEAD = 10000;
   const MBN_TRACE_MAX = 400;
+  const MBN_INC_ALONE = new Set(["user-tags","user-genres","user-ratings","recordings","recording-level-rels","work-level-rels","release-group-level-rels","discids","isrcs"]);
   function mbnGated(url) {
       const s = String(url || '');
       return /^\/ws\/2\//.test(s) || /^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org\/ws\/2\//i.test(s);
@@ -341,55 +342,89 @@
           try { const u = new URL(p, location.href); p = u.pathname.replace(/^\/ws\/2\//, '') + u.search.replace(/[?&]fmt=json\b/, '').replace(/^&/, '?'); } catch (e) {}
           o = Object.assign({}, o, { label: p.slice(0, 120) });
       }
-      const go = async () => {
+      // `at` gives the URL at the moment the request leaves: a queued read's inc list can still grow
+      const go = async at => {
           for (let attempt = 1; ; attempt++) {
               const slot = await mbnSlot(o);
               if (!slot.ok) return null;
               let r;
-              try { r = await mbnWsFetch(url, init); }
+              try { r = await mbnWsFetch(at ? at() : url, init); }
               catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
               const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
               if (!a.throttled || give(attempt)) return r;
           }
       };
-      // The same read asked again while the first is still queued or running shares its fetch: each
-      // caller gets its own clone of the one answer. Two members of String Theory's bundle, or one
-      // page drawn twice, otherwise send it twice. A write (POST, a body) always goes on its own.
+      // Reads of the same thing share one fetch, and each caller gets its own clone of the answer.
+      // Two members of String Theory's bundle, or one page drawn twice, otherwise send it twice.
+      //   join   a read whose inc list the running or queued one already covers waits for its answer
+      //   merge  a read that differs only in inc joins one still queued: that one then leaves
+      //          asking for both inc lists (one page's scripts all ask for its entity at load)
+      // A write (POST, a body) always goes on its own. MBN_INC_ALONE incs change what an answer
+      // costs or needs (a login, a smaller page), so they are never added to a read that lacks them.
       const m = String((init && init.method) || 'GET').toUpperCase();
-      let key = '';
+      let key = '', want = null, base = null;
       if ((m === 'GET' || m === 'HEAD') && !(init && init.body)) {
           try {
               const h = init && init.headers, hs = h ? JSON.stringify(typeof h.entries === 'function' ? Array.from(h.entries()) : h) : '';
-              key = m + ' ' + new URL(String(url), location.href).href + ' ' + hs + ' ' + (o.background === false ? 'i' : 'b');
+              base = new URL(String(url), location.href);
+              want = new Set((base.searchParams.get('inc') || '').split(/[\s+]+/).filter(Boolean));
+              const rest = Array.from(base.searchParams.entries()).filter(([k]) => k !== 'inc').sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] < b[1] ? -1 : 1);
+              key = m + ' ' + base.origin + base.pathname + '?' + new URLSearchParams(rest) + ' ' + hs + ' ' + (o.background === false ? 'i' : 'b');
           } catch (e) { key = ''; }
       }
       if (!key) return go();
       const live = globalThis.__mbnLive || (globalThis.__mbnLive = new Map());
       const sig = init && init.signal;
       const mine = () => !(o.cancelled && o.cancelled()) && !(sig && sig.aborted);
+      const covers = run => { for (const i of want) if (!run.inc.has(i)) return false; return true; };
+      const fits = run => { for (const i of MBN_INC_ALONE) if (run.inc.has(i) !== want.has(i)) return false; return true; };
       for (;;) {
-          const run = live.get(key);
+          const runs = live.get(key) || [];
+          let run = runs.find(x => covers(x) && fits(x)), how = 'join';
+          if (!run) { run = runs.find(x => !x.sent && fits(x)); how = 'merge'; }
           if (!run) break;
-          mbnTrace({ e: 'join', l: o.label, b: o.background === false ? 0 : 1 });
+          const add = how === 'merge' ? Array.from(want).filter(i => !run.inc.has(i)) : [];
+          for (const i of add) run.inc.add(i);
+          mbnTrace({ e: how, l: o.label, b: o.background === false ? 0 : 1, with: run.label, add: add.join(' ') || undefined });
+          const p = run.p;
           // this caller's own Stop or abort still ends its wait, whatever the first caller does
           const stop = new Promise(res => {
               if (sig) sig.addEventListener('abort', () => res('stop'), { once: true });
-              if (o.cancelled) { const t = setInterval(() => { if (o.cancelled()) { clearInterval(t); res('stop'); } }, 250); run.then(() => clearInterval(t), () => clearInterval(t)); }
+              if (o.cancelled) { const t = setInterval(() => { if (o.cancelled()) { clearInterval(t); res('stop'); } }, 250); p.then(() => clearInterval(t), () => clearInterval(t)); }
           });
           let r;
-          try { r = await Promise.race([run, stop]); } catch (e) { if (!mine()) throw e; r = null; }
+          try { r = await Promise.race([p, stop]); } catch (e) { if (!mine()) throw e; r = null; }
           if (r === 'stop') {
               if (sig && sig.aborted) throw (sig.reason instanceof Error ? sig.reason : new DOMException('The operation was aborted.', 'AbortError'));
               return null;
           }
+          // a wider read MusicBrainz refused (a 400 for an inc it won't take here) might not refuse
+          // this one's own: it asks alone
+          if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();
           if (r) return r.clone();
           if (!mine()) return null;
           // the first caller was cancelled or aborted, this one wasn't: it asks for itself
       }
-      const p = go();
-      live.set(key, p);
-      try { const r = await p; return r ? r.clone() : r; }
-      finally { if (live.get(key) === p) live.delete(key); }
+      const run = { inc: new Set(want), sent: false, label: o.label, p: null };
+      run.p = go(() => {
+          run.sent = true;
+          if (run.inc.size === want.size) return url;   // nothing merged: as asked
+          const u = new URL(base.href);
+          u.searchParams.set('inc', Array.from(run.inc).join(' '));
+          return u.href;
+      });
+      const runs = live.get(key) || [];
+      runs.push(run);
+      live.set(key, runs);
+      try {
+          const r = await run.p;
+          if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();   // as for a joiner, above
+          return r ? r.clone() : r;
+      } finally {
+          const l = live.get(key) || [], i = l.indexOf(run);
+          if (i >= 0) l.splice(i, 1);
+          if (!l.length) live.delete(key);
+      }
   }
   function mbnHot() {
       let s;

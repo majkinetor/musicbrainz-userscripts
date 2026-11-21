@@ -46,6 +46,9 @@ export const MBN_MAX_HOLD = 60000;
 export const MBN_MAX_LEAD = 10000;
 /** Gate events each tab keeps for String Theory's Gate log (mbnTrace). */
 export const MBN_TRACE_MAX = 400;
+/** Incs a merged read (mbnFetch) never adds to one without them: they need a login, or MusicBrainz
+ *  answers them with fewer results or much more work. */
+export const MBN_INC_ALONE = ['user-tags', 'user-genres', 'user-ratings', 'recordings', 'recording-level-rels', 'work-level-rels', 'release-group-level-rels', 'discids', 'isrcs'];
 
 /** True for a request the gate paces: MusicBrainz's /ws/2, relative or absolute. */
 export function mbnGated(url) {
@@ -388,55 +391,89 @@ export async function mbnFetch(url, init, o) {
         try { const u = new URL(p, location.href); p = u.pathname.replace(/^\/ws\/2\//, '') + u.search.replace(/[?&]fmt=json\b/, '').replace(/^&/, '?'); } catch (e) {}
         o = Object.assign({}, o, { label: p.slice(0, 120) });
     }
-    const go = async () => {
+    // `at` gives the URL at the moment the request leaves: a queued read's inc list can still grow
+    const go = async at => {
         for (let attempt = 1; ; attempt++) {
             const slot = await mbnSlot(o);
             if (!slot.ok) return null;
             let r;
-            try { r = await mbnWsFetch(url, init); }
+            try { r = await mbnWsFetch(at ? at() : url, init); }
             catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
             const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
             if (!a.throttled || give(attempt)) return r;
         }
     };
-    // The same read asked again while the first is still queued or running shares its fetch: each
-    // caller gets its own clone of the one answer. Two members of String Theory's bundle, or one
-    // page drawn twice, otherwise send it twice. A write (POST, a body) always goes on its own.
+    // Reads of the same thing share one fetch, and each caller gets its own clone of the answer.
+    // Two members of String Theory's bundle, or one page drawn twice, otherwise send it twice.
+    //   join   a read whose inc list the running or queued one already covers waits for its answer
+    //   merge  a read that differs only in inc joins one still queued: that one then leaves
+    //          asking for both inc lists (one page's scripts all ask for its entity at load)
+    // A write (POST, a body) always goes on its own. MBN_INC_ALONE incs change what an answer
+    // costs or needs (a login, a smaller page), so they are never added to a read that lacks them.
     const m = String((init && init.method) || 'GET').toUpperCase();
-    let key = '';
+    let key = '', want = null, base = null;
     if ((m === 'GET' || m === 'HEAD') && !(init && init.body)) {
         try {
             const h = init && init.headers, hs = h ? JSON.stringify(typeof h.entries === 'function' ? Array.from(h.entries()) : h) : '';
-            key = m + ' ' + new URL(String(url), location.href).href + ' ' + hs + ' ' + (o.background === false ? 'i' : 'b');
+            base = new URL(String(url), location.href);
+            want = new Set((base.searchParams.get('inc') || '').split(/[\s+]+/).filter(Boolean));
+            const rest = Array.from(base.searchParams.entries()).filter(([k]) => k !== 'inc').sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] < b[1] ? -1 : 1);
+            key = m + ' ' + base.origin + base.pathname + '?' + new URLSearchParams(rest) + ' ' + hs + ' ' + (o.background === false ? 'i' : 'b');
         } catch (e) { key = ''; }
     }
     if (!key) return go();
     const live = globalThis.__mbnLive || (globalThis.__mbnLive = new Map());
     const sig = init && init.signal;
     const mine = () => !(o.cancelled && o.cancelled()) && !(sig && sig.aborted);
+    const covers = run => { for (const i of want) if (!run.inc.has(i)) return false; return true; };
+    const fits = run => { for (const i of MBN_INC_ALONE) if (run.inc.has(i) !== want.has(i)) return false; return true; };
     for (;;) {
-        const run = live.get(key);
+        const runs = live.get(key) || [];
+        let run = runs.find(x => covers(x) && fits(x)), how = 'join';
+        if (!run) { run = runs.find(x => !x.sent && fits(x)); how = 'merge'; }
         if (!run) break;
-        mbnTrace({ e: 'join', l: o.label, b: o.background === false ? 0 : 1 });
+        const add = how === 'merge' ? Array.from(want).filter(i => !run.inc.has(i)) : [];
+        for (const i of add) run.inc.add(i);
+        mbnTrace({ e: how, l: o.label, b: o.background === false ? 0 : 1, with: run.label, add: add.join(' ') || undefined });
+        const p = run.p;
         // this caller's own Stop or abort still ends its wait, whatever the first caller does
         const stop = new Promise(res => {
             if (sig) sig.addEventListener('abort', () => res('stop'), { once: true });
-            if (o.cancelled) { const t = setInterval(() => { if (o.cancelled()) { clearInterval(t); res('stop'); } }, 250); run.then(() => clearInterval(t), () => clearInterval(t)); }
+            if (o.cancelled) { const t = setInterval(() => { if (o.cancelled()) { clearInterval(t); res('stop'); } }, 250); p.then(() => clearInterval(t), () => clearInterval(t)); }
         });
         let r;
-        try { r = await Promise.race([run, stop]); } catch (e) { if (!mine()) throw e; r = null; }
+        try { r = await Promise.race([p, stop]); } catch (e) { if (!mine()) throw e; r = null; }
         if (r === 'stop') {
             if (sig && sig.aborted) throw (sig.reason instanceof Error ? sig.reason : new DOMException('The operation was aborted.', 'AbortError'));
             return null;
         }
+        // a wider read MusicBrainz refused (a 400 for an inc it won't take here) might not refuse
+        // this one's own: it asks alone
+        if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();
         if (r) return r.clone();
         if (!mine()) return null;
         // the first caller was cancelled or aborted, this one wasn't: it asks for itself
     }
-    const p = go();
-    live.set(key, p);
-    try { const r = await p; return r ? r.clone() : r; }
-    finally { if (live.get(key) === p) live.delete(key); }
+    const run = { inc: new Set(want), sent: false, label: o.label, p: null };
+    run.p = go(() => {
+        run.sent = true;
+        if (run.inc.size === want.size) return url;   // nothing merged: as asked
+        const u = new URL(base.href);
+        u.searchParams.set('inc', Array.from(run.inc).join(' '));
+        return u.href;
+    });
+    const runs = live.get(key) || [];
+    runs.push(run);
+    live.set(key, runs);
+    try {
+        const r = await run.p;
+        if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();   // as for a joiner, above
+        return r ? r.clone() : r;
+    } finally {
+        const l = live.get(key) || [], i = l.indexOf(run);
+        if (i >= 0) l.splice(i, 1);
+        if (!l.length) live.delete(key);
+    }
 }
 
 /** How throttled MusicBrainz is right now (0: not at all), for a caller that narrows its own
@@ -601,6 +638,6 @@ export function mbnReverify(url, init, o) {
 
 /** What sync-gate.mjs inlines, in order. */
 export const MBN_INLINE = {
-    consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_MAX_HOLD, MBN_MAX_LEAD, MBN_TRACE_MAX },
+    consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_MAX_HOLD, MBN_MAX_LEAD, MBN_TRACE_MAX, MBN_INC_ALONE },
     fns: [mbnGated, mbnState, mbnSleep, mbnTrace, mbnSlot, mbnLead, mbnAnswer, mbnFetch, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
 };
