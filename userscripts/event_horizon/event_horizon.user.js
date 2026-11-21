@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.224645
+// @version      2026.11.21.225101
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3827,7 +3827,10 @@ body.col-dragging,body.col-dragging *{cursor:grabbing!important;user-select:none
 .sk-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:22px;margin-top:40px}.sk-f{display:grid;gap:10px}.sk-f .l{width:70px;height:10px}.sk-f .v{width:120px;height:18px}
 .sk-st{margin-top:36px;color:var(--muted);font-size:13px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sk-st b{color:var(--text);font-weight:600}
 .sk-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:skp 1s ease-in-out infinite}@keyframes skp{50%{opacity:.25}}
-.sk-st.err{color:var(--warn)}.sk-busy{color:var(--warn)}
+.sk-st.err{color:var(--warn)}.sk-busy{display:inline-flex;align-items:center;gap:4px;padding:2px 4px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums;cursor:default}.sk-busy:hover{color:var(--text)}
+.sk-busy svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.sk-slot{display:inline-flex;align-items:center;gap:8px}.sk-slot.sk-wait{visibility:hidden}.sk-busy>span{min-width:2ch}
+.sk-st [data-skstop]{border:0}.sk-st [data-skstop]:hover{color:var(--accent)}
 .sk-b{font:600 13px Manrope,system-ui,sans-serif;height:30px;padding:0 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}.sk-b:hover{border-color:var(--accent)}
 .sk-sec{margin-top:48px}.sk.h{width:260px;height:26px}
 .sk-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;margin-top:16px}.sk-tiles .sk{aspect-ratio:1;border-radius:12px}
@@ -18250,17 +18253,22 @@ function start1() {
 let showing = 0;
 // wsStopped: the last page load whose throttled lookups the reader stopped; skBusy tells the loading page MusicBrainz is busy
 let wsStopped = 0;
+// the busy slot sits in the status line from the start, hidden, so the line doesn't move when it shows:
+// a muted retry mark with the count, its words in the tooltip (a busy server is no error), and Stop
+const SK_SLOT = '<span class="sk-slot sk-wait"><span class="sk-busy"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg><span></span></span><button type="button" class="sk-b" data-skstop>Stop</button></span>';
 function skBusy(n) {
     const st = n === showing && document.querySelector('#app .sk-st');
     if (!st || st.classList.contains('err')) return;
-    let b = st.querySelector('.sk-busy');
-    if (!b) {
-        st.insertAdjacentHTML('beforeend', '<span class="sk-busy"></span><button type="button" class="sk-b" data-skstop>Stop</button>');
-        b = st.querySelector('.sk-busy');
-        st.querySelector('[data-skstop]').onclick = () => { wsStopped = n; };
+    const slot = st.querySelector('.sk-slot'), b = slot && slot.querySelector('.sk-busy');
+    if (!b) return;
+    if (slot.classList.contains('sk-wait')) {
+        slot.classList.remove('sk-wait');
+        slot.querySelector('[data-skstop]').onclick = () => { wsStopped = n; };
     }
     b.dataset.n = +(b.dataset.n || 0) + 1;
-    b.textContent = 'MusicBrainz is busy, asking again (' + b.dataset.n + ')…';
+    b.lastChild.textContent = b.dataset.n;
+    b.dataset.tip = 'MusicBrainz is busy\nAsked again ' + b.dataset.n + (b.dataset.n === '1' ? ' time' : ' times') + ', still trying';
+    b.setAttribute('aria-label', 'MusicBrainz is busy, asked again ' + b.dataset.n + ' times');
 }
 // a load's three states, the same on every page (#1085): loading, failed with a Retry (the error left out where the
 // header already shows it), and nothing to show, where a filter that hides everything says so in one wording
@@ -18271,15 +18279,15 @@ function stNone(q, empty) { return `<p class="hm-none">${q ? 'Nothing matches th
 // the skeleton's hero alone, for a page whose sections came before its entity
 function heroSk(kind, err) {
     const h = skeleton(), a = h.indexOf('<div class="hero">'), b = h.indexOf('<div class="sk-sec">');
-    const st = err ? `<div class="sk-st err"><span>${esc(err)}</span></div>` : `<div class="sk-st" role="status"><span class="sk-dot"></span><span><b>${kind}</b></span></div>`;
-    return '<div class="sk-page" aria-busy="true">' + h.slice(a, b).replace(/<div class="sk-st"[\s\S]*?<\/span><\/div>/, st) + '</div>';
+    const st = err ? `<div class="sk-st err"><span>${esc(err)}</span></div>` : `<div class="sk-st" role="status"><span class="sk-dot"></span><span class="sk-parts"><b>${kind}</b></span>${SK_SLOT}</div>`;
+    return '<div class="sk-page" aria-busy="true">' + h.slice(a, b).replace(/<div class="sk-st"[\s\S]*?<\/div>/, st) + '</div>';
 }
 function skeleton() {
     const sk = (cls, st = '') => `<span class="sk ${cls}"${st ? ` style="${st}"` : ''}></span>`;
     const fact = `<div class="sk-f">${sk('l')}${sk('v')}</div>`;
     return `<div class="sk-page" aria-busy="true"><div class="hero"><div class="art"><div class="sk sk-cover">${LOGO.replace('<svg', '<svg class="sk-orbit"')}</div><div class="sk-thumbs">${sk('t').repeat(3)}</div></div>
         <div class="info">${sk('k')}${sk('ti')}${sk('by')}<div class="sk-facts">${fact.repeat(5)}</div>
-        <div class="sk-st" role="status"><span class="sk-dot"></span><span><b>release</b> · <b>editions</b> · <b>covers</b></span></div></div></div>
+        <div class="sk-st" role="status"><span class="sk-dot"></span><span class="sk-parts"><b>release</b> · <b>editions</b> · <b>covers</b></span>${SK_SLOT}</div></div></div>
         <div class="sk-sec">${sk('h')}<div class="sk-tiles">${sk('tile').repeat(4)}</div></div>
         <div class="sk-sec">${sk('h', 'width:140px')}<div class="sk-rows">${Array.from({ length: 8 }, (_, i) => `<div class="sk-r">${sk('')}${sk('', `width:${45 + (i * 37) % 40}%`)}${sk('')}${sk('')}</div>`).join('')}</div></div></div>`;
 }
@@ -18393,7 +18401,7 @@ async function show(key, o = {}) {
     if (!o.quiet) scrollTo(0, 0);
     // the pinned bar drops the last page's title and buttons while the skeleton shows: the player's controls alone stay
     if (!o.quiet && pb) { const k = pb.querySelector('.kicker'); if (k) { k.innerHTML = '<span class="pident"></span>'; plyPin(); } }
-    const st = app.querySelector('.sk-st span:last-child');
+    const st = app.querySelector('.sk-st .sk-parts');
     // each part is bold while it loads and ticked when done
     const done = new Set();
     const step = k => { done.add(k); if (n === showing && st) st.innerHTML = parts.map(x => done.has(x) ? `✓ ${x}` : `<b>${x}</b>`).join(' · '); };
