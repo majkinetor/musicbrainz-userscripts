@@ -79,7 +79,7 @@ The window lists the latest 20 posts and loads older ones as you scroll to the e
 
 ## Gate log
 
-The scripts send their MusicBrainz requests through one shared queue, the gate. It spaces them out across all tabs, and when MusicBrainz answers 503 or 429, every script waits. Open **Gate log** from the [command palette](#command-palette) to see what goes through it.
+The scripts send their MusicBrainz requests through one shared queue, the gate. It spaces them out across all tabs, and when MusicBrainz answers 503 or 429, every script waits. If a request is asked again while the first one is still on its way, both share one answer (**join** in the log). Open **Gate log** from the [command palette](#command-palette) to see what goes through it.
 
 The top line shows the gate now: the wait after a 503 (**Hold**), how many 503s came in a row (**Hot**), how far ahead the queues are booked, and which page holds the lead. The next line counts the last minute in all tabs: requests started, answered, and refused with 503 or 429.
 

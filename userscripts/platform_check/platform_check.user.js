@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.21.224315
+// @version      2026.11.21.224645
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -353,15 +353,55 @@ async function mbnFetch(url, init, o) {
         try { const u = new URL(p, location.href); p = u.pathname.replace(/^\/ws\/2\//, '') + u.search.replace(/[?&]fmt=json\b/, '').replace(/^&/, '?'); } catch (e) {}
         o = Object.assign({}, o, { label: p.slice(0, 120) });
     }
-    for (let attempt = 1; ; attempt++) {
-        const slot = await mbnSlot(o);
-        if (!slot.ok) return null;
-        let r;
-        try { r = await mbnWsFetch(url, init); }
-        catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
-        const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
-        if (!a.throttled || give(attempt)) return r;
+    const go = async () => {
+        for (let attempt = 1; ; attempt++) {
+            const slot = await mbnSlot(o);
+            if (!slot.ok) return null;
+            let r;
+            try { r = await mbnWsFetch(url, init); }
+            catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
+            const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
+            if (!a.throttled || give(attempt)) return r;
+        }
+    };
+    // The same read asked again while the first is still queued or running shares its fetch: each
+    // caller gets its own clone of the one answer. Two members of String Theory's bundle, or one
+    // page drawn twice, otherwise send it twice. A write (POST, a body) always goes on its own.
+    const m = String((init && init.method) || 'GET').toUpperCase();
+    let key = '';
+    if ((m === 'GET' || m === 'HEAD') && !(init && init.body)) {
+        try {
+            const h = init && init.headers, hs = h ? JSON.stringify(typeof h.entries === 'function' ? Array.from(h.entries()) : h) : '';
+            key = m + ' ' + new URL(String(url), location.href).href + ' ' + hs + ' ' + (o.background === false ? 'i' : 'b');
+        } catch (e) { key = ''; }
     }
+    if (!key) return go();
+    const live = globalThis.__mbnLive || (globalThis.__mbnLive = new Map());
+    const sig = init && init.signal;
+    const mine = () => !(o.cancelled && o.cancelled()) && !(sig && sig.aborted);
+    for (;;) {
+        const run = live.get(key);
+        if (!run) break;
+        mbnTrace({ e: 'join', l: o.label, b: o.background === false ? 0 : 1 });
+        // this caller's own Stop or abort still ends its wait, whatever the first caller does
+        const stop = new Promise(res => {
+            if (sig) sig.addEventListener('abort', () => res('stop'), { once: true });
+            if (o.cancelled) { const t = setInterval(() => { if (o.cancelled()) { clearInterval(t); res('stop'); } }, 250); run.then(() => clearInterval(t), () => clearInterval(t)); }
+        });
+        let r;
+        try { r = await Promise.race([run, stop]); } catch (e) { if (!mine()) throw e; r = null; }
+        if (r === 'stop') {
+            if (sig && sig.aborted) throw (sig.reason instanceof Error ? sig.reason : new DOMException('The operation was aborted.', 'AbortError'));
+            return null;
+        }
+        if (r) return r.clone();
+        if (!mine()) return null;
+        // the first caller was cancelled or aborted, this one wasn't: it asks for itself
+    }
+    const p = go();
+    live.set(key, p);
+    try { const r = await p; return r ? r.clone() : r; }
+    finally { if (live.get(key) === p) live.delete(key); }
 }
 function mbnHot() {
     let s;

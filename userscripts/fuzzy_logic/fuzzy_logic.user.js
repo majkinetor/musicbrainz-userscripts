@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.224315
+// @version      2026.11.21.224645
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm, RateYourMusic and Album of the Year, read when you open their pages), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjI4Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMxNmNjZjgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjZmZhZTM4Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -381,15 +381,55 @@
           try { const u = new URL(p, location.href); p = u.pathname.replace(/^\/ws\/2\//, '') + u.search.replace(/[?&]fmt=json\b/, '').replace(/^&/, '?'); } catch (e) {}
           o = Object.assign({}, o, { label: p.slice(0, 120) });
       }
-      for (let attempt = 1; ; attempt++) {
-          const slot = await mbnSlot(o);
-          if (!slot.ok) return null;
-          let r;
-          try { r = await mbnWsFetch(url, init); }
-          catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
-          const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
-          if (!a.throttled || give(attempt)) return r;
+      const go = async () => {
+          for (let attempt = 1; ; attempt++) {
+              const slot = await mbnSlot(o);
+              if (!slot.ok) return null;
+              let r;
+              try { r = await mbnWsFetch(url, init); }
+              catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
+              const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
+              if (!a.throttled || give(attempt)) return r;
+          }
+      };
+      // The same read asked again while the first is still queued or running shares its fetch: each
+      // caller gets its own clone of the one answer. Two members of String Theory's bundle, or one
+      // page drawn twice, otherwise send it twice. A write (POST, a body) always goes on its own.
+      const m = String((init && init.method) || 'GET').toUpperCase();
+      let key = '';
+      if ((m === 'GET' || m === 'HEAD') && !(init && init.body)) {
+          try {
+              const h = init && init.headers, hs = h ? JSON.stringify(typeof h.entries === 'function' ? Array.from(h.entries()) : h) : '';
+              key = m + ' ' + new URL(String(url), location.href).href + ' ' + hs + ' ' + (o.background === false ? 'i' : 'b');
+          } catch (e) { key = ''; }
       }
+      if (!key) return go();
+      const live = globalThis.__mbnLive || (globalThis.__mbnLive = new Map());
+      const sig = init && init.signal;
+      const mine = () => !(o.cancelled && o.cancelled()) && !(sig && sig.aborted);
+      for (;;) {
+          const run = live.get(key);
+          if (!run) break;
+          mbnTrace({ e: 'join', l: o.label, b: o.background === false ? 0 : 1 });
+          // this caller's own Stop or abort still ends its wait, whatever the first caller does
+          const stop = new Promise(res => {
+              if (sig) sig.addEventListener('abort', () => res('stop'), { once: true });
+              if (o.cancelled) { const t = setInterval(() => { if (o.cancelled()) { clearInterval(t); res('stop'); } }, 250); run.then(() => clearInterval(t), () => clearInterval(t)); }
+          });
+          let r;
+          try { r = await Promise.race([run, stop]); } catch (e) { if (!mine()) throw e; r = null; }
+          if (r === 'stop') {
+              if (sig && sig.aborted) throw (sig.reason instanceof Error ? sig.reason : new DOMException('The operation was aborted.', 'AbortError'));
+              return null;
+          }
+          if (r) return r.clone();
+          if (!mine()) return null;
+          // the first caller was cancelled or aborted, this one wasn't: it asks for itself
+      }
+      const p = go();
+      live.set(key, p);
+      try { const r = await p; return r ? r.clone() : r; }
+      finally { if (live.get(key) === p) live.delete(key); }
   }
   function mbnHot() {
       let s;

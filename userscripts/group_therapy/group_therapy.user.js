@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.224315
+// @version      2026.11.21.224645
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -322,15 +322,55 @@
           try { const u = new URL(p, location.href); p = u.pathname.replace(/^\/ws\/2\//, '') + u.search.replace(/[?&]fmt=json\b/, '').replace(/^&/, '?'); } catch (e) {}
           o = Object.assign({}, o, { label: p.slice(0, 120) });
       }
-      for (let attempt = 1; ; attempt++) {
-          const slot = await mbnSlot(o);
-          if (!slot.ok) return null;
-          let r;
-          try { r = await mbnWsFetch(url, init); }
-          catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
-          const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
-          if (!a.throttled || give(attempt)) return r;
+      const go = async () => {
+          for (let attempt = 1; ; attempt++) {
+              const slot = await mbnSlot(o);
+              if (!slot.ok) return null;
+              let r;
+              try { r = await mbnWsFetch(url, init); }
+              catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
+              const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
+              if (!a.throttled || give(attempt)) return r;
+          }
+      };
+      // The same read asked again while the first is still queued or running shares its fetch: each
+      // caller gets its own clone of the one answer. Two members of String Theory's bundle, or one
+      // page drawn twice, otherwise send it twice. A write (POST, a body) always goes on its own.
+      const m = String((init && init.method) || 'GET').toUpperCase();
+      let key = '';
+      if ((m === 'GET' || m === 'HEAD') && !(init && init.body)) {
+          try {
+              const h = init && init.headers, hs = h ? JSON.stringify(typeof h.entries === 'function' ? Array.from(h.entries()) : h) : '';
+              key = m + ' ' + new URL(String(url), location.href).href + ' ' + hs + ' ' + (o.background === false ? 'i' : 'b');
+          } catch (e) { key = ''; }
       }
+      if (!key) return go();
+      const live = globalThis.__mbnLive || (globalThis.__mbnLive = new Map());
+      const sig = init && init.signal;
+      const mine = () => !(o.cancelled && o.cancelled()) && !(sig && sig.aborted);
+      for (;;) {
+          const run = live.get(key);
+          if (!run) break;
+          mbnTrace({ e: 'join', l: o.label, b: o.background === false ? 0 : 1 });
+          // this caller's own Stop or abort still ends its wait, whatever the first caller does
+          const stop = new Promise(res => {
+              if (sig) sig.addEventListener('abort', () => res('stop'), { once: true });
+              if (o.cancelled) { const t = setInterval(() => { if (o.cancelled()) { clearInterval(t); res('stop'); } }, 250); run.then(() => clearInterval(t), () => clearInterval(t)); }
+          });
+          let r;
+          try { r = await Promise.race([run, stop]); } catch (e) { if (!mine()) throw e; r = null; }
+          if (r === 'stop') {
+              if (sig && sig.aborted) throw (sig.reason instanceof Error ? sig.reason : new DOMException('The operation was aborted.', 'AbortError'));
+              return null;
+          }
+          if (r) return r.clone();
+          if (!mine()) return null;
+          // the first caller was cancelled or aborted, this one wasn't: it asks for itself
+      }
+      const p = go();
+      live.set(key, p);
+      try { const r = await p; return r ? r.clone() : r; }
+      finally { if (live.get(key) === p) live.delete(key); }
   }
   function mbnHot() {
       let s;

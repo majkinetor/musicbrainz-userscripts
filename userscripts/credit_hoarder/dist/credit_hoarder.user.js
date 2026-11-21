@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.11.21.224359
+// @version      2026.11.21.224713
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -616,26 +616,80 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     }
     const t0 = Date.now(), give = (attempt) => o.tries ? attempt >= o.tries : o.background === false ? Date.now() - t0 > 45e3 : attempt >= 4;
     if (!o.label) {
-      let p = String(url);
+      let p2 = String(url);
       try {
-        const u = new URL(p, location.href);
-        p = u.pathname.replace(/^\/ws\/2\//, "") + u.search.replace(/[?&]fmt=json\b/, "").replace(/^&/, "?");
+        const u = new URL(p2, location.href);
+        p2 = u.pathname.replace(/^\/ws\/2\//, "") + u.search.replace(/[?&]fmt=json\b/, "").replace(/^&/, "?");
       } catch (e) {
       }
-      o = Object.assign({}, o, { label: p.slice(0, 120) });
+      o = Object.assign({}, o, { label: p2.slice(0, 120) });
     }
-    for (let attempt = 1; ; attempt++) {
-      const slot = await mbnSlot(o);
-      if (!slot.ok) return null;
+    const go = async () => {
+      for (let attempt = 1; ; attempt++) {
+        const slot = await mbnSlot(o);
+        if (!slot.ok) return null;
+        let r;
+        try {
+          r = await mbnWsFetch(url, init);
+        } catch (e) {
+          mbnTrace({ e: "error", l: o.label, b: o.background === false ? 0 : 1, err: String(e && (e.name === "AbortError" ? "aborted" : e.message) || e).slice(0, 80) });
+          throw e;
+        }
+        const a = await mbnAnswer(r.status, (n) => r.headers.get(n), o);
+        if (!a.throttled || give(attempt)) return r;
+      }
+    };
+    const m = String(init && init.method || "GET").toUpperCase();
+    let key = "";
+    if ((m === "GET" || m === "HEAD") && !(init && init.body)) {
+      try {
+        const h = init && init.headers, hs = h ? JSON.stringify(typeof h.entries === "function" ? Array.from(h.entries()) : h) : "";
+        key = m + " " + new URL(String(url), location.href).href + " " + hs + " " + (o.background === false ? "i" : "b");
+      } catch (e) {
+        key = "";
+      }
+    }
+    if (!key) return go();
+    const live = globalThis.__mbnLive || (globalThis.__mbnLive = /* @__PURE__ */ new Map());
+    const sig = init && init.signal;
+    const mine = () => !(o.cancelled && o.cancelled()) && !(sig && sig.aborted);
+    for (; ; ) {
+      const run = live.get(key);
+      if (!run) break;
+      mbnTrace({ e: "join", l: o.label, b: o.background === false ? 0 : 1 });
+      const stop = new Promise((res) => {
+        if (sig) sig.addEventListener("abort", () => res("stop"), { once: true });
+        if (o.cancelled) {
+          const t = setInterval(() => {
+            if (o.cancelled()) {
+              clearInterval(t);
+              res("stop");
+            }
+          }, 250);
+          run.then(() => clearInterval(t), () => clearInterval(t));
+        }
+      });
       let r;
       try {
-        r = await mbnWsFetch(url, init);
+        r = await Promise.race([run, stop]);
       } catch (e) {
-        mbnTrace({ e: "error", l: o.label, b: o.background === false ? 0 : 1, err: String(e && (e.name === "AbortError" ? "aborted" : e.message) || e).slice(0, 80) });
-        throw e;
+        if (!mine()) throw e;
+        r = null;
       }
-      const a = await mbnAnswer(r.status, (n) => r.headers.get(n), o);
-      if (!a.throttled || give(attempt)) return r;
+      if (r === "stop") {
+        if (sig && sig.aborted) throw sig.reason instanceof Error ? sig.reason : new DOMException("The operation was aborted.", "AbortError");
+        return null;
+      }
+      if (r) return r.clone();
+      if (!mine()) return null;
+    }
+    const p = go();
+    live.set(key, p);
+    try {
+      const r = await p;
+      return r ? r.clone() : r;
+    } finally {
+      if (live.get(key) === p) live.delete(key);
     }
   }
   function mbnUA() {
