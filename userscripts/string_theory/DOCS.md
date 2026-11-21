@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-21 20:42 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-21 21:52 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -839,11 +839,10 @@ A clean, modern redesign of MusicBrainz's pages, with themes, automatic light an
 - **[The viewer](#the-viewer)** replaces a MusicBrainz page and moves between pages without reloading.
 - **[Header menu](#header-menu)**: which actions show, in what order, and which go under More.
 - **[Background effects](#background-effects)**: Hexagons, Tron, Stars, Aurora and Rain over the cover, a glow, generated artwork or any picture.
-- **[Sections](#sections)**: a page's data in cards you fold, hide and reorder.
-- **[Aliases](#aliases-1)**: edit them together and fetch an artist's names from Discogs.
-- **[Starred entities](#starred-entities)** keeps favourites on the homepage.
-- **[Collections](#collections)**: add an entity to your collections or remove it.
-- **[Recently opened](#recently-opened)** lists the pages you opened last on the homepage.
+- **Sections**: a page's data in cards you fold, hide and reorder.
+- **Starred entities** keeps favourites on the homepage.
+- **Collections**: in-place interface to add an entity to your collections or remove it.
+- **Recently opened** lists the pages you opened last on the homepage.
 - **[Tracklist](#tracklist-1)**: each track's credits and streaming links.
 - **[Player](#player)** plays recordings, releases and collections from their streaming links, and can send your listens to ListenBrainz.
 - **[Releases and discography](#releases-and-discography)** as a grid or a table, with columns, filters and saved views.
@@ -864,8 +863,7 @@ On a page Event Horizon can show, its dock button replaces MusicBrainz's page. L
 - **History** groups edits into bursts; a single edit opens under the release it touches.
 - **Account pages** keep MusicBrainz's controls under your profile header. Revoke an application in its row.
 - **Relate**, the relationship editor, takes Event Horizon's look, with folding cards.
-- **Long titles**: a subtitle drops to its own line, long titles shrink, and very long ones stop at four lines with **Show full title**.
-- **Search**: a type's letter and a space search that type: `w yesterday` searches works. The letters are **a** artist, **g** release group, **r** release, **w** work, **s** series, **p** place and **e** editor. MusicBrainz's own **Search** page (`/search`, with its Tag lookup and Other lookups) opens here too.
+- **Search**: a type's letter and a space search that type, e.g. `w yesterday` searches works.
 - **Logged out**: the corner logo turns grey with an amber dot; click it to log in and come back.
 - **Pinned header**: once the header scrolls away, a bar keeps the cover, title, artist and actions in reach.
 
@@ -898,26 +896,6 @@ While you tune, the settings window fades when the mouse leaves it, so you see t
 
 > [!NOTE]
 > Motion pauses in a hidden tab and respects reduced motion.
-
-### Sections
-
-Click a card's header to fold it; right-click to fold its siblings too. Reorder and hide cards from the header menu; each entity remembers its cards' state. Some cards have their own options at the right.
-
-### Aliases
-
-The pencil beside an entity's aliases, or its **Aliases** page, opens the [bulk alias editor](../apollo_editor/README.md#aliases). An empty Locale shows the detected language in grey: **文** takes it, right-click fills every empty one. For an artist with a Discogs link, **Fetch from Discogs** adds its name variations as new rows; review them before **Enter edit**, since a Discogs alias can be another MusicBrainz artist.
-
-### Starred entities
-
-The star in an entity's header keeps it on the homepage, as a list, grid or table, grouped by type. The homepage header's export button saves stars to a file or adds them from one.
-
-### Collections
-
-Click the entity-type label above a title for your collections of that type; select one to add or remove the entity. **Add to a new collection** creates one without reloading, so the player keeps playing. **Refresh** in the menu picks up changes made elsewhere.
-
-### Recently opened
-
-The homepage lists the pages you opened last, with the same views as stars. Its settings button sets how many to keep and which entity types.
 
 ### Tracklist
 
