@@ -79,3 +79,37 @@ test('plays a release collection and an individual release', { tag: ['@sandbox',
     await expect.poll(async () => (await page.evaluate(() => window.__ehPlayerTest.state())).q.length).toBe(4);
   } finally { await page.request.post(`${mb}/collection/${gid}/own_collection/delete`, { form: {} }); }
 });
+
+test('makes a new collection right in the collections picker, holding the recording', { tag: ['@sandbox', '@login'] }, async ({ page, context, inject }) => {
+  const mb = 'https://test.musicbrainz.org';
+  await context.route('https://www.youtube-nocookie.com/embed/**', route => route.fulfill({ contentType: 'text/html', body: '<p>player fixture</p>' }));
+  await page.goto(mb); await requireLogin(page);
+  const rec = await pristine(page, 'standalone-recording');
+  await page.goto(mb);
+  await inject('event_horizon', { waitFor: '__ehPlayerTest' });
+  const links = [{ key: 'youtube', name: 'YouTube', urls: [{ url: 'https://www.youtube.com/watch?v=abcdefghijk' }] }];
+  await page.evaluate(({ rec, links }) => window.__ehPlayerTest.recording({ id: rec.mbid, title: 'First', ac: [], links }, []), { rec, links });
+  await page.locator('[data-ply="list"]').click();
+  const btn = page.locator('#eh-ply-menu .ply-ra [data-pa="rec"]');
+  await btn.click({ button: 'right' });
+  const menu = page.locator('#eh-ply-coll');
+  await menu.locator('[data-cnew]').click();
+  const name = 'Picker new ' + Date.now();
+  await expect(menu.locator('form.cn [name=n]')).toBeFocused();
+  await menu.locator('form.cn [name=n]').fill(name);
+  await menu.locator('form.cn [name=d]').fill('made in the picker');
+  await menu.locator('form.cn [name=p]').check();
+  const created = page.waitForResponse(r => r.request().method() === 'POST' && r.url().includes('/collection/create'));
+  await menu.locator('form.cn button[type=submit]').click();
+  const res = await created;
+  const gid = res.headers().location?.match(/\/collection\/([0-9a-f-]{36})/)?.[1];
+  expect(gid, `status ${res.status()}`).toBeTruthy();
+  try {
+    expect(res.request().postData()).toContain('edit-list.public=1');
+    await expect(menu.locator('form.cn')).toHaveCount(0);
+    await expect(menu.locator(`[data-cc="${gid}"]`)).toHaveAttribute('aria-checked', 'true');
+    await expect(menu.locator(`[data-cc="${gid}"]`)).toContainText(name);
+    await page.goto(`${mb}/collection/${gid}`);
+    await expect(page.locator(`a[href="/recording/${rec.mbid}"]`).first()).toBeVisible({ timeout: 30000 });
+  } finally { await page.request.post(`${mb}/collection/${gid}/own_collection/delete`, { form: {} }); }
+});

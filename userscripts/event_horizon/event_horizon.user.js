@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.051000
+// @version      2026.11.22.060000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13808,15 +13808,79 @@ function plyCollPick(btn, type) {
             PLOG.info('default ' + (type === 'rel' ? 'release' : 'recording') + ' collection', r && d && d.id !== r.id || r && !d ? r.label : 'cleared');
             plyCollDraw(m); plyHeadPaint();
         } else if (b.dataset.cr) collectionLoad(key, true);
+        else if (b.dataset.cnew) plyCollNewOpen(m);
+        else if (b.dataset.cnx) { m._cn = null; plyCollDraw(m); }
     });
+    m.addEventListener('submit', ev => { ev.preventDefault(); plyCollNewSave(m, ev.target); });
     plyCollDraw(m);
     collectionLoad(key);
+}
+function plyCollNewHtml(cn) {
+    const f = cn.f || {}, dis = cn.busy ? ' disabled' : '';
+    return `<form class="cn" autocomplete="off"><div class="hd">New collection</div>`
+        + `<input name="n" type="text" maxlength="255" placeholder="${esc(f.lName || 'Name')}" aria-label="${esc(f.lName || 'Name')}"${dis}>`
+        + `<textarea name="d" rows="2" placeholder="${esc(f.lDesc || 'Description')}" aria-label="${esc(f.lDesc || 'Description')}"${dis}></textarea>`
+        + `<label class="pb"><input name="p" type="checkbox"${dis}><span>${esc(f.lPub || 'Allow other users to see this collection')}</span></label>`
+        + (cn.err ? `<div class="st" role="alert">${esc(cn.err)}</div>` : '')
+        + `<div class="bt"><button type="button" class="nx" data-cnx="1"${dis}>Cancel</button><button type="submit" class="ok"${dis}>${cn.busy ? 'Adding…' : esc(f.btn || 'Add collection')}</button></div></form>`;
+}
+// a new collection, right in the picker: its name, description and visibility; the type follows the item it starts with,
+// so MusicBrainz's form (read as it opens, for its words and that type) is never shown, and the item goes straight in
+function plyCollNewOpen(m) {
+    const x = COLLECTIONS.get(m.dataset.key), c = x && x.rows && x.rows.find(r => !r.id); if (!c) return;
+    const cn = m._cn = { path: c.path, f: null, v: { n: '', d: '', p: false } };
+    PLOG.debug('new collection form', c.path);
+    plyCollDraw(m); m.querySelector('.cn [name=n]')?.focus();
+    plyCollNewForm(cn).then(() => { if (m._cn === cn && m.isConnected) plyCollDraw(m); }, e => PLOG.warn('Reading the new collection form: ' + e.message));
+}
+async function plyCollNewForm(cn) {
+    if (cn.f) return cn.f;
+    const r = await mbnFetch(MB + cn.path, { credentials: 'include' });
+    if (!r || !r.ok) throw new Error(r ? 'HTTP ' + r.status : 'Request cancelled');
+    if (/\/login\b/.test(new URL(r.url || MB).pathname)) throw new Error('Log in to MusicBrainz to add a collection');
+    const f = colnewParse(await r.text()); if (!f) throw new Error('MusicBrainz sent no collection form');
+    return (cn.f = f);
+}
+async function plyCollNewSave(m, fm) {
+    const cn = m._cn, key = m.dataset.key; if (!cn || cn.busy || !fm.matches('.cn')) return;
+    const fd = new FormData(fm), name = String(fd.get('n') || '').trim(), desc = String(fd.get('d') || ''), pub = !!fd.get('p');
+    cn.v = { n: name, d: desc, p: pub };
+    if (!name) { cn.err = (cn.f && cn.f.lName || 'Name') + ' is required'; plyCollDraw(m); m.querySelector('.cn [name=n]')?.focus(); return; }
+    cn.busy = true; cn.err = ''; plyCollDraw(m);
+    try {
+        const f = await plyCollNewForm(cn), type = f.cur.type || (f.types.find(t => t.on) || {}).v;
+        if (!type) throw new Error('MusicBrainz sent no collection type');
+        const p = new URLSearchParams({ 'edit-list.name': name, 'edit-list.type_id': type, 'edit-list.description': desc });
+        if (pub) p.set('edit-list.public', '1');
+        const r = await mbnFetch(MB + cn.path, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: p });
+        if (!r || !r.ok) throw new Error(r ? 'HTTP ' + r.status : 'Request cancelled');
+        const gid = ((new URL(r.url || MB).pathname.match(new RegExp('^/collection/(' + MBID.source + ')/?$', 'i')) || [])[1] || '').toLowerCase();
+        if (!gid) { const back = colnewParse(await r.text()); throw new Error(back && back.errs.length ? back.errs.join(' · ') : 'MusicBrainz didn\'t add the collection'); }
+        kpWrote();
+        PLOG.info('new collection', name, gid, pub ? 'public' : 'private');
+        // into the list at once, holding the item (MusicBrainz put it in); the fresh read that follows replaces the guess
+        const x = COLLECTIONS.get(key), t = key.split('/')[0].replace('-', '_'), id = new URL(cn.path, MB).searchParams.get(t);
+        if (x && x.rows) {
+            const own = x.rows.filter(v => v.id), g = own.length ? own[0].group : 'My collections';
+            let at = 0; x.rows.forEach((v, i) => { if (v.id && v.group === g) at = i + 1; });
+            x.rows.splice(at, 0, { group: g, label: 'Remove from ' + name, path: '/collection/' + gid + '/collection_collaborator/remove?' + t + '=' + id, id: gid, on: true });
+            x.at = 0;
+        }
+        m._cn = null; toast('Added to the new collection "' + name + '"');
+        plyCollPaint(key);
+        collectionLoad(key, true);
+    } catch (e) {
+        PLOG.warn('Adding the collection: ' + e.message);
+        cn.busy = false; cn.err = e.message; if (m._cn === cn && m.isConnected) plyCollDraw(m);
+    }
 }
 function plyCollDraw(m) {
     const key = m.dataset.key, type = m.dataset.type, x = COLLECTIONS.get(key) || {}, d = plyCollDef(type), what = type === 'rel' ? 'release' : 'recording';
     const off = x.busy || x.loading ? ' disabled' : '', rows = (x.rows || []).filter(r => r.id), create = (x.rows || []).find(r => !r.id);
     let group = '';
-    const names = collectionNames(x.rows || []);
+    const names = collectionNames(x.rows || []), cn = m._cn, old = cn && m.querySelector('form.cn'), a = document.activeElement;
+    if (old) cn.v = { n: old.elements.n.value, d: old.elements.d.value, p: old.elements.p.checked };
+    const focus = old && old.contains(a) && a.name ? { name: a.name, sel: a.type === 'checkbox' ? null : [a.selectionStart, a.selectionEnd] } : null;
     // headed like the release page's collections menu: the first group is the user's own and links to their collections
     m.innerHTML = (rows.length ? '' : `<div class="hd">${type === 'rel' ? 'Release' : 'Recording'} collections</div>`) + rows.map(r => {
         const own = r.group === rows[0].group && ME;
@@ -13827,8 +13891,16 @@ function plyCollDraw(m) {
         + (!x.rows ? `<div class="st">${x.error ? esc(x.error) : 'Reading your collections…'}</div>` : !rows.length ? `<div class="st">You have no ${what} collections</div>` : '')
         + (x.rows && x.error ? `<div class="st" role="alert">${esc(x.error)}</div>` : '')
         + (rows.length && !d ? `<div class="st">Pick a default with ◯ and a click on the button collects into it</div>` : '')
-        + '<hr>' + (create ? `<a class="it ft" role="menuitem" href="${esc(MB + create.path)}" target="_blank" rel="noopener">${SVG('<path d="M12 5v14M5 12h14"/>')}<span>New collection…</span></a>` : '')
-        + `<button type="button" class="it ft" role="menuitem" data-cr="1"${off}>${SVG('<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/>')}<span>Refresh</span></button>`;
+        + '<hr>' + (cn ? plyCollNewHtml(cn) : (create ? `<button type="button" class="it ft" role="menuitem" data-cnew="1">${SVG('<path d="M12 5v14M5 12h14"/>')}<span>New collection…</span></button>` : '')
+        + `<button type="button" class="it ft" role="menuitem" data-cr="1"${off}>${SVG('<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/>')}<span>Refresh</span></button>`);
+    // a redraw keeps what is typed, and the box being typed in
+    if (cn) {
+        const fm = m.querySelector('form.cn');
+        fm.elements.n.value = cn.v.n; fm.elements.d.value = cn.v.d; fm.elements.p.checked = cn.v.p;
+        if (focus && fm.elements[focus.name]) { const e = fm.elements[focus.name]; e.focus({ preventScroll: true }); if (focus.sel) try { e.setSelectionRange(...focus.sel); } catch (er) { /* a checkbox */ } }
+    }
+    // a head repaint replaces the button: find its successor, or the picker stays where the loading line put it
+    if (!m._btn?.isConnected) m._btn = [...document.querySelectorAll('.ply-ra [data-pa="' + m.dataset.type + '"]')].find(x => x.getClientRects().length) || m._btn;
     const r = m._btn && m._btn.isConnected ? m._btn.getBoundingClientRect() : null, h = m.offsetHeight, w = m.offsetWidth;
     if (!r) return;
     m.style.left = Math.max(8, Math.min(r.right - w, innerWidth - w - 8)) + 'px';
@@ -14298,6 +14370,19 @@ html.eh-ply-pin #eh-ply.ply-chip .ply-dock{top:calc(var(--eh-pin-h,0px) + 8px)}
 .ply-menu .ss:hover,.ply-menu .ss:focus-visible{background:color-mix(in srgb,currentColor 10%,transparent);outline:0}
 .ply-menu .ss[aria-current]{background:color-mix(in srgb,currentColor 10%,transparent);color:var(--text,#222);box-shadow:inset 0 -2px 0 var(--accent,#ba478f)}
 .ply-menu hr{margin:5px 4px;border:0;border-top:1px solid var(--line,#ddd)}
+.ply-menu .cn{display:flex;flex-direction:column;gap:6px;padding:0 6px 4px;min-width:240px}
+.ply-menu .cn .hd{padding-left:3px}
+.ply-menu .cn input[type=text],.ply-menu .cn textarea{box-sizing:border-box;width:100%;padding:4px 7px;border:1px solid var(--line,#ddd);border-radius:5px;background:transparent;color:var(--text,#222);font:12px/1.35 system-ui,sans-serif;outline:0;resize:vertical;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
+.ply-menu .cn input[type=text]:focus,.ply-menu .cn textarea:focus{border-color:var(--accent,#ba478f)}
+.ply-menu .cn .pb{display:flex;align-items:center;gap:6px;color:var(--text,#222);font-size:12px;cursor:pointer}
+.ply-menu .cn .pb input{margin:0;accent-color:var(--accent,#ba478f)}
+.ply-menu .cn .st{padding:0 3px;color:#c0392b}
+.ply-menu .cn .bt{display:flex;justify-content:flex-end;gap:6px}
+.ply-menu .cn .bt button{padding:4px 10px;border:0;border-radius:5px;background:transparent;color:var(--muted,#777);font:12px/1.3 system-ui,sans-serif;cursor:pointer}
+.ply-menu .cn .bt button:hover:not(:disabled){color:var(--text,#222)}
+.ply-menu .cn .bt .ok{background:var(--accent,#ba478f);color:#fff}
+.ply-menu .cn .bt .ok:hover:not(:disabled){color:#fff;filter:brightness(1.1)}
+.ply-menu .cn .bt button:disabled{opacity:.6;cursor:default}
 .ply-menu .st{display:flex;align-items:center;gap:8px;padding:5px 9px;color:var(--muted,#777);font-size:12px}
 .ply-menu .st .d{width:7px;height:7px;border-radius:50%;background:#3fa56b;flex:none}
 @media(max-width:720px){.pb .ply-t{max-width:110px}}
