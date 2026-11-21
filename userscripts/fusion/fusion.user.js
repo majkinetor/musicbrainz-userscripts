@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.21.230223
+// @version      2026.11.21.230925
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -402,11 +402,14 @@ async function mbnFetch(url, init, o) {
     let key = '', want = null, base = null;
     if ((m === 'GET' || m === 'HEAD') && !(init && init.body)) {
         try {
-            const h = init && init.headers, hs = h ? JSON.stringify(typeof h.entries === 'function' ? Array.from(h.entries()) : h) : '';
             base = new URL(String(url), location.href);
+            // with fmt=json, an Accept: application/json header changes nothing: one script sends it, another doesn't
+            const h = init && init.headers, json = base.searchParams.get('fmt') === 'json';
+            const he = h ? (typeof h.entries === 'function' ? Array.from(h.entries()) : Array.isArray(h) ? h : Object.entries(h)).filter(([k, v]) => !(json && /^accept$/i.test(k) && /^application\/json$/i.test(String(v).trim()))) : [];
+            const hs = he.length ? JSON.stringify(he) : '';
             want = new Set((base.searchParams.get('inc') || '').split(/[\s+]+/).filter(Boolean));
             const rest = Array.from(base.searchParams.entries()).filter(([k]) => k !== 'inc').sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] < b[1] ? -1 : 1);
-            key = m + ' ' + base.origin + base.pathname + '?' + new URLSearchParams(rest) + ' ' + hs + ' ' + (o.background === false ? 'i' : 'b');
+            key = m + ' ' + base.origin + base.pathname + '?' + new URLSearchParams(rest) + ' ' + hs;
         } catch (e) { key = ''; }
     }
     if (!key) return go();
@@ -414,11 +417,13 @@ async function mbnFetch(url, init, o) {
     const sig = init && init.signal;
     const mine = () => !(o.cancelled && o.cancelled()) && !(sig && sig.aborted);
     const covers = run => { for (const i of want) if (!run.inc.has(i)) return false; return true; };
+    // a background read may share a page's read; a page's read shares a background one only once it is sent
+    const bg = o.background !== false, ahead = run => run.sent || !run.bg || bg;
     const fits = run => { for (const i of MBN_INC_ALONE) if (run.inc.has(i) !== want.has(i)) return false; return true; };
     for (;;) {
         const runs = live.get(key) || [];
-        let run = runs.find(x => covers(x) && fits(x)), how = 'join';
-        if (!run) { run = runs.find(x => !x.sent && fits(x)); how = 'merge'; }
+        let run = runs.find(x => covers(x) && fits(x) && ahead(x)), how = 'join';
+        if (!run) { run = runs.find(x => !x.sent && fits(x) && ahead(x)); how = 'merge'; }
         if (!run) break;
         const add = how === 'merge' ? Array.from(want).filter(i => !run.inc.has(i)) : [];
         for (const i of add) run.inc.add(i);
@@ -442,7 +447,7 @@ async function mbnFetch(url, init, o) {
         if (!mine()) return null;
         // the first caller was cancelled or aborted, this one wasn't: it asks for itself
     }
-    const run = { inc: new Set(want), sent: false, label: o.label, p: null };
+    const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null };
     run.p = go(() => {
         run.sent = true;
         if (run.inc.size === want.size) return url;   // nothing merged: as asked

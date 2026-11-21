@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.21.230223
+// @version      2026.11.21.230925
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -3051,11 +3051,14 @@ async function mbnFetch(url, init, o) {
     let key = '', want = null, base = null;
     if ((m === 'GET' || m === 'HEAD') && !(init && init.body)) {
         try {
-            const h = init && init.headers, hs = h ? JSON.stringify(typeof h.entries === 'function' ? Array.from(h.entries()) : h) : '';
             base = new URL(String(url), location.href);
+            // with fmt=json, an Accept: application/json header changes nothing: one script sends it, another doesn't
+            const h = init && init.headers, json = base.searchParams.get('fmt') === 'json';
+            const he = h ? (typeof h.entries === 'function' ? Array.from(h.entries()) : Array.isArray(h) ? h : Object.entries(h)).filter(([k, v]) => !(json && /^accept$/i.test(k) && /^application\/json$/i.test(String(v).trim()))) : [];
+            const hs = he.length ? JSON.stringify(he) : '';
             want = new Set((base.searchParams.get('inc') || '').split(/[\s+]+/).filter(Boolean));
             const rest = Array.from(base.searchParams.entries()).filter(([k]) => k !== 'inc').sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] < b[1] ? -1 : 1);
-            key = m + ' ' + base.origin + base.pathname + '?' + new URLSearchParams(rest) + ' ' + hs + ' ' + (o.background === false ? 'i' : 'b');
+            key = m + ' ' + base.origin + base.pathname + '?' + new URLSearchParams(rest) + ' ' + hs;
         } catch (e) { key = ''; }
     }
     if (!key) return go();
@@ -3063,11 +3066,13 @@ async function mbnFetch(url, init, o) {
     const sig = init && init.signal;
     const mine = () => !(o.cancelled && o.cancelled()) && !(sig && sig.aborted);
     const covers = run => { for (const i of want) if (!run.inc.has(i)) return false; return true; };
+    // a background read may share a page's read; a page's read shares a background one only once it is sent
+    const bg = o.background !== false, ahead = run => run.sent || !run.bg || bg;
     const fits = run => { for (const i of MBN_INC_ALONE) if (run.inc.has(i) !== want.has(i)) return false; return true; };
     for (;;) {
         const runs = live.get(key) || [];
-        let run = runs.find(x => covers(x) && fits(x)), how = 'join';
-        if (!run) { run = runs.find(x => !x.sent && fits(x)); how = 'merge'; }
+        let run = runs.find(x => covers(x) && fits(x) && ahead(x)), how = 'join';
+        if (!run) { run = runs.find(x => !x.sent && fits(x) && ahead(x)); how = 'merge'; }
         if (!run) break;
         const add = how === 'merge' ? Array.from(want).filter(i => !run.inc.has(i)) : [];
         for (const i of add) run.inc.add(i);
@@ -3091,7 +3096,7 @@ async function mbnFetch(url, init, o) {
         if (!mine()) return null;
         // the first caller was cancelled or aborted, this one wasn't: it asks for itself
     }
-    const run = { inc: new Set(want), sent: false, label: o.label, p: null };
+    const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null };
     run.p = go(() => {
         run.sent = true;
         if (run.inc.size === want.size) return url;   // nothing merged: as asked

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.21.230223
+// @version      2026.11.21.230925
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -377,11 +377,14 @@ async function mbnFetch(url, init, o) {
     let key = '', want = null, base = null;
     if ((m === 'GET' || m === 'HEAD') && !(init && init.body)) {
         try {
-            const h = init && init.headers, hs = h ? JSON.stringify(typeof h.entries === 'function' ? Array.from(h.entries()) : h) : '';
             base = new URL(String(url), location.href);
+            // with fmt=json, an Accept: application/json header changes nothing: one script sends it, another doesn't
+            const h = init && init.headers, json = base.searchParams.get('fmt') === 'json';
+            const he = h ? (typeof h.entries === 'function' ? Array.from(h.entries()) : Array.isArray(h) ? h : Object.entries(h)).filter(([k, v]) => !(json && /^accept$/i.test(k) && /^application\/json$/i.test(String(v).trim()))) : [];
+            const hs = he.length ? JSON.stringify(he) : '';
             want = new Set((base.searchParams.get('inc') || '').split(/[\s+]+/).filter(Boolean));
             const rest = Array.from(base.searchParams.entries()).filter(([k]) => k !== 'inc').sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] < b[1] ? -1 : 1);
-            key = m + ' ' + base.origin + base.pathname + '?' + new URLSearchParams(rest) + ' ' + hs + ' ' + (o.background === false ? 'i' : 'b');
+            key = m + ' ' + base.origin + base.pathname + '?' + new URLSearchParams(rest) + ' ' + hs;
         } catch (e) { key = ''; }
     }
     if (!key) return go();
@@ -389,11 +392,13 @@ async function mbnFetch(url, init, o) {
     const sig = init && init.signal;
     const mine = () => !(o.cancelled && o.cancelled()) && !(sig && sig.aborted);
     const covers = run => { for (const i of want) if (!run.inc.has(i)) return false; return true; };
+    // a background read may share a page's read; a page's read shares a background one only once it is sent
+    const bg = o.background !== false, ahead = run => run.sent || !run.bg || bg;
     const fits = run => { for (const i of MBN_INC_ALONE) if (run.inc.has(i) !== want.has(i)) return false; return true; };
     for (;;) {
         const runs = live.get(key) || [];
-        let run = runs.find(x => covers(x) && fits(x)), how = 'join';
-        if (!run) { run = runs.find(x => !x.sent && fits(x)); how = 'merge'; }
+        let run = runs.find(x => covers(x) && fits(x) && ahead(x)), how = 'join';
+        if (!run) { run = runs.find(x => !x.sent && fits(x) && ahead(x)); how = 'merge'; }
         if (!run) break;
         const add = how === 'merge' ? Array.from(want).filter(i => !run.inc.has(i)) : [];
         for (const i of add) run.inc.add(i);
@@ -417,7 +422,7 @@ async function mbnFetch(url, init, o) {
         if (!mine()) return null;
         // the first caller was cancelled or aborted, this one wasn't: it asks for itself
     }
-    const run = { inc: new Set(want), sent: false, label: o.label, p: null };
+    const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null };
     run.p = go(() => {
         run.sent = true;
         if (run.inc.size === want.size) return url;   // nothing merged: as asked

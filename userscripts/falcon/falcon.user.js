@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.230223
+// @version      2026.11.21.230925
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -365,11 +365,14 @@
       let key = '', want = null, base = null;
       if ((m === 'GET' || m === 'HEAD') && !(init && init.body)) {
           try {
-              const h = init && init.headers, hs = h ? JSON.stringify(typeof h.entries === 'function' ? Array.from(h.entries()) : h) : '';
               base = new URL(String(url), location.href);
+              // with fmt=json, an Accept: application/json header changes nothing: one script sends it, another doesn't
+              const h = init && init.headers, json = base.searchParams.get('fmt') === 'json';
+              const he = h ? (typeof h.entries === 'function' ? Array.from(h.entries()) : Array.isArray(h) ? h : Object.entries(h)).filter(([k, v]) => !(json && /^accept$/i.test(k) && /^application\/json$/i.test(String(v).trim()))) : [];
+              const hs = he.length ? JSON.stringify(he) : '';
               want = new Set((base.searchParams.get('inc') || '').split(/[\s+]+/).filter(Boolean));
               const rest = Array.from(base.searchParams.entries()).filter(([k]) => k !== 'inc').sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] < b[1] ? -1 : 1);
-              key = m + ' ' + base.origin + base.pathname + '?' + new URLSearchParams(rest) + ' ' + hs + ' ' + (o.background === false ? 'i' : 'b');
+              key = m + ' ' + base.origin + base.pathname + '?' + new URLSearchParams(rest) + ' ' + hs;
           } catch (e) { key = ''; }
       }
       if (!key) return go();
@@ -377,11 +380,13 @@
       const sig = init && init.signal;
       const mine = () => !(o.cancelled && o.cancelled()) && !(sig && sig.aborted);
       const covers = run => { for (const i of want) if (!run.inc.has(i)) return false; return true; };
+      // a background read may share a page's read; a page's read shares a background one only once it is sent
+      const bg = o.background !== false, ahead = run => run.sent || !run.bg || bg;
       const fits = run => { for (const i of MBN_INC_ALONE) if (run.inc.has(i) !== want.has(i)) return false; return true; };
       for (;;) {
           const runs = live.get(key) || [];
-          let run = runs.find(x => covers(x) && fits(x)), how = 'join';
-          if (!run) { run = runs.find(x => !x.sent && fits(x)); how = 'merge'; }
+          let run = runs.find(x => covers(x) && fits(x) && ahead(x)), how = 'join';
+          if (!run) { run = runs.find(x => !x.sent && fits(x) && ahead(x)); how = 'merge'; }
           if (!run) break;
           const add = how === 'merge' ? Array.from(want).filter(i => !run.inc.has(i)) : [];
           for (const i of add) run.inc.add(i);
@@ -405,7 +410,7 @@
           if (!mine()) return null;
           // the first caller was cancelled or aborted, this one wasn't: it asks for itself
       }
-      const run = { inc: new Set(want), sent: false, label: o.label, p: null };
+      const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null };
       run.p = go(() => {
           run.sent = true;
           if (run.inc.size === want.size) return url;   // nothing merged: as asked

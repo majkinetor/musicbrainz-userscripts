@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.230223
+// @version      2026.11.21.230925
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm, RateYourMusic and Album of the Year, read when you open their pages), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjI4Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMxNmNjZjgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjZmZhZTM4Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -405,11 +405,14 @@
       let key = '', want = null, base = null;
       if ((m === 'GET' || m === 'HEAD') && !(init && init.body)) {
           try {
-              const h = init && init.headers, hs = h ? JSON.stringify(typeof h.entries === 'function' ? Array.from(h.entries()) : h) : '';
               base = new URL(String(url), location.href);
+              // with fmt=json, an Accept: application/json header changes nothing: one script sends it, another doesn't
+              const h = init && init.headers, json = base.searchParams.get('fmt') === 'json';
+              const he = h ? (typeof h.entries === 'function' ? Array.from(h.entries()) : Array.isArray(h) ? h : Object.entries(h)).filter(([k, v]) => !(json && /^accept$/i.test(k) && /^application\/json$/i.test(String(v).trim()))) : [];
+              const hs = he.length ? JSON.stringify(he) : '';
               want = new Set((base.searchParams.get('inc') || '').split(/[\s+]+/).filter(Boolean));
               const rest = Array.from(base.searchParams.entries()).filter(([k]) => k !== 'inc').sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] < b[1] ? -1 : 1);
-              key = m + ' ' + base.origin + base.pathname + '?' + new URLSearchParams(rest) + ' ' + hs + ' ' + (o.background === false ? 'i' : 'b');
+              key = m + ' ' + base.origin + base.pathname + '?' + new URLSearchParams(rest) + ' ' + hs;
           } catch (e) { key = ''; }
       }
       if (!key) return go();
@@ -417,11 +420,13 @@
       const sig = init && init.signal;
       const mine = () => !(o.cancelled && o.cancelled()) && !(sig && sig.aborted);
       const covers = run => { for (const i of want) if (!run.inc.has(i)) return false; return true; };
+      // a background read may share a page's read; a page's read shares a background one only once it is sent
+      const bg = o.background !== false, ahead = run => run.sent || !run.bg || bg;
       const fits = run => { for (const i of MBN_INC_ALONE) if (run.inc.has(i) !== want.has(i)) return false; return true; };
       for (;;) {
           const runs = live.get(key) || [];
-          let run = runs.find(x => covers(x) && fits(x)), how = 'join';
-          if (!run) { run = runs.find(x => !x.sent && fits(x)); how = 'merge'; }
+          let run = runs.find(x => covers(x) && fits(x) && ahead(x)), how = 'join';
+          if (!run) { run = runs.find(x => !x.sent && fits(x) && ahead(x)); how = 'merge'; }
           if (!run) break;
           const add = how === 'merge' ? Array.from(want).filter(i => !run.inc.has(i)) : [];
           for (const i of add) run.inc.add(i);
@@ -445,7 +450,7 @@
           if (!mine()) return null;
           // the first caller was cancelled or aborted, this one wasn't: it asks for itself
       }
-      const run = { inc: new Set(want), sent: false, label: o.label, p: null };
+      const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null };
       run.p = go(() => {
           run.sent = true;
           if (run.inc.size === want.size) return url;   // nothing merged: as asked

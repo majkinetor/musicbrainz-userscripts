@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.11.21.234216
+// @version      2026.11.21.231105
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -644,11 +644,13 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     let key = "", want = null, base = null;
     if ((m === "GET" || m === "HEAD") && !(init && init.body)) {
       try {
-        const h = init && init.headers, hs = h ? JSON.stringify(typeof h.entries === "function" ? Array.from(h.entries()) : h) : "";
         base = new URL(String(url), location.href);
+        const h = init && init.headers, json = base.searchParams.get("fmt") === "json";
+        const he = h ? (typeof h.entries === "function" ? Array.from(h.entries()) : Array.isArray(h) ? h : Object.entries(h)).filter(([k, v]) => !(json && /^accept$/i.test(k) && /^application\/json$/i.test(String(v).trim()))) : [];
+        const hs = he.length ? JSON.stringify(he) : "";
         want = new Set((base.searchParams.get("inc") || "").split(/[\s+]+/).filter(Boolean));
         const rest = Array.from(base.searchParams.entries()).filter(([k]) => k !== "inc").sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] < b[1] ? -1 : 1);
-        key = m + " " + base.origin + base.pathname + "?" + new URLSearchParams(rest) + " " + hs + " " + (o.background === false ? "i" : "b");
+        key = m + " " + base.origin + base.pathname + "?" + new URLSearchParams(rest) + " " + hs;
       } catch (e) {
         key = "";
       }
@@ -661,15 +663,16 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       for (const i of want) if (!run2.inc.has(i)) return false;
       return true;
     };
+    const bg = o.background !== false, ahead = (run2) => run2.sent || !run2.bg || bg;
     const fits = (run2) => {
       for (const i of MBN_INC_ALONE) if (run2.inc.has(i) !== want.has(i)) return false;
       return true;
     };
     for (; ; ) {
       const runs2 = live.get(key) || [];
-      let run2 = runs2.find((x) => covers(x) && fits(x)), how = "join";
+      let run2 = runs2.find((x) => covers(x) && fits(x) && ahead(x)), how = "join";
       if (!run2) {
-        run2 = runs2.find((x) => !x.sent && fits(x));
+        run2 = runs2.find((x) => !x.sent && fits(x) && ahead(x));
         how = "merge";
       }
       if (!run2) break;
@@ -704,7 +707,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       if (r) return r.clone();
       if (!mine()) return null;
     }
-    const run = { inc: new Set(want), sent: false, label: o.label, p: null };
+    const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null };
     run.p = go(() => {
       run.sent = true;
       if (run.inc.size === want.size) return url;
