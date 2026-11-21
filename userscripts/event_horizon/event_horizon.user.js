@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.090000
+// @version      2026.11.22.091000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8353,7 +8353,16 @@ async function loadArtist(id, step = () => {}) {
     // the search answers 100 a page, so an artist with more groups takes a few pages (at most 5), or the rest show no count
     const rcPage = o => wsk(`release-group?query=arid:${id}&limit=100&offset=${o}`);
     const rcount = rcPage(0).then(x => Promise.all([x, ...Array.from({ length: Math.max(0, Math.min(4, Math.ceil(((x.count || 0) - 100) / 100))) }, (_, i) => rcPage(100 * (i + 1)).catch(() => null))]))
-        .then(xs => new Map(xs.flatMap(x => (x && x['release-groups']) || []).map(g => [g.id, g.count])), noSec(`release-group?query=arid:${id}`));
+        .then(xs => new Map(xs.flatMap(x => (x && x['release-groups']) || []).map(g => [g.id, g.count])), noSec(`release-group?query=arid:${id}`))
+        // the various-artists groups aren't credited to the artist, so arid: misses them: their counts come from a search by their ids, 40 a query
+        .then(m => disc.then(x => {
+            const miss = (((x && x['release-groups']) || []).map(g => g.id)).filter(g => !(m && m.has(g)));
+            if (!miss.length) return m;
+            const out = m || new Map(), qs = [];
+            for (let i = 0; i < miss.length && i < 200; i += 40) qs.push(miss.slice(i, i + 40));
+            return Promise.all(qs.map(q => wsk('release-group?query=' + encodeURIComponent('rgid:(' + q.join(' OR ') + ')') + '&limit=100').catch(() => null)))
+                .then(xs => { for (const y of xs) for (const g of (y && y['release-groups']) || []) out.set(g.id, g.count); return out; });
+        }, () => m));
     const wiki = wikiOf('artist', id);
     const gP = wsk(`artist/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`).then(a => { step('artist'); const g = artist(a); areaFill(g, [g.beginArea, g.endArea, g.area]); return g; });
     const img = gP.then(g => artistImage(id, g.rels)).then(x => { step('image'); return x; });
