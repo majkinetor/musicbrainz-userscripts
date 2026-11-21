@@ -1,0 +1,265 @@
+{
+  "format": "mb-userscript-review",
+  "schemaVersion": 1,
+  "exportedAt": "2026-11-21T20:00:00.000Z",
+  "report": {
+    "reportId": "mb-userscripts-926",
+    "reportVersion": "209486e912e2bc3a3bf7093670bc26b0cc3db636a8940cf3f294a4495196e811",
+    "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/209486e912e2bc3a3bf7093670bc26b0cc3db636a8940cf3f294a4495196e811.html",
+    "wikiRevision": 79510,
+    "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+    "sourceManifestSha256": "dfe48854716f3ecb535f9e232f3fe0ad1bcee0e43ff5c49e482f699b52af9473",
+    "collectedAt": "2026-11-07T18:55:51.247Z"
+  },
+  "purpose": "User review data for AI incorporation. Preserve source provenance, distinguish user preferences from verified evidence, and investigate corrections before replacing original findings.",
+  "scoringPolicy": {
+    "weights": [
+      [
+        0,
+        "Ignore"
+      ],
+      [
+        1,
+        "Minor"
+      ],
+      [
+        3,
+        "Normal"
+      ],
+      [
+        5,
+        "Important"
+      ],
+      [
+        10,
+        "Essential"
+      ]
+    ],
+    "coverageCredit": {
+      "Covered": 1,
+      "Partial": 0.5,
+      "Gap": 0
+    },
+    "unknown": "Any active unknown coverage yields Needs assessment",
+    "essential": "An essential feature not fully covered caps the weighted verdict at Partial overlap",
+    "manualVerdict": "proposedVerdict is the visitor-selected verdict; retain the weighted suggestion separately"
+  },
+  "entries": [
+    {
+      "id": "wiki-fc3fbf5231796637b2bb",
+      "name": "Import VGMdb releases to MusicBrainz (Ame)",
+      "currentBasis": {
+        "name": "Import VGMdb releases to MusicBrainz (Ame)",
+        "hash": "9737fcf45a34c67e830b0508a479eb7c883d09ed8bd8f757740a4ada75f9db6a",
+        "wikiRevision": 79510,
+        "wikiRowHash": "0d8e247cb6fdb53ffb7e81413570df74661488702bbb963b6661ea2d6f4bf1a3",
+        "sourceIdentity": "https://gitlab.com/SuperSaltyGamer/ame/-/raw/main/dist/vgmdb.user.js",
+        "sourceUrl": "https://gitlab.com/SuperSaltyGamer/ame/-/blob/main/dist/vgmdb.user.js",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "No equivalent",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Import album data from VGMdb to add a new release on MusicBrainz. Batch download album art, add links from VGMdb to Ongaku no Mori and MusicBrainz releases.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null,
+        "acceptedReview": {
+          "submissionId": "D_kwDOSj7rds4Aq7xW",
+          "discussionNumber": 945,
+          "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/945",
+          "author": {
+            "id": "MDQ6VXNlcjg1NzY3",
+            "login": "majkinetor",
+            "url": "https://github.com/majkinetor"
+          },
+          "disposition": "accepted",
+          "verdict": "No equivalent",
+          "reviewedReport": "d5079ea591c46c4be942bc5ca0c1a8887485bce3daa5bedbea26edc0f83fffee"
+        },
+        "earlierHashes": [
+          "c5f5ff42f7e34b8213fe773b1496f23b26a37bea24d1f9cebe368d0bdd2cf750"
+        ]
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Replaceable",
+        "note": "Fully replaceable now: First Contact imports VGMdb album pages and Art Station takes VGMdb covers (#1090).",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "Import VGMdb releases to MusicBrainz (Ame)",
+          "hash": "9737fcf45a34c67e830b0508a479eb7c883d09ed8bd8f757740a4ada75f9db6a",
+          "wikiRevision": 79510,
+          "wikiRowHash": "0d8e247cb6fdb53ffb7e81413570df74661488702bbb963b6661ea2d6f4bf1a3",
+          "sourceIdentity": "https://gitlab.com/SuperSaltyGamer/ame/-/raw/main/dist/vgmdb.user.js",
+          "sourceUrl": "https://gitlab.com/SuperSaltyGamer/ame/-/blob/main/dist/vgmdb.user.js",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "No equivalent",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Import album data from VGMdb to add a new release on MusicBrainz. Batch download album art, add links from VGMdb to Ongaku no Mori and MusicBrainz releases.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null,
+          "acceptedReview": {
+            "submissionId": "D_kwDOSj7rds4Aq7xW",
+            "discussionNumber": 945,
+            "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/945",
+            "author": {
+              "id": "MDQ6VXNlcjg1NzY3",
+              "login": "majkinetor",
+              "url": "https://github.com/majkinetor"
+            },
+            "disposition": "accepted",
+            "verdict": "No equivalent",
+            "reviewedReport": "d5079ea591c46c4be942bc5ca0c1a8887485bce3daa5bedbea26edc0f83fffee"
+          },
+          "earlierHashes": [
+            "c5f5ff42f7e34b8213fe773b1496f23b26a37bea24d1f9cebe368d0bdd2cf750"
+          ]
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "209486e912e2bc3a3bf7093670bc26b0cc3db636a8940cf3f294a4495196e811",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/209486e912e2bc3a3bf7093670bc26b0cc3db636a8940cf3f294a4495196e811.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+          "sourceManifestSha256": "dfe48854716f3ecb535f9e232f3fe0ad1bcee0e43ff5c49e482f699b52af9473",
+          "collectedAt": "2026-11-07T18:55:51.247Z"
+        },
+        "updatedAt": "2026-11-21T20:00:00.000Z"
+      }
+    },
+    {
+      "id": "wiki-b01149720ce1b61f8f78",
+      "name": "VGMdb Musicbrainz Links",
+      "currentBasis": {
+        "name": "VGMdb Musicbrainz Links",
+        "hash": "8d584c293e8018b6add4b745a55b16010a68ed0984e48f8359873237aa0a6a50",
+        "wikiRevision": 79510,
+        "wikiRowHash": "70df8712b6d6853fd1b94623fa1c3d196df29031e089ac28218975a9ac275d72",
+        "sourceIdentity": "github:toadking/vgmdb-userscripts/vgmdb-musicbrainz-links.user.js",
+        "sourceUrl": "https://github.com/ToadKing/vgmdb-userscripts/blob/main/vgmdb-musicbrainz-links.user.js",
+        "sourceVersion": null,
+        "sourceHash": null,
+        "sourceCommit": null,
+        "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+        "baselineVerdict": "Not applicable",
+        "features": [
+          {
+            "id": "wiki.main-workflow",
+            "name": "Add MusicBrainz links to VGMdb album pages.",
+            "coverage": "Unknown",
+            "weight": 5,
+            "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+          }
+        ],
+        "assessedInputs": null,
+        "observedInputs": null,
+        "acceptedReview": {
+          "submissionId": "D_kwDOSj7rds4Aq8dv",
+          "discussionNumber": 955,
+          "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/955",
+          "author": {
+            "id": "MDQ6VXNlcjg1NzY3",
+            "login": "majkinetor",
+            "url": "https://github.com/majkinetor"
+          },
+          "disposition": "accepted",
+          "verdict": "Not applicable",
+          "reviewedReport": "f748a7e4bc975f70ef950391146650c321f7a11a8357bb3e371f8ba3976d829d"
+        },
+        "earlierHashes": [
+          "e022e9bfe1d48d1eaaf1502ccd312b45324b3c4643a50a7acc9f1ced8e4addd3",
+          "ee4b36be70533460ee1a0af9b70d5c961c468aa3900e99b685fd583a6142a46a"
+        ]
+      },
+      "currentFinding": {
+        "summary": "Listed in the wiki. This entry awaits source review; its description is a starting point, not a replacement finding.",
+        "tools": [],
+        "assessment": null
+      },
+      "review": {
+        "proposedVerdict": "Replaceable",
+        "note": "Fully replaceable now: First Contact on a VGMdb album page finds the matching MusicBrainz release (#1090).",
+        "draft": "",
+        "features": {},
+        "comments": [],
+        "deletedComments": [],
+        "basis": {
+          "name": "VGMdb Musicbrainz Links",
+          "hash": "8d584c293e8018b6add4b745a55b16010a68ed0984e48f8359873237aa0a6a50",
+          "wikiRevision": 79510,
+          "wikiRowHash": "70df8712b6d6853fd1b94623fa1c3d196df29031e089ac28218975a9ac275d72",
+          "sourceIdentity": "github:toadking/vgmdb-userscripts/vgmdb-musicbrainz-links.user.js",
+          "sourceUrl": "https://github.com/ToadKing/vgmdb-userscripts/blob/main/vgmdb-musicbrainz-links.user.js",
+          "sourceVersion": null,
+          "sourceHash": null,
+          "sourceCommit": null,
+          "toolsetCommit": "e27cbbf9746b626d6ce03cdb59d95e6964e9ead8",
+          "baselineVerdict": "Not applicable",
+          "features": [
+            {
+              "id": "wiki.main-workflow",
+              "name": "Add MusicBrainz links to VGMdb album pages.",
+              "coverage": "Unknown",
+              "weight": 5,
+              "reason": "Wiki description only. Source functionality and suite coverage have not been assessed."
+            }
+          ],
+          "assessedInputs": null,
+          "observedInputs": null,
+          "acceptedReview": {
+            "submissionId": "D_kwDOSj7rds4Aq8dv",
+            "discussionNumber": 955,
+            "url": "https://github.com/majkinetor/musicbrainz-userscripts/discussions/955",
+            "author": {
+              "id": "MDQ6VXNlcjg1NzY3",
+              "login": "majkinetor",
+              "url": "https://github.com/majkinetor"
+            },
+            "disposition": "accepted",
+            "verdict": "Not applicable",
+            "reviewedReport": "f748a7e4bc975f70ef950391146650c321f7a11a8357bb3e371f8ba3976d829d"
+          },
+          "earlierHashes": [
+            "e022e9bfe1d48d1eaaf1502ccd312b45324b3c4643a50a7acc9f1ced8e4addd3",
+            "ee4b36be70533460ee1a0af9b70d5c961c468aa3900e99b685fd583a6142a46a"
+          ]
+        },
+        "reportAtReview": {
+          "reportId": "mb-userscripts-926",
+          "reportVersion": "209486e912e2bc3a3bf7093670bc26b0cc3db636a8940cf3f294a4495196e811",
+          "permanentUrl": "https://milic.info/musicbrainz-userscripts/third-party-comparison/reports/209486e912e2bc3a3bf7093670bc26b0cc3db636a8940cf3f294a4495196e811.html",
+          "wikiRevision": 79510,
+          "toolsetCommit": "66b16aac9943fbe048b90f477bff26587cb6f3b1",
+          "sourceManifestSha256": "dfe48854716f3ecb535f9e232f3fe0ad1bcee0e43ff5c49e482f699b52af9473",
+          "collectedAt": "2026-11-07T18:55:51.247Z"
+        },
+        "updatedAt": "2026-11-21T20:00:00.000Z"
+      }
+    }
+  ]
+}

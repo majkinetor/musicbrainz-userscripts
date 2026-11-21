@@ -5,6 +5,16 @@
       "id": "MDQ6VXNlcjg1NzY3",
       "login": "majkinetor",
       "url": "https://github.com/majkinetor"
+    },
+    {
+      "id": "chat-2026-11-21-vgmdb",
+      "discussionNumber": 1090,
+      "url": "https://github.com/majkinetor/musicbrainz-userscripts/issues/1090",
+      "createdAt": "2026-11-21T20:00:00Z",
+      "updatedAt": "2026-11-21T20:00:00Z",
+      "exportPath": "contributions/chat-2026-11-21-vgmdb.json",
+      "reportVersion": "209486e912e2bc3a3bf7093670bc26b0cc3db636a8940cf3f294a4495196e811",
+      "decision": "Maintainer verdict given in chat: SuperSaltyGamer's VGMdb importer (Ame) and ToadKing's VGMdb Musicbrainz Links are fully replaceable."
     }
   ],
   "submissions": [
