@@ -294,8 +294,9 @@ export async function mbnAnswer(status, header, o) {
             // page for good.
             if (now > (s.cool || 0) + 30000) s.hot = 0;
             if (now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
-            // a Retry-After is honoured as given (plus 1s); only a throttle without one grows step by step
-            const ms = Math.min(ra > 0 ? ra + 1000 : 1000 * Math.max(1, s.hot), MBN_MAX_HOLD);
+            // the hold grows with each throttle in a row, a Retry-After included, so a long busy
+            // spell gets fewer and fewer requests from us
+            const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.hot), MBN_MAX_HOLD);
             s.cool = Math.max(s.cool || 0, Date.now() + ms);
             return s.cool - Date.now();
         });
