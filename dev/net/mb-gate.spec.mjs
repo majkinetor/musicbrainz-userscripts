@@ -88,7 +88,7 @@ test('a 503 in one tab holds the other', { tag: ['@unit'] }, async ({ context })
   const a = await tab(context), b = await tab(context);
   await a.evaluate(() => { localStorage.clear(); window.__answers = [503]; });
   const logs = await a.evaluate(async () => { const l = []; await mbnFetch('/ws/2/x', {}, { tries: 1, log: (lv, m) => l.push(lv + ' ' + m) }); return l; });
-  check(logs.some(l => /HTTP 503 \(Retry-After: 2\) — every script holds 2/.test(l)), `the throttle is logged: ${JSON.stringify(logs)}`);
+  check(logs.some(l => /HTTP 503 \(Retry-After: 2\) — every script holds 3s/.test(l)), `the throttle is logged: ${JSON.stringify(logs)}`);
   const waited = await b.evaluate(async () => { const t0 = Date.now(); await mbnFetch('/ws/2/y'); return Date.now() - t0; });
   check(waited >= 1700, `the other tab's next request waited the hold out (${waited} ms)`);
 });
@@ -125,6 +125,41 @@ test('an interactive request goes ahead of queued background work; a cancelled w
   });
   check(r.inter < 400 && r.inter < Math.max(...r.bg), `interactive started at ${r.inter} ms, ahead of the queued ones (${r.bg.join(', ')} ms)`);
   check(r.cancelled.ok === false && r.cancelMs < 800, `a cancelled wait returns at once (${r.cancelMs} ms, ok=${r.cancelled.ok})`);
+});
+
+test('the page requests have their own line: a burst, then one a second, and no burst while throttled', { tag: ['@unit'] }, async ({ context }) => {
+  const a = await tab(context);
+  const r = await a.evaluate(async () => {
+    localStorage.clear();
+    // a full background queue does not delay them
+    for (let i = 0; i < 8; i++) mbnSlot({ label: 'bg' + i });
+    await new Promise(z => setTimeout(z, 50));
+    let t0 = Date.now();
+    const calm = await Promise.all(Array.from({ length: 5 }, () => mbnSlot({ background: false }).then(() => Date.now() - t0)));
+    // throttled a moment ago (the hold is over, hot is not): one a second from the first
+    await new Promise(z => setTimeout(z, 3000));
+    localStorage.setItem('mbu:mb-gate', JSON.stringify({ ...JSON.parse(localStorage.getItem('mbu:mb-gate')), cool: Date.now() - 10, hot: 2, itat: 0 }));
+    t0 = Date.now();
+    const hot = await Promise.all(Array.from({ length: 3 }, () => mbnSlot({ background: false }).then(() => Date.now() - t0)));
+    return { calm: calm.sort((x, y) => x - y), hot: hot.sort((x, y) => x - y) };
+  });
+  check(r.calm[2] < 300 && r.calm[3] >= 800 && r.calm[3] < 1400 && r.calm[4] >= 1800 && r.calm[4] < 2400, `calm: three at once ahead of the background queue, then one a second (${r.calm.join(', ')} ms)`);
+  check(r.hot[0] < 300 && r.hot[1] >= 800 && r.hot[2] >= 1800, `throttled: one a second from the first (${r.hot.join(', ')} ms)`);
+});
+
+test('a page request keeps trying past four throttles; a background one stops at four', { tag: ['@unit'] }, async ({ context }) => {
+  const a = await tab(context);
+  const r = await a.evaluate(async () => {
+    localStorage.clear();
+    window.__answers = [503, 503, 503, 503, 503];
+    const bg = await mbnFetch('/ws/2/x');
+    const bgCalls = window.__starts.length;
+    localStorage.clear(); window.__starts = []; window.__answers = [503, 503, 503, 503, 503];
+    const inter = await mbnFetch('/ws/2/x', {}, { background: false });
+    return { bg: bg.status, bgCalls, inter: inter.status, interCalls: window.__starts.length };
+  });
+  check(r.bg === 503 && r.bgCalls === 4, `background: four tries, then the 503 (${JSON.stringify(r)})`);
+  check(r.inter === 200 && r.interCalls === 6, `interactive: tries on and gets its answer (${JSON.stringify(r)})`);
 });
 
 // #847: a page being drawn (Event Horizon) holds other tabs' background requests until it ends or lapses

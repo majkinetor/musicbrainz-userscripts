@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.191845
+// @version      2026.11.21.203802
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -162,6 +162,7 @@ async function mbnState(fn) {
         if ((s.leadUntil || 0) > now + MBN_MAX_LEAD) s.leadUntil = now + MBN_MAX_LEAD;
         // nor a queue longer than a minute: slots that waits left behind (a closed tab) are dropped
         if ((s.tat || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s.tat = Math.max(now, s.cool || 0) + 60 * MBN_GAP;
+        if ((s.itat || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s.itat = Math.max(now, s.cool || 0) + 60 * MBN_GAP;
         const out = fn(s);
         Object.assign(g, s);
         try { localStorage.setItem(MBN_KEY, JSON.stringify({ ...s, tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
@@ -287,16 +288,26 @@ async function mbnSlot(o) {
     let booked = null, rebooked = false;
     const book = () => mbnState(s => {
         const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
-        // an interactive request (the page's own) never queues behind the budget, a rebooking included
-        let at = !background ? now : rebooked ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP);
-        at = Math.max(at, cool);
+        // an interactive request (the page's own) never queues behind the background budget: it
+        // has its own line (itat), a burst then one a second, so a page's handful of lookups don't
+        // all leave at once into a 503 (and while MusicBrainz is throttling, no burst at all)
+        let at;
+        if (!background) {
+            const itat = s.itat || 0, hot = s.hot && now <= cool + 30000;
+            at = Math.max(now, rebooked ? itat : itat - (hot ? 0 : (MBN_BURST - 1) * MBN_GAP), cool);
+            s.itat = Math.max(itat, at) + MBN_GAP;
+        } else at = Math.max(rebooked ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP), cool);
         s.tat = Math.max(tat, at) + MBN_GAP;
         return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second' };
     });
     booked = await book();
     // a cancelled wait hands its slot back when it is still the last one booked, so a page that
     // drops a queue of lookups (a Stop, a new page) does not leave every later request behind it
-    const giveBack = () => mbnState(s => { if (s.tat === booked.at + MBN_GAP && booked.at > Date.now()) s.tat -= MBN_GAP; });
+    const giveBack = () => mbnState(s => {
+        if (booked.at <= Date.now()) return;
+        if (s.tat === booked.at + MBN_GAP) s.tat -= MBN_GAP;
+        if (!background && s.itat === booked.at + MBN_GAP) s.itat -= MBN_GAP;
+    });
     // #999: the wait logs again whenever its end moves later (a hold another tab or script set
     // while we queued) and every 10s it goes on, so a long wait is never silent
     let toldUntil = 0, toldAt = 0;
@@ -365,13 +376,13 @@ async function mbnFetch(url, init, o) {
         // to repeat), so pass the check and ask again
         return (await mbnReverify(url, init, o)) ? fetch(url, init) : r;
     }
-    const tries = o.tries || 4;
+    const t0 = Date.now(), give = attempt => o.tries ? attempt >= o.tries : o.background === false ? Date.now() - t0 > 45000 : attempt >= 4;
     for (let attempt = 1; ; attempt++) {
         const slot = await mbnSlot(o);
         if (!slot.ok) return null;
         const r = await mbnWsFetch(url, init);
         const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
-        if (!a.throttled || attempt >= tries) return r;
+        if (!a.throttled || give(attempt)) return r;
     }
 }
 function mbnHot() {
@@ -8418,14 +8429,17 @@ async function loadArtist(id, step = () => {}) {
     const rcPage = o => wsk(`release-group?query=arid:${id}&limit=100&offset=${o}`);
     const rcount = rcPage(0).then(x => Promise.all([x, ...Array.from({ length: Math.max(0, Math.min(4, Math.ceil(((x.count || 0) - 100) / 100))) }, (_, i) => rcPage(100 * (i + 1)).catch(() => null))]))
         .then(xs => new Map(xs.flatMap(x => (x && x['release-groups']) || []).map(g => [g.id, g.count])), noSec(`release-group?query=arid:${id}`))
-        // the various-artists groups aren't credited to the artist, so arid: misses them: their counts come from a search by their ids, 40 a query
-        .then(m => disc.then(x => {
+        // the various-artists groups aren't credited to the artist, so arid: misses them: their counts come from a search by their ids,
+        // 100 a query (a page of answers; the URL is about 4.5 kB, which MusicBrainz takes), one query after the other, so the page's other requests go between them
+        .then(m => disc.then(async x => {
             const miss = (((x && x['release-groups']) || []).map(g => g.id)).filter(g => !(m && m.has(g)));
             if (!miss.length) return m;
-            const out = m || new Map(), qs = [];
-            for (let i = 0; i < miss.length && i < 200; i += 40) qs.push(miss.slice(i, i + 40));
-            return Promise.all(qs.map(q => wsk('release-group?query=' + encodeURIComponent('rgid:(' + q.join(' OR ') + ')') + '&limit=100').catch(() => null)))
-                .then(xs => { for (const y of xs) for (const g of (y && y['release-groups']) || []) out.set(g.id, g.count); return out; });
+            const out = m || new Map();
+            for (let i = 0; i < miss.length && i < 200; i += 100) {
+                const y = await wsk('release-group?query=' + encodeURIComponent('rgid:(' + miss.slice(i, i + 100).join(' OR ') + ')') + '&limit=100').catch(() => null);
+                for (const g of (y && y['release-groups']) || []) out.set(g.id, g.count);
+            }
+            return out;
         }, () => m));
     const wiki = wikiOf('artist', id);
     const gP = wsk(`artist/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`).then(a => { step('artist'); const g = artist(a); areaFill(g, [g.beginArea, g.endArea, g.area]); return g; });
@@ -8476,8 +8490,9 @@ Which facts the header shows, and where the picture comes from">${MBU_CFG_ICON}<
 }
 const areaA = x => x ? entA('area', x.id, x.name) : '';
 // An artist's or label's area the way MusicBrainz's sidebar writes it: the area, what it's part of up to its country,
-// and the country's flag (Douala, Littoral, [flag] Cameroon). ws/2 gives only the area itself, so each step up is
-// one area lookup, made in the background, kept 30 days (areas hardly change) and shared by every artist and label.
+// and the country's flag (Douala, Littoral, [flag] Cameroon). ws/2 gives only the area itself; the website's
+// /ws/js/entity gives its whole chain (containment) in one request that ws/2's rate limit doesn't touch. The steps
+// are kept 30 days (areas hardly change) and shared by every artist and label.
 const AREA_UP = (() => { try { return GM_getValue('areaUp', null) || {}; } catch (e) { return {}; } })(), AREA_TTL = 30 * 864e5;
 const areaNode = a => ({ id: a.id, name: a.name, iso: (a['iso-3166-1-codes'] || [])[0] || '' });
 const areaSave = () => { const ks = Object.keys(AREA_UP); if (ks.length > 3000) ks.sort((a, b) => AREA_UP[a].t - AREA_UP[b].t).slice(0, ks.length - 3000).forEach(k => delete AREA_UP[k]); try { GM_setValue('areaUp', AREA_UP); } catch (e) { /* no storage */ } };
@@ -8494,11 +8509,26 @@ function areaKnown(a) {
     }
     return out;
 }
+// the whole chain above one area in one website request: false when it doesn't answer, and ws/2 climbs instead
+async function areaChain(id) {
+    try {
+        const r = await mbnFetch(`${MB}/ws/js/entity/${id}`, { headers: { Accept: 'application/json' } });
+        if (!r || !r.ok) return false;
+        const j = await r.json();
+        if (!j || j.gid !== id || !Array.isArray(j.containment)) return false;
+        const node = c => ({ id: c.gid, name: c.name, iso: (c.iso_3166_1_codes || [])[0] || '' }), t = Date.now();
+        const steps = [j, ...j.containment];
+        steps.forEach((c, i) => { const n = node(c), up = steps[i + 1]; AREA_UP[n.id] = { iso: n.iso, up: !n.iso && up ? node(up) : null, t }; });
+        areaSave();
+        return true;
+    } catch (e) { return false; }
+}
 async function areaClimb(a) {
     for (let i = 0; i < 8 && !areaKnown(a); i++) {
         // the first step not yet known
         let x = areaNode(a);
         for (let j = 0; j < 8; j++) { const e = AREA_UP[x.id]; if (!e || Date.now() - e.t > AREA_TTL || e.iso || !e.up) break; x = e.up; }
+        if (await areaChain(x.id)) continue;
         const r = JSON.parse(await wsText(`area/${x.id}?inc=area-rels`, true));
         const up = (r.relations || []).find(v => v['target-type'] === 'area' && v.type === 'part of' && v.direction === 'backward' && v.area && !v.ended) || (r.relations || []).find(v => v['target-type'] === 'area' && v.type === 'part of' && v.direction === 'backward' && v.area);
         AREA_UP[x.id] = { iso: (r['iso-3166-1-codes'] || [])[0] || '', up: up ? areaNode(up.area) : null, t: Date.now() };

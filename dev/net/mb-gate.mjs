@@ -68,6 +68,7 @@ export async function mbnState(fn) {
         if ((s.leadUntil || 0) > now + MBN_MAX_LEAD) s.leadUntil = now + MBN_MAX_LEAD;
         // nor a queue longer than a minute: slots that waits left behind (a closed tab) are dropped
         if ((s.tat || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s.tat = Math.max(now, s.cool || 0) + 60 * MBN_GAP;
+        if ((s.itat || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s.itat = Math.max(now, s.cool || 0) + 60 * MBN_GAP;
         const out = fn(s);
         Object.assign(g, s);
         try { localStorage.setItem(MBN_KEY, JSON.stringify({ ...s, tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
@@ -185,7 +186,8 @@ export function mbnSleep(ms, cancelled) {
 
 /**
  * Wait for this request's start slot.
- *   o.background  queue behind the budget (default); false = interactive, start as soon as no hold
+ *   o.background  queue behind the budget (default); false = interactive: its own line, ahead of
+ *                 the background queue (a burst of MBN_BURST, then one a second), after any hold
  *   o.lead        the lead's token (mbnLead): this request is the leader's, and doesn't wait for it
  *   o.cancelled   () => true stops the wait (a superseded search, a Stop): resolves { ok: false }
  *   o.log         (level, message) for waits worth mentioning (over a second)
@@ -213,16 +215,26 @@ export async function mbnSlot(o) {
     let booked = null, rebooked = false;
     const book = () => mbnState(s => {
         const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
-        // an interactive request (the page's own) never queues behind the budget, a rebooking included
-        let at = !background ? now : rebooked ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP);
-        at = Math.max(at, cool);
+        // an interactive request (the page's own) never queues behind the background budget: it
+        // has its own line (itat), a burst then one a second, so a page's handful of lookups don't
+        // all leave at once into a 503 (and while MusicBrainz is throttling, no burst at all)
+        let at;
+        if (!background) {
+            const itat = s.itat || 0, hot = s.hot && now <= cool + 30000;
+            at = Math.max(now, rebooked ? itat : itat - (hot ? 0 : (MBN_BURST - 1) * MBN_GAP), cool);
+            s.itat = Math.max(itat, at) + MBN_GAP;
+        } else at = Math.max(rebooked ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP), cool);
         s.tat = Math.max(tat, at) + MBN_GAP;
         return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second' };
     });
     booked = await book();
     // a cancelled wait hands its slot back when it is still the last one booked, so a page that
     // drops a queue of lookups (a Stop, a new page) does not leave every later request behind it
-    const giveBack = () => mbnState(s => { if (s.tat === booked.at + MBN_GAP && booked.at > Date.now()) s.tat -= MBN_GAP; });
+    const giveBack = () => mbnState(s => {
+        if (booked.at <= Date.now()) return;
+        if (s.tat === booked.at + MBN_GAP) s.tat -= MBN_GAP;
+        if (!background && s.itat === booked.at + MBN_GAP) s.itat -= MBN_GAP;
+    });
     // #999: the wait logs again whenever its end moves later (a hold another tab or script set
     // while we queued) and every 10s it goes on, so a long wait is never silent
     let toldUntil = 0, toldAt = 0;
@@ -300,7 +312,9 @@ export async function mbnAnswer(status, header, o) {
  * Other requests aren't paced; one to MusicBrainz's website side (/ws/js, pages, forms) that
  * gets the browser check instead passes it once and is retried (#733, mbnReverify below).
  * Resolves the Response, or null when cancelled.
- *   o.tries   attempts on 429/503 (default 4); the last answer is returned as it is
+ *   o.tries   attempts on 429/503 (default 4; an interactive request, o.background false, keeps
+ *             trying for 45s instead, so a page isn't lost to a short throttle); the last answer
+ *             is returned as it is
  *   o.log, o.notify  see mbnReverify
  */
 export async function mbnFetch(url, init, o) {
@@ -312,13 +326,13 @@ export async function mbnFetch(url, init, o) {
         // to repeat), so pass the check and ask again
         return (await mbnReverify(url, init, o)) ? fetch(url, init) : r;
     }
-    const tries = o.tries || 4;
+    const t0 = Date.now(), give = attempt => o.tries ? attempt >= o.tries : o.background === false ? Date.now() - t0 > 45000 : attempt >= 4;
     for (let attempt = 1; ; attempt++) {
         const slot = await mbnSlot(o);
         if (!slot.ok) return null;
         const r = await mbnWsFetch(url, init);
         const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
-        if (!a.throttled || attempt >= tries) return r;
+        if (!a.throttled || give(attempt)) return r;
     }
 }
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.21.175804
+// @version      2026.11.21.180953
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -102,6 +102,7 @@
           if ((s.leadUntil || 0) > now + MBN_MAX_LEAD) s.leadUntil = now + MBN_MAX_LEAD;
           // nor a queue longer than a minute: slots that waits left behind (a closed tab) are dropped
           if ((s.tat || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s.tat = Math.max(now, s.cool || 0) + 60 * MBN_GAP;
+          if ((s.itat || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s.itat = Math.max(now, s.cool || 0) + 60 * MBN_GAP;
           const out = fn(s);
           Object.assign(g, s);
           try { localStorage.setItem(MBN_KEY, JSON.stringify({ ...s, tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
@@ -227,16 +228,26 @@
       let booked = null, rebooked = false;
       const book = () => mbnState(s => {
           const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
-          // an interactive request (the page's own) never queues behind the budget, a rebooking included
-          let at = !background ? now : rebooked ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP);
-          at = Math.max(at, cool);
+          // an interactive request (the page's own) never queues behind the background budget: it
+          // has its own line (itat), a burst then one a second, so a page's handful of lookups don't
+          // all leave at once into a 503 (and while MusicBrainz is throttling, no burst at all)
+          let at;
+          if (!background) {
+              const itat = s.itat || 0, hot = s.hot && now <= cool + 30000;
+              at = Math.max(now, rebooked ? itat : itat - (hot ? 0 : (MBN_BURST - 1) * MBN_GAP), cool);
+              s.itat = Math.max(itat, at) + MBN_GAP;
+          } else at = Math.max(rebooked ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP), cool);
           s.tat = Math.max(tat, at) + MBN_GAP;
           return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second' };
       });
       booked = await book();
       // a cancelled wait hands its slot back when it is still the last one booked, so a page that
       // drops a queue of lookups (a Stop, a new page) does not leave every later request behind it
-      const giveBack = () => mbnState(s => { if (s.tat === booked.at + MBN_GAP && booked.at > Date.now()) s.tat -= MBN_GAP; });
+      const giveBack = () => mbnState(s => {
+          if (booked.at <= Date.now()) return;
+          if (s.tat === booked.at + MBN_GAP) s.tat -= MBN_GAP;
+          if (!background && s.itat === booked.at + MBN_GAP) s.itat -= MBN_GAP;
+      });
       // #999: the wait logs again whenever its end moves later (a hold another tab or script set
       // while we queued) and every 10s it goes on, so a long wait is never silent
       let toldUntil = 0, toldAt = 0;
@@ -305,13 +316,13 @@
           // to repeat), so pass the check and ask again
           return (await mbnReverify(url, init, o)) ? fetch(url, init) : r;
       }
-      const tries = o.tries || 4;
+      const t0 = Date.now(), give = attempt => o.tries ? attempt >= o.tries : o.background === false ? Date.now() - t0 > 45000 : attempt >= 4;
       for (let attempt = 1; ; attempt++) {
           const slot = await mbnSlot(o);
           if (!slot.ok) return null;
           const r = await mbnWsFetch(url, init);
           const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
-          if (!a.throttled || attempt >= tries) return r;
+          if (!a.throttled || give(attempt)) return r;
       }
   }
   function mbnHot() {
