@@ -2971,8 +2971,7 @@
                   html = await this.openPage(u.href);
               }
               const out = [], seen = new Set();
-              // the gallery spans several tables (three thumbs each): end it at the clear div, not at a </table>
-              const gallery = (html.match(/id="cover_gallery"[\s\S]*?(?=<div style="clear|<h3|<div id="(?!cover)|$)/) || [''])[0];
+              const gallery = (html.match(/id="cover_gallery"[\s\S]*?(?=<\/table>|<div id="(?!cover)|$)/) || [''])[0];
               for (const m of gallery.matchAll(/<a[^>]*id="thumb_\d+"[^>]*href="([^"]+)"[^>]*>[\s\S]*?class="label"[^>]*>([^<]*)</g)) {
                   const url = ImageMaximizer.decode(m[1]);
                   if (seen.has(url)) continue; seen.add(url);
