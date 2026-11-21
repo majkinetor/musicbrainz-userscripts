@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.20.200000
+// @version      2026.11.20.200001
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -228,13 +228,17 @@ async function mbnSlot(o) {
         if (!told && o.log) { told = true; o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + ' waits for a page being drawn'); }
         await mbnSleep(Math.min(left, 250), o.cancelled);
     }
-    const booked = await mbnState(s => {
+    // a hold that appears while we queue ends for every waiter at once: each waiter then books
+    // again, so they leave one a second instead of all together into a fresh 503
+    let booked = null, rebooked = false;
+    const book = () => mbnState(s => {
         const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
-        let at = background ? Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP) : now;
+        let at = rebooked ? Math.max(now, tat) : background ? Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP) : now;
         at = Math.max(at, cool);
         s.tat = Math.max(tat, at) + MBN_GAP;
         return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second' };
     });
+    booked = await book();
     // #999: the wait logs again whenever its end moves later (a hold another tab or script set
     // while we queued) and every 10s it goes on, so a long wait is never silent
     let toldUntil = 0, toldAt = 0;
@@ -245,7 +249,10 @@ async function mbnSlot(o) {
         const now = Date.now();
         cool = seen(cool, MBN_MAX_HOLD);   // a hold is never longer than the longest one the gate sets
         const until = Math.max(booked.at, cool), left = until - now;   // a hold that appeared while we queued
-        if (left <= 0) break;
+        if (left <= 0) {
+            if (cool > booked.at && !rebooked) { rebooked = true; booked = await book(); continue; }
+            break;
+        }
         if (o.log && until - t0 > 1000 && (!toldAt || until > toldUntil + 1000 || now - toldAt >= 10000)) {
             const why = cool > booked.at ? 'MusicBrainz asked everyone to wait' : booked.why;
             o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + (toldAt ? ' still waits, ' + Math.round(left / 100) / 10 + 's to go' : ' waits ' + Math.round((until - t0) / 100) / 10 + 's') + ' (' + why + ')');
@@ -280,7 +287,8 @@ async function mbnAnswer(status, header, o) {
             // page for good.
             if (now > (s.cool || 0) + 30000) s.hot = 0;
             if (now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
-            const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.hot), MBN_MAX_HOLD);
+            // a Retry-After is honoured as given (plus 1s); only a throttle without one grows step by step
+            const ms = Math.min(ra > 0 ? ra + 1000 : 1000 * Math.max(1, s.hot), MBN_MAX_HOLD);
             s.cool = Math.max(s.cool || 0, Date.now() + ms);
             return s.cool - Date.now();
         });

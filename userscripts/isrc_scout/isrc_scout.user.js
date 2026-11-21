@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.21.160000
+// @version      2026.11.21.160001
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -220,13 +220,17 @@
           if (!told && o.log) { told = true; o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + ' waits for a page being drawn'); }
           await mbnSleep(Math.min(left, 250), o.cancelled);
       }
-      const booked = await mbnState(s => {
+      // a hold that appears while we queue ends for every waiter at once: each waiter then books
+      // again, so they leave one a second instead of all together into a fresh 503
+      let booked = null, rebooked = false;
+      const book = () => mbnState(s => {
           const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
-          let at = background ? Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP) : now;
+          let at = rebooked ? Math.max(now, tat) : background ? Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP) : now;
           at = Math.max(at, cool);
           s.tat = Math.max(tat, at) + MBN_GAP;
           return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second' };
       });
+      booked = await book();
       // #999: the wait logs again whenever its end moves later (a hold another tab or script set
       // while we queued) and every 10s it goes on, so a long wait is never silent
       let toldUntil = 0, toldAt = 0;
@@ -237,7 +241,10 @@
           const now = Date.now();
           cool = seen(cool, MBN_MAX_HOLD);   // a hold is never longer than the longest one the gate sets
           const until = Math.max(booked.at, cool), left = until - now;   // a hold that appeared while we queued
-          if (left <= 0) break;
+          if (left <= 0) {
+              if (cool > booked.at && !rebooked) { rebooked = true; booked = await book(); continue; }
+              break;
+          }
           if (o.log && until - t0 > 1000 && (!toldAt || until > toldUntil + 1000 || now - toldAt >= 10000)) {
               const why = cool > booked.at ? 'MusicBrainz asked everyone to wait' : booked.why;
               o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + (toldAt ? ' still waits, ' + Math.round(left / 100) / 10 + 's to go' : ' waits ' + Math.round((until - t0) / 100) / 10 + 's') + ' (' + why + ')');
@@ -272,7 +279,8 @@
               // page for good.
               if (now > (s.cool || 0) + 30000) s.hot = 0;
               if (now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
-              const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.hot), MBN_MAX_HOLD);
+              // a Retry-After is honoured as given (plus 1s); only a throttle without one grows step by step
+              const ms = Math.min(ra > 0 ? ra + 1000 : 1000 * Math.max(1, s.hot), MBN_MAX_HOLD);
               s.cool = Math.max(s.cool || 0, Date.now() + ms);
               return s.cool - Date.now();
           });
