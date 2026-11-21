@@ -71,7 +71,7 @@ function extractCredits(doc) {
         const label = tds[0].querySelector('span.label') || tds[0];
         const en = label.querySelector('span.artistname[lang=en]');
         const role = (en || label.querySelector('b') || label).textContent.replace(/\s+/g, ' ').trim();
-        const sub = /^[\s00a0]+/.test(label.textContent);
+        const sub = /^[\s\u00a0]+/.test(label.textContent);
         const artists = [];
         const cell = tds[1];
         for (const a of cell.querySelectorAll('a[href*="/artist/"], a[href*="/org/"]')) {
