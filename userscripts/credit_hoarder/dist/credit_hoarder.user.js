@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.11.21.222133
+// @version      2026.11.21.223324
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -265,6 +265,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
   var MBN_LOCK = "mbu-mb-gate";
   var MBN_MAX_HOLD = 6e4;
   var MBN_MAX_LEAD = 1e4;
+  var MBN_TRACE_MAX = 400;
   function mbnGated(url) {
     const s = String(url || "");
     return /^\/ws\/2\//.test(s) || /^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org\/ws\/2\//i.test(s);
@@ -432,9 +433,57 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       }
     });
   }
+  function mbnTrace(ev) {
+    try {
+      const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: "", script: "", swept: 0 });
+      if (!g.tab) {
+        try {
+          g.tab = sessionStorage.getItem(MBN_KEY + "-tab") || "";
+        } catch (e) {
+        }
+        if (!g.tab) {
+          g.tab = Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5);
+          try {
+            sessionStorage.setItem(MBN_KEY + "-tab", g.tab);
+          } catch (e) {
+          }
+        }
+        try {
+          g.script = String(GM_info.script.name || "");
+        } catch (e) {
+        }
+      }
+      const pre = MBN_KEY + "-trace:", key = pre + g.tab, now = Date.now();
+      let list = [];
+      try {
+        list = JSON.parse(localStorage.getItem(key) || "[]");
+      } catch (e) {
+      }
+      if (!Array.isArray(list)) list = [];
+      list.push(Object.assign({ t: now, s: g.script }, ev));
+      if (list.length > MBN_TRACE_MAX) list = list.slice(-MBN_TRACE_MAX);
+      localStorage.setItem(key, JSON.stringify(list));
+      if (now - g.swept > 6e4) {
+        g.swept = now;
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const k = localStorage.key(i);
+          if (!k || k.indexOf(pre) !== 0 || k === key) continue;
+          let last = 0;
+          try {
+            const l = JSON.parse(localStorage.getItem(k) || "[]");
+            last = (l[l.length - 1] || {}).t || 0;
+          } catch (e) {
+          }
+          if (now - last > 36e5) localStorage.removeItem(k);
+        }
+      }
+    } catch (e) {
+    }
+  }
   async function mbnSlot(o) {
     o = o || {};
     const t0 = Date.now(), background = o.background !== false;
+    const tr = (e, x) => mbnTrace(Object.assign({ e, l: o.label || "", b: background ? 1 : 0 }, x));
     const seen = (v, cap) => {
       if (v !== seen[cap + "v"]) {
         seen[cap + "v"] = v;
@@ -451,11 +500,16 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       }
       const left = s && s.lead && s.lead !== o.lead ? seen(s.leadUntil || 0, MBN_MAX_LEAD) - Date.now() : 0;
       if (left <= 0) break;
-      if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
+      if (o.cancelled && o.cancelled()) {
+        tr("cancel", { w: Date.now() - t0 });
+        return { ok: false, waited: Date.now() - t0 };
+      }
+      if (!told) tr("lead", { w: left, by: String(s.lead).slice(0, 12) });
       if (!told && o.log) {
         told = true;
         o.log("info", "MusicBrainz gate: " + (o.label || "request") + " waits for a page being drawn");
       }
+      told = true;
       await mbnSleep(Math.min(left, 250), o.cancelled);
     }
     let booked = null, rebooked = false;
@@ -468,7 +522,9 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         s.itat = Math.max(itat, at) + MBN_GAP;
       } else at = Math.max(rebooked ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP), cool);
       s.tat = Math.max(tat, at) + MBN_GAP;
-      return { at, why: cool > now && cool >= at ? "MusicBrainz asked everyone to wait" : "pacing, one request a second" };
+      const why = cool > now && cool >= at ? "MusicBrainz asked everyone to wait" : "pacing, one request a second";
+      if (at > now) tr("book", { w: at - now, why: cool > now && cool >= at ? "hold" : "pace", re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
+      return { at, why };
     });
     booked = await book();
     const giveBack = () => mbnState((s) => {
@@ -480,6 +536,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     for (; ; ) {
       if (o.cancelled && o.cancelled()) {
         await giveBack();
+        tr("cancel", { w: Date.now() - t0 });
         return { ok: false, waited: Date.now() - t0 };
       }
       let cool = 0;
@@ -512,10 +569,20 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         o.log("info", "MusicBrainz gate: this page's timer fired " + Math.round(st.ms / 100) / 10 + "s late (page " + (st.state || "?") + (st.hidden ? ", hidden" : "") + "); waits wake on page activity too");
       }
     }
+    tr("start", { w: Date.now() - t0 });
     return { ok: true, waited: Date.now() - t0 };
   }
   async function mbnAnswer(status, header, o) {
     o = o || {};
+    const rl = {};
+    for (const [k, n] of [["lim", "X-RateLimit-Limit"], ["rem", "X-RateLimit-Remaining"], ["rst", "X-RateLimit-Reset"], ["who", "X-RateLimit-Who"]]) {
+      try {
+        const v = header ? header(n) : null;
+        if (v != null && v !== "") rl[k] = String(v).slice(0, 40);
+      } catch (e) {
+      }
+    }
+    const tr = (x, s) => mbnTrace(Object.assign({ e: "answer", st: status, l: o.label || "", b: o.background === false ? 0 : 1, hot: s ? s.hot || 0 : void 0 }, rl, x));
     if (status === 429 || status === 503) {
       const raw = header ? header("Retry-After") : null;
       const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
@@ -526,6 +593,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         if (now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
         const ms = Math.min(Math.max(1e3, ra) * Math.max(1, s.hot), MBN_MAX_HOLD);
         s.cool = Math.max(s.cool || 0, Date.now() + ms);
+        tr({ ra: raw == null ? void 0 : String(raw).slice(0, 40), hold: s.cool - Date.now() }, s);
         return s.cool - Date.now();
       });
       if (o.log) o.log("warn", "MusicBrainz gate: HTTP " + status + (raw != null ? " (Retry-After: " + raw + ")" : "") + " \u2014 every script holds " + Math.round(hold / 100) / 10 + "s");
@@ -533,7 +601,9 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     }
     if (status >= 200 && status < 500) await mbnState((s) => {
       if (s.hot) s.hot = Date.now() > (s.cool || 0) + 3e4 ? 0 : s.hot - 1;
+      tr({}, s);
     });
+    else tr({});
     return { throttled: false, hold: 0 };
   }
   async function mbnFetch(url, init, o) {
@@ -544,10 +614,25 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       return await mbnReverify(url, init, o) ? fetch(url, init) : r;
     }
     const t0 = Date.now(), give = (attempt) => o.tries ? attempt >= o.tries : o.background === false ? Date.now() - t0 > 45e3 : attempt >= 4;
+    if (!o.label) {
+      let p = String(url);
+      try {
+        const u = new URL(p, location.href);
+        p = u.pathname.replace(/^\/ws\/2\//, "") + u.search.replace(/[?&]fmt=json\b/, "").replace(/^&/, "?");
+      } catch (e) {
+      }
+      o = Object.assign({}, o, { label: p.slice(0, 120) });
+    }
     for (let attempt = 1; ; attempt++) {
       const slot = await mbnSlot(o);
       if (!slot.ok) return null;
-      const r = await mbnWsFetch(url, init);
+      let r;
+      try {
+        r = await mbnWsFetch(url, init);
+      } catch (e) {
+        mbnTrace({ e: "error", l: o.label, b: o.background === false ? 0 : 1, err: String(e && (e.name === "AbortError" ? "aborted" : e.message) || e).slice(0, 80) });
+        throw e;
+      }
       const a = await mbnAnswer(r.status, (n) => r.headers.get(n), o);
       if (!a.throttled || give(attempt)) return r;
     }
@@ -703,6 +788,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         done = true;
         fr.remove();
         g.busy = null;
+        mbnTrace({ e: "check", ok: ok ? 1 : 0, w: Date.now() - t0 });
         if (ok) log2("info", "browser check passed in " + (Date.now() - t0) + " ms \u2014 retrying");
         else {
           g.failedAt = Date.now();

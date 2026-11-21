@@ -44,6 +44,8 @@ export const MBN_LOCK = 'mbu-mb-gate';
 export const MBN_MAX_HOLD = 60000;
 /** The longest one lead lasts without being renewed: a page that stops asking frees the queue. */
 export const MBN_MAX_LEAD = 10000;
+/** Gate events each tab keeps for String Theory's Gate log (mbnTrace). */
+export const MBN_TRACE_MAX = 400;
 
 /** True for a request the gate paces: MusicBrainz's /ws/2, relative or absolute. */
 export function mbnGated(url) {
@@ -185,6 +187,40 @@ export function mbnSleep(ms, cancelled) {
 }
 
 /**
+ * Note one gate event for String Theory's Gate log, to tell MusicBrainz's own load apart from
+ * ours. Each tab keeps its last MBN_TRACE_MAX events under MBN_KEY + '-trace:' + its id (per tab,
+ * so tabs never overwrite each other's); a tab's trace idle for an hour is dropped by the next.
+ * `ev.e` is the kind: lead, book, cancel, start, answer, error, lead+, lead-, check.
+ */
+export function mbnTrace(ev) {
+    try {
+        const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', script: '', swept: 0 });
+        if (!g.tab) {
+            try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
+            if (!g.tab) { g.tab = Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5); try { sessionStorage.setItem(MBN_KEY + '-tab', g.tab); } catch (e) {} }
+            try { g.script = String(GM_info.script.name || ''); } catch (e) {}
+        }
+        const pre = MBN_KEY + '-trace:', key = pre + g.tab, now = Date.now();
+        let list = [];
+        try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}
+        if (!Array.isArray(list)) list = [];
+        list.push(Object.assign({ t: now, s: g.script }, ev));
+        if (list.length > MBN_TRACE_MAX) list = list.slice(-MBN_TRACE_MAX);
+        localStorage.setItem(key, JSON.stringify(list));
+        if (now - g.swept > 60000) {   // once a minute: drop the traces of tabs gone quiet for an hour
+            g.swept = now;
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+                const k = localStorage.key(i);
+                if (!k || k.indexOf(pre) !== 0 || k === key) continue;
+                let last = 0;
+                try { const l = JSON.parse(localStorage.getItem(k) || '[]'); last = (l[l.length - 1] || {}).t || 0; } catch (e) {}
+                if (now - last > 3600000) localStorage.removeItem(k);
+            }
+        }
+    } catch (e) { /* no storage: no trace */ }
+}
+
+/**
  * Wait for this request's start slot.
  *   o.background  queue behind the budget (default); false = interactive: its own line, ahead of
  *                 the background queue (a burst of MBN_BURST, then one a second), after any hold
@@ -197,6 +233,7 @@ export function mbnSleep(ms, cancelled) {
 export async function mbnSlot(o) {
     o = o || {};
     const t0 = Date.now(), background = o.background !== false;
+    const tr = (e, x) => mbnTrace(Object.assign({ e, l: o.label || '', b: background ? 1 : 0 }, x));
     // someone else's lead: a background request books its slot only once it ends or lapses
     // #938: a cap counted from each new `now` moves with it and never caps; count it from when
     // this wait first saw the value, so a broken one holds at most the longest real one
@@ -206,8 +243,10 @@ export async function mbnSlot(o) {
         try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { s = globalThis.__mbnGate; }
         const left = s && s.lead && s.lead !== o.lead ? seen(s.leadUntil || 0, MBN_MAX_LEAD) - Date.now() : 0;
         if (left <= 0) break;
-        if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
+        if (o.cancelled && o.cancelled()) { tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
+        if (!told) tr('lead', { w: left, by: String(s.lead).slice(0, 12) });
         if (!told && o.log) { told = true; o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + ' waits for a page being drawn'); }
+        told = true;
         await mbnSleep(Math.min(left, 250), o.cancelled);
     }
     // a hold that appears while we queue ends for every waiter at once: each waiter then books
@@ -225,7 +264,9 @@ export async function mbnSlot(o) {
             s.itat = Math.max(itat, at) + MBN_GAP;
         } else at = Math.max(rebooked ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP), cool);
         s.tat = Math.max(tat, at) + MBN_GAP;
-        return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second' };
+        const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second';
+        if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
+        return { at, why };
     });
     booked = await book();
     // a cancelled wait hands its slot back when it is still the last one booked, so a page that
@@ -239,7 +280,7 @@ export async function mbnSlot(o) {
     // while we queued) and every 10s it goes on, so a long wait is never silent
     let toldUntil = 0, toldAt = 0;
     for (;;) {
-        if (o.cancelled && o.cancelled()) { await giveBack(); return { ok: false, waited: Date.now() - t0 }; }
+        if (o.cancelled && o.cancelled()) { await giveBack(); tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
         let cool = 0;
         try { cool = (JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}).cool || 0; } catch (e) { cool = (globalThis.__mbnGate || {}).cool || 0; }
         const now = Date.now();
@@ -261,6 +302,7 @@ export async function mbnSlot(o) {
             o.log('info', 'MusicBrainz gate: this page\'s timer fired ' + Math.round(st.ms / 100) / 10 + 's late (page ' + (st.state || '?') + (st.hidden ? ', hidden' : '') + '); waits wake on page activity too');
         }
     }
+    tr('start', { w: Date.now() - t0 });
     return { ok: true, waited: Date.now() - t0 };
 }
 
@@ -270,8 +312,10 @@ export async function mbnSlot(o) {
  */
 export async function mbnLead(token, ms) {
     return mbnState(s => {
-        if (ms > 0) { s.lead = token; s.leadUntil = Date.now() + Math.min(ms, MBN_MAX_LEAD); }
-        else if (s.lead === token) { s.lead = ''; s.leadUntil = 0; }
+        if (ms > 0) {
+            if (s.lead !== token || (s.leadUntil || 0) < Date.now()) mbnTrace({ e: 'lead+', by: String(token).slice(0, 12), w: Math.min(ms, MBN_MAX_LEAD) });
+            s.lead = token; s.leadUntil = Date.now() + Math.min(ms, MBN_MAX_LEAD);
+        } else if (s.lead === token) { s.lead = ''; s.leadUntil = 0; mbnTrace({ e: 'lead-', by: String(token).slice(0, 12) }); }
     });
 }
 
@@ -282,6 +326,12 @@ export async function mbnLead(token, ms) {
  */
 export async function mbnAnswer(status, header, o) {
     o = o || {};
+    // for the Gate log: MusicBrainz's own rate-limit headers, which say whose budget ran out
+    const rl = {};
+    for (const [k, n] of [['lim', 'X-RateLimit-Limit'], ['rem', 'X-RateLimit-Remaining'], ['rst', 'X-RateLimit-Reset'], ['who', 'X-RateLimit-Who']]) {
+        try { const v = header ? header(n) : null; if (v != null && v !== '') rl[k] = String(v).slice(0, 40); } catch (e) {}
+    }
+    const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, l: o.label || '', b: o.background === false ? 0 : 1, hot: s ? s.hot || 0 : undefined }, rl, x));
     if (status === 429 || status === 503) {
         const raw = header ? header('Retry-After') : null;
         const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
@@ -298,12 +348,14 @@ export async function mbnAnswer(status, header, o) {
             // spell gets fewer and fewer requests from us
             const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.hot), MBN_MAX_HOLD);
             s.cool = Math.max(s.cool || 0, Date.now() + ms);
+            tr({ ra: raw == null ? undefined : String(raw).slice(0, 40), hold: s.cool - Date.now() }, s);
             return s.cool - Date.now();
         });
         if (o.log) o.log('warn', 'MusicBrainz gate: HTTP ' + status + (raw != null ? ' (Retry-After: ' + raw + ')' : '') + ' — every script holds ' + Math.round(hold / 100) / 10 + 's');
         return { throttled: true, hold };
     }
-    if (status >= 200 && status < 500) await mbnState(s => { if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1; });
+    if (status >= 200 && status < 500) await mbnState(s => { if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1; tr({}, s); });
+    else tr({});
     return { throttled: false, hold: 0 };
 }
 
@@ -328,10 +380,17 @@ export async function mbnFetch(url, init, o) {
         return (await mbnReverify(url, init, o)) ? fetch(url, init) : r;
     }
     const t0 = Date.now(), give = attempt => o.tries ? attempt >= o.tries : o.background === false ? Date.now() - t0 > 45000 : attempt >= 4;
+    if (!o.label) {   // the Gate log names a request by what it asks for
+        let p = String(url);
+        try { const u = new URL(p, location.href); p = u.pathname.replace(/^\/ws\/2\//, '') + u.search.replace(/[?&]fmt=json\b/, '').replace(/^&/, '?'); } catch (e) {}
+        o = Object.assign({}, o, { label: p.slice(0, 120) });
+    }
     for (let attempt = 1; ; attempt++) {
         const slot = await mbnSlot(o);
         if (!slot.ok) return null;
-        const r = await mbnWsFetch(url, init);
+        let r;
+        try { r = await mbnWsFetch(url, init); }
+        catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
         const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
         if (!a.throttled || give(attempt)) return r;
     }
@@ -472,6 +531,7 @@ export function mbnReverify(url, init, o) {
         let loads = 0, done = false;
         const finish = ok => {
             if (done) return; done = true; fr.remove(); g.busy = null;
+            mbnTrace({ e: 'check', ok: ok ? 1 : 0, w: Date.now() - t0 });
             if (ok) log('info', 'browser check passed in ' + (Date.now() - t0) + ' ms — retrying');
             else {
                 g.failedAt = Date.now();
@@ -498,6 +558,6 @@ export function mbnReverify(url, init, o) {
 
 /** What sync-gate.mjs inlines, in order. */
 export const MBN_INLINE = {
-    consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_MAX_HOLD, MBN_MAX_LEAD },
-    fns: [mbnGated, mbnState, mbnSleep, mbnSlot, mbnLead, mbnAnswer, mbnFetch, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
+    consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_MAX_HOLD, MBN_MAX_LEAD, MBN_TRACE_MAX },
+    fns: [mbnGated, mbnState, mbnSleep, mbnTrace, mbnSlot, mbnLead, mbnAnswer, mbnFetch, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
 };

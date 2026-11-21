@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.21.222056
+// @version      2026.11.21.223115
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -2739,6 +2739,7 @@ const MBN_VERSION = 1;
 const MBN_LOCK = "mbu-mb-gate";
 const MBN_MAX_HOLD = 60000;
 const MBN_MAX_LEAD = 10000;
+const MBN_TRACE_MAX = 400;
 function mbnGated(url) {
     const s = String(url || '');
     return /^\/ws\/2\//.test(s) || /^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org\/ws\/2\//i.test(s);
@@ -2864,9 +2865,37 @@ function mbnSleep(ms, cancelled) {
         } catch (e) { w.worker = false; }
     });
 }
+function mbnTrace(ev) {
+    try {
+        const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', script: '', swept: 0 });
+        if (!g.tab) {
+            try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
+            if (!g.tab) { g.tab = Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5); try { sessionStorage.setItem(MBN_KEY + '-tab', g.tab); } catch (e) {} }
+            try { g.script = String(GM_info.script.name || ''); } catch (e) {}
+        }
+        const pre = MBN_KEY + '-trace:', key = pre + g.tab, now = Date.now();
+        let list = [];
+        try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}
+        if (!Array.isArray(list)) list = [];
+        list.push(Object.assign({ t: now, s: g.script }, ev));
+        if (list.length > MBN_TRACE_MAX) list = list.slice(-MBN_TRACE_MAX);
+        localStorage.setItem(key, JSON.stringify(list));
+        if (now - g.swept > 60000) {   // once a minute: drop the traces of tabs gone quiet for an hour
+            g.swept = now;
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+                const k = localStorage.key(i);
+                if (!k || k.indexOf(pre) !== 0 || k === key) continue;
+                let last = 0;
+                try { const l = JSON.parse(localStorage.getItem(k) || '[]'); last = (l[l.length - 1] || {}).t || 0; } catch (e) {}
+                if (now - last > 3600000) localStorage.removeItem(k);
+            }
+        }
+    } catch (e) { /* no storage: no trace */ }
+}
 async function mbnSlot(o) {
     o = o || {};
     const t0 = Date.now(), background = o.background !== false;
+    const tr = (e, x) => mbnTrace(Object.assign({ e, l: o.label || '', b: background ? 1 : 0 }, x));
     // someone else's lead: a background request books its slot only once it ends or lapses
     // #938: a cap counted from each new `now` moves with it and never caps; count it from when
     // this wait first saw the value, so a broken one holds at most the longest real one
@@ -2876,8 +2905,10 @@ async function mbnSlot(o) {
         try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { s = globalThis.__mbnGate; }
         const left = s && s.lead && s.lead !== o.lead ? seen(s.leadUntil || 0, MBN_MAX_LEAD) - Date.now() : 0;
         if (left <= 0) break;
-        if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
+        if (o.cancelled && o.cancelled()) { tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
+        if (!told) tr('lead', { w: left, by: String(s.lead).slice(0, 12) });
         if (!told && o.log) { told = true; o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + ' waits for a page being drawn'); }
+        told = true;
         await mbnSleep(Math.min(left, 250), o.cancelled);
     }
     // a hold that appears while we queue ends for every waiter at once: each waiter then books
@@ -2895,7 +2926,9 @@ async function mbnSlot(o) {
             s.itat = Math.max(itat, at) + MBN_GAP;
         } else at = Math.max(rebooked ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP), cool);
         s.tat = Math.max(tat, at) + MBN_GAP;
-        return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second' };
+        const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second';
+        if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
+        return { at, why };
     });
     booked = await book();
     // a cancelled wait hands its slot back when it is still the last one booked, so a page that
@@ -2909,7 +2942,7 @@ async function mbnSlot(o) {
     // while we queued) and every 10s it goes on, so a long wait is never silent
     let toldUntil = 0, toldAt = 0;
     for (;;) {
-        if (o.cancelled && o.cancelled()) { await giveBack(); return { ok: false, waited: Date.now() - t0 }; }
+        if (o.cancelled && o.cancelled()) { await giveBack(); tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
         let cool = 0;
         try { cool = (JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}).cool || 0; } catch (e) { cool = (globalThis.__mbnGate || {}).cool || 0; }
         const now = Date.now();
@@ -2931,16 +2964,25 @@ async function mbnSlot(o) {
             o.log('info', 'MusicBrainz gate: this page\'s timer fired ' + Math.round(st.ms / 100) / 10 + 's late (page ' + (st.state || '?') + (st.hidden ? ', hidden' : '') + '); waits wake on page activity too');
         }
     }
+    tr('start', { w: Date.now() - t0 });
     return { ok: true, waited: Date.now() - t0 };
 }
 async function mbnLead(token, ms) {
     return mbnState(s => {
-        if (ms > 0) { s.lead = token; s.leadUntil = Date.now() + Math.min(ms, MBN_MAX_LEAD); }
-        else if (s.lead === token) { s.lead = ''; s.leadUntil = 0; }
+        if (ms > 0) {
+            if (s.lead !== token || (s.leadUntil || 0) < Date.now()) mbnTrace({ e: 'lead+', by: String(token).slice(0, 12), w: Math.min(ms, MBN_MAX_LEAD) });
+            s.lead = token; s.leadUntil = Date.now() + Math.min(ms, MBN_MAX_LEAD);
+        } else if (s.lead === token) { s.lead = ''; s.leadUntil = 0; mbnTrace({ e: 'lead-', by: String(token).slice(0, 12) }); }
     });
 }
 async function mbnAnswer(status, header, o) {
     o = o || {};
+    // for the Gate log: MusicBrainz's own rate-limit headers, which say whose budget ran out
+    const rl = {};
+    for (const [k, n] of [['lim', 'X-RateLimit-Limit'], ['rem', 'X-RateLimit-Remaining'], ['rst', 'X-RateLimit-Reset'], ['who', 'X-RateLimit-Who']]) {
+        try { const v = header ? header(n) : null; if (v != null && v !== '') rl[k] = String(v).slice(0, 40); } catch (e) {}
+    }
+    const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, l: o.label || '', b: o.background === false ? 0 : 1, hot: s ? s.hot || 0 : undefined }, rl, x));
     if (status === 429 || status === 503) {
         const raw = header ? header('Retry-After') : null;
         const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
@@ -2957,12 +2999,14 @@ async function mbnAnswer(status, header, o) {
             // spell gets fewer and fewer requests from us
             const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.hot), MBN_MAX_HOLD);
             s.cool = Math.max(s.cool || 0, Date.now() + ms);
+            tr({ ra: raw == null ? undefined : String(raw).slice(0, 40), hold: s.cool - Date.now() }, s);
             return s.cool - Date.now();
         });
         if (o.log) o.log('warn', 'MusicBrainz gate: HTTP ' + status + (raw != null ? ' (Retry-After: ' + raw + ')' : '') + ' — every script holds ' + Math.round(hold / 100) / 10 + 's');
         return { throttled: true, hold };
     }
-    if (status >= 200 && status < 500) await mbnState(s => { if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1; });
+    if (status >= 200 && status < 500) await mbnState(s => { if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1; tr({}, s); });
+    else tr({});
     return { throttled: false, hold: 0 };
 }
 async function mbnFetch(url, init, o) {
@@ -2975,10 +3019,17 @@ async function mbnFetch(url, init, o) {
         return (await mbnReverify(url, init, o)) ? fetch(url, init) : r;
     }
     const t0 = Date.now(), give = attempt => o.tries ? attempt >= o.tries : o.background === false ? Date.now() - t0 > 45000 : attempt >= 4;
+    if (!o.label) {   // the Gate log names a request by what it asks for
+        let p = String(url);
+        try { const u = new URL(p, location.href); p = u.pathname.replace(/^\/ws\/2\//, '') + u.search.replace(/[?&]fmt=json\b/, '').replace(/^&/, '?'); } catch (e) {}
+        o = Object.assign({}, o, { label: p.slice(0, 120) });
+    }
     for (let attempt = 1; ; attempt++) {
         const slot = await mbnSlot(o);
         if (!slot.ok) return null;
-        const r = await mbnWsFetch(url, init);
+        let r;
+        try { r = await mbnWsFetch(url, init); }
+        catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
         const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
         if (!a.throttled || give(attempt)) return r;
     }
@@ -3081,6 +3132,7 @@ function mbnReverify(url, init, o) {
         let loads = 0, done = false;
         const finish = ok => {
             if (done) return; done = true; fr.remove(); g.busy = null;
+            mbnTrace({ e: 'check', ok: ok ? 1 : 0, w: Date.now() - t0 });
             if (ok) log('info', 'browser check passed in ' + (Date.now() - t0) + ' ms — retrying');
             else {
                 g.failedAt = Date.now();

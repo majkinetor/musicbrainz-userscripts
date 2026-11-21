@@ -17,6 +17,7 @@
 - **[Theme](#theme)**: light or dark, for MusicBrainz and every script.
 - **[Idle appearance](#idle-appearance)**: a theme and effect while the page is idle.
 - **[What's new](#whats-new)**: String Theory's icon turns golden when there is news.
+- **[Gate log](#gate-log)**: every request the scripts send to MusicBrainz, to tell its load from ours.
 - **[Command palette](#command-palette)**: Ctrl+K lists every command, filtered as you type.
 - **[Sync and backup](#sync-and-backup)**: sync devices with Dropbox, Google Drive or your own WebDAV server, save backups there, or export a file.
 - **[Automated mode](#automated-mode)**: scripts follow the requested task in worker pages.
@@ -76,6 +77,14 @@ String Theory checks the project's [announcements](https://github.com/majkinetor
 
 The window lists the latest 20 posts and loads older ones as you scroll to the end, each with its script's name and icon. A post shows **stable** when its change is released and **latest** when it isn't yet.
 
+## Gate log
+
+The scripts send their MusicBrainz requests through one shared queue, the gate. It spaces them out across all tabs, and when MusicBrainz answers 503 or 429, every script waits. Open **Gate log** from the [command palette](#command-palette) to see what goes through it.
+
+The top line shows the gate now: the wait after a 503 (**Hold**), how many 503s came in a row (**Hot**), how far ahead the queues are booked, and which page holds the lead. The next line counts the last minute in all tabs: requests started, answered, and refused with 503 or 429.
+
+The table lists the events of every tab, newest first, with the script and the request. Failed requests have a red background. An answer shows MusicBrainz's rate limit headers when it sends them: `search-shed` means that MusicBrainz sheds load for every user, not only for you. **This tab only** hides the other tabs, **Copy** copies it all as Markdown for an issue, and **Clear** deletes it. Each tab keeps its last 400 events.
+
 ## Command palette
 
 Press **Ctrl+K** on any page String Theory runs on and type to filter the commands:
@@ -94,7 +103,7 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 | Scripts                       | turn a script on or off                                          |
 | Search                        | a MusicBrainz search for what you type, see below                |
 | New issue, New issue with log | a new issue about String Theory or one script, see below         |
-| String Theory                 | copy versions, docs, reload                                      |
+| String Theory                 | copy versions, docs, reload, What's new, Gate log                |
 
 - **Your last input comes back** selected when you open the palette again: type to replace it.
 - **Theme commands show as you move over them** with the arrows; **Enter** keeps one, **Esc** goes back to yours.

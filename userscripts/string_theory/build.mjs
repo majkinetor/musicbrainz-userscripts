@@ -228,6 +228,7 @@ const SETTINGS = readFileSync(resolve(HERE, 'settings.js'), 'utf8').replace(/\r\
 const PALETTE = readFileSync(resolve(HERE, 'palette.js'), 'utf8').replace(/\r\n/g, '\n');   // #890
 const CSP_STYLES = readFileSync(resolve(HERE, 'csp-styles.js'), 'utf8').replace(/\r\n/g, '\n');   // #977
 const NEWS = readFileSync(resolve(HERE, 'news.js'), 'utf8').replace(/\r\n/g, '\n');   // #896
+const GATELOG = readFileSync(resolve(HERE, 'gatelog.js'), 'utf8').replace(/\r\n/g, '\n');   // gate log
 const SYNC_DATA = ['sync-data.js', 'sync-policy.js', 'sync-storage.js'].map(f => readFileSync(resolve(HERE, f), 'utf8').replace(/\r\n/g, '\n')).join('\n');
 const SYNC = ['providers.js', 'sync.js', 'sync-google.js', 'sync-webdav.js'].map(f => readFileSync(resolve(HERE, f), 'utf8').replace(/\r\n/g, '\n')).join('\n');
 const toggles = `var __stPlayerOnly = location.pathname === '/' && new URLSearchParams(location.search).get('eh-player-window') === '1';
@@ -266,6 +267,7 @@ var __stStarters = {};   // #851: per member folder, how String Theory's setting
   ${SETTINGS.replace(/\n/g, '\n  ').trimEnd()}
   ${PALETTE.replace(/\n/g, '\n  ').trimEnd()}
   ${NEWS.replace(/\n/g, '\n  ').trimEnd()}
+  ${GATELOG.replace(/\n/g, '\n  ').trimEnd()}
   stPalListen();
   var open = function () { try { stSettings(); } catch (e) { try { console.error('[String Theory] settings failed:', e); } catch (x) {} } };
   document.addEventListener('mbu-st-settings', open);
