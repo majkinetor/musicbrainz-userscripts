@@ -122,7 +122,7 @@ function stSyncStorageInit() {
   var origin = /^https:\/\/(?:musicbrainz\.org|(?:beta|test)\.musicbrainz\.org)$/.test(location.origin) ? location.origin : null;
   stSyncStorage = stSyncStore({
     origin: origin,
-    gm: { keys: function () { return GM_listValues(); }, get: function (k) { return GM_getValue(k); }, set: function (k, v) { GM_setValue(k, v); }, del: function (k) { GM_deleteValue(k); } },
+    gm: { keys: function () { return GM_listValues(); }, get: function (k) { return GM_getValue(k); }, set: function (k, v) { __stGuardNote(k); GM_setValue(k, v); }, del: function (k) { __stGuardNote(k); GM_deleteValue(k); } },
     local: { keys: function () { return Object.keys(localStorage); }, get: function (k) { var v = localStorage.getItem(k); return v === null ? undefined : v; }, set: function (k, v) { localStorage.setItem(k, String(v)); }, del: function (k) { localStorage.removeItem(k); } },
   });
   if (!origin || window.top !== window || /[?&]st-(?:dropbox|google)=callback(?:&|$)/.test(location.search || '')) return;
@@ -133,17 +133,42 @@ function stSyncStorageInit() {
 }
 // A member may keep a settings object alive in a second tab. Preserve remote changes to fields
 // that member hasn't edited, rather than saving its stale whole object over a newly synced value.
+// A read or a save must cost nothing more than the plain GM call: a change listener notes when
+// another writer changes a key, and only the next save of that key merges, against the value the
+// key had before that change (what this member last read or wrote).
+// sync's own writes in this tab are not remote: they tell every guard here before they write
+var __stGuards = [];
+function __stGuardNote(k) { if (!__stGuards.length) return; var old = GM_getValue(k); __stGuards.forEach(function (b) { if (!stSyncData.own(b, k)) b[k] = old; }); }
 function __stSyncGuard() {
-  var seen = Object.create(null), D = stSyncData;
-  var copy = function (v) { return v === undefined ? undefined : JSON.parse(JSON.stringify(v)); };
+  var D = stSyncData, allow = Object.create(null), listen = Object.create(null), base = Object.create(null);
+  __stGuards.push(base);
+  var ok = function (k) { return k in allow ? allow[k] : (allow[k] = stSyncAllow('gm', k, [])); };
+  var watch = function (k) {
+    if (listen[k]) return; listen[k] = true;
+    GM_addValueChangeListener(k, function (name, old, now, remote) {
+      if (!remote) return;   // this tab's write: the guard is for another tab's (#885)
+      if (!D.own(base, k)) base[k] = old;
+    });
+  };
+  if (typeof GM_addValueChangeListener !== 'function') {
+    // no change events: the old way, a copy on each read and a merge on each save
+    var seen = Object.create(null), copy = function (v) { return v === undefined ? undefined : JSON.parse(JSON.stringify(v)); };
+    watch = function (k) { if (!D.own(seen, k)) seen[k] = copy(GM_getValue(k)); };
+    var oldSet = function (k) { if (D.own(seen, k)) base[k] = seen[k]; };
+  }
   return {
-    get: function (k, def) { var v = GM_getValue(k); if (stSyncAllow('gm', k, [])) seen[k] = copy(v); return v === undefined ? def : v; },
+    get: function (k, def) { var v = GM_getValue(k); if (ok(k)) { if (seen) seen[k] = copy(v); else watch(k); } return v === undefined ? def : v; },
     set: function (k, v) {
-      if (stSyncAllow('gm', k, []) && D.own(seen, k)) {
-        var b = D.decode(seen[k]), l = D.decode(v), r = D.decode(GM_getValue(k));
-        v = D.encode({ encoding: l.encoding, value: D.merge(b.value, l.value, r.value, 'local', function (p) { return k === 'view' && p.join('.') === 'stars' ? 'key' : null; }) });
+      if (ok(k)) {
+        if (seen) oldSet(k); else watch(k);
+        if (D.own(base, k)) {
+          var b = D.decode(base[k]), l = D.decode(v), r = D.decode(GM_getValue(k));
+          v = D.encode({ encoding: l.encoding, value: D.merge(b.value, l.value, r.value, 'local', function (p) { return k === 'view' && p.join('.') === 'stars' ? 'key' : null; }) });
+          delete base[k];
+        }
       }
-      GM_setValue(k, v); if (stSyncAllow('gm', k, [])) seen[k] = copy(v);
+      GM_setValue(k, v);
+      if (seen && ok(k)) seen[k] = copy(v);
     },
   };
 }
