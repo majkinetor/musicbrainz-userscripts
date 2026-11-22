@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.210002
+// @version      2026.11.22.214202
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -2896,12 +2896,33 @@ function mbnSleep(ms, cancelled) {
     });
 }
 function mbnRid() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 6); }
+function mbnTabId() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5); }
+function mbnTabCheck(g) {
+    try {
+        if (window.top !== window || typeof BroadcastChannel === 'undefined') return;
+        const root = document.documentElement, at = 'data-mbn-doc';
+        const doc = root.getAttribute(at) || (root.setAttribute(at, mbnTabId()), root.getAttribute(at));
+        const asked = g.tab, bc = new BroadcastChannel(MBN_KEY + '-tab');
+        bc.onmessage = m => {
+            const d = m.data || {};
+            if (d.doc === doc) return;
+            let now = '';
+            try { now = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
+            if (d.q) { if (d.tab === (now || g.tab)) bc.postMessage({ tab: d.tab, doc }); return; }   // the id this page has now
+            if (d.tab !== asked || g.tab !== asked) return;   // not our question, or this copy has already moved on
+            if (!now || now === asked) { now = mbnTabId(); try { sessionStorage.setItem(MBN_KEY + '-tab', now); } catch (e) {} }
+            g.tab = now;   // another copy in this page may have renamed it already: then take its new id
+        };
+        bc.postMessage({ q: 1, tab: asked, doc });
+    } catch (e) { /* no channel: the id stays shared */ }
+}
 function mbnTrace(ev) {
     try {
         const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', swept: 0 });
         if (!g.tab) {
             try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
-            if (!g.tab) { g.tab = Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5); try { sessionStorage.setItem(MBN_KEY + '-tab', g.tab); } catch (e) {} }
+            if (!g.tab) { g.tab = mbnTabId(); try { sessionStorage.setItem(MBN_KEY + '-tab', g.tab); } catch (e) {} }
+            mbnTabCheck(g);
         }
         if (!g.buf) g.buf = [];
         if (!g.flush) {
@@ -2910,6 +2931,9 @@ function mbnTrace(ev) {
                     clearTimeout(g.timer); g.timer = 0;
                     if (!g.buf.length) return;
                     const add = g.buf; g.buf = [];
+                    // the tab's id as it is now: a renamed duplicate (mbnTabCheck) renames every copy of the gate in it,
+                    // and the frames it holds, which share its sessionStorage
+                    try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || g.tab; } catch (e) {}
                     const pre = MBN_KEY + '-trace:', key = pre + g.tab, now = Date.now();
                     let list = [];
                     try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}

@@ -224,12 +224,40 @@ export function mbnSleep(ms, cancelled) {
  */
 export function mbnRid() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 6); }
 
+function mbnTabId() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5); }
+
+// A tab's id lives in sessionStorage, and a browser copies that into a duplicated tab and into a tab a page opens
+// (a link with a target, window.open), so two tabs would log as one and the Gate log's "this tab" would show both.
+// A new top-level page asks the other tabs whether its id is taken; if one answers, this page takes a new id. A frame
+// never asks: it is part of its tab, and shares the tab's sessionStorage and id. Every copy of the gate in one
+// document (standalone scripts each have their own) shares the document's mark, so they don't answer each other.
+function mbnTabCheck(g) {
+    try {
+        if (window.top !== window || typeof BroadcastChannel === 'undefined') return;
+        const root = document.documentElement, at = 'data-mbn-doc';
+        const doc = root.getAttribute(at) || (root.setAttribute(at, mbnTabId()), root.getAttribute(at));
+        const asked = g.tab, bc = new BroadcastChannel(MBN_KEY + '-tab');
+        bc.onmessage = m => {
+            const d = m.data || {};
+            if (d.doc === doc) return;
+            let now = '';
+            try { now = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
+            if (d.q) { if (d.tab === (now || g.tab)) bc.postMessage({ tab: d.tab, doc }); return; }   // the id this page has now
+            if (d.tab !== asked || g.tab !== asked) return;   // not our question, or this copy has already moved on
+            if (!now || now === asked) { now = mbnTabId(); try { sessionStorage.setItem(MBN_KEY + '-tab', now); } catch (e) {} }
+            g.tab = now;   // another copy in this page may have renamed it already: then take its new id
+        };
+        bc.postMessage({ q: 1, tab: asked, doc });
+    } catch (e) { /* no channel: the id stays shared */ }
+}
+
 export function mbnTrace(ev) {
     try {
         const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', swept: 0 });
         if (!g.tab) {
             try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
-            if (!g.tab) { g.tab = Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5); try { sessionStorage.setItem(MBN_KEY + '-tab', g.tab); } catch (e) {} }
+            if (!g.tab) { g.tab = mbnTabId(); try { sessionStorage.setItem(MBN_KEY + '-tab', g.tab); } catch (e) {} }
+            mbnTabCheck(g);
         }
         if (!g.buf) g.buf = [];
         if (!g.flush) {
@@ -238,6 +266,9 @@ export function mbnTrace(ev) {
                     clearTimeout(g.timer); g.timer = 0;
                     if (!g.buf.length) return;
                     const add = g.buf; g.buf = [];
+                    // the tab's id as it is now: a renamed duplicate (mbnTabCheck) renames every copy of the gate in it,
+                    // and the frames it holds, which share its sessionStorage
+                    try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || g.tab; } catch (e) {}
                     const pre = MBN_KEY + '-trace:', key = pre + g.tab, now = Date.now();
                     let list = [];
                     try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}
@@ -853,5 +884,5 @@ export function mbnReverify(url, init, o) {
 /** What sync-gate.mjs inlines, in order. */
 export const MBN_INLINE = {
     consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_LOCK_HOLD, MBN_MAX_HOLD, MBN_MAX_LEAD, MBN_TRACE_MAX, MBN_MERGE_WAIT, MBN_CACHE_TTL, MBN_CACHE_MAX, MBN_INC_ALONE },
-    fns: [mbnGated, mbnState, mbnSleep, mbnRid, mbnTrace, mbnSlot, mbnLead, mbnAnswer, mbnFetch, mbnEdited, mbnEditEpoch, mbnCacheUrl, mbnCacheGet, mbnCachePut, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
+    fns: [mbnGated, mbnState, mbnSleep, mbnRid, mbnTabId, mbnTabCheck, mbnTrace, mbnSlot, mbnLead, mbnAnswer, mbnFetch, mbnEdited, mbnEditEpoch, mbnCacheUrl, mbnCacheGet, mbnCachePut, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
 };

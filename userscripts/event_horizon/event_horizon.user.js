@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.211500
+// @version      2026.11.22.214202
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -280,12 +280,33 @@ function mbnSleep(ms, cancelled) {
     });
 }
 function mbnRid() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 6); }
+function mbnTabId() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5); }
+function mbnTabCheck(g) {
+    try {
+        if (window.top !== window || typeof BroadcastChannel === 'undefined') return;
+        const root = document.documentElement, at = 'data-mbn-doc';
+        const doc = root.getAttribute(at) || (root.setAttribute(at, mbnTabId()), root.getAttribute(at));
+        const asked = g.tab, bc = new BroadcastChannel(MBN_KEY + '-tab');
+        bc.onmessage = m => {
+            const d = m.data || {};
+            if (d.doc === doc) return;
+            let now = '';
+            try { now = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
+            if (d.q) { if (d.tab === (now || g.tab)) bc.postMessage({ tab: d.tab, doc }); return; }   // the id this page has now
+            if (d.tab !== asked || g.tab !== asked) return;   // not our question, or this copy has already moved on
+            if (!now || now === asked) { now = mbnTabId(); try { sessionStorage.setItem(MBN_KEY + '-tab', now); } catch (e) {} }
+            g.tab = now;   // another copy in this page may have renamed it already: then take its new id
+        };
+        bc.postMessage({ q: 1, tab: asked, doc });
+    } catch (e) { /* no channel: the id stays shared */ }
+}
 function mbnTrace(ev) {
     try {
         const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', swept: 0 });
         if (!g.tab) {
             try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
-            if (!g.tab) { g.tab = Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5); try { sessionStorage.setItem(MBN_KEY + '-tab', g.tab); } catch (e) {} }
+            if (!g.tab) { g.tab = mbnTabId(); try { sessionStorage.setItem(MBN_KEY + '-tab', g.tab); } catch (e) {} }
+            mbnTabCheck(g);
         }
         if (!g.buf) g.buf = [];
         if (!g.flush) {
@@ -294,6 +315,9 @@ function mbnTrace(ev) {
                     clearTimeout(g.timer); g.timer = 0;
                     if (!g.buf.length) return;
                     const add = g.buf; g.buf = [];
+                    // the tab's id as it is now: a renamed duplicate (mbnTabCheck) renames every copy of the gate in it,
+                    // and the frames it holds, which share its sessionStorage
+                    try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || g.tab; } catch (e) {}
                     const pre = MBN_KEY + '-trace:', key = pre + g.tab, now = Date.now();
                     let list = [];
                     try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}
@@ -4948,10 +4972,15 @@ const MBID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 // every fetch leaves a debug line: what, how it answered, how long it took
 const fetchLog = (what, t0, r, e, L = LOG) => L.debug(`Fetch ${what}: ${e ? 'failed, ' + (e.message || e) : r ? r.status : 'cancelled'} in ${Math.round(performance.now() - t0)} ms`);
 // the page being drawn in this tab leads the shared gate (#847): other scripts' and tabs' background requests wait
-// for it; a tab the reader isn't looking at doesn't lead, and a lead not renewed lapses on its own
+// for it; a tab the reader isn't looking at doesn't lead, and a lead not renewed lapses on its own. Only the window the
+// reader works in leads: a frame (a Falcon worker, a same-origin embed) reports itself visible whenever its page is, and
+// a second window of a duplicated tab is visible beside the first, so each would take the one lead from the other
+// (seen in a gate log: eight EH leads swapped in three seconds, and EH waiting 7.8 s on its own tab's lead).
+const EH_TOP = (() => { try { return window.top === window; } catch (e) { return false; } })();
+const ehMayLead = () => EH_TOP && document.visibilityState === 'visible' && document.hasFocus();
 let ehLead = '';
 function leadOn() {
-    ehLead = document.visibilityState === 'visible' ? 'eh' + Math.random().toString(36).slice(2) : '';
+    ehLead = ehMayLead() ? 'eh' + Math.random().toString(36).slice(2) : '';
     if (ehLead) mbnLead(ehLead, 8000).catch(() => {});
     return ehLead;
 }
@@ -4961,7 +4990,8 @@ function leadOff(t) { if (!t) return; if (ehLead === t) ehLead = ''; mbnLead(t, 
 async function wsText(path, bg, L) {
     // the page's own request goes ahead of the queued background ones; a gate wait is logged, so a page that hangs says why
     const t0 = performance.now(), lead = bg ? '' : ehLead, mine = showing;
-    if (lead) mbnLead(lead, 8000).catch(() => {});
+    // a window the reader left stops renewing, so its lead lapses instead of holding the others back
+    if (lead && ehMayLead()) mbnLead(lead, 8000).catch(() => {});
     // a page's lookup that MusicBrainz keeps throttling says so on the loading page, with a Stop (wsStopped)
     const stopped = () => wsStopped >= mine;
     let r;
@@ -18740,7 +18770,7 @@ async function show(key, o = {}) {
         const pre = early && early.key === key ? early : null;
     early = null;
     if (pre) { pre.done.forEach(step); pre.on = step; }
-    const used = pre ? pre.used : (kpUsed = new Map()), lead = pre ? pre.lead : o.quiet ? '' : leadOn();
+    const used = pre ? pre.used : (kpUsed = new Map()), lead = pre ? (ehLead = pre.lead) : o.quiet ? '' : leadOn();   // a prefetched page's own lead, so its end releases the lead its requests renewed
     document.documentElement.setAttribute('data-eh-checking', '');
     const d = await (pre ? pre.p : LOADERS[kind](id, step));
         d.id = id;

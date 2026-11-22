@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.193202
+// @version      2026.11.22.214202
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -228,12 +228,33 @@ function mbnSleep(ms, cancelled) {
     });
 }
 function mbnRid() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 6); }
+function mbnTabId() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5); }
+function mbnTabCheck(g) {
+    try {
+        if (window.top !== window || typeof BroadcastChannel === 'undefined') return;
+        const root = document.documentElement, at = 'data-mbn-doc';
+        const doc = root.getAttribute(at) || (root.setAttribute(at, mbnTabId()), root.getAttribute(at));
+        const asked = g.tab, bc = new BroadcastChannel(MBN_KEY + '-tab');
+        bc.onmessage = m => {
+            const d = m.data || {};
+            if (d.doc === doc) return;
+            let now = '';
+            try { now = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
+            if (d.q) { if (d.tab === (now || g.tab)) bc.postMessage({ tab: d.tab, doc }); return; }   // the id this page has now
+            if (d.tab !== asked || g.tab !== asked) return;   // not our question, or this copy has already moved on
+            if (!now || now === asked) { now = mbnTabId(); try { sessionStorage.setItem(MBN_KEY + '-tab', now); } catch (e) {} }
+            g.tab = now;   // another copy in this page may have renamed it already: then take its new id
+        };
+        bc.postMessage({ q: 1, tab: asked, doc });
+    } catch (e) { /* no channel: the id stays shared */ }
+}
 function mbnTrace(ev) {
     try {
         const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', swept: 0 });
         if (!g.tab) {
             try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
-            if (!g.tab) { g.tab = Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5); try { sessionStorage.setItem(MBN_KEY + '-tab', g.tab); } catch (e) {} }
+            if (!g.tab) { g.tab = mbnTabId(); try { sessionStorage.setItem(MBN_KEY + '-tab', g.tab); } catch (e) {} }
+            mbnTabCheck(g);
         }
         if (!g.buf) g.buf = [];
         if (!g.flush) {
@@ -242,6 +263,9 @@ function mbnTrace(ev) {
                     clearTimeout(g.timer); g.timer = 0;
                     if (!g.buf.length) return;
                     const add = g.buf; g.buf = [];
+                    // the tab's id as it is now: a renamed duplicate (mbnTabCheck) renames every copy of the gate in it,
+                    // and the frames it holds, which share its sessionStorage
+                    try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || g.tab; } catch (e) {}
                     const pre = MBN_KEY + '-trace:', key = pre + g.tab, now = Date.now();
                     let list = [];
                     try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.193202
+// @version      2026.11.22.214202
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -222,12 +222,33 @@
       });
   }
   function mbnRid() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 6); }
+  function mbnTabId() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5); }
+  function mbnTabCheck(g) {
+      try {
+          if (window.top !== window || typeof BroadcastChannel === 'undefined') return;
+          const root = document.documentElement, at = 'data-mbn-doc';
+          const doc = root.getAttribute(at) || (root.setAttribute(at, mbnTabId()), root.getAttribute(at));
+          const asked = g.tab, bc = new BroadcastChannel(MBN_KEY + '-tab');
+          bc.onmessage = m => {
+              const d = m.data || {};
+              if (d.doc === doc) return;
+              let now = '';
+              try { now = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
+              if (d.q) { if (d.tab === (now || g.tab)) bc.postMessage({ tab: d.tab, doc }); return; }   // the id this page has now
+              if (d.tab !== asked || g.tab !== asked) return;   // not our question, or this copy has already moved on
+              if (!now || now === asked) { now = mbnTabId(); try { sessionStorage.setItem(MBN_KEY + '-tab', now); } catch (e) {} }
+              g.tab = now;   // another copy in this page may have renamed it already: then take its new id
+          };
+          bc.postMessage({ q: 1, tab: asked, doc });
+      } catch (e) { /* no channel: the id stays shared */ }
+  }
   function mbnTrace(ev) {
       try {
           const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', swept: 0 });
           if (!g.tab) {
               try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
-              if (!g.tab) { g.tab = Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5); try { sessionStorage.setItem(MBN_KEY + '-tab', g.tab); } catch (e) {} }
+              if (!g.tab) { g.tab = mbnTabId(); try { sessionStorage.setItem(MBN_KEY + '-tab', g.tab); } catch (e) {} }
+              mbnTabCheck(g);
           }
           if (!g.buf) g.buf = [];
           if (!g.flush) {
@@ -236,6 +257,9 @@
                       clearTimeout(g.timer); g.timer = 0;
                       if (!g.buf.length) return;
                       const add = g.buf; g.buf = [];
+                      // the tab's id as it is now: a renamed duplicate (mbnTabCheck) renames every copy of the gate in it,
+                      // and the frames it holds, which share its sessionStorage
+                      try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || g.tab; } catch (e) {}
                       const pre = MBN_KEY + '-trace:', key = pre + g.tab, now = Date.now();
                       let list = [];
                       try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}

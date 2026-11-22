@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.212602
+// @version      2026.11.22.214202
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -172,12 +172,33 @@
       });
   }
   function mbnRid() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 6); }
+  function mbnTabId() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5); }
+  function mbnTabCheck(g) {
+      try {
+          if (window.top !== window || typeof BroadcastChannel === 'undefined') return;
+          const root = document.documentElement, at = 'data-mbn-doc';
+          const doc = root.getAttribute(at) || (root.setAttribute(at, mbnTabId()), root.getAttribute(at));
+          const asked = g.tab, bc = new BroadcastChannel(MBN_KEY + '-tab');
+          bc.onmessage = m => {
+              const d = m.data || {};
+              if (d.doc === doc) return;
+              let now = '';
+              try { now = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
+              if (d.q) { if (d.tab === (now || g.tab)) bc.postMessage({ tab: d.tab, doc }); return; }   // the id this page has now
+              if (d.tab !== asked || g.tab !== asked) return;   // not our question, or this copy has already moved on
+              if (!now || now === asked) { now = mbnTabId(); try { sessionStorage.setItem(MBN_KEY + '-tab', now); } catch (e) {} }
+              g.tab = now;   // another copy in this page may have renamed it already: then take its new id
+          };
+          bc.postMessage({ q: 1, tab: asked, doc });
+      } catch (e) { /* no channel: the id stays shared */ }
+  }
   function mbnTrace(ev) {
       try {
           const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', swept: 0 });
           if (!g.tab) {
               try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
-              if (!g.tab) { g.tab = Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5); try { sessionStorage.setItem(MBN_KEY + '-tab', g.tab); } catch (e) {} }
+              if (!g.tab) { g.tab = mbnTabId(); try { sessionStorage.setItem(MBN_KEY + '-tab', g.tab); } catch (e) {} }
+              mbnTabCheck(g);
           }
           if (!g.buf) g.buf = [];
           if (!g.flush) {
@@ -186,6 +207,9 @@
                       clearTimeout(g.timer); g.timer = 0;
                       if (!g.buf.length) return;
                       const add = g.buf; g.buf = [];
+                      // the tab's id as it is now: a renamed duplicate (mbnTabCheck) renames every copy of the gate in it,
+                      // and the frames it holds, which share its sessionStorage
+                      try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || g.tab; } catch (e) {}
                       const pre = MBN_KEY + '-trace:', key = pre + g.tab, now = Date.now();
                       let list = [];
                       try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}
