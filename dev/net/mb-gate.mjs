@@ -34,8 +34,9 @@
 
 /** Between request starts, sustained: two a second. MusicBrainz publishes one a second per IP, but
  *  its 503s come from its own load (X-RateLimit-Who: global), whatever our pace: one a second still
- *  drew them, and Credit Hoarder's four at a time finished a preflight in 52 s, not 173 s (#1095). */
-export const MBN_GAP = 500;
+ *  drew them, and Credit Hoarder's four at a time finished a preflight in 52 s, not 173 s (#1095). Two a second through the gate was
+ *  still slower than its own four in flight: eight a second keeps up with them. */
+export const MBN_GAP = 125;
 /** Requests that may start back to back after a quiet spell. */
 export const MBN_BURST = 4;
 /** The shared schedule, in the origin's localStorage. */
@@ -397,7 +398,7 @@ export async function mbnSlot(o) {
                 if ((s.last || 0) > now) s.last += MBN_GAP;
                 s.last = Math.max(s.last || 0, at);
                 if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: 1, head: 1 });
-                return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, two requests a second', slip: s.slip || 0, bslip: s.bslip };
+                return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, eight requests a second', slip: s.slip || 0, bslip: s.bslip };
             }
             s.last = Math.max(s.last || 0, at);
         } else {
@@ -409,7 +410,7 @@ export async function mbnSlot(o) {
             s.last = Math.max(s.last || 0, at);
         }
         s.tat = Math.max(tat, at) + MBN_GAP;
-        const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, two requests a second';
+        const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, eight requests a second';
         if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
         return { at, why, slip: s.slip || 0, bslip: s.bslip || 0 };
     });

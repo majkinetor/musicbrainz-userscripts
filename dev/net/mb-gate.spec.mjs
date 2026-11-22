@@ -165,8 +165,8 @@ test('the gate paces starts, a burst first, then one a second', { tag: ['@unit']
   check(mbnGated('//musicbrainz.org/ws/2/artist/x') && mbnGated('//test.musicbrainz.org/ws/2/x') && !mbnGated('//example.org/ws/2/x'), '…protocol-relative too (Credit Hoarder)');
 });
 
-// #1095: the shipped pace, with the real constants: a burst of four, then two a second
-test('the shipped pace is a burst of four, then two a second', { tag: ['@unit'] }, async ({ context }) => {
+// #1095: the shipped pace, with the real constants: a burst of four, then eight a second
+test('the shipped pace is a burst of four, then eight a second', { tag: ['@unit'] }, async ({ context }) => {
   const a = await context.newPage();
   await a.goto(ORIGIN + '/');
   await a.addScriptTag({ content: GATE.replace(/^const MBN_GAP = .*$/m, 'const MBN_GAP = ' + MBN_INLINE.consts.MBN_GAP + ';').replace(/^const MBN_BURST = .*$/m, 'const MBN_BURST = ' + MBN_INLINE.consts.MBN_BURST + ';') });
@@ -177,8 +177,9 @@ test('the shipped pace is a burst of four, then two a second', { tag: ['@unit'] 
     return window.__starts.map(t => t - t0).sort((x, y) => x - y);
   });
   check(starts[3] - starts[0] < 300, `the first four start at once (${starts.join(', ')} ms)`);
-  const gaps = starts.slice(4).map((t, i) => t - starts[i + 3]);
-  check(gaps.every(g => g >= 400 && g <= 900), `then half a second apart (${gaps.join(', ')} ms)`);
+  check(starts[4] - starts[0] >= 90, `the fifth waits its turn (${starts.join(', ')} ms)`);
+  const gaps = starts.slice(5).map((t, i) => t - starts[i + 4]);
+  check(gaps.every(g => g >= 90 && g <= 400), `then an eighth of a second apart (${gaps.join(', ')} ms)`);
 });
 
 // #1095: a single request after a quiet spell drew "X-RateLimit-Who: global", and the next one went
