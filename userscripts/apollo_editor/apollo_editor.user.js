@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.192224
+// @version      2026.11.22.193202
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -460,6 +460,8 @@
       // one id for the request and its retries, so the Gate log keeps it apart from a twin
       if (!o.id) o = Object.assign({}, o, { id: mbnRid() });
       // `at` gives the URL at the moment the request leaves: a queued read's inc list can still grow
+      // set below for a cacheable read: before a retry, a twin's answer that came back in the meantime
+      let peek = null;
       const go = async at => {
           for (let attempt = 1; ; attempt++) {
               const slot = await mbnSlot(o);
@@ -479,6 +481,9 @@
               // a background search MusicBrainz sheds twice is given up: searches are what it drops when busy
               const shed = a.shed && o.background !== false && attempt >= 2;
               if (give(attempt) || shed) { mbnTrace({ e: 'giveup', l: o.label, b: o.background === false ? 0 : 1, id: o.id, st: r.status, n: attempt }); return r; }
+              // log: a twin sent apart from this one got its 200 while this one waited: no retry
+              const hit = peek && await peek();
+              if (hit) { mbnTrace({ e: 'cache', l: o.label, b: o.background === false ? 0 : 1, w: Math.round((Date.now() - hit.at) / 1000) }); return hit.r; }
           }
       };
       // Reads of the same thing share one fetch, and each caller gets its own clone of the answer.
@@ -517,6 +522,7 @@
       // #1098: a recent answer for the same thing, when no edit went out since
       const cacheable = !o.fresh && !(init && init.credentials && init.credentials !== 'omit') && !base.searchParams.has('query') && (lookup || fits({ inc: new Set() }));
       let looked = !cacheable;
+      if (cacheable) peek = () => mbnCacheGet(key, want);
       for (;;) {
           const runs = live.get(key) || [];
           let run = runs.find(x => covers(x) && answers(x) && ahead(x)), how = 'join';

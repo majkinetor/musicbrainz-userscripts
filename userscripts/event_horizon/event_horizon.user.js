@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.192224
+// @version      2026.11.22.193202
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -518,6 +518,8 @@ async function mbnFetch(url, init, o) {
     // one id for the request and its retries, so the Gate log keeps it apart from a twin
     if (!o.id) o = Object.assign({}, o, { id: mbnRid() });
     // `at` gives the URL at the moment the request leaves: a queued read's inc list can still grow
+    // set below for a cacheable read: before a retry, a twin's answer that came back in the meantime
+    let peek = null;
     const go = async at => {
         for (let attempt = 1; ; attempt++) {
             const slot = await mbnSlot(o);
@@ -537,6 +539,9 @@ async function mbnFetch(url, init, o) {
             // a background search MusicBrainz sheds twice is given up: searches are what it drops when busy
             const shed = a.shed && o.background !== false && attempt >= 2;
             if (give(attempt) || shed) { mbnTrace({ e: 'giveup', l: o.label, b: o.background === false ? 0 : 1, id: o.id, st: r.status, n: attempt }); return r; }
+            // log: a twin sent apart from this one got its 200 while this one waited: no retry
+            const hit = peek && await peek();
+            if (hit) { mbnTrace({ e: 'cache', l: o.label, b: o.background === false ? 0 : 1, w: Math.round((Date.now() - hit.at) / 1000) }); return hit.r; }
         }
     };
     // Reads of the same thing share one fetch, and each caller gets its own clone of the answer.
@@ -575,6 +580,7 @@ async function mbnFetch(url, init, o) {
     // #1098: a recent answer for the same thing, when no edit went out since
     const cacheable = !o.fresh && !(init && init.credentials && init.credentials !== 'omit') && !base.searchParams.has('query') && (lookup || fits({ inc: new Set() }));
     let looked = !cacheable;
+    if (cacheable) peek = () => mbnCacheGet(key, want);
     for (;;) {
         const runs = live.get(key) || [];
         let run = runs.find(x => covers(x) && answers(x) && ahead(x)), how = 'join';

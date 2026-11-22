@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.192224
+// @version      2026.11.22.193202
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -466,6 +466,8 @@ async function mbnFetch(url, init, o) {
     // one id for the request and its retries, so the Gate log keeps it apart from a twin
     if (!o.id) o = Object.assign({}, o, { id: mbnRid() });
     // `at` gives the URL at the moment the request leaves: a queued read's inc list can still grow
+    // set below for a cacheable read: before a retry, a twin's answer that came back in the meantime
+    let peek = null;
     const go = async at => {
         for (let attempt = 1; ; attempt++) {
             const slot = await mbnSlot(o);
@@ -485,6 +487,9 @@ async function mbnFetch(url, init, o) {
             // a background search MusicBrainz sheds twice is given up: searches are what it drops when busy
             const shed = a.shed && o.background !== false && attempt >= 2;
             if (give(attempt) || shed) { mbnTrace({ e: 'giveup', l: o.label, b: o.background === false ? 0 : 1, id: o.id, st: r.status, n: attempt }); return r; }
+            // log: a twin sent apart from this one got its 200 while this one waited: no retry
+            const hit = peek && await peek();
+            if (hit) { mbnTrace({ e: 'cache', l: o.label, b: o.background === false ? 0 : 1, w: Math.round((Date.now() - hit.at) / 1000) }); return hit.r; }
         }
     };
     // Reads of the same thing share one fetch, and each caller gets its own clone of the answer.
@@ -523,6 +528,7 @@ async function mbnFetch(url, init, o) {
     // #1098: a recent answer for the same thing, when no edit went out since
     const cacheable = !o.fresh && !(init && init.credentials && init.credentials !== 'omit') && !base.searchParams.has('query') && (lookup || fits({ inc: new Set() }));
     let looked = !cacheable;
+    if (cacheable) peek = () => mbnCacheGet(key, want);
     for (;;) {
         const runs = live.get(key) || [];
         let run = runs.find(x => covers(x) && answers(x) && ahead(x)), how = 'join';
