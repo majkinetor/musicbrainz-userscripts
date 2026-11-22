@@ -213,9 +213,9 @@ export function mbnTrace(ev) {
         localStorage.setItem(key, JSON.stringify(list));
         if (now - g.swept > 60000) {   // once a minute: drop the traces of tabs gone quiet for an hour
             g.swept = now;
-            for (let i = localStorage.length - 1; i >= 0; i--) {
-                const k = localStorage.key(i);
-                if (!k || k.indexOf(pre) !== 0 || k === key) continue;
+            // one pass over the names: in Firefox each localStorage.key(i) walks the store from its start
+            for (const k of Object.keys(localStorage)) {
+                if (k.indexOf(pre) !== 0 || k === key) continue;
                 let last = 0;
                 try { const l = JSON.parse(localStorage.getItem(k) || '[]'); last = (l[l.length - 1] || {}).t || 0; } catch (e) {}
                 if (now - last > 3600000) localStorage.removeItem(k);
