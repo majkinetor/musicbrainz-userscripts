@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.22.193202
+// @version      2026.11.22.211316
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -5282,7 +5282,7 @@ appendLog('System', mbuStartupInfo('Platform Check') + ' — startup');
 
 // ─── GM_xmlhttpRequest wrapper that returns a Promise ──────────────────────
 // MusicBrainz's /ws/2 goes through the shared request gate (#633): its slot first, and its
-// hold after a 429/503 (one retry, which waits the hold out); everything else goes straight.
+// hold after a 429/503 (retried up to the gate's normal limit, each waiting the hold out); everything else goes straight.
 const pcGateLog = (lv, m) => appendLog('MusicBrainz', m, lv === 'warn' ? 'warn' : undefined);
 // A cancelled scan (#674: a barcode picked or pasted mid-scan) is dropped where it waits: every
 // request it has in flight is aborted and never answers, so the scan's code never runs on to
@@ -5311,14 +5311,14 @@ function pcGmRequest(opts, resolve, n) {
     if (n != null && req && req.abort) PC_SCAN.live.add(req);
 }
 // a MusicBrainz read goes through the gate's fetch: it shares a read already out (any member's)
-// and a recent answer from the gate's cache, and retries a 429/503 once
+// and a recent answer from the gate's cache, and retries a 429/503 up to the gate's normal limit (4 tries)
 async function gmGet(url, o) {
     if (!mbnGated(url)) return gmGetRaw(url, o);
     const n = o && 'scan' in o ? o.scan : pcScanOf();   // { scan: null }: not a scan's, never dropped
     const label = '/ws/2/' + url.split('/ws/2/').pop(), t0 = Date.now();
     const fail = error => ({ ok: false, status: 0, finalUrl: url, responseText: '', error, ms: Date.now() - t0 });
     let r;
-    try { r = await mbnFetch(url, { headers: { Accept: 'application/json', ...((o && o.headers) || {}) } }, { label, log: pcGateLog, tries: 2, cancelled: n == null ? undefined : () => pcStale(n) }); }
+    try { r = await mbnFetch(url, { headers: { Accept: 'application/json', ...((o && o.headers) || {}) } }, { label, log: pcGateLog, cancelled: n == null ? undefined : () => pcStale(n) }); }
     catch (e) { return fail(String((e && e.message) || e)); }
     if (!r) return new Promise(() => {});   // a cancelled scan's read never answers, as before
     let text = '';
