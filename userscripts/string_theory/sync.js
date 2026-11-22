@@ -172,7 +172,7 @@ async function stBackupRun(mode, entry) {
     } else if (mode === 'apply') {
       var incoming = (await drive.readBackup(entry)).data;
       stSyncImport(incoming); stBackupBrowse(document.getElementById('st-p-s'), false);
-      stBackupNotice = 'Imported. Reload to apply the changes.';
+      stBackupNotice = 'Imported. Reload to see the changes.';
     } else if (mode === 'delete') {
       await drive.deleteBackup(entry);
       stBackupEntries = (stBackupEntries || []).filter(function (item) { return item.id !== entry.id; });
@@ -187,6 +187,9 @@ async function stBackupRun(mode, entry) {
 function stSyncImport(incoming) {
   // Partial imports preserve data absent from the file; incoming values win shared fields.
   stSyncStorage.stage(stSyncStorage.merge(undefined, stSyncStorage.effective(), incoming, 'remote'));
+  // #1095: applied here and now, not by the next page load; the GM guard keeps running members'
+  // stale saves from undoing it
+  stSyncStorage.applyPending();
 }
 function stBackupBrowse(panel, open) {
   if (!panel) return;
@@ -377,10 +380,11 @@ async function stSyncRun(manual, mode) {
         // A user may have changed settings during the request; keep those edits for the next run.
         var after = stSyncStorage.effective();
         var pending = stSyncStorage.merge(local, after, merged, 'local');
-        if (mode !== 'push' && stSyncData.stable(pending) !== stSyncData.stable(after)) stSyncStorage.stage(pending);
+        var applied = false;
+        if (mode !== 'push' && stSyncData.stable(pending) !== stSyncData.stable(after)) { stSyncStorage.stage(pending); applied = stSyncStorage.applyPending(); }
         GM_setValue(stSyncKey('base', provider), merged);
         stSyncState({ at: Date.now(), next: Date.now() + settings.minutes * 60e3, error: '', notice: '', failures: 0, conflicts: conflicts.length }, provider);
-        if (manual) stUI().mbuToast(stSyncStorage.pending() ? (mode === 'pull' ? 'Pulled from ' + name + '.' : 'Synced.') + ' Reload to apply downloaded changes.' : mode === 'push' ? 'Pushed to ' + name : mode === 'pull' ? 'Pulled from ' + name : remote.data ? 'Synced with ' + name : 'Created the first ' + name + ' backup');
+        if (manual) stUI().mbuToast(applied ? (mode === 'pull' ? 'Pulled from ' + name + '.' : 'Synced.') + ' Reload to see downloaded changes.' : mode === 'push' ? 'Pushed to ' + name : mode === 'pull' ? 'Pulled from ' + name : remote.data ? 'Synced with ' + name : 'Created the first ' + name + ' backup');
         return;
       }
     } catch (e) {
@@ -414,7 +418,9 @@ function stSyncSchedule() {
   stSyncTimer = null;
   if ((typeof __stSyncCallbackOnly !== 'undefined' && __stSyncCallbackOnly) || !ST_ON_MB || !stSyncSettings().automatic || !stSyncConnected()) return;
   stSyncTimer = setInterval(function () { stSyncRun(false).catch(function () {}); }, 60000);
-  stSyncRun(false).catch(function () {});
+  // #1095: a due sync waits for the page to go idle, not its load
+  var first = function () { stSyncRun(false).catch(function () {}); };
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(first, { timeout: 10000 }); else setTimeout(first, 3000);
 }
 function stSyncDownload(doc, name) {
   var url = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' }));
@@ -510,7 +516,7 @@ function stSyncBind(panel) {
     if (file.size > 10 * 1024 * 1024) throw new Error('Backup exceeds 10 MB');
     var incoming = stSyncStorage.read(await file.text());
     stSyncImport(incoming);
-    q('file').value = ''; stUI().mbuToast('Imported. Reload to apply the changes.');
+    q('file').value = ''; stUI().mbuToast('Imported. Reload to see the changes.');
   });
   stSyncPaint();
 }

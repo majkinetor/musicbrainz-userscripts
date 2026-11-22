@@ -47,8 +47,7 @@ function stSyncStore(io) {
     io.gm.set('string_theory.sync.recovery', document(effective()));
     pendingMemo = null, io.gm.set('string_theory.sync.stage', { before: before, after: filter(data) });
   }
-  function apply(data) {
-    function write(kind, storage, incoming) {
+  function write(kind, storage, incoming) {
       var currentKeys = storage.keys().filter(function (k) { return stSyncAllow(kind, k, []); });
       D.keys(Object.fromEntries(currentKeys.map(function (k) { return [k, true]; })), incoming).forEach(function (k) {
         if (!stSyncAllow(kind, k, [])) return;
@@ -60,7 +59,8 @@ function stSyncStore(io) {
           if (D.stable(encoded) !== D.stable(raw)) storage.set(k, encoded);
         }
       });
-    }
+  }
+  function apply(data) {
     data = filter(data);
     write('gm', io.gm, data.gm);
     if (origin && D.own(data.local, origin)) write('local', io.local, data.local[origin]);
@@ -76,9 +76,27 @@ function stSyncStore(io) {
     delete pending.before.local[origin]; delete pending.after.local[origin];
     if (Object.keys(pending.after.local).length) {
       // Keep the other origins' pending settings until a page on each origin can apply them.
-      var actual = capture(); pending.before.gm = actual.gm; pending.after.gm = actual.gm;
+      // gm is applied: an empty before and after leave it to this page's values
+      pending.before.gm = {}; pending.after.gm = {};
       pendingMemo = null, io.gm.set('string_theory.sync.stage', pending);
     } else pendingMemo = null, io.gm.del('string_theory.sync.stage');
+    return true;
+  }
+  // #1095: what a page load does, so it must stay cheap. The tab that synced applied gm and its
+  // own origin; this page applies only the localStorage that waits for its origin, and reads
+  // only its own keys. A gm part left over (a tab closed mid-apply) waits for the next sync.
+  function applyLocal() {
+    var pending = io.gm.get('string_theory.sync.stage');
+    if (!pending || !origin || !(D.own(pending.after.local, origin) || D.own(pending.before.local, origin))) return false;
+    var now = {};
+    io.local.keys().forEach(function (key) { var e = entry('local', key, io.local.get(key)); if (e) now[key] = e; });
+    var to = pending.after.local[origin] || {};
+    var result = D.own(pending.before.local, origin) ? D.merge(pending.before.local[origin], now, to, 'local') : D.merge(undefined, now, to, 'remote');
+    write('local', io.local, result);
+    delete pending.before.local[origin]; delete pending.after.local[origin];
+    pendingMemo = null;
+    if (Object.keys(pending.after.local).length || D.stable(pending.before.gm) !== D.stable(pending.after.gm)) io.gm.set('string_theory.sync.stage', pending);
+    else io.gm.del('string_theory.sync.stage');
     return true;
   }
   // the merge is slow, and the stage changes only when this script writes it
@@ -97,7 +115,7 @@ function stSyncStore(io) {
     if (info) info.filtered = D.stable(filtered) !== D.stable(data);
     return filtered;
   }
-  return { capture: capture, effective: effective, merge: merge, stage: stage, apply: apply, applyPending: applyPending, pending: pending, document: document, read: read, filter: filter };
+  return { capture: capture, effective: effective, merge: merge, stage: stage, apply: apply, applyPending: applyPending, applyLocal: applyLocal, pending: pending, document: document, read: read, filter: filter };
 }
 var stSyncStorage;
 function stSyncStorageInit() {
@@ -108,10 +126,9 @@ function stSyncStorageInit() {
     local: { keys: function () { return Object.keys(localStorage); }, get: function (k) { var v = localStorage.getItem(k); return v === null ? undefined : v; }, set: function (k, v) { localStorage.setItem(k, String(v)); }, del: function (k) { localStorage.removeItem(k); } },
   });
   if (!origin || window.top !== window || /[?&]st-(?:dropbox|google)=callback(?:&|$)/.test(location.search || '')) return;
-  // Applied when the page is idle, not at start: members began with the old values, the GM guard
-  // keeps their later saves from undoing the sync, and the new values show on the next load.
-  // A stage that fails once fails on every load, and each try costs a full merge: drop it.
-  var run = function () { try { stSyncStorage.applyPending(); } catch (e) { GM_deleteValue('string_theory.sync.stage'); console.error('[String Theory] sync could not apply saved changes; recovery retained', e); } };
+  // Only this origin's waiting localStorage, when the page is idle (#1095). A stage that fails
+  // once fails on every load: drop it.
+  var run = function () { try { stSyncStorage.applyLocal(); } catch (e) { GM_deleteValue('string_theory.sync.stage'); console.error('[String Theory] sync could not apply saved changes; recovery retained', e); } };
   if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 10000 }); else setTimeout(run, 3000);
 }
 // A member may keep a settings object alive in a second tab. Preserve remote changes to fields

@@ -130,7 +130,7 @@ Open String Theory's settings → **Sync**, choose **Provider**, and connect. Us
 | -------- | ---------------------------------------------------------------------------- |
 | Sync now | Merges this device with the provider                                         |
 | Push     | Replaces the provider's portable data with this device's                     |
-| Pull     | Replaces this device's portable data from the provider on the next page load |
+| Pull     | Replaces this device's portable data from the provider                       |
 
 Independent changes are combined; when both devices change the same value, **On conflict** chooses which one wins. Star additions and removals are merged separately.
 
@@ -138,7 +138,7 @@ On the first sync with existing data, stars from both sides are combined and con
 
 Credentials, stars, saved notes, remembered field values, named filters and normal preferences are included. Caches, logs, recent activity, temporary work, local paths and device layout stay local, including page width, columns, window state and location coordinates.
 
-**Save backup** saves a separate, dated snapshot at the selected provider. **Browse** lists them, newest first, with dates and sizes. Select a backup, then use **Apply** or **Delete** in its header. **Apply** merges it into your settings, keeping a recovery copy and applying on reload, just like **Import**. Backup values win shared settings; stars are combined.
+**Save backup** saves a separate, dated snapshot at the selected provider. **Browse** lists them, newest first, with dates and sizes. Select a backup, then use **Apply** or **Delete** in its header. **Apply** merges it into your settings, keeping a recovery copy, just like **Import**. Pages show the new settings when you reload them. Backup values win shared settings; stars are combined.
 
 **Disconnect** stops automatic sync and removes this device's selected connection; remote data remains. Google Drive saves files in a **String Theory** folder, including sync history. WebDAV saves `string-theory.json` in the folder you entered and backups in its `backups` folder.
 

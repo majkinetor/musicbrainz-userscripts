@@ -149,7 +149,7 @@ function cloud(data) {
   };
   return state;
 }
-test('Dropbox transport retries a revision race and stages both devices’ changes', { tag: '@unit' }, async () => {
+test('Dropbox transport retries a revision race and applies both devices’ changes at once', { tag: '@unit' }, async () => {
   const b = device({ view: { stars: [{ key: 'artist/b' }], facts: ['b'] } });
   const server = cloud(b.s.capture());
   server.race = () => { server.data.gm.view.value.stars.push({ key: 'artist/c' }); server.rev++; };
@@ -157,9 +157,8 @@ test('Dropbox transport retries a revision race and stages both devices’ chang
   await a.run(true);
   expect(server.uploads).toBe(2); expect(server.reads).toEqual(['1', '2']);
   expect(server.data.gm.view.value.stars.map(x => x.key).sort()).toEqual(['artist/a', 'artist/b', 'artist/c']);
-  expect(a.gm.get('view')).toEqual({ stars: [{ key: 'artist/a' }], width: 800 });
-  expect(a.store.effective().gm.view.value.stars).toHaveLength(3);
-  a.store.applyPending();
+  // #1095: the syncing tab applies them; a page load has nothing to merge
+  expect(a.gm.get('string_theory.sync.stage')).toBeUndefined(); expect(a.store.applyPending()).toBe(false);
   expect(a.gm.get('view').width).toBe(800); expect(a.gm.get('view').stars).toHaveLength(3);
   expect(a.state().error).toBe('');
   // A second unchanged sync reads but does not upload or restage anything.
@@ -237,8 +236,7 @@ test('Push replaces remote portable values and retains other origins; Pull never
   server.data.gm.view.value.stars = [{ key: 'artist/c' }]; server.rev++;
   const uploads = server.uploads;
   await a.run(true, 'pull'); expect(server.uploads).toBe(uploads);
-  expect(a.gm.get('localOnly')).toBe('push'); // staged until reload
-  a.store.applyPending();
+  // applied by the pull itself (#1095)
   expect(a.gm.get('saved')).toEqual({ fromDropbox: true }); expect(a.gm.get('localOnly')).toBeUndefined();
   expect(a.gm.get('view')).toEqual({ stars: [{ key: 'artist/c' }], width: 700 });
 });
@@ -289,7 +287,7 @@ test('remote backups are distinct snapshots, list all pages and leave sync state
   expect(server.calls.every(c => c.args.path !== '/string-theory.json')).toBe(true);
 });
 
-test('remote import validates and stages a filtered merge with recovery before reload', { tag: '@unit' }, async () => {
+test('remote import validates and applies a filtered merge with recovery', { tag: '@unit' }, async () => {
   const server = backupCloud(), a = runtime({ saved: 'old', localOnly: 'keep', view: { width: 800, stars: [{ key: 'artist/a' }] } }, server.request);
   await a.backups('save');
   const file = [...server.files.values()][0], doc = JSON.parse(file.text);
@@ -298,10 +296,9 @@ test('remote import validates and stages a filtered merge with recovery before r
   file.text = JSON.stringify(doc);
   const entry = (await a.drive().listBackups())[0];
   await a.backups('apply', entry);
-  expect(a.gm.get('saved')).toBe('old');
   expect(a.gm.get('string_theory.sync.recovery').data.gm.saved.value).toBe('old');
-  a.gm.set('editedAfterImport', 'keep'); a.store.applyPending();
-  expect(a.gm.get('saved')).toBe('restored'); expect(a.gm.get('localOnly')).toBe('keep'); expect(a.gm.get('editedAfterImport')).toBe('keep');
+  expect(a.gm.get('string_theory.sync.stage')).toBeUndefined();
+  expect(a.gm.get('saved')).toBe('restored'); expect(a.gm.get('localOnly')).toBe('keep');
   expect(a.gm.get('view').width).toBe(800); expect(a.gm.get('view').stars.map(s => s.key).sort()).toEqual(['artist/a', 'artist/b']);
   expect(a.gm.get('pc:cache:fixture')).toBeUndefined();
   expect(server.files.size).toBe(1); expect(a.gm.get('string_theory.sync.base')).toBeUndefined();

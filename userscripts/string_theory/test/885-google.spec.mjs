@@ -79,8 +79,8 @@ test('Google Push and Pull preserve their one-way behavior and a missing remote 
   expect(read.data.local['https://musicbrainz.org']['mbtools:qobuz'].value).toBe('other-origin');
   read.data.gm.saved.value = 'downloaded'; delete read.data.gm.localOnly;
   await a.drive().write(read.data, read.rev); const count = server.files.size;
-  await a.run(true, 'pull'); expect(server.files.size).toBe(count); expect(a.gm.get('saved')).toBe('local');
-  a.store.applyPending(); expect(a.gm.get('saved')).toBe('downloaded'); expect(a.gm.get('localOnly')).toBeUndefined(); expect(a.gm.get('view').width).toBe(800);
+  await a.run(true, 'pull'); expect(server.files.size).toBe(count);
+  expect(a.gm.get('saved')).toBe('downloaded'); expect(a.gm.get('localOnly')).toBeUndefined(); expect(a.gm.get('view').width).toBe(800);
 });
 test('repeated concurrent merges use all shared ancestors so removals are not resurrected', { tag: '@unit' }, async () => {
   const server = googleCloud(), a = runtime(server, { view: { stars: [] } });

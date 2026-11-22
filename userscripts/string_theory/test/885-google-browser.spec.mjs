@@ -43,8 +43,7 @@ test('Google provider connects and retains Dropbox when disconnected', { tag: '@
   await info.attach('Google Drive settings', { path: 'dev/_google-sync.png', contentType: 'image/png' });
   await page.evaluate(() => GM_setValue('saved', 'edit'));
   await page.locator('#st-sync-remote [data-backup-action=apply]').click();
-  await expect.poll(() => page.evaluate(() => !!GM_getValue('string_theory.sync.stage'))).toBe(true);
-  expect(await page.evaluate(() => GM_getValue('saved'))).toBe('edit');
+  await expect.poll(() => page.evaluate(() => GM_getValue('saved'))).toBe('snapshot');
   await page.reload(); await page.evaluate(prepare); await inject('string_theory');
   expect(await page.evaluate(() => GM_getValue('saved'))).toBe('snapshot');
   expect(await page.evaluate(() => GM_getValue('view').width)).toBe(800);

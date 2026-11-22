@@ -8,7 +8,7 @@ test.use({ gm: { name: 'String Theory', persist: true, values: {
   'mbu.archive': { iaKey: 'fixture-key', iaSecret: 'fixture-secret' },
 } } });
 
-test('backup download and import use the bundle’s real settings and apply on reload', { tag: '@sandbox' }, async ({ page, inject }, info) => {
+test('backup download and import use the bundle’s real settings and apply at once', { tag: '@sandbox' }, async ({ page, inject }, info) => {
   await page.goto(SANDBOX + '/search/edits', { waitUntil: 'load' });
   await inject('string_theory');
   await page.evaluate(() => document.dispatchEvent(new Event('mbu-st-settings')));
@@ -23,11 +23,10 @@ test('backup download and import use the bundle’s real settings and apply on r
   backup.data.gm.view.value.stars = [{ key: 'artist/7a2e9474-459e-44f5-8421-8b7943c8a6f0', title: 'Fixture' }];
   backup.data.gm.view.value.width = 1600; // imports reapply exclusions too
   await page.locator('#st-sync-file').setInputFiles({ name: 'backup.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(backup)) });
-  await expect.poll(() => page.evaluate(() => !!GM_getValue('string_theory.sync.stage'))).toBe(true);
-  expect(await page.evaluate(() => GM_getValue('view'))).toEqual({ width: 800, stars: [] });
+  // #1095: the importing tab applies it, no reload needed
+  await expect.poll(() => page.evaluate(() => GM_getValue('view').stars.length)).toBe(1);
   await page.screenshot({ path: 'dev/_885-sync.png', fullPage: false });
   await info.attach('Sync settings', { path: 'dev/_885-sync.png', contentType: 'image/png' });
-  await page.reload(); await inject('string_theory');
   const stored = await page.evaluate(() => GM_getValue('view'));
   expect(stored.width).toBe(800); expect(stored.stars).toHaveLength(1);
   expect(await page.evaluate(() => GM_getValue('string_theory.sync.stage'))).toBeUndefined();
@@ -40,7 +39,7 @@ test.describe('remote backup manager', () => {
     'string_theory.sync.state': { account: 'fixture-account', name: 'Fixture' },
     saved: 'snapshot value', view: { width: 800, stars: [] }, 'pc:cache:fixture': 'excluded',
   } } });
-  test('save, list, apply on reload and immediate deletion work through the settings', { tag: '@sandbox' }, async ({ page, context, inject }, info) => {
+  test('save, list, apply and immediate deletion work through the settings', { tag: '@sandbox' }, async ({ page, context, inject }, info) => {
     const server = backupCloud();
     await answerGm(context, async opts => {
       if (!/\.dropboxapi\.com\//.test(opts.url)) return null;
@@ -75,9 +74,9 @@ test.describe('remote backup manager', () => {
     await info.attach('Remote backup list', { path: 'dev/_885-remote-backups.png', contentType: 'image/png' });
     await page.evaluate(() => GM_setValue('saved', 'local edit'));
     await page.locator('#st-sync-remote [data-backup-action=apply]').click();
-    await expect.poll(() => page.evaluate(() => !!GM_getValue('string_theory.sync.stage'))).toBe(true);
-    expect(await page.evaluate(() => GM_getValue('saved'))).toBe('local edit');
+    await expect.poll(() => page.evaluate(() => GM_getValue('saved'))).toBe('snapshot value');
     expect(await page.evaluate(() => GM_getValue('string_theory.sync.recovery').data.gm.saved.value)).toBe('local edit');
+    expect(await page.evaluate(() => GM_getValue('string_theory.sync.stage'))).toBeUndefined();
     await page.reload();
     await page.evaluate(prepare); await inject('string_theory');
     expect(await page.evaluate(() => GM_getValue('saved'))).toBe('snapshot value');
@@ -123,9 +122,7 @@ test.describe('remote backup manager', () => {
     await expect(choices.nth(1)).toHaveAttribute('aria-pressed', 'true');
     await page.locator('#st-sync-remote [data-backup-action=apply]').click();
     await expect(page.locator('#st-sync-remote')).toBeHidden();
-    await expect.poll(() => page.evaluate(() => !!GM_getValue('string_theory.sync.stage'))).toBe(true);
-    await page.reload(); await page.evaluate(prepare); await inject('string_theory');
-    expect(await page.evaluate(() => GM_getValue('saved'))).toBe('snapshot value');
+    await expect.poll(() => page.evaluate(() => GM_getValue('saved'))).toBe('snapshot value');
   });
 
 });
