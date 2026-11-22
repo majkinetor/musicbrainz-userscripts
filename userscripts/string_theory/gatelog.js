@@ -486,9 +486,10 @@ function stGateBuild() {
     };
     document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
   });
-  // Escape, with the focus in the window: a filled filter is emptied, else the window closes
+  // Escape, anywhere but a field outside the window: a filled filter is emptied, else the window closes
   var onKey = function (e) {
-    if (e.key !== 'Escape' || !pop.contains(e.target)) return;
+    if (e.key !== 'Escape' || pop.classList.contains('min')) return;
+    if (!pop.contains(e.target) && e.target.closest && e.target.closest('input,textarea,select,[contenteditable=""],[contenteditable="true"]')) return;
     e.preventDefault(); e.stopPropagation();
     if (e.target === qEl && qEl.value) { qEl.value = ''; q = ''; draw(); return; }
     stGateClose();
