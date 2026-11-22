@@ -329,7 +329,7 @@ function stSettings(tab) {
     (document.head || html).appendChild(css);
   }
   var h = U.mbuCfgHeader({ icon: '<img src="' + ST_ICON + '" alt="">', name: 'String Theory', version: ST_VERSION, script: 'string_theory' });
-  if (ST_ON_MB) h = h.replace('<span class="mbu-cfg-sp"></span>', '<span class="mbu-cfg-sp"></span><a href="#" id="st-cfg-news">What\'s new</a>');
+  if (ST_ON_MB) h = h.replace('<span class="mbu-cfg-sp"></span>', '<span class="mbu-cfg-sp"></span><a href="#" id="st-cfg-news">What\'s new</a><a href="#" id="st-cfg-gate">Gate log</a>');
   var links = '<span class="st-links">'
     + '<a href="https://milic.info/musicbrainz-userscripts" target="_blank" rel="noopener">Website</a>'
     + '<a href="https://github.com/' + ST_REPO + '/issues" target="_blank" rel="noopener">Issues</a>'
@@ -420,6 +420,8 @@ function stSettings(tab) {
   var close = function () { removeEventListener('scroll', ovPin, true); removeEventListener('resize', ovPin); if (vv) { vv.removeEventListener('resize', pin); vv.removeEventListener('scroll', pin); } if (tabObserver) tabObserver.disconnect(); ov.remove(); document.removeEventListener('keydown', onKey, true); document.removeEventListener('mousedown', onOut, true); };
   var newsLink = ov.querySelector('#st-cfg-news');
   if (newsLink) newsLink.addEventListener('click', function (e) { e.preventDefault(); close(); stNewsOpen(); });
+  var gateLink = ov.querySelector('#st-cfg-gate');
+  if (gateLink) gateLink.addEventListener('click', function (e) { e.preventDefault(); close(); stGateOpen(); });
   // #851: a script's settings opened from here sit above this window, which stays open; the one used last
   // is in front and takes Escape. A floating (position: fixed) element is taken for such a window.
   var front = true, toFront = function (on) { front = on; ov.style.zIndex = on ? '' : '9000'; };   // #851: behind every script's window, the lowest of which is 9990
