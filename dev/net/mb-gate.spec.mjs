@@ -60,7 +60,7 @@ test('the gate paces starts, a burst first, then one a second', { tag: ['@unit']
   const starts = await a.evaluate(async () => {
     localStorage.clear();
     const t0 = Date.now();
-    await Promise.all(Array.from({ length: 6 }, () => mbnFetch('/ws/2/artist?query=x')));
+    await Promise.all(Array.from({ length: 6 }, (_, i) => mbnFetch('/ws/2/artist?query=x' + i)));
     return window.__starts.map(t => t - t0).sort((x, y) => x - y);
   });
   // measured from the first start, not from t0: a slow runner delays the whole burst
@@ -76,7 +76,7 @@ test('two tabs share one budget', { tag: ['@unit'] }, async ({ context }) => {
   await a.evaluate(() => localStorage.clear());
   const t0 = Date.now();
   const [sa, sb] = await Promise.all([a, b].map(p => p.evaluate(async () => {
-    await Promise.all(Array.from({ length: 3 }, () => mbnFetch('/ws/2/release?query=x')));
+    await Promise.all(Array.from({ length: 3 }, (_, i) => mbnFetch('/ws/2/release?query=' + Math.random() + i)));
     return window.__starts;
   })));
   const all = [...sa, ...sb].map(t => t - t0).sort((x, y) => x - y);
@@ -88,7 +88,7 @@ test('a 503 in one tab holds the other', { tag: ['@unit'] }, async ({ context })
   const a = await tab(context), b = await tab(context);
   await a.evaluate(() => { localStorage.clear(); window.__answers = [503]; });
   const logs = await a.evaluate(async () => { const l = []; await mbnFetch('/ws/2/x', {}, { tries: 1, log: (lv, m) => l.push(lv + ' ' + m) }); return l; });
-  check(logs.some(l => /HTTP 503 \(Retry-After: 2\) — every script holds 3s/.test(l)), `the throttle is logged: ${JSON.stringify(logs)}`);
+  check(logs.some(l => /HTTP 503 \(Retry-After: 2\) — every script holds 2s/.test(l)), `the throttle is logged: ${JSON.stringify(logs)}`);
   const waited = await b.evaluate(async () => { const t0 = Date.now(); await mbnFetch('/ws/2/y'); return Date.now() - t0; });
   check(waited >= 1700, `the other tab's next request waited the hold out (${waited} ms)`);
 });
