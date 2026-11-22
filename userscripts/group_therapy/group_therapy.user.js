@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.094103
+// @version      2026.11.22.100106
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -3251,14 +3251,21 @@
   // viewport, pull it back onto it.
   function mountOverlay(ov) {
     (document.documentElement || document.body).appendChild(ov);
-    try {
-      const r = ov.getBoundingClientRect();
-      if (Math.abs(r.top) > 1 || Math.abs(r.left) > 1 || Math.abs(r.height - window.innerHeight) > 1 || Math.abs(r.width - document.documentElement.clientWidth) > 1) {
-        ov.style.inset = 'auto'; ov.style.top = (-r.top) + 'px'; ov.style.left = (-r.left) + 'px';
-        ov.style.width = document.documentElement.clientWidth + 'px'; ov.style.height = window.innerHeight + 'px';
-        LOG().warn('overlay was ' + Math.round(r.width) + 'x' + Math.round(r.height) + ' at ' + Math.round(r.left) + ',' + Math.round(r.top) + ', not the viewport; pinned to it');
-      }
-    } catch (e) {}
+    // the pin is kept on scroll and resize: a page-measured overlay scrolls away with the page otherwise
+    let warned = false;
+    const pin = () => {
+      if (!ov.isConnected) { removeEventListener('scroll', pin, true); removeEventListener('resize', pin); return; }
+      try {
+        const r = ov.getBoundingClientRect(), w = document.documentElement.clientWidth, h = window.innerHeight;
+        if (Math.abs(r.top) <= 1 && Math.abs(r.left) <= 1 && Math.abs(r.height - h) <= 1 && Math.abs(r.width - w) <= 1) return;
+        if (!warned) { warned = true; LOG().warn('overlay was ' + Math.round(r.width) + 'x' + Math.round(r.height) + ' at ' + Math.round(r.left) + ',' + Math.round(r.top) + ', not the viewport; pinned to it'); }
+        const t0 = parseFloat(ov.style.top) || 0, l0 = parseFloat(ov.style.left) || 0;   // read first: inset resets them
+        ov.style.inset = 'auto'; ov.style.top = (t0 - r.top) + 'px'; ov.style.left = (l0 - r.left) + 'px';
+        ov.style.width = w + 'px'; ov.style.height = h + 'px';
+      } catch (e) {}
+    };
+    pin();
+    if (warned) { addEventListener('scroll', pin, { capture: true, passive: true }); addEventListener('resize', pin, { passive: true }); }
   }
   function injectStyle() {
     const s = el('style');
