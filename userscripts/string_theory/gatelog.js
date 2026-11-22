@@ -108,7 +108,8 @@ function stGateWhat(ev) {
     case 'hidden': x.push('waits up to ' + stGateSec(ev.w) + ' for the queue to be free (this tab is hidden)'); break;
     case 'lead': x.push('waits up to ' + stGateSec(ev.w) + ' for a page being drawn (' + (ev.by || '?') + ')'); break;
     case 'lead+': x.push('takes the lead for ' + stGateSec(ev.w) + ' (' + (ev.by || '?') + ')'); break;
-    case 'lead-': x.push('ends the lead (' + (ev.by || '?') + ')'); break;
+    case 'lead-': x.push((ev.why === 'lapsed' ? 'the lead lapsed (' : 'ends the lead (') + (ev.by || '?') + ')'); break;
+    case 'giveup': x.push('gives up after ' + (ev.n || 1) + (ev.n > 1 ? ' tries' : ' try') + (ev.st ? ' (HTTP ' + ev.st + ')' : '')); break;
     case 'cancel': x.push('cancelled after ' + stGateSec(ev.w)); break;
     case 'join': x.push('a request that covers this one is already on its way' + (ev.with ? ' (' + ev.with + ')' : '') + ': shares its answer'); break;
     case 'merge': x.push('asks together with a waiting request' + (ev.with ? ' (' + ev.with + ')' : '') + (ev.add ? ', which adds ' + ev.add : '') + ': one answer for both'); break;
@@ -166,6 +167,7 @@ function stGateGroups(all, now) {
       g.ans = ev;
       if (stGateThrottled(ev.st)) g.pend = ev.t; else if (ev.id || !open1()) done(g, String(ev.st || 'no status'));
     } else if (ev.e === 'error') { x = ev.id ? (last && last.st == null ? last : null) : open1(); if (x) { x.st = -1; x.end = ev.t; } done(g, 'error'); }
+    else if (ev.e === 'giveup') done(g, 'gave up');
     else if (ev.e === 'cancel') { g.tries.forEach(function (y) { if (y.st == null) { y.st = -2; y.end = ev.t; } }); done(g, 'cancelled'); }
   });
   groups.forEach(function (g) {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.180411
+// @version      2026.11.22.192224
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -294,7 +294,9 @@
       for (let told = false; background && typeof document !== 'undefined' && document.hidden;) {
           let s = null;
           try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { s = globalThis.__mbnGate; }
-          const left = s && s.tat ? seen(s.tat, MBN_MAX_LEAD) - Date.now() : 0;
+          // #log: the visible tab kept booking, so the queue end kept moving and a hidden wait ran 46s;
+          // it waits MBN_MAX_LEAD in all, then books like any other
+          const left = s && s.tat ? Math.min(seen(s.tat, MBN_MAX_LEAD), t0 + MBN_MAX_LEAD) - Date.now() : 0;
           if (left <= 0) break;
           if (o.cancelled && o.cancelled()) { tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
           if (!told) tr('hidden', { w: left });
@@ -313,7 +315,10 @@
           let at;
           if (!background) {
               const itat = s.itat || 0, hot = s.hot && now <= cool + 30000;
-              at = Math.max(now, rebooked ? itat : itat - (hot ? 0 : (MBN_BURST - 1) * MBN_GAP), cool);
+              // the background lane already spends the burst while its queue reaches past now: the two
+              // lanes bursting together sent five or six in one moment, and they all got a 503
+              const busy = tat > now;
+              at = Math.max(now, rebooked || busy ? itat : itat - (hot ? 0 : (MBN_BURST - 1) * MBN_GAP), cool);
               s.itat = Math.max(itat, at) + MBN_GAP;
           } else {
               // #1096: while MusicBrainz throttles, no burst: the queue a hold built up leaves one
@@ -371,9 +376,11 @@
   async function mbnLead(token, ms) {
       return mbnState(s => {
           if (ms > 0) {
+              // a lead that lapsed unrenewed ends in the log too, so every lead+ has its lead-
+              if (s.lead && (s.leadUntil || 0) < Date.now()) mbnTrace({ e: 'lead-', by: String(s.lead).slice(0, 12), why: 'lapsed' });
               if (s.lead !== token || (s.leadUntil || 0) < Date.now()) mbnTrace({ e: 'lead+', by: String(token).slice(0, 12), w: Math.min(ms, MBN_MAX_LEAD) });
               s.lead = token; s.leadUntil = Date.now() + Math.min(ms, MBN_MAX_LEAD);
-          } else if (s.lead === token) { s.lead = ''; s.leadUntil = 0; mbnTrace({ e: 'lead-', by: String(token).slice(0, 12) }); }
+          } else if (s.lead === token) { const late = (s.leadUntil || 0) < Date.now(); s.lead = ''; s.leadUntil = 0; mbnTrace({ e: 'lead-', by: String(token).slice(0, 12), why: late ? 'lapsed' : undefined }); }
       });
   }
   async function mbnAnswer(status, header, o) {
@@ -400,7 +407,7 @@
                   return s.scool - now;
               });
               if (o.log) o.log('warn', 'MusicBrainz gate: HTTP 503 (search-shed) — searches hold ' + Math.round(hold / 100) / 10 + 's');
-              return { throttled: true, hold };
+              return { throttled: true, hold, shed: true };
           }
           const hold = await mbnState(s => {
               const now = Date.now();
@@ -458,10 +465,20 @@
               const slot = await mbnSlot(o);
               if (!slot.ok) return null;
               let r;
-              try { r = await (o.send || mbnWsFetch)(at ? at() : url, init); }
+              try {
+                  // #log: an o.send that never settles (no timeout of its own) left the request open in
+                  // the Gate log for good; mbnWsFetch gives up at 35s, so any send does at 40s
+                  let quit = false;
+                  const sent = (o.send || mbnWsFetch)(at ? at() : url, init);
+                  r = await Promise.race([sent, mbnSleep(40000, () => quit).then(() => { if (!quit) throw new TypeError('no answer in 40s'); return new Promise(() => {}); })]);
+                  quit = true;
+              }
               catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, id: o.id, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
               const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
-              if (!a.throttled || give(attempt)) return r;
+              if (!a.throttled) return r;
+              // a background search MusicBrainz sheds twice is given up: searches are what it drops when busy
+              const shed = a.shed && o.background !== false && attempt >= 2;
+              if (give(attempt) || shed) { mbnTrace({ e: 'giveup', l: o.label, b: o.background === false ? 0 : 1, id: o.id, st: r.status, n: attempt }); return r; }
           }
       };
       // Reads of the same thing share one fetch, and each caller gets its own clone of the answer.
