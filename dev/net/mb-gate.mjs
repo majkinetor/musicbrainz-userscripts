@@ -306,7 +306,9 @@ export async function mbnSlot(o) {
         cool = seen(cool, MBN_MAX_HOLD);   // a hold is never longer than the longest one the gate sets
         const until = Math.max(booked.at, cool), left = until - now;   // a hold that appeared while we queued
         if (left <= 0) {
-            if (cool > booked.at && !rebooked) { rebooked = true; booked = await book(); continue; }
+            // every hold that ends past the slot books again, a second or third one included:
+            // booking only once let the waiters of a later hold all leave in the same millisecond
+            if (cool > booked.at) { rebooked = true; booked = await book(); continue; }
             break;
         }
         if (o.log && until - t0 > 1000 && (!toldAt || until > toldUntil + 1000 || now - toldAt >= 10000)) {

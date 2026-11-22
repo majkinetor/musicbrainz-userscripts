@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.120243
+// @version      2026.11.22.122815
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -305,7 +305,9 @@
           cool = seen(cool, MBN_MAX_HOLD);   // a hold is never longer than the longest one the gate sets
           const until = Math.max(booked.at, cool), left = until - now;   // a hold that appeared while we queued
           if (left <= 0) {
-              if (cool > booked.at && !rebooked) { rebooked = true; booked = await book(); continue; }
+              // every hold that ends past the slot books again, a second or third one included:
+              // booking only once let the waiters of a later hold all leave in the same millisecond
+              if (cool > booked.at) { rebooked = true; booked = await book(); continue; }
               break;
           }
           if (o.log && until - t0 > 1000 && (!toldAt || until > toldUntil + 1000 || now - toldAt >= 10000)) {
@@ -3296,15 +3298,16 @@ Click: open the label`;
   // AND once it has one, so a stale call costs no request. #555
   // A picker search (it has a stale()) is interactive for the gate: it doesn't queue
   // behind a matching pass's background lookups.
+  // a search (?query=) waits out the hold MusicBrainz sets for searches only (search-shed)
+  const wsIsSearch = u => /[?&]query=/.test(String(u));
   async function wsGet(url, opts) {
     const o = opts || {};
     const gen = _stopGen;
     const cancelled = () => o.stale ? !!o.stale() : gen !== _stopGen;
     if (o.stale && o.stale()) return null;
-    // The wait is interruptible: a lane parked in the gate cannot notice a Stop otherwise,
-    // and a pass whose lanes are all parked looks unstoppable (#577).
-    const slot = await mbnSlot({ background: !o.stale, label: o.label || 'ws2', log: wsGateLog, cancelled });
-    if (!slot.ok) return null;                         // caller treats null as superseded
+    // A lane first, then the gate's slot: a slot taken before the lane wait was spent while the
+    // request sat there, and every request parked behind a busy lane then left in the same
+    // millisecond when lanes freed (a 4-request burst into the next 503).
     for (let told = false; wsLaneSync(), _wsInFlight >= wsLanes();) {
       if (cancelled()) return null;
       if (!told) { told = true; wsGateLog('debug', 'MusicBrainz gate: ' + (o.label || 'ws2') + ' waits for a free lane (' + _wsInFlight + ' of ' + wsLanes() + ' busy)'); }
@@ -3313,8 +3316,14 @@ Click: open the label`;
     if (cancelled()) return null;
     _wsInFlight++;
     const laneGen = _wsLaneGen;
-    const p = mbnWsFetch(url, { headers: { Accept: 'application/json' } });
     const free = () => { if (laneGen === _wsLaneGen && _wsInFlight > 0) _wsInFlight--; wsLaneWake(); };
+    // The wait is interruptible: a lane parked in the gate cannot notice a Stop otherwise,
+    // and a pass whose lanes are all parked looks unstoppable (#577).
+    let slot;
+    try { slot = await mbnSlot({ background: !o.stale, label: o.label || 'ws2', log: wsGateLog, cancelled, search: wsIsSearch(url) }); }
+    catch (e) { free(); throw e; }
+    if (!slot.ok || cancelled()) { free(); return null; }   // caller treats null as superseded
+    const p = mbnWsFetch(url, { headers: { Accept: 'application/json' } });
     p.then(free, free);
     if (o.stale) return p;
     // A background request in flight stops being waited for at a Stop (it isn't aborted:
@@ -3331,7 +3340,7 @@ Click: open the label`;
   }
   // tell the gate how MusicBrainz answered: a 429/503 holds everybody, a clean answer earns room back
   // with the label its slot had (wsGet's): the Gate log pairs the answer with its start by it
-  const wsAnswer = (r, label, background) => mbnAnswer(r.status, n => (r.headers && r.headers.get ? r.headers.get(n) : null), { log: wsGateLog, label: label || 'ws2', background });
+  const wsAnswer = (r, label, background, search) => mbnAnswer(r.status, n => (r.headers && r.headers.get ? r.headers.get(n) : null), { log: wsGateLog, label: label || 'ws2', background, search: !!search });
   // EVERY /ws/2 read goes through here. MusicBrainz answers a throttled request
   // with HTTP 503 (or 429) and a body of `{"error":"…"}` — no `recordings` /
   // `artists` key. Callers that did `fetch(url).then(r => r.json())` therefore
@@ -3387,7 +3396,7 @@ Click: open the label`;
       catch (e) { Log.cat('MusicBrainz').warn(label + ': network error —', e.message, '(attempt ' + attempt + '/' + WS_TRIES + ')', url); await _sleep(600 * attempt); continue; }
       if (!r || (!o.stale && gen !== _stopGen)) { Log.cat('MusicBrainz').debug(label + ': superseded while queued, dropped —', url); return { stale: true }; }
       Log.cat('MusicBrainz').debug(label + ': HTTP', r.status, url);
-      const a = await wsAnswer(r, o.label, !o.stale);
+      const a = await wsAnswer(r, o.label, !o.stale, wsIsSearch(url));
       if (a.throttled) {
         // #575 round 3: hold every lane, not just this one. wsGet waits in the gate for
         // the shared deadline, so the retry needs no sleep of its own — sleeping here
