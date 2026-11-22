@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.140653
+// @version      2026.11.22.150000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -4505,7 +4505,7 @@ function ccStyle() {
         + '.mcc-center{flex:1;overflow:auto;padding:12px 14px;min-width:0}'
         + '.mcc-h{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mbu-text-dim);margin:2px 0 8px}'
         + '#mcc-root .mc-all{font:600 11px inherit;padding:2px 9px;margin:0 0 4px 6px;border-radius:12px;border:1px solid var(--mbu-border-strong);background:var(--mbu-bg);color:var(--mbu-accent-text);cursor:pointer;white-space:nowrap}#mcc-root .mc-all:hover{border-color:var(--mbu-accent)}'
-        + '.mcc-lane{margin:0 0 14px}.mcc-bc{display:inline-block;font-family:var(--mbu-font-mono);font-size:12px;padding:1px 7px;border-radius:5px;border:1px solid var(--mbu-border);margin-bottom:4px}'
+        + '.mcc-lane{margin:0 0 14px}.mcc-lane-hd{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}.mcc-lane-hd>*{margin:0!important}.mcc-bc{display:inline-block;font-family:var(--mbu-font-mono);font-size:12px;padding:1px 7px;border-radius:5px;border:1px solid var(--mbu-border);margin-bottom:4px}'
         + '.mcc-bc.own{border-color:var(--mbu-ok-border);background:var(--mbu-ok-bg);color:var(--mbu-ok)}.mcc-lane-note{font-size:12px;color:var(--mbu-text-dim);margin:2px 0 4px}'
         + '.mcc-src{display:flex;align-items:center;gap:7px;padding:3px 4px;border-radius:5px;cursor:pointer}.mcc-src:hover{background:var(--mbu-bg-hover)}'
         + '.mcc-src input{margin:0;cursor:pointer;flex:none}.mcc-src>:not(.nm):not(.meta){flex:none}.mcc-src .nm{flex:1 0 auto;max-width:60%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mcc-src .meta{flex:0 1 auto;min-width:0;margin-left:auto;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:var(--mbu-text-weak);white-space:nowrap}'
@@ -5116,13 +5116,15 @@ function ccSideHtml() {
     const srcTracks = CC.sources[0].tracks;
     let h = '<div class="mcc-h">Sources</div>';
     lanes.forEach(l => {
-        h += '<div class="mcc-lane" data-bc="' + esc(l.bc) + '">' + (l.bc ? '<span class="mcc-bc' + (l.own ? ' own' : '') + '" data-tip="' + (l.own ? 'The source\'s barcode' : 'Another barcode\nAnother release') + '">' + esc(l.shown) + '</span>' : l.own ? '<div class="mcc-lane-note">no barcode</div>' : '');   // the other no-barcode lane's note says it
+        // majkinetor: take all in sits right of the barcode (or "no barcode")
+        const head = l.bc ? '<span class="mcc-bc' + (l.own ? ' own' : '') + '" data-tip="' + (l.own ? 'The source\'s barcode' : 'Another barcode\nAnother release') + '">' + esc(l.shown) + '</span>' : l.own ? '<span class="mcc-lane-note">no barcode</span>' : '';   // the other no-barcode lane's note says it
+        const picks = ccLaneTakes(l), n = picks.filter(s => s.take).length;
+        const allBtn = picks.length ? '<button type="button" class="mc-all" data-cc="lane-all" data-bc="' + esc(l.bc) + '" data-tip="' + esc('Take every platform in this group in, or leave them all out' + (l.list.some(s => s.role !== 'source' && !picks.includes(s)) ? '\nNot the ones with an issue: another track count or format, read as another release, or a failed read.' : '')) + '">'
+            + (n === picks.length ? '✓ all taken in' : n ? n + ' of ' + picks.length + ' · take all' : 'take all in') + '</button>' : '';
+        h += '<div class="mcc-lane" data-bc="' + esc(l.bc) + '">' + (head || allBtn ? '<div class="mcc-lane-hd">' + head + allBtn + '</div>' : '');
         if (!l.own && l.bc) h += '<div class="mcc-lane-note">another release</div>';
         else if (!l.bc && !l.own) h += '<div class="mcc-lane-note">no barcode shown: selected when it matches the source\'s track count (' + srcTracks + '), format, track titles and lengths</div>';
         // #1088: take all in, as on a release page: never a platform with an issue (another track count or format, read as another release, a failed read)
-        const picks = ccLaneTakes(l), n = picks.filter(s => s.take).length;
-        if (picks.length) h +='<button type="button" class="mc-all" data-cc="lane-all" data-bc="' + esc(l.bc) + '" data-tip="' + esc('Take every platform in this group in, or leave them all out' + (l.list.some(s => s.role !== 'source' && !picks.includes(s)) ? '\nNot the ones with an issue: another track count or format, read as another release, or a failed read.' : '')) + '">'
-            + (n === picks.length ? '✓ all taken in' : n ? n + ' of ' + picks.length + ' · take all' : 'take all in') + '</button>';
         l.list.forEach(s => {
             const r = s.read;
             const meta = s.role === 'source' ? ['', 'source · ' + s.tracks + ' tracks']
