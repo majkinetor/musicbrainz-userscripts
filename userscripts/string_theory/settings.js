@@ -407,7 +407,19 @@ function stSettings(tab, warm) {
     });
     if (on) { s.setProperty('right', 'auto', 'important'); s.setProperty('bottom', 'auto', 'important'); } else { s.removeProperty('right'); s.removeProperty('bottom'); }
   };
-  var close = function () { if (vv) { vv.removeEventListener('resize', pin); vv.removeEventListener('scroll', pin); } if (tabObserver) tabObserver.disconnect(); ov.remove(); document.removeEventListener('keydown', onKey, true); document.removeEventListener('mousedown', onOut, true); stCfgWarmSoon(); };
+  // a theme that sets a transform or filter on the page makes the fixed window scroll with the page:
+  // it is pinned back to the viewport when shown and on every scroll and resize
+  var ovPin = function () {
+    if (ov.style.display === 'none') return;
+    try {
+      var r = ov.getBoundingClientRect(), w = html.clientWidth, h = window.innerHeight;
+      if (Math.abs(r.top) <= 1 && Math.abs(r.left) <= 1 && Math.abs(r.height - h) <= 1 && Math.abs(r.width - w) <= 1) return;
+      var t0 = parseFloat(ov.style.top) || 0, l0 = parseFloat(ov.style.left) || 0;   // read first: inset resets them
+      ov.style.inset = 'auto'; ov.style.top = (t0 - r.top) + 'px'; ov.style.left = (l0 - r.left) + 'px';
+      ov.style.width = w + 'px'; ov.style.height = h + 'px';
+    } catch (e) {}
+  };
+  var close = function () { removeEventListener('scroll', ovPin, true); removeEventListener('resize', ovPin); if (vv) { vv.removeEventListener('resize', pin); vv.removeEventListener('scroll', pin); } if (tabObserver) tabObserver.disconnect(); ov.remove(); document.removeEventListener('keydown', onKey, true); document.removeEventListener('mousedown', onOut, true); stCfgWarmSoon(); };
   var newsLink = ov.querySelector('#st-cfg-news');
   if (newsLink) newsLink.addEventListener('click', function (e) { e.preventDefault(); close(); stNewsOpen(); });
   // #851: a script's settings opened from here sit above this window, which stays open; the one used last
@@ -765,6 +777,7 @@ function stSettings(tab, warm) {
     document.addEventListener('keydown', onKey, true);
     document.addEventListener('mousedown', onOut, true);
     ov.style.display = '';
+    ovPin(); addEventListener('scroll', ovPin, { capture: true, passive: true }); addEventListener('resize', ovPin, { passive: true });
     if (warm) { try { refresh(); } catch (e) {} if (!ST_ON_MB) checkUpdates(); }
     if (t && q('#st-tab-' + t)) q('#st-tab-' + t).click();
     panel.focus();
