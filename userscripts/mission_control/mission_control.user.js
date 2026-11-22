@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.190003
+// @version      2026.11.22.210000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -202,6 +202,7 @@ document.addEventListener('mc:findings', e => {
     if (d.id === 'fusion') fxAutoCheck();
     if (d.id === 'pc' && CMP.waiting) cmpStart();   // #782: the comparison waited for Platform Check's platforms
     if (d.id === 'pc' && !CONS) pcVet();   // #792
+    if (d.id === 'pc') LINK_READERS.forEach(id => { if (results[id] && results[id].waitPc) probeOne(id, 'with the album links of Platform Check'); });
     findings.forEach(x => Log.cat('Probe').debug('  ' + d.id + ' ' + x.key + ' ' + x.state + (x.why ? ' (' + x.why + ')' : '') + (x.url ? ' ' + x.url : '')));
     paintAll();
     syncLinks();
@@ -259,10 +260,13 @@ function probe() {
     for (const k in picked) delete picked[k];
     const ask = PROVIDERS.filter(p => found[p.id] && modeOf(p) === 'auto').map(p => p.id);
     ask.forEach(id => { results[id] = { state: 'busy', note: '', at: Date.now() }; });
+    // ISRC Scout and Art Station wait for Platform Check's album links, so they are asked once, with them
+    const wait = ask.includes('pc') ? ask.filter(id => LINK_READERS.includes(id)) : [];
+    wait.forEach(id => { results[id].waitPc = true; });
     probeAt = Date.now(); probeTook = 0;
     LINK_READERS.forEach(id => { linksAsked[id] = '[]'; });   // nothing is selected yet
     Log.cat('Probe').info('probe run ' + run + ' · asking ' + (ask.join(', ') || 'nobody') + '');
-    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify(Object.assign({ release: RELEASE, run, only: ask.filter(id => id !== 'fc'), links: [], isrcs: isrcsNow(), cons: CMP.cons || undefined }, shownRel())) }));
+    document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify(Object.assign({ release: RELEASE, run, only: ask.filter(id => id !== 'fc' && !wait.includes(id)), links: [], isrcs: isrcsNow(), cons: CMP.cons || undefined }, shownRel())) }));
     // #782: the comparison starts once Platform Check has answered; Update this release runs it whatever its mode
     if (found.fc && (ask.includes('fc') || (AFTER && AFTER.compare && !AFTER.compared))) { if (AFTER && AFTER.compare) AFTER.compared = true; cmpStart(); }
     paintAll();
@@ -270,7 +274,7 @@ function probe() {
 }
 // An Ask-mode provider is probed on its own Fetch button, inside the current run
 // (a run is started if there is none), leaving the others' results alone.
-function probeOne(id, why) {
+function probeOne(id, why, given) {
     if (!found[id]) return;
     if (id === 'fc') { cmpStart(); return; }
     if (!run) run = Date.now().toString(36);
@@ -278,7 +282,7 @@ function probeOne(id, why) {
     if (id === 'fusion') fxCheckGen++;
     results[id] = { state: 'busy', note: '', at: Date.now() };
     probeAt = Date.now(); probeTook = 0;
-    const links = pcAlbumLinks();
+    const links = given || pcAlbumLinks();
     if (LINK_READERS.includes(id)) linksAsked[id] = JSON.stringify(links);
     Log.cat('Probe').info('probe ' + id + ' ' + (why || 'on request') + ' · run ' + run + (links.length ? ' · selected album links ' + links.join(' ') : ''));
     document.dispatchEvent(new CustomEvent('mc:probe', { detail: JSON.stringify(Object.assign({ release: RELEASE, run, only: [id], links, isrcs: isrcsNow(), cons: CMP.cons || undefined }, shownRel())) }));
@@ -296,7 +300,7 @@ function askAgain(id, why) {
 // a provider asked by the probe that never said a word, past STALL_MS, and not asked again yet
 function unheard() {
     if (executing) return [];
-    return PROVIDERS.filter(p => { const r = results[p.id]; return p.id !== 'fc' && r && r.state === 'busy' && !r.spoke && !r.again && Date.now() - (r.at || Date.now()) >= STALL_MS; });
+    return PROVIDERS.filter(p => { const r = results[p.id]; return p.id !== 'fc' && r && r.state === 'busy' && !r.spoke && !r.again && !(r.waitPc && (results.pc || {}).state === 'busy') && Date.now() - (r.at || Date.now()) >= STALL_MS; });
 }
 // Execute: the steps in order, the lanes of a parallel step together. Each
 // provider with selected findings gets 'mc:apply' { id, run, release, keys, dry }
@@ -5795,8 +5799,10 @@ function cmpFinish() {
     const said = [differ && differ + ' track title' + (differ === 1 ? ' differs' : 's differ'), caseOnly && caseOnly + ' in case only', symOnly && symOnly + ' in punctuation only'].filter(Boolean).join(', ');
     cmpDone(read + (aligned ? said ? ' · ' + said : '' : ' · ' + t.n + ' tracks there, not compared'), findings);
     // what the release lacks, offered by those who add it
+    // the album links are read before Platform Check is asked again, which clears its selection
+    const links = pcAlbumLinks();
     if (found.pc && !providerOff('pc')) probeOne('pc');
-    if (CMP.isrcs && found.is && !providerOff('is')) probeOne('is');
+    if (CMP.isrcs && found.is && !providerOff('is')) probeOne('is', null, links);
 }
 // Platform Check's card: what the comparison shows and doesn't apply (the release's title on the platforms), and
 // which platforms it read
