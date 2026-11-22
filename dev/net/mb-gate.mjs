@@ -63,11 +63,10 @@ export const MBN_CACHE_MAX = 150;
  *  a merged read with them answers 401, and each caller then asks alone. */
 export const MBN_INC_ALONE = ['recordings', 'recording-level-rels', 'work-level-rels', 'release-group-level-rels', 'discids', 'isrcs'];
 
-/** True for a request the gate paces: MusicBrainz's /ws/2, relative, protocol-relative (Credit
- *  Hoarder's '//musicbrainz.org/ws/2/…') or absolute. */
+/** True for a request the gate paces: MusicBrainz's /ws/2, relative or absolute. */
 export function mbnGated(url) {
     const s = String(url || '');
-    return /^\/ws\/2\//.test(s) || /^(https?:)?\/\/([a-z0-9-]+\.)*musicbrainz\.org\/ws\/2\//i.test(s);
+    return /^\/ws\/2\//.test(s) || /^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org\/ws\/2\//i.test(s);
 }
 
 /** Read-modify-write the shared schedule. `fn(state)` may change `state`; its result is returned. */
@@ -891,7 +890,7 @@ export function mbnRawHeader(raw, name) {
 export function mbnWebsite(url) {
     const s = String(url || '');
     if (mbnGated(s)) return false;
-    if (/^(https?:)?\/\/([a-z0-9-]+\.)*musicbrainz\.org(\/|$)/i.test(s)) return true;
+    if (/^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org(\/|$)/i.test(s)) return true;
     return /^\/(?!\/)/.test(s) && typeof location !== 'undefined' && /(^|\.)musicbrainz\.org$/i.test(location.hostname);
 }
 
