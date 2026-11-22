@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.153001
+// @version      2026.11.22.153338
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm, RateYourMusic and Album of the Year, read when you open their pages), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjI4Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMxNmNjZjgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjZmZhZTM4Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -3458,6 +3458,7 @@
 .fl-menu button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;font:inherit;border:0;background:none;color:var(--mbu-text);padding:5px 12px;cursor:pointer}
 .fl-menu button:hover{background:var(--mbu-bg-hover)}
 .fl-menu hr{border:0;border-top:1px solid var(--mbu-border);margin:4px 0}
+.fl-ac{position:fixed;z-index:var(--mbu-z-tip,2147483647);display:grid;min-width:220px;max-height:280px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;padding:4px;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:10px;box-shadow:0 10px 24px rgba(0,0,0,.25)}.fl-ac button{all:unset;cursor:pointer;display:flex;justify-content:space-between;gap:12px;padding:5px 10px;border-radius:6px;font-size:13px}.fl-ac button.on,.fl-ac button:hover{background:var(--mbu-bg-hover)}.fl-ac small{opacity:.6;font-size:11px}
 .fl-menu .fl-mapin{display:flex;gap:4px;padding:4px 8px}
 .fl-in{font:inherit;padding:3px 6px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-text);min-width:0;flex:1 1 auto;box-sizing:border-box}
 .fl-in.err{border-color:var(--mbu-error)}
@@ -3665,6 +3666,41 @@
 
   // the ⋯ menu of a tag: map it, ignore it, make it a favourite, open where it came from
   let menu = null, menuOff = null;
+  // tag autocomplete, as Event Horizon's inline tag add: MB genres and the collected tags, matched on the part after the last sep
+  function flAcSugg(q) {
+    q = q.trim().toLowerCase(); if (!q) return [];
+    const gen = S.genres || new Set(), seen = new Set(), out = [];
+    for (const n of [...(S.tags ? S.tags.keys() : []), ...gen]) { const l = String(n).toLowerCase(); if (!seen.has(l) && l.includes(q)) { seen.add(l); out.push(l); } }
+    return out.sort((a, b) => (b.startsWith(q) - a.startsWith(q)) || a.length - b.length).slice(0, 8).map(n => ({ n, g: gen.has(n) }));
+  }
+  function flAc(root, match, sep) {
+    let box = null, inp = null, items = [], on = 0;
+    const hide = () => { if (box) box.remove(); box = null; items = []; };
+    const part = v => sep ? v.slice(v.lastIndexOf(sep) + 1) : v;
+    const show = () => {
+      items = flAcSugg(part(inp.value)); if (!items.length) return hide();
+      if (!box) { box = document.createElement('div'); box.className = 'fl-ac fl-ui mbu-ui'; root.appendChild(box);
+        box.addEventListener('mousedown', e => { const b = e.target.closest('[data-k]'); if (b) { e.preventDefault(); on = +b.dataset.k; pick(); } }); }
+      on = Math.min(on, items.length - 1);
+      box.innerHTML = items.map((x, k) => '<button type="button" data-k="' + k + '"' + (k === on ? ' class="on"' : '') + '>' + esc(x.n) + (x.g ? '<small>genre</small>' : '') + '</button>').join('');
+      const r = inp.getBoundingClientRect(); box.style.left = r.left + 'px'; box.style.top = (r.bottom + 4) + 'px';
+    };
+    const pick = () => {
+      const x = items[on]; if (!x) return; const v = inp.value, i = sep ? v.lastIndexOf(sep) : -1;
+      inp.value = (i >= 0 ? v.slice(0, i + 1) + ' ' : '') + x.n; hide();
+      if (!sep) inp.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+      inp.focus();
+    };
+    root.addEventListener('input', e => { if (e.target.matches && e.target.matches(match)) { inp = e.target; on = 0; show(); } });
+    root.addEventListener('keydown', e => {
+      if (!box || e.target !== inp) return;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); on = (on + (e.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length; show(); }
+      else if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); e.stopImmediatePropagation(); pick(); }
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); hide(); }
+    }, true);
+    root.addEventListener('focusout', e => { if (e.target === inp) setTimeout(hide, 0); });
+    return hide;
+  }
   function closeMenu() { if (menuOff) menuOff(); menuOff = null; if (menu) menu.remove(); menu = null; }
   function openMenu(btn, name) {
     closeMenu();
@@ -3690,6 +3726,7 @@
       closeMenu(); S.sel.delete(name); to.forEach(t => S.sel.add(t.toLowerCase()));
       addRule(from, to);
     };
+    flAc(menu, '[data-m=to]', ';');
     inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); doMap(); } else if (ev.key === 'Escape') { ev.stopPropagation(); closeMenu(); } });
     menu.addEventListener('click', ev => {
       const b = ev.target.closest('[data-m]'); if (!b || b === inp) return;
@@ -3751,6 +3788,7 @@
     if (document.querySelector('.fl-cfg')) return;
     const ov = document.createElement('div');
     ov.className = 'mbu-ov fl-cfg fl-ui mbu-ui';
+    const acOff = flAc(ov, '.fl-chips input', '');
     // the mapping table works on rows; the text in CFG.mapper is what is kept, exported and imported
     let rows = lines(CFG.mapper).filter(l => !l.startsWith('#')).map(l => {
       const m = l.match(/^(.*?)\s*(?:→|->)\s*(.*)$/);
@@ -3809,7 +3847,7 @@
       + '<div class="fl-tabs"></div><div class="mbu-ov-body"></div></div>';
     document.body.appendChild(ov); mbuCfgDrag(ov.querySelector('.mbu-ov-panel'));   // on a phone it fills the screen
     paint();
-    const close = () => { ov.remove(); document.removeEventListener('keydown', onKey, true); rebuild(); draw(); };
+    const close = () => { acOff(); ov.remove(); document.removeEventListener('keydown', onKey, true); rebuild(); draw(); };
     const onKey = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
     document.addEventListener('keydown', onKey, true);
     ov.addEventListener('mousedown', e => { if (e.target === ov) close(); });
