@@ -1959,7 +1959,9 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         var _mbuThemeT = 0;
         var _mbuThemeSoon = function () {
             clearTimeout(_mbuThemeT);
-            _mbuThemeT = setTimeout(mbuTheme, 150);
+            // #1095: read in the next frame, where the browser recalculates style anyway; from a bare timer
+            // getComputedStyle recalculated the whole release editor on its own, about 90 ms a call
+            _mbuThemeT = setTimeout(function () { requestAnimationFrame(mbuTheme); }, 150);
         };
         var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
         _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
@@ -1983,8 +1985,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             if (_mbuMq.addEventListener) _mbuMq.addEventListener('change', _mbuThemeSoon);
             else if (_mbuMq.addListener) _mbuMq.addListener(_mbuThemeSoon);
         } catch (e) {}
-        setTimeout(mbuTheme, 400);
-        setTimeout(mbuTheme, 2000);
+        setTimeout(function () { requestAnimationFrame(mbuTheme); }, 400);
+        setTimeout(function () { requestAnimationFrame(mbuTheme); }, 2000);
     } catch (e) { /* no observer, no theme switching — the light defaults still apply */ } }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mbuThemeStart, { once: true });
     else mbuThemeStart();

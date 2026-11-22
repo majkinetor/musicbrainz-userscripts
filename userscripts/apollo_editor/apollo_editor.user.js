@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.172551
+// @version      2026.11.22.175221
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -7103,7 +7103,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       var _mbuThemeT = 0;
       var _mbuThemeSoon = function () {
           clearTimeout(_mbuThemeT);
-          _mbuThemeT = setTimeout(mbuTheme, 150);
+          // #1095: read in the next frame, where the browser recalculates style anyway; from a bare timer
+          // getComputedStyle recalculated the whole release editor on its own, about 90 ms a call
+          _mbuThemeT = setTimeout(function () { requestAnimationFrame(mbuTheme); }, 150);
       };
       var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
       _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
@@ -7127,8 +7129,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           if (_mbuMq.addEventListener) _mbuMq.addEventListener('change', _mbuThemeSoon);
           else if (_mbuMq.addListener) _mbuMq.addListener(_mbuThemeSoon);
       } catch (e) {}
-      setTimeout(mbuTheme, 400);
-      setTimeout(mbuTheme, 2000);
+      setTimeout(function () { requestAnimationFrame(mbuTheme); }, 400);
+      setTimeout(function () { requestAnimationFrame(mbuTheme); }, 2000);
   } catch (e) { /* no observer, no theme switching — the light defaults still apply */ } }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mbuThemeStart, { once: true });
   else mbuThemeStart();
@@ -8273,7 +8275,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
        content instead, capped to the viewport. And a flyout kept open only by :focus-within (a ticked
        checkbox keeps focus) closes while you hover another collapsed tool — two flyouts overlapped. */
     .tc-opt.tc-collapsed > :not(.tc-optname){width:max-content;max-width:min(720px,92vw);white-space:nowrap;flex-wrap:wrap;align-items:center;row-gap:4px}
-    .tc-tools:has(.tc-opt.tc-collapsed:hover) .tc-opt.tc-collapsed:focus-within:not(:hover) > :not(.tc-optname){display:none}
+    /* #1095: .tc-flyhover is set from JS (makeToolGroup) while a collapsed tool is hovered. It was
+       .tc-tools:has(.tc-opt.tc-collapsed:hover), and with its subject a bare :not() Chrome answered every
+       DOM insertion anywhere on the page with a style recalc of the whole document (~80ms a frame in the
+       release editor's load, and on every Knockout re-render after). */
+    .tc-tools.tc-flyhover .tc-opt.tc-collapsed:focus-within:not(:hover) > :not(.tc-optname){display:none}
     /* #280 — Customize tools popover */
     .tc-toolcfg{position:fixed;z-index:100002;background:var(--mbu-bg);border:1px solid var(--mbu-accent);border-radius:9px;box-shadow:0 10px 30px rgba(40,20,80,.32);padding:8px 0 4px;font:13px Arial;width:340px}
     .tc-tc-h{font-weight:800;color:var(--mbu-accent-deep-text);padding:3px 14px 8px}
@@ -9963,13 +9969,33 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
      The same happened on every other re-fill (majkinetor: a background-created
      artist landing, [Aa], "the problem appears on various places"), so every
      render entry point keeps it: rerender, loadAndRender, rebuild, renderRecBody. */
+  /* #1095: the positions come from scroll events, not from reading the layout. Walking the
+     table's ancestors for scrollHeight and scrollTop forced a full layout of the editor before
+     every re-fill and another after it; a Discogs check re-fills every 300 ms, which was most
+     of the 90-110 ms long tasks while the editor opens. Only what has scrolled is kept. */
+  let _scrollAt = null;
+  function scrollAt() {
+    if (_scrollAt) return _scrollAt;
+    const se = document.scrollingElement || document.documentElement;
+    _scrollAt = new Map();
+    if (se.scrollTop) _scrollAt.set(se, se.scrollTop);   // the browser may have restored it before we started listening
+    document.addEventListener('scroll', e => {
+      const n = e.target === document ? se : e.target;
+      if (!n || n.nodeType !== 1) return;
+      const top = n.scrollTop;
+      if (top) _scrollAt.set(n, top); else _scrollAt.delete(n);
+    }, { capture: true, passive: true });
+    return _scrollAt;
+  }
   function keepScroll() {
-    const at = [[document.scrollingElement || document.documentElement, 0]];
-    const seen = new Set();
-    [ACTIVE.tbody, ...(ACTIVE.sections || []).map(s => s.tbody), document.querySelector('#tc-recwrap tbody')].forEach(tb => {
-      for (let n = tb && tb.parentElement; n && n !== document.body; n = n.parentElement) if (n.scrollHeight > n.clientHeight && !seen.has(n)) { seen.add(n); at.push([n, 0]); }
+    const se = document.scrollingElement || document.documentElement;
+    const tbs = [ACTIVE.tbody, ...(ACTIVE.sections || []).map(s => s.tbody), document.querySelector('#tc-recwrap tbody')].filter(Boolean);
+    const at = [];
+    scrollAt().forEach((top, n) => {
+      if (!n.isConnected) { _scrollAt.delete(n); return; }
+      if (n === se || tbs.some(tb => n.contains(tb))) at.push([n, top]);
     });
-    at.forEach(p => { p[1] = p[0].scrollTop; });
+    if (!at.length) return () => {};   // nothing scrolled: nothing a re-fill can clamp
     // clamped = only where the view sits at the top now: a later call (after matching) mustn't undo the user's own scrolling
     return clamped => at.forEach(([n, top]) => {
       if (!n.isConnected || n.scrollTop === top || (clamped && n.scrollTop !== 0)) return;
@@ -11211,6 +11237,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // preview on the whole group (not just the name) so it persists while the cursor
     // moves onto the params/flyout — mouseenter/leave ignore parent↔descendant moves
     if (act === 'guesscase') { grp.onmouseenter = () => previewAllGuess(true); grp.onmouseleave = () => previewAllGuess(false); }
+    // #1095: marks the toolbar while a collapsed tool is hovered, so a flyout held open only by focus closes (see .tc-flyhover)
+    const flyHover = on => { const tools = grp.closest('.tc-tools'); if (tools) tools.classList.toggle('tc-flyhover', on && grp.classList.contains('tc-collapsed')); };
+    grp.addEventListener('mouseenter', () => flyHover(true));
+    grp.addEventListener('mouseleave', () => flyHover(false));
     if (t.hideParams) grp.classList.add('tc-collapsed');
     setTitle();
     grp.appendChild(name);
@@ -11890,7 +11920,16 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function tlWant() { return apolloEnabled() && SETTINGS.replaceTracklist !== false; }
   function recWant() { return apolloEnabled() && SETTINGS.replaceRecordings !== false; }
   function riWant() { return apolloEnabled() && SETTINGS.replaceReleaseInfo !== false; }
-  function releaseInfoVisible() { const p = document.getElementById('information'); return !!(p && p.offsetParent !== null); }
+  // #1095: whether a tab panel is shown, read from the attributes jQuery-UI sets (display:none, aria-hidden) on it and its
+  // parents, not offsetParent: the 500ms tab watcher read offsetParent first in its tick, so it paid for a forced layout of
+  // whatever MusicBrainz had just rendered (190ms during the editor's load). Matches offsetParent at every step of a load
+  // and a tab switch.
+  function panelShown(id) {
+    const p = document.getElementById(id); if (!p) return false;
+    for (let n = p; n && n.nodeType === 1; n = n.parentElement) if (n.hidden || n.style.display === 'none' || n.getAttribute('aria-hidden') === 'true') return false;
+    return true;
+  }
+  function releaseInfoVisible() { return panelShown('information'); }
   function apolloOn() { return apolloEnabled(); }
   // #695: the launcher is an icon, in colour while Apollo is on and monochrome while off; the tooltip says what a click does
   function relabelLauncher() {
@@ -11923,7 +11962,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     document.body.appendChild(b); relabelLauncher();
     mbRestackCorner('br');
   }
-  function tracklistVisible() { const p = document.getElementById('tracklist'); return !!(p && p.offsetParent !== null); }   // the Tracklist tab panel is shown
+  function tracklistVisible() { return panelShown('tracklist'); }   // the Tracklist tab panel is shown
   let _tlPrev = false, _recPrev = false, _tlRefreshed = false;
   // #145: the 500ms watcher means switching tab (or toggling Apollo, then visiting a tab) paints the
   // stale/native table for up to half a second before the takeover is (re)applied. Catch the tab-nav
@@ -14898,7 +14937,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     _recPopReposition();
   }
   // the Recordings tab panel (#recordings) — check the PANEL not the inner table (we hide the table)
-  function recordingsVisible() { const p = document.getElementById('recordings'); return !!(p && p.offsetParent !== null); }
+  function recordingsVisible() { return panelShown('recordings'); }
   // hide the native recording-assignment table and render the Apollo comparison table in its place.
   // Both read/write the same MB model, so toggling Original/Apollo lets you work in either view (#119).
   function showRecMirror() {
@@ -15299,11 +15338,30 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   // stack the sticky Apollo toolbars BELOW the frozen entity-tab row (both default to top:0 and would
   // otherwise overlap, hiding the pinned tab row). The row height is dynamic, so measure it each sync.
+  // #1095: the height comes from a ResizeObserver, not offsetHeight: this runs on every tick, and a tick follows
+  // MB's own DOM writes, so reading it there laid the whole editor out (about 290 ms of a load)
+  let _navBarRo = null, _navBarObserved = null, _navBarH = 0;
+  function navBarHeight(tabs) {
+    if (!tabs) return 0;
+    if (_navBarObserved !== tabs) {
+      if (!_navBarRo) _navBarRo = new ResizeObserver(es => {
+        const h = Math.round(es[es.length - 1].target.offsetHeight);   // laid out already: inside the observer this costs nothing
+        if (h === _navBarH) return;
+        Log.cat('System').debug('nav bar height:', _navBarH + ' → ' + h);
+        _navBarH = h; updateStickyOffsets();
+      });
+      if (_navBarObserved) _navBarRo.unobserve(_navBarObserved);
+      _navBarObserved = tabs; _navBarRo.observe(tabs);
+      _navBarH = tabs.offsetHeight;   // once per bar
+    }
+    return _navBarH;
+  }
   function updateStickyOffsets() {
     const tabs = document.getElementById('tc-nav-bar');   // #140: the full-width nav bar is the frozen header now
-    const h = (navOn() && tabs) ? tabs.offsetHeight : 0;
-    const w = document.getElementById('tc-mirror-wrap'); if (w) w.style.top = h ? h + 'px' : '';
-    const r = document.querySelector('#tc-recwrap .tc-rec-tb'); if (r) r.style.top = h ? h + 'px' : '';
+    const h = navOn() && tabs ? navBarHeight(tabs) : 0;
+    const top = h ? h + 'px' : '';
+    const w = document.getElementById('tc-mirror-wrap'); if (w && w.style.top !== top) w.style.top = top;
+    const r = document.querySelector('#tc-recwrap .tc-rec-tb'); if (r && r.style.top !== top) r.style.top = top;
   }
   // the native "Add medium" OPENER — it lives in the editor footer (present on the Tracklist step) and
   // opens MB's add-medium parser dialog. (NB: the button inside #add-medium-dialog is the dialog's commit
@@ -17901,9 +17959,18 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const out = new Set();
     const isHelp = e => !e.querySelector('input,button,select,textarea');   // a functional editor bubble (URL cleanup, add/edit link) has controls — never hide it
     document.querySelectorAll('#release-editor .bubble, #release-editor .guidance, #release-editor .guidance-popover, #page .bubble').forEach(e => { if (isHelp(e)) out.add(e); });
-    [...document.querySelectorAll('#page div')].forEach(e => {
-      if (e.offsetParent === null || document.getElementById('information')?.contains(e)) return;
-      if (e.querySelector('a[href*="style"]') && (e.textContent || '').length < 400 && !e.querySelector('input,button,select,textarea,table,fieldset,h2')) out.add(e);
+    // #1095: walk up from the style links instead of testing every div on the page; offsetParent (a layout read) goes last,
+    // so only the few candidates left are measured
+    const page = document.getElementById('page'), info = document.getElementById('information');
+    if (!page) return [...out];
+    const seen = new Set();
+    page.querySelectorAll('a[href*="style"]').forEach(a => {
+      for (let e = a.parentElement; e && e !== page; e = e.parentElement) {
+        if (e.tagName !== 'DIV' || seen.has(e)) continue;
+        seen.add(e);
+        if (info?.contains(e) || (e.textContent || '').length >= 400 || e.querySelector('input,button,select,textarea,table,fieldset,h2')) continue;
+        if (e.offsetParent !== null) out.add(e);
+      }
     });
     return [...out];
   }

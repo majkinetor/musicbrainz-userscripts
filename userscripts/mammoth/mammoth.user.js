@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.164333
+// @version      2026.11.22.175221
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg==
@@ -2103,7 +2103,9 @@
       var _mbuThemeT = 0;
       var _mbuThemeSoon = function () {
           clearTimeout(_mbuThemeT);
-          _mbuThemeT = setTimeout(mbuTheme, 150);
+          // #1095: read in the next frame, where the browser recalculates style anyway; from a bare timer
+          // getComputedStyle recalculated the whole release editor on its own, about 90 ms a call
+          _mbuThemeT = setTimeout(function () { requestAnimationFrame(mbuTheme); }, 150);
       };
       var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
       _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
@@ -2127,8 +2129,8 @@
           if (_mbuMq.addEventListener) _mbuMq.addEventListener('change', _mbuThemeSoon);
           else if (_mbuMq.addListener) _mbuMq.addListener(_mbuThemeSoon);
       } catch (e) {}
-      setTimeout(mbuTheme, 400);
-      setTimeout(mbuTheme, 2000);
+      setTimeout(function () { requestAnimationFrame(mbuTheme); }, 400);
+      setTimeout(function () { requestAnimationFrame(mbuTheme); }, 2000);
   } catch (e) { /* no observer, no theme switching — the light defaults still apply */ } }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mbuThemeStart, { once: true });
   else mbuThemeStart();
@@ -3371,12 +3373,20 @@
   // #462: MB's jQuery-UI autocomplete menu (ul.ui-autocomplete) opens by toggling `display`
   // — a style mutation the childList observer above never sees — so watch each menu's attrs
   // directly and flag `mmthf-acopen` while any is visible, which hides overlapping babies.
+  // #1095: a closed menu has an inline display:none (jQuery UI's hide), so the layout reads run only for menus that may be open
+  const acMenus = new Set();
   const syncAc = () => {
-    const open = [...document.querySelectorAll('ul.ui-autocomplete')].some(u => u.offsetParent !== null && getComputedStyle(u).display !== 'none');
+    const open = [...acMenus].some(u => u.isConnected && u.style.display !== 'none' && u.offsetParent !== null && getComputedStyle(u).display !== 'none');
     mbuCls(document.documentElement, 'mmthf-acopen', open);
   };
   const acObs = new MutationObserver(syncAc);
-  const watchAcMenus = () => { document.querySelectorAll('ul.ui-autocomplete').forEach(u => { if (!u._mmthfAc) { u._mmthfAc = 1; acObs.observe(u, { attributes: true, attributeFilter: ['style', 'class'] }); } }); syncAc(); };
+  // a page burst re-syncs only when a menu came or went; the menus' own style/class changes come through acObs
+  const watchAcMenus = () => {
+    let changed = false;
+    acMenus.forEach(u => { if (!u.isConnected) { acMenus.delete(u); changed = true; } });
+    document.querySelectorAll('ul.ui-autocomplete').forEach(u => { if (!acMenus.has(u)) { acMenus.add(u); changed = true; if (!u._mmthfAc) { u._mmthfAc = 1; acObs.observe(u, { attributes: true, attributeFilter: ['style', 'class'] }); } } });
+    if (changed) syncAc();
+  };
   // #851: String Theory's settings open these settings on any page, whether this script runs here or not
   document.addEventListener('mbu-open-settings', e => { if (e.detail === 'mammoth' && !e.defaultPrevented) { e.preventDefault(); if (document.querySelector('.mmth-cfg')) closePop(); else openSettings(null); } });
   if (SETTINGS_ONLY) { if (document.querySelector('.mmth-cfg')) closePop(); else openSettings(null); return; }

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.172551
+// @version      2026.11.22.175221
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2954,7 +2954,9 @@
       var _mbuThemeT = 0;
       var _mbuThemeSoon = function () {
           clearTimeout(_mbuThemeT);
-          _mbuThemeT = setTimeout(mbuTheme, 150);
+          // #1095: read in the next frame, where the browser recalculates style anyway; from a bare timer
+          // getComputedStyle recalculated the whole release editor on its own, about 90 ms a call
+          _mbuThemeT = setTimeout(function () { requestAnimationFrame(mbuTheme); }, 150);
       };
       var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
       _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
@@ -2978,8 +2980,8 @@
           if (_mbuMq.addEventListener) _mbuMq.addEventListener('change', _mbuThemeSoon);
           else if (_mbuMq.addListener) _mbuMq.addListener(_mbuThemeSoon);
       } catch (e) {}
-      setTimeout(mbuTheme, 400);
-      setTimeout(mbuTheme, 2000);
+      setTimeout(function () { requestAnimationFrame(mbuTheme); }, 400);
+      setTimeout(function () { requestAnimationFrame(mbuTheme); }, 2000);
   } catch (e) { /* no observer, no theme switching — the light defaults still apply */ } }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mbuThemeStart, { once: true });
   else mbuThemeStart();
