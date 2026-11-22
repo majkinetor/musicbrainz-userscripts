@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.133049
+// @version      2026.11.22.140652
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -160,6 +160,7 @@
           } catch (e) {}
       });
   }
+  function mbnRid() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 6); }
   function mbnTrace(ev) {
       try {
           const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', swept: 0 });
@@ -193,7 +194,7 @@
   async function mbnSlot(o) {
       o = o || {};
       const t0 = Date.now(), background = o.background !== false;
-      const tr = (e, x) => mbnTrace(Object.assign({ e, l: o.label || '', b: background ? 1 : 0 }, x));
+      const tr = (e, x) => mbnTrace(Object.assign({ e, l: o.label || '', b: background ? 1 : 0, id: o.id || undefined }, x));
       // someone else's lead: a background request books its slot only once it ends or lapses
       // #938: a cap counted from each new `now` moves with it and never caps; count it from when
       // this wait first saw the value, so a broken one holds at most the longest real one
@@ -291,7 +292,7 @@
       for (const [k, n] of [['lim', 'X-RateLimit-Limit'], ['rem', 'X-RateLimit-Remaining'], ['rst', 'X-RateLimit-Reset'], ['who', 'X-RateLimit-Who']]) {
           try { const v = header ? header(n) : null; if (v != null && v !== '') rl[k] = String(v).slice(0, 40); } catch (e) {}
       }
-      const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, l: o.label || '', b: o.background === false ? 0 : 1, hot: s ? s.hot || 0 : undefined }, rl, x));
+      const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, l: o.label || '', b: o.background === false ? 0 : 1, id: o.id || undefined, hot: s ? s.hot || 0 : undefined }, rl, x));
       if (status === 429 || status === 503) {
           const raw = header ? header('Retry-After') : null;
           const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
@@ -358,6 +359,8 @@
           try { q = new URL(String(url), location.href).searchParams.has('query'); } catch (e) {}
           o = Object.assign({}, o, { search: q });
       }
+      // one id for the request and its retries, so the Gate log keeps it apart from a twin
+      if (!o.id) o = Object.assign({}, o, { id: mbnRid() });
       // `at` gives the URL at the moment the request leaves: a queued read's inc list can still grow
       const go = async at => {
           for (let attempt = 1; ; attempt++) {
@@ -365,7 +368,7 @@
               if (!slot.ok) return null;
               let r;
               try { r = await mbnWsFetch(at ? at() : url, init); }
-              catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
+              catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, id: o.id, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
               const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
               if (!a.throttled || give(attempt)) return r;
           }

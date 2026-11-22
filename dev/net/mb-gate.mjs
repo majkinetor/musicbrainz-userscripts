@@ -199,6 +199,13 @@ export function mbnSleep(ms, cancelled) {
  * so tabs never overwrite each other's); a tab's trace idle for an hour is dropped by the next.
  * `ev.e` is the kind: lead, book, cancel, start, answer, error, lead+, lead-, check.
  */
+/**
+ * A request id for the Gate log: a caller gives the same o.id to mbnSlot and mbnAnswer (mbnFetch
+ * does), and the log then keeps two requests with the same label apart. Without one, the log
+ * pairs an answer with its start by the label.
+ */
+export function mbnRid() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 6); }
+
 export function mbnTrace(ev) {
     try {
         const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', swept: 0 });
@@ -244,7 +251,7 @@ export function mbnTrace(ev) {
 export async function mbnSlot(o) {
     o = o || {};
     const t0 = Date.now(), background = o.background !== false;
-    const tr = (e, x) => mbnTrace(Object.assign({ e, l: o.label || '', b: background ? 1 : 0 }, x));
+    const tr = (e, x) => mbnTrace(Object.assign({ e, l: o.label || '', b: background ? 1 : 0, id: o.id || undefined }, x));
     // someone else's lead: a background request books its slot only once it ends or lapses
     // #938: a cap counted from each new `now` moves with it and never caps; count it from when
     // this wait first saw the value, so a broken one holds at most the longest real one
@@ -354,7 +361,7 @@ export async function mbnAnswer(status, header, o) {
     for (const [k, n] of [['lim', 'X-RateLimit-Limit'], ['rem', 'X-RateLimit-Remaining'], ['rst', 'X-RateLimit-Reset'], ['who', 'X-RateLimit-Who']]) {
         try { const v = header ? header(n) : null; if (v != null && v !== '') rl[k] = String(v).slice(0, 40); } catch (e) {}
     }
-    const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, l: o.label || '', b: o.background === false ? 0 : 1, hot: s ? s.hot || 0 : undefined }, rl, x));
+    const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, l: o.label || '', b: o.background === false ? 0 : 1, id: o.id || undefined, hot: s ? s.hot || 0 : undefined }, rl, x));
     if (status === 429 || status === 503) {
         const raw = header ? header('Retry-After') : null;
         const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
@@ -433,6 +440,8 @@ export async function mbnFetch(url, init, o) {
         try { q = new URL(String(url), location.href).searchParams.has('query'); } catch (e) {}
         o = Object.assign({}, o, { search: q });
     }
+    // one id for the request and its retries, so the Gate log keeps it apart from a twin
+    if (!o.id) o = Object.assign({}, o, { id: mbnRid() });
     // `at` gives the URL at the moment the request leaves: a queued read's inc list can still grow
     const go = async at => {
         for (let attempt = 1; ; attempt++) {
@@ -440,7 +449,7 @@ export async function mbnFetch(url, init, o) {
             if (!slot.ok) return null;
             let r;
             try { r = await mbnWsFetch(at ? at() : url, init); }
-            catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
+            catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, id: o.id, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
             const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
             if (!a.throttled || give(attempt)) return r;
         }
@@ -763,5 +772,5 @@ export function mbnReverify(url, init, o) {
 /** What sync-gate.mjs inlines, in order. */
 export const MBN_INLINE = {
     consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_MAX_HOLD, MBN_MAX_LEAD, MBN_TRACE_MAX, MBN_MERGE_WAIT, MBN_CACHE_TTL, MBN_CACHE_MAX, MBN_INC_ALONE },
-    fns: [mbnGated, mbnState, mbnSleep, mbnTrace, mbnSlot, mbnLead, mbnAnswer, mbnFetch, mbnEdited, mbnEditEpoch, mbnCacheUrl, mbnCacheGet, mbnCachePut, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
+    fns: [mbnGated, mbnState, mbnSleep, mbnRid, mbnTrace, mbnSlot, mbnLead, mbnAnswer, mbnFetch, mbnEdited, mbnEditEpoch, mbnCacheUrl, mbnCacheGet, mbnCachePut, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
 };

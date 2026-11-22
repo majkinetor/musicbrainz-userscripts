@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.22.134731
+// @version      2026.11.22.140653
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -191,6 +191,7 @@ function mbnSleep(ms, cancelled) {
         } catch (e) {}
     });
 }
+function mbnRid() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 6); }
 function mbnTrace(ev) {
     try {
         const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', swept: 0 });
@@ -224,7 +225,7 @@ function mbnTrace(ev) {
 async function mbnSlot(o) {
     o = o || {};
     const t0 = Date.now(), background = o.background !== false;
-    const tr = (e, x) => mbnTrace(Object.assign({ e, l: o.label || '', b: background ? 1 : 0 }, x));
+    const tr = (e, x) => mbnTrace(Object.assign({ e, l: o.label || '', b: background ? 1 : 0, id: o.id || undefined }, x));
     // someone else's lead: a background request books its slot only once it ends or lapses
     // #938: a cap counted from each new `now` moves with it and never caps; count it from when
     // this wait first saw the value, so a broken one holds at most the longest real one
@@ -322,7 +323,7 @@ async function mbnAnswer(status, header, o) {
     for (const [k, n] of [['lim', 'X-RateLimit-Limit'], ['rem', 'X-RateLimit-Remaining'], ['rst', 'X-RateLimit-Reset'], ['who', 'X-RateLimit-Who']]) {
         try { const v = header ? header(n) : null; if (v != null && v !== '') rl[k] = String(v).slice(0, 40); } catch (e) {}
     }
-    const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, l: o.label || '', b: o.background === false ? 0 : 1, hot: s ? s.hot || 0 : undefined }, rl, x));
+    const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, l: o.label || '', b: o.background === false ? 0 : 1, id: o.id || undefined, hot: s ? s.hot || 0 : undefined }, rl, x));
     if (status === 429 || status === 503) {
         const raw = header ? header('Retry-After') : null;
         const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
@@ -389,6 +390,8 @@ async function mbnFetch(url, init, o) {
         try { q = new URL(String(url), location.href).searchParams.has('query'); } catch (e) {}
         o = Object.assign({}, o, { search: q });
     }
+    // one id for the request and its retries, so the Gate log keeps it apart from a twin
+    if (!o.id) o = Object.assign({}, o, { id: mbnRid() });
     // `at` gives the URL at the moment the request leaves: a queued read's inc list can still grow
     const go = async at => {
         for (let attempt = 1; ; attempt++) {
@@ -396,7 +399,7 @@ async function mbnFetch(url, init, o) {
             if (!slot.ok) return null;
             let r;
             try { r = await mbnWsFetch(at ? at() : url, init); }
-            catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
+            catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, id: o.id, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
             const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
             if (!a.throttled || give(attempt)) return r;
         }

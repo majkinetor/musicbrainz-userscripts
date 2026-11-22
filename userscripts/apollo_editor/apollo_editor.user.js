@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.133048
+// @version      2026.11.22.140652
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -210,6 +210,7 @@
           } catch (e) {}
       });
   }
+  function mbnRid() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 6); }
   function mbnTrace(ev) {
       try {
           const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', swept: 0 });
@@ -243,7 +244,7 @@
   async function mbnSlot(o) {
       o = o || {};
       const t0 = Date.now(), background = o.background !== false;
-      const tr = (e, x) => mbnTrace(Object.assign({ e, l: o.label || '', b: background ? 1 : 0 }, x));
+      const tr = (e, x) => mbnTrace(Object.assign({ e, l: o.label || '', b: background ? 1 : 0, id: o.id || undefined }, x));
       // someone else's lead: a background request books its slot only once it ends or lapses
       // #938: a cap counted from each new `now` moves with it and never caps; count it from when
       // this wait first saw the value, so a broken one holds at most the longest real one
@@ -341,7 +342,7 @@
       for (const [k, n] of [['lim', 'X-RateLimit-Limit'], ['rem', 'X-RateLimit-Remaining'], ['rst', 'X-RateLimit-Reset'], ['who', 'X-RateLimit-Who']]) {
           try { const v = header ? header(n) : null; if (v != null && v !== '') rl[k] = String(v).slice(0, 40); } catch (e) {}
       }
-      const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, l: o.label || '', b: o.background === false ? 0 : 1, hot: s ? s.hot || 0 : undefined }, rl, x));
+      const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, l: o.label || '', b: o.background === false ? 0 : 1, id: o.id || undefined, hot: s ? s.hot || 0 : undefined }, rl, x));
       if (status === 429 || status === 503) {
           const raw = header ? header('Retry-After') : null;
           const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
@@ -408,6 +409,8 @@
           try { q = new URL(String(url), location.href).searchParams.has('query'); } catch (e) {}
           o = Object.assign({}, o, { search: q });
       }
+      // one id for the request and its retries, so the Gate log keeps it apart from a twin
+      if (!o.id) o = Object.assign({}, o, { id: mbnRid() });
       // `at` gives the URL at the moment the request leaves: a queued read's inc list can still grow
       const go = async at => {
           for (let attempt = 1; ; attempt++) {
@@ -415,7 +418,7 @@
               if (!slot.ok) return null;
               let r;
               try { r = await mbnWsFetch(at ? at() : url, init); }
-              catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
+              catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, id: o.id, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
               const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
               if (!a.throttled || give(attempt)) return r;
           }
@@ -2264,7 +2267,7 @@
     const q = mbmIdentityQuery(name, kind); if (!q) return null;
     // a throttled lookup must NOT be cached as "no match" — that would freeze a
     // transient 503 into a permanent auto-match failure for this name (#555)
-    const res = await wsJson(`${ORIGIN}/ws/2/${kind}?query=${encodeURIComponent(q)}&fmt=json&limit=${MBM_EXACT_LIMIT}`, { label: kind + ' alias search' });
+    const res = await wsJson(`${ORIGIN}/ws/2/${kind}?query=${encodeURIComponent(q)}&fmt=json&limit=${MBM_EXACT_LIMIT}`, { label: kind + ' alias search: ' + name });
     // #999: a Stop drops the queued lookups; that's not a failure, so it isn't warned about
     if (res.stale) { Log.cat(kind === 'label' ? 'Label' : 'Artist').debug('alias search dropped at Stop:', name); return null; }
     if (!res.json) { Log.cat(kind === 'label' ? 'Label' : 'Artist').warn('alias search failed:', name, '— not cached, a later pass retries'); return null; }
@@ -3321,7 +3324,7 @@ Click: open the label`;
     // The wait is interruptible: a lane parked in the gate cannot notice a Stop otherwise,
     // and a pass whose lanes are all parked looks unstoppable (#577).
     let slot;
-    try { slot = await mbnSlot({ background: !o.stale, label: o.label || 'ws2', log: wsGateLog, cancelled, search: wsIsSearch(url) }); }
+    try { slot = await mbnSlot({ background: !o.stale, label: o.label || 'ws2', log: wsGateLog, cancelled, search: wsIsSearch(url), id: o.id }); }
     catch (e) { free(); throw e; }
     if (!slot.ok || cancelled()) { free(); return null; }   // caller treats null as superseded
     const p = mbnWsFetch(url, { headers: { Accept: 'application/json' } });
@@ -3341,7 +3344,8 @@ Click: open the label`;
   }
   // tell the gate how MusicBrainz answered: a 429/503 holds everybody, a clean answer earns room back
   // with the label its slot had (wsGet's): the Gate log pairs the answer with its start by it
-  const wsAnswer = (r, label, background, search) => mbnAnswer(r.status, n => (r.headers && r.headers.get ? r.headers.get(n) : null), { log: wsGateLog, label: label || 'ws2', background, search: !!search });
+  // o.id: the request's id (wsJsonOnce's), the same one its slot had
+  const wsAnswer = (r, label, background, search, id) => mbnAnswer(r.status, n => (r.headers && r.headers.get ? r.headers.get(n) : null), { log: wsGateLog, label: label || 'ws2', background, search: !!search, id });
   // EVERY /ws/2 read goes through here. MusicBrainz answers a throttled request
   // with HTTP 503 (or 429) and a body of `{"error":"…"}` — no `recordings` /
   // `artists` key. Callers that did `fetch(url).then(r => r.json())` therefore
@@ -3389,7 +3393,8 @@ Click: open the label`;
     return p;
   }
   async function wsJsonOnce(url, opts) {
-    const o = opts || {}, label = o.label || 'ws2', gen = _stopGen;
+    // one id for the request and its retries: the Gate log keeps two searches with one label apart
+    const o = Object.assign({}, opts, { id: mbnRid() }), label = o.label || 'ws2', gen = _stopGen;
     for (let attempt = 1; attempt <= WS_TRIES; attempt++) {
       if (!o.stale && gen !== _stopGen) return { stale: true };
       let r;
@@ -3397,7 +3402,7 @@ Click: open the label`;
       catch (e) { Log.cat('MusicBrainz').warn(label + ': network error —', e.message, '(attempt ' + attempt + '/' + WS_TRIES + ')', url); await _sleep(600 * attempt); continue; }
       if (!r || (!o.stale && gen !== _stopGen)) { Log.cat('MusicBrainz').debug(label + ': superseded while queued, dropped —', url); return { stale: true }; }
       Log.cat('MusicBrainz').debug(label + ': HTTP', r.status, url);
-      const a = await wsAnswer(r, o.label, !o.stale, wsIsSearch(url));
+      const a = await wsAnswer(r, o.label, !o.stale, wsIsSearch(url), o.id);
       if (a.throttled) {
         // #575 round 3: hold every lane, not just this one. wsGet waits in the gate for
         // the shared deadline, so the retry needs no sleep of its own — sleeping here

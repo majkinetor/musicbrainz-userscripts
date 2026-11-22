@@ -129,8 +129,9 @@ function stGateThrottled(st) { return st === 429 || st === 503; }
 function stGateTryCls(st) { return st == null ? 'go' : st === -1 ? 'bad' : stGateThrottled(st) ? 're' : st >= 500 || !st ? 'bad' : 'ok'; }
 function stGateTryTip(st) { return st == null ? 'On its way' : st === -1 ? 'Network error' : 'HTTP ' + st; }
 
-// The events, grouped into requests. A trace event carries no request id, so a request is the
-// run of events with the same tab, script, label and kind: it ends at an answer that is not a
+// The events, grouped into requests. An event with an id (mbnRid) belongs to that request. One
+// without (an older event, or a caller that gives none) goes by the run of events with the same
+// tab, script, label and kind: it ends at an answer that is not a
 // 429/503, at an error, a cancel, or a 429/503 that no retry follows within ST_GATE_RETRY (the gate
 // books the retry at once). A join is a request of its own; an event without a label (the lead,
 // the browser check) is a system row.
@@ -141,7 +142,7 @@ function stGateGroups(all, now) {
   var done = function (g, res) { g.res = res; delete open[g.key]; };
   all.forEach(function (ev) {
     if (!ev.l) { groups.push({ sys: true, id: 'y' + ev.tab + ev.t + ev.e, tab: ev.tab, s: ev.s, t: ev.t, end: ev.t, evs: [ev], tries: [] }); return; }
-    var key = ev.tab + '|' + (ev.s || '') + '|' + ev.l + '|' + ev.b, g = open[key];
+    var key = ev.tab + '|' + (ev.s || '') + '|' + (ev.id ? '#' + ev.id : ev.l + '|' + ev.b), g = open[key];
     if (g && g.pend && ev.t - g.pend > ST_GATE_RETRY) { done(g, 'gave up'); g = null; }
     if (ev.e === 'join' || ev.e === 'cache') { groups.push({ id: (ev.e === 'join' ? 'j' : 'c') + key + ev.t, key: key, tab: ev.tab, s: ev.s, l: ev.l, b: ev.b, t: ev.t, end: ev.t, evs: [ev], tries: [], res: ev.e === 'join' ? 'shared' : 'cached' }); return; }
     if (!g) { g = open[key] = { id: 'r' + key + ev.t, key: key, tab: ev.tab, s: ev.s, l: ev.l, b: ev.b, t: ev.t, end: ev.t, evs: [], tries: [] }; groups.push(g); }

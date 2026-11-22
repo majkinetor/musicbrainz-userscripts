@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.133049
+// @version      2026.11.22.140653
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -2869,6 +2869,7 @@ function mbnSleep(ms, cancelled) {
         } catch (e) {}
     });
 }
+function mbnRid() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 6); }
 function mbnTrace(ev) {
     try {
         const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', swept: 0 });
@@ -2902,7 +2903,7 @@ function mbnTrace(ev) {
 async function mbnSlot(o) {
     o = o || {};
     const t0 = Date.now(), background = o.background !== false;
-    const tr = (e, x) => mbnTrace(Object.assign({ e, l: o.label || '', b: background ? 1 : 0 }, x));
+    const tr = (e, x) => mbnTrace(Object.assign({ e, l: o.label || '', b: background ? 1 : 0, id: o.id || undefined }, x));
     // someone else's lead: a background request books its slot only once it ends or lapses
     // #938: a cap counted from each new `now` moves with it and never caps; count it from when
     // this wait first saw the value, so a broken one holds at most the longest real one
@@ -3000,7 +3001,7 @@ async function mbnAnswer(status, header, o) {
     for (const [k, n] of [['lim', 'X-RateLimit-Limit'], ['rem', 'X-RateLimit-Remaining'], ['rst', 'X-RateLimit-Reset'], ['who', 'X-RateLimit-Who']]) {
         try { const v = header ? header(n) : null; if (v != null && v !== '') rl[k] = String(v).slice(0, 40); } catch (e) {}
     }
-    const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, l: o.label || '', b: o.background === false ? 0 : 1, hot: s ? s.hot || 0 : undefined }, rl, x));
+    const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, l: o.label || '', b: o.background === false ? 0 : 1, id: o.id || undefined, hot: s ? s.hot || 0 : undefined }, rl, x));
     if (status === 429 || status === 503) {
         const raw = header ? header('Retry-After') : null;
         const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
@@ -3067,6 +3068,8 @@ async function mbnFetch(url, init, o) {
         try { q = new URL(String(url), location.href).searchParams.has('query'); } catch (e) {}
         o = Object.assign({}, o, { search: q });
     }
+    // one id for the request and its retries, so the Gate log keeps it apart from a twin
+    if (!o.id) o = Object.assign({}, o, { id: mbnRid() });
     // `at` gives the URL at the moment the request leaves: a queued read's inc list can still grow
     const go = async at => {
         for (let attempt = 1; ; attempt++) {
@@ -3074,7 +3077,7 @@ async function mbnFetch(url, init, o) {
             if (!slot.ok) return null;
             let r;
             try { r = await mbnWsFetch(at ? at() : url, init); }
-            catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
+            catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, id: o.id, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
             const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
             if (!a.throttled || give(attempt)) return r;
         }

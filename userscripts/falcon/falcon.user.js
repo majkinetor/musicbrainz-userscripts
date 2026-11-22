@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.133048
+// @version      2026.11.22.140652
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -179,6 +179,7 @@
           } catch (e) {}
       });
   }
+  function mbnRid() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 6); }
   function mbnTrace(ev) {
       try {
           const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', swept: 0 });
@@ -212,7 +213,7 @@
   async function mbnSlot(o) {
       o = o || {};
       const t0 = Date.now(), background = o.background !== false;
-      const tr = (e, x) => mbnTrace(Object.assign({ e, l: o.label || '', b: background ? 1 : 0 }, x));
+      const tr = (e, x) => mbnTrace(Object.assign({ e, l: o.label || '', b: background ? 1 : 0, id: o.id || undefined }, x));
       // someone else's lead: a background request books its slot only once it ends or lapses
       // #938: a cap counted from each new `now` moves with it and never caps; count it from when
       // this wait first saw the value, so a broken one holds at most the longest real one
@@ -310,7 +311,7 @@
       for (const [k, n] of [['lim', 'X-RateLimit-Limit'], ['rem', 'X-RateLimit-Remaining'], ['rst', 'X-RateLimit-Reset'], ['who', 'X-RateLimit-Who']]) {
           try { const v = header ? header(n) : null; if (v != null && v !== '') rl[k] = String(v).slice(0, 40); } catch (e) {}
       }
-      const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, l: o.label || '', b: o.background === false ? 0 : 1, hot: s ? s.hot || 0 : undefined }, rl, x));
+      const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, l: o.label || '', b: o.background === false ? 0 : 1, id: o.id || undefined, hot: s ? s.hot || 0 : undefined }, rl, x));
       if (status === 429 || status === 503) {
           const raw = header ? header('Retry-After') : null;
           const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
@@ -377,6 +378,8 @@
           try { q = new URL(String(url), location.href).searchParams.has('query'); } catch (e) {}
           o = Object.assign({}, o, { search: q });
       }
+      // one id for the request and its retries, so the Gate log keeps it apart from a twin
+      if (!o.id) o = Object.assign({}, o, { id: mbnRid() });
       // `at` gives the URL at the moment the request leaves: a queued read's inc list can still grow
       const go = async at => {
           for (let attempt = 1; ; attempt++) {
@@ -384,7 +387,7 @@
               if (!slot.ok) return null;
               let r;
               try { r = await mbnWsFetch(at ? at() : url, init); }
-              catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
+              catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, id: o.id, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
               const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
               if (!a.throttled || give(attempt)) return r;
           }
