@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.214835
+// @version      2026.11.22.214943
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -290,8 +290,10 @@
           if (!background) {
               const itat = s.itat || 0, hot = s.hot && now <= cool + 30000;
               // the background lane already spends the burst while its queue reaches past now: the two
-              // lanes bursting together sent five or six in one moment, and they all got a 503
-              const busy = tat > now;
+              // lanes bursting together sent five or six in one moment, and they all got a 503. Every booking
+              // moves tat, the page's own too, so tat only past itat holds background bookings: tat > now
+              // alone took the burst from the page's second request on, even with no background work at all
+              const busy = tat > Math.max(now, itat);
               at = Math.max(now, rebooked || busy ? itat : itat - (hot ? 0 : (MBN_BURST - 1) * MBN_GAP), cool);
               s.itat = Math.max(itat, at) + MBN_GAP;
           } else {

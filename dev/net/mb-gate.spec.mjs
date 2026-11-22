@@ -188,23 +188,28 @@ test('an interactive request goes ahead of queued background work; a cancelled w
   check(r.cancelled.ok === false && r.cancelMs < 800, `a cancelled wait returns at once (${r.cancelMs} ms, ok=${r.cancelled.ok})`);
 });
 
-test('the page requests have their own line: a burst, then one a second, and no burst while throttled', { tag: ['@unit'] }, async ({ context }) => {
+test('the page requests have their own line: a burst, then one a second, and no burst while throttled or busy', { tag: ['@unit'] }, async ({ context }) => {
   const a = await tab(context);
   const r = await a.evaluate(async () => {
     localStorage.clear();
-    // a full background queue does not delay them
+    const five = () => { const t0 = Date.now(); return Promise.all(Array.from({ length: 5 }, () => mbnSlot({ background: false }).then(() => Date.now() - t0))); };
+    const calm = await five();
+    // a full background queue does not delay them, but it already spends the burst: both lanes bursting at
+    // once sent five or six in one moment, and MusicBrainz answered them all with 503
+    await new Promise(z => setTimeout(z, 3000));
     for (let i = 0; i < 8; i++) mbnSlot({ label: 'bg' + i });
     await new Promise(z => setTimeout(z, 50));
-    let t0 = Date.now();
-    const calm = await Promise.all(Array.from({ length: 5 }, () => mbnSlot({ background: false }).then(() => Date.now() - t0)));
+    const busy = await five();
+    let t0;
     // throttled a moment ago (the hold is over, hot is not): one a second from the first
     await new Promise(z => setTimeout(z, 3000));
     localStorage.setItem('mbu:mb-gate', JSON.stringify({ ...JSON.parse(localStorage.getItem('mbu:mb-gate')), cool: Date.now() - 10, hot: 2, itat: 0 }));
     t0 = Date.now();
     const hot = await Promise.all(Array.from({ length: 3 }, () => mbnSlot({ background: false }).then(() => Date.now() - t0)));
-    return { calm: calm.sort((x, y) => x - y), hot: hot.sort((x, y) => x - y) };
+    return { calm: calm.sort((x, y) => x - y), busy: busy.sort((x, y) => x - y), hot: hot.sort((x, y) => x - y) };
   });
-  check(r.calm[2] < 300 && r.calm[3] >= 800 && r.calm[3] < 1400 && r.calm[4] >= 1800 && r.calm[4] < 2400, `calm: three at once ahead of the background queue, then one a second (${r.calm.join(', ')} ms)`);
+  check(r.calm[2] < 300 && r.calm[3] >= 800 && r.calm[3] < 1400 && r.calm[4] >= 1800 && r.calm[4] < 2400, `calm: three at once, then one a second (${r.calm.join(', ')} ms)`);
+  check(r.busy[0] < 300 && r.busy[1] >= 800 && r.busy[1] < 1400 && r.busy[4] < 4600, `background queue busy: ahead of it, one a second from the first (${r.busy.join(', ')} ms)`);
   check(r.hot[0] < 300 && r.hot[1] >= 800 && r.hot[2] >= 1800, `throttled: one a second from the first (${r.hot.join(', ')} ms)`);
 });
 

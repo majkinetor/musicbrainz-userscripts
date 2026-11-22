@@ -363,8 +363,10 @@ export async function mbnSlot(o) {
         if (!background) {
             const itat = s.itat || 0, hot = s.hot && now <= cool + 30000;
             // the background lane already spends the burst while its queue reaches past now: the two
-            // lanes bursting together sent five or six in one moment, and they all got a 503
-            const busy = tat > now;
+            // lanes bursting together sent five or six in one moment, and they all got a 503. Every booking
+            // moves tat, the page's own too, so tat only past itat holds background bookings: tat > now
+            // alone took the burst from the page's second request on, even with no background work at all
+            const busy = tat > Math.max(now, itat);
             at = Math.max(now, rebooked || busy ? itat : itat - (hot ? 0 : (MBN_BURST - 1) * MBN_GAP), cool);
             s.itat = Math.max(itat, at) + MBN_GAP;
         } else {
