@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.190201
+// @version      2026.11.22.190202
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -7030,6 +7030,11 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   // calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
   // That recomputes every element in the corner, whichever script owns it and
   // whatever order they loaded in, so two launchers never land on the same pixel.
+  // The restack runs once per frame for the whole page, in the next animation frame,
+  // before it is painted: every script's copy asks through one attribute on <html>,
+  // so ten asks in one task cost one restack, and a hidden frame (Mission Control's)
+  // pays nothing. Code that reads a launcher's place right after a change calls
+  // mbRestackCornerNow(corner), which restacks at once.
   // Orders in use, all bottom-right: Apollo and Art Station 10 (never on the same page), Scribe 15
   // (above Apollo on the edit page), Falcon 20, Fusion 30, Mission Control 40. Scribe is not on the shared block and keeps a copy of this.
   // The stack is a column; the shared setting cornerFlow = 'row' (mbuShared, set in String
@@ -7482,6 +7487,17 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
       }
   }
   function mbRestackCorner(corner) {
+      var html = document.documentElement;
+      var q = html.getAttribute('data-mbu-restack');
+      if (q !== null) { if (q.indexOf(corner) < 0) html.setAttribute('data-mbu-restack', q + ' ' + corner); return; }   // another copy runs it
+      html.setAttribute('data-mbu-restack', corner);
+      requestAnimationFrame(function () {
+          var all = (html.getAttribute('data-mbu-restack') || '').split(' ');
+          html.removeAttribute('data-mbu-restack');
+          all.forEach(function (c) { if (c) mbRestackCornerNow(c); });
+      });
+  }
+  function mbRestackCornerNow(corner) {
       if (!document.getElementById('mbu-quiet-css')) {
           var quiet = document.createElement('style'); quiet.id = 'mbu-quiet-css';
           quiet.textContent = ':root[data-mbu-quiet] :is([data-mb-corner],#mbu-dock-shelf){visibility:hidden!important;pointer-events:none!important}';
@@ -7535,7 +7551,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
               var again = function () {
                   if (queued) return;
                   queued = true;
-                  requestAnimationFrame(function () { queued = false; ['br', 'bl', 'tr', 'tl'].forEach(function (c) { if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCorner(c); }); });
+                  requestAnimationFrame(function () { queued = false; ['br', 'bl', 'tr', 'tl'].forEach(function (c) { if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCornerNow(c); }); });
               };
               vv.addEventListener('resize', again);
               vv.addEventListener('scroll', again);
@@ -8455,6 +8471,12 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   // so such a script never read the theme at all (#625). It starts on the parsed page.
   function mbuThemeStart() { try {
       mbuTheme();
+      // One watcher for the page: every script carries this block, and each copy ran the
+      // same reads on every change. The first copy sets the attribute and watches; the
+      // others read the attributes it writes.
+      var _mbuRoot = document.documentElement;
+      if (_mbuRoot.hasAttribute('data-mbu-theme-watch')) return;
+      _mbuRoot.setAttribute('data-mbu-theme-watch', '');
       // Stylus and friends inject after us often enough that a one-shot read is
       // wrong about half the time. Watch for stylesheets ARRIVING — head childList
       // plus the root's own attributes — and never the whole subtree: this runs on
@@ -8467,7 +8489,19 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
           // getComputedStyle recalculated the whole release editor on its own, about 90 ms a call
           _mbuThemeT = setTimeout(function () { requestAnimationFrame(mbuTheme); }, 150);
       };
-      var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
+      // In <head> only a stylesheet can change the theme: a <style> or <link> added or
+      // removed, or a <style>'s text rewritten. The scripts and tags pages add there all
+      // the time woke this and cost a full read of the page's styles each.
+      var _mbuSheet = function (n) { return !!n && (n.nodeName === 'STYLE' || n.nodeName === 'LINK'); };
+      var _mbuThemeRec = function (r) {
+          if (r.type === 'attributes') return true;
+          if (r.type === 'characterData') return _mbuSheet(r.target.parentNode);
+          if (_mbuSheet(r.target)) return true;
+          for (var i = 0; i < r.addedNodes.length; i++) if (_mbuSheet(r.addedNodes[i])) return true;
+          for (var j = 0; j < r.removedNodes.length; j++) if (_mbuSheet(r.removedNodes[j])) return true;
+          return false;
+      };
+      var _mbuThemeObs = new MutationObserver(function (recs) { if (recs.some(_mbuThemeRec)) _mbuThemeSoon(); });
       _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
       // ⚠ #569: characterData, not just childList. Until the idle thrash was fixed
       // this function ran several times a second whether or not anything had

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.175221
+// @version      2026.11.22.180411
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Amazon (CDs, vinyl and MP3 albums in its store), Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Internet Archive (audio items), Presto Music, RateYourMusic, Album of the Year, VGMdb.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -4297,7 +4297,7 @@ function togglePanel(anchor) {
         const next = Object.assign(settings(), { iconOnly: e.target.checked });
         saveSettings(next);
         const root = document.getElementById('fc-root');
-        if (root) { root.classList.toggle('fc-iconly', next.iconOnly); mbRestackCorner('br'); placeShelf(root); }
+        if (root) { root.classList.toggle('fc-iconly', next.iconOnly); mbRestackCornerNow('br'); placeShelf(root); }
         Log.info(`button: ${next.iconOnly ? 'icon only' : 'icon and text'}`);
     });
     panel.querySelector('.fc-annotation').addEventListener('change', e => {
@@ -5800,6 +5800,11 @@ function mbuShared(key, value) {
 // calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
 // That recomputes every element in the corner, whichever script owns it and
 // whatever order they loaded in, so two launchers never land on the same pixel.
+// The restack runs once per frame for the whole page, in the next animation frame,
+// before it is painted: every script's copy asks through one attribute on <html>,
+// so ten asks in one task cost one restack, and a hidden frame (Mission Control's)
+// pays nothing. Code that reads a launcher's place right after a change calls
+// mbRestackCornerNow(corner), which restacks at once.
 // Orders in use, all bottom-right: Apollo and Art Station 10 (never on the same page), Scribe 15
 // (above Apollo on the edit page), Falcon 20, Fusion 30, Mission Control 40. Scribe is not on the shared block and keeps a copy of this.
 // The stack is a column; the shared setting cornerFlow = 'row' (mbuShared, set in String
@@ -6252,6 +6257,17 @@ function mbuPeekMove(el, dx, dy) {
     }
 }
 function mbRestackCorner(corner) {
+    var html = document.documentElement;
+    var q = html.getAttribute('data-mbu-restack');
+    if (q !== null) { if (q.indexOf(corner) < 0) html.setAttribute('data-mbu-restack', q + ' ' + corner); return; }   // another copy runs it
+    html.setAttribute('data-mbu-restack', corner);
+    requestAnimationFrame(function () {
+        var all = (html.getAttribute('data-mbu-restack') || '').split(' ');
+        html.removeAttribute('data-mbu-restack');
+        all.forEach(function (c) { if (c) mbRestackCornerNow(c); });
+    });
+}
+function mbRestackCornerNow(corner) {
     if (!document.getElementById('mbu-quiet-css')) {
         var quiet = document.createElement('style'); quiet.id = 'mbu-quiet-css';
         quiet.textContent = ':root[data-mbu-quiet] :is([data-mb-corner],#mbu-dock-shelf){visibility:hidden!important;pointer-events:none!important}';
@@ -6305,7 +6321,7 @@ function mbRestackCorner(corner) {
             var again = function () {
                 if (queued) return;
                 queued = true;
-                requestAnimationFrame(function () { queued = false; ['br', 'bl', 'tr', 'tl'].forEach(function (c) { if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCorner(c); }); });
+                requestAnimationFrame(function () { queued = false; ['br', 'bl', 'tr', 'tl'].forEach(function (c) { if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCornerNow(c); }); });
             };
             vv.addEventListener('resize', again);
             vv.addEventListener('scroll', again);
@@ -7225,6 +7241,12 @@ function mbuTheme() {
 // so such a script never read the theme at all (#625). It starts on the parsed page.
 function mbuThemeStart() { try {
     mbuTheme();
+    // One watcher for the page: every script carries this block, and each copy ran the
+    // same reads on every change. The first copy sets the attribute and watches; the
+    // others read the attributes it writes.
+    var _mbuRoot = document.documentElement;
+    if (_mbuRoot.hasAttribute('data-mbu-theme-watch')) return;
+    _mbuRoot.setAttribute('data-mbu-theme-watch', '');
     // Stylus and friends inject after us often enough that a one-shot read is
     // wrong about half the time. Watch for stylesheets ARRIVING — head childList
     // plus the root's own attributes — and never the whole subtree: this runs on
@@ -7237,7 +7259,19 @@ function mbuThemeStart() { try {
         // getComputedStyle recalculated the whole release editor on its own, about 90 ms a call
         _mbuThemeT = setTimeout(function () { requestAnimationFrame(mbuTheme); }, 150);
     };
-    var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
+    // In <head> only a stylesheet can change the theme: a <style> or <link> added or
+    // removed, or a <style>'s text rewritten. The scripts and tags pages add there all
+    // the time woke this and cost a full read of the page's styles each.
+    var _mbuSheet = function (n) { return !!n && (n.nodeName === 'STYLE' || n.nodeName === 'LINK'); };
+    var _mbuThemeRec = function (r) {
+        if (r.type === 'attributes') return true;
+        if (r.type === 'characterData') return _mbuSheet(r.target.parentNode);
+        if (_mbuSheet(r.target)) return true;
+        for (var i = 0; i < r.addedNodes.length; i++) if (_mbuSheet(r.addedNodes[i])) return true;
+        for (var j = 0; j < r.removedNodes.length; j++) if (_mbuSheet(r.removedNodes[j])) return true;
+        return false;
+    };
+    var _mbuThemeObs = new MutationObserver(function (recs) { if (recs.some(_mbuThemeRec)) _mbuThemeSoon(); });
     _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
     // ⚠ #569: characterData, not just childList. Until the idle thrash was fixed
     // this function ran several times a second whether or not anything had

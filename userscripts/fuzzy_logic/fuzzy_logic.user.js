@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.175221
+// @version      2026.11.22.180411
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm, RateYourMusic and Album of the Year, read when you open their pages), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjI4Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMxNmNjZjgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjZmZhZTM4Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -1157,6 +1157,11 @@
   // calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
   // That recomputes every element in the corner, whichever script owns it and
   // whatever order they loaded in, so two launchers never land on the same pixel.
+  // The restack runs once per frame for the whole page, in the next animation frame,
+  // before it is painted: every script's copy asks through one attribute on <html>,
+  // so ten asks in one task cost one restack, and a hidden frame (Mission Control's)
+  // pays nothing. Code that reads a launcher's place right after a change calls
+  // mbRestackCornerNow(corner), which restacks at once.
   // Orders in use, all bottom-right: Apollo and Art Station 10 (never on the same page), Scribe 15
   // (above Apollo on the edit page), Falcon 20, Fusion 30, Mission Control 40. Scribe is not on the shared block and keeps a copy of this.
   // The stack is a column; the shared setting cornerFlow = 'row' (mbuShared, set in String
@@ -1609,6 +1614,17 @@
       }
   }
   function mbRestackCorner(corner) {
+      var html = document.documentElement;
+      var q = html.getAttribute('data-mbu-restack');
+      if (q !== null) { if (q.indexOf(corner) < 0) html.setAttribute('data-mbu-restack', q + ' ' + corner); return; }   // another copy runs it
+      html.setAttribute('data-mbu-restack', corner);
+      requestAnimationFrame(function () {
+          var all = (html.getAttribute('data-mbu-restack') || '').split(' ');
+          html.removeAttribute('data-mbu-restack');
+          all.forEach(function (c) { if (c) mbRestackCornerNow(c); });
+      });
+  }
+  function mbRestackCornerNow(corner) {
       if (!document.getElementById('mbu-quiet-css')) {
           var quiet = document.createElement('style'); quiet.id = 'mbu-quiet-css';
           quiet.textContent = ':root[data-mbu-quiet] :is([data-mb-corner],#mbu-dock-shelf){visibility:hidden!important;pointer-events:none!important}';
@@ -1662,7 +1678,7 @@
               var again = function () {
                   if (queued) return;
                   queued = true;
-                  requestAnimationFrame(function () { queued = false; ['br', 'bl', 'tr', 'tl'].forEach(function (c) { if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCorner(c); }); });
+                  requestAnimationFrame(function () { queued = false; ['br', 'bl', 'tr', 'tl'].forEach(function (c) { if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCornerNow(c); }); });
               };
               vv.addEventListener('resize', again);
               vv.addEventListener('scroll', again);
@@ -2582,6 +2598,12 @@
   // so such a script never read the theme at all (#625). It starts on the parsed page.
   function mbuThemeStart() { try {
       mbuTheme();
+      // One watcher for the page: every script carries this block, and each copy ran the
+      // same reads on every change. The first copy sets the attribute and watches; the
+      // others read the attributes it writes.
+      var _mbuRoot = document.documentElement;
+      if (_mbuRoot.hasAttribute('data-mbu-theme-watch')) return;
+      _mbuRoot.setAttribute('data-mbu-theme-watch', '');
       // Stylus and friends inject after us often enough that a one-shot read is
       // wrong about half the time. Watch for stylesheets ARRIVING — head childList
       // plus the root's own attributes — and never the whole subtree: this runs on
@@ -2594,7 +2616,19 @@
           // getComputedStyle recalculated the whole release editor on its own, about 90 ms a call
           _mbuThemeT = setTimeout(function () { requestAnimationFrame(mbuTheme); }, 150);
       };
-      var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
+      // In <head> only a stylesheet can change the theme: a <style> or <link> added or
+      // removed, or a <style>'s text rewritten. The scripts and tags pages add there all
+      // the time woke this and cost a full read of the page's styles each.
+      var _mbuSheet = function (n) { return !!n && (n.nodeName === 'STYLE' || n.nodeName === 'LINK'); };
+      var _mbuThemeRec = function (r) {
+          if (r.type === 'attributes') return true;
+          if (r.type === 'characterData') return _mbuSheet(r.target.parentNode);
+          if (_mbuSheet(r.target)) return true;
+          for (var i = 0; i < r.addedNodes.length; i++) if (_mbuSheet(r.addedNodes[i])) return true;
+          for (var j = 0; j < r.removedNodes.length; j++) if (_mbuSheet(r.removedNodes[j])) return true;
+          return false;
+      };
+      var _mbuThemeObs = new MutationObserver(function (recs) { if (recs.some(_mbuThemeRec)) _mbuThemeSoon(); });
       _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
       // ⚠ #569: characterData, not just childList. Until the idle thrash was fixed
       // this function ran several times a second whether or not anything had

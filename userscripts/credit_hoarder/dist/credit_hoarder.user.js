@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.11.22.175215
+// @version      2026.11.22.180500
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -11224,6 +11224,22 @@ Its \u{1F517} chip adds the link.`;
       }
     }
     function mbRestackCorner(corner) {
+      var html = document.documentElement;
+      var q = html.getAttribute("data-mbu-restack");
+      if (q !== null) {
+        if (q.indexOf(corner) < 0) html.setAttribute("data-mbu-restack", q + " " + corner);
+        return;
+      }
+      html.setAttribute("data-mbu-restack", corner);
+      requestAnimationFrame(function() {
+        var all = (html.getAttribute("data-mbu-restack") || "").split(" ");
+        html.removeAttribute("data-mbu-restack");
+        all.forEach(function(c) {
+          if (c) mbRestackCornerNow(c);
+        });
+      });
+    }
+    function mbRestackCornerNow(corner) {
       if (!document.getElementById("mbu-quiet-css")) {
         var quiet = document.createElement("style");
         quiet.id = "mbu-quiet-css";
@@ -11301,7 +11317,7 @@ Its \u{1F517} chip adds the link.`;
             requestAnimationFrame(function() {
               queued = false;
               ["br", "bl", "tr", "tl"].forEach(function(c) {
-                if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCorner(c);
+                if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCornerNow(c);
               });
             });
           };
@@ -12422,6 +12438,9 @@ Its \u{1F517} chip adds the link.`;
     function mbuThemeStart() {
       try {
         mbuTheme();
+        var _mbuRoot = document.documentElement;
+        if (_mbuRoot.hasAttribute("data-mbu-theme-watch")) return;
+        _mbuRoot.setAttribute("data-mbu-theme-watch", "");
         var _mbuThemeT = 0;
         var _mbuThemeSoon = function() {
           clearTimeout(_mbuThemeT);
@@ -12429,7 +12448,20 @@ Its \u{1F517} chip adds the link.`;
             requestAnimationFrame(mbuTheme);
           }, 150);
         };
-        var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
+        var _mbuSheet = function(n) {
+          return !!n && (n.nodeName === "STYLE" || n.nodeName === "LINK");
+        };
+        var _mbuThemeRec = function(r) {
+          if (r.type === "attributes") return true;
+          if (r.type === "characterData") return _mbuSheet(r.target.parentNode);
+          if (_mbuSheet(r.target)) return true;
+          for (var i = 0; i < r.addedNodes.length; i++) if (_mbuSheet(r.addedNodes[i])) return true;
+          for (var j = 0; j < r.removedNodes.length; j++) if (_mbuSheet(r.removedNodes[j])) return true;
+          return false;
+        };
+        var _mbuThemeObs = new MutationObserver(function(recs) {
+          if (recs.some(_mbuThemeRec)) _mbuThemeSoon();
+        });
         _mbuThemeObs.observe(document.documentElement, { attributeFilter: ["style", "class"] });
         if (document.head) _mbuThemeObs.observe(document.head, { childList: true, subtree: true, characterData: true });
         if (document.body) _mbuThemeObs.observe(document.body, { attributeFilter: ["style", "class"] });

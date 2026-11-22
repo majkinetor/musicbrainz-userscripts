@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.175221
+// @version      2026.11.22.180411
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -5670,6 +5670,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
   // That recomputes every element in the corner, whichever script owns it and
   // whatever order they loaded in, so two launchers never land on the same pixel.
+  // The restack runs once per frame for the whole page, in the next animation frame,
+  // before it is painted: every script's copy asks through one attribute on <html>,
+  // so ten asks in one task cost one restack, and a hidden frame (Mission Control's)
+  // pays nothing. Code that reads a launcher's place right after a change calls
+  // mbRestackCornerNow(corner), which restacks at once.
   // Orders in use, all bottom-right: Apollo and Art Station 10 (never on the same page), Scribe 15
   // (above Apollo on the edit page), Falcon 20, Fusion 30, Mission Control 40. Scribe is not on the shared block and keeps a copy of this.
   // The stack is a column; the shared setting cornerFlow = 'row' (mbuShared, set in String
@@ -6122,6 +6127,17 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       }
   }
   function mbRestackCorner(corner) {
+      var html = document.documentElement;
+      var q = html.getAttribute('data-mbu-restack');
+      if (q !== null) { if (q.indexOf(corner) < 0) html.setAttribute('data-mbu-restack', q + ' ' + corner); return; }   // another copy runs it
+      html.setAttribute('data-mbu-restack', corner);
+      requestAnimationFrame(function () {
+          var all = (html.getAttribute('data-mbu-restack') || '').split(' ');
+          html.removeAttribute('data-mbu-restack');
+          all.forEach(function (c) { if (c) mbRestackCornerNow(c); });
+      });
+  }
+  function mbRestackCornerNow(corner) {
       if (!document.getElementById('mbu-quiet-css')) {
           var quiet = document.createElement('style'); quiet.id = 'mbu-quiet-css';
           quiet.textContent = ':root[data-mbu-quiet] :is([data-mb-corner],#mbu-dock-shelf){visibility:hidden!important;pointer-events:none!important}';
@@ -6175,7 +6191,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
               var again = function () {
                   if (queued) return;
                   queued = true;
-                  requestAnimationFrame(function () { queued = false; ['br', 'bl', 'tr', 'tl'].forEach(function (c) { if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCorner(c); }); });
+                  requestAnimationFrame(function () { queued = false; ['br', 'bl', 'tr', 'tl'].forEach(function (c) { if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCornerNow(c); }); });
               };
               vv.addEventListener('resize', again);
               vv.addEventListener('scroll', again);
@@ -7095,6 +7111,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // so such a script never read the theme at all (#625). It starts on the parsed page.
   function mbuThemeStart() { try {
       mbuTheme();
+      // One watcher for the page: every script carries this block, and each copy ran the
+      // same reads on every change. The first copy sets the attribute and watches; the
+      // others read the attributes it writes.
+      var _mbuRoot = document.documentElement;
+      if (_mbuRoot.hasAttribute('data-mbu-theme-watch')) return;
+      _mbuRoot.setAttribute('data-mbu-theme-watch', '');
       // Stylus and friends inject after us often enough that a one-shot read is
       // wrong about half the time. Watch for stylesheets ARRIVING — head childList
       // plus the root's own attributes — and never the whole subtree: this runs on
@@ -7107,7 +7129,19 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           // getComputedStyle recalculated the whole release editor on its own, about 90 ms a call
           _mbuThemeT = setTimeout(function () { requestAnimationFrame(mbuTheme); }, 150);
       };
-      var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
+      // In <head> only a stylesheet can change the theme: a <style> or <link> added or
+      // removed, or a <style>'s text rewritten. The scripts and tags pages add there all
+      // the time woke this and cost a full read of the page's styles each.
+      var _mbuSheet = function (n) { return !!n && (n.nodeName === 'STYLE' || n.nodeName === 'LINK'); };
+      var _mbuThemeRec = function (r) {
+          if (r.type === 'attributes') return true;
+          if (r.type === 'characterData') return _mbuSheet(r.target.parentNode);
+          if (_mbuSheet(r.target)) return true;
+          for (var i = 0; i < r.addedNodes.length; i++) if (_mbuSheet(r.addedNodes[i])) return true;
+          for (var j = 0; j < r.removedNodes.length; j++) if (_mbuSheet(r.removedNodes[j])) return true;
+          return false;
+      };
+      var _mbuThemeObs = new MutationObserver(function (recs) { if (recs.some(_mbuThemeRec)) _mbuThemeSoon(); });
       _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
       // ⚠ #569: characterData, not just childList. Until the idle thrash was fixed
       // this function ran several times a second whether or not anything had

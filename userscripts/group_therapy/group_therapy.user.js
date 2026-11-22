@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.175221
+// @version      2026.11.22.180411
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -1521,6 +1521,11 @@
   // calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
   // That recomputes every element in the corner, whichever script owns it and
   // whatever order they loaded in, so two launchers never land on the same pixel.
+  // The restack runs once per frame for the whole page, in the next animation frame,
+  // before it is painted: every script's copy asks through one attribute on <html>,
+  // so ten asks in one task cost one restack, and a hidden frame (Mission Control's)
+  // pays nothing. Code that reads a launcher's place right after a change calls
+  // mbRestackCornerNow(corner), which restacks at once.
   // Orders in use, all bottom-right: Apollo and Art Station 10 (never on the same page), Scribe 15
   // (above Apollo on the edit page), Falcon 20, Fusion 30, Mission Control 40. Scribe is not on the shared block and keeps a copy of this.
   // The stack is a column; the shared setting cornerFlow = 'row' (mbuShared, set in String
@@ -1973,6 +1978,17 @@
       }
   }
   function mbRestackCorner(corner) {
+      var html = document.documentElement;
+      var q = html.getAttribute('data-mbu-restack');
+      if (q !== null) { if (q.indexOf(corner) < 0) html.setAttribute('data-mbu-restack', q + ' ' + corner); return; }   // another copy runs it
+      html.setAttribute('data-mbu-restack', corner);
+      requestAnimationFrame(function () {
+          var all = (html.getAttribute('data-mbu-restack') || '').split(' ');
+          html.removeAttribute('data-mbu-restack');
+          all.forEach(function (c) { if (c) mbRestackCornerNow(c); });
+      });
+  }
+  function mbRestackCornerNow(corner) {
       if (!document.getElementById('mbu-quiet-css')) {
           var quiet = document.createElement('style'); quiet.id = 'mbu-quiet-css';
           quiet.textContent = ':root[data-mbu-quiet] :is([data-mb-corner],#mbu-dock-shelf){visibility:hidden!important;pointer-events:none!important}';
@@ -2026,7 +2042,7 @@
               var again = function () {
                   if (queued) return;
                   queued = true;
-                  requestAnimationFrame(function () { queued = false; ['br', 'bl', 'tr', 'tl'].forEach(function (c) { if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCorner(c); }); });
+                  requestAnimationFrame(function () { queued = false; ['br', 'bl', 'tr', 'tl'].forEach(function (c) { if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCornerNow(c); }); });
               };
               vv.addEventListener('resize', again);
               vv.addEventListener('scroll', again);
@@ -2946,6 +2962,12 @@
   // so such a script never read the theme at all (#625). It starts on the parsed page.
   function mbuThemeStart() { try {
       mbuTheme();
+      // One watcher for the page: every script carries this block, and each copy ran the
+      // same reads on every change. The first copy sets the attribute and watches; the
+      // others read the attributes it writes.
+      var _mbuRoot = document.documentElement;
+      if (_mbuRoot.hasAttribute('data-mbu-theme-watch')) return;
+      _mbuRoot.setAttribute('data-mbu-theme-watch', '');
       // Stylus and friends inject after us often enough that a one-shot read is
       // wrong about half the time. Watch for stylesheets ARRIVING — head childList
       // plus the root's own attributes — and never the whole subtree: this runs on
@@ -2958,7 +2980,19 @@
           // getComputedStyle recalculated the whole release editor on its own, about 90 ms a call
           _mbuThemeT = setTimeout(function () { requestAnimationFrame(mbuTheme); }, 150);
       };
-      var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
+      // In <head> only a stylesheet can change the theme: a <style> or <link> added or
+      // removed, or a <style>'s text rewritten. The scripts and tags pages add there all
+      // the time woke this and cost a full read of the page's styles each.
+      var _mbuSheet = function (n) { return !!n && (n.nodeName === 'STYLE' || n.nodeName === 'LINK'); };
+      var _mbuThemeRec = function (r) {
+          if (r.type === 'attributes') return true;
+          if (r.type === 'characterData') return _mbuSheet(r.target.parentNode);
+          if (_mbuSheet(r.target)) return true;
+          for (var i = 0; i < r.addedNodes.length; i++) if (_mbuSheet(r.addedNodes[i])) return true;
+          for (var j = 0; j < r.removedNodes.length; j++) if (_mbuSheet(r.removedNodes[j])) return true;
+          return false;
+      };
+      var _mbuThemeObs = new MutationObserver(function (recs) { if (recs.some(_mbuThemeRec)) _mbuThemeSoon(); });
       _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
       // ⚠ #569: characterData, not just childList. Until the idle thrash was fixed
       // this function ran several times a second whether or not anything had
