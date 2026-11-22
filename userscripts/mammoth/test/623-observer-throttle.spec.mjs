@@ -4,7 +4,8 @@
 // in bursts ran it hundreds of times. Now a burst runs it once, 60 ms later.
 //
 // A stub MusicBrainz page, no network: 200 mutations spread over 200 tasks, counting
-// the scans through getComputedStyle calls on an open autocomplete menu.
+// the scans through the autocomplete-menu lookup each one makes (#1095: a burst no
+// longer reads the open menu's style, so the menu's getComputedStyle calls can't count them).
 import { test, check, idle } from '../../../dev/test/harness.mjs';
 
 test.use({ profile: 'fresh', gm: { name: 'Mammoth' } });
@@ -17,17 +18,16 @@ test('a burst of page mutations is scanned once, and new edit notes still get th
   await idle(page);   // the boot scans are done
 
   const scans = await page.evaluate(async () => {
-    const menu = document.querySelector('ul.ui-autocomplete');
-    let n = 0; const real = window.getComputedStyle;
-    window.getComputedStyle = function (el) { if (el === menu) n++; return real.apply(this, arguments); };
+    let n = 0; const real = Document.prototype.querySelectorAll;
+    document.querySelectorAll = function (sel) { if (sel === 'ul.ui-autocomplete') n++; return real.apply(this, arguments); };
     for (let i = 0; i < 200; i++) { await new Promise(r => setTimeout(r, 0)); document.getElementById('content').appendChild(document.createElement('span')); }
     // until the burst has been scanned at least once (a later scan only adds to n,
     // so the "only a handful" bound below holds however long this takes)
     for (let i = 0; i < 200 && !n; i++) await new Promise(r => setTimeout(r, 25));
-    window.getComputedStyle = real;
+    delete document.querySelectorAll;
     return n;
   });
-  console.log('autocomplete-menu style reads during a 200-mutation burst:', scans);
+  console.log('scans during a 200-mutation burst:', scans);
   check(scans > 0, 'the scan still runs after a burst');
   check(scans <= 20, `…but a handful of times, not once per mutation (${scans})`);
 
