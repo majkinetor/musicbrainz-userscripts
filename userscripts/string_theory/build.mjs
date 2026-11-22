@@ -198,7 +198,8 @@ const ON_KEY = 'string_theory.on';
 const SHARED = (UI_JS.match(/function mbuShared\(key, value\) \{[\s\S]*?\n\}\n/) || [])[0];
 if (!SHARED) throw new Error('mbuShared not found in dev/ui/ui-components.mjs');
 // with the dock (#847), which mbRestackCorner calls: the icon, mbuDock and mbuDockItem come along
-const RESTACK = (UI_JS.match(/var MBU_DOCK_ICON[\s\S]*?\nfunction mbRestackCorner\(corner\) \{[\s\S]*?\n\}\n/) || [])[0];
+// mbRestackCorner batches a frame's restacks into mbRestackCornerNow, which comes along too
+const RESTACK = (UI_JS.match(/var MBU_DOCK_ICON[\s\S]*?\nfunction mbRestackCorner\(corner\) \{[\s\S]*?\n\}\nfunction mbRestackCornerNow\(corner\) \{[\s\S]*?\n\}\n/) || [])[0];
 if (!RESTACK) throw new Error('mbRestackCorner not found in dev/ui/ui-components.mjs');
 // Themes (#879): every themes/<name>.<dark|light>.css, named by its "Theme:" line
 const THEMES_DIR = resolve(dirname(fileURLToPath(import.meta.url)), 'themes');
