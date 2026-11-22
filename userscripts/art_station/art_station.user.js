@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.190202
+// @version      2026.11.22.190203
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -906,9 +906,14 @@
       stageFront = !!d.front;
       stage();
     });
-    // #784: the frame is kept over the card's slot (#mc-as-slot), as moving an iframe into the card loads it again:
-    // clipped to what the card's scrolling shows, hidden while MC shows something of its own over the card, and
-    // over the whole window while the gallery shows full screen or a dialog. The slot takes the gallery's height.
+    // #784: the frame is kept over the card's slot (#mc-as-slot), as moving an iframe into the card loads it again,
+    // hidden while MC shows something of its own over the card, and over the whole window while the gallery shows
+    // full screen or a dialog. The slot takes the gallery's height.
+    // It is made in MC's center column (.mc-center, position:relative), placed there with position:absolute, so the
+    // browser scrolls and clips it with the column itself. A fixed frame moved by script after each scroll lagged a
+    // frame behind the scroll and jumped (Firefox scrolls off the main thread). MC keeps the column when it rebuilds
+    // its body; closing MC removes it, and with it the frame, which is then dropped. Outside the column (no MC
+    // window) the frame is fixed and clipped to the slot's scrolling parents, as before.
     const HIDDEN = w => 'position:fixed;left:-20000px;top:0;width:' + (w || 1200) + 'px;height:900px;border:0;opacity:0;pointer-events:none';
     let clipBy = { slot: null, xs: [] };
     const scrollers = slot => {
@@ -927,8 +932,18 @@
     // frame; a slow tick catches what has no event (an MC window opening over the card, a layout shift)
     const soon = () => { if (placeSoon || !frame) return; placeSoon = true; requestAnimationFrame(() => { placeSoon = false; place(); }); };
     const tick = () => { if (!frame) { placeOn = false; return; } place(); setTimeout(tick, 250); };
+    const inColumn = () => !!frame && !!frame.el.parentElement && frame.el.parentElement.classList.contains('mc-center');
+    const onScroll = () => { if (frame && !inColumn()) soon(); };   // in the column the browser scrolls it
     const place = () => {
       if (!frame) { placeOn = false; return; }
+      if (!frame.el.isConnected) {
+        // MC closed and took its column, and the frame in it: drop it, so a probe or an Execute sources again
+        const t = 'gallery: the frame left the page with Mission Control\'s window' + (frame.busy ? ', during an Execute' : '');
+        log.info('Mission Control ' + t); send('mc:note', { id: 'as', release: rel, text: t });
+        frame = null; placeOn = false;
+        frameMsgs.forEach(f => { f({ type: 'best', best: null }); f({ type: 'entered', ok: false, error: 'Mission Control was closed while the gallery was entering the cover art' }); });
+        return;
+      }
       const f = frame.el, slot = document.getElementById('mc-as-slot');
       let css, cov = null;   // the covers, read once per frame (#1095)
       const coverList = () => cov || (cov = covers());
@@ -939,11 +954,19 @@
         if (!r || !r.width || coverList().length) css = HIDDEN(r && r.width ? Math.round(r.width) : frame.w);
         else {
           frame.w = Math.round(r.width);
+          const col = inColumn() ? f.parentElement : null;
           let t = r.top, b = r.top + frame.h, l = r.left, rt = r.right;
+          if (col) {
+            const q = col.getBoundingClientRect();
+            t = r.top - q.top - col.clientTop + col.scrollTop; l = r.left - q.left - col.clientLeft + col.scrollLeft;
+            css = 'position:absolute;left:' + Math.round(l) + 'px;top:' + Math.round(t) + 'px;width:' + r.width + 'px;height:' + frame.h + 'px;border:0;opacity:1;pointer-events:auto;z-index:1';
+          }
+          else {
           scrollers(slot).forEach(n => { const q = n.getBoundingClientRect(); t = Math.max(t, q.top); b = Math.min(b, q.bottom); l = Math.max(l, q.left); rt = Math.min(rt, q.right); });
           css = b <= t || rt <= l ? HIDDEN(frame.w)
             : 'position:fixed;left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + frame.h + 'px;border:0;opacity:1;pointer-events:auto;z-index:2147483001;'
               + 'clip-path:inset(' + Math.max(0, t - r.top) + 'px ' + Math.max(0, r.right - rt) + 'px ' + Math.max(0, r.top + frame.h - b) + 'px ' + Math.max(0, l - r.left) + 'px)';
+          }
         }
       }
       // why the gallery shows or not, logged when it changes (an empty gallery slot during Execute)
@@ -1007,9 +1030,9 @@
       frame = { el, token, urls: key, best: null, h: 0, w: 0, full: false, used: false };
       log.info('Mission Control: sourcing the best cover in a frame from ' + urls.join(' '));
       const got = waitFrame('best', 300000, s => onTick && onTick('finding the best cover (' + s + ' s)'));
-      document.body.appendChild(el);
+      (document.querySelector('#mc-root .mc-center') || document.body).appendChild(el);
       if (!placeOn) {
-        if (!tick.on) { tick.on = true; addEventListener('scroll', soon, { capture: true, passive: true }); addEventListener('resize', soon, { passive: true }); }
+        if (!tick.on) { tick.on = true; addEventListener('scroll', onScroll, { capture: true, passive: true }); addEventListener('resize', soon, { passive: true }); }
         placeOn = true; tick();
       }
       const m = await got;
@@ -1068,13 +1091,15 @@
       let word = 'entering the cover art', heard = Date.now();
       const onWord = m => { if (m.type === 'progress') { word = m.note || word; rep = !!m.repeat; heard = Date.now(); busy(word); } };
       frameMsgs.add(onWord);
+      frame.busy = true;
       const got = waitFrame('entered', 6 * 3600000, s => { if (Date.now() - heard > 600000) frameMsgs.forEach(f => f({ type: 'entered', ok: false, error: 'no word from the cover-art frame for 10 minutes' })); else busy(word + ' (' + s + ' s)'); });
       framePost({ type: 'enter', front, replace: front && mcPlan.replace, note: 'Via ' + (d.mcName || 'Mission Control') + (d.mc ? ' v' + d.mc : '') + ': ' + location.origin + '/release/' + rel });
       const m = await got;
       frameMsgs.delete(onWord);
+      if (frame) frame.busy = false;
       log.info('Mission Control apply: ' + JSON.stringify(m));
-      const b = frame.best;
-      if (m && m.ok) { frame.used = true; galleryAfter(); }
+      const b = frame ? frame.best : null;
+      if (m && m.ok && frame) { frame.used = true; galleryAfter(); }
       if (!m) reply({ ok: false, sent: 0, note: 'Art Station did not finish' });
       else if (m.ok) {
         const nx = m.extrasIn || 0, other = Math.max(0, (m.total || 0) - (m.front ? 1 : 0) - nx);
