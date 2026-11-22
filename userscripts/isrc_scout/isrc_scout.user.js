@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.111606
+// @version      2026.11.22.112213
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -5711,7 +5711,15 @@
   }
   // Global by-ISRC lookup (no album link needed) — Tidal v2 /tracks?filter[isrc],
   // pulling the artist names via include=artists. Returns a fields-shaped object.
-  async function tidalLookupByIsrc(isrc) {
+  // #1095: a row of lookups started together got 429 from Tidal for most of them; one at a
+  // time, 250 ms apart, and a 429's back-off holds the ones behind it too
+  let tidalIsrcChain = Promise.resolve();
+  function tidalLookupByIsrc(isrc) {
+    const run = tidalIsrcChain.then(() => tidalLookupByIsrcNow(isrc));
+    tidalIsrcChain = run.catch(() => {}).then(() => sleep(250));
+    return run;
+  }
+  async function tidalLookupByIsrcNow(isrc) {
     const token = await tidalToken();
     const headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.api+json' };
     const r = await tidalGet(TIDAL.api + '/tracks?countryCode=' + TIDAL.country + '&filter%5Bisrc%5D=' + encodeURIComponent(isrc) + '&include=artists', headers);

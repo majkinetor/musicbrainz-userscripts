@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.22.111606
+// @version      2026.11.22.112213
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -8266,6 +8266,9 @@ function appleAlbumMeta(a) {
         credits: pcCreditsApple(a, appleStorefront(at.url)),   // #671
     };
 }
+// #1095: what the storefronts said about a barcode, kept for the page: a second scan of the
+// release asks none of them again. A round where a storefront didn't answer isn't kept as a miss.
+const APPLE_UPC_SEEN = new Map();
 async function scanApple(args) {
     await scanAppleFind(args);
     await pcAppleSale(args.mbid);
@@ -8324,8 +8327,10 @@ async function scanAppleAmp({ artist, album, mbTracks, existingUrl, mbid, isVari
     // of the barcode goes in the one request per storefront (filter[upc] takes a list).
     if (!existingUrl && !wikidataAppleId && barcode) {
         const forms = gtinVariants(barcode);
+        let whole = true;
         const upcIn = async sfs => {
             const got = await appleEach(sfs, `albums?filter[upc]=${forms.map(encodeURIComponent).join(',')}&${APPLE_ALBUM_INC}`);
+            if (got.length < sfs.length) whole = false;
             const seen = new Set();
             for (const { sf: s, j } of got) for (const a of (j.data || [])) {
                 if (seen.has(a.id)) continue;
@@ -8335,11 +8340,17 @@ async function scanAppleAmp({ artist, album, mbTracks, existingUrl, mbid, isVari
             for (const { sf: s, j } of got) for (const u of forms) { const hit = applePickByUpc(j.data, u); if (hit) return { hit, sf: s }; }
             return null;
         };
-        let found = await upcIn(shortSfs);
-        if (!found) {
-            const rest = await otherSfs();
-            appendLog(label, `Barcode ${barcode}: no album with that UPC in ${shortSfs.join(', ')} — asking the other ${rest.length} storefronts`);
-            found = await upcIn(rest);
+        const upcKey = forms.join(',');
+        let found = APPLE_UPC_SEEN.get(upcKey);
+        if (found !== undefined) appendLog(label, `Barcode ${barcode}: the storefronts' answer from this page's last scan`);
+        else {
+            found = await upcIn(shortSfs);
+            if (!found) {
+                const rest = await otherSfs();
+                appendLog(label, `Barcode ${barcode}: no album with that UPC in ${shortSfs.join(', ')} — asking the other ${rest.length} storefronts`);
+                found = await upcIn(rest);
+            }
+            if (found || whole) APPLE_UPC_SEEN.set(upcKey, found);
         }
         if (found) {
             const meta = appleAlbumMeta(found.hit);
