@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.140652
+// @version      2026.11.22.142122
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -18518,11 +18518,30 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     });
   }
 
+  // Event Horizon shows its own page over MusicBrainz's (data-mbu-dock on <html> while it does):
+  // resolves true when it shows, after waiting up to 3s for it where Event Horizon runs (data-mbu-eh)
+  function ehShowsPage() {
+    const root = document.documentElement;
+    if (root.hasAttribute('data-mbu-dock')) return Promise.resolve(true);
+    if (!root.hasAttribute('data-mbu-eh')) return Promise.resolve(false);
+    return new Promise(done => {
+      const mo = new MutationObserver(() => { if (root.hasAttribute('data-mbu-dock')) { mo.disconnect(); clearTimeout(t); done(true); } });
+      const t = setTimeout(() => { mo.disconnect(); done(root.hasAttribute('data-mbu-dock')); }, 3000);
+      mo.observe(root, { attributes: true, attributeFilter: ['data-mbu-dock'] });
+    });
+  }
+
   // #849 the alias count in an entity's Aliases tab, from one ws/2 lookup
   async function aliasTabBadge() {
     if (!aliasWant()) return;
     const m = location.pathname.match(/^\/(artist|label|place|work|recording|event|series|release|release-group|area|instrument|genre)\/([0-9a-f-]{36})/i); if (!m) return;
     const a = document.querySelector('.tabs a[href$="/' + m[2] + '/aliases"]'); if (!a || a.querySelector('.tc-al-pill')) return;
+    // the tab is not seen under Event Horizon: no read for it, until MusicBrainz's page shows again
+    if (await ehShowsPage()) {
+      const root = document.documentElement, mo = new MutationObserver(() => { if (!root.hasAttribute('data-mbu-dock')) { mo.disconnect(); aliasTabBadge(); } });
+      mo.observe(root, { attributes: true, attributeFilter: ['data-mbu-dock'] });
+      return;
+    }
     try {
       const j = await (await mbWebFetch(`${ORIGIN}/ws/2/${m[1]}/${m[2]}?inc=aliases&fmt=json`)).json();
       const n = (j && j.aliases || []).length; if (!n) return;
