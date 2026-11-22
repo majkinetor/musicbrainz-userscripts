@@ -61,7 +61,7 @@ test('WebDAV provider connects with a password, syncs with ETags and keeps remot
   await info.attach('WebDAV settings', { path: 'dev/_webdav-sync.png', contentType: 'image/png' });
   await page.evaluate(() => GM_setValue('saved', 'later'));
   await page.locator('#st-sync-remote [data-backup-action=apply]').click();
-  await expect(q('reload')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => !!GM_getValue('string_theory.sync.stage'))).toBe(true);
   await page.reload(); await inject('string_theory');
   expect(await page.evaluate(() => GM_getValue('saved'))).toBe('edit');
   await open(); await q('remote-import').click();

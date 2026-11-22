@@ -430,7 +430,7 @@ function stSyncMarkup() {
     + '<div class="st-row"><label data-tip="Automatic sync&#10;Runs while MusicBrainz is open"><input id="st-sync-auto" type="checkbox"> Automatic sync</label><label for="st-sync-minutes">every</label><select id="st-sync-minutes"><option value="5">5 minutes</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="60">1 hour</option><option value="360">6 hours</option><option value="1440">1 day</option></select></div>'
     + '<div class="st-row"><label for="st-sync-conflict">On conflict</label><select id="st-sync-conflict"><option value="remote">Use remote value</option><option value="local">Use local value</option></select></div></div></section>'
     + '<section class="st-sync-group"><h3>Backups<span class="st-sync-spinner" id="st-sync-backup-progress" role="status" aria-label="In progress" hidden></span></h3><div class="st-backup-columns"><div class="st-row st-sync-backup-row"><span id="st-sync-backup-name">Dropbox</span><span class="st-sync-acts"><button class="st-b" type="button" id="st-sync-remote-backup">Save backup</button><button class="st-b" type="button" id="st-sync-remote-import">Browse</button></span></div>'
-    + '<div class="st-row st-sync-backup-row"><span>This device</span><span class="st-sync-acts"><button class="st-b" type="button" id="st-sync-export">Export</button><button class="st-b" type="button" id="st-sync-import">Import</button></span><input id="st-sync-file" type="file" accept=".json,application/json" hidden></div></div><div class="st-row"><button class="st-b" type="button" id="st-sync-reload" hidden>Reload</button><span id="st-sync-backup-status" role="status"></span></div>'
+    + '<div class="st-row st-sync-backup-row"><span>This device</span><span class="st-sync-acts"><button class="st-b" type="button" id="st-sync-export">Export</button><button class="st-b" type="button" id="st-sync-import">Import</button></span><input id="st-sync-file" type="file" accept=".json,application/json" hidden></div></div><div class="st-row"><span id="st-sync-backup-status" role="status"></span></div>'
     + '</section><div id="st-sync-remote" role="region" aria-labelledby="st-sync-backup-provider" hidden><div class="st-backup-head"><h3 id="st-sync-backup-provider">Backups</h3><span class="st-sync-spinner" id="st-sync-browse-progress" role="status" aria-label="In progress" hidden></span><div class="st-backup-actions" id="st-sync-backup-actions"></div><button class="st-b st-sync-link" type="button" id="st-sync-backup-close" aria-label="Back to Sync">&lt; Back</button></div><div id="st-sync-backups" aria-label="Saved backups" hidden></div></div>';
 }
 function stSyncPaint() {
@@ -461,8 +461,6 @@ function stSyncPaint() {
   ['remote-backup', 'remote-import'].forEach(function (id) { q(id).disabled = stSyncBusy || !connected; });
   q('import').disabled = stSyncBusy;
   stBackupPaint(panel, connected);
-  // after the tab is on screen: the first check can take a moment
-  var reload = q('reload'); requestAnimationFrame(function () { setTimeout(function () { reload.hidden = !stSyncStorage.pending(); }, 0); });
   q('status').textContent = stSyncBusy ? '' : (provider === 'google' && auth.accessToken && !connected ? 'Reconnect Google Drive to turn on sync.' : state.error) || (stSyncAuthPending ? 'Waiting for ' + stSyncName(stSyncAuthPending.provider) + ' authorization…' : state.notice || (connected ? '' : 'Not connected'));
   q('status').hidden = !q('status').textContent;
   q('progress').hidden = !stSyncBusy || stSyncActivity !== 'sync';
@@ -505,7 +503,6 @@ function stSyncBind(panel) {
     var mode = button.dataset.backupAction;
     action(function () { return stBackupRun(mode, entry); })();
   };
-  q('reload').onclick = function () { location.reload(); };
   q('export').onclick = action(function () { stSyncDownload(stSyncStorage.document(stSyncStorage.effective()), 'string-theory-backup.json'); });
   q('import').onclick = function () { q('file').click(); };
   q('file').onchange = action(async function () {
