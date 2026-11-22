@@ -102,7 +102,11 @@ function stSyncStorageInit() {
     gm: { keys: function () { return GM_listValues(); }, get: function (k) { return GM_getValue(k); }, set: function (k, v) { GM_setValue(k, v); }, del: function (k) { GM_deleteValue(k); } },
     local: { keys: function () { return Object.keys(localStorage); }, get: function (k) { var v = localStorage.getItem(k); return v === null ? undefined : v; }, set: function (k, v) { localStorage.setItem(k, String(v)); }, del: function (k) { localStorage.removeItem(k); } },
   });
-  if (origin && !/[?&]st-(?:dropbox|google)=callback(?:&|$)/.test(location.search || '')) try { stSyncStorage.applyPending(); } catch (e) { console.error('[String Theory] sync could not apply saved changes; recovery retained'); }
+  if (!origin || /[?&]st-(?:dropbox|google)=callback(?:&|$)/.test(location.search || '')) return;
+  // Applied when the page is idle, not at start: members began with the old values, the GM guard
+  // keeps their later saves from undoing the sync, and the new values show on the next load.
+  var run = function () { try { stSyncStorage.applyPending(); } catch (e) { console.error('[String Theory] sync could not apply saved changes; recovery retained'); } };
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 10000 }); else setTimeout(run, 3000);
 }
 // A member may keep a settings object alive in a second tab. Preserve remote changes to fields
 // that member hasn't edited, rather than saving its stale whole object over a newly synced value.
