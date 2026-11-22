@@ -51,12 +51,15 @@ test('a lookup with recordings answers a lighter lookup, by join and from the ca
     await mbnFetch(ws + 'artist/' + id + '?inc=user-tags&fmt=json');
     await mbnFetch(ws + 'artist/' + id + '?fmt=json');
     out.user = window.__starts.length;
+    await Promise.all([mbnFetch(ws + 'label/' + id + '?inc=aliases&fmt=json'), mbnFetch(ws + 'label/' + id + '?inc=user-tags&fmt=json')]);
+    out.merge = window.__starts.length;
     return out;
   });
   check(n.join === 2, `the lighter lookup joins the one with recordings (${n.join} requests)`);
   check(n.cache === 2, `a later lighter lookup comes from the cache (${n.cache})`);
   check(n.browse === 4, `a browse with isrcs does not answer one without (${n.browse})`);
-  check(n.user === 6, `a lookup with user-tags answers nothing else (${n.user})`);
+  check(n.user === 5, `a lookup with user-tags answers a lighter one too (${n.user})`);
+  check(n.merge === 6, `a read with user-tags merges with one without (${n.merge})`);
 });
 
 test('o.send sends the request in place of fetch', { tag: ['@unit'] }, async ({ context }) => {

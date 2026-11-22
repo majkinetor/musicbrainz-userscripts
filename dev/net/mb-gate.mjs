@@ -54,11 +54,12 @@ export const MBN_MERGE_WAIT = 100;
 export const MBN_CACHE_TTL = 5 * 60000;
 /** Cached answers kept at most. */
 export const MBN_CACHE_MAX = 150;
-/** Incs a merged read (mbnFetch) never adds to one without them: they need a login, or MusicBrainz
- *  answers them with fewer results or much more work. A lookup of one entity (/ws/2/<type>/<mbid>)
- *  that has them still answers a read that lacks them, the user-* ones aside: its answer only
- *  carries more. A browse with them can hold fewer results, so it answers only its twin. */
-export const MBN_INC_ALONE = ['user-tags', 'user-genres', 'user-ratings', 'recordings', 'recording-level-rels', 'work-level-rels', 'release-group-level-rels', 'discids', 'isrcs'];
+/** Incs a merged read (mbnFetch) never adds to one without them: MusicBrainz answers them with
+ *  fewer results or much more work. A lookup of one entity (/ws/2/<type>/<mbid>) that has them
+ *  still answers a read that lacks them: its answer only carries more. A browse with them can hold
+ *  fewer results, so it answers only its twin. The user-* incs are like any other inc: signed out,
+ *  a merged read with them answers 401, and each caller then asks alone. */
+export const MBN_INC_ALONE = ['recordings', 'recording-level-rels', 'work-level-rels', 'release-group-level-rels', 'discids', 'isrcs'];
 
 /** True for a request the gate paces: MusicBrainz's /ws/2, relative or absolute. */
 export function mbnGated(url) {
@@ -503,13 +504,11 @@ export async function mbnFetch(url, init, o) {
     const bg = o.background !== false, ahead = run => run.sent || !run.bg || bg;
     // merge: the two have the same MBN_INC_ALONE incs
     const fits = run => { for (const i of MBN_INC_ALONE) if (run.inc.has(i) !== want.has(i)) return false; return true; };
-    // join or cache: a lookup's answer with more incs answers this one too, but not with a
-    // user-* inc this read lacks (it needs a login, and it is the user's own data)
+    // join or cache: a lookup's answer with more incs answers this one too
     const lookup = /^\/ws\/2\/[a-z-]+\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(base.pathname);
-    const user = inc => { for (const i of inc) if (/^user-/.test(i)) return true; return false; };
-    const answers = run => lookup ? !Array.from(run.inc).some(i => /^user-/.test(i) && !want.has(i)) : fits(run);
+    const answers = run => lookup || fits(run);
     // #1098: a recent answer for the same thing, when no edit went out since
-    const cacheable = !o.fresh && !(init && init.credentials && init.credentials !== 'omit') && !base.searchParams.has('query') && (lookup ? !user(want) : fits({ inc: new Set() }));
+    const cacheable = !o.fresh && !(init && init.credentials && init.credentials !== 'omit') && !base.searchParams.has('query') && (lookup || fits({ inc: new Set() }));
     let looked = !cacheable;
     for (;;) {
         const runs = live.get(key) || [];
@@ -562,7 +561,7 @@ export async function mbnFetch(url, init, o) {
     try {
         const r = await run.p;
         if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();   // as for a joiner, above
-        if (r && r.ok && cacheable && (lookup ? !user(run.inc) : fits(run))) await mbnCachePut(key, run.inc, r.clone());
+        if (r && r.ok && cacheable && (lookup || fits(run))) await mbnCachePut(key, run.inc, r.clone());
         return r ? r.clone() : r;
     } finally {
         const l = live.get(key) || [], i = l.indexOf(run);
