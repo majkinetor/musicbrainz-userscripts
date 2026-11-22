@@ -141,10 +141,10 @@ var ST_GATE_LOST = 30000;
 // without (an older event, or a caller that gives none) goes by the run of events with the same
 // tab, script, label and kind: it ends at an answer that is not a
 // 429/503, at an error, a cancel, or a 429/503 that no retry follows within ST_GATE_RETRY (the gate
-// books the retry at once). A join is a request of its own; an event without a label (the lead,
-// the browser check) is a system row.
+// books the retry at once). A join or a cache answer is a request of its own, or ends the open one
+// with its id; an event without a label (the lead, the browser check) is a system row.
 // A request: { id, tab, s, l, b, t, end, evs, tries: [{ t, w, st, end }], res, cls, label, wait }
-//   cls: ok | re (answered after a retry) | bad | go (still on its way) | '' (shared, cancelled)
+//   cls: ok | re (answered after a retry) | bad | go (still on its way) | '' (shared, cached, cancelled)
 function stGateGroups(all, now) {
   var groups = [], open = {};
   var done = function (g, res) { g.res = res; delete open[g.key]; };
@@ -152,6 +152,8 @@ function stGateGroups(all, now) {
     if (!ev.l) { groups.push({ sys: true, id: 'y' + ev.tab + ev.t + ev.e, tab: ev.tab, s: ev.s, t: ev.t, end: ev.t, evs: [ev], tries: [] }); return; }
     var key = ev.tab + '|' + (ev.s || '') + '|' + (ev.id ? '#' + ev.id : ev.l + '|' + ev.b), g = open[key];
     if (g && g.pend && ev.t - g.pend > ST_GATE_RETRY) { done(g, 'gave up'); g = null; }
+    // a request that waited, then found a twin's answer just before it left (or before a retry), ends there
+    if ((ev.e === 'join' || ev.e === 'cache') && g) { g.evs.push(ev); g.end = ev.t; g.pend = 0; done(g, ev.e === 'join' ? 'shared' : 'cached'); return; }
     if (ev.e === 'join' || ev.e === 'cache') { groups.push({ id: (ev.e === 'join' ? 'j' : 'c') + key + ev.t, key: key, tab: ev.tab, s: ev.s, l: ev.l, b: ev.b, t: ev.t, end: ev.t, evs: [ev], tries: [], res: ev.e === 'join' ? 'shared' : 'cached' }); return; }
     if (!g) { g = open[key] = { id: 'r' + key + ev.t, key: key, tab: ev.tab, s: ev.s, l: ev.l, b: ev.b, t: ev.t, end: ev.t, evs: [], tries: [] }; groups.push(g); }
     g.evs.push(ev); g.end = ev.t;
@@ -181,7 +183,8 @@ function stGateGroups(all, now) {
     if (g.res !== 'in flight' && g.res !== 'waiting' && g.res !== 'retrying') g.tries.forEach(function (x) { if (x.st == null) { x.st = -3; x.end = Math.min(x.t + 1000, now); } });
     var st = g.ans ? g.ans.st : 0, retried = g.tries.length > 1;
     if (g.res === 'in flight' || g.res === 'waiting' || g.res === 'retrying') g.cls = 'go';
-    else if (g.res === 'shared' || g.res === 'cancelled') g.cls = '';
+    else if (g.res === 'shared' || g.res === 'cached') g.cls = g.tries.length ? 're' : '';   // after a 503: answered after a retry
+    else if (g.res === 'cancelled') g.cls = '';
     else if (g.res === 'gave up' || g.res === 'error' || g.res === 'no answer' || !st || st >= 500) g.cls = 'bad';
     else g.cls = retried ? 're' : 'ok';
     g.label = g.res === 'gave up' && st ? st + ', gave up' : g.res === '200' ? 'ok' : g.res;

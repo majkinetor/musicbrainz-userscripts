@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.214943
+// @version      2026.11.22.222200
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -360,8 +360,8 @@
       booked = await book();
       // a cancelled wait hands its slot back when it is still the last one booked, so a page that
       // drops a queue of lookups (a Stop, a new page) does not leave every later request behind it
-      const giveBack = () => mbnState(s => {
-          if (booked.at <= Date.now()) return;
+      const giveBack = force => mbnState(s => {
+          if (!force && booked.at <= Date.now()) return;
           if (s.tat === booked.at + MBN_GAP) s.tat -= MBN_GAP;
           if (!background && s.itat === booked.at + MBN_GAP) s.itat -= MBN_GAP;
       });
@@ -396,6 +396,10 @@
               o.log('info', 'MusicBrainz gate: this page\'s timer fired ' + Math.round(st.ms / 100) / 10 + 's late (page ' + (st.state || '?') + (st.hidden ? ', hidden' : '') + '); waits wake on page activity too');
           }
       }
+      // log: a request that waited out a lead or a hold sent anyway, and only after its 503 found the
+      // answer a twin had brought back meanwhile; it looks once more just before it leaves
+      const twin = o.twin && Date.now() - t0 >= MBN_MERGE_WAIT ? await o.twin() : null;   // one that didn't wait looked a moment ago
+      if (twin) { await giveBack(true); return { ok: false, waited: Date.now() - t0, twin }; }
       tr('start', { w: Date.now() - t0 });
       return { ok: true, waited: Date.now() - t0 };
   }
@@ -486,11 +490,14 @@
       // one id for the request and its retries, so the Gate log keeps it apart from a twin
       if (!o.id) o = Object.assign({}, o, { id: mbnRid() });
       // `at` gives the URL at the moment the request leaves: a queued read's inc list can still grow
-      // set below for a cacheable read: before a retry, a twin's answer that came back in the meantime
+      // set below for a read: (inc, self) => a twin's answer that came back while this one waited, or
+      // null; asked just before it leaves and before a retry
       let peek = null;
-      const go = async at => {
+      const go = async (at, inc, self) => {
+          const twin = peek ? () => peek(inc ? inc() : want, self) : null;
           for (let attempt = 1; ; attempt++) {
-              const slot = await mbnSlot(o);
+              const slot = await mbnSlot(twin ? Object.assign({}, o, { twin }) : o);
+              if (slot.twin) return slot.twin;
               if (!slot.ok) return null;
               let r;
               try {
@@ -508,8 +515,8 @@
               const shed = a.shed && o.background !== false && attempt >= 2;
               if (give(attempt) || shed) { mbnTrace({ e: 'giveup', l: o.label, b: o.background === false ? 0 : 1, id: o.id, st: r.status, n: attempt }); return r; }
               // log: a twin sent apart from this one got its 200 while this one waited: no retry
-              const hit = peek && await peek();
-              if (hit) { mbnTrace({ e: 'cache', l: o.label, b: o.background === false ? 0 : 1, w: Math.round((Date.now() - hit.at) / 1000) }); return hit.r; }
+              const hit = twin && await twin();
+              if (hit) return hit;
           }
       };
       // Reads of the same thing share one fetch, and each caller gets its own clone of the answer.
@@ -537,18 +544,39 @@
       const live = globalThis.__mbnLive || (globalThis.__mbnLive = new Map());
       const sig = init && init.signal;
       const mine = () => !(o.cancelled && o.cancelled()) && !(sig && sig.aborted);
-      const covers = run => { for (const i of want) if (!run.inc.has(i)) return false; return true; };
+      const covers = (run, inc = want) => { for (const i of inc) if (!run.inc.has(i)) return false; return true; };
       // a background read may share a page's read; a page's read shares a background one only once it is sent
       const bg = o.background !== false, ahead = run => run.sent || !run.bg || bg;
       // merge: the two have the same MBN_INC_ALONE incs
-      const fits = run => { for (const i of MBN_INC_ALONE) if (run.inc.has(i) !== want.has(i)) return false; return true; };
+      const fits = (run, inc = want) => { for (const i of MBN_INC_ALONE) if (run.inc.has(i) !== inc.has(i)) return false; return true; };
       // join or cache: a lookup's answer with more incs answers this one too
       const lookup = /^\/ws\/2\/[a-z-]+\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(base.pathname);
       const answers = run => lookup || fits(run);
       // #1098: a recent answer for the same thing, when no edit went out since
       const cacheable = !o.fresh && !(init && init.credentials && init.credentials !== 'omit') && !base.searchParams.has('query') && (lookup || fits({ inc: new Set() }));
       let looked = !cacheable;
-      if (cacheable) peek = () => mbnCacheGet(key, want);
+      // answers that came from a twin or the cache: not put in the cache again (that would make them new)
+      const kept = new WeakSet();
+      // the twin check before a request leaves: a run sent in the meantime that answers it (joined,
+      // as below), else the cache. A run that is itself waiting on a twin is never joined, so two
+      // runs retrying apart can't wait on each other
+      peek = async (inc, self) => {
+          const tb = o.background === false ? 0 : 1;
+          const x = (live.get(key) || []).find(x => x !== self && x.sent && !x.twin && covers(x, inc) && (lookup || fits(x, inc)));
+          if (x) {
+              if (self) self.twin = x;
+              mbnTrace({ e: 'join', l: o.label, b: tb, id: o.id, with: x.label });
+              let r = null;
+              try { r = await x.p; } catch (e) { r = null; }
+              if (self) self.twin = null;
+              if (r && r.ok) { r = r.clone(); kept.add(r); return r; }
+          }
+          const hit = cacheable && await mbnCacheGet(key, inc);
+          if (!hit) return null;
+          mbnTrace({ e: 'cache', l: o.label, b: tb, id: o.id, w: Math.round((Date.now() - hit.at) / 1000) });
+          kept.add(hit.r);
+          return hit.r;
+      };
       for (;;) {
           const runs = live.get(key) || [];
           let run = runs.find(x => covers(x) && answers(x) && ahead(x)), how = 'join';
@@ -556,14 +584,14 @@
           if (!run && !looked) {
               looked = true;
               const hit = await mbnCacheGet(key, want);
-              if (hit) { mbnTrace({ e: 'cache', l: o.label, b: bg ? 1 : 0, w: Math.round((Date.now() - hit.at) / 1000) }); return hit.r; }
+              if (hit) { mbnTrace({ e: 'cache', l: o.label, b: bg ? 1 : 0, id: o.id, w: Math.round((Date.now() - hit.at) / 1000) }); return hit.r; }
               // the cache is read asynchronously: the same read asked in that moment is in `live` by now
               continue;
           }
           if (!run) break;
           const add = how === 'merge' ? Array.from(want).filter(i => !run.inc.has(i)) : [];
           for (const i of add) run.inc.add(i);
-          mbnTrace({ e: how, l: o.label, b: o.background === false ? 0 : 1, with: run.label, add: add.join(' ') || undefined });
+          mbnTrace({ e: how, l: o.label, b: o.background === false ? 0 : 1, id: o.id, with: run.label, add: add.join(' ') || undefined });
           const p = run.p;
           // this caller's own Stop or abort still ends its wait, whatever the first caller does
           const stop = new Promise(res => {
@@ -583,7 +611,7 @@
           if (!mine()) return null;
           // the first caller was cancelled or aborted, this one wasn't: it asks for itself
       }
-      const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null };
+      const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null, twin: null };
       // #1097: a new read waits MBN_MERGE_WAIT before it books, so the reads a page's scripts send
       // at load in the same moment merge into it instead of all leaving on their own
       // #1097: only background reads wait for others; the lead and interactive reads go at once
@@ -593,14 +621,14 @@
           const u = new URL(base.href);
           u.searchParams.set('inc', Array.from(run.inc).join(' '));
           return u.href;
-      }) : null);
+      }, () => run.inc, run) : null);
       const runs = live.get(key) || [];
       runs.push(run);
       live.set(key, runs);
       try {
           const r = await run.p;
           if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();   // as for a joiner, above
-          if (r && r.ok && cacheable && (lookup || fits(run))) await mbnCachePut(key, run.inc, r.clone());
+          if (r && r.ok && cacheable && !kept.has(r) && (lookup || fits(run))) await mbnCachePut(key, run.inc, r.clone());
           return r ? r.clone() : r;
       } finally {
           const l = live.get(key) || [], i = l.indexOf(run);

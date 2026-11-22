@@ -62,7 +62,34 @@ test('a lookup with recordings answers a lighter lookup, by join and from the ca
   check(n.merge === 6, `a read with user-tags merges with one without (${n.merge})`);
 });
 
-test('o.send sends the request in place of fetch', { tag: ['@unit'] }, async ({ context }) => {
+// gate log: Event Horizon's background read queued behind another script's lead while the page's own read of the same
+// entity went past it and came back; after the lead it sent its own anyway (and Fuzzy Logic sent into a 503 that way)
+test('a read that waited sends nothing when a twin answered meanwhile, from the cache or still on its way', { tag: ['@unit'] }, async ({ context }) => {
+  const a = await tab(context);
+  const n = await a.evaluate(async () => {
+    const ws = 'https://musicbrainz.org/ws/2/release/', out = {};
+    const read = async (id, slow) => {
+      window.__starts = [];
+      await mbnLead('other-script', 1200);
+      const bg = mbnFetch(ws + id + '?inc=labels&fmt=json');
+      await new Promise(r => setTimeout(r, 300));   // past its own cache lookup: it is queued behind the lead
+      const real = window.fetch;
+      if (slow) window.fetch = async u => { window.__starts.push(Date.now()); await new Promise(r => setTimeout(r, 2000)); return new Response('{}', { status: 200 }); };
+      const page = mbnFetch(ws + id + '?inc=labels&fmt=json', null, { background: false });
+      const [x, y] = await Promise.all([bg, page]);
+      window.fetch = real;
+      await mbnLead('other-script', 0);
+      return { starts: window.__starts.length, ok: x.ok && y.ok };
+    };
+    out.cache = await read('1a2b3c4d-0000-4000-8000-000000000001', false);
+    out.join = await read('1a2b3c4d-0000-4000-8000-000000000002', true);
+    return out;
+  });
+  check(n.cache.ok && n.cache.starts === 1, `answered from the cache the page's read filled (${JSON.stringify(n.cache)})`);
+  check(n.join.ok && n.join.starts === 1, `joins the page's read still on its way (${JSON.stringify(n.join)})`);
+});
+
+test('o.send sends the request in place of fetch',{ tag: ['@unit'] }, async ({ context }) => {
   const a = await tab(context);
   const r = await a.evaluate(async () => {
     const sent = [];
