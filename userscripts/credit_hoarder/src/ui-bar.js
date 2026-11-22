@@ -3124,9 +3124,18 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         const p = document.getElementById('eh-pin');
         let top = 0;
         if (p && !p.hidden && getComputedStyle(p).display !== 'none') { const r = p.getBoundingClientRect(); if (r.top <= 1 && r.bottom > 0) top = Math.round(r.bottom); }
+        // Inside a page-tall frame (Event Horizon's), "fixed" is relative to the whole page:
+        // pin to the visible top of the frame instead, under the parent's own #eh-pin if it has one
+        try { const fe = window.frameElement; if (fe) {
+            const fr = fe.getBoundingClientRect(), pp = fe.ownerDocument.getElementById('eh-pin');
+            let pb = 0;
+            if (pp && !pp.hidden && getComputedStyle(pp).display !== 'none') { const r = pp.getBoundingClientRect(); if (r.top <= 1 && r.bottom > 0) pb = r.bottom; }
+            top = Math.max(top, Math.round(Math.max(0, pb - fr.top)));
+        } } catch (e) { /* cross-origin parent */ }
         if (row1.style.top !== top + 'px') row1.style.top = top + 'px';
     };
     window.addEventListener('scroll', underPin, { passive: true });
+    try { const pw = window.frameElement && window.frameElement.ownerDocument.defaultView; if (pw) { pw.addEventListener('scroll', underPin, { passive: true }); pw.addEventListener('resize', underPin); } } catch (e) { /* cross-origin parent */ }
     setInterval(underPin, 400);
 
     // ── Options (inline in the single bar — #139). No "Options:" label: the
