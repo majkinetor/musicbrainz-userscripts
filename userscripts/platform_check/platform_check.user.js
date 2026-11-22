@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.22.145804
+// @version      2026.11.22.152822
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -6278,6 +6278,23 @@ function pcLsSet(key, entry) {
     if (!entry) return;
     try { localStorage.setItem(key, JSON.stringify({ ...entry, _t: Date.now() })); } catch (e) {}
 }
+// A queued add's write: when the site's storage is full, the oldest releases' scan
+// cache makes room and the write is tried again. It still throws when that is not enough.
+function pcLsPut(key, value) {
+    try { localStorage.setItem(key, value); return; } catch (e) { if (!/quota/i.test(e.name + ' ' + e.message)) throw e; }
+    const newest = new Map();
+    for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k || !(k.startsWith('pc:cache:v2:') || k.startsWith('pc:mbdata:'))) continue;
+        let t = 0; try { t = JSON.parse(localStorage.getItem(k))?._t || 0; } catch (e) {}
+        const id = k.slice(k.lastIndexOf(':') + 1);
+        if (id !== mbid) newest.set(id, Math.max(newest.get(id) || 0, t));
+    }
+    const drop = [...newest].sort((a, b) => a[1] - b[1]).slice(0, Math.max(50, Math.ceil(newest.size / 2)));
+    drop.forEach(([id]) => cacheClear(id));
+    appendLog('System', `Storage full: dropped the scan cache of ${drop.length} older release(s) to queue the add`, 'warn');
+    localStorage.setItem(key, value);
+}
 function pcPruneCache() {
     try {
         const now = Date.now(), today = new Date(now).toISOString().slice(0, 10);
@@ -10928,7 +10945,7 @@ function addSingleUrl(platform, background, force) {
     }
     localStorage.setItem(`pc:pending:${mbid}`, JSON.stringify({ [platform]: cached.url }));
     pcQueuePastedBarcode();   // #673
-    pcQueuePickedCatnos();    // #740
+        pcQueuePickedCatnos();    // #740
     // #641: a forced add is recorded for the edit note; any other add clears an old record
     const forcedWhy = force ? pcWithheldWhy(platform) : null;
     if (forcedWhy) localStorage.setItem(`pc:forced:${mbid}`, JSON.stringify({ [cached.url]: forcedWhy })); else localStorage.removeItem(`pc:forced:${mbid}`);
@@ -10959,6 +10976,14 @@ function addMasterUrl(masterUrl, background = false) {
 // force (#641, middle click on +): barcode/format confidence doesn't withhold anything.
 async function runInjectBtn(e, background, force) {
     const triggerBtn = e.currentTarget;
+    try { await runInjectBtnInner(triggerBtn, background, force); }
+    catch (err) {
+        // never a click that does nothing: a failure is said in the log and at the button
+        appendLog('System', `Inject failed: ${err && err.name}: ${err && err.message}`, 'error');
+        flashInfo(triggerBtn, /quota/i.test(String(err && (err.name + err.message))) ? 'Browser storage full — not added' : 'Add failed — see the log', '#B05B5B');
+    }
+}
+async function runInjectBtnInner(triggerBtn, background, force) {
     // Bucket 1: URLs going onto the release.
     const pendingRelease = {};
     let barcodeBlocked = 0;
@@ -11048,15 +11073,15 @@ async function runInjectBtn(e, background, force) {
     }
 
     if (releaseCount > 0) {
-        localStorage.setItem(`pc:pending:${mbid}`, JSON.stringify(pendingRelease));
+        pcLsPut(`pc:pending:${mbid}`, JSON.stringify(pendingRelease));
         pcQueuePastedBarcode();   // #673
     pcQueuePickedCatnos();    // #740
-        if (Object.keys(forcedUrls).length) localStorage.setItem(`pc:forced:${mbid}`, JSON.stringify(forcedUrls)); else localStorage.removeItem(`pc:forced:${mbid}`);
+        if (Object.keys(forcedUrls).length) pcLsPut(`pc:forced:${mbid}`, JSON.stringify(forcedUrls)); else localStorage.removeItem(`pc:forced:${mbid}`);
         appendLog('System', `Inject (${background ? 'background' : 'click'}): queued ${releaseCount} release URL(s) — opening release editor`, 'ok');
         openReleaseEditTab(mbid, { background });
     }
     if (rgCount > 0 && rgMbid) {
-        localStorage.setItem(`pc:pending:rg:${rgMbid}`, JSON.stringify(pendingRG));
+        pcLsPut(`pc:pending:rg:${rgMbid}`, JSON.stringify(pendingRG));
         // #559: the master now takes the background route too, instead of the
         // "background add doesn't cover the release-group master URL" tab it used
         // to leave open and focused.
