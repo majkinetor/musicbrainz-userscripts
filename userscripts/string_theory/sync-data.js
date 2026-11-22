@@ -8,11 +8,22 @@ var stSyncData = (function () {
     Array.prototype.forEach.call(arguments, function (o) { if (object(o)) Object.keys(o).forEach(function (k) { out[k] = true; }); });
     return Object.keys(out).sort();
   };
+  // A merge compares every subtree at every level: it memoizes, else a large store took seconds per page load.
+  var memo = null;
   function stable(v) {
     if (v === undefined) return 'undefined';
-    if (Array.isArray(v)) return '[' + v.map(stable).join(',') + ']';
-    if (object(v)) return '{' + Object.keys(v).sort().map(function (k) { return JSON.stringify(k) + ':' + stable(v[k]); }).join(',') + '}';
-    return JSON.stringify(v);
+    var m = memo && v !== null && typeof v === 'object' ? memo.get(v) : undefined;
+    if (m !== undefined) return m;
+    var s = Array.isArray(v) ? '[' + v.map(function (x) { return stable(x); }).join(',') + ']'
+      : object(v) ? '{' + Object.keys(v).sort().map(function (k) { return JSON.stringify(k) + ':' + stable(v[k]); }).join(',') + '}'
+      : JSON.stringify(v);
+    if (memo && v !== null && typeof v === 'object') memo.set(v, s);
+    return s;
+  }
+  function merge(base, local, remote, policy, identity, path, conflicts) {
+    if (memo) return merge3(base, local, remote, policy, identity, path, conflicts);
+    memo = new WeakMap();
+    try { return merge3(base, local, remote, policy, identity, path, conflicts); } finally { memo = null; }
   }
   function safe(v, depth) {
     if ((depth || 0) > 64) throw new Error('Backup is nested too deeply');
@@ -62,7 +73,7 @@ var stSyncData = (function () {
     }
     return incoming;
   }
-  function merge(base, local, remote, policy, identity, path, conflicts) {
+  function merge3(base, local, remote, policy, identity, path, conflicts) {
     path = path || []; conflicts = conflicts || [];
     if (stable(local) === stable(remote)) return local;
     if (stable(base) === stable(local)) return remote;

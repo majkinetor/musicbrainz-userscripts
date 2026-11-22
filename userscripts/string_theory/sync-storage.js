@@ -68,6 +68,8 @@ function stSyncStore(io) {
   function applyPending() {
     var pending = io.gm.get('string_theory.sync.stage');
     if (!pending) return false;
+    // Only other origins wait: nothing here to apply, and the merge below costs a whole capture.
+    if (origin && !D.own(pending.after.local, origin) && !D.own(pending.before.local, origin) && D.stable(pending.before.gm) === D.stable(pending.after.gm)) return false;
     var data = effective();
     apply(data);
     delete pending.before.local[origin]; delete pending.after.local[origin];
