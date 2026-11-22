@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.214202
+// @version      2026.11.22.214257
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -3530,6 +3530,9 @@
         const t0 = parseFloat(ov.style.top) || 0, l0 = parseFloat(ov.style.left) || 0;   // read first: inset resets them
         ov.style.inset = 'auto'; ov.style.top = (t0 - r.top + vt) + 'px'; ov.style.left = (l0 - r.left + vl) + 'px';
         ov.style.width = w + 'px'; ov.style.height = h + 'px';
+        // the window's own max-height is in vh, which in a page-tall frame is the page: cap it to the pinned height
+        const pn = ov.querySelector(':scope>.gt-cons');
+        if (pn) pn.style.maxHeight = Math.round(h * (matchMedia('(max-width:700px)').matches ? 1 : .88)) + 'px';
       } catch (e) {}
     };
     // always kept, not only when the first check fails: at mount the overlay can still match the viewport
