@@ -26,6 +26,16 @@ test.beforeEach(async ({ context }) => {
   await context.route(ORIGIN + '/**', r => r.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><title>gate</title>' }));
 });
 
+test('the same read asked twice in one moment is one request, the cache lookup between them included', { tag: ['@unit'] }, async ({ context }) => {
+  const a = await tab(context);
+  const n = await a.evaluate(async () => {
+    const u = 'https://musicbrainz.org/ws/2/url?resource=https%3A%2F%2Fa.test%2F&inc=artist-rels&fmt=json';
+    await Promise.all([mbnFetch(u), mbnFetch(u)]);
+    return window.__starts.length;
+  });
+  check(n === 1, `one request for both (${n})`);
+});
+
 test('a lock bridge ignoring abort cannot retain the gate or book twice', { tag: '@unit' }, async ({ context }) => {
   const a = await tab(context);
   const got = await a.evaluate(async () => {

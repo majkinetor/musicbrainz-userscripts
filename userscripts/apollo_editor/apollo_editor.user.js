@@ -446,10 +446,20 @@
       // a background read may share a page's read; a page's read shares a background one only once it is sent
       const bg = o.background !== false, ahead = run => run.sent || !run.bg || bg;
       const fits = run => { for (const i of MBN_INC_ALONE) if (run.inc.has(i) !== want.has(i)) return false; return true; };
+      // #1098: a recent answer for the same thing, when no edit went out since
+      const cacheable = !o.fresh && !(init && init.credentials && init.credentials !== 'omit') && !base.searchParams.has('query') && fits({ inc: new Set() });
+      let looked = !cacheable;
       for (;;) {
           const runs = live.get(key) || [];
           let run = runs.find(x => covers(x) && fits(x) && ahead(x)), how = 'join';
           if (!run) { run = runs.find(x => !x.sent && fits(x) && ahead(x)); how = 'merge'; }
+          if (!run && !looked) {
+              looked = true;
+              const hit = await mbnCacheGet(key, want);
+              if (hit) { mbnTrace({ e: 'cache', l: o.label, b: bg ? 1 : 0, w: Math.round((Date.now() - hit.at) / 1000) }); return hit.r; }
+              // the cache is read asynchronously: the same read asked in that moment is in `live` by now
+              continue;
+          }
           if (!run) break;
           const add = how === 'merge' ? Array.from(want).filter(i => !run.inc.has(i)) : [];
           for (const i of add) run.inc.add(i);
@@ -472,12 +482,6 @@
           if (r) return r.clone();
           if (!mine()) return null;
           // the first caller was cancelled or aborted, this one wasn't: it asks for itself
-      }
-      // #1098: a recent answer for the same thing, when no edit went out since
-      const cacheable = !o.fresh && !(init && init.credentials && init.credentials !== 'omit') && !base.searchParams.has('query') && fits({ inc: new Set() });
-      if (cacheable) {
-          const hit = await mbnCacheGet(key, want);
-          if (hit) { mbnTrace({ e: 'cache', l: o.label, b: bg ? 1 : 0, w: Math.round((Date.now() - hit.at) / 1000) }); return hit.r; }
       }
       const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null };
       // #1097: a new read waits MBN_MERGE_WAIT before it books, so the reads a page's scripts send
