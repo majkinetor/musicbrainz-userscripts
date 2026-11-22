@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.234627
+// @version      2026.11.23.000258
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -301,7 +301,7 @@
       // a hold that appears while we queue ends for every waiter at once: each waiter then books
       // again, so they leave one a second instead of all together into a fresh 503
       let booked = null, rebooked = false;
-      const book = () => mbnState(s => {
+      const book = head => mbnState(s => {
           // a search also waits out the search-shed hold: booked with it, the log names the real wait
           const now = Date.now(), cool = Math.max(s.cool || 0, o.search ? s.scool || 0 : 0), tat = s.tat || 0;
           // an interactive request (the page's own) never queues behind the background budget: it
@@ -322,11 +322,13 @@
               if ((s.ilast || 0) > now) at = Math.max(at, s.ilast + MBN_GAP);
               s.itat = Math.max(itat, at) + MBN_GAP;
               s.ilast = Math.max(s.ilast || 0, at);
-          } else if (o.retry) {
+          } else if (o.retry || head) {
               // log: a search's retry after its 503 booked at the end of a 13-request queue, three times
               // 8-12 s, and gave up while requests booked after it got through. A retry leaves first once
               // the hold ends (retries one a second among themselves, `rhead`), and every background slot
-              // still to come moves one second later to make room (`bslip`, which each waiter adds to its own)
+              // still to come moves one second later to make room (`bslip`, which each waiter adds to its own).
+              // log: a search waiting out a search-shed hold is at the head too: it booked again at the end
+              // each time, behind the lookups that went on meanwhile, ten holds in a row, 36 s for one search
               at = Math.max(now, cool, s.rhead || 0);
               s.rhead = at + MBN_GAP;
               if (tat > at) {
@@ -380,7 +382,7 @@
           if (left <= 0) {
               // every hold that ends past the slot books again, a second or third one included:
               // booking only once let the waiters of a later hold all leave in the same millisecond
-              if (cool > booked.at) { rebooked = true; booked = await book(); continue; }
+              if (cool > booked.at) { rebooked = true; booked = await book(shed && background); continue; }
               break;
           }
           if (o.log && until - t0 > 1000 && (!toldAt || until > toldUntil + 1000 || now - toldAt >= 10000)) {

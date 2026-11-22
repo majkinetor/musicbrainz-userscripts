@@ -93,7 +93,7 @@ export const mbThrottle = (() => {
         const id = mbnRid();   // one request, every try: the Gate log groups them by it
         for (let attempt = 0; attempt <= item.retries; attempt++) {
             await _waitForPause();
-            if (gated) await mbnSlot({ label: shortUrl, log: gateLog, search: /[?&]query=/.test(item.url), id });
+            if (gated) await mbnSlot({ label: shortUrl, log: gateLog, search: /[?&]query=/.test(item.url), retry: attempt > 0, id });
             _totalRequests++;
             const attemptTag = attempt === 0 ? '' : ` (retry ${attempt})`;
             // #87 diagnostic: log request start with in-flight + queued

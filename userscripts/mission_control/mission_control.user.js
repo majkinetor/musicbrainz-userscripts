@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.234627
+// @version      2026.11.23.000258
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -3006,7 +3006,7 @@ async function mbnSlot(o) {
     // a hold that appears while we queue ends for every waiter at once: each waiter then books
     // again, so they leave one a second instead of all together into a fresh 503
     let booked = null, rebooked = false;
-    const book = () => mbnState(s => {
+    const book = head => mbnState(s => {
         // a search also waits out the search-shed hold: booked with it, the log names the real wait
         const now = Date.now(), cool = Math.max(s.cool || 0, o.search ? s.scool || 0 : 0), tat = s.tat || 0;
         // an interactive request (the page's own) never queues behind the background budget: it
@@ -3027,11 +3027,13 @@ async function mbnSlot(o) {
             if ((s.ilast || 0) > now) at = Math.max(at, s.ilast + MBN_GAP);
             s.itat = Math.max(itat, at) + MBN_GAP;
             s.ilast = Math.max(s.ilast || 0, at);
-        } else if (o.retry) {
+        } else if (o.retry || head) {
             // log: a search's retry after its 503 booked at the end of a 13-request queue, three times
             // 8-12 s, and gave up while requests booked after it got through. A retry leaves first once
             // the hold ends (retries one a second among themselves, `rhead`), and every background slot
-            // still to come moves one second later to make room (`bslip`, which each waiter adds to its own)
+            // still to come moves one second later to make room (`bslip`, which each waiter adds to its own).
+            // log: a search waiting out a search-shed hold is at the head too: it booked again at the end
+            // each time, behind the lookups that went on meanwhile, ten holds in a row, 36 s for one search
             at = Math.max(now, cool, s.rhead || 0);
             s.rhead = at + MBN_GAP;
             if (tat > at) {
@@ -3085,7 +3087,7 @@ async function mbnSlot(o) {
         if (left <= 0) {
             // every hold that ends past the slot books again, a second or third one included:
             // booking only once let the waiters of a later hold all leave in the same millisecond
-            if (cool > booked.at) { rebooked = true; booked = await book(); continue; }
+            if (cool > booked.at) { rebooked = true; booked = await book(shed && background); continue; }
             break;
         }
         if (o.log && until - t0 > 1000 && (!toldAt || until > toldUntil + 1000 || now - toldAt >= 10000)) {

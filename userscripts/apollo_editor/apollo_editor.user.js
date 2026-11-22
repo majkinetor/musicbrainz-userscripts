@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.234627
+// @version      2026.11.23.000258
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -332,7 +332,7 @@
       // a hold that appears while we queue ends for every waiter at once: each waiter then books
       // again, so they leave one a second instead of all together into a fresh 503
       let booked = null, rebooked = false;
-      const book = () => mbnState(s => {
+      const book = head => mbnState(s => {
           // a search also waits out the search-shed hold: booked with it, the log names the real wait
           const now = Date.now(), cool = Math.max(s.cool || 0, o.search ? s.scool || 0 : 0), tat = s.tat || 0;
           // an interactive request (the page's own) never queues behind the background budget: it
@@ -353,11 +353,13 @@
               if ((s.ilast || 0) > now) at = Math.max(at, s.ilast + MBN_GAP);
               s.itat = Math.max(itat, at) + MBN_GAP;
               s.ilast = Math.max(s.ilast || 0, at);
-          } else if (o.retry) {
+          } else if (o.retry || head) {
               // log: a search's retry after its 503 booked at the end of a 13-request queue, three times
               // 8-12 s, and gave up while requests booked after it got through. A retry leaves first once
               // the hold ends (retries one a second among themselves, `rhead`), and every background slot
-              // still to come moves one second later to make room (`bslip`, which each waiter adds to its own)
+              // still to come moves one second later to make room (`bslip`, which each waiter adds to its own).
+              // log: a search waiting out a search-shed hold is at the head too: it booked again at the end
+              // each time, behind the lookups that went on meanwhile, ten holds in a row, 36 s for one search
               at = Math.max(now, cool, s.rhead || 0);
               s.rhead = at + MBN_GAP;
               if (tat > at) {
@@ -411,7 +413,7 @@
           if (left <= 0) {
               // every hold that ends past the slot books again, a second or third one included:
               // booking only once let the waiters of a later hold all leave in the same millisecond
-              if (cool > booked.at) { rebooked = true; booked = await book(); continue; }
+              if (cool > booked.at) { rebooked = true; booked = await book(shed && background); continue; }
               break;
           }
           if (o.log && until - t0 > 1000 && (!toldAt || until > toldUntil + 1000 || now - toldAt >= 10000)) {

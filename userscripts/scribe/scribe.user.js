@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.234627
+// @version      2026.11.23.000258
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the corner button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBkPSJNNDYgMjQgTDI2IDI0IEwyNiAxMDQgTDQ2IDEwNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04MiAyNCBMMTAyIDI0IEwxMDIgMTA0IEw4MiAxMDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJmNmY1NCIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNjQgNDAgTDUxIDY2IEw2NCA5NCBMNzcgNjYgWiIgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iNjQiIHkxPSI3NCIgeDI9IjY0IiB5Mj0iOTIiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==
@@ -279,7 +279,7 @@
       // a hold that appears while we queue ends for every waiter at once: each waiter then books
       // again, so they leave one a second instead of all together into a fresh 503
       let booked = null, rebooked = false;
-      const book = () => mbnState(s => {
+      const book = head => mbnState(s => {
           // a search also waits out the search-shed hold: booked with it, the log names the real wait
           const now = Date.now(), cool = Math.max(s.cool || 0, o.search ? s.scool || 0 : 0), tat = s.tat || 0;
           // an interactive request (the page's own) never queues behind the background budget: it
@@ -300,11 +300,13 @@
               if ((s.ilast || 0) > now) at = Math.max(at, s.ilast + MBN_GAP);
               s.itat = Math.max(itat, at) + MBN_GAP;
               s.ilast = Math.max(s.ilast || 0, at);
-          } else if (o.retry) {
+          } else if (o.retry || head) {
               // log: a search's retry after its 503 booked at the end of a 13-request queue, three times
               // 8-12 s, and gave up while requests booked after it got through. A retry leaves first once
               // the hold ends (retries one a second among themselves, `rhead`), and every background slot
-              // still to come moves one second later to make room (`bslip`, which each waiter adds to its own)
+              // still to come moves one second later to make room (`bslip`, which each waiter adds to its own).
+              // log: a search waiting out a search-shed hold is at the head too: it booked again at the end
+              // each time, behind the lookups that went on meanwhile, ten holds in a row, 36 s for one search
               at = Math.max(now, cool, s.rhead || 0);
               s.rhead = at + MBN_GAP;
               if (tat > at) {
@@ -358,7 +360,7 @@
           if (left <= 0) {
               // every hold that ends past the slot books again, a second or third one included:
               // booking only once let the waiters of a later hold all leave in the same millisecond
-              if (cool > booked.at) { rebooked = true; booked = await book(); continue; }
+              if (cool > booked.at) { rebooked = true; booked = await book(shed && background); continue; }
               break;
           }
           if (o.log && until - t0 > 1000 && (!toldAt || until > toldUntil + 1000 || now - toldAt >= 10000)) {

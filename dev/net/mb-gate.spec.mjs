@@ -307,6 +307,26 @@ test('a retry after a 503 leaves first when the hold ends, ahead of the queue be
   check(r.at.B - r.at.X >= 800 && r.at.C - r.at.B >= 800 && r.at.D - r.at.C >= 800, `still one a second (${JSON.stringify(r.at)})`);
 });
 
+// log: a search-shed hold sent every search waiting on it to the end of the queue, behind the lookups
+// booked meanwhile, ten holds in a row: one search waited 36 s; it keeps its place at the head
+test('a search waiting out a search-shed hold leaves first, ahead of lookups booked after it', { tag: ['@unit'] }, async ({ context }) => {
+  const a = await tab(context);
+  const r = await a.evaluate(async () => {
+    localStorage.clear();
+    await mbnState(s => { s.cool = Date.now() - 1; s.hot = 1; });   // throttled a moment ago: no burst
+    const t0 = Date.now(), order = [], at = {};
+    const go = (k, search) => mbnSlot({ search }).then(() => { order.push(k); at[k] = Date.now() - t0; });
+    const queued = [go('A', true), go('B', true), go('C', true)];   // searches at 0, 1 and 2 s
+    await new Promise(z => setTimeout(z, 50));
+    await mbnAnswer(503, n => n === 'Retry-After' ? '1' : n === 'X-RateLimit-Who' ? 'search-shed' : null, { search: true });   // A's: searches hold 1 s, past B's slot
+    const later = [go('D'), go('E'), go('F')];   // lookups, which don't wait for the search hold
+    await Promise.all([...queued, ...later]);
+    return { order: order.join(''), at };
+  });
+  check(r.order === 'ABCDEF', `the searches queued before the hold still leave before the lookups booked after it (${r.order}, ${JSON.stringify(r.at)})`);
+  check(r.at.B >= 1000 && r.at.C - r.at.B >= 800 && r.at.D - r.at.C >= 800 && r.at.E - r.at.D >= 800, `one a second (${JSON.stringify(r.at)})`);
+});
+
 test('a page request keeps trying past four throttles; a background one stops at four', { tag: ['@unit'] }, async ({ context }) => {
   const a = await tab(context);
   const r = await a.evaluate(async () => {

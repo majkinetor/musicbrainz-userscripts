@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.234627
+// @version      2026.11.23.000258
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm, RateYourMusic and Album of the Year, read when you open their pages), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjI4Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMxNmNjZjgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjZmZhZTM4Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -350,7 +350,7 @@
       // a hold that appears while we queue ends for every waiter at once: each waiter then books
       // again, so they leave one a second instead of all together into a fresh 503
       let booked = null, rebooked = false;
-      const book = () => mbnState(s => {
+      const book = head => mbnState(s => {
           // a search also waits out the search-shed hold: booked with it, the log names the real wait
           const now = Date.now(), cool = Math.max(s.cool || 0, o.search ? s.scool || 0 : 0), tat = s.tat || 0;
           // an interactive request (the page's own) never queues behind the background budget: it
@@ -371,11 +371,13 @@
               if ((s.ilast || 0) > now) at = Math.max(at, s.ilast + MBN_GAP);
               s.itat = Math.max(itat, at) + MBN_GAP;
               s.ilast = Math.max(s.ilast || 0, at);
-          } else if (o.retry) {
+          } else if (o.retry || head) {
               // log: a search's retry after its 503 booked at the end of a 13-request queue, three times
               // 8-12 s, and gave up while requests booked after it got through. A retry leaves first once
               // the hold ends (retries one a second among themselves, `rhead`), and every background slot
-              // still to come moves one second later to make room (`bslip`, which each waiter adds to its own)
+              // still to come moves one second later to make room (`bslip`, which each waiter adds to its own).
+              // log: a search waiting out a search-shed hold is at the head too: it booked again at the end
+              // each time, behind the lookups that went on meanwhile, ten holds in a row, 36 s for one search
               at = Math.max(now, cool, s.rhead || 0);
               s.rhead = at + MBN_GAP;
               if (tat > at) {
@@ -429,7 +431,7 @@
           if (left <= 0) {
               // every hold that ends past the slot books again, a second or third one included:
               // booking only once let the waiters of a later hold all leave in the same millisecond
-              if (cool > booked.at) { rebooked = true; booked = await book(); continue; }
+              if (cool > booked.at) { rebooked = true; booked = await book(shed && background); continue; }
               break;
           }
           if (o.log && until - t0 > 1000 && (!toldAt || until > toldUntil + 1000 || now - toldAt >= 10000)) {

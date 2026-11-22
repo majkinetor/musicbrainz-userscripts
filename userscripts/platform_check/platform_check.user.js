@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.22.234627
+// @version      2026.11.23.000258
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -313,7 +313,7 @@ async function mbnSlot(o) {
     // a hold that appears while we queue ends for every waiter at once: each waiter then books
     // again, so they leave one a second instead of all together into a fresh 503
     let booked = null, rebooked = false;
-    const book = () => mbnState(s => {
+    const book = head => mbnState(s => {
         // a search also waits out the search-shed hold: booked with it, the log names the real wait
         const now = Date.now(), cool = Math.max(s.cool || 0, o.search ? s.scool || 0 : 0), tat = s.tat || 0;
         // an interactive request (the page's own) never queues behind the background budget: it
@@ -334,11 +334,13 @@ async function mbnSlot(o) {
             if ((s.ilast || 0) > now) at = Math.max(at, s.ilast + MBN_GAP);
             s.itat = Math.max(itat, at) + MBN_GAP;
             s.ilast = Math.max(s.ilast || 0, at);
-        } else if (o.retry) {
+        } else if (o.retry || head) {
             // log: a search's retry after its 503 booked at the end of a 13-request queue, three times
             // 8-12 s, and gave up while requests booked after it got through. A retry leaves first once
             // the hold ends (retries one a second among themselves, `rhead`), and every background slot
-            // still to come moves one second later to make room (`bslip`, which each waiter adds to its own)
+            // still to come moves one second later to make room (`bslip`, which each waiter adds to its own).
+            // log: a search waiting out a search-shed hold is at the head too: it booked again at the end
+            // each time, behind the lookups that went on meanwhile, ten holds in a row, 36 s for one search
             at = Math.max(now, cool, s.rhead || 0);
             s.rhead = at + MBN_GAP;
             if (tat > at) {
@@ -392,7 +394,7 @@ async function mbnSlot(o) {
         if (left <= 0) {
             // every hold that ends past the slot books again, a second or third one included:
             // booking only once let the waiters of a later hold all leave in the same millisecond
-            if (cool > booked.at) { rebooked = true; booked = await book(); continue; }
+            if (cool > booked.at) { rebooked = true; booked = await book(shed && background); continue; }
             break;
         }
         if (o.log && until - t0 > 1000 && (!toldAt || until > toldUntil + 1000 || now - toldAt >= 10000)) {
