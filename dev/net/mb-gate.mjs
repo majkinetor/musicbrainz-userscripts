@@ -35,8 +35,9 @@
 /** Between request starts, sustained: two a second. MusicBrainz publishes one a second per IP, but
  *  its 503s come from its own load (X-RateLimit-Who: global), whatever our pace: one a second still
  *  drew them, and Credit Hoarder's four at a time finished a preflight in 52 s, not 173 s (#1095). Two a second through the gate was
- *  still slower than its own four in flight: eight a second keeps up with them. */
-export const MBN_GAP = 125;
+ *  still slower than its own four in flight; eight a second drew 5-8 s Retry-Afters after each burst.
+ *  Four a second sits between. */
+export const MBN_GAP = 250;
 /** Requests that may start back to back after a quiet spell. */
 export const MBN_BURST = 4;
 /** The shared schedule, in the origin's localStorage. */
@@ -398,7 +399,7 @@ export async function mbnSlot(o) {
                 if ((s.last || 0) > now) s.last += MBN_GAP;
                 s.last = Math.max(s.last || 0, at);
                 if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: 1, head: 1 });
-                return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, eight requests a second', slip: s.slip || 0, bslip: s.bslip };
+                return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, four requests a second', slip: s.slip || 0, bslip: s.bslip };
             }
             s.last = Math.max(s.last || 0, at);
         } else {
@@ -410,7 +411,7 @@ export async function mbnSlot(o) {
             s.last = Math.max(s.last || 0, at);
         }
         s.tat = Math.max(tat, at) + MBN_GAP;
-        const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, eight requests a second';
+        const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, four requests a second';
         if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
         return { at, why, slip: s.slip || 0, bslip: s.bslip || 0 };
     });
@@ -528,7 +529,9 @@ export async function mbnAnswer(status, header, o) {
             // not about our pace: it came to a single request after a quiet spell, and the next one went
             // through. It holds a flat second (or its Retry-After); growing holds stalled every tab for nothing
             const load = /^global$/i.test(String(rl.who || '').trim());
-            const ms = Math.min(Math.max(1000, ra) * (load ? 1 : Math.max(1, s.hot)), MBN_MAX_HOLD);
+            // #1095: a Retry-After is MusicBrainz's own answer for how long: "Retry-After: 5" held 10s at hot 2,
+            // where Credit Hoarder alone waited the 5. Only a 503 without one grows
+            const ms = Math.min(Math.max(1000, ra) * (load || raw != null ? 1 : Math.max(1, s.hot)), MBN_MAX_HOLD);
             // log: every waiter whose slot a hold passed booked again at the end of the queue, behind
             // requests booked after it, and a hidden tab's (whose timer wakes late) went last again on
             // each hold: one waited 40s. The hold now moves the whole queue later by its length, the
@@ -544,7 +547,7 @@ export async function mbnAnswer(status, header, o) {
             tr({ ra: raw == null ? undefined : String(raw).slice(0, 40), hold: s.cool - Date.now() }, s);
             return s.cool - Date.now();
         });
-        if (o.log) o.log('warn', 'MusicBrainz gate: HTTP ' + status + (raw != null ? ' (Retry-After: ' + raw + ')' : '') + ' — every script holds ' + Math.round(hold / 100) / 10 + 's');
+        if (o.log) o.log('warn', 'MusicBrainz gate: HTTP ' + status + (raw != null ? ' (Retry-After: ' + raw + ')' : '') + (rl.who ? ' [' + String(rl.who).slice(0, 20) + ']' : '') + ' — every script holds ' + Math.round(hold / 100) / 10 + 's');
         return { throttled: true, hold };
     }
     if (status >= 200 && status < 500) await mbnState(s => {

@@ -165,8 +165,8 @@ test('the gate paces starts, a burst first, then one a second', { tag: ['@unit']
   check(mbnGated('//musicbrainz.org/ws/2/artist/x') && mbnGated('//test.musicbrainz.org/ws/2/x') && !mbnGated('//example.org/ws/2/x'), '…protocol-relative too (Credit Hoarder)');
 });
 
-// #1095: the shipped pace, with the real constants: a burst of four, then eight a second
-test('the shipped pace is a burst of four, then eight a second', { tag: ['@unit'] }, async ({ context }) => {
+// #1095: the shipped pace, with the real constants: a burst of four, then four a second
+test('the shipped pace is a burst of four, then four a second', { tag: ['@unit'] }, async ({ context }) => {
   const a = await context.newPage();
   await a.goto(ORIGIN + '/');
   await a.addScriptTag({ content: GATE.replace(/^const MBN_GAP = .*$/m, 'const MBN_GAP = ' + MBN_INLINE.consts.MBN_GAP + ';').replace(/^const MBN_BURST = .*$/m, 'const MBN_BURST = ' + MBN_INLINE.consts.MBN_BURST + ';') });
@@ -177,9 +177,9 @@ test('the shipped pace is a burst of four, then eight a second', { tag: ['@unit'
     return window.__starts.map(t => t - t0).sort((x, y) => x - y);
   });
   check(starts[3] - starts[0] < 300, `the first four start at once (${starts.join(', ')} ms)`);
-  check(starts[4] - starts[0] >= 90, `the fifth waits its turn (${starts.join(', ')} ms)`);
+  check(starts[4] - starts[0] >= 200, `the fifth waits its turn (${starts.join(', ')} ms)`);
   const gaps = starts.slice(5).map((t, i) => t - starts[i + 4]);
-  check(gaps.every(g => g >= 90 && g <= 400), `then an eighth of a second apart (${gaps.join(', ')} ms)`);
+  check(gaps.every(g => g >= 200 && g <= 500), `then a quarter of a second apart (${gaps.join(', ')} ms)`);
 });
 
 // #1095: a single request after a quiet spell drew "X-RateLimit-Who: global", and the next one went
@@ -195,10 +195,14 @@ test("a 503 for MusicBrainz's own load holds a flat second, however many in a ro
     for (let i = 0; i < 3; i++) { const x = await mbnAnswer(503, n => n === 'X-RateLimit-Who' ? 'search-shed' : null, { search: true }); shed.push(x.hold); await new Promise(z => setTimeout(z, x.hold + 20)); }
     localStorage.clear();
     const own = [await hold(null), await hold(null)];
-    return { global, shed, own };
+    localStorage.clear();
+    const ra = [];
+    for (let i = 0; i < 2; i++) { const x = await mbnAnswer(503, n => n === 'Retry-After' ? '2' : null); ra.push(x.hold); await new Promise(z => setTimeout(z, x.hold + 20)); }
+    return { global, shed, own, ra };
   });
   check(r.global.every(h => h > 900 && h <= 1000), `global: a second each (${r.global.join(', ')} ms)`);
   check(r.shed.every(h => h > 900 && h <= 1000), `search-shed: a second each (${r.shed.join(', ')} ms)`);
+  check(r.ra.every(h => h > 1900 && h <= 2000), `a Retry-After holds what it says, however many in a row (${r.ra.join(', ')} ms)`);
   check(r.own[1] > 1900, `any other 503 still holds longer each time (${r.own.join(', ')} ms)`);
 });
 
