@@ -29,6 +29,7 @@ export default [
                 AbortController:        'readonly',
                 performance:            'readonly',
                 requestAnimationFrame:  'readonly',
+                queueMicrotask:         'readonly',
                 cancelAnimationFrame:   'readonly',
                 localStorage:           'readonly',
                 sessionStorage:         'readonly',

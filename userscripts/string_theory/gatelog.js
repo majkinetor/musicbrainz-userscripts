@@ -35,7 +35,7 @@ var ST_GATE_CSS = ''
   + '.st-gl-name{position:absolute;left:-180px;width:172px;top:0;line-height:30px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--mbu-text-weak)}'
   + '.st-gl-name b{color:var(--mbu-text);font-weight:600}.st-gl-lane.me .st-gl-name b{color:var(--mbu-accent-text)}'
   + '.st-gl-w,.st-gl-f{position:absolute;top:5px;height:20px;min-width:5px;border-radius:3px;box-shadow:inset 1px 0 0 var(--mbu-bg)}.st-gl-w:hover,.st-gl-f:hover{filter:brightness(1.25)}'
-  + '.st-gl-w{background:var(--mbu-border)}.st-gl-f{background:var(--mbu-ok)}.st-gl-f.bad{background:var(--mbu-error)}.st-gl-f.re{background:var(--mbu-warn)}.st-gl-f.go{background:var(--mbu-info)}'
+  + '.st-gl-w{background:var(--mbu-border)}.st-gl-f{background:var(--mbu-ok)}.st-gl-f.bad{background:var(--mbu-error)}.st-gl-f.re{background:var(--mbu-warn)}.st-gl-f.go{background:var(--mbu-info)}.st-gl-f.off{background:var(--mbu-border)}'
   + '.st-gl-ax{position:relative;height:16px;border-top:1px solid var(--mbu-border-soft);font-size:11px;color:var(--mbu-text-weak)}'
   + '.st-gl-ax span{position:absolute;top:1px;transform:translateX(-50%);white-space:nowrap}.st-gl-ax span:first-child{transform:none}.st-gl-ax span:last-child{transform:translateX(-100%)}'
   + '.st-gl-none{line-height:30px;font-size:12px;color:var(--mbu-text-weak)}'
@@ -129,8 +129,12 @@ function stGateWhat(ev) {
 function stGateBad(ev) { return ev.e === 'error' || (ev.e === 'check' && !ev.ok) || (ev.e === 'answer' && (ev.st === 429 || ev.st === 503 || ev.st >= 500 || !ev.st)); }
 function stGateThrottled(st) { return st === 429 || st === 503; }
 // one try's colour: on its way, ok, busy (retried) or failed
-function stGateTryCls(st) { return st == null ? 'go' : st === -1 ? 'bad' : stGateThrottled(st) ? 're' : st >= 500 || !st ? 'bad' : 'ok'; }
-function stGateTryTip(st) { return st == null ? 'On its way' : st === -1 ? 'Network error' : 'HTTP ' + st; }
+// -2: dropped (cancelled after its start) · -3: lost (no answer ever came)
+function stGateTryCls(st) { return st == null ? 'go' : st === -2 ? 'off' : st === -1 || st === -3 ? 'bad' : stGateThrottled(st) ? 're' : st >= 500 || !st ? 'bad' : 'ok'; }
+function stGateTryTip(st) { return st == null ? 'On its way' : st === -1 ? 'Network error' : st === -2 ? 'Dropped, no answer awaited' : st === -3 ? 'No answer seen' : 'HTTP ' + st; }
+// a try still open this long is lost: MusicBrainz answers in seconds, and a lost start used to draw
+// a solid "on its way" bar up to now for a whole minute
+var ST_GATE_LOST = 30000;
 
 // The events, grouped into requests. An event with an id (mbnRid) belongs to that request. One
 // without (an older event, or a caller that gives none) goes by the run of events with the same
@@ -152,21 +156,27 @@ function stGateGroups(all, now) {
     g.evs.push(ev); g.end = ev.t;
     if (ev.e !== 'answer') g.pend = 0;
     var last = g.tries[g.tries.length - 1];
+    // without an id, two requests with the same label overlap in one run: an answer goes to the
+    // oldest open try (first in, first out) and the run stays open while another try waits
+    var open1 = function () { for (var i = 0; i < g.tries.length; i++) if (g.tries[i].st == null) return g.tries[i]; return null; };
     if (ev.e === 'start') g.tries.push({ t: ev.t, w: ev.w || 0 });
     else if (ev.e === 'answer') {
-      if (last && last.st == null) { last.st = ev.st || 0; last.end = ev.t; } else g.tries.push({ t: ev.t, w: 0, st: ev.st || 0, end: ev.t });
+      var x = ev.id ? (last && last.st == null ? last : null) : open1();
+      if (x) { x.st = ev.st || 0; x.end = ev.t; } else g.tries.push({ t: ev.t, w: 0, st: ev.st || 0, end: ev.t });
       g.ans = ev;
-      if (stGateThrottled(ev.st)) g.pend = ev.t; else done(g, String(ev.st || 'no status'));
-    } else if (ev.e === 'error') { if (last && last.st == null) { last.st = -1; last.end = ev.t; } done(g, 'error'); }
-    else if (ev.e === 'cancel') done(g, 'cancelled');
+      if (stGateThrottled(ev.st)) g.pend = ev.t; else if (ev.id || !open1()) done(g, String(ev.st || 'no status'));
+    } else if (ev.e === 'error') { x = ev.id ? (last && last.st == null ? last : null) : open1(); if (x) { x.st = -1; x.end = ev.t; } done(g, 'error'); }
+    else if (ev.e === 'cancel') { g.tries.forEach(function (y) { if (y.st == null) { y.st = -2; y.end = ev.t; } }); done(g, 'cancelled'); }
   });
   groups.forEach(function (g) {
     if (g.sys) { var y = g.evs[0]; g.cls = stGateBad(y) ? 'bad' : ''; g.label = y.e === 'check' ? (y.ok ? 'check passed' : 'check failed') : y.e; return; }
     if (!g.res) {
       if (g.pend) g.res = now - g.pend > ST_GATE_RETRY ? 'gave up' : 'retrying';
-      else if (now - g.end > ST_GATE_SPAN) g.res = 'no answer';   // its tab went away mid-request
+      else if (now - g.end > ST_GATE_LOST) g.res = 'no answer';   // its tab went away mid-request, or its answer was never told
       else g.res = g.tries.length ? 'in flight' : 'waiting';
     }
+    // a finished request has no try on its way: one left open is lost, drawn as a tick, not up to now
+    if (g.res !== 'in flight' && g.res !== 'waiting' && g.res !== 'retrying') g.tries.forEach(function (x) { if (x.st == null) { x.st = -3; x.end = Math.min(x.t + 1000, now); } });
     var st = g.ans ? g.ans.st : 0, retried = g.tries.length > 1;
     if (g.res === 'in flight' || g.res === 'waiting' || g.res === 'retrying') g.cls = 'go';
     else if (g.res === 'shared' || g.res === 'cancelled') g.cls = '';

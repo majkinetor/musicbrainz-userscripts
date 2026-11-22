@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.164333
+// @version      2026.11.22.171225
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11446,6 +11446,14 @@ function pdRead(j) {
     }
     return p;
 }
+// a read on a slot booked by hand: its answer (or failure) goes to the Gate log under the slot's id
+async function pdGet(u, init, label, id) {
+    let r;
+    try { r = await mbnFetch(u, init); }
+    catch (e) { mbnTrace({ e: 'error', l: label, b: 1, id, err: String((e && e.message) || e).slice(0, 80) }); throw e; }
+    mbnTrace({ e: 'answer', l: label, b: 1, id, st: (r && r.status) || 0 });
+    return r;
+}
 async function pdAsk(kind, id, live) {
     if (!S.pending || !PD_KINDS.test(kind)) return;
     const k = pdKey = kind + '/' + id, had = PD.get(k);
@@ -11456,17 +11464,18 @@ async function pdAsk(kind, id, live) {
         while (live() && document.visibilityState !== 'visible') await new Promise(r => setTimeout(r, 1000));
         if (!live()) return;
         await new Promise(r => (window.requestIdleCallback || setTimeout)(r, { timeout: 5000 }));
-        const slot = await mbnSlot({ label: 'pending edits', cancelled: () => !live(), log: (l, m) => LOG.debug(m) });
+        // the slot's start shows in the Gate log; pdGet tells it how the read ended, or it stays "on its way"
+        const rid = mbnRid(), slot = await mbnSlot({ label: 'pending edits', cancelled: () => !live(), log: (l, m) => LOG.debug(m), id: rid });
         if (!slot.ok || !live()) return;
         const t0 = performance.now(), u = kind === 'release' ? `${MB}/ws/js/release/${id}?inc=rels+recordings` : `${MB}/ws/js/entity/${id}?inc=rels`;
-        const r = await mbnFetch(u, { headers: { Accept: 'application/json' } });
+        const r = await pdGet(u, { headers: { Accept: 'application/json' } }, 'pending edits', rid);
         fetchLog('pending edits ' + k, t0, r);
         if (!r || !r.ok) return;
         const p = pdRead(await r.json());
         // ws/js has no list of an entity's releases; MusicBrainz's own page marks them, for one more request.
         if (/^(artist|label|release-group)$/.test(kind)) {
-            const s2 = await mbnSlot({ label: 'pending edits list', cancelled: () => !live(), log: (l, m) => LOG.debug(m) });
-            const r2 = s2.ok && live() && await mbnFetch(`${MB}/${kind}/${id}`, { headers: { Accept: 'text/html' } });
+            const rid2 = mbnRid(), s2 = await mbnSlot({ label: 'pending edits list', cancelled: () => !live(), log: (l, m) => LOG.debug(m), id: rid2 });
+            const r2 = s2.ok && live() && await pdGet(`${MB}/${kind}/${id}`, { headers: { Accept: 'text/html' } }, 'pending edits list', rid2);
             if (r2 && r2.ok) for (const a of new DOMParser().parseFromString(await r2.text(), 'text/html').querySelectorAll('.mp a[href]')) {
                 const m = PD_ENT.exec(a.getAttribute('href')); if (m && m[1] !== id) p.ents.add(m[1]);
             }

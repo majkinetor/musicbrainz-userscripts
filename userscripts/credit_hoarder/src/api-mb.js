@@ -5,7 +5,7 @@
 
 import { MB, pageWindow }    from './constants.js';
 import { log, logDebug } from './log.js';
-import { mbnGated, mbnSlot, mbnAnswer, mbnFetch, mbnWsFetch } from '../../../dev/net/mb-gate.mjs';
+import { mbnGated, mbnSlot, mbnAnswer, mbnFetch, mbnWsFetch, mbnRid, mbnTrace } from '../../../dev/net/mb-gate.mjs';
 
 /**
  * Fetch a full MB entity from the internal `/ws/js/entity/{mbid}` endpoint.
@@ -90,9 +90,10 @@ export const mbThrottle = (() => {
         const shortUrl = item.url.replace(MB, '').replace(/^https:/, '');
         const gated = mbnGated(item.url);
         const gateLog = (lv, m) => (lv === 'warn' ? log.warn(m) : logDebug(m));
+        const id = mbnRid();   // one request, every try: the Gate log groups them by it
         for (let attempt = 0; attempt <= item.retries; attempt++) {
             await _waitForPause();
-            if (gated) await mbnSlot({ label: shortUrl, log: gateLog, search: /[?&]query=/.test(item.url) });
+            if (gated) await mbnSlot({ label: shortUrl, log: gateLog, search: /[?&]query=/.test(item.url), id });
             _totalRequests++;
             const attemptTag = attempt === 0 ? '' : ` (retry ${attempt})`;
             // #87 diagnostic: log request start with in-flight + queued
@@ -107,7 +108,7 @@ export const mbThrottle = (() => {
                 const res = gated ? await mbnWsFetch(item.url, { signal: ctrl.signal }) : await mbnFetch(item.url, { signal: ctrl.signal }, { log: gateLog });
                 const elapsed = Date.now() - t0;
                 if (gated) {
-                    const a = await mbnAnswer(res.status, n => res.headers.get(n), { log: gateLog, label: shortUrl, search: /[?&]query=/.test(item.url) });   // the Gate log pairs it with its start by the label
+                    const a = await mbnAnswer(res.status, n => res.headers.get(n), { log: gateLog, label: shortUrl, search: /[?&]query=/.test(item.url), id });
                     if (a.throttled) { _rateLimited++; logDebug(`${tag} <- ${res.status} in ${elapsed}ms; the shared gate holds ${a.hold}ms`); continue; }
                 }
                 if (res.status === 429 || res.status === 503) {
@@ -137,6 +138,7 @@ export const mbThrottle = (() => {
             } catch (e) {
                 const elapsed = Date.now() - t0;
                 const isTimeout = e?.name === 'AbortError';
+                if (gated) mbnTrace({ e: 'error', l: shortUrl, b: 1, id, err: isTimeout ? 'timed out' : String(e?.message || e).slice(0, 80) });
                 const reason = isTimeout
                     ? `timed out after ${REQUEST_TIMEOUT_MS}ms`
                     : `${e?.message || e}`;
