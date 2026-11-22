@@ -109,6 +109,7 @@ function stGateWhat(ev) {
     case 'cancel': x.push('cancelled after ' + stGateSec(ev.w)); break;
     case 'join': x.push('a request that covers this one is already on its way' + (ev.with ? ' (' + ev.with + ')' : '') + ': shares its answer'); break;
     case 'merge': x.push('asks together with a waiting request' + (ev.with ? ' (' + ev.with + ')' : '') + (ev.add ? ', which adds ' + ev.add : '') + ': one answer for both'); break;
+    case 'cache': x.push('answered from the cache (' + (ev.w || 0) + 's old): no request'); break;
     case 'error': x.push(ev.err || 'network error'); break;
     case 'check': x.push('browser check ' + (ev.ok ? 'passed' : 'failed') + ' in ' + stGateSec(ev.w)); break;
     case 'answer':
@@ -142,7 +143,7 @@ function stGateGroups(all, now) {
     if (!ev.l) { groups.push({ sys: true, id: 'y' + ev.tab + ev.t + ev.e, tab: ev.tab, s: ev.s, t: ev.t, end: ev.t, evs: [ev], tries: [] }); return; }
     var key = ev.tab + '|' + (ev.s || '') + '|' + ev.l + '|' + ev.b, g = open[key];
     if (g && g.pend && ev.t - g.pend > ST_GATE_RETRY) { done(g, 'gave up'); g = null; }
-    if (ev.e === 'join') { groups.push({ id: 'j' + key + ev.t, key: key, tab: ev.tab, s: ev.s, l: ev.l, b: ev.b, t: ev.t, end: ev.t, evs: [ev], tries: [], res: 'shared' }); return; }
+    if (ev.e === 'join' || ev.e === 'cache') { groups.push({ id: (ev.e === 'join' ? 'j' : 'c') + key + ev.t, key: key, tab: ev.tab, s: ev.s, l: ev.l, b: ev.b, t: ev.t, end: ev.t, evs: [ev], tries: [], res: ev.e === 'join' ? 'shared' : 'cached' }); return; }
     if (!g) { g = open[key] = { id: 'r' + key + ev.t, key: key, tab: ev.tab, s: ev.s, l: ev.l, b: ev.b, t: ev.t, end: ev.t, evs: [], tries: [] }; groups.push(g); }
     g.evs.push(ev); g.end = ev.t;
     if (ev.e !== 'answer') g.pend = 0;

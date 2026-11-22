@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.11.22.094135
+// @version      2026.11.22.111639
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -266,6 +266,9 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
   var MBN_MAX_HOLD = 6e4;
   var MBN_MAX_LEAD = 1e4;
   var MBN_TRACE_MAX = 400;
+  var MBN_MERGE_WAIT = 100;
+  var MBN_CACHE_TTL = 5 * 6e4;
+  var MBN_CACHE_MAX = 150;
   var MBN_INC_ALONE = ["user-tags", "user-genres", "user-ratings", "recordings", "recording-level-rels", "work-level-rels", "release-group-level-rels", "discids", "isrcs"];
   function mbnGated(url) {
     const s = String(url || "");
@@ -514,7 +517,10 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         const itat = s.itat || 0, hot = s.hot && now <= cool + 3e4;
         at = Math.max(now, rebooked ? itat : itat - (hot ? 0 : (MBN_BURST - 1) * MBN_GAP), cool);
         s.itat = Math.max(itat, at) + MBN_GAP;
-      } else at = Math.max(rebooked ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP), cool);
+      } else {
+        const hot = s.hot && now <= cool + 3e4;
+        at = Math.max(rebooked || hot ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP), cool);
+      }
       s.tat = Math.max(tat, at) + MBN_GAP;
       const why = cool > now && cool >= at ? "MusicBrainz asked everyone to wait" : "pacing, one request a second";
       if (at > now) tr("book", { w: at - now, why: cool > now && cool >= at ? "hold" : "pace", re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
@@ -622,6 +628,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
   }
   async function mbnFetch(url, init, o) {
     o = o || {};
+    if (!/^(GET|HEAD)$/i.test(String(init && init.method || "GET"))) mbnEdited();
     if (!mbnGated(url)) {
       const r = await fetch(url, init);
       if (!mbnWebsite(url) || !await mbnIsCheck(r)) return r;
@@ -727,25 +734,101 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       if (r) return r.clone();
       if (!mine()) return null;
     }
+    const cacheable = !o.fresh && !(init && init.credentials && init.credentials !== "omit") && !base.searchParams.has("query") && fits({ inc: /* @__PURE__ */ new Set() });
+    if (cacheable) {
+      const hit = await mbnCacheGet(key, want);
+      if (hit) {
+        mbnTrace({ e: "cache", l: o.label, b: bg ? 1 : 0, w: Math.round((Date.now() - hit.at) / 1e3) });
+        return hit.r;
+      }
+    }
     const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null };
-    run.p = go(() => {
+    run.p = mbnSleep(bg && !o.lead ? MBN_MERGE_WAIT : 0).then(() => mine() ? go(() => {
       run.sent = true;
       if (run.inc.size === want.size) return url;
       const u = new URL(base.href);
       u.searchParams.set("inc", Array.from(run.inc).join(" "));
       return u.href;
-    });
+    }) : null);
     const runs = live.get(key) || [];
     runs.push(run);
     live.set(key, runs);
     try {
       const r = await run.p;
       if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();
+      if (r && r.ok && cacheable && fits(run)) await mbnCachePut(key, run.inc, r.clone());
       return r ? r.clone() : r;
     } finally {
       const l = live.get(key) || [], i = l.indexOf(run);
       if (i >= 0) l.splice(i, 1);
       if (!l.length) live.delete(key);
+    }
+  }
+  function mbnEdited() {
+    try {
+      localStorage.setItem(MBN_KEY + "-edit", String(Date.now()));
+    } catch (e) {
+    }
+  }
+  function mbnEditEpoch() {
+    const g = globalThis.__mbnCacheG || (globalThis.__mbnCacheG = { watch: false });
+    if (!g.watch && typeof document !== "undefined") {
+      g.watch = true;
+      try {
+        document.addEventListener("submit", (e) => {
+          const f = e.target;
+          if (f && /^post$/i.test(f.method || "")) mbnEdited();
+        }, true);
+      } catch (e) {
+      }
+    }
+    try {
+      return localStorage.getItem(MBN_KEY + "-edit") || "0";
+    } catch (e) {
+      return "0";
+    }
+  }
+  function mbnCacheUrl(key, inc) {
+    return "https://mbn-cache.invalid/?k=" + encodeURIComponent(key) + "&inc=" + encodeURIComponent(Array.from(inc).sort().join(" "));
+  }
+  async function mbnCacheGet(key, want) {
+    try {
+      if (typeof caches === "undefined") return null;
+      const epoch = mbnEditEpoch(), c = await caches.open(MBN_KEY + "-cache"), pre = mbnCacheUrl(key, []).replace(/&inc=.*$/, "&inc=");
+      for (const q of await c.keys()) {
+        if (q.url.indexOf(pre) !== 0) continue;
+        const inc = decodeURIComponent(q.url.slice(pre.length)).split(" ").filter(Boolean);
+        let ok = true;
+        for (const i of want) if (inc.indexOf(i) < 0) {
+          ok = false;
+          break;
+        }
+        if (!ok) continue;
+        const r = await c.match(q);
+        if (!r) continue;
+        const at = +r.headers.get("x-mbn-at") || 0;
+        if (r.headers.get("x-mbn-epoch") !== epoch || Date.now() - at > MBN_CACHE_TTL) {
+          await c.delete(q);
+          continue;
+        }
+        return { r, at };
+      }
+    } catch (e) {
+    }
+    return null;
+  }
+  async function mbnCachePut(key, inc, r) {
+    try {
+      if (typeof caches === "undefined") return;
+      const epoch = mbnEditEpoch(), body = await r.text(), h = new Headers();
+      h.set("content-type", r.headers.get("content-type") || "application/json");
+      h.set("x-mbn-at", String(Date.now()));
+      h.set("x-mbn-epoch", epoch);
+      const c = await caches.open(MBN_KEY + "-cache");
+      await c.put(mbnCacheUrl(key, inc), new Response(body, { status: r.status, headers: h }));
+      const all = await c.keys();
+      for (let i = 0; i < all.length - MBN_CACHE_MAX; i++) await c.delete(all[i]);
+    } catch (e) {
     }
   }
   function mbnUA() {

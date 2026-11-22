@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.094622
+// @version      2026.11.22.111606
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -56,6 +56,9 @@
   const MBN_MAX_HOLD = 60000;
   const MBN_MAX_LEAD = 10000;
   const MBN_TRACE_MAX = 400;
+  const MBN_MERGE_WAIT = 100;
+  const MBN_CACHE_TTL = 300000;
+  const MBN_CACHE_MAX = 150;
   const MBN_INC_ALONE = new Set(["user-tags","user-genres","user-ratings","recordings","recording-level-rels","work-level-rels","release-group-level-rels","discids","isrcs"]);
   function mbnGated(url) {
       const s = String(url || '');
@@ -240,7 +243,12 @@
               const itat = s.itat || 0, hot = s.hot && now <= cool + 30000;
               at = Math.max(now, rebooked ? itat : itat - (hot ? 0 : (MBN_BURST - 1) * MBN_GAP), cool);
               s.itat = Math.max(itat, at) + MBN_GAP;
-          } else at = Math.max(rebooked ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP), cool);
+          } else {
+              // #1096: while MusicBrainz throttles, no burst: the queue a hold built up leaves one
+              // a second when it ends, not all in one millisecond into the next 503
+              const hot = s.hot && now <= cool + 30000;
+              at = Math.max(rebooked || hot ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP), cool);
+          }
           s.tat = Math.max(tat, at) + MBN_GAP;
           const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second';
           if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
@@ -348,6 +356,8 @@
   }
   async function mbnFetch(url, init, o) {
       o = o || {};
+      // #1098: a write (an edit, an ISRC submit) makes every cached answer old
+      if (!/^(GET|HEAD)$/i.test(String((init && init.method) || 'GET'))) mbnEdited();
       if (!mbnGated(url)) {
           const r = await fetch(url, init);
           if (!mbnWebsite(url) || !(await mbnIsCheck(r))) return r;
@@ -434,26 +444,82 @@
           if (!mine()) return null;
           // the first caller was cancelled or aborted, this one wasn't: it asks for itself
       }
+      // #1098: a recent answer for the same thing, when no edit went out since
+      const cacheable = !o.fresh && !(init && init.credentials && init.credentials !== 'omit') && !base.searchParams.has('query') && fits({ inc: new Set() });
+      if (cacheable) {
+          const hit = await mbnCacheGet(key, want);
+          if (hit) { mbnTrace({ e: 'cache', l: o.label, b: bg ? 1 : 0, w: Math.round((Date.now() - hit.at) / 1000) }); return hit.r; }
+      }
       const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null };
-      run.p = go(() => {
+      // #1097: a new read waits MBN_MERGE_WAIT before it books, so the reads a page's scripts send
+      // at load in the same moment merge into it instead of all leaving on their own
+      // #1097: only background reads wait for others; the lead and interactive reads go at once
+      run.p = mbnSleep(bg && !o.lead ? MBN_MERGE_WAIT : 0).then(() => mine() ? go(() => {
           run.sent = true;
           if (run.inc.size === want.size) return url;   // nothing merged: as asked
           const u = new URL(base.href);
           u.searchParams.set('inc', Array.from(run.inc).join(' '));
           return u.href;
-      });
+      }) : null);
       const runs = live.get(key) || [];
       runs.push(run);
       live.set(key, runs);
       try {
           const r = await run.p;
           if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();   // as for a joiner, above
+          if (r && r.ok && cacheable && fits(run)) await mbnCachePut(key, run.inc, r.clone());
           return r ? r.clone() : r;
       } finally {
           const l = live.get(key) || [], i = l.indexOf(run);
           if (i >= 0) l.splice(i, 1);
           if (!l.length) live.delete(key);
       }
+  }
+  function mbnEdited() {
+      try { localStorage.setItem(MBN_KEY + '-edit', String(Date.now())); } catch (e) {}
+  }
+  function mbnEditEpoch() {
+      const g = globalThis.__mbnCacheG || (globalThis.__mbnCacheG = { watch: false });
+      if (!g.watch && typeof document !== 'undefined') {
+          g.watch = true;
+          try { document.addEventListener('submit', e => { const f = e.target; if (f && /^post$/i.test(f.method || '')) mbnEdited(); }, true); } catch (e) {}
+      }
+      try { return localStorage.getItem(MBN_KEY + '-edit') || '0'; } catch (e) { return '0'; }
+  }
+  function mbnCacheUrl(key, inc) {
+      return 'https://mbn-cache.invalid/?k=' + encodeURIComponent(key) + '&inc=' + encodeURIComponent(Array.from(inc).sort().join(' '));
+  }
+  async function mbnCacheGet(key, want) {
+      try {
+          if (typeof caches === 'undefined') return null;
+          const epoch = mbnEditEpoch(), c = await caches.open(MBN_KEY + '-cache'), pre = mbnCacheUrl(key, []).replace(/&inc=.*$/, '&inc=');
+          for (const q of await c.keys()) {
+              if (q.url.indexOf(pre) !== 0) continue;
+              const inc = decodeURIComponent(q.url.slice(pre.length)).split(' ').filter(Boolean);
+              let ok = true;
+              for (const i of want) if (inc.indexOf(i) < 0) { ok = false; break; }
+              if (!ok) continue;
+              const r = await c.match(q);
+              if (!r) continue;
+              const at = +r.headers.get('x-mbn-at') || 0;
+              if (r.headers.get('x-mbn-epoch') !== epoch || Date.now() - at > MBN_CACHE_TTL) { await c.delete(q); continue; }
+              return { r, at };
+          }
+      } catch (e) {}
+      return null;
+  }
+  async function mbnCachePut(key, inc, r) {
+      try {
+          if (typeof caches === 'undefined') return;
+          const epoch = mbnEditEpoch(), body = await r.text(), h = new Headers();
+          h.set('content-type', r.headers.get('content-type') || 'application/json');
+          h.set('x-mbn-at', String(Date.now()));
+          h.set('x-mbn-epoch', epoch);
+          const c = await caches.open(MBN_KEY + '-cache');
+          await c.put(mbnCacheUrl(key, inc), new Response(body, { status: r.status, headers: h }));
+          const all = await c.keys();
+          for (let i = 0; i < all.length - MBN_CACHE_MAX; i++) await c.delete(all[i]);   // oldest first
+      } catch (e) {}
   }
   function mbnHot() {
       let s;

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.094103
+// @version      2026.11.22.111606
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -85,6 +85,9 @@
   const MBN_MAX_HOLD = 60000;
   const MBN_MAX_LEAD = 10000;
   const MBN_TRACE_MAX = 400;
+  const MBN_MERGE_WAIT = 100;
+  const MBN_CACHE_TTL = 300000;
+  const MBN_CACHE_MAX = 150;
   const MBN_INC_ALONE = new Set(["user-tags","user-genres","user-ratings","recordings","recording-level-rels","work-level-rels","release-group-level-rels","discids","isrcs"]);
   function mbnGated(url) {
       const s = String(url || '');
@@ -269,7 +272,12 @@
               const itat = s.itat || 0, hot = s.hot && now <= cool + 30000;
               at = Math.max(now, rebooked ? itat : itat - (hot ? 0 : (MBN_BURST - 1) * MBN_GAP), cool);
               s.itat = Math.max(itat, at) + MBN_GAP;
-          } else at = Math.max(rebooked ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP), cool);
+          } else {
+              // #1096: while MusicBrainz throttles, no burst: the queue a hold built up leaves one
+              // a second when it ends, not all in one millisecond into the next 503
+              const hot = s.hot && now <= cool + 30000;
+              at = Math.max(rebooked || hot ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP), cool);
+          }
           s.tat = Math.max(tat, at) + MBN_GAP;
           const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second';
           if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
@@ -377,6 +385,8 @@
   }
   async function mbnFetch(url, init, o) {
       o = o || {};
+      // #1098: a write (an edit, an ISRC submit) makes every cached answer old
+      if (!/^(GET|HEAD)$/i.test(String((init && init.method) || 'GET'))) mbnEdited();
       if (!mbnGated(url)) {
           const r = await fetch(url, init);
           if (!mbnWebsite(url) || !(await mbnIsCheck(r))) return r;
@@ -463,26 +473,82 @@
           if (!mine()) return null;
           // the first caller was cancelled or aborted, this one wasn't: it asks for itself
       }
+      // #1098: a recent answer for the same thing, when no edit went out since
+      const cacheable = !o.fresh && !(init && init.credentials && init.credentials !== 'omit') && !base.searchParams.has('query') && fits({ inc: new Set() });
+      if (cacheable) {
+          const hit = await mbnCacheGet(key, want);
+          if (hit) { mbnTrace({ e: 'cache', l: o.label, b: bg ? 1 : 0, w: Math.round((Date.now() - hit.at) / 1000) }); return hit.r; }
+      }
       const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null };
-      run.p = go(() => {
+      // #1097: a new read waits MBN_MERGE_WAIT before it books, so the reads a page's scripts send
+      // at load in the same moment merge into it instead of all leaving on their own
+      // #1097: only background reads wait for others; the lead and interactive reads go at once
+      run.p = mbnSleep(bg && !o.lead ? MBN_MERGE_WAIT : 0).then(() => mine() ? go(() => {
           run.sent = true;
           if (run.inc.size === want.size) return url;   // nothing merged: as asked
           const u = new URL(base.href);
           u.searchParams.set('inc', Array.from(run.inc).join(' '));
           return u.href;
-      });
+      }) : null);
       const runs = live.get(key) || [];
       runs.push(run);
       live.set(key, runs);
       try {
           const r = await run.p;
           if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();   // as for a joiner, above
+          if (r && r.ok && cacheable && fits(run)) await mbnCachePut(key, run.inc, r.clone());
           return r ? r.clone() : r;
       } finally {
           const l = live.get(key) || [], i = l.indexOf(run);
           if (i >= 0) l.splice(i, 1);
           if (!l.length) live.delete(key);
       }
+  }
+  function mbnEdited() {
+      try { localStorage.setItem(MBN_KEY + '-edit', String(Date.now())); } catch (e) {}
+  }
+  function mbnEditEpoch() {
+      const g = globalThis.__mbnCacheG || (globalThis.__mbnCacheG = { watch: false });
+      if (!g.watch && typeof document !== 'undefined') {
+          g.watch = true;
+          try { document.addEventListener('submit', e => { const f = e.target; if (f && /^post$/i.test(f.method || '')) mbnEdited(); }, true); } catch (e) {}
+      }
+      try { return localStorage.getItem(MBN_KEY + '-edit') || '0'; } catch (e) { return '0'; }
+  }
+  function mbnCacheUrl(key, inc) {
+      return 'https://mbn-cache.invalid/?k=' + encodeURIComponent(key) + '&inc=' + encodeURIComponent(Array.from(inc).sort().join(' '));
+  }
+  async function mbnCacheGet(key, want) {
+      try {
+          if (typeof caches === 'undefined') return null;
+          const epoch = mbnEditEpoch(), c = await caches.open(MBN_KEY + '-cache'), pre = mbnCacheUrl(key, []).replace(/&inc=.*$/, '&inc=');
+          for (const q of await c.keys()) {
+              if (q.url.indexOf(pre) !== 0) continue;
+              const inc = decodeURIComponent(q.url.slice(pre.length)).split(' ').filter(Boolean);
+              let ok = true;
+              for (const i of want) if (inc.indexOf(i) < 0) { ok = false; break; }
+              if (!ok) continue;
+              const r = await c.match(q);
+              if (!r) continue;
+              const at = +r.headers.get('x-mbn-at') || 0;
+              if (r.headers.get('x-mbn-epoch') !== epoch || Date.now() - at > MBN_CACHE_TTL) { await c.delete(q); continue; }
+              return { r, at };
+          }
+      } catch (e) {}
+      return null;
+  }
+  async function mbnCachePut(key, inc, r) {
+      try {
+          if (typeof caches === 'undefined') return;
+          const epoch = mbnEditEpoch(), body = await r.text(), h = new Headers();
+          h.set('content-type', r.headers.get('content-type') || 'application/json');
+          h.set('x-mbn-at', String(Date.now()));
+          h.set('x-mbn-epoch', epoch);
+          const c = await caches.open(MBN_KEY + '-cache');
+          await c.put(mbnCacheUrl(key, inc), new Response(body, { status: r.status, headers: h }));
+          const all = await c.keys();
+          for (let i = 0; i < all.length - MBN_CACHE_MAX; i++) await c.delete(all[i]);   // oldest first
+      } catch (e) {}
   }
   function mbnHot() {
       let s;

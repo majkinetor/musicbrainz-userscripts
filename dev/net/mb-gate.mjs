@@ -50,6 +50,12 @@ export const MBN_MAX_LEAD = 10000;
 export const MBN_TRACE_MAX = 400;
 /** Incs a merged read (mbnFetch) never adds to one without them: they need a login, or MusicBrainz
  *  answers them with fewer results or much more work. */
+/** How long a new read waits for others to merge into it (#1097). */
+export const MBN_MERGE_WAIT = 100;
+/** How long a cached ws/2 answer is used, unless an edit went out since (#1098). */
+export const MBN_CACHE_TTL = 5 * 60000;
+/** Cached answers kept at most. */
+export const MBN_CACHE_MAX = 150;
 export const MBN_INC_ALONE = ['user-tags', 'user-genres', 'user-ratings', 'recordings', 'recording-level-rels', 'work-level-rels', 'release-group-level-rels', 'discids', 'isrcs'];
 
 /** True for a request the gate paces: MusicBrainz's /ws/2, relative or absolute. */
@@ -267,7 +273,12 @@ export async function mbnSlot(o) {
             const itat = s.itat || 0, hot = s.hot && now <= cool + 30000;
             at = Math.max(now, rebooked ? itat : itat - (hot ? 0 : (MBN_BURST - 1) * MBN_GAP), cool);
             s.itat = Math.max(itat, at) + MBN_GAP;
-        } else at = Math.max(rebooked ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP), cool);
+        } else {
+            // #1096: while MusicBrainz throttles, no burst: the queue a hold built up leaves one
+            // a second when it ends, not all in one millisecond into the next 503
+            const hot = s.hot && now <= cool + 30000;
+            at = Math.max(rebooked || hot ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP), cool);
+        }
         s.tat = Math.max(tat, at) + MBN_GAP;
         const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second';
         if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
@@ -399,6 +410,8 @@ export async function mbnAnswer(status, header, o) {
  */
 export async function mbnFetch(url, init, o) {
     o = o || {};
+    // #1098: a write (an edit, an ISRC submit) makes every cached answer old
+    if (!/^(GET|HEAD)$/i.test(String((init && init.method) || 'GET'))) mbnEdited();
     if (!mbnGated(url)) {
         const r = await fetch(url, init);
         if (!mbnWebsite(url) || !(await mbnIsCheck(r))) return r;
@@ -485,26 +498,99 @@ export async function mbnFetch(url, init, o) {
         if (!mine()) return null;
         // the first caller was cancelled or aborted, this one wasn't: it asks for itself
     }
+    // #1098: a recent answer for the same thing, when no edit went out since
+    const cacheable = !o.fresh && !(init && init.credentials && init.credentials !== 'omit') && !base.searchParams.has('query') && fits({ inc: new Set() });
+    if (cacheable) {
+        const hit = await mbnCacheGet(key, want);
+        if (hit) { mbnTrace({ e: 'cache', l: o.label, b: bg ? 1 : 0, w: Math.round((Date.now() - hit.at) / 1000) }); return hit.r; }
+    }
     const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null };
-    run.p = go(() => {
+    // #1097: a new read waits MBN_MERGE_WAIT before it books, so the reads a page's scripts send
+    // at load in the same moment merge into it instead of all leaving on their own
+    // #1097: only background reads wait for others; the lead and interactive reads go at once
+    run.p = mbnSleep(bg && !o.lead ? MBN_MERGE_WAIT : 0).then(() => mine() ? go(() => {
         run.sent = true;
         if (run.inc.size === want.size) return url;   // nothing merged: as asked
         const u = new URL(base.href);
         u.searchParams.set('inc', Array.from(run.inc).join(' '));
         return u.href;
-    });
+    }) : null);
     const runs = live.get(key) || [];
     runs.push(run);
     live.set(key, runs);
     try {
         const r = await run.p;
         if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();   // as for a joiner, above
+        if (r && r.ok && cacheable && fits(run)) await mbnCachePut(key, run.inc, r.clone());
         return r ? r.clone() : r;
     } finally {
         const l = live.get(key) || [], i = l.indexOf(run);
         if (i >= 0) l.splice(i, 1);
         if (!l.length) live.delete(key);
     }
+}
+
+/* ── A short cache of ws/2 reads (#1098) ──
+ * Event Horizon, Platform Check and Apollo read the same entity again on every visit to a page.
+ * Their answers are kept MBN_CACHE_TTL in the origin's Cache Storage, shared by every script and
+ * tab. Any edit makes them all old: the edit epoch (localStorage MBN_KEY + '-edit') moves on a
+ * write through mbnFetch and on a POST form sent from a MusicBrainz page, and an answer stored
+ * under another epoch is not used. A caller that must see the server's answer passes o.fresh. */
+
+/** Note that an edit went out: every cached answer is old from now on. */
+export function mbnEdited() {
+    try { localStorage.setItem(MBN_KEY + '-edit', String(Date.now())); } catch (e) {}
+}
+
+/** The current edit epoch; also watches this page's POST forms (once per page). */
+export function mbnEditEpoch() {
+    const g = globalThis.__mbnCacheG || (globalThis.__mbnCacheG = { watch: false });
+    if (!g.watch && typeof document !== 'undefined') {
+        g.watch = true;
+        try { document.addEventListener('submit', e => { const f = e.target; if (f && /^post$/i.test(f.method || '')) mbnEdited(); }, true); } catch (e) {}
+    }
+    try { return localStorage.getItem(MBN_KEY + '-edit') || '0'; } catch (e) { return '0'; }
+}
+
+/** The cache entry URL for a read: its key and its sorted incs. */
+export function mbnCacheUrl(key, inc) {
+    return 'https://mbn-cache.invalid/?k=' + encodeURIComponent(key) + '&inc=' + encodeURIComponent(Array.from(inc).sort().join(' '));
+}
+
+/** A cached answer that covers `want` (a Set of incs) for `key`, or null: { r, at }. */
+export async function mbnCacheGet(key, want) {
+    try {
+        if (typeof caches === 'undefined') return null;
+        const epoch = mbnEditEpoch(), c = await caches.open(MBN_KEY + '-cache'), pre = mbnCacheUrl(key, []).replace(/&inc=.*$/, '&inc=');
+        for (const q of await c.keys()) {
+            if (q.url.indexOf(pre) !== 0) continue;
+            const inc = decodeURIComponent(q.url.slice(pre.length)).split(' ').filter(Boolean);
+            let ok = true;
+            for (const i of want) if (inc.indexOf(i) < 0) { ok = false; break; }
+            if (!ok) continue;
+            const r = await c.match(q);
+            if (!r) continue;
+            const at = +r.headers.get('x-mbn-at') || 0;
+            if (r.headers.get('x-mbn-epoch') !== epoch || Date.now() - at > MBN_CACHE_TTL) { await c.delete(q); continue; }
+            return { r, at };
+        }
+    } catch (e) {}
+    return null;
+}
+
+/** Keep an answer for `key` with incs `inc`; drops old entries past MBN_CACHE_MAX. */
+export async function mbnCachePut(key, inc, r) {
+    try {
+        if (typeof caches === 'undefined') return;
+        const epoch = mbnEditEpoch(), body = await r.text(), h = new Headers();
+        h.set('content-type', r.headers.get('content-type') || 'application/json');
+        h.set('x-mbn-at', String(Date.now()));
+        h.set('x-mbn-epoch', epoch);
+        const c = await caches.open(MBN_KEY + '-cache');
+        await c.put(mbnCacheUrl(key, inc), new Response(body, { status: r.status, headers: h }));
+        const all = await c.keys();
+        for (let i = 0; i < all.length - MBN_CACHE_MAX; i++) await c.delete(all[i]);   // oldest first
+    } catch (e) {}
 }
 
 /** How throttled MusicBrainz is right now (0: not at all), for a caller that narrows its own
@@ -669,6 +755,6 @@ export function mbnReverify(url, init, o) {
 
 /** What sync-gate.mjs inlines, in order. */
 export const MBN_INLINE = {
-    consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_MAX_HOLD, MBN_MAX_LEAD, MBN_TRACE_MAX, MBN_INC_ALONE },
-    fns: [mbnGated, mbnState, mbnSleep, mbnTrace, mbnSlot, mbnLead, mbnAnswer, mbnFetch, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
+    consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_MAX_HOLD, MBN_MAX_LEAD, MBN_TRACE_MAX, MBN_MERGE_WAIT, MBN_CACHE_TTL, MBN_CACHE_MAX, MBN_INC_ALONE },
+    fns: [mbnGated, mbnState, mbnSleep, mbnTrace, mbnSlot, mbnLead, mbnAnswer, mbnFetch, mbnEdited, mbnEditEpoch, mbnCacheUrl, mbnCacheGet, mbnCachePut, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
 };
