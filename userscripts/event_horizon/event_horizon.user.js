@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.114017
+// @version      2026.11.22.120238
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4836,13 +4836,21 @@ const wsk = path => {
 // memory for the tab and in IndexedDB across tabs, so the next visit draws at once. Once a page is all in, each kept answer
 // it drew from is asked again in the background, and a changed one redraws the page (show). Not asked again: one checked
 // under a minute ago, since this page loaded and since the tab last came to the front (MusicBrainz may have changed meanwhile).
-// Whatever EH writes to MusicBrainz (a vote, a rating, a tag, an alias) makes everything kept before it a miss, in every tab
+// Whatever EH writes to MusicBrainz (a vote, a rating, a tag, an alias) makes everything kept before it a miss, in every tab.
+// A write that touches only known entities (a tag vote, a refresh of one release) drops only the answers that name them
 const KP_TTL = 60000, KP_MAX = 800, KP_MEM = new Map(), KP_FLY = new Map();
 let kpSeen = Date.now(), kpUsed = null, kpDb = null, kpPuts = 0;
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') kpSeen = Date.now(); });
 // `mbLastWrite`, the time of the last write to MusicBrainz, is shared by the suite and SAED (#938): an edit made with any of them drops every script's kept answers
 const mbLastWrite = () => { try { return +localStorage.getItem('mbLastWrite') || 0; } catch (e) { return 0; } };
-function kpWrote() { KP_MEM.clear(); try { localStorage.setItem('mbLastWrite', String(Date.now())); } catch (e) { /* storage blocked: this tab's memory is dropped all the same */ } }
+// eh.kpDrop: [mbid, time] of the targeted drops, the last 100, shared by every tab
+const kpDrops = () => { try { return JSON.parse(localStorage.getItem('eh.kpDrop')) || []; } catch (e) { return []; } };
+function kpWrote(ids) {
+    ids = (ids || []).filter(Boolean).map(i => String(i).toLowerCase());
+    if (!ids.length) { KP_MEM.clear(); try { localStorage.setItem('mbLastWrite', String(Date.now())); } catch (e) { /* storage blocked: this tab's memory is dropped all the same */ } return; }
+    for (const k of [...KP_MEM.keys()]) if (ids.some(i => k.includes(i))) KP_MEM.delete(k);
+    try { const now = Date.now(), l = kpDrops().filter(x => !ids.includes(x[0])); ids.forEach(i => l.push([i, now])); localStorage.setItem('eh.kpDrop', JSON.stringify(l.slice(-100))); } catch (e) { /* storage blocked: this tab's memory is dropped all the same */ }
+}
 const kpStore = mode => (kpDb || (kpDb = new Promise((ok, no) => {
     const q = indexedDB.open('eh-kept', 1);
     q.onupgradeneeded = () => q.result.createObjectStore('a', { keyPath: 'k' }).createIndex('at', 'at');
@@ -4852,7 +4860,7 @@ const kpMem = e => { KP_MEM.delete(e.k); KP_MEM.set(e.k, e); if (KP_MEM.size > 2
 async function kpGet(k) {
     let e = KP_MEM.get(k);
     if (!e) try { e = await kpStore('readonly').then(s => new Promise(ok => { const q = s.get(k); q.onsuccess = () => ok(q.result); q.onerror = () => ok(null); })); if (e) kpMem(e); } catch (x) { e = null; }
-    return e && e.at > mbLastWrite() ? e : null;
+    return e && e.at > mbLastWrite() && !kpDrops().some(x => x[1] >= e.at && e.k.includes(x[0])) ? e : null;
 }
 function kpPut(k, t) {
     const e = { k, at: Date.now(), t };
@@ -6345,7 +6353,7 @@ async function tgInOpen() {
 async function tgInSend(names, v) {
     const d = tgIn; if (!d || !d.t || !names.length) return;
     try {
-        kpWrote(); const r = await mbnFetch(`${MB}${d.path}/tags/${TG_VOTE[v]}?tags=${encodeURIComponent(names.join(','))}`, { headers: { Accept: 'application/json' } });
+        kpWrote([d.path.split('/').pop()]); const r = await mbnFetch(`${MB}${d.path}/tags/${TG_VOTE[v]}?tags=${encodeURIComponent(names.join(','))}`, { headers: { Accept: 'application/json' } });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         tagsUpdate(d, (await r.json()).updates); d.dirty = true;
     } catch (e) { LOG.err('Tagging failed: ' + e.message); toast('Tagging failed: ' + e.message); }
@@ -6358,7 +6366,7 @@ function tgInWire() {
     // (they hold the old tags, and Fuzzy Logic's vote misses kpWrote)
     document.addEventListener('mbu-tags-voted', ev => {
         // Fuzzy Logic voted (or withdrew, kind 'withdraw'): your votes change at once, so the header's next tell isn't the old list
-        const d = ev.detail || {}; kpWrote(); if (!d.path) return;
+        const d = ev.detail || {}; kpWrote(d.path ? [d.path.split('/').pop()] : null); if (!d.path) return;
         const lc = xs => (xs || []).map(x => String(x).trim().toLowerCase()).filter(Boolean), up = d.kind !== 'withdraw', ns = [...lc(d.genres), ...lc(d.tags)];
         const mk = d.path.slice(1), mine = MINE.get(mk); if (mine) ns.forEach(n => up ? mine.add(n) : mine.delete(n)); else if (up) MINE.set(mk, new Set(ns));
         if (tgIn || !up || !tgPath().startsWith(d.path) || !data || !(data.rel || data.g)) { if (!tgIn) render(); return; } const g = data.rel || data.g; LOG.info('Fuzzy Logic voted on this page: header tags updated'); g.genres = [...new Set([...(g.genres || []), ...lc(d.genres)])]; g.tags = [...new Set([...(g.tags || []), ...lc(d.tags)])]; render(); });
@@ -10315,7 +10323,7 @@ async function tagsVote(d, i, v) {
     const was = { c: t.c, v: t.v };
     t.c += v - t.v; t.v = v; tagsDraw();
     try {
-        kpWrote(); const r = await mbnFetch(`${MB}/${d.ent.replace(':', '/')}/tags/${TG_VOTE[v]}?tags=${encodeURIComponent(t.n)}`, { headers: { Accept: 'application/json' } });
+        kpWrote([d.ent.split(':').pop()]); const r = await mbnFetch(`${MB}/${d.ent.replace(':', '/')}/tags/${TG_VOTE[v]}?tags=${encodeURIComponent(t.n)}`, { headers: { Accept: 'application/json' } });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         tagsUpdate(d, (await r.json()).updates);
     } catch (e) { Object.assign(t, was); LOG.err('Voting on the tag ' + t.n + ' failed: ' + e.message); toast('The vote failed: ' + e.message); }
@@ -10332,7 +10340,7 @@ function tagsUpdate(d, ups) {
 async function tagsAdd(d, s) {
     const names = s.trim().toLowerCase().split(/\s*,\s*/).filter(Boolean); if (!names.length) return;
     try {
-        kpWrote(); const r = await mbnFetch(`${MB}/${d.ent.replace(':', '/')}/tags/upvote?tags=${encodeURIComponent(names.join(','))}`, { headers: { Accept: 'application/json' } });
+        kpWrote([d.ent.split(':').pop()]); const r = await mbnFetch(`${MB}/${d.ent.replace(':', '/')}/tags/upvote?tags=${encodeURIComponent(names.join(','))}`, { headers: { Accept: 'application/json' } });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         tagsUpdate(d, (await r.json()).updates); toast(names.length === 1 ? 'Tagged' : `Added ${names.length} tags`);
     } catch (e) { LOG.err('Adding tags failed: ' + e.message); toast('Adding the tags failed: ' + e.message); }
@@ -18459,7 +18467,8 @@ let ehRefreshTimer;
 document.addEventListener('mbu-refresh-release', ev => {
     const id = ev.detail && ev.detail.release;
     if (!ehOn || !ehRel || typeof id !== 'string' || id.toLowerCase() !== ehRel.toLowerCase()) return;
-    ev.preventDefault(); kpWrote(); clearTimeout(ehRefreshTimer);
+    // the write was to this release or its release group: the rest of what is kept stays good
+    ev.preventDefault(); kpWrote([id, ENT.get(id.toLowerCase())?.['release-group']?.id]); clearTimeout(ehRefreshTimer);
     ehRefreshTimer = setTimeout(() => { if (ehOn && ehRel === id.toLowerCase()) show('release/' + ehRel, { quiet: true, y: scrollY, notifyRefresh: true }); }, 300);
 });
 // o.y: where to scroll once the page is all in (Back, Forward, a redraw); o.quiet: a redraw of the page showing, with
