@@ -65,11 +65,12 @@ function stSyncStore(io) {
     write('gm', io.gm, data.gm);
     if (origin && D.own(data.local, origin)) write('local', io.local, data.local[origin]);
   }
+  function othersOnly(stage) { return origin && !D.own(stage.after.local, origin) && !D.own(stage.before.local, origin) && D.stable(stage.before.gm) === D.stable(stage.after.gm); }
   function applyPending() {
     var pending = io.gm.get('string_theory.sync.stage');
     if (!pending) return false;
     // Only other origins wait: nothing here to apply, and the merge below costs a whole capture.
-    if (origin && !D.own(pending.after.local, origin) && !D.own(pending.before.local, origin) && D.stable(pending.before.gm) === D.stable(pending.after.gm)) return false;
+    if (othersOnly(pending)) return false;
     var data = effective();
     apply(data);
     delete pending.before.local[origin]; delete pending.after.local[origin];
@@ -81,7 +82,8 @@ function stSyncStore(io) {
     return true;
   }
   function pending() {
-    if (!io.gm.get('string_theory.sync.stage')) return false;
+    var stage = io.gm.get('string_theory.sync.stage');
+    if (!stage || othersOnly(stage)) return false;
     var actual = capture(), target = effective();
     return D.stable(actual.gm) !== D.stable(target.gm) || origin && D.stable(actual.local[origin]) !== D.stable(target.local[origin]);
   }
