@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.222200
+// @version      2026.11.22.224051
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -112,6 +112,7 @@
           // nor a queue longer than a minute: slots that waits left behind (a closed tab) are dropped
           if ((s.tat || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s.tat = Math.max(now, s.cool || 0) + 60 * MBN_GAP;
           if ((s.itat || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s.itat = Math.max(now, s.cool || 0) + 60 * MBN_GAP;
+          for (const k of ['last', 'ilast']) if ((s[k] || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s[k] = Math.max(now, s.cool || 0) + 59 * MBN_GAP;
           const out = fn(s);
           Object.assign(g, s);
           try { localStorage.setItem(MBN_KEY, JSON.stringify({ ...s, tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
@@ -345,12 +346,19 @@
               // alone took the burst from the page's second request on, even with no background work at all
               const busy = tat > Math.max(now, itat);
               at = Math.max(now, rebooked || busy ? itat : itat - (hot ? 0 : (MBN_BURST - 1) * MBN_GAP), cool);
+              // log: the burst reaches back from itat, so once a 200 cooled `hot` while a queue still
+              // waited out a hold, a new request took the slot a queued one held and both got a 503;
+              // the burst is for an idle line, never ahead of (or on) a slot still to come
+              if ((s.ilast || 0) > now) at = Math.max(at, s.ilast + MBN_GAP);
               s.itat = Math.max(itat, at) + MBN_GAP;
+              s.ilast = Math.max(s.ilast || 0, at);
           } else {
               // #1096: while MusicBrainz throttles, no burst: the queue a hold built up leaves one
               // a second when it ends, not all in one millisecond into the next 503
               const hot = s.hot && now <= cool + 30000;
               at = Math.max(rebooked || hot ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP), cool);
+              if ((s.last || 0) > now) at = Math.max(at, s.last + MBN_GAP);   // as above
+              s.last = Math.max(s.last || 0, at);
           }
           s.tat = Math.max(tat, at) + MBN_GAP;
           const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second';
@@ -364,6 +372,7 @@
           if (!force && booked.at <= Date.now()) return;
           if (s.tat === booked.at + MBN_GAP) s.tat -= MBN_GAP;
           if (!background && s.itat === booked.at + MBN_GAP) s.itat -= MBN_GAP;
+          if (background ? s.last === booked.at : s.ilast === booked.at) s[background ? 'last' : 'ilast'] = booked.at - MBN_GAP;
       });
       // #999: the wait logs again whenever its end moves later (a hold another tab or script set
       // while we queued) and every 10s it goes on, so a long wait is never silent

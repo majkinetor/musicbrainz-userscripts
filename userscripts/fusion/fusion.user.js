@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.222200
+// @version      2026.11.22.224051
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -118,6 +118,7 @@ async function mbnState(fn) {
         // nor a queue longer than a minute: slots that waits left behind (a closed tab) are dropped
         if ((s.tat || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s.tat = Math.max(now, s.cool || 0) + 60 * MBN_GAP;
         if ((s.itat || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s.itat = Math.max(now, s.cool || 0) + 60 * MBN_GAP;
+        for (const k of ['last', 'ilast']) if ((s[k] || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s[k] = Math.max(now, s.cool || 0) + 59 * MBN_GAP;
         const out = fn(s);
         Object.assign(g, s);
         try { localStorage.setItem(MBN_KEY, JSON.stringify({ ...s, tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
@@ -351,12 +352,19 @@ async function mbnSlot(o) {
             // alone took the burst from the page's second request on, even with no background work at all
             const busy = tat > Math.max(now, itat);
             at = Math.max(now, rebooked || busy ? itat : itat - (hot ? 0 : (MBN_BURST - 1) * MBN_GAP), cool);
+            // log: the burst reaches back from itat, so once a 200 cooled `hot` while a queue still
+            // waited out a hold, a new request took the slot a queued one held and both got a 503;
+            // the burst is for an idle line, never ahead of (or on) a slot still to come
+            if ((s.ilast || 0) > now) at = Math.max(at, s.ilast + MBN_GAP);
             s.itat = Math.max(itat, at) + MBN_GAP;
+            s.ilast = Math.max(s.ilast || 0, at);
         } else {
             // #1096: while MusicBrainz throttles, no burst: the queue a hold built up leaves one
             // a second when it ends, not all in one millisecond into the next 503
             const hot = s.hot && now <= cool + 30000;
             at = Math.max(rebooked || hot ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP), cool);
+            if ((s.last || 0) > now) at = Math.max(at, s.last + MBN_GAP);   // as above
+            s.last = Math.max(s.last || 0, at);
         }
         s.tat = Math.max(tat, at) + MBN_GAP;
         const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second';
@@ -370,6 +378,7 @@ async function mbnSlot(o) {
         if (!force && booked.at <= Date.now()) return;
         if (s.tat === booked.at + MBN_GAP) s.tat -= MBN_GAP;
         if (!background && s.itat === booked.at + MBN_GAP) s.itat -= MBN_GAP;
+        if (background ? s.last === booked.at : s.ilast === booked.at) s[background ? 'last' : 'ilast'] = booked.at - MBN_GAP;
     });
     // #999: the wait logs again whenever its end moves later (a hold another tab or script set
     // while we queued) and every 10s it goes on, so a long wait is never silent

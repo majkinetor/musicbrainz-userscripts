@@ -240,6 +240,31 @@ test('the page requests have their own line: a burst, then one a second, and no 
   check(r.hot[0] < 300 && r.hot[1] >= 800 && r.hot[2] >= 1800, `throttled: one a second from the first (${r.hot.join(', ')} ms)`);
 });
 
+// log: three page requests queued behind a hold; a 200 then cooled `hot`, and a fourth booked a
+// moment later took the burst back from the line's end, onto the first one's slot: both got a 503
+test('a burst never lands on a slot still to come, in either line', { tag: ['@unit'] }, async ({ context }) => {
+  const a = await tab(context);
+  const r = await a.evaluate(async () => {
+    const out = {};
+    for (const background of [false, true]) {
+      localStorage.clear();
+      await mbnState(s => { s.cool = Date.now() + 1500; s.hot = 1; });
+      const t0 = Date.now(), at = [];
+      const three = Array.from({ length: 3 }, () => mbnSlot({ background }).then(() => at.push(Date.now() - t0)));
+      await new Promise(z => setTimeout(z, 50));
+      await mbnState(s => { s.hot = 0; });   // what a 200 in the meantime does
+      await mbnSlot({ background }).then(() => at.push(Date.now() - t0));
+      await Promise.all(three);
+      out[background ? 'bg' : 'page'] = at.sort((x, y) => x - y);
+    }
+    return out;
+  });
+  for (const [k, v] of Object.entries(r)) {
+    const gaps = v.slice(1).map((t, i) => t - v[i]);
+    check(v[0] >= 1400 && gaps.every(g => g >= 800), `${k}: one a second after the hold, none doubled up (${v.join(', ')} ms)`);
+  }
+});
+
 test('a page request keeps trying past four throttles; a background one stops at four', { tag: ['@unit'] }, async ({ context }) => {
   const a = await tab(context);
   const r = await a.evaluate(async () => {
