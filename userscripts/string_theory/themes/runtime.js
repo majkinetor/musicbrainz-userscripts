@@ -152,8 +152,11 @@ var __stTheme = (function () {
   if (onMb) {
     apply();
     activity();
+    // a mouse move fires many times a second: the timer, whole minutes long, is set again at most once a second
+    var lastAct = Date.now();
+    var moved = function () { var t = Date.now(); if (!idle && t - lastAct < 1000) return; lastAct = t; activity(); };
     ['pointermove', 'pointerdown', 'keydown', 'wheel', 'touchstart', 'scroll'].forEach(function (name) {
-      window.addEventListener(name, activity, { capture: true, passive: true });
+      window.addEventListener(name, moved, { capture: true, passive: true });
     });
     window.addEventListener('focus', activity);
     document.addEventListener('visibilitychange', function () { if (!document.hidden) activity(); });
