@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.172551
+// @version      2026.11.22.190000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -160,7 +160,7 @@ document.addEventListener('mc:progress', e => {
     const r = results[d.id];
     // during Execute a provider that already answered keeps its findings: the note goes beside them
     // (a late tick from the probe, after its findings, is dropped: no stuck spinner)
-    if (r && r.state === 'done') { if (executing) { r.working = d.note || 'working'; r.at = Date.now(); if (d.best) r.best = d.best; } }
+    if (r && r.state === 'done') { if (executing) { r.working = d.note || 'working'; r.repeat = !!d.repeat; r.at = Date.now(); if (d.best) r.best = d.best; } }
     // spoke: it heard the probe (one that never says a word is asked again, see askAgain)
     else results[d.id] = Object.assign(r || {}, { state: 'busy', note: d.note || '', at: Date.now(), spoke: true });
     Log.cat('Providers').debug('progress ' + d.id + ': ' + (d.note || d.state));
@@ -319,7 +319,7 @@ function applyOne(id, dry) {
     if (lateApplied[id]) { document.removeEventListener('mc:applied', lateApplied[id]); delete lateApplied[id]; }
     return new Promise(resolve => {
         // a provider still working says so with mc:progress, and each one restarts the wait (#680: a cover upload takes minutes)
-        const done = o => { document.removeEventListener('mc:applied', on); document.removeEventListener('mc:progress', alive); clearTimeout(t); clearTimeout(cap); if (results[id]) delete results[id].working; resolve(o); };
+        const done = o => { document.removeEventListener('mc:applied', on); document.removeEventListener('mc:progress', alive); clearTimeout(t); clearTimeout(cap); if (results[id]) { delete results[id].working; delete results[id].repeat; } resolve(o); };
         const on = e => { const d = busEvent(e, 'mc:applied'); if (d && d.id === id) done(Object.assign({ keys }, d)); };
         const late = e => {
             const d = busEvent(e, 'mc:applied'); if (!d || d.id !== id) return;
@@ -2116,7 +2116,8 @@ function paintCards() {
         const ap = (r.applied ? '<div class="mc-applied ' + (r.applied.ok ? 'ok' : 'err') + '">' + (r.applied.ok ? '✓ ' : '✕ ') + esc(r.applied.note || (r.applied.ok ? 'done' : 'failed'))
             // #741: a provider that says it can try again (retry) gets a button that applies it alone, with what is still taken in
             + (!r.applied.ok && r.applied.retry ? ' <button type="button" class="mc-retry" data-act="retry-apply" data-prov="' + esc(id) + '" data-tip="Apply ' + esc(p.provider) + ' again, with what is taken in">Retry</button>' : '') + '</div>' : '')
-            + (r.working ? '<div class="mc-working"><span class="mc-spin"></span>' + esc(r.working) + '</div>' : '') + falconHtml(r.falcon) + bestHtml(r.best);
+            + (r.working ? '<div class="mc-working"><span class="mc-spin"></span>' + esc(r.working)
+                + (r.repeat ? ' <button type="button" class="mc-retry" data-act="repeat-now" data-prov="' + esc(id) + '" data-tip="Repeat what failed now, without waiting">Repeat now</button>' : '') + '</div>' : '') + falconHtml(r.falcon) + bestHtml(r.best);
         // 'not found' is one line of icons, not a row each: it's most of the list and needs no action.
         // 'linked' needs none either: icons on their section's sub-heading (Release, Artists, Labels),
         // so the rows that need a decision lead; clicking them lists them as rows instead, each section on its own (S.linkedOpen).
@@ -2612,6 +2613,7 @@ function onClick(e) {
         case 'cover': coverViewer(coverList(results.as && results.as.best), Number(act.dataset.i) || 0); break;
         case 'exec': if (!autoExecCancel('you clicked Execute')) startExecute(); break;
         case 'retry-apply': retryOne(act.dataset.prov); break;
+        case 'repeat-now': if (results[act.dataset.prov]) results[act.dataset.prov].repeat = false; paintSoon(); document.dispatchEvent(new CustomEvent('mc:repeat', { detail: JSON.stringify({ id: act.dataset.prov, run }) })); break;
         case 'log': Log.open(); break;
         case 'cfg': settingsWindow(); break;
         case 'close': close(); break;

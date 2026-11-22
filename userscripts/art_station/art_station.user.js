@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.172551
+// @version      2026.11.22.190000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -1031,6 +1031,7 @@
       send('mc:plan', { id: 'as', release: rel, ops: [], more: 0 });
       log.info('Mission Control: the gallery shows the archive after the Execute');
     }
+    document.addEventListener('mc:repeat', e => { let d = {}; try { d = JSON.parse(e.detail) || {}; } catch (x) { return; } if (d.id === 'as') framePost({ type: 'repeat' }); });
     document.addEventListener('mc:apply', async e => {
       let d = {};
       try { d = JSON.parse(e.detail) || {}; } catch (x) { return; }
@@ -1040,7 +1041,8 @@
       const urls = last.filter(x => (d.keys || []).includes(x.p.name)).map(x => x.u);
       const front = urls.length > 0;
       const reply = o => send('mc:applied', Object.assign({ id: 'as', run: d.run, release: rel }, o));
-      const busy = note => send('mc:progress', { id: 'as', run: d.run, state: 'busy', note });
+      let rep = false;
+      const busy = note => send('mc:progress', { id: 'as', run: d.run, state: 'busy', note, repeat: rep });
       const more = frame && frame.plan ? frame.plan.more || 0 : 0;
       if (!front && !more) { reply({ ok: true, sent: 0, note: 'nothing to enter' }); return; }
       if (d.dry) {
@@ -1064,7 +1066,7 @@
       // #741: the frame repeats a failed upload (auto-repeat), which can take longer than ten minutes: it is
       // waited for while it says what it does, and its word is the note
       let word = 'entering the cover art', heard = Date.now();
-      const onWord = m => { if (m.type === 'progress') { word = m.note || word; heard = Date.now(); busy(word); } };
+      const onWord = m => { if (m.type === 'progress') { word = m.note || word; rep = !!m.repeat; heard = Date.now(); busy(word); } };
       frameMsgs.add(onWord);
       const got = waitFrame('entered', 6 * 3600000, s => { if (Date.now() - heard > 600000) frameMsgs.forEach(f => f({ type: 'entered', ok: false, error: 'no word from the cover-art frame for 10 minutes' })); else busy(word + ' (' + s + ' s)'); });
       framePost({ type: 'enter', front, replace: front && mcPlan.replace, note: 'Via ' + (d.mcName || 'Mission Control') + (d.mc ? ' v' + d.mc : '') + ': ' + location.origin + '/release/' + rel });
@@ -4454,6 +4456,7 @@
   // cover goes back to the release page as { mcAs, token, type: 'best' }; on { type: 'enter' }
   // the frame runs Enter edit and answers { type: 'entered', ok, errs, total }.
   const MC_FRAME = window.top !== window ? new URLSearchParams(location.search).get('mc_frame') : null;
+  let _mcRepeatNow = null;
   function mcFramePost(o) { try { window.parent.postMessage(Object.assign({ mcAs: 1, token: MC_FRAME }, o), location.origin); } catch (e) { asLog.warn('Mission Control: post failed: ' + (e && e.message)); } }
   let _mcCommitDone = null, _mcBest = null, _mcNoteBase = null, _mcPool = [];   // #772 _mcPool: the stores' other images; #784 in the gallery, left out until taken in
   // #784: the best front in or out as its source rows are ticked on Mission Control's card; with it in, the one
@@ -4476,6 +4479,7 @@
     const d = e.data;
     if (e.origin !== location.origin || !d || d.mcAs !== 1 || d.token !== MC_FRAME) return;
     if (d.type === 'stage') { mcStage(!!d.front, !!d.replace); return; }
+    if (d.type === 'repeat') { asLog.info('Mission Control: Repeat now'); if (_mcRepeatNow) _mcRepeatNow(); return; }
     if (d.type !== 'enter') return;
     asLog.info('Mission Control: Enter edit' + (d.note ? ' with its note' : ''));
     // #741: the frame's own note plus Mission Control's line, once: a second Execute on the same frame
@@ -5728,7 +5732,10 @@
         if (!errs || !SETTINGS.autoRepeat) { report(errs ? { retry: true } : null); if (!errs) ov.remove(); return; }
         ov._arGiveUp = (why, extra) => report(Object.assign({ retry: true, gaveUp: why }, extra));
         mcFramePost({ type: 'progress', note: `${errs} failed: repeating` });
-        arSchedule(ov, () => runPlan(ov, plan, meta, plan.filter(o => o._err)));
+        const againMc = () => { mcFramePost({ type: 'progress', note: `repeating ${arErrs(ov)} failed` }); runPlan(ov, plan, meta, plan.filter(o => o._err)); };
+        // Mission Control's "Repeat now": as the page's own Repeat button, drop the wait and go, the schedule carries on
+        _mcRepeatNow = () => { if (!ov._ar) return; arCancelPending(ov); againMc(); };
+        arSchedule(ov, againMc);
         return;
       }
       if (!errs) {
@@ -5824,7 +5831,7 @@
     }
     st.n++;
     const delay = arDelayMs(st.n);
-    if (MC_FRAME) mcFramePost({ type: 'progress', note: `${arErrs(ov)} failed: repeating in ${Math.round(delay / 1000)} s (attempt ${st.n} of ${maxTries})` });   // #741
+    if (MC_FRAME) mcFramePost({ type: 'progress', note: `${arErrs(ov)} failed: repeating in ${Math.round(delay / 1000)} s (attempt ${st.n} of ${maxTries})`, repeat: true });   // #741
     const at = Date.now() + delay;
     const fire = () => {
       if (st.gen !== gen || st.abandoned || !document.body.contains(ov)) return;
