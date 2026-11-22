@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.23.002457
+// @version      2026.11.23.003131
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -323,7 +323,8 @@
           const left = s && s.tat ? Math.min(seen(s.tat, MBN_MAX_LEAD), t0 + MBN_MAX_LEAD) - Date.now() : 0;
           if (left <= 0) break;
           if (o.cancelled && o.cancelled()) { tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
-          if (!told) tr('hidden', { w: left });
+          // #1095: the queue end seen now is not the wait: the visible tab keeps booking, so say the cap too
+          if (!told) tr('hidden', { w: left, cap: t0 + MBN_MAX_LEAD - Date.now() });
           told = true;
           await mbnSleep(Math.min(left, 250), o.cancelled);
       }

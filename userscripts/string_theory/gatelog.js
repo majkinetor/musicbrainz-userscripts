@@ -105,7 +105,7 @@ function stGateWhat(ev) {
   switch (ev.e) {
     case 'book': x.push('waits ' + stGateSec(ev.w) + (ev.why === 'hold' ? ' (MusicBrainz hold)' : ' (pacing)')); if (ev.q) x.push(ev.q + ' queued'); if (ev.re) x.push('booked again after a hold'); break;
     case 'start': if (ev.w) x.push('after ' + stGateSec(ev.w)); break;
-    case 'hidden': x.push('waits up to ' + stGateSec(ev.w) + ' for the queue to be free (this tab is hidden)'); break;
+    case 'hidden': x.push('waits for the queue to be free, now ' + stGateSec(ev.w) + (ev.cap ? ', at most ' + stGateSec(ev.cap) : '') + ' (this tab is hidden)'); break;
     case 'lead': x.push('waits up to ' + stGateSec(ev.w) + ' for a page being drawn (' + (ev.by || '?') + ')'); break;
     case 'lead+': x.push('takes the lead for ' + stGateSec(ev.w) + ' (' + (ev.by || '?') + ')'); break;
     case 'lead-': x.push((ev.why === 'lapsed' ? 'the lead lapsed (' : 'ends the lead (') + (ev.by || '?') + ')'); break;

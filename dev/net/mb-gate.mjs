@@ -352,7 +352,8 @@ export async function mbnSlot(o) {
         const left = s && s.tat ? Math.min(seen(s.tat, MBN_MAX_LEAD), t0 + MBN_MAX_LEAD) - Date.now() : 0;
         if (left <= 0) break;
         if (o.cancelled && o.cancelled()) { tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
-        if (!told) tr('hidden', { w: left });
+        // #1095: the queue end seen now is not the wait: the visible tab keeps booking, so say the cap too
+        if (!told) tr('hidden', { w: left, cap: t0 + MBN_MAX_LEAD - Date.now() });
         told = true;
         await mbnSleep(Math.min(left, 250), o.cancelled);
     }

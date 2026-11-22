@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.23.002457
+// @version      2026.11.23.003131
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -275,7 +275,8 @@
           const left = s && s.tat ? Math.min(seen(s.tat, MBN_MAX_LEAD), t0 + MBN_MAX_LEAD) - Date.now() : 0;
           if (left <= 0) break;
           if (o.cancelled && o.cancelled()) { tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
-          if (!told) tr('hidden', { w: left });
+          // #1095: the queue end seen now is not the wait: the visible tab keeps booking, so say the cap too
+          if (!told) tr('hidden', { w: left, cap: t0 + MBN_MAX_LEAD - Date.now() });
           told = true;
           await mbnSleep(Math.min(left, 250), o.cancelled);
       }

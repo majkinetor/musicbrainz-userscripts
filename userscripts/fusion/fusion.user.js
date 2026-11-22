@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.23.002457
+// @version      2026.11.23.003131
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -331,7 +331,8 @@ async function mbnSlot(o) {
         const left = s && s.tat ? Math.min(seen(s.tat, MBN_MAX_LEAD), t0 + MBN_MAX_LEAD) - Date.now() : 0;
         if (left <= 0) break;
         if (o.cancelled && o.cancelled()) { tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
-        if (!told) tr('hidden', { w: left });
+        // #1095: the queue end seen now is not the wait: the visible tab keeps booking, so say the cap too
+        if (!told) tr('hidden', { w: left, cap: t0 + MBN_MAX_LEAD - Date.now() });
         told = true;
         await mbnSleep(Math.min(left, 250), o.cancelled);
     }

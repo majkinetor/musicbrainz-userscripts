@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.23.002457
+// @version      2026.11.23.003131
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -325,7 +325,8 @@
           const left = s && s.tat ? Math.min(seen(s.tat, MBN_MAX_LEAD), t0 + MBN_MAX_LEAD) - Date.now() : 0;
           if (left <= 0) break;
           if (o.cancelled && o.cancelled()) { tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
-          if (!told) tr('hidden', { w: left });
+          // #1095: the queue end seen now is not the wait: the visible tab keeps booking, so say the cap too
+          if (!told) tr('hidden', { w: left, cap: t0 + MBN_MAX_LEAD - Date.now() });
           told = true;
           await mbnSleep(Math.min(left, 250), o.cancelled);
       }

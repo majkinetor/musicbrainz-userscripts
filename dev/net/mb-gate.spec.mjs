@@ -111,8 +111,10 @@ test('a hidden tab\'s background request waits for the queue to be free; a page 
     const t0 = Date.now();
     const page = mbnSlot({ background: false }).then(() => Date.now() - t0);
     const bg = mbnSlot({}).then(() => Date.now() - t0);
-    return { page: await page, bg: await bg };
+    const ev = (globalThis.__mbnTrace.buf || []).find(e => e.e === 'hidden') || {};
+    return { page: await page, bg: await bg, cap: ev.cap };
   });
+  check(r.cap >= 9000, `the log says how long it may wait at most, not only the queue end it saw (${r.cap})`);
   check(r.page < 300, `the page request starts at once (${r.page} ms)`);
   check(r.bg >= 1300, `the background request waits for the queue to end (${r.bg} ms)`);
 });

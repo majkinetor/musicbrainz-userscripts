@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.23.002457
+// @version      2026.11.23.003131
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the corner button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBkPSJNNDYgMjQgTDI2IDI0IEwyNiAxMDQgTDQ2IDEwNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04MiAyNCBMMTAyIDI0IEwxMDIgMTA0IEw4MiAxMDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJmNmY1NCIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNjQgNDAgTDUxIDY2IEw2NCA5NCBMNzcgNjYgWiIgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iNjQiIHkxPSI3NCIgeDI9IjY0IiB5Mj0iOTIiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==
@@ -272,7 +272,8 @@
           const left = s && s.tat ? Math.min(seen(s.tat, MBN_MAX_LEAD), t0 + MBN_MAX_LEAD) - Date.now() : 0;
           if (left <= 0) break;
           if (o.cancelled && o.cancelled()) { tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
-          if (!told) tr('hidden', { w: left });
+          // #1095: the queue end seen now is not the wait: the visible tab keeps booking, so say the cap too
+          if (!told) tr('hidden', { w: left, cap: t0 + MBN_MAX_LEAD - Date.now() });
           told = true;
           await mbnSleep(Math.min(left, 250), o.cancelled);
       }
