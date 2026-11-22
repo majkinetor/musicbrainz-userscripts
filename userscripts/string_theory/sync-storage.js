@@ -45,7 +45,7 @@ function stSyncStore(io) {
   function stage(data) {
     var before = capture();
     io.gm.set('string_theory.sync.recovery', document(effective()));
-    io.gm.set('string_theory.sync.stage', { before: before, after: filter(data) });
+    pendingMemo = null, io.gm.set('string_theory.sync.stage', { before: before, after: filter(data) });
   }
   function apply(data) {
     function write(kind, storage, incoming) {
@@ -77,15 +77,18 @@ function stSyncStore(io) {
     if (Object.keys(pending.after.local).length) {
       // Keep the other origins' pending settings until a page on each origin can apply them.
       var actual = capture(); pending.before.gm = actual.gm; pending.after.gm = actual.gm;
-      io.gm.set('string_theory.sync.stage', pending);
-    } else io.gm.del('string_theory.sync.stage');
+      pendingMemo = null, io.gm.set('string_theory.sync.stage', pending);
+    } else pendingMemo = null, io.gm.del('string_theory.sync.stage');
     return true;
   }
+  // the merge is slow, and the stage changes only when this script writes it
+  var pendingMemo = null;
   function pending() {
+    if (pendingMemo !== null) return pendingMemo;
     var stage = io.gm.get('string_theory.sync.stage');
-    if (!stage || othersOnly(stage)) return false;
+    if (!stage || othersOnly(stage)) return pendingMemo = false;
     var actual = capture(), target = effective();
-    return D.stable(actual.gm) !== D.stable(target.gm) || origin && D.stable(actual.local[origin]) !== D.stable(target.local[origin]);
+    return pendingMemo = D.stable(actual.gm) !== D.stable(target.gm) || origin && D.stable(actual.local[origin]) !== D.stable(target.local[origin]);
   }
   function document(data) { return { format: 'string-theory-sync', version: 1, at: Date.now(), data: data }; }
   function read(text, info) {

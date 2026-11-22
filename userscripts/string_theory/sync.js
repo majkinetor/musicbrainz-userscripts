@@ -461,7 +461,8 @@ function stSyncPaint() {
   ['remote-backup', 'remote-import'].forEach(function (id) { q(id).disabled = stSyncBusy || !connected; });
   q('import').disabled = stSyncBusy;
   stBackupPaint(panel, connected);
-  q('reload').hidden = !stSyncStorage.pending();
+  // after the tab is on screen: the first check can take a moment
+  var reload = q('reload'); requestAnimationFrame(function () { setTimeout(function () { reload.hidden = !stSyncStorage.pending(); }, 0); });
   q('status').textContent = stSyncBusy ? '' : (provider === 'google' && auth.accessToken && !connected ? 'Reconnect Google Drive to turn on sync.' : state.error) || (stSyncAuthPending ? 'Waiting for ' + stSyncName(stSyncAuthPending.provider) + ' authorization…' : state.notice || (connected ? '' : 'Not connected'));
   q('status').hidden = !q('status').textContent;
   q('progress').hidden = !stSyncBusy || stSyncActivity !== 'sync';
