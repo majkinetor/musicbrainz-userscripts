@@ -108,7 +108,7 @@ export async function mbnState(fn) {
  * Sleep `ms`, or less once `cancelled()` turns true. #999: on a MusicBrainz page (Firefox,
  * Violentmonkey) plain timers were seen held back for minutes while the page went on, and every
  * gate wait hung with them: "waits 1.4s (pacing…)" and nothing more until a Stop. So the sleep
- * also wakes on animation frames, page changes and a worker's timer, whichever comes first, and
+ * also wakes on a worker's timer (animation frames where no worker can start), and
  * checks the clock each time. Resolves with how long past `ms` it woke.
  * A timer found more than 2s overdue is noted in globalThis.__mbnWake1.stall (at most once a
  * minute) for a caller to log: { ms, state, hidden, told }.
@@ -166,19 +166,7 @@ export function mbnSleep(ms, cancelled) {
         if (done) return;
         w.all.add(me);
         arm();
-        try {
-            if (!w.raf && typeof requestAnimationFrame === 'function') {
-                const frame = () => { w.raf = 0; wake(); if (w.all.size) w.raf = requestAnimationFrame(frame); };
-                w.raf = requestAnimationFrame(frame);
-            }
-        } catch (e) {}
-        try {
-            if (!w.mo && typeof MutationObserver === 'function' && typeof document !== 'undefined' && document.documentElement) {
-                w.mo = new MutationObserver(wake);
-                w.mo.observe(document.documentElement, { childList: true, subtree: true, attributes: true, characterData: true });
-            }
-        } catch (e) { w.mo = null; }
-        try {   // a worker's timers run apart from the page's; a page that forbids blob workers goes without
+        try {   // a worker's timers run apart from the page's; a page that forbids blob workers falls back to frames
             if (w.worker === null && typeof Worker === 'function' && typeof Blob === 'function' && typeof URL !== 'undefined' && URL.createObjectURL) {
                 w.worker = false;
                 const wk = new Worker(URL.createObjectURL(new Blob(['let t=0;onmessage=e=>{clearInterval(t);t=0;if(e.data>0)t=setInterval(()=>postMessage(1),e.data)}'], { type: 'text/javascript' })));
@@ -189,6 +177,13 @@ export function mbnSleep(ms, cancelled) {
             w.wake = wake;
             if (w.worker && !w.ticking) { w.ticking = true; w.worker.postMessage(100); }
         } catch (e) { w.worker = false; }
+        // no DOM watch: on a busy page (Mission Control's) every change ran the wake, and the lag was felt
+        try {   // frames only without a worker: a frame loop runs the wake 60 times a second
+            if (!w.worker && !w.raf && typeof requestAnimationFrame === 'function') {
+                const frame = () => { w.raf = 0; wake(); if (w.all.size && !w.worker) w.raf = requestAnimationFrame(frame); };
+                w.raf = requestAnimationFrame(frame);
+            }
+        } catch (e) {}
     });
 }
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.21.232300
+// @version      2026.11.22.081419
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -245,19 +245,7 @@ function mbnSleep(ms, cancelled) {
         if (done) return;
         w.all.add(me);
         arm();
-        try {
-            if (!w.raf && typeof requestAnimationFrame === 'function') {
-                const frame = () => { w.raf = 0; wake(); if (w.all.size) w.raf = requestAnimationFrame(frame); };
-                w.raf = requestAnimationFrame(frame);
-            }
-        } catch (e) {}
-        try {
-            if (!w.mo && typeof MutationObserver === 'function' && typeof document !== 'undefined' && document.documentElement) {
-                w.mo = new MutationObserver(wake);
-                w.mo.observe(document.documentElement, { childList: true, subtree: true, attributes: true, characterData: true });
-            }
-        } catch (e) { w.mo = null; }
-        try {   // a worker's timers run apart from the page's; a page that forbids blob workers goes without
+        try {   // a worker's timers run apart from the page's; a page that forbids blob workers falls back to frames
             if (w.worker === null && typeof Worker === 'function' && typeof Blob === 'function' && typeof URL !== 'undefined' && URL.createObjectURL) {
                 w.worker = false;
                 const wk = new Worker(URL.createObjectURL(new Blob(['let t=0;onmessage=e=>{clearInterval(t);t=0;if(e.data>0)t=setInterval(()=>postMessage(1),e.data)}'], { type: 'text/javascript' })));
@@ -268,6 +256,13 @@ function mbnSleep(ms, cancelled) {
             w.wake = wake;
             if (w.worker && !w.ticking) { w.ticking = true; w.worker.postMessage(100); }
         } catch (e) { w.worker = false; }
+        // no DOM watch: on a busy page (Mission Control's) every change ran the wake, and the lag was felt
+        try {   // frames only without a worker: a frame loop runs the wake 60 times a second
+            if (!w.worker && !w.raf && typeof requestAnimationFrame === 'function') {
+                const frame = () => { w.raf = 0; wake(); if (w.all.size && !w.worker) w.raf = requestAnimationFrame(frame); };
+                w.raf = requestAnimationFrame(frame);
+            }
+        } catch (e) {}
     });
 }
 function mbnTrace(ev) {

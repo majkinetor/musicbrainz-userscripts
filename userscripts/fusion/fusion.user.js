@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.000842
+// @version      2026.11.22.081419
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -193,19 +193,7 @@ function mbnSleep(ms, cancelled) {
         if (done) return;
         w.all.add(me);
         arm();
-        try {
-            if (!w.raf && typeof requestAnimationFrame === 'function') {
-                const frame = () => { w.raf = 0; wake(); if (w.all.size) w.raf = requestAnimationFrame(frame); };
-                w.raf = requestAnimationFrame(frame);
-            }
-        } catch (e) {}
-        try {
-            if (!w.mo && typeof MutationObserver === 'function' && typeof document !== 'undefined' && document.documentElement) {
-                w.mo = new MutationObserver(wake);
-                w.mo.observe(document.documentElement, { childList: true, subtree: true, attributes: true, characterData: true });
-            }
-        } catch (e) { w.mo = null; }
-        try {   // a worker's timers run apart from the page's; a page that forbids blob workers goes without
+        try {   // a worker's timers run apart from the page's; a page that forbids blob workers falls back to frames
             if (w.worker === null && typeof Worker === 'function' && typeof Blob === 'function' && typeof URL !== 'undefined' && URL.createObjectURL) {
                 w.worker = false;
                 const wk = new Worker(URL.createObjectURL(new Blob(['let t=0;onmessage=e=>{clearInterval(t);t=0;if(e.data>0)t=setInterval(()=>postMessage(1),e.data)}'], { type: 'text/javascript' })));
@@ -216,6 +204,13 @@ function mbnSleep(ms, cancelled) {
             w.wake = wake;
             if (w.worker && !w.ticking) { w.ticking = true; w.worker.postMessage(100); }
         } catch (e) { w.worker = false; }
+        // no DOM watch: on a busy page (Mission Control's) every change ran the wake, and the lag was felt
+        try {   // frames only without a worker: a frame loop runs the wake 60 times a second
+            if (!w.worker && !w.raf && typeof requestAnimationFrame === 'function') {
+                const frame = () => { w.raf = 0; wake(); if (w.all.size && !w.worker) w.raf = requestAnimationFrame(frame); };
+                w.raf = requestAnimationFrame(frame);
+            }
+        } catch (e) {}
     });
 }
 function mbnTrace(ev) {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.000842
+// @version      2026.11.22.081419
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -137,19 +137,7 @@
           if (done) return;
           w.all.add(me);
           arm();
-          try {
-              if (!w.raf && typeof requestAnimationFrame === 'function') {
-                  const frame = () => { w.raf = 0; wake(); if (w.all.size) w.raf = requestAnimationFrame(frame); };
-                  w.raf = requestAnimationFrame(frame);
-              }
-          } catch (e) {}
-          try {
-              if (!w.mo && typeof MutationObserver === 'function' && typeof document !== 'undefined' && document.documentElement) {
-                  w.mo = new MutationObserver(wake);
-                  w.mo.observe(document.documentElement, { childList: true, subtree: true, attributes: true, characterData: true });
-              }
-          } catch (e) { w.mo = null; }
-          try {   // a worker's timers run apart from the page's; a page that forbids blob workers goes without
+          try {   // a worker's timers run apart from the page's; a page that forbids blob workers falls back to frames
               if (w.worker === null && typeof Worker === 'function' && typeof Blob === 'function' && typeof URL !== 'undefined' && URL.createObjectURL) {
                   w.worker = false;
                   const wk = new Worker(URL.createObjectURL(new Blob(['let t=0;onmessage=e=>{clearInterval(t);t=0;if(e.data>0)t=setInterval(()=>postMessage(1),e.data)}'], { type: 'text/javascript' })));
@@ -160,6 +148,13 @@
               w.wake = wake;
               if (w.worker && !w.ticking) { w.ticking = true; w.worker.postMessage(100); }
           } catch (e) { w.worker = false; }
+          // no DOM watch: on a busy page (Mission Control's) every change ran the wake, and the lag was felt
+          try {   // frames only without a worker: a frame loop runs the wake 60 times a second
+              if (!w.worker && !w.raf && typeof requestAnimationFrame === 'function') {
+                  const frame = () => { w.raf = 0; wake(); if (w.all.size && !w.worker) w.raf = requestAnimationFrame(frame); };
+                  w.raf = requestAnimationFrame(frame);
+              }
+          } catch (e) {}
       });
   }
   function mbnTrace(ev) {
