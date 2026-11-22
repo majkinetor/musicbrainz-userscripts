@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.114032
+// @version      2026.11.22.130716
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -164,7 +164,7 @@ document.addEventListener('mc:progress', e => {
     // spoke: it heard the probe (one that never says a word is asked again, see askAgain)
     else results[d.id] = Object.assign(r || {}, { state: 'busy', note: d.note || '', at: Date.now(), spoke: true });
     Log.cat('Providers').debug('progress ' + d.id + ': ' + (d.note || d.state));
-    paintAll();
+    paintSoon();
 });
 // #730: MusicBrainz's special-purpose entities — Various Artists, [anonymous], [data], [dialogue],
 // [no artist], [traditional], [unknown] and the label [no label]. Since MBS-14146 (musicbrainz-server
@@ -1353,7 +1353,11 @@ function stateText(p) {
     const t = r.findings.reduce((a, x) => { const k = x.role === 'searched' ? 'searched' : x.state; a[k] = (a[k] || 0) + 1; return a; }, {});
     return [t.new && t.new + ' new', t.searched && t.searched + ' searched', t.linked && t.linked + ' linked', t.withheld && t.withheld + ' withheld', t.unsure && t.unsure + ' unsure', t.blocked && t.blocked + ' blocked', t.none && t.none + ' not found'].filter(Boolean).join(' · ') || 'nothing';
 }
-function paintAll() { if (!ui) return; asStage(); paintBadges(); paintCards(); paintReleaseCredits(); fitCards(); paintMatrix(); paintInspector(); paintExec(); }
+function paintAll() { if (!ui) return; clearTimeout(paintSoonT); paintSoonT = 0; asStage(); paintBadges(); paintCards(); paintReleaseCredits(); fitCards(); paintMatrix(); paintInspector(); paintExec(); }
+// progress ticks come many a second while a provider works (Art Station's commits, the reads): each full
+// paint lays the cards out again, so the ticks paint at most once every 250 ms
+var paintSoonT = 0;   // var: paintAll can run before this line
+function paintSoon() { if (!paintSoonT) paintSoonT = setTimeout(() => { paintSoonT = 0; paintAll(); }, 250); }
 
 function header() {
     const h = el('header', 'mc-hdr');
@@ -5676,7 +5680,7 @@ function cmpProgress() {
     const done = want.filter(s => s.read.state === 'done').length, failed = want.filter(s => s.read.state === 'failed').length;
     if (want.some(s => s.read.state === 'queued' || s.read.state === 'reading')) {
         r.note = 'read ' + done + ' of ' + want.length + (failed ? ' · ' + failed + ' failed' : ''); r.at = Date.now();
-        paintAll();
+        paintSoon();
         return;
     }
     cmpFinish();
@@ -6398,7 +6402,12 @@ function mbuDock() {
             }
             root.toggleAttribute('data-mbu-dock-over', over);
         };
-        document.addEventListener('mousemove', shelfOver, true);
+        // a mouse move fires many times a frame and each measure lays the page out: one measure a frame, the last move's
+        var shelfE = null, shelfF = 0;
+        document.addEventListener('mousemove', function (e) {
+            shelfE = e; if (shelfF) return;
+            shelfF = requestAnimationFrame(function () { shelfF = 0; var m = shelfE; shelfE = null; if (m) shelfOver(m); });
+        }, true);
         root.addEventListener('mouseleave', function () { root.removeAttribute('data-mbu-dock-over'); });
         btn.addEventListener('mouseenter', function () {
             clearTimeout(leaveT);

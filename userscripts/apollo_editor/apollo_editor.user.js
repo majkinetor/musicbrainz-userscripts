@@ -5758,7 +5758,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
               }
               root.toggleAttribute('data-mbu-dock-over', over);
           };
-          document.addEventListener('mousemove', shelfOver, true);
+          // a mouse move fires many times a frame and each measure lays the page out: one measure a frame, the last move's
+          var shelfE = null, shelfF = 0;
+          document.addEventListener('mousemove', function (e) {
+              shelfE = e; if (shelfF) return;
+              shelfF = requestAnimationFrame(function () { shelfF = 0; var m = shelfE; shelfE = null; if (m) shelfOver(m); });
+          }, true);
           root.addEventListener('mouseleave', function () { root.removeAttribute('data-mbu-dock-over'); });
           btn.addEventListener('mouseenter', function () {
               clearTimeout(leaveT);
