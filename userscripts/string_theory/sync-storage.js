@@ -110,7 +110,8 @@ function stSyncStorageInit() {
   if (!origin || window.top !== window || /[?&]st-(?:dropbox|google)=callback(?:&|$)/.test(location.search || '')) return;
   // Applied when the page is idle, not at start: members began with the old values, the GM guard
   // keeps their later saves from undoing the sync, and the new values show on the next load.
-  var run = function () { try { stSyncStorage.applyPending(); } catch (e) { console.error('[String Theory] sync could not apply saved changes; recovery retained'); } };
+  // A stage that fails once fails on every load, and each try costs a full merge: drop it.
+  var run = function () { try { stSyncStorage.applyPending(); } catch (e) { GM_deleteValue('string_theory.sync.stage'); console.error('[String Theory] sync could not apply saved changes; recovery retained', e); } };
   if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 10000 }); else setTimeout(run, 3000);
 }
 // A member may keep a settings object alive in a second tab. Preserve remote changes to fields
