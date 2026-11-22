@@ -265,6 +265,24 @@ test('a burst never lands on a slot still to come, in either line', { tag: ['@un
   }
 });
 
+test('a hold keeps the queue in its order: a request booked after it does not overtake those waiting', { tag: ['@unit'] }, async ({ context }) => {
+  const a = await tab(context);
+  const r = await a.evaluate(async () => {
+    localStorage.clear();
+    await mbnState(s => { s.cool = Date.now() - 1; s.hot = 1; });   // throttled a moment ago: no burst
+    const t0 = Date.now(), order = [], at = {};
+    const go = (k, background = true) => mbnSlot({ background }).then(() => { order.push(k); at[k] = Date.now() - t0; });
+    const queued = ['A', 'B', 'C'].map(k => go(k));   // slots at 0, 1 and 2 s
+    await new Promise(z => setTimeout(z, 50));
+    await mbnAnswer(503, n => n === 'Retry-After' ? '2' : null);   // A's answer: everyone holds 2 s
+    const late = go('D');
+    await Promise.all([...queued, late]);
+    return { order: order.join(''), at };
+  });
+  check(r.order === 'ABCD', `the requests queued before the hold still leave first (${r.order}, ${JSON.stringify(r.at)})`);
+  check(r.at.B >= 1900 && r.at.C - r.at.B >= 800 && r.at.D - r.at.C >= 800, `after the hold, one a second (${JSON.stringify(r.at)})`);
+});
+
 test('a page request keeps trying past four throttles; a background one stops at four', { tag: ['@unit'] }, async ({ context }) => {
   const a = await tab(context);
   const r = await a.evaluate(async () => {

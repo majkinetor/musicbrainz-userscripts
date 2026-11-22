@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.224051
+// @version      2026.11.22.230959
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -363,7 +363,7 @@
           s.tat = Math.max(tat, at) + MBN_GAP;
           const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second';
           if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
-          return { at, why };
+          return { at, why, slip: s.slip || 0 };
       });
       booked = await book();
       // a cancelled wait hands its slot back when it is still the last one booked, so a page that
@@ -379,8 +379,10 @@
       let toldUntil = 0, toldAt = 0;
       for (;;) {
           if (o.cancelled && o.cancelled()) { await giveBack(); tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
-          let cool = 0, scool = 0;
-          try { const g = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; cool = g.cool || 0; scool = g.scool || 0; } catch (e) { const g = globalThis.__mbnGate || {}; cool = g.cool || 0; scool = g.scool || 0; }
+          let cool = 0, scool = 0, slip = 0;
+          try { const g = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; cool = g.cool || 0; scool = g.scool || 0; slip = g.slip || 0; } catch (e) { const g = globalThis.__mbnGate || {}; cool = g.cool || 0; scool = g.scool || 0; slip = g.slip || 0; }
+          // a hold set since we booked moved our slot later with the rest of the queue
+          if (slip > booked.slip) { booked.at += slip - booked.slip; booked.slip = slip; booked.why = 'MusicBrainz asked everyone to wait'; }
           // a search also waits out the hold MusicBrainz set for searches
           const shed = !!o.search && scool > cool;
           if (o.search) cool = Math.max(cool, scool);
@@ -459,7 +461,18 @@
               // the hold grows with each throttle in a row, a Retry-After included, so a long busy
               // spell gets fewer and fewer requests from us
               const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.hot), MBN_MAX_HOLD);
+              // log: every waiter whose slot a hold passed booked again at the end of the queue, behind
+              // requests booked after it, and a hidden tab's (whose timer wakes late) went last again on
+              // each hold: one waited 40s. The hold now moves the whole queue later by its length, the
+              // slots still to come and every waiter's (`slip`, which each adds to its own), so the
+              // queue keeps its order and its one a second
+              const from = Math.max(now, s.cool || 0);
               s.cool = Math.max(s.cool || 0, Date.now() + ms);
+              const d = s.cool - from;
+              if (d > 0) {
+                  s.slip = (s.slip || 0) + d;
+                  for (const k of ['tat', 'itat', 'last', 'ilast']) if ((s[k] || 0) > now) s[k] += d;
+              }
               tr({ ra: raw == null ? undefined : String(raw).slice(0, 40), hold: s.cool - Date.now() }, s);
               return s.cool - Date.now();
           });

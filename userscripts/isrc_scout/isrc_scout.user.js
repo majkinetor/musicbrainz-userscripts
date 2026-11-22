@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.224051
+// @version      2026.11.22.230959
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -361,7 +361,7 @@
           s.tat = Math.max(tat, at) + MBN_GAP;
           const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second';
           if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
-          return { at, why };
+          return { at, why, slip: s.slip || 0 };
       });
       booked = await book();
       // a cancelled wait hands its slot back when it is still the last one booked, so a page that
@@ -377,8 +377,10 @@
       let toldUntil = 0, toldAt = 0;
       for (;;) {
           if (o.cancelled && o.cancelled()) { await giveBack(); tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
-          let cool = 0, scool = 0;
-          try { const g = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; cool = g.cool || 0; scool = g.scool || 0; } catch (e) { const g = globalThis.__mbnGate || {}; cool = g.cool || 0; scool = g.scool || 0; }
+          let cool = 0, scool = 0, slip = 0;
+          try { const g = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; cool = g.cool || 0; scool = g.scool || 0; slip = g.slip || 0; } catch (e) { const g = globalThis.__mbnGate || {}; cool = g.cool || 0; scool = g.scool || 0; slip = g.slip || 0; }
+          // a hold set since we booked moved our slot later with the rest of the queue
+          if (slip > booked.slip) { booked.at += slip - booked.slip; booked.slip = slip; booked.why = 'MusicBrainz asked everyone to wait'; }
           // a search also waits out the hold MusicBrainz set for searches
           const shed = !!o.search && scool > cool;
           if (o.search) cool = Math.max(cool, scool);
@@ -457,7 +459,18 @@
               // the hold grows with each throttle in a row, a Retry-After included, so a long busy
               // spell gets fewer and fewer requests from us
               const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.hot), MBN_MAX_HOLD);
+              // log: every waiter whose slot a hold passed booked again at the end of the queue, behind
+              // requests booked after it, and a hidden tab's (whose timer wakes late) went last again on
+              // each hold: one waited 40s. The hold now moves the whole queue later by its length, the
+              // slots still to come and every waiter's (`slip`, which each adds to its own), so the
+              // queue keeps its order and its one a second
+              const from = Math.max(now, s.cool || 0);
               s.cool = Math.max(s.cool || 0, Date.now() + ms);
+              const d = s.cool - from;
+              if (d > 0) {
+                  s.slip = (s.slip || 0) + d;
+                  for (const k of ['tat', 'itat', 'last', 'ilast']) if ((s[k] || 0) > now) s[k] += d;
+              }
               tr({ ra: raw == null ? undefined : String(raw).slice(0, 40), hold: s.cool - Date.now() }, s);
               return s.cool - Date.now();
           });
