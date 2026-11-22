@@ -374,6 +374,10 @@ function stGateBuild() {
       return !q || ((g.l || '') + ' ' + (g.s || '') + ' ' + g.tab + ' ' + (g.label || '')).toLowerCase().indexOf(q) >= 0;
     });
     shownIds = shown.filter(function (g) { return !g.sys; }).map(function (g) { return g.id; });
+    if (shownIds.length < n) {   // a filter hides some: say how many are left, and which filter
+      var why = [mine && 'this tab only', mode === 'bad' && 'failed', mode === 're' && 'retried', q && 'text'].filter(Boolean).join(', ');
+      $('.st-gate-n').textContent = shownIds.length + ' of ' + n + ' requests shown' + (why ? ' (' + why + ')' : '');
+    }
     var key = shown.map(function (g) { return g.id + ':' + g.evs.length + ':' + g.label; }).join('|') + '#' + Object.keys(opened).join('|') + '#' + me;
     if (key === sig) return;
     sig = key;
