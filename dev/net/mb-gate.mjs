@@ -32,10 +32,12 @@
 // `// <ST-NET>` markers; Credit Hoarder's esbuild build imports this module directly.
 // Edit HERE, never in a generated block.
 
-/** Between request starts, sustained: MusicBrainz's published guidance. */
-export const MBN_GAP = 1000;
+/** Between request starts, sustained: two a second. MusicBrainz publishes one a second per IP, but
+ *  its 503s come from its own load (X-RateLimit-Who: global), whatever our pace: one a second still
+ *  drew them, and Credit Hoarder's four at a time finished a preflight in 52 s, not 173 s (#1095). */
+export const MBN_GAP = 500;
 /** Requests that may start back to back after a quiet spell. */
-export const MBN_BURST = 3;
+export const MBN_BURST = 4;
 /** The shared schedule, in the origin's localStorage. */
 export const MBN_KEY = 'mbu:mb-gate';
 /** Shared schedule protocol; a legacy schedule without a version is version 1. */
@@ -393,7 +395,7 @@ export async function mbnSlot(o) {
                 if ((s.last || 0) > now) s.last += MBN_GAP;
                 s.last = Math.max(s.last || 0, at);
                 if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: 1, head: 1 });
-                return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second', slip: s.slip || 0, bslip: s.bslip };
+                return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, two requests a second', slip: s.slip || 0, bslip: s.bslip };
             }
             s.last = Math.max(s.last || 0, at);
         } else {
@@ -405,7 +407,7 @@ export async function mbnSlot(o) {
             s.last = Math.max(s.last || 0, at);
         }
         s.tat = Math.max(tat, at) + MBN_GAP;
-        const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, one request a second';
+        const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, two requests a second';
         if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
         return { at, why, slip: s.slip || 0, bslip: s.bslip || 0 };
     });
@@ -500,7 +502,8 @@ export async function mbnAnswer(status, header, o) {
                 const now = Date.now();
                 if (now > (s.scool || 0) + 30000) s.shot = 0;
                 if (now >= (s.scool || 0)) s.shot = Math.min((s.shot || 0) + 1, 6);
-                const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.shot), MBN_MAX_HOLD);
+                // #1095: a shed clears within a second or so; growing holds only stalled the searches
+                const ms = Math.min(Math.max(1000, ra), MBN_MAX_HOLD);
                 s.scool = Math.max(s.scool || 0, now + ms);
                 tr({ ra: raw == null ? undefined : String(raw).slice(0, 40), shold: s.scool - now, shot: s.shot }, s);
                 return s.scool - now;
@@ -518,7 +521,11 @@ export async function mbnAnswer(status, header, o) {
             if (now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
             // the hold grows with each throttle in a row, a Retry-After included, so a long busy
             // spell gets fewer and fewer requests from us
-            const ms = Math.min(Math.max(1000, ra) * Math.max(1, s.hot), MBN_MAX_HOLD);
+            // #1095: a 503 that says MusicBrainz as a whole is out of room (X-RateLimit-Who: global) is
+            // not about our pace: it came to a single request after a quiet spell, and the next one went
+            // through. It holds a flat second (or its Retry-After); growing holds stalled every tab for nothing
+            const load = /^global$/i.test(String(rl.who || '').trim());
+            const ms = Math.min(Math.max(1000, ra) * (load ? 1 : Math.max(1, s.hot)), MBN_MAX_HOLD);
             // log: every waiter whose slot a hold passed booked again at the end of the queue, behind
             // requests booked after it, and a hidden tab's (whose timer wakes late) went last again on
             // each hold: one waited 40s. The hold now moves the whole queue later by its length, the
