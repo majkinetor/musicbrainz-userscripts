@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.092828
+// @version      2026.11.22.110721
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -16945,13 +16945,16 @@ const H_SEG = [['1', 'Yes'], ['0', 'No'], ['-1', 'Abstain']];
 // the open edit's Votes line: voters grouped by vote, each with its count; Abstain only when someone did
 const histVotes = e => e.voters && e.voters.length ? `<div class="hvl"><b>Votes</b>${H_SEG.map(([v, t]) => { const n = e.voters.filter(x => x.v === v); return v === '-1' && !n.length ? '' : `<span class="hvg"><i class="v${v}">${t} (${n.length})</i>${n.length ? n.map(x => `<a href="${MB}/user/${encodeURIComponent(x.by)}">${esc(x.by)}</a>`).join(', ') : '<span class="hvz">none</span>'}</span>`; }).join('')}</div>` : '';
 // a list doesn't name the voters: any edit's card, expanded (applied and failed too), fetches its page once and adds the Votes line
+// a right-click opens every sibling at once: at most 3 pages load together, the rest wait their turn
+const histVq = { n: 0, w: [] };
+const histVget = async u => { if (histVq.n >= 3) await new Promise(r => histVq.w.push(r)); histVq.n++; try { return await mbnFetch(u); } finally { histVq.n--; histVq.w.shift()?.(); } };
 document.addEventListener('toggle', async ev => {
     const dt = ev.target; if (!dt.open || !dt.matches?.('#app details.hed') || dt.dataset.hvf) return;
     const id = (dt.querySelector(':scope>summary>a.d')?.getAttribute('href') || '').match(/\/edit\/(\d+)/)?.[1], d = data, e = id && d && d.edits && d.edits.find(x => String(x.id) === id);
     if (!e || e.voters) return;
     dt.dataset.hvf = '1';
     try {
-        const t0 = performance.now(), r = await mbnFetch(`${MB}/edit/${id}`); fetchLog(`/edit/${id} voters`, t0, r); if (!r || !r.ok) throw new Error(r ? 'HTTP ' + r.status : 'cancelled');
+        const t0 = performance.now(), r = await histVget(`${MB}/edit/${id}`); fetchLog(`/edit/${id} voters`, t0, r); if (!r || !r.ok) throw new Error(r ? 'HTTP ' + r.status : 'cancelled');
         const x = histParse(await r.text()).edits[0]; if (!x || !x.voters || data !== d) return;
         e.voters = x.voters;
         const cur = document.querySelector(`#app [data-hvote^="${e.id}:"]`)?.closest('details.hed') || dt, hd = cur.querySelector(':scope>.hdt'), bar = cur.querySelector(':scope>summary .hbar');
