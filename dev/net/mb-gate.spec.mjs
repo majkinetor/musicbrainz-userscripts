@@ -162,6 +162,7 @@ test('the gate paces starts, a burst first, then one a second', { tag: ['@unit']
   check(gaps.every(g => g >= 900 && g <= 1400), `then a second apart (${gaps.join(', ')} ms)`);
   check(await a.evaluate(() => mbnGated('/ws/2/x') && mbnGated('https://test.musicbrainz.org/ws/2/x') && !mbnGated('/ws/js/entity/x') && !mbnGated('https://example.org/ws/2/x')), 'only /ws/2 on MusicBrainz is gated');
   check(mbnGated('https://musicbrainz.org/ws/2/recording/x'), '…production included');
+  check(mbnGated('//musicbrainz.org/ws/2/artist/x') && mbnGated('//test.musicbrainz.org/ws/2/x') && !mbnGated('//example.org/ws/2/x'), '…protocol-relative too (Credit Hoarder)');
 });
 
 // #1095: the shipped pace, with the real constants: a burst of four, then two a second
