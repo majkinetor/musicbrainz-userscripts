@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.140652
+// @version      2026.11.22.143522
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -266,6 +266,19 @@ async function mbnSlot(o) {
         told = true;
         await mbnSleep(Math.min(left, 250), o.cancelled);
     }
+    // a hidden tab's background request books only once the background queue is free: queued
+    // ahead, it would hold up the visible tab's requests booked after it. It waits at most
+    // MBN_MAX_LEAD for each queue end it sees, so a broken value doesn't hold it for good
+    for (let told = false; background && typeof document !== 'undefined' && document.hidden;) {
+        let s = null;
+        try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { s = globalThis.__mbnGate; }
+        const left = s && s.tat ? seen(s.tat, MBN_MAX_LEAD) - Date.now() : 0;
+        if (left <= 0) break;
+        if (o.cancelled && o.cancelled()) { tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
+        if (!told) tr('hidden', { w: left });
+        told = true;
+        await mbnSleep(Math.min(left, 250), o.cancelled);
+    }
     // a hold that appears while we queue ends for every waiter at once: each waiter then books
     // again, so they leave one a second instead of all together into a fresh 503
     let booked = null, rebooked = false;
@@ -423,7 +436,7 @@ async function mbnFetch(url, init, o) {
             const slot = await mbnSlot(o);
             if (!slot.ok) return null;
             let r;
-            try { r = await mbnWsFetch(at ? at() : url, init); }
+            try { r = await (o.send || mbnWsFetch)(at ? at() : url, init); }
             catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, id: o.id, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
             const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
             if (!a.throttled || give(attempt)) return r;
@@ -457,13 +470,19 @@ async function mbnFetch(url, init, o) {
     const covers = run => { for (const i of want) if (!run.inc.has(i)) return false; return true; };
     // a background read may share a page's read; a page's read shares a background one only once it is sent
     const bg = o.background !== false, ahead = run => run.sent || !run.bg || bg;
+    // merge: the two have the same MBN_INC_ALONE incs
     const fits = run => { for (const i of MBN_INC_ALONE) if (run.inc.has(i) !== want.has(i)) return false; return true; };
+    // join or cache: a lookup's answer with more incs answers this one too, but not with a
+    // user-* inc this read lacks (it needs a login, and it is the user's own data)
+    const lookup = /^\/ws\/2\/[a-z-]+\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(base.pathname);
+    const user = inc => { for (const i of inc) if (/^user-/.test(i)) return true; return false; };
+    const answers = run => lookup ? !Array.from(run.inc).some(i => /^user-/.test(i) && !want.has(i)) : fits(run);
     // #1098: a recent answer for the same thing, when no edit went out since
-    const cacheable = !o.fresh && !(init && init.credentials && init.credentials !== 'omit') && !base.searchParams.has('query') && fits({ inc: new Set() });
+    const cacheable = !o.fresh && !(init && init.credentials && init.credentials !== 'omit') && !base.searchParams.has('query') && (lookup ? !user(want) : fits({ inc: new Set() }));
     let looked = !cacheable;
     for (;;) {
         const runs = live.get(key) || [];
-        let run = runs.find(x => covers(x) && fits(x) && ahead(x)), how = 'join';
+        let run = runs.find(x => covers(x) && answers(x) && ahead(x)), how = 'join';
         if (!run) { run = runs.find(x => !x.sent && fits(x) && ahead(x)); how = 'merge'; }
         if (!run && !looked) {
             looked = true;
@@ -512,7 +531,7 @@ async function mbnFetch(url, init, o) {
     try {
         const r = await run.p;
         if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();   // as for a joiner, above
-        if (r && r.ok && cacheable && fits(run)) await mbnCachePut(key, run.inc, r.clone());
+        if (r && r.ok && cacheable && (lookup ? !user(run.inc) : fits(run))) await mbnCachePut(key, run.inc, r.clone());
         return r ? r.clone() : r;
     } finally {
         const l = live.get(key) || [], i = l.indexOf(run);
@@ -715,23 +734,23 @@ function renderNetBanner() {
     el.className = 'fs-netbanner' + (_netTrouble.kind === 'offline' ? ' fs-netbanner-err' : '');
 }
 const gateLog = (lv, m) => (lv === 'warn' ? Log.warn : Log.info)(m);
+// Through mbnFetch: the shared pace and holds, its retries on a 429/503, and a read another script
+// sends in the same moment is one request. o.fresh: no answer from the gate's short cache, because
+// Fusion merges by what MusicBrainz holds now.
 async function wsGet(path, retries) {
     retries = retries == null ? 4 : retries;
+    // the gate's waits on a hold show in the banner
+    const log = (lv, m) => { gateLog(lv, m); if (/asked (everyone|searches) to wait/.test(m)) setNetTrouble('throttled', 'paused as MusicBrainz asked'); };
     for (let attempt = 0; attempt <= retries; attempt++) {
-        await mbnSlot({ label: 'GET ' + path, log: gateLog });   // the shared pace, and any hold MusicBrainz asked for
         const t0 = Date.now();
         try {
             Log.info('GET ' + path + (attempt ? ' (retry ' + attempt + '/' + retries + ')' : ''));
             // no-store: MB's WS2 sends NO cache headers, so browsers cache these
             // heuristically and can serve a stale response — which silently fed
             // Fusion out-of-date ISRC data. #529
-            const r = await mbnWsFetch(path, { headers: { Accept: 'application/json' }, cache: 'no-store' });
+            const r = await mbnFetch(path, { headers: { Accept: 'application/json' }, cache: 'no-store' }, { label: 'GET ' + path, log, tries: retries + 1, fresh: true });
             const ms = Date.now() - t0;
-            const a = await mbnAnswer(r.status, n => r.headers.get(n), { log: gateLog, label: 'GET ' + path });   // the Gate log pairs it with its start by the label
-            if (a.throttled) {
-                // the retry waits out the shared hold in mbnSlot: no private backoff on top (#633)
-                Log.warn('GET ' + path + ' → ' + r.status + ' (' + ms + 'ms) — MB busy');
-                if (attempt < retries) { setNetTrouble('throttled', 'paused ' + Math.round(a.hold / 1000) + 's as MusicBrainz asked'); continue; }
+            if (r.status === 429 || r.status === 503) {
                 Log.error('GET ' + path + ' gave up after ' + (retries + 1) + ' attempts (still ' + r.status + ')');
                 setNetTrouble('throttled', 'gave up on a request after ' + (retries + 1) + ' attempts (HTTP ' + r.status + ')');
                 return null;

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.140653
+// @version      2026.11.22.143521
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -258,6 +258,19 @@
           told = true;
           await mbnSleep(Math.min(left, 250), o.cancelled);
       }
+      // a hidden tab's background request books only once the background queue is free: queued
+      // ahead, it would hold up the visible tab's requests booked after it. It waits at most
+      // MBN_MAX_LEAD for each queue end it sees, so a broken value doesn't hold it for good
+      for (let told = false; background && typeof document !== 'undefined' && document.hidden;) {
+          let s = null;
+          try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { s = globalThis.__mbnGate; }
+          const left = s && s.tat ? seen(s.tat, MBN_MAX_LEAD) - Date.now() : 0;
+          if (left <= 0) break;
+          if (o.cancelled && o.cancelled()) { tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
+          if (!told) tr('hidden', { w: left });
+          told = true;
+          await mbnSleep(Math.min(left, 250), o.cancelled);
+      }
       // a hold that appears while we queue ends for every waiter at once: each waiter then books
       // again, so they leave one a second instead of all together into a fresh 503
       let booked = null, rebooked = false;
@@ -415,7 +428,7 @@
               const slot = await mbnSlot(o);
               if (!slot.ok) return null;
               let r;
-              try { r = await mbnWsFetch(at ? at() : url, init); }
+              try { r = await (o.send || mbnWsFetch)(at ? at() : url, init); }
               catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, id: o.id, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
               const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
               if (!a.throttled || give(attempt)) return r;
@@ -449,13 +462,19 @@
       const covers = run => { for (const i of want) if (!run.inc.has(i)) return false; return true; };
       // a background read may share a page's read; a page's read shares a background one only once it is sent
       const bg = o.background !== false, ahead = run => run.sent || !run.bg || bg;
+      // merge: the two have the same MBN_INC_ALONE incs
       const fits = run => { for (const i of MBN_INC_ALONE) if (run.inc.has(i) !== want.has(i)) return false; return true; };
+      // join or cache: a lookup's answer with more incs answers this one too, but not with a
+      // user-* inc this read lacks (it needs a login, and it is the user's own data)
+      const lookup = /^\/ws\/2\/[a-z-]+\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(base.pathname);
+      const user = inc => { for (const i of inc) if (/^user-/.test(i)) return true; return false; };
+      const answers = run => lookup ? !Array.from(run.inc).some(i => /^user-/.test(i) && !want.has(i)) : fits(run);
       // #1098: a recent answer for the same thing, when no edit went out since
-      const cacheable = !o.fresh && !(init && init.credentials && init.credentials !== 'omit') && !base.searchParams.has('query') && fits({ inc: new Set() });
+      const cacheable = !o.fresh && !(init && init.credentials && init.credentials !== 'omit') && !base.searchParams.has('query') && (lookup ? !user(want) : fits({ inc: new Set() }));
       let looked = !cacheable;
       for (;;) {
           const runs = live.get(key) || [];
-          let run = runs.find(x => covers(x) && fits(x) && ahead(x)), how = 'join';
+          let run = runs.find(x => covers(x) && answers(x) && ahead(x)), how = 'join';
           if (!run) { run = runs.find(x => !x.sent && fits(x) && ahead(x)); how = 'merge'; }
           if (!run && !looked) {
               looked = true;
@@ -504,7 +523,7 @@
       try {
           const r = await run.p;
           if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();   // as for a joiner, above
-          if (r && r.ok && cacheable && fits(run)) await mbnCachePut(key, run.inc, r.clone());
+          if (r && r.ok && cacheable && (lookup ? !user(run.inc) : fits(run))) await mbnCachePut(key, run.inc, r.clone());
           return r ? r.clone() : r;
       } finally {
           const l = live.get(key) || [], i = l.indexOf(run);
@@ -971,15 +990,31 @@
   const gateLog = (lv, m) => (lv === 'warn' ? Log.warn : Log.info)(m);
   // A read for a release Event Horizon moved away from leaves the gate's queue and never answers (a write always goes):
   // its caller belongs to the release it left, and an error would land on the new one's button
+  // It goes through mbnFetch, so a read another script asks in the same moment, or asked a moment
+  // ago, is one request; the request itself is still ISRC Scout's own GM one (o.send).
   async function http(opts) {
     if (!mbnGated(opts && opts.url)) return httpRaw(opts);
     const at = mbid, read = !/post/i.test(opts.method || '');
-    const label = opts.method + ' ' + '/ws/2/' + String(opts.url).split('/ws/2/').pop();   // the answer carries it too: the Gate log pairs the two by it
-    const slot = await mbnSlot({ label, log: gateLog, cancelled: read ? () => mbid !== at : undefined });
-    if (slot && slot.ok === false && read && mbid !== at) { Log.debug('Dropped ' + shortUrl(opts.url) + ': release ' + mbid + ' is shown now'); return new Promise(() => {}); }
-    const r = await httpRaw(opts);
-    await mbnAnswer(r.status, n => mbnRawHeader(r.responseHeaders, n), { log: gateLog, label });
-    return r;
+    const label = opts.method + ' ' + '/ws/2/' + String(opts.url).split('/ws/2/').pop();
+    // the GM answer as a fetch() Response (one with no HTTP status is a network error)
+    const send = async (u, init) => {
+      const g = await httpRaw(Object.assign({}, opts, { url: u }));
+      if (!(g.status >= 200 && g.status <= 599)) throw new Error('network error');
+      const h = new Headers();
+      String(g.responseHeaders || '').split(/\r?\n/).forEach(l => { const i = l.indexOf(':'); if (i > 0) try { h.append(l.slice(0, i).trim(), l.slice(i + 1).trim()); } catch (e) {} });
+      return new Response([101, 204, 205, 304].includes(g.status) ? null : (g.responseText || ''), { status: g.status, statusText: g.statusText || '', headers: h });
+    };
+    const r = await mbnFetch(opts.url, { method: opts.method, headers: opts.headers, body: opts.data }, {
+      label, log: gateLog, send, cancelled: read ? () => mbid !== at : undefined,
+      tries: read ? undefined : 1,   // a write is sent once; its caller decides on a repeat
+    });
+    if (!r) {
+      if (read && mbid !== at) { Log.debug('Dropped ' + shortUrl(opts.url) + ': release ' + mbid + ' is shown now'); return new Promise(() => {}); }
+      throw new Error('aborted');
+    }
+    // back to the GM answer shape the callers read
+    const responseHeaders = Array.from(r.headers.entries()).map(([k, v]) => k + ': ' + v).join('\r\n');
+    return { status: r.status, statusText: r.statusText, responseText: await r.text(), responseHeaders, finalUrl: r.url || opts.url };
   }
   const gmGet  = (url, headers) => http({ method: 'GET',  url, headers: headers || {} });
   const gmPost = (url, data, headers) => http({ method: 'POST', url, data, headers: headers || {} });

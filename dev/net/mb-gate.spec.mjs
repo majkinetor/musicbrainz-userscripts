@@ -36,6 +36,54 @@ test('the same read asked twice in one moment is one request, the cache lookup b
   check(n === 1, `one request for both (${n})`);
 });
 
+test('a lookup with recordings answers a lighter lookup, by join and from the cache; a browse does not', { tag: ['@unit'] }, async ({ context }) => {
+  const a = await tab(context);
+  const n = await a.evaluate(async () => {
+    const id = '0f1e2d3c-4b5a-4968-8776-a5b4c3d2e1f0', ws = 'https://musicbrainz.org/ws/2/';
+    const out = {};
+    await Promise.all([mbnFetch(ws + 'release/' + id + '?inc=recordings+isrcs&fmt=json'), mbnFetch(ws + 'release/' + id + '?inc=artist-credits&fmt=json')]);
+    out.join = window.__starts.length;
+    await mbnFetch(ws + 'release/' + id + '?fmt=json');
+    out.cache = window.__starts.length;
+    await mbnFetch(ws + 'recording?release=' + id + '&inc=isrcs&fmt=json');
+    await mbnFetch(ws + 'recording?release=' + id + '&fmt=json');
+    out.browse = window.__starts.length;
+    await mbnFetch(ws + 'artist/' + id + '?inc=user-tags&fmt=json');
+    await mbnFetch(ws + 'artist/' + id + '?fmt=json');
+    out.user = window.__starts.length;
+    return out;
+  });
+  check(n.join === 2, `the lighter lookup joins the one with recordings (${n.join} requests)`);
+  check(n.cache === 2, `a later lighter lookup comes from the cache (${n.cache})`);
+  check(n.browse === 4, `a browse with isrcs does not answer one without (${n.browse})`);
+  check(n.user === 6, `a lookup with user-tags answers nothing else (${n.user})`);
+});
+
+test('o.send sends the request in place of fetch', { tag: ['@unit'] }, async ({ context }) => {
+  const a = await tab(context);
+  const r = await a.evaluate(async () => {
+    const sent = [];
+    const send = async (u, init) => { sent.push(u + ' ' + init.method); return new Response('{"ok":1}', { status: 200 }); };
+    const res = await mbnFetch('https://musicbrainz.org/ws/2/isrc/X?fmt=json', { method: 'POST', body: 'x' }, { send });
+    return { sent, body: await res.json(), fetched: window.__starts.length };
+  });
+  check(r.sent.length === 1 && / POST$/.test(r.sent[0]) && r.body.ok === 1 && r.fetched === 0, `the answer comes from o.send, fetch is not called (${JSON.stringify(r)})`);
+});
+
+test('a hidden tab\'s background request waits for the queue to be free; a page request does not', { tag: ['@unit'] }, async ({ context }) => {
+  const a = await tab(context);
+  const r = await a.evaluate(async () => {
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+    await mbnState(s => { s.tat = Date.now() + 1500; });
+    const t0 = Date.now();
+    const page = mbnSlot({ background: false }).then(() => Date.now() - t0);
+    const bg = mbnSlot({}).then(() => Date.now() - t0);
+    return { page: await page, bg: await bg };
+  });
+  check(r.page < 300, `the page request starts at once (${r.page} ms)`);
+  check(r.bg >= 1300, `the background request waits for the queue to end (${r.bg} ms)`);
+});
+
 test('a lock bridge ignoring abort cannot retain the gate or book twice', { tag: '@unit' }, async ({ context }) => {
   const a = await tab(context);
   const got = await a.evaluate(async () => {
