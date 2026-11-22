@@ -513,6 +513,7 @@ function stSettings(tab) {
     q('#st-tab-menu').value = t.id.slice(-1);
     try { localStorage.setItem('st-cfg-tab', t.id.slice(-1)); } catch (_) {}
     if (enteringAbout) checkUpdates();
+    if (t.id === 'st-tab-s') stSyncPaint();
   };
   var live = stLive, openFor = function (name) { stOpenFor(name, toFront); };
   q('.st-scripts').addEventListener('contextmenu', function (e) {

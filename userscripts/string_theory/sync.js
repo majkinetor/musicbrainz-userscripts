@@ -434,7 +434,7 @@ function stSyncMarkup() {
     + '</section><div id="st-sync-remote" role="region" aria-labelledby="st-sync-backup-provider" hidden><div class="st-backup-head"><h3 id="st-sync-backup-provider">Backups</h3><span class="st-sync-spinner" id="st-sync-browse-progress" role="status" aria-label="In progress" hidden></span><div class="st-backup-actions" id="st-sync-backup-actions"></div><button class="st-b st-sync-link" type="button" id="st-sync-backup-close" aria-label="Back to Sync">&lt; Back</button></div><div id="st-sync-backups" aria-label="Saved backups" hidden></div></div>';
 }
 function stSyncPaint() {
-  var panel = document.getElementById('st-p-s'); if (!panel) return;
+  var panel = document.getElementById('st-p-s'); if (!panel || panel.hidden) return;
   var q = function (id) { return panel.querySelector('#st-sync-' + id); };
   var provider = stSyncProvider(), name = stSyncName(provider), auth = stSyncAuth(provider), state = stSyncState(), settings = stSyncSettings(), connected = stSyncConnected(provider);
   var backupAccount = provider + ':' + (state.account || '');
