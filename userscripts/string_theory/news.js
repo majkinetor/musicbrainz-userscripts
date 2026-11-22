@@ -172,11 +172,13 @@ function stNewsCheck(force, cb) {
 // the golden icon and its count in the hover label
 function stNewsSignal() {
   var n = stNewsUnread(stNewsRead()).length, root = document.documentElement, b = document.getElementById('mbu-dock');
-  root.toggleAttribute('data-st-news', n > 0);
+  // each write only on a change: this runs every second for the first ten, and a rewrite of the same value is a mutation and a restyle (#1095)
+  if (root.hasAttribute('data-st-news') !== n > 0) root.toggleAttribute('data-st-news', n > 0);
   if (!b) return;
   if (n) {
     if (!b.hasAttribute('data-st-label')) b.setAttribute('data-st-label', b.getAttribute('data-mb-corner-label') || '');
-    b.setAttribute('data-mb-corner-label', "What's new: " + n);
+    var label = "What's new: " + n;
+    if (b.getAttribute('data-mb-corner-label') !== label) b.setAttribute('data-mb-corner-label', label);
   } else if (b.hasAttribute('data-st-label')) {
     b.setAttribute('data-mb-corner-label', b.getAttribute('data-st-label'));
     b.removeAttribute('data-st-label');

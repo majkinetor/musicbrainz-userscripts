@@ -201,6 +201,9 @@ export function mbnSleep(ms, cancelled) {
  * ours. Each tab keeps its last MBN_TRACE_MAX events under MBN_KEY + '-trace:' + its id (per tab,
  * so tabs never overwrite each other's); a tab's trace idle for an hour is dropped by the next.
  * `ev.e` is the kind: lead, book, cancel, start, answer, error, lead+, lead-, check.
+ * Events wait in memory and go to storage together, a second after the first (and when the page
+ * is left or hidden): one write per event parsed and rewrote the whole trace each time, and fired a
+ * storage event in every other open MusicBrainz tab (#1095). `__mbnTrace.flush()` writes them now.
  */
 /**
  * A request id for the Gate log: a caller gives the same o.id to mbnSlot and mbnAnswer (mbnFetch
@@ -216,27 +219,44 @@ export function mbnTrace(ev) {
             try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
             if (!g.tab) { g.tab = Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5); try { sessionStorage.setItem(MBN_KEY + '-tab', g.tab); } catch (e) {} }
         }
+        if (!g.buf) g.buf = [];
+        if (!g.flush) {
+            g.flush = () => {
+                try {
+                    clearTimeout(g.timer); g.timer = 0;
+                    if (!g.buf.length) return;
+                    const add = g.buf; g.buf = [];
+                    const pre = MBN_KEY + '-trace:', key = pre + g.tab, now = Date.now();
+                    let list = [];
+                    try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}
+                    if (!Array.isArray(list)) list = [];
+                    list = list.concat(add);
+                    if (list.length > MBN_TRACE_MAX) list = list.slice(-MBN_TRACE_MAX);
+                    localStorage.setItem(key, JSON.stringify(list));
+                    if (now - g.swept > 60000) {   // once a minute: drop the traces of tabs gone quiet for an hour
+                        g.swept = now;
+                        // one pass over the names: in Firefox each localStorage.key(i) walks the store from its start
+                        for (const k of Object.keys(localStorage)) {
+                            if (k.indexOf(pre) !== 0 || k === key) continue;
+                            let last = 0;
+                            try { const l = JSON.parse(localStorage.getItem(k) || '[]'); last = (l[l.length - 1] || {}).t || 0; } catch (e) {}
+                            if (now - last > 3600000) localStorage.removeItem(k);
+                        }
+                    }
+                } catch (e) { /* no storage: no trace */ }
+            };
+            try {   // leaving the page, or hiding it (a phone may never come back): write what waits
+                addEventListener('pagehide', g.flush);
+                document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') g.flush(); });
+            } catch (e) {}
+        }
         // the name is read per call, never kept in the shared object: in String Theory's bundle every
         // member runs its own copy of the gate with its own GM_info, but globalThis is the bundle's one
         let script = '';
         try { script = String(GM_info.script.name || ''); } catch (e) {}
-        const pre = MBN_KEY + '-trace:', key = pre + g.tab, now = Date.now();
-        let list = [];
-        try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}
-        if (!Array.isArray(list)) list = [];
-        list.push(Object.assign({ t: now, s: script }, ev));
-        if (list.length > MBN_TRACE_MAX) list = list.slice(-MBN_TRACE_MAX);
-        localStorage.setItem(key, JSON.stringify(list));
-        if (now - g.swept > 60000) {   // once a minute: drop the traces of tabs gone quiet for an hour
-            g.swept = now;
-            // one pass over the names: in Firefox each localStorage.key(i) walks the store from its start
-            for (const k of Object.keys(localStorage)) {
-                if (k.indexOf(pre) !== 0 || k === key) continue;
-                let last = 0;
-                try { const l = JSON.parse(localStorage.getItem(k) || '[]'); last = (l[l.length - 1] || {}).t || 0; } catch (e) {}
-                if (now - last > 3600000) localStorage.removeItem(k);
-            }
-        }
+        g.buf.push(Object.assign({ t: Date.now(), s: script }, ev));
+        if (g.buf.length > MBN_TRACE_MAX) g.buf = g.buf.slice(-MBN_TRACE_MAX);
+        if (!g.timer) g.timer = setTimeout(g.flush, 1000);
     } catch (e) { /* no storage: no trace */ }
 }
 

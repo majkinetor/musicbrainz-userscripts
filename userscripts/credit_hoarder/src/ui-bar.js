@@ -556,6 +556,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // by data-mb-corner-order. Scribe keeps its own copy of the restack and knows neither.
     var MBU_DOCK_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"> <path d="M64 10 L66.4 10.2 L68.7 10.6 L70.9 11.4 L73.1 12.4 L75.2 13.7 L77.1 15.2 L78.8 17 L80.4 18.9 L81.8 21 L83.1 23.1 L84.1 25.4 L85 27.6 L85.7 29.9 L86.3 32.1 L86.8 34.3 L87.1 36.4 L87.4 38.4 L87.7 40.3 L87.9 42.1 L88.2 43.7 L88.5 45.2 L88.9 46.6 L89.4 47.8 L90 49 L90.7 50.1 L91.6 51.1 L92.6 52.2 L93.7 53.2 L95 54.2 L96.4 55.3 L97.9 56.5 L99.5 57.7 L101.1 59.1 L102.7 60.6 L104.4 62.2 L106 64 L107.5 65.9 L108.9 67.9 L110.2 70.1 L111.3 72.3 L112.1 74.7 L112.8 77.1 L113.1 79.5 L113.2 81.9 L113 84.3 L112.6 86.6 L111.8 88.9 L110.8 91 L109.5 93 L107.9 94.7 L106.1 96.3 L104.1 97.7 L102 98.8 L99.7 99.7 L97.3 100.4 L94.9 100.8 L92.4 101 L89.9 100.9 L87.4 100.7 L85 100.4 L82.7 99.9 L80.4 99.3 L78.3 98.6 L76.3 97.8 L74.4 97.1 L72.7 96.4 L71 95.7 L69.5 95.1 L68 94.6 L66.7 94.3 L65.3 94.1 L64 94 L62.7 94.1 L61.3 94.3 L60 94.6 L58.5 95.1 L57 95.7 L55.3 96.4 L53.6 97.1 L51.7 97.8 L49.7 98.6 L47.6 99.3 L45.3 99.9 L43 100.4 L40.6 100.7 L38.1 100.9 L35.6 101 L33.1 100.8 L30.7 100.4 L28.3 99.7 L26 98.8 L23.9 97.7 L21.9 96.3 L20.1 94.7 L18.5 93 L17.2 91 L16.2 88.9 L15.4 86.6 L15 84.3 L14.8 81.9 L14.9 79.5 L15.2 77.1 L15.9 74.7 L16.7 72.3 L17.8 70.1 L19.1 67.9 L20.5 65.9 L22 64 L23.6 62.2 L25.3 60.6 L26.9 59.1 L28.5 57.7 L30.1 56.5 L31.6 55.3 L33 54.2 L34.3 53.2 L35.4 52.2 L36.4 51.1 L37.3 50.1 L38 49 L38.6 47.8 L39.1 46.6 L39.5 45.2 L39.8 43.7 L40.1 42.1 L40.3 40.3 L40.6 38.4 L40.9 36.4 L41.2 34.3 L41.7 32.1 L42.3 29.9 L43 27.6 L43.9 25.4 L44.9 23.1 L46.2 21 L47.6 18.9 L49.2 17 L50.9 15.2 L52.8 13.7 L54.9 12.4 L57.1 11.4 L59.3 10.6 L61.6 10.2Z" fill="none" stroke="#9c86ea" stroke-width="10" stroke-linejoin="round"/> <path d="M64 34 L65.3 33.9 L66.7 33.7 L68 33.4 L69.5 32.9 L71 32.3 L72.7 31.6 L74.4 30.9 L76.3 30.2 L78.3 29.4 L80.4 28.7 L82.7 28.1 L85 27.6 L87.4 27.3 L89.9 27.1 L92.4 27 L94.9 27.2 L97.3 27.6 L99.7 28.3 L102 29.2 L104.1 30.3 L106.1 31.7 L107.9 33.3 L109.5 35 L110.8 37 L111.8 39.1 L112.6 41.4 L113 43.7 L113.2 46.1 L113.1 48.5 L112.8 50.9 L112.1 53.3 L111.3 55.7 L110.2 57.9 L108.9 60.1 L107.5 62.1 L106 64 L104.4 65.8 L102.7 67.4 L101.1 68.9 L99.5 70.3 L97.9 71.5 L96.4 72.7 L95 73.8 L93.7 74.8 L92.6 75.8 L91.6 76.9 L90.7 77.9 L90 79 L89.4 80.2 L88.9 81.4 L88.5 82.8 L88.2 84.3 L87.9 85.9 L87.7 87.7 L87.4 89.6 L87.1 91.6 L86.8 93.7 L86.3 95.9 L85.7 98.1 L85 100.4 L84.1 102.6 L83.1 104.9 L81.8 107 L80.4 109.1 L78.8 111 L77.1 112.8 L75.2 114.3 L73.1 115.6 L70.9 116.6 L68.7 117.4 L66.4 117.8 L64 118 L61.6 117.8 L59.3 117.4 L57.1 116.6 L54.9 115.6 L52.8 114.3 L50.9 112.8 L49.2 111 L47.6 109.1 L46.2 107 L44.9 104.9 L43.9 102.6 L43 100.4 L42.3 98.1 L41.7 95.9 L41.2 93.7 L40.9 91.6 L40.6 89.6 L40.3 87.7 L40.1 85.9 L39.8 84.3 L39.5 82.8 L39.1 81.4 L38.6 80.2 L38 79 L37.3 77.9 L36.4 76.9 L35.4 75.8 L34.3 74.8 L33 73.8 L31.6 72.7 L30.1 71.5 L28.5 70.3 L26.9 68.9 L25.3 67.4 L23.6 65.8 L22 64 L20.5 62.1 L19.1 60.1 L17.8 57.9 L16.7 55.7 L15.9 53.3 L15.2 50.9 L14.9 48.5 L14.8 46.1 L15 43.7 L15.4 41.4 L16.2 39.1 L17.2 37 L18.5 35 L20.1 33.3 L21.9 31.7 L23.9 30.3 L26 29.2 L28.3 28.3 L30.7 27.6 L33.1 27.2 L35.6 27 L38.1 27.1 L40.6 27.3 L43 27.6 L45.3 28.1 L47.6 28.7 L49.7 29.4 L51.7 30.2 L53.6 30.9 L55.3 31.6 L57 32.3 L58.5 32.9 L60 33.4 L61.3 33.7 L62.7 33.9Z" fill="none" stroke="#ffffff" stroke-width="20" stroke-linejoin="round"/> <path d="M64 34 L65.3 33.9 L66.7 33.7 L68 33.4 L69.5 32.9 L71 32.3 L72.7 31.6 L74.4 30.9 L76.3 30.2 L78.3 29.4 L80.4 28.7 L82.7 28.1 L85 27.6 L87.4 27.3 L89.9 27.1 L92.4 27 L94.9 27.2 L97.3 27.6 L99.7 28.3 L102 29.2 L104.1 30.3 L106.1 31.7 L107.9 33.3 L109.5 35 L110.8 37 L111.8 39.1 L112.6 41.4 L113 43.7 L113.2 46.1 L113.1 48.5 L112.8 50.9 L112.1 53.3 L111.3 55.7 L110.2 57.9 L108.9 60.1 L107.5 62.1 L106 64 L104.4 65.8 L102.7 67.4 L101.1 68.9 L99.5 70.3 L97.9 71.5 L96.4 72.7 L95 73.8 L93.7 74.8 L92.6 75.8 L91.6 76.9 L90.7 77.9 L90 79 L89.4 80.2 L88.9 81.4 L88.5 82.8 L88.2 84.3 L87.9 85.9 L87.7 87.7 L87.4 89.6 L87.1 91.6 L86.8 93.7 L86.3 95.9 L85.7 98.1 L85 100.4 L84.1 102.6 L83.1 104.9 L81.8 107 L80.4 109.1 L78.8 111 L77.1 112.8 L75.2 114.3 L73.1 115.6 L70.9 116.6 L68.7 117.4 L66.4 117.8 L64 118 L61.6 117.8 L59.3 117.4 L57.1 116.6 L54.9 115.6 L52.8 114.3 L50.9 112.8 L49.2 111 L47.6 109.1 L46.2 107 L44.9 104.9 L43.9 102.6 L43 100.4 L42.3 98.1 L41.7 95.9 L41.2 93.7 L40.9 91.6 L40.6 89.6 L40.3 87.7 L40.1 85.9 L39.8 84.3 L39.5 82.8 L39.1 81.4 L38.6 80.2 L38 79 L37.3 77.9 L36.4 76.9 L35.4 75.8 L34.3 74.8 L33 73.8 L31.6 72.7 L30.1 71.5 L28.5 70.3 L26.9 68.9 L25.3 67.4 L23.6 65.8 L22 64 L20.5 62.1 L19.1 60.1 L17.8 57.9 L16.7 55.7 L15.9 53.3 L15.2 50.9 L14.9 48.5 L14.8 46.1 L15 43.7 L15.4 41.4 L16.2 39.1 L17.2 37 L18.5 35 L20.1 33.3 L21.9 31.7 L23.9 30.3 L26 29.2 L28.3 28.3 L30.7 27.6 L33.1 27.2 L35.6 27 L38.1 27.1 L40.6 27.3 L43 27.6 L45.3 28.1 L47.6 28.7 L49.7 29.4 L51.7 30.2 L53.6 30.9 L55.3 31.6 L57 32.3 L58.5 32.9 L60 33.4 L61.3 33.7 L62.7 33.9Z" fill="none" stroke="#6c47e0" stroke-width="13" stroke-linejoin="round"/> <path class="mbu-dock-run" pathLength="100" d="M64 34 L65.3 33.9 L66.7 33.7 L68 33.4 L69.5 32.9 L71 32.3 L72.7 31.6 L74.4 30.9 L76.3 30.2 L78.3 29.4 L80.4 28.7 L82.7 28.1 L85 27.6 L87.4 27.3 L89.9 27.1 L92.4 27 L94.9 27.2 L97.3 27.6 L99.7 28.3 L102 29.2 L104.1 30.3 L106.1 31.7 L107.9 33.3 L109.5 35 L110.8 37 L111.8 39.1 L112.6 41.4 L113 43.7 L113.2 46.1 L113.1 48.5 L112.8 50.9 L112.1 53.3 L111.3 55.7 L110.2 57.9 L108.9 60.1 L107.5 62.1 L106 64 L104.4 65.8 L102.7 67.4 L101.1 68.9 L99.5 70.3 L97.9 71.5 L96.4 72.7 L95 73.8 L93.7 74.8 L92.6 75.8 L91.6 76.9 L90.7 77.9 L90 79 L89.4 80.2 L88.9 81.4 L88.5 82.8 L88.2 84.3 L87.9 85.9 L87.7 87.7 L87.4 89.6 L87.1 91.6 L86.8 93.7 L86.3 95.9 L85.7 98.1 L85 100.4 L84.1 102.6 L83.1 104.9 L81.8 107 L80.4 109.1 L78.8 111 L77.1 112.8 L75.2 114.3 L73.1 115.6 L70.9 116.6 L68.7 117.4 L66.4 117.8 L64 118 L61.6 117.8 L59.3 117.4 L57.1 116.6 L54.9 115.6 L52.8 114.3 L50.9 112.8 L49.2 111 L47.6 109.1 L46.2 107 L44.9 104.9 L43.9 102.6 L43 100.4 L42.3 98.1 L41.7 95.9 L41.2 93.7 L40.9 91.6 L40.6 89.6 L40.3 87.7 L40.1 85.9 L39.8 84.3 L39.5 82.8 L39.1 81.4 L38.6 80.2 L38 79 L37.3 77.9 L36.4 76.9 L35.4 75.8 L34.3 74.8 L33 73.8 L31.6 72.7 L30.1 71.5 L28.5 70.3 L26.9 68.9 L25.3 67.4 L23.6 65.8 L22 64 L20.5 62.1 L19.1 60.1 L17.8 57.9 L16.7 55.7 L15.9 53.3 L15.2 50.9 L14.9 48.5 L14.8 46.1 L15 43.7 L15.4 41.4 L16.2 39.1 L17.2 37 L18.5 35 L20.1 33.3 L21.9 31.7 L23.9 30.3 L26 29.2 L28.3 28.3 L30.7 27.6 L33.1 27.2 L35.6 27 L38.1 27.1 L40.6 27.3 L43 27.6 L45.3 28.1 L47.6 28.7 L49.7 29.4 L51.7 30.2 L53.6 30.9 L55.3 31.6 L57 32.3 L58.5 32.9 L60 33.4 L61.3 33.7 L62.7 33.9Z" fill="none" stroke="#ff4f9a" stroke-width="13" stroke-linecap="round"/> </svg>';   // String Theory's icon.svg
     var mbuDockBusyT, mbuDockFadeT;   // the dock's busy-off delay and its fade-out, below
+    var mbuPathRe = {};   // data-mb-corner-paths, compiled once each
     function mbuDock() {
         var root = document.documentElement, eh = root.hasAttribute('data-mbu-dock');
         var on = eh || root.hasAttribute('data-mbu-st');
@@ -639,13 +640,14 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
                 document.dispatchEvent(new CustomEvent('mbu-st-settings'));
             });
             // hovering the folded button unrolls the dock until the pointer leaves it, not remembered
-            var leaveT = 0;
+            var leaveT = 0, boxC = null, boxT = 0;
             var dockBox = function () {
                 var boxes = Array.prototype.slice.call(document.querySelectorAll('#mbu-dock,[data-mbu-docked=show],[data-mbu-docked=peek]'))
                     .map(function (el) { return el.getBoundingClientRect(); }).filter(function (r) { return r.width && r.height; });
-                if (!boxes.length) return null;
-                return { left: Math.min.apply(null, boxes.map(function (r) { return r.left; })), right: Math.max.apply(null, boxes.map(function (r) { return r.right; })),
+                boxT = Date.now();
+                boxC = !boxes.length ? null : { left: Math.min.apply(null, boxes.map(function (r) { return r.left; })), right: Math.max.apply(null, boxes.map(function (r) { return r.right; })),
                     top: Math.min.apply(null, boxes.map(function (r) { return r.top; })), bottom: Math.max.apply(null, boxes.map(function (r) { return r.bottom; })) };
+                return boxC;
             };
             var inBox = function (e, b, pad) { return !!b && e.clientX >= b.left - pad && e.clientX <= b.right + pad && e.clientY >= b.top - pad && e.clientY <= b.bottom + pad; };
             var inDock = function (e) {
@@ -666,6 +668,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
                 return l !== null && l < 0.5;
             };
             var shelfOver = function (e) {
+                // far from the dock, a box read a moment ago settles it: no page-wide query and layout on every move (#1095)
+                if (!root.hasAttribute('data-mbu-dock-over') && Date.now() - boxT < 300 && !inBox(e, boxC, 80)) return;
                 var b = dockBox(), over = inBox(e, b, 6);
                 if (over) {
                     if (document.body && shelf.parentNode !== document.body) document.body.appendChild(shelf);
@@ -726,15 +730,26 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             if (mbuShared('cornerOffset') !== undefined) mbuShared('cornerOffset', null);   // dragging the launchers is gone (#851)
         }
         var open = root.hasAttribute('data-mbu-dock-open'), n = 0, busy = false;
-        if (mbuShared('cornerFlow') === 'row') root.setAttribute('data-mbu-flow', 'row'); else root.removeAttribute('data-mbu-flow');
-        if (mbuShared('cornerSide') === 'left') root.setAttribute('data-mbu-side', 'left'); else root.removeAttribute('data-mbu-side');
+        var rootAt = function (k, v) { if (v === null) root.removeAttribute(k); else if (root.getAttribute(k) !== v) root.setAttribute(k, v); };
+        rootAt('data-mbu-flow', mbuShared('cornerFlow') === 'row' ? 'row' : null);
+        rootAt('data-mbu-side', mbuShared('cornerSide') === 'left' ? 'left' : null);
         root.toggleAttribute('data-mbu-dock-frost', mbuShared('dockHover') === 'shelf');
         mbuDockCount(root);
+        // Each launcher is measured as its script left it, so a hidden one's own hide comes off first. All of
+        // them are read in one pass and written in the next: one off and one read per launcher in turn made
+        // the browser restyle the page once per launcher, on every restack (#1095). Shown and peeking ones
+        // keep their attribute, which only hide and off turn into display:none, and nothing is written
+        // unchanged, since a write restyles too and wakes every observer of the page.
+        var live = [], set = function (el, v) { if (el.getAttribute('data-mbu-docked') !== v) el.setAttribute('data-mbu-docked', v); };
         els.forEach(function (el) {
-            if ((eh && el.dataset.mbCornerDock === 'hide') || (el.dataset.mbCornerPaths && !new RegExp(el.dataset.mbCornerPaths).test(location.pathname))) { el.setAttribute('data-mbu-docked', 'off'); return; }
-            var was = el.getAttribute('data-mbu-docked');
-            el.removeAttribute('data-mbu-docked');   // measured as its script left it
-            var shown = getComputedStyle(el).display !== 'none';
+            var p = el.dataset.mbCornerPaths;
+            if ((eh && el.dataset.mbCornerDock === 'hide') || (p && !(mbuPathRe[p] || (mbuPathRe[p] = new RegExp(p))).test(location.pathname))) { set(el, 'off'); return; }
+            live.push({ el: el, was: el.getAttribute('data-mbu-docked') });
+        });
+        live.forEach(function (x) { if (x.was === 'hide' || x.was === 'off') x.el.removeAttribute('data-mbu-docked'); });
+        live.forEach(function (x) { x.shown = getComputedStyle(x.el).display !== 'none'; });
+        live.forEach(function (x) {
+            var el = x.el, was = x.was, shown = x.shown;
             if (shown) { n++; if (el.hasAttribute('data-mbu-busy')) busy = true; }
             var now = !shown ? 'hide' : open ? 'show' : /^[+]?[1-9]/.test(el.dataset.mbCornerStatus || '') || el.hasAttribute('data-mbu-actionable') ? 'peek' : 'hide';
             var out = el.hasAttribute('data-mbu-peek-out');
@@ -742,18 +757,18 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             // (mbRestackCorner runs the slide, which knows the distance). This runs on every restack,
             // hence the attributes: a CSS animation would replay, and another script's copy can't see a property.
             if (now === 'hide' && shown && (was === 'peek' || out) && el.animate && !mbuStill()) {
-                el.setAttribute('data-mbu-docked', 'peek');
-                el.setAttribute('data-mbu-peek-out', '');
+                set(el, 'peek');
+                if (!out) el.setAttribute('data-mbu-peek-out', '');
                 return;
             }
             if (out) { el.removeAttribute('data-mbu-peek-out'); mbuPeekStop(el); }
-            el.setAttribute('data-mbu-docked', now);
+            set(el, now);
             if (now === 'peek' && (was !== 'peek' || out)) el.setAttribute('data-mbu-peek-in', '');
         });
         mbuDockKnow(els);
         // Busy ends a moment late: members hand work on with short gaps, and each would blink the dash out.
         clearTimeout(mbuDockBusyT);
-        if (busy) { clearTimeout(mbuDockFadeT); btn.removeAttribute('data-mbu-busy-out'); btn.setAttribute('data-mbu-busy', ''); }
+        if (busy) { clearTimeout(mbuDockFadeT); btn.removeAttribute('data-mbu-busy-out'); if (!btn.hasAttribute('data-mbu-busy')) btn.setAttribute('data-mbu-busy', ''); }
         else if (btn.hasAttribute('data-mbu-busy')) mbuDockBusyT = setTimeout(function () {
             btn.removeAttribute('data-mbu-busy');
             btn.setAttribute('data-mbu-busy-out', '');   // the dash keeps moving while it fades out
@@ -777,7 +792,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     function mbuDockCount(root) {
         var style = mbuShared('dockCount');
         style = style === 'seg' || style === 'bare' ? style : null;
-        if (style) root.setAttribute('data-mbu-count', style); else root.removeAttribute('data-mbu-count');
+        if (!style) root.removeAttribute('data-mbu-count'); else if (root.getAttribute('data-mbu-count') !== style) root.setAttribute('data-mbu-count', style);
         root.toggleAttribute('data-mbu-count-side', mbuShared('dockCountPos') === 'side');
         if (!document.getElementById('mbu-dock-count-css')) {
             var S = ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))';
@@ -841,7 +856,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         if (!html) { if (span) span.remove(); el.removeAttribute('data-mbu-count-cells'); return; }
         if (!span) { span = document.createElement('span'); span.className = 'mbu-dock-n'; el.appendChild(span); }
         if (span.innerHTML !== html) span.innerHTML = html;
-        el.setAttribute('data-mbu-count-cells', '');
+        if (!el.hasAttribute('data-mbu-count-cells')) el.setAttribute('data-mbu-count-cells', '');
     }
     // Records each named bottom-right launcher's icon in dockKnown, for String Theory's settings to list
     // the ones not on this page too; written only when something changed.
@@ -864,6 +879,14 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         var i = order ? order.indexOf(el.dataset.mbCornerLabel) : -1;
         return i >= 0 ? i - 1e5 : Number(el.dataset.mbCornerOrder) || 0;
     }
+    // one restack of the dock's corner once the code running now is done, for any number of asks meanwhile
+    var mbuRestackQueued = false;
+    function mbuRestackSoon() {
+        if (mbuRestackQueued) return;
+        mbuRestackQueued = true;
+        var go = function () { mbuRestackQueued = false; mbRestackCorner('br'); };
+        if (typeof queueMicrotask === 'function') queueMicrotask(go); else Promise.resolve().then(go);
+    }
     // A script's entry that lives in the dock only (#847): for a script whose own controls sit in
     // MusicBrainz's page, which Event Horizon replaces. o: id, label, icon (an image URL), order,
     // paths (as data-mb-corner-paths), click. Outside the dock it is never shown, unless the script clears its
@@ -883,13 +906,19 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             b.onclick = o.click;
             document.documentElement.appendChild(b);   // outside the body, which Event Horizon swaps
         }
-        b.dataset.mbCornerLabel = o.label; b.mbuIcon = o.icon; b.mbuBusyIcon = o.busyIcon || ''; b.mbuSpin = o.busySpin || 0;
+        if (b.dataset.mbCornerLabel !== o.label) b.dataset.mbCornerLabel = o.label;
+        b.mbuIcon = o.icon; b.mbuBusyIcon = o.busyIcon || ''; b.mbuSpin = o.busySpin || 0;
         // .status(t): the count beside it; .busy(on): while it works, a faint "···" where the count goes,
         // or the count so far, fading; .card(fn): a hover card, fn() → its HTML (mbuTipCard)
+        // A member sets its count from inside another script's render (Fuzzy Logic's in Event Horizon's), mostly to the
+        // count already there. Only a change restacks, and after that render is done: a restack reads every launcher's
+        // style, which in the middle of a render costs the whole page's restyle there and then (157ms, #1095).
+        var drawn = null;
         var show = function () { var busy = b.hasAttribute('data-mbu-busy'), t = b.mbuSt || (busy && !b.mbuBusyIcon ? '···' : '');
             var im = b.querySelector('img'), src = busy && !b.mbuSt && b.mbuBusyIcon || b.mbuIcon; if (im && src) spin(im, src);
-            if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus;
-            var r = document.documentElement; if (r.hasAttribute('data-mbu-dock') && b.isConnected) mbRestackCorner('br'); };   // update the dock's loading state and any peek
+            var key = t + '|' + busy; if (key === drawn) return; drawn = key;
+            if (t) { if (b.dataset.mbCornerStatus !== t) b.dataset.mbCornerStatus = t; } else if (b.hasAttribute('data-mb-corner-status')) delete b.dataset.mbCornerStatus;
+            var r = document.documentElement; if (r.hasAttribute('data-mbu-dock') && b.isConnected) mbuRestackSoon(); };   // update the dock's loading state and any peek
         // The busy icon turns by its rotate (never transform, which the hover's scale has), and on its way out it finishes
         // the turn decelerating evenly from full speed, a whole extra turn when it is nearly up, so it never stops short
         var spin = function (im, src) {
@@ -911,7 +940,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             b.mbuSettleA.onfinish = function () { b.mbuSettleA = null; show(); };
         };
         b.status = function (t) { b.mbuSt = t || ''; show(); };
-        b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };
+        b.busy = function (on) { if (!on !== !b.hasAttribute('data-mbu-busy')) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; } show(); };
         b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };
         // a bigger icon gets its size, even whole pixels, never a transform (the dock's CSS has why), folded too
         if (o.scale) { b.style.setProperty('--mbu-di', Math.round(17 * o.scale) * 2 + 'px'); b.style.setProperty('--mbu-di-p', Math.round(14 * o.scale) * 2 + 'px'); }
@@ -958,27 +987,46 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
         var row = mbuShared('cornerFlow') === 'row';
         var vv = window.visualViewport, gapX = 0, gapY = 0, html = document.documentElement;
-        // a launcher, not a panel: only those scale (First Contact's open card isn't one)
-        var small = function (el) { return el.offsetHeight <= 64 && el.offsetWidth <= 240; };
-        var size = Math.min(1.6, Math.max(0.6, Number(mbuShared('cornerSize')) || 1));
-        if (corner === 'br') html.style.setProperty('--mbu-cs', String(size));
+        var size = Math.min(1.6, Math.max(0.6, Number(mbuShared('cornerSize')) || 1)), scaled = size !== 1;
+        // All reads come first and all writes after them. A write between two reads makes the browser lay the
+        // page out again, once per launcher, and a write of the value already there still costs a restyle (#1095).
+        var put = function (el, k, v) { if (el.style[k] !== v) el.style[k] = v; };
+        var px = function (x) { return Math.round(x * 100) / 100 + 'px'; };
+        if (corner === 'br' && html.style.getPropertyValue('--mbu-cs') !== String(size)) html.style.setProperty('--mbu-cs', String(size));
         var peek = function (el) { return el.getAttribute('data-mbu-docked') === 'peek'; };
+        // what a fixed element is placed against, measured: clientWidth leaves out a scrollbar but is the screen's width on a phone, where the page is wider (360 of 780), and innerWidth is the reverse
+        var probe = null;
+        if (vv) { probe = document.createElement('div'); probe.style.cssText = 'position:fixed;left:0;right:0;height:0;visibility:hidden;pointer-events:none'; html.appendChild(probe); }
+        var edge = html.hasAttribute('data-mbu-dock') ? 6 : 14;   // docked (Event Horizon), nearer the edge: the page keeps a column clear for them
+        var peeks = [], order = corner === 'br' && mbuShared('dockOrder');
+        order = Array.isArray(order) ? order : null;
+        var byRank = function (a, b) { return mbuCornerRank(a, order) - mbuCornerRank(b, order); };
+        var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+            // offsetParent is always null for position:fixed, so it can't tell visibility here
+            .filter(function (el) { return !el.hidden && getComputedStyle(el).display !== 'none'; })
+            .filter(function (el) { if (el.getAttribute('data-mbu-docked') !== 'peek') return true; peeks.push(el); return false; })
+            .sort(byRank);
+        // every size in one layout; offsetWidth and offsetHeight leave scale and position out, so they hold through the writes below
+        var dim = new Map();
+        els.concat(peeks).forEach(function (el) { dim.set(el, { w: el.offsetWidth, h: el.offsetHeight }); });
+        var fixedW = probe ? probe.offsetWidth : 0;
+        if (probe) probe.remove();
+        // a launcher, not a panel: only those scale (First Contact's open card isn't one)
+        var small = function (el) { var d = dim.get(el); return d.h <= 64 && d.w <= 240; };
+        var grown = function (el) { return scaled && small(el); };
+        var origin = (right ? 'right ' : 'left ') + (bottom ? 'bottom' : 'top');   // the order the browser reads it back in
         var fit = function (el) {
-            var on = size !== 1 && small(el);
-            if (on) { el.style.scale = String(size); el.setAttribute('data-mb-corner-scaled', ''); }
+            var on = grown(el);
+            if (on) { put(el, 'scale', String(size)); if (!el.hasAttribute('data-mb-corner-scaled')) el.setAttribute('data-mb-corner-scaled', ''); }
             else if (el.hasAttribute('data-mb-corner-scaled')) { el.style.scale = ''; el.removeAttribute('data-mb-corner-scaled'); }
             // a launcher's peek scale(.8) shrinks it toward the corner too, so the stack below can centre what is drawn
-            el.style.transformOrigin = on || peek(el) ? (bottom ? 'bottom ' : 'top ') + (right ? 'right' : 'left') : '';
+            put(el, 'transformOrigin', on || peek(el) ? origin : '');
         };
         if (vv) {
-            // what a fixed element is placed against, measured: clientWidth leaves out a scrollbar but is the screen's width on a phone, where the page is wider (360 of 780), and innerWidth is the reverse
-            var box = document.createElement('div'); box.style.cssText = 'position:fixed;left:0;right:0;height:0;visibility:hidden;pointer-events:none';
-            document.documentElement.appendChild(box); var fixedW = box.offsetWidth; box.remove();
             gapX = Math.max(0, right ? fixedW - vv.offsetLeft - vv.width : vv.offsetLeft);
             gapY = Math.max(0, bottom ? window.innerHeight - vv.offsetTop - vv.height : vv.offsetTop);
-            var root = document.documentElement;
-            if (!root.hasAttribute('data-mb-corner-vv')) {   // one listener for every script's copy
-                root.setAttribute('data-mb-corner-vv', '');
+            if (!html.hasAttribute('data-mb-corner-vv')) {   // one listener for every script's copy
+                html.setAttribute('data-mb-corner-vv', '');
                 var queued = false;
                 var again = function () {
                     if (queued) return;
@@ -988,41 +1036,38 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
                 vv.addEventListener('resize', again);
                 vv.addEventListener('scroll', again);
                 // the layout viewport can change alone, with no event: a full-screen view pins the page's body
-                // (780px → the screen's width); the body's size is what moves then
+                // (780px → the screen's width); the body's width is what moves then. Its height grows with the
+                // page as it loads, which moves no launcher, so a change of height alone restacks nothing (#1095).
+                if (window.ResizeObserver && document.body) {
+                    var bodyW = -1;
+                    new window.ResizeObserver(function (es) { var w = es[0] && es[0].contentRect.width; if (w === bodyW) return; bodyW = w; again(); }).observe(document.body);
+                }
                 window.addEventListener('resize', again);
-                if (window.ResizeObserver && document.body) new window.ResizeObserver(again).observe(document.body);
             }
         }
-        var edge = document.documentElement.hasAttribute('data-mbu-dock') ? 6 : 14;   // docked (Event Horizon), nearer the edge: the page keeps a column clear for them
-        var peeks = [], order = corner === 'br' && mbuShared('dockOrder');
-        order = Array.isArray(order) ? order : null;
-        var byRank = function (a, b) { return mbuCornerRank(a, order) - mbuCornerRank(b, order); };
-        var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
-            // offsetParent is always null for position:fixed, so it can't tell visibility here
-            .filter(function (el) { return !el.hidden && getComputedStyle(el).display !== 'none'; })
-            .filter(function (el) { if (el.getAttribute('data-mbu-docked') !== 'peek') return true; peeks.push(el); return false; })
-            .sort(byRank);
         // launchers share one centre line across the flow: a 34px one beside the 40px dock button sat
         // flush to the edge instead, off centre by half the difference, times the corner's size
         // what is drawn across: the corner's size, and a peeking launcher's scale(.8) as well (a dock entry is laid out smaller)
-        var across = function (el) { return (row ? el.offsetHeight : el.offsetWidth) * (el.hasAttribute('data-mb-corner-scaled') ? size : 1) * (peek(el) && !el.classList.contains('mbu-dock-item') ? 0.8 : 1); };
+        var across = function (el) { var d = dim.get(el); return (row ? d.h : d.w) * (grown(el) ? size : 1) * (peek(el) && !el.classList.contains('mbu-dock-item') ? 0.8 : 1); };
         els.concat(peeks).forEach(fit);
         var lane = 0;
         els.concat(peeks).forEach(function (el) { if (small(el)) lane = Math.max(lane, across(el)); });
         var inset = function (el) { return small(el) ? Math.round((lane - across(el)) / 2) : 0; };
+        var place = function (el, along) {
+            put(el, bottom ? 'bottom' : 'top', px(gapY + (row ? edge + inset(el) : along)));
+            put(el, right ? 'right' : 'left', px(gapX + (row ? along : edge + inset(el))));
+            put(el, right ? 'left' : 'right', 'auto');
+        };
         var pos = edge;
         els.forEach(function (el) {
-            el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge + inset(el) : pos)) + 'px';
-            el.style[right ? 'right' : 'left'] = (gapX + (row ? pos : edge + inset(el))) + 'px';
-            el.style[right ? 'left' : 'right'] = 'auto';
-            pos += (row ? el.offsetWidth : el.offsetHeight) * (el.hasAttribute('data-mb-corner-scaled') ? size : 1) + 8;
+            place(el, pos);
+            var d = dim.get(el);
+            pos += (row ? d.w : d.h) * (grown(el) ? size : 1) + 8;
         });
         // the folded dock's peeking entries: in a line from its button, along the stack's flow
         var side = edge + 44 * size;
         peeks.sort(byRank).forEach(function (el) {
-            el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge + inset(el) : side)) + 'px';
-            el.style[right ? 'right' : 'left'] = (gapX + (row ? side : edge + inset(el))) + 'px';
-            el.style[right ? 'left' : 'right'] = 'auto';
+            place(el, side);
             var d = Math.round(side - edge);   // its way to the dock button, along the flow
             mbuPeekMove(el, row ? (right ? d : -d) : 0, row ? 0 : (bottom ? d : -d));
             side += 36 * size;

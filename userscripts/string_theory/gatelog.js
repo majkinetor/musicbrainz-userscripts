@@ -81,6 +81,8 @@ function stGateTab() { try { return sessionStorage.getItem(ST_GATE_KEY + '-tab')
 // every tab's events, oldest first, each with its tab id
 function stGateEvents() {
   var out = [];
+  // this tab's newest events wait in memory up to a second (mbnTrace): write them first
+  try { if (globalThis.__mbnTrace && globalThis.__mbnTrace.flush) globalThis.__mbnTrace.flush(); } catch (e) { /* none yet */ }
   try {
     for (var i = 0; i < localStorage.length; i++) {
       var k = localStorage.key(i);
