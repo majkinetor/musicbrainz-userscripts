@@ -42,6 +42,8 @@ export const MBN_KEY = 'mbu:mb-gate';
 export const MBN_VERSION = 1;
 /** The Web Lock that serialises reading and writing it. */
 export const MBN_LOCK = 'mbu-mb-gate';
+/** How long the lock is kept after a booking, for the write to reach every other tab (see mbnState). */
+export const MBN_LOCK_HOLD = 30;
 /** The longest one throttle holds everyone. */
 export const MBN_MAX_HOLD = 60000;
 /** The longest one lead lasts without being renewed: a page that stops asking frees the queue. */
@@ -91,9 +93,13 @@ export async function mbnState(fn) {
         try { localStorage.setItem(MBN_KEY, JSON.stringify({ ...s, tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
         return out;
     };
-    // The lock is held only for rw()'s synchronous moment, so a wait of seconds means it is
-    // stuck (a frozen or sandboxed holder): give up on it and go unlocked rather than hang
-    // every request behind it.
+    // The lock is held for rw()'s synchronous moment and MBN_LOCK_HOLD after, so a wait of seconds
+    // means it is stuck (a frozen or sandboxed holder): give up on it and go unlocked rather than
+    // hang every request behind it.
+    // The hold: Chromium hands a localStorage write to another tab's process a moment later, so a
+    // tab taking the lock right after us could read the schedule before our booking and book the
+    // same slot (two tabs at once sent four in a burst of three). Our caller has its answer at
+    // once; only the next holder waits the hold out.
     let expired = false, settled = false;
     try {
         if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) {
@@ -106,8 +112,14 @@ export async function mbnState(fn) {
             });
             // Some userscript bridges never settle the request on abort. The timer
             // must release our wait itself; a late grant must not book twice.
-            const locked = navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, () => expired ? undefined : rw());
-            return await Promise.race([locked, timeout]);
+            let done;
+            const answered = new Promise((res, rej) => { done = { res, rej }; });
+            navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, async () => {
+                if (expired) return;
+                try { done.res(rw()); } catch (e) { done.rej(e); return; }
+                await mbnSleep(MBN_LOCK_HOLD);
+            }).catch(e => done.rej(e));
+            return await Promise.race([answered, timeout]);
         }
     } catch (e) { /* no Web Locks here (an insecure or sandboxed context), or stuck: unlocked, like a lone script */ } finally { settled = true; }
     return rw();
@@ -817,6 +829,6 @@ export function mbnReverify(url, init, o) {
 
 /** What sync-gate.mjs inlines, in order. */
 export const MBN_INLINE = {
-    consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_MAX_HOLD, MBN_MAX_LEAD, MBN_TRACE_MAX, MBN_MERGE_WAIT, MBN_CACHE_TTL, MBN_CACHE_MAX, MBN_INC_ALONE },
+    consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_LOCK_HOLD, MBN_MAX_HOLD, MBN_MAX_LEAD, MBN_TRACE_MAX, MBN_MERGE_WAIT, MBN_CACHE_TTL, MBN_CACHE_MAX, MBN_INC_ALONE },
     fns: [mbnGated, mbnState, mbnSleep, mbnRid, mbnTrace, mbnSlot, mbnLead, mbnAnswer, mbnFetch, mbnEdited, mbnEditEpoch, mbnCacheUrl, mbnCacheGet, mbnCachePut, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
 };

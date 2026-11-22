@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.171225
+// @version      2026.11.22.172551
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -32,6 +32,7 @@
   const MBN_KEY = "mbu:mb-gate";
   const MBN_VERSION = 1;
   const MBN_LOCK = "mbu-mb-gate";
+  const MBN_LOCK_HOLD = 30;
   const MBN_MAX_HOLD = 60000;
   const MBN_MAX_LEAD = 10000;
   const MBN_TRACE_MAX = 400;
@@ -66,9 +67,13 @@
           try { localStorage.setItem(MBN_KEY, JSON.stringify({ ...s, tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
           return out;
       };
-      // The lock is held only for rw()'s synchronous moment, so a wait of seconds means it is
-      // stuck (a frozen or sandboxed holder): give up on it and go unlocked rather than hang
-      // every request behind it.
+      // The lock is held for rw()'s synchronous moment and MBN_LOCK_HOLD after, so a wait of seconds
+      // means it is stuck (a frozen or sandboxed holder): give up on it and go unlocked rather than
+      // hang every request behind it.
+      // The hold: Chromium hands a localStorage write to another tab's process a moment later, so a
+      // tab taking the lock right after us could read the schedule before our booking and book the
+      // same slot (two tabs at once sent four in a burst of three). Our caller has its answer at
+      // once; only the next holder waits the hold out.
       let expired = false, settled = false;
       try {
           if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) {
@@ -81,8 +86,14 @@
               });
               // Some userscript bridges never settle the request on abort. The timer
               // must release our wait itself; a late grant must not book twice.
-              const locked = navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, () => expired ? undefined : rw());
-              return await Promise.race([locked, timeout]);
+              let done;
+              const answered = new Promise((res, rej) => { done = { res, rej }; });
+              navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, async () => {
+                  if (expired) return;
+                  try { done.res(rw()); } catch (e) { done.rej(e); return; }
+                  await mbnSleep(MBN_LOCK_HOLD);
+              }).catch(e => done.rej(e));
+              return await Promise.race([answered, timeout]);
           }
       } catch (e) { /* no Web Locks here (an insecure or sandboxed context), or stuck: unlocked, like a lone script */ } finally { settled = true; }
       return rw();

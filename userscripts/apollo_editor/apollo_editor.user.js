@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.164333
+// @version      2026.11.22.172551
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -82,6 +82,7 @@
   const MBN_KEY = "mbu:mb-gate";
   const MBN_VERSION = 1;
   const MBN_LOCK = "mbu-mb-gate";
+  const MBN_LOCK_HOLD = 30;
   const MBN_MAX_HOLD = 60000;
   const MBN_MAX_LEAD = 10000;
   const MBN_TRACE_MAX = 400;
@@ -116,9 +117,13 @@
           try { localStorage.setItem(MBN_KEY, JSON.stringify({ ...s, tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
           return out;
       };
-      // The lock is held only for rw()'s synchronous moment, so a wait of seconds means it is
-      // stuck (a frozen or sandboxed holder): give up on it and go unlocked rather than hang
-      // every request behind it.
+      // The lock is held for rw()'s synchronous moment and MBN_LOCK_HOLD after, so a wait of seconds
+      // means it is stuck (a frozen or sandboxed holder): give up on it and go unlocked rather than
+      // hang every request behind it.
+      // The hold: Chromium hands a localStorage write to another tab's process a moment later, so a
+      // tab taking the lock right after us could read the schedule before our booking and book the
+      // same slot (two tabs at once sent four in a burst of three). Our caller has its answer at
+      // once; only the next holder waits the hold out.
       let expired = false, settled = false;
       try {
           if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) {
@@ -131,8 +136,14 @@
               });
               // Some userscript bridges never settle the request on abort. The timer
               // must release our wait itself; a late grant must not book twice.
-              const locked = navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, () => expired ? undefined : rw());
-              return await Promise.race([locked, timeout]);
+              let done;
+              const answered = new Promise((res, rej) => { done = { res, rej }; });
+              navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, async () => {
+                  if (expired) return;
+                  try { done.res(rw()); } catch (e) { done.rej(e); return; }
+                  await mbnSleep(MBN_LOCK_HOLD);
+              }).catch(e => done.rej(e));
+              return await Promise.race([answered, timeout]);
           }
       } catch (e) { /* no Web Locks here (an insecure or sandboxed context), or stuck: unlocked, like a lone script */ } finally { settled = true; }
       return rw();

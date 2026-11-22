@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.164333
+// @version      2026.11.22.172551
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -80,6 +80,7 @@
   const MBN_KEY = "mbu:mb-gate";
   const MBN_VERSION = 1;
   const MBN_LOCK = "mbu-mb-gate";
+  const MBN_LOCK_HOLD = 30;
   const MBN_MAX_HOLD = 60000;
   const MBN_MAX_LEAD = 10000;
   const MBN_TRACE_MAX = 400;
@@ -114,9 +115,13 @@
           try { localStorage.setItem(MBN_KEY, JSON.stringify({ ...s, tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
           return out;
       };
-      // The lock is held only for rw()'s synchronous moment, so a wait of seconds means it is
-      // stuck (a frozen or sandboxed holder): give up on it and go unlocked rather than hang
-      // every request behind it.
+      // The lock is held for rw()'s synchronous moment and MBN_LOCK_HOLD after, so a wait of seconds
+      // means it is stuck (a frozen or sandboxed holder): give up on it and go unlocked rather than
+      // hang every request behind it.
+      // The hold: Chromium hands a localStorage write to another tab's process a moment later, so a
+      // tab taking the lock right after us could read the schedule before our booking and book the
+      // same slot (two tabs at once sent four in a burst of three). Our caller has its answer at
+      // once; only the next holder waits the hold out.
       let expired = false, settled = false;
       try {
           if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) {
@@ -129,8 +134,14 @@
               });
               // Some userscript bridges never settle the request on abort. The timer
               // must release our wait itself; a late grant must not book twice.
-              const locked = navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, () => expired ? undefined : rw());
-              return await Promise.race([locked, timeout]);
+              let done;
+              const answered = new Promise((res, rej) => { done = { res, rej }; });
+              navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, async () => {
+                  if (expired) return;
+                  try { done.res(rw()); } catch (e) { done.rej(e); return; }
+                  await mbnSleep(MBN_LOCK_HOLD);
+              }).catch(e => done.rej(e));
+              return await Promise.race([answered, timeout]);
           }
       } catch (e) { /* no Web Locks here (an insecure or sandboxed context), or stuck: unlocked, like a lone script */ } finally { settled = true; }
       return rw();
