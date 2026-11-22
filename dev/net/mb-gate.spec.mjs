@@ -283,6 +283,29 @@ test('a hold keeps the queue in its order: a request booked after it does not ov
   check(r.at.B >= 1900 && r.at.C - r.at.B >= 800 && r.at.D - r.at.C >= 800, `after the hold, one a second (${JSON.stringify(r.at)})`);
 });
 
+// log: a search's 503 sent its retry to the back of a 13-request queue three times, 8-12 s each,
+// and it gave up while requests booked after it got through; a retry keeps its place at the head
+test('a retry after a 503 leaves first when the hold ends, ahead of the queue behind it', { tag: ['@unit'] }, async ({ context }) => {
+  const a = await tab(context);
+  const r = await a.evaluate(async () => {
+    localStorage.clear();
+    await mbnState(s => { s.cool = Date.now() - 1; s.hot = 1; });   // throttled a moment ago: no burst
+    const t0 = Date.now(), order = [], at = {};
+    let first = true;
+    window.fetch = async () => {
+      if (first) { first = false; await new Promise(z => setTimeout(z, 50)); return new Response('{}', { status: 503, headers: { 'Retry-After': '1' } }); }
+      order.push('X'); at.X = Date.now() - t0; return new Response('{}', { status: 200 });
+    };
+    const x = mbnFetch('/ws/2/x');   // slot 0: sent at once, its 503 comes back 50 ms later
+    while (first) await new Promise(z => setTimeout(z, 5));   // the others queue once it is sent
+    const queued = ['B', 'C', 'D'].map(k => mbnSlot({}).then(() => { order.push(k); at[k] = Date.now() - t0; }));   // slots at 1, 2 and 3 s
+    await Promise.all([x, ...queued]);
+    return { order: order.join(''), at };
+  });
+  check(r.order === 'XBCD', `the retry leaves before the requests queued behind it (${r.order}, ${JSON.stringify(r.at)})`);
+  check(r.at.B - r.at.X >= 800 && r.at.C - r.at.B >= 800 && r.at.D - r.at.C >= 800, `still one a second (${JSON.stringify(r.at)})`);
+});
+
 test('a page request keeps trying past four throttles; a background one stops at four', { tag: ['@unit'] }, async ({ context }) => {
   const a = await tab(context);
   const r = await a.evaluate(async () => {
