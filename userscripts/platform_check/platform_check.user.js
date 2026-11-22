@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.22.122816
+// @version      2026.11.22.133049
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -244,7 +244,8 @@ async function mbnSlot(o) {
     // again, so they leave one a second instead of all together into a fresh 503
     let booked = null, rebooked = false;
     const book = () => mbnState(s => {
-        const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
+        // a search also waits out the search-shed hold: booked with it, the log names the real wait
+        const now = Date.now(), cool = Math.max(s.cool || 0, o.search ? s.scool || 0 : 0), tat = s.tat || 0;
         // an interactive request (the page's own) never queues behind the background budget: it
         // has its own line (itat), a burst then one a second, so a page's handful of lookups don't
         // all leave at once into a 503 (and while MusicBrainz is throttling, no burst at all)
@@ -5153,9 +5154,22 @@ function pcGmRequest(opts, resolve, n) {
     req = GM_xmlhttpRequest(opts);
     if (n != null && req && req.abort) PC_SCAN.live.add(req);
 }
-async function gmGet(url, o) {
+// the same MusicBrainz read asked again while the first is out shares its answer, per scan:
+// a cancelled scan's read never answers, so a later scan must not wait on it
+const PC_MB_LIVE = new Map();
+function gmGet(url, o) {
     if (!mbnGated(url)) return gmGetRaw(url, o);
     const n = o && 'scan' in o ? o.scan : pcScanOf();   // { scan: null }: not a scan's, never dropped
+    const key = n + ' ' + url + ' ' + JSON.stringify((o && o.headers) || {}) + ' ' + ((o && o.responseType) || '');
+    let p = PC_MB_LIVE.get(key);
+    if (p) return p;
+    p = gmGetGated(url, o, n);
+    PC_MB_LIVE.set(key, p);
+    const drop = () => { if (PC_MB_LIVE.get(key) === p) PC_MB_LIVE.delete(key); };
+    p.then(drop, drop);
+    return p;
+}
+async function gmGetGated(url, o, n) {
     for (let attempt = 1; ; attempt++) {
         // a cancelled scan's read leaves the gate's queue at once and gives its slot back
         const label = '/ws/2/' + url.split('/ws/2/').pop();   // the answer carries it too: the Gate log pairs the two by it
