@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.22.145804
+// @version      2026.11.22.161926
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -546,7 +546,9 @@ function mbnEditEpoch() {
         g.watch = true;
         try { document.addEventListener('submit', e => { const f = e.target; if (f && /^post$/i.test(f.method || '')) mbnEdited(); }, true); } catch (e) {}
     }
-    try { return localStorage.getItem(MBN_KEY + '-edit') || '0'; } catch (e) { return '0'; }
+    // mbLastWrite: the suite's shared time of the last write to MusicBrainz (Event Horizon's kept answers use it too),
+    // so an edit made where the gate saw no submit (the release editor's own save, another script) is one all the same
+    try { return (localStorage.getItem(MBN_KEY + '-edit') || '0') + '|' + (localStorage.getItem('mbLastWrite') || '0'); } catch (e) { return '0'; }
 }
 function mbnCacheUrl(key, inc) {
     return 'https://mbn-cache.invalid/?k=' + encodeURIComponent(key) + '&inc=' + encodeURIComponent(Array.from(inc).sort().join(' '));

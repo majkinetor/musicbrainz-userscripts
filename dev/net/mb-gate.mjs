@@ -589,7 +589,9 @@ export function mbnEditEpoch() {
         g.watch = true;
         try { document.addEventListener('submit', e => { const f = e.target; if (f && /^post$/i.test(f.method || '')) mbnEdited(); }, true); } catch (e) {}
     }
-    try { return localStorage.getItem(MBN_KEY + '-edit') || '0'; } catch (e) { return '0'; }
+    // mbLastWrite: the suite's shared time of the last write to MusicBrainz (Event Horizon's kept answers use it too),
+    // so an edit made where the gate saw no submit (the release editor's own save, another script) is one all the same
+    try { return (localStorage.getItem(MBN_KEY + '-edit') || '0') + '|' + (localStorage.getItem('mbLastWrite') || '0'); } catch (e) { return '0'; }
 }
 
 /** The cache entry URL for a read: its key and its sorted incs. */
