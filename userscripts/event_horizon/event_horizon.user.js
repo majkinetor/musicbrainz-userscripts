@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.22.145804
+// @version      2026.11.22.153934
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -14122,7 +14122,7 @@ function plyDraw() {
     const cov = !bar && S.playerCover && (t.rel || t.rg) && !(t.rel && PLY_CV.get(t.rel) === '') ? (t.rel
         ? `<a class="ply-cov" href="${MB}/release/${t.rel}" target="_blank" rel="noopener" aria-label="Open the release" data-tip="${esc((t.relTitle || 'Release') + '\nClick: open the release in a new tab\nRight-click: copy “title - artist”')}" data-plycopy="${esc(t.title + ' - ' + t.artist)}"><img${PLY_CV.has(t.rel) ? ` src="${esc(PLY_CV.get(t.rel))}"` : t.front ? ` src="${esc(caaSrc('release', t.rel))}"` : ''} data-plyrel="${t.rel}" alt=""></a>`
         : PLY_RGCV.get(t.rg) !== '' ? `<a class="ply-cov" href="${MB}/recording/${t.rid}" target="_blank" rel="noopener" aria-label="Open the recording" data-tip="${esc(t.title + '\nClick: open the recording in a new tab\nRight-click: copy “title - artist”')}" data-plycopy="${esc(t.title + ' - ' + t.artist)}"><img src="${esc(PLY_RGCV.get(t.rg) || caaSrc('release-group', t.rg))}" alt=""></a>` : '') : '';
-    const prog = ply.ctl && t.len ? `<span class="ply-pr sk" data-ply="seek" aria-label="Position"><i></i>${bar ? '' : '<b class="ply-hv"></b>'}</span>` : '<span class="ply-pr" aria-hidden="true"><i></i></span>';
+    const prog = ply.ctl && t.len ? `<span class="ply-pr seek" data-ply="seek" aria-label="Position"><i></i>${bar ? '' : '<b class="ply-hv"></b>'}</span>` : '<span class="ply-pr" aria-hidden="true"><i></i></span>';
     const menu = `<button type="button" class="ply-b ply-lb${lb && t.ok != null ? ' sent' : ''}" data-ply="lb" aria-haspopup="menu" aria-label="Playing from ${esc(p.name)}" data-tip="Playing from ${esc(p.name)}${lb && t.ok != null ? '\nListen sent' : ''}\nClick: sources, ListenBrainz, stop">${icon(p, 18)}</button>`;
     const v = +S.playerVol, vol = plyHasVol() ? `<span class="ply-vg"><button type="button" class="ply-b" data-ply="mute" aria-pressed="${!v}" aria-label="${v ? 'Mute' : 'Unmute'}" data-tip="${v ? 'Mute' : 'Unmute'}">${plyVolIc(v)}</button><span class="ply-vp"><b class="ply-vn">${v}</b><input type="range" class="ply-vol" min="0" max="100" step="1" value="${v}" style="--p:${v}%" aria-label="Volume"></span></span>` : '';
     plyKeepCovers(plyCtl, () => { plyCtl.innerHTML = `<span class="ply-g">${nav}</span>${cov}${name}${prog}${vol}${menu}`; });
@@ -14199,7 +14199,7 @@ function plyWheel(ev) {
 }
 // the time under the pointer, over the chip's bar
 function plyHover(ev) {
-    const pr = ev.target.closest && ev.target.closest('.pb .ply-pr.sk'), hv = pr && pr.querySelector('.ply-hv'), t = ply.q[ply.i];
+    const pr = ev.target.closest && ev.target.closest('.pb .ply-pr.seek'), hv = pr && pr.querySelector('.ply-hv'), t = ply.q[ply.i];
     if (!hv || !t || !t.len) return;
     const r = pr.getBoundingClientRect(), x = Math.max(0, Math.min(r.width, ev.clientX - r.left));
     hv.textContent = dur(Math.round(x / r.width * t.len));
@@ -14824,8 +14824,8 @@ const PLY_CSS = `
 .ply-ctl .ply-tm{flex:none;min-width:2.6em;font-size:11px;font-variant-numeric:tabular-nums;color:var(--muted,#777)}
 .ply-ctl .ply-tm:last-child{text-align:right}
 .ply-ctl .ply-pr{flex:1;height:3px;border-radius:2px;background:color-mix(in srgb,currentColor 15%,transparent);overflow:hidden}
-.ply-ctl .ply-pr.sk{cursor:pointer;background-clip:content-box;padding:6px 0;height:3px;box-sizing:content-box}
-.ply-ctl .ply-pr.sk:hover{height:5px;padding:5px 0}
+.ply-ctl .ply-pr.seek{cursor:pointer;background-clip:content-box;padding:6px 0;height:3px;box-sizing:content-box}
+.ply-ctl .ply-pr.seek:hover{height:5px;padding:5px 0}
 .ply-ctl .ply-pr i{display:block;width:0;height:100%;background:var(--accent,#ba478f)}
 .ply-ctl .ply-sc{display:inline-flex;align-items:center;justify-content:center;flex:none;width:30px;height:30px;padding:0;border:0;border-radius:7px;background:none;color:inherit;cursor:pointer}
 .ply-ctl .ply-sc img,.ply-ctl .ply-sc svg{width:18px;height:18px;display:block}
@@ -14878,12 +14878,12 @@ html.eh-ply-win .ply-wl{order:2;flex:1;min-height:0;overflow:hidden auto;overscr
 .kicker .ply-ctl .ply-b svg{color:inherit}
 .pb .ply-cov{flex:none;display:block;position:relative;align-self:stretch;height:auto;margin:5px 0 2px;aspect-ratio:1;border-radius:2px;overflow:hidden;background:color-mix(in srgb,currentColor 8%,transparent)}.pb .ply-cov:not(:has(img[src])){display:none}.pb .ply-cov img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover}.pb .ply-cov:hover{outline:2px solid var(--accent,#ba478f);outline-offset:1px}.pb .ply-t{max-width:260px}#eh-pin .pb .ply-t{max-width:none;flex:0 1 auto}
 .pb .ply-pr{position:absolute;left:0;right:0;bottom:0;width:auto;height:3px;border-radius:0;overflow:visible}
-.pb .ply-pr.sk{padding:8px 0 0;height:3px}
-.pb .ply-pr.sk:hover{height:5px;padding:6px 0 0}
+.pb .ply-pr.seek{padding:8px 0 0;height:3px}
+.pb .ply-pr.seek:hover{height:5px;padding:6px 0 0}
 .pb .ply-pr i{position:relative}
-.pb .ply-pr.sk:hover i::after{content:"";position:absolute;right:-6px;top:50%;width:12px;height:12px;margin-top:-6px;border-radius:50%;background:var(--accent,#ba478f)}
+.pb .ply-pr.seek:hover i::after{content:"";position:absolute;right:-6px;top:50%;width:12px;height:12px;margin-top:-6px;border-radius:50%;background:var(--accent,#ba478f)}
 .pb .ply-hv{display:none;position:absolute;bottom:12px;transform:translateX(-50%);padding:1px 5px;border-radius:4px;background:var(--text,#222);color:var(--surface,#fff);font:600 11px/1.4 system-ui,sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:none}
-.pb .ply-pr.sk:hover .ply-hv:not(:empty){display:block}
+.pb .ply-pr.seek:hover .ply-hv:not(:empty){display:block}
 
 #eh-ply>.ply-ctl.pb:not(.pa){display:none!important}
 #eh-ply>.ply-ctl.pb{position:fixed;right:16px;top:84px;height:40px;max-width:calc(100vw - 32px);box-sizing:border-box;margin:0;padding:0 4px 0 6px;background:var(--surface,#fff);color:var(--text,#222);border:1px solid var(--line,#ddd);border-radius:999px}
