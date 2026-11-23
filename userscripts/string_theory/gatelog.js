@@ -53,17 +53,14 @@ var ST_GATE_CSS = ''
   + '.st-gate-ent{display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-right:5px;flex:none}'
   + '#st-gate .st-gate-facts{font-size:12px;color:var(--mbu-text-weak);padding:0 0 6px}#st-gate .st-gate-k{font-weight:600;color:var(--mbu-accent,var(--mbu-text))}#st-gate .st-gate-url{width:0;min-width:100%;box-sizing:border-box;font:12px/1.4 monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;user-select:text;padding:4px 0 6px;color:var(--mbu-text)}#st-gate .st-gate-url.all{white-space:normal;word-break:break-all}'
   + '#st-gate td.l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40ch}'
-  + '#st-gate-bar{display:none;position:absolute;z-index:2;flex-direction:column;align-items:flex-start;gap:8px;padding:10px;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);max-width:calc(100% - 8px)}#st-gate-bar.open{display:flex}'
-  + '#st-gate-bar .st-gate-seg{flex-wrap:wrap}#st-gate-q{width:100%}'
-  + '#st-gate th.st-gate-mh{width:1%;text-align:right;padding:0 4px}#st-gate-menu{min-width:30px;min-height:26px;border:0;background:none;color:var(--mbu-accent-text);font:inherit;cursor:pointer;border-radius:var(--mbu-radius)}#st-gate-menu:hover,#st-gate-menu[aria-expanded=true]{background:var(--mbu-bg-hover)}'
+  + '#st-gate .st-gate-hosts{margin-right:12px}#st-gate .st-gate-hosts button{display:inline-flex;align-items:center;padding:0 8px}#st-gate .st-gate-hosts button[aria-pressed=false] svg{opacity:.35;filter:grayscale(1)}#st-gate .st-gate-mode{margin-right:6px}'
+  + '.st-gate-cfp label{display:flex;gap:6px;align-items:center;padding:4px 6px;cursor:pointer;border-radius:var(--mbu-radius);white-space:nowrap}.st-gate-cfp label:hover{background:var(--mbu-bg-hover)}'
   + '#st-gate-hud{margin-right:4px}#st-gate-hud[aria-pressed=true]{background:var(--mbu-accent-soft)}'
-  + '#st-gate-q{min-height:30px;box-sizing:border-box}'
   + '.st-gate-seg{display:inline-flex;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden}'
-  + '.st-gate-seg button,#st-gate-mine{min-height:30px;padding:0 11px;border:0;background:none;color:var(--mbu-accent-text);font:inherit;font-size:12px;cursor:pointer}'
+  + '.st-gate-seg button{min-height:30px;padding:0 11px;border:0;background:none;color:var(--mbu-accent-text);font:inherit;font-size:12px;cursor:pointer}'
   + '.st-gate-seg button+button{border-left:1px solid var(--mbu-border)}'
-  + '.st-gate-seg button:hover,#st-gate-mine:hover{background:var(--mbu-bg-hover)}'
-  + '.st-gate-seg button[aria-pressed=true],#st-gate-mine[aria-pressed=true]{background:var(--mbu-accent-soft)}'
-  + '#st-gate-mine{border:1px solid var(--mbu-border);border-radius:var(--mbu-radius)}'
+  + '.st-gate-seg button:hover{background:var(--mbu-bg-hover)}'
+  + '.st-gate-seg button[aria-pressed=true]{background:var(--mbu-accent-soft)}'
   // the requests
   + '#st-gate-body{flex:1 1 auto;min-height:0;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;border-top:1px solid var(--mbu-border-soft)}'
   + '#st-gate table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}'
@@ -688,7 +685,7 @@ function stGateBuild() {
   stGateRemember({ open: true });
   var st = stGateWinState();
   if (ST_GATE_SPANS.indexOf(st.span) >= 0) ST_GATE_SPAN = st.span;
-  var mine = !!st.mine, mode = st.mode || 'all', src = st.src || 'all', hide = st.hide || [], q = '', sig = '', opened = {}, cf = {}, lastGroups = [];
+  var mode = st.mode || 'all', hosts = st.hosts || { mb: st.src !== 'other', ext: st.src !== 'mb' }, hide = st.hide || [], sig = '', opened = {}, cf = {}, cft = {}, lastGroups = [];
   var pop = document.createElement('div');
   pop.id = 'st-gate'; pop.className = 'mbu-ui'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Network log');
   pop.innerHTML = '<div class="mbu-logpop-h"><b>Network log</b> <span class="st-gate-n"></span><span class="mbu-logpop-sp"></span>'
@@ -696,52 +693,29 @@ function stGateBuild() {
     + '<button type="button" id="st-gate-hud" data-tip="The time line in a small strip\nIt stays on screen when this window is closed">HUD</button>'
     + '<button type="button" class="mbu-logpop-copy" data-tip="Copy as Markdown\nThe state and every event, ready for a GitHub issue">⧉ Copy</button>'
     + '<button type="button" class="mbu-logpop-clear" data-tip="Clear the gate log\nThe events of every tab are deleted">Clear</button>'
+    + '<span class="st-gate-seg st-gate-mode" role="group" aria-label="Show"><button type="button" data-m="bad" data-tip="Only the requests that failed">Failed</button>'
+    + '<button type="button" data-m="re" data-tip="Only the requests that took more than one try">Retried</button></span>'
+    + '<span class="st-gate-seg st-gate-hosts" role="group" aria-label="Hosts"><button type="button" data-v="mb" data-tip="Requests to MusicBrainz">' + stIcon('musicbrainz', 14) + '</button>'
+    + '<button type="button" data-v="ext" data-tip="Requests to other sites\nThe gate logs them but does not pace them">' + stIcon('globe', 14) + '</button></span>'
     + '<button type="button" class="mbu-logpop-full" data-tip="Full screen\nA double-click on the title bar does the same">⛶</button>'
     + '<button type="button" class="mbu-logpop-min" data-tip="Minimize">–</button>'
     + '<button type="button" class="mbu-logpop-x" data-tip="Close">✕</button></div>'
     + '<div id="st-gate-state"></div><div id="st-gate-sum"></div><div id="st-gate-lanes"></div>'
-    + '<div id="st-gate-bar"><input id="st-gate-q" class="mbu-input" type="search" placeholder="Filter" autocomplete="off" data-tip="Show only the requests with this text\nIt matches the request, the script, the tab and the result">'
-    + '<span class="st-gate-seg" role="group" aria-label="Show"><button type="button" data-m="all" data-tip="Every request">All</button>'
-    + '<button type="button" data-m="bad" data-tip="Only the requests that failed">Failed</button>'
-    + '<button type="button" data-m="re" data-tip="Only the requests that took more than one try">Retried</button></span>'
-    + '<button type="button" id="st-gate-mine" data-tip="Show only the requests of this tab">This tab only</button>'
-    + '<span class="st-gate-seg st-gate-src" role="group" aria-label="Source"><button type="button" data-v="all" data-tip="Requests to every host">All hosts</button>'
-    + '<button type="button" data-v="mb" data-tip="Only the requests to MusicBrainz">MusicBrainz</button>'
-    + '<button type="button" data-v="other" data-tip="Only the requests to other hosts\nThe gate logs them but does not pace them">Other</button></span>'
-    + '<span class="st-gate-seg st-gate-cols" role="group" aria-label="Columns">' + ST_GATE_COLS.map(function (c) { return '<button type="button" data-c="' + c[0] + '" data-tip="Show or hide this column">' + c[1] + '</button>'; }).join('') + '</span></div>'
-    + '<div id="st-gate-body"><table><thead><tr><th>Time</th><th>Tab' + stGateCfBtn('tab') + '</th><th>Script' + stGateCfBtn('s') + '</th><th>Verb' + stGateCfBtn('m') + '</th><th>Reason' + stGateCfBtn('r') + '</th><th>Entity' + stGateCfBtn('e') + '</th><th>Site</th><th>Request' + stGateCfBtn('rq') + '</th><th>Tries' + stGateCfBtn('n') + '</th><th>Result' + stGateCfBtn('res') + '</th><th>Wait' + stGateCfBtn('wt') + '</th><th>Rate limit' + stGateCfBtn('rl') + '</th><th class="st-gate-mh"><button type="button" id="st-gate-menu" aria-haspopup="true" aria-expanded="false" data-tip="Filters and columns">☰</button></th></tr></thead><tbody></tbody></table></div>'
+    + '<div id="st-gate-body"><table><thead><tr><th>Time</th><th>Tab' + stGateCfBtn('tab') + '</th><th>Script' + stGateCfBtn('s') + '</th><th>Verb' + stGateCfBtn('m') + '</th><th>Reason' + stGateCfBtn('r') + '</th><th>Entity' + stGateCfBtn('e') + '</th><th>Site</th><th>Request' + stGateCfBtn('rq') + '</th><th>Tries' + stGateCfBtn('n') + '</th><th>Result' + stGateCfBtn('res') + '</th><th>Wait' + stGateCfBtn('wt') + '</th><th>Rate limit' + stGateCfBtn('rl') + '</th></tr></thead><tbody></tbody></table></div>'
     + '<div class="mbu-logpop-grip" data-tip="Resize"></div>';
   document.documentElement.appendChild(pop);   // outside the body, which Event Horizon swaps
   var $ = function (s) { return pop.querySelector(s); };
-  var body = $('tbody'), qEl = $('#st-gate-q'), mineBtn = $('#st-gate-mine'), scroller = $('#st-gate-body');
-  var seg = function () { Array.prototype.forEach.call(pop.querySelectorAll('.st-gate-seg button'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.m === mode)); }); };
-  seg(); mineBtn.setAttribute('aria-pressed', String(mine));
-  var srcSeg = function () { Array.prototype.forEach.call(pop.querySelectorAll('.st-gate-src button'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.v === src)); }); };
+  var body = $('tbody'), scroller = $('#st-gate-body');
+  var seg = function () { Array.prototype.forEach.call(pop.querySelectorAll('.st-gate-mode button'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.m === mode)); }); };
+  seg();
+  var srcSeg = function () { Array.prototype.forEach.call(pop.querySelectorAll('.st-gate-hosts button'), function (b) { b.setAttribute('aria-pressed', String(!!hosts[b.dataset.v])); }); };
   var colSeg = function () {
     ST_GATE_COLS.forEach(function (c) { pop.classList.toggle('hc' + c[0], hide.indexOf(c[0]) >= 0); });
-    Array.prototype.forEach.call(pop.querySelectorAll('.st-gate-cols button'), function (b) { b.setAttribute('aria-pressed', String(hide.indexOf(+b.dataset.c) < 0)); });
   };
-  var bar = $('#st-gate-bar'), menuBtn = $('#st-gate-menu');
-  var menu = function (on) {
-    bar.classList.toggle('open', on); menuBtn.setAttribute('aria-expanded', String(on));
-    if (!on) return;
-    var r = menuBtn.getBoundingClientRect(), p = pop.getBoundingClientRect();
-    bar.style.top = (r.bottom - p.top + 2) + 'px'; bar.style.right = Math.max(4, p.right - r.right) + 'px';
-    qEl.focus();
-  };
-  menuBtn.onclick = function (e) { e.stopPropagation(); menu(!bar.classList.contains('open')); };
-  pop.addEventListener('mousedown', function (e) { if (bar.classList.contains('open') && !bar.contains(e.target) && e.target !== menuBtn) menu(false); });
-  bar.addEventListener('keydown', function (e) { if (e.key === 'Escape') { e.stopPropagation(); menu(false); menuBtn.focus(); } });
   $('#st-gate-span').addEventListener('change', function () { ST_GATE_SPAN = +this.value; stGateRemember({ span: ST_GATE_SPAN }); sig = ''; draw(); });
   var hudBtn = $('#st-gate-hud'), hudSeg = function () { hudBtn.setAttribute('aria-pressed', String(!!stGateHudEl)); };
   srcSeg(); colSeg(); hudSeg();
-  pop.querySelector('.st-gate-src').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; src = b.dataset.v; srcSeg(); stGateRemember({ src: src }); draw(); });
-  pop.querySelector('.st-gate-cols').addEventListener('click', function (e) {
-    var b = e.target.closest('button'); if (!b) return;
-    var c = +b.dataset.c, i = hide.indexOf(c);
-    if (i >= 0) hide.splice(i, 1); else hide.push(c);
-    colSeg(); stGateRemember({ hide: hide });
-  });
+  pop.querySelector('.st-gate-hosts').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; hosts[b.dataset.v] = !hosts[b.dataset.v]; srcSeg(); stGateRemember({ hosts: hosts }); draw(); });
   hudBtn.onclick = function () { stGateHud(!stGateHudEl); hudSeg(); };
   var drawFailed = '', lanesHeld = false, shownIds = [];
   var draw = function () {
@@ -761,21 +735,20 @@ function stGateBuild() {
     if (!lanesHeld) $('#st-gate-lanes').innerHTML = stGateLanesHtml(groups, all, now, me);   // held still under the mouse, so a tip stays put
     lastGroups = groups;
     var shown = groups.filter(function (g) {
-      if (mine && g.tab !== me) return false;
       for (var ck in cf) if (stGateCfVal(g, ck) !== cf[ck]) return false;
-      if (src === 'mb' && g.h) return false;
-      if (src === 'other' && !g.h) return false;
+      for (var tk in cft) if (String(stGateCfVal(g, tk)).toLowerCase().indexOf(cft[tk]) < 0) return false;
+      if (!g.sys && (g.h ? !hosts.ext : !hosts.mb)) return false;
       if (mode === 'bad' && g.cls !== 'bad') return false;
       if (mode === 're' && (g.sys || g.tries.length < 2)) return false;
-      return !q || ((g.m || '') + ' ' + (g.h || '') + ' ' + (g.l || '') + ' ' + (g.u || '') + ' ' + (g.s || '') + ' ' + g.tab + ' ' + (g.label || '')).toLowerCase().indexOf(q) >= 0;
+      return true;
     });
     shownIds = shown.filter(function (g) { return !g.sys; }).map(function (g) { return g.id; });
     if (shownIds.length < n) {   // a filter hides some: say how many are left, and which filter
-      var why = [mine && 'this tab only', src === 'mb' && 'MusicBrainz', src === 'other' && 'other hosts', mode === 'bad' && 'failed', mode === 're' && 'retried', q && 'text'].concat(Object.keys(cf).map(function (k) { return { tab: 'tab', s: 'script', m: 'verb', rq: 'request', n: 'tries', res: 'result', wt: 'wait', rl: 'rate limit' }[k] || k; })).filter(Boolean).join(', ');
+      var why = [!hosts.mb && 'no MusicBrainz', !hosts.ext && 'no other sites', mode === 'bad' && 'failed', mode === 're' && 'retried'].concat(Object.keys(cf).concat(Object.keys(cft)).map(function (k) { return { tab: 'tab', s: 'script', m: 'verb', rq: 'request', n: 'tries', res: 'result', wt: 'wait', rl: 'rate limit' }[k] || k; })).filter(Boolean).join(', ');
       $('.st-gate-n').textContent = shownIds.length + ' of ' + n + ' requests shown' + (why ? ' (' + why + ')' : '');
     }
     // the funnel of every column that filters stands out
-    pop.querySelectorAll('.st-gate-cf').forEach(function (b) { b.classList.toggle('on', cf[b.dataset.cf] != null); });
+    pop.querySelectorAll('.st-gate-cf').forEach(function (b) { b.classList.toggle('on', cf[b.dataset.cf] != null || cft[b.dataset.cf] != null); });
     var key = shown.map(function (g) { return g.id + ':' + g.evs.length + ':' + g.label; }).join('|') + '#' + Object.keys(opened).join('|') + '#' + me;
     if (key === sig) return;
     sig = key;
@@ -835,13 +808,28 @@ function stGateBuild() {
   // a right click on a funnel clears that column's filter
   pop.addEventListener('contextmenu', function (e) {
     var b = e.target.closest && e.target.closest('.st-gate-cf');
-    if (!b) return;
+    if (!b) { if (e.target.closest && e.target.closest('thead')) { e.preventDefault(); colMenu(e); } return; }
     e.preventDefault();
-    delete cf[b.dataset.cf];
+    delete cf[b.dataset.cf]; delete cft[b.dataset.cf];
     b.classList.remove('on');
     cfClose(); draw();
   });
   var cfPop = null, cfClose = function () { if (cfPop) cfPop.remove(), cfPop = null; };
+  // the columns to show, from a right click on the header
+  var colMenu = function (e) {
+    cfClose();
+    cfPop = document.createElement('div'); cfPop.className = 'st-gate-cfp'; cfPop.dataset.k = '#cols';
+    cfPop.innerHTML = ST_GATE_COLS.map(function (c) { return '<label><input type="checkbox" data-c="' + c[0] + '"' + (hide.indexOf(c[0]) < 0 ? ' checked' : '') + '>' + c[1] + '</label>'; }).join('');
+    cfPop.addEventListener('change', function (ev) {
+      var c = +ev.target.dataset.c, i = hide.indexOf(c);
+      if (ev.target.checked) { if (i >= 0) hide.splice(i, 1); } else if (i < 0) hide.push(c);
+      colSeg(); stGateRemember({ hide: hide });
+    });
+    cfPop.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') cfClose(); });
+    document.body.appendChild(cfPop);
+    cfPop.style.left = Math.max(4, Math.min(window.innerWidth - cfPop.offsetWidth - 4, e.clientX)) + 'px';
+    cfPop.style.top = Math.max(4, Math.min(window.innerHeight - cfPop.offsetHeight - 4, e.clientY)) + 'px';
+  };
   var cfName = function (k, v) { return k === 'tab' ? (v === stGateTab() ? 'this tab' : v.slice(0, 8)) : v || '(none)'; };
   pop.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('.st-gate-cf');
@@ -854,19 +842,21 @@ function stGateBuild() {
     lastGroups.forEach(function (g) { if (!g.sys) { var v = stGateCfVal(g, k); cnt[v] = (cnt[v] || 0) + 1; } });
     var vals = Object.keys(cnt).sort(function (a, b) { return cnt[b] - cnt[a] || (a < b ? -1 : 1); });
     cfPop = document.createElement('div'); cfPop.className = 'st-gate-cfp'; cfPop.dataset.k = k;
-    cfPop.innerHTML = '<input type="text" placeholder="Filter" aria-label="Filter the values"><ul></ul>';
+    cfPop.innerHTML = '<input type="text" placeholder="Type to filter" aria-label="Filter the values"><ul></ul>';
     var inp = cfPop.querySelector('input'), ul = cfPop.querySelector('ul');
+    if (cft[k]) inp.value = cft[k];
     var fill = function () {
       var t = inp.value.trim().toLowerCase();
-      ul.innerHTML = (t ? '' : '<li data-v="" class="' + (cf[k] == null ? 'on' : '') + '"><span>All</span></li>') + vals.filter(function (v) { return !t || cfName(k, v).toLowerCase().indexOf(t) >= 0; }).map(function (v) {
+      ul.innerHTML = (t ? '<li data-t="' + stEsc(t) + '"><span>Contains “' + stEsc(t) + '”</span></li>' : '<li data-v="" class="' + (cf[k] == null && cft[k] == null ? 'on' : '') + '"><span>All</span></li>') + vals.filter(function (v) { return !t || cfName(k, v).toLowerCase().indexOf(t) >= 0; }).map(function (v) {
         return '<li data-v="' + stEsc(v) + '" data-set="1" class="' + (cf[k] === v ? 'on' : '') + '"><span>' + stEsc(cfName(k, v)) + '</span><b>' + cnt[v] + '</b></li>';
       }).join('');
       var first = ul.querySelector('li'); if (first) first.classList.add('act');
     };
     var pick = function (li) {
       if (!li) return;
-      if (li.dataset.set) cf[k] = li.dataset.v; else delete cf[k];
-      b.classList.toggle('on', cf[k] != null);
+      delete cf[k]; delete cft[k];
+      if (li.dataset.t) cft[k] = li.dataset.t; else if (li.dataset.set) cf[k] = li.dataset.v;
+      b.classList.toggle('on', cf[k] != null || cft[k] != null);
       cfClose(); draw();
     };
     inp.addEventListener('input', fill);
@@ -905,13 +895,11 @@ function stGateBuild() {
   document.addEventListener('click', openFromLanes);
   lanes.addEventListener('mouseenter', function () { lanesHeld = true; });
   lanes.addEventListener('mouseleave', function () { lanesHeld = false; draw(); });
-  qEl.addEventListener('input', function () { q = qEl.value.trim().toLowerCase(); draw(); });
-  $('.st-gate-seg').addEventListener('click', function (e) {
+  $('.st-gate-mode').addEventListener('click', function (e) {
     var b = e.target.closest('button');
     if (!b) return;
     mode = b.dataset.m === mode ? 'all' : b.dataset.m; seg(); stGateRemember({ mode: mode }); draw();
   });
-  mineBtn.onclick = function () { mine = !mine; mineBtn.setAttribute('aria-pressed', String(mine)); stGateRemember({ mine: mine }); draw(); };
   $('.mbu-logpop-copy').onclick = function () {
     stCopy(stGateMarkdown(stGateEvents(), stGateTab()), function (ok) { try { U.mbuToast(ok ? 'Network log copied' : 'Could not copy the network log'); } catch (e) { /* no toast */ } });
   };
@@ -991,7 +979,6 @@ function stGateBuild() {
     if (e.key !== 'Escape' || pop.classList.contains('min')) return;
     if (!pop.contains(e.target) && e.target.closest && e.target.closest('input,textarea,select,[contenteditable=""],[contenteditable="true"]')) return;
     e.preventDefault(); e.stopPropagation();
-    if (e.target === qEl && qEl.value) { qEl.value = ''; q = ''; draw(); return; }
     stGateClose();
   };
   window.addEventListener('keydown', onKey, true);
@@ -999,7 +986,7 @@ function stGateBuild() {
   stGateWin = {
     el: pop,
     off: function () { clearInterval(timer); window.removeEventListener('keydown', onKey, true); },
-    show: function () { if (pop.classList.contains('min')) minBtn.click(); try { qEl.focus(); } catch (e) { /* no focus */ } }
+    show: function () { if (pop.classList.contains('min')) minBtn.click(); try { pop.focus(); } catch (e) { /* no focus */ } }
   };
   draw();
 }
