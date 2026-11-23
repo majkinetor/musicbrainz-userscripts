@@ -40,6 +40,7 @@ var ST_GATE_CSS = ''
   + '.st-gl-pi{position:absolute;top:3px;display:flex;height:14px;margin-left:-35px;z-index:1}.st-gl-pi svg{width:14px;height:14px;display:block}.st-gl-zx{color:var(--mbu-accent);display:inline-block;width:34px;text-align:right;margin-right:6px;flex:none}.st-gl-lt{display:block;width:14px;height:14px;border-radius:3px;color:#fff;font:700 9px/14px system-ui,sans-serif;text-align:center}.st-gl-pi .st-gl-ic{position:static;width:14px;height:14px;margin:0 3px 0 0;flex:none}'
   + '.st-gl-cl .st-gl-ic{position:static;margin:0;flex:none;width:21px!important;height:21px!important;max-width:none}'
   + '#st-gate-tabs{display:flex;flex-wrap:wrap;gap:2px;border-bottom:1px solid var(--mbu-border);margin-top:6px}#st-gate-tabs:empty{display:none}#st-gate-tabs>span{all:unset;font-size:12px;padding:6px 12px;color:var(--mbu-text-muted,#888);border-bottom:2px solid transparent;display:flex;gap:6px;align-items:center;cursor:pointer;margin-bottom:-1px}#st-gate-tabs>span.on{color:var(--mbu-text);border-bottom-color:var(--mbu-accent)}#st-gate-tabs>span:hover{color:var(--mbu-text)}#st-gate-tabs .x{font-size:15px;line-height:1;padding:0 2px;border-radius:3px}#st-gate-tabs .x:hover{background:color-mix(in srgb,var(--mbu-text) 12%,transparent)}.st-gl-lane[data-lane]{cursor:pointer}'
+  + '#st-gate-split{flex:0 0 auto;height:6px;margin:-4px 0 -2px;cursor:row-resize;position:relative;z-index:2}#st-gate-split::after{content:"";position:absolute;left:0;right:0;top:2px;height:2px;background:transparent}#st-gate-split:hover::after,#st-gate-split.on::after{background:var(--mbu-accent)}#st-gate-hud-box #st-gate-split{display:none}'
   + '.st-gl-sub{position:absolute;left:0;right:0;top:calc(var(--i)*30px);height:30px}.st-gl-cl .st-gl-ic+.st-gl-ic{margin-left:-8px}.st-gl-cl[data-z]{background:color-mix(in srgb,var(--mbu-text-muted,#888) 12%,transparent);border-radius:11px;padding-right:3px}'
   + '.st-gl-cb{flex:1 0 auto;min-width:fit-content;height:14px;margin-left:2px;border-radius:7px;display:flex;align-items:center;gap:4px;padding:0 6px;box-sizing:border-box;background:color-mix(in srgb,var(--mbu-ok) 25%,transparent);font:600 10px/1 sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}'
   + '.st-gl-cl.bad .st-gl-cb{background:color-mix(in srgb,var(--mbu-error) 16%,transparent)}.st-gl-cb .m{color:var(--mbu-accent-text)}.st-gl-cb .x{color:#2f7fd6}.st-gl-cb .b{color:var(--mbu-error)}.st-gl-cb .t{margin-left:auto;padding-left:2px;font-weight:400;color:var(--mbu-text-weak)}'
@@ -733,7 +734,7 @@ function stGateBuild() {
     + '<span style="width:16px;flex:none"></span><button type="button" class="mbu-logpop-full" data-tip="Full screen\nA double-click on the title bar does the same">⛶</button>'
     + '<button type="button" class="mbu-logpop-min" data-tip="Minimize">–</button>'
     + '<button type="button" class="mbu-logpop-x" data-tip="Close">✕</button></div>'
-    + '<div id="st-gate-state"></div><div id="st-gate-sum"></div><div id="st-gate-lanes"></div><div id="st-gate-tabs" role="tablist"></div>'
+    + '<div id="st-gate-state"></div><div id="st-gate-sum"></div><div id="st-gate-lanes"></div><div id="st-gate-split" data-tip="Drag to resize\nA double click resets"></div><div id="st-gate-tabs" role="tablist"></div>'
     + '<div id="st-gate-body"><table><thead><tr><th>Time</th><th>Tab' + stGateCfBtn('tab') + '</th><th>Script' + stGateCfBtn('s') + '</th><th>Verb' + stGateCfBtn('m') + '</th><th>Reason' + stGateCfBtn('r') + '</th><th>Entity' + stGateCfBtn('e') + '</th><th>Site</th><th>Request' + stGateCfBtn('rq') + '</th><th>Tries' + stGateCfBtn('n') + '</th><th>Result' + stGateCfBtn('res') + '</th><th>Wait' + stGateCfBtn('wt') + '</th><th>Rate limit' + stGateCfBtn('rl') + '</th></tr></thead><tbody></tbody></table></div>'
     + '<div class="mbu-logpop-grip" data-tip="Resize"></div>';
   document.documentElement.appendChild(pop);   // outside the body, which Event Horizon swaps
@@ -869,6 +870,20 @@ function stGateBuild() {
     draw();
   });
   var lanes = $('#st-gate-lanes');
+  // the separator between the lanes and the table: a drag sets the lanes' height, a double click resets it
+  (function () {
+    var sp = $('#st-gate-split'); if (!sp) return;
+    var setH = function (h) { if (h) { lanes.style.maxHeight = 'none'; lanes.style.height = h + 'px'; } else { lanes.style.maxHeight = ''; lanes.style.height = ''; } };
+    try { setH(+localStorage.getItem('st-gate-lanes-h') || 0); } catch (e) {}
+    sp.addEventListener('pointerdown', function (e) {
+      e.preventDefault(); sp.setPointerCapture(e.pointerId); sp.classList.add('on');
+      var y0 = e.clientY, h0 = lanes.getBoundingClientRect().height;
+      var mv = function (ev) { setH(Math.max(40, Math.min(window.innerHeight - 160, h0 + ev.clientY - y0))); };
+      var up = function () { sp.classList.remove('on'); sp.removeEventListener('pointermove', mv); sp.removeEventListener('pointerup', up); try { localStorage.setItem('st-gate-lanes-h', parseInt(lanes.style.height) || ''); } catch (e) {} };
+      sp.addEventListener('pointermove', mv); sp.addEventListener('pointerup', up);
+    });
+    sp.addEventListener('dblclick', function () { setH(0); try { localStorage.removeItem('st-gate-lanes-h'); } catch (e) {} });
+  })();
   $('#st-gate-tabs').addEventListener('click', function (e) {
     var t = e.target.closest('[data-t]'); if (!t) return;
     var i = +t.dataset.t;
