@@ -796,6 +796,15 @@ function stGateBuild() {
     if (stGateColW[i]) th.style.width = stGateColW[i] + 'px';
     var rz = document.createElement('span'); rz.className = 'st-gate-rz'; th.appendChild(rz);
     rz.addEventListener('click', function (e) { e.stopPropagation(); });
+    // a double click on the line fits the column to its widest cell
+    rz.addEventListener('dblclick', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      var w = th.scrollWidth;
+      pop.querySelectorAll('#st-gate-body tr.rq, #st-gate-body tr.sys').forEach(function (tr) {
+        var td = tr.children[i]; if (td && td.colSpan === 1) w = Math.max(w, td.scrollWidth);
+      });
+      stGateColW[i] = Math.max(32, Math.ceil(w) + 2); th.style.width = stGateColW[i] + 'px';
+    });
     rz.addEventListener('mousedown', function (e) {
       e.preventDefault(); e.stopPropagation();
       var x0 = e.clientX, w0 = th.offsetWidth; rz.classList.add('on');
