@@ -72,6 +72,37 @@ test.describe('gate log', () => {
   });
 });
 
+test.describe('gate log, scrolled down', () => {
+  test.use({ gm: { name: 'String Theory', persist: true, values: { 'string_theory.off': ['event_horizon'] } } });
+  // #1095: a new request came in at the top and pushed the rows being read down, out of view
+  test('a new row does not move the rows in view', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+    await page.goto(`${SANDBOX}/search/edits`, { waitUntil: 'load', timeout: 60000 });
+    await page.evaluate(() => {
+      const now = Date.now(), evs = [];
+      for (let i = 0; i < 60; i++) evs.push({ t: now - 60000 + i * 500, s: 'Credit Hoarder', e: 'start', l: 'GET /ws/2/artist/a' + i, b: 1, id: 'r' + i }, { t: now - 59900 + i * 500, s: 'Credit Hoarder', e: 'answer', st: 200, l: 'GET /ws/2/artist/a' + i, b: 1, id: 'r' + i });
+      localStorage.setItem('mbu:mb-gate-trace:cccc3333', JSON.stringify(evs));
+    });
+    await inject('string_theory');
+    await openLog(page, inject);
+    await page.waitForSelector('#st-gate tr.rq');
+    const where = () => page.evaluate(() => {
+      const sc = document.querySelector('#st-gate-body'), top = sc.getBoundingClientRect().top;
+      const r = [...sc.querySelectorAll('tr.rq')].find(x => x.getBoundingClientRect().bottom > top + 1);
+      return { id: r.getAttribute('data-id'), y: Math.round(r.getBoundingClientRect().top - top) };
+    });
+    await page.evaluate(() => { document.querySelector('#st-gate-body').scrollTop = 300; });
+    const before = await where();
+    await page.evaluate(() => {
+      const k = 'mbu:mb-gate-trace:cccc3333', evs = JSON.parse(localStorage.getItem(k)), now = Date.now();
+      for (let i = 0; i < 3; i++) evs.push({ t: now + i, s: 'Credit Hoarder', e: 'start', l: 'GET /ws/2/artist/new' + i, b: 1, id: 'n' + i });
+      localStorage.setItem(k, JSON.stringify(evs));
+    });
+    await until(() => page.$$eval('#st-gate tr.rq', l => l.some(x => /new0/.test(x.textContent))), x => x, { timeout: 5000 });
+    const after = await where();
+    check(after.id === before.id && Math.abs(after.y - before.y) <= 2, `the row in view stays put (${JSON.stringify(before)} -> ${JSON.stringify(after)})`);
+  });
+});
+
 test.describe('gate log, a bad saved window', () => {
   // a place off screen, a size too big and the minimised bar: an open from the palette still shows the window
   test.use({ gm: { name: 'String Theory', persist: true, values: { 'string_theory.off': ['event_horizon'], 'st:gatelog-win': JSON.stringify({ open: false, min: true, left: '5000px', top: '-900px', w: '9000px', h: '9000px' }) } } });

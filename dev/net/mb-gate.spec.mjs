@@ -7,7 +7,10 @@ import { MBN_INLINE, mbnGated } from './mb-gate.mjs';
 test.use({ profile: 'fresh', gm: false });
 
 const ORIGIN = 'https://gate.test';
-const GATE = Object.entries(MBN_INLINE.consts).map(([k, v]) => `const ${k} = ${JSON.stringify(v)};`).join('\n') + '\n'
+// the specs below time the gate's logic at the old pace, a burst of three then one a second;
+// the shipped pace has its own spec, with the real constants
+const CONSTS = { ...MBN_INLINE.consts, MBN_GAP: 1000, MBN_BURST: 3 };
+const GATE = Object.entries(CONSTS).map(([k, v]) => `const ${k} = ${JSON.stringify(v)};`).join('\n') + '\n'
   + MBN_INLINE.fns.map(f => f.toString()).join('\n')
   // the stub: each call records its start; a queued status list decides the answers (default 200)
   + `\nwindow.__starts = []; window.__answers = [];
@@ -108,8 +111,10 @@ test('a hidden tab\'s background request waits for the queue to be free; a page 
     const t0 = Date.now();
     const page = mbnSlot({ background: false }).then(() => Date.now() - t0);
     const bg = mbnSlot({}).then(() => Date.now() - t0);
-    return { page: await page, bg: await bg };
+    const ev = (globalThis.__mbnTrace.buf || []).find(e => e.e === 'hidden') || {};
+    return { page: await page, bg: await bg, cap: ev.cap };
   });
+  check(r.cap >= 9000, `the log says how long it may wait at most, not only the queue end it saw (${r.cap})`);
   check(r.page < 300, `the page request starts at once (${r.page} ms)`);
   check(r.bg >= 1300, `the background request waits for the queue to end (${r.bg} ms)`);
 });
@@ -157,6 +162,50 @@ test('the gate paces starts, a burst first, then one a second', { tag: ['@unit']
   check(gaps.every(g => g >= 900 && g <= 1400), `then a second apart (${gaps.join(', ')} ms)`);
   check(await a.evaluate(() => mbnGated('/ws/2/x') && mbnGated('https://test.musicbrainz.org/ws/2/x') && !mbnGated('/ws/js/entity/x') && !mbnGated('https://example.org/ws/2/x')), 'only /ws/2 on MusicBrainz is gated');
   check(mbnGated('https://musicbrainz.org/ws/2/recording/x'), '…production included');
+  check(mbnGated('//musicbrainz.org/ws/2/artist/x') && mbnGated('//test.musicbrainz.org/ws/2/x') && !mbnGated('//example.org/ws/2/x'), '…protocol-relative too (Credit Hoarder)');
+});
+
+// #1095: the shipped pace, with the real constants: a burst of four, then eight a second
+test('the shipped pace is a burst of four, then eight a second', { tag: ['@unit'] }, async ({ context }) => {
+  const a = await context.newPage();
+  await a.goto(ORIGIN + '/');
+  await a.addScriptTag({ content: GATE.replace(/^const MBN_GAP = .*$/m, 'const MBN_GAP = ' + MBN_INLINE.consts.MBN_GAP + ';').replace(/^const MBN_BURST = .*$/m, 'const MBN_BURST = ' + MBN_INLINE.consts.MBN_BURST + ';') });
+  const starts = await a.evaluate(async () => {
+    localStorage.clear();
+    const t0 = Date.now();
+    await Promise.all(Array.from({ length: 8 }, (_, i) => mbnFetch('/ws/2/artist?query=x' + i)));
+    return window.__starts.map(t => t - t0).sort((x, y) => x - y);
+  });
+  check(starts[3] - starts[0] < 300, `the first four start at once (${starts.join(', ')} ms)`);
+  check(starts[4] - starts[0] >= 90, `the fifth waits its turn (${starts.join(', ')} ms)`);
+  const gaps = starts.slice(5).map((t, i) => t - starts[i + 4]);
+  check(gaps.every(g => g >= 90 && g <= 220), `then an eighth of a second apart (${gaps.join(', ')} ms)`);
+});
+
+// #1095: a single request after a quiet spell drew "X-RateLimit-Who: global", and the next one went
+// through: MusicBrainz's own load, not our pace. Its hold stays a flat second; ours grows as before
+test("a 503 for MusicBrainz's own load holds a flat second, however many in a row", { tag: ['@unit'] }, async ({ context }) => {
+  const a = await tab(context);
+  const r = await a.evaluate(async () => {
+    localStorage.clear();
+    const hold = async who => { const x = await mbnAnswer(503, n => n === 'X-RateLimit-Who' ? who : null); await new Promise(z => setTimeout(z, x.hold + 20)); return x.hold; };
+    const global = [await hold('global'), await hold('global'), await hold('global')];
+    const globalHot = mbnHot();
+    localStorage.clear();
+    const shed = [];
+    for (let i = 0; i < 3; i++) { const x = await mbnAnswer(503, n => n === 'X-RateLimit-Who' ? 'search-shed' : null, { search: true }); shed.push(x.hold); await new Promise(z => setTimeout(z, x.hold + 20)); }
+    localStorage.clear();
+    const own = [await hold(null), await hold(null)];
+    localStorage.clear();
+    const ra = [];
+    for (let i = 0; i < 2; i++) { const x = await mbnAnswer(503, n => n === 'Retry-After' ? '2' : null); ra.push(x.hold); await new Promise(z => setTimeout(z, x.hold + 20)); }
+    return { global, globalHot, shed, own, ra };
+  });
+  check(r.global.every(h => h > 900 && h <= 1000), `global: a second each (${r.global.join(', ')} ms)`);
+  check(r.globalHot === 0, `global: not a throttle of ours, the burst stays (hot ${r.globalHot})`);
+  check(r.shed.every(h => h > 900 && h <= 1000), `search-shed: a second each (${r.shed.join(', ')} ms)`);
+  check(r.ra.every(h => h > 1900 && h <= 2000), `a Retry-After holds what it says, however many in a row (${r.ra.join(', ')} ms)`);
+  check(r.own[1] > 1900, `any other 503 still holds longer each time (${r.own.join(', ')} ms)`);
 });
 
 test('two tabs share one budget', { tag: ['@unit'] }, async ({ context }) => {
@@ -423,7 +472,7 @@ async function mbTab(context, { clears = true } = {}) {
   });
   const p = await context.newPage();
   await p.goto(MBHOST + '/');
-  await p.addScriptTag({ content: Object.entries(MBN_INLINE.consts).map(([k, v]) => `const ${k} = ${JSON.stringify(v)};`).join('\n') + '\n'
+  await p.addScriptTag({ content: Object.entries(CONSTS).map(([k, v]) => `const ${k} = ${JSON.stringify(v)};`).join('\n') + '\n'
     + MBN_INLINE.fns.map(f => f.toString()).join('\n')
     + `\nwindow.__calls = []; window.__cleared = false;
        window.fetch = async (url, init) => { window.__calls.push(((init && init.method) || 'GET') + ' ' + url);
