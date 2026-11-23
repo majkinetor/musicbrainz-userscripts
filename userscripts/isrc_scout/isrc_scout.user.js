@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.23.014739
+// @version      2026.11.23.015420
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -7596,8 +7596,21 @@
 
     // Internet Archive item (https://github.com/majkinetor/musicbrainz-userscripts/issues/1086): its files from archive.org/metadata, fetched once. Each source file and its
     // derivatives are one track; a file without a track number is not a track. → ordered [{ title, url }]
+    // Event Horizon changes the release without a page load: each album list below belongs to the
+    // release it was read for, so a new release drops them all, and a read that comes back after
+    // the change is not kept (it carried one release's album into the next)
+    let _albFor = null, _albGen = 0;
+    function albumsFresh() {
+      if (_albFor !== mbid) {
+        _albFor = mbid; _albGen++;
+        _iaList = _iaPromise = _bcList = _bcPromise = _ytAlbum = _ytAlbumP = _azAlbum = _azAlbumP = null;
+        _amList = _amPromise = _scLinkList = _scLinkPromise = _akLinkList = _akLinkPromise = _spList = _spPromise = null;
+      }
+      return _albGen;
+    }
     let _iaList = null, _iaPromise = null;
     async function iaAlbum() {
+      const g = albumsFresh();
       if (_iaList && _iaList.length) return _iaList;
       if (_iaPromise) return _iaPromise;
       const id = ((RELEASE && RELEASE.iaUrl) || '').split('/details/')[1];
@@ -7619,7 +7632,7 @@
         ts.forEach((g, i) => { list[uniq ? g.n - 1 : i] = { title: g.title, url: 'https://archive.org/details/' + id + '/' + g.name.split('/').map(encodeURIComponent).join('/') }; });
         Log.info('Internet Archive item ' + id + ': ' + ts.length + ' track file(s)');
         return list;
-      })().then(l => { _iaList = l; _iaPromise = null; return l; });
+      })().then(l => { if (g === _albGen) { _iaList = l; _iaPromise = null; } return l; });
       return _iaPromise;
     }
     async function iaResolve(t, idx) {
@@ -7633,6 +7646,7 @@
     // Bandcamp album page (fetched once): ordered [{title, url}] from data-tralbum.
     let _bcList = null, _bcPromise = null;
     async function bcAlbum() {
+      const g = albumsFresh();
       if (_bcList && _bcList.length) return _bcList;   // an empty result (network hiccup, anti-bot, transient block) must NOT stick — retry on the next Find links click rather than caching a permanent miss for the rest of the page session
       if (_bcPromise) return _bcPromise;
       const url = RELEASE && RELEASE.bandcampUrl;
@@ -7647,8 +7661,9 @@
         let origin = ''; try { origin = new URL(j.url).origin; } catch (e) { origin = url.replace(/\/(?:album|track)\/.*$/, ''); }
         return (j.trackinfo || []).map(ti => ({ title: ti.title || '', len: ti.duration == null ? null : Number(ti.duration), url: ti.title_link ? origin + ti.title_link : '' }));
       })();
-      _bcList = await _bcPromise.catch(() => []); _bcPromise = null;
-      return _bcList;
+      const l = await _bcPromise.catch(() => []);
+      if (g === _albGen) { _bcList = l; _bcPromise = null; }
+      return l;
     }
     // #463 keep ALL Unicode letters/numbers, not just ASCII — else a non-Latin title (Cyrillic,
     // CJK, …) collapses to '' and the position title-guard bails, refusing an otherwise-identical
@@ -7835,6 +7850,7 @@
     // listener can play (a song that can't be has no video there).
     let _ytAlbum = null, _ytAlbumP = null;
     async function ytAlbum() {
+      const g = albumsFresh();
       if (_ytAlbum) return _ytAlbum;
       if (_ytAlbumP) return _ytAlbumP;
       const url = RELEASE && RELEASE.ytmUrl;
@@ -7874,6 +7890,7 @@
         return { id, name: page.name, url: 'https://music.youtube.com/browse/' + id, tracks: page.tracks };
       })();
       const res = await _ytAlbumP.catch(() => ({ tracks: [] }));
+      if (g !== _albGen) return res;
       _ytAlbumP = null;
       if (res.tracks.length) _ytAlbum = res;
       return res;
@@ -7967,6 +7984,7 @@
     // The release's Amazon Music album (fetched once): { id, name, tracks: [{ id, title, len }] }.
     let _azAlbum = null, _azAlbumP = null;
     async function azAlbum() {
+      const g = albumsFresh();
       if (_azAlbum) return _azAlbum;
       if (_azAlbumP) return _azAlbumP;
       const id = ((RELEASE && RELEASE.amzUrl) || '').match(/\/albums\/([A-Z0-9]{10})/i);
@@ -7984,6 +8002,7 @@
         return { id: id[1].toUpperCase(), name, tracks };
       })();
       const res = await _azAlbumP.catch(() => ({ tracks: [] }));
+      if (g !== _albGen) return res;
       _azAlbumP = null;
       if (res.tracks.length) _azAlbum = res;
       return res;
@@ -8002,6 +8021,7 @@
     // Apple Music album page (fetched once): ordered [{title, url}] from its ld+json.
     let _amList = null, _amPromise = null;
     async function amAlbum() {
+      const g = albumsFresh();
       if (_amList && _amList.length) return _amList;   // see bcAlbum: don't let a transient empty fetch stick forever
       if (_amPromise) return _amPromise;
       const url = RELEASE && RELEASE.appleUrl;
@@ -8014,8 +8034,9 @@
         let j; try { j = JSON.parse(m[1]); } catch (e) { return []; }
         return (j.tracks || []).map(t => ({ title: t.name || '', url: t.url || '' })).filter(t => t.url);
       })();
-      _amList = await _amPromise.catch(() => []); _amPromise = null;
-      return _amList;
+      const l = await _amPromise.catch(() => []);
+      if (g === _albGen) { _amList = l; _amPromise = null; }
+      return l;
     }
     async function amResolve(t, idx) {
       const list = await amAlbum();
@@ -8030,6 +8051,7 @@
     // don't carry an ISRC yet / whose SoundCloud upload ISRC differs from MB's. #439
     let _scLinkList = null, _scLinkPromise = null;
     async function scAlbum() {
+      const g = albumsFresh();
       if (_scLinkList && _scLinkList.length) return _scLinkList;   // see bcAlbum: don't let a transient empty fetch stick forever
       if (_scLinkPromise) return _scLinkPromise;
       const setUrl = RELEASE && RELEASE.scUrl;
@@ -8049,18 +8071,21 @@
         }
         return stubs.map(s => byId.get(s.id)).filter(Boolean).map(t => ({ title: t.title || '', url: t.permalink_url || '' })).filter(t => t.url);
       })();
-      _scLinkList = await _scLinkPromise.catch(() => []); _scLinkPromise = null;
-      return _scLinkList;
+      const l = await _scLinkPromise.catch(() => []);
+      if (g === _albGen) { _scLinkList = l; _scLinkPromise = null; }
+      return l;
     }
     let _akLinkList = null, _akLinkPromise = null;
     async function akAlbum() {
+      const g = albumsFresh();
       if (_akLinkList && _akLinkList.length) return _akLinkList;   // see bcAlbum: don't let a transient empty fetch stick
       if (_akLinkPromise) return _akLinkPromise;
       const u = RELEASE && RELEASE.akUrl;
       if (!u) { _akLinkList = []; return _akLinkList; }
       _akLinkPromise = audiomackRelease(u).then(r => r.tracks.filter(t => t.url));
-      _akLinkList = await _akLinkPromise.catch(e => { Log.warn('Audiomack track links: ' + errText(e)); return []; }); _akLinkPromise = null;
-      return _akLinkList;
+      const l = await _akLinkPromise.catch(e => { Log.warn('Audiomack track links: ' + errText(e)); return []; });
+      if (g === _albGen) { _akLinkList = l; _akLinkPromise = null; }
+      return l;
     }
     async function akResolve(t, idx) {
       const e = (await akAlbum())[idx];
@@ -8087,6 +8112,7 @@
     }
     let _spList = null, _spPromise = null;
     async function spAlbum() {
+      const g = albumsFresh();
       // an empty [] here (network hiccup, or open.spotify.com's anti-bot serving a
       // consent/interstitial page instead of the real embed) used to get cached in
       // _spList forever — and `if (_spList)` treats an empty array as truthy, so every
@@ -8115,8 +8141,9 @@
         if (!list.length) list = [...html.matchAll(/spotify:track:([A-Za-z0-9]+)/g)].map(x => ({ title: '', url: 'https://open.spotify.com/track/' + x[1] }));
         return list;
       })();
-      _spList = await _spPromise.catch(() => []); _spPromise = null;
-      return _spList;
+      const l = await _spPromise.catch(() => []);
+      if (g === _albGen) { _spList = l; _spPromise = null; }
+      return l;
     }
     async function spResolve(t, idx) {
       const list = await spAlbum();
