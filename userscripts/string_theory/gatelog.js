@@ -772,8 +772,10 @@ function stGateBuild() {
   pop.querySelector('.st-gate-hosts').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; hosts[b.dataset.v] = !hosts[b.dataset.v]; srcSeg(); stGateRemember({ hosts: hosts }); draw(); });
   hudBtn.onclick = function () { if (!stGateHudEl) stGateHud(true); stGateClose(); };
   // a double click in the window (not on its title bar, which goes full screen, nor on a control) switches to the HUD
+  var born = Date.now();
   pop.addEventListener('dblclick', function (e) {
-    if (e.target.closest('.mbu-logpop-h,button,select,input,textarea,a')) return;
+    // the HUD's double click opens this window under the pointer: its own clicks must not switch straight back
+    if (Date.now() - born < 800 || e.target.closest('.mbu-logpop-h,button,select,input,textarea,a')) return;
     hudBtn.onclick();
   });
   // a drag on the line between two headers resizes the column on its left; the widths last while the page is open
