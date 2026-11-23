@@ -21,7 +21,7 @@ var ST_GATE_CSS = ''
   + '#st-gate.min{height:auto!important;width:auto!important}'
   + '#st-gate.min>:not(.mbu-logpop-h),#st-gate.min .mbu-logpop-h>:not(b):not(.st-gate-n):not(.mbu-logpop-min){display:none}'
   + '#st-gate.full{top:0!important;left:0!important;right:0!important;bottom:0!important;border-radius:0;border:0;width:auto!important;height:auto!important;transform:none!important}'
-  + '#st-gate.full .mbu-logpop-h{cursor:default}#st-gate.full .mbu-logpop-grip{display:none}'
+  + 'html:has(#st-gate.full){overflow:hidden!important}#st-gate.full .mbu-logpop-h{cursor:default}#st-gate.full .mbu-logpop-grip{display:none}'
   // the gate's state, as chips
   + '#st-gate-state{display:flex;flex-wrap:wrap;gap:6px;padding:8px 13px 0}'
   + '#st-gate-state>span{white-space:nowrap;padding:2px 9px;border-radius:999px;background:var(--mbu-bg-hover);font-size:12px}'
