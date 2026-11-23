@@ -361,7 +361,7 @@ function stGateLanesHtml(groups, all, now, me) {
     if (g.s) L.s[g.s] = 1;
     var last = g.tries.length ? g.tries[g.tries.length - 1] : null, gEnd = g.res === 'waiting' ? now : Math.max(g.end || g.t, last ? last.end || now : g.t);
     var item = { g: g, a: g.t, b: gEnd, cls: last ? stGateTryCls(last.st) : 'off' };
-    if ((gEnd - g.t < ST_GATE_SHORT || pct(gEnd) - pct(g.t) < 1.5) && g.cls !== 'go') { (L.short = L.short || []).push(item); return; }
+    if ((gEnd - g.t < ST_GATE_SHORT || pct(gEnd) - pct(g.t) < 0.6) && g.cls !== 'go') { (L.short = L.short || []).push(item); return; }
     item.head = 1; (L.short = L.short || []).push(item);   // a long bar's start icon; overlapping ones become one icon with a count
     var who = (g.s ? g.s + '\n' : '') + stGateAlias(g.l);
     g.tries.forEach(function (x) {
