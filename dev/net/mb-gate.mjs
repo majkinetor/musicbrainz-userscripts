@@ -315,7 +315,7 @@ export function mbnTrace(ev) {
 /**
  * Wait for this request's start slot.
  *   o.background  queue behind the budget (default); false = interactive: its own line, ahead of
- *                 the background queue (a burst of MBN_BURST, then one a second), after any hold
+ *                 the background queue (a burst of MBN_BURST, then one every MBN_GAP), after any hold
  *   o.lead        the lead's token (mbnLead): this request is the leader's, and doesn't wait for it
  *   o.cancelled   () => true stops the wait (a superseded search, a Stop): resolves { ok: false }
  *   o.log         (level, message) for waits worth mentioning (over a second)
@@ -404,7 +404,7 @@ export async function mbnSlot(o) {
                 if ((s.last || 0) > now) s.last += MBN_GAP;
                 s.last = Math.max(s.last || 0, at);
                 if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: 1, head: 1 });
-                return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, four requests a second', slip: s.slip || 0, bslip: s.bslip };
+                return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, eight requests a second', slip: s.slip || 0, bslip: s.bslip };
             }
             s.last = Math.max(s.last || 0, at);
         } else {
@@ -416,7 +416,7 @@ export async function mbnSlot(o) {
             s.last = Math.max(s.last || 0, at);
         }
         s.tat = Math.max(tat, at) + MBN_GAP;
-        const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, four requests a second';
+        const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, eight requests a second';
         if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
         return { at, why, slip: s.slip || 0, bslip: s.bslip || 0 };
     });

@@ -61,12 +61,13 @@ const mbuAliasEditor = (() => {
             const data = await new Promise((resolve, reject) => {
               const gm = typeof GM_xmlhttpRequest === 'function' ? GM_xmlhttpRequest : typeof GM !== 'undefined' && GM.xmlHttpRequest;
               if (!gm) { reject(new Error('No cross-site request support')); return; }
-              gm({ method: 'GET', url: 'https://api.discogs.com/artists/' + id, timeout: 20000,
+              // through the gate's mbnGm, so String Theory's network log shows it
+              mbnGm({ method: 'GET', url: 'https://api.discogs.com/artists/' + id, timeout: 20000,
                 onload: r => {
                   if (r.status < 200 || r.status >= 300) { reject(new Error('HTTP ' + r.status)); return; }
                   try { resolve(JSON.parse(r.responseText)); } catch (e) { reject(e); }
                 },
-                onerror: () => reject(new Error('Request failed')), ontimeout: () => reject(new Error('Request timed out')) });
+                onerror: () => reject(new Error('Request failed')), ontimeout: () => reject(new Error('Request timed out')) }, gm);
             });
             if (String(data.id) !== id || typeof data.name !== 'string') throw new Error('Invalid Discogs artist response');
             // Discogs numbers distinguish database entries, not the artist's name.

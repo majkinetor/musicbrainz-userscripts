@@ -87,7 +87,7 @@ export function shareBlocks(parts) {
     const ast = espree.parse(wrapped, PARSE);
     const sm = analyze(ast);
     const refs = sm.scopes.flatMap(sc => sc.references);
-    const edits = [];
+    const edits = [], vars = [];
     const inAny = r => blocks.some(o => r[0] >= o.start + PRE.length && r[1] <= o.end + PRE.length);
 
     for (const b of blocks) {
@@ -130,10 +130,18 @@ export function shareBlocks(parts) {
       const stmts = fn.body.body;
       let at = fn.body.range[0] + 1;
       for (const st of stmts) { if (st.directive) at = st.range[1]; else break; }
-      edits.push({ at: at - PRE.length, del: 0, seq: edits.length, ins: `\nvar { ${own.join(', ')} } = ${f.fname}(${params.join(', ')});   // ${b.name}, written once at the top of the bundle (#786)` });
+      vars.push({ own, deps, at: at - PRE.length, del: 0, ins: `\nvar { ${own.join(', ')} } = ${f.fname}(${params.join(', ')});   // ${b.name}, written once at the top of the bundle (#786)` });
       edits.push({ at: b.start, del: b.end - b.start, seq: edits.length, ins: `${b.ind}// <${b.name}> is ${f.fname}, at the top of the bundle (#786)` });
     }
 
+    // a block's line comes after the lines of the blocks it takes names from (First Contact's archive
+    // block uses the gate's mbnGm but sits above the gate), else its factory gets them undefined
+    const left = vars.slice();
+    while (left.length) {
+      const i = left.findIndex(v => !left.some(w => w !== v && [...v.deps].some(d => w.own.includes(d))));
+      if (i < 0) { errors.push(`${p.n}: shared blocks that take names from each other`); break; }
+      edits.push(Object.assign(left.splice(i, 1)[0], { seq: -1000 + edits.length }));
+    }
     let body = p.body;
     // from the end, so earlier offsets stay right; lines inserted at one spot keep the blocks' order
     edits.sort((a, b) => b.at - a.at || b.del - a.del || b.seq - a.seq).forEach(ed => {

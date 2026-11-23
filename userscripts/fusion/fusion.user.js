@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.23.185327
+// @version      2026.11.23.191508
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -386,7 +386,7 @@ async function mbnSlot(o) {
                 if ((s.last || 0) > now) s.last += MBN_GAP;
                 s.last = Math.max(s.last || 0, at);
                 if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: 1, head: 1 });
-                return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, four requests a second', slip: s.slip || 0, bslip: s.bslip };
+                return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, eight requests a second', slip: s.slip || 0, bslip: s.bslip };
             }
             s.last = Math.max(s.last || 0, at);
         } else {
@@ -398,7 +398,7 @@ async function mbnSlot(o) {
             s.last = Math.max(s.last || 0, at);
         }
         s.tat = Math.max(tat, at) + MBN_GAP;
-        const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, four requests a second';
+        const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, eight requests a second';
         if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
         return { at, why, slip: s.slip || 0, bslip: s.bslip || 0 };
     });

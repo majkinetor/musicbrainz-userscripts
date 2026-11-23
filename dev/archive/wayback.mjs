@@ -8,8 +8,10 @@
 // storage belongs to the script, not the site, so First Contact's panel on a platform's page and
 // Apollo on MusicBrainz see the same value. Whether a script archives at all is its own setting.
 //
-// Every function is self-contained (it may call the others and the manager's GM_* functions,
-// nothing else), so it can be inlined from its own source text. `log` is the script's logger
+// Every function is self-contained (it may call the others, the manager's GM_* functions and the
+// gate's mbnGm, nothing else), so it can be inlined from its own source text. Every script that
+// carries this block also carries the gate (ST-NET); mbnGm puts the requests in String Theory's
+// network log. `log` is the script's logger
 // ({ info, ok, warn, debug }).
 
 export const MBA_KEY = 'mbu.archive';
@@ -63,7 +65,7 @@ function mbaSetKeys(iaKey, iaSecret) {
 function mbaSaveAnon(url, log) {
     const t0 = Date.now(), wait = 180000;
     return new Promise(resolve => {
-        GM_xmlhttpRequest({
+        mbnGm({
             method: 'GET', url: 'https://web.archive.org/save/' + url, timeout: wait, anonymous: true,
             headers: { Accept: 'text/html' },
             onload: r => {
@@ -82,7 +84,7 @@ function mbaSaveAnon(url, log) {
 
 function mbaRequest(method, url, auth, body) {
     return new Promise(resolve => {
-        GM_xmlhttpRequest({
+        mbnGm({
             method, url, data: body, timeout: 30000, anonymous: true,
             headers: Object.assign({ Accept: 'application/json', Authorization: 'LOW ' + auth }, body ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}),
             onload: r => { let j = null; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { /* not JSON */ } resolve({ status: r.status, json: j, text: r.responseText || '' }); },

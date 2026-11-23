@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.23.185327
+// @version      2026.11.23.191508
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -371,7 +371,7 @@
                   if ((s.last || 0) > now) s.last += MBN_GAP;
                   s.last = Math.max(s.last || 0, at);
                   if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: 1, head: 1 });
-                  return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, four requests a second', slip: s.slip || 0, bslip: s.bslip };
+                  return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, eight requests a second', slip: s.slip || 0, bslip: s.bslip };
               }
               s.last = Math.max(s.last || 0, at);
           } else {
@@ -383,7 +383,7 @@
               s.last = Math.max(s.last || 0, at);
           }
           s.tat = Math.max(tat, at) + MBN_GAP;
-          const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, four requests a second';
+          const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, eight requests a second';
           if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
           return { at, why, slip: s.slip || 0, bslip: s.bslip || 0 };
       });
@@ -7834,7 +7834,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function mbaSaveAnon(url, log) {
       const t0 = Date.now(), wait = 180000;
       return new Promise(resolve => {
-          GM_xmlhttpRequest({
+          mbnGm({
               method: 'GET', url: 'https://web.archive.org/save/' + url, timeout: wait, anonymous: true,
               headers: { Accept: 'text/html' },
               onload: r => {
@@ -7852,7 +7852,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   function mbaRequest(method, url, auth, body) {
       return new Promise(resolve => {
-          GM_xmlhttpRequest({
+          mbnGm({
               method, url, data: body, timeout: 30000, anonymous: true,
               headers: Object.assign({ Accept: 'application/json', Authorization: 'LOW ' + auth }, body ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}),
               onload: r => { let j = null; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { /* not JSON */ } resolve({ status: r.status, json: j, text: r.responseText || '' }); },
@@ -19017,12 +19017,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
               const data = await new Promise((resolve, reject) => {
                 const gm = typeof GM_xmlhttpRequest === 'function' ? GM_xmlhttpRequest : typeof GM !== 'undefined' && GM.xmlHttpRequest;
                 if (!gm) { reject(new Error('No cross-site request support')); return; }
-                gm({ method: 'GET', url: 'https://api.discogs.com/artists/' + id, timeout: 20000,
+                // through the gate's mbnGm, so String Theory's network log shows it
+                mbnGm({ method: 'GET', url: 'https://api.discogs.com/artists/' + id, timeout: 20000,
                   onload: r => {
                     if (r.status < 200 || r.status >= 300) { reject(new Error('HTTP ' + r.status)); return; }
                     try { resolve(JSON.parse(r.responseText)); } catch (e) { reject(e); }
                   },
-                  onerror: () => reject(new Error('Request failed')), ontimeout: () => reject(new Error('Request timed out')) });
+                  onerror: () => reject(new Error('Request failed')), ontimeout: () => reject(new Error('Request timed out')) }, gm);
               });
               if (String(data.id) !== id || typeof data.name !== 'string') throw new Error('Invalid Discogs artist response');
               // Discogs numbers distinguish database entries, not the artist's name.

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.23.185327
+// @version      2026.11.23.191508
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -429,7 +429,7 @@ async function mbnSlot(o) {
                 if ((s.last || 0) > now) s.last += MBN_GAP;
                 s.last = Math.max(s.last || 0, at);
                 if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: 1, head: 1 });
-                return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, four requests a second', slip: s.slip || 0, bslip: s.bslip };
+                return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, eight requests a second', slip: s.slip || 0, bslip: s.bslip };
             }
             s.last = Math.max(s.last || 0, at);
         } else {
@@ -441,7 +441,7 @@ async function mbnSlot(o) {
             s.last = Math.max(s.last || 0, at);
         }
         s.tat = Math.max(tat, at) + MBN_GAP;
-        const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, four requests a second';
+        const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, eight requests a second';
         if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
         return { at, why, slip: s.slip || 0, bslip: s.bslip || 0 };
     });
@@ -8172,12 +8172,13 @@ const mbuAliasEditor = (() => {
             const data = await new Promise((resolve, reject) => {
               const gm = typeof GM_xmlhttpRequest === 'function' ? GM_xmlhttpRequest : typeof GM !== 'undefined' && GM.xmlHttpRequest;
               if (!gm) { reject(new Error('No cross-site request support')); return; }
-              gm({ method: 'GET', url: 'https://api.discogs.com/artists/' + id, timeout: 20000,
+              // through the gate's mbnGm, so String Theory's network log shows it
+              mbnGm({ method: 'GET', url: 'https://api.discogs.com/artists/' + id, timeout: 20000,
                 onload: r => {
                   if (r.status < 200 || r.status >= 300) { reject(new Error('HTTP ' + r.status)); return; }
                   try { resolve(JSON.parse(r.responseText)); } catch (e) { reject(e); }
                 },
-                onerror: () => reject(new Error('Request failed')), ontimeout: () => reject(new Error('Request timed out')) });
+                onerror: () => reject(new Error('Request failed')), ontimeout: () => reject(new Error('Request timed out')) }, gm);
             });
             if (String(data.id) !== id || typeof data.name !== 'string') throw new Error('Invalid Discogs artist response');
             // Discogs numbers distinguish database entries, not the artist's name.
