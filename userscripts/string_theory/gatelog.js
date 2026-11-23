@@ -41,8 +41,9 @@ var ST_GATE_CSS = ''
   + '.st-gl-cl .st-gl-ic{position:static;margin:0;flex:none;width:21px!important;height:21px!important;max-width:none}'
   + '#st-gate-tabs{display:flex;flex-wrap:wrap;gap:2px;border-bottom:1px solid var(--mbu-border);margin-top:6px}#st-gate-tabs:empty{display:none}#st-gate-tabs>span{all:unset;font-size:12px;padding:6px 12px;color:var(--mbu-text-muted,#888);border-bottom:2px solid transparent;display:flex;gap:6px;align-items:center;cursor:pointer;margin-bottom:-1px}#st-gate-tabs>span.on{color:var(--mbu-text);border-bottom-color:var(--mbu-accent)}#st-gate-tabs>span:hover{color:var(--mbu-text)}#st-gate-tabs .x{font-size:15px;line-height:1;padding:0 2px;border-radius:3px}#st-gate-tabs .x:hover{background:color-mix(in srgb,var(--mbu-text) 12%,transparent)}.st-gl-lane[data-lane]{cursor:pointer}'
   + '#st-gate-split{flex:0 0 auto;height:6px;margin:-4px 0 -2px;cursor:row-resize;position:relative;z-index:2}#st-gate-split::after{content:"";position:absolute;left:0;right:0;top:2px;height:2px;background:transparent}#st-gate-split:hover::after,#st-gate-split.on::after{background:var(--mbu-accent)}#st-gate-hud-box #st-gate-split{display:none}'
-  + '.st-gate-mx{position:absolute;right:14px;top:-8px;display:flex;gap:2px;z-index:3}.st-gate-mx button{all:unset;cursor:pointer;font-size:10px;width:22px;height:18px;line-height:18px;text-align:center;color:var(--mbu-text-muted,#888);border-radius:3px;background:var(--mbu-bg)}.st-gate-mx button:hover{color:var(--mbu-text);background:var(--mbu-bg-hover)}.st-gate-mx button.on{color:var(--mbu-accent)}'
-  + '#st-gate[data-max=lanes] #st-gate-lanes{max-height:none!important;height:auto!important;flex:1 1 auto}#st-gate[data-max=lanes] #st-gate-tabs,#st-gate[data-max=lanes] #st-gate-body{display:none}#st-gate[data-max=body] #st-gate-lanes{display:none}#st-gate[data-max] #st-gate-split{cursor:default}'
+  + '.st-gate-pane{position:relative;display:flex;flex-direction:column;min-height:0}.st-gate-pane[data-pane=lanes]{flex:0 1 auto}.st-gate-pane[data-pane=body]{flex:1 1 auto}'
+  + '.st-gate-mx{all:unset;position:absolute;right:16px;top:3px;z-index:4;cursor:pointer;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:3px;color:var(--mbu-text-muted,#888)}.st-gate-pane[data-pane=lanes] .st-gate-mx{top:0}.st-gate-mx i{width:9px;height:9px;border:1.5px solid currentColor;border-radius:1px}.st-gate-mx:hover{color:var(--mbu-text);background:var(--mbu-bg-hover)}.st-gate-mx.on{color:var(--mbu-accent)}'
+  + '#st-gate[data-max=lanes] .st-gate-pane[data-pane=lanes]{flex:1 1 auto}#st-gate[data-max=lanes] #st-gate-lanes{max-height:none!important;height:auto!important;flex:1 1 auto}#st-gate[data-max=lanes] #st-gate-tabs,#st-gate[data-max=lanes] .st-gate-pane[data-pane=body],#st-gate[data-max] #st-gate-split,#st-gate[data-max=body] .st-gate-pane[data-pane=lanes]{display:none}'
   + '.st-gl-sub{position:absolute;left:0;right:0;top:calc(var(--i)*30px);height:30px}.st-gl-cl .st-gl-ic+.st-gl-ic{margin-left:1px}'
   + '.st-gl-cb{flex:1 0 auto;min-width:fit-content;height:14px;margin-left:2px;border-radius:7px;display:flex;align-items:center;gap:4px;padding:0 6px;box-sizing:border-box;background:color-mix(in srgb,var(--mbu-ok) 25%,transparent);font:600 10px/1 sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}'
   + '.st-gl-cl.bad .st-gl-cb{background:color-mix(in srgb,var(--mbu-error) 16%,transparent)}.st-gl-cb .m{color:var(--mbu-accent-text)}.st-gl-cb .x{color:#2f7fd6}.st-gl-cb .b{color:var(--mbu-error)}.st-gl-cb .t{margin-left:auto;padding-left:2px;font-weight:400;color:var(--mbu-text-weak)}'
@@ -738,8 +739,8 @@ function stGateBuild() {
     + '<span style="width:16px;flex:none"></span><button type="button" class="mbu-logpop-full" data-tip="Full screen\nA double-click on the title bar does the same">⛶</button>'
     + '<button type="button" class="mbu-logpop-min" data-tip="Minimize">–</button>'
     + '<button type="button" class="mbu-logpop-x" data-tip="Close">✕</button></div>'
-    + '<div id="st-gate-state"></div><div id="st-gate-sum"></div><div id="st-gate-lanes"></div><div id="st-gate-split" data-tip="Drag to resize\nA double click resets"><span class="st-gate-mx"><button type="button" data-mx="lanes" data-tip="Maximize the time line\nA second click restores both panels">▲</button><button type="button" data-mx="body" data-tip="Maximize the request table\nA second click restores both panels">▼</button></span></div><div id="st-gate-tabs" role="tablist"></div>'
-    + '<div id="st-gate-body"><table><thead><tr><th>Time</th><th>Tab' + stGateCfBtn('tab') + '</th><th>Script' + stGateCfBtn('s') + '</th><th>Verb' + stGateCfBtn('m') + '</th><th>Reason' + stGateCfBtn('r') + '</th><th>Entity' + stGateCfBtn('e') + '</th><th>Site</th><th>Request' + stGateCfBtn('rq') + '</th><th>Tries' + stGateCfBtn('n') + '</th><th>Result' + stGateCfBtn('res') + '</th><th>Wait' + stGateCfBtn('wt') + '</th><th>Rate limit' + stGateCfBtn('rl') + '</th></tr></thead><tbody></tbody></table></div>'
+    + '<div id="st-gate-state"></div><div id="st-gate-sum"></div><div class="st-gate-pane" data-pane="lanes"><div id="st-gate-lanes"></div><button type="button" class="st-gate-mx" data-mx="lanes" data-tip="Maximize the time line\nA second click restores both panels"><i></i></button></div><div id="st-gate-split" data-tip="Drag to resize\nA double click resets"></div><div id="st-gate-tabs" role="tablist"></div>'
+    + '<div class="st-gate-pane" data-pane="body"><button type="button" class="st-gate-mx" data-mx="body" data-tip="Maximize the request table\nA second click restores both panels"><i></i></button><div id="st-gate-body"><table><thead><tr><th>Time</th><th>Tab' + stGateCfBtn('tab') + '</th><th>Script' + stGateCfBtn('s') + '</th><th>Verb' + stGateCfBtn('m') + '</th><th>Reason' + stGateCfBtn('r') + '</th><th>Entity' + stGateCfBtn('e') + '</th><th>Site</th><th>Request' + stGateCfBtn('rq') + '</th><th>Tries' + stGateCfBtn('n') + '</th><th>Result' + stGateCfBtn('res') + '</th><th>Wait' + stGateCfBtn('wt') + '</th><th>Rate limit' + stGateCfBtn('rl') + '</th></tr></thead><tbody></tbody></table></div></div>'
     + '<div class="mbu-logpop-grip" data-tip="Resize"></div>';
   document.documentElement.appendChild(pop);   // outside the body, which Event Horizon swaps
   var $ = function (s) { return pop.querySelector(s); };
@@ -874,14 +875,14 @@ function stGateBuild() {
     draw();
   });
   var lanes = $('#st-gate-lanes');
-  // ▲ and ▼ on the separator: one panel takes the whole window, a second click restores both
-  pop.querySelectorAll('.st-gate-mx button').forEach(function (b) {
+  // [ ] in each panel's upper right corner: one panel takes the whole window, a second click restores both
+  pop.querySelectorAll('button.st-gate-mx').forEach(function (b) {
     b.addEventListener('pointerdown', function (e) { e.stopPropagation(); });
     b.addEventListener('dblclick', function (e) { e.stopPropagation(); });
     b.addEventListener('click', function () {
       var v = pop.dataset.max === b.dataset.mx ? '' : b.dataset.mx;
       if (v) pop.dataset.max = v; else delete pop.dataset.max;
-      pop.querySelectorAll('.st-gate-mx button').forEach(function (x) { x.classList.toggle('on', x.dataset.mx === v); });
+      pop.querySelectorAll('button.st-gate-mx').forEach(function (x) { x.classList.toggle('on', x.dataset.mx === v); });
     });
   });
   // the separator between the lanes and the table: a drag sets the lanes' height, a double click resets it
