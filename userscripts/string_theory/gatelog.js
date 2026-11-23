@@ -94,6 +94,7 @@ var ST_GATE_CSS = ''
   + [2, 3, 4, 5, 6, 7, 9, 11, 12].map(function (n) { return '#st-gate.hc' + n + ' tr>:nth-child(' + n + ')'; }).join(',') + '{display:none}'
   + '#st-gate-hud-box{position:fixed;right:14px;bottom:14px;width:520px;max-width:calc(100vw - 28px);z-index:var(--mbu-z-modal);background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:6px;padding:4px 8px;font-size:12px;opacity:.92}'
   + '#st-gate-hud-box .st-gate-hud-h{cursor:move;user-select:none;display:flex;gap:8px;align-items:center;height:22px}#st-gate-hud-box .st-gate-hud-h>span:first-child{font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}'
+  + '#st-gate-hud-box .st-gate-hud-rz{position:absolute;top:0;bottom:0;width:6px;cursor:ew-resize}#st-gate-hud-box .st-gate-hud-rz.l{left:-3px}#st-gate-hud-box .st-gate-hud-rz.r{right:-3px}#st-gate-hud-box .st-gate-hud-rz:hover{background:var(--mbu-accent);opacity:.5}'
   + '#st-gate-hud-box .st-gate-n{flex:1;color:var(--mbu-text-weak)}#st-gate-hud-box .bad{color:var(--mbu-error)}'
   + '#st-gate-hud-box .st-gate-hud-l{position:relative}#st-gate-hud-box .st-gl-bands{left:0}#st-gate-hud-box .st-gl-name{left:-180px;width:172px}'
   + '.st-gate-tries{display:inline-flex;gap:3px;vertical-align:middle}.st-gate-tries i{--c:var(--mbu-border);width:9px;height:9px;box-sizing:border-box;border-radius:2px;border:1px solid color-mix(in srgb,var(--c) 75%,transparent);background:color-mix(in srgb,var(--c) 30%,transparent)}'
@@ -670,8 +671,30 @@ function stGateHud(on) {
   stGateCss();
   var el = document.createElement('div');
   el.id = 'st-gate-hud-box'; el.className = 'mbu-ui';
-  el.innerHTML = '<div class="st-gate-hud-h"><span data-tip="Open the network log\nA double click anywhere on the HUD does the same"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Network</span><span class="st-gate-n"></span><button type="button" class="mbu-ov-x" aria-label="Close the HUD">✕</button></div><div class="st-gate-hud-l"></div>';
+  el.innerHTML = '<div class="st-gate-hud-h"><span data-tip="Open the network log\nA double click anywhere on the HUD does the same"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Network</span><span class="st-gate-n"></span><button type="button" class="mbu-ov-x" aria-label="Close the HUD">✕</button></div><div class="st-gate-hud-l"></div><div class="st-gate-hud-rz l"></div><div class="st-gate-hud-rz r"></div>';
   document.documentElement.appendChild(el);
+  var w0 = stGateWinState().hudW; if (w0) el.style.width = w0 + 'px';
+  // its left and right edges drag its width, which it remembers
+  el.querySelectorAll('.st-gate-hud-rz').forEach(function (h) {
+    h.addEventListener('dblclick', function (e) { e.stopPropagation(); });
+    h.addEventListener('mousedown', function (e) {
+      if (e.button !== 0) return;
+      e.preventDefault(); e.stopPropagation();
+      var left = h.classList.contains('l'), r = el.getBoundingClientRect(), x0 = e.clientX;
+      Object.assign(el.style, { left: r.left + 'px', top: r.top + 'px', right: 'auto', bottom: 'auto' });
+      var mv = function (ev) {
+        var d = ev.clientX - x0, w = left ? r.width - d : r.width + d;
+        w = Math.max(240, Math.min(w, left ? r.right : window.innerWidth - r.left));
+        el.style.width = w + 'px';
+        if (left) el.style.left = (r.right - w) + 'px';
+      };
+      var up = function () {
+        document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+        stGateRemember({ hudW: Math.round(el.offsetWidth), hudPos: { left: el.style.left, top: el.style.top } });
+      };
+      document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+    });
+  });
   var held = false, lanes = el.querySelector('.st-gate-hud-l');
   lanes.addEventListener('mouseenter', function () { held = true; });
   lanes.addEventListener('mouseleave', function () { held = false; });
