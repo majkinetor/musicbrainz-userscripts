@@ -774,10 +774,10 @@ function stGateBuild() {
     if (t) b.dataset.tip = 'Filter: ' + t + '\nRight click clears it'; else delete b.dataset.tip;
   };
   var drawFailed = '', lanesHeld = false, shownIds = [], sels = [], act = -1;
-  var tabsDraw = function (n) {
+  var tabsDraw = function (n, hostIds) {
     var el = $('#st-gate-tabs');
     el.innerHTML = sels.length ? '<span data-t="-1" class="' + (act < 0 ? 'on' : '') + '">All ' + n + '</span>' + sels.map(function (x, i) {
-      return '<span data-t="' + i + '" class="' + (act === i ? 'on' : '') + '">' + stEsc(x.name) + ' · ' + x.ids.length + '<span class="x" data-tip="Close this tab\nA right click closes every tab">×</span></span>';
+      return '<span data-t="' + i + '" class="' + (act === i ? 'on' : '') + '">' + stEsc(x.name) + ' · ' + x.ids.filter(function (id) { return !hostIds || hostIds[id]; }).length + '<span class="x" data-tip="Close this tab\nA right click closes every tab">×</span></span>';
     }).join('') : '';
   };
   var addSel = function (name, ids) {
@@ -795,12 +795,16 @@ function stGateBuild() {
     }
   };
   var drawNow = function () {
-    var me = stGateTab(), all = stGateEvents(), now = Date.now(), groups = stGateGroups(all, now), n = stGateCount(groups).n;
+    var me = stGateTab(), all = stGateEvents(), now = Date.now(), groups = stGateGroups(all, now);
+    // the site filter: a hidden site's requests are left out of the counts too
+    var inHost = groups.filter(function (g) { return g.sys || (g.h ? hosts.ext : hosts.mb); }), hostIds = {};
+    inHost.forEach(function (g) { if (!g.sys) hostIds[g.id] = 1; });
+    var n = stGateCount(inHost).n;
     $('.st-gate-n').textContent = n + ' request' + (n === 1 ? '' : 's');
     if (pop.classList.contains('min')) return;
     $('#st-gate-state').innerHTML = stGateStateHtml(stGateState(), me);
-    $('#st-gate-sum').innerHTML = stGateSumHtml(groups, now);
-    if (!lanesHeld) $('#st-gate-lanes').innerHTML = stGateLanesHtml(groups, all, now, me);   // held still under the mouse, so a tip stays put
+    $('#st-gate-sum').innerHTML = stGateSumHtml(inHost, now);
+    if (!lanesHeld) $('#st-gate-lanes').innerHTML = stGateLanesHtml(inHost, all, now, me);   // held still under the mouse, so a tip stays put
     lastGroups = groups;
     var shown = groups.filter(function (g) {
       for (var ck in cf) if (stGateCfVal(g, ck) !== cf[ck]) return false;
@@ -811,7 +815,7 @@ function stGateBuild() {
       if (mode === 're' && (g.sys || g.tries.length < 2)) return false;
       return true;
     });
-    tabsDraw(n);
+    tabsDraw(n, hostIds);
     shownIds = shown.filter(function (g) { return !g.sys; }).map(function (g) { return g.id; });
     if (shownIds.length < n) {   // a filter hides some: say how many are left, and which filter
       var why = [!hosts.mb && 'no MusicBrainz', !hosts.ext && 'no other sites', mode === 'bad' && 'failed', mode === 're' && 'retried'].concat(Object.keys(cf).concat(Object.keys(cft)).map(function (k) { return { tab: 'tab', s: 'script', m: 'verb', rq: 'request', n: 'tries', res: 'result', wt: 'wait', rl: 'rate limit' }[k] || k; })).filter(Boolean).join(', ');
