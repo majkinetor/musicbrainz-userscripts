@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.23.013814
+// @version      2026.11.23.015917
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -722,7 +722,9 @@ async function mbnFetch(url, init, o) {
         if (!mine()) return null;
         // the first caller was cancelled or aborted, this one wasn't: it asks for itself
     }
-    const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null, twin: null };
+    // epoch: the edits known before the read goes out. A read sent before a write and answered after it
+    // is kept under the old epoch, so the cache drops it instead of serving the answer from before the write
+    const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null, twin: null, epoch: mbnEditEpoch() };
     // #1097: a new read waits MBN_MERGE_WAIT before it books, so the reads a page's scripts send
     // at load in the same moment merge into it instead of all leaving on their own
     // #1097: only background reads wait for others; the lead and interactive reads go at once
@@ -739,7 +741,7 @@ async function mbnFetch(url, init, o) {
     try {
         const r = await run.p;
         if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();   // as for a joiner, above
-        if (r && r.ok && cacheable && !kept.has(r) && (lookup || fits(run))) await mbnCachePut(key, run.inc, r.clone());
+        if (r && r.ok && cacheable && !kept.has(r) && (lookup || fits(run))) await mbnCachePut(key, run.inc, r.clone(), run.epoch);
         return r ? r.clone() : r;
     } finally {
         const l = live.get(key) || [], i = l.indexOf(run);
@@ -782,10 +784,10 @@ async function mbnCacheGet(key, want) {
     } catch (e) {}
     return null;
 }
-async function mbnCachePut(key, inc, r) {
+async function mbnCachePut(key, inc, r, epoch = mbnEditEpoch()) {
     try {
         if (typeof caches === 'undefined') return;
-        const epoch = mbnEditEpoch(), body = await r.text(), h = new Headers();
+        const body = await r.text(), h = new Headers();
         h.set('content-type', r.headers.get('content-type') || 'application/json');
         h.set('x-mbn-at', String(Date.now()));
         h.set('x-mbn-epoch', epoch);
@@ -5123,8 +5125,10 @@ const mbLastWrite = () => { try { return +localStorage.getItem('mbLastWrite') ||
 const kpDrops = () => { try { return JSON.parse(localStorage.getItem('eh.kpDrop')) || []; } catch (e) { return []; } };
 function kpWrote(ids) {
     ids = (ids || []).filter(Boolean).map(i => String(i).toLowerCase());
-    if (!ids.length) { KP_MEM.clear(); try { localStorage.setItem('mbLastWrite', String(Date.now())); } catch (e) { /* storage blocked: this tab's memory is dropped all the same */ } return; }
+    if (!ids.length) { KP_MEM.clear(); KP_FLY.clear(); try { localStorage.setItem('mbLastWrite', String(Date.now())); } catch (e) { /* storage blocked: this tab's memory is dropped all the same */ } return; }
     for (const k of [...KP_MEM.keys()]) if (ids.some(i => k.includes(i))) KP_MEM.delete(k);
+    // a request still on its way went out before the write: the next ask sends a new one instead of sharing it
+    for (const k of [...KP_FLY.keys()]) if (ids.some(i => k.includes(i))) KP_FLY.delete(k);
     try { const now = Date.now(), l = kpDrops().filter(x => !ids.includes(x[0])); ids.forEach(i => l.push([i, now])); localStorage.setItem('eh.kpDrop', JSON.stringify(l.slice(-100))); } catch (e) { /* storage blocked: this tab's memory is dropped all the same */ }
 }
 const kpStore = mode => (kpDb || (kpDb = new Promise((ok, no) => {
@@ -5138,8 +5142,10 @@ async function kpGet(k) {
     if (!e) try { e = await kpStore('readonly').then(s => new Promise(ok => { const q = s.get(k); q.onsuccess = () => ok(q.result); q.onerror = () => ok(null); })); if (e) kpMem(e); } catch (x) { e = null; }
     return e && e.at > mbLastWrite() && !kpDrops().some(x => x[1] >= e.at && e.k.includes(x[0])) ? e : null;
 }
-function kpPut(k, t) {
-    const e = { k, at: Date.now(), t };
+// at: when its request went out, not when it came back: an answer to a request sent before a write is older than that
+// write, so the write's drop covers it
+function kpPut(k, t, at = Date.now()) {
+    const e = { k, at, t };
     kpMem(e);
     // past the cap, the longest unchecked go
     kpStore('readwrite').then(s => {
@@ -5155,7 +5161,7 @@ const kpCanon = t => JSON.stringify(JSON.parse(t), (k, v) => v && typeof v === '
 async function kept(k, get) {
     const e = await kpGet(k), g = bg => get(bg).then(kpCanon);
     if (e) { if (kpUsed && e.at < Math.max(kpSeen, Date.now() - KP_TTL)) kpUsed.set(k, { get: () => g(true), t: e.t }); return e.t; }
-    if (!KP_FLY.has(k)) KP_FLY.set(k, g().then(t => { kpPut(k, t); return t; }).finally(() => KP_FLY.delete(k)));
+    if (!KP_FLY.has(k)) { const at = Date.now(), p = g().then(t => { kpPut(k, t, at); return t; }).finally(() => { if (KP_FLY.get(k) === p) KP_FLY.delete(k); }); KP_FLY.set(k, p); }
     return KP_FLY.get(k);
 }
 // the kept answers a page drew from, asked again one at a time while it still shows: true when one changed
@@ -5163,7 +5169,7 @@ async function kpCheck(used, live) {
     let changed = 0;
     for (const [k, u] of used) {
         if (!live()) return false;
-        try { const t = await u.get(); kpPut(k, t); mineKept(k, t); if (t !== u.t) { changed++; LOG.debug('Kept answer changed: ' + k); } } catch (e) { LOG.debug('Kept answer not checked: ' + k + ', ' + (e && e.message || e)); }
+        try { const at = Date.now(), t = await u.get(); kpPut(k, t, at); mineKept(k, t); if (t !== u.t) { changed++; LOG.debug('Kept answer changed: ' + k); } } catch (e) { LOG.debug('Kept answer not checked: ' + k + ', ' + (e && e.message || e)); }
     }
     LOG.debug('Kept answers checked: ' + used.size + ', ' + changed + ' changed');
     return changed > 0 && live();

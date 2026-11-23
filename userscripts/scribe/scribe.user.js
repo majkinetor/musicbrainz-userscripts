@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.23.011310
+// @version      2026.11.23.015917
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the corner button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBkPSJNNDYgMjQgTDI2IDI0IEwyNiAxMDQgTDQ2IDEwNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04MiAyNCBMMTAyIDI0IEwxMDIgMTA0IEw4MiAxMDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJmNmY1NCIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNjQgNDAgTDUxIDY2IEw2NCA5NCBMNzcgNjYgWiIgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iNjQiIHkxPSI3NCIgeDI9IjY0IiB5Mj0iOTIiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==
@@ -611,7 +611,9 @@
           if (!mine()) return null;
           // the first caller was cancelled or aborted, this one wasn't: it asks for itself
       }
-      const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null, twin: null };
+      // epoch: the edits known before the read goes out. A read sent before a write and answered after it
+      // is kept under the old epoch, so the cache drops it instead of serving the answer from before the write
+      const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null, twin: null, epoch: mbnEditEpoch() };
       // #1097: a new read waits MBN_MERGE_WAIT before it books, so the reads a page's scripts send
       // at load in the same moment merge into it instead of all leaving on their own
       // #1097: only background reads wait for others; the lead and interactive reads go at once
@@ -628,7 +630,7 @@
       try {
           const r = await run.p;
           if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();   // as for a joiner, above
-          if (r && r.ok && cacheable && !kept.has(r) && (lookup || fits(run))) await mbnCachePut(key, run.inc, r.clone());
+          if (r && r.ok && cacheable && !kept.has(r) && (lookup || fits(run))) await mbnCachePut(key, run.inc, r.clone(), run.epoch);
           return r ? r.clone() : r;
       } finally {
           const l = live.get(key) || [], i = l.indexOf(run);
@@ -671,10 +673,10 @@
       } catch (e) {}
       return null;
   }
-  async function mbnCachePut(key, inc, r) {
+  async function mbnCachePut(key, inc, r, epoch = mbnEditEpoch()) {
       try {
           if (typeof caches === 'undefined') return;
-          const epoch = mbnEditEpoch(), body = await r.text(), h = new Headers();
+          const body = await r.text(), h = new Headers();
           h.set('content-type', r.headers.get('content-type') || 'application/json');
           h.set('x-mbn-at', String(Date.now()));
           h.set('x-mbn-epoch', epoch);

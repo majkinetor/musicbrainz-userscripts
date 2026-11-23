@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.23.013308
+// @version      2026.11.23.015917
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -614,7 +614,9 @@
           if (!mine()) return null;
           // the first caller was cancelled or aborted, this one wasn't: it asks for itself
       }
-      const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null, twin: null };
+      // epoch: the edits known before the read goes out. A read sent before a write and answered after it
+      // is kept under the old epoch, so the cache drops it instead of serving the answer from before the write
+      const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null, twin: null, epoch: mbnEditEpoch() };
       // #1097: a new read waits MBN_MERGE_WAIT before it books, so the reads a page's scripts send
       // at load in the same moment merge into it instead of all leaving on their own
       // #1097: only background reads wait for others; the lead and interactive reads go at once
@@ -631,7 +633,7 @@
       try {
           const r = await run.p;
           if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();   // as for a joiner, above
-          if (r && r.ok && cacheable && !kept.has(r) && (lookup || fits(run))) await mbnCachePut(key, run.inc, r.clone());
+          if (r && r.ok && cacheable && !kept.has(r) && (lookup || fits(run))) await mbnCachePut(key, run.inc, r.clone(), run.epoch);
           return r ? r.clone() : r;
       } finally {
           const l = live.get(key) || [], i = l.indexOf(run);
@@ -674,10 +676,10 @@
       } catch (e) {}
       return null;
   }
-  async function mbnCachePut(key, inc, r) {
+  async function mbnCachePut(key, inc, r, epoch = mbnEditEpoch()) {
       try {
           if (typeof caches === 'undefined') return;
-          const epoch = mbnEditEpoch(), body = await r.text(), h = new Headers();
+          const body = await r.text(), h = new Headers();
           h.set('content-type', r.headers.get('content-type') || 'application/json');
           h.set('x-mbn-at', String(Date.now()));
           h.set('x-mbn-epoch', epoch);

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.23.011310
+// @version      2026.11.23.015917
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -664,7 +664,9 @@
           if (!mine()) return null;
           // the first caller was cancelled or aborted, this one wasn't: it asks for itself
       }
-      const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null, twin: null };
+      // epoch: the edits known before the read goes out. A read sent before a write and answered after it
+      // is kept under the old epoch, so the cache drops it instead of serving the answer from before the write
+      const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null, twin: null, epoch: mbnEditEpoch() };
       // #1097: a new read waits MBN_MERGE_WAIT before it books, so the reads a page's scripts send
       // at load in the same moment merge into it instead of all leaving on their own
       // #1097: only background reads wait for others; the lead and interactive reads go at once
@@ -681,7 +683,7 @@
       try {
           const r = await run.p;
           if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();   // as for a joiner, above
-          if (r && r.ok && cacheable && !kept.has(r) && (lookup || fits(run))) await mbnCachePut(key, run.inc, r.clone());
+          if (r && r.ok && cacheable && !kept.has(r) && (lookup || fits(run))) await mbnCachePut(key, run.inc, r.clone(), run.epoch);
           return r ? r.clone() : r;
       } finally {
           const l = live.get(key) || [], i = l.indexOf(run);
@@ -724,10 +726,10 @@
       } catch (e) {}
       return null;
   }
-  async function mbnCachePut(key, inc, r) {
+  async function mbnCachePut(key, inc, r, epoch = mbnEditEpoch()) {
       try {
           if (typeof caches === 'undefined') return;
-          const epoch = mbnEditEpoch(), body = await r.text(), h = new Headers();
+          const body = await r.text(), h = new Headers();
           h.set('content-type', r.headers.get('content-type') || 'application/json');
           h.set('x-mbn-at', String(Date.now()));
           h.set('x-mbn-epoch', epoch);

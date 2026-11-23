@@ -721,7 +721,9 @@ export async function mbnFetch(url, init, o) {
         if (!mine()) return null;
         // the first caller was cancelled or aborted, this one wasn't: it asks for itself
     }
-    const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null, twin: null };
+    // epoch: the edits known before the read goes out. A read sent before a write and answered after it
+    // is kept under the old epoch, so the cache drops it instead of serving the answer from before the write
+    const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null, twin: null, epoch: mbnEditEpoch() };
     // #1097: a new read waits MBN_MERGE_WAIT before it books, so the reads a page's scripts send
     // at load in the same moment merge into it instead of all leaving on their own
     // #1097: only background reads wait for others; the lead and interactive reads go at once
@@ -738,7 +740,7 @@ export async function mbnFetch(url, init, o) {
     try {
         const r = await run.p;
         if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();   // as for a joiner, above
-        if (r && r.ok && cacheable && !kept.has(r) && (lookup || fits(run))) await mbnCachePut(key, run.inc, r.clone());
+        if (r && r.ok && cacheable && !kept.has(r) && (lookup || fits(run))) await mbnCachePut(key, run.inc, r.clone(), run.epoch);
         return r ? r.clone() : r;
     } finally {
         const l = live.get(key) || [], i = l.indexOf(run);
@@ -798,10 +800,10 @@ export async function mbnCacheGet(key, want) {
 }
 
 /** Keep an answer for `key` with incs `inc`; drops old entries past MBN_CACHE_MAX. */
-export async function mbnCachePut(key, inc, r) {
+export async function mbnCachePut(key, inc, r, epoch = mbnEditEpoch()) {
     try {
         if (typeof caches === 'undefined') return;
-        const epoch = mbnEditEpoch(), body = await r.text(), h = new Headers();
+        const body = await r.text(), h = new Headers();
         h.set('content-type', r.headers.get('content-type') || 'application/json');
         h.set('x-mbn-at', String(Date.now()));
         h.set('x-mbn-epoch', epoch);

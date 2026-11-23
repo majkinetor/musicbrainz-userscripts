@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.23.011310
+// @version      2026.11.23.015917
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm, RateYourMusic and Album of the Year, read when you open their pages), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjI4Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMxNmNjZjgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjZmZhZTM4Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -682,7 +682,9 @@
           if (!mine()) return null;
           // the first caller was cancelled or aborted, this one wasn't: it asks for itself
       }
-      const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null, twin: null };
+      // epoch: the edits known before the read goes out. A read sent before a write and answered after it
+      // is kept under the old epoch, so the cache drops it instead of serving the answer from before the write
+      const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null, twin: null, epoch: mbnEditEpoch() };
       // #1097: a new read waits MBN_MERGE_WAIT before it books, so the reads a page's scripts send
       // at load in the same moment merge into it instead of all leaving on their own
       // #1097: only background reads wait for others; the lead and interactive reads go at once
@@ -699,7 +701,7 @@
       try {
           const r = await run.p;
           if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();   // as for a joiner, above
-          if (r && r.ok && cacheable && !kept.has(r) && (lookup || fits(run))) await mbnCachePut(key, run.inc, r.clone());
+          if (r && r.ok && cacheable && !kept.has(r) && (lookup || fits(run))) await mbnCachePut(key, run.inc, r.clone(), run.epoch);
           return r ? r.clone() : r;
       } finally {
           const l = live.get(key) || [], i = l.indexOf(run);
@@ -742,10 +744,10 @@
       } catch (e) {}
       return null;
   }
-  async function mbnCachePut(key, inc, r) {
+  async function mbnCachePut(key, inc, r, epoch = mbnEditEpoch()) {
       try {
           if (typeof caches === 'undefined') return;
-          const epoch = mbnEditEpoch(), body = await r.text(), h = new Headers();
+          const body = await r.text(), h = new Headers();
           h.set('content-type', r.headers.get('content-type') || 'application/json');
           h.set('x-mbn-at', String(Date.now()));
           h.set('x-mbn-epoch', epoch);

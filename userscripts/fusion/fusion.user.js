@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.23.011310
+// @version      2026.11.23.015917
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -670,7 +670,9 @@ async function mbnFetch(url, init, o) {
         if (!mine()) return null;
         // the first caller was cancelled or aborted, this one wasn't: it asks for itself
     }
-    const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null, twin: null };
+    // epoch: the edits known before the read goes out. A read sent before a write and answered after it
+    // is kept under the old epoch, so the cache drops it instead of serving the answer from before the write
+    const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null, twin: null, epoch: mbnEditEpoch() };
     // #1097: a new read waits MBN_MERGE_WAIT before it books, so the reads a page's scripts send
     // at load in the same moment merge into it instead of all leaving on their own
     // #1097: only background reads wait for others; the lead and interactive reads go at once
@@ -687,7 +689,7 @@ async function mbnFetch(url, init, o) {
     try {
         const r = await run.p;
         if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();   // as for a joiner, above
-        if (r && r.ok && cacheable && !kept.has(r) && (lookup || fits(run))) await mbnCachePut(key, run.inc, r.clone());
+        if (r && r.ok && cacheable && !kept.has(r) && (lookup || fits(run))) await mbnCachePut(key, run.inc, r.clone(), run.epoch);
         return r ? r.clone() : r;
     } finally {
         const l = live.get(key) || [], i = l.indexOf(run);
@@ -730,10 +732,10 @@ async function mbnCacheGet(key, want) {
     } catch (e) {}
     return null;
 }
-async function mbnCachePut(key, inc, r) {
+async function mbnCachePut(key, inc, r, epoch = mbnEditEpoch()) {
     try {
         if (typeof caches === 'undefined') return;
-        const epoch = mbnEditEpoch(), body = await r.text(), h = new Headers();
+        const body = await r.text(), h = new Headers();
         h.set('content-type', r.headers.get('content-type') || 'application/json');
         h.set('x-mbn-at', String(Date.now()));
         h.set('x-mbn-epoch', epoch);
