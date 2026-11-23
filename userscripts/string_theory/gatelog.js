@@ -35,7 +35,7 @@ var ST_GATE_CSS = ''
   + '.st-gl-band{position:absolute;top:0;bottom:0;background:var(--mbu-error-bg)}'
   + '.st-gl-lane{position:relative;height:calc(var(--r,1)*30px);border-top:1px solid var(--mbu-divider)}'
   + '.st-gl-ic{position:absolute;top:50%;width:21px;height:21px;margin:-10px 0 0 -10px;z-index:1;object-fit:contain}'
-  + '.st-gl-ic.at{margin:-10px 0 0 -23px}#st-gate-hud-box .st-gl-ic.at{margin:-6px 0 0 -15px}#st-gate-hud-box .st-gl-ic{width:12px;height:12px;margin:-6px 0 0 -6px}#st-gate-hud-box .st-gl-cl b{height:12px;font-size:9px;line-height:12px;border-radius:6px;margin-bottom:-2px}#st-gate-hud-box .st-gl-cl b i{padding:0 3px}#st-gate-hud-box .st-gl-name{display:none}#st-gate-hud-box .st-gl-cl{height:12px;margin-top:-6px}'
+  + '.st-gl-ic.at{margin:-10px 0 0 -23px}#st-gate-hud-box .st-gl-name{display:none}'
   + '.st-gl-cl{position:absolute;top:50%;height:21px;margin:-10px 0 0 -10px;z-index:2;display:flex;align-items:center;cursor:default}.st-gl-cl b{position:absolute;right:-6px;top:-5px;min-width:11px;height:11px;padding:0 2px;box-sizing:border-box;border-radius:6px;background:var(--mbu-accent);color:#fff;font-size:8px;line-height:11px;text-align:center}.st-gl-cl b{display:flex;padding:0;overflow:hidden;background:none}.st-gl-cl b i{font-style:normal;padding:0 3px;min-width:6px;background:color-mix(in srgb,var(--mbu-accent) 14%,transparent);color:var(--mbu-accent-text);font-weight:normal}.st-gl-cl b i.x{background:rgba(47,127,214,.14);color:#2f7fd6}.st-gl-cl b{z-index:3;top:auto;right:auto;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:-2px;height:13px;border-radius:7px;font-size:10px;line-height:13px}.st-gl-cl.bad b i.x{color:var(--mbu-error)}'
   + '.st-gl-pi{position:absolute;top:3px;display:flex;height:14px;margin-left:-35px;z-index:1}.st-gl-pi svg{width:14px;height:14px;display:block}.st-gl-zx{color:var(--mbu-accent);display:inline-block;width:34px;text-align:right;margin-right:6px;flex:none}.st-gl-lt{display:block;width:14px;height:14px;border-radius:3px;color:#fff;font:700 9px/14px system-ui,sans-serif;text-align:center}.st-gl-pi .st-gl-ic{position:static;width:14px;height:14px;margin:0 3px 0 0;flex:none}'
   + '.st-gl-cl .st-gl-ic{position:static;margin:0;flex:none;width:21px!important;height:21px!important;max-width:none}'
@@ -44,7 +44,7 @@ var ST_GATE_CSS = ''
   + '.st-gate-pane{position:relative;display:flex;flex-direction:column;min-height:0}.st-gate-pane[data-pane=lanes]{flex:0 1 auto}.st-gate-pane[data-pane=body]{flex:1 1 auto}'
   + '.st-gate-sumrow{display:flex;align-items:flex-start;gap:8px}.st-gate-sumrow>#st-gate-sum{flex:1 1 auto;min-width:0}.st-gate-sumrow>.st-gate-mx{flex:0 0 auto;margin:5px 13px 0 0}.st-gate-mx{font-size:12px;line-height:normal;color:var(--mbu-accent-text);background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}.st-gate-pane .st-gate-mx{position:absolute;right:16px;top:3px;z-index:4}.st-gate-mx:hover{background:var(--mbu-accent-soft)}#st-gate[data-max=body] .st-gate-sumrow>.st-gate-mx{display:none}.st-gate-mx.on{color:var(--mbu-accent)}'
   + '#st-gate[data-max=lanes] .st-gate-pane[data-pane=lanes]{flex:1 1 auto}#st-gate[data-max=lanes] #st-gate-lanes{max-height:none!important;height:auto!important;flex:1 1 auto}#st-gate[data-max=lanes] #st-gate-tabs,#st-gate[data-max=lanes] .st-gate-pane[data-pane=body],#st-gate[data-max] #st-gate-split,#st-gate[data-max=body] .st-gate-pane[data-pane=lanes]{display:none}'
-  + '.st-gl-sub{position:absolute;left:0;right:0;top:calc(var(--i)*30px);height:30px}.st-gl-cl .st-gl-ic+.st-gl-ic{margin-left:1px}.st-gl-ic.small{scale:.8}.st-gl-cl .st-gl-ic.small{scale:none;width:17px!important;height:17px!important;margin:0 2px}#st-gate-hud-box .st-gl-cl .st-gl-ic{margin:0}#st-gate-hud-box .st-gl-cl .st-gl-ic+.st-gl-ic{margin-left:1px}#st-gate-hud-box .st-gl-cl .st-gl-ic.small{margin:0 2px}'
+  + '.st-gl-sub{position:absolute;left:0;right:0;top:calc(var(--i)*30px);height:30px}.st-gl-cl .st-gl-ic+.st-gl-ic{margin-left:1px}.st-gl-ic.small{scale:.8}.st-gl-cl .st-gl-ic.small{scale:none;width:17px!important;height:17px!important;margin:0 2px}'
   + '.st-gl-cb{flex:1 0 auto;min-width:fit-content;height:14px;margin-left:2px;border-radius:7px;display:flex;align-items:center;gap:4px;padding:0 6px;box-sizing:border-box;background:color-mix(in srgb,var(--mbu-ok) 25%,transparent);font:600 10px/1 sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}'
   + '.st-gl-cl.bad .st-gl-cb{background:color-mix(in srgb,var(--mbu-error) 16%,transparent)}.st-gl-cb .m{color:var(--mbu-accent-text)}.st-gl-cb .x{color:#2f7fd6}.st-gl-cb .b{color:var(--mbu-error)}.st-gl-cb .t{margin-left:auto;padding-left:2px;font-weight:400;color:var(--mbu-text-weak)}'
   + '.st-gl-zoom{position:fixed;z-index:2147483647;width:450px;padding:8px 10px;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);font-size:12px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}.st-gl-zoom::-webkit-scrollbar{display:none}'
@@ -95,7 +95,7 @@ var ST_GATE_CSS = ''
   + '#st-gate-hud-box{position:fixed;right:14px;bottom:14px;width:520px;max-width:calc(100vw - 28px);z-index:var(--mbu-z-modal);background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:6px;padding:4px 8px;font-size:12px;opacity:.92}'
   + '#st-gate-hud-box .st-gate-hud-h{cursor:move;user-select:none;display:flex;gap:8px;align-items:center;height:22px}#st-gate-hud-box .st-gate-hud-h>span:first-child{font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}'
   + '#st-gate-hud-box .st-gate-n{flex:1;color:var(--mbu-text-weak)}#st-gate-hud-box .bad{color:var(--mbu-error)}'
-  + '#st-gate-hud-box .st-gate-hud-l{position:relative}#st-gate-hud-box .st-gl-bands{left:0}#st-gate-hud-box .st-gl-name{left:-180px;width:172px}#st-gate-hud-box .st-gl-lane{height:calc(var(--r,1)*20px)}#st-gate-hud-box .st-gl-sub{top:calc(var(--i)*20px);height:20px}#st-gate-hud-box .st-gl-cb{height:11px;font-size:9px;padding:0 4px}#st-gate-hud-box .st-gl-name{line-height:20px}#st-gate-hud-box .st-gl-w,#st-gate-hud-box .st-gl-f{top:3px;height:14px}'
+  + '#st-gate-hud-box .st-gate-hud-l{position:relative}#st-gate-hud-box .st-gl-bands{left:0}#st-gate-hud-box .st-gl-name{left:-180px;width:172px}'
   + '.st-gate-tries{display:inline-flex;gap:3px;vertical-align:middle}.st-gate-tries i{--c:var(--mbu-border);width:9px;height:9px;box-sizing:border-box;border-radius:2px;border:1px solid color-mix(in srgb,var(--c) 75%,transparent);background:color-mix(in srgb,var(--c) 30%,transparent)}'
   + '.st-gate-tries i.ok{--c:var(--mbu-ok)}.st-gate-tries i.re{--c:var(--mbu-warn)}.st-gate-tries i.bad{--c:var(--mbu-error)}.st-gate-tries i.go{--c:var(--mbu-info)}'
   + '.st-gl-gc{display:inline-block;min-width:18px;padding:0 5px;margin-right:6px;border-radius:8px;background:var(--mbu-accent);color:var(--mbu-bg);font-size:11px;line-height:16px;text-align:center}.st-gate-pill{display:inline-block;padding:0 8px;border-radius:999px;font-size:12px;white-space:nowrap;background:var(--mbu-bg-hover)}'
@@ -368,10 +368,10 @@ function stGateZoomHtml(items, now) {
       + '<span class="st-gl-zt">' + stGateSec(x.b - x.a) + '</span></div>';
   }).join('');
 }
-function stGateLanesHtml(groups, all, now, me) {
+function stGateLanesHtml(groups, all, now, me, box) {
   stGateZoomWire();
   // the time line keeps a margin at each end, so an icon or a cluster's pill does not go past the edge
-  var lw = ((document.querySelector('.st-gl-lane') || {}).clientWidth || 600), insL = 26 / lw * 100, insR = 120 / lw * 100;
+  var lw = (((box || document).querySelector('.st-gl-lane') || {}).clientWidth || (box ? box.clientWidth : 0) || 600), insL = 26 / lw * 100, insR = 120 / lw * 100;
   var at = function (p) { return insL + p * (100 - insL - insR) / 100; };
   var t0 = now - ST_GATE_SPAN, pct = function (t) { return at(Math.max(0, Math.min(100, (t - t0) / ST_GATE_SPAN * 100))); };
   var bar = function (cls, a, b, tip) { return '<i class="' + cls + '"' + (tip ? ' data-tip="' + stEsc(tip) + '"' : '') + ' style="left:' + pct(a).toFixed(2) + '%;width:' + (pct(b) - pct(a)).toFixed(2) + '%"></i>'; };
@@ -697,11 +697,16 @@ function stGateHud(on) {
   var draw = function () {
     if (!el.isConnected) { clearInterval(el.timer); return; }
     try {
+      var hs = Math.max(30000, Math.round(ST_GATE_SPAN * (lanes.clientWidth || 500) / 1200 / 10000) * 10000);
       var all = stGateEvents(), now = Date.now(), st = stGateWinState(), hosts = st.hosts || { mb: st.src !== 'other', ext: st.src !== 'mb' };
       // the big window's site filter applies here too
-      var groups = stGateGroups(all, now).filter(function (g) { return g.sys || (g.h ? hosts.ext : hosts.mb); }), c = stGateCount(groups.filter(function (g) { return now - g.t <= ST_GATE_SPAN; }));
-      el.querySelector('.st-gate-n').innerHTML = c.n + ' in ' + stGateSpanTxt() + (c.bad ? ' · <span class="bad">' + c.bad + ' failed</span>' : '') + (c.go ? ' · ' + c.go + ' on the way' : '');
-      if (!held) lanes.innerHTML = stGateLanesHtml(groups, all, now, stGateTab());
+      var groups = stGateGroups(all, now).filter(function (g) { return g.sys || (g.h ? hosts.ext : hosts.mb); }), c = stGateCount(groups.filter(function (g) { return now - g.t <= hs; }));
+      el.querySelector('.st-gate-n').innerHTML = c.n + ' in ' + stGateSpanTxt(hs) + (c.bad ? ' · <span class="bad">' + c.bad + ' failed</span>' : '') + (c.go ? ' · ' + c.go + ' on the way' : '');
+      if (!held) {
+        // the same scale as the big window (its span over about 1200 px), so the HUD shows the last part of it
+        var span0 = ST_GATE_SPAN; ST_GATE_SPAN = hs;
+        try { lanes.innerHTML = stGateLanesHtml(groups, all, now, stGateTab(), lanes); } finally { ST_GATE_SPAN = span0; }
+      }
     } catch (e) { /* a bad event: the next tick tries again */ }
   };
   el.timer = setInterval(draw, 1000);
