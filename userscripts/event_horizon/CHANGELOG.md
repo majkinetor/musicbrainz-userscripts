@@ -1,5 +1,11 @@
 # Event Horizon Changelog
 
+## [2026.11.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.23)
+
+### Fixes
+
+1. Approve option confused with cancel edit ([#1099](https://github.com/majkinetor/musicbrainz-userscripts/issues/1099))
+
 ## [2026.11.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.21)
 
 ### Features

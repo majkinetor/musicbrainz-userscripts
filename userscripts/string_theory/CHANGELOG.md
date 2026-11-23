@@ -1,5 +1,75 @@
 # String Theory Changelog
 
+## [2026.11.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.23)
+
+### Features
+
+1. Short cache for repeated reads ([#1098](https://github.com/majkinetor/musicbrainz-userscripts/issues/1098))
+1. Performance enhacements ([#1095](https://github.com/majkinetor/musicbrainz-userscripts/issues/1095))
+1. Merge waiting reads that differ only in inc ([#1094](https://github.com/majkinetor/musicbrainz-userscripts/issues/1094))
+1. MB request gate viewer ([#1093](https://github.com/majkinetor/musicbrainz-userscripts/issues/1093))
+
+### Fixes
+
+1. Requests that start together are not merged ([#1097](https://github.com/majkinetor/musicbrainz-userscripts/issues/1097))
+1. Queue released all at once after a hold ([#1096](https://github.com/majkinetor/musicbrainz-userscripts/issues/1096))
+
+### [Apollo Editor](../apollo_editor/README.md)
+
+1. Small improvements
+
+### [Art Station](../art_station/README.md)
+
+1. Small improvements
+
+### [Credit Hoarder](../credit_hoarder/README.md)
+
+1. Small improvements
+
+### [Event Horizon](../event_horizon/README.md)
+
+#### Fixes
+
+1. Approve option confused with cancel edit ([#1099](https://github.com/majkinetor/musicbrainz-userscripts/issues/1099))
+
+### [Falcon](../falcon/README.md)
+
+1. Small improvements
+
+### [First Contact](../first_contact/README.md)
+
+1. Small improvements
+
+### [Fusion](../fusion/README.md)
+
+1. Small improvements
+
+### [Fuzzy Logic](../fuzzy_logic/README.md)
+
+1. Small improvements
+
+### [Group Therapy](../group_therapy/README.md)
+
+1. Small improvements
+
+### [ISRC Scout](../isrc_scout/README.md)
+
+1. Small improvements
+
+### [Mammoth](../mammoth/README.md)
+
+1. Small improvements
+
+### [Mission Control](../mission_control/README.md)
+
+#### Features
+
+1. "Take all in" In MC add release consolidation ([#1088](https://github.com/majkinetor/musicbrainz-userscripts/issues/1088))
+
+### [Platform Check](../platform_check/README.md)
+
+1. Small improvements
+
 ## [2026.11.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.21)
 
 ### [Apollo Editor](../apollo_editor/README.md)

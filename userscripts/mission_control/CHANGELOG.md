@@ -1,5 +1,11 @@
 # Mission Control Changelog
 
+## [2026.11.23](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.23)
+
+### Features
+
+1. "Take all in" In MC add release consolidation ([#1088](https://github.com/majkinetor/musicbrainz-userscripts/issues/1088))
+
 ## [2026.11.21](https://github.com/majkinetor/musicbrainz-userscripts/releases/tag/2026.11.21)
 
 ### Features
