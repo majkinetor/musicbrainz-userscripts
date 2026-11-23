@@ -40,7 +40,7 @@ var ST_GATE_CSS = ''
   + '.st-gl-pi{position:absolute;top:3px;display:flex;height:14px;margin-left:-35px;z-index:1}.st-gl-pi svg{width:14px;height:14px;display:block}.st-gl-zx{color:var(--mbu-accent);display:inline-block;width:34px;text-align:right;margin-right:6px;flex:none}.st-gl-lt{display:block;width:14px;height:14px;border-radius:3px;color:#fff;font:700 9px/14px system-ui,sans-serif;text-align:center}.st-gl-pi .st-gl-ic{position:static;width:14px;height:14px;margin:0 3px 0 0;flex:none}'
   + '.st-gl-cl .st-gl-ic{position:static;margin:0}'
   + '.st-gl-zoom{position:fixed;z-index:2147483647;width:340px;padding:8px 10px;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);font-size:12px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}.st-gl-zoom::-webkit-scrollbar{display:none}'
-  + '.st-gl-zh{color:var(--mbu-text-weak);margin-bottom:4px}.st-gl-zr{display:flex;align-items:center;gap:6px;height:26px}.st-gl-zr .st-gl-ic{position:static;margin:0}'
+  + '.st-gl-zh{color:var(--mbu-text-weak);margin-bottom:4px}.st-gl-zr{display:flex;align-items:center;gap:6px;height:26px;cursor:pointer;border-radius:var(--mbu-radius)}.st-gl-zr:hover{background:var(--mbu-bg-hover)}.st-gl-zr .st-gl-ic{position:static;margin:0}'
   + '.st-gl-zn{flex:0 0 220px;}.st-gl-zn .h{color:var(--mbu-text-weak)}.st-gl-zn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.st-gl-zl{position:relative;flex:1;height:20px;margin-left:20px}.st-gl-zr .st-gl-ic.at{position:absolute;top:2px;margin:0 0 0 -19px}.st-gl-zl .st-gl-f{top:0;height:20px}.st-gl-zt{flex:0 0 44px;text-align:right;color:var(--mbu-text-weak)}'
   + '.st-gl-name{position:absolute;left:-180px;width:172px;top:0;line-height:30px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--mbu-text-weak)}'
   + '.st-gl-name b{color:var(--mbu-text);font-weight:600}.st-gl-lane.me .st-gl-name b{color:var(--mbu-accent-text)}'
@@ -408,6 +408,10 @@ function stGateLanesHtml(groups, all, now, me) {
 function stGateZoomWire() {
   if (stGateZoomWire.on) return; stGateZoomWire.on = 1;
   var pop = null, bye = 0;
+  // a click on a row opens that request in the table (openFromLanes), then the popup goes
+  document.addEventListener('click', function (e) {
+    if (pop && e.target.closest && e.target.closest('.st-gl-zoom [data-id]')) setTimeout(function () { if (pop) pop.remove(), pop = null; }, 0);
+  });
   // the popup stays a moment after the mouse leaves, so it can cross the gap and click a row in it
   document.addEventListener('mouseover', function (e) {
     var c = e.target.closest && e.target.closest('.st-gl-cl');
