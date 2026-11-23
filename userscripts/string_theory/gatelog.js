@@ -33,13 +33,15 @@ var ST_GATE_CSS = ''
   + '#st-gate-lanes{position:relative;flex:0 0 auto;margin:4px 13px 8px;padding-left:180px}'
   + '.st-gl-bands{position:absolute;top:0;bottom:16px;left:180px;right:0}'
   + '.st-gl-band{position:absolute;top:0;bottom:0;background:var(--mbu-error-bg)}'
-  + '.st-gl-lane{position:relative;height:30px;border-top:1px solid var(--mbu-divider)}'
+  + '.st-gl-lane{position:relative;height:calc(var(--r,1)*30px);border-top:1px solid var(--mbu-divider)}'
   + '.st-gl-ic{position:absolute;top:50%;width:21px;height:21px;margin:-10px 0 0 -10px;z-index:1;object-fit:contain}'
   + '.st-gl-ic.at{margin:-10px 0 0 -23px}#st-gate-hud-box .st-gl-ic.at{margin:-6px 0 0 -15px}#st-gate-hud-box .st-gl-ic{width:12px;height:12px;margin:-6px 0 0 -6px}#st-gate-hud-box .st-gl-cl b{height:12px;font-size:9px;line-height:12px;border-radius:6px;margin-bottom:-2px}#st-gate-hud-box .st-gl-cl b i{padding:0 3px}#st-gate-hud-box .st-gl-name{display:none}#st-gate-hud-box .st-gl-cl{height:12px;margin-top:-6px}'
   + '.st-gl-cl{position:absolute;top:50%;height:21px;margin:-10px 0 0 -10px;z-index:2;display:flex;align-items:center;cursor:default}.st-gl-cl b{position:absolute;right:-6px;top:-5px;min-width:11px;height:11px;padding:0 2px;box-sizing:border-box;border-radius:6px;background:var(--mbu-accent);color:#fff;font-size:8px;line-height:11px;text-align:center}.st-gl-cl b{display:flex;padding:0;overflow:hidden;background:none}.st-gl-cl b i{font-style:normal;padding:0 3px;min-width:6px;background:color-mix(in srgb,var(--mbu-accent) 14%,transparent);color:var(--mbu-accent-text);font-weight:normal}.st-gl-cl b i.x{background:rgba(47,127,214,.14);color:#2f7fd6}.st-gl-cl b{z-index:3;top:auto;right:auto;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:-2px;height:13px;border-radius:7px;font-size:10px;line-height:13px}.st-gl-cl.bad b i.x{color:var(--mbu-error)}'
   + '.st-gl-pi{position:absolute;top:3px;display:flex;height:14px;margin-left:-35px;z-index:1}.st-gl-pi svg{width:14px;height:14px;display:block}.st-gl-zx{color:var(--mbu-accent);display:inline-block;width:34px;text-align:right;margin-right:6px;flex:none}.st-gl-lt{display:block;width:14px;height:14px;border-radius:3px;color:#fff;font:700 9px/14px system-ui,sans-serif;text-align:center}.st-gl-pi .st-gl-ic{position:static;width:14px;height:14px;margin:0 3px 0 0;flex:none}'
   + '.st-gl-cl .st-gl-ic{position:static;margin:0;flex:none;width:21px!important;height:21px!important;max-width:none}'
-  + '#st-gate .st-gl-cl b{all:unset;position:absolute;left:100%;top:-4px;margin-left:1px;font:600 9px/1 sans-serif;color:var(--mbu-text-muted,#888);font-variant-numeric:tabular-nums;z-index:3}#st-gate .st-gl-cl.bad b{color:var(--mbu-error)}'
+  + '.st-gl-sub{position:absolute;left:0;right:0;top:calc(var(--i)*30px);height:30px}.st-gl-cl .st-gl-ic+.st-gl-ic{margin-left:-8px}'
+  + '.st-gl-cb{flex:1 0 auto;min-width:fit-content;height:14px;margin-left:2px;border-radius:7px;display:flex;align-items:center;gap:4px;padding:0 6px;box-sizing:border-box;background:color-mix(in srgb,var(--mbu-ok) 25%,transparent);font:600 10px/1 sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}'
+  + '.st-gl-cl.bad .st-gl-cb{background:color-mix(in srgb,var(--mbu-error) 16%,transparent)}.st-gl-cb .m{color:var(--mbu-accent-text)}.st-gl-cb .x{color:#2f7fd6}.st-gl-cb .b{color:var(--mbu-error)}.st-gl-cb .t{margin-left:auto;padding-left:2px;font-weight:400;color:var(--mbu-text-weak)}'
   + '.st-gl-zoom{position:fixed;z-index:2147483647;width:450px;padding:8px 10px;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);font-size:12px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}.st-gl-zoom::-webkit-scrollbar{display:none}'
   + '.st-gl-zh{color:var(--mbu-text-weak);margin-bottom:4px}.st-gl-zr{display:flex;align-items:center;gap:6px;height:26px;cursor:pointer;border-radius:var(--mbu-radius)}.st-gl-zr:hover{background:var(--mbu-bg-hover)}.st-gl-zr .st-gl-ic{position:static;margin:0}'
   + '.st-gl-zn{flex:0 0 220px;}.st-gl-zrs{flex:0 0 110px;color:var(--mbu-text-weak);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.st-gl-zn .h{color:var(--mbu-text-weak)}.st-gl-zn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.st-gl-zl{position:relative;flex:1;height:20px;margin-left:20px}.st-gl-zr .st-gl-ic.at{position:absolute;top:2px;margin:0 0 0 -19px}.st-gl-zl .st-gl-f{top:0;height:20px}.st-gl-zt{flex:0 0 44px;text-align:right;color:var(--mbu-text-weak)}'
@@ -88,7 +90,7 @@ var ST_GATE_CSS = ''
   + '#st-gate-hud-box{position:fixed;right:14px;bottom:14px;width:520px;max-width:calc(100vw - 28px);z-index:var(--mbu-z-modal);background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:6px;padding:4px 8px;font-size:12px;opacity:.92}'
   + '#st-gate-hud-box .st-gate-hud-h{cursor:move;user-select:none;display:flex;gap:8px;align-items:center;height:22px}#st-gate-hud-box .st-gate-hud-h>span:first-child{font-weight:600;cursor:pointer}'
   + '#st-gate-hud-box .st-gate-n{flex:1;color:var(--mbu-text-weak)}#st-gate-hud-box .bad{color:var(--mbu-error)}'
-  + '#st-gate-hud-box .st-gate-hud-l{position:relative}#st-gate-hud-box .st-gl-bands{left:0}#st-gate-hud-box .st-gl-name{left:-180px;width:172px}#st-gate-hud-box .st-gl-lane{height:20px}#st-gate-hud-box .st-gl-name{line-height:20px}#st-gate-hud-box .st-gl-w,#st-gate-hud-box .st-gl-f{top:3px;height:14px}'
+  + '#st-gate-hud-box .st-gate-hud-l{position:relative}#st-gate-hud-box .st-gl-bands{left:0}#st-gate-hud-box .st-gl-name{left:-180px;width:172px}#st-gate-hud-box .st-gl-lane{height:calc(var(--r,1)*20px)}#st-gate-hud-box .st-gl-sub{top:calc(var(--i)*20px);height:20px}#st-gate-hud-box .st-gl-cb{height:11px;font-size:9px;padding:0 4px}#st-gate-hud-box .st-gl-name{line-height:20px}#st-gate-hud-box .st-gl-w,#st-gate-hud-box .st-gl-f{top:3px;height:14px}'
   + '.st-gate-tries{display:inline-flex;gap:3px;vertical-align:middle}.st-gate-tries i{--c:var(--mbu-border);width:9px;height:9px;box-sizing:border-box;border-radius:2px;border:1px solid color-mix(in srgb,var(--c) 75%,transparent);background:color-mix(in srgb,var(--c) 30%,transparent)}'
   + '.st-gate-tries i.ok{--c:var(--mbu-ok)}.st-gate-tries i.re{--c:var(--mbu-warn)}.st-gate-tries i.bad{--c:var(--mbu-error)}.st-gate-tries i.go{--c:var(--mbu-info)}'
   + '.st-gl-gc{display:inline-block;min-width:18px;padding:0 5px;margin-right:6px;border-radius:8px;background:var(--mbu-accent);color:var(--mbu-bg);font-size:11px;line-height:16px;text-align:center}.st-gate-pill{display:inline-block;padding:0 8px;border-radius:999px;font-size:12px;white-space:nowrap;background:var(--mbu-bg-hover)}'
@@ -277,6 +279,14 @@ function stGateIcon(name, cls, tip, left) {
 var ST_GATE_SHORT = 1500, ST_GATE_NEAR = 2.2, stGateZoom = {};
 // the zoomed view of a cluster: its own time line and one line per request
 // the cluster's count as a pill: MusicBrainz requests in one half, other sites in the other; an empty half is left out
+function stGateBurst(run) {
+  var gs = run.map(function (x) { return x.g; }), bad = run.filter(function (x) { return x.cls === 'bad'; }).length;
+  var x = gs.filter(function (g) { return g.h; }).length, m = gs.length - x;
+  var a = Math.min.apply(null, run.map(function (r) { return r.a; })), b = Math.max.apply(null, run.map(function (r) { return r.b; }));
+  return '<span class="st-gl-cb" title="' + (m ? m + ' MusicBrainz' : '') + (m && x ? ', ' : '') + (x ? x + ' other' : '') + (bad ? ', ' + bad + ' failed' : '') + ' · ' + stGateSec(b - a) + '">'
+    + (m ? '<span class="m">' + m + '</span>' : '') + (x ? '<span class="x">' + x + '</span>' : '') + (bad ? '<span class="b">' + bad + '</span>' : '')
+    + (b - a >= 300 ? '<span class="t">' + stGateSec(b - a) + '</span>' : '') + '</span>';
+}
 function stGatePill(gs) {
   var x = gs.filter(function (g) { return g.h; }).length, m = gs.length - x;
   return '<b title="' + (m ? m + ' MusicBrainz' : '') + (m && x ? ', ' : '') + (x ? x + ' other' : '') + '">' + gs.length + '</b>';
@@ -367,45 +377,55 @@ function stGateLanesHtml(groups, all, now, me) {
     var last = g.tries.length ? g.tries[g.tries.length - 1] : null, gEnd = g.res === 'waiting' ? now : Math.max(g.end || g.t, last ? last.end || now : g.t);
     var item = { g: g, a: g.t, b: gEnd, cls: last ? stGateTryCls(last.st) : 'off' };
     if ((gEnd - g.t < ST_GATE_SHORT || pct(gEnd) - pct(g.t) < 0.6) && g.cls !== 'go') { (L.short = L.short || []).push(item); return; }
-    item.head = 1; (L.short = L.short || []).push(item);   // a long bar's start icon; overlapping ones become one icon with a count
+    item.head = 1; item.bars = []; (L.long = L.long || []).push(item);   // a long request: its start icon and its bars, as one mark
     var who = (g.s ? g.s + '\n' : '') + stGateAlias(g.l);
     g.tries.forEach(function (x) {
       var end = x.end || now;
-      if (x.t > from) L.bars.push(stGateTag(bar('st-gl-w', from, x.t, who + '\nWaits in the gate'), g.id));
-      L.bars.push(stGateTag(bar('st-gl-f ' + stGateTryCls(x.st), x.t, end, who + '\n' + stGateTryTip(x.st) + ' · ' + stGateSec(end - x.t)), g.id));
+      if (x.t > from) item.bars.push(stGateTag(bar('st-gl-w', from, x.t, who + '\nWaits in the gate'), g.id));
+      item.bars.push(stGateTag(bar('st-gl-f ' + stGateTryCls(x.st), x.t, end, who + '\n' + stGateTryTip(x.st) + ' · ' + stGateSec(end - x.t)), g.id));
       from = end;
     });
-    if (g.res === 'waiting') L.bars.push(stGateTag(bar('st-gl-w', from, now, who + '\nWaits in the gate'), g.id));
+    if (g.res === 'waiting') item.bars.push(stGateTag(bar('st-gl-w', from, now, who + '\nWaits in the gate'), g.id));
   });
   if (me && !lanes[me]) { lanes[me] = { s: {}, bars: [] }; order.push(me); }
   order.sort(function (a, b) { return (b === me) - (a === me); });   // this tab first
   var bands = all.filter(function (ev) { return ev.e === 'answer' && ev.hold && ev.t + ev.hold > t0; }).map(function (ev) {
     return bar('st-gl-band', ev.t, ev.t + ev.hold);
   }).join('');
-  var zid = 0;
+  var zid = 0, laneW = ((document.querySelector('.st-gl-lane') || {}).clientWidth || 600), pxp = function (n) { return n / laneW * 100; };
   order.forEach(function (tab) {
-    var sh = (lanes[tab].short || []).sort(function (x, y) { return x.a - y.a; }), run = [];
     var one = function (x) { return stGateTag(stGateIcon(x.g.s, 'at ' + x.cls, (x.g.s ? x.g.s + '\n' : '') + stGateAlias(x.g.l), pct(x.a)), x.g.id); };
+    var sh = (lanes[tab].short || []).sort(function (x, y) { return x.a - y.a; }), run = [], marks = [];
+    (lanes[tab].long || []).forEach(function (x) { marks.push({ a: pct(x.a) - pxp(23), b: pct(x.b), h: one(x) + x.bars.join('') }); });
     var flush = function () {
       if (!run.length) return;
       var at = pct(run[0].a);
       if (run.length === 1) {
         var x = run[0];
-        if (x.head) lanes[tab].bars.push(one(x)); else lanes[tab].bars.push(stGateTag(stGateIcon(x.g.s, 'one ' + x.cls, (x.g.s ? x.g.s + '\n' : '') + stGateAlias(x.g.l) + '\n' + stGateTryTip(x.g.tries.length ? x.g.tries[x.g.tries.length - 1].st : '') + ' · ' + stGateSec(x.b - x.a), at), x.g.id));
+        marks.push({ a: at - pxp(10), b: at + pxp(11), h: stGateTag(stGateIcon(x.g.s, 'one ' + x.cls, (x.g.s ? x.g.s + '\n' : '') + stGateAlias(x.g.l) + '\n' + stGateTryTip(x.g.tries.length ? x.g.tries[x.g.tries.length - 1].st : '') + ' · ' + stGateSec(x.b - x.a), at), x.g.id) });
       } else {
         var id = 'z' + (zid++);
         stGateZoom[id] = stGateZoomHtml(run, now);
         var bad = run.some(function (x) { return x.cls === 'bad'; });
-        lanes[tab].bars.push('<span class="st-gl-cl' + (bad ? ' bad' : '') + '" data-z="' + id + '" data-ids="' + stEsc(JSON.stringify(run.map(function (x) { return x.g.id; }))) + '" style="left:' + at.toFixed(2) + '%">' + run.reduce(function (a, x) { var k = stGateIconSrc(x.g.s); if (!a.k[k]) { a.k[k] = 1; a.l.push(x.g.s); } return a; }, { k: {}, l: [] }).l.slice(0, 3).map(function (n, i) { return stGateIcon(n, '', '').replace('<img ', '<img style="margin-left:' + (i * 15 - 10) + 'px" '); }).join('') + stGatePill(run.map(function (x) { return x.g; })) + '</span>');
+        var end = pct(Math.max.apply(null, run.map(function (x) { return x.b; }))), ni = Math.min(3, run.reduce(function (a, x) { a[stGateIconSrc(x.g.s)] = 1; return a; }, {}) && Object.keys(run.reduce(function (a, x) { a[stGateIconSrc(x.g.s)] = 1; return a; }, {})).length);
+        var minW = pxp(21 + (ni - 1) * 13 + 2 + 50 + (run.length > 1 ? 30 : 0));
+        marks.push({ a: at - pxp(10), b: Math.max(end, at - pxp(10) + minW), h: '<span class="st-gl-cl' + (bad ? ' bad' : '') + '" data-z="' + id + '" data-ids="' + stEsc(JSON.stringify(run.map(function (x) { return x.g.id; }))) + '" style="left:' + at.toFixed(2) + '%;width:calc(' + Math.max(0, end - at).toFixed(2) + '% + 10px)">' + run.reduce(function (a, x) { var k = stGateIconSrc(x.g.s); if (!a.k[k]) { a.k[k] = 1; a.l.push(x.g.s); } return a; }, { k: {}, l: [] }).l.slice(0, 3).map(function (n) { return stGateIcon(n, '', ''); }).join('') + stGateBurst(run) + '</span>' });
       }
       run = [];
     };
     sh.forEach(function (x) { if (run.length && pct(x.a) - pct(run[run.length - 1].a) > ST_GATE_NEAR) flush(); run.push(x); });
     flush();
+    // greedy packing: a mark goes on the first sub-row whose last mark ends before it starts
+    var ends = [], subs = [];
+    marks.sort(function (x, y) { return x.a - y.a; }).forEach(function (k) {
+      for (var i = 0; ; i++) if (ends[i] == null || ends[i] < k.a - pxp(3)) { ends[i] = k.b; (subs[i] = subs[i] || []).push(k.h); break; }
+    });
+    lanes[tab].rows = Math.max(1, subs.length);
+    subs.forEach(function (h, i) { lanes[tab].bars.push('<div class="st-gl-sub" style="--i:' + i + '">' + h.join('') + '</div>'); });
   });
   var rows = order.map(function (tab) {
     var s = Object.keys(lanes[tab].s).join(', ');
-    return '<div class="st-gl-lane' + (tab === me ? ' me' : '') + '"><span class="st-gl-name" data-tip="' + stEsc('Tab ' + tab + (tab === me ? ' (this tab)' : '') + (s ? '\n' + s : '')) + '"><b>'
+    return '<div class="st-gl-lane' + (tab === me ? ' me' : '') + '" style="--r:' + (lanes[tab].rows || 1) + '"><span class="st-gl-name" data-tip="' + stEsc('Tab ' + tab + (tab === me ? ' (this tab)' : '') + (s ? '\n' + s : '')) + '"><b>'
       + stEsc(tab === me ? 'This tab' : tab.slice(0, 8)) + '</b>' + (s ? ' ' + stEsc(s) : '') + '</span>' + lanes[tab].bars.join('') + '</div>';
   }).join('') || '<div class="st-gl-lane"><span class="st-gl-none">No requests in the last ' + stGateSpanTxt() + '</span></div>';
   return '<div class="st-gl-bands">' + bands + '</div>' + rows
