@@ -89,7 +89,7 @@ var ST_GATE_CSS = ''
   + '#st-gate-hud-box .st-gate-hud-l{position:relative}#st-gate-hud-box .st-gl-bands{left:0}#st-gate-hud-box .st-gl-name{left:-180px;width:172px}#st-gate-hud-box .st-gl-lane{height:20px}#st-gate-hud-box .st-gl-name{line-height:20px}#st-gate-hud-box .st-gl-w,#st-gate-hud-box .st-gl-f{top:3px;height:14px}'
   + '.st-gate-tries{display:inline-flex;gap:3px;vertical-align:middle}.st-gate-tries i{--c:var(--mbu-border);width:9px;height:9px;box-sizing:border-box;border-radius:2px;border:1px solid color-mix(in srgb,var(--c) 75%,transparent);background:color-mix(in srgb,var(--c) 30%,transparent)}'
   + '.st-gate-tries i.ok{--c:var(--mbu-ok)}.st-gate-tries i.re{--c:var(--mbu-warn)}.st-gate-tries i.bad{--c:var(--mbu-error)}.st-gate-tries i.go{--c:var(--mbu-info)}'
-  + '.st-gate-pill{display:inline-block;padding:0 8px;border-radius:999px;font-size:12px;white-space:nowrap;background:var(--mbu-bg-hover)}'
+  + '.st-gl-gc{display:inline-block;min-width:18px;padding:0 5px;margin-right:6px;border-radius:8px;background:var(--mbu-accent);color:var(--mbu-bg);font-size:11px;line-height:16px;text-align:center}.st-gate-pill{display:inline-block;padding:0 8px;border-radius:999px;font-size:12px;white-space:nowrap;background:var(--mbu-bg-hover)}'
   + '.st-gate-pill.ok{background:var(--mbu-ok-bg);color:var(--mbu-ok)}.st-gate-pill.re{background:var(--mbu-warn-bg);color:var(--mbu-warn)}'
   + '.st-gate-pill.bad{background:var(--mbu-error-bg);color:var(--mbu-error)}.st-gate-pill.go{background:var(--mbu-info-bg);color:var(--mbu-info)}'
   + '.st-gate-meter{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:12px;color:var(--mbu-text-weak)}'
@@ -296,6 +296,12 @@ function stGateZoomIcon(x, left) {
 // the line's bar runs from the first start to the last end, and it is red when any of them failed
 // the kind is the label without its last word: "v1 catalog gy" and "v1 catalog hk" are one kind
 function stGateKind(g) { var w = stGateAlias(g.l).split(' '); return w.length > 1 ? w.slice(0, -1).join(' ') : w[0]; }
+function stGateGroupResult(run) {
+  var by = {}, order = [];
+  run.forEach(function (g) { var k = g.cls + '|' + g.label; if (!by[k]) { by[k] = { g: g, n: 0 }; order.push(k); } by[k].n++; });
+  order.sort(function (a, b) { return by[b].n - by[a].n; });
+  return order.map(function (k) { var x = by[k]; return '<span class="st-gate-pill ' + x.g.cls + '">' + (order.length > 1 || x.n > 1 ? x.n + '× ' : '') + stEsc(x.g.label) + '</span>'; }).join(' ');
+}
 function stGateKindKey(g) { return g.h && !g.sys ? g.tab + '|' + String(g.h).split('//').pop().split('/')[0] + '|' + (g.s || '') + '|' + (g.r || '') + '|' + (stGateEntity(g) || '') + '|' + stGateKind(g) : ''; }
 // the table: 3 or more rows of one kind, site, entity and reason become one row with a count, which a click opens;
 // the group stands where its newest row would be, and other rows between its members do not split it
@@ -311,8 +317,8 @@ function stGateTableHtml(list, me, opened, now) {
     var host = String(g0.h).split('//').pop().split('/')[0];
     out.push('<tr class="rq grp' + (open ? ' open' : '') + (g0.tab === me ? ' me' : '') + (stGateSel[gid] ? ' sel' : '') + '" data-id="' + stEsc(gid) + '"><td class="t">' + stGateTime(g0.t) + '</td>'
       + '<td class="tab">' + stEsc(g0.tab === me ? 'this tab' : String(g0.tab).slice(0, 8)) + '</td><td class="s">' + stEsc(g0.s || '') + '</td><td class="v">' + stEsc(g0.m || '') + '</td><td class="r">' + stEsc(g0.r || '') + '</td><td class="e">' + stGateEntHtml(g0) + '</td>'
-      + '<td class="i">' + stEsc(stGateSite(g0)) + '</td><td class="l"><span class="st-gl-gx">' + (open ? '▾' : '▸') + '</span> ' + stEsc(stGateKind(g0)) + ' <b class="st-gl-zx">×' + run.length + '</b></td><td></td>'
-      + '<td><span class="st-gate-pill ' + (bad ? 'bad' : g0.cls) + '">' + (bad ? bad + ' failed' : run.length + ' requests') + '</span></td><td class="w">' + stGateSec(wait) + '</td><td></td><td></td></tr>');
+      + '<td class="i">' + stEsc(stGateSite(g0)) + '</td><td class="l"><b class="st-gl-gc">' + run.length + '</b><span class="st-gl-gx">' + (open ? '▾' : '▸') + '</span> ' + stEsc(stGateKind(g0)) + '</td><td></td>'
+      + '<td>' + stGateGroupResult(run) + '</td><td class="w">' + stGateSec(wait) + '</td><td></td><td></td></tr>');
     if (open) run.forEach(function (g) { out.push(stGateRowHtml(g, me, !!opened[g.id], now).replace('<tr class="rq', '<tr class="rq in')); });
   });
   return out.join('');
