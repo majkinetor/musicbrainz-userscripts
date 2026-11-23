@@ -283,6 +283,7 @@ function stGateIcon(name, cls, tip, left) {
   return '<img class="st-gl-ic' + (cls ? ' ' + cls : '') + (/^Falcon/.test(String(name || '')) ? ' small' : '') + '" alt=""' + (tip ? ' data-tip="' + stEsc(tip) + '"' : '') + (left != null ? ' style="left:' + left.toFixed(2) + '%"' : '') + ' src="' + stEsc(stGateIconSrc(name)) + '">';
 }
 // requests shorter than ST_GATE_SHORT ms are drawn as an icon; icons closer than ST_GATE_NEAR overlap
+var stGateVw = null;   // the window's zoomed view of the time line: { t0, s }, or null for the whole span
 var ST_GATE_SHORT = 1500, ST_GATE_NEAR = 2.2, stGateZoom = {}, ST_GATE_SUBS = 3;   // every lane has 3 fixed sub-rows
 // the zoomed view of a cluster: its own time line and one line per request
 // the cluster's count as a pill: MusicBrainz requests in one half, other sites in the other; an empty half is left out
@@ -375,12 +376,13 @@ function stGateLanesHtml(groups, all, now, me, box) {
   // the time line keeps a margin at each end, so an icon or a cluster's pill does not go past the edge
   var lw = (((box || document).querySelector('.st-gl-lane') || {}).clientWidth || (box ? box.clientWidth : 0) || 600), insL = 26 / lw * 100, insR = 120 / lw * 100;
   var at = function (p) { return insL + p * (100 - insL - insR) / 100; };
-  var t0 = now - ST_GATE_SPAN, pct = function (t) { return at(Math.max(0, Math.min(100, (t - t0) / ST_GATE_SPAN * 100))); };
+  var vw = box ? null : stGateVw, SP = vw ? vw.s : ST_GATE_SPAN, t0 = vw ? vw.t0 : now - ST_GATE_SPAN, t1 = t0 + SP;
+  var pct = function (t) { return at(Math.max(0, Math.min(100, (t - t0) / SP * 100))); };
   var bar = function (cls, a, b, tip) { return '<i class="' + cls + '"' + (tip ? ' data-tip="' + stEsc(tip) + '"' : '') + ' style="left:' + pct(a).toFixed(2) + '%;width:' + (pct(b) - pct(a)).toFixed(2) + '%"></i>'; };
   var lanes = {}, order = [];
   stGateZoom = {};
   groups.forEach(function (g) {
-    if (g.sys || (g.cls !== 'go' && g.end < t0)) return;
+    if (g.sys || (g.cls !== 'go' && g.end < t0) || (vw && g.t > t1)) return;
     if (!lanes[g.tab]) { lanes[g.tab] = { s: {}, bars: [] }; order.push(g.tab); }
     var L = lanes[g.tab], from = g.t;
     if (g.s) L.s[g.s] = 1;
@@ -443,7 +445,7 @@ function stGateLanesHtml(groups, all, now, me, box) {
       + stEsc(tab === me ? 'This tab' : tab.slice(0, 8)) + '</b>' + (s ? ' ' + Object.keys(lanes[tab].s).map(function (n) { return stGateIcon(n, 'nm'); }).join('') : '') + '</span>' + lanes[tab].bars.join('') + '</div>';
   }).join('') || '<div class="st-gl-lane"><span class="st-gl-none">No requests in the last ' + stGateSpanTxt() + '</span></div>';
   return '<div class="st-gl-bands">' + bands + '</div>' + rows
-    + '<div class="st-gl-ax">' + [0, 25, 50, 75].map(function (p) { return '<span style="left:' + at(p).toFixed(2) + '%">−' + stGateSpanTxt(ST_GATE_SPAN * (100 - p) / 100).replace(/\.\d+/, function (d) { return d.length > 2 ? d.slice(0, 2) : d; }) + '</span>'; }).join('') + '<span style="left:' + at(100).toFixed(2) + '%">now</span></div>';
+    + '<div class="st-gl-ax">' + (vw ? [0, 25, 50, 75, 100] : [0, 25, 50, 75]).map(function (p) { return '<span style="left:' + at(p).toFixed(2) + '%">' + (vw ? stGateTime(t0 + SP * p / 100).slice(0, p ? 12 : 8) : '−' + stGateSpanTxt(ST_GATE_SPAN * (100 - p) / 100).replace(/\.\d+/, function (d) { return d.length > 2 ? d.slice(0, 2) : d; })) + '</span>'; }).join('') + (vw ? '' : '<span style="left:' + at(100).toFixed(2) + '%">now</span>') + '</div>';
 }
 function stGateZoomWire() {
   if (stGateZoomWire.on) return; stGateZoomWire.on = 1;
@@ -803,7 +805,7 @@ function stGateBuild() {
   var colSeg = function () {
     ST_GATE_COLS.forEach(function (c) { pop.classList.toggle('hc' + c[0], hide.indexOf(c[0]) >= 0); });
   };
-  $('#st-gate-span').addEventListener('change', function () { ST_GATE_SPAN = +this.value; stGateRemember({ span: ST_GATE_SPAN }); sig = ''; draw(); });
+  $('#st-gate-span').addEventListener('change', function () { ST_GATE_SPAN = +this.value; stGateVw = null; stGateRemember({ span: ST_GATE_SPAN }); sig = ''; draw(); });
   var hudBtn = $('#st-gate-hud'), hudSeg = function () { hudBtn.setAttribute('aria-pressed', String(!!stGateHudEl)); };
   srcSeg(); colSeg(); hudSeg();
   pop.querySelector('.st-gate-hosts').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; hosts[b.dataset.v] = !hosts[b.dataset.v]; srcSeg(); stGateRemember({ hosts: hosts }); draw(); });
@@ -1094,6 +1096,20 @@ function stGateBuild() {
   document.addEventListener('click', openFromLanes);
   lanes.addEventListener('mouseenter', function () { lanesHeld = true; });
   lanes.addEventListener('mouseleave', function () { lanesHeld = false; draw(); });
+  // the mouse wheel zooms the time line around the pointer, Shift and the wheel move it, a right click shows the whole span again
+  lanes.addEventListener('wheel', function (e) {
+    var ln = lanes.querySelector('.st-gl-lane'); if (!ln) return;
+    e.preventDefault();
+    var now = Date.now(), r = ln.getBoundingClientRect(), lw = r.width || 600, insL = 26 / lw * 100, insR = 120 / lw * 100;
+    var p = Math.max(0, Math.min(1, ((e.clientX - r.left) / lw * 100 - insL) / (100 - insL - insR)));
+    var v = stGateVw || { t0: now - ST_GATE_SPAN, s: ST_GATE_SPAN }, d = e.deltaY || e.deltaX, s = v.s, t0 = v.t0;
+    if (e.shiftKey || (!e.deltaY && e.deltaX)) t0 += (d > 0 ? 1 : -1) * s * 0.15;
+    else { var at = t0 + s * p; s = Math.max(2000, Math.min(ST_GATE_SPAN, s * (d > 0 ? 1.25 : 0.8))); t0 = at - s * p; }
+    t0 = Math.max(now - ST_GATE_SPAN, Math.min(t0, now - s));
+    stGateVw = s >= ST_GATE_SPAN ? null : { t0: t0, s: s };
+    lanesHeld = false; sig = ''; draw(); lanesHeld = true;
+  }, { passive: false });
+  lanes.addEventListener('contextmenu', function (e) { if (!stGateVw) return; e.preventDefault(); stGateVw = null; lanesHeld = false; sig = ''; draw(); lanesHeld = true; });
   $('.mbu-logpop-copy').onclick = function () {
     stCopy(stGateMarkdown(stGateEvents(), stGateTab()), function (ok) { try { U.mbuToast(ok ? 'Network log copied' : 'Could not copy the network log'); } catch (e) { /* no toast */ } });
   };
