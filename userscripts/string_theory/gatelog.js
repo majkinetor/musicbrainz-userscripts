@@ -433,7 +433,7 @@ function stGateLanesHtml(groups, all, now, me) {
   });
   var rows = order.map(function (tab) {
     var s = Object.keys(lanes[tab].s).join(', ');
-    return '<div class="st-gl-lane' + (tab === me ? ' me' : '') + '" data-lane="' + stEsc(tab) + '" style="--r:' + (lanes[tab].rows || 1) + '"><span class="st-gl-name" data-tip="' + stEsc('Tab ' + tab + (tab === me ? ' (this tab)' : '') + (s ? '\n' + s : '')) + '"><b>'
+    return '<div class="st-gl-lane' + (tab === me ? ' me' : '') + '" data-lane="' + stEsc(tab) + '" style="--r:' + (lanes[tab].rows || 1) + '"><span class="st-gl-name" data-tip="' + stEsc('Tab ' + tab + (tab === me ? ' (this tab)' : '') + (function () { try { var t = localStorage.getItem(ST_GATE_KEY + '-title:' + tab); return t ? '\n' + t : ''; } catch (e) { return ''; } })() + (s ? '\n' + s : '')) + '"><b>'
       + stEsc(tab === me ? 'This tab' : tab.slice(0, 8)) + '</b>' + (s ? ' ' + Object.keys(lanes[tab].s).map(function (n) { return stGateIcon(n, 'nm'); }).join('') : '') + '</span>' + lanes[tab].bars.join('') + '</div>';
   }).join('') || '<div class="st-gl-lane"><span class="st-gl-none">No requests in the last ' + stGateSpanTxt() + '</span></div>';
   return '<div class="st-gl-bands">' + bands + '</div>' + rows
