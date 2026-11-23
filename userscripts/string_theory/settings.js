@@ -461,7 +461,7 @@ function stSettings(tab) {
     gate.setAttribute('aria-label', 'Network log'); gate.dataset.tip = 'Network log\nThe requests of the scripts';
     gate.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg>';
     gate.onclick = function () { close(); stGateOpen(); };
-    title.insertBefore(gate, help);
+    if (stGateHere()) title.insertBefore(gate, help);
     themes.style.marginLeft = '20px'; gate.style.marginRight = '20px';
     var x = title.querySelector('.mbu-cfg-x'); x.setAttribute('aria-label', 'Close settings');
     x.onclick = close;

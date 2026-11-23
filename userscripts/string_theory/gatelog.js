@@ -648,10 +648,12 @@ function stGateWinState() { try { return JSON.parse(GM_getValue(ST_GATE_WIN, '{}
 // a column filter: a funnel in the header opens a list of the column's values, narrowed by typing
 function stGateCfBtn(k) { return '<button type="button" class="st-gate-cf" data-cf="' + k + '" aria-label="Filter this column, right click clears the filter"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18l-7 8v7l-4 2v-9z"/></svg></button>'; }
 function stGateRemember(patch) { try { GM_setValue(ST_GATE_WIN, JSON.stringify(Object.assign(stGateWinState(), patch))); } catch (e) { /* no storage: it just forgets */ } }
+// the network log opens on MusicBrainz only, never on another site such as Discogs
+function stGateHere() { return /(^|\.)musicbrainz\.(org|eu)$/.test(location.hostname); }
 // at start: the window comes back if it was left open (top frame only)
 function stGateReopen() {
   var w;
-  try { if (window.top !== window) return; w = stGateWinState(); if (!w.open && !w.hud) return; } catch (e) { return; }
+  try { if (window.top !== window || !stGateHere()) return; w = stGateWinState(); if (!w.open && !w.hud) return; } catch (e) { return; }
   var go = function () {
     try { if (w.hud) stGateHud(true); } catch (e) { /* no HUD */ }
     try { if (w.open) stGateOpen(true); } catch (e) { /* no window */ }
@@ -668,6 +670,7 @@ function stGateCss() {
 var stGateHudEl = null;
 var stGateColW = {};   // the network log table's column widths a drag set, by column
 function stGateHud(on) {
+  if (on && !stGateHere()) return;
   if (stGateHudEl) { clearInterval(stGateHudEl.timer); stGateHudEl.remove(); stGateHudEl = null; }
   stGateRemember({ hud: !!on });
   if (!on) return;
@@ -761,6 +764,7 @@ function stGateClose() {
 
 // asked for (the palette): it opens whole, a minimised one too. At start (again) it comes back as it was left
 function stGateOpen(again) {
+  if (!stGateHere()) return;
   if (again !== true) stGateRemember({ min: false });
   if (stGateWin && stGateWin.el.isConnected) { stGateWin.show(); return; }
   stGateWin = null;
