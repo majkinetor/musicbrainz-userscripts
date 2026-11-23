@@ -302,15 +302,15 @@ function stGateGroupResult(run) {
   order.sort(function (a, b) { return by[b].n - by[a].n; });
   return order.map(function (k) { var x = by[k]; return '<span class="st-gate-pill ' + x.g.cls + '">' + (order.length > 1 || x.n > 1 ? x.n + '× ' : '') + stEsc(x.g.label) + '</span>'; }).join(' ');
 }
-function stGateKindKey(g) { return g.h && !g.sys ? g.tab + '|' + String(g.h).split('//').pop().split('/')[0] + '|' + (g.s || '') + '|' + (g.r || '') + '|' + (stGateEntity(g) || '') + '|' + stGateKind(g) : ''; }
-// the table: 3 or more rows of one kind, site, entity and reason become one row with a count, which a click opens;
+function stGateKindKey(g) { return g.h && !g.sys ? g.tab + '|' + String(g.h).split('//').pop().split('/')[0] + '|' + (g.s || '') + '|' + (g.r || '') + '|' + (stGateEntity(g) || '') + '|' + (g.r ? '' : stGateKind(g)) : ''; }
+// the table: 2 or more rows of one kind, site, entity and reason become one row with a count, which a click opens;
 // the group stands where its newest row would be, and other rows between its members do not split it
 function stGateTableHtml(list, me, opened, now) {
   var out = [], by = {};
   list.forEach(function (g) { var k = stGateKindKey(g); if (k) (by[k] = by[k] || []).push(g); });
   list.forEach(function (g) {
     var k = stGateKindKey(g), run = k ? by[k] : [g];
-    if (run.length < 3) { out.push(stGateRowHtml(g, me, !!opened[g.id], now)); return; }
+    if (run.length < 2) { out.push(stGateRowHtml(g, me, !!opened[g.id], now)); return; }
     if (run[0] !== g) return;
     var gid = 'grp:' + run[run.length - 1].id, open = opened[gid] || run.some(function (g) { return opened[g.id] || stGateSel[g.id]; });
     var g0 = run[0], bad = run.filter(function (g) { return g.cls === 'bad'; }).length, wait = run.reduce(function (n, g) { return n + (g.wait || 0); }, 0);
