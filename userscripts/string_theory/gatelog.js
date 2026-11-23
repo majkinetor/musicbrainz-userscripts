@@ -39,7 +39,7 @@ var ST_GATE_CSS = ''
   + '.st-gl-cl{position:absolute;top:50%;height:18px;margin:-9px 0 0 -9px;z-index:2;display:flex;align-items:center;cursor:default}.st-gl-cl b{position:absolute;right:-6px;top:-5px;min-width:11px;height:11px;padding:0 2px;box-sizing:border-box;border-radius:6px;background:var(--mbu-accent);color:#fff;font-size:8px;line-height:11px;text-align:center}.st-gl-cl b{display:flex;padding:0;overflow:hidden;background:none}.st-gl-cl b i{font-style:normal;padding:0 2px;min-width:7px;background:var(--mbu-accent)}.st-gl-cl b i.x{background:#2f7fd6}.st-gl-cl.bad b{box-shadow:0 0 0 1px var(--mbu-error)}'
   + '.st-gl-pi{position:absolute;top:3px;width:14px;height:14px;margin-left:-18px;z-index:1}.st-gl-pi svg{width:14px;height:14px;display:block}.st-gl-zx{color:var(--mbu-accent)}.st-gl-lt{display:block;width:14px;height:14px;border-radius:3px;color:#fff;font:700 9px/14px system-ui,sans-serif;text-align:center}.st-gl-pi .st-gl-ic{position:absolute;left:auto;top:auto;right:-5px;bottom:-5px;width:10px;height:10px;margin:0}'
   + '.st-gl-cl .st-gl-ic{position:static;margin:0}'
-  + '.st-gl-zoom{position:fixed;z-index:2147483647;width:340px;padding:8px 10px;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);font-size:12px}'
+  + '.st-gl-zoom{position:fixed;z-index:2147483647;width:340px;padding:8px 10px;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);font-size:12px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}.st-gl-zoom::-webkit-scrollbar{display:none}'
   + '.st-gl-zh{color:var(--mbu-text-weak);margin-bottom:4px}.st-gl-zr{display:flex;align-items:center;gap:6px;height:26px}.st-gl-zr .st-gl-ic{position:static;margin:0}'
   + '.st-gl-zn{flex:0 0 220px;}.st-gl-zn .h{color:var(--mbu-text-weak);margin-right:6px}.st-gl-zn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.st-gl-zl{position:relative;flex:1;height:20px;margin-left:20px}.st-gl-zr .st-gl-ic.at{position:absolute;top:2px;margin:0 0 0 -19px}.st-gl-zl .st-gl-f{top:0;height:20px}.st-gl-zt{flex:0 0 44px;text-align:right;color:var(--mbu-text-weak)}'
   + '.st-gl-name{position:absolute;left:-180px;width:172px;top:0;line-height:30px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--mbu-text-weak)}'
@@ -421,7 +421,10 @@ function stGateZoomWire() {
     document.body.appendChild(pop);
     var r = c.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
     pop.style.left = Math.max(4, Math.min(window.innerWidth - w - 4, r.left + r.width / 2 - w / 2)) + 'px';
-    pop.style.top = (r.top - h - 6 >= 4 ? r.top - h - 6 : r.bottom + 6) + 'px';
+    // too tall for the window: it takes the side with more room and scrolls with the wheel, with no scrollbar
+    var up = r.top - 10, down = window.innerHeight - r.bottom - 10;
+    if (h > up && h > down) { pop.style.maxHeight = Math.max(up, down) + 'px'; h = pop.offsetHeight; }
+    pop.style.top = (h <= up && (up >= down || h > down) ? r.top - h - 6 : r.bottom + 6) + 'px';
   });
 }
 // one request on its own time line: its gate waits weak, each try in its result's colour
