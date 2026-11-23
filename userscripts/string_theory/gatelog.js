@@ -613,12 +613,25 @@ function stGateLabelHtml(g) {
   return e ? t.replace(new RegExp('^' + e.replace(/[_-]/g, '[ _-]') + 's?\\s+', 'i'), '') : t;
 }
 function stGateMarkdown(all, me) {
-  var s = stGateState(), now = Date.now(), c = stGateCount(stGateGroups(all, now));
+  var s = stGateState(), now = Date.now(), groups = stGateGroups(all, now), c = stGateCount(groups);
   var out = ['# MusicBrainz gate log', '', 'Copied ' + new Date().toISOString() + ', this tab ' + (me || '-'), '',
     'State: ' + JSON.stringify(s) + ' (now ' + now + ')', '',
     'Requests: ' + c.n + ' (' + c.ok + ' ok, ' + c.re + ' retried, ' + c.bad + ' failed, ' + c.go + ' on the way)', '',
-    '| Time | Tab | Script | Event | Request | What |', '| --- | --- | --- | --- | --- | --- |'];
+    '## Requests', '',
+    '| Time | Tab | Script | Verb | Reason | Entity | Site | Request | Tries | Result | Wait | Rate limit |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |'];
   var cell = function (v) { return String(v == null ? '' : v).replace(/\|/g, '\\|').replace(/\n/g, ' '); };
+  // one row per request, the same columns as the table
+  groups.forEach(function (g) {
+    var tab = cell(g.tab) + (g.tab === me ? ' (this)' : '');
+    if (g.sys) { out.push('| ' + stGateTime(g.t) + ' | ' + tab + ' | ' + cell(g.s) + ' |  |  |  |  | ' + cell(stGateWhat(g.evs[0])) + ' |  | ' + cell(g.label) + ' |  |  |'); return; }
+    var flight = (g.tries || []).reduce(function (n, x) { return n + (x.end ? x.end - x.t : 0); }, 0), a = g.ans;
+    out.push('| ' + stGateTime(g.t) + ' | ' + tab + ' | ' + cell(g.s) + (g.b === 0 ? ' (i)' : '') + ' | ' + cell(g.m) + ' | ' + cell(g.r)
+      + ' | ' + cell((stGateEntity(g) || '').replace(/_/g, ' ')) + ' | ' + cell(stGateSite(g)) + ' | ' + cell(stGateAlias(g.l)) + ((g.h || g.u) ? ' (' + cell((g.h || '') + (g.u || '')) + ')' : '')
+      + ' | ' + (g.tries || []).length + ' | ' + cell(g.label) + ' | ' + stGateSec(g.wait) + (flight ? ' + ' + stGateSec(flight) : '')
+      + ' | ' + (a && a.lim && a.rem != null ? a.rem + '/' + a.lim + (a.who ? ' (' + cell(a.who) + ')' : '') : '') + ' |');
+  });
+  out.push('', '## Events', '', '| Time | Tab | Script | Event | Request | What |', '| --- | --- | --- | --- | --- | --- |');
   all.forEach(function (ev) {
     out.push('| ' + stGateTime(ev.t) + ' | ' + cell(ev.tab) + (ev.tab === me ? ' (this)' : '') + ' | ' + cell(ev.s) + ' | ' + cell(ev.e) + (ev.b === 0 ? ' (i)' : '')
       + ' | ' + cell((ev.m ? ev.m + ' ' : '') + (ev.h ? ev.h + ' ' : '') + ev.l) + (ev.u ? ' (' + cell(ev.u) + ')' : '') + ' | ' + cell(stGateWhat(ev)) + ' |');
