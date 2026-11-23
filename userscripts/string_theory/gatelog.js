@@ -218,7 +218,7 @@ function stGateGroups(all, now) {
     else if (g.res === 'gave up' || g.res === 'error' || g.res === 'no answer' || !st || st >= 500) g.cls = 'bad';
     else g.cls = retried ? 're' : 'ok';
     g.label = g.res === 'gave up' && st ? st + ', gave up' : g.res === '200' ? 'OK' : g.res;
-    if (retried && g.cls !== 'go') g.label += ' (' + g.tries.length + ')';
+    if (retried && g.cls !== 'go') g.label += ' ↻' + g.tries.length;
     g.wait = g.tries.reduce(function (n, x) { return n + (x.w || 0); }, 0);
   });
   return groups;
