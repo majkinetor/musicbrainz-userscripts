@@ -300,7 +300,7 @@ function stGateGroupResult(run) {
   var by = {}, order = [];
   run.forEach(function (g) { var k = g.cls + '|' + g.label; if (!by[k]) { by[k] = { g: g, n: 0 }; order.push(k); } by[k].n++; });
   order.sort(function (a, b) { return by[b].n - by[a].n; });
-  return order.map(function (k) { var x = by[k]; return '<span class="st-gate-pill ' + x.g.cls + '">' + (order.length > 1 || x.n > 1 ? x.n + '× ' : '') + stEsc(x.g.label) + '</span>'; }).join(' ');
+  return order.map(function (k) { var x = by[k]; return '<span class="st-gate-pill ' + x.g.cls + '">' + stEsc(x.g.label) + (order.length > 1 || x.n > 1 ? ' ×' + x.n : '') + '</span>'; }).join(' ');
 }
 function stGateKindKey(g) { return g.h && !g.sys ? g.tab + '|' + String(g.h).split('//').pop().split('/')[0] + '|' + (g.s || '') + '|' + (g.r || '') + '|' + (stGateEntity(g) || '') + '|' + (g.r ? '' : stGateKind(g)) : ''; }
 // the table: 2 or more rows of one kind, site, entity and reason become one row with a count, which a click opens;
