@@ -481,6 +481,10 @@
       } catch (e) {}
       return undefined;
   }
+  function mbnReasons(fn) { mbnReasons.fn = fn; }
+  function mbnReasonOf(url, method) {
+      try { return (mbnReasons.fn && mbnReasons.fn(String(url), String(method || 'GET').toUpperCase())) || undefined; } catch (e) { return undefined; }
+  }
   async function mbnLog(url, init, o) {
       o = o || {};
       let h = '', p = String(url);
@@ -488,7 +492,7 @@
       if (/^(blob|data):/i.test(p)) return (o.send || fetch)(url, init);
       // a host that isn't MusicBrainz is external, the page's own one too (Beatport's pages)
       try { const x = new URL(p, location.href); p = x.pathname + x.search; if (!/(^|\.)musicbrainz\.(org|eu)$/.test(x.hostname)) h = x.host; } catch (e) {}
-      const ev = { r: o.reason || undefined, en: o.entity || undefined, l: o.label || p.slice(0, 120), u: o.u || (o.label ? p.slice(0, 300) : undefined), b: o.background === false ? 0 : 1,
+      const ev = { r: o.reason || mbnReasonOf(url, (init && init.method) || o.method), en: o.entity || undefined, l: o.label || p.slice(0, 120), u: o.u || (o.label ? p.slice(0, 300) : undefined), b: o.background === false ? 0 : 1,
           id: o.id || mbnRid(), m: o.m || String((init && init.method) || o.method || 'GET').toUpperCase(), h: h || undefined, x: 1 };
       mbnTrace(Object.assign({ e: 'start', bs: mbnBodySize(init) }, ev));
       try {
@@ -525,6 +529,7 @@
   }
   async function mbnFetch(url, init, o) {
       o = o || {};
+      if (!o.reason) { const r = mbnReasonOf(url, init && init.method); if (r) o = Object.assign({}, o, { reason: r }); }
       // #1098: a write (an edit, an ISRC submit) makes every cached answer old. Marked when it goes out and
       // again when it is answered: a read sent while the write runs gets the answer from before the write,
       // and without the second mark it was cached as new (ISRC Scout's links count stayed after a submit)
@@ -874,6 +879,16 @@
       return g.busy;
   }
   // </ST-NET>
+  // the Reason column of String Theory's network log: what each request is for
+  mbnReasons((u, m) => /\/ws\/js\/edit\//.test(u) ? 'save'
+      : /\/ws\/js\/(artist|label|place|work)\?/.test(u) ? 'autocomplete'
+      : /\/ws\/2\/isrc/.test(u) ? 'ISRC'
+      : /\/ws\/2\/work\?.*query=/.test(u) ? 'find work'
+      : /[?&]query=/.test(u) ? 'search'
+      : /annotation/.test(u) ? 'annotation'
+      : /release-group/.test(u) ? 'siblings'
+      : /\/ws\/2\/release\/.*recordings/.test(u) ? 'tracks'
+      : /\/ws\/(2|js)\//.test(u) ? 'details' : undefined);
   const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '?';   // from the @version header at runtime
   const W = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
 

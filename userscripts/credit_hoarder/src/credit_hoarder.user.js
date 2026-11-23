@@ -17,7 +17,15 @@ import { getSourceUrlsForRelease, logSourceProbe } from './api-mb.js';
 import { log, setReviewContainer } from './log.js';
 import { insertDiscogsBar, probeTitleRemixes } from './ui-bar.js';
 import { MB, DISCOGS_CHANNEL }       from './constants.js';
-import { mbnFetch }                  from '../../../dev/net/mb-gate.mjs';
+import { mbnFetch, mbnReasons }      from '../../../dev/net/mb-gate.mjs';
+// the Reason column of String Theory's network log: what each request is for
+mbnReasons((u, m) => /token|oauth/i.test(u) ? 'token'
+    : /\/ws\/2\/url/.test(u) ? 'link owner'
+    : /add-alias|inc=aliases/.test(u) ? 'alias'
+    : /\/ws\/2\/artist|\/ws\/js\/entity/.test(u) ? 'match artist'
+    : /\/ws\/js\/type-info/.test(u) ? 'types'
+    : /\/ws\/(2|js)\//.test(u) ? 'release'
+    : /musicbrainz\.(org|eu)/.test(u) ? undefined : 'credits');
 import { runTidalHarvestPage }   from './sources/tidal.js';
 import { runMetalArchivesHarvestPage } from './sources/metal_archives.js';
 import { runVgmdbHarvestPage } from './sources/vgmdb.js';

@@ -585,6 +585,13 @@ export function mbnBodySize(init) {
     return undefined;
 }
 
+// a script's own reasons for the log: fn(url, method) gives a purpose word ("links", "vote") or nothing;
+// a reason a call site passes wins
+export function mbnReasons(fn) { mbnReasons.fn = fn; }
+export function mbnReasonOf(url, method) {
+    try { return (mbnReasons.fn && mbnReasons.fn(String(url), String(method || 'GET').toUpperCase())) || undefined; } catch (e) { return undefined; }
+}
+
 export async function mbnLog(url, init, o) {
     o = o || {};
     let h = '', p = String(url);
@@ -592,7 +599,7 @@ export async function mbnLog(url, init, o) {
     if (/^(blob|data):/i.test(p)) return (o.send || fetch)(url, init);
     // a host that isn't MusicBrainz is external, the page's own one too (Beatport's pages)
     try { const x = new URL(p, location.href); p = x.pathname + x.search; if (!/(^|\.)musicbrainz\.(org|eu)$/.test(x.hostname)) h = x.host; } catch (e) {}
-    const ev = { r: o.reason || undefined, en: o.entity || undefined, l: o.label || p.slice(0, 120), u: o.u || (o.label ? p.slice(0, 300) : undefined), b: o.background === false ? 0 : 1,
+    const ev = { r: o.reason || mbnReasonOf(url, (init && init.method) || o.method), en: o.entity || undefined, l: o.label || p.slice(0, 120), u: o.u || (o.label ? p.slice(0, 300) : undefined), b: o.background === false ? 0 : 1,
         id: o.id || mbnRid(), m: o.m || String((init && init.method) || o.method || 'GET').toUpperCase(), h: h || undefined, x: 1 };
     mbnTrace(Object.assign({ e: 'start', bs: mbnBodySize(init) }, ev));
     try {
@@ -650,6 +657,7 @@ export function mbnXhr(xhr, url, method, body) {
  */
 export async function mbnFetch(url, init, o) {
     o = o || {};
+    if (!o.reason) { const r = mbnReasonOf(url, init && init.method); if (r) o = Object.assign({}, o, { reason: r }); }
     // #1098: a write (an edit, an ISRC submit) makes every cached answer old. Marked when it goes out and
     // again when it is answered: a read sent while the write runs gets the answer from before the write,
     // and without the second mark it was cached as new (ISRC Scout's links count stayed after a submit)
@@ -1057,5 +1065,5 @@ export function mbnReverify(url, init, o) {
 /** What sync-gate.mjs inlines, in order. */
 export const MBN_INLINE = {
     consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_LOCK_HOLD, MBN_MAX_HOLD, MBN_MAX_LEAD, MBN_TRACE_MAX, MBN_MERGE_WAIT, MBN_CACHE_TTL, MBN_CACHE_MAX, MBN_INC_ALONE },
-    fns: [mbnGated, mbnState, mbnSleep, mbnRid, mbnTabId, mbnTabCheck, mbnTrace, mbnSlot, mbnLead, mbnAnswer, mbnBodySize, mbnLog, mbnGm, mbnGmFn, mbnXhr, mbnFetch, mbnEdited, mbnEditEpoch, mbnCacheUrl, mbnCacheGet, mbnCachePut, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
+    fns: [mbnGated, mbnState, mbnSleep, mbnRid, mbnTabId, mbnTabCheck, mbnTrace, mbnSlot, mbnLead, mbnAnswer, mbnBodySize, mbnReasons, mbnReasonOf, mbnLog, mbnGm, mbnGmFn, mbnXhr, mbnFetch, mbnEdited, mbnEditEpoch, mbnCacheUrl, mbnCacheGet, mbnCachePut, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
 };
