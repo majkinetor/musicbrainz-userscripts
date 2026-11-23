@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.23.015917
+// @version      2026.11.23.021406
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -4609,15 +4609,38 @@
   // In Event Horizon the release comes from the lookup Event Horizon drew its page from (MBU.ehRelease), which has
   // everything this one asks for: no request of our own. Only a release's first load: after an edit here a reload asks MusicBrainz
   let _ehUsed = new Map();   // release → the Event Horizon text it was read from
+  // Refresh logs: why a refresh waits, a short tag of a release text (two reads of the same answer have the same tag),
+  // and what the badge still counts after a reread
+  function ehBusy() {
+    return _removalBusy ? 'a removal is running' : (typeof modal !== 'undefined' && modal && modal.classList.contains('open')) ? 'the window is open'
+      : _relInFlight ? 'a release read is running' : '';
+  }
+  function textTag(t) {
+    t = String(t || ''); let h = 0;
+    for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36) + '/' + t.length;
+  }
+  function logBadgeLeft(why) {
+    try {
+      if (!RELEASE) return;
+      const urls = RELEASE.tracks.reduce((n, t) => n + (t.recUrls || []).length, 0), isrcs = RELEASE.tracks.filter(t => t.existing.length).length;
+      const left = bgLinksToAdd(), newIsrcs = bgIsrcsNew();
+      Log.info(why + ': ' + urls + ' recording link(s), ' + isrcs + ' track(s) with an ISRC; badge counts ' + newIsrcs.length + ' ISRC(s), ' + left.length + ' link(s) to add'
+        + (left.length ? ' (' + left.slice(0, 4).map(l => 'track ' + (RELEASE.tracks.findIndex(t => t.recId === l.rec) + 1) + ' ' + l.url).join(', ') + (left.length > 4 ? ', …' : '') + ')' : ''));
+    } catch (e) { Log.warn(why + ': badge count failed: ' + errText(e)); }
+  }
   function ehShared(id) {
     try { const ns = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window; return (ns.MBU && ns.MBU.ehRelease && ns.MBU.ehRelease(id)) || null; } catch (e) { return null; }
   }
   // Event Horizon got the release again (a redraw with what MusicBrainz changed): read it again when it differs
   document.addEventListener('mbu-eh-release', e => {
     const id = String(e.detail || '').toLowerCase(), p = ehShared(id);
-    if (id !== mbid || !p || !_ehUsed.has(id) || _relInFlight || _removalBusy || (typeof modal !== 'undefined' && modal && modal.classList.contains('open'))) return;
+    if (id !== mbid) return;
+    const busy = ehBusy();
+    if (!p || !_ehUsed.has(id) || busy) { Log.info('Event Horizon got release ' + id + ' again: not read, ' + (!p ? 'it shares no copy' : !_ehUsed.has(id) ? 'this release was not read from it' : busy)); return; }
     Promise.resolve(p).then(t => {
-      if (id !== mbid || String(t) === _ehUsed.get(id) || _relInFlight) return;
+      if (id !== mbid || _relInFlight) return;
+      if (String(t) === _ehUsed.get(id)) { Log.info('Event Horizon got release ' + id + ' again, unchanged (' + textTag(t) + ')'); return; }
       Log.info('Event Horizon got release ' + id + ' again, changed: reading it again');
       _ehUsed.delete(id); RELEASE = null; fetchRelease().catch(() => {});
     }, () => {});
@@ -4628,16 +4651,18 @@
   function isSyncEhRefresh() {
     const id = _ehRefreshPending;
     if (!id || id !== mbid) { _ehRefreshPending = ''; return; }
-    if (_removalBusy || (typeof modal !== 'undefined' && modal && modal.classList.contains('open'))) return;
-    if (_relInFlight) { _relInFlight.catch(() => {}).then(isSyncEhRefresh); return; }
-    if (!ehShared(id)) return;
+    if (_removalBusy || (typeof modal !== 'undefined' && modal && modal.classList.contains('open'))) { Log.info('Refreshed release ' + id + ': waiting, ' + ehBusy()); return; }
+    if (_relInFlight) { Log.info('Refreshed release ' + id + ': waiting, a release read is running'); _relInFlight.catch(() => {}).then(isSyncEhRefresh); return; }
+    if (!ehShared(id)) { Log.info('Refreshed release ' + id + ': not read, Event Horizon shares no copy'); return; }
+    Log.info('Refreshed release ' + id + ': reading it again');
     const pending = (RELEASE && RELEASE.tracks || []).map(t => ({ recId: t.recId, value: t.pending }));
     _ehRefreshPending = ''; _ehUsed.delete(id); RELEASE = null;
-    fetchRelease().then(r => { if (mbid !== id || RELEASE !== r) return; r.tracks.forEach((t, i) => { if (pending[i]?.recId === t.recId && pending[i].value) t.pending = pending[i].value; }); updateBtnStatus(); notifyMatchCounts(); }, e => Log.warn('Refreshed release could not be read: ' + errText(e)));
+    fetchRelease().then(r => { if (mbid !== id || RELEASE !== r) return; r.tracks.forEach((t, i) => { if (pending[i]?.recId === t.recId && pending[i].value) t.pending = pending[i].value; }); updateBtnStatus(); notifyMatchCounts(); logBadgeLeft('Refreshed release read'); }, e => Log.warn('Refreshed release could not be read: ' + errText(e)));
   }
   document.addEventListener('mbu-release-refreshed', e => {
     const id = String(e.detail || '').toLowerCase();
     if (id !== mbid) return;
+    Log.info('Event Horizon refreshed release ' + id + (_ehRefreshPending === id ? ' (an earlier refresh still waits)' : ''));
     _ehRefreshPending = id; isSyncEhRefresh();
   });
   // own: ask MusicBrainz, not Event Horizon. Its lookup can fail (and stays kept failed) or hang; either way this
@@ -4649,7 +4674,7 @@
       _ehUsed.set(id, null);
       const late = new Promise((ok, no) => setTimeout(() => no(new Error('no answer in 10 s')), 10000));
       return Promise.race([Promise.resolve(shared), late]).then(t => {
-        if (id !== mbid) Log.debug('Event Horizon\'s lookup of ' + id + ' arrived, ' + mbid + ' is shown now'); _ehUsed.set(id, String(t)); Log.info('Release read from Event Horizon, no request'); return releaseFrom({ status: 200, responseText: String(t) }); },
+        if (id !== mbid) Log.debug('Event Horizon\'s lookup of ' + id + ' arrived, ' + mbid + ' is shown now'); _ehUsed.set(id, String(t)); Log.info('Release read from Event Horizon, no request (' + textTag(t) + ')'); return releaseFrom({ status: 200, responseText: String(t) }); },
         e => { _ehUsed.delete(id); Log.info('Event Horizon\'s release lookup failed (' + errText(e) + '): asking MusicBrainz'); return fetchReleaseNow(true); });
     }
     return gmGet(
@@ -4862,7 +4887,7 @@
       }
     }
   }
-  function refreshEhRelease() { document.dispatchEvent(new CustomEvent('mbu-refresh-release', { detail: { release: mbid }, cancelable: true })); }
+  function refreshEhRelease() { Log.info('Asking Event Horizon to refresh release ' + mbid); document.dispatchEvent(new CustomEvent('mbu-refresh-release', { detail: { release: mbid }, cancelable: true })); }
   function submitIsrcs(map, editNote) { return withRepeat(() => submitIsrcsOnce(map, editNote), 'The ISRC submit').then(result => { invalidateMatchCache(); refreshEhRelease(); return result; }); }
   async function submitIsrcsOnce(map, editNote) {
     const token = await Auth.accessToken();
