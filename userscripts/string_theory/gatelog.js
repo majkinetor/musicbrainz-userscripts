@@ -276,7 +276,7 @@ function stGateIcon(name, cls, tip, left) {
   return '<img class="st-gl-ic' + (cls ? ' ' + cls : '') + '" alt=""' + (tip ? ' data-tip="' + stEsc(tip) + '"' : '') + (left != null ? ' style="left:' + left.toFixed(2) + '%"' : '') + ' src="' + stEsc(stGateIconSrc(name)) + '">';
 }
 // requests shorter than ST_GATE_SHORT ms are drawn as an icon; icons closer than ST_GATE_NEAR overlap
-var ST_GATE_SHORT = 1500, ST_GATE_NEAR = 2.2, stGateZoom = {};
+var ST_GATE_SHORT = 1500, ST_GATE_NEAR = 2.2, stGateZoom = {}, stGateRows = {};   // a lane's most sub-rows so far: it never shrinks, so it does not jump
 // the zoomed view of a cluster: its own time line and one line per request
 // the cluster's count as a pill: MusicBrainz requests in one half, other sites in the other; an empty half is left out
 function stGateBurst(run) {
@@ -420,7 +420,7 @@ function stGateLanesHtml(groups, all, now, me) {
     marks.sort(function (x, y) { return x.a - y.a; }).forEach(function (k) {
       for (var i = 0; ; i++) if (ends[i] == null || ends[i] < k.a - pxp(3)) { ends[i] = k.b; (subs[i] = subs[i] || []).push(k.h); break; }
     });
-    lanes[tab].rows = Math.max(1, subs.length);
+    lanes[tab].rows = stGateRows[tab] = Math.max(1, subs.length, stGateRows[tab] || 0);
     subs.forEach(function (h, i) { lanes[tab].bars.push('<div class="st-gl-sub" style="--i:' + i + '">' + h.join('') + '</div>'); });
   });
   var rows = order.map(function (tab) {
