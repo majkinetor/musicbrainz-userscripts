@@ -306,7 +306,7 @@ function stGateBurst(run) {
   var gs = run.map(function (x) { return x.g; }), bad = run.filter(function (x) { return x.cls === 'bad'; }).length;
   var x = gs.filter(function (g) { return g.h; }).length, m = gs.length - x;
   var a = Math.min.apply(null, run.map(function (r) { return r.a; })), b = Math.max.apply(null, run.map(function (r) { return r.b; }));
-  return '<span class="st-gl-cb" title="' + (m ? m + ' MusicBrainz' : '') + (m && x ? ', ' : '') + (x ? x + ' other' : '') + (bad ? ', ' + bad + ' failed' : '') + ' · ' + stGateSec(b - a) + '">'
+  return '<span class="st-gl-cb">'
     + (m ? '<span class="m">' + m + '</span>' : '') + (x ? '<span class="x">' + x + '</span>' : '') + (bad ? '<span class="b">' + bad + '</span>' : '')
     + (b - a >= 300 ? '<span class="t">' + stGateSec(b - a) + '</span>' : '') + '</span>';
 }
@@ -378,7 +378,7 @@ function stGateZoomHtml(items, now) {
   var a = Math.min.apply(null, items.map(function (x) { return x.a; })), b = Math.max.apply(null, items.map(function (x) { return x.b; }));
   var span = Math.max(b - a, 200), pad = span * 0.08; a -= pad; span += pad * 2;
   var pct = function (t) { return (t - a) / span * 100; };
-  return '<div class="st-gl-zh">' + stGateTime(a + pad) + ' · ' + items.length + ' requests in ' + stGateSec(b - a - pad * 2) + stGateSplit(items.map(function (x) { return x.g; })) + '</div>' + stGateZoomMerge(items).map(function (x) {
+  return '<div class="st-gl-zh">' + stGateTime(a + pad) + ' · ' + items.length + ' requests in ' + stGateSec(span - pad * 2) + stGateSplit(items.map(function (x) { return x.g; })) + '</div>' + stGateZoomMerge(items).map(function (x) {
     var w = Math.max(pct(x.b) - pct(x.a), 1.5);
     return stGateTag('<div class="st-gl-zr">', x.g.id) + '<span class="st-gl-zn">' + '<b class="st-gl-zx">' + (x.n ? '×' + x.n : '') + '</b>' + '<span' + (x.g.h ? ' class="h"' : '') + '>' + (x.n ? stEsc(x.kind) : stGateLabelHtml(x.g)) + '</span></span>'
       + '<span class="st-gl-zrs">' + stEsc(x.g.r || '') + '</span>'
