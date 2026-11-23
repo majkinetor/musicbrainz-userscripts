@@ -79,6 +79,9 @@ var ST_GATE_CSS = ''
   + '#st-gate td.t,#st-gate td.tab,#st-gate td.w{white-space:nowrap;color:var(--mbu-text-weak)}#st-gate tr.me td.tab{color:var(--mbu-accent-text)}'
   + '#st-gate td.s{white-space:nowrap}#st-gate td.l{overflow-wrap:anywhere;font-family:var(--mbu-font-mono);font-size:12px}'
   + '#st-gate .i{color:var(--mbu-text-weak);font-size:11px}#st-gate td.v{font-family:var(--mbu-font-mono);font-size:11px;color:var(--mbu-text-weak)}'
+  + '#st-gate th{overflow:visible}#st-gate .st-gate-rz{position:absolute;top:0;right:-4px;width:8px;height:100%;cursor:col-resize;z-index:2}'
+  + '#st-gate .st-gate-rz::after{content:"";position:absolute;left:3px;top:20%;height:60%;width:1px;background:var(--mbu-border)}#st-gate .st-gate-rz:hover::after,#st-gate .st-gate-rz.on::after{top:0;height:100%;background:var(--mbu-accent)}'
+  + '#st-gate tr>:last-child>.st-gate-rz{display:none}'
   + '#st-gate table{table-layout:fixed}#st-gate td{overflow:hidden;text-overflow:ellipsis}#st-gate th:nth-child(1){width:96px}#st-gate th:nth-child(2){width:64px}#st-gate th:nth-child(3){width:140px}#st-gate th:nth-child(4){width:64px}#st-gate th:nth-child(5){width:130px}#st-gate th:nth-child(6){width:120px}#st-gate th:nth-child(7){width:56px}#st-gate th:nth-child(9){width:70px}#st-gate th:nth-child(10){width:120px}#st-gate th:nth-child(11){width:72px}#st-gate th:nth-child(12){width:96px}'
   + [2, 3, 4, 5, 6, 7, 9, 11, 12].map(function (n) { return '#st-gate.hc' + n + ' tr>:nth-child(' + n + ')'; }).join(',') + '{display:none}'
   + '#st-gate-hud-box{position:fixed;right:14px;bottom:14px;width:520px;max-width:calc(100vw - 28px);z-index:var(--mbu-z-modal);background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:6px;padding:4px 8px;font-size:12px;opacity:.92}'
@@ -613,6 +616,7 @@ function stGateCss() {
 }
 // the HUD: the lanes in a small strip at the bottom right, on screen without the window
 var stGateHudEl = null;
+var stGateColW = {};   // the network log table's column widths a drag set, by column
 function stGateHud(on) {
   if (stGateHudEl) { clearInterval(stGateHudEl.timer); stGateHudEl.remove(); stGateHudEl = null; }
   stGateRemember({ hud: !!on });
@@ -718,6 +722,19 @@ function stGateBuild() {
   srcSeg(); colSeg(); hudSeg();
   pop.querySelector('.st-gate-hosts').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; hosts[b.dataset.v] = !hosts[b.dataset.v]; srcSeg(); stGateRemember({ hosts: hosts }); draw(); });
   hudBtn.onclick = function () { if (!stGateHudEl) stGateHud(true); stGateClose(); };
+  // a drag on the line between two headers resizes the column on its left; the widths last while the page is open
+  pop.querySelectorAll('#st-gate-body th').forEach(function (th, i) {
+    if (stGateColW[i]) th.style.width = stGateColW[i] + 'px';
+    var rz = document.createElement('span'); rz.className = 'st-gate-rz'; th.appendChild(rz);
+    rz.addEventListener('click', function (e) { e.stopPropagation(); });
+    rz.addEventListener('mousedown', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      var x0 = e.clientX, w0 = th.offsetWidth; rz.classList.add('on');
+      var mv = function (ev) { stGateColW[i] = Math.max(32, w0 + ev.clientX - x0); th.style.width = stGateColW[i] + 'px'; };
+      var up = function () { rz.classList.remove('on'); document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
+      document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+    });
+  });
   var moOf = { n: 're', res: 'bad' }, cfOn = function (k) { return cf[k] != null || cft[k] != null || (mode !== 'all' && moOf[k] === mode); };
   var cfTip = function (b) {
     var k = b.dataset.cf, t = cft[k] != null ? 'Contains “' + cft[k] + '”' : cf[k] != null ? (cf[k] === '' ? '(empty)' : String(cf[k])) : moOf[k] === mode ? (k === 'n' ? 'Retried' : 'Failed') : '';
