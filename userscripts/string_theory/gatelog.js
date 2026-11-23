@@ -74,7 +74,7 @@ var ST_GATE_CSS = ''
   + '#st-gate-span{margin-right:6px;padding:2px 4px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-text);font:inherit;font-size:12px}'
   + '#st-gate th{position:sticky;top:0;z-index:1;background:var(--mbu-bg);text-align:left;font-weight:600;font-size:12px;padding:5px 8px;border-bottom:1px solid var(--mbu-border)}'
   + '#st-gate td{padding:4px 8px;border-bottom:1px solid var(--mbu-divider);vertical-align:middle}'
-  + '#st-gate tr.rq{cursor:pointer}#st-gate tr.rq:hover td,#st-gate tr.rq.open td{background:var(--mbu-bg-hover)}'
+  + '#st-gate tr.rq{cursor:pointer}#st-gate tr.rq.in td:first-child{box-shadow:inset 3px 0 var(--mbu-border)}.st-gl-gx{display:inline-block;width:1em;color:var(--mbu-text-weak)}#st-gate tr.rq:hover td,#st-gate tr.rq.open td{background:var(--mbu-bg-hover)}'
   + '#st-gate tr.rq.sel td,#st-gate tr.rq.sel+tr.steps td{background:color-mix(in srgb,var(--mbu-info) 24%,transparent)}#st-gate tr.rq.sel td:first-child,#st-gate tr.rq.sel+tr.steps td{box-shadow:inset 3px 0 var(--mbu-info)}'
   + '#st-gate tr.sys td{color:var(--mbu-text-weak)}'
   + '#st-gate tr.sys.lead td{background:color-mix(in srgb,var(--mbu-info) 8%,transparent)}'
@@ -294,13 +294,33 @@ function stGateZoomIcon(x, left) {
 }
 // many requests of one kind to one site (cover art for 100 releases) become one line with a count;
 // the line's bar runs from the first start to the last end, and it is red when any of them failed
+// the kind is the label without its last word: "v1 catalog gy" and "v1 catalog hk" are one kind
+function stGateKind(g) { var w = stGateAlias(g.l).split(' '); return w.length > 1 ? w.slice(0, -1).join(' ') : w[0]; }
+function stGateKindKey(g) { return g.h && !g.sys ? g.tab + '|' + String(g.h).split('//').pop().split('/')[0] + '|' + (g.s || '') + '|' + (g.r || '') + '|' + stGateKind(g) : ''; }
+// the table: 3 or more rows in a row of one kind to one site become one row with a count, which a click opens
+function stGateTableHtml(list, me, opened, now) {
+  var out = [], i = 0;
+  while (i < list.length) {
+    var k = stGateKindKey(list[i]), j = i + 1;
+    while (k && j < list.length && stGateKindKey(list[j]) === k) j++;
+    var run = list.slice(i, j); i = j;
+    if (run.length < 3) { run.forEach(function (g) { out.push(stGateRowHtml(g, me, !!opened[g.id], now)); }); continue; }
+    var gid = 'grp:' + run[run.length - 1].id, open = opened[gid] || run.some(function (g) { return opened[g.id] || stGateSel[g.id]; });
+    var g0 = run[0], bad = run.filter(function (g) { return g.cls === 'bad'; }).length, wait = run.reduce(function (n, g) { return n + (g.wait || 0); }, 0);
+    var host = String(g0.h).split('//').pop().split('/')[0];
+    out.push('<tr class="rq grp' + (open ? ' open' : '') + (g0.tab === me ? ' me' : '') + (stGateSel[gid] ? ' sel' : '') + '" data-id="' + stEsc(gid) + '"><td class="t">' + stGateTime(g0.t) + '</td>'
+      + '<td class="tab">' + stEsc(g0.tab === me ? 'this tab' : String(g0.tab).slice(0, 8)) + '</td><td class="s">' + stEsc(g0.s || '') + '</td><td class="v">' + stEsc(g0.m || '') + '</td><td class="r">' + stEsc(g0.r || '') + '</td><td class="e"></td>'
+      + '<td class="l"><span class="st-gl-gx">' + (open ? '▾' : '▸') + '</span> <span class="i">' + stEsc(host) + '</span> ' + stEsc(stGateKind(g0)) + ' <b class="st-gl-zx">×' + run.length + '</b></td><td></td>'
+      + '<td><span class="st-gate-pill ' + (bad ? 'bad' : g0.cls) + '">' + (bad ? bad + ' failed' : run.length + ' requests') + '</span></td><td class="w">' + stGateSec(wait) + '</td><td></td><td></td></tr>');
+    if (open) run.forEach(function (g) { out.push(stGateRowHtml(g, me, !!opened[g.id], now).replace('<tr class="rq', '<tr class="rq in')); });
+  }
+  return out.join('');
+}
 function stGateZoomMerge(items) {
   var by = {}, out = [];
   items.forEach(function (x) {
     if (!x.g.h) { out.push(x); return; }
-    // the kind is the label without its last word: "v1 catalog gy" and "v1 catalog hk" are one kind
-    var w = stGateAlias(x.g.l).split(' '), kind = w.length > 1 ? w.slice(0, -1).join(' ') : w[0];
-    var key = String(x.g.h).split('//').pop().split('/')[0] + '|' + (x.g.s || '') + '|' + kind;
+    var kind = stGateKind(x.g), key = stGateKindKey(x.g);
     if (!by[key]) { by[key] = { first: x, all: [], kind: kind }; out.push(by[key]); }
     by[key].all.push(x);
   });
@@ -754,7 +774,7 @@ function stGateBuild() {
       var rows = body.querySelectorAll('tr.rq');
       for (var i = 0; i < rows.length; i++) { var r = rows[i].getBoundingClientRect(); if (r.bottom > sTop) { anchor = rows[i].getAttribute('data-id'); at = r.top - sTop; break; } }
     }
-    body.innerHTML = shown.length ? shown.slice().reverse().map(function (g) { return stGateRowHtml(g, me, !!opened[g.id], now); }).join('')
+    body.innerHTML = shown.length ? stGateTableHtml(shown.slice().reverse(), me, opened, now)
       : '<tr><td class="none" colspan="12">' + (all.length ? 'No request matches.' : 'No requests went through the gate yet. Open or reload a MusicBrainz page that uses a script, then look again.') + '</td></tr>';
     scroller.scrollTop = top;
     if (anchor != null) {
