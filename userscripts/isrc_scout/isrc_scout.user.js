@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.23.140634
+// @version      2026.11.23.144146
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1212,11 +1212,23 @@
   // its caller belongs to the release it left, and an error would land on the new one's button
   // It goes through mbnFetch, so a read another script asks in the same moment, or asked a moment
   // ago, is one request; the request itself is still ISRC Scout's own GM one (o.send).
+  // the reason the gate's log shows for a request to another site: API or Page, then ISRC, Barcode, Search, Token or Lookup;
+  // the log groups alike requests of one reason. A caller can name its own (a token scrape: Page/Token).
+  function scReasonOf(url) {
+    let u; try { u = new URL(url); } catch (e) { return undefined; }
+    const p = u.pathname.toLowerCase(), q = u.search.toLowerCase();
+    const api = /^(api|openapi|amp-api|auth|isrc-api)[.-]|^itunes\.apple\.com$/.test(u.hostname) || /\/(api|ws|v\d+|youtubei)(\/|\.json|$)|\.json/.test(p) || /[?&]fmt=json/.test(q);
+    const what = /oauth|token/.test(p) ? 'Token'
+      : /isrc/.test(p + q) ? 'ISRC'
+      : /barcode|upc|ean/.test(p + q) ? 'Barcode'
+      : /search|recordings$|[?&](q|k|query|term)=/.test(p + q) ? 'Search' : 'Lookup';
+    return (api ? 'API' : 'Page') + '/' + what;
+  }
   async function http(opts) {
     if (!mbnGated(opts && opts.url)) {
       // another site's request (SoundExchange, the stores' ISRC lookups) shows in the Gate log as external
       let g;
-      await mbnLog(opts.url, { method: opts.method || 'GET', body: opts.data }, { reason: opts.reason, send: async () => { g = await httpRaw(opts); return { status: g.status }; } });
+      await mbnLog(opts.url, { method: opts.method || 'GET', body: opts.data }, { reason: opts.reason || scReasonOf(opts.url), send: async () => { g = await httpRaw(opts); return { status: g.status }; } });
       return g;
     }
     const at = mbid, read = !/post/i.test(opts.method || '');
@@ -1230,7 +1242,7 @@
       return new Response([101, 204, 205, 304].includes(g.status) ? null : (g.responseText || ''), { status: g.status, statusText: g.statusText || '', headers: h });
     };
     const r = await mbnFetch(opts.url, { method: opts.method, headers: opts.headers, body: opts.data }, {
-      label, log: gateLog, send, cancelled: read ? () => mbid !== at : undefined,
+      label, reason: opts.reason, log: gateLog, send, cancelled: read ? () => mbid !== at : undefined,
       // a write retries only when MusicBrainz's limiter throttled it (429/503): it did nothing then, and
       // a 1s Retry-After otherwise became withRepeat's 60s wait; any other failure is its caller's call
       tries: read ? undefined : 3,
@@ -1244,7 +1256,7 @@
     return { status: r.status, statusText: r.statusText, responseText: await r.text(), responseHeaders, finalUrl: r.url || opts.url };
   }
   const gmGet  = (url, headers, reason) => http({ method: 'GET',  url, headers: headers || {}, reason });
-  const gmPost = (url, data, headers) => http({ method: 'POST', url, data, headers: headers || {} });
+  const gmPost = (url, data, headers, reason) => http({ method: 'POST', url, data, headers: headers || {}, reason });
 
   /* ═══════════════════════════════════════════════════════════════════════
      SMALL UTILITIES
@@ -4986,7 +4998,7 @@
     }
     function refreshToken() {
       if (_tokenFetch) return _tokenFetch;
-      _tokenFetch = gmGet(SX_HOME, { 'Accept': 'text/html', 'User-Agent': 'Mozilla/5.0' })
+      _tokenFetch = gmGet(SX_HOME, { 'Accept': 'text/html', 'User-Agent': 'Mozilla/5.0' }, 'Page/Token')
         .then(r1 => {
           _tokenFetch = null;
           if (r1.status !== 200) throw new Error('SX home ' + r1.status);
@@ -5848,7 +5860,7 @@
     if (onProgress) onProgress(0, 0);
     const input = 'spotify:album:' + albumId;
     Log.info('Spotify via molla: ' + input);
-    const r = await gmPost('https://isrc.mollamusicgroup.com/api/spotify', JSON.stringify({ input }), { 'Content-Type': 'application/json' });
+    const r = await gmPost('https://isrc.mollamusicgroup.com/api/spotify', JSON.stringify({ input }), { 'Content-Type': 'application/json' }, 'API/ISRC');
     let j = null; try { j = JSON.parse(r.responseText || 'null'); } catch (e) { Log.warn('molla: response is not JSON (' + String(r.responseText || '').slice(0, 80) + ')'); }
     if (r.status !== 200) {
       const msg = (j && j.error) || ('HTTP ' + r.status);
@@ -10609,7 +10621,7 @@
   // MBS-13969). No CSRF token field is used; the session cookie authorises. WS2-verified.
   async function removeIsrcsFromRecording(recId, isrcsToRemove, note) {
     const editUrl = MB_ROOT + '/recording/' + recId + '/edit';
-    const gr = await gmGet(editUrl, { 'Accept': 'text/html' });
+    const gr = await gmGet(editUrl, { 'Accept': 'text/html' }, 'Page/Remove ISRC');
     if (gr.status !== 200) throw new Error('GET form ' + gr.status + (gr.status === 401 || gr.status === 403 ? ' (are you logged into MusicBrainz?)' : ''));
     const html = gr.responseText;
     const rm = new Set(isrcsToRemove.map(normalizeIsrc));
@@ -10662,7 +10674,7 @@
     Log.info('POST ' + shortUrl(editUrl) + ' (' + [...params.keys()].length + ' fields, removing ' + [...rm].join(',') + ')');
     const pr = await gmPost(editUrl, params.toString(), {
       'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'text/html', 'Referer': editUrl, 'Origin': MB_ROOT,
-    });
+    }, 'Page/Remove ISRC');
     if (pr.status >= 400) throw new Error('POST ' + pr.status + (pr.status === 401 || pr.status === 403 ? ' (are you logged into MusicBrainz?)' : ''));
     // A created edit redirects away from /edit to the recording page. A validation
     // error re-renders the form (stays on /edit, still has the edit-recording inputs).
