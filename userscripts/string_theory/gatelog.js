@@ -20,7 +20,7 @@ var ST_GATE_CSS = ''
   // minimised: the title bar only, docked at the bottom left
   + '#st-gate.min{height:auto!important;width:auto!important}'
   + '#st-gate.min>:not(.mbu-logpop-h),#st-gate.min .mbu-logpop-h>:not(b):not(.st-gate-n):not(.mbu-logpop-min){display:none}'
-  + '#st-gate.full{top:12px!important;left:12px!important;right:12px!important;bottom:12px!important;width:auto!important;height:auto!important;transform:none!important}'
+  + '#st-gate.full{top:0!important;left:0!important;right:0!important;bottom:0!important;border-radius:0;border:0;width:auto!important;height:auto!important;transform:none!important}'
   + '#st-gate.full .mbu-logpop-h{cursor:default}#st-gate.full .mbu-logpop-grip{display:none}'
   // the gate's state, as chips
   + '#st-gate-state{display:flex;flex-wrap:wrap;gap:6px;padding:8px 13px 0}'
