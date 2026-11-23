@@ -283,7 +283,22 @@ function stGateIcon(name, cls, tip, left) {
   return '<img class="st-gl-ic' + (cls ? ' ' + cls : '') + (/^Falcon/.test(String(name || '')) ? ' small' : '') + '" alt=""' + (tip ? ' data-tip="' + stEsc(tip) + '"' : '') + (left != null ? ' style="left:' + left.toFixed(2) + '%"' : '') + ' src="' + stEsc(stGateIconSrc(name)) + '">';
 }
 // requests shorter than ST_GATE_SHORT ms are drawn as an icon; icons closer than ST_GATE_NEAR overlap
-var stGateVw = null;   // the window's zoomed view of the time line: { t0, s }, or null for the whole span
+var stGateVw = null, stGateHudVw = null;   // the zoomed view of the window's and the HUD's time line: { t0, s }, or null for the whole span
+// the mouse wheel zooms a time line around the pointer, Shift and the wheel move it, a right click shows the whole span again
+function stGateZoomOn(box, span, get, set, redraw) {
+  box.addEventListener('wheel', function (e) {
+    var ln = box.querySelector('.st-gl-lane'); if (!ln) return;
+    e.preventDefault();
+    var now = Date.now(), SP = span(), r = ln.getBoundingClientRect(), lw = r.width || 600, insL = 26 / lw * 100, insR = 120 / lw * 100;
+    var p = Math.max(0, Math.min(1, ((e.clientX - r.left) / lw * 100 - insL) / (100 - insL - insR)));
+    var v = get() || { t0: now - SP, s: SP }, d = e.deltaY || e.deltaX, s = v.s, t0 = v.t0;
+    if (e.shiftKey || (!e.deltaY && e.deltaX)) t0 += (d > 0 ? 1 : -1) * s * 0.15;
+    else { var at = t0 + s * p; s = Math.max(2000, Math.min(SP, s * (d > 0 ? 1.25 : 0.8))); t0 = at - s * p; }
+    t0 = Math.max(now - SP, Math.min(t0, now - s));
+    set(s >= SP ? null : { t0: t0, s: s }); redraw();
+  }, { passive: false });
+  box.addEventListener('contextmenu', function (e) { if (!get()) return; e.preventDefault(); set(null); redraw(); });
+}
 var ST_GATE_SHORT = 1500, ST_GATE_NEAR = 2.2, stGateZoom = {}, ST_GATE_SUBS = 3;   // every lane has 3 fixed sub-rows
 // the zoomed view of a cluster: its own time line and one line per request
 // the cluster's count as a pill: MusicBrainz requests in one half, other sites in the other; an empty half is left out
@@ -376,7 +391,7 @@ function stGateLanesHtml(groups, all, now, me, box) {
   // the time line keeps a margin at each end, so an icon or a cluster's pill does not go past the edge
   var lw = (((box || document).querySelector('.st-gl-lane') || {}).clientWidth || (box ? box.clientWidth : 0) || 600), insL = 26 / lw * 100, insR = 120 / lw * 100;
   var at = function (p) { return insL + p * (100 - insL - insR) / 100; };
-  var vw = box ? null : stGateVw, SP = vw ? vw.s : ST_GATE_SPAN, t0 = vw ? vw.t0 : now - ST_GATE_SPAN, t1 = t0 + SP;
+  var vw = box ? stGateHudVw : stGateVw, SP = vw ? vw.s : ST_GATE_SPAN, t0 = vw ? vw.t0 : now - ST_GATE_SPAN, t1 = t0 + SP;
   var pct = function (t) { return at(Math.max(0, Math.min(100, (t - t0) / SP * 100))); };
   var bar = function (cls, a, b, tip) { return '<i class="' + cls + '"' + (tip ? ' data-tip="' + stEsc(tip) + '"' : '') + ' style="left:' + pct(a).toFixed(2) + '%;width:' + (pct(b) - pct(a)).toFixed(2) + '%"></i>'; };
   var lanes = {}, order = [];
@@ -701,7 +716,7 @@ function stGateHud(on) {
       document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
     });
   });
-  var held = false, lanes = el.querySelector('.st-gate-hud-l');
+  var held = false, hudSpan = 30000, lanes = el.querySelector('.st-gate-hud-l');
   lanes.addEventListener('mouseenter', function () { held = true; });
   lanes.addEventListener('mouseleave', function () { held = false; });
   el.querySelector('.mbu-ov-x').onclick = function () {
@@ -739,7 +754,7 @@ function stGateHud(on) {
   var draw = function () {
     if (!el.isConnected) { clearInterval(el.timer); return; }
     try {
-      var hs = Math.max(30000, Math.round(ST_GATE_SPAN * (lanes.clientWidth || 500) / 1200 / 10000) * 10000);
+      var hs = hudSpan = Math.max(30000, Math.round(ST_GATE_SPAN * (lanes.clientWidth || 500) / 1200 / 10000) * 10000);
       var all = stGateEvents(), now = Date.now(), st = stGateWinState(), hosts = st.hosts || { mb: st.src !== 'other', ext: st.src !== 'mb' };
       // the big window's site filter applies here too
       var groups = stGateGroups(all, now).filter(function (g) { return g.sys || (g.h ? hosts.ext : hosts.mb); }), c = stGateCount(groups.filter(function (g) { return now - g.t <= hs; }));
@@ -752,6 +767,7 @@ function stGateHud(on) {
     } catch (e) { /* a bad event: the next tick tries again */ }
   };
   el.timer = setInterval(draw, 1000);
+  stGateZoomOn(lanes, function () { return hudSpan; }, function () { return stGateHudVw; }, function (v) { stGateHudVw = v; }, function () { held = false; draw(); held = true; });
   stGateHudEl = el;
   draw();
   // pinned by its top left corner: a change in height grows it downward, it does not move
@@ -1100,20 +1116,7 @@ function stGateBuild() {
   document.addEventListener('click', openFromLanes);
   lanes.addEventListener('mouseenter', function () { lanesHeld = true; });
   lanes.addEventListener('mouseleave', function () { lanesHeld = false; draw(); });
-  // the mouse wheel zooms the time line around the pointer, Shift and the wheel move it, a right click shows the whole span again
-  lanes.addEventListener('wheel', function (e) {
-    var ln = lanes.querySelector('.st-gl-lane'); if (!ln) return;
-    e.preventDefault();
-    var now = Date.now(), r = ln.getBoundingClientRect(), lw = r.width || 600, insL = 26 / lw * 100, insR = 120 / lw * 100;
-    var p = Math.max(0, Math.min(1, ((e.clientX - r.left) / lw * 100 - insL) / (100 - insL - insR)));
-    var v = stGateVw || { t0: now - ST_GATE_SPAN, s: ST_GATE_SPAN }, d = e.deltaY || e.deltaX, s = v.s, t0 = v.t0;
-    if (e.shiftKey || (!e.deltaY && e.deltaX)) t0 += (d > 0 ? 1 : -1) * s * 0.15;
-    else { var at = t0 + s * p; s = Math.max(2000, Math.min(ST_GATE_SPAN, s * (d > 0 ? 1.25 : 0.8))); t0 = at - s * p; }
-    t0 = Math.max(now - ST_GATE_SPAN, Math.min(t0, now - s));
-    stGateVw = s >= ST_GATE_SPAN ? null : { t0: t0, s: s };
-    lanesHeld = false; sig = ''; draw(); lanesHeld = true;
-  }, { passive: false });
-  lanes.addEventListener('contextmenu', function (e) { if (!stGateVw) return; e.preventDefault(); stGateVw = null; lanesHeld = false; sig = ''; draw(); lanesHeld = true; });
+  stGateZoomOn(lanes, function () { return ST_GATE_SPAN; }, function () { return stGateVw; }, function (v) { stGateVw = v; }, function () { lanesHeld = false; sig = ''; draw(); lanesHeld = true; });
   $('.mbu-logpop-copy').onclick = function () {
     stCopy(stGateMarkdown(stGateEvents(), stGateTab()), function (ok) { try { U.mbuToast(ok ? 'Network log copied' : 'Could not copy the network log'); } catch (e) { /* no toast */ } });
   };
