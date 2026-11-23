@@ -63,7 +63,7 @@ var ST_GATE_CSS = ''
   + '#st-gate td.l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40ch}'
   + '#st-gate .st-gate-hosts{margin-right:12px}#st-gate .st-gate-hosts button{display:inline-flex;align-items:center;padding:0 8px}#st-gate .st-gate-hosts button[aria-pressed=false] svg{opacity:.35;filter:grayscale(1)}'
   + '.st-gate-cfp label{display:flex;gap:6px;align-items:center;padding:4px 6px;cursor:pointer;border-radius:var(--mbu-radius);white-space:nowrap}.st-gate-cfp label:hover{background:var(--mbu-bg-hover)}.st-gate-cfp input[type=checkbox]{width:auto;margin:0;padding:0;accent-color:var(--mbu-accent)}'
-  + '#st-gate-hud{display:inline-flex;align-items:center;padding:4px;margin-right:4px;border:0;background:none;color:var(--mbu-text-weak);cursor:pointer;border-radius:var(--mbu-radius)}#st-gate-hud:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}#st-gate .st-gate-hosts{margin-right:8px}#st-gate .mbu-logpop-h .st-gate-n{flex:0 0 24em;width:24em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#st-gate .st-gate-hosts{border:0}#st-gate .st-gate-hosts button,#st-gate .st-gate-hosts button:hover,#st-gate .st-gate-hosts button[aria-pressed=true]{background:none;border:0;padding:0 5px;opacity:.35}#st-gate .st-gate-hosts button[aria-pressed=true]{opacity:1}#st-gate .st-gate-hosts button:hover{opacity:.8}'
+  + '#st-gate-hud,#st-gate-ghost{display:inline-flex;align-items:center;padding:4px;margin-right:4px;border:0;background:none;color:var(--mbu-text-weak);cursor:pointer;border-radius:var(--mbu-radius)}#st-gate-hud:hover,#st-gate-ghost:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}#st-gate-ghost[aria-pressed=true]{color:var(--mbu-accent-text)}#st-gate .st-gate-hosts{margin-right:8px}#st-gate .mbu-logpop-h .st-gate-n{flex:0 0 24em;width:24em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#st-gate .st-gate-hosts{border:0}#st-gate .st-gate-hosts button,#st-gate .st-gate-hosts button:hover,#st-gate .st-gate-hosts button[aria-pressed=true]{background:none;border:0;padding:0 5px;opacity:.35}#st-gate .st-gate-hosts button[aria-pressed=true]{opacity:1}#st-gate .st-gate-hosts button:hover{opacity:.8}'
   + '.st-gate-seg{display:inline-flex;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden}'
   + '.st-gate-seg button{min-height:30px;padding:0 11px;border:0;background:none;color:var(--mbu-accent-text);font:inherit;font-size:12px;cursor:pointer}'
   + '.st-gate-seg button+button{border-left:1px solid var(--mbu-border)}'
@@ -95,6 +95,7 @@ var ST_GATE_CSS = ''
   + '#st-gate-hud-box{position:fixed;right:14px;bottom:14px;width:520px;max-width:calc(100vw - 28px);z-index:var(--mbu-z-modal);background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:6px;padding:4px 8px;font-size:12px;opacity:.92}'
   + '#st-gate-hud-box .st-gate-hud-h{cursor:move;user-select:none;display:flex;gap:8px;align-items:center;height:22px}#st-gate-hud-box .st-gate-hud-h>span:first-child{font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}'
   + '#st-gate-hud-box .st-gate-hud-rz{position:absolute;top:0;bottom:0;width:6px;cursor:ew-resize}#st-gate-hud-box .st-gate-hud-rz.l{left:-3px}#st-gate-hud-box .st-gate-hud-rz.r{right:-3px}#st-gate-hud-box .st-gate-hud-rz:hover{background:var(--mbu-accent);opacity:.5}'
+  + '#st-gate-hud-box.ghost{opacity:.15;transition:opacity .2s}#st-gate-hud-box.ghost:hover{opacity:.92}'
   + '#st-gate-hud-box .st-gate-n{flex:1;color:var(--mbu-text-weak)}#st-gate-hud-box .bad{color:var(--mbu-error)}'
   + '#st-gate-hud-box .st-gate-hud-l{position:relative}#st-gate-hud-box .st-gl-bands{left:0}#st-gate-hud-box .st-gl-name{left:-180px;width:172px}'
   + '.st-gate-tries{display:inline-flex;gap:3px;vertical-align:middle}.st-gate-tries i{--c:var(--mbu-border);width:9px;height:9px;box-sizing:border-box;border-radius:2px;border:1px solid color-mix(in srgb,var(--c) 75%,transparent);background:color-mix(in srgb,var(--c) 30%,transparent)}'
@@ -670,7 +671,7 @@ function stGateHud(on) {
   if (!on) return;
   stGateCss();
   var el = document.createElement('div');
-  el.id = 'st-gate-hud-box'; el.className = 'mbu-ui';
+  el.id = 'st-gate-hud-box'; el.className = 'mbu-ui' + (stGateWinState().hudGhost ? ' ghost' : '');
   el.innerHTML = '<div class="st-gate-hud-h"><span data-tip="Open the network log\nA double click anywhere on the HUD does the same"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Network</span><span class="st-gate-n"></span><button type="button" class="mbu-ov-x" aria-label="Close the HUD">✕</button></div><div class="st-gate-hud-l"></div><div class="st-gate-hud-rz l"></div><div class="st-gate-hud-rz r"></div>';
   document.documentElement.appendChild(el);
   var w0 = stGateWinState().hudW; if (w0) el.style.width = w0 + 'px';
@@ -783,7 +784,7 @@ function stGateBuild() {
   var mode = st.mode || 'all', hosts = st.hosts || { mb: st.src !== 'other', ext: st.src !== 'mb' }, hide = st.hide || [], sig = '', opened = {}, cf = {}, cft = {}, lastGroups = [];
   var pop = document.createElement('div');
   pop.id = 'st-gate'; pop.className = 'mbu-ui'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Network log');
-  pop.innerHTML = '<div class="mbu-logpop-h"><button type="button" id="st-gate-hud" aria-label="Minimize to the HUD" data-tip="Minimize to the HUD\nThe time line in a small strip that stays on screen\nA double click in the window does the same"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></button><b>Network log</b> <span class="st-gate-n"></span><span class="mbu-logpop-sp"></span>'
+  pop.innerHTML = '<div class="mbu-logpop-h"><button type="button" id="st-gate-hud" aria-label="Minimize to the HUD" data-tip="Minimize to the HUD\nThe time line in a small strip that stays on screen\nA double click in the window does the same"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></button><button type="button" id="st-gate-ghost" aria-label="See-through HUD" data-tip="See-through HUD\nThe HUD is nearly invisible until the mouse is on it"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 10h.01M15 10h.01M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"/></svg></button><b>Network log</b> <span class="st-gate-n"></span><span class="mbu-logpop-sp"></span>'
     + '<span class="st-gate-seg st-gate-hosts" role="group" aria-label="Hosts"><button type="button" data-v="mb" data-tip="Requests to MusicBrainz">' + (stGateIcons(), stIcon ? stIcon('musicbrainz', 16) : 'MB') + '</button>'
     + '<button type="button" data-v="ext" data-tip="Requests to other sites\nThe gate logs them but does not pace them">' + (stIcon ? stIcon('globe', 16) : 'Other') + '</button></span>'
     + '<select id="st-gate-span" aria-label="Time line span" data-tip="How far back the time line goes">' + ST_GATE_SPANS.map(function (ms) { return '<option value="' + ms + '"' + (ms === ST_GATE_SPAN ? ' selected' : '') + '>' + stGateSpanTxt(ms) + '</option>'; }).join('') + '</select><span class="mbu-logpop-sp"></span>'
@@ -807,6 +808,12 @@ function stGateBuild() {
   srcSeg(); colSeg(); hudSeg();
   pop.querySelector('.st-gate-hosts').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; hosts[b.dataset.v] = !hosts[b.dataset.v]; srcSeg(); stGateRemember({ hosts: hosts }); draw(); });
   hudBtn.onclick = function () { if (!stGateHudEl) stGateHud(true); stGateClose(); };
+  var ghostBtn = $('#st-gate-ghost'), ghostSeg = function () { ghostBtn.setAttribute('aria-pressed', String(!!stGateWinState().hudGhost)); };
+  ghostSeg();
+  ghostBtn.onclick = function () {
+    var on = !stGateWinState().hudGhost; stGateRemember({ hudGhost: on }); ghostSeg();
+    if (stGateHudEl) stGateHudEl.classList.toggle('ghost', on);
+  };
   // a double click in the window (not on its title bar, which goes full screen, nor on a control) switches to the HUD
   var born = Date.now();
   pop.addEventListener('dblclick', function (e) {
