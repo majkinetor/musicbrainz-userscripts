@@ -820,7 +820,7 @@ function stGateBuild() {
   var born = Date.now();
   pop.addEventListener('dblclick', function (e) {
     // the HUD's double click opens this window under the pointer: its own clicks must not switch straight back
-    if (Date.now() - born < 800 || e.target.closest('.mbu-logpop-h,button,select,input,textarea,a')) return;
+    if (Date.now() - born < 800 || e.target.closest('.mbu-logpop-h,thead,button,select,input,textarea,a')) return;
     hudBtn.onclick();
   });
   // a drag on the line between two headers resizes the column on its left; the widths last while the page is open
