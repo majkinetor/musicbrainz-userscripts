@@ -32,12 +32,13 @@
 // `// <ST-NET>` markers; Credit Hoarder's esbuild build imports this module directly.
 // Edit HERE, never in a generated block.
 
-/** Between request starts, sustained: two a second. MusicBrainz publishes one a second per IP, but
+/** Between request starts, sustained: eight a second. MusicBrainz publishes one a second per IP, but
  *  its 503s come from its own load (X-RateLimit-Who: global), whatever our pace: one a second still
  *  drew them, and Credit Hoarder's four at a time finished a preflight in 52 s, not 173 s (#1095). Two a second through the gate was
  *  still slower than its own four in flight; eight a second drew 5-8 s Retry-Afters after each burst.
- *  Four a second sits between. */
-export const MBN_GAP = 250;
+ *  Four a second sat between, but most of a run's 503s are MusicBrainz's own load (global, a flat
+ *  second) whatever our pace, and four a second only took longer (112 s against 32-67 s). */
+export const MBN_GAP = 125;
 /** Requests that may start back to back after a quiet spell. */
 export const MBN_BURST = 4;
 /** The shared schedule, in the origin's localStorage. */
