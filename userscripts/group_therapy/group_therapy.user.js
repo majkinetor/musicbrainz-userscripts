@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.23.015917
+// @version      2026.11.23.021737
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -470,8 +470,13 @@
   }
   async function mbnFetch(url, init, o) {
       o = o || {};
-      // #1098: a write (an edit, an ISRC submit) makes every cached answer old
-      if (!/^(GET|HEAD)$/i.test(String((init && init.method) || 'GET'))) mbnEdited();
+      // #1098: a write (an edit, an ISRC submit) makes every cached answer old. Marked when it goes out and
+      // again when it is answered: a read sent while the write runs gets the answer from before the write,
+      // and without the second mark it was cached as new (ISRC Scout's links count stayed after a submit)
+      if (!o.wrote && !/^(GET|HEAD)$/i.test(String((init && init.method) || 'GET'))) {
+          mbnEdited();
+          try { return await mbnFetch(url, init, Object.assign({}, o, { wrote: true })); } finally { mbnEdited(); }
+      }
       if (!mbnGated(url)) {
           const r = await fetch(url, init);
           if (!mbnWebsite(url) || !(await mbnIsCheck(r))) return r;

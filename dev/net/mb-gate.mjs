@@ -577,8 +577,13 @@ export async function mbnAnswer(status, header, o) {
  */
 export async function mbnFetch(url, init, o) {
     o = o || {};
-    // #1098: a write (an edit, an ISRC submit) makes every cached answer old
-    if (!/^(GET|HEAD)$/i.test(String((init && init.method) || 'GET'))) mbnEdited();
+    // #1098: a write (an edit, an ISRC submit) makes every cached answer old. Marked when it goes out and
+    // again when it is answered: a read sent while the write runs gets the answer from before the write,
+    // and without the second mark it was cached as new (ISRC Scout's links count stayed after a submit)
+    if (!o.wrote && !/^(GET|HEAD)$/i.test(String((init && init.method) || 'GET'))) {
+        mbnEdited();
+        try { return await mbnFetch(url, init, Object.assign({}, o, { wrote: true })); } finally { mbnEdited(); }
+    }
     if (!mbnGated(url)) {
         const r = await fetch(url, init);
         if (!mbnWebsite(url) || !(await mbnIsCheck(r))) return r;
