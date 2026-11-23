@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.23
+// @version      2026.11.23.093717
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3361,6 +3361,7 @@ const CSS = `
 .hm-add span{color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-right:4px}
 .hm-add a{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;color:var(--c)!important;text-decoration:none!important}
 .hm-add a:hover{background:var(--chip)}
+.hm-add a.hm-go1{margin-left:auto}
 .hm-add a svg,.hm-srch button.hm-tg svg{width:20px;height:20px}
 .hm-covers{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px}
 .hm-cv{min-width:0;color:var(--text)!important;text-decoration:none!important}
@@ -12184,6 +12185,10 @@ const HM_ADD = [
     ['place/create', 'Place', MBU_ENT_ICONS['place']],
     ['series/create', 'Series', MBU_ENT_ICONS['series']],
 ];
+const HM_GO = [   // site pages, at the row's right end
+    ['statistics', 'Statistics', '<path d="M4 19h16"/><path d="M4 15l4-6l4 2l4-5l4 4"/>'],
+    ['reports', 'Reports', '<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1-2-2v-14a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 17v-5"/><path d="M12 17v-1"/><path d="M15 17v-3"/>'],
+];
 const HM_ME = [
     ['/edit/notes-received', 'Notes received', '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'],
     ['collections', 'Collections', MK_COL],
@@ -12634,7 +12639,7 @@ function srchHero(hi, sub, q = '', ty = 'artist', meth = 'indexed', add = '') {
 function homeHtml() {
     const u = ME && `${MB}/user/${encodeURIComponent(ME)}/`, h = new Date().getHours();
     const hi = (h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + (ME ? `, <em>${esc(ME)}</em>` : '');
-    const hero = srchHero(hi, '', '', 'artist', 'indexed', `<nav class="hm-add"><span>Add</span>${HM_ADD.map(([p, n, ic], i) => `<a href="${MB}/${p}" style="--c:${HM_CLR[i]}" data-tip="Add ${n.toLowerCase()}" aria-label="Add ${n.toLowerCase()}">${SVG(ic)}</a>`).join('')}</nav>`);
+    const hero = srchHero(hi, '', '', 'artist', 'indexed', `<nav class="hm-add"><span>Add</span>${HM_ADD.map(([p, n, ic], i) => `<a href="${MB}/${p}" style="--c:${HM_CLR[i]}" data-tip="Add ${n.toLowerCase()}" aria-label="Add ${n.toLowerCase()}">${SVG(ic)}</a>`).join('')}${HM_GO.map(([p, n, ic], i) => `<a href="${MB}/${p}"${i ? '' : ' class="hm-go1"'} style="--c:var(--muted)" data-tip="${n}" aria-label="${n}">${SVG(ic)}</a>`).join('')}</nav>`);
     const hmPh = t => { let h = 0; for (const c of t) h = (h * 31 + c.codePointAt(0)) >>> 0; return `--h1:${h % 360};--h2:${(h % 360 + 40 + (h >> 9) % 80) % 360}`; };
     const fr = hmFront(), cov = xs => `<div class="hm-covers">${xs.map(x => `<a class="hm-cv" href="${x.href}" data-tip="${esc(x.t + (x.by ? ' by ' + x.by : ''))}"><span class="hm-art" style="${hmPh(x.t)}"><span class="hm-ph"><i>${esc((x.t.match(/[\p{L}\p{N}]/u) || ['?'])[0].toUpperCase())}</i></span>${x.img ? `<img src="${esc(x.img)}" loading="lazy" alt="" data-hmcv>` : ''}</span><b>${esc(x.t)}</b>${x.by ? `<small>${esc(x.by)}</small>` : ''}</a>`).join('')}</div>`;
     const nrel = fr.rel.length ? sect('hnew', 'Recently added releases', '', cov(fr.rel), '') : '';
