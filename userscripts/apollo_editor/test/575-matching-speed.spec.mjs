@@ -18,6 +18,7 @@
 // watch (and it is when someone reaches for Stop). Nothing is submitted.
 import { test, check } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
+import { MBN_INLINE } from '../../../dev/net/mb-gate.mjs';
 
 async function blank(page, inject) {
   await page.setContent('<!DOCTYPE html><html><body></body></html>');
@@ -96,16 +97,17 @@ test.describe('the web-service queue', () => {
     check(run.starts.length === N, `all ${N} made`);
     check(run.total < chained / 2, `${run.total} ms, where chaining would take ~${chained} ms`);
     check(run.peak > 1 && run.peak <= 4, `they overlap, at most 4 at once (peak ${run.peak})`);
-    // #633: the shared gate allows a burst of three, then one a second on average: the i-th
-    // start is never earlier than (i − 2) seconds in
-    check(run.starts.every((s, i) => s >= (i - 2) * 1000 - 100), `but no faster than a burst of three and then one a second (${JSON.stringify(run.starts)})`);
+    // #633, #1095: the shared gate allows a burst of MBN_BURST, then one start every MBN_GAP:
+    // the i-th start is never earlier than (i − BURST + 1) gaps in
+    const { MBN_GAP: GAP, MBN_BURST: BURST } = MBN_INLINE.consts;
+    check(run.starts.every((s, i) => s >= (i - BURST + 1) * GAP - 100), `but no faster than a burst of ${BURST} and then one every ${GAP} ms (${JSON.stringify(run.starts)})`);
     check(run.staleSent === 0 && run.stale && run.stale.stale === true, 'a request gone stale is never sent, and its caller is told');
   });
 
   test('round 3: one 503 holds every lane', { tag: ['@unit', '@timing'] }, async ({ page, inject }) => {
     await blank(page, inject);
     const out = await page.evaluate(async () => {
-      const t0 = performance.now(), events = [], SICK_UNTIL = 12000;   // unwell for a while, not for a count
+      const t0 = performance.now(), events = [], SICK_UNTIL = 20000;   // unwell for a while, not for a count
       let live = 0, seen = null, n = 0;
       window.fetch = () => {
         const throttled = performance.now() - t0 < SICK_UNTIL;
@@ -123,10 +125,10 @@ test.describe('the web-service queue', () => {
     // what was already in flight at the first 503 cannot be recalled: measure from a second after
     const steady = out.events.filter(e => e.t > out.seen + 1200 && e.t < out.SICK_UNTIL);
     const gaps = steady.slice(1).map((e, i) => e.t - steady[i].t);
-    check(out.seen !== null && steady.length >= 2, `the stub throttled, long enough to watch (${steady.length} starts while it did)`);
+    check(out.seen !== null && steady.length >= 2, `the stub throttled, long enough to watch (${steady.length} starts while it did; ${JSON.stringify(out.events.map(e => Math.round(e.t)))}, first 503 at ${Math.round(out.seen)})`);
     check(Math.max(0, ...steady.map(e => e.live)) <= 1, 'while MusicBrainz says 503: one probe at a time');
     check(gaps.every(g => g >= 900), `none fired inside the shared hold (${JSON.stringify(gaps.map(Math.round))})`);
-    check(out.total <= 16, `the retries stay bounded (${out.total} requests for 6 calls over a 12 s outage)`);
+    check(out.total <= 16, `the retries stay bounded (${out.total} requests for 6 calls over a 20 s outage)`);
   });
 });
 

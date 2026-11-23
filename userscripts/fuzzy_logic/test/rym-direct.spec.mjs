@@ -14,7 +14,8 @@ test('RYM opens the linked album directly in front', { tag: '@unit' }, async ({ 
     return calls;
   }, source);
   expect(opened).toEqual([{
-    url: 'https://rateyourmusic.com/release/album/test-artist/test-album/',
+    // #fl-ext names the link that opened the tab, so the genres are saved under it too (731f199f9)
+    url: 'https://rateyourmusic.com/release/album/test-artist/test-album/#fl-ext=' + encodeURIComponent('http://rateyourmusic.com/release/album/test-artist/test-album/'),
     options: { active: true, insert: true, setParent: true },
   }]);
 });

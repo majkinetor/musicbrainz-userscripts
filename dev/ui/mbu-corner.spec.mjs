@@ -15,7 +15,7 @@ test('launchers in one corner stack by order, and a hidden one leaves no gap', {
       const el = document.createElement('div'); el.id = id;
       el.style.cssText = 'position:fixed;width:40px;height:' + h + 'px';
       el.dataset.mbCorner = 'br'; el.dataset.mbCornerOrder = String(order);
-      document.body.appendChild(el); mbRestackCorner('br');
+      document.body.appendChild(el); mbRestackCornerNow('br');
     };
     add('fusion', 30, 30);   // added first, stacks last
     add('falcon', 20, 40);
@@ -24,32 +24,32 @@ test('launchers in one corner stack by order, and a hidden one leaves no gap', {
   const a = await at();
   check(a.apollo.bottom === '14px' && a.falcon.bottom === '72px' && a.fusion.bottom === '120px', `stacked by order from the corner (${JSON.stringify(a)})`);
   check(a.apollo.right === '14px' && a.fusion.right === '14px', 'all at the corner\'s side');
-  await page.evaluate(() => { document.getElementById('falcon').style.display = 'none'; mbRestackCorner('br'); });
+  await page.evaluate(() => { document.getElementById('falcon').style.display = 'none'; mbRestackCornerNow('br'); });
   const b = await at();
   check(b.falcon === null && b.fusion.bottom === '72px', `a hidden launcher gives up its slot (${JSON.stringify(b)})`);
   // String Theory's horizontal option: the same order, along the bottom edge
   // (a blank page has no localStorage, so the shared setting is stood in for)
-  await page.evaluate(() => { document.getElementById('falcon').style.display = ''; window.mbuShared = k => (k === 'cornerFlow' ? 'row' : undefined); mbRestackCorner('br'); });
+  await page.evaluate(() => { document.getElementById('falcon').style.display = ''; window.mbuShared = k => (k === 'cornerFlow' ? 'row' : undefined); mbRestackCornerNow('br'); });
   const c = await at();
   check(c.apollo.right === '14px' && c.falcon.right === '62px' && c.fusion.right === '110px', `a row by order from the corner (${JSON.stringify(c)})`);
   check(c.apollo.bottom === '14px' && c.falcon.bottom === '19px' && c.fusion.bottom === '24px', `along the bottom edge, on one centre line (${JSON.stringify(c)})`);
   // the left side (#802): the same corner mirrored, the lowest order still nearest it
-  await page.evaluate(() => { window.mbuShared = k => (k === 'cornerFlow' ? 'row' : k === 'cornerSide' ? 'left' : undefined); mbRestackCorner('br'); });
+  await page.evaluate(() => { window.mbuShared = k => (k === 'cornerFlow' ? 'row' : k === 'cornerSide' ? 'left' : undefined); mbRestackCornerNow('br'); });
   const d = await at();
   check(d.apollo.left === '14px' && d.falcon.left === '62px' && d.fusion.left === '110px', `a row from the bottom-left corner (${JSON.stringify(d)})`);
   check(d.apollo.right === 'auto' && d.fusion.right === 'auto', 'the right side let go');
-  await page.evaluate(() => { window.mbuShared = k => (k === 'cornerSide' ? 'left' : undefined); mbRestackCorner('br'); });
+  await page.evaluate(() => { window.mbuShared = k => (k === 'cornerSide' ? 'left' : undefined); mbRestackCornerNow('br'); });
   const e = await at();
   check(e.apollo.left === '14px' && e.fusion.left === '14px' && e.apollo.bottom === '14px' && e.fusion.bottom === '120px', `a column on the left edge (${JSON.stringify(e)})`);
   // launchers of different widths share one centre line, scaled too: a 34px one beside a 40px one
   // sat flush to the edge, off centre by half the difference
-  await page.evaluate(() => { document.getElementById('falcon').style.width = '30px'; window.mbuShared = k => (k === 'cornerSize' ? 1.5 : undefined); mbRestackCorner('br'); });
+  await page.evaluate(() => { document.getElementById('falcon').style.width = '30px'; window.mbuShared = k => (k === 'cornerSize' ? 1.5 : undefined); mbRestackCornerNow('br'); });
   const f = await at();
   check(f.apollo.right === '14px' && f.falcon.right === '22px' && f.fusion.right === '14px', `a narrower launcher is centred in the column (${JSON.stringify(f)})`);
   // a folded dock's peek draws at its scale(.8) as well: centred on what is drawn, not flush to the side
   await page.evaluate(() => {
     const st = document.createElement('style'); st.textContent = '[data-mbu-docked=peek]{transform:scale(.8)}'; document.head.appendChild(st);
-    document.getElementById('falcon').setAttribute('data-mbu-docked', 'peek'); mbRestackCorner('br');
+    document.getElementById('falcon').setAttribute('data-mbu-docked', 'peek'); mbRestackCornerNow('br');
   });
   const g = await page.evaluate(() => Object.fromEntries(['apollo', 'falcon'].map(id => { const r = document.getElementById(id).getBoundingClientRect(); return [id, r.left + r.width / 2]; })));
   check(Math.abs(g.apollo - g.falcon) <= 1, `a peek is centred on the column (${JSON.stringify(g)})`);
