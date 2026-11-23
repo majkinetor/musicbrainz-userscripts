@@ -401,10 +401,20 @@ function stGateBuild() {
     var key = shown.map(function (g) { return g.id + ':' + g.evs.length + ':' + g.label; }).join('|') + '#' + Object.keys(opened).join('|') + '#' + me;
     if (key === sig) return;
     sig = key;
-    var top = scroller.scrollTop;
+    // #1095: newest rows come in at the top; scrolled down, the row in view stays put, so the
+    // entries being read don't slide away under each new one
+    var top = scroller.scrollTop, anchor = null, at = 0, sTop = scroller.getBoundingClientRect().top;
+    if (top > 0) {
+      var rows = body.querySelectorAll('tr.rq');
+      for (var i = 0; i < rows.length; i++) { var r = rows[i].getBoundingClientRect(); if (r.bottom > sTop) { anchor = rows[i].getAttribute('data-id'); at = r.top - sTop; break; } }
+    }
     body.innerHTML = shown.length ? shown.slice().reverse().map(function (g) { return stGateRowHtml(g, me, !!opened[g.id], now); }).join('')
       : '<tr><td class="none" colspan="8">' + (all.length ? 'No request matches.' : 'No requests went through the gate yet. Open or reload a MusicBrainz page that uses a script, then look again.') + '</td></tr>';
     scroller.scrollTop = top;
+    if (anchor != null) {
+      var same = body.querySelectorAll('tr.rq');
+      for (var j = 0; j < same.length; j++) if (same[j].getAttribute('data-id') === anchor) { scroller.scrollTop = top + same[j].getBoundingClientRect().top - scroller.getBoundingClientRect().top - at; break; }
+    }
   };
   body.addEventListener('click', function (e) {
     var tr = e.target.closest('tr.rq');

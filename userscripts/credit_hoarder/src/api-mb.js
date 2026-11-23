@@ -89,7 +89,9 @@ export const mbThrottle = (() => {
         const tag = `req#${++_diagReqSeq}`;
         const shortUrl = item.url.replace(MB, '').replace(/^https:/, '');
         const gated = mbnGated(item.url);
-        const gateLog = (lv, m) => (lv === 'warn' ? log.warn(m) : logDebug(m));
+        // #1095: the gate's notes (holds, throttles) go to debug only: the log shows the artists' progress,
+        // and String Theory's Gate log has the gate's side
+        const gateLog = (lv, m) => logDebug(m);
         const id = mbnRid();   // one request, every try: the Gate log groups them by it
         for (let attempt = 0; attempt <= item.retries; attempt++) {
             await _waitForPause();
