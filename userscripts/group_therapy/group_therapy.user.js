@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.23.011310
+// @version      2026.11.23.013116
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -5499,8 +5499,10 @@
       '.gt-wm .gt-cons-body{padding-top:0}'
       // #381 drag-to-resize from the lower-right so a big screen can widen the table (less Artist wrap)
       + '.gt-cons.gt-wm{resize:both;overflow:hidden;max-width:98vw;max-height:94vh;min-width:620px;min-height:320px}'
-      // #381 maximize toggle → near-fullscreen
-      + '.gt-cons.gt-wm.gt-wm-max{position:fixed;left:10px;right:10px;top:10px;bottom:10px;width:auto;height:auto;max-width:none;max-height:none;margin:0}'
+      // #381 maximize toggle → near-fullscreen. Absolute in the overlay, not fixed: in a page-tall frame (Mission
+      // Control) fixed spans the whole page, while mountOverlay pins the overlay to the part on screen; !important
+      // beats the inline max-height that pin sets
+      + '.gt-cons.gt-wm.gt-wm-max{position:absolute;left:10px;right:10px;top:10px;bottom:10px;width:auto;height:auto;max-width:none;max-height:none!important;margin:0}'
       + '.gt-wm-tb{display:flex;align-items:center;gap:8px;padding:9px 14px;flex-wrap:wrap;position:sticky;top:0;z-index:6;background:var(--mbu-bg);border-bottom:1px solid var(--mbu-border);margin:0 -14px 8px}'
       + '.gt-wm-tb .gt-wm-amstatus{color:var(--mbu-accent-text);font-size:12px;flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;padding-right:4px}'
       + '.gt-wm-tbl2{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--mbu-text-dim)}.gt-wm-tbl2 b{color:var(--mbu-accent-deep-text)}'
