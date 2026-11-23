@@ -669,6 +669,13 @@ function stGateHud(on) {
   var moved = false, pos = stGateWinState().hudPos;
   if (pos) Object.assign(el.style, { left: pos.left, top: pos.top, right: 'auto', bottom: 'auto' });
   el.querySelector('.st-gate-hud-h span').onclick = function () { if (!moved) stGateOpen(); };
+  // a double click anywhere on the HUD opens the big window and hides the HUD
+  el.addEventListener('dblclick', function (e) {
+    if (e.target.closest('.mbu-ov-x')) return;
+    stGateOpen();
+    stGateHud(false);
+    var b = document.getElementById('st-gate-hud'); if (b) b.setAttribute('aria-pressed', 'false');
+  });
   // dragged by its header, kept on screen
   el.querySelector('.st-gate-hud-h').addEventListener('mousedown', function (e) {
     if (e.button !== 0 || e.target.closest('button')) return;
