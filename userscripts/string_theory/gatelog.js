@@ -41,7 +41,7 @@ var ST_GATE_CSS = ''
   + '.st-gl-cl .st-gl-ic{position:static;margin:0}'
   + '.st-gl-zoom{position:fixed;z-index:2147483647;width:340px;padding:8px 10px;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);font-size:12px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}.st-gl-zoom::-webkit-scrollbar{display:none}'
   + '.st-gl-zh{color:var(--mbu-text-weak);margin-bottom:4px}.st-gl-zr{display:flex;align-items:center;gap:6px;height:26px}.st-gl-zr .st-gl-ic{position:static;margin:0}'
-  + '.st-gl-zn{flex:0 0 220px;}.st-gl-zn .h{color:var(--mbu-text-weak);margin-right:6px}.st-gl-zn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.st-gl-zl{position:relative;flex:1;height:20px;margin-left:20px}.st-gl-zr .st-gl-ic.at{position:absolute;top:2px;margin:0 0 0 -19px}.st-gl-zl .st-gl-f{top:0;height:20px}.st-gl-zt{flex:0 0 44px;text-align:right;color:var(--mbu-text-weak)}'
+  + '.st-gl-zn{flex:0 0 220px;}.st-gl-zn .h{color:var(--mbu-text-weak)}.st-gl-zn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.st-gl-zl{position:relative;flex:1;height:20px;margin-left:20px}.st-gl-zr .st-gl-ic.at{position:absolute;top:2px;margin:0 0 0 -19px}.st-gl-zl .st-gl-f{top:0;height:20px}.st-gl-zt{flex:0 0 44px;text-align:right;color:var(--mbu-text-weak)}'
   + '.st-gl-name{position:absolute;left:-180px;width:172px;top:0;line-height:30px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--mbu-text-weak)}'
   + '.st-gl-name b{color:var(--mbu-text);font-weight:600}.st-gl-lane.me .st-gl-name b{color:var(--mbu-accent-text)}'
   + '.st-gl-w,.st-gl-f{position:absolute;top:5px;height:20px;min-width:5px;border-radius:3px;box-shadow:inset 1px 0 0 var(--mbu-bg)}.st-gl-w,.st-gl-f{opacity:.6}.st-gl-w:hover,.st-gl-f:hover{opacity:1}'
@@ -339,7 +339,7 @@ function stGateZoomHtml(items, now) {
   var pct = function (t) { return (t - a) / span * 100; };
   return '<div class="st-gl-zh">' + items.length + ' requests in ' + stGateSec(b - a - pad * 2) + stGateSplit(items.map(function (x) { return x.g; })) + '</div>' + stGateZoomMerge(items).map(function (x) {
     var w = Math.max(pct(x.b) - pct(x.a), 1.5);
-    return stGateTag('<div class="st-gl-zr">', x.g.id) + '<span class="st-gl-zn">' + '<b class="st-gl-zx">' + (x.n ? '×' + x.n : '') + '</b>' + (x.g.h ? '<span class="h">' + stEsc(x.g.h.replace(/^https?:\/\//, '').split('/')[0].replace(/^www\./, '')) + '</span>' : '') + (x.n ? stEsc(x.kind) : stGateLabelHtml(x.g)) + '</span>'
+    return stGateTag('<div class="st-gl-zr">', x.g.id) + '<span class="st-gl-zn">' + '<b class="st-gl-zx">' + (x.n ? '×' + x.n : '') + '</b>' + '<span' + (x.g.h ? ' class="h"' : '') + '>' + (x.n ? stEsc(x.kind) : stGateLabelHtml(x.g)) + '</span></span>'
       + '<span class="st-gl-zl"><i class="st-gl-f ' + x.cls + '" style="left:' + pct(x.a).toFixed(2) + '%;width:' + w.toFixed(2) + '%"></i>' + stGateZoomIcon(x, pct(x.a)) + '</span>'
       + '<span class="st-gl-zt">' + stGateSec(x.b - x.a) + '</span></div>';
   }).join('');
