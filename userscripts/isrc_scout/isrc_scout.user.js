@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.23.135450
+// @version      2026.11.23.140445
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1216,7 +1216,7 @@
     if (!mbnGated(opts && opts.url)) {
       // another site's request (SoundExchange, the stores' ISRC lookups) shows in the Gate log as external
       let g;
-      await mbnLog(opts.url, { method: opts.method || 'GET', body: opts.data }, { send: async () => { g = await httpRaw(opts); return { status: g.status }; } });
+      await mbnLog(opts.url, { method: opts.method || 'GET', body: opts.data }, { reason: opts.reason, send: async () => { g = await httpRaw(opts); return { status: g.status }; } });
       return g;
     }
     const at = mbid, read = !/post/i.test(opts.method || '');
@@ -1243,7 +1243,7 @@
     const responseHeaders = Array.from(r.headers.entries()).map(([k, v]) => k + ': ' + v).join('\r\n');
     return { status: r.status, statusText: r.statusText, responseText: await r.text(), responseHeaders, finalUrl: r.url || opts.url };
   }
-  const gmGet  = (url, headers) => http({ method: 'GET',  url, headers: headers || {} });
+  const gmGet  = (url, headers, reason) => http({ method: 'GET',  url, headers: headers || {}, reason });
   const gmPost = (url, data, headers) => http({ method: 'POST', url, data, headers: headers || {} });
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -6217,10 +6217,10 @@
     if (fresh) { _appleTok = null; try { localStorage.removeItem(APPLE.lsKey); } catch (e) {} }
     if (_appleTok) return _appleTok;
     try { const c = JSON.parse(localStorage.getItem(APPLE.lsKey) || 'null'); if (c && c.t && c.at && (Date.now() - c.at) < 12 * 3600e3) { _appleTok = c.t; return _appleTok; } } catch (e) {}
-    const home = await gmGet('https://music.apple.com/us/browse', { 'Accept': 'text/html' });
+    const home = await gmGet('https://music.apple.com/us/browse', { 'Accept': 'text/html' }, 'Apple Music token');
     const asset = (home.responseText.match(/\/assets\/index-legacy~[a-z0-9]+\.js/i) || home.responseText.match(/\/assets\/index~[a-z0-9]+\.js/i) || [])[0];
     if (!asset) throw new Error('Apple: web-player JS asset not found');
-    const js = await gmGet('https://music.apple.com' + asset, {});
+    const js = await gmGet('https://music.apple.com' + asset, {}, 'Apple Music token');
     const tok = (js.responseText.match(/eyJ[A-Za-z0-9._\-]{80,}/) || [])[0];
     if (!tok) throw new Error('Apple: no bearer token in the web-player JS');
     _appleTok = tok;
@@ -6236,7 +6236,7 @@
     let h, r;
     for (let attempt = 0; attempt < 2; attempt++) {
       h = { Authorization: 'Bearer ' + await appleToken(attempt > 0), Origin: 'https://music.apple.com', Accept: 'application/json' };
-      r = await gmGet(APPLE.amp + '/' + sf + '/albums/' + encodeURIComponent(id) + '?l=en-US', h);
+      r = await gmGet(APPLE.amp + '/' + sf + '/albums/' + encodeURIComponent(id) + '?l=en-US', h, 'Apple Music ISRCs');
       if (r.status !== 401 || attempt > 0) break;
       Log.warn('Apple: the cached token was refused (401) — fetching a new one');
     }
@@ -6246,7 +6246,7 @@
     let list = (alb && alb.relationships && alb.relationships.tracks && alb.relationships.tracks.data) || [];
     let next = alb && alb.relationships && alb.relationships.tracks && alb.relationships.tracks.next;
     while (next) {
-      const pg = await gmGet('https://amp-api.music.apple.com' + next + (next.includes('?') ? '&' : '?') + 'l=en-US', h);
+      const pg = await gmGet('https://amp-api.music.apple.com' + next + (next.includes('?') ? '&' : '?') + 'l=en-US', h, 'Apple Music ISRCs');
       let pj; try { pj = JSON.parse(pg.responseText || 'null'); } catch (e) { break; }
       list = list.concat((pj && pj.data) || []); next = pj && pj.next;
     }
