@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.23.005321
+// @version      2026.11.23.010603
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -479,14 +479,16 @@
               // 503 too, and each must not stretch the hold again. A throttle long gone doesn't
               // count at all: `hot` is shared and persists, and would otherwise slow every later
               // page for good.
+              const load = /^global$/i.test(String(rl.who || '').trim());
               if (now > (s.cool || 0) + 30000) s.hot = 0;
-              if (now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
+              // #1095: nor does it count as a throttle of ours: a run of them (a 130s preflight) raised `hot`
+              // to 6, which takes the burst away, and the queue crawled at one a second behind each hold
+              if (!load && now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
               // the hold grows with each throttle in a row, a Retry-After included, so a long busy
               // spell gets fewer and fewer requests from us
               // #1095: a 503 that says MusicBrainz as a whole is out of room (X-RateLimit-Who: global) is
               // not about our pace: it came to a single request after a quiet spell, and the next one went
               // through. It holds a flat second (or its Retry-After); growing holds stalled every tab for nothing
-              const load = /^global$/i.test(String(rl.who || '').trim());
               // #1095: a Retry-After is MusicBrainz's own answer for how long: "Retry-After: 5" held 10s at hot 2,
               // where Credit Hoarder alone waited the 5. Only a 503 without one grows
               const ms = Math.min(Math.max(1000, ra) * (load || raw != null ? 1 : Math.max(1, s.hot)), MBN_MAX_HOLD);

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.23.005321
+// @version      2026.11.23.010603
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -460,14 +460,16 @@ async function mbnAnswer(status, header, o) {
             // 503 too, and each must not stretch the hold again. A throttle long gone doesn't
             // count at all: `hot` is shared and persists, and would otherwise slow every later
             // page for good.
+            const load = /^global$/i.test(String(rl.who || '').trim());
             if (now > (s.cool || 0) + 30000) s.hot = 0;
-            if (now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
+            // #1095: nor does it count as a throttle of ours: a run of them (a 130s preflight) raised `hot`
+            // to 6, which takes the burst away, and the queue crawled at one a second behind each hold
+            if (!load && now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
             // the hold grows with each throttle in a row, a Retry-After included, so a long busy
             // spell gets fewer and fewer requests from us
             // #1095: a 503 that says MusicBrainz as a whole is out of room (X-RateLimit-Who: global) is
             // not about our pace: it came to a single request after a quiet spell, and the next one went
             // through. It holds a flat second (or its Retry-After); growing holds stalled every tab for nothing
-            const load = /^global$/i.test(String(rl.who || '').trim());
             // #1095: a Retry-After is MusicBrainz's own answer for how long: "Retry-After: 5" held 10s at hot 2,
             // where Credit Hoarder alone waited the 5. Only a 503 without one grows
             const ms = Math.min(Math.max(1000, ra) * (load || raw != null ? 1 : Math.max(1, s.hot)), MBN_MAX_HOLD);

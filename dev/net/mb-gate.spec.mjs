@@ -190,6 +190,7 @@ test("a 503 for MusicBrainz's own load holds a flat second, however many in a ro
     localStorage.clear();
     const hold = async who => { const x = await mbnAnswer(503, n => n === 'X-RateLimit-Who' ? who : null); await new Promise(z => setTimeout(z, x.hold + 20)); return x.hold; };
     const global = [await hold('global'), await hold('global'), await hold('global')];
+    const globalHot = mbnHot();
     localStorage.clear();
     const shed = [];
     for (let i = 0; i < 3; i++) { const x = await mbnAnswer(503, n => n === 'X-RateLimit-Who' ? 'search-shed' : null, { search: true }); shed.push(x.hold); await new Promise(z => setTimeout(z, x.hold + 20)); }
@@ -198,9 +199,10 @@ test("a 503 for MusicBrainz's own load holds a flat second, however many in a ro
     localStorage.clear();
     const ra = [];
     for (let i = 0; i < 2; i++) { const x = await mbnAnswer(503, n => n === 'Retry-After' ? '2' : null); ra.push(x.hold); await new Promise(z => setTimeout(z, x.hold + 20)); }
-    return { global, shed, own, ra };
+    return { global, globalHot, shed, own, ra };
   });
   check(r.global.every(h => h > 900 && h <= 1000), `global: a second each (${r.global.join(', ')} ms)`);
+  check(r.globalHot === 0, `global: not a throttle of ours, the burst stays (hot ${r.globalHot})`);
   check(r.shed.every(h => h > 900 && h <= 1000), `search-shed: a second each (${r.shed.join(', ')} ms)`);
   check(r.ra.every(h => h > 1900 && h <= 2000), `a Retry-After holds what it says, however many in a row (${r.ra.join(', ')} ms)`);
   check(r.own[1] > 1900, `any other 503 still holds longer each time (${r.own.join(', ')} ms)`);
