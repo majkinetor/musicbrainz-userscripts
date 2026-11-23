@@ -39,6 +39,7 @@ var ST_GATE_CSS = ''
   + '.st-gl-cl{position:absolute;top:50%;height:21px;margin:-10px 0 0 -10px;z-index:2;display:flex;align-items:center;cursor:default}.st-gl-cl b{position:absolute;right:-6px;top:-5px;min-width:11px;height:11px;padding:0 2px;box-sizing:border-box;border-radius:6px;background:var(--mbu-accent);color:#fff;font-size:8px;line-height:11px;text-align:center}.st-gl-cl b{display:flex;padding:0;overflow:hidden;background:none}.st-gl-cl b i{font-style:normal;padding:0 3px;min-width:6px;background:color-mix(in srgb,var(--mbu-accent) 14%,transparent);color:var(--mbu-accent-text);font-weight:normal}.st-gl-cl b i.x{background:rgba(47,127,214,.14);color:#2f7fd6}.st-gl-cl b{z-index:3;top:auto;right:auto;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:-2px;height:13px;border-radius:7px;font-size:10px;line-height:13px}.st-gl-cl.bad b i.x{color:var(--mbu-error)}'
   + '.st-gl-pi{position:absolute;top:3px;display:flex;height:14px;margin-left:-35px;z-index:1}.st-gl-pi svg{width:14px;height:14px;display:block}.st-gl-zx{color:var(--mbu-accent);display:inline-block;width:34px;text-align:right;margin-right:6px;flex:none}.st-gl-lt{display:block;width:14px;height:14px;border-radius:3px;color:#fff;font:700 9px/14px system-ui,sans-serif;text-align:center}.st-gl-pi .st-gl-ic{position:static;width:14px;height:14px;margin:0 3px 0 0;flex:none}'
   + '.st-gl-cl .st-gl-ic{position:static;margin:0;flex:none;width:21px!important;height:21px!important;max-width:none}'
+  + '#st-gate-tabs{display:flex;flex-wrap:wrap;gap:2px;border-bottom:1px solid var(--mbu-border);margin-top:6px}#st-gate-tabs:empty{display:none}#st-gate-tabs>span{all:unset;font-size:12px;padding:6px 12px;color:var(--mbu-text-muted,#888);border-bottom:2px solid transparent;display:flex;gap:6px;align-items:center;cursor:pointer;margin-bottom:-1px}#st-gate-tabs>span.on{color:var(--mbu-text);border-bottom-color:var(--mbu-accent)}#st-gate-tabs>span:hover{color:var(--mbu-text)}#st-gate-tabs .x{font-size:15px;line-height:1;padding:0 2px;border-radius:3px}#st-gate-tabs .x:hover{background:color-mix(in srgb,var(--mbu-text) 12%,transparent)}.st-gl-lane[data-lane]{cursor:pointer}'
   + '.st-gl-sub{position:absolute;left:0;right:0;top:calc(var(--i)*30px);height:30px}.st-gl-cl .st-gl-ic+.st-gl-ic{margin-left:-8px}.st-gl-cl[data-z]{background:color-mix(in srgb,var(--mbu-text-muted,#888) 12%,transparent);border-radius:11px;padding-right:3px}'
   + '.st-gl-cb{flex:1 0 auto;min-width:fit-content;height:14px;margin-left:2px;border-radius:7px;display:flex;align-items:center;gap:4px;padding:0 6px;box-sizing:border-box;background:color-mix(in srgb,var(--mbu-ok) 25%,transparent);font:600 10px/1 sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}'
   + '.st-gl-cl.bad .st-gl-cb{background:color-mix(in srgb,var(--mbu-error) 16%,transparent)}.st-gl-cb .m{color:var(--mbu-accent-text)}.st-gl-cb .x{color:#2f7fd6}.st-gl-cb .b{color:var(--mbu-error)}.st-gl-cb .t{margin-left:auto;padding-left:2px;font-weight:400;color:var(--mbu-text-weak)}'
@@ -429,7 +430,7 @@ function stGateLanesHtml(groups, all, now, me) {
   });
   var rows = order.map(function (tab) {
     var s = Object.keys(lanes[tab].s).join(', ');
-    return '<div class="st-gl-lane' + (tab === me ? ' me' : '') + '" style="--r:' + (lanes[tab].rows || 1) + '"><span class="st-gl-name" data-tip="' + stEsc('Tab ' + tab + (tab === me ? ' (this tab)' : '') + (s ? '\n' + s : '')) + '"><b>'
+    return '<div class="st-gl-lane' + (tab === me ? ' me' : '') + '" data-lane="' + stEsc(tab) + '" style="--r:' + (lanes[tab].rows || 1) + '"><span class="st-gl-name" data-tip="' + stEsc('Tab ' + tab + (tab === me ? ' (this tab)' : '') + (s ? '\n' + s : '')) + '"><b>'
       + stEsc(tab === me ? 'This tab' : tab.slice(0, 8)) + '</b>' + (s ? ' ' + stEsc(s) : '') + '</span>' + lanes[tab].bars.join('') + '</div>';
   }).join('') || '<div class="st-gl-lane"><span class="st-gl-none">No requests in the last ' + stGateSpanTxt() + '</span></div>';
   return '<div class="st-gl-bands">' + bands + '</div>' + rows
@@ -732,7 +733,7 @@ function stGateBuild() {
     + '<span style="width:16px;flex:none"></span><button type="button" class="mbu-logpop-full" data-tip="Full screen\nA double-click on the title bar does the same">⛶</button>'
     + '<button type="button" class="mbu-logpop-min" data-tip="Minimize">–</button>'
     + '<button type="button" class="mbu-logpop-x" data-tip="Close">✕</button></div>'
-    + '<div id="st-gate-state"></div><div id="st-gate-sum"></div><div id="st-gate-lanes"></div>'
+    + '<div id="st-gate-state"></div><div id="st-gate-sum"></div><div id="st-gate-lanes"></div><div id="st-gate-tabs" role="tablist"></div>'
     + '<div id="st-gate-body"><table><thead><tr><th>Time</th><th>Tab' + stGateCfBtn('tab') + '</th><th>Script' + stGateCfBtn('s') + '</th><th>Verb' + stGateCfBtn('m') + '</th><th>Reason' + stGateCfBtn('r') + '</th><th>Entity' + stGateCfBtn('e') + '</th><th>Site</th><th>Request' + stGateCfBtn('rq') + '</th><th>Tries' + stGateCfBtn('n') + '</th><th>Result' + stGateCfBtn('res') + '</th><th>Wait' + stGateCfBtn('wt') + '</th><th>Rate limit' + stGateCfBtn('rl') + '</th></tr></thead><tbody></tbody></table></div>'
     + '<div class="mbu-logpop-grip" data-tip="Resize"></div>';
   document.documentElement.appendChild(pop);   // outside the body, which Event Horizon swaps
@@ -766,7 +767,19 @@ function stGateBuild() {
     b.classList.toggle('on', !!t);
     if (t) b.dataset.tip = 'Filter: ' + t + '\nRight click clears it'; else delete b.dataset.tip;
   };
-  var drawFailed = '', lanesHeld = false, shownIds = [];
+  var drawFailed = '', lanesHeld = false, shownIds = [], sels = [], act = -1;
+  var tabsDraw = function (n) {
+    var el = $('#st-gate-tabs');
+    el.innerHTML = sels.length ? '<span data-t="-1" class="' + (act < 0 ? 'on' : '') + '">All ' + n + '</span>' + sels.map(function (x, i) {
+      return '<span data-t="' + i + '" class="' + (act === i ? 'on' : '') + '">' + stEsc(x.name) + ' · ' + x.ids.length + '<span class="x" data-tip="Close this tab\nA right click closes every tab">×</span></span>';
+    }).join('') : '';
+  };
+  var addSel = function (name, ids) {
+    if (!ids.length) return;
+    var key = ids.slice().sort().join(','), i = sels.findIndex(function (x) { return x.ids.slice().sort().join(',') === key; });
+    if (i < 0) { sels.push({ name: name, ids: ids }); i = sels.length - 1; }
+    act = i; sig = ''; draw();
+  };
   var draw = function () {
     try { drawNow(); } catch (e) {
       var msg = String(e && e.message || e);
@@ -787,10 +800,12 @@ function stGateBuild() {
       for (var ck in cf) if (stGateCfVal(g, ck) !== cf[ck]) return false;
       for (var tk in cft) if (String(stGateCfVal(g, tk)).toLowerCase().indexOf(cft[tk]) < 0) return false;
       if (!g.sys && (g.h ? !hosts.ext : !hosts.mb)) return false;
+      if (act >= 0 && sels[act].ids.indexOf(g.id) < 0) return false;
       if (mode === 'bad' && g.cls !== 'bad') return false;
       if (mode === 're' && (g.sys || g.tries.length < 2)) return false;
       return true;
     });
+    tabsDraw(n);
     shownIds = shown.filter(function (g) { return !g.sys; }).map(function (g) { return g.id; });
     if (shownIds.length < n) {   // a filter hides some: say how many are left, and which filter
       var why = [!hosts.mb && 'no MusicBrainz', !hosts.ext && 'no other sites', mode === 'bad' && 'failed', mode === 're' && 'retried'].concat(Object.keys(cf).concat(Object.keys(cft)).map(function (k) { return { tab: 'tab', s: 'script', m: 'verb', rq: 'request', n: 'tries', res: 'result', wt: 'wait', rl: 'rate limit' }[k] || k; })).filter(Boolean).join(', ');
@@ -798,7 +813,7 @@ function stGateBuild() {
     }
     // the funnel of every column that filters stands out
     pop.querySelectorAll('.st-gate-cf').forEach(cfTip);
-    var key = shown.map(function (g) { return g.id + ':' + g.evs.length + ':' + g.label; }).join('|') + '#' + Object.keys(opened).join('|') + '#' + me;
+    var key = shown.map(function (g) { return g.id + ':' + g.evs.length + ':' + g.label; }).join('|') + '#' + Object.keys(opened).join('|') + '#' + me + '#' + act;
     if (key === sig) return;
     sig = key;
     // #1095: newest rows come in at the top; scrolled down, the row in view stays put, so the
@@ -854,6 +869,17 @@ function stGateBuild() {
     draw();
   });
   var lanes = $('#st-gate-lanes');
+  $('#st-gate-tabs').addEventListener('click', function (e) {
+    var t = e.target.closest('[data-t]'); if (!t) return;
+    var i = +t.dataset.t;
+    if (e.target.closest('.x')) { sels.splice(i, 1); if (act === i) act = -1; else if (act > i) act--; }
+    else act = i;
+    sig = ''; draw();
+  });
+  $('#st-gate-tabs').addEventListener('contextmenu', function (e) {
+    if (!e.target.closest('.x')) return;
+    e.preventDefault(); sels = []; act = -1; sig = ''; draw();
+  });
   // a right click on a funnel clears that column's filter
   pop.addEventListener('contextmenu', function (e) {
     var b = e.target.closest && e.target.closest('.st-gate-cf');
@@ -935,7 +961,19 @@ function stGateBuild() {
   // a click on a timeline mark, or on a row of a cluster's tip, opens that request's row and scrolls to it
   var openFromLanes = function (e) {
     var m = e.target.closest && e.target.closest('#st-gate-lanes [data-id], .st-gl-zoom [data-id], #st-gate-lanes [data-ids]');
+    var ln = !m && e.target.closest && e.target.closest('#st-gate-lanes .st-gl-lane[data-lane]');
+    if (ln) {
+      var tab = ln.dataset.lane, from = Date.now() - ST_GATE_SPAN, me0 = stGateTab();
+      addSel(tab === me0 ? 'This tab' : tab.slice(0, 8), lastGroups.filter(function (g) { return !g.sys && g.tab === tab && g.t >= from; }).map(function (g) { return g.id; }));
+      return;
+    }
     if (!m) return;
+    if (m.dataset.ids) {
+      var bl = m.closest('.st-gl-lane[data-lane]'), bt = bl ? bl.dataset.lane : '', bids = JSON.parse(m.dataset.ids);
+      var t0 = lastGroups.filter(function (g) { return g.id === bids[0]; })[0];
+      addSel((bt === stGateTab() ? 'This tab' : bt.slice(0, 8)) + (t0 ? ' ' + stGateTime(t0.t).slice(0, 8) : ''), bids);
+      return;
+    }
     var ids = m.dataset.ids ? JSON.parse(m.dataset.ids) : [m.dataset.id], id = ids[0];
     stGateSel = {};
     ids.forEach(function (x) { opened[x] = 1; stGateSel[x] = 1; });
