@@ -30,7 +30,7 @@ var ST_GATE_CSS = ''
   // the totals and the lanes
   + '#st-gate-sum{padding:8px 13px 2px;color:var(--mbu-text-weak);font-size:12px}#st-gate-sum b{color:var(--mbu-text);font-weight:600}'
   + '#st-gate-sum .bad b{color:var(--mbu-error)}#st-gate-sum .re b{color:var(--mbu-warn)}'
-  + '#st-gate-lanes{position:relative;flex:0 0 auto;margin:4px 13px 8px;padding-left:180px}'
+  + '#st-gate-lanes{position:relative;flex:0 1 auto;min-height:60px;max-height:40vh;overflow-x:hidden;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;margin:4px 13px 8px;padding-left:180px}'
   + '.st-gl-bands{position:absolute;top:0;bottom:16px;left:180px;right:0}'
   + '.st-gl-band{position:absolute;top:0;bottom:0;background:var(--mbu-error-bg)}'
   + '.st-gl-lane{position:relative;height:calc(var(--r,1)*30px);border-top:1px solid var(--mbu-divider)}'
