@@ -298,7 +298,9 @@ function stGateZoomMerge(items) {
   var by = {}, out = [];
   items.forEach(function (x) {
     if (!x.g.h) { out.push(x); return; }
-    var kind = stGateAlias(x.g.l).split(' ')[0], key = x.g.h + '|' + (x.g.s || '') + '|' + kind;
+    // the kind is the label without its last word: "v1 catalog gy" and "v1 catalog hk" are one kind
+    var w = stGateAlias(x.g.l).split(' '), kind = w.length > 1 ? w.slice(0, -1).join(' ') : w[0];
+    var key = String(x.g.h).split('//').pop().split('/')[0] + '|' + (x.g.s || '') + '|' + kind;
     if (!by[key]) { by[key] = { first: x, all: [], kind: kind }; out.push(by[key]); }
     by[key].all.push(x);
   });
