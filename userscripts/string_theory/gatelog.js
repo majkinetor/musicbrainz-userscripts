@@ -296,24 +296,25 @@ function stGateZoomIcon(x, left) {
 // the line's bar runs from the first start to the last end, and it is red when any of them failed
 // the kind is the label without its last word: "v1 catalog gy" and "v1 catalog hk" are one kind
 function stGateKind(g) { var w = stGateAlias(g.l).split(' '); return w.length > 1 ? w.slice(0, -1).join(' ') : w[0]; }
-function stGateKindKey(g) { return g.h && !g.sys ? g.tab + '|' + String(g.h).split('//').pop().split('/')[0] + '|' + (g.s || '') + '|' + (g.r || '') + '|' + stGateKind(g) : ''; }
-// the table: 3 or more rows in a row of one kind to one site become one row with a count, which a click opens
+function stGateKindKey(g) { return g.h && !g.sys ? g.tab + '|' + String(g.h).split('//').pop().split('/')[0] + '|' + (g.s || '') + '|' + (g.r || '') + '|' + (stGateEntity(g) || '') + '|' + stGateKind(g) : ''; }
+// the table: 3 or more rows of one kind, site, entity and reason become one row with a count, which a click opens;
+// the group stands where its newest row would be, and other rows between its members do not split it
 function stGateTableHtml(list, me, opened, now) {
-  var out = [], i = 0;
-  while (i < list.length) {
-    var k = stGateKindKey(list[i]), j = i + 1;
-    while (k && j < list.length && stGateKindKey(list[j]) === k) j++;
-    var run = list.slice(i, j); i = j;
-    if (run.length < 3) { run.forEach(function (g) { out.push(stGateRowHtml(g, me, !!opened[g.id], now)); }); continue; }
+  var out = [], by = {};
+  list.forEach(function (g) { var k = stGateKindKey(g); if (k) (by[k] = by[k] || []).push(g); });
+  list.forEach(function (g) {
+    var k = stGateKindKey(g), run = k ? by[k] : [g];
+    if (run.length < 3) { out.push(stGateRowHtml(g, me, !!opened[g.id], now)); return; }
+    if (run[0] !== g) return;
     var gid = 'grp:' + run[run.length - 1].id, open = opened[gid] || run.some(function (g) { return opened[g.id] || stGateSel[g.id]; });
     var g0 = run[0], bad = run.filter(function (g) { return g.cls === 'bad'; }).length, wait = run.reduce(function (n, g) { return n + (g.wait || 0); }, 0);
     var host = String(g0.h).split('//').pop().split('/')[0];
     out.push('<tr class="rq grp' + (open ? ' open' : '') + (g0.tab === me ? ' me' : '') + (stGateSel[gid] ? ' sel' : '') + '" data-id="' + stEsc(gid) + '"><td class="t">' + stGateTime(g0.t) + '</td>'
-      + '<td class="tab">' + stEsc(g0.tab === me ? 'this tab' : String(g0.tab).slice(0, 8)) + '</td><td class="s">' + stEsc(g0.s || '') + '</td><td class="v">' + stEsc(g0.m || '') + '</td><td class="r">' + stEsc(g0.r || '') + '</td><td class="e"></td>'
+      + '<td class="tab">' + stEsc(g0.tab === me ? 'this tab' : String(g0.tab).slice(0, 8)) + '</td><td class="s">' + stEsc(g0.s || '') + '</td><td class="v">' + stEsc(g0.m || '') + '</td><td class="r">' + stEsc(g0.r || '') + '</td><td class="e">' + stGateEntHtml(g0) + '</td>'
       + '<td class="i">' + stEsc(stGateSite(g0)) + '</td><td class="l"><span class="st-gl-gx">' + (open ? '▾' : '▸') + '</span> ' + stEsc(stGateKind(g0)) + ' <b class="st-gl-zx">×' + run.length + '</b></td><td></td>'
       + '<td><span class="st-gate-pill ' + (bad ? 'bad' : g0.cls) + '">' + (bad ? bad + ' failed' : run.length + ' requests') + '</span></td><td class="w">' + stGateSec(wait) + '</td><td></td><td></td></tr>');
     if (open) run.forEach(function (g) { out.push(stGateRowHtml(g, me, !!opened[g.id], now).replace('<tr class="rq', '<tr class="rq in')); });
-  }
+  });
   return out.join('');
 }
 function stGateZoomMerge(items) {
@@ -338,7 +339,7 @@ function stGateZoomHtml(items, now) {
   var pct = function (t) { return (t - a) / span * 100; };
   return '<div class="st-gl-zh">' + items.length + ' requests in ' + stGateSec(b - a - pad * 2) + stGateSplit(items.map(function (x) { return x.g; })) + '</div>' + stGateZoomMerge(items).map(function (x) {
     var w = Math.max(pct(x.b) - pct(x.a), 1.5);
-    return stGateTag('<div class="st-gl-zr">', x.g.id) + '<span class="st-gl-zn">' + (x.g.h ? '<span class="h">' + stEsc(x.g.h.replace(/^https?:\/\//, '').split('/')[0].replace(/^www\./, '')) + '</span>' : '') + (x.n ? stEsc(x.kind) + ' <b class="st-gl-zx">×' + x.n + '</b>' : stGateLabelHtml(x.g)) + '</span>'
+    return stGateTag('<div class="st-gl-zr">', x.g.id) + '<span class="st-gl-zn">' + (x.n ? '<b class="st-gl-zx">×' + x.n + '</b> ' : '') + (x.g.h ? '<span class="h">' + stEsc(x.g.h.replace(/^https?:\/\//, '').split('/')[0].replace(/^www\./, '')) + '</span>' : '') + (x.n ? stEsc(x.kind) : stGateLabelHtml(x.g)) + '</span>'
       + '<span class="st-gl-zl"><i class="st-gl-f ' + x.cls + '" style="left:' + pct(x.a).toFixed(2) + '%;width:' + w.toFixed(2) + '%"></i>' + stGateZoomIcon(x, pct(x.a)) + '</span>'
       + '<span class="st-gl-zt">' + stGateSec(x.b - x.a) + '</span></div>';
   }).join('');
