@@ -37,7 +37,7 @@ var ST_GATE_CSS = ''
   + '.st-gl-ic{position:absolute;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;z-index:1;object-fit:contain}'
   + '.st-gl-ic.at{margin:-8px 0 0 -19px}#st-gate-hud-box .st-gl-ic.at{margin:-6px 0 0 -15px}#st-gate-hud-box .st-gl-ic{width:12px;height:12px;margin:-6px 0 0 -6px}#st-gate-hud-box .st-gl-cl b{display:none}#st-gate-hud-box .st-gl-cl{height:12px;margin-top:-6px}'
   + '.st-gl-cl{position:absolute;top:50%;height:18px;margin:-9px 0 0 -9px;z-index:2;display:flex;align-items:center;cursor:default}.st-gl-cl b{position:absolute;right:-6px;top:-5px;min-width:11px;height:11px;padding:0 2px;box-sizing:border-box;border-radius:6px;background:var(--mbu-accent);color:#fff;font-size:8px;line-height:11px;text-align:center}.st-gl-cl b{display:flex;padding:0;overflow:hidden;background:none}.st-gl-cl b i{font-style:normal;padding:0 2px;min-width:7px;background:var(--mbu-accent)}.st-gl-cl b i.x{background:#2f7fd6}.st-gl-cl.bad b{box-shadow:0 0 0 1px var(--mbu-error)}'
-  + '.st-gl-pi{position:absolute;top:-2px;width:24px;height:24px;margin-left:-27px;z-index:1}.st-gl-pi svg{width:24px;height:24px;display:block}.st-gl-lt{display:block;width:24px;height:24px;border-radius:5px;color:#fff;font:700 14px/24px system-ui,sans-serif;text-align:center}.st-gl-pi .st-gl-ic{position:absolute;left:auto;top:auto;right:-5px;bottom:-5px;width:13px;height:13px;margin:0}'
+  + '.st-gl-pi{position:absolute;top:-2px;width:24px;height:24px;margin-left:-27px;z-index:1}.st-gl-pi svg{width:24px;height:24px;display:block}.st-gl-zx{color:var(--mbu-accent)}.st-gl-lt{display:block;width:24px;height:24px;border-radius:5px;color:#fff;font:700 14px/24px system-ui,sans-serif;text-align:center}.st-gl-pi .st-gl-ic{position:absolute;left:auto;top:auto;right:-5px;bottom:-5px;width:13px;height:13px;margin:0}'
   + '.st-gl-cl .st-gl-ic{position:static;margin:0}'
   + '.st-gl-zoom{position:fixed;z-index:2147483647;width:340px;padding:8px 10px;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);font-size:12px}'
   + '.st-gl-zh{color:var(--mbu-text-weak);margin-bottom:4px}.st-gl-zr{display:flex;align-items:center;gap:6px;height:26px}.st-gl-zr .st-gl-ic{position:static;margin:0}'
@@ -292,13 +292,31 @@ function stGateZoomIcon(x, left) {
   if (!x.g.h) return stGateIcon(x.g.s, 'at ' + x.cls, '', left);
   return '<span class="st-gl-pi" style="left:' + left.toFixed(2) + '%">' + (k ? stIcon(k, 24) : stGateLetter(x.g.h)) + stGateIcon(x.g.s, '', '') + '</span>';
 }
+// many requests of one kind to one site (cover art for 100 releases) become one line with a count;
+// the line's bar runs from the first start to the last end, and it is red when any of them failed
+function stGateZoomMerge(items) {
+  var by = {}, out = [];
+  items.forEach(function (x) {
+    if (!x.g.h) { out.push(x); return; }
+    var kind = stGateAlias(x.g.l).split(' ')[0], key = x.g.h + '|' + (x.g.s || '') + '|' + kind;
+    if (!by[key]) { by[key] = { first: x, all: [], kind: kind }; out.push(by[key]); }
+    by[key].all.push(x);
+  });
+  return out.map(function (m) {
+    if (!m.all) return m;
+    if (m.all.length < 3) return m.all;
+    var bad = m.all.filter(function (x) { return x.cls !== m.first.cls; })[0];
+    return { g: m.first.g, cls: bad ? bad.cls : m.first.cls, kind: m.kind, n: m.all.length,
+      a: Math.min.apply(null, m.all.map(function (x) { return x.a; })), b: Math.max.apply(null, m.all.map(function (x) { return x.b; })) };
+  }).reduce(function (r, x) { return r.concat(x); }, []);
+}
 function stGateZoomHtml(items, now) {
   var a = Math.min.apply(null, items.map(function (x) { return x.a; })), b = Math.max.apply(null, items.map(function (x) { return x.b; }));
   var span = Math.max(b - a, 200), pad = span * 0.08; a -= pad; span += pad * 2;
   var pct = function (t) { return (t - a) / span * 100; };
-  return '<div class="st-gl-zh">' + items.length + ' requests in ' + stGateSec(b - a - pad * 2) + stGateSplit(items.map(function (x) { return x.g; })) + '</div>' + items.map(function (x) {
+  return '<div class="st-gl-zh">' + items.length + ' requests in ' + stGateSec(b - a - pad * 2) + stGateSplit(items.map(function (x) { return x.g; })) + '</div>' + stGateZoomMerge(items).map(function (x) {
     var w = Math.max(pct(x.b) - pct(x.a), 1.5);
-    return stGateTag('<div class="st-gl-zr">', x.g.id) + '<span class="st-gl-zn">' + (x.g.h ? '<span class="h">' + stEsc(x.g.h.replace(/^https?:\/\//, '').split('/')[0].replace(/^www\./, '')) + '</span>' : '') + stGateLabelHtml(x.g) + '</span>'
+    return stGateTag('<div class="st-gl-zr">', x.g.id) + '<span class="st-gl-zn">' + (x.g.h ? '<span class="h">' + stEsc(x.g.h.replace(/^https?:\/\//, '').split('/')[0].replace(/^www\./, '')) + '</span>' : '') + (x.n ? stEsc(x.kind) + ' <b class="st-gl-zx">×' + x.n + '</b>' : stGateLabelHtml(x.g)) + '</span>'
       + '<span class="st-gl-zl"><i class="st-gl-f ' + x.cls + '" style="left:' + pct(x.a).toFixed(2) + '%;width:' + w.toFixed(2) + '%"></i>' + stGateZoomIcon(x, pct(x.a)) + '</span>'
       + '<span class="st-gl-zt">' + stGateSec(x.b - x.a) + '</span></div>';
   }).join('');
@@ -494,7 +512,7 @@ function stGateEntity(g) {
   return ST_GATE_ENTS.indexOf(e) >= 0 ? e : '';
 }
 // a row starts with its entity's icon (MBU-ENT-ICONS), or for another site with that site's platform icon (ST-ICONS)
-var ST_GATE_HOSTS = { itunes: 'apple', music: 'apple', 'youtu': 'youtube', '7digital': 'sevendigital' };
+var ST_GATE_HOSTS = { itunes: 'apple', music: 'apple', 'youtu': 'youtube', '7digital': 'sevendigital', coverartarchive: 'archive' };
 function stGateHostKey(h) {
   var p = String(h || '').replace(/^https?:\/\//, '').split('/')[0].split(':')[0].split('.').filter(function (x) { return x !== 'www' && x !== 'api'; });
   for (var i = 0; i < p.length - 1; i++) { var k = ST_GATE_HOSTS[p[i]] || p[i]; if (typeof ST_ICONS !== 'undefined' && ST_ICONS[k] && k !== 'globe') return k; }
