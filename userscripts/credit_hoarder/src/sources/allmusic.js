@@ -11,6 +11,7 @@
 
 import { getArtistRoles } from '../mappers.js';
 import { assignVolumePositions } from '../util.js';
+import { gmLogged } from '../gm.js';
 
 export const TIVO_API = 'https://tivomusicapi-staging-elb.digitalsmiths.net/sd/tivomusicapi/taps/v3';
 
@@ -78,7 +79,7 @@ export function allMusicToEngine(parsedTracks) {
 export function tivoGet(path, timeout = 25000) {
     return new Promise((resolve, reject) => {
         if (typeof GM_xmlhttpRequest !== 'function') { reject(new Error('GM_xmlhttpRequest unavailable')); return; }
-        GM_xmlhttpRequest({
+        gmLogged({
             method: 'GET',
             url: TIVO_API + path,
             timeout,

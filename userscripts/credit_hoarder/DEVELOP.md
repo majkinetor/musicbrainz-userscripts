@@ -54,7 +54,7 @@ test/                      tests (see below)
 - **Requests** to MusicBrainz share one throttle; on a 429 or 503 every worker waits out the `Retry-After`.
 - **Writing** goes through `MB.relationshipEditor` on the page's real `window` (`unsafeWindow`), the same state the editor's own dialogs use, so nothing is submitted until you enter the edit.
 
-Credit Hoarder began as the [Discogs Importer](../discogs_credits/README.md), itself built on userscripts by *mattgoldspink*, *vzell* and *kellnerd*.
+Credit Hoarder began as the Discogs Importer, itself built on userscripts by *mattgoldspink*, *vzell* and *kellnerd*.
 
 ## Source APIs
 

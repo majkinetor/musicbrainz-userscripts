@@ -37,7 +37,7 @@ Each script's `@icon` (from `<script>.user.js` or `dist/<script>.user.js`) is us
 | Setting | What                                                                                                                |
 | ------- | ------------------------------------------------------------------------------------------------------------------- |
 | `SWAP`  | a file to show in place of a script's `@icon`: a candidate icon under review, or Mammoth's `icon.svg` for its emoji |
-| `SKIP`  | scripts left out of the set: Discogs Credits (frozen) and Bandcamp Player Enhanced                                  |
+| `SKIP`  | scripts left out of the set: Bandcamp Player Enhanced                                                               |
 
 To try a candidate against the whole set, add it to `SWAP` with a short note; the note shows under the icon.
 

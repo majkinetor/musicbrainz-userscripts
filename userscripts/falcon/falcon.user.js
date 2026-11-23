@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.23
+// @version      2026.11.23.124859
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -266,7 +266,7 @@
   async function mbnSlot(o) {
       o = o || {};
       const t0 = Date.now(), background = o.background !== false;
-      const tr = (e, x) => mbnTrace(Object.assign({ e, l: o.label || '', b: background ? 1 : 0, id: o.id || undefined }, x));
+      const tr = (e, x) => mbnTrace(Object.assign({ e, r: o.reason || undefined, en: o.entity || undefined, l: o.label || '', b: background ? 1 : 0, id: o.id || undefined, m: o.m, u: o.u }, x));
       // someone else's lead: a background request books its slot only once it ends or lapses
       // #938: a cap counted from each new `now` moves with it and never caps; count it from when
       // this wait first saw the value, so a broken one holds at most the longest real one
@@ -402,7 +402,7 @@
       // answer a twin had brought back meanwhile; it looks once more just before it leaves
       const twin = o.twin && Date.now() - t0 >= MBN_MERGE_WAIT ? await o.twin() : null;   // one that didn't wait looked a moment ago
       if (twin) { await giveBack(true); return { ok: false, waited: Date.now() - t0, twin }; }
-      tr('start', { w: Date.now() - t0 });
+      tr('start', { w: Date.now() - t0, bs: o.bs });
       return { ok: true, waited: Date.now() - t0 };
   }
   async function mbnLead(token, ms) {
@@ -422,7 +422,7 @@
       for (const [k, n] of [['lim', 'X-RateLimit-Limit'], ['rem', 'X-RateLimit-Remaining'], ['rst', 'X-RateLimit-Reset'], ['who', 'X-RateLimit-Who']]) {
           try { const v = header ? header(n) : null; if (v != null && v !== '') rl[k] = String(v).slice(0, 40); } catch (e) {}
       }
-      const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, l: o.label || '', b: o.background === false ? 0 : 1, id: o.id || undefined, hot: s ? s.hot || 0 : undefined }, rl, x));
+      const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, r: o.reason || undefined, en: o.entity || undefined, l: o.label || '', b: o.background === false ? 0 : 1, id: o.id || undefined, m: o.m, u: o.u, hot: s ? s.hot || 0 : undefined }, rl, x));
       if (status === 429 || status === 503) {
           const raw = header ? header('Retry-After') : null;
           const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
@@ -487,6 +487,59 @@
       else tr({});
       return { throttled: false, hold: 0 };
   }
+  function mbnBodySize(init) {
+      const b = init && init.body;
+      if (b == null) return undefined;
+      try {
+          if (typeof b === 'string') return new TextEncoder().encode(b).length;
+          if (b instanceof URLSearchParams) return new TextEncoder().encode(b.toString()).length;
+          if (typeof Blob !== 'undefined' && b instanceof Blob) return b.size;
+          if (b.byteLength != null) return b.byteLength;
+      } catch (e) {}
+      return undefined;
+  }
+  async function mbnLog(url, init, o) {
+      o = o || {};
+      let h = '', p = String(url);
+      // a blob: or data: URL stays on this computer: not a network request, not logged
+      if (/^(blob|data):/i.test(p)) return (o.send || fetch)(url, init);
+      // a host that isn't MusicBrainz is external, the page's own one too (Beatport's pages)
+      try { const x = new URL(p, location.href); p = x.pathname + x.search; if (!/(^|\.)musicbrainz\.(org|eu)$/.test(x.hostname)) h = x.host; } catch (e) {}
+      const ev = { r: o.reason || undefined, en: o.entity || undefined, l: o.label || p.slice(0, 120), u: o.u || (o.label ? p.slice(0, 300) : undefined), b: o.background === false ? 0 : 1,
+          id: o.id || mbnRid(), m: o.m || String((init && init.method) || o.method || 'GET').toUpperCase(), h: h || undefined, x: 1 };
+      mbnTrace(Object.assign({ e: 'start', bs: mbnBodySize(init) }, ev));
+      try {
+          const r = await (o.send || fetch)(url, init);
+          mbnTrace(Object.assign({ e: 'answer', st: r.status }, ev));
+          return r;
+      } catch (e) {
+          mbnTrace(Object.assign({ e: 'error', err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }, ev));
+          throw e;
+      }
+  }
+  function mbnGm(opts, fn) {
+      fn = fn || (typeof GM_xmlhttpRequest !== 'undefined' ? GM_xmlhttpRequest : null);
+      let fin = null;
+      mbnLog(opts.url, { method: opts.method || 'GET', body: opts.data }, { send: () => new Promise((ok, no) => { fin = { ok, no }; }) }).catch(() => {});
+      const end = (x, msg) => {
+          if (!fin) return;
+          const g = fin; fin = null;
+          if (!msg) { g.ok({ status: (x && x.status) || 0 }); return; }
+          const e = new Error(msg); if (msg === 'aborted') e.name = 'AbortError'; g.no(e);
+      };
+      const wrap = (name, msg) => { const f = opts[name]; return (...a) => { end(a[0], msg); if (f) return f(...a); }; };
+      return fn(Object.assign({}, opts, { onload: wrap('onload'), onerror: wrap('onerror', 'network error'), ontimeout: wrap('ontimeout', 'timeout'), onabort: wrap('onabort', 'aborted') }));
+  }
+  function mbnGmFn(fn) { return fn ? o => mbnGm(o, fn) : null; }
+  function mbnXhr(xhr, url, method, body) {
+      mbnLog(url, { method: method || 'GET', body }, { send: () => new Promise((ok, no) => {
+          xhr.addEventListener('load', () => ok({ status: xhr.status }));
+          xhr.addEventListener('error', () => no(new Error('network error')));
+          xhr.addEventListener('timeout', () => no(new Error('timeout')));
+          xhr.addEventListener('abort', () => { const e = new Error('aborted'); e.name = 'AbortError'; no(e); });
+      }) }).catch(() => {});
+      return xhr;
+  }
   async function mbnFetch(url, init, o) {
       o = o || {};
       // #1098: a write (an edit, an ISRC submit) makes every cached answer old. Marked when it goes out and
@@ -496,19 +549,21 @@
           mbnEdited();
           try { return await mbnFetch(url, init, Object.assign({}, o, { wrote: true })); } finally { mbnEdited(); }
       }
-      if (!mbnGated(url)) {
-          const r = await fetch(url, init);
-          if (!mbnWebsite(url) || !(await mbnIsCheck(r))) return r;
-          // #733: MusicBrainz's browser check answered instead: nothing was done (a POST is safe
-          // to repeat), so pass the check and ask again
-          return (await mbnReverify(url, init, o)) ? fetch(url, init) : r;
-      }
-      const t0 = Date.now(), give = attempt => o.tries ? attempt >= o.tries : o.background === false ? Date.now() - t0 > 45000 : attempt >= 4;
-      if (!o.label) {   // the Gate log names a request by what it asks for
+      {   // the Gate log names a request by what it asks for, or by the caller's name with its path kept in u
           let p = String(url);
           try { const u = new URL(p, location.href); p = u.pathname.replace(/^\/ws\/2\//, '') + u.search.replace(/[?&]fmt=json\b/, '').replace(/^&/, '?'); } catch (e) {}
-          o = Object.assign({}, o, { label: p.slice(0, 120) });
+          o = Object.assign({}, o, o.label ? { u: p.slice(0, 300) } : { label: p.slice(0, 120) }, { m: String((init && init.method) || 'GET').toUpperCase(), bs: mbnBodySize(init) });
       }
+      if (!mbnGated(url)) {
+          return mbnLog(url, init, Object.assign({}, o, { send: async (u, i) => {
+              const r = await fetch(u, i);
+              if (!mbnWebsite(u) || !(await mbnIsCheck(r))) return r;
+              // #733: MusicBrainz's browser check answered instead: nothing was done (a POST is safe
+              // to repeat), so pass the check and ask again
+              return (await mbnReverify(u, i, o)) ? fetch(u, i) : r;
+          } }));
+      }
+      const t0 = Date.now(), give = attempt => o.tries ? attempt >= o.tries : o.background === false ? Date.now() - t0 > 45000 : attempt >= 4;
       if (o.search === undefined) {   // a search (?query=) waits out a search-shed hold, nothing else does
           let q = false;
           try { q = new URL(String(url), location.href).searchParams.has('query'); } catch (e) {}
@@ -535,12 +590,12 @@
                   r = await Promise.race([sent, mbnSleep(40000, () => quit).then(() => { if (!quit) throw new TypeError('no answer in 40s'); return new Promise(() => {}); })]);
                   quit = true;
               }
-              catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, id: o.id, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
+              catch (e) { mbnTrace({ e: 'error', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: o.background === false ? 0 : 1, id: o.id, m: o.m, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
               const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
               if (!a.throttled) return r;
               // a background search MusicBrainz sheds twice is given up: searches are what it drops when busy
               const shed = a.shed && o.background !== false && attempt >= 2;
-              if (give(attempt) || shed) { mbnTrace({ e: 'giveup', l: o.label, b: o.background === false ? 0 : 1, id: o.id, st: r.status, n: attempt }); return r; }
+              if (give(attempt) || shed) { mbnTrace({ e: 'giveup', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: o.background === false ? 0 : 1, id: o.id, m: o.m, st: r.status, n: attempt }); return r; }
               // log: a twin sent apart from this one got its 200 while this one waited: no retry
               const hit = twin && await twin();
               if (hit) return hit;
@@ -592,7 +647,7 @@
           const x = (live.get(key) || []).find(x => x !== self && x.sent && !x.twin && covers(x, inc) && (lookup || fits(x, inc)));
           if (x) {
               if (self) self.twin = x;
-              mbnTrace({ e: 'join', l: o.label, b: tb, id: o.id, with: x.label });
+              mbnTrace({ e: 'join', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: tb, id: o.id, m: o.m, with: x.label });
               let r = null;
               try { r = await x.p; } catch (e) { r = null; }
               if (self) self.twin = null;
@@ -600,7 +655,7 @@
           }
           const hit = cacheable && await mbnCacheGet(key, inc);
           if (!hit) return null;
-          mbnTrace({ e: 'cache', l: o.label, b: tb, id: o.id, w: Math.round((Date.now() - hit.at) / 1000) });
+          mbnTrace({ e: 'cache', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: tb, id: o.id, m: o.m, w: Math.round((Date.now() - hit.at) / 1000) });
           kept.add(hit.r);
           return hit.r;
       };
@@ -611,14 +666,14 @@
           if (!run && !looked) {
               looked = true;
               const hit = await mbnCacheGet(key, want);
-              if (hit) { mbnTrace({ e: 'cache', l: o.label, b: bg ? 1 : 0, id: o.id, w: Math.round((Date.now() - hit.at) / 1000) }); return hit.r; }
+              if (hit) { mbnTrace({ e: 'cache', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: bg ? 1 : 0, id: o.id, m: o.m, w: Math.round((Date.now() - hit.at) / 1000) }); return hit.r; }
               // the cache is read asynchronously: the same read asked in that moment is in `live` by now
               continue;
           }
           if (!run) break;
           const add = how === 'merge' ? Array.from(want).filter(i => !run.inc.has(i)) : [];
           for (const i of add) run.inc.add(i);
-          mbnTrace({ e: how, l: o.label, b: o.background === false ? 0 : 1, id: o.id, with: run.label, add: add.join(' ') || undefined });
+          mbnTrace({ e: how, r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: o.background === false ? 0 : 1, id: o.id, m: o.m, with: run.label, add: add.join(' ') || undefined });
           const p = run.p;
           // this caller's own Stop or abort still ends its wait, whatever the first caller does
           const stop = new Promise(res => {
@@ -927,6 +982,7 @@
       'place': '<path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>',
       'series': '<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
       'event': '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+      'url': '<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>',
       'collection': '<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/>',
   };
   var MBU_EDIT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
@@ -5151,7 +5207,7 @@
   // Art Station's gmFetch (art_station.user.js).
   function gmFetch(url) {
     return new Promise((resolve, reject) => {
-      GM_xmlhttpRequest({
+      mbnGm({
         method: 'GET', url, responseType: 'blob', timeout: 30000,
         onload: r => { (r.status >= 200 && r.status < 300 && r.response) ? resolve(r.response) : reject(new Error('fetch ' + r.status)); },
         onerror: () => reject(new Error('network error')),
@@ -7113,6 +7169,7 @@
     await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open('POST', signed.action);
+      mbnXhr(xhr, signed.action, 'POST');
       xhr.timeout = 300000;
       xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error('upload ' + xhr.status));
       xhr.onerror = () => reject(new Error('upload network error'));
@@ -7122,7 +7179,7 @@
 
     log('info', `${tag} release ${item.mbid} — registering (${entry.type})`);
     const addUrl = `${MB_ORIGIN}/release/${item.mbid}/add-cover-art`;
-    const formHtml = await fetch(addUrl, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error('GET add-cover-art ' + r.status); return r.text(); });
+    const formHtml = await mbnFetch(addUrl, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error('GET add-cover-art ' + r.status); return r.text(); });
     const formDoc = new DOMParser().parseFromString(formHtml, 'text/html');
     const form = [...formDoc.querySelectorAll('form')].find(f => (f.getAttribute('method') || '').toUpperCase() === 'POST');
     if (!form) throw new Error('add-cover-art form not found');
@@ -7152,7 +7209,7 @@
     // whatever note the item already carries (e.g. from Harmony) rather than
     // replacing it.
     p.append('add-cover-art.edit_note', coverEditNote(item, entry, actual));
-    const addRes = await fetch(addUrl, { method: 'POST', body: p, credentials: 'same-origin' });
+    const addRes = await mbnFetch(addUrl, { method: 'POST', body: p, credentials: 'same-origin' });
     if (!addRes.ok) throw new Error('add-cover-art submit ' + addRes.status);
     try { localStorage.setItem('mbLastWrite', String(Date.now())); } catch (e) {}   // #938: tell other scripts an edit just went in
     log('info', `${tag} release ${item.mbid} — cover art added (${entry.type})`);
@@ -7225,7 +7282,7 @@
   async function submitAlias(item, alias, tag) {
     const seg = entityUrlSegment(item.entityType);
     const url = `${MB_ORIGIN}/${seg}/${item.mbid}/add-alias`;
-    const html = await fetch(url, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error(`GET add-alias ${r.status}`); return r.text(); });
+    const html = await mbnFetch(url, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error(`GET add-alias ${r.status}`); return r.text(); });
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const form = doc.querySelector('form.edit-alias');
     if (!form) throw new Error('MusicBrainz did not serve an alias form (are we still logged in?)');
@@ -7268,7 +7325,7 @@
     p.set('edit-alias.edit_note', withBatchNote([item.note, FALCON_SIGNATURE()].filter(Boolean).join(String.fromCharCode(10, 10))));
 
     dbg(tag, `alias POST ${seg}/${item.mbid}: ${JSON.stringify({ name: alias.name, locale: alias.locale || '(none)', type: alias.type || '(none)', primary: !!alias.primary })}`);
-    const res = await fetch(url, {
+    const res = await mbnFetch(url, {
       method: 'POST', credentials: 'same-origin',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: p.toString(),
@@ -7881,7 +7938,7 @@
     if (typeof GM_xmlhttpRequest === 'function') {
       log('info', `Picard: sending release ${mbid} → ${url}`);
       try {
-        GM_xmlhttpRequest({
+        mbnGm({
           method: 'GET', url, timeout: 5000,
           onload: r => log(r.status >= 200 && r.status < 400 ? 'ok' : 'warn', `Picard: responded ${r.status}`),
           // by far the most likely cause, and worth saying rather than leaving a

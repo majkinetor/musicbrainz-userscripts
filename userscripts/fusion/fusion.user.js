@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.23.115218
+// @version      2026.11.23.124859
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -55,14 +55,14 @@ Log.info(mbuStartupInfo('Fusion'));
 const openLog = () => Log.open();
 
 /* ── GM_xmlhttpRequest promisified (ported from isrc_scout's http/gmGet/gmPost) —
-   used only for the merge_queue/merge GET+POST sequence; everything else (read-only
-   same-origin WS2/ws-js calls) uses plain fetch(), same as group_therapy's txp* helpers. ── */
+   used for other hosts (AcoustID); MusicBrainz calls, merges included, go through the
+   gate's mbnFetch / mbnWsFetch. ── */
 function http(opts) {
     const t0 = Date.now();
     const tag = (opts.method || 'GET') + ' ' + String(opts.url).replace(location.origin, '');
     Log.info('→ ' + tag);
     return new Promise((resolve, reject) => {
-        GM_xmlhttpRequest(Object.assign({
+        mbnGm(Object.assign({
             timeout: 20000,
             onload: r => {
                 const ms = Date.now() - t0;
@@ -77,6 +77,15 @@ function http(opts) {
 }
 const gmGet = (url, headers) => http({ method: 'GET', url, headers: headers || {} });
 const gmPost = (url, data, headers) => http({ method: 'POST', url, data, headers: headers || {} });
+// A merge's queue GET and its POST are MusicBrainz's website side, behind its browser check: they go
+// through the gate's mbnFetch (with the page's cookies), shaped like a GM answer for the code below.
+async function mbWeb(method, url, data, headers) {
+    const tag = method + ' ' + String(url).replace(location.origin, '');
+    Log.info('→ ' + tag);
+    const r = await mbnFetch(url, Object.assign({ method, credentials: 'same-origin', headers: headers || {} }, data == null ? {} : { body: data }));
+    Log.info('← ' + r.status + ' ' + tag);
+    return { status: r.status, finalUrl: r.url, responseText: await r.text() };
+}
 
 // MusicBrainz's /ws/2 goes through the shared request gate (#633): one budget for every
 // script and tab on the origin, and one 503 holds them all. (#529 had Fusion's own global
@@ -303,7 +312,7 @@ function mbnTrace(ev) {
 async function mbnSlot(o) {
     o = o || {};
     const t0 = Date.now(), background = o.background !== false;
-    const tr = (e, x) => mbnTrace(Object.assign({ e, l: o.label || '', b: background ? 1 : 0, id: o.id || undefined }, x));
+    const tr = (e, x) => mbnTrace(Object.assign({ e, r: o.reason || undefined, en: o.entity || undefined, l: o.label || '', b: background ? 1 : 0, id: o.id || undefined, m: o.m, u: o.u }, x));
     // someone else's lead: a background request books its slot only once it ends or lapses
     // #938: a cap counted from each new `now` moves with it and never caps; count it from when
     // this wait first saw the value, so a broken one holds at most the longest real one
@@ -439,7 +448,7 @@ async function mbnSlot(o) {
     // answer a twin had brought back meanwhile; it looks once more just before it leaves
     const twin = o.twin && Date.now() - t0 >= MBN_MERGE_WAIT ? await o.twin() : null;   // one that didn't wait looked a moment ago
     if (twin) { await giveBack(true); return { ok: false, waited: Date.now() - t0, twin }; }
-    tr('start', { w: Date.now() - t0 });
+    tr('start', { w: Date.now() - t0, bs: o.bs });
     return { ok: true, waited: Date.now() - t0 };
 }
 async function mbnLead(token, ms) {
@@ -459,7 +468,7 @@ async function mbnAnswer(status, header, o) {
     for (const [k, n] of [['lim', 'X-RateLimit-Limit'], ['rem', 'X-RateLimit-Remaining'], ['rst', 'X-RateLimit-Reset'], ['who', 'X-RateLimit-Who']]) {
         try { const v = header ? header(n) : null; if (v != null && v !== '') rl[k] = String(v).slice(0, 40); } catch (e) {}
     }
-    const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, l: o.label || '', b: o.background === false ? 0 : 1, id: o.id || undefined, hot: s ? s.hot || 0 : undefined }, rl, x));
+    const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, r: o.reason || undefined, en: o.entity || undefined, l: o.label || '', b: o.background === false ? 0 : 1, id: o.id || undefined, m: o.m, u: o.u, hot: s ? s.hot || 0 : undefined }, rl, x));
     if (status === 429 || status === 503) {
         const raw = header ? header('Retry-After') : null;
         const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
@@ -524,6 +533,59 @@ async function mbnAnswer(status, header, o) {
     else tr({});
     return { throttled: false, hold: 0 };
 }
+function mbnBodySize(init) {
+    const b = init && init.body;
+    if (b == null) return undefined;
+    try {
+        if (typeof b === 'string') return new TextEncoder().encode(b).length;
+        if (b instanceof URLSearchParams) return new TextEncoder().encode(b.toString()).length;
+        if (typeof Blob !== 'undefined' && b instanceof Blob) return b.size;
+        if (b.byteLength != null) return b.byteLength;
+    } catch (e) {}
+    return undefined;
+}
+async function mbnLog(url, init, o) {
+    o = o || {};
+    let h = '', p = String(url);
+    // a blob: or data: URL stays on this computer: not a network request, not logged
+    if (/^(blob|data):/i.test(p)) return (o.send || fetch)(url, init);
+    // a host that isn't MusicBrainz is external, the page's own one too (Beatport's pages)
+    try { const x = new URL(p, location.href); p = x.pathname + x.search; if (!/(^|\.)musicbrainz\.(org|eu)$/.test(x.hostname)) h = x.host; } catch (e) {}
+    const ev = { r: o.reason || undefined, en: o.entity || undefined, l: o.label || p.slice(0, 120), u: o.u || (o.label ? p.slice(0, 300) : undefined), b: o.background === false ? 0 : 1,
+        id: o.id || mbnRid(), m: o.m || String((init && init.method) || o.method || 'GET').toUpperCase(), h: h || undefined, x: 1 };
+    mbnTrace(Object.assign({ e: 'start', bs: mbnBodySize(init) }, ev));
+    try {
+        const r = await (o.send || fetch)(url, init);
+        mbnTrace(Object.assign({ e: 'answer', st: r.status }, ev));
+        return r;
+    } catch (e) {
+        mbnTrace(Object.assign({ e: 'error', err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }, ev));
+        throw e;
+    }
+}
+function mbnGm(opts, fn) {
+    fn = fn || (typeof GM_xmlhttpRequest !== 'undefined' ? GM_xmlhttpRequest : null);
+    let fin = null;
+    mbnLog(opts.url, { method: opts.method || 'GET', body: opts.data }, { send: () => new Promise((ok, no) => { fin = { ok, no }; }) }).catch(() => {});
+    const end = (x, msg) => {
+        if (!fin) return;
+        const g = fin; fin = null;
+        if (!msg) { g.ok({ status: (x && x.status) || 0 }); return; }
+        const e = new Error(msg); if (msg === 'aborted') e.name = 'AbortError'; g.no(e);
+    };
+    const wrap = (name, msg) => { const f = opts[name]; return (...a) => { end(a[0], msg); if (f) return f(...a); }; };
+    return fn(Object.assign({}, opts, { onload: wrap('onload'), onerror: wrap('onerror', 'network error'), ontimeout: wrap('ontimeout', 'timeout'), onabort: wrap('onabort', 'aborted') }));
+}
+function mbnGmFn(fn) { return fn ? o => mbnGm(o, fn) : null; }
+function mbnXhr(xhr, url, method, body) {
+    mbnLog(url, { method: method || 'GET', body }, { send: () => new Promise((ok, no) => {
+        xhr.addEventListener('load', () => ok({ status: xhr.status }));
+        xhr.addEventListener('error', () => no(new Error('network error')));
+        xhr.addEventListener('timeout', () => no(new Error('timeout')));
+        xhr.addEventListener('abort', () => { const e = new Error('aborted'); e.name = 'AbortError'; no(e); });
+    }) }).catch(() => {});
+    return xhr;
+}
 async function mbnFetch(url, init, o) {
     o = o || {};
     // #1098: a write (an edit, an ISRC submit) makes every cached answer old. Marked when it goes out and
@@ -533,19 +595,21 @@ async function mbnFetch(url, init, o) {
         mbnEdited();
         try { return await mbnFetch(url, init, Object.assign({}, o, { wrote: true })); } finally { mbnEdited(); }
     }
-    if (!mbnGated(url)) {
-        const r = await fetch(url, init);
-        if (!mbnWebsite(url) || !(await mbnIsCheck(r))) return r;
-        // #733: MusicBrainz's browser check answered instead: nothing was done (a POST is safe
-        // to repeat), so pass the check and ask again
-        return (await mbnReverify(url, init, o)) ? fetch(url, init) : r;
-    }
-    const t0 = Date.now(), give = attempt => o.tries ? attempt >= o.tries : o.background === false ? Date.now() - t0 > 45000 : attempt >= 4;
-    if (!o.label) {   // the Gate log names a request by what it asks for
+    {   // the Gate log names a request by what it asks for, or by the caller's name with its path kept in u
         let p = String(url);
         try { const u = new URL(p, location.href); p = u.pathname.replace(/^\/ws\/2\//, '') + u.search.replace(/[?&]fmt=json\b/, '').replace(/^&/, '?'); } catch (e) {}
-        o = Object.assign({}, o, { label: p.slice(0, 120) });
+        o = Object.assign({}, o, o.label ? { u: p.slice(0, 300) } : { label: p.slice(0, 120) }, { m: String((init && init.method) || 'GET').toUpperCase(), bs: mbnBodySize(init) });
     }
+    if (!mbnGated(url)) {
+        return mbnLog(url, init, Object.assign({}, o, { send: async (u, i) => {
+            const r = await fetch(u, i);
+            if (!mbnWebsite(u) || !(await mbnIsCheck(r))) return r;
+            // #733: MusicBrainz's browser check answered instead: nothing was done (a POST is safe
+            // to repeat), so pass the check and ask again
+            return (await mbnReverify(u, i, o)) ? fetch(u, i) : r;
+        } }));
+    }
+    const t0 = Date.now(), give = attempt => o.tries ? attempt >= o.tries : o.background === false ? Date.now() - t0 > 45000 : attempt >= 4;
     if (o.search === undefined) {   // a search (?query=) waits out a search-shed hold, nothing else does
         let q = false;
         try { q = new URL(String(url), location.href).searchParams.has('query'); } catch (e) {}
@@ -572,12 +636,12 @@ async function mbnFetch(url, init, o) {
                 r = await Promise.race([sent, mbnSleep(40000, () => quit).then(() => { if (!quit) throw new TypeError('no answer in 40s'); return new Promise(() => {}); })]);
                 quit = true;
             }
-            catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, id: o.id, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
+            catch (e) { mbnTrace({ e: 'error', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: o.background === false ? 0 : 1, id: o.id, m: o.m, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
             const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
             if (!a.throttled) return r;
             // a background search MusicBrainz sheds twice is given up: searches are what it drops when busy
             const shed = a.shed && o.background !== false && attempt >= 2;
-            if (give(attempt) || shed) { mbnTrace({ e: 'giveup', l: o.label, b: o.background === false ? 0 : 1, id: o.id, st: r.status, n: attempt }); return r; }
+            if (give(attempt) || shed) { mbnTrace({ e: 'giveup', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: o.background === false ? 0 : 1, id: o.id, m: o.m, st: r.status, n: attempt }); return r; }
             // log: a twin sent apart from this one got its 200 while this one waited: no retry
             const hit = twin && await twin();
             if (hit) return hit;
@@ -629,7 +693,7 @@ async function mbnFetch(url, init, o) {
         const x = (live.get(key) || []).find(x => x !== self && x.sent && !x.twin && covers(x, inc) && (lookup || fits(x, inc)));
         if (x) {
             if (self) self.twin = x;
-            mbnTrace({ e: 'join', l: o.label, b: tb, id: o.id, with: x.label });
+            mbnTrace({ e: 'join', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: tb, id: o.id, m: o.m, with: x.label });
             let r = null;
             try { r = await x.p; } catch (e) { r = null; }
             if (self) self.twin = null;
@@ -637,7 +701,7 @@ async function mbnFetch(url, init, o) {
         }
         const hit = cacheable && await mbnCacheGet(key, inc);
         if (!hit) return null;
-        mbnTrace({ e: 'cache', l: o.label, b: tb, id: o.id, w: Math.round((Date.now() - hit.at) / 1000) });
+        mbnTrace({ e: 'cache', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: tb, id: o.id, m: o.m, w: Math.round((Date.now() - hit.at) / 1000) });
         kept.add(hit.r);
         return hit.r;
     };
@@ -648,14 +712,14 @@ async function mbnFetch(url, init, o) {
         if (!run && !looked) {
             looked = true;
             const hit = await mbnCacheGet(key, want);
-            if (hit) { mbnTrace({ e: 'cache', l: o.label, b: bg ? 1 : 0, id: o.id, w: Math.round((Date.now() - hit.at) / 1000) }); return hit.r; }
+            if (hit) { mbnTrace({ e: 'cache', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: bg ? 1 : 0, id: o.id, m: o.m, w: Math.round((Date.now() - hit.at) / 1000) }); return hit.r; }
             // the cache is read asynchronously: the same read asked in that moment is in `live` by now
             continue;
         }
         if (!run) break;
         const add = how === 'merge' ? Array.from(want).filter(i => !run.inc.has(i)) : [];
         for (const i of add) run.inc.add(i);
-        mbnTrace({ e: how, l: o.label, b: o.background === false ? 0 : 1, id: o.id, with: run.label, add: add.join(' ') || undefined });
+        mbnTrace({ e: how, r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: o.background === false ? 0 : 1, id: o.id, m: o.m, with: run.label, add: add.join(' ') || undefined });
         const p = run.p;
         // this caller's own Stop or abort still ends its wait, whatever the first caller does
         const stop = new Promise(res => {
@@ -1558,7 +1622,7 @@ async function fetchAcoustIdsBatch(gids) {
     const url = 'https://api.acoustid.org/v2/track/list_by_mbid?' + qs + '&batch=1&format=json';
     const out = new Map();
     try {
-        const r = await gmGet(url, { Accept: 'application/json' });
+        const r = await mbnLog(url, null, { label: 'AcoustID ' + gids.length + ' recording(s)', send: u => gmGet(u, { Accept: 'application/json' }) });
         if (r.status < 200 || r.status >= 300) { Log.warn('AcoustID lookup failed: HTTP ' + r.status + ' for ' + gids.length + ' recording(s) — left unknown, not recorded as "none"'); return null; }
         const j = JSON.parse(r.responseText || '{}');
         if (j.status !== 'ok') { Log.warn('AcoustID lookup returned status=' + j.status + ' for ' + gids.length + ' recording(s) — left unknown'); return null; }
@@ -2373,7 +2437,7 @@ async function mergeGroup(group) {
           // nothing: unless the kept recording now shows the merge pending, pass the check and try once more
           for (let attempt = 1; ; attempt++) {
             Log.info('  merge session free — submitting group ' + group.id + (attempt > 1 ? ' (attempt ' + attempt + ')' : ''));
-            const gr = await gmGet(location.origin + '/recording/merge_queue?' + addQs, { Accept: 'text/html' });
+            const gr = await mbWeb('GET', location.origin + '/recording/merge_queue?' + addQs, null, { Accept: 'text/html' });
             if (gr.status < 200 || gr.status >= 400) throw new Error('merge_queue GET failed: HTTP ' + gr.status);
             const mergeUrl = gr.finalUrl || (location.origin + '/recording/merge');
             Log.info('  merge_queue redirected to ' + mergeUrl);
@@ -2383,7 +2447,7 @@ async function mergeGroup(group) {
             const note = buildEditNote(group);
             body.append('merge.edit_note', note);
             Log.info('  edit note: ' + note.replace(/\n/g, ' ¶ '));
-            const pr = await gmPost(mergeUrl, body.toString(), { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'text/html', Referer: mergeUrl, Origin: location.origin });
+            const pr = await mbWeb('POST', mergeUrl, body.toString(), { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'text/html' });
             if (pr.status >= 400) throw new Error('merge POST failed: HTTP ' + pr.status);
             const landed = pr.finalUrl || '';
             const reRendered = /\/recording\/merge(\?|$)/.test(landed) || /name="merge\.target"/.test(pr.responseText || '');
@@ -2534,6 +2598,7 @@ var MBU_ENT_ICONS = {
     'place': '<path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>',
     'series': '<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
     'event': '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    'url': '<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>',
     'collection': '<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/>',
 };
 var MBU_EDIT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
@@ -4928,7 +4993,7 @@ function fsStyle() {
         + '#fs-em-cons .fs-colbody{scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}'
         + '#fs-em-cons .fs-newgroup.fs-dragover{outline:2px dashed var(--fs-purple);outline-offset:-3px}'
         + '#fs-em-cons .fs-colbody.fs-dragover{background:color-mix(in srgb, var(--fs-purple) 5%, transparent)}'
-        + '.fs-scope{color:var(--fs-muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}'
+        + '.fs-scope{color:var(--fs-muted);font-size:12px}'
         + '.fs-busy{color:var(--mbu-accent-deep-text);font-size:12px;font-weight:600;animation:fs-pulse 1.1s ease-in-out infinite;white-space:nowrap}'
         + '@keyframes fs-pulse{0%,100%{opacity:1}50%{opacity:.25}}'
         + '.fs-sp{flex:1}'
@@ -4950,7 +5015,7 @@ function fsStyle() {
         + '.fs-split>.fs-btn:last-child{border-top-left-radius:0!important;border-bottom-left-radius:0!important;border-left:1px solid rgba(255,255,255,.35)!important;padding-left:10px;padding-right:10px}'
         + '.fs-btn.fs-primary{background:linear-gradient(180deg,var(--fs-purple),var(--fs-purple-d));border-color:var(--fs-purple-d);color:var(--mbu-text-on-accent);font-weight:600}'
         + '.fs-btn:disabled{opacity:.5;cursor:default}'
-        + '.fs-netbanner{display:inline-flex;align-items:center;box-sizing:border-box;height:18px;padding:0 8px;border-radius:4px;font-size:11px;line-height:1;font-weight:600;white-space:nowrap;flex:none;cursor:pointer;background:rgba(168,112,42,.14);color:var(--mbu-warn);border:1px solid rgba(168,112,42,.4)}'
+        + '.fs-netbanner{display:inline-flex;align-items:center;box-sizing:border-box;height:18px;padding:0 8px;border-radius:4px;font-size:11px;line-height:1;font-weight:600;white-space:nowrap;cursor:pointer;background:rgba(168,112,42,.14);color:var(--mbu-warn);border:1px solid rgba(168,112,42,.4)}'
         + '.fs-netbanner.fs-netbanner-err{background:rgba(200,56,79,.12);color:var(--fs-red);border-color:rgba(200,56,79,.45)}'
         + '.fs-legend{display:flex;gap:10px;color:var(--fs-muted);font-size:11px;align-items:center}'
         + '.fs-body{display:flex;flex:1;min-height:0;position:relative}'
@@ -6958,7 +7023,7 @@ function emMerge(type, gid) {
         const ids = await ensureInternalIds(members);
         const targetId = ids[members.indexOf(target)];
         return withMergeLock(async () => {
-            const gr = await gmGet(location.origin + '/' + emPath(type) + '/merge_queue?' + ids.map(id => 'add-to-merge=' + id).join('&'), { Accept: 'text/html' });
+            const gr = await mbWeb('GET', location.origin + '/' + emPath(type) + '/merge_queue?' + ids.map(id => 'add-to-merge=' + id).join('&'), null, { Accept: 'text/html' });
             if (gr.status < 200 || gr.status >= 400) throw new Error('merge_queue GET failed: HTTP ' + gr.status);
             const mergeUrl = gr.finalUrl || (location.origin + '/' + emPath(type) + '/merge');
             // keep what MB's form fills in (a release's medium order, say), then set the members, the target and the note
@@ -6979,7 +7044,7 @@ function emMerge(type, gid) {
             ids.forEach((id, i) => body.append('merge.merging.' + i, String(id)));
             body.append('merge.target', String(targetId));
             body.append('merge.edit_note', note);
-            const pr = await gmPost(mergeUrl, body.toString(), { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'text/html', Referer: mergeUrl, Origin: location.origin });
+            const pr = await mbWeb('POST', mergeUrl, body.toString(), { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'text/html' });
             if (pr.status >= 400) throw new Error('merge POST failed: HTTP ' + pr.status);
             const landed = pr.finalUrl || '', lm = landed.match(EM_TYPE_RE);
             Log.info('  POST landed at ' + landed);

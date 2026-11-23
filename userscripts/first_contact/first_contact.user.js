@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.23
+// @version      2026.11.23.124859
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Amazon (CDs, vinyl and MP3 albums in its store), Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Internet Archive (audio items), Presto Music, RateYourMusic, Album of the Year, VGMdb.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -129,6 +129,20 @@
 
 (function () {
 'use strict';
+
+// GM_xmlhttpRequest that the gate's log shows: a request to another site is logged as external
+function fcGmLogged(opts) {
+    let fin = null;
+    mbnLog(opts.url, { method: opts.method || 'GET', body: opts.data }, { send: () => new Promise((ok, no) => { fin = { ok, no }; }) }).catch(() => {});
+    const end = (x, msg) => {
+        if (!fin) return;
+        const g = fin; fin = null;
+        if (!msg) { g.ok({ status: (x && x.status) || 0 }); return; }
+        const e = new Error(msg); if (msg === 'aborted') e.name = 'AbortError'; g.no(e);
+    };
+    const wrap = (name, msg) => { const fn = opts[name]; return (...a) => { end(a[0], msg); if (fn) return fn(...a); }; };
+    return GM_xmlhttpRequest(Object.assign({}, opts, { onload: wrap('onload'), onerror: wrap('onerror', 'network error'), ontimeout: wrap('ontimeout', 'timeout'), onabort: wrap('onabort', 'aborted') }));
+}
 // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
 const SETTINGS_ONLY = typeof MBU_SETTINGS_ONLY !== 'undefined' && !!MBU_SETTINGS_ONLY;   // #851: String Theory started this copy only to open its settings
 if (!SETTINGS_ONLY && !mbuClaim('first_contact', 'First Contact')) return;
@@ -206,7 +220,7 @@ function gmFailDetail(url, r) {
 function gmText(url, headers, cookies) {
     const t0 = Date.now();
     return new Promise((resolve, reject) => {
-        GM_xmlhttpRequest({
+        fcGmLogged({
             method: 'GET', url, headers: Object.assign({ Accept: 'application/json' }, headers || {}), timeout: 20000, anonymous: !cookies,
             onload: r => {
                 Log.debug(`GET ${url} → ${r.status}, ${(r.responseText || '').length} b in ${Date.now() - t0} ms`);
@@ -226,7 +240,7 @@ async function gmJson(url, headers) {
 // A form POST through the manager: the parsed JSON answer, or throws.
 function gmPostJson(url, body, headers) {
     return new Promise((resolve, reject) => {
-        GM_xmlhttpRequest({
+        fcGmLogged({
             method: 'POST', url, data: body, timeout: 20000, anonymous: true,
             headers: Object.assign({ 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' }, headers || {}),
             onload: r => {
@@ -1232,7 +1246,7 @@ const BEATPORT = {
                 throw new Error(`Beatport: its bot check refused the release page, and Platform Check ${api === null ? 'isn\'t logged in to Beatport' : 'didn\'t answer'}: open a Beatport page once in this browser, or log in to Beatport in Platform Check`);
             }
         } else {
-            const r = await fetch(`${location.origin}/release/-/${id}`, { credentials: 'include' });
+            const r = await mbnLog(`${location.origin}/release/-/${id}`, { credentials: 'include' });
             if (!r.ok) throw new Error(`Beatport: HTTP ${r.status} for release ${id}`);
             html = await r.text();
         }
@@ -1472,7 +1486,7 @@ const SPOTIFY = {
     post(body) {
         const url = this.QUERY_URL, headers = this.auth.headers;
         return new Promise((resolve, reject) => {
-            GM_xmlhttpRequest({
+            fcGmLogged({
                 method: 'POST', url, data: JSON.stringify(body), timeout: 20000, anonymous: true,
                 headers: Object.assign({}, headers, { 'content-type': 'application/json;charset=UTF-8', accept: 'application/json' }),
                 onload: r => {
@@ -1499,7 +1513,7 @@ const SPOTIFY = {
     upc(id) {
         const url = `https://spclient.wg.spotify.com/metadata/4/album/${this.gidOf(id)}?market=from_token`;
         return new Promise(resolve => {
-            GM_xmlhttpRequest({
+            fcGmLogged({
                 method: 'GET', url, timeout: 15000, anonymous: true,
                 headers: Object.assign({}, this.auth.headers, { accept: 'application/json' }),
                 onload: r => {
@@ -1597,7 +1611,7 @@ const YTMUSIC = {
         const url = `${this.API}${endpoint}?prettyPrint=false`;
         const t0 = Date.now();
         return new Promise((resolve, reject) => {
-            GM_xmlhttpRequest({
+            fcGmLogged({
                 method: 'POST', url, data: JSON.stringify(Object.assign({ context: { client: this.CLIENT } }, body)), timeout: 20000, anonymous: true,
                 headers: { 'Content-Type': 'application/json' },
                 onload: r => {
@@ -1910,7 +1924,7 @@ const AMAZON = {
     post(url, data, headers) {
         const t0 = Date.now();
         return new Promise((resolve, reject) => {
-            GM_xmlhttpRequest({
+            fcGmLogged({
                 method: 'POST', url, data, timeout: 20000, anonymous: true, headers: headers || {},
                 onload: r => {
                     Log.debug(`POST ${url} → ${r.status}, ${(r.responseText || '').length} b in ${Date.now() - t0} ms`);
@@ -3095,7 +3109,7 @@ const PRESTO = {
     streamUrl: code => `https://streaming.prestomusic.com/album/${code}`,
     // one API call; null for a product that doesn't stream ("The record is not yet available", code 54)
     async call(what, code) {
-        const r = await fetch(`${this.api}${what}/${code}`, { headers: { Accept: 'application/json' } });
+        const r = await mbnLog(`${this.api}${what}/${code}`, { headers: { Accept: 'application/json' } });
         const j = await r.json().catch(() => null);   // code 54 comes as a 404 that says so
         if (!r.ok && !(j && j.status === 'error')) throw new Error(`Presto Music API: HTTP ${r.status} for ${what}/${code}`);
         if (j && j.status === 'ok') return j.payload;
@@ -3196,7 +3210,7 @@ const PRESTO = {
     // clearance or not; one tried again 2 s later mostly passes, within 6 tries in every probe
     async page(url) {
         for (let i = 1; ; i++) {
-            const r = await fetch(url, { credentials: 'include', headers: { Accept: 'text/html' } });
+            const r = await mbnLog(url, { credentials: 'include', headers: { Accept: 'text/html' } });
             const doc = r.status === 403 || r.ok ? new DOMParser().parseFromString(await r.text(), 'text/html') : null;
             if (r.ok && !/just a moment/i.test(doc.title)) return doc;
             if (!doc || i === 6) throw new Error(doc ? `Presto's bot check refused ${url} ${i} times: open it, then import again` : `HTTP ${r.status} for ${url}`);
@@ -5420,6 +5434,7 @@ var MBU_ENT_ICONS = {
     'place': '<path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>',
     'series': '<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
     'event': '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    'url': '<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>',
     'collection': '<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/>',
 };
 var MBU_EDIT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
@@ -7863,6 +7878,853 @@ ${s} input::placeholder { color: var(--mbu-text-weak); opacity: 1; font-style: n
 `;
 }
 // </ST-ARCHIVE>
+
+// <ST-NET> — generated by dev/net/sync-gate.mjs from dev/net/mb-gate.mjs — DO NOT EDIT
+const MBN_GAP = 125;
+const MBN_BURST = 4;
+const MBN_KEY = "mbu:mb-gate";
+const MBN_VERSION = 1;
+const MBN_LOCK = "mbu-mb-gate";
+const MBN_LOCK_HOLD = 30;
+const MBN_MAX_HOLD = 60000;
+const MBN_MAX_LEAD = 10000;
+const MBN_TRACE_MAX = 400;
+const MBN_MERGE_WAIT = 100;
+const MBN_CACHE_TTL = 300000;
+const MBN_CACHE_MAX = 150;
+const MBN_INC_ALONE = new Set(["recordings","recording-level-rels","work-level-rels","release-group-level-rels","discids","isrcs"]);
+function mbnGated(url) {
+    const s = String(url || '');
+    return /^\/ws\/2\//.test(s) || /^(https?:)?\/\/([a-z0-9-]+\.)*musicbrainz\.org\/ws\/2\//i.test(s);
+}
+async function mbnState(fn) {
+    const rw = () => {
+        let s = null, stored = true;
+        try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { stored = false; }
+        const g = globalThis.__mbnGate || (globalThis.__mbnGate = { tat: 0, cool: 0, hot: 0 });
+        if (!stored) s = g;                                                        // no storage: this page's copy only
+        else if (!s || typeof s !== 'object') s = { tat: 0, cool: 0, hot: 0 };   // none yet (or cleared): a fresh schedule
+        if (s.version != null && s.version !== MBN_VERSION) throw new Error('Unsupported MusicBrainz gate version: ' + s.version);
+        s.version = MBN_VERSION;
+        // #938: no writer sets a hold past MBN_MAX_HOLD or a lead past MBN_MAX_LEAD, so a value
+        // beyond them is broken (a bug, a clock that jumped): bring it back, for every tab after us
+        const now = Date.now();
+        if ((s.cool || 0) > now + MBN_MAX_HOLD) s.cool = now + MBN_MAX_HOLD;
+        if ((s.scool || 0) > now + MBN_MAX_HOLD) s.scool = now + MBN_MAX_HOLD;
+        if ((s.leadUntil || 0) > now + MBN_MAX_LEAD) s.leadUntil = now + MBN_MAX_LEAD;
+        // nor a queue longer than a minute: slots that waits left behind (a closed tab) are dropped
+        if ((s.tat || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s.tat = Math.max(now, s.cool || 0) + 60 * MBN_GAP;
+        if ((s.itat || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s.itat = Math.max(now, s.cool || 0) + 60 * MBN_GAP;
+        for (const k of ['last', 'ilast']) if ((s[k] || 0) > Math.max(now, s.cool || 0) + 60 * MBN_GAP) s[k] = Math.max(now, s.cool || 0) + 59 * MBN_GAP;
+        const out = fn(s);
+        Object.assign(g, s);
+        try { localStorage.setItem(MBN_KEY, JSON.stringify({ ...s, tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
+        return out;
+    };
+    // The lock is held for rw()'s synchronous moment and MBN_LOCK_HOLD after, so a wait of seconds
+    // means it is stuck (a frozen or sandboxed holder): give up on it and go unlocked rather than
+    // hang every request behind it.
+    // The hold: Chromium hands a localStorage write to another tab's process a moment later, so a
+    // tab taking the lock right after us could read the schedule before our booking and book the
+    // same slot (two tabs at once sent four in a burst of three). Our caller has its answer at
+    // once; only the next holder waits the hold out.
+    let expired = false, settled = false;
+    try {
+        if (typeof navigator !== 'undefined' && navigator.locks && navigator.locks.request) {
+            const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+            const timeout = mbnSleep(3000, () => settled).then(() => {
+                if (settled) return new Promise(() => {});   // the lock answered first
+                expired = true;
+                try { if (ctrl) ctrl.abort(); } catch (e) {}
+                throw new Error('MusicBrainz gate lock timed out');
+            });
+            // Some userscript bridges never settle the request on abort. The timer
+            // must release our wait itself; a late grant must not book twice.
+            let done;
+            const answered = new Promise((res, rej) => { done = { res, rej }; });
+            navigator.locks.request(MBN_LOCK, ctrl ? { signal: ctrl.signal } : {}, async () => {
+                if (expired) return;
+                try { done.res(rw()); } catch (e) { done.rej(e); return; }
+                await mbnSleep(MBN_LOCK_HOLD);
+            }).catch(e => done.rej(e));
+            return await Promise.race([answered, timeout]);
+        }
+    } catch (e) { /* no Web Locks here (an insecure or sandboxed context), or stuck: unlocked, like a lone script */ } finally { settled = true; }
+    return rw();
+}
+function mbnSleep(ms, cancelled) {
+    const end = Date.now() + Math.max(0, +ms || 0);
+    const w = globalThis.__mbnWake1 || (globalThis.__mbnWake1 = { all: new Set(), due: new Map(), raf: 0, mo: null, worker: null, stall: null });
+    const note = () => {   // a timer overdue by 2s: note it once a minute, for the log
+        const now = Date.now();
+        if (w.stall && now - w.stall.at < 60000) return;
+        for (const d of w.due.values()) {
+            if (now - d <= 2000) continue;
+            let state = '', hidden = false;
+            try { state = document.readyState; hidden = !!document.hidden; } catch (e) {}
+            w.stall = { ms: now - d, at: now, state, hidden, told: false };
+            return;
+        }
+    };
+    const wake = () => { note(); for (const f of Array.from(w.all)) f(); };
+    return new Promise(resolve => {
+        let done = false;
+        const tok = {};
+        const me = () => {
+            if (done) return;
+            let stop = false;
+            try { stop = !!(cancelled && cancelled()); } catch (e) {}
+            const now = Date.now();
+            if (!stop && now < end) return;
+            done = true;
+            w.all.delete(me);
+            if (!w.all.size) {   // the last sleeper: the wakers rest
+                try { if (w.raf) cancelAnimationFrame(w.raf); } catch (e) {}
+                w.raf = 0;
+                try { if (w.mo) w.mo.disconnect(); } catch (e) {}
+                w.mo = null;
+                try { if (w.worker && w.ticking) w.worker.postMessage(0); } catch (e) {}
+                w.ticking = false;
+            }
+            resolve(Math.max(0, now - end));
+        };
+        // the plain timer, left to fire after another waker ended the sleep: when it fires late, it says so
+        // with a cancel check it runs in 250ms slices, so a cancel lands where nothing else wakes it (no page)
+        const tick = () => {
+            if (Date.now() - (w.due.get(tok) || Infinity) > 2000) note();
+            w.due.delete(tok);
+            me();
+            if (!done) arm();
+        };
+        const arm = () => {
+            const d = Math.max(1, Math.min(cancelled ? 250 : 2147483647, end - Date.now()));
+            if (w.due.size < 500) w.due.set(tok, Date.now() + d);
+            setTimeout(tick, d);
+        };
+        me();
+        if (done) return;
+        w.all.add(me);
+        arm();
+        try {   // a worker's timers run apart from the page's; a page that forbids blob workers falls back to frames
+            if (w.worker === null && typeof Worker === 'function' && typeof Blob === 'function' && typeof URL !== 'undefined' && URL.createObjectURL) {
+                w.worker = false;
+                const wk = new Worker(URL.createObjectURL(new Blob(['let t=0;onmessage=e=>{clearInterval(t);t=0;if(e.data>0)t=setInterval(()=>postMessage(1),e.data)}'], { type: 'text/javascript' })));
+                wk.onmessage = () => { const x = globalThis.__mbnWake1; if (x) { x.wake && x.wake(); } };
+                wk.onerror = () => { w.worker = false; };
+                w.worker = wk;
+            }
+            w.wake = wake;
+            if (w.worker && !w.ticking) { w.ticking = true; w.worker.postMessage(100); }
+        } catch (e) { w.worker = false; }
+        // no DOM watch: on a busy page (Mission Control's) every change ran the wake, and the lag was felt
+        try {   // frames only without a worker: a frame loop runs the wake 60 times a second
+            if (!w.worker && !w.raf && typeof requestAnimationFrame === 'function') {
+                const frame = () => { w.raf = 0; wake(); if (w.all.size && !w.worker) w.raf = requestAnimationFrame(frame); };
+                w.raf = requestAnimationFrame(frame);
+            }
+        } catch (e) {}
+    });
+}
+function mbnRid() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 6); }
+function mbnTabId() { return Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5); }
+function mbnTabCheck(g) {
+    try {
+        if (window.top !== window || typeof BroadcastChannel === 'undefined') return;
+        const root = document.documentElement, at = 'data-mbn-doc';
+        const doc = root.getAttribute(at) || (root.setAttribute(at, mbnTabId()), root.getAttribute(at));
+        const asked = g.tab, bc = new BroadcastChannel(MBN_KEY + '-tab');
+        bc.onmessage = m => {
+            const d = m.data || {};
+            if (d.doc === doc) return;
+            let now = '';
+            try { now = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
+            if (d.q) { if (d.tab === (now || g.tab)) bc.postMessage({ tab: d.tab, doc }); return; }   // the id this page has now
+            if (d.tab !== asked || g.tab !== asked) return;   // not our question, or this copy has already moved on
+            if (!now || now === asked) { now = mbnTabId(); try { sessionStorage.setItem(MBN_KEY + '-tab', now); } catch (e) {} }
+            g.tab = now;   // another copy in this page may have renamed it already: then take its new id
+        };
+        bc.postMessage({ q: 1, tab: asked, doc });
+    } catch (e) { /* no channel: the id stays shared */ }
+}
+function mbnTrace(ev) {
+    try {
+        const g = globalThis.__mbnTrace || (globalThis.__mbnTrace = { tab: '', swept: 0 });
+        if (!g.tab) {
+            try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || ''; } catch (e) {}
+            if (!g.tab) { g.tab = mbnTabId(); try { sessionStorage.setItem(MBN_KEY + '-tab', g.tab); } catch (e) {} }
+            mbnTabCheck(g);
+        }
+        if (!g.buf) g.buf = [];
+        if (!g.flush) {
+            g.flush = () => {
+                try {
+                    clearTimeout(g.timer); g.timer = 0;
+                    if (!g.buf.length) return;
+                    const add = g.buf; g.buf = [];
+                    // the tab's id as it is now: a renamed duplicate (mbnTabCheck) renames every copy of the gate in it,
+                    // and the frames it holds, which share its sessionStorage
+                    try { g.tab = sessionStorage.getItem(MBN_KEY + '-tab') || g.tab; } catch (e) {}
+                    const pre = MBN_KEY + '-trace:', key = pre + g.tab, now = Date.now();
+                    let list = [];
+                    try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}
+                    if (!Array.isArray(list)) list = [];
+                    list = list.concat(add);
+                    if (list.length > MBN_TRACE_MAX) list = list.slice(-MBN_TRACE_MAX);
+                    localStorage.setItem(key, JSON.stringify(list));
+                    if (now - g.swept > 60000) {   // once a minute: drop the traces of tabs gone quiet for an hour
+                        g.swept = now;
+                        // one pass over the names: in Firefox each localStorage.key(i) walks the store from its start
+                        for (const k of Object.keys(localStorage)) {
+                            if (k.indexOf(pre) !== 0 || k === key) continue;
+                            let last = 0;
+                            try { const l = JSON.parse(localStorage.getItem(k) || '[]'); last = (l[l.length - 1] || {}).t || 0; } catch (e) {}
+                            if (now - last > 3600000) localStorage.removeItem(k);
+                        }
+                    }
+                } catch (e) { /* no storage: no trace */ }
+            };
+            try {   // leaving the page, or hiding it (a phone may never come back): write what waits
+                addEventListener('pagehide', g.flush);
+                document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') g.flush(); });
+            } catch (e) {}
+        }
+        // the name is read per call, never kept in the shared object: in String Theory's bundle every
+        // member runs its own copy of the gate with its own GM_info, but globalThis is the bundle's one
+        let script = '';
+        try { script = String(GM_info.script.name || ''); } catch (e) {}
+        g.buf.push(Object.assign({ t: Date.now(), s: script }, ev));
+        if (g.buf.length > MBN_TRACE_MAX) g.buf = g.buf.slice(-MBN_TRACE_MAX);
+        if (!g.timer) g.timer = setTimeout(g.flush, 1000);
+    } catch (e) { /* no storage: no trace */ }
+}
+async function mbnSlot(o) {
+    o = o || {};
+    const t0 = Date.now(), background = o.background !== false;
+    const tr = (e, x) => mbnTrace(Object.assign({ e, r: o.reason || undefined, en: o.entity || undefined, l: o.label || '', b: background ? 1 : 0, id: o.id || undefined, m: o.m, u: o.u }, x));
+    // someone else's lead: a background request books its slot only once it ends or lapses
+    // #938: a cap counted from each new `now` moves with it and never caps; count it from when
+    // this wait first saw the value, so a broken one holds at most the longest real one
+    const seen = (v, cap) => { if (v !== seen[cap + 'v']) { seen[cap + 'v'] = v; seen[cap + 't'] = Date.now(); } return Math.min(v, seen[cap + 't'] + cap); };
+    for (let told = false; background;) {
+        let s = null;
+        try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { s = globalThis.__mbnGate; }
+        const left = s && s.lead && s.lead !== o.lead ? seen(s.leadUntil || 0, MBN_MAX_LEAD) - Date.now() : 0;
+        if (left <= 0) break;
+        if (o.cancelled && o.cancelled()) { tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
+        if (!told) tr('lead', { w: left, by: String(s.lead).slice(0, 12) });
+        if (!told && o.log) { told = true; o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + ' waits for a page being drawn'); }
+        told = true;
+        await mbnSleep(Math.min(left, 250), o.cancelled);
+    }
+    // a hidden tab's background request books only once the background queue is free: queued
+    // ahead, it would hold up the visible tab's requests booked after it. It waits at most
+    // MBN_MAX_LEAD for each queue end it sees, so a broken value doesn't hold it for good
+    // a retry is not new work: it keeps its place at the head (below), hidden tab or not
+    for (let told = false; background && !o.retry && typeof document !== 'undefined' && document.hidden;) {
+        let s = null;
+        try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { s = globalThis.__mbnGate; }
+        // #log: the visible tab kept booking, so the queue end kept moving and a hidden wait ran 46s;
+        // it waits MBN_MAX_LEAD in all, then books like any other
+        const left = s && s.tat ? Math.min(seen(s.tat, MBN_MAX_LEAD), t0 + MBN_MAX_LEAD) - Date.now() : 0;
+        if (left <= 0) break;
+        if (o.cancelled && o.cancelled()) { tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
+        // #1095: the queue end seen now is not the wait: the visible tab keeps booking, so say the cap too
+        if (!told) tr('hidden', { w: left, cap: t0 + MBN_MAX_LEAD - Date.now() });
+        told = true;
+        await mbnSleep(Math.min(left, 250), o.cancelled);
+    }
+    // a hold that appears while we queue ends for every waiter at once: each waiter then books
+    // again, so they leave one a second instead of all together into a fresh 503
+    let booked = null, rebooked = false;
+    const book = head => mbnState(s => {
+        // a search also waits out the search-shed hold: booked with it, the log names the real wait
+        const now = Date.now(), cool = Math.max(s.cool || 0, o.search ? s.scool || 0 : 0), tat = s.tat || 0;
+        // an interactive request (the page's own) never queues behind the background budget: it
+        // has its own line (itat), a burst then one a second, so a page's handful of lookups don't
+        // all leave at once into a 503 (and while MusicBrainz is throttling, no burst at all)
+        let at;
+        if (!background) {
+            const itat = s.itat || 0, hot = s.hot && now <= cool + 30000;
+            // the background lane already spends the burst while its queue reaches past now: the two
+            // lanes bursting together sent five or six in one moment, and they all got a 503. Every booking
+            // moves tat, the page's own too, so tat only past itat holds background bookings: tat > now
+            // alone took the burst from the page's second request on, even with no background work at all
+            const busy = tat > Math.max(now, itat);
+            at = Math.max(now, rebooked || busy ? itat : itat - (hot ? 0 : (MBN_BURST - 1) * MBN_GAP), cool);
+            // log: the burst reaches back from itat, so once a 200 cooled `hot` while a queue still
+            // waited out a hold, a new request took the slot a queued one held and both got a 503;
+            // the burst is for an idle line, never ahead of (or on) a slot still to come
+            if ((s.ilast || 0) > now) at = Math.max(at, s.ilast + MBN_GAP);
+            s.itat = Math.max(itat, at) + MBN_GAP;
+            s.ilast = Math.max(s.ilast || 0, at);
+        } else if (o.retry || head) {
+            // log: a search's retry after its 503 booked at the end of a 13-request queue, three times
+            // 8-12 s, and gave up while requests booked after it got through. A retry leaves first once
+            // the hold ends (retries one a second among themselves, `rhead`), and every background slot
+            // still to come moves one second later to make room (`bslip`, which each waiter adds to its own).
+            // log: a search waiting out a search-shed hold is at the head too: it booked again at the end
+            // each time, behind the lookups that went on meanwhile, ten holds in a row, 36 s for one search
+            at = Math.max(now, cool, s.rhead || 0);
+            s.rhead = at + MBN_GAP;
+            if (tat > at) {
+                s.bslip = (s.bslip || 0) + MBN_GAP;
+                s.tat = tat + MBN_GAP;
+                if ((s.last || 0) > now) s.last += MBN_GAP;
+                s.last = Math.max(s.last || 0, at);
+                if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: 1, head: 1 });
+                return { at, why: cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, four requests a second', slip: s.slip || 0, bslip: s.bslip };
+            }
+            s.last = Math.max(s.last || 0, at);
+        } else {
+            // #1096: while MusicBrainz throttles, no burst: the queue a hold built up leaves one
+            // a second when it ends, not all in one millisecond into the next 503
+            const hot = s.hot && now <= cool + 30000;
+            at = Math.max(rebooked || hot ? Math.max(now, tat) : Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP), cool);
+            if ((s.last || 0) > now) at = Math.max(at, s.last + MBN_GAP);   // as above
+            s.last = Math.max(s.last || 0, at);
+        }
+        s.tat = Math.max(tat, at) + MBN_GAP;
+        const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, four requests a second';
+        if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
+        return { at, why, slip: s.slip || 0, bslip: s.bslip || 0 };
+    });
+    booked = await book();
+    // a cancelled wait hands its slot back when it is still the last one booked, so a page that
+    // drops a queue of lookups (a Stop, a new page) does not leave every later request behind it
+    const giveBack = force => mbnState(s => {
+        if (!force && booked.at <= Date.now()) return;
+        if (s.tat === booked.at + MBN_GAP) s.tat -= MBN_GAP;
+        if (!background && s.itat === booked.at + MBN_GAP) s.itat -= MBN_GAP;
+        if (background ? s.last === booked.at : s.ilast === booked.at) s[background ? 'last' : 'ilast'] = booked.at - MBN_GAP;
+    });
+    // #999: the wait logs again whenever its end moves later (a hold another tab or script set
+    // while we queued) and every 10s it goes on, so a long wait is never silent
+    let toldUntil = 0, toldAt = 0;
+    for (;;) {
+        if (o.cancelled && o.cancelled()) { await giveBack(); tr('cancel', { w: Date.now() - t0 }); return { ok: false, waited: Date.now() - t0 }; }
+        let cool = 0, scool = 0, slip = 0, bslip = 0;
+        try { const g = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; cool = g.cool || 0; scool = g.scool || 0; slip = g.slip || 0; bslip = g.bslip || 0; } catch (e) { const g = globalThis.__mbnGate || {}; cool = g.cool || 0; scool = g.scool || 0; slip = g.slip || 0; bslip = g.bslip || 0; }
+        // a hold set since we booked moved our slot later with the rest of the queue
+        if (slip > booked.slip) { booked.at += slip - booked.slip; booked.slip = slip; booked.why = 'MusicBrainz asked everyone to wait'; }
+        // a retry took the head of the background queue: our slot moved a second later with the rest
+        if (background && bslip > booked.bslip) { booked.at += bslip - booked.bslip; booked.bslip = bslip; }
+        // a search also waits out the hold MusicBrainz set for searches
+        const shed = !!o.search && scool > cool;
+        if (o.search) cool = Math.max(cool, scool);
+        const now = Date.now();
+        cool = seen(cool, MBN_MAX_HOLD);   // a hold is never longer than the longest one the gate sets
+        const until = Math.max(booked.at, cool), left = until - now;   // a hold that appeared while we queued
+        if (left <= 0) {
+            // every hold that ends past the slot books again, a second or third one included:
+            // booking only once let the waiters of a later hold all leave in the same millisecond
+            if (cool > booked.at) { rebooked = true; booked = await book(shed && background); continue; }
+            break;
+        }
+        if (o.log && until - t0 > 1000 && (!toldAt || until > toldUntil + 1000 || now - toldAt >= 10000)) {
+            const why = cool > booked.at ? (shed ? 'MusicBrainz asked searches to wait' : 'MusicBrainz asked everyone to wait') : booked.why;
+            o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + (toldAt ? ' still waits, ' + Math.round(left / 100) / 10 + 's to go' : ' waits ' + Math.round((until - t0) / 100) / 10 + 's') + ' (' + why + ')');
+            toldUntil = until; toldAt = now;
+        }
+        await mbnSleep(Math.min(left, 250), o.cancelled);   // in slices, so a cancel lands promptly
+        const st = globalThis.__mbnWake1 && globalThis.__mbnWake1.stall;
+        if (st && !st.told && o.log) {
+            st.told = true;
+            o.log('info', 'MusicBrainz gate: this page\'s timer fired ' + Math.round(st.ms / 100) / 10 + 's late (page ' + (st.state || '?') + (st.hidden ? ', hidden' : '') + '); waits wake on page activity too');
+        }
+    }
+    // log: a request that waited out a lead or a hold sent anyway, and only after its 503 found the
+    // answer a twin had brought back meanwhile; it looks once more just before it leaves
+    const twin = o.twin && Date.now() - t0 >= MBN_MERGE_WAIT ? await o.twin() : null;   // one that didn't wait looked a moment ago
+    if (twin) { await giveBack(true); return { ok: false, waited: Date.now() - t0, twin }; }
+    tr('start', { w: Date.now() - t0, bs: o.bs });
+    return { ok: true, waited: Date.now() - t0 };
+}
+async function mbnLead(token, ms) {
+    return mbnState(s => {
+        if (ms > 0) {
+            // a lead that lapsed unrenewed ends in the log too, so every lead+ has its lead-
+            if (s.lead && (s.leadUntil || 0) < Date.now()) mbnTrace({ e: 'lead-', by: String(s.lead).slice(0, 12), why: 'lapsed' });
+            if (s.lead !== token || (s.leadUntil || 0) < Date.now()) mbnTrace({ e: 'lead+', by: String(token).slice(0, 12), w: Math.min(ms, MBN_MAX_LEAD) });
+            s.lead = token; s.leadUntil = Date.now() + Math.min(ms, MBN_MAX_LEAD);
+        } else if (s.lead === token) { const late = (s.leadUntil || 0) < Date.now(); s.lead = ''; s.leadUntil = 0; mbnTrace({ e: 'lead-', by: String(token).slice(0, 12), why: late ? 'lapsed' : undefined }); }
+    });
+}
+async function mbnAnswer(status, header, o) {
+    o = o || {};
+    // for the Gate log: MusicBrainz's own rate-limit headers, which say whose budget ran out
+    const rl = {};
+    for (const [k, n] of [['lim', 'X-RateLimit-Limit'], ['rem', 'X-RateLimit-Remaining'], ['rst', 'X-RateLimit-Reset'], ['who', 'X-RateLimit-Who']]) {
+        try { const v = header ? header(n) : null; if (v != null && v !== '') rl[k] = String(v).slice(0, 40); } catch (e) {}
+    }
+    const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, r: o.reason || undefined, en: o.entity || undefined, l: o.label || '', b: o.background === false ? 0 : 1, id: o.id || undefined, m: o.m, u: o.u, hot: s ? s.hot || 0 : undefined }, rl, x));
+    if (status === 429 || status === 503) {
+        const raw = header ? header('Retry-After') : null;
+        const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
+        const ra = Number.isFinite(secs) ? secs * 1000 : Number.isFinite(date) ? Math.max(0, date - Date.now()) : 0;
+        // MusicBrainz shed searches, not this client: only searches wait, and the shared hot is untouched
+        if (status === 503 && /^search-shed$/i.test(String(rl.who || '').trim())) {
+            const hold = await mbnState(s => {
+                const now = Date.now();
+                if (now > (s.scool || 0) + 30000) s.shot = 0;
+                if (now >= (s.scool || 0)) s.shot = Math.min((s.shot || 0) + 1, 6);
+                // #1095: a shed clears within a second or so; growing holds only stalled the searches
+                const ms = Math.min(Math.max(1000, ra), MBN_MAX_HOLD);
+                s.scool = Math.max(s.scool || 0, now + ms);
+                tr({ ra: raw == null ? undefined : String(raw).slice(0, 40), shold: s.scool - now, shot: s.shot }, s);
+                return s.scool - now;
+            });
+            if (o.log) o.log('warn', 'MusicBrainz gate: HTTP 503 (search-shed) — searches hold ' + Math.round(hold / 100) / 10 + 's');
+            return { throttled: true, hold, shed: true };
+        }
+        const hold = await mbnState(s => {
+            const now = Date.now();
+            // One throttle, one step: the requests already in flight when it began all answer
+            // 503 too, and each must not stretch the hold again. A throttle long gone doesn't
+            // count at all: `hot` is shared and persists, and would otherwise slow every later
+            // page for good.
+            const load = /^global$/i.test(String(rl.who || '').trim());
+            if (now > (s.cool || 0) + 30000) s.hot = 0;
+            // #1095: nor does it count as a throttle of ours: a run of them (a 130s preflight) raised `hot`
+            // to 6, which takes the burst away, and the queue crawled at one a second behind each hold
+            if (!load && now >= (s.cool || 0)) s.hot = Math.min((s.hot || 0) + 1, 6);
+            // the hold grows with each throttle in a row, a Retry-After included, so a long busy
+            // spell gets fewer and fewer requests from us
+            // #1095: a 503 that says MusicBrainz as a whole is out of room (X-RateLimit-Who: global) is
+            // not about our pace: it came to a single request after a quiet spell, and the next one went
+            // through. It holds a flat second (or its Retry-After); growing holds stalled every tab for nothing
+            // #1095: a Retry-After is MusicBrainz's own answer for how long: "Retry-After: 5" held 10s at hot 2,
+            // where Credit Hoarder alone waited the 5. Only a 503 without one grows
+            const ms = Math.min(Math.max(1000, ra) * (load || raw != null ? 1 : Math.max(1, s.hot)), MBN_MAX_HOLD);
+            // log: every waiter whose slot a hold passed booked again at the end of the queue, behind
+            // requests booked after it, and a hidden tab's (whose timer wakes late) went last again on
+            // each hold: one waited 40s. The hold now moves the whole queue later by its length, the
+            // slots still to come and every waiter's (`slip`, which each adds to its own), so the
+            // queue keeps its order and its one a second
+            const from = Math.max(now, s.cool || 0);
+            s.cool = Math.max(s.cool || 0, Date.now() + ms);
+            const d = s.cool - from;
+            if (d > 0) {
+                s.slip = (s.slip || 0) + d;
+                for (const k of ['tat', 'itat', 'last', 'ilast', 'rhead']) if ((s[k] || 0) > now) s[k] += d;
+            }
+            tr({ ra: raw == null ? undefined : String(raw).slice(0, 40), hold: s.cool - Date.now() }, s);
+            return s.cool - Date.now();
+        });
+        if (o.log) o.log('warn', 'MusicBrainz gate: HTTP ' + status + (raw != null ? ' (Retry-After: ' + raw + ')' : '') + (rl.who ? ' [' + String(rl.who).slice(0, 20) + ']' : '') + ' — every script holds ' + Math.round(hold / 100) / 10 + 's');
+        return { throttled: true, hold };
+    }
+    if (status >= 200 && status < 500) await mbnState(s => {
+        if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1;
+        if (o.search && s.shot) s.shot = Date.now() > (s.scool || 0) + 30000 ? 0 : s.shot - 1;
+        tr({}, s);
+    });
+    else tr({});
+    return { throttled: false, hold: 0 };
+}
+function mbnBodySize(init) {
+    const b = init && init.body;
+    if (b == null) return undefined;
+    try {
+        if (typeof b === 'string') return new TextEncoder().encode(b).length;
+        if (b instanceof URLSearchParams) return new TextEncoder().encode(b.toString()).length;
+        if (typeof Blob !== 'undefined' && b instanceof Blob) return b.size;
+        if (b.byteLength != null) return b.byteLength;
+    } catch (e) {}
+    return undefined;
+}
+async function mbnLog(url, init, o) {
+    o = o || {};
+    let h = '', p = String(url);
+    // a blob: or data: URL stays on this computer: not a network request, not logged
+    if (/^(blob|data):/i.test(p)) return (o.send || fetch)(url, init);
+    // a host that isn't MusicBrainz is external, the page's own one too (Beatport's pages)
+    try { const x = new URL(p, location.href); p = x.pathname + x.search; if (!/(^|\.)musicbrainz\.(org|eu)$/.test(x.hostname)) h = x.host; } catch (e) {}
+    const ev = { r: o.reason || undefined, en: o.entity || undefined, l: o.label || p.slice(0, 120), u: o.u || (o.label ? p.slice(0, 300) : undefined), b: o.background === false ? 0 : 1,
+        id: o.id || mbnRid(), m: o.m || String((init && init.method) || o.method || 'GET').toUpperCase(), h: h || undefined, x: 1 };
+    mbnTrace(Object.assign({ e: 'start', bs: mbnBodySize(init) }, ev));
+    try {
+        const r = await (o.send || fetch)(url, init);
+        mbnTrace(Object.assign({ e: 'answer', st: r.status }, ev));
+        return r;
+    } catch (e) {
+        mbnTrace(Object.assign({ e: 'error', err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }, ev));
+        throw e;
+    }
+}
+function mbnGm(opts, fn) {
+    fn = fn || (typeof GM_xmlhttpRequest !== 'undefined' ? GM_xmlhttpRequest : null);
+    let fin = null;
+    mbnLog(opts.url, { method: opts.method || 'GET', body: opts.data }, { send: () => new Promise((ok, no) => { fin = { ok, no }; }) }).catch(() => {});
+    const end = (x, msg) => {
+        if (!fin) return;
+        const g = fin; fin = null;
+        if (!msg) { g.ok({ status: (x && x.status) || 0 }); return; }
+        const e = new Error(msg); if (msg === 'aborted') e.name = 'AbortError'; g.no(e);
+    };
+    const wrap = (name, msg) => { const f = opts[name]; return (...a) => { end(a[0], msg); if (f) return f(...a); }; };
+    return fn(Object.assign({}, opts, { onload: wrap('onload'), onerror: wrap('onerror', 'network error'), ontimeout: wrap('ontimeout', 'timeout'), onabort: wrap('onabort', 'aborted') }));
+}
+function mbnGmFn(fn) { return fn ? o => mbnGm(o, fn) : null; }
+function mbnXhr(xhr, url, method, body) {
+    mbnLog(url, { method: method || 'GET', body }, { send: () => new Promise((ok, no) => {
+        xhr.addEventListener('load', () => ok({ status: xhr.status }));
+        xhr.addEventListener('error', () => no(new Error('network error')));
+        xhr.addEventListener('timeout', () => no(new Error('timeout')));
+        xhr.addEventListener('abort', () => { const e = new Error('aborted'); e.name = 'AbortError'; no(e); });
+    }) }).catch(() => {});
+    return xhr;
+}
+async function mbnFetch(url, init, o) {
+    o = o || {};
+    // #1098: a write (an edit, an ISRC submit) makes every cached answer old. Marked when it goes out and
+    // again when it is answered: a read sent while the write runs gets the answer from before the write,
+    // and without the second mark it was cached as new (ISRC Scout's links count stayed after a submit)
+    if (!o.wrote && !/^(GET|HEAD)$/i.test(String((init && init.method) || 'GET'))) {
+        mbnEdited();
+        try { return await mbnFetch(url, init, Object.assign({}, o, { wrote: true })); } finally { mbnEdited(); }
+    }
+    {   // the Gate log names a request by what it asks for, or by the caller's name with its path kept in u
+        let p = String(url);
+        try { const u = new URL(p, location.href); p = u.pathname.replace(/^\/ws\/2\//, '') + u.search.replace(/[?&]fmt=json\b/, '').replace(/^&/, '?'); } catch (e) {}
+        o = Object.assign({}, o, o.label ? { u: p.slice(0, 300) } : { label: p.slice(0, 120) }, { m: String((init && init.method) || 'GET').toUpperCase(), bs: mbnBodySize(init) });
+    }
+    if (!mbnGated(url)) {
+        return mbnLog(url, init, Object.assign({}, o, { send: async (u, i) => {
+            const r = await fetch(u, i);
+            if (!mbnWebsite(u) || !(await mbnIsCheck(r))) return r;
+            // #733: MusicBrainz's browser check answered instead: nothing was done (a POST is safe
+            // to repeat), so pass the check and ask again
+            return (await mbnReverify(u, i, o)) ? fetch(u, i) : r;
+        } }));
+    }
+    const t0 = Date.now(), give = attempt => o.tries ? attempt >= o.tries : o.background === false ? Date.now() - t0 > 45000 : attempt >= 4;
+    if (o.search === undefined) {   // a search (?query=) waits out a search-shed hold, nothing else does
+        let q = false;
+        try { q = new URL(String(url), location.href).searchParams.has('query'); } catch (e) {}
+        o = Object.assign({}, o, { search: q });
+    }
+    // one id for the request and its retries, so the Gate log keeps it apart from a twin
+    if (!o.id) o = Object.assign({}, o, { id: mbnRid() });
+    // `at` gives the URL at the moment the request leaves: a queued read's inc list can still grow
+    // set below for a read: (inc, self) => a twin's answer that came back while this one waited, or
+    // null; asked just before it leaves and before a retry
+    let peek = null;
+    const go = async (at, inc, self) => {
+        const twin = peek ? () => peek(inc ? inc() : want, self) : null;
+        for (let attempt = 1; ; attempt++) {
+            const slot = await mbnSlot(Object.assign({}, o, twin ? { twin } : {}, attempt > 1 ? { retry: true } : {}));
+            if (slot.twin) return slot.twin;
+            if (!slot.ok) return null;
+            let r;
+            try {
+                // #log: an o.send that never settles (no timeout of its own) left the request open in
+                // the Gate log for good; mbnWsFetch gives up at 35s, so any send does at 40s
+                let quit = false;
+                const sent = (o.send || mbnWsFetch)(at ? at() : url, init);
+                r = await Promise.race([sent, mbnSleep(40000, () => quit).then(() => { if (!quit) throw new TypeError('no answer in 40s'); return new Promise(() => {}); })]);
+                quit = true;
+            }
+            catch (e) { mbnTrace({ e: 'error', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: o.background === false ? 0 : 1, id: o.id, m: o.m, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
+            const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
+            if (!a.throttled) return r;
+            // a background search MusicBrainz sheds twice is given up: searches are what it drops when busy
+            const shed = a.shed && o.background !== false && attempt >= 2;
+            if (give(attempt) || shed) { mbnTrace({ e: 'giveup', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: o.background === false ? 0 : 1, id: o.id, m: o.m, st: r.status, n: attempt }); return r; }
+            // log: a twin sent apart from this one got its 200 while this one waited: no retry
+            const hit = twin && await twin();
+            if (hit) return hit;
+        }
+    };
+    // Reads of the same thing share one fetch, and each caller gets its own clone of the answer.
+    // Two members of String Theory's bundle, or one page drawn twice, otherwise send it twice.
+    //   join   a read whose inc list the running or queued one already covers waits for its answer
+    //   merge  a read that differs only in inc joins one still queued: that one then leaves
+    //          asking for both inc lists (one page's scripts all ask for its entity at load)
+    // A write (POST, a body) always goes on its own. MBN_INC_ALONE incs change what an answer
+    // costs or needs (a login, a smaller page), so they are never added to a read that lacks them.
+    const m = String((init && init.method) || 'GET').toUpperCase();
+    let key = '', want = null, base = null;
+    if ((m === 'GET' || m === 'HEAD') && !(init && init.body)) {
+        try {
+            base = new URL(String(url), location.href);
+            // with fmt=json, an Accept: application/json header changes nothing: one script sends it, another doesn't
+            const h = init && init.headers, json = base.searchParams.get('fmt') === 'json';
+            const he = h ? (typeof h.entries === 'function' ? Array.from(h.entries()) : Array.isArray(h) ? h : Object.entries(h)).filter(([k, v]) => !(json && /^accept$/i.test(k) && /^application\/json$/i.test(String(v).trim()))) : [];
+            const hs = he.length ? JSON.stringify(he) : '';
+            want = new Set((base.searchParams.get('inc') || '').split(/[\s+]+/).filter(Boolean));
+            const rest = Array.from(base.searchParams.entries()).filter(([k]) => k !== 'inc').sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] < b[1] ? -1 : 1);
+            key = m + ' ' + base.origin + base.pathname + '?' + new URLSearchParams(rest) + ' ' + hs;
+        } catch (e) { key = ''; }
+    }
+    if (!key) return go();
+    const live = globalThis.__mbnLive || (globalThis.__mbnLive = new Map());
+    const sig = init && init.signal;
+    const mine = () => !(o.cancelled && o.cancelled()) && !(sig && sig.aborted);
+    const covers = (run, inc = want) => { for (const i of inc) if (!run.inc.has(i)) return false; return true; };
+    // a background read may share a page's read; a page's read shares a background one only once it is sent
+    const bg = o.background !== false, ahead = run => run.sent || !run.bg || bg;
+    // merge: the two have the same MBN_INC_ALONE incs
+    const fits = (run, inc = want) => { for (const i of MBN_INC_ALONE) if (run.inc.has(i) !== inc.has(i)) return false; return true; };
+    // join or cache: a lookup's answer with more incs answers this one too
+    const lookup = /^\/ws\/2\/[a-z-]+\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(base.pathname);
+    const answers = run => lookup || fits(run);
+    // #1098: a recent answer for the same thing, when no edit went out since
+    const cacheable = !o.fresh && !(init && init.credentials && init.credentials !== 'omit') && !base.searchParams.has('query') && (lookup || fits({ inc: new Set() }));
+    let looked = !cacheable;
+    // answers that came from a twin or the cache: not put in the cache again (that would make them new)
+    const kept = new WeakSet();
+    // the twin check before a request leaves: a run sent in the meantime that answers it (joined,
+    // as below), else the cache. A run that is itself waiting on a twin is never joined, so two
+    // runs retrying apart can't wait on each other
+    peek = async (inc, self) => {
+        const tb = o.background === false ? 0 : 1;
+        const x = (live.get(key) || []).find(x => x !== self && x.sent && !x.twin && covers(x, inc) && (lookup || fits(x, inc)));
+        if (x) {
+            if (self) self.twin = x;
+            mbnTrace({ e: 'join', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: tb, id: o.id, m: o.m, with: x.label });
+            let r = null;
+            try { r = await x.p; } catch (e) { r = null; }
+            if (self) self.twin = null;
+            if (r && r.ok) { r = r.clone(); kept.add(r); return r; }
+        }
+        const hit = cacheable && await mbnCacheGet(key, inc);
+        if (!hit) return null;
+        mbnTrace({ e: 'cache', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: tb, id: o.id, m: o.m, w: Math.round((Date.now() - hit.at) / 1000) });
+        kept.add(hit.r);
+        return hit.r;
+    };
+    for (;;) {
+        const runs = live.get(key) || [];
+        let run = runs.find(x => covers(x) && answers(x) && ahead(x)), how = 'join';
+        if (!run) { run = runs.find(x => !x.sent && fits(x) && ahead(x)); how = 'merge'; }
+        if (!run && !looked) {
+            looked = true;
+            const hit = await mbnCacheGet(key, want);
+            if (hit) { mbnTrace({ e: 'cache', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: bg ? 1 : 0, id: o.id, m: o.m, w: Math.round((Date.now() - hit.at) / 1000) }); return hit.r; }
+            // the cache is read asynchronously: the same read asked in that moment is in `live` by now
+            continue;
+        }
+        if (!run) break;
+        const add = how === 'merge' ? Array.from(want).filter(i => !run.inc.has(i)) : [];
+        for (const i of add) run.inc.add(i);
+        mbnTrace({ e: how, r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: o.background === false ? 0 : 1, id: o.id, m: o.m, with: run.label, add: add.join(' ') || undefined });
+        const p = run.p;
+        // this caller's own Stop or abort still ends its wait, whatever the first caller does
+        const stop = new Promise(res => {
+            if (sig) sig.addEventListener('abort', () => res('stop'), { once: true });
+            if (o.cancelled) { const t = setInterval(() => { if (o.cancelled()) { clearInterval(t); res('stop'); } }, 250); p.then(() => clearInterval(t), () => clearInterval(t)); }
+        });
+        let r;
+        try { r = await Promise.race([p, stop]); } catch (e) { if (!mine()) throw e; r = null; }
+        if (r === 'stop') {
+            if (sig && sig.aborted) throw (sig.reason instanceof Error ? sig.reason : new DOMException('The operation was aborted.', 'AbortError'));
+            return null;
+        }
+        // a wider read MusicBrainz refused (a 400 for an inc it won't take here) might not refuse
+        // this one's own: it asks alone
+        if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();
+        if (r) return r.clone();
+        if (!mine()) return null;
+        // the first caller was cancelled or aborted, this one wasn't: it asks for itself
+    }
+    // epoch: the edits known before the read goes out. A read sent before a write and answered after it
+    // is kept under the old epoch, so the cache drops it instead of serving the answer from before the write
+    const run = { inc: new Set(want), sent: false, bg, label: o.label, p: null, twin: null, epoch: mbnEditEpoch() };
+    // #1097: a new read waits MBN_MERGE_WAIT before it books, so the reads a page's scripts send
+    // at load in the same moment merge into it instead of all leaving on their own
+    // #1097: only background reads wait for others; the lead and interactive reads go at once
+    run.p = mbnSleep(bg && !o.lead ? MBN_MERGE_WAIT : 0).then(() => mine() ? go(() => {
+        run.sent = true;
+        if (run.inc.size === want.size) return url;   // nothing merged: as asked
+        const u = new URL(base.href);
+        u.searchParams.set('inc', Array.from(run.inc).join(' '));
+        return u.href;
+    }, () => run.inc, run) : null);
+    const runs = live.get(key) || [];
+    runs.push(run);
+    live.set(key, runs);
+    try {
+        const r = await run.p;
+        if (r && !r.ok && r.status !== 404 && run.inc.size !== want.size) return go();   // as for a joiner, above
+        if (r && r.ok && cacheable && !kept.has(r) && (lookup || fits(run))) await mbnCachePut(key, run.inc, r.clone(), run.epoch);
+        return r ? r.clone() : r;
+    } finally {
+        const l = live.get(key) || [], i = l.indexOf(run);
+        if (i >= 0) l.splice(i, 1);
+        if (!l.length) live.delete(key);
+    }
+}
+function mbnEdited() {
+    try { localStorage.setItem(MBN_KEY + '-edit', String(Date.now())); } catch (e) {}
+}
+function mbnEditEpoch() {
+    const g = globalThis.__mbnCacheG || (globalThis.__mbnCacheG = { watch: false });
+    if (!g.watch && typeof document !== 'undefined') {
+        g.watch = true;
+        try { document.addEventListener('submit', e => { const f = e.target; if (f && /^post$/i.test(f.method || '')) mbnEdited(); }, true); } catch (e) {}
+    }
+    // mbLastWrite: the suite's shared time of the last write to MusicBrainz (Event Horizon's kept answers use it too),
+    // so an edit made where the gate saw no submit (the release editor's own save, another script) is one all the same
+    try { return (localStorage.getItem(MBN_KEY + '-edit') || '0') + '|' + (localStorage.getItem('mbLastWrite') || '0'); } catch (e) { return '0'; }
+}
+function mbnCacheUrl(key, inc) {
+    return 'https://mbn-cache.invalid/?k=' + encodeURIComponent(key) + '&inc=' + encodeURIComponent(Array.from(inc).sort().join(' '));
+}
+async function mbnCacheGet(key, want) {
+    try {
+        if (typeof caches === 'undefined') return null;
+        const epoch = mbnEditEpoch(), c = await caches.open(MBN_KEY + '-cache'), pre = mbnCacheUrl(key, []).replace(/&inc=.*$/, '&inc=');
+        for (const q of await c.keys()) {
+            if (q.url.indexOf(pre) !== 0) continue;
+            const inc = decodeURIComponent(q.url.slice(pre.length)).split(' ').filter(Boolean);
+            let ok = true;
+            for (const i of want) if (inc.indexOf(i) < 0) { ok = false; break; }
+            if (!ok) continue;
+            const r = await c.match(q);
+            if (!r) continue;
+            const at = +r.headers.get('x-mbn-at') || 0;
+            if (r.headers.get('x-mbn-epoch') !== epoch || Date.now() - at > MBN_CACHE_TTL) { await c.delete(q); continue; }
+            return { r, at };
+        }
+    } catch (e) {}
+    return null;
+}
+async function mbnCachePut(key, inc, r, epoch = mbnEditEpoch()) {
+    try {
+        if (typeof caches === 'undefined') return;
+        const body = await r.text(), h = new Headers();
+        h.set('content-type', r.headers.get('content-type') || 'application/json');
+        h.set('x-mbn-at', String(Date.now()));
+        h.set('x-mbn-epoch', epoch);
+        const c = await caches.open(MBN_KEY + '-cache');
+        await c.put(mbnCacheUrl(key, inc), new Response(body, { status: r.status, headers: h }));
+        const all = await c.keys();
+        for (let i = 0; i < all.length - MBN_CACHE_MAX; i++) await c.delete(all[i]);   // oldest first
+    } catch (e) {}
+}
+function mbnHot() {
+    let s;
+    try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; } catch (e) { s = globalThis.__mbnGate || {}; }
+    return Date.now() > (s.cool || 0) + 30000 ? 0 : (s.hot || 0);   // a throttle long gone is over
+}
+function mbnUA() {
+    let n = 'mb-userscripts', v = '';
+    try { const i = GM_info.script; n = String(i.name || n).replace(/\s+/g, ''); v = i.version || ''; } catch (e) {}
+    return n + (v ? '/' + v : '') + ' ( https://github.com/majkinetor/musicbrainz-userscripts )';
+}
+function mbnWsFetch(url, init) {
+    init = init || {};
+    const gm = typeof GM_xmlhttpRequest === 'function' ? GM_xmlhttpRequest
+        : (typeof GM !== 'undefined' && GM && typeof GM.xmlHttpRequest === 'function' ? GM.xmlHttpRequest : null);
+    const abs = new URL(String(url), typeof location !== 'undefined' ? location.href : 'https://musicbrainz.org/').href;
+    // #997: a request that asks for the login (credentials 'include' / 'same-origin') on this
+    // page's own origin goes through the page's fetch(): a manager's GM request carries the
+    // cookie only if the browser lets the extension send it (Safari's tracking prevention does
+    // not), and MusicBrainz then answers 401. The User-Agent is the browser's then.
+    const own = typeof location !== 'undefined' && (() => { try { return new URL(abs).origin === location.origin; } catch (e) { return false; } })();
+    if (!gm || (own && (init.credentials === 'include' || init.credentials === 'same-origin'))) return fetch(url, init);
+    const headers = {};
+    try { new Headers(init.headers || {}).forEach((v, k) => { headers[k] = v; }); } catch (e) {}
+    headers['User-Agent'] = mbnUA();
+    return new Promise((resolve, reject) => {
+        const sig = init.signal;
+        if (sig && sig.aborted) { reject(new DOMException('Aborted', 'AbortError')); return; }
+        let req = null, done = false;
+        const onAbort = () => { if (done) return; done = true; try { req && req.abort && req.abort(); } catch (e) {} reject(new DOMException('Aborted', 'AbortError')); };
+        const fail = m => () => { if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort); reject(new TypeError(m)); };
+        // A request the manager never answers, not even with its own timeout (seen in
+        // Violentmonkey on Firefox): give up on it here, or whoever awaits it, a matching
+        // pass that was told to stop included, waits forever. MusicBrainz answers a search in
+        // seconds even on a slow day; one that took a minute held every lane behind it while
+        // the shared throttle allowed a single one, so the gate stops waiting after half that.
+        // #999 mbnSleep, not a plain timer: with this page's timers held back, a stuck request was never given up on
+        mbnSleep(35000, () => done).then(() => { if (done) return; fail('no answer in 35s')(); try { req && req.abort && req.abort(); } catch (e) {} });
+        if (sig) sig.addEventListener('abort', onAbort);
+        const res = gm({
+            method: String(init.method || 'GET').toUpperCase(), url: abs, headers, data: init.body,
+            timeout: 30000,
+            onload: x => {
+                if (done) return; done = true; if (sig) sig.removeEventListener('abort', onAbort);
+                const h = new Headers();
+                for (const line of String(x.responseHeaders || '').split(/\r?\n/)) { const i = line.indexOf(':'); if (i > 0) try { h.append(line.slice(0, i).trim(), line.slice(i + 1).trim()); } catch (e) {} }
+                const st = x.status || 0;
+                if (st < 200 || st > 599) { reject(new TypeError('network error (status ' + st + ')')); return; }
+                const r = new Response(st === 204 || st === 304 ? null : (x.responseText != null ? x.responseText : ''), { status: st, statusText: x.statusText || '', headers: h });
+                try { Object.defineProperty(r, 'url', { value: x.finalUrl || abs }); } catch (e) {}
+                resolve(r);
+            },
+            onerror: fail('network error'), ontimeout: fail('timed out'), onabort: fail('aborted'),
+        });
+        req = res && typeof res.then === 'function' ? null : res;   // GM.xmlHttpRequest returns a promise in some managers
+    });
+}
+function mbnRawHeader(raw, name) {
+    const want = String(name).toLowerCase();
+    for (const line of String(raw || '').split(/\r?\n/)) {
+        const i = line.indexOf(':');
+        if (i > 0 && line.slice(0, i).trim().toLowerCase() === want) return line.slice(i + 1).trim();
+    }
+    return null;
+}
+function mbnWebsite(url) {
+    const s = String(url || '');
+    if (mbnGated(s)) return false;
+    if (/^(https?:)?\/\/([a-z0-9-]+\.)*musicbrainz\.org(\/|$)/i.test(s)) return true;
+    return /^\/(?!\/)/.test(s) && typeof location !== 'undefined' && /(^|\.)musicbrainz\.org$/i.test(location.hostname);
+}
+async function mbnIsCheck(r) {
+    try {
+        if (!r || !/text\/html/i.test((r.headers && r.headers.get('content-type')) || '')) return false;
+        const head = (await r.clone().text()).slice(0, 3000);
+        return /<title>\s*Verifying your browser\s*<\/title>|JavaScript is required to access this page/i.test(head);
+    } catch (e) { return false; }
+}
+function mbnReverify(url, init, o) {
+    o = o || {};
+    const log = (lvl, m) => { try { if (o.log) o.log(lvl, m); else (lvl === 'warn' ? console.warn : console.info)('[MusicBrainz gate] ' + m); } catch (e) {} };
+    const g = globalThis.__mbnCheck || (globalThis.__mbnCheck = { busy: null, failedAt: 0 });
+    if (g.busy) return g.busy;
+    let target;
+    try { target = new URL(String(url), location.href); } catch (e) { return Promise.resolve(false); }
+    if (target.host !== location.host || typeof document === 'undefined') { log('warn', 'MusicBrainz asked to verify the browser — open any MusicBrainz page, then retry'); return Promise.resolve(false); }
+    if (Date.now() - g.failedAt < 60000) return Promise.resolve(false);   // just failed: don't loop
+    // a POST's URL can't be loaded: the check is per browser, so any light GET passes it
+    const method = String((init && init.method) || 'GET').toUpperCase();
+    const src = method === 'GET' ? target.href : location.origin + '/ws/js/entity/89ad4ac3-39f7-470e-963a-56509c546377';
+    const t0 = Date.now();
+    log('warn', 'MusicBrainz asked to verify the browser again ("Verifying your browser") — passing it in a hidden frame');
+    g.busy = new Promise(resolve => {
+        const fr = document.createElement('iframe');   // fresh each time, never re-navigated
+        fr.setAttribute('aria-hidden', 'true'); fr.setAttribute('data-mbn-check', ''); fr.tabIndex = -1;
+        fr.style.cssText = 'position:fixed;width:1px;height:1px;left:-9999px;top:0;border:0;opacity:0;pointer-events:none';
+        let loads = 0, done = false;
+        const finish = ok => {
+            if (done) return; done = true; fr.remove(); g.busy = null;
+            mbnTrace({ e: 'check', ok: ok ? 1 : 0, w: Date.now() - t0 });
+            if (ok) log('info', 'browser check passed in ' + (Date.now() - t0) + ' ms — retrying');
+            else {
+                g.failedAt = Date.now();
+                const m = 'MusicBrainz wants to verify your browser — open any MusicBrainz page in another tab, then retry';
+                log('warn', m + ' (the hidden frame did not clear it in 20 s)');
+                try { if (o.notify) o.notify(m); } catch (e) {}
+            }
+            resolve(ok);
+        };
+        // the first load is the check; it posts its answer and is redirected to the real URL
+        fr.onload = () => {
+            loads++;
+            let still;
+            try { const d = fr.contentDocument; still = !d || /<title>\s*Verifying your browser\s*<\/title>|JavaScript is required to access this page/i.test(d.documentElement ? d.documentElement.outerHTML.slice(0, 3000) : ''); }
+            catch (e) { still = loads < 2; }
+            if (!still) finish(true);
+        };
+        mbnSleep(20000, () => done).then(() => finish(false));   // #999 wakes even with this page's timers held back
+        fr.src = src;
+        (document.body || document.documentElement).appendChild(fr);
+    });
+    return g.busy;
+}
+// </ST-NET>
 
 // #851: String Theory's settings open these settings on any page, whether this script runs here or not
 document.addEventListener('mbu-open-settings', e => { if (e.detail === 'first_contact' && !e.defaultPrevented) { e.preventDefault(); injectStyle(); togglePanel(null); } });

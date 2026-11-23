@@ -21,9 +21,8 @@ STAGED=$(git diff --cached --name-only)
 
 # lint + syntax gate (#623) — a staged monolithic userscript must parse and lint
 # clean (errors only; warnings are for a later look). Runs before any rebuild, so a
-# broken script never reaches the bundle. The bundle and the frozen discogs_credits
-# are not linted; Credit Hoarder's src/ has its own gate, right after.
-USER_JS=$(printf '%s\n' "$STAGED" | grep -E '^userscripts/.+\.user\.js$' | grep -vE '^userscripts/(string_theory|discogs_credits)/|/dist/' || true)
+# broken script never reaches the bundle. The bundle is not linted; Credit Hoarder's src/ has its own gate, right after.
+USER_JS=$(printf '%s\n' "$STAGED" | grep -E '^userscripts/.+\.user\.js$' | grep -vE '^userscripts/string_theory/|/dist/' || true)
 if [ -n "$USER_JS" ]; then
     PRESENT=""
     for f in $USER_JS; do
@@ -159,8 +158,6 @@ if printf '%s\n' "$STAGED" | grep -qE '^dev/archive/(wayback|sync-archive)\.mjs$
     [ -n "$ARCHIVE_FILES" ] && git add $ARCHIVE_FILES
     STAGED=$(git diff --cached --name-only)
 fi
-
-# (discogs_credits is frozen — no longer developed — so its bundle is not rebuilt here.)
 
 # credit_hoarder — esbuild bundle. It was
 # missing here, so a shared-component sync (which rewrites src/ui-bar.js) left

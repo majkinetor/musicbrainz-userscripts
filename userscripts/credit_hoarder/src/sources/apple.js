@@ -16,6 +16,7 @@
 
 import { getArtistRoles } from '../mappers.js';
 import { assignVolumePositions } from '../util.js';   // #523 shared multi-volume position detection
+import { gmLogged } from '../gm.js';
 
 export const APPLE_AMP = 'https://amp-api.music.apple.com/v1/catalog';
 
@@ -108,7 +109,7 @@ export function appleToEngine(parsedTracks) {
 function appleGet(url, headers) {
     return new Promise((resolve, reject) => {
         if (typeof GM_xmlhttpRequest !== 'function') { reject(new Error('GM_xmlhttpRequest unavailable')); return; }
-        GM_xmlhttpRequest({
+        gmLogged({
             method: 'GET', url, headers: headers || {}, timeout: 20000,
             onload: r => resolve({ status: r.status, text: r.responseText || '' }),
             onerror:   () => reject(new Error('Apple request failed (network)')),

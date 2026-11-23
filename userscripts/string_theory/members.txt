@@ -10,7 +10,6 @@
 #   scribe                   — niche, a separate workflow; never to be bundled
 #   bandcamp_player_enhanced — niche, Bandcamp only; never to be bundled
 #   as_picker                — runs on every site (*://*/*)
-#   discogs_credits          — frozen twin of credit_hoarder; would double-run
 #
 # Falcon (Harmony) and First Contact (the platforms' album pages) run on other sites too:
 # the bundle's @match is the union of its members', but each member starts only where

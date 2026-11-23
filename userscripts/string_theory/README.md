@@ -17,7 +17,7 @@
 - **[Theme](#theme)**: light or dark, for MusicBrainz and every script.
 - **[Idle appearance](#idle-appearance)**: a theme and effect while the page is idle.
 - **[What's new](#whats-new)**: String Theory's icon turns golden when there is news.
-- **[Gate log](#gate-log)**: every request the scripts send to MusicBrainz, to tell its load from ours.
+- **[Network log](#network-log)**: every request the scripts send, to MusicBrainz and other hosts, to tell its load from ours.
 - **[Command palette](#command-palette)**: Ctrl+K lists every command, filtered as you type.
 - **[Sync and backup](#sync-and-backup)**: sync devices with Dropbox, Google Drive or your own WebDAV server, save backups there, or export a file.
 - **[Automated mode](#automated-mode)**: scripts follow the requested task in worker pages.
@@ -77,9 +77,9 @@ String Theory checks the project's [announcements](https://github.com/majkinetor
 
 The window lists the latest 20 posts and loads older ones as you scroll to the end, each with its script's name and icon. A post shows **stable** when its change is released and **latest** when it isn't yet.
 
-## Gate log
+## Network log
 
-The scripts send their MusicBrainz requests through one shared queue, the gate. It spaces them out across all tabs, and when MusicBrainz answers 503 or 429, every script waits. If a request is asked again while the first one is still on its way, both share one answer (**join** in the log). If two waiting requests differ only in what extra data they ask for, the gate sends one request for both (**merge** in the log). Open **Gate log** from the [command palette](#command-palette) to see what goes through it.
+The scripts send their MusicBrainz requests through one shared queue, the gate. It spaces them out across all tabs, and when MusicBrainz answers 503 or 429, every script waits. If a request is asked again while the first one is still on its way, both share one answer (**join** in the log). If two waiting requests differ only in what extra data they ask for, the gate sends one request for both (**merge** in the log). Open **Network log** from the [command palette](#command-palette) to see what goes through it.
 
 The window works like the Activity log. You move it by its title bar, minimize it to that bar, and resize it by its corner. A double-click on the title bar makes it full screen. It stays open, in its place and size, when you reload the page or open another one.
 
@@ -107,7 +107,7 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 | Scripts                       | turn a script on or off                                          |
 | Search                        | a MusicBrainz search for what you type, see below                |
 | New issue, New issue with log | a new issue about String Theory or one script, see below         |
-| String Theory                 | copy versions, docs, reload, What's new, Gate log                |
+| String Theory                 | copy versions, docs, reload, What's new, Network log               |
 
 - **Your last input comes back** selected when you open the palette again: type to replace it.
 - **Theme commands show as you move over them** with the arrows; **Enter** keeps one, **Esc** goes back to yours.

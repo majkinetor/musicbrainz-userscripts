@@ -9,6 +9,7 @@
 // review table (the Qobuz/Deezer shape). Neither host sends CORS headers → GM.
 
 import { assignVolumePositions } from '../util.js';
+import { gmLogged } from '../gm.js';
 
 const MORA_PACKAGE_RE = /^(?:https?:)?\/\/(?:www\.)?mora\.jp\/package\/(\d+)\/([\w-]+)\/?(?:[?#]|$)/i;
 
@@ -79,7 +80,7 @@ export function moraToEngine(parsedTracks) {
 function gmGet(url, what) {
     return new Promise((resolve, reject) => {
         if (typeof GM_xmlhttpRequest !== 'function') { reject(new Error('GM_xmlhttpRequest unavailable')); return; }
-        GM_xmlhttpRequest({
+        gmLogged({
             method: 'GET',
             url,
             timeout: 20000,

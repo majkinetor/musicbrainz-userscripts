@@ -41,10 +41,8 @@ function walk(dir, out = []) {
     return out;
 }
 
-// discogs_credits is frozen (no longer developed): it never adopted the token
-// block, and its three permanent FAILs only buried real ones (#623).
 const files = walk(resolve(ROOT, 'userscripts'))
-    .filter(f => !f.includes('string_theory') && !f.includes('discogs_credits') && !/[\\/]test[\\/]/.test(f));
+    .filter(f => !f.includes('string_theory') && !/[\\/]test[\\/]/.test(f));
 
 const carriers = files.filter(f => readFileSync(f, 'utf8').includes('// <ST-TOKENS>'));
 console.log(`${carriers.length} file(s) carry the token block\n`);
@@ -53,7 +51,7 @@ ck(carriers.length > 0, 'at least one script has adopted the tokens');
 const expected = `const MBU_TOKENS = '${tokensCss()}';`;
 const usedGlobally = new Set();
 
-// A bundled script (credit_hoarder, discogs_credits) is many source files that
+// A bundled script (credit_hoarder) is many source files that
 // become ONE userscript, so "carries the token block" and "wires a style sink"
 // are properties of the bundle, not of each module. Checking them per file
 // demands a copy of the block in every module, which is exactly what the bundle

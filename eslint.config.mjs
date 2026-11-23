@@ -40,7 +40,7 @@ const rules = {
 };
 
 export default [
-  { ignores: ['**/node_modules/**', '**/dist/**', 'userscripts/discogs_credits/**', 'userscripts/string_theory/**', 'userscripts/*/test/**', 'userscripts/*/dev/**', 'test-results/**'] },
+  { ignores: ['**/node_modules/**', '**/dist/**', 'userscripts/string_theory/**', 'userscripts/*/test/**', 'userscripts/*/dev/**', 'test-results/**'] },
   {
     // the monolithic scripts, as a userscript manager runs them
     files: ['userscripts/**/*.user.js'],

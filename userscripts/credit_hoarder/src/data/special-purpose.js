@@ -3,10 +3,9 @@
 // and their aliases are junk (#171). Keyed by MBID, not a name pattern — not all are
 // bracketed (Various Artists) and plenty of real artists DO use brackets.
 //
-// Kept in sync BY HAND across three copies (single-file scripts can't import):
+// Kept in sync BY HAND across two copies (single-file scripts can't import):
 //   - apollo_editor/apollo_editor.user.js  (inline SPECIAL_PURPOSE_ARTISTS)
 //   - credit_hoarder/src/data/special-purpose.js   (this file)
-//   - discogs_credits/src/data/special-purpose.js  (mirror)
 export const SPECIAL_PURPOSE_ARTISTS = new Set([
     '125ec42a-7229-4250-afc5-e057484327fe', // [unknown]
     'f731ccc4-e22a-43af-a747-64213329e088', // [anonymous]

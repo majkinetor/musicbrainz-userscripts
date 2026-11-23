@@ -102,7 +102,7 @@ export async function submitAliasBackground(mbid, name, note) {
         log.info(`+ alias: "${name}" is already a name/alias of ${live.artistName} — nothing submitted`);
         return { already: true };
     }
-    const html = await fetch(url, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error(`GET add-alias HTTP ${r.status}`); return r.text(); });
+    const html = await mbnFetch(url, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error(`GET add-alias HTTP ${r.status}`); return r.text(); });
     const form = new DOMParser().parseFromString(html, 'text/html').querySelector('form.edit-alias');
     if (!form) throw new Error('MusicBrainz did not serve an alias form (still logged in?)');
     const p = new URLSearchParams();
@@ -118,7 +118,7 @@ export async function submitAliasBackground(mbid, name, note) {
     p.delete('edit-alias.primary_for_locale');
     if (note) p.set('edit-alias.edit_note', note);
     log.info(`+ alias: submitting "${name}" as an alias of ${url.split('/artist/')[1].split('/')[0]} in the background (no type)`);
-    const res = await fetch(url, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: p.toString() });
+    const res = await mbnFetch(url, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: p.toString() });
     if (!res.ok) throw new Error(`add-alias submit HTTP ${res.status}`);
     // MB redirects to the artist's aliases on success and re-renders the form with errors on failure
     if (!/\/add-alias\b/.test(res.url)) return res.url;

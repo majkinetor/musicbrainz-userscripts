@@ -26,6 +26,7 @@ import { getArtistRoles }    from '../mappers.js';
 import { INSTRUMENTS }       from '../data/instruments.js';
 import { splitCombinedNames } from './split-names.js';   // #411 shared multi-artist splitter
 import { assignVolumePositions } from '../util.js';   // #523 shared multi-volume position detection
+import { gmLogged } from '../gm.js';
 
 /** Role vocabulary seen in Qobuz `performers` strings → MB relationship plan.
  *  Qobuz's vocabulary varies by album — some use camelCase tokens
@@ -288,7 +289,7 @@ export function qobuzToEngine(parsedTracks) {
 export function fetchQobuzAlbumPage(pageUrl) {
     return new Promise((resolve, reject) => {
         if (typeof GM_xmlhttpRequest !== 'function') { reject(new Error('GM_xmlhttpRequest unavailable')); return; }
-        GM_xmlhttpRequest({
+        gmLogged({
             method: 'GET',
             url: pageUrl,
             headers: { 'Accept': 'text/html,application/xhtml+xml', 'Accept-Language': 'en-US,en;q=0.8' },
@@ -363,7 +364,7 @@ export function qobuzApiAlbumInfo(json) {
 export function fetchQobuzApiAlbum(albumId, token) {
     return new Promise((resolve, reject) => {
         if (typeof GM_xmlhttpRequest !== 'function') { reject(new Error('GM_xmlhttpRequest unavailable')); return; }
-        GM_xmlhttpRequest({
+        gmLogged({
             method: 'GET',
             url: `${QOBUZ_API}/album/get?album_id=${encodeURIComponent(albumId)}&app_id=${QOBUZ_APP_ID}`,
             headers: { 'X-App-Id': QOBUZ_APP_ID, 'X-User-Auth-Token': token, 'Accept': 'application/json' },

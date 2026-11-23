@@ -1,6 +1,6 @@
 # Repo-root .gitignore for shared infrastructure under /dev/.
 # Per-userscript ignores live in each userscript's own .gitignore
-# (e.g. userscripts/discogs_credits/.gitignore).
+# (e.g. userscripts/credit_hoarder/.gitignore).
 
 # The bot token lives in the hub (DEVELOP.md#bot-identity); this only guards a stray copy.
 dev/.github-credentials.json

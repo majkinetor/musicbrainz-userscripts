@@ -3,7 +3,7 @@
 // repo's scripts, so a user can install a single file instead of many.
 //
 // Rebuilt automatically by the repo pre-commit hook whenever a constituent changes
-// (same idea as discogs_credits' esbuild build). Run manually with:
+// (same idea as credit_hoarder's esbuild build). Run manually with:
 //
 //   node userscripts/string_theory/build.mjs
 //

@@ -73,7 +73,7 @@ function stPalCommands() {
   if (ST_ON_MB) {
     var newsN = stNewsUnread(stNewsRead()).length;
     add({ id: 'st:news', cat: 'String Theory', label: "What's new", hint: newsN ? newsN + ' new' : '', run: stNewsOpen });
-    add({ id: 'st:gatelog', cat: 'String Theory', label: 'Gate log', hint: 'MusicBrainz requests', run: stGateOpen });
+    add({ id: 'st:gatelog', cat: 'String Theory', label: 'Network log', hint: 'requests of the scripts', run: stGateOpen });
   }
   if (ST_ON_MB) {
     add({ id: 'set:dock', cat: 'Settings', label: 'Dock', run: function () { stSettings('l'); } });

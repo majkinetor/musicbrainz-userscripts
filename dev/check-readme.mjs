@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const FIXED = ['Features', 'Settings', 'Shortcuts', 'Notes'];
 // Scripts whose README isn't a script README of the usual shape.
-const SKIP = new Set(['discogs_credits', 'string_theory']);
+const SKIP = new Set(['string_theory']);
 
 const files = process.argv.slice(2).length
   ? process.argv.slice(2).map(f => resolve(f))

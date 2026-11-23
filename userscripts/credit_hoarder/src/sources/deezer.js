@@ -18,6 +18,7 @@
 // Verified on album 12166410 (Soul Jazz *Calypso*): 19/19 track lines parsed.
 
 import { assignVolumePositions } from '../util.js';   // #523 shared multi-volume position detection
+import { gmLogged } from '../gm.js';
 
 /** Minimal HTML-entity decode for the entities Deezer pages emit (numeric refs,
  *  `&amp;`, `&#039;`, …). Kept local so this source has no engine imports. */
@@ -176,7 +177,7 @@ export function deezerToEngine(parsedTracks) {
 export function fetchDeezerAlbumPage(pageUrl) {
     return new Promise((resolve, reject) => {
         if (typeof GM_xmlhttpRequest !== 'function') { reject(new Error('GM_xmlhttpRequest unavailable')); return; }
-        GM_xmlhttpRequest({
+        gmLogged({
             method: 'GET',
             url: pageUrl,
             headers: { 'Accept': 'text/html,application/xhtml+xml', 'Accept-Language': 'en-US,en;q=0.8' },

@@ -13,7 +13,7 @@ const { chromium } = await import(pathToFileURL(join(dir, '../../node_modules/@p
 const SWAP = {
   mammoth: { file: join(root, 'mammoth/icon.svg'), note: 'its icon.svg in place of the emoji' },
 };
-const SKIP = new Set(['discogs_credits', 'bandcamp_player_enhanced']); // discogs_credits is frozen (Credit Hoarder replaced it); Bandcamp Player Enhanced is left out of the set
+const SKIP = new Set(['bandcamp_player_enhanced']); // Bandcamp Player Enhanced is left out of the set
 const toData = f => `data:${extname(f) === '.png' ? 'image/png' : 'image/svg+xml'};base64,${readFileSync(f).toString('base64')}`;
 
 const icons = readdirSync(root, { withFileTypes: true }).filter(d => d.isDirectory() && !SKIP.has(d.name)).map(d => {

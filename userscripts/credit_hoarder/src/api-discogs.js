@@ -1,3 +1,4 @@
+import { mbnLog } from '../../../dev/net/mb-gate.mjs';
 // Discogs API wrappers and URL helpers.
 
 const DISCOGS_URL_RE = /^https?:\/\/(?:www|api)\.discogs\.com\/(?:(?:(?!sell).+|sell.+)\/)?(master|release|artist|label)s?\/(\d+)(?:[^?#]*)(?:\?noanv=1|\?anv=[^=]+)?$/i;
@@ -55,7 +56,7 @@ function stripCompanyNums(json) {
  */
 export function getDiscogsReleaseData(url) {
     if (_releaseDataCache.has(url)) return Promise.resolve(_releaseDataCache.get(url));
-    return fetch(
+    return mbnLog(
         `${url.replace(
             'https://www.discogs.com/release/',
             'https://api.discogs.com/releases/'
@@ -100,7 +101,7 @@ const _entityDataCache = new Map();
 export function getDiscogsEntityData(resourceUrl) {
     if (!resourceUrl) return Promise.resolve(null);
     if (_entityDataCache.has(resourceUrl)) return Promise.resolve(_entityDataCache.get(resourceUrl));
-    return fetch(`${resourceUrl}?token=gYAnSAmIoXiHezHBmHoqcBCuJRyQLJBYSjurbGTZ`)
+    return mbnLog(`${resourceUrl}?token=gYAnSAmIoXiHezHBmHoqcBCuJRyQLJBYSjurbGTZ`)
         // #623 (sweep): only "no such entity" is remembered. A throttled (429) or failed
         // lookup used to be cached as null for the whole session, so one Discogs rate
         // limit hid that profile until a reload; now the next open asks again.

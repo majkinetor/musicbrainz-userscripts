@@ -9,6 +9,7 @@
 // shape). No CORS on either host → GM.
 
 import { assignVolumePositions } from '../util.js';
+import { gmLogged } from '../gm.js';
 
 const MELON_ALBUM_RE = /^(?:https?:)?\/\/(?:www\.|m2\.|m\.app\.)?melon\.com\/album\/detail\.htm\?(?:[^#]*&)?albumId=(\d+)/i;
 
@@ -72,7 +73,7 @@ export function melonToEngine(parsedTracks) {
 function gmGet(url, what) {
     return new Promise((resolve, reject) => {
         if (typeof GM_xmlhttpRequest !== 'function') { reject(new Error('GM_xmlhttpRequest unavailable')); return; }
-        GM_xmlhttpRequest({
+        gmLogged({
             method: 'GET',
             url,
             timeout: 20000,

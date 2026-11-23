@@ -318,6 +318,8 @@ export function mbnTrace(ev) {
  *   o.cancelled   () => true stops the wait (a superseded search, a Stop): resolves { ok: false }
  *   o.log         (level, message) for waits worth mentioning (over a second)
  *   o.label       what the request is, for the log
+ *   o.reason      why the script asks (view, play, prefetch…), its own column in the log
+ *   o.entity      the entity the request is about (recording, area…), when its path does not say
  *   o.search      a search (?query=): it also waits out a search-shed hold (mbnFetch sets it)
  * A background request in a hidden tab books only once the queue is free, so the tab in view
  * never waits behind it.
@@ -328,7 +330,7 @@ export function mbnTrace(ev) {
 export async function mbnSlot(o) {
     o = o || {};
     const t0 = Date.now(), background = o.background !== false;
-    const tr = (e, x) => mbnTrace(Object.assign({ e, l: o.label || '', b: background ? 1 : 0, id: o.id || undefined }, x));
+    const tr = (e, x) => mbnTrace(Object.assign({ e, r: o.reason || undefined, en: o.entity || undefined, l: o.label || '', b: background ? 1 : 0, id: o.id || undefined, m: o.m, u: o.u }, x));
     // someone else's lead: a background request books its slot only once it ends or lapses
     // #938: a cap counted from each new `now` moves with it and never caps; count it from when
     // this wait first saw the value, so a broken one holds at most the longest real one
@@ -464,7 +466,7 @@ export async function mbnSlot(o) {
     // answer a twin had brought back meanwhile; it looks once more just before it leaves
     const twin = o.twin && Date.now() - t0 >= MBN_MERGE_WAIT ? await o.twin() : null;   // one that didn't wait looked a moment ago
     if (twin) { await giveBack(true); return { ok: false, waited: Date.now() - t0, twin }; }
-    tr('start', { w: Date.now() - t0 });
+    tr('start', { w: Date.now() - t0, bs: o.bs });
     return { ok: true, waited: Date.now() - t0 };
 }
 
@@ -496,7 +498,7 @@ export async function mbnAnswer(status, header, o) {
     for (const [k, n] of [['lim', 'X-RateLimit-Limit'], ['rem', 'X-RateLimit-Remaining'], ['rst', 'X-RateLimit-Reset'], ['who', 'X-RateLimit-Who']]) {
         try { const v = header ? header(n) : null; if (v != null && v !== '') rl[k] = String(v).slice(0, 40); } catch (e) {}
     }
-    const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, l: o.label || '', b: o.background === false ? 0 : 1, id: o.id || undefined, hot: s ? s.hot || 0 : undefined }, rl, x));
+    const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, r: o.reason || undefined, en: o.entity || undefined, l: o.label || '', b: o.background === false ? 0 : 1, id: o.id || undefined, m: o.m, u: o.u, hot: s ? s.hot || 0 : undefined }, rl, x));
     if (status === 429 || status === 503) {
         const raw = header ? header('Retry-After') : null;
         const secs = Number(raw), date = raw ? Date.parse(raw) : NaN;
@@ -563,6 +565,75 @@ export async function mbnAnswer(status, header, o) {
 }
 
 /**
+ * Sends a request the gate does not pace (another host, a MusicBrainz page outside the gate) and writes
+ * it to the Gate log, so the log shows the whole network of the page.
+ *   o.label   the name in the log (default: the path); o.background false marks it interactive
+ *   o.send    (url, init) => an answer with a status (a GM request); default fetch
+ */
+// a request body's size in bytes, for the Gate log (undefined without a body, or one it cannot measure)
+export function mbnBodySize(init) {
+    const b = init && init.body;
+    if (b == null) return undefined;
+    try {
+        if (typeof b === 'string') return new TextEncoder().encode(b).length;
+        if (b instanceof URLSearchParams) return new TextEncoder().encode(b.toString()).length;
+        if (typeof Blob !== 'undefined' && b instanceof Blob) return b.size;
+        if (b.byteLength != null) return b.byteLength;
+    } catch (e) {}
+    return undefined;
+}
+
+export async function mbnLog(url, init, o) {
+    o = o || {};
+    let h = '', p = String(url);
+    // a blob: or data: URL stays on this computer: not a network request, not logged
+    if (/^(blob|data):/i.test(p)) return (o.send || fetch)(url, init);
+    // a host that isn't MusicBrainz is external, the page's own one too (Beatport's pages)
+    try { const x = new URL(p, location.href); p = x.pathname + x.search; if (!/(^|\.)musicbrainz\.(org|eu)$/.test(x.hostname)) h = x.host; } catch (e) {}
+    const ev = { r: o.reason || undefined, en: o.entity || undefined, l: o.label || p.slice(0, 120), u: o.u || (o.label ? p.slice(0, 300) : undefined), b: o.background === false ? 0 : 1,
+        id: o.id || mbnRid(), m: o.m || String((init && init.method) || o.method || 'GET').toUpperCase(), h: h || undefined, x: 1 };
+    mbnTrace(Object.assign({ e: 'start', bs: mbnBodySize(init) }, ev));
+    try {
+        const r = await (o.send || fetch)(url, init);
+        mbnTrace(Object.assign({ e: 'answer', st: r.status }, ev));
+        return r;
+    } catch (e) {
+        mbnTrace(Object.assign({ e: 'error', err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }, ev));
+        throw e;
+    }
+}
+
+/**
+ * GM_xmlhttpRequest (or the function fn, such as GM.xmlHttpRequest) that the gate's log shows:
+ * logged from start to load, error, timeout or abort. Same options and return value as the call it wraps.
+ */
+export function mbnGm(opts, fn) {
+    fn = fn || (typeof GM_xmlhttpRequest !== 'undefined' ? GM_xmlhttpRequest : null);
+    let fin = null;
+    mbnLog(opts.url, { method: opts.method || 'GET', body: opts.data }, { send: () => new Promise((ok, no) => { fin = { ok, no }; }) }).catch(() => {});
+    const end = (x, msg) => {
+        if (!fin) return;
+        const g = fin; fin = null;
+        if (!msg) { g.ok({ status: (x && x.status) || 0 }); return; }
+        const e = new Error(msg); if (msg === 'aborted') e.name = 'AbortError'; g.no(e);
+    };
+    const wrap = (name, msg) => { const f = opts[name]; return (...a) => { end(a[0], msg); if (f) return f(...a); }; };
+    return fn(Object.assign({}, opts, { onload: wrap('onload'), onerror: wrap('onerror', 'network error'), ontimeout: wrap('ontimeout', 'timeout'), onabort: wrap('onabort', 'aborted') }));
+}
+// a GM request function that logs through mbnGm, or null without one
+export function mbnGmFn(fn) { return fn ? o => mbnGm(o, fn) : null; }
+// an XMLHttpRequest (an upload with progress) that the gate's log shows; call it after open()
+export function mbnXhr(xhr, url, method, body) {
+    mbnLog(url, { method: method || 'GET', body }, { send: () => new Promise((ok, no) => {
+        xhr.addEventListener('load', () => ok({ status: xhr.status }));
+        xhr.addEventListener('error', () => no(new Error('network error')));
+        xhr.addEventListener('timeout', () => no(new Error('timeout')));
+        xhr.addEventListener('abort', () => { const e = new Error('aborted'); e.name = 'AbortError'; no(e); });
+    }) }).catch(() => {});
+    return xhr;
+}
+
+/**
  * fetch() through the gate: waits for a slot, reports the answer, retries a 429/503
  * (the retry waits out the shared hold, so it needs no sleep of its own).
  * Other requests aren't paced; one to MusicBrainz's website side (/ws/js, pages, forms) that
@@ -584,19 +655,21 @@ export async function mbnFetch(url, init, o) {
         mbnEdited();
         try { return await mbnFetch(url, init, Object.assign({}, o, { wrote: true })); } finally { mbnEdited(); }
     }
-    if (!mbnGated(url)) {
-        const r = await fetch(url, init);
-        if (!mbnWebsite(url) || !(await mbnIsCheck(r))) return r;
-        // #733: MusicBrainz's browser check answered instead: nothing was done (a POST is safe
-        // to repeat), so pass the check and ask again
-        return (await mbnReverify(url, init, o)) ? fetch(url, init) : r;
-    }
-    const t0 = Date.now(), give = attempt => o.tries ? attempt >= o.tries : o.background === false ? Date.now() - t0 > 45000 : attempt >= 4;
-    if (!o.label) {   // the Gate log names a request by what it asks for
+    {   // the Gate log names a request by what it asks for, or by the caller's name with its path kept in u
         let p = String(url);
         try { const u = new URL(p, location.href); p = u.pathname.replace(/^\/ws\/2\//, '') + u.search.replace(/[?&]fmt=json\b/, '').replace(/^&/, '?'); } catch (e) {}
-        o = Object.assign({}, o, { label: p.slice(0, 120) });
+        o = Object.assign({}, o, o.label ? { u: p.slice(0, 300) } : { label: p.slice(0, 120) }, { m: String((init && init.method) || 'GET').toUpperCase(), bs: mbnBodySize(init) });
     }
+    if (!mbnGated(url)) {
+        return mbnLog(url, init, Object.assign({}, o, { send: async (u, i) => {
+            const r = await fetch(u, i);
+            if (!mbnWebsite(u) || !(await mbnIsCheck(r))) return r;
+            // #733: MusicBrainz's browser check answered instead: nothing was done (a POST is safe
+            // to repeat), so pass the check and ask again
+            return (await mbnReverify(u, i, o)) ? fetch(u, i) : r;
+        } }));
+    }
+    const t0 = Date.now(), give = attempt => o.tries ? attempt >= o.tries : o.background === false ? Date.now() - t0 > 45000 : attempt >= 4;
     if (o.search === undefined) {   // a search (?query=) waits out a search-shed hold, nothing else does
         let q = false;
         try { q = new URL(String(url), location.href).searchParams.has('query'); } catch (e) {}
@@ -623,12 +696,12 @@ export async function mbnFetch(url, init, o) {
                 r = await Promise.race([sent, mbnSleep(40000, () => quit).then(() => { if (!quit) throw new TypeError('no answer in 40s'); return new Promise(() => {}); })]);
                 quit = true;
             }
-            catch (e) { mbnTrace({ e: 'error', l: o.label, b: o.background === false ? 0 : 1, id: o.id, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
+            catch (e) { mbnTrace({ e: 'error', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: o.background === false ? 0 : 1, id: o.id, m: o.m, err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }); throw e; }
             const a = await mbnAnswer(r.status, n => r.headers.get(n), o);
             if (!a.throttled) return r;
             // a background search MusicBrainz sheds twice is given up: searches are what it drops when busy
             const shed = a.shed && o.background !== false && attempt >= 2;
-            if (give(attempt) || shed) { mbnTrace({ e: 'giveup', l: o.label, b: o.background === false ? 0 : 1, id: o.id, st: r.status, n: attempt }); return r; }
+            if (give(attempt) || shed) { mbnTrace({ e: 'giveup', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: o.background === false ? 0 : 1, id: o.id, m: o.m, st: r.status, n: attempt }); return r; }
             // log: a twin sent apart from this one got its 200 while this one waited: no retry
             const hit = twin && await twin();
             if (hit) return hit;
@@ -680,7 +753,7 @@ export async function mbnFetch(url, init, o) {
         const x = (live.get(key) || []).find(x => x !== self && x.sent && !x.twin && covers(x, inc) && (lookup || fits(x, inc)));
         if (x) {
             if (self) self.twin = x;
-            mbnTrace({ e: 'join', l: o.label, b: tb, id: o.id, with: x.label });
+            mbnTrace({ e: 'join', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: tb, id: o.id, m: o.m, with: x.label });
             let r = null;
             try { r = await x.p; } catch (e) { r = null; }
             if (self) self.twin = null;
@@ -688,7 +761,7 @@ export async function mbnFetch(url, init, o) {
         }
         const hit = cacheable && await mbnCacheGet(key, inc);
         if (!hit) return null;
-        mbnTrace({ e: 'cache', l: o.label, b: tb, id: o.id, w: Math.round((Date.now() - hit.at) / 1000) });
+        mbnTrace({ e: 'cache', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: tb, id: o.id, m: o.m, w: Math.round((Date.now() - hit.at) / 1000) });
         kept.add(hit.r);
         return hit.r;
     };
@@ -699,14 +772,14 @@ export async function mbnFetch(url, init, o) {
         if (!run && !looked) {
             looked = true;
             const hit = await mbnCacheGet(key, want);
-            if (hit) { mbnTrace({ e: 'cache', l: o.label, b: bg ? 1 : 0, id: o.id, w: Math.round((Date.now() - hit.at) / 1000) }); return hit.r; }
+            if (hit) { mbnTrace({ e: 'cache', r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: bg ? 1 : 0, id: o.id, m: o.m, w: Math.round((Date.now() - hit.at) / 1000) }); return hit.r; }
             // the cache is read asynchronously: the same read asked in that moment is in `live` by now
             continue;
         }
         if (!run) break;
         const add = how === 'merge' ? Array.from(want).filter(i => !run.inc.has(i)) : [];
         for (const i of add) run.inc.add(i);
-        mbnTrace({ e: how, l: o.label, b: o.background === false ? 0 : 1, id: o.id, with: run.label, add: add.join(' ') || undefined });
+        mbnTrace({ e: how, r: o.reason || undefined, en: o.entity || undefined, l: o.label, b: o.background === false ? 0 : 1, id: o.id, m: o.m, with: run.label, add: add.join(' ') || undefined });
         const p = run.p;
         // this caller's own Stop or abort still ends its wait, whatever the first caller does
         const stop = new Promise(res => {
@@ -982,5 +1055,5 @@ export function mbnReverify(url, init, o) {
 /** What sync-gate.mjs inlines, in order. */
 export const MBN_INLINE = {
     consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_LOCK_HOLD, MBN_MAX_HOLD, MBN_MAX_LEAD, MBN_TRACE_MAX, MBN_MERGE_WAIT, MBN_CACHE_TTL, MBN_CACHE_MAX, MBN_INC_ALONE },
-    fns: [mbnGated, mbnState, mbnSleep, mbnRid, mbnTabId, mbnTabCheck, mbnTrace, mbnSlot, mbnLead, mbnAnswer, mbnFetch, mbnEdited, mbnEditEpoch, mbnCacheUrl, mbnCacheGet, mbnCachePut, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
+    fns: [mbnGated, mbnState, mbnSleep, mbnRid, mbnTabId, mbnTabCheck, mbnTrace, mbnSlot, mbnLead, mbnAnswer, mbnBodySize, mbnLog, mbnGm, mbnGmFn, mbnXhr, mbnFetch, mbnEdited, mbnEditEpoch, mbnCacheUrl, mbnCacheGet, mbnCachePut, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
 };

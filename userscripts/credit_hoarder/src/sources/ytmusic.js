@@ -27,6 +27,7 @@
 
 import { getArtistRoles } from '../mappers.js';
 import { log, logDebug } from '../log.js';
+import { gmLogged } from '../gm.js';
 
 export const YTM_API = 'https://music.youtube.com/youtubei/v1/';
 const YTM_CLIENT = { clientName: 'WEB_REMIX', clientVersion: '1.20250101.01.00', hl: 'en', gl: 'US' };
@@ -107,7 +108,7 @@ function ytmPost(endpoint, body) {
     return new Promise((resolve, reject) => {
         if (typeof GM_xmlhttpRequest !== 'function') { reject(new Error('GM_xmlhttpRequest unavailable')); return; }
         const t0 = Date.now();
-        GM_xmlhttpRequest({
+        gmLogged({
             method: 'POST', url: `${YTM_API}${endpoint}?prettyPrint=false`, anonymous: true, timeout: 20000,
             headers: { 'Content-Type': 'application/json' },
             data: JSON.stringify({ context: { client: YTM_CLIENT }, ...body }),
