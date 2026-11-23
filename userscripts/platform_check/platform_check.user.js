@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.23.142621
+// @version      2026.11.23.143126
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -5475,12 +5475,25 @@ function pcCancelScan() {
     searchChain = Promise.resolve();
 }
 // GM_xmlhttpRequest for a scan's request: resolve() is never called once the scan is cancelled
+// the reason the gate's log shows for a request to another site: API or Page, then ISRC, Barcode, Search, Token or Lookup;
+// the log groups alike requests of one reason. A caller can name its own (a token scrape: Page/Token).
+function pcReasonOf(url, method) {
+    let u; try { u = new URL(url); } catch { return undefined; }
+    const p = u.pathname.toLowerCase(), q = u.search.toLowerCase();
+    const api = /^(api|openapi|amp-api|auth)\.|^itunes\.apple\.com$|^query\.wikidata/.test(u.hostname) || /\/(api|ws|v\d+)(\/|\.json|$)|\.json/.test(p) || /[?&]fmt=json/.test(q);
+    const what = method === 'POST' || /oauth|token/.test(p) ? 'Token'
+        : /isrc/.test(p + q) ? 'ISRC'
+        : /barcode|upc|ean/.test(p + q) ? 'Barcode'
+        : /search|[?&](q|k|query|term)=/.test(p + q) ? 'Search' : 'Lookup';
+    return (api ? 'API' : 'Page') + '/' + what;
+}
 function pcGmRequest(opts, resolve, n) {
     if (pcStale(n)) return;
     let req = null;
     // the gate's log shows a request to another site too
     let fin = null;
-    mbnLog(opts.url, { method: opts.method || 'GET', body: opts.data }, { send: () => new Promise((ok, no) => { fin = { ok, no }; }) }).catch(() => {});
+    mbnLog(opts.url, { method: opts.method || 'GET', body: opts.data }, { reason: opts.reason || pcReasonOf(opts.url, opts.method), send: () => new Promise((ok, no) => { fin = { ok, no }; }) }).catch(() => {});
+    delete opts.reason;
     const end = (x, err) => { if (!fin) return; const g = fin; fin = null; if (err) g.no(err); else g.ok({ status: (x && x.status) || 0 }); };
     const done = (f, err) => (...a) => { end(a[0], err); PC_SCAN.live.delete(req); if (!pcStale(n)) resolve(f(...a)); };
     opts.onload = done(opts.onload); opts.onerror = done(opts.onerror, new Error('network error')); opts.ontimeout = done(opts.ontimeout, new Error('timeout'));
@@ -5506,7 +5519,7 @@ async function gmGet(url, o) {
     r.headers.forEach((v, k) => { hs += k + ': ' + v + '\r\n'; });
     return { ok: r.ok, status: r.status, finalUrl: r.url || url, responseText: text, responseHeaders: hs, ms: Date.now() - t0 };
 }
-function gmGetRaw(url, { responseType, headers, timeout = 15000, anonymous, scan = pcScanOf() } = {}) {
+function gmGetRaw(url, { responseType, headers, timeout = 15000, anonymous, reason, scan = pcScanOf() } = {}) {
     return new Promise((resolve) => {
         const t0 = Date.now();
         const opts = {
@@ -5530,6 +5543,7 @@ function gmGetRaw(url, { responseType, headers, timeout = 15000, anonymous, scan
         };
         if (responseType) opts.responseType = responseType;
         if (anonymous) opts.anonymous = true;   // omit the browser's ambient cookies
+        if (reason) opts.reason = reason;
         pcGmRequest(opts, resolve, scan);
     });
 }
@@ -7722,10 +7736,10 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVari
 let _pcScClientId = null;
 async function soundcloudClientId() {
     if (_pcScClientId) return _pcScClientId;
-    const home = await gmGet('https://soundcloud.com/discover', { headers: { Accept: 'text/html' } });
+    const home = await gmGet('https://soundcloud.com/discover', { headers: { Accept: 'text/html' }, reason: 'Page/Token' });
     const assets = [...(home.responseText || '').matchAll(/https:\/\/a-v2\.sndcdn\.com\/assets\/[^"']+\.js/g)].map(m => m[0]);
     for (const a of assets.reverse()) {
-        const js = await gmGet(a);
+        const js = await gmGet(a, { reason: 'Page/Token' });
         const m = (js.responseText || '').match(/client_id\s*[:=]\s*"([a-zA-Z0-9]{20,40})"/);
         if (m) { _pcScClientId = m[1]; return _pcScClientId; }
     }
@@ -8563,10 +8577,10 @@ async function appleTokenFetch(fresh) {
         try { const c = JSON.parse(localStorage.getItem(APPLE_TOKEN_KEY) || 'null'); if (c && c.t && c.at && Date.now() - c.at < 12 * 3600e3) return (_appleTok = c.t); } catch (e) {}
     }
     appendLog('Apple', 'amp-api: fetching the web player\'s token');
-    const home = await gmGet('https://music.apple.com/us/browse', { headers: { Accept: 'text/html' } });
+    const home = await gmGet('https://music.apple.com/us/browse', { headers: { Accept: 'text/html' }, reason: 'Page/Token' });
     const asset = (home.responseText.match(/\/assets\/index-legacy~[a-z0-9]+\.js/i) || home.responseText.match(/\/assets\/index~[a-z0-9]+\.js/i) || [])[0];
     if (!asset) throw new Error('the web player\'s JS was not found');
-    const js = await gmGet('https://music.apple.com' + asset);
+    const js = await gmGet('https://music.apple.com' + asset, { reason: 'Page/Token' });
     const tok = (js.responseText.match(/eyJ[A-Za-z0-9._-]{80,}/) || [])[0];
     if (!tok) throw new Error('no token in the web player\'s JS');
     try { localStorage.setItem(APPLE_TOKEN_KEY, JSON.stringify({ t: tok, at: Date.now() })); } catch (e) {}
@@ -9307,10 +9321,10 @@ async function sdKeyFetch(fresh) {
         return (_sdKey = k || SD_KEY_DEFAULT);
     }
     appendLog('7digital', 'API: fetching the key from the store\'s JS');
-    const home = await gmGet('https://us.7digital.com/', { headers: { Accept: 'text/html' } });
+    const home = await gmGet('https://us.7digital.com/', { headers: { Accept: 'text/html' }, reason: 'Page/Token' });
     const js = (home.responseText.match(/\/\/js-cdn\.7digital\.com\/static\/build\/javascript\/app\.[a-z0-9]+\.js/i) || [])[0];
     if (!js) throw new Error(`the store's JS was not found (home page HTTP ${home.status})`);
-    const r = await gmGet('https:' + js);
+    const r = await gmGet('https:' + js, { reason: 'Page/Token' });
     const k = (r.responseText.match(/oauth_consumer_key="([A-Za-z0-9]+)"/) || [])[1];
     if (!k) throw new Error('no key in the store\'s JS');
     try { localStorage.setItem(SD_KEY_STORE, k); } catch (e) {}
