@@ -48,7 +48,7 @@ var ST_GATE_CSS = ''
   + '.st-gl-zh{color:var(--mbu-text-weak);margin-bottom:4px}.st-gl-zr{display:flex;align-items:center;gap:6px;height:26px;cursor:pointer;border-radius:var(--mbu-radius)}.st-gl-zr:hover{background:var(--mbu-bg-hover)}.st-gl-zr .st-gl-ic{position:static;margin:0}'
   + '.st-gl-zn{flex:0 0 220px;}.st-gl-zrs{flex:0 0 110px;color:var(--mbu-text-weak);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.st-gl-zn .h{color:var(--mbu-text-weak)}.st-gl-zn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.st-gl-zl{position:relative;flex:1;height:20px;margin-left:20px}.st-gl-zr .st-gl-ic.at{position:absolute;top:2px;margin:0 0 0 -19px}.st-gl-zl .st-gl-f{top:0;height:20px}.st-gl-zt{flex:0 0 44px;text-align:right;color:var(--mbu-text-weak)}'
   + '.st-gl-name{position:absolute;left:-180px;width:172px;top:0;line-height:30px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--mbu-text-weak)}'
-  + '.st-gl-name b{color:var(--mbu-text);font-weight:600}.st-gl-lane.me .st-gl-name b{color:var(--mbu-accent-text)}'
+  + '.st-gl-name .st-gl-ic.nm{position:static;width:16px;height:16px;margin:0 0 0 3px;vertical-align:middle}.st-gl-name b{color:var(--mbu-text);font-weight:600}.st-gl-lane.me .st-gl-name b{color:var(--mbu-accent-text)}'
   + '.st-gl-w,.st-gl-f{position:absolute;top:5px;height:20px;min-width:5px;border-radius:3px;box-shadow:inset 1px 0 0 var(--mbu-bg)}.st-gl-w,.st-gl-f{opacity:.6}.st-gl-w:hover,.st-gl-f:hover{opacity:1}'
   + '.st-gl-w{background:var(--mbu-border)}.st-gl-f{background:var(--mbu-ok)}.st-gl-f.bad{background:var(--mbu-error)}.st-gl-f.re{background:var(--mbu-warn)}.st-gl-f.go{background:var(--mbu-info)}.st-gl-f.off{background:var(--mbu-border)}'
   + '.st-gl-ax{position:relative;height:16px;border-top:1px solid var(--mbu-border-soft);font-size:11px;color:var(--mbu-text-weak)}'
@@ -432,7 +432,7 @@ function stGateLanesHtml(groups, all, now, me) {
   var rows = order.map(function (tab) {
     var s = Object.keys(lanes[tab].s).join(', ');
     return '<div class="st-gl-lane' + (tab === me ? ' me' : '') + '" data-lane="' + stEsc(tab) + '" style="--r:' + (lanes[tab].rows || 1) + '"><span class="st-gl-name" data-tip="' + stEsc('Tab ' + tab + (tab === me ? ' (this tab)' : '') + (s ? '\n' + s : '')) + '"><b>'
-      + stEsc(tab === me ? 'This tab' : tab.slice(0, 8)) + '</b>' + (s ? ' ' + stEsc(s) : '') + '</span>' + lanes[tab].bars.join('') + '</div>';
+      + stEsc(tab === me ? 'This tab' : tab.slice(0, 8)) + '</b>' + (s ? ' ' + Object.keys(lanes[tab].s).map(function (n) { return stGateIcon(n, 'nm'); }).join('') : '') + '</span>' + lanes[tab].bars.join('') + '</div>';
   }).join('') || '<div class="st-gl-lane"><span class="st-gl-none">No requests in the last ' + stGateSpanTxt() + '</span></div>';
   return '<div class="st-gl-bands">' + bands + '</div>' + rows
     + '<div class="st-gl-ax">' + [0, 25, 50, 75].map(function (p) { return '<span style="left:' + p + '%">−' + stGateSpanTxt(ST_GATE_SPAN * (100 - p) / 100).replace(/\.\d+/, function (d) { return d.length > 2 ? d.slice(0, 2) : d; }) + '</span>'; }).join('') + '<span style="left:100%">now</span></div>';
