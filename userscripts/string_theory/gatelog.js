@@ -37,7 +37,7 @@ var ST_GATE_CSS = ''
   + '.st-gl-ic{position:absolute;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;z-index:1;object-fit:contain}'
   + '.st-gl-ic.at{margin:-8px 0 0 -19px}#st-gate-hud-box .st-gl-ic.at{margin:-6px 0 0 -15px}#st-gate-hud-box .st-gl-ic{width:12px;height:12px;margin:-6px 0 0 -6px}#st-gate-hud-box .st-gl-cl b{display:none}#st-gate-hud-box .st-gl-cl{height:12px;margin-top:-6px}'
   + '.st-gl-cl{position:absolute;top:50%;height:18px;margin:-9px 0 0 -9px;z-index:2;display:flex;align-items:center;cursor:default}.st-gl-cl b{position:absolute;right:-6px;top:-5px;min-width:11px;height:11px;padding:0 2px;box-sizing:border-box;border-radius:6px;background:var(--mbu-accent);color:#fff;font-size:8px;line-height:11px;text-align:center}.st-gl-cl b{display:flex;padding:0;overflow:hidden;background:none}.st-gl-cl b i{font-style:normal;padding:0 2px;min-width:7px;background:var(--mbu-accent)}.st-gl-cl b i.x{background:#2f7fd6}.st-gl-cl.bad b{box-shadow:0 0 0 1px var(--mbu-error)}'
-  + '.st-gl-pi{position:absolute;top:-2px;width:24px;height:24px;margin-left:-27px;z-index:1}.st-gl-pi svg{width:24px;height:24px;display:block}.st-gl-pi .st-gl-ic{position:absolute;left:auto;top:auto;right:-5px;bottom:-5px;width:13px;height:13px;margin:0}'
+  + '.st-gl-pi{position:absolute;top:-2px;width:24px;height:24px;margin-left:-27px;z-index:1}.st-gl-pi svg{width:24px;height:24px;display:block}.st-gl-lt{display:block;width:24px;height:24px;border-radius:5px;color:#fff;font:700 14px/24px system-ui,sans-serif;text-align:center}.st-gl-pi .st-gl-ic{position:absolute;left:auto;top:auto;right:-5px;bottom:-5px;width:13px;height:13px;margin:0}'
   + '.st-gl-cl .st-gl-ic{position:static;margin:0}'
   + '.st-gl-zoom{position:fixed;z-index:2147483647;width:340px;padding:8px 10px;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);font-size:12px}'
   + '.st-gl-zh{color:var(--mbu-text-weak);margin-bottom:4px}.st-gl-zr{display:flex;align-items:center;gap:6px;height:26px}.st-gl-zr .st-gl-ic{position:static;margin:0}'
@@ -279,11 +279,18 @@ function stGatePill(gs) {
   var x = gs.filter(function (g) { return g.h; }).length, m = gs.length - x;
   return '<b>' + (m ? '<i class="m">' + m + '</i>' : '') + (x ? '<i class="x">' + x + '</i>' : '') + '</b>';
 }
+// a site with no icon of its own: the first letter of its name on a tile, in a color taken from the name
+function stGateLetter(h) {
+  var p = String(h).replace(/^https?:\/\//, '').split('/')[0].split(':')[0].split('.').filter(function (x) { return x !== 'www' && x !== 'api'; });
+  var n = p.length > 1 ? p[p.length - 2] : (p[0] || '?'), c = 0;
+  for (var i = 0; i < n.length; i++) c = (c * 31 + n.charCodeAt(i)) % 360;
+  return '<b class="st-gl-lt" style="background:hsl(' + c + ',55%,42%)">' + stEsc(n.charAt(0).toUpperCase()) + '</b>';
+}
 function stGateZoomIcon(x, left) {
   stGateIcons();
   var k = x.g.h ? stGateHostKey(x.g.h) : '';
-  if (!k) return stGateIcon(x.g.s, 'at ' + x.cls, '', left);
-  return '<span class="st-gl-pi" style="left:' + left.toFixed(2) + '%">' + stIcon(k, 24) + stGateIcon(x.g.s, '', '') + '</span>';
+  if (!x.g.h) return stGateIcon(x.g.s, 'at ' + x.cls, '', left);
+  return '<span class="st-gl-pi" style="left:' + left.toFixed(2) + '%">' + (k ? stIcon(k, 24) : stGateLetter(x.g.h)) + stGateIcon(x.g.s, '', '') + '</span>';
 }
 function stGateZoomHtml(items, now) {
   var a = Math.min.apply(null, items.map(function (x) { return x.a; })), b = Math.max.apply(null, items.map(function (x) { return x.b; }));
