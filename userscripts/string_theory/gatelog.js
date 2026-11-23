@@ -368,7 +368,7 @@ function stGateZoomMerge(items) {
   });
   return out.map(function (m) {
     if (!m.all) return m;
-    if (m.all.length < 3) return m.all;
+    if (m.all.length < 2) return m.all;
     var bad = m.all.filter(function (x) { return x.cls !== m.first.cls; })[0];
     return { g: m.first.g, cls: bad ? bad.cls : m.first.cls, kind: m.kind, n: m.all.length,
       a: Math.min.apply(null, m.all.map(function (x) { return x.a; })), b: Math.max.apply(null, m.all.map(function (x) { return x.b; })) };
