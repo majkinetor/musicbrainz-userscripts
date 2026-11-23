@@ -82,7 +82,7 @@ var ST_GATE_CSS = ''
   + '#st-gate td.t,#st-gate td.tab,#st-gate td.w{white-space:nowrap;color:var(--mbu-text-weak)}#st-gate tr.me td.tab{color:var(--mbu-accent-text)}'
   + '#st-gate td.s{white-space:nowrap}#st-gate td.l{overflow-wrap:anywhere;font-family:var(--mbu-font-mono);font-size:12px}'
   + '#st-gate .i{color:var(--mbu-text-weak);font-size:11px}#st-gate td.v{font-family:var(--mbu-font-mono);font-size:11px;color:var(--mbu-text-weak)}'
-  + [2, 3, 4, 5, 6, 8, 10, 11].map(function (n) { return '#st-gate.hc' + n + ' tr>:nth-child(' + n + ')'; }).join(',') + '{display:none}'
+  + [2, 3, 4, 5, 6, 7, 9, 11, 12].map(function (n) { return '#st-gate.hc' + n + ' tr>:nth-child(' + n + ')'; }).join(',') + '{display:none}'
   + '#st-gate-hud-box{position:fixed;right:14px;bottom:14px;width:520px;max-width:calc(100vw - 28px);z-index:var(--mbu-z-modal);background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:6px;padding:4px 8px 4px 188px;font-size:12px;opacity:.92}'
   + '#st-gate-hud-box .st-gate-hud-h{cursor:move;user-select:none;display:flex;gap:8px;align-items:center;margin-left:-180px;height:22px}#st-gate-hud-box .st-gate-hud-h>span:first-child{font-weight:600;cursor:pointer}'
   + '#st-gate-hud-box .st-gate-n{flex:1;color:var(--mbu-text-weak)}#st-gate-hud-box .bad{color:var(--mbu-error)}'
@@ -174,7 +174,7 @@ var ST_GATE_LOST = 30000;
 // with its id; an event without a label (the lead, the browser check) is a system row.
 // A request: { id, tab, s, l, b, t, end, evs, tries: [{ t, w, st, end }], res, cls, label, wait }
 //   cls: ok | re (answered after a retry) | bad | go (still on its way) | '' (shared, cached, cancelled)
-var ST_GATE_COLS = [[2, 'Tab'], [3, 'Script'], [4, 'Verb'], [5, 'Reason'], [6, 'Entity'], [8, 'Tries'], [10, 'Wait'], [11, 'Rate limit']];
+var ST_GATE_COLS = [[2, 'Tab'], [3, 'Script'], [4, 'Verb'], [5, 'Reason'], [6, 'Entity'], [7, 'Site'], [9, 'Tries'], [11, 'Wait'], [12, 'Rate limit']];
 function stGateGroups(all, now) {
   var groups = [], open = {};
   var done = function (g, res) { g.res = res; delete open[g.key]; };
@@ -310,7 +310,7 @@ function stGateTableHtml(list, me, opened, now) {
     var host = String(g0.h).split('//').pop().split('/')[0];
     out.push('<tr class="rq grp' + (open ? ' open' : '') + (g0.tab === me ? ' me' : '') + (stGateSel[gid] ? ' sel' : '') + '" data-id="' + stEsc(gid) + '"><td class="t">' + stGateTime(g0.t) + '</td>'
       + '<td class="tab">' + stEsc(g0.tab === me ? 'this tab' : String(g0.tab).slice(0, 8)) + '</td><td class="s">' + stEsc(g0.s || '') + '</td><td class="v">' + stEsc(g0.m || '') + '</td><td class="r">' + stEsc(g0.r || '') + '</td><td class="e"></td>'
-      + '<td class="l"><span class="st-gl-gx">' + (open ? '▾' : '▸') + '</span> <span class="i">' + stEsc(host) + '</span> ' + stEsc(stGateKind(g0)) + ' <b class="st-gl-zx">×' + run.length + '</b></td><td></td>'
+      + '<td class="i">' + stEsc(stGateSite(g0)) + '</td><td class="l"><span class="st-gl-gx">' + (open ? '▾' : '▸') + '</span> ' + stEsc(stGateKind(g0)) + ' <b class="st-gl-zx">×' + run.length + '</b></td><td></td>'
       + '<td><span class="st-gate-pill ' + (bad ? 'bad' : g0.cls) + '">' + (bad ? bad + ' failed' : run.length + ' requests') + '</span></td><td class="w">' + stGateSec(wait) + '</td><td></td><td></td></tr>');
     if (open) run.forEach(function (g) { out.push(stGateRowHtml(g, me, !!opened[g.id], now).replace('<tr class="rq', '<tr class="rq in')); });
   }
@@ -457,11 +457,13 @@ function stGateCfVal(g, k) {
 }
 var stGateUrlAll = {};   // the rows whose whole URL shows, not only its first line
 var stGateSel = {};   // the rows last picked on the time line
+// the site of a request without the scheme and a leading www.; MusicBrainz's own requests have none
+function stGateSite(g) { return g.h ? String(g.h).split('//').pop().split('/')[0].replace(/^www[.]/, '') : ''; }
 function stGateRowHtml(g, me, isOpen, now) {
   var tab = '<td class="tab">' + stEsc(g.tab === me ? 'this tab' : String(g.tab).slice(0, 8)) + '</td>';
   if (g.sys) {
     return '<tr class="sys' + (/^lead/.test(g.evs[0].e) ? ' lead' : '') + (g.tab === me ? ' me' : '') + '"><td class="t">' + stGateTime(g.t) + '</td>' + tab + '<td class="s">' + stEsc(g.s || '') + '</td>'
-      + '<td class="v"></td><td></td><td></td><td class="l">' + stEsc(stGateWhat(g.evs[0])) + '</td><td></td><td><span class="st-gate-pill ' + g.cls + '">' + stEsc(g.label) + '</span></td><td></td><td></td><td></td></tr>';
+      + '<td class="v"></td><td></td><td></td><td></td><td class="l">' + stEsc(stGateWhat(g.evs[0])) + '</td><td></td><td><span class="st-gate-pill ' + g.cls + '">' + stEsc(g.label) + '</span></td><td></td><td></td><td></td></tr>';
   }
   var tries = g.tries.map(function (x) { return '<i class="' + stGateTryCls(x.st) + '" data-tip="' + stGateTryTip(x.st) + '"></i>'; }).join('');
   var a = g.ans, meter = '';
@@ -472,7 +474,7 @@ function stGateRowHtml(g, me, isOpen, now) {
   var flight = g.tries.reduce(function (n, x) { return n + (x.end ? x.end - x.t : 0); }, 0);
   var row = '<tr class="rq' + (g.m && g.m !== 'GET' ? ' wr' : '') + (g.tab === me ? ' me' : '') + (isOpen ? ' open' : '') + (stGateSel[g.id] ? ' sel' : '') + '" data-id="' + stEsc(g.id) + '"><td class="t">' + stGateTime(g.t) + '</td>' + tab
     + '<td class="s">' + stEsc(g.s || '') + (g.b === 0 ? ' <span class="i" data-tip="Interactive: a click or a search\nIt goes ahead of background work">(i)</span>' : '') + '</td>'
-    + '<td class="v">' + stEsc(g.m || '') + '</td><td class="r">' + stEsc(g.r || '') + '</td><td class="e">' + stGateEntHtml(g) + '</td><td class="l"' + (g.u || g.h ? ' data-tip="' + stEsc((g.h ? g.h : '') + (g.u || '')) + '"' : '') + '>' + (g.h ? '<span class="i">' + stEsc(g.h) + '</span> ' : '') + stGateLabelHtml(g) + '</td><td><span class="st-gate-tries">' + tries + '</span></td>'
+    + '<td class="v">' + stEsc(g.m || '') + '</td><td class="r">' + stEsc(g.r || '') + '</td><td class="e">' + stGateEntHtml(g) + '</td><td class="i">' + stEsc(stGateSite(g)) + '</td><td class="l"' + (g.u || g.h ? ' data-tip="' + stEsc((g.h ? g.h : '') + (g.u || '')) + '"' : '') + '>' + stGateLabelHtml(g) + '</td><td><span class="st-gate-tries">' + tries + '</span></td>'
     + '<td><span class="st-gate-pill ' + g.cls + '">' + stEsc(g.label) + '</span></td>'
     + '<td class="w" data-tip="Waited in the gate + on the way">' + stGateSec(g.wait) + (flight ? ' + ' + stGateSec(flight) : '') + '</td><td>' + meter + '</td><td></td></tr>';
   if (!isOpen) return row;
@@ -492,7 +494,7 @@ function stGateRowHtml(g, me, isOpen, now) {
   var lim = /[?&]limit=(\d+)/.exec(qs), off = /[?&]offset=(\d+)/.exec(qs);
   if (lim) facts.push('<b class="st-gate-k">limit:</b> ' + lim[1] + (off ? ', offset ' + off[1] : ''));
   if (g.bs != null) facts.push('body ' + stGateBytes(g.bs)); else if (g.m && g.m !== 'GET') facts.push('body size unknown');
-  return row + '<tr class="steps"><td colspan="12">' + (full ? '<div class="st-gate-url' + (stGateUrlAll[g.id] ? ' all' : '') + '" data-tip="Click to show the whole URL or only its first line">' + stEsc(full) + '</div>' : '') + '<div class="st-gate-facts">' + facts.join(' · ') + '</div>' + stGateReqLaneHtml(g, now || Date.now()) + '<ol>' + g.evs.map(function (ev) {
+  return row + '<tr class="steps"><td colspan="13">' + (full ? '<div class="st-gate-url' + (stGateUrlAll[g.id] ? ' all' : '') + '" data-tip="Click to show the whole URL or only its first line">' + stEsc(full) + '</div>' : '') + '<div class="st-gate-facts">' + facts.join(' · ') + '</div>' + stGateReqLaneHtml(g, now || Date.now()) + '<ol>' + g.evs.map(function (ev) {
     return '<li' + (stGateBad(ev) ? ' class="bad"' : '') + '><span class="t">' + stGateTime(ev.t) + '</span><span class="e">' + stEsc(ev.e) + '</span><span>' + stEsc(stGateWhat(ev)) + '</span></li>';
   }).join('') + '</ol></td></tr>';
 }
@@ -697,7 +699,7 @@ function stGateBuild() {
     + '<button type="button" data-v="mb" data-tip="Only the requests to MusicBrainz">MusicBrainz</button>'
     + '<button type="button" data-v="other" data-tip="Only the requests to other hosts\nThe gate logs them but does not pace them">Other</button></span>'
     + '<span class="st-gate-seg st-gate-cols" role="group" aria-label="Columns">' + ST_GATE_COLS.map(function (c) { return '<button type="button" data-c="' + c[0] + '" data-tip="Show or hide this column">' + c[1] + '</button>'; }).join('') + '</span></div>'
-    + '<div id="st-gate-body"><table><thead><tr><th>Time</th><th>Tab' + stGateCfBtn('tab') + '</th><th>Script' + stGateCfBtn('s') + '</th><th>Verb' + stGateCfBtn('m') + '</th><th>Reason' + stGateCfBtn('r') + '</th><th>Entity' + stGateCfBtn('e') + '</th><th>Request' + stGateCfBtn('rq') + '</th><th>Tries' + stGateCfBtn('n') + '</th><th>Result' + stGateCfBtn('res') + '</th><th>Wait' + stGateCfBtn('wt') + '</th><th>Rate limit' + stGateCfBtn('rl') + '</th><th class="st-gate-mh"><button type="button" id="st-gate-menu" aria-haspopup="true" aria-expanded="false" data-tip="Filters and columns">☰</button></th></tr></thead><tbody></tbody></table></div>'
+    + '<div id="st-gate-body"><table><thead><tr><th>Time</th><th>Tab' + stGateCfBtn('tab') + '</th><th>Script' + stGateCfBtn('s') + '</th><th>Verb' + stGateCfBtn('m') + '</th><th>Reason' + stGateCfBtn('r') + '</th><th>Entity' + stGateCfBtn('e') + '</th><th>Site</th><th>Request' + stGateCfBtn('rq') + '</th><th>Tries' + stGateCfBtn('n') + '</th><th>Result' + stGateCfBtn('res') + '</th><th>Wait' + stGateCfBtn('wt') + '</th><th>Rate limit' + stGateCfBtn('rl') + '</th><th class="st-gate-mh"><button type="button" id="st-gate-menu" aria-haspopup="true" aria-expanded="false" data-tip="Filters and columns">☰</button></th></tr></thead><tbody></tbody></table></div>'
     + '<div class="mbu-logpop-grip" data-tip="Resize"></div>';
   document.documentElement.appendChild(pop);   // outside the body, which Event Horizon swaps
   var $ = function (s) { return pop.querySelector(s); };
@@ -737,7 +739,7 @@ function stGateBuild() {
       var msg = String(e && e.message || e);
       if (msg !== drawFailed) { drawFailed = msg; try { console.error('String Theory: the Network log could not show its events', e); } catch (x) { /* no console */ } }
       sig = '';
-      try { body.innerHTML = '<tr><td class="none" colspan="12">The gate log could not show its events (' + msg.replace(/[<&]/g, '') + '). Clear it to start again.</td></tr>'; } catch (x) { /* no body */ }
+      try { body.innerHTML = '<tr><td class="none" colspan="13">The gate log could not show its events (' + msg.replace(/[<&]/g, '') + '). Clear it to start again.</td></tr>'; } catch (x) { /* no body */ }
     }
   };
   var drawNow = function () {
@@ -775,7 +777,7 @@ function stGateBuild() {
       for (var i = 0; i < rows.length; i++) { var r = rows[i].getBoundingClientRect(); if (r.bottom > sTop) { anchor = rows[i].getAttribute('data-id'); at = r.top - sTop; break; } }
     }
     body.innerHTML = shown.length ? stGateTableHtml(shown.slice().reverse(), me, opened, now)
-      : '<tr><td class="none" colspan="12">' + (all.length ? 'No request matches.' : 'No requests went through the gate yet. Open or reload a MusicBrainz page that uses a script, then look again.') + '</td></tr>';
+      : '<tr><td class="none" colspan="13">' + (all.length ? 'No request matches.' : 'No requests went through the gate yet. Open or reload a MusicBrainz page that uses a script, then look again.') + '</td></tr>';
     scroller.scrollTop = top;
     if (anchor != null) {
       var same = body.querySelectorAll('tr.rq');
