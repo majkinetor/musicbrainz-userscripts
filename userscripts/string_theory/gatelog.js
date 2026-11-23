@@ -88,7 +88,7 @@ var ST_GATE_CSS = ''
   + '#st-gate table{table-layout:fixed}#st-gate td{overflow:hidden;text-overflow:ellipsis}#st-gate th:nth-child(1){width:96px}#st-gate th:nth-child(2){width:64px}#st-gate th:nth-child(3){width:140px}#st-gate th:nth-child(4){width:64px}#st-gate th:nth-child(5){width:130px}#st-gate th:nth-child(6){width:120px}#st-gate th:nth-child(7){width:56px}#st-gate th:nth-child(9){width:70px}#st-gate th:nth-child(10){width:120px}#st-gate th:nth-child(11){width:72px}#st-gate th:nth-child(12){width:96px}'
   + [2, 3, 4, 5, 6, 7, 9, 11, 12].map(function (n) { return '#st-gate.hc' + n + ' tr>:nth-child(' + n + ')'; }).join(',') + '{display:none}'
   + '#st-gate-hud-box{position:fixed;right:14px;bottom:14px;width:520px;max-width:calc(100vw - 28px);z-index:var(--mbu-z-modal);background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:6px;padding:4px 8px;font-size:12px;opacity:.92}'
-  + '#st-gate-hud-box .st-gate-hud-h{cursor:move;user-select:none;display:flex;gap:8px;align-items:center;height:22px}#st-gate-hud-box .st-gate-hud-h>span:first-child{font-weight:600;cursor:pointer}'
+  + '#st-gate-hud-box .st-gate-hud-h{cursor:move;user-select:none;display:flex;gap:8px;align-items:center;height:22px}#st-gate-hud-box .st-gate-hud-h>span:first-child{font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}'
   + '#st-gate-hud-box .st-gate-n{flex:1;color:var(--mbu-text-weak)}#st-gate-hud-box .bad{color:var(--mbu-error)}'
   + '#st-gate-hud-box .st-gate-hud-l{position:relative}#st-gate-hud-box .st-gl-bands{left:0}#st-gate-hud-box .st-gl-name{left:-180px;width:172px}#st-gate-hud-box .st-gl-lane{height:calc(var(--r,1)*20px)}#st-gate-hud-box .st-gl-sub{top:calc(var(--i)*20px);height:20px}#st-gate-hud-box .st-gl-cb{height:11px;font-size:9px;padding:0 4px}#st-gate-hud-box .st-gl-name{line-height:20px}#st-gate-hud-box .st-gl-w,#st-gate-hud-box .st-gl-f{top:3px;height:14px}'
   + '.st-gate-tries{display:inline-flex;gap:3px;vertical-align:middle}.st-gate-tries i{--c:var(--mbu-border);width:9px;height:9px;box-sizing:border-box;border-radius:2px;border:1px solid color-mix(in srgb,var(--c) 75%,transparent);background:color-mix(in srgb,var(--c) 30%,transparent)}'
@@ -276,7 +276,7 @@ function stGateIcon(name, cls, tip, left) {
   return '<img class="st-gl-ic' + (cls ? ' ' + cls : '') + '" alt=""' + (tip ? ' data-tip="' + stEsc(tip) + '"' : '') + (left != null ? ' style="left:' + left.toFixed(2) + '%"' : '') + ' src="' + stEsc(stGateIconSrc(name)) + '">';
 }
 // requests shorter than ST_GATE_SHORT ms are drawn as an icon; icons closer than ST_GATE_NEAR overlap
-var ST_GATE_SHORT = 1500, ST_GATE_NEAR = 2.2, stGateZoom = {}, ST_GATE_SUBS = 4;   // every lane has 4 fixed sub-rows
+var ST_GATE_SHORT = 1500, ST_GATE_NEAR = 2.2, stGateZoom = {}, ST_GATE_SUBS = 3;   // every lane has 3 fixed sub-rows
 // the zoomed view of a cluster: its own time line and one line per request
 // the cluster's count as a pill: MusicBrainz requests in one half, other sites in the other; an empty half is left out
 function stGateBurst(run) {
@@ -649,7 +649,7 @@ function stGateHud(on) {
   stGateCss();
   var el = document.createElement('div');
   el.id = 'st-gate-hud-box'; el.className = 'mbu-ui';
-  el.innerHTML = '<div class="st-gate-hud-h"><span>Network</span><span class="st-gate-n"></span><button type="button" class="mbu-ov-x" aria-label="Close the HUD">✕</button></div><div class="st-gate-hud-l"></div>';
+  el.innerHTML = '<div class="st-gate-hud-h"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Network</span><span class="st-gate-n"></span><button type="button" class="mbu-ov-x" aria-label="Close the HUD">✕</button></div><div class="st-gate-hud-l"></div>';
   document.documentElement.appendChild(el);
   var held = false, lanes = el.querySelector('.st-gate-hud-l');
   lanes.addEventListener('mouseenter', function () { held = true; });
