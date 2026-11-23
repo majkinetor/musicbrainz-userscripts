@@ -370,7 +370,10 @@ function stGateZoomHtml(items, now) {
 }
 function stGateLanesHtml(groups, all, now, me) {
   stGateZoomWire();
-  var t0 = now - ST_GATE_SPAN, pct = function (t) { return Math.max(0, Math.min(100, (t - t0) / ST_GATE_SPAN * 100)); };
+  // the time line keeps a margin at each end, so an icon or a cluster's pill does not go past the edge
+  var lw = ((document.querySelector('.st-gl-lane') || {}).clientWidth || 600), insL = 26 / lw * 100, insR = 120 / lw * 100;
+  var at = function (p) { return insL + p * (100 - insL - insR) / 100; };
+  var t0 = now - ST_GATE_SPAN, pct = function (t) { return at(Math.max(0, Math.min(100, (t - t0) / ST_GATE_SPAN * 100))); };
   var bar = function (cls, a, b, tip) { return '<i class="' + cls + '"' + (tip ? ' data-tip="' + stEsc(tip) + '"' : '') + ' style="left:' + pct(a).toFixed(2) + '%;width:' + (pct(b) - pct(a)).toFixed(2) + '%"></i>'; };
   var lanes = {}, order = [];
   stGateZoom = {};
@@ -438,7 +441,7 @@ function stGateLanesHtml(groups, all, now, me) {
       + stEsc(tab === me ? 'This tab' : tab.slice(0, 8)) + '</b>' + (s ? ' ' + Object.keys(lanes[tab].s).map(function (n) { return stGateIcon(n, 'nm'); }).join('') : '') + '</span>' + lanes[tab].bars.join('') + '</div>';
   }).join('') || '<div class="st-gl-lane"><span class="st-gl-none">No requests in the last ' + stGateSpanTxt() + '</span></div>';
   return '<div class="st-gl-bands">' + bands + '</div>' + rows
-    + '<div class="st-gl-ax">' + [0, 25, 50, 75].map(function (p) { return '<span style="left:' + p + '%">−' + stGateSpanTxt(ST_GATE_SPAN * (100 - p) / 100).replace(/\.\d+/, function (d) { return d.length > 2 ? d.slice(0, 2) : d; }) + '</span>'; }).join('') + '<span style="left:100%">now</span></div>';
+    + '<div class="st-gl-ax">' + [0, 25, 50, 75].map(function (p) { return '<span style="left:' + at(p).toFixed(2) + '%">−' + stGateSpanTxt(ST_GATE_SPAN * (100 - p) / 100).replace(/\.\d+/, function (d) { return d.length > 2 ? d.slice(0, 2) : d; }) + '</span>'; }).join('') + '<span style="left:' + at(100).toFixed(2) + '%">now</span></div>';
 }
 function stGateZoomWire() {
   if (stGateZoomWire.on) return; stGateZoomWire.on = 1;
