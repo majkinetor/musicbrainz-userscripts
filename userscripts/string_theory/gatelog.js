@@ -694,7 +694,7 @@ function stGateBuild() {
     + '<select id="st-gate-span" aria-label="Time line span" data-tip="How far back the time line goes">' + ST_GATE_SPANS.map(function (ms) { return '<option value="' + ms + '"' + (ms === ST_GATE_SPAN ? ' selected' : '') + '>' + stGateSpanTxt(ms) + '</option>'; }).join('') + '</select><span class="mbu-logpop-sp"></span>'
     + '<button type="button" class="mbu-logpop-copy" data-tip="Copy as Markdown\nThe state and every event, ready for a GitHub issue">⧉ Copy</button>'
     + '<button type="button" class="mbu-logpop-clear" data-tip="Clear the gate log\nThe events of every tab are deleted">Clear</button>'
-    + '<span class="mbu-logpop-sp"></span><button type="button" class="mbu-logpop-full" data-tip="Full screen\nA double-click on the title bar does the same">⛶</button>'
+    + '<span style="width:16px;flex:none"></span><button type="button" class="mbu-logpop-full" data-tip="Full screen\nA double-click on the title bar does the same">⛶</button>'
     + '<button type="button" class="mbu-logpop-min" data-tip="Minimize">–</button>'
     + '<button type="button" class="mbu-logpop-x" data-tip="Close">✕</button></div>'
     + '<div id="st-gate-state"></div><div id="st-gate-sum"></div><div id="st-gate-lanes"></div>'
