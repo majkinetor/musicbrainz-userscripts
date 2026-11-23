@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.23
+// @version      2026.11.23.110951
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -194,6 +194,7 @@ document.addEventListener('mc:findings', e => {
     const catPick = new Map();
     findings.filter(x => x.state === 'new' && catOf(x)).forEach(x => { if (!catPick.has(catOf(x)) || (x.cons && !catPick.get(catOf(x)).cons)) catPick.set(catOf(x), x); });
     picked[d.id] = new Set(findings.filter(x => x.state === 'new' && (!catOf(x) || catPick.get(catOf(x)) === x)).map(x => x.key));
+    if (d.id === 'is') isrcRunPicks(findings).forEach(k => picked.is.add(k));
     if (findings.some(x => x.state === 'new' && catOf(x) && catPick.get(catOf(x)) !== x)) Log.cat('Probe').debug('catalog numbers: one per label selected, ' + [...catPick.values()].map(x => x.label.name + ' ' + x.code).join(', '));
     afterPicks(d.id);
     const tally = findings.reduce((t, x) => (t[x.state] = (t[x.state] || 0) + 1, t), {});
@@ -1603,6 +1604,32 @@ function colHead(c) {
     const ask = modeOf(p) === 'ask' && found[p.id] && (!r || r.state !== 'busy');
     return esc(c.head) + (ask && FETCH_LABEL[p.id] ? ' <button type="button" class="mc-fetch" data-fetch="' + p.id + '" data-tip="Run this slow fetch now">' + (r ? '↻ ' : '') + FETCH_LABEL[p.id] + '</button>'
         : '<span class="mc-mode">' + modeOf(p) + '</span>');
+}
+// ISRCs that count up by one in track order, over the whole release or a whole medium, are one
+// batch from the label: an unsure one inside such a run is selected with the rest. Every track of the
+// run needs a code (found, or the one it already has), at least three of them.
+function isrcRunPicks(findings) {
+    if (!rel || !rel.tracks.length) return [];
+    const norm = v => String(v || '').toUpperCase().replace(/[\s-]/g, '');
+    const of = t => findings.find(x => x.track === t.rec && !x.kind);
+    const code = t => {
+        const x = of(t); if (!x) return null;
+        if (x.state === 'new' || x.state === 'unsure') return norm(x.isrc);
+        return x.state === 'linked' && (x.existing || []).length === 1 ? norm(x.existing[0]) : null;
+    };
+    const runs = ts => {
+        if (ts.length < 3) return false;
+        const cs = ts.map(code);
+        if (cs.some(c => !/^[A-Z]{2}[A-Z0-9]{3}[0-9]{7}$/.test(c || ''))) return false;
+        return cs.every((c, i) => c.slice(0, 7) === cs[0].slice(0, 7) && +c.slice(7) === +cs[0].slice(7) + i);
+    };
+    const groups = [rel.tracks];
+    const meds = [...new Set(rel.tracks.map(t => t.medium))];
+    if (meds.length > 1) meds.forEach(m => groups.push(rel.tracks.filter(t => t.medium === m)));
+    const keys = new Set();
+    groups.filter(runs).forEach(ts => ts.forEach(t => { const x = of(t); if (x && x.state === 'unsure') keys.add(x.key); }));
+    if (keys.size) Log.cat('Probe').info('ISRCs: ' + keys.size + ' unsure selected, they sit in a run that counts up by one');
+    return [...keys];
 }
 function trackFinding(pid, rec) {
     const r = results[pid];

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-23 10:51 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-23 11:10 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -2544,7 +2544,7 @@ One row per track, a column per script: the ISRCs and recording links ISRC Scout
 
 The Tracks header counts the changes taken in and on how many tracks; each track with one has a bar on its left.
 
-Click a finding to take it in or leave it out; new findings start taken in. A click elsewhere in a row shows the track in the [Inspector](#inspector).
+Click a finding to take it in or leave it out; new findings start taken in. An ISRC marked ⚠ starts left out, unless the release's ISRCs, or a medium's, count up by one track after track (`…67001`, `…67002`, `…67003`): such a run is taken in whole. A click elsewhere in a row shows the track in the [Inspector](#inspector).
 
 To take in or leave out many at once, hold a key while you click: the others follow the one you click.
 
