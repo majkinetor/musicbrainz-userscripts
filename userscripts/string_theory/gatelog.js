@@ -512,7 +512,7 @@ function stGateEntity(g) {
   return ST_GATE_ENTS.indexOf(e) >= 0 ? e : '';
 }
 // a row starts with its entity's icon (MBU-ENT-ICONS), or for another site with that site's platform icon (ST-ICONS)
-var ST_GATE_HOSTS = { itunes: 'apple', music: 'apple', 'youtu': 'youtube', '7digital': 'sevendigital', coverartarchive: 'archive' };
+var ST_GATE_HOSTS = { itunes: 'apple', music: 'apple', 'youtu': 'youtube', '7digital': 'sevendigital' };
 function stGateHostKey(h) {
   var p = String(h || '').replace(/^https?:\/\//, '').split('/')[0].split(':')[0].split('.').filter(function (x) { return x !== 'www' && x !== 'api'; });
   for (var i = 0; i < p.length - 1; i++) { var k = ST_GATE_HOSTS[p[i]] || p[i]; if (typeof ST_ICONS !== 'undefined' && ST_ICONS[k] && k !== 'globe') return k; }
