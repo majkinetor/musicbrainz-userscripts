@@ -340,7 +340,7 @@ function stGateZoomHtml(items, now) {
   var a = Math.min.apply(null, items.map(function (x) { return x.a; })), b = Math.max.apply(null, items.map(function (x) { return x.b; }));
   var span = Math.max(b - a, 200), pad = span * 0.08; a -= pad; span += pad * 2;
   var pct = function (t) { return (t - a) / span * 100; };
-  return '<div class="st-gl-zh">' + items.length + ' requests in ' + stGateSec(b - a - pad * 2) + stGateSplit(items.map(function (x) { return x.g; })) + '</div>' + stGateZoomMerge(items).map(function (x) {
+  return '<div class="st-gl-zh">' + stGateTime(a + pad) + ' · ' + items.length + ' requests in ' + stGateSec(b - a - pad * 2) + stGateSplit(items.map(function (x) { return x.g; })) + '</div>' + stGateZoomMerge(items).map(function (x) {
     var w = Math.max(pct(x.b) - pct(x.a), 1.5);
     return stGateTag('<div class="st-gl-zr">', x.g.id) + '<span class="st-gl-zn">' + '<b class="st-gl-zx">' + (x.n ? '×' + x.n : '') + '</b>' + '<span' + (x.g.h ? ' class="h"' : '') + '>' + (x.n ? stEsc(x.kind) : stGateLabelHtml(x.g)) + '</span></span>'
       + '<span class="st-gl-zrs">' + stEsc(x.g.r || '') + '</span>'
