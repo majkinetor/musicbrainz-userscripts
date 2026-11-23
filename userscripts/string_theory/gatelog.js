@@ -55,7 +55,7 @@ var ST_GATE_CSS = ''
   + '#st-gate td.l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40ch}'
   + '#st-gate .st-gate-hosts{margin-right:12px}#st-gate .st-gate-hosts button{display:inline-flex;align-items:center;padding:0 8px}#st-gate .st-gate-hosts button[aria-pressed=false] svg{opacity:.35;filter:grayscale(1)}'
   + '.st-gate-cfp label{display:flex;gap:6px;align-items:center;padding:4px 6px;cursor:pointer;border-radius:var(--mbu-radius);white-space:nowrap}.st-gate-cfp label:hover{background:var(--mbu-bg-hover)}.st-gate-cfp input[type=checkbox]{width:auto;margin:0;padding:0;accent-color:var(--mbu-accent)}'
-  + '#st-gate-hud{margin-right:4px}#st-gate-hud[aria-pressed=true]{background:var(--mbu-accent-soft)}'
+  + '#st-gate-hud{display:inline-flex;align-items:center;padding:4px;margin-right:4px;border:0;background:none;color:var(--mbu-text-weak);cursor:pointer;border-radius:var(--mbu-radius)}#st-gate-hud:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}#st-gate .st-gate-hosts{margin-right:8px}'
   + '.st-gate-seg{display:inline-flex;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden}'
   + '.st-gate-seg button{min-height:30px;padding:0 11px;border:0;background:none;color:var(--mbu-accent-text);font:inherit;font-size:12px;cursor:pointer}'
   + '.st-gate-seg button+button{border-left:1px solid var(--mbu-border)}'
@@ -688,14 +688,13 @@ function stGateBuild() {
   var mode = st.mode || 'all', hosts = st.hosts || { mb: st.src !== 'other', ext: st.src !== 'mb' }, hide = st.hide || [], sig = '', opened = {}, cf = {}, cft = {}, lastGroups = [];
   var pop = document.createElement('div');
   pop.id = 'st-gate'; pop.className = 'mbu-ui'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Network log');
-  pop.innerHTML = '<div class="mbu-logpop-h"><b>Network log</b> <span class="st-gate-n"></span><span class="mbu-logpop-sp"></span>'
-    + '<select id="st-gate-span" aria-label="Time line span" data-tip="How far back the time line goes">' + ST_GATE_SPANS.map(function (ms) { return '<option value="' + ms + '"' + (ms === ST_GATE_SPAN ? ' selected' : '') + '>' + stGateSpanTxt(ms) + '</option>'; }).join('') + '</select>'
-    + '<button type="button" id="st-gate-hud" data-tip="The time line in a small strip\nIt stays on screen when this window is closed">HUD</button>'
+  pop.innerHTML = '<div class="mbu-logpop-h"><button type="button" id="st-gate-hud" aria-label="Minimize to the HUD" data-tip="Minimize to the HUD\nThe time line in a small strip that stays on screen"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></button><b>Network log</b> <span class="st-gate-n"></span><span class="mbu-logpop-sp"></span>'
+    + '<span class="st-gate-seg st-gate-hosts" role="group" aria-label="Hosts"><button type="button" data-v="mb" data-tip="Requests to MusicBrainz">' + (stGateIcons(), stIcon ? stIcon('musicbrainz', 16) : 'MB') + '</button>'
+    + '<button type="button" data-v="ext" data-tip="Requests to other sites\nThe gate logs them but does not pace them">' + (stIcon ? stIcon('globe', 16) : 'Other') + '</button></span>'
+    + '<select id="st-gate-span" aria-label="Time line span" data-tip="How far back the time line goes">' + ST_GATE_SPANS.map(function (ms) { return '<option value="' + ms + '"' + (ms === ST_GATE_SPAN ? ' selected' : '') + '>' + stGateSpanTxt(ms) + '</option>'; }).join('') + '</select><span class="mbu-logpop-sp"></span>'
     + '<button type="button" class="mbu-logpop-copy" data-tip="Copy as Markdown\nThe state and every event, ready for a GitHub issue">⧉ Copy</button>'
     + '<button type="button" class="mbu-logpop-clear" data-tip="Clear the gate log\nThe events of every tab are deleted">Clear</button>'
-    + '<span class="st-gate-seg st-gate-hosts" role="group" aria-label="Hosts"><button type="button" data-v="mb" data-tip="Requests to MusicBrainz">' + (stGateIcons(), stIcon ? stIcon('musicbrainz', 14) : 'MB') + '</button>'
-    + '<button type="button" data-v="ext" data-tip="Requests to other sites\nThe gate logs them but does not pace them">' + (stIcon ? stIcon('globe', 14) : 'Other') + '</button></span>'
-    + '<button type="button" class="mbu-logpop-full" data-tip="Full screen\nA double-click on the title bar does the same">⛶</button>'
+    + '<span class="mbu-logpop-sp"></span><button type="button" class="mbu-logpop-full" data-tip="Full screen\nA double-click on the title bar does the same">⛶</button>'
     + '<button type="button" class="mbu-logpop-min" data-tip="Minimize">–</button>'
     + '<button type="button" class="mbu-logpop-x" data-tip="Close">✕</button></div>'
     + '<div id="st-gate-state"></div><div id="st-gate-sum"></div><div id="st-gate-lanes"></div>'
@@ -712,7 +711,7 @@ function stGateBuild() {
   var hudBtn = $('#st-gate-hud'), hudSeg = function () { hudBtn.setAttribute('aria-pressed', String(!!stGateHudEl)); };
   srcSeg(); colSeg(); hudSeg();
   pop.querySelector('.st-gate-hosts').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; hosts[b.dataset.v] = !hosts[b.dataset.v]; srcSeg(); stGateRemember({ hosts: hosts }); draw(); });
-  hudBtn.onclick = function () { stGateHud(!stGateHudEl); hudSeg(); };
+  hudBtn.onclick = function () { if (!stGateHudEl) stGateHud(true); stGateClose(); };
   var moOf = { n: 're', res: 'bad' }, cfOn = function (k) { return cf[k] != null || cft[k] != null || (mode !== 'all' && moOf[k] === mode); };
   var cfTip = function (b) {
     var k = b.dataset.cf, t = cft[k] != null ? 'Contains “' + cft[k] + '”' : cf[k] != null ? (cf[k] === '' ? '(empty)' : String(cf[k])) : moOf[k] === mode ? (k === 'n' ? 'Retried' : 'Failed') : '';
