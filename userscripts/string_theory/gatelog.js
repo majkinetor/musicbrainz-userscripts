@@ -657,7 +657,7 @@ function stGateHud(on) {
   stGateCss();
   var el = document.createElement('div');
   el.id = 'st-gate-hud-box'; el.className = 'mbu-ui';
-  el.innerHTML = '<div class="st-gate-hud-h"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Network</span><span class="st-gate-n"></span><button type="button" class="mbu-ov-x" aria-label="Close the HUD">✕</button></div><div class="st-gate-hud-l"></div>';
+  el.innerHTML = '<div class="st-gate-hud-h"><span data-tip="Open the network log\nA double click anywhere on the HUD does the same"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Network</span><span class="st-gate-n"></span><button type="button" class="mbu-ov-x" aria-label="Close the HUD">✕</button></div><div class="st-gate-hud-l"></div>';
   document.documentElement.appendChild(el);
   var held = false, lanes = el.querySelector('.st-gate-hud-l');
   lanes.addEventListener('mouseenter', function () { held = true; });
@@ -747,7 +747,7 @@ function stGateBuild() {
   var mode = st.mode || 'all', hosts = st.hosts || { mb: st.src !== 'other', ext: st.src !== 'mb' }, hide = st.hide || [], sig = '', opened = {}, cf = {}, cft = {}, lastGroups = [];
   var pop = document.createElement('div');
   pop.id = 'st-gate'; pop.className = 'mbu-ui'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Network log');
-  pop.innerHTML = '<div class="mbu-logpop-h"><button type="button" id="st-gate-hud" aria-label="Minimize to the HUD" data-tip="Minimize to the HUD\nThe time line in a small strip that stays on screen"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></button><b>Network log</b> <span class="st-gate-n"></span><span class="mbu-logpop-sp"></span>'
+  pop.innerHTML = '<div class="mbu-logpop-h"><button type="button" id="st-gate-hud" aria-label="Minimize to the HUD" data-tip="Minimize to the HUD\nThe time line in a small strip that stays on screen\nA double click in the window does the same"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></button><b>Network log</b> <span class="st-gate-n"></span><span class="mbu-logpop-sp"></span>'
     + '<span class="st-gate-seg st-gate-hosts" role="group" aria-label="Hosts"><button type="button" data-v="mb" data-tip="Requests to MusicBrainz">' + (stGateIcons(), stIcon ? stIcon('musicbrainz', 16) : 'MB') + '</button>'
     + '<button type="button" data-v="ext" data-tip="Requests to other sites\nThe gate logs them but does not pace them">' + (stIcon ? stIcon('globe', 16) : 'Other') + '</button></span>'
     + '<select id="st-gate-span" aria-label="Time line span" data-tip="How far back the time line goes">' + ST_GATE_SPANS.map(function (ms) { return '<option value="' + ms + '"' + (ms === ST_GATE_SPAN ? ' selected' : '') + '>' + stGateSpanTxt(ms) + '</option>'; }).join('') + '</select><span class="mbu-logpop-sp"></span>'
@@ -771,6 +771,11 @@ function stGateBuild() {
   srcSeg(); colSeg(); hudSeg();
   pop.querySelector('.st-gate-hosts').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; hosts[b.dataset.v] = !hosts[b.dataset.v]; srcSeg(); stGateRemember({ hosts: hosts }); draw(); });
   hudBtn.onclick = function () { if (!stGateHudEl) stGateHud(true); stGateClose(); };
+  // a double click in the window (not on its title bar, which goes full screen, nor on a control) switches to the HUD
+  pop.addEventListener('dblclick', function (e) {
+    if (e.target.closest('.mbu-logpop-h,button,select,input,textarea,a')) return;
+    hudBtn.onclick();
+  });
   // a drag on the line between two headers resizes the column on its left; the widths last while the page is open
   pop.querySelectorAll('#st-gate-body th').forEach(function (th, i) {
     if (stGateColW[i]) th.style.width = stGateColW[i] + 'px';
