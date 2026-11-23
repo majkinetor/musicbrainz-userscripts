@@ -53,7 +53,7 @@ var ST_GATE_CSS = ''
   + '.st-gate-ent{display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-right:5px;flex:none}'
   + '#st-gate .st-gate-facts{font-size:12px;color:var(--mbu-text-weak);padding:0 0 6px}#st-gate .st-gate-k{font-weight:600;color:var(--mbu-accent,var(--mbu-text))}#st-gate .st-gate-url{width:0;min-width:100%;box-sizing:border-box;font:12px/1.4 monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;user-select:text;padding:4px 0 6px;color:var(--mbu-text)}#st-gate .st-gate-url.all{white-space:normal;word-break:break-all}'
   + '#st-gate td.l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40ch}'
-  + '#st-gate .st-gate-hosts{margin-right:12px}#st-gate .st-gate-hosts button{display:inline-flex;align-items:center;padding:0 8px}#st-gate .st-gate-hosts button[aria-pressed=false] svg{opacity:.35;filter:grayscale(1)}#st-gate .st-gate-mode{margin-right:6px}'
+  + '#st-gate .st-gate-hosts{margin-right:12px}#st-gate .st-gate-hosts button{display:inline-flex;align-items:center;padding:0 8px}#st-gate .st-gate-hosts button[aria-pressed=false] svg{opacity:.35;filter:grayscale(1)}'
   + '.st-gate-cfp label{display:flex;gap:6px;align-items:center;padding:4px 6px;cursor:pointer;border-radius:var(--mbu-radius);white-space:nowrap}.st-gate-cfp label:hover{background:var(--mbu-bg-hover)}'
   + '#st-gate-hud{margin-right:4px}#st-gate-hud[aria-pressed=true]{background:var(--mbu-accent-soft)}'
   + '.st-gate-seg{display:inline-flex;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden}'
@@ -693,8 +693,6 @@ function stGateBuild() {
     + '<button type="button" id="st-gate-hud" data-tip="The time line in a small strip\nIt stays on screen when this window is closed">HUD</button>'
     + '<button type="button" class="mbu-logpop-copy" data-tip="Copy as Markdown\nThe state and every event, ready for a GitHub issue">⧉ Copy</button>'
     + '<button type="button" class="mbu-logpop-clear" data-tip="Clear the gate log\nThe events of every tab are deleted">Clear</button>'
-    + '<span class="st-gate-seg st-gate-mode" role="group" aria-label="Show"><button type="button" data-m="bad" data-tip="Only the requests that failed">Failed</button>'
-    + '<button type="button" data-m="re" data-tip="Only the requests that took more than one try">Retried</button></span>'
     + '<span class="st-gate-seg st-gate-hosts" role="group" aria-label="Hosts"><button type="button" data-v="mb" data-tip="Requests to MusicBrainz">' + stIcon('musicbrainz', 14) + '</button>'
     + '<button type="button" data-v="ext" data-tip="Requests to other sites\nThe gate logs them but does not pace them">' + stIcon('globe', 14) + '</button></span>'
     + '<button type="button" class="mbu-logpop-full" data-tip="Full screen\nA double-click on the title bar does the same">⛶</button>'
@@ -706,8 +704,6 @@ function stGateBuild() {
   document.documentElement.appendChild(pop);   // outside the body, which Event Horizon swaps
   var $ = function (s) { return pop.querySelector(s); };
   var body = $('tbody'), scroller = $('#st-gate-body');
-  var seg = function () { Array.prototype.forEach.call(pop.querySelectorAll('.st-gate-mode button'), function (b) { b.setAttribute('aria-pressed', String(b.dataset.m === mode)); }); };
-  seg();
   var srcSeg = function () { Array.prototype.forEach.call(pop.querySelectorAll('.st-gate-hosts button'), function (b) { b.setAttribute('aria-pressed', String(!!hosts[b.dataset.v])); }); };
   var colSeg = function () {
     ST_GATE_COLS.forEach(function (c) { pop.classList.toggle('hc' + c[0], hide.indexOf(c[0]) >= 0); });
@@ -717,6 +713,7 @@ function stGateBuild() {
   srcSeg(); colSeg(); hudSeg();
   pop.querySelector('.st-gate-hosts').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; hosts[b.dataset.v] = !hosts[b.dataset.v]; srcSeg(); stGateRemember({ hosts: hosts }); draw(); });
   hudBtn.onclick = function () { stGateHud(!stGateHudEl); hudSeg(); };
+  var moOf = { n: 're', res: 'bad' }, cfOn = function (k) { return cf[k] != null || cft[k] != null || (mode !== 'all' && moOf[k] === mode); };
   var drawFailed = '', lanesHeld = false, shownIds = [];
   var draw = function () {
     try { drawNow(); } catch (e) {
@@ -748,7 +745,7 @@ function stGateBuild() {
       $('.st-gate-n').textContent = shownIds.length + ' of ' + n + ' requests shown' + (why ? ' (' + why + ')' : '');
     }
     // the funnel of every column that filters stands out
-    pop.querySelectorAll('.st-gate-cf').forEach(function (b) { b.classList.toggle('on', cf[b.dataset.cf] != null || cft[b.dataset.cf] != null); });
+    pop.querySelectorAll('.st-gate-cf').forEach(function (b) { b.classList.toggle('on', cfOn(b.dataset.cf)); });
     var key = shown.map(function (g) { return g.id + ':' + g.evs.length + ':' + g.label; }).join('|') + '#' + Object.keys(opened).join('|') + '#' + me;
     if (key === sig) return;
     sig = key;
@@ -811,6 +808,7 @@ function stGateBuild() {
     if (!b) { if (e.target.closest && e.target.closest('thead')) { e.preventDefault(); colMenu(e); } return; }
     e.preventDefault();
     delete cf[b.dataset.cf]; delete cft[b.dataset.cf];
+    if (moOf[b.dataset.cf] === mode) { mode = 'all'; stGateRemember({ mode: mode }); }
     b.classList.remove('on');
     cfClose(); draw();
   });
@@ -847,7 +845,7 @@ function stGateBuild() {
     if (cft[k]) inp.value = cft[k];
     var fill = function () {
       var t = inp.value.trim().toLowerCase();
-      ul.innerHTML = (t ? '<li data-t="' + stEsc(t) + '"><span>Contains “' + stEsc(t) + '”</span></li>' : '<li data-v="" class="' + (cf[k] == null && cft[k] == null ? 'on' : '') + '"><span>All</span></li>') + vals.filter(function (v) { return !t || cfName(k, v).toLowerCase().indexOf(t) >= 0; }).map(function (v) {
+      ul.innerHTML = (t ? '<li data-t="' + stEsc(t) + '"><span>Contains “' + stEsc(t) + '”</span></li>' : '<li data-v="" class="' + (cfOn(k) ? '' : 'on') + '"><span>All</span></li>' + (moOf[k] ? '<li data-mo="' + moOf[k] + '" class="' + (mode === moOf[k] ? 'on' : '') + '"><span>' + (k === 'n' ? 'Retried' : 'Failed') + '</span></li>' : '')) + vals.filter(function (v) { return !t || cfName(k, v).toLowerCase().indexOf(t) >= 0; }).map(function (v) {
         return '<li data-v="' + stEsc(v) + '" data-set="1" class="' + (cf[k] === v ? 'on' : '') + '"><span>' + stEsc(cfName(k, v)) + '</span><b>' + cnt[v] + '</b></li>';
       }).join('');
       var first = ul.querySelector('li'); if (first) first.classList.add('act');
@@ -855,8 +853,9 @@ function stGateBuild() {
     var pick = function (li) {
       if (!li) return;
       delete cf[k]; delete cft[k];
-      if (li.dataset.t) cft[k] = li.dataset.t; else if (li.dataset.set) cf[k] = li.dataset.v;
-      b.classList.toggle('on', cf[k] != null || cft[k] != null);
+      if (moOf[k]) { mode = li.dataset.mo || (mode === moOf[k] ? 'all' : mode); stGateRemember({ mode: mode }); }
+      if (li.dataset.mo) { /* the mode alone */ } else if (li.dataset.t) cft[k] = li.dataset.t; else if (li.dataset.set) cf[k] = li.dataset.v;
+      b.classList.toggle('on', cfOn(k));
       cfClose(); draw();
     };
     inp.addEventListener('input', fill);
@@ -895,11 +894,6 @@ function stGateBuild() {
   document.addEventListener('click', openFromLanes);
   lanes.addEventListener('mouseenter', function () { lanesHeld = true; });
   lanes.addEventListener('mouseleave', function () { lanesHeld = false; draw(); });
-  $('.st-gate-mode').addEventListener('click', function (e) {
-    var b = e.target.closest('button');
-    if (!b) return;
-    mode = b.dataset.m === mode ? 'all' : b.dataset.m; seg(); stGateRemember({ mode: mode }); draw();
-  });
   $('.mbu-logpop-copy').onclick = function () {
     stCopy(stGateMarkdown(stGateEvents(), stGateTab()), function (ok) { try { U.mbuToast(ok ? 'Network log copied' : 'Could not copy the network log'); } catch (e) { /* no toast */ } });
   };
