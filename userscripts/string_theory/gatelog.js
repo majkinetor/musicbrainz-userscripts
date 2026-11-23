@@ -42,7 +42,7 @@ var ST_GATE_CSS = ''
   + '#st-gate-tabs{display:flex;flex-wrap:wrap;gap:2px;border-bottom:1px solid var(--mbu-border);margin-top:6px}#st-gate-tabs:empty{display:none}#st-gate-tabs>span{all:unset;font-size:12px;padding:6px 12px;color:var(--mbu-text-muted,#888);border-bottom:2px solid transparent;display:flex;gap:6px;align-items:center;cursor:pointer;margin-bottom:-1px}#st-gate-tabs>span.on{color:var(--mbu-text);border-bottom-color:var(--mbu-accent)}#st-gate-tabs>span:hover{color:var(--mbu-text)}#st-gate-tabs .x{font-size:15px;line-height:1;padding:0 2px;border-radius:3px}#st-gate-tabs .x:hover{background:color-mix(in srgb,var(--mbu-text) 12%,transparent)}.st-gl-lane[data-lane]{cursor:pointer}'
   + '#st-gate-split{flex:0 0 auto;height:6px;margin:-4px 0 -2px;cursor:row-resize;position:relative;z-index:2}#st-gate-split::after{content:"";position:absolute;left:0;right:0;top:2px;height:2px;background:transparent}#st-gate-split:hover::after,#st-gate-split.on::after{background:var(--mbu-accent)}#st-gate-hud-box #st-gate-split{display:none}'
   + '.st-gate-pane{position:relative;display:flex;flex-direction:column;min-height:0}.st-gate-pane[data-pane=lanes]{flex:0 1 auto}.st-gate-pane[data-pane=body]{flex:1 1 auto}'
-  + '.st-gate-sumrow{display:flex;align-items:flex-start;gap:8px}.st-gate-sumrow>#st-gate-sum{flex:1 1 auto;min-width:0}.st-gate-sumrow>.st-gate-mx{flex:0 0 auto;margin:5px 13px 0 0}.st-gate-sumrow>.st-gate-zm{flex:0 0 auto;margin:5px 0 0 0}.st-gate-zm:not(.on){opacity:.45}.st-gate-mx,.st-gate-zm{font-size:12px;line-height:normal;color:var(--mbu-accent-text);background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}.st-gate-pane .st-gate-mx{position:absolute;right:16px;top:3px;z-index:4}.st-gate-mx:hover{background:var(--mbu-accent-soft)}#st-gate[data-max=body] .st-gate-sumrow>.st-gate-mx{display:none}.st-gate-mx.on{color:var(--mbu-accent)}'
+  + '.st-gate-sumrow{display:flex;align-items:flex-start;gap:8px}.st-gate-sumrow>#st-gate-sum{flex:1 1 auto;min-width:0}.st-gate-sumrow>.st-gate-mx{flex:0 0 auto;margin:5px 13px 0 0}.st-gate-sumrow>.st-gate-zm{flex:0 0 auto;margin:5px 0 0 0}.st-gate-zm:not(.on){opacity:.45}.st-gate-mx,.st-gate-zm,.st-gate-fit{font-size:12px;line-height:normal;color:var(--mbu-accent-text);background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}.st-gate-pane .st-gate-mx{position:absolute;right:16px;top:3px;z-index:4}.st-gate-pane .st-gate-fit{position:absolute;right:52px;top:3px;z-index:4}.st-gate-mx:hover,.st-gate-fit:hover{background:var(--mbu-accent-soft)}#st-gate[data-max=body] .st-gate-sumrow>.st-gate-mx{display:none}.st-gate-mx.on{color:var(--mbu-accent)}'
   + '#st-gate[data-max=lanes] .st-gate-pane[data-pane=lanes]{flex:1 1 auto}#st-gate[data-max=lanes] #st-gate-lanes{max-height:none!important;height:auto!important;flex:1 1 auto}#st-gate[data-max=lanes] #st-gate-tabs,#st-gate[data-max=lanes] .st-gate-pane[data-pane=body],#st-gate[data-max] #st-gate-split,#st-gate[data-max=body] .st-gate-pane[data-pane=lanes]{display:none}'
   + '.st-gl-sub{position:absolute;left:0;right:0;top:calc(var(--i)*30px);height:30px}.st-gl-cl .st-gl-ic+.st-gl-ic{margin-left:1px}.st-gl-ic.small{scale:.8}.st-gl-cl .st-gl-ic.small{scale:none;width:17px!important;height:17px!important;margin:0 2px}'
   + '.st-gl-cb{flex:1 0 auto;min-width:fit-content;height:14px;margin-left:2px;border-radius:7px;display:flex;align-items:center;gap:4px;padding:0 6px;box-sizing:border-box;background:color-mix(in srgb,var(--mbu-ok) 25%,transparent);font:600 10px/1 sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}'
@@ -90,7 +90,7 @@ var ST_GATE_CSS = ''
   + '#st-gate th{overflow:visible}#st-gate .st-gate-rz{position:absolute;top:0;right:-4px;width:8px;height:100%;cursor:col-resize;z-index:2}'
   + '#st-gate .st-gate-rz::after{content:"";position:absolute;left:3px;top:20%;height:60%;width:1px;background:var(--mbu-border)}#st-gate .st-gate-rz:hover::after,#st-gate .st-gate-rz.on::after{top:0;height:100%;background:var(--mbu-accent)}'
   + '#st-gate tr>:last-child>.st-gate-rz{display:none}'
-  + '#st-gate table{table-layout:fixed}#st-gate td{overflow:hidden;text-overflow:ellipsis}#st-gate th:nth-child(1){width:96px}#st-gate th:nth-child(2){width:64px}#st-gate th:nth-child(3){width:140px}#st-gate th:nth-child(4){width:64px}#st-gate th:nth-child(5){width:130px}#st-gate th:nth-child(6){width:120px}#st-gate th:nth-child(7){width:56px}#st-gate th:nth-child(9){width:70px}#st-gate th:nth-child(10){width:120px}#st-gate th:nth-child(11){width:72px}#st-gate th:nth-child(12){width:124px}'
+  + '#st-gate table{table-layout:fixed}#st-gate table.st-gate-measure{table-layout:auto;width:max-content}#st-gate table.st-gate-measure th{width:auto!important}#st-gate table.st-gate-measure td{white-space:nowrap;max-width:none!important}#st-gate table.st-gate-measure tbody tr:not(.rq):not(.sys){display:none}#st-gate td{overflow:hidden;text-overflow:ellipsis}#st-gate th:nth-child(1){width:96px}#st-gate th:nth-child(2){width:64px}#st-gate th:nth-child(3){width:140px}#st-gate th:nth-child(4){width:64px}#st-gate th:nth-child(5){width:130px}#st-gate th:nth-child(6){width:120px}#st-gate th:nth-child(7){width:56px}#st-gate th:nth-child(9){width:70px}#st-gate th:nth-child(10){width:120px}#st-gate th:nth-child(11){width:72px}#st-gate th:nth-child(12){width:124px}'
   + [2, 3, 4, 5, 6, 7, 9, 11, 12].map(function (n) { return '#st-gate.hc' + n + ' tr>:nth-child(' + n + ')'; }).join(',') + '{display:none}'
   + '#st-gate-hud-box{position:fixed;right:14px;bottom:14px;width:520px;max-width:calc(100vw - 28px);z-index:var(--mbu-z-modal);background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:6px;padding:4px 8px;font-size:12px;opacity:.92}'
   + '#st-gate-hud-box .st-gate-hud-h{cursor:move;user-select:none;display:flex;gap:8px;align-items:center;height:22px}#st-gate-hud-box .st-gate-hud-h>span:first-child{font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}'
@@ -816,7 +816,7 @@ function stGateBuild() {
     + '<button type="button" class="mbu-logpop-min" data-tip="Minimize">–</button>'
     + '<button type="button" class="mbu-logpop-x" data-tip="Close">✕</button></div>'
     + '<div id="st-gate-state"></div><div class="st-gate-sumrow"><div id="st-gate-sum"></div><button type="button" class="st-gate-zm" data-tip="Reset the zoom\nShows the whole time line again\nThe mouse wheel on the time line zooms in and out\nShift and the wheel move it to the left or right\nA right click on the time line resets the zoom too">🔍</button><button type="button" class="st-gate-mx" data-mx="lanes" data-tip="Maximize the time line\nA second click restores both panels">⛶</button></div><div class="st-gate-pane" data-pane="lanes"><div id="st-gate-lanes"></div></div><div id="st-gate-split" data-tip="Drag to resize\nA double click resets"></div><div id="st-gate-tabs" role="tablist"></div>'
-    + '<div class="st-gate-pane" data-pane="body"><button type="button" class="st-gate-mx" data-mx="body" data-tip="Maximize the request table\nA second click restores both panels">⛶</button><div id="st-gate-body"><table><thead><tr><th>Time</th><th>Tab' + stGateCfBtn('tab') + '</th><th>Script' + stGateCfBtn('s') + '</th><th>Verb' + stGateCfBtn('m') + '</th><th>Reason' + stGateCfBtn('r') + '</th><th>Entity' + stGateCfBtn('e') + '</th><th>Site</th><th>Request' + stGateCfBtn('rq') + '</th><th>Tries' + stGateCfBtn('n') + '</th><th>Result' + stGateCfBtn('res') + '</th><th>Wait' + stGateCfBtn('wt') + '</th><th>Rate limit' + stGateCfBtn('rl') + '</th></tr></thead><tbody></tbody></table></div></div>'
+    + '<div class="st-gate-pane" data-pane="body"><button type="button" class="st-gate-fit" data-tip="Fit the columns\nEach column gets the width of its widest cell\nThe Request column takes the rest\nA double click on a column\'s edge fits that column only">↔</button><button type="button" class="st-gate-mx" data-mx="body" data-tip="Maximize the request table\nA second click restores both panels">⛶</button><div id="st-gate-body"><table><thead><tr><th>Time</th><th>Tab' + stGateCfBtn('tab') + '</th><th>Script' + stGateCfBtn('s') + '</th><th>Verb' + stGateCfBtn('m') + '</th><th>Reason' + stGateCfBtn('r') + '</th><th>Entity' + stGateCfBtn('e') + '</th><th>Site</th><th>Request' + stGateCfBtn('rq') + '</th><th>Tries' + stGateCfBtn('n') + '</th><th>Result' + stGateCfBtn('res') + '</th><th>Wait' + stGateCfBtn('wt') + '</th><th>Rate limit' + stGateCfBtn('rl') + '</th></tr></thead><tbody></tbody></table></div></div>'
     + '<div class="mbu-logpop-grip" data-tip="Resize"></div>';
   document.documentElement.appendChild(pop);   // outside the body, which Event Horizon swaps
   var $ = function (s) { return pop.querySelector(s); };
@@ -843,6 +843,20 @@ function stGateBuild() {
     if (Date.now() - born < 800 || e.target.closest('.mbu-logpop-h,thead,button,select,input,textarea,a')) return;
     hudBtn.onclick();
   });
+  // the width each column needs for its widest cell, measured with the table laid out at its natural size for a moment
+  var colFit = function () {
+    var tb = pop.querySelector('#st-gate-body table'); tb.classList.add('st-gate-measure');
+    var ws = [].map.call(tb.querySelectorAll('thead th'), function (th) { return th.offsetWidth ? Math.max(32, Math.ceil(th.getBoundingClientRect().width) + 2) : 0; });
+    tb.classList.remove('st-gate-measure'); return ws;
+  };
+  var fitBtn = pop.querySelector('.st-gate-fit');
+  fitBtn.addEventListener('pointerdown', function (e) { e.stopPropagation(); });
+  fitBtn.addEventListener('dblclick', function (e) { e.stopPropagation(); });
+  // the Request column keeps no width of its own: it takes the space the others leave
+  fitBtn.addEventListener('click', function () {
+    var ws = colFit();
+    pop.querySelectorAll('#st-gate-body th').forEach(function (th, i) { if (i !== 7 && ws[i]) { stGateColW[i] = ws[i]; th.style.width = ws[i] + 'px'; } });
+  });
   // a drag on the line between two headers resizes the column on its left; the widths last while the page is open
   pop.querySelectorAll('#st-gate-body th').forEach(function (th, i) {
     if (stGateColW[i]) th.style.width = stGateColW[i] + 'px';
@@ -851,11 +865,8 @@ function stGateBuild() {
     // a double click on the line fits the column to its widest cell
     rz.addEventListener('dblclick', function (e) {
       e.preventDefault(); e.stopPropagation();
-      var w = th.scrollWidth;
-      pop.querySelectorAll('#st-gate-body tr.rq, #st-gate-body tr.sys').forEach(function (tr) {
-        var td = tr.children[i]; if (td && td.colSpan === 1) w = Math.max(w, td.scrollWidth);
-      });
-      stGateColW[i] = Math.max(32, Math.ceil(w) + 2); th.style.width = stGateColW[i] + 'px';
+      var w = colFit()[i]; if (!w) return;
+      stGateColW[i] = w; th.style.width = w + 'px';
     });
     rz.addEventListener('mousedown', function (e) {
       e.preventDefault(); e.stopPropagation();
