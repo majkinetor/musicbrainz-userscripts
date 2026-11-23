@@ -687,7 +687,9 @@ function stGateHud(on) {
   var draw = function () {
     if (!el.isConnected) { clearInterval(el.timer); return; }
     try {
-      var all = stGateEvents(), now = Date.now(), groups = stGateGroups(all, now), c = stGateCount(groups.filter(function (g) { return now - g.t <= ST_GATE_SPAN; }));
+      var all = stGateEvents(), now = Date.now(), st = stGateWinState(), hosts = st.hosts || { mb: st.src !== 'other', ext: st.src !== 'mb' };
+      // the big window's site filter applies here too
+      var groups = stGateGroups(all, now).filter(function (g) { return g.sys || (g.h ? hosts.ext : hosts.mb); }), c = stGateCount(groups.filter(function (g) { return now - g.t <= ST_GATE_SPAN; }));
       el.querySelector('.st-gate-n').innerHTML = c.n + ' in ' + stGateSpanTxt() + (c.bad ? ' · <span class="bad">' + c.bad + ' failed</span>' : '') + (c.go ? ' · ' + c.go + ' on the way' : '');
       if (!held) lanes.innerHTML = stGateLanesHtml(groups, all, now, stGateTab());
     } catch (e) { /* a bad event: the next tick tries again */ }
