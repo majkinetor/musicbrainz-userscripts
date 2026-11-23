@@ -714,6 +714,11 @@ function stGateBuild() {
   pop.querySelector('.st-gate-hosts').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; hosts[b.dataset.v] = !hosts[b.dataset.v]; srcSeg(); stGateRemember({ hosts: hosts }); draw(); });
   hudBtn.onclick = function () { stGateHud(!stGateHudEl); hudSeg(); };
   var moOf = { n: 're', res: 'bad' }, cfOn = function (k) { return cf[k] != null || cft[k] != null || (mode !== 'all' && moOf[k] === mode); };
+  var cfTip = function (b) {
+    var k = b.dataset.cf, t = cft[k] != null ? 'Contains “' + cft[k] + '”' : cf[k] != null ? (cf[k] === '' ? '(empty)' : String(cf[k])) : moOf[k] === mode ? (k === 'n' ? 'Retried' : 'Failed') : '';
+    b.classList.toggle('on', !!t);
+    if (t) b.dataset.tip = 'Filter: ' + t + '\nRight click clears it'; else delete b.dataset.tip;
+  };
   var drawFailed = '', lanesHeld = false, shownIds = [];
   var draw = function () {
     try { drawNow(); } catch (e) {
@@ -745,7 +750,7 @@ function stGateBuild() {
       $('.st-gate-n').textContent = shownIds.length + ' of ' + n + ' requests shown' + (why ? ' (' + why + ')' : '');
     }
     // the funnel of every column that filters stands out
-    pop.querySelectorAll('.st-gate-cf').forEach(function (b) { b.classList.toggle('on', cfOn(b.dataset.cf)); });
+    pop.querySelectorAll('.st-gate-cf').forEach(cfTip);
     var key = shown.map(function (g) { return g.id + ':' + g.evs.length + ':' + g.label; }).join('|') + '#' + Object.keys(opened).join('|') + '#' + me;
     if (key === sig) return;
     sig = key;
@@ -855,7 +860,7 @@ function stGateBuild() {
       delete cf[k]; delete cft[k];
       if (moOf[k]) { mode = li.dataset.mo || (mode === moOf[k] ? 'all' : mode); stGateRemember({ mode: mode }); }
       if (li.dataset.mo) { /* the mode alone */ } else if (li.dataset.t) cft[k] = li.dataset.t; else if (li.dataset.set) cf[k] = li.dataset.v;
-      b.classList.toggle('on', cfOn(k));
+      cfTip(b);
       cfClose(); draw();
     };
     inp.addEventListener('input', fill);
