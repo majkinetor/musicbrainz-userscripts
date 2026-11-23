@@ -329,7 +329,7 @@ function stSettings(tab) {
     (document.head || html).appendChild(css);
   }
   var h = U.mbuCfgHeader({ icon: '<img src="' + ST_ICON + '" alt="">', name: 'String Theory', version: ST_VERSION, script: 'string_theory' });
-  if (ST_ON_MB) h = h.replace('<span class="mbu-cfg-sp"></span>', '<span class="mbu-cfg-sp"></span><a href="#" id="st-cfg-news">What\'s new</a><a href="#" id="st-cfg-gate">Network log</a>');
+  if (ST_ON_MB) h = h.replace('<span class="mbu-cfg-sp"></span>', '<span class="mbu-cfg-sp"></span><a href="#" id="st-cfg-news">What\'s new</a>');
   var links = '<span class="st-links">'
     + '<a href="https://milic.info/musicbrainz-userscripts" target="_blank" rel="noopener">Website</a>'
     + '<a href="https://github.com/' + ST_REPO + '/issues" target="_blank" rel="noopener">Issues</a>'
@@ -420,8 +420,6 @@ function stSettings(tab) {
   var close = function () { removeEventListener('scroll', ovPin, true); removeEventListener('resize', ovPin); if (vv) { vv.removeEventListener('resize', pin); vv.removeEventListener('scroll', pin); } if (tabObserver) tabObserver.disconnect(); ov.remove(); document.removeEventListener('keydown', onKey, true); document.removeEventListener('mousedown', onOut, true); };
   var newsLink = ov.querySelector('#st-cfg-news');
   if (newsLink) newsLink.addEventListener('click', function (e) { e.preventDefault(); close(); stNewsOpen(); });
-  var gateLink = ov.querySelector('#st-cfg-gate');
-  if (gateLink) gateLink.addEventListener('click', function (e) { e.preventDefault(); close(); stGateOpen(); });
   // #851: a script's settings opened from here sit above this window, which stays open; the one used last
   // is in front and takes Escape. A floating (position: fixed) element is taken for such a window.
   var front = true, toFront = function (on) { front = on; ov.style.zIndex = on ? '' : '9000'; };   // #851: behind every script's window, the lowest of which is 9990
@@ -458,6 +456,13 @@ function stSettings(tab) {
     themes.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"/></svg>';
     themes.onclick = function () { close(); setTimeout(stThemeChooser, 0); };
     title.insertBefore(themes, help);
+    // the network log beside the theme chooser, drawn like it; a gap sets this pair apart from the tabs and from help
+    var gate = document.createElement('button'); gate.type = 'button'; gate.className = 'mbu-help'; gate.id = 'st-cfg-gate';
+    gate.setAttribute('aria-label', 'Network log'); gate.dataset.tip = 'Network log\nThe requests of the scripts';
+    gate.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg>';
+    gate.onclick = function () { close(); stGateOpen(); };
+    title.insertBefore(gate, help);
+    themes.style.marginLeft = '10px'; gate.style.marginRight = '10px';
     var x = title.querySelector('.mbu-cfg-x'); x.setAttribute('aria-label', 'Close settings');
     x.onclick = close;
     var fitTabs = function () {
