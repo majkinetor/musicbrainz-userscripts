@@ -276,7 +276,7 @@ function stGateIcon(name, cls, tip, left) {
   return '<img class="st-gl-ic' + (cls ? ' ' + cls : '') + '" alt=""' + (tip ? ' data-tip="' + stEsc(tip) + '"' : '') + (left != null ? ' style="left:' + left.toFixed(2) + '%"' : '') + ' src="' + stEsc(stGateIconSrc(name)) + '">';
 }
 // requests shorter than ST_GATE_SHORT ms are drawn as an icon; icons closer than ST_GATE_NEAR overlap
-var ST_GATE_SHORT = 1500, ST_GATE_NEAR = 2.2, stGateZoom = {}, stGateRows = {};   // a lane's most sub-rows so far: it never shrinks, so it does not jump
+var ST_GATE_SHORT = 1500, ST_GATE_NEAR = 2.2, stGateZoom = {}, ST_GATE_SUBS = 4;   // every lane has 4 fixed sub-rows
 // the zoomed view of a cluster: its own time line and one line per request
 // the cluster's count as a pill: MusicBrainz requests in one half, other sites in the other; an empty half is left out
 function stGateBurst(run) {
@@ -418,9 +418,13 @@ function stGateLanesHtml(groups, all, now, me) {
     // greedy packing: a mark goes on the first sub-row whose last mark ends before it starts
     var ends = [], subs = [];
     marks.sort(function (x, y) { return x.a - y.a; }).forEach(function (k) {
-      for (var i = 0; ; i++) if (ends[i] == null || ends[i] < k.a - pxp(3)) { ends[i] = k.b; (subs[i] = subs[i] || []).push(k.h); break; }
+      // the first free sub-row; when all 4 are busy, the one that frees up first
+      var i = 0, best = 0;
+      for (; i < ST_GATE_SUBS; i++) { if (ends[i] == null || ends[i] < k.a - pxp(3)) break; if (ends[i] < ends[best]) best = i; }
+      if (i === ST_GATE_SUBS) i = best;
+      ends[i] = Math.max(ends[i] || -1e9, k.b); (subs[i] = subs[i] || []).push(k.h);
     });
-    lanes[tab].rows = stGateRows[tab] = Math.max(1, subs.length, stGateRows[tab] || 0);
+    lanes[tab].rows = ST_GATE_SUBS;
     subs.forEach(function (h, i) { lanes[tab].bars.push('<div class="st-gl-sub" style="--i:' + i + '">' + h.join('') + '</div>'); });
   });
   var rows = order.map(function (tab) {
