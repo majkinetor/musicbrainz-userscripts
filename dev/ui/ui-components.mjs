@@ -162,7 +162,7 @@ const CSS = [
     '.mbu-logpop-grip:hover{opacity:1}',
     '#mbu-logpop.min .mbu-logpop-grip,#mbu-logpop.full .mbu-logpop-grip{display:none}',
     // full screen: the whole viewport less a margin, whatever the window was
-    '#mbu-logpop.full{top:12px!important;left:12px!important;right:12px!important;bottom:12px!important;',
+    '#mbu-logpop.full{top:0!important;left:0!important;right:0!important;bottom:0!important;border-radius:0;border:0;',
     'width:auto!important;height:auto!important;max-height:none;transform:none!important}',
     '#mbu-logpop.full .mbu-logpop-h{cursor:default}',
     '#mbu-logpop.min .mbu-logpop-sp{display:none}',
