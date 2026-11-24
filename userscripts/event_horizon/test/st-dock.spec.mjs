@@ -115,7 +115,8 @@ test('Platform Check follows another release shown inside EH', { tag: ['@sandbox
   const other = await until(() => page.locator('#app a[href*="/release/"]').evaluateAll((as, rel) => as.map(a => (a.getAttribute('href').match(/\/release\/([0-9a-f-]{36})$/) || [])[1]).find(id => id && id !== rel) || null, REL), v => v);
   check(!!other, 'another release on the artist');
   if (!other) return;
-  await page.locator(`#app a[href$="/release/${other}"]`).first().click();
+  // not the cover link: it holds "Play this release", which a click on its middle would press
+  await page.locator(`#app a[href$="/release/${other}"]:not(:has(button))`).first().click();
   check(await until(() => page.evaluate(() => document.documentElement.getAttribute('data-mbu-release')), v => v === other) === other, 'EH names the release it shows');
   check(await until(() => page.locator('#mb-pc-dock').isVisible(), v => v) === true, 'Platform Check is in the dock');
   await page.locator('#mb-pc-dock').click();
