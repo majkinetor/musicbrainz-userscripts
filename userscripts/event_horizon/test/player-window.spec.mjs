@@ -1,5 +1,8 @@
 import { test, expect } from '../../../dev/test/harness.mjs';
 
+// the window's playing iframe: since #1084 (2026-11-20) the next track preloads beside it (.ply-nx), and a crossfade keeps the old one a moment (.ply-old)
+const PLAYING = '#eh-ply iframe:not(.ply-nx):not(.ply-old)';
+
 test.use({ gm: { name: 'Event Horizon', persist: 'tabs', values: { view: { on: true, player: true }, plyWin: true } } });
 
 test('appending from a tab updates the window without restarting playback', { tag: '@sandbox' }, async ({ page, context, inject }) => {
@@ -31,10 +34,10 @@ test('separate player survives its opening tab and another tab controls it', { t
   const popup = await next;
   await popup.waitForURL('**/?eh-player-window=1');
   await inject('string_theory', { target: popup, waitFor: '__ehPlayerTest' });
-  await expect(popup.locator('#eh-ply iframe')).toHaveCount(1);
+  await expect(popup.locator(PLAYING)).toHaveCount(1);
   await expect.poll(() => page.evaluate(() => window.__ehPlayerTest.remote())).toBe(true);
   await page.close();
-  await expect(popup.locator('#eh-ply iframe')).toHaveCount(1);
+  await expect(popup.locator(PLAYING)).toHaveCount(1);
   const other = await context.newPage();
   await other.goto('https://test.musicbrainz.org/');
   await inject('event_horizon', { target: other, waitFor: '__ehPlayerTest' });
@@ -55,7 +58,8 @@ test('separate player survives its opening tab and another tab controls it', { t
   await other.locator('.ply-ctl [data-ply="pause"]').click({ button: 'right' });
   await expect.poll(() => popup.evaluate(() => window.__ehPlayerTest.state().repeat)).toBe('one');
   const gen = await popup.evaluate(() => window.__ehPlayerTest.state().gen);
-  await popup.frameLocator('#eh-ply iframe').locator('p').waitFor();
+  // loaded is enough: with video off the player keeps its iframe at 1px and no opacity, so its text never shows
+  await popup.frameLocator(PLAYING).locator('p').waitFor({ state: 'attached' });
   await popup.frames().find(f => f.url().includes('youtube-nocookie.com/embed/')).evaluate(() => parent.postMessage(JSON.stringify({ event: 'onStateChange', info: 0 }), '*'));
   await expect.poll(() => popup.evaluate(() => window.__ehPlayerTest.state().gen)).toBeGreaterThan(gen);
   expect(await popup.evaluate(() => window.__ehPlayerTest.state().i)).toBe(1);
@@ -63,7 +67,8 @@ test('separate player survives its opening tab and another tab controls it', { t
   await expect.poll(() => popup.evaluate(() => window.__ehPlayerTest.state().repeat)).toBe('off');
   await other.locator('.ply-ctl [data-ply="pause"]').click({ button: 'right' });
   await expect.poll(() => popup.evaluate(() => window.__ehPlayerTest.state().repeat)).toBe('all');
-  await popup.frameLocator('#eh-ply iframe').locator('p').waitFor();
+  // loaded is enough: with video off the player keeps its iframe at 1px and no opacity, so its text never shows
+  await popup.frameLocator(PLAYING).locator('p').waitFor({ state: 'attached' });
   await popup.frames().find(f => f.url().includes('youtube-nocookie.com/embed/')).evaluate(() => parent.postMessage(JSON.stringify({ event: 'onStateChange', info: 0 }), '*'));
   await expect.poll(() => popup.evaluate(() => window.__ehPlayerTest.state().i)).toBe(0);
   await other.evaluate(() => { window.__openedPlatform = null; window.open = (url, target) => { window.__openedPlatform = { url, target }; return null; }; });
@@ -75,7 +80,7 @@ test('separate player survives its opening tab and another tab controls it', { t
     await inject('event_horizon', { target: other, waitFor: '__ehPlayerTest' });
     await expect.poll(() => other.evaluate(() => window.__ehPlayerTest.remote())).toBe(true);
     await expect(other.locator('#eh-ply iframe')).toHaveCount(0);
-    await expect(popup.locator('#eh-ply iframe')).toHaveCount(1);
+    await expect(popup.locator(PLAYING)).toHaveCount(1);
   }
   await expect(popup.locator('#eh-ply .ply-wl .qi')).toHaveCount(2);
   await expect(popup.locator('#eh-ply .ply-wl .qi[aria-current]')).toHaveText(/First/);
@@ -108,11 +113,11 @@ test.describe('tab player', () => {
     const popup = await opened;
     await popup.waitForURL('**/?eh-player-window=1');
     await inject('event_horizon', { target: popup, waitFor: '__ehPlayerTest' });
-    await expect(popup.locator('#eh-ply iframe')).toHaveCount(1);
+    await expect(popup.locator(PLAYING)).toHaveCount(1);
     await expect(other.locator('#eh-ply iframe')).toHaveCount(0);
     expect(await page.evaluate(() => window.__ehPlayerTest.inWindow())).toBe(true);
     await page.evaluate(r => window.__ehPlayerTest.startRelease(r), release);
     await expect(page.locator('#eh-ply iframe')).toHaveCount(0);
-    await expect(popup.locator('#eh-ply iframe')).toHaveCount(1);
+    await expect(popup.locator(PLAYING)).toHaveCount(1);
   });
 });
