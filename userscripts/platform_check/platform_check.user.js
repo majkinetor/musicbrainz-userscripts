@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.24.014820
+// @version      2026.11.24.022536
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -947,6 +947,12 @@ function mbnReverify(url, init, o) {
     return g.busy;
 }
 // </ST-NET>
+
+// why each MusicBrainz request is made, for String Theory's network log
+mbnReasons(u => /\/ws\/2\/url\?/.test(u) ? 'link owner'
+    : /\/ws\/2\/release\?query=/.test(u) ? 'barcode'
+    : /\/ws\/2\/label\?query=/.test(u) ? 'label'
+    : /\/ws\/2\/release(-group)?\//.test(u) ? 'details' : undefined);
 
 // MusicBrainz origin of the current page (musicbrainz.org or beta.musicbrainz.org),
 // so the script's own MB API calls + edit-page links stay on the same server.
@@ -6700,6 +6706,10 @@ function pcPruneCache() {
 function cacheKey(mbid, platform) { return `pc:cache:v2:${platform}:${mbid}`; }   // v2: entries now carry `barcode` (#182)
 function cacheGet(mbid, platform) { return pcLsGet(cacheKey(mbid, platform)); }
 function cacheSet(mbid, platform, entry) { pcLsSet(cacheKey(mbid, platform), entry); }
+// A cached "no match" younger than this is used as it is: a release with a barcode, a Wikidata id or a
+// Beatport login searches again otherwise, and Event Horizon's refresh after each edit rescans the release
+const PC_MISS_FRESH_MS = 10 * 60e3;
+function pcFreshMiss(c) { return !!(c && !c.url && c._t && Date.now() - c._t < PC_MISS_FRESH_MS); }
 // the platforms whose album answer names artist or label pages (Spotify's, Tidal's, Amazon's,
 // 7digital's, Volumo's and HDtracks' don't, or not without another request)
 const PC_CREDIT_PROVIDERS = ['discogs', 'deezer', 'apple', 'qobuz', 'bandcamp', 'beatport', 'ytmusic', 'soundcloud', 'audiomack'];
@@ -7063,6 +7073,7 @@ async function scanSpotify({ artist, album, mbTracks, existingUrl, mbid, wikidat
     let barcodeUrl = null;
     if (albumUrl)      appendLog('Wallstream', `skipped — Spotify already linked in MB: ${albumUrl}`);
     else if (!barcode) appendLog('Wallstream', `skipped — release has no barcode`);
+    else if (pcFreshMiss(cached) && !wikidataSpotifyId) appendLog('Wallstream', `skipped — no match a few minutes ago (↻ to re-run)`);
     else               barcodeUrl = await lookupWallstreamSpotify(barcode);
 
     if (albumUrl) {
@@ -7246,7 +7257,7 @@ async function scanQobuz({ artist, album, mbTracks, existingUrl, mbid, isVarious
     const label = 'Qobuz';
     const cached = cacheGetScan(mbid, 'qobuz', label);
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('qobuz', label, cached, mbTracks); return; }
-    if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('qobuz', label, cached, mbTracks); return; }
+    if (cached && !cached.url && !existingUrl && (!barcode || pcFreshMiss(cached))) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('qobuz', label, cached, mbTracks); return; }
 
     // Barcode-first: the API matches an exact UPC with no text-search ambiguity.
     // Qobuz indexes the UPC in its stored form, usually the 13-digit EAN with a
@@ -8471,7 +8482,7 @@ async function scanDeezer({ artist, album, mbTracks, existingUrl, mbid, isVariou
         applyCachedRow('deezer', label, cached, mbTracks);
         return;
     }
-    if (cached && !cached.url && !existingUrl && !barcode) {
+    if (cached && !cached.url && !existingUrl && (!barcode || pcFreshMiss(cached))) {
         appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn');
         applyCachedRow('deezer', label, cached, mbTracks);
         return;
@@ -8724,7 +8735,7 @@ async function scanAppleFind(args) {
         applyCachedRow('apple', label, cached, mbTracks);
         return;
     }
-    if (cached && !cached.url && !existingUrl && !barcode) {
+    if (cached && !cached.url && !existingUrl && (!barcode || pcFreshMiss(cached))) {
         appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn');
         applyCachedRow('apple', label, cached, mbTracks);
         return;
@@ -8855,7 +8866,7 @@ async function scanAppleItunes({ artist, album, mbTracks, existingUrl, mbid, isV
         applyCachedRow('apple', label, cached, mbTracks);
         return;
     }
-    if (cached && !cached.url && !existingUrl && !barcode) {
+    if (cached && !cached.url && !existingUrl && (!barcode || pcFreshMiss(cached))) {
         appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn');
         applyCachedRow('apple', label, cached, mbTracks);
         return;
@@ -8974,7 +8985,7 @@ async function scanTidal({ artist, album, mbTracks, existingUrl, mbid, isVarious
     const label = 'Tidal';
     const cached = cacheGet(mbid, 'tidal');
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('tidal', label, cached, mbTracks); return; }
-    if (cached && !cached.url && !existingUrl && !wikidataTidalId) {
+    if (cached && !cached.url && !existingUrl && (!wikidataTidalId || pcFreshMiss(cached))) {
         appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn');
         applyCachedRow('tidal', label, cached, mbTracks); return;
     }
@@ -9070,7 +9081,7 @@ async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVari
     // URL's release id, instead of leaving it UNVERIFIED forever (#168).
     const cachedUnverified = !!(cached?.url && cached.tracks == null && bpLoggedIn());
     if (cached?.url && (!existingUrl || existingUrl === cached.url) && !cachedUnverified) { applyCachedRow('beatport', label, cached, mbTracks); return; }
-    if (cached && !cached.url && !existingUrl && !wikidataBeatportId && !bpLoggedIn()) {
+    if (cached && !cached.url && !existingUrl && (pcFreshMiss(cached) || (!wikidataBeatportId && !bpLoggedIn()))) {
         appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn');
         applyCachedRow('beatport', label, cached, mbTracks); return;
     }
@@ -9231,7 +9242,7 @@ async function scanVolumo({ artist, album, mbTracks, existingUrl, mbid, isVariou
     const label = 'Volumo';
     const cached = cacheGet(mbid, 'volumo');
     if (cached?.url && (!existingUrl || volumoClean(existingUrl) === volumoClean(cached.url))) { applyCachedRow('volumo', label, cached, mbTracks); return; }
-    if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('volumo', label, cached, mbTracks); return; }
+    if (cached && !cached.url && !existingUrl && (!barcode || pcFreshMiss(cached))) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('volumo', label, cached, mbTracks); return; }
 
     let a = null, source = null;
     if (existingUrl) {
@@ -9300,7 +9311,7 @@ async function scanHDtracks({ artist, album, mbTracks, existingUrl, mbid, isVari
     const label = 'HDtracks';
     const cached = cacheGet(mbid, 'hdtracks');
     if (cached?.url && (!existingUrl || existingUrl === cached.url)) { applyCachedRow('hdtracks', label, cached, mbTracks); return; }
-    if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('hdtracks', label, cached, mbTracks); return; }
+    if (cached && !cached.url && !existingUrl && (!barcode || pcFreshMiss(cached))) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('hdtracks', label, cached, mbTracks); return; }
 
     let a = null, source = null;
     if (existingUrl) {
@@ -9455,7 +9466,7 @@ async function scanSevendigital({ artist, album, mbTracks, existingUrl, mbid, is
     const label = '7digital';
     const cached = cacheGet(mbid, 'sevendigital');
     if (cached?.url && (!existingUrl || pcSameUrl(existingUrl, cached.url))) { applyCachedRow('sevendigital', label, cached, mbTracks); return; }
-    if (cached && !cached.url && !existingUrl && !barcode) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('sevendigital', label, cached, mbTracks); return; }
+    if (cached && !cached.url && !existingUrl && (!barcode || pcFreshMiss(cached))) { appendLog(label, `No match (cached from previous scan — use ↻ to force a re-search)`, 'warn'); applyCachedRow('sevendigital', label, cached, mbTracks); return; }
 
     let meta = null, source = null;
     try {
@@ -10161,9 +10172,9 @@ async function runScansInner() {
     // particular has no other reliable resolver (it's Cloudflare-walled), so
     // Wikidata is its primary path.
     const spotifyCache = cacheGet(mbid, 'spotify');
-    const spotifyKnown = !!(existing.spotify || spotifyCache?.url);
-    const tidalKnown    = !!(existing.tidal    || cacheGet(mbid, 'tidal')?.url);
-    const beatportKnown = !!(existing.beatport || cacheGet(mbid, 'beatport')?.url);
+    const spotifyKnown = !!(existing.spotify || spotifyCache?.url || pcFreshMiss(spotifyCache));
+    const tidalKnown    = !!(existing.tidal    || cacheGet(mbid, 'tidal')?.url || pcFreshMiss(cacheGet(mbid, 'tidal')));
+    const beatportKnown = !!(existing.beatport || cacheGet(mbid, 'beatport')?.url || pcFreshMiss(cacheGet(mbid, 'beatport')));
     const tidalWanted    = providerEnabled('tidal')    && !tidalKnown;
     const beatportWanted = providerEnabled('beatport') && !beatportKnown;
     // Non-blocking: the lookup runs alongside the scans instead of in front of
@@ -10172,7 +10183,7 @@ async function runScansInner() {
     // prefers over Wikidata); every other provider starts straight away.
     let wdP = Promise.resolve(null);
     if (spotifyKnown && !tidalWanted && !beatportWanted) {
-        appendLog('Wikidata', `skipped — Spotify/Tidal/Beatport already resolved`);
+        appendLog('Wikidata', `skipped — Spotify/Tidal/Beatport already resolved, or had no match a few minutes ago`);
     } else {
         wdP = lookupWikidata(releaseGroupMbid, PC_SEED ? null : mbid).catch(e => { appendLog('Wikidata', `lookup error: ${e.message}`, 'warn'); return null; });
     }
