@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.24.184847
+// @version      2026.11.24.191727
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -5513,6 +5513,7 @@ function appendLog(platform, msg, kind = 'info') {
     PC_LOG.cat(platform).add(kind, msg);
 }
 appendLog('System', mbuStartupInfo('Platform Check') + ' — startup');
+appendLog('System', pcStorageUse());
 
 // #556: the background add's stage timeline, surfaced HERE — see pcMark. The
 // tab it happens in closes itself and this page reloads underneath it, so the
@@ -6710,7 +6711,24 @@ function pcLsGet(key) {   // the entry, or null when absent, unreadable or expir
 }
 function pcLsSet(key, entry) {
     if (!entry) return;
-    try { localStorage.setItem(key, JSON.stringify({ ...entry, _t: Date.now() })); } catch (e) {}
+    try { pcLsPut(key, JSON.stringify({ ...entry, _t: Date.now() })); }
+    catch (e) {
+        // #1111: a full storage made every write fail without a word, and Mission Control saw no platform
+        if (!pcLsSet.warned) { pcLsSet.warned = true; appendLog('System', `Storage write failed (${e.name}): the scan is not cached, so Mission Control sees no platform · ${pcStorageUse()}`, 'error'); }
+    }
+}
+// #1111: how much of the site's localStorage is used, and how much of it is Platform Check's (a browser allows about 5 MB)
+function pcStorageUse() {
+    try {
+        let all = 0, pc = 0, n = 0;
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i), size = (k.length + (localStorage.getItem(k) || '').length) * 2;
+            all += size;
+            if (k.startsWith('pc:')) { pc += size; n++; }
+        }
+        const mb = b => (b / 1048576).toFixed(2) + ' MB';
+        return `storage ${mb(all)} used, Platform Check ${mb(pc)} in ${n} entr${n === 1 ? 'y' : 'ies'}`;
+    } catch (e) { return `storage not readable: ${e.message}`; }
 }
 // A queued add's write: when the site's storage is full, the oldest releases' scan
 // cache makes room and the write is tried again. It still throws when that is not enough.
@@ -11901,6 +11919,13 @@ document.addEventListener('mc:probe', async e => {
     const findings = pcMcBarcodeFindings().concat(labs, pcMcCatnoFindings(labs), pcMcFieldFindings(), PROVIDER_ORDER.filter(providerEnabled).map(pcMcFinding), providerEnabled('discogs') ? [pcMcMasterFinding()].filter(Boolean) : [], await pcMcEntityFindings());
     const tally = findings.reduce((t, f) => (t[f.state] = (t[f.state] || 0) + 1, t), {});
     appendLog('System', `Mission Control probe ${d.run || ''} answered: ${JSON.stringify(tally)}`, 'ok');
+    // #1111: what the answer was read from — the release's saved data and each platform's cached scan
+    {
+        const md = mbDataGet(mbid), on = PROVIDER_ORDER.filter(providerEnabled);
+        const cached = on.filter(p => localStorage.getItem(cacheKey(mbid, p)) != null), hits = on.filter(p => cacheGet(mbid, p)?.url);
+        const linked = md && md.existing ? Object.keys(md.existing).filter(p => md.existing[p]) : [];
+        appendLog('System', `Mission Control answer read from: release ${mbid} · release data ${md ? 'saved' : 'MISSING'}${md ? ` (linked: ${linked.join(', ') || 'none'})` : ''} · cached scans ${cached.length} of ${on.length}${cached.length < on.length ? ` (missing: ${on.filter(p => !cached.includes(p)).join(', ')})` : ''} · with a link ${hits.length} · ${pcStorageUse()}`, md && cached.length === on.length ? 'info' : 'warn');
+    }
     // the release's barcode beside each platform's: MC shows them in a column, one colour per barcode
     pcMcSend('mc:findings', { id: 'pc', run: d.run, release: mbid, findings, barcode: MB_BARCODE || null });
 });
