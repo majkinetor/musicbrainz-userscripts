@@ -36,7 +36,7 @@ test.describe('gate log', () => {
     check(lanes >= 2, `one lane per tab (${lanes})`);
     check(await page.$$eval('#st-gate-lanes .st-gl-band', l => l.length) >= 1, 'the hold is shaded');
     const pills = await page.$$eval('#st-gate .st-gate-pill', l => l.map(x => x.textContent));
-    check(pills.includes('ok after 2 tries'), `the retried request is one row (${pills.join(', ')})`);
+    check(pills.includes('OK ↻2'), `the retried request is one row (${pills.join(', ')})`);
     check(pills.includes('error'), 'the failed request shows its error');
     await page.click('#st-gate tr.rq');
     check(await page.$('#st-gate tr.steps'), 'a click shows the steps');
