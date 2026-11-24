@@ -484,23 +484,37 @@ function stGateLanesHtml(groups, all, now, me, box) {
 }
 function stGateZoomWire() {
   if (stGateZoomWire.on) return; stGateZoomWire.on = 1;
-  var pop = null, bye = 0;
+  var pop = null, bye = 0, watch = 0, mx = -1, my = -1;
+  var close = function () { clearTimeout(bye); bye = 0; clearInterval(watch); watch = 0; if (pop) pop.remove(), pop = null; };
   // a click on a row opens that request in the table (openFromLanes), then the popup goes
   document.addEventListener('click', function (e) {
-    if (pop && e.target.closest && e.target.closest('.st-gl-zoom [data-id]')) setTimeout(function () { if (pop) pop.remove(), pop = null; }, 0);
+    if (pop && e.target.closest && e.target.closest('.st-gl-zoom [data-id]')) setTimeout(close, 0);
   });
+  // no mouseover comes when the mouse leaves the window, or when the time line redraws under a still mouse:
+  // a watchdog looks under the last mouse spot and closes the popup when neither it nor a cluster is there
+  document.addEventListener('mousemove', function (e) { mx = e.clientX; my = e.clientY; }, true);
+  document.addEventListener('mouseout', function (e) { if (!e.relatedTarget) mx = my = -1; if (pop && !e.relatedTarget && !bye) bye = setTimeout(close, 400); });
+  window.addEventListener('blur', function () { if (pop) close(); });
+  var check = function () {
+    if (!pop) return close();
+    var el = mx < 0 ? null : document.elementFromPoint(mx, my);
+    if (!el || !el.closest || !el.closest('.st-gl-cl, .st-gl-zoom')) { if (!bye) bye = setTimeout(close, 400); }
+    else { clearTimeout(bye); bye = 0; }
+  };
   // the popup stays a moment after the mouse leaves, so it can cross the gap and click a row in it
   document.addEventListener('mouseover', function (e) {
     var c = e.target.closest && e.target.closest('.st-gl-cl');
     if (!c) {
       if (!pop) return;
-      if (e.target.closest && e.target.closest('.st-gl-zoom')) { clearTimeout(bye); return; }
-      clearTimeout(bye); bye = setTimeout(function () { if (pop) pop.remove(), pop = null; }, 400);
+      if (e.target.closest && e.target.closest('.st-gl-zoom')) { clearTimeout(bye); bye = 0; return; }
+      // a close already on its way is not restarted: moving the mouse, or the log scrolling under it, sends mouseover after mouseover
+      if (!bye) bye = setTimeout(close, 400);
       return;
     }
-    clearTimeout(bye);
+    clearTimeout(bye); bye = 0;
     if (pop && pop.dataset.z === c.dataset.z) return;
     if (pop) pop.remove();
+    if (!watch) watch = setInterval(check, 300);
     pop = document.createElement('div'); pop.className = 'st-gl-zoom'; pop.dataset.z = c.dataset.z;
     pop.innerHTML = stGateZoom[c.dataset.z] || '';
     document.body.appendChild(pop);
