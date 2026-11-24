@@ -893,6 +893,18 @@ function stGateHud(on) {
   var moved = false, pos = stGateWinState().hudPos;
   if (pos) Object.assign(el.style, { left: pos.left, top: pos.top, right: 'auto', bottom: 'auto' });
   el.querySelector('.st-gate-hud-h span').onclick = function () { if (!moved) stGateOpen(); };
+  // a click on a mark, or on a row of a cluster's tip, opens the window at that request, as a click in the window does
+  if (!stGateHud.wired) {
+    stGateHud.wired = 1;
+    document.addEventListener('click', function (e) {
+      var m = e.target.closest && e.target.closest('#st-gate-hud-box [data-id], #st-gate-hud-box [data-ids], .st-gl-zoom [data-id]');
+      // with the window open, its own handler takes a tip's row
+      if (!m || (stGateWin && stGateWin.el.isConnected && !m.closest('#st-gate-hud-box'))) return;
+      var bl = m.closest('.st-gl-lane[data-lane]');
+      stGateOpen();
+      if (stGateWin && stGateWin.focus) stGateWin.focus(m.dataset.ids ? JSON.parse(m.dataset.ids) : [m.dataset.id], bl ? bl.dataset.lane : stGateTab(), !!m.dataset.ids);
+    });
+  }
   // a double click anywhere on the HUD opens the big window and hides the HUD
   el.addEventListener('dblclick', function (e) {
     if (e.target.closest('button')) return;
@@ -1306,13 +1318,16 @@ function stGateBuild() {
       return;
     }
     if (!m) return;
-    if (m.dataset.ids) {
-      var bl = m.closest('.st-gl-lane[data-lane]'), bt = bl ? bl.dataset.lane : '', bids = JSON.parse(m.dataset.ids);
-      var t0 = lastGroups.filter(function (g) { return g.id === bids[0]; })[0];
-      addSel((bt === stGateTab() ? 'This tab' : bt.slice(0, 8)) + (t0 ? ' ' + stGateTime(t0.t).slice(0, 8) : ''), bids);
+    var bl = m.closest('.st-gl-lane[data-lane]');
+    focusIds(m.dataset.ids ? JSON.parse(m.dataset.ids) : [m.dataset.id], bl ? bl.dataset.lane : '', !!m.dataset.ids);
+  };
+  // a cluster's requests go to a tab of their own; one request opens its row and scrolls to it
+  var focusIds = function (ids, bt, many) {
+    if (many) {
+      var t0 = lastGroups.filter(function (g) { return g.id === ids[0]; })[0];
+      addSel((bt === stGateTab() ? 'This tab' : String(bt).slice(0, 8)) + (t0 ? ' ' + stGateTime(t0.t).slice(0, 8) : ''), ids);
       return;
     }
-    var ids = m.dataset.ids ? JSON.parse(m.dataset.ids) : [m.dataset.id], id = ids[0];
     stGateSel = {};
     ids.forEach(function (x) { opened[x] = 1; stGateSel[x] = 1; });
     lanesHeld = false; sig = ''; draw();   // a selection alone leaves the signature as it was
@@ -1429,7 +1444,8 @@ function stGateBuild() {
   var timer = setInterval(function () { if (!pop.isConnected) { clearInterval(timer); return; } draw(); }, 500);
   stGateWin = {
     el: pop,
-    off: function () { clearInterval(timer); window.removeEventListener('keydown', onKey, true); },
+    off: function () { clearInterval(timer); window.removeEventListener('keydown', onKey, true); document.removeEventListener('click', openFromLanes); },
+    focus: focusIds,
     show: function () { if (pop.classList.contains('min')) minBtn.click(); try { pop.focus(); } catch (e) { /* no focus */ } }
   };
   draw();
