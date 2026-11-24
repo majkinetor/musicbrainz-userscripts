@@ -64,7 +64,7 @@ var ST_GATE_CSS = ''
   + '#st-gate td.l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:56ch}#st-gate .st-gate-dt{color:var(--mbu-text-weak)}'
   + '#st-gate .st-gate-hosts{margin-right:12px}#st-gate .st-gate-hosts button{display:inline-flex;align-items:center;padding:0 8px}#st-gate .st-gate-hosts button[aria-pressed=false] svg{opacity:.35;filter:grayscale(1)}'
   + '.st-gate-cfp label{display:flex;gap:6px;align-items:center;padding:4px 6px;cursor:pointer;border-radius:var(--mbu-radius);white-space:nowrap}.st-gate-cfp label:hover{background:var(--mbu-bg-hover)}.st-gate-cfp input[type=checkbox]{width:auto;margin:0;padding:0;accent-color:var(--mbu-accent)}'
-  + '#st-gate-hud,#st-gate-lbl{display:inline-flex;align-items:center;padding:4px;margin-right:4px;border:0;background:none;color:var(--mbu-text-weak);cursor:pointer;border-radius:var(--mbu-radius)}#st-gate-hud:hover,#st-gate-lbl:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}#st-gate-lbl[aria-pressed=true]{color:var(--mbu-accent-text)}#st-gate .st-gate-hosts{margin-right:8px}#st-gate .mbu-logpop-h .st-gate-n{flex:0 0 24em;width:24em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#st-gate .st-gate-hosts{border:0}#st-gate .st-gate-hosts button,#st-gate .st-gate-hosts button:hover,#st-gate .st-gate-hosts button[aria-pressed=true]{background:none;border:0;padding:0 5px;opacity:.35}#st-gate .st-gate-hosts button[aria-pressed=true]{opacity:1}#st-gate .st-gate-hosts button:hover{opacity:.8}'
+  + '#st-gate-hud,#st-gate-lbl,#st-gate-dk{display:inline-flex;align-items:center;padding:4px;margin-right:4px;border:0;background:none;color:var(--mbu-text-weak);cursor:pointer;border-radius:var(--mbu-radius)}#st-gate-hud:hover,#st-gate-lbl:hover,#st-gate-dk:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}#st-gate-lbl[aria-pressed=true],#st-gate-dk[aria-pressed=true]{color:var(--mbu-accent-text)}#st-gate .st-gate-hosts{margin-right:8px}#st-gate .mbu-logpop-h .st-gate-n{flex:0 0 24em;width:24em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#st-gate .st-gate-hosts{border:0}#st-gate .st-gate-hosts button,#st-gate .st-gate-hosts button:hover,#st-gate .st-gate-hosts button[aria-pressed=true]{background:none;border:0;padding:0 5px;opacity:.35}#st-gate .st-gate-hosts button[aria-pressed=true]{opacity:1}#st-gate .st-gate-hosts button:hover{opacity:.8}'
   + '.st-gate-seg{display:inline-flex;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden}'
   + '.st-gate-seg button{min-height:30px;padding:0 11px;border:0;background:none;color:var(--mbu-accent-text);font:inherit;font-size:12px;cursor:pointer}'
   + '.st-gate-seg button+button{border-left:1px solid var(--mbu-border)}'
@@ -1031,7 +1031,7 @@ function stGateBuild() {
   var mode = st.mode || 'all', hosts = st.hosts || { mb: st.src !== 'other', ext: st.src !== 'mb' }, hide = st.hide || [], sig = '', opened = {}, cf = {}, cft = {}, lastGroups = [];
   var pop = document.createElement('div');
   pop.id = 'st-gate'; pop.className = 'mbu-ui'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Network log');
-  pop.innerHTML = '<div class="mbu-logpop-h"><button type="button" id="st-gate-hud" aria-label="Minimize to the HUD" data-tip="Minimize to the HUD\nThe time line in a small strip that stays on screen\nA double click in the window does the same"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></button><button type="button" id="st-gate-lbl" aria-label="Request names on the time line" data-tip="Request names on the time line\nEach request\'s name under its script\'s icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg></button><b>Network log</b> <span class="st-gate-n"></span><span class="mbu-logpop-sp"></span>'
+  pop.innerHTML = '<div class="mbu-logpop-h"><button type="button" id="st-gate-hud" aria-label="Minimize to the HUD" data-tip="Minimize to the HUD\nThe time line in a small strip that stays on screen\nA double click in the window does the same"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></button><b>Network log</b> <span class="st-gate-n"></span><button type="button" id="st-gate-lbl" aria-label="Request names on the time line" data-tip="Request names on the time line\nEach request\'s name under its script\'s icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg></button><button type="button" id="st-gate-dk" aria-label="Icon with the launchers" data-tip="Icon with the launchers\nIt counts this tab\'s latest burst of requests\nThe mouse on it shows the HUD, a click opens this window"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M6.5 12h2.5l1.5-3.5 3 7 1.5-3.5h2.5"/></svg></button><span class="mbu-logpop-sp"></span>'
     + '<span class="st-gate-seg st-gate-hosts" role="group" aria-label="Hosts"><button type="button" data-v="mb" data-tip="Requests to MusicBrainz">' + (stGateIcons(), stIcon ? stIcon('musicbrainz', 16) : 'MB') + '</button>'
     + '<button type="button" data-v="ext" data-tip="Requests to other sites\nThe gate logs them but does not pace them">' + (stIcon ? stIcon('globe', 16) : 'Other') + '</button></span>'
     + '<select id="st-gate-span" aria-label="Time line span" data-tip="How far back the time line goes">' + ST_GATE_SPANS.map(function (ms) { return '<option value="' + ms + '"' + (ms === ST_GATE_SPAN ? ' selected' : '') + '>' + stGateSpanTxt(ms) + '</option>'; }).join('') + '</select><span class="mbu-logpop-sp"></span>'
@@ -1058,6 +1058,9 @@ function stGateBuild() {
   var lblBtn = $('#st-gate-lbl'), lblSeg = function () { var on = !!stGateWinState().labels; lblBtn.setAttribute('aria-pressed', String(on)); pop.classList.toggle('lbl', on); };
   lblSeg();
   lblBtn.onclick = function () { stGateRemember({ labels: !stGateWinState().labels }); lblSeg(); lanesHeld = false; sig = ''; draw(); };
+  var dkBtn = $('#st-gate-dk'), dkSeg = function () { dkBtn.setAttribute('aria-pressed', String(stGateDockOn())); };
+  dkSeg();
+  dkBtn.onclick = function () { var on = !stGateDockOn(); stGateRemember({ icon: on }); stGateDockIcon(on); dkSeg(); };
   // a double click in the window (not on its title bar, which goes full screen, nor on a control) switches to the HUD
   var born = Date.now();
   pop.addEventListener('dblclick', function (e) {
@@ -1498,7 +1501,7 @@ function stGateBuild() {
   draw();
 }
 
-// The dock icon (String Theory's settings → Dock → Network log, ST_GATE_WIN's icon): its count is this tab's latest
+// The launcher (the window's title bar button beside T, ST_GATE_WIN's icon): its count is this tab's latest
 // burst of requests, those that started within ST_GATE_BURST of the one before; it stays until the next burst starts.
 // The mouse on it shows the HUD beside it until the mouse has left both for a moment; a click opens the window.
 var ST_GATE_BURST = 4000;
@@ -1532,7 +1535,9 @@ function stGateDockIcon(on) {
   var b = stGateDockEl = stUI().mbuDockItem({ id: 'st-gate-dock', label: 'Network log', icon: ST_GATE_DOCK_ICON, order: 90, click: function () { stGatePeekEnd(true); stGateOpen(); } });
   b.oncontextmenu = function (e) { e.preventDefault(); stGatePeekEnd(true); stGateHud(!stGateHudEl || !!stGateHudEl.peek); };
   b.setAttribute('aria-label', 'Network log');
-  delete b.dataset.mbCornerDock; mbRestackCorner('br');   // a launcher of its own, shown outside Event Horizon too
+  delete b.dataset.mbCornerDock;   // a launcher of its own, shown outside Event Horizon too
+  b.setAttribute('data-mbu-actionable', '');   // and out of the folded dock even without a count, so it shows as soon as it is turned on
+  mbRestackCorner('br');
   var last = '';
   var tick = function () {
     if (!b.isConnected || document.hidden) return;

@@ -81,13 +81,13 @@ The window lists the latest 20 posts and loads older ones as you scroll to the e
 
 The scripts send their MusicBrainz requests through one shared queue, the gate. It spaces them out across all tabs, and when MusicBrainz answers 503 or 429, every script waits. If a request is asked again while the first one is still on its way, both share one answer (**join** in the log). If two waiting requests differ only in what extra data they ask for, the gate sends one request for both (**merge** in the log). Open **Network log** from the [command palette](#command-palette) to see what goes through it.
 
-Set **Network log** to **Icon** in the settings to put its icon with the launchers. Its count is this tab's latest burst of requests, those that started within 4 seconds of one another, and it stays until the next burst. While requests are on their way the count fades. The mouse on the icon shows the HUD beside it until the mouse leaves both, a click opens the window, and a right click keeps the HUD open.
-
 The window works like the Activity log. You move it by its title bar, minimize it to that bar, and resize it by its corner. A double-click on the title bar makes it full screen. It stays open, in its place and size, when you reload the page or open another one.
 
 The top line shows the gate now: the wait after a 503 (**Hold**), how many 503s came in a row (**Hot**), how far ahead the queues are booked, and which page holds the lead. The next line counts the requests in the log and those of the last minute: ok, retried and failed.
 
 Under it, the last 60 seconds show as one lane per tab, with the scripts of that tab and this tab first. Each try is a bar: gray while it waits in the gate, then green, yellow (busy, tried again) or red. A red band across all lanes is a hold that MusicBrainz asked for. The **T** button in the title bar writes each request's reason and, under it, its name below its script's icon, in the window and the HUD. Under a group of requests, it lists the first three of their reasons and names, each once. String Theory remembers your choice.
+
+The button after **T** in the title bar puts the log's icon with the launchers. Its count is this tab's latest burst of requests, those that started within 4 seconds of one another, and it stays until the next burst. While requests are on their way the count fades. The mouse on the icon shows the HUD beside it until the mouse leaves both, a click opens the window, and a right click keeps the HUD open.
 
 The mouse wheel on the time line zooms in and out around the pointer, and Shift with the wheel moves it to the left or right. When the time line is zoomed in, you can also drag it to the left or right with the mouse. The button with the left and right arrow swaps the two, and String Theory remembers your choice. The button with the diagonal arrow, or a right click on the time line, shows the whole span again.
 
@@ -167,7 +167,6 @@ Right-click String Theory's icon to open its settings, or any dock icon for that
 | Hover            | None              | While the pointer is over the dock, None, or Shelf: a frosted shelf behind its icons                                                      |
 | Counter          | Pill              | How an icon shows its count: Pill, Segmented (to do, held and already there in their own cells) or Bare: the pill's text without the pill |
 | Position         | On icon           | The count on the icon's corner, or Beside it: left of a right-side column, right of a left one, above a row                               |
-| Network log      | Off               | Icon puts the [Network log](#network-log)'s icon with the launchers                                                                       |
 | Launcher order   | Each script's own | Drag the icons to reorder the launchers; the first sits nearest the corner                                                                |
 | Palette          | On                | The command palette's hotkey works                                                                                                        |
 | Hotkey           | Ctrl+K            | The key that opens the command palette: click it, then press the new one                                                                  |
