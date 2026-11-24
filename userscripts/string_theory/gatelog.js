@@ -42,7 +42,7 @@ var ST_GATE_CSS = ''
   + '#st-gate-tabs{display:flex;flex-wrap:wrap;gap:2px;border-bottom:1px solid var(--mbu-border);margin-top:6px}#st-gate-tabs:empty{display:none}#st-gate-tabs>span{all:unset;font-size:12px;padding:6px 12px;color:var(--mbu-text-muted,#888);border-bottom:2px solid transparent;display:flex;gap:6px;align-items:center;cursor:pointer;margin-bottom:-1px}#st-gate-tabs>span.on{color:var(--mbu-text);border-bottom-color:var(--mbu-accent)}#st-gate-tabs>span:hover{color:var(--mbu-text)}#st-gate-tabs .x{font-size:15px;line-height:1;padding:0 2px;border-radius:3px}#st-gate-tabs .x:hover{background:color-mix(in srgb,var(--mbu-text) 12%,transparent)}.st-gl-lane[data-lane]{cursor:pointer}'
   + '#st-gate-split{flex:0 0 auto;height:6px;margin:-4px 0 -2px;cursor:row-resize;position:relative;z-index:2}#st-gate-split::after{content:"";position:absolute;left:0;right:0;top:2px;height:2px;background:transparent}#st-gate-split:hover::after,#st-gate-split.on::after{background:var(--mbu-accent)}#st-gate-hud-box #st-gate-split{display:none}'
   + '.st-gate-pane{position:relative;display:flex;flex-direction:column;min-height:0}.st-gate-pane[data-pane=lanes]{flex:0 1 auto}.st-gate-pane[data-pane=body]{flex:1 1 auto}'
-  + '.st-gate-sumrow{display:flex;align-items:flex-start;gap:8px}.st-gate-sumrow>#st-gate-sum{flex:1 1 auto;min-width:0}.st-gate-sumrow>.st-gate-mx{flex:0 0 auto;margin:5px 13px 0 0}.st-gate-sumrow>.st-gate-zm,.st-gate-sumrow>.st-gate-wm{flex:0 0 auto;margin:5px 0 0 0}.st-gate-zm:not(.on),.st-gate-wm:not(.on){opacity:.45}.st-gate-zm svg,.st-gate-wm svg{width:14px;height:14px;display:block}.st-gate-mx,.st-gate-zm,.st-gate-wm,.st-gate-fit{font-size:12px;line-height:normal;color:var(--mbu-accent-text);background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}.st-gate-pane .st-gate-mx{position:absolute;right:16px;top:3px;z-index:4}.st-gate-pane .st-gate-fit{position:absolute;right:52px;top:3px;z-index:4}.st-gate-mx:hover,.st-gate-zm:hover,.st-gate-wm:hover,.st-gate-fit:hover{background:var(--mbu-accent-soft)}#st-gate[data-max=body] .st-gate-sumrow>.st-gate-mx{display:none}.st-gate-mx.on{color:var(--mbu-accent)}'
+  + '.st-gate-sumrow{display:flex;align-items:flex-start;gap:8px}.st-gate-sumrow>#st-gate-sum{flex:1 1 auto;min-width:0}.st-gate-sumrow>.st-gate-mx{flex:0 0 auto;margin:5px 13px 0 0}.st-gate-sumrow>.st-gate-zm,.st-gate-sumrow>.st-gate-wm,.st-gate-sumrow>.st-gate-ps{flex:0 0 auto;margin:5px 0 0 0}.st-gate-zm:not(.on),.st-gate-wm:not(.on),.st-gate-ps:not(.on){opacity:.45}.st-gate-zm svg,.st-gate-wm svg,.st-gate-ps svg{width:14px;height:14px;display:block}.st-gate-mx,.st-gate-zm,.st-gate-wm,.st-gate-ps,.st-gate-fit{font-size:12px;line-height:normal;color:var(--mbu-accent-text);background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}.st-gate-pane .st-gate-mx{position:absolute;right:16px;top:3px;z-index:4}.st-gate-pane .st-gate-fit{position:absolute;right:52px;top:3px;z-index:4}.st-gate-mx:hover,.st-gate-zm:hover,.st-gate-wm:hover,.st-gate-fit:hover{background:var(--mbu-accent-soft)}#st-gate[data-max=body] .st-gate-sumrow>.st-gate-mx{display:none}.st-gate-mx.on{color:var(--mbu-accent)}'
   + '#st-gate[data-max=lanes] .st-gate-pane[data-pane=lanes]{flex:1 1 auto}#st-gate[data-max=lanes] #st-gate-lanes{max-height:none!important;height:auto!important;flex:1 1 auto}#st-gate[data-max=lanes] #st-gate-tabs,#st-gate[data-max=lanes] .st-gate-pane[data-pane=body],#st-gate[data-max] #st-gate-split,#st-gate[data-max=body] .st-gate-pane[data-pane=lanes]{display:none}'
   + '.st-gl-sub{position:absolute;left:0;right:0;top:calc(var(--i)*30px);height:30px}.st-gl-cl .st-gl-ic+.st-gl-ic{margin-left:1px}.st-gl-ic.small{scale:.8}.st-gl-cl .st-gl-ic.small{scale:none;width:17px!important;height:17px!important;margin:0 2px}'
   + '.st-gl-cb{flex:1 0 auto;min-width:fit-content;height:14px;margin-left:2px;border-radius:7px;display:flex;align-items:center;gap:4px;padding:0 6px;box-sizing:border-box;background:color-mix(in srgb,var(--mbu-ok) 25%,transparent);font:600 10px/1 sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}'
@@ -301,14 +301,15 @@ function stGateIcon(name, cls, tip, left) {
 }
 // requests shorter than ST_GATE_SHORT ms are drawn as an icon; icons closer than ST_GATE_NEAR overlap
 function stGateWheelPan() { return !!stGateWinState().wheelPan; }   // the wheel button: true when the wheel moves the time line
+var stGatePausedAt = 0;   // the window's time line stands still at this time while its pause button is on, 0 when it runs
 var stGateVw = null, stGateHudVw = null;   // the zoomed view of the window's and the HUD's time line: { t0, s }, or null for the whole span
 // the mouse wheel zooms a time line around the pointer and Shift and the wheel move it, or the other way round when the
 // wheel button is on (stGateWheelPan); a right click shows the whole span again
-function stGateZoomOn(box, span, get, set, redraw) {
+function stGateZoomOn(box, span, get, set, redraw, nowFn) {
   box.addEventListener('wheel', function (e) {
     var ln = box.querySelector('.st-gl-lane'); if (!ln) return;
     e.preventDefault();
-    var now = Date.now(), SP = span(), r = ln.getBoundingClientRect(), lw = r.width || 600, insL = 26 / lw * 100, insR = 120 / lw * 100;
+    var now = nowFn ? nowFn() : Date.now(), SP = span(), r = ln.getBoundingClientRect(), lw = r.width || 600, insL = 26 / lw * 100, insR = 120 / lw * 100;
     var p = Math.max(0, Math.min(1, ((e.clientX - r.left) / lw * 100 - insL) / (100 - insL - insR)));
     var v = get() || { t0: now - SP, s: SP }, d = e.deltaY || e.deltaX, s = v.s, t0 = v.t0;
     if (!!e.shiftKey !== stGateWheelPan() || (!e.deltaY && e.deltaX)) t0 += (d > 0 ? 1 : -1) * s * 0.15;
@@ -911,7 +912,7 @@ function stGateBuild() {
     + '<span style="width:16px;flex:none"></span><button type="button" class="mbu-logpop-full" data-tip="Full screen\nA double-click on the title bar does the same">⛶</button>'
     + '<button type="button" class="mbu-logpop-min" data-tip="Minimize">–</button>'
     + '<button type="button" class="mbu-logpop-x" data-tip="Close">✕</button></div>'
-    + '<div id="st-gate-state"></div><div class="st-gate-sumrow"><div id="st-gate-sum"></div><button type="button" class="st-gate-zm" data-tip="Reset the zoom\nShows the whole time line again\nA right click on the time line resets the zoom too"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 13L13 3M8.5 3H13V7.5M3 8.5V13H7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="st-gate-wm" data-tip="What the mouse wheel does on the time line\nOff: it zooms in and out\nOn: it moves the time line to the left or right\nWith Shift, the wheel does the other one"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 8H14.5M5 4.5L1.5 8L5 11.5M11 4.5L14.5 8L11 11.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="st-gate-mx" data-mx="lanes" data-tip="Maximize the time line\nA second click restores both panels">⛶</button></div><div class="st-gate-pane" data-pane="lanes"><div id="st-gate-lanes"></div></div><div id="st-gate-split" data-tip="Drag to resize\nA double click resets"></div><div id="st-gate-tabs" role="tablist"></div>'
+    + '<div id="st-gate-state"></div><div class="st-gate-sumrow"><div id="st-gate-sum"></div><button type="button" class="st-gate-zm" data-tip="Reset the zoom\nShows the whole time line again\nA right click on the time line resets the zoom too"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 13L13 3M8.5 3H13V7.5M3 8.5V13H7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="st-gate-wm" data-tip="What the mouse wheel does on the time line\nOff: it zooms in and out\nOn: it moves the time line to the left or right\nWith Shift, the wheel does the other one"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 8H14.5M5 4.5L1.5 8L5 11.5M11 4.5L14.5 8L11 11.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="st-gate-ps" data-tip="Pause the time line\nIt stands still at this moment, new requests still come in below\nA second click lets it run again"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3V13M11 3V13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button><button type="button" class="st-gate-mx" data-mx="lanes" data-tip="Maximize the time line\nA second click restores both panels">⛶</button></div><div class="st-gate-pane" data-pane="lanes"><div id="st-gate-lanes"></div></div><div id="st-gate-split" data-tip="Drag to resize\nA double click resets"></div><div id="st-gate-tabs" role="tablist"></div>'
     + '<div class="st-gate-pane" data-pane="body"><button type="button" class="st-gate-fit" data-tip="Fit the columns\nEach column gets the width of its widest cell\nThe Request column takes the rest\nA double click on a column\'s edge fits that column only">↔</button><button type="button" class="st-gate-mx" data-mx="body" data-tip="Maximize the request table\nA second click restores both panels">⛶</button><div id="st-gate-body"><table><thead><tr><th>Time</th><th>Tab' + stGateCfBtn('tab') + '</th><th>Script' + stGateCfBtn('s') + '</th><th>Verb' + stGateCfBtn('m') + '</th><th>Reason' + stGateCfBtn('r') + '</th><th>Entity' + stGateCfBtn('e') + '</th><th>Site</th><th>Request' + stGateCfBtn('rq') + '</th><th>Tries' + stGateCfBtn('n') + '</th><th>Result' + stGateCfBtn('res') + '</th><th>Wait' + stGateCfBtn('wt') + '</th><th>Rate limit' + stGateCfBtn('rl') + '</th></tr></thead><tbody></tbody></table></div></div>'
     + '<div class="mbu-logpop-grip" data-tip="Resize"></div>';
   document.documentElement.appendChild(pop);   // outside the body, which Event Horizon swaps
@@ -1009,7 +1010,7 @@ function stGateBuild() {
     if (pop.classList.contains('min')) return;
     $('#st-gate-state').innerHTML = stGateStateHtml(stGateState(), me);
     $('#st-gate-sum').innerHTML = stGateSumHtml(inHost, now);
-    if (!lanesHeld) $('#st-gate-lanes').innerHTML = stGateLanesHtml(inHost, all, now, me);   // held still under the mouse, so a tip stays put
+    if (!lanesHeld) $('#st-gate-lanes').innerHTML = stGateLanesHtml(inHost, all, stGatePausedAt || now, me);   // held still under the mouse, so a tip stays put
     lastGroups = groups;
     var shown = groups.filter(function (g) {
       for (var ck in cf) if (stGateCfVal(g, ck) !== cf[ck]) return false;
@@ -1233,7 +1234,7 @@ function stGateBuild() {
   lanes.addEventListener('mouseenter', function () { lanesHeld = true; });
   lanes.addEventListener('mouseleave', function () { lanesHeld = false; draw(); });
   var zmBtn = pop.querySelector('.st-gate-zm'), zmRedraw = function () { lanesHeld = false; sig = ''; draw(); lanesHeld = true; zmBtn.classList.toggle('on', !!stGateVw); };
-  stGateZoomOn(lanes, function () { return ST_GATE_SPAN; }, function () { return stGateVw; }, function (v) { stGateVw = v; }, zmRedraw);
+  stGateZoomOn(lanes, function () { return ST_GATE_SPAN; }, function () { return stGateVw; }, function (v) { stGateVw = v; }, zmRedraw, function () { return stGatePausedAt || Date.now(); });
   // the zoom button resets the zoom; it is dim while the whole span shows
   zmBtn.onclick = function () { stGateVw = null; zmRedraw(); };
   zmBtn.classList.toggle('on', !!stGateVw);
@@ -1241,6 +1242,14 @@ function stGateBuild() {
   var wmBtn = pop.querySelector('.st-gate-wm');
   wmBtn.onclick = function () { stGateRemember({ wheelPan: !stGateWheelPan() }); wmBtn.classList.toggle('on', stGateWheelPan()); };
   wmBtn.classList.toggle('on', stGateWheelPan());
+  // the pause button: on, the time line stands still where it is; off, it runs on to now, at the same zoom
+  var psBtn = pop.querySelector('.st-gate-ps');
+  psBtn.onclick = function () {
+    var t = Date.now();
+    if (stGatePausedAt) { if (stGateVw) stGateVw.t0 += t - stGatePausedAt; stGatePausedAt = 0; } else stGatePausedAt = t;
+    psBtn.classList.toggle('on', !!stGatePausedAt); lanesHeld = false; sig = ''; draw();
+  };
+  psBtn.classList.toggle('on', !!stGatePausedAt);
   $('.mbu-logpop-copy').onclick = function () {
     stCopy(stGateMarkdown(stGateEvents(), stGateTab()), function (ok) { try { U.mbuToast(ok ? 'Network log copied' : 'Could not copy the network log'); } catch (e) { /* no toast */ } });
   };
