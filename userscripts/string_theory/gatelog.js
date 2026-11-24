@@ -613,7 +613,7 @@ function stGateRowHtml(g, me, isOpen, now) {
 }
 // a short name for a raw URL or path: "ws/2 url lookup (24)", "ws/2 release by release-group"
 function stGateAlias(l) {
-  l = String(l || '');
+  l = String(l || '').replace(/^(GET|POST|PUT|PATCH|DELETE|HEAD) +(?=\/|https?:)/, '');   // Fusion's labels start with the verb
   if (!/^(https?:|\/|ws\/)/.test(l) && l.indexOf('?') < 0) return l;
   var q = l.indexOf('?'), path = (q < 0 ? l : l.slice(0, q)).replace(/^https?:\/\/[^/]+/, '').replace(/^\/+/, '');
   var qs = q < 0 ? '' : l.slice(q + 1).split('#')[0];
