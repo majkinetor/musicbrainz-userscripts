@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.24.120000
+// @version      2026.11.24.164718
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5234,7 +5234,7 @@ async function wsText(path, bg, L) {
     // a page's lookup that MusicBrainz keeps throttling says so on the loading page, with a Stop (wsStopped)
     const stopped = () => wsStopped >= mine;
     let r;
-    try { r = await mbnFetch(MB + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json', { headers: { Accept: 'application/json' } }, { lead: lead || undefined, background: !lead, reason: L === PLOG ? 'play' : lead ? 'view' : 'prefetch', label: 'ws/2 ' + path, cancelled: lead ? stopped : undefined, log: (lv, m) => { (L || LOG)[lv](m); if (lead && lv === 'warn' && /HTTP (429|503)/.test(m)) skBusy(mine); } }); } catch (e) { fetchLog('ws/2 ' + path, t0, null, e, L); throw e; }
+    try { r = await mbnFetch(MB + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json', { headers: { Accept: 'application/json' }, cache: bg ? 'no-cache' : 'default' }, { lead: lead || undefined, fresh: !!bg, background: !lead, reason: L === PLOG ? 'play' : lead ? 'view' : 'prefetch', label: 'ws/2 ' + path, cancelled: lead ? stopped : undefined, log: (lv, m) => { (L || LOG)[lv](m); if (lead && lv === 'warn' && /HTTP (429|503)/.test(m)) skBusy(mine); } }); } catch (e) { fetchLog('ws/2 ' + path, t0, null, e, L); throw e; }
     fetchLog('ws/2 ' + path, t0, r, undefined, L);
     if (!r) throw new Error(lead && stopped() ? 'Stopped: MusicBrainz was busy.' : 'cancelled');
     if (r.status === 503 || r.status === 429) throw Object.assign(new Error('MusicBrainz is busy (HTTP ' + r.status + '). Try again in a moment.'), { status: r.status });
