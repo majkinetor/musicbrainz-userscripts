@@ -191,6 +191,15 @@ function stGateGroups(all, now) {
   var groups = [], open = {};
   var done = function (g, res) { g.res = res; delete open[g.key]; };
   all.forEach(function (ev) {
+    // the page left: its tab's open requests end there, their answers never come back to it
+    if (ev.e === 'left') {
+      Object.keys(open).forEach(function (k) {
+        var o = open[k]; if (o.tab !== ev.tab) return;
+        o.tries.forEach(function (y) { if (y.st == null) { y.st = -2; y.end = ev.t; } });
+        o.end = Math.max(o.end, ev.t); o.pend = 0; done(o, 'page left');
+      });
+      return;
+    }
     if (!ev.l) { groups.push({ sys: true, id: 'y' + ev.tab + ev.t + ev.e, tab: ev.tab, s: ev.s, t: ev.t, end: ev.t, evs: [ev], tries: [] }); return; }
     var key = ev.tab + '|' + (ev.s || '') + '|' + (ev.id ? '#' + ev.id : ev.l + '|' + ev.b), g = open[key];
     if (g && g.pend && ev.t - g.pend > ST_GATE_RETRY) { done(g, 'gave up'); g = null; }
@@ -227,7 +236,7 @@ function stGateGroups(all, now) {
     var st = g.ans ? g.ans.st : 0, retried = g.tries.length > 1;
     if (g.res === 'in flight' || g.res === 'waiting' || g.res === 'retrying') g.cls = 'go';
     else if (g.res === 'shared' || g.res === 'cached') g.cls = g.tries.length ? 're' : '';   // after a 503: answered after a retry
-    else if (g.res === 'cancelled') g.cls = '';
+    else if (g.res === 'cancelled' || g.res === 'page left') g.cls = '';
     else if (g.res === 'gave up' || g.res === 'error' || g.res === 'no answer' || !st || st >= 500) g.cls = 'bad';
     else g.cls = retried ? 're' : 'ok';
     g.label = g.res === 'gave up' && st ? st + ', gave up' : g.res === '200' ? 'OK' : g.res;

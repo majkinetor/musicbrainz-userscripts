@@ -298,7 +298,12 @@ export function mbnTrace(ev) {
                 } catch (e) { /* no storage: no trace */ }
             };
             try {   // leaving the page, or hiding it (a phone may never come back): write what waits
-                addEventListener('pagehide', g.flush);
+                // the top page notes that it left, so the network log ends its open requests as "page left"
+                // and not as "no answer"; a worker frame closes while its page stays, so it notes nothing
+                addEventListener('pagehide', () => {
+                    try { if (window === window.top) g.buf.push({ t: Date.now(), s: '', e: 'left' }); } catch (e) {}
+                    g.flush();
+                });
                 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') g.flush(); });
             } catch (e) {}
         }
