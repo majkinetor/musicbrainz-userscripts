@@ -62,12 +62,19 @@ test('a changed answer redraws the page', { tag: ['@sandbox'] }, async ({ page, 
 test('a page leads the gate while it loads, and lets go after', { tag: ['@sandbox'] }, async ({ page, inject }) => {
   await page.goto(`https://test.musicbrainz.org/release/${REL}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await settled(page);
+  // a page drawn from kept answers asks nothing and so takes no lead (4e19cff): the release goes unkept, and has to be asked for
+  await page.evaluate(key => new Promise(ok => { const q = indexedDB.open('eh-kept', 1);
+    q.onupgradeneeded = () => q.transaction.abort();
+    q.onsuccess = () => { const t = q.result.transaction('a', 'readwrite'); t.objectStore('a').delete(IDBKeyRange.bound(key, key + '\uffff')); t.oncomplete = t.onerror = () => { q.result.close(); ok(); }; };
+    q.onerror = () => ok(); }), KEY);
   await page.evaluate(() => { window.__leads = new Set(); setInterval(() => { try { const s = JSON.parse(localStorage.getItem('mbu:mb-gate') || '{}'); if (s.lead) window.__leads.add(s.lead); } catch (e) {} }, 20); });
   await open(page, inject);
   check(!!(await until(() => checked(page), v => v)), 'the page is all in, and checked');
-  const r = await page.evaluate(() => ({ seen: [...window.__leads], now: JSON.parse(localStorage.getItem('mbu:mb-gate') || '{}').lead || '' }));
-  check(r.seen.some(x => x.startsWith('eh')), 'it led while loading: ' + r.seen.join(' '));
-  check(r.now === '', 'and let go after: ' + r.now);
+  const seen = await page.evaluate(() => [...window.__leads]);
+  check(seen.some(x => x.startsWith('eh')), 'it led while loading: ' + seen.join(' '));
+  // the answer is kept a moment before the page lets go: the release goes through the gate's lock
+  const now = await until(() => page.evaluate(() => JSON.parse(localStorage.getItem('mbu:mb-gate') || '{}').lead || ''), v => v === '');
+  check(now === '', 'and let go after: ' + now);
 });
 
 // #847: CAA's cover address redirects twice, uncached, so a page drawn from kept answers waited on its cover; the cover is kept too
