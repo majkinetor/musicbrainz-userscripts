@@ -28,7 +28,7 @@ const panel = async page => {
 
 test.describe('a fresh install', () => {
   test.use(seeded(null));
-  test('auto-repeat is on, 10 minutes or 10 times', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  test('auto-repeat is on, 10 minutes or 10 times', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
     await openArtStation(page, inject, { path: 'add-cover-art' });
     const p = await panel(page);
     check(p.checked === true && p.min === '10' && p.times === '10', `on, 10/10 (${JSON.stringify(p)})`);
@@ -37,7 +37,7 @@ test.describe('a fresh install', () => {
 
 test.describe('the old defaults stored', () => {
   test.use(seeded({ autoRepeat: false, autoRepeatMin: 20, autoRepeatTimes: 20, tile: 200 }));
-  test('are migrated to the new ones, and the migration is saved', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  test('are migrated to the new ones, and the migration is saved', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
     await openArtStation(page, inject, { path: 'add-cover-art' });
     const p = await panel(page);
     check(p.checked === true && p.min === '10' && p.times === '10', `migrated to on, 10/10 (${JSON.stringify(p)})`);
@@ -49,7 +49,7 @@ test.describe('the old defaults stored', () => {
 
 test.describe('deliberate values stored', () => {
   test.use(seeded({ autoRepeat: true, autoRepeatMin: 30, autoRepeatTimes: 7 }));
-  test('survive the migration', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  test('survive the migration', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
     await openArtStation(page, inject, { path: 'add-cover-art' });
     const p = await panel(page);
     check(p.min === '30' && p.times === '7', `30/7 survives (${p.min}/${p.times})`);

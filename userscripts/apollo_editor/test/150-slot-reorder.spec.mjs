@@ -7,7 +7,7 @@ import { openApollo, matchDone, toTab, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
 
-test('dragging a slot handle reorders the credit, in the model and in MusicBrainz', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('dragging a slot handle reorders the credit, in the model and in MusicBrainz', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
   await page.clock.install();   // to run Apollo's debounced re-renders out, below
   const submitted = await openApollo(page, inject, { seed: 'seed-saigon', tab: 'tracklist' });
   await page.waitForFunction(() => { const l = document.querySelector('.tc-mirror:not(.tc-ri-mirror) tr .tc-aslot'); return l && l.offsetParent !== null; }, null, { timeout: 20000 });

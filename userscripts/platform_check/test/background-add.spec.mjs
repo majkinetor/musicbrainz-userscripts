@@ -91,7 +91,7 @@ test('#464, #556: a background add lands on the release, closes its tab, and lea
   check((log.match(/Enter edit clicked/g) || []).length === 1, 'each entry once');
 });
 
-test('a background add refreshes Event Horizon and Platform Check without reloading', { tag: ['@sandbox', '@login'] }, async ({ page, context, inject }) => {
+test('a background add refreshes Event Horizon and Platform Check without reloading', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, context, inject }) => {
   const { mbid: rel } = await pristine(page, 'release');
   await everyTab(context);
   await page.goto(`${SANDBOX}/release/${rel}`, { waitUntil: 'domcontentloaded' });
@@ -121,7 +121,7 @@ test('a background add refreshes Event Horizon and Platform Check without reload
   check(await page.evaluate(u => window.__refreshProbe?.relLinks?.includes(u), url), 'Mission Control started after the refresh sends the new link to its adapters');
 });
 
-test('#559: the Discogs master lands on the release group, in the background', { tag: ['@sandbox', '@login'] }, async ({ page, context }) => {
+test('#559: the Discogs master lands on the release group, in the background', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, context }) => {
   const { mbid: REL, releaseGroup: RG } = await pristine(page, 'release');
   const said = await everyTab(context);
   await page.goto(`${SANDBOX}/release/${REL}`, { waitUntil: 'domcontentloaded' });
@@ -143,7 +143,7 @@ test('#559: the Discogs master lands on the release group, in the background', {
 // (a link queued for the release stays out, and stays queued), submits, and closes.
 const gtin = core => core + String((10 - [...core].reverse().reduce((a, d, i) => a + Number(d) * (i % 2 ? 1 : 3), 0) % 10) % 10);
 const barcodeOf = async rel => (await mbJson(`${SANDBOX}/ws/2/release/${rel}?fmt=json`)).barcode;
-test('#780: a barcode alone lands on the release, in the background', { tag: ['@sandbox', '@login'] }, async ({ page, context }) => {
+test('#780: a barcode alone lands on the release, in the background', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, context }) => {
   const { mbid: REL, releaseGroup: RG } = await pristine(page, 'release');
   const said = await everyTab(context);
   await page.goto(`${SANDBOX}/release/${REL}`, { waitUntil: 'domcontentloaded' });

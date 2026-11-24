@@ -20,7 +20,7 @@ import { test, check, requireLogin, sourceOf, idle, until, settled, mbNoise } fr
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
 
-test("live 578 picard harmony proof", { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
+test("live 578 picard harmony proof", { tag: ['@sandbox', '@login', '@env'] }, async ({ context, page }) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
   // majkinetor's own release from the issue, so the proof is about the case he reported
   const R = '79e909b1-9320-4483-806b-33a899c01193';

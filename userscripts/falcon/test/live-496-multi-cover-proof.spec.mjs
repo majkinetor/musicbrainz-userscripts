@@ -14,7 +14,7 @@ import { test, check, requireLogin, sourceOf, until, pristine } from '../../../d
 /// the harness's GM storage; the spec answers GM_xmlhttpRequest itself, below
 test.use({ gm: { name: 'Falcon' } });
 
-test("live 496 multi cover proof", { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
+test("live 496 multi cover proof", { tag: ['@sandbox', '@login', '@env'] }, async ({ context, page }) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
 
   const { mbid: TEST_RELEASE } = await pristine(page, 'release');   // made for the run (#795): a release other specs read gains no covers

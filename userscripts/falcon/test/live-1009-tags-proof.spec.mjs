@@ -8,7 +8,7 @@ import { test, check, requireLogin, sourceOf, idle, frames, mbNoise, pristine } 
 
 test.use({ gm: false });
 
-test('live 1009 tags proof', { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
+test('live 1009 tags proof', { tag: ['@sandbox', '@login', '@env'] }, async ({ context, page }) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
   const HOST = 'https://test.musicbrainz.org';
   if (!/test\.musicbrainz\.org$/.test(new URL(HOST).hostname)) throw new Error('sandbox only');

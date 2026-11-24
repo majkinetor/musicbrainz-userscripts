@@ -41,7 +41,7 @@ const esc = t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 // a match line names its track first (#708): "[Artist] track 3: Kid Creol & the Coconuts → …"
 const viaPos = (log, name) => new RegExp('\\[Artist\\] (?:track [^:\\n]+: )?' + esc(name) + ' → .* via the same position').test(log);
 
-test('track artists matched by their position on other editions', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('track artists matched by their position on other editions', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
   test.setTimeout(10 * 60000);
   // ground truth from the sandbox itself: position → { title, length, artist gids }
   const ed = await mbJson(`https://test.musicbrainz.org/ws/2/release/${EDITION}?inc=recordings+artist-credits&fmt=json`);

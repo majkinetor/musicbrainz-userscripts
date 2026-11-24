@@ -12,14 +12,20 @@
 //   "2026-09-30 02:00:14": {
 //     "source": "nightly", "passed": 320, "failed": 2, "skipped": 4, "color": "orange",
 //     "duration": "2:04:31", "commit": "8136e0f", "run": "https://github.com/…/actions/runs/…",
-//     "failures": [{ "name": "[isrc_scout] 640-ytmusic.spec.mjs › #640: …", "error": "Error: …" }]
+//     "layout": "3x3", "causes": { "test": 1, "rate-limit": 1 },
+//     "failures": [{ "name": "[isrc_scout] 640-ytmusic.spec.mjs › #640: …", "error": "Error: …", "cause": "test" }]
 //   }
+//
+// Each failure's cause is the test itself, a rate limit or the network (failure-cause.mjs);
+// --layout <runners>x<workers> records how the run was spread, so that rate limits can be
+// compared across layouts (flaky-report.mjs --causes).
 //
 // --badge also writes the shields.io badge the README shows (the numbers of this run).
 // dev/test/flaky-report.mjs reads the history back: which specs keep failing. The suite runs
 // without retries, so a spec that fails now and then shows there, across runs.
 import { readFileSync, writeFileSync, existsSync, statSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { cause } from './failure-cause.mjs';
 
 const [resultsFile, historyFile] = process.argv.slice(2).filter((a, i, all) => !a.startsWith('--') && !(all[i - 1] || '').startsWith('--'));
 const opt = name => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : null; };
@@ -48,7 +54,9 @@ function summarise(report) {
       const results = t.results || [];
       const bad = results[results.length - 1];
       const error = brief(bad && (bad.error || (bad.errors || [])[0]));
-      failures.push(error ? { name, error } : { name });
+      const full = bad ? (bad.errors || [bad.error]).filter(Boolean).map(e => ansi(e.message || e.value || '')).join('\n') : '';
+      const why = cause(full, [...(t.annotations || []), ...((bad && bad.annotations) || [])]);
+      failures.push({ name, ...(error ? { error } : {}), cause: why });
     }
   };
   for (const s of report.suites || []) walk(s, s.title ? [s.title] : []);
@@ -83,6 +91,8 @@ const entry = {
   ...(run.ms != null ? { duration: hms(run.ms) } : {}),   // how long the specs took, the run's setup aside
   ...(opt('--commit') ? { commit: opt('--commit').slice(0, 7) } : {}),
   ...(opt('--run') ? { run: opt('--run') } : {}),
+  ...(opt('--layout') ? { layout: opt('--layout') } : {}),
+  ...(run.failures.length ? { causes: run.failures.reduce((a, f) => ({ ...a, [f.cause]: (a[f.cause] || 0) + 1 }), {}) } : {}),
   ...(run.error ? { error: run.error } : {}),
   failures: run.failures,
 };
@@ -101,4 +111,4 @@ writeFileSync(historyFile, JSON.stringify(history, null, 2) + '\n');
 const msg = run.error ? 'no report' : [`${run.passed} passed`, run.failed && `${run.failed} failed`].filter(Boolean).join(', ');
 if (opt('--badge')) writeFileSync(opt('--badge'), JSON.stringify({ schemaVersion: 1, label: 'suite', message: msg, color }) + '\n');
 console.log(`suite-history: ${key} — ${msg} (${Object.keys(history).length} run(s) recorded)`);
-for (const f of run.failures) console.log(`  ✗ ${f.name}${f.error ? '\n      ' + f.error : ''}`);
+for (const f of run.failures) console.log(`  ✗ [${f.cause}] ${f.name}${f.error ? '\n      ' + f.error : ''}`);

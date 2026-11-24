@@ -13,7 +13,7 @@ test.use({ gm: false });
 const HOST = 'https://test.musicbrainz.org';
 const MARK = ' (Falcon #783)';
 
-test('#783: Falcon changes a track\'s title, its recording\'s and its length, only while the track holds what it had', { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
+test('#783: Falcon changes a track\'s title, its recording\'s and its length, only while the track holds what it had', { tag: ['@sandbox', '@login', '@env'] }, async ({ context, page }) => {
   test.setTimeout(900_000);
   if (!/test\.musicbrainz\.org$/.test(new URL(HOST).hostname)) throw new Error('sandbox only');
   const code = await readFile(sourceOf('falcon'), 'utf8');

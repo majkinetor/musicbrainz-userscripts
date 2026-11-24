@@ -33,7 +33,7 @@ const LIVE = !!process.env.ARCHIVE_LIVE;
 test.describe('Enter edit', () => {
   test.use({ gm: apolloGm(null, { xhr: 'node' }) });
 
-  test("saves the release's links, not the note's, and leaves the note alone", { tag: ['@sandbox', '@login'] }, async ({ page, context, inject }) => {
+  test("saves the release's links, not the note's, and leaves the note alone", { tag: ['@sandbox', '@login', '@env'] }, async ({ page, context, inject }) => {
     test.setTimeout(5 * 60_000);
     const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
     const source = `https://example.com/?mbu736=${stamp}`;

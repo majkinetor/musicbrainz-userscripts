@@ -16,7 +16,7 @@ const log = page => page.evaluate(() => window.__apolloEditor.logMarkdown());
 test.describe('release information first', () => {
   test.use({ gm: apolloGm({ autoMatch: true }) });
 
-  test('Release information is matched before the Tracklist, with spinners meanwhile', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, inject }) => {
+  test('Release information is matched before the Tracklist, with spinners meanwhile', { tag: ['@sandbox', '@login', '@critical', '@env'] }, async ({ page, inject }) => {
     // hold Release information's name lookups until the spinners are checked
     let release; const held = new Promise(r => { release = r; });
     await page.route(/\/ws\/2\/(label|artist)\?/, async r => { await held; return r.continue(); });
@@ -38,7 +38,7 @@ test.describe('release information first', () => {
     check(after.badges.length === 2, `the badges in the spinners' place: ${JSON.stringify(after.badges)}`);
   });
 
-  test('the Label picker stays open while the Tracklist matches', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  test('the Label picker stays open while the Tracklist matches', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
     await openApollo(page, inject, { seed });
     const running = await until(() => page.evaluate(() => /Stop/.test((document.querySelector('#tc-bar [data-act="match"]') || {}).textContent || '')), Boolean, { timeout: 60000 });
     check(running, 'the Tracklist pass is running');

@@ -10,7 +10,7 @@ async function toggleViewer(page) {
 }
 
 for (const add of [false, true]) for (const asFirst of [true, false]) {
-  test(`Art Station survives native switching on ${add ? 'add-' : ''}cover-art (${asFirst ? 'AS' : 'EH'} first)`, { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+  test(`Art Station survives native switching on ${add ? 'add-' : ''}cover-art (${asFirst ? 'AS' : 'EH'} first)`, { tag: ['@sandbox', '@env'] }, async ({ page, inject }, testInfo) => {
     await page.goto(`https://test.musicbrainz.org/release/${RELEASE}/${add ? 'add-' : ''}cover-art`, { waitUntil: 'domcontentloaded' });
     await idle(page);
     if (asFirst) { await inject('art_station'); await page.waitForSelector('#as-root'); }

@@ -36,7 +36,7 @@ const fakeRec = (id, title) => ({ id, title, length: 200000, video: false, isrcs
 
 test.use({ gm: apolloGm({ autoMatchRec: true, autoMatch: false }) });
 
-test('recordings are matched by the ISRC First Contact hands over', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, inject }) => {
+test('recordings are matched by the ISRC First Contact hands over', { tag: ['@sandbox', '@login', '@critical', '@env'] }, async ({ page, inject }) => {
   // #662 (chaban-mb): the release's ISRCs go out together, as one recording search
   const isrcLookups = [], isrcSearches = [];
   page.on('request', r => {
@@ -84,7 +84,7 @@ test('recordings are matched by the ISRC First Contact hands over', { tag: ['@sa
 
 // #722 full run: MusicBrainz answered the batch search "The MusicBrainz web server is currently
 // busy" (in a 200's error envelope too), and Apollo took that as final, so Get Lucky went unmatched.
-test('a busy answer to the ISRC search is retried', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('a busy answer to the ISRC search is retried', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
   let busy = 0;
   await page.route(/\/ws\/2\/recording\?query=[^&]*isrc%3A/, async r => {
     if (!busy++) return r.fulfill({ contentType: 'application/json', body: JSON.stringify({ error: 'The MusicBrainz web server is currently busy. Please try again later.', help: '' }) });

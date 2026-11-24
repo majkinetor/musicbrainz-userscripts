@@ -18,7 +18,7 @@ import { blockEdits, tpPaste, tpRow, tpCredits, tpSettle } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
 
-test('the text parser: background create marks the row, disambiguations, the picker close button', { tag: ['@sandbox', '@login'] }, async ({ page, context, inject }, testInfo) => {
+test('the text parser: background create marks the row, disambiguations, the picker close button', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, context, inject }, testInfo) => {
   const RELEASE = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';
   const NL = String.fromCharCode(10);
 

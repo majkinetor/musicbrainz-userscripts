@@ -12,7 +12,7 @@ import { blockEdits, tpPaste, tpCredits } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
 
-test('the text parser: in the page, create seeding, places, presets', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('the text parser: in the page, create seeding, places, presets', { tag: ['@sandbox', '@login', '@quarantine'] }, async ({ page, inject }) => {
   const RELEASE_GID = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';
 
   for (let a = 1; ; a++) {

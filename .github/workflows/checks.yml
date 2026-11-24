@@ -51,11 +51,17 @@ jobs:
   critical:
     needs: checks
     # (called from the release workflow, the event is its workflow_dispatch; the input decides)
-    if: (github.event_name != 'push' || github.ref == 'refs/heads/main') && inputs.critical != false
+    # On a push there is no input, and GitHub takes null for false: `inputs.critical != false`
+    # skipped this job on every push from 2026-09-30 on. As text, null is '' and false is 'false'.
+    if: (github.event_name != 'push' || github.ref == 'refs/heads/main') && format('{0}', inputs.critical) != 'false'
     runs-on: ubuntu-24.04   # Playwright has no browsers for 26.04 (ubuntu-latest since 2026-11)
     timeout-minutes: 30
-    # one run at a time on the sandbox: two would edit the same fixture releases
+    # one run at a time: a push soon after another waits for it, and only the newest waits
     concurrency: { group: sandbox, cancel-in-progress: false }
+    env:
+      PW_WORKERS: 3     # each on its own copy of the signed-in profile (dev/test/worker-profiles.mjs)
+      PW_FAST: 1        # 3 minutes a spec, 45 s a page load
+      PW_ENV_STOP: 5    # 5 failures in a row from the environment skip the rest
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -66,12 +72,17 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium firefox
       - run: sudo apt-get install -y libarchive-tools   # bsdtar, for Art Station's zip spec
-      - name: Sign in to the sandbox
-        run: node dev/test/login.mjs sandbox --auto
+      - name: The sandbox answers
+        run: node dev/test/preflight.mjs
+      - name: Sign in to the sandbox, one profile per worker
+        run: |
+          node dev/test/login.mjs sandbox --auto
+          node dev/test/worker-profiles.mjs "$PW_WORKERS"
       # @web reads other live sites, which often block cloud machines; @timing asserts a
-      # time budget, which a slower shared machine can miss for no fault of the script
+      # time budget, which a slower shared machine can miss for no fault of the script;
+      # @env and @quarantine fail for reasons a push does not change; @unit ran above
       - name: Core specs (@critical)
-        run: pnpm test --grep @critical --grep-invert "@web|@timing"
+        run: pnpm test --grep @critical --grep-invert "@web|@timing|@env|@quarantine|@unit"
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:

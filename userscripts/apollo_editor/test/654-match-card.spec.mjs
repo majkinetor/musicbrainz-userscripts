@@ -12,7 +12,7 @@ import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm({ autoMatch: true, autoMatchRec: false, autoMatchLabel: false, discogsUrlMatch: false }) });
 
-test('a badge opens its match card: stage, artist, the release that proves it, when', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('a badge opens its match card: stage, artist, the release that proves it, when', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
   const ws = await replayWs(page, new URL('./fixtures/ws-tracklist.json.gz', import.meta.url), { paths: /^\/ws\/(2|js\/entity)\// });
   await openApollo(page, inject, { seed: 'seed-saigon', tab: 'tracklist' });
   await page.waitForSelector('.tc-medsec .tc-mirror tbody tr[data-tk]', { timeout: 60000 });

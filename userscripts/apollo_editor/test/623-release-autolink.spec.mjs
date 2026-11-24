@@ -14,7 +14,7 @@ import { test, check, requireLogin, SANDBOX, settled } from '../../../dev/test/h
 
 test.use({ gm: { name: 'Apollo Editor' } });
 
-test('a seeded release links its unique label and artist, and leaves ambiguous ones alone', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('a seeded release links its unique label and artist, and leaves ambiguous ones alone', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
   await page.goto(SANDBOX + '/', { waitUntil: 'domcontentloaded' });
   await requireLogin(page);
   await page.evaluate(() => {

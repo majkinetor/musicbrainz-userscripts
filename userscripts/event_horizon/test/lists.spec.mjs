@@ -3,7 +3,7 @@ import { test, check, until, attachShot } from '../../../dev/test/harness.mjs';
 test.use({ gm: { name: 'Event Horizon' } });
 
 // the discography table has MB's own columns, Rating and Releases, and the groups' links; the release counts fill in on their own
-test('the discography table shows ratings, release counts and links', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+test('the discography table shows ratings, release counts and links', { tag: ['@sandbox', '@quarantine'] }, async ({ page, inject }, testInfo) => {
   await page.goto('https://test.musicbrainz.org/artist/b10bbbfc-cf9e-42e0-be17-e2c3e1d2600d');
   await inject('event_horizon');
   const tbl = page.locator('#s-dg [data-dgview="table"]');

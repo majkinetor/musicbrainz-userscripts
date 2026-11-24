@@ -19,7 +19,7 @@ import { test, check, requireLogin, sourceOf, idle, frames, mbNoise, pristine } 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
 
-test("#495: release rg links", { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
+test("#495: release rg links", { tag: ['@sandbox', '@login', '@env'] }, async ({ context, page }) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
 
   // a release and its release group made for the run (#795): the links below go on for real

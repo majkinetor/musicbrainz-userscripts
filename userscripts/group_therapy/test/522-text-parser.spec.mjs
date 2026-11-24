@@ -18,7 +18,7 @@ import { blockEdits, ensureAnnotation, tpPaste, tpCredits, tpRow, tpPick, tpAppl
 
 test.use({ gm: { name: 'Group Therapy' } });
 
-test('the text parser end to end: parse, resolve, apply, and the fixes from live feedback', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, inject }) => {
+test('the text parser end to end: parse, resolve, apply, and the fixes from live feedback', { tag: ['@sandbox', '@login', '@critical', '@quarantine'] }, async ({ page, inject }) => {
   test.setTimeout(600000);
   const RELEASE_GID = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';
   // the release needs an annotation for "Load annotation" — a one-time real edit,

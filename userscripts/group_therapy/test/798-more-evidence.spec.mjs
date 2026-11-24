@@ -11,7 +11,7 @@ import { openRelEditor, blockEdits } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });   // fresh: no remembered picks
 
-test('the text parser: evidence from the release group and co-credits, with badges', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('the text parser: evidence from the release group and co-credits, with badges', { tag: ['@sandbox', '@login', '@quarantine'] }, async ({ page, inject }) => {
   test.setTimeout(300000);
   const posts = await blockEdits(page);
   const asked = { group: 0, release: 0, recording: 0 };

@@ -10,7 +10,7 @@ import { openScout } from './is.mjs';
 
 test.use({ gm: { name: 'ISRC Scout' } });
 
-test('the settings window, and a platform switched off leaves the editor', { tag: ['@sandbox'] }, async ({ page, inject }, info) => {
+test('the settings window, and a platform switched off leaves the editor', { tag: ['@sandbox', '@env'] }, async ({ page, inject }, info) => {
   await page.setViewportSize({ width: 1500, height: 1000 });
   await openScout(page, inject, { release: '54b7bca2-7ed6-4484-bdd3-fe35a3f33dda' });   // links its albums (680-match)
   await page.click('#ii-setup-toggle');

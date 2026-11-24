@@ -6,7 +6,7 @@ test.use({ gm: { name: 'Event Horizon' } });
 const rows = page => page.locator('#app .sr-t tbody tr').count();
 const foot = (page, k) => page.locator(`#app [data-lm="${k}"]`);
 
-test('a search loads its next page under the rows, by Load more', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+test('a search loads its next page under the rows, by Load more', { tag: ['@sandbox', '@env'] }, async ({ page, inject }, testInfo) => {
   await page.goto('https://test.musicbrainz.org/search?query=love&type=artist&method=indexed');
   await inject('event_horizon');
   const n0 = await until(() => rows(page), n => n >= 25);

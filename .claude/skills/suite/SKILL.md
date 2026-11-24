@@ -22,7 +22,7 @@ Neither narrowed mode is a full run, so neither is recorded in the test history 
 
 ## Why script by script
 
-The runner allows one worker: all specs share one logged-in profile, and MusicBrainz rate-limits per IP. Two scripts' specs usually hit different MusicBrainz APIs, so the maintainer allows exactly **two** runs at once: the main run on one script, and a recheck or fix test of an earlier script. Never more, and never two runs of the same script.
+The local runner allows one worker by default: all specs share one logged-in profile, and MusicBrainz rate-limits per IP (CI runs 3, each on its own profile copy, #1109). Two scripts' specs usually hit different MusicBrainz APIs, so the maintainer allows exactly **two** runs at once: the main run on one script, and a recheck or fix test of an earlier script. Never more, and never two runs of the same script.
 
 - The main run uses `.pw-profile`. Rechecks use a copy, `.pw-profile-recheck`, through `PW_PROFILE` (Chromium locks a profile to one browser).
 - Each run has its own output folder, so neither wipes the other's artifacts.

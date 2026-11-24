@@ -17,7 +17,7 @@
 // Read only — every POST is aborted. Sandbox.
 import { readFile } from 'node:fs/promises';
 import { firefox } from '@playwright/test';
-import { test, check, requireLogin, sourceOf, REPO, idle, frames, until } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, FF_PROFILE, idle, frames, until } from '../../../dev/test/harness.mjs';
 import { installProdGuard } from '../../../dev/test/guard.mjs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -59,7 +59,7 @@ test("#564: alias chip", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({}
   // color-scheme, which our panels set to dark. Chromium paints that WHITE, so the
   // bug is invisible there and this check passed on the broken build twice before
   // I noticed. Firefox paints it BLACK, which is what majkinetor reported.
-  const context = await firefox.launchPersistentContext(resolve(REPO, '.pw-profile-ff'), {
+  const context = await firefox.launchPersistentContext(FF_PROFILE, {
       headless: !process.argv.includes('--headed'), viewport: { width: 1500, height: 950 },
   });
   // closed in `finally`: a spec that skips (the profile isn't signed in) or fails must not leave

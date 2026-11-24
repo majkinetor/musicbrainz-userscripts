@@ -19,7 +19,7 @@ import { blockEdits, tpPaste, tpRow, tpCredits, tpSettle } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
 
-test('the text parser: seven UX fixes (background create, MBID paste, freeze, click-to-apply, keys)', { tag: ['@sandbox', '@login'] }, async ({ page, context, inject }) => {
+test('the text parser: seven UX fixes (background create, MBID paste, freeze, click-to-apply, keys)', { tag: ['@sandbox', '@login', '@quarantine'] }, async ({ page, context, inject }) => {
 
   const RELEASE = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';
   const NL = String.fromCharCode(10);

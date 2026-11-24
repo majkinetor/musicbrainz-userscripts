@@ -9,7 +9,7 @@ const ROWS = '.tc-medsec .tc-mirror tbody tr[data-tk]';
 test.describe('credited-as and the picker', () => {
   test.use({ gm: apolloGm({ autoMatch: true, autoMatchRec: false, autoMatchLabel: false, discogsUrlMatch: false }) });
 
-  test('right-click on a credited-as × clears them all', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  test('right-click on a credited-as × clears them all', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
     const ws = await replayWs(page, new URL('./fixtures/ws-tracklist.json.gz', import.meta.url), { paths: /^\/ws\/(2|js\/entity)\// });
     const submitted = await openApollo(page, inject, { seed: 'seed-saigon', tab: 'tracklist' });
     await page.waitForSelector(ROWS, { timeout: 60000 });
@@ -50,7 +50,7 @@ test.describe('credited-as and the picker', () => {
 test.describe('the picker near the bottom', () => {
   test.use({ gm: apolloGm() });
 
-  test('the artist picker opens above its input when there is no room below', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  test('the artist picker opens above its input when there is no room below', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
     await page.setViewportSize({ width: 1400, height: 700 });
     await openApollo(page, inject, { seed: 'seed-saigon', tab: 'tracklist' });
     await page.waitForSelector(ROWS, { timeout: 60000 });

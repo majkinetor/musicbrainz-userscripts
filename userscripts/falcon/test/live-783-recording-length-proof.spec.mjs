@@ -10,7 +10,7 @@ test.use({ gm: false });
 
 const HOST = 'https://test.musicbrainz.org';
 
-test('#783: Falcon sets a standalone recording\'s length, and says why it can\'t for one with tracks', { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
+test('#783: Falcon sets a standalone recording\'s length, and says why it can\'t for one with tracks', { tag: ['@sandbox', '@login', '@env'] }, async ({ context, page }) => {
   test.setTimeout(600_000);
   if (!/test\.musicbrainz\.org$/.test(new URL(HOST).hostname)) throw new Error('sandbox only');
   const code = await readFile(sourceOf('falcon'), 'utf8');

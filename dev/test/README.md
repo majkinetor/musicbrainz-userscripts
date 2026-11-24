@@ -14,6 +14,7 @@ pnpm test --project=fusion        # one script
 pnpm test --grep @unit            # only specs that need no network
 pnpm test --grep @critical        # the quick run: each script's core
 pnpm test:core                    # everything but the purely visual specs (@cosmetic)
+pnpm test:env                     # the specs that fail when the sandbox or another service misbehaves (@env)
 pnpm test --headed                # watch the browser
 TEST_LOG=1 pnpm test              # also print what specs log
 pnpm test:report                  # open the last HTML report
@@ -21,14 +22,39 @@ pnpm test:report                  # open the last HTML report
 
 `node dev/test/suite-by-script.mjs` runs the same suite one script (project) at a time, each with its own JSON report and artifacts in `test-results/suite/`; the [`suite` skill](../../.claude/skills/suite/SKILL.md) uses it to recheck one script's failures while the next one runs. Such a recheck runs on a copy of the profile, `PW_PROFILE=.pw-profile-recheck`, since Chromium lets one browser at a time open a profile.
 
-One test runs at a time: all of them share the logged-in profile, and MusicBrainz rate-limits per IP.
+One test runs at a time by default: all of them share the logged-in profile, and MusicBrainz rate-limits per IP. `PW_WORKERS=<n>` runs n spec files at once. Each worker then opens its own copy of the profile, `.pw-profile-w<i>` and `.pw-profile-ff-w<i>`, because a browser locks the profile it opens. Make the copies after you sign in: `node dev/test/worker-profiles.mjs <n>`.
+
+These variables change a run:
+
+| Variable | What it does |
+| --- | --- |
+| `PW_WORKERS=<n>` | n workers, each on its own profile copy |
+| `PW_FAST=1` | 3 minutes for a spec and 45 s for a page load, not 5 minutes and 90 s, so a dead sandbox fails fast |
+| `PW_ENV_STOP=<n>` | after n failures in a row that the environment caused, skip the specs that are left |
+| `PW_BLOB=<name>` | also write a blob report, `blob-report/<name>.zip`, that `playwright merge-reports` joins with other runners' |
+| `PW_JSON=<file>` | also write the Playwright JSON report |
+
+[`failure-cause.mjs`](failure-cause.mjs) gives each failure a cause. `rate-limit` is a 429 or 503 answer from MusicBrainz, or its "Verification failed" page. `network` is a connection or proxy error. `test` is any other failure. The harness adds the cause to the failed test as a `cause` annotation.
 
 ## CI
 
-- **[checks](../../.github/workflows/checks.yml)**, on every push to main or stable and every pull request: parse, lint, design tokens, Credit Hoarder's build matching its source, and the `@unit` specs. For main and pull requests it then runs the `@critical` specs on the sandbox, signed in by `login.mjs sandbox --auto` (the sandbox account is public, so there is no secret).
-- **[suite](../../.github/workflows/suite.yml)**, nightly and from Actions → suite → Run workflow: every spec but `@web` (other live sites often block cloud machines) and `@timing`. It signs in Firefox's profile too, for Falcon's Firefox specs. The README badge shows how many specs passed and failed on its last run on main. Every run is also kept in [`history.json`](https://github.com/majkinetor/musicbrainz-userscripts/blob/test-history/history.json) on the `test-history` branch, newest first: the counts, how long it took (`duration`, H:MM:SS, the specs without the setup), each failed spec with its error, the commit and the run's link (#647). A full local run through the [`suite` skill](../../.claude/skills/suite/SKILL.md) goes in too, marked `"source": "local"` ([`suite-record.mjs`](suite-record.mjs)): the only runs with the `@web` specs. The badge stays the nightly's. The suite doesn't retry a failed spec, so flakiness shows across runs: `node dev/test/flaky-report.mjs` (after `git fetch github test-history`) lists the specs that failed in the last 30 runs, most often first, with how many of the failures were nightly and how many local, marking one red in every run as BROKEN and one red more than once as flaky; `--runs N` looks further back. `PW_JSON=<file>` makes any run write the Playwright JSON report this is built from.
+- **[checks](../../.github/workflows/checks.yml)**, on every push to main or stable and every pull request: parse, lint, design tokens, Credit Hoarder's build matching its source, and the `@unit` specs. For main and pull requests it then runs the `@critical` specs on the sandbox with 3 workers, signed in by `login.mjs sandbox --auto` (the sandbox account is public, so there is no secret). `@env` and `@quarantine` specs stay out.
+- **[suite](../../.github/workflows/suite.yml)** runs on 3 runners (GitHub machines) at once, with 3 workers each ([#1109](https://github.com/majkinetor/musicbrainz-userscripts/issues/1109)). [`shards.mjs`](shards.mjs) gives each runner a share of the scripts of about the same length. First, [`preflight.mjs`](preflight.mjs) makes sure that the sandbox answers. If it does not, no runner starts. The `report` job joins the runners' reports into one HTML report. The set of specs depends on the night:
 
-Both keep the HTML report as a download on the run page, for 14 days, and only one of them uses the sandbox at a time.
+  | Set | When | Specs |
+  | --- | --- | --- |
+  | `nightly` | Monday to Saturday, 02:00 UTC | the specs that guard behavior: not `@unit`, `@cosmetic`, `@fixture`, `@debug`, `@env` or `@quarantine` |
+  | `full` | Sunday, 02:00 UTC | every spec but `@unit`, `@env` and `@quarantine` |
+  | `env` | by hand | the `@env` specs, before a release or after the sandbox changes |
+  | `quarantine` | by hand | the `@quarantine` specs |
+
+  No set has `@web` (other live sites often block cloud machines) or `@timing`. Actions → suite → Run workflow starts any set, and with 3, 2 or 1 workers. The `nightly` and `full` sets run with `PW_FAST=1` and `PW_ENV_STOP=5`.
+
+  The README badge shows how many specs passed and failed on the last `nightly` or `full` run on main. Every such run is also kept in [`history.json`](https://github.com/majkinetor/musicbrainz-userscripts/blob/test-history/history.json) on the `test-history` branch, newest first: the counts, how long it took (`duration`, H:MM:SS, the specs without the setup), the layout (`3x3` is 3 runners with 3 workers), each failed spec with its error and cause, the commit and the run's link (#647). A full local run through the [`suite` skill](../../.claude/skills/suite/SKILL.md) goes in too, marked `"source": "local"` ([`suite-record.mjs`](suite-record.mjs)): the only runs with the `@web` specs. The badge stays the nightly's.
+
+  The suite does not retry a failed spec, so flakiness shows across runs. `node dev/test/flaky-report.mjs` (after `git fetch github test-history`) lists the specs that failed in the last 30 runs, most often first. It gives how many of the failures were nightly and how many local, and marks one red in every run as BROKEN and one red more than once as flaky. `--runs N` looks further back. `--causes` counts each run's failures by cause, with its layout. If the `rate-limit` count grows, run fewer workers: change `PW_WORKERS` in `suite.yml` and `checks.yml`.
+
+Both keep the HTML report as a download on the run page, for 14 days, and only one of them uses the sandbox at a time (the concurrency group `sandbox`).
 
 ## Writing a spec
 
@@ -61,7 +87,7 @@ test('what the spec proves', { tag: '@sandbox' }, async ({ page, inject }) => {
 - **`answerGm(context, handler)`** answers `GM_xmlhttpRequest` calls in place of the network, as `page.route()` does for the page's own requests: `answerGm(context, ({ url }) => /soundexchange/.test(url) ? { status: 202, body: '…' } : null)`.
 - **`replayWs(page, fixture)`** answers the page's `/ws/2/` reads from answers recorded on production, so a spec that depends on who is called what gets the same data every run and is never throttled. `RECORD_WS=1` records what the recording lacks (`RECORD_WS=fresh` starts it over); `await ws.done()` saves, or fails on a read the fixture lacks. `web: true` (or a RegExp of hosts) also replays the other sites the script asks through `GM_xmlhttpRequest`; tokens are redacted and HTML pages stripped of styles, SVG and comments before they are stored, and `trim: (key, body) => body` cuts what else a spec doesn't need. **Bandcamp** answers the harness's requests (live and recording) with its "Client Challenge" page, though a plain Node `fetch` gets the album: write such a fixture from Node (`680-is-pc-links`'s holds only the page's `data-tralbum`).
 - **MusicBrainz noise:** its own React #418 (hydration, recovered on the client) never fails a test. A spec that collects page errors itself filters with `mbNoise` from the harness.
-- **Tags:** `@unit` needs no network, `@prod` reads musicbrainz.org, `@sandbox` uses test.musicbrainz.org (writes allowed), `@web` reads another live site (Bandcamp, Discogs…), `@login` needs the logged-in profile. `@critical` marks the few specs per script that cover its core, for a quick run. `@cosmetic` marks a spec that checks only how something looks (colours, themes, icons, layout, alignment); a broken one leaves every feature working, so `pnpm test:core` leaves them out. Tag a new spec `@cosmetic` when that is all it checks. `@timing` marks a spec that asserts a time budget ("shows within 3 s"), which CI leaves out. `@flaky` marks a spec that has failed intermittently, so it can be run alone many times: `pnpm test:flaky` repeats every one 10 times (`pnpm test --grep @flaky --repeat-each 20` for more). Drop the tag once a fix has held through several full runs; add it with a note in the commit when a spec fails once and passes on rerun.
+- **Tags:** `@unit` needs no network, `@prod` reads musicbrainz.org, `@sandbox` uses test.musicbrainz.org (writes allowed), `@web` reads another live site (Bandcamp, Discogs…), `@login` needs the logged-in profile. `@critical` marks the few specs per script that cover its core, for a quick run. `@cosmetic` marks a spec that checks only how something looks (colours, themes, icons, layout, alignment); a broken one leaves every feature working, so `pnpm test:core` leaves them out. Tag a new spec `@cosmetic` when that is all it checks. `@timing` marks a spec that asserts a time budget ("shows within 3 s"), which CI leaves out. `@env` marks a spec that often fails because of the environment, not the script: the sandbox's empty search index, a slow sandbox, or a service that the sandbox does not have. CI runs it only in the `env` set, by hand. Remove the tag when the cause is gone. `@quarantine` marks a spec that failed every night for a reason that is still unknown. It stays out of CI until someone fixes or deletes it. `@flaky` marks a spec that has failed intermittently, so it can be run alone many times: `pnpm test:flaky` repeats every one 10 times (`pnpm test --grep @flaky --repeat-each 20` for more). Drop the tag once a fix has held through several full runs; add it with a note in the commit when a spec fails once and passes on rerun.
 
 ### Options (`test.use`)
 

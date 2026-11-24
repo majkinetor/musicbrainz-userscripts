@@ -40,7 +40,7 @@ test('a focused field shows no help bubble, an entity field included', { tag: ['
 });
 
 // #929: the hidden barcode bubble's content shows as a note under the field instead
-test('the barcode lists releases that already have it, and warns about no barcode', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('the barcode lists releases that already have it, and warns about no barcode', { tag: ['@sandbox', '@login', '@quarantine'] }, async ({ page, inject }) => {
   const submitted = await openApollo(page, inject, { release: '51bdb849-5dfc-40c0-9fcb-f49fe7395cc7' });
   await releaseInfo(page);
   await page.fill('#barcode', '751937415022');   // the sandbox's Saigon Rock & Soul

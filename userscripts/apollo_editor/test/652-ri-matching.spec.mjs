@@ -68,7 +68,7 @@ test.describe('release artist and label', () => {
     check(lb === 'disc', `the label's badge (${lb})`);
   });
 
-  test('without a link the name stages still run', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  test('without a link the name stages still run', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
     await openApollo(page, inject, { seed: { ...seed, 'artist_credit.names.0.name': 'Pharrell Williams', 'labels.0.name': 'Zzq No Label 652' } });
     const ri = await until(() => page.evaluate(() => (window.__apolloEditor.riArt || []).map(s => ({ c: s.creditedAs, status: s.status, committed: !!s.committed }))), v => v.length === 2 && v[0].status !== 'none', { timeout: 60000 });
     check(ri[0] && ['high', 'alias'].includes(ri[0].status) && ri[0].committed, `"Pharrell Williams" by its exact name: ${JSON.stringify(ri[0])}`);
@@ -76,7 +76,7 @@ test.describe('release artist and label', () => {
     check(!label, 'a label nobody has stays unset');
     check(await page.locator('.tc-ri-lab').count() === 0, 'and gets no badge');
   });
-  test('the release Artist field is the Tracklist artist cell', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, inject }) => {
+  test('the release Artist field is the Tracklist artist cell', { tag: ['@sandbox', '@login', '@critical', '@env'] }, async ({ page, inject }) => {
     await openApollo(page, inject, { seed: { ...seed, 'artist_credit.names.0.name': 'Daft Punk', 'artist_credit.names.1.name': 'Zzq Nobody 652', 'labels.0.name': '' } });
     await until(() => page.evaluate(() => (window.__apolloEditor.riArt || [])[0]?.committed), Boolean, { timeout: 60000 });
     const cell = '#information td.release-artist .tc-ri-art';

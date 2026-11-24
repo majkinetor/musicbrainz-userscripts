@@ -21,20 +21,19 @@
 // the harness's Chromium (pristine()'s artist form didn't submit in Playwright's Firefox).
 import { readFile } from 'node:fs/promises';
 import { firefox } from '@playwright/test';
-import { test, check, requireLogin, sourceOf, REPO, idle, frames, settled, mbNoise, pristine } from '../../../dev/test/harness.mjs';
-import { resolve } from 'node:path';
+import { test, check, requireLogin, sourceOf, FF_PROFILE, idle, frames, settled, mbNoise, pristine } from '../../../dev/test/harness.mjs';
 import { installProdGuard } from '../../../dev/test/guard.mjs';
 
 // Firefox (the harness is Chromium): the script launches it, with its own GM stand-ins
 test.use({ gm: false });
 
-test("#467: e2e testserver", { tag: ['@sandbox', '@login'] }, async ({ page: chromium }) => {
+test("#467: e2e testserver", { tag: ['@sandbox', '@login', '@env'] }, async ({ page: chromium }) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
   const { recordings: RECS } = await pristine(chromium, 'release', { tracks: 8 });
 
   const TEST_MB = 'https://test.musicbrainz.org';
 
-  const context = await firefox.launchPersistentContext(resolve(REPO, '.pw-profile-ff'), { headless: true, viewport: { width: 1500, height: 950 } });
+  const context = await firefox.launchPersistentContext(FF_PROFILE, { headless: true, viewport: { width: 1500, height: 950 } });
   // closed in `finally`: a spec that skips (the profile isn't signed in) or fails must not leave
   // Firefox running on the profile, or the next Firefox spec can't open it (#637)
   try {

@@ -10,7 +10,7 @@ import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
 
-test('artist search dropdown icons open the artist in a new tab', { tag: ['@sandbox', '@login'] }, async ({ page, context, inject }) => {
+test('artist search dropdown icons open the artist in a new tab', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, context, inject }) => {
   const seed = { name: 'Apollo 689 fixture', 'artist_credit.names.0.name': 'Miles Davis', 'mediums.0.format': 'CD', 'mediums.0.track.0.name': 'So What', 'mediums.0.track.0.artist_credit.names.0.name': 'Miles Davis' };
   await openApollo(page, inject, { seed, tab: 'tracklist' });
   await page.waitForSelector('.tc-medsec .tc-search input.nm', { state: 'visible', timeout: 60000 });

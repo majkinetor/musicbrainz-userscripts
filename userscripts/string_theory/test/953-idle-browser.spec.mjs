@@ -8,7 +8,7 @@ test.use({ gm: { name: 'String Theory', values: {
   view: { on: false, fx: ['hexagons'], hexMotion: 'static', hexOpacity: 60, fxCur: 'Night', fxTheme: 'Night', named: { fx: [{ name: 'Night', v: { fx: ['hexagons'], hexMotion: 'static', hexOpacity: 20 } }] } },
 } } });
 
-for (const path of ['/', '/doc/About']) test('idle appearance and exact effect restoration on ' + path, { tag: '@sandbox' }, async ({ page, inject }) => {
+for (const path of ['/', '/doc/About']) test('idle appearance and exact effect restoration on ' + path, { tag: ['@sandbox', '@env'] }, async ({ page, inject }) => {
   await page.goto(SANDBOX + path);
   await page.clock.install();
   await inject('string_theory');

@@ -2,7 +2,11 @@
 // Which specs keep failing (#647): reads the suite history (dev/test/suite-history.mjs) and
 // lists every spec that failed in the last N runs, most often first.
 //
-//   node dev/test/flaky-report.mjs [history.json] [--runs 30]
+//   node dev/test/flaky-report.mjs [history.json] [--runs 30] [--causes]
+//
+// --causes lists, per run, how the run was spread (runners x workers) and how many failures
+// each cause had: the test, a rate limit, the network (failure-cause.mjs). Rate limits that
+// grow with the workers on one runner say to run fewer there (PW_WORKERS in the workflows).
 //
 // Without a file it reads history.json from the `test-history` branch (git fetch github test-history
 // first, or origin in a plain clone). A spec red in every run is broken, not flaky; one red
@@ -11,6 +15,7 @@
 // 3n+1l is three nightly, one local.
 import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { cause } from './failure-cause.mjs';
 
 const i = process.argv.indexOf('--runs'), N = i > 0 ? +process.argv[i + 1] : 30;
 const file = process.argv.slice(2).find((a, k, all) => !a.startsWith('--') && all[k - 1] !== '--runs');
@@ -20,6 +25,15 @@ const load = () => {
   throw new Error('no history: pass a file, or git fetch the test-history branch');
 };
 const runs = Object.entries(JSON.parse(load())).slice(0, N);   // newest first
+if (process.argv.includes('--causes')) {
+  console.log('run                  source   layout  failed  test  rate-limit  network');
+  for (const [at, r] of runs) {
+    const c = r.causes || (r.failures || []).reduce((a, f) => { const k = f.cause || cause(f.error); return { ...a, [k]: (a[k] || 0) + 1 }; }, {});
+    const known = r.causes ? '' : '  (from the error text only)';
+    console.log(`${at}  ${(r.source || '').padEnd(7)}  ${(r.layout || '1x1').padEnd(6)}  ${String(r.failed ?? 0).padStart(6)}  ${String(c.test || 0).padStart(4)}  ${String(c['rate-limit'] || 0).padStart(10)}  ${String(c.network || 0).padStart(7)}${known}`);
+  }
+  process.exit(0);
+}
 const specs = new Map();
 for (const [at, r] of runs) {
   for (const f of r.failures || []) {

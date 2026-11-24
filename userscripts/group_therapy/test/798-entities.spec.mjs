@@ -11,7 +11,7 @@ import { openRelEditor, blockEdits } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy', persist: true } });
 
-test('the text parser: in the page, entities with candidates, cutoff, remembered picks', { tag: ['@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
+test('the text parser: in the page, entities with candidates, cutoff, remembered picks', { tag: ['@sandbox', '@login', '@quarantine'] }, async ({ page, inject }, testInfo) => {
   test.setTimeout(300000);
   const posts = await blockEdits(page);
   await openRelEditor(page, inject);

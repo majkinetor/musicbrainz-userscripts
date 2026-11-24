@@ -6,7 +6,7 @@ import { openArtStation } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
 
-test('the settings panel covers the corner launchers, and its header has padding', { tag: ['@sandbox', '@cosmetic'] }, async ({ page, inject }, testInfo) => {
+test('the settings panel covers the corner launchers, and its header has padding', { tag: ['@sandbox', '@cosmetic', '@env'] }, async ({ page, inject }, testInfo) => {
   await openArtStation(page, inject);
   // a launcher under the panel, standing in for Falcon's (same inline z-index)
   await page.evaluate(() => {

@@ -21,7 +21,7 @@ const field = page => page.evaluate(() => {
 test.describe('label search', () => {
   test.use({ gm: apolloGm({ autoMatchLabel: false }) });
 
-  test('Apollo\'s picker sets the label; ＋ creates one; the Original view gets MusicBrainz\'s back', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, inject }) => {
+  test('Apollo\'s picker sets the label; ＋ creates one; the Original view gets MusicBrainz\'s back', { tag: ['@sandbox', '@login', '@critical', '@env'] }, async ({ page, inject }) => {
     await openApollo(page, inject, { seed });
     const f0 = await until(() => field(page), v => v.taken);
     check(f0.taken && f0.nativeOff, `MusicBrainz's lookup is off, Apollo's is on: ${JSON.stringify(f0)}`);

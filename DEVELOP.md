@@ -21,7 +21,7 @@ pnpm lint
 - **CI** (`.github/workflows/`):
   - `checks.yml`, on every push and pull request, runs the syntax check, the linters, the design-token check and the `@unit` specs, then the `@critical` specs on test.musicbrainz.org. A pull request must also carry the builds of its sources (`node dev/regen.mjs --check`).
   - `build.yml`, on every push to `main`, rebuilds what the hook builds (`node dev/regen.mjs`) and commits it as `github-actions[bot]` when a commit came without the hook: the web editor, another machine, `--no-verify`, a merge. Where the hook ran, it finds nothing to commit. The hook stays: it builds in the same commit (so a pinned install link works at once, on a feature branch too), and it stops a script that doesn't parse or lint.
-  - `suite.yml` runs the whole suite nightly.
+  - `suite.yml` runs the suite nightly on 3 runners: a smaller set Monday to Saturday, the full one on Sunday (#1109).
   - `issue-label.yml`, on every opened issue, adds the `area | …` label of each script its title names and takes a leading `<Script>: ` off the title ([`dev/issue-label`](dev/issue-label/README.md)).
 - **Tests** are in [`dev/test`](dev/test/README.md): one Playwright runner for every script, on test.musicbrainz.org, with a guard that refuses any write to production.
 

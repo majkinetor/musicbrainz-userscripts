@@ -14,7 +14,7 @@ import { test, check, expect, requireLogin, SANDBOX, idle, settled, pristine } f
 
 test.use({ gm: { name: 'Group Therapy' } });
 
-test('Apply & clear annotation really clears it, with an edit note', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('Apply & clear annotation really clears it, with an edit note', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
   const HOST = SANDBOX;
   const { mbid: RELEASE } = await pristine(page, 'release');
   const MARKER = 'GT #550 probe ' + new Date().toISOString();

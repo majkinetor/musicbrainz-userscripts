@@ -21,7 +21,7 @@ import { join } from 'node:path';
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
 
-test("live 534 video proof", { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
+test("live 534 video proof", { tag: ['@sandbox', '@login', '@env'] }, async ({ context, page }) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
 
   const HOST = 'https://test.musicbrainz.org';

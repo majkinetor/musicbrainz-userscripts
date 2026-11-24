@@ -27,7 +27,7 @@ function seed() {
   return o;
 }
 
-test('a recording by an unrelated artist is not auto-linked', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('a recording by an unrelated artist is not auto-linked', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
   const submitted = await openApollo(page, inject, { seed: seed() });
   await page.evaluate(() => {
     const b = [...document.querySelectorAll('#tc-nav-bar button, #tc-nav-bar a')].find(x => x.textContent.trim().toLowerCase().startsWith('recording'));

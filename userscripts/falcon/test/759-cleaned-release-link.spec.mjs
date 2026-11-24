@@ -12,7 +12,7 @@ test.use({ gm: false });
 const ID = '1999' + String(Date.now()).slice(-6);
 const URL1 = `https://music.apple.com/us/album/zzq-falcon-759-single/${ID}`;
 
-test('#759: a release link MusicBrainz cleans as it seeds it gets both its types', { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
+test('#759: a release link MusicBrainz cleans as it seeds it gets both its types', { tag: ['@sandbox', '@login', '@env'] }, async ({ context, page }) => {
   test.setTimeout(180000);
   const { mbid: RELEASE } = await pristine(page, 'release');
   const code = await readFile(sourceOf('falcon'), 'utf8');

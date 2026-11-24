@@ -19,7 +19,7 @@ const state = page => page.evaluate(() => {
 test.describe('label from duplicates', () => {
   test.use({ gm: apolloGm({ autoMatchLabel: true }) });
 
-  test('an ambiguous label name is linked by the one label the similar releases credit', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  test('an ambiguous label name is linked by the one label the similar releases credit', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
     await openApollo(page, inject, { seed });
     const s = await until(() => state(page), v => v.gid === WARP_UK, { timeout: 60000 });
     console.log(JSON.stringify(s));

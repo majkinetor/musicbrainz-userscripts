@@ -26,16 +26,23 @@
 // @login (needs the logged-in profile), @critical (the quick run: pnpm test --grep @critical).
 import { test as base, expect, chromium } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
-import { readFileSync, appendFileSync } from 'node:fs';
+import { readFileSync, appendFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { gzipSync, gunzipSync, deflateSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { installProdGuard, hostOf, withUa } from './guard.mjs';
+import { THROTTLE_PAGE, failureCause } from './failure-cause.mjs';
 
 export { expect };
 export const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
-// PW_PROFILE=<dir> runs on a copy of the profile, beside a run on the real one (the suite skill's rechecks)
-export const PROFILE = process.env.PW_PROFILE ? resolve(process.env.PW_PROFILE) : resolve(REPO, '.pw-profile');
+// PW_PROFILE=<dir> runs on a copy of the profile, beside a run on the real one (the suite skill's rechecks).
+// PW_WORKERS=<n> above 1 gives each worker its own copy, because Chromium locks a profile to one
+// browser: worker i uses .pw-profile-w<i> (and .pw-profile-ff-w<i> for Firefox). CI makes the copies
+// after it signs in (dev/test/worker-profiles.mjs).
+const WORKER = Number(process.env.PW_WORKERS) > 1 ? process.env.TEST_PARALLEL_INDEX : null;
+const perWorker = dir => (WORKER != null ? `${dir}-w${WORKER}` : dir);
+export const PROFILE = process.env.PW_PROFILE ? resolve(process.env.PW_PROFILE) : resolve(REPO, perWorker('.pw-profile'));
+export const FF_PROFILE = resolve(REPO, perWorker('.pw-profile-ff'));
 export const PROD = 'https://musicbrainz.org';
 export const SANDBOX = 'https://test.musicbrainz.org';
 
@@ -124,6 +131,22 @@ export const test = base.extend({
     }
   }, { auto: true }],
 
+  // PW_ENV_STOP=<n>: after n failures in a row that the environment caused (the sandbox down,
+  // throttled or unreachable), the tests that remain are skipped, not run into the same wall
+  // for hours. The count is a file in the output folder, so the workers of one run share it;
+  // any test that passes sets it back to 0. Off (no limit) without the variable.
+  _envStop: [async ({}, use, testInfo) => {
+    const limit = Number(process.env.PW_ENV_STOP) || 0;
+    const file = resolve(testInfo.project.outputDir, '..', 'env-streak');
+    const read = () => { try { return Number(readFileSync(file, 'utf8')) || 0; } catch { return 0; } };
+    if (limit && read() >= limit) testInfo.skip(true, `skipped: ${limit} failures in a row came from the environment (PW_ENV_STOP)`);
+    await use();
+    if (!limit || testInfo.status === 'skipped') return;
+    const ok = testInfo.status === testInfo.expectedStatus;
+    const env = !ok && failureCause(testInfo) !== 'test';
+    if (ok || env) try { mkdirSync(dirname(file), { recursive: true }); writeFileSync(file, String(ok ? 0 : read() + 1)); } catch { /* the count is a help, not a must */ }
+  }, { auto: true }],
+
   // every production write the guard refused (layer 1 or 2); a spec using 'block' reads it
   blockedWrites: async ({}, use) => { await use([]); },
 
@@ -136,14 +159,20 @@ export const test = base.extend({
     await ctx.addInitScript(() => { window.__mbuTest = true; });
     const watch = p => p.on('pageerror', e => errors.push(e.message));
     ctx.pages().forEach(watch); ctx.on('page', watch);
+    // MusicBrainz's "too busy" answers, counted so that a failure can say it met them (see failureCause)
+    const busy = { n: 0 };
+    ctx.on('response', r => { if ([429, 503].includes(r.status()) && /(^|\.)musicbrainz\.org$/i.test(hostOf(r.url()) || '')) busy.n++; });
     if (process.env.SANDBOX_WRITES) logSandboxWrites(ctx, testInfo, process.env.SANDBOX_WRITES);
 
     await use(ctx);
 
     const failed = testInfo.status !== testInfo.expectedStatus;
+    let throttled = false;
     if (failed) for (const p of ctx.pages()) {
       try { await testInfo.attach('page ' + p.url(), { body: await p.screenshot(), contentType: 'image/png' }); } catch (e) { /* page already gone */ }
+      try { throttled ||= THROTTLE_PAGE.test(await p.evaluate(() => document.body?.innerText.slice(0, 2000) || '')); } catch (e) { /* page already gone */ }
     }
+    if (failed && (throttled || busy.n)) testInfo.annotations.push({ type: 'cause', description: `rate-limit${busy.n ? ` (${busy.n} answers 429/503)` : ''}${throttled ? ' (throttle page shown)' : ''}` });
     await ctx.close();
     const leaked = guard.leaked();
     expect(leaked, 'writes that reached PRODUCTION MusicBrainz — the guard has a hole').toEqual([]);

@@ -13,7 +13,7 @@ test.use({ gm: false });
 const HOST = 'https://test.musicbrainz.org';
 const CATNO = 'AOF 727';
 
-test('#727: Falcon fills a release label\'s empty catalog number', { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
+test('#727: Falcon fills a release label\'s empty catalog number', { tag: ['@sandbox', '@login', '@env'] }, async ({ context, page }) => {
   test.setTimeout(600_000);
   if (!/test\.musicbrainz\.org$/.test(new URL(HOST).hostname)) throw new Error('sandbox only');
   const code = await readFile(sourceOf('falcon'), 'utf8');

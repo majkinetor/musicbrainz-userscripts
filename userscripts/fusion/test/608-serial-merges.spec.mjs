@@ -14,7 +14,7 @@ import { test, check, until, pristine } from '../../../dev/test/harness.mjs';
 const GROUPS = 3;
 test.use({ gm: { name: 'Fusion' } });
 
-test('Merge All submits one merge at a time, and only reports what MusicBrainz created', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('Merge All submits one merge at a time, and only reports what MusicBrainz created', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
   // Fresh fixtures every run, the tracks of a pristine release (#795): a pending edit
   // afterwards can only be the merge this run created.
   const fixtures = (await pristine(page, 'release', { tracks: GROUPS * 2 })).recordings;

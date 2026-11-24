@@ -6,7 +6,7 @@ const cols = page => page.locator('.tr[data-row] .ar').count();
 
 // Tracklist settings › Artist column by itself: on, a Various Artists release shows the column by itself;
 // off, Show › Artist is one saved choice for every release
-test('the Artist column follows the release, or your choice with the option off', { tag: '@sandbox' }, async ({ page, inject }) => {
+test('the Artist column follows the release, or your choice with the option off', { tag: ['@sandbox', '@quarantine'] }, async ({ page, inject }) => {
   await page.goto('https://test.musicbrainz.org/');
   const id = await page.evaluate(async () => (await (await fetch('/ws/2/release?query=arid:89ad4ac3-39f7-470e-963a-56509c546377%20AND%20tracks:[4%20TO%2030]&limit=1&fmt=json')).json()).releases[0].id);
   const open = async () => {

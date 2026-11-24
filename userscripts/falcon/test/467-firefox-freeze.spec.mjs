@@ -28,8 +28,7 @@
 // this. Submits are intercepted and faked, so nothing is committed for real.
 import { readFile } from 'node:fs/promises';
 import { firefox } from '@playwright/test';
-import { test, check, requireLogin, sourceOf, REPO, idle, frames } from '../../../dev/test/harness.mjs';
-import { resolve } from 'node:path';
+import { test, check, requireLogin, sourceOf, FF_PROFILE, idle, frames } from '../../../dev/test/harness.mjs';
 import { installProdGuard } from '../../../dev/test/guard.mjs';
 
 // Firefox (the harness is Chromium): the script launches it, with its own GM stand-ins
@@ -38,7 +37,7 @@ test.use({ gm: false });
 test("#467: firefox freeze", { tag: ['@sandbox', '@login'] }, async ({}) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
 
-  const context = await firefox.launchPersistentContext(resolve(REPO, '.pw-profile-ff'), { headless: true, viewport: { width: 1500, height: 950 } });
+  const context = await firefox.launchPersistentContext(FF_PROFILE, { headless: true, viewport: { width: 1500, height: 950 } });
   // closed in `finally`: a spec that skips (the profile isn't signed in) or fails must not leave
   // Firefox running on the profile, or the next Firefox spec can't open it (#637)
   try {

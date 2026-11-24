@@ -64,7 +64,7 @@ test('group voting filters permission, skips unchanged votes and recovers after 
   expect(result.warnings).toHaveLength(1);
 });
 
-test('a group batch persists on the sandbox and keeps its group open state', { tag: ['@sandbox', '@login'] }, async ({ page, context, inject }, testInfo) => {
+test('a group batch persists on the sandbox and keeps its group open state', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, context, inject }, testInfo) => {
   await page.goto('https://test.musicbrainz.org/edit/open');
   await requireLogin(page);
   await idle(page);
@@ -115,7 +115,7 @@ test('a group batch persists on the sandbox and keeps its group open state', { t
   }
 });
 
-test('an empty collection retains its quick links and loads others by default', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('an empty collection retains its quick links and loads others by default', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
   const mb = 'https://test.musicbrainz.org';
   await page.goto(mb);
   await requireLogin(page);

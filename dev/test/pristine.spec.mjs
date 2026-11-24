@@ -5,7 +5,7 @@ import { test, check, pristine, mbJson, SANDBOX } from './harness.mjs';
 
 const read = (kind, mbid) => mbJson(`${SANDBOX}/ws/2/${kind}/${mbid}?fmt=json`);
 
-test('pristine makes a new entity of every kind, defaults or fields given', { tag: ['@sandbox', '@login'] }, async ({ page }) => {
+test('pristine makes a new entity of every kind, defaults or fields given', { tag: ['@sandbox', '@login', '@env'] }, async ({ page }) => {
   test.setTimeout(300_000);
   const rel = await pristine(page, 'release');
   const r = await read('release', rel.mbid);

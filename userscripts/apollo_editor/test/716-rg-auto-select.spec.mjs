@@ -17,7 +17,7 @@ const rgGid = page => page.evaluate(() => { const rg = window.MB.releaseEditor.r
 test.describe('release group auto-select', () => {
   test.use({ gm: apolloGm() });
 
-  test('the only suggested group with the title and artist is selected, with a badge', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, inject }) => {
+  test('the only suggested group with the title and artist is selected, with a badge', { tag: ['@sandbox', '@login', '@critical', '@env'] }, async ({ page, inject }) => {
     await openApollo(page, inject, { seed });
     check(await until(() => rgGid(page), g => g === PLAYS_THE_TRUTH, { timeout: 60000 }) === PLAYS_THE_TRUTH, 'Plays the Truth is the release group');
     const badge = await until(() => page.locator('#information .tc-ri-rgb .tc-badge').textContent().catch(() => ''), t => t === 'auto');
@@ -32,7 +32,7 @@ test.describe('release group auto-select', () => {
     check(await until(() => page.locator('#information .tc-ri-rgb').count(), n => n === 0) === 0, 'the badge goes with it');
   });
 
-  test('a title that differs only in punctuation still takes the group', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  test('a title that differs only in punctuation still takes the group', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
     await openApollo(page, inject, { seed: { ...seed, name: 'Plays, the Truth' } });
     check(await until(() => rgGid(page), g => g === PLAYS_THE_TRUTH, { timeout: 60000 }) === PLAYS_THE_TRUTH, 'Plays the Truth is the release group');
     const tip = await until(() => page.locator('#information .tc-ri-rgb .tc-badge').getAttribute('data-tip').catch(() => ''), t => !!t);

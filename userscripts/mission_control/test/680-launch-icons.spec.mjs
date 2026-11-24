@@ -6,7 +6,7 @@ test.use({ gm: { name: 'Mission Control' } });
 
 const RELEASE = '54b7bca2-7ed6-4484-bdd3-fe35a3f33dda';
 
-test('#680: corner launchers show their script icons, no disc', { tag: ['@sandbox'] }, async ({ page, inject }, info) => {
+test('#680: corner launchers show their script icons, no disc', { tag: ['@sandbox', '@env'] }, async ({ page, inject }, info) => {
   await page.setViewportSize({ width: 1400, height: 900 });
   await page.goto(`https://test.musicbrainz.org/release/${RELEASE}`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#content table.medium');

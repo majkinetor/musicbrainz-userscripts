@@ -9,7 +9,7 @@ import { openRelEditor, blockEdits, tpPaste, tpRow, tpSettle } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
 
-test('the text parser: MB roles ranks the candidates on the role they held before', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('the text parser: MB roles ranks the candidates on the role they held before', { tag: ['@sandbox', '@login', '@quarantine'] }, async ({ page, inject }) => {
   test.setTimeout(300000);
   const posts = await blockEdits(page);
   // nothing from the release group or co-credits, so John Smith stays open

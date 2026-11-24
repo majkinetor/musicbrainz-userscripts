@@ -20,7 +20,7 @@ async function open(page, inject, mbid) {
 }
 const rows = page => page.$$eval('#tc-alias .tc-al-row', trs => trs.map(tr => ({ cls: tr.className.replace(/\s*tc-al-row\s*/, ''), name: tr.querySelector('.tc-al-n').value, sort: tr.querySelector('.tc-al-s').value, locale: tr.querySelector('.tc-al-l').dataset.v })));
 
-test('paste, guess, submit, then edit and remove', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('paste, guess, submit, then edit and remove', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
   test.setTimeout(240000);
   const { mbid } = await pristine(page, 'artist');
   await open(page, inject, mbid);

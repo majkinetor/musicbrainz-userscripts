@@ -8,7 +8,7 @@ import { openArtStation } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
 
-test('the corner launcher is an icon: click switches, monochrome while off, right-click opens settings', { tag: ['@sandbox'] }, async ({ page, inject }, testInfo) => {
+test('the corner launcher is an icon: click switches, monochrome while off, right-click opens settings', { tag: ['@sandbox', '@env'] }, async ({ page, inject }, testInfo) => {
   await openArtStation(page, inject);
   const read = () => page.evaluate(() => {
     const b = document.getElementById('as-switch'), r = b.getBoundingClientRect();

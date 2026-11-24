@@ -51,7 +51,7 @@ test('a link in the diff highlight, and the modified-row marker, read in both th
 });
 
 for (const dark of [true, false]) {
-  test(`tracklist inputs show the row through them (${dark ? 'dark userstyle' : 'no userstyle'})`, { tag: ['@cosmetic', '@sandbox', '@login', ...(dark ? ['@web'] : [])] }, async ({ page, inject }) => {
+  test(`tracklist inputs show the row through them (${dark ? 'dark userstyle' : 'no userstyle'})`, { tag: ['@cosmetic', '@sandbox', '@login', ...(dark ? ['@web'] : []), '@env'] }, async ({ page, inject }) => {
     const css = dark ? (await (await fetch('https://raw.githubusercontent.com/kellnerd/userstyles/main/musicbrainz-dark.user.css')).text()).replace(/^[\s\S]*?@-moz-document[^{]*\{/, '').replace(/\}\s*$/, '') : null;
     await openApollo(page, inject, { seed: 'seed-saigon', before: css ? () => page.addStyleTag({ content: css }) : null, tab: 'tracklist' });
     await page.waitForSelector('.tc-mirror:not(.tc-ri-mirror)', { state: 'visible', timeout: 60000 });

@@ -6,7 +6,7 @@ const post = (id, title, channel) => ({ id, title, url: 'https://github.com/x', 
 
 test.describe('what\'s new', () => {
   test.use({ gm: { name: 'String Theory', values: { 'string_theory.off': ['event_horizon'], stNews: { at: Date.now(), since: 1, seen: [], items: [post(2, 'Two', 'latest'), post(1, 'One', 'stable')] } } } });
-  test('golden icon opens the viewer, reading clears it', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+  test('golden icon opens the viewer, reading clears it', { tag: ['@sandbox', '@env'] }, async ({ page, inject }) => {
     await page.goto(`${SANDBOX}/search/edits`, { waitUntil: 'load', timeout: 60000 });
     await page.evaluate(() => localStorage.removeItem('st:news:full'));   // the viewer remembers full screen in the profile
     await inject('string_theory');
@@ -40,7 +40,7 @@ test.describe('what\'s new', () => {
     await page.click('#st-news-refresh');
     await until(() => page.textContent('#st-news-state'), t => /checked today|check failed/.test(t), { timeout: 20000 });
   });
-  test('a phone: full screen, the list or one post', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+  test('a phone: full screen, the list or one post', { tag: ['@sandbox', '@env'] }, async ({ page, inject }) => {
     await page.setViewportSize({ width: 390, height: 800 });
     await page.goto(`${SANDBOX}/search/edits`, { waitUntil: 'load', timeout: 60000 });
     await inject('string_theory');
@@ -76,7 +76,7 @@ test.describe('what\'s new', () => {
 test.describe("what's new, older posts", () => {
   const full = Array.from({ length: 20 }, (_, k) => post(990020 - k, 'Cached ' + (20 - k), 'stable'));
   test.use({ gm: { name: 'String Theory', values: { 'string_theory.off': ['event_horizon'], stNews: { at: Date.now(), since: 1, seen: [], items: full } } } });
-  test('scrolling to the end loads older posts', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+  test('scrolling to the end loads older posts', { tag: ['@sandbox', '@quarantine'] }, async ({ page, inject }) => {
     await page.goto(`${SANDBOX}/search/edits`, { waitUntil: 'load', timeout: 60000 });
     await inject('string_theory');
     await page.waitForSelector('#mbu-dock', { timeout: 15000 });

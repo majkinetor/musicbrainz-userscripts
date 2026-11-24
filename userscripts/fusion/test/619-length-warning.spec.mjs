@@ -11,7 +11,7 @@ import { test, check, requireLogin, mbJson, until, frames } from '../../../dev/t
 
 test.use({ viewport: { width: 1500, height: 1000 }, deviceScaleFactor: 2, gm: { name: 'Fusion' } });
 
-test('lengths outside tolerance warn in the chip, the badge, the row and the tooltip', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('lengths outside tolerance warn in the chip, the badge, the row and the tooltip', { tag: ['@sandbox', '@login', '@quarantine'] }, async ({ page, inject }) => {
   // four sandbox recordings (their lengths are set in the page), all audio: other specs flag
   // sandbox recordings as videos, and a video never groups with audio, whatever the lengths
   const gids = (await mbJson('https://test.musicbrainz.org/ws/2/recording?query=arid:c321a13a-1c52-43c0-b60a-3a454cb7f9a2&limit=25&fmt=json')).recordings.filter(x => !x.video).map(x => x.id).slice(0, 4);

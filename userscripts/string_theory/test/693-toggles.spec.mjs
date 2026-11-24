@@ -126,7 +126,7 @@ test.describe('Event Horizon turned off', () => {
   });
 
   // The orientation: a column (the default) or a row along the page's edge; the side: right (the default) or left.
-  test('side and orientation move the launchers, and a fresh load keeps them', { tag: ['@sandbox'] }, async ({ page, inject }, info) => {
+  test('side and orientation move the launchers, and a fresh load keeps them', { tag: ['@sandbox', '@env'] }, async ({ page, inject }, info) => {
     await page.setViewportSize({ width: 1400, height: 900 });
     await load(page, inject, { open: true });
     await stacked(page);
@@ -164,7 +164,7 @@ test.describe('Event Horizon turned off', () => {
   });
 
   // The size stepper scales every launcher, 60 to 160 % by 10; the settings' icons, and so the window, keep their size (#851).
-  test('the size stepper', { tag: ['@sandbox'] }, async ({ page, inject }, info) => {
+  test('the size stepper', { tag: ['@sandbox', '@env'] }, async ({ page, inject }, info) => {
     await page.setViewportSize({ width: 1400, height: 900 });
     await load(page, inject, { open: true });
     await stacked(page);

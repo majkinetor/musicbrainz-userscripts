@@ -13,7 +13,7 @@ const HOST = 'https://test.musicbrainz.org';
 const EVENT = { date: { year: 2014, month: 2, day: 20 }, country: 'XW' };
 const LENGTHS = [{ medium: 1, position: 3, ms: 418952 }, { medium: 1, position: 4, ms: 428673 }];
 
-test('#783: Falcon enters a release event and track lengths where the release has none', { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
+test('#783: Falcon enters a release event and track lengths where the release has none', { tag: ['@sandbox', '@login', '@env'] }, async ({ context, page }) => {
   test.setTimeout(600_000);
   if (!/test\.musicbrainz\.org$/.test(new URL(HOST).hostname)) throw new Error('sandbox only');
   const code = await readFile(sourceOf('falcon'), 'utf8');

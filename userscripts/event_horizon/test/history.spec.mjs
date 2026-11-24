@@ -60,7 +60,7 @@ test('a single edit shows in the history viewer', { tag: '@sandbox' }, async ({ 
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT, fullPage: true });
 });
 
-test('an open edit takes your vote and a note in place, and your votes open as a history', { tag: ['@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
+test('an open edit takes your vote and a note in place, and your votes open as a history', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }, testInfo) => {
   await page.goto('https://test.musicbrainz.org/edit/open');
   await inject('event_horizon');
   await page.getByText(/^1 edit · /).first().click();

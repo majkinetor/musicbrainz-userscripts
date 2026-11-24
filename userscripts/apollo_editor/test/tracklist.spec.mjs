@@ -103,7 +103,7 @@ test.describe('editing', () => {
 test.describe('matching on load', () => {
   test.use({ gm: apolloGm({ autoMatch: true, autoMatchRec: false, autoMatchLabel: false, discogsUrlMatch: false }) });
 
-  test('artists it can prove are linked; a changed row can be reverted', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, inject }) => {
+  test('artists it can prove are linked; a changed row can be reverted', { tag: ['@sandbox', '@login', '@critical', '@quarantine'] }, async ({ page, inject }) => {
     const ws = await replayWs(page, new URL('./fixtures/ws-tracklist.json.gz', import.meta.url), { paths: /^\/ws\/(2|js\/entity)\// });
     const submitted = await openApollo(page, inject, { seed: 'seed-saigon', tab: 'tracklist' });
     await page.waitForSelector(ROWS, { timeout: 60000 });

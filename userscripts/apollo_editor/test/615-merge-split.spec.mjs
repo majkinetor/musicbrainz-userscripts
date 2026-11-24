@@ -38,7 +38,7 @@ async function submitAndAccept(page, rel) {
   return true;
 }
 
-test('merge all media, then split one, and MusicBrainz agrees', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('merge all media, then split one, and MusicBrainz agrees', { tag: ['@sandbox', '@login', '@env'] }, async ({ page, inject }) => {
   test.setTimeout(10 * 60_000);
   const rel = await makeRelease(page);
   const before = await read(rel), recs = before.flatMap(m => m.tracks.map(t => t.rec));

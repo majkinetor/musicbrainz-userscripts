@@ -10,6 +10,7 @@
     "test:unit": "playwright test --grep @unit",
     "test:core": "playwright test --grep-invert @cosmetic",
     "test:flaky": "playwright test --grep @flaky --repeat-each 10",
+    "test:env": "playwright test --grep @env --grep-invert @web",
     "test:report": "playwright show-report test-results/html"
   },
   "devDependencies": {
