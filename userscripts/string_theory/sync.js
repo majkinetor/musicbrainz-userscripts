@@ -35,11 +35,24 @@ function stSyncFetch(url, options) {
 }
 function stSyncSettings() {
   var v = GM_getValue('string_theory.sync.settings', {}) || {};
-  return { provider: v.provider === 'google' || v.provider === 'webdav' ? v.provider : 'dropbox', automatic: v.automatic === true, minutes: Math.max(5, Math.min(1440, Number(v.minutes) || 30)), conflict: v.conflict === 'local' ? 'local' : 'remote' };
+  return { provider: v.provider === 'google' || v.provider === 'webdav' ? v.provider : 'dropbox', automatic: v.automatic === true, minutes: Math.max(5, Math.min(1440, Number(v.minutes) || 30)), conflict: v.conflict === 'local' ? 'local' : 'remote', notify: v.notify === true };
 }
 function stSyncSaveSettings(patch) {
   GM_setValue('string_theory.sync.settings', Object.assign(stSyncSettings(), patch));
   stSyncSchedule(); stSyncPaint();
+}
+// Names the stored keys a sync changed on this device, for the change notice.
+function stSyncChanges(before, after) {
+  var names = [];
+  ['gm', 'local'].forEach(function (kind) {
+    var a = before && before[kind] || {}, b = after && after[kind] || {};
+    Object.keys(Object.assign({}, a, b)).forEach(function (k) {
+      if (stSyncData.stable(a[k]) === stSyncData.stable(b[k])) return;
+      var n = k.replace(/^string_theory\./, '').replace(/[._-]+/g, ' ').trim();
+      if (n && names.indexOf(n) < 0) names.push(n);
+    });
+  });
+  return names;
 }
 function stSyncProvider() { return stSyncSettings().provider; }
 function stSyncName(provider) { provider = provider || stSyncProvider(); return provider === 'google' ? 'Google Drive' : provider === 'webdav' ? 'WebDAV' : 'Dropbox'; }
@@ -380,11 +393,12 @@ async function stSyncRun(manual, mode) {
         // A user may have changed settings during the request; keep those edits for the next run.
         var after = stSyncStorage.effective();
         var pending = stSyncStorage.merge(local, after, merged, 'local');
-        var applied = false;
+        var applied = false, changed = mode !== 'push' ? stSyncChanges(after, pending) : [];
         if (mode !== 'push' && stSyncData.stable(pending) !== stSyncData.stable(after)) { stSyncStorage.stage(pending); applied = stSyncStorage.applyPending(); }
         GM_setValue(stSyncKey('base', provider), merged);
         stSyncState({ at: Date.now(), next: Date.now() + settings.minutes * 60e3, error: '', notice: '', failures: 0, conflicts: conflicts.length }, provider);
-        if (manual) stUI().mbuToast(applied ? (mode === 'pull' ? 'Pulled from ' + name + '.' : 'Synced.') + ' Reload to see downloaded changes.' : mode === 'push' ? 'Pushed to ' + name : mode === 'pull' ? 'Pulled from ' + name : remote.data ? 'Synced with ' + name : 'Created the first ' + name + ' backup');
+        if (applied && settings.notify && changed.length) stUI().mbuToast(name + ' sync changed ' + changed.length + ' setting' + (changed.length > 1 ? 's' : '') + ': ' + changed.slice(0, 6).join(', ') + (changed.length > 6 ? ' and ' + (changed.length - 6) + ' more' : '') + '. Reload to see them.', { ms: 9000 });
+        else if (manual) stUI().mbuToast(applied ? (mode === 'pull' ? 'Pulled from ' + name + '.' : 'Synced.') + ' Reload to see downloaded changes.' : mode === 'push' ? 'Pushed to ' + name : mode === 'pull' ? 'Pulled from ' + name : remote.data ? 'Synced with ' + name : 'Created the first ' + name + ' backup');
         return;
       }
     } catch (e) {
@@ -434,7 +448,8 @@ function stSyncMarkup() {
     + '<div class="st-row"><button class="st-b st-sync-primary" type="button" id="st-sync-now" data-tip="Merge this device with Dropbox">Sync now</button><button class="st-b" type="button" id="st-sync-push" data-tip="Replace Dropbox’s portable data with this device’s">Push</button><button class="st-b" type="button" id="st-sync-pull" data-tip="Replace this device’s portable data with Dropbox’s\nKeeps device settings; applies on the next page load">Pull</button></div>'
     + '</div><div class="st-sync-options"><h3>Sync options</h3>'
     + '<div class="st-row"><label data-tip="Automatic sync&#10;Runs while MusicBrainz is open"><input id="st-sync-auto" type="checkbox"> Automatic sync</label><label for="st-sync-minutes">every</label><select id="st-sync-minutes"><option value="5">5 minutes</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="60">1 hour</option><option value="360">6 hours</option><option value="1440">1 day</option></select></div>'
-    + '<div class="st-row"><label for="st-sync-conflict">On conflict</label><select id="st-sync-conflict"><option value="remote">Use remote value</option><option value="local">Use local value</option></select></div></div></section>'
+    + '<div class="st-row"><label for="st-sync-conflict">On conflict</label><select id="st-sync-conflict"><option value="remote">Use remote value</option><option value="local">Use local value</option></select></div>'
+    + '<div class="st-row"><label data-tip="Show a notice with a summary&#10;when a sync changes this device’s settings"><input id="st-sync-notify" type="checkbox"> Notify on changes</label></div></div></section>'
     + '<section class="st-sync-group"><h3>Backups<span class="st-sync-spinner" id="st-sync-backup-progress" role="status" aria-label="In progress" hidden></span></h3><div class="st-backup-columns"><div class="st-row st-sync-backup-row"><span id="st-sync-backup-name">Dropbox</span><span class="st-sync-acts"><button class="st-b" type="button" id="st-sync-remote-backup">Save backup</button><button class="st-b" type="button" id="st-sync-remote-import">Browse</button></span></div>'
     + '<div class="st-row st-sync-backup-row"><span>This device</span><span class="st-sync-acts"><button class="st-b" type="button" id="st-sync-export">Export</button><button class="st-b" type="button" id="st-sync-import">Import</button></span><input id="st-sync-file" type="file" accept=".json,application/json" hidden></div></div><div class="st-row"><span id="st-sync-backup-status" role="status"></span></div>'
     + '</section><div id="st-sync-remote" role="region" aria-labelledby="st-sync-backup-provider" hidden><div class="st-backup-head"><h3 id="st-sync-backup-provider">Backups</h3><span class="st-sync-spinner" id="st-sync-browse-progress" role="status" aria-label="In progress" hidden></span><div class="st-backup-actions" id="st-sync-backup-actions"></div><button class="st-b st-sync-link" type="button" id="st-sync-backup-close" aria-label="Back to Sync">&lt; Back</button></div><div id="st-sync-backups" aria-label="Saved backups" hidden></div></div>';
@@ -461,7 +476,7 @@ function stSyncPaint() {
   ['dav-url', 'dav-user', 'dav-password'].forEach(function (id) { q(id).disabled = stSyncBusy; });
   q('connect').textContent = (connected || auth.accessToken) && !dav ? 'Reconnect' : 'Connect';
   q('disconnect').hidden = !auth.refreshToken && !auth.accessToken && !auth.url;
-  q('auto').checked = settings.automatic; q('minutes').value = String(settings.minutes); q('conflict').value = settings.conflict;
+  q('auto').checked = settings.automatic; q('minutes').value = String(settings.minutes); q('conflict').value = settings.conflict; q('notify').checked = settings.notify;
   q('now').disabled = stSyncBusy || !connected; q('connect').disabled = stSyncBusy; q('disconnect').disabled = stSyncBusy;
   q('push').disabled = stSyncBusy || !connected; q('pull').disabled = stSyncBusy || !connected;
   ['remote-backup', 'remote-import'].forEach(function (id) { q(id).disabled = stSyncBusy || !connected; });
@@ -490,6 +505,7 @@ function stSyncBind(panel) {
   q('disconnect').onclick = stSyncDisconnect;
   q('auto').onchange = function () { stSyncSaveSettings({ automatic: q('auto').checked }); };
   q('minutes').onchange = function () { stSyncSaveSettings({ minutes: +q('minutes').value }); };
+  q('notify').onchange = function () { stSyncSaveSettings({ notify: q('notify').checked }); };
   q('conflict').onchange = function () { stSyncSaveSettings({ conflict: q('conflict').value }); };
   q('now').onclick = action(function () { return stSyncRun(true); });
   q('push').onclick = action(function () { return stSyncRun(true, 'push'); });
