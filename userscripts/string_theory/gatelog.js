@@ -662,12 +662,15 @@ function stGateAlias(l) {
 var ST_GATE_BYX = /^(inc|fmt|format|limit|offset|page|per_page|type|status|lang|_|callback|oauth_.*|client_id|app_id|appid|api_?key|key|token|access_token|sig|signature|nonce|ts|timestamp)$/i;
 // the MusicBrainz entity a request is about, from its path: "/ws/2/release-group?…", "/recording/<mbid>"
 var ST_GATE_ENTS = ['area', 'artist', 'event', 'genre', 'instrument', 'label', 'place', 'recording', 'release', 'release_group', 'series', 'url', 'work'];
+var ST_GATE_ENT_ALIAS = { cover_art_upload: 'release', event_art_upload: 'event' };
 function stGateEntity(g) {
   if (g.en) return String(g.en).replace(/-/g, '_');
   if (g.h) return '';
   var p = String(g.u || g.l || '').split('?')[0].replace(/^https?:\/\/[^/]+/, '').replace(/ /g, '/').split('/').filter(Boolean);
   if (p[0] === 'ws') p = p.slice(2);
   var e = (p[0] || '').replace(/-/g, '_');
+  // an art upload is about the release (Art Station, Falcon) or the event its mbid names
+  e = ST_GATE_ENT_ALIAS[e] || e;
   return ST_GATE_ENTS.indexOf(e) >= 0 ? e : '';
 }
 // a row starts with its entity's icon (MBU-ENT-ICONS), or for another site with that site's platform icon (ST-ICONS)
