@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.24.213154
+// @version      2026.11.24.222558
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -15122,7 +15122,9 @@ function plyMenu(btn, html, pick, align) {
         m.style.maxHeight = Math.min(520, innerHeight * 0.6, down ? below : above) + 'px';
         if (down) m.style.top = player.bottom + 4 + 'px'; else m.style.bottom = innerHeight - player.top + 4 + 'px';
     } else m.style.top = Math.max(8, r.bottom + h + 6 < innerHeight ? r.bottom + 4 : r.top - h - 4) + 'px';
-    const off = ev => { if (m.contains(ev.target) || ev.target.closest?.('#eh-ply-coll')) return; plyMenuShut = { k: ev.target.closest?.('[data-ply]')?.dataset.ply || '', t: Date.now() }; shut(); };
+    // only this menu's own button is remembered, so its click closes the menu and stays closed; a press on another menu's
+    // button closes this one and lets that click open its own menu
+    const off = ev => { if (m.contains(ev.target) || ev.target.closest?.('#eh-ply-coll')) return; const k = ev.target.closest?.('[data-ply]')?.dataset.ply || ''; plyMenuShut = { k: k === kind ? k : '', t: Date.now() }; shut(); };
     // Escape closes the menu (the playlist's filter included) before anything else sees the key
     const key = ev => { if (ev.key !== 'Escape' || !m.isConnected || document.getElementById('eh-ply-coll')) return; ev.preventDefault(); ev.stopPropagation(); shut(); back(); };
     // focus goes back where it was: the menu's button, or, for a menu the keyboard opened, what had the focus before it

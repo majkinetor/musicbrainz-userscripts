@@ -4,7 +4,7 @@ import { test, check, until, attachShot, answerGm } from '../../../dev/test/harn
 const REL = 'https://musicbrainz.org/release/20d82991-89d9-4143-9f7e-5989e73759e7';
 
 test.describe('bar', () => {
-  test.use({ profile: 'fresh', gm: { name: 'Event Horizon', persist: true, values: { view: { on: true, player: true, playerScrobble: true }, lbToken: 'tok' } } });
+  test.use({ profile: 'fresh', gm: { name: 'Event Horizon', persist: true, values: { view: { on: true, player: true, playerScrobble: true }, lbToken: 'tok' } }, pageErrors: ['No valid solution has been found to play this item'] });
 
   // a track's play button starts the player at the bottom; the listen goes to ListenBrainz as playing_now
   test('a track plays in the bottom bar, and ListenBrainz hears it is playing', { tag: '@prod' }, async ({ page, context, inject }, testInfo) => {
@@ -24,7 +24,8 @@ test.describe('bar', () => {
     check(await page.locator('#eh-ply .ply-ctl.pa').count() === 1, 'the bar has its controls');
     check(await page.locator('#eh-ply [data-ply="prev"]').isEnabled(), 'the first track can be restarted');
     await page.locator('#eh-ply [data-ply="list"]').click();
-    check(await until(() => page.locator('#eh-ply-menu .qi').count(), n => n > 1) > 1, 'the title opens the playlist');
+    // a track's own play button queues that track alone since 2026-11-18 (762993543); Play takes the whole release
+    check(await until(() => page.locator('#eh-ply-menu .qi').count(), n => n > 0) === 1, 'the title opens the playlist, with the one track queued');
     check(await page.locator('#eh-ply-menu .qi[aria-current]').count() === 1, 'the playing track is marked in it');
     check(await page.locator('#eh-ply-menu .qi .qp').count() === await page.locator('#eh-ply-menu .qi').count(), 'every row shows the platform it plays from');
     await attachShot(testInfo, page.locator('#eh-ply-menu'), 'playlist');
@@ -56,7 +57,7 @@ test.describe('chip', () => {
 });
 
 test.describe('chip cover', () => {
-  test.use({ profile: 'fresh', gm: { name: 'Event Horizon', persist: true, values: { view: { on: true, player: true, playerPlace: 'chip', playerLb: false, playerCover: true } } }, pageErrors: ['No valid solution has been found to play this item'] });
+  test.use({ profile: 'fresh', gm: { name: 'Event Horizon', persist: true, values: { view: { on: true, player: true, playerPlace: 'chip', playerLb: false, playerCover: true, playerNo: true } } }, pageErrors: ['No valid solution has been found to play this item'] });
 
   test('the top bar shows the playing cover, which opens the release', { tag: '@prod' }, async ({ page, inject }, testInfo) => {
     await page.goto(REL);
