@@ -48,7 +48,7 @@ test('manual recording search remains available during Stop', { tag: '@unit' }, 
   const source = await functionSource('apollo_editor', ['wsGet', 'wsJsonOnce']);
   const run = new Function(`
     let _stopGen = 1, _matchStop = true, _wsInFlight = 0, calls = 0;
-    const WS_TRIES = 4, mbnRid = () => 'r1', wsIsSearch = () => true, wsLanes = () => 4, wsLaneSync = () => {}, wsLaneWake = () => {}, mbnSleep = () => new Promise(() => {}), _wsLaneWaiters = new Set(), _wsLaneGen = 1, wsGateLog = () => {}, _sleep = () => Promise.resolve();
+    const WS_TRIES = 4, mbnRid = () => 'r1', wsIsSearch = () => true, wsLanes = () => 4, wsLaneSync = () => {}, wsLaneWake = () => {}, mbnSleep = () => new Promise(() => {}), _wsLaneWaiters = new Set(), _wsLaneGen = 1, wsGateLog = () => {}, wsGateAt = () => ({}), _sleep = () => Promise.resolve();
     const Log = { cat: () => ({ debug() {}, warn() {}, err() {} }) };
     const mbnSlot = async o => ({ ok: !o.cancelled() });
     const wsAnswer = async () => ({ throttled: false });

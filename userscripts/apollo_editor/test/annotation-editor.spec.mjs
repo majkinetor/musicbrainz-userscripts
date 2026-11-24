@@ -214,7 +214,8 @@ test.describe('History', () => {
       window.fetch = async () => ({ ok: true, text: async () => '<table><tr><th>Editor</th></tr>'
         + '<tr><td><a href="/user/bob">bob</a></td><td>2026-06-09 10:39 UTC</td><td><a href="/release/x/annotation/123">View this version</a> (Testing change message)</td></tr>'
         + '<tr><td><a href="/user/bob">bob</a></td><td>2026-06-09 10:37 UTC</td><td><a href="/release/x/annotation/122">View this version</a> (no changelog specified)</td></tr></table>' });
-      return new Function(src + '; return annoFetchHistory;')()('00000000-0000-0000-0000-000000000000');
+      // the page's MusicBrainz reads go through the gate (mbnFetch): here it is the stubbed fetch
+      return new Function('const mbnFetch = (u, i) => fetch(u, i);' + src + '; return annoFetchHistory;')()('00000000-0000-0000-0000-000000000000');
     }, hist);
     check(rows[0]?.changelog === 'Testing change message' && rows[1]?.changelog === '', `the changelog, and "no changelog specified" as none (${JSON.stringify(rows)})`);
   });

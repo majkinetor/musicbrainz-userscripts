@@ -164,7 +164,7 @@ test('the window resizes from its corner, goes full screen, and remembers both',
 
   await page.click('#mbu-logpop .mbu-logpop-full');
   const f = await box();
-  check(f.x === 12 && f.y === 12 && f.w === 1200 - 24 && f.h === 800 - 24, `full screen fills the viewport less 12px (${JSON.stringify(f)})`);
+  check(f.x === 0 && f.y === 0 && f.w === 1200 && f.h === 800, `full screen fills the whole viewport, with no margin (${JSON.stringify(f)})`);
   check(await page.evaluate(() => JSON.parse(window.__store.get('k')).full === true), 'and is remembered');
   await page.dblclick('#mbu-logpop .mbu-logpop-h b');
   const back = await box();
