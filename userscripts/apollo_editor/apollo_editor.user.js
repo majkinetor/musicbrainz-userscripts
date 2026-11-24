@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.130000
+// @version      2026.11.24.140000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -3667,7 +3667,7 @@ Click: open the label`;
     // millisecond when lanes freed (a 4-request burst into the next 503).
     for (let told = false; wsLaneSync(), _wsInFlight >= wsLanes();) {
       if (cancelled()) return null;
-      if (!told) { told = true; wsGateLog('debug', 'MusicBrainz gate: ' + (o.label || 'ws2') + ' waits for a free lane (' + _wsInFlight + ' of ' + wsLanes() + ' busy)'); }
+      if (!told) { told = true; wsGateLog('debug', 'MusicBrainz gate: ' + (o.label || 'ws2') + ' waits for a free lane (' + _wsInFlight + ' in flight, ' + wsLanes() + (wsLanes() === 1 ? ' lane while MusicBrainz holds' : ' lanes') + ')'); }
       await Promise.race([new Promise(z => _wsLaneWaiters.add(z)), mbnSleep(1000, cancelled)]);   // woken by a freed lane or Stop
     }
     if (cancelled()) return null;
@@ -3708,7 +3708,7 @@ Click: open the label`;
   // NOTHING logged: the same query worked or didn't at random, depending purely
   // on how many requests happened to be in flight. So: retry with backoff,
   // honour Retry-After, and log every attempt. #555
-  const WS_TRIES = 4;
+  const WS_TRIES = 6;   // #1110: four 1s holds gave up after 3s while MusicBrainz shed searches for minutes
   // #575 (majkinetor, "Matching takes too long"): every per-caller cache in here
   // — _aliasMatchCache, _credCache, the duplicates ones — is CHECKED before its
   // await and WRITTEN after it. When several track slots resolve the same artist
@@ -3764,6 +3764,9 @@ Click: open the label`;
         // too would stack a private penalty on top of the shared one.
         Log.cat('MusicBrainz').warn(label + ': throttled by MusicBrainz (HTTP ' + r.status + ') — all requests holding ' + a.hold + 'ms (attempt ' + attempt + '/' + WS_TRIES + ')');
         if (o.onThrottle) { try { o.onThrottle(attempt); } catch (e) {} }
+        // #1110: past the first, a retry also backs off on its own (1s, 2s, 3s…): MusicBrainz's
+        // Retry-After of 1s, repeated, let four tries fail inside three seconds
+        if (attempt > 1 && attempt < WS_TRIES) await _sleep(1000 * (attempt - 1));
         continue;
       }
       if (r.status === 404) { Log.cat('MusicBrainz').debug(label + ': 404 not found —', url); return { notFound: true }; }
@@ -4913,7 +4916,7 @@ Click: open the label`;
       if (stopped) Log.cat('Artist').info('matching stopped after ' + done + ' of ' + planned + ' track' + (planned === 1 ? '' : 's') + ' — what matched is kept');
       // #575: the artist pass had no end marker, so the recordings pass's summary
       // looked like the whole thing finishing while artists were still resolving.
-      else if (planned) Log.cat('Artist').info('tracklist match: ' + planned + ' track' + (planned === 1 ? '' : 's') + ' matched — Discogs link checks and alias enrichment continue in the background');
+      else if (planned) Log.cat('Artist').info('tracklist match: ' + planned + ' track' + (planned === 1 ? '' : 's') + ' looked up — Discogs link checks and alias enrichment continue in the background');
     } finally {
       endMatchLog();   // a no-op once the pass summed up; covers a pass that threw
       setMatching(false);
@@ -14290,6 +14293,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     let linked = 0, considered = 0, ambiguous = 0;   // #540
     let vidBlocked = 0;   // #585 — video candidates refused on audio-only mediums
     let diffArtist = 0;   // #857 — tracks left unset because the only match is by another artist
+    let lookupFailed = 0, noMatch = 0;   // the rest of the unset tracks: a search MusicBrainz refused, and nothing found
     let stopped = false;   // #577
     let noWork = '';   // #582: set to the reason when the pass has nothing to match
     const _takenGids = new Set();   // #541: recordings this run has already linked
@@ -14456,12 +14460,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         // #963 — last tier: the picker's own narrow search (title + artist name + length).
         // MB's suggestions can miss a recording that search finds; a single hit is
         // as sure as the one the user would pick by hand. Several hits: left alone.
+        let searchFailed = false;
         if ((!best || bestLevel > maxLevel) && !_matchStop) {
           const qy = recNarrowQuery(ko);
           if (qy) {
             setStatus('auto-matching ' + (i + 1) + '/' + todo.length + '… (search)');
             Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' search tier: asking MusicBrainz' + (document.hidden ? ' (page hidden: the browser slows its timers)' : ''));
-            const hits = ((await wait(searchRecordings(qy, { stale: cancelled }), 'recording search')) || []).filter(d => !(videoBlocked && d.video));
+            const raw = await wait(searchRecordings(qy, { stale: cancelled }), 'recording search');
+            searchFailed = raw === null && !cancelled();
+            const hits = (raw || []).filter(d => !(videoBlocked && d.video));
             if (hits.length === 1) consider(hits[0]);
             Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' search tier → ' + hits.length + ' hit(s)' + (hits.length === 1 ? ': "' + hits[0].name + '" [' + (hits[0].gid || '').slice(0, 8) + '] level=' + recComboLevel(hits[0], ctx) : hits.length ? ', not used (more than one)' : ''));
           }
@@ -14495,6 +14502,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
             Log.cat('Recording').warn('track ' + (r.number || (r.ti + 1)) + ' "' + r.title + '" by "' + (r.trackArtist || '') + '" left unset — ' + refused.length + ' matching recording(s) by another artist refused: '
               + refused.map(d => '"' + d.name + '" by "' + (d.artist || '?') + '" [' + (d.gid || '').slice(0, 8) + '] level=' + d._level).join(', '));
           }
+          else if (searchFailed) lookupFailed++;
+          else noMatch++;
         }
         if (otherArtist.length) Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' shared-artist check: ' + otherArtist.length + ' candidate(s) share no artist with "' + (r.trackArtist || '') + '" (names: ' + JSON.stringify(ctx.artistNames) + ')');
         if (vidSkipped) {   // #585
@@ -14517,11 +14526,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         : (stopped ? 'stopped · ' : '') + 'linked ' + linked + ' of ' + considered + ' unset track' + (considered === 1 ? '' : 's')
         + (ambiguous ? ' · ' + ambiguous + ' ambiguous, left for you' : '')
         + (diffArtist ? ' · ' + diffArtist + ' different artist, left for you' : '')   // #857
+        + (lookupFailed ? ' · ' + lookupFailed + ' not searched (MusicBrainz busy), run again' : '')
+        + (noMatch ? ' · ' + noMatch + ' no match' : '')
         + (vidBlocked ? ' · ' + vidBlocked + ' video skipped' : '');   // #585
       if (e) e.textContent = _recLastStatus;
       // #575: named for its pass. Plain "auto-match:" read as the whole match
       // finishing, while the tracklist's artist pass was still going.
-      if (!noWork) Log.cat('Recording').info('auto-match:' + (stopped ? ' STOPPED —' : ''), 'linked', linked, 'of', considered, 'unset tracks' + (ambiguous ? ', ' + ambiguous + ' left unset as ambiguous' : '') + (diffArtist ? ', ' + diffArtist + ' left unset: only matched by another artist' : '') + (vidBlocked ? ', ' + vidBlocked + ' video candidate(s) refused on an audio-only medium' : '') + (stopped ? ' — the rest are untouched' : ''));   // #585
+      if (!noWork) Log.cat('Recording').info('auto-match:' + (stopped ? ' STOPPED —' : ''), 'linked', linked, 'of', considered, 'unset tracks' + (ambiguous ? ', ' + ambiguous + ' left unset as ambiguous' : '') + (diffArtist ? ', ' + diffArtist + ' left unset: only matched by another artist' : '') + (lookupFailed ? ', ' + lookupFailed + ' left unset: the search failed (MusicBrainz busy), run again' : '') + (noMatch ? ', ' + noMatch + ' left unset: no match found' : '') + (vidBlocked ? ', ' + vidBlocked + ' video candidate(s) refused on an audio-only medium' : '') + (stopped ? ' — the rest are untouched' : ''));   // #585
       if (!_matching) _matchStop = false;   // #575: leave it set while the tracklist pass is still winding down
     }
   }
@@ -14789,7 +14800,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const title = u(ko.name), artist = acText(u(ko.artistCredit)), len = Math.round(Number(u(ko.length)) || 0);   // a number: a string length made "TO 2700010000"
     if (!title) return '';
     let qy = 'recording:"' + esq(title) + '"';
-    if (artist) qy += ' AND artist:"' + esq(artist) + '"';
+    // a linked artist is searched by its MBID: the typed name ("Duo Los Ahijados" for "Los
+    // Ahijados") and a whole multi-artist credit as one phrase found nothing
+    const ac = u(ko.artistCredit), names = u(ac && ac.names) || [], gids = acArtistGids(ac);
+    if (names.length && gids.length === names.length) qy += gids.map(g => ' AND arid:' + g).join('');
+    else if (artist) qy += ' AND artist:"' + esq(artist) + '"';
     if (len) qy += ' AND dur:[' + Math.max(0, len - 10000) + ' TO ' + (len + 10000) + ']';
     return qy;
   }
@@ -14938,7 +14953,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         if (!loading() && Date.now() - t0 >= 750) return finish();
       };
       [ko.suggestedRecordings, ko.loadingSuggestedRecordings].forEach(o => { if (o && typeof o.subscribe === 'function') subs.push(o.subscribe(check)); });
-      grace = setTimeout(check, 800); cap = setTimeout(finish, 7000);
+      grace = setTimeout(check, 800); cap = setTimeout(finish, mbnHot() ? 3000 : 7000);   // #1110: while MusicBrainz holds, the search tier is the better bet
       check();
     });
   }
