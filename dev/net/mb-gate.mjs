@@ -431,7 +431,9 @@ export async function mbnSlot(o) {
         s.tat = Math.max(tat, at) + MBN_GAP;
         const held = cool > now && cool >= at;
         const why = held ? 'MusicBrainz asked everyone to wait' : 'pacing, eight requests a second';
-        if (at > now) tr('book', { w: at - now, why: held ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
+        // #1112: no queue length here: the slots ahead were 125 ms each plus every hold, so "13 queued"
+        // meant 1.6 s, not 13 requests. The network log counts the requests waiting from the events
+        if (at > now) tr('book', { w: at - now, why: held ? 'hold' : 'pace', re: rebooked ? 1 : 0 });
         return { at, why, slip: s.slip || 0, bslip: s.bslip || 0 };
     });
     booked = await book();
@@ -451,7 +453,8 @@ export async function mbnSlot(o) {
         let cool = 0, scool = 0, slip = 0, bslip = 0;
         try { const g = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; cool = g.cool || 0; scool = g.scool || 0; slip = g.slip || 0; bslip = g.bslip || 0; } catch (e) { const g = globalThis.__mbnGate || {}; cool = g.cool || 0; scool = g.scool || 0; slip = g.slip || 0; bslip = g.bslip || 0; }
         // a hold set since we booked moved our slot later with the rest of the queue
-        if (slip > booked.slip) { booked.at += slip - booked.slip; booked.slip = slip; booked.why = 'MusicBrainz asked everyone to wait'; }
+        // #1112: and the network log says so: a request booked to wait 1.3 s started after 5.8 s, with no event between
+        if (slip > booked.slip) { tr('moved', { w: slip - booked.slip, to: Math.max(0, booked.at + slip - booked.slip - Date.now()) }); booked.at += slip - booked.slip; booked.slip = slip; booked.why = 'MusicBrainz asked everyone to wait'; }
         // a retry took the head of the background queue: our slot moved a second later with the rest
         if (background && bslip > booked.bslip) { booked.at += bslip - booked.bslip; booked.bslip = bslip; }
         // a search also waits out the hold MusicBrainz set for searches

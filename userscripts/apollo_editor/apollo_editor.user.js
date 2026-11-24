@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.210520
+// @version      2026.11.24.213153
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -402,7 +402,9 @@
           s.tat = Math.max(tat, at) + MBN_GAP;
           const held = cool > now && cool >= at;
           const why = held ? 'MusicBrainz asked everyone to wait' : 'pacing, eight requests a second';
-          if (at > now) tr('book', { w: at - now, why: held ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
+          // #1112: no queue length here: the slots ahead were 125 ms each plus every hold, so "13 queued"
+          // meant 1.6 s, not 13 requests. The network log counts the requests waiting from the events
+          if (at > now) tr('book', { w: at - now, why: held ? 'hold' : 'pace', re: rebooked ? 1 : 0 });
           return { at, why, slip: s.slip || 0, bslip: s.bslip || 0 };
       });
       booked = await book();
@@ -422,7 +424,8 @@
           let cool = 0, scool = 0, slip = 0, bslip = 0;
           try { const g = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; cool = g.cool || 0; scool = g.scool || 0; slip = g.slip || 0; bslip = g.bslip || 0; } catch (e) { const g = globalThis.__mbnGate || {}; cool = g.cool || 0; scool = g.scool || 0; slip = g.slip || 0; bslip = g.bslip || 0; }
           // a hold set since we booked moved our slot later with the rest of the queue
-          if (slip > booked.slip) { booked.at += slip - booked.slip; booked.slip = slip; booked.why = 'MusicBrainz asked everyone to wait'; }
+          // #1112: and the network log says so: a request booked to wait 1.3 s started after 5.8 s, with no event between
+          if (slip > booked.slip) { tr('moved', { w: slip - booked.slip, to: Math.max(0, booked.at + slip - booked.slip - Date.now()) }); booked.at += slip - booked.slip; booked.slip = slip; booked.why = 'MusicBrainz asked everyone to wait'; }
           // a retry took the head of the background queue: our slot moved a second later with the rest
           if (background && bslip > booked.bslip) { booked.at += bslip - booked.bslip; booked.bslip = bslip; }
           // a search also waits out the hold MusicBrainz set for searches

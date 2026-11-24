@@ -132,7 +132,20 @@ function stGateEvents() {
       if (Array.isArray(l)) l.forEach(function (ev) { if (ev && ev.t) { ev.tab = tab; out.push(ev); } });
     }
   } catch (e) { /* no storage */ }
-  return out.sort(function (a, b) { return a.t - b.t; });
+  out.sort(function (a, b) { return a.t - b.t; });
+  // #1112: a booking says how many other requests wait at that moment, in every tab, counted from
+  // the events: the gate's own count was the queue's length in 125 ms slots ("13 queued" for 1.6 s)
+  var waiting = {};
+  out.forEach(function (ev) {
+    if (!ev.l) return;
+    var key = ev.tab + '|' + (ev.s || '') + '|' + (ev.id ? '#' + ev.id : ev.l + '|' + ev.b);
+    if (ev.e === 'book') {
+      var n = 0;
+      Object.keys(waiting).forEach(function (k) { if (ev.t - waiting[k] > 120000) delete waiting[k]; else if (k !== key) n++; });   // a tab closed mid-wait
+      ev.n = n; waiting[key] = ev.t;
+    } else if (ev.e !== 'moved' && ev.e !== 'hidden' && ev.e !== 'lead') delete waiting[key];
+  });
+  return out;
 }
 function stGateSec(ms) { return Math.round((+ms || 0) / 100) / 10 + 's'; }
 function stGateTime(t) {
@@ -143,7 +156,8 @@ function stGateTime(t) {
 function stGateWhat(ev) {
   var x = [];
   switch (ev.e) {
-    case 'book': x.push('waits ' + stGateSec(ev.w) + (ev.why === 'hold' ? ' (MusicBrainz hold)' : ' (pacing)')); if (ev.q) x.push(ev.q + ' queued'); if (ev.re) x.push('booked again after a hold'); break;
+    case 'book': x.push('waits ' + stGateSec(ev.w) + (ev.why === 'hold' ? ' (MusicBrainz hold)' : ' (pacing)')); if (ev.n != null) x.push(ev.n ? ev.n + (ev.n === 1 ? ' other request waits' : ' other requests wait') : 'no other request waits'); if (ev.re) x.push('booked again after a hold'); break;
+    case 'moved': x.push('a new MusicBrainz hold moved it ' + stGateSec(ev.w) + ' later' + (ev.to != null ? ', now waits ' + stGateSec(ev.to) : '')); break;
     case 'start': if (ev.w) x.push('after ' + stGateSec(ev.w)); break;
     case 'hidden': x.push('waits for the queue to be free, now ' + stGateSec(ev.w) + (ev.cap ? ', at most ' + stGateSec(ev.cap) : '') + ' (this tab is hidden)'); break;
     case 'lead': x.push('waits up to ' + stGateSec(ev.w) + ' for a page being drawn (' + (ev.by || '?') + ')'); break;

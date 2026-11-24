@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.24.193806
+// @version      2026.11.24.213153
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm, RateYourMusic and Album of the Year, read when you open their pages), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjI4Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMxNmNjZjgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjZmZhZTM4Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -420,7 +420,9 @@
           s.tat = Math.max(tat, at) + MBN_GAP;
           const held = cool > now && cool >= at;
           const why = held ? 'MusicBrainz asked everyone to wait' : 'pacing, eight requests a second';
-          if (at > now) tr('book', { w: at - now, why: held ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
+          // #1112: no queue length here: the slots ahead were 125 ms each plus every hold, so "13 queued"
+          // meant 1.6 s, not 13 requests. The network log counts the requests waiting from the events
+          if (at > now) tr('book', { w: at - now, why: held ? 'hold' : 'pace', re: rebooked ? 1 : 0 });
           return { at, why, slip: s.slip || 0, bslip: s.bslip || 0 };
       });
       booked = await book();
@@ -440,7 +442,8 @@
           let cool = 0, scool = 0, slip = 0, bslip = 0;
           try { const g = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; cool = g.cool || 0; scool = g.scool || 0; slip = g.slip || 0; bslip = g.bslip || 0; } catch (e) { const g = globalThis.__mbnGate || {}; cool = g.cool || 0; scool = g.scool || 0; slip = g.slip || 0; bslip = g.bslip || 0; }
           // a hold set since we booked moved our slot later with the rest of the queue
-          if (slip > booked.slip) { booked.at += slip - booked.slip; booked.slip = slip; booked.why = 'MusicBrainz asked everyone to wait'; }
+          // #1112: and the network log says so: a request booked to wait 1.3 s started after 5.8 s, with no event between
+          if (slip > booked.slip) { tr('moved', { w: slip - booked.slip, to: Math.max(0, booked.at + slip - booked.slip - Date.now()) }); booked.at += slip - booked.slip; booked.slip = slip; booked.why = 'MusicBrainz asked everyone to wait'; }
           // a retry took the head of the background queue: our slot moved a second later with the rest
           if (background && bslip > booked.bslip) { booked.at += bslip - booked.bslip; booked.bslip = bslip; }
           // a search also waits out the hold MusicBrainz set for searches

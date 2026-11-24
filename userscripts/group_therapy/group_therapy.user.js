@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.24.193806
+// @version      2026.11.24.213153
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -352,7 +352,9 @@
           s.tat = Math.max(tat, at) + MBN_GAP;
           const held = cool > now && cool >= at;
           const why = held ? 'MusicBrainz asked everyone to wait' : 'pacing, eight requests a second';
-          if (at > now) tr('book', { w: at - now, why: held ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
+          // #1112: no queue length here: the slots ahead were 125 ms each plus every hold, so "13 queued"
+          // meant 1.6 s, not 13 requests. The network log counts the requests waiting from the events
+          if (at > now) tr('book', { w: at - now, why: held ? 'hold' : 'pace', re: rebooked ? 1 : 0 });
           return { at, why, slip: s.slip || 0, bslip: s.bslip || 0 };
       });
       booked = await book();
@@ -372,7 +374,8 @@
           let cool = 0, scool = 0, slip = 0, bslip = 0;
           try { const g = JSON.parse(localStorage.getItem(MBN_KEY) || 'null') || {}; cool = g.cool || 0; scool = g.scool || 0; slip = g.slip || 0; bslip = g.bslip || 0; } catch (e) { const g = globalThis.__mbnGate || {}; cool = g.cool || 0; scool = g.scool || 0; slip = g.slip || 0; bslip = g.bslip || 0; }
           // a hold set since we booked moved our slot later with the rest of the queue
-          if (slip > booked.slip) { booked.at += slip - booked.slip; booked.slip = slip; booked.why = 'MusicBrainz asked everyone to wait'; }
+          // #1112: and the network log says so: a request booked to wait 1.3 s started after 5.8 s, with no event between
+          if (slip > booked.slip) { tr('moved', { w: slip - booked.slip, to: Math.max(0, booked.at + slip - booked.slip - Date.now()) }); booked.at += slip - booked.slip; booked.slip = slip; booked.why = 'MusicBrainz asked everyone to wait'; }
           // a retry took the head of the background queue: our slot moved a second later with the rest
           if (background && bslip > booked.bslip) { booked.at += bslip - booked.bslip; booked.bslip = bslip; }
           // a search also waits out the hold MusicBrainz set for searches
