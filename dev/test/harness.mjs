@@ -110,7 +110,8 @@ export const mbNoise = msg => /Minified React error #418\b/.test(String(msg));
 // the test profile keeps that storage between tests. A test would then get the answer that an
 // earlier test read or faked, and its own faked answer would never be asked. So each test starts
 // with that cache empty, on every MusicBrainz origin it can use.
-async function clearReadCache(ctx) {
+// A test that fakes a new answer for a read it already made clears it again itself.
+export async function clearReadCache(ctx) {
   const page = ctx.pages()[0] || await ctx.newPage();
   const cdp = await ctx.newCDPSession(page);
   try {

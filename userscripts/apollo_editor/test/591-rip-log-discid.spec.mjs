@@ -18,7 +18,7 @@
 // and the attach page. Nothing is fetched from MusicBrainz and nothing is
 // submitted — the attach route only records the URL Apollo would have opened.
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, frames, idle, until, settled } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, frames, idle, until, settled, clearReadCache } from '../../../dev/test/harness.mjs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -222,6 +222,7 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
 
   // a non-CD medium cannot have disc IDs and must say so rather than fail later
   STATE.media = MEDIA_TWO;
+  await clearReadCache(context);   // the gate keeps the first page's media read (#1098): the new page must ask again
   const page2 = await open();
   // the zones come after Apollo's /ws/2 media read, which waits its turn at the shared request
   // gate (#633): read them once they are there, not straight after the page opens

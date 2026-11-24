@@ -17,7 +17,8 @@ test('revoke an application inline and keep the profile navigation', { tag: '@sa
   for (const [k, v] of Object.entries({ client_id: client, response_type: 'code', redirect_uri: 'urn:ietf:wg:oauth:2.0:oob', scope: 'profile' })) auth.searchParams.set(k, v);
   await page.goto(auth.href);
   await page.getByRole('button', { name: 'Allow access' }).click();
-  const code = (await page.locator('body').innerText()).match(/\b[A-Za-z0-9_-]{30,}\b/);
+  // the success page shows the code in a code element: waiting for it waits for that page
+  const code = (await page.locator('#content code, code').first().innerText()).match(/\b[A-Za-z0-9_-]{30,}\b/);
   if (!code) throw new Error('OAuth authorization code not found');
   const token = await page.request.post('https://test.musicbrainz.org/oauth2/token', { form: { grant_type: 'authorization_code', code: code[0], redirect_uri: 'urn:ietf:wg:oauth:2.0:oob' }, headers: { Authorization: 'Basic ' + Buffer.from(client + ':' + secret).toString('base64') } });
   if (!token.ok()) throw new Error('OAuth token exchange failed: ' + token.status());
@@ -25,7 +26,7 @@ test('revoke an application inline and keep the profile navigation', { tag: '@sa
   const row = page.locator('tr').filter({ hasText: name }).filter({ has: page.locator('a[href*="revoke-access"]') });
   await row.waitFor();
   await inject('event_horizon');
-  check(await page.locator('#eh-relhd .u-nt').count() >= 10, 'public and account tabs are present');
+  check(await until(() => page.locator('#eh-relhd .u-nt').count(), n => n >= 10) >= 10, 'public and account tabs are present');   // the header comes once EH has read the page
   await row.locator('a[href*="revoke-access"]').click();
   check(page.url().endsWith('/account/applications'), 'confirmation stays on the applications page');
   await row.locator('[data-eh-revoke-cancel]').click();
