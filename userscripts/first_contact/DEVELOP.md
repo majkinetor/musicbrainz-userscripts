@@ -44,7 +44,7 @@ On a release page (`/release/<mbid>`) First Contact runs as a reader only (`mbRe
 
 **Update this release** stores `{ v: 1, token, created, mbid, source, sourceName, platform, url, rel }` (the finished read, with `relWithForms`) under `fc.handoff.upd.<token>` (pruned with the handoffs) and opens `/release/<mbid>#fc-update=<token>`. There First Contact copies it to the tab's `sessionStorage`, deletes it from the storage, and publishes it as `document.documentElement.dataset.fcUpdate` and the `fc:update` event (again on `fc:update-request`); `{ token, error }` when it isn't stored. Mission Control's side is in [its DEVELOP.md](../mission_control/DEVELOP.md#an-update-from-first-contact).
 
-**Add link only** opens `/release/<mbid>/edit?urls.N.url=…&urls.N.link_type=…&edit_note=…` with the read's links the release lacks.
+**Add link only** stores `{ v: 1, token, created, mbid, urls: [{ url, linkType }], note }` (the read's links the release lacks, one entry per link type) under `fc.handoff.links.<token>` and opens `/release/<mbid>/edit#fc-links=<token>`. The release editor ignores `urls.N.*` and `edit_note` in its address ([#1105](https://github.com/majkinetor/musicbrainz-userscripts/issues/1105)). There `mbAddLinks` types each link into the External links editor as Platform Check does, sets its types (a second type through *Add another relationship*), and fills the edit note. It submits nothing.
 
 ## How each platform is read
 

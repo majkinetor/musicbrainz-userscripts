@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.022958
+// @version      2026.11.24.061541
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Amazon (CDs, vinyl and MP3 albums in its store), Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Internet Archive (audio items), Presto Music, RateYourMusic, Album of the Year, VGMdb.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -4633,6 +4633,7 @@ const CHECK_MODES = [
     ['load', 'On page load'],
 ];
 const UPDATE_PREFIX = HANDOFF_PREFIX + 'upd.';
+const LINKS_PREFIX = HANDOFF_PREFIX + 'links.';   // #1105: Add link only's links and edit note, for the release's edit page
 const LIGHTS = {
     busy: 'Checking MusicBrainz…',
     linked: 'MusicBrainz has this album\nIts link is on a release there',
@@ -5104,13 +5105,16 @@ function updateRelease(e, rel, provider) {
     openMb(`https://${settings().server}/release/${e.id}#fc-update=${token}`);
     if (settings().closeAfter && !mbuTestHooks()) closeSourceTab();
 }
-// Add link only: the release's edit page, seeded with the album's links and an edit note
+// Add link only: the release's edit page, where First Contact types the album's links and an edit note (mbAddLinks).
+// #1105: the release editor ignores urls.N.* and edit_note in its address, so they go through the script's storage.
 function addLinkOnly(e, urls, rel, provider) {
-    const q = new URLSearchParams();
-    urls.forEach((u, i) => { q.set(`urls.${i}.url`, u.url); if (u.linkType) q.set(`urls.${i}.link_type`, u.linkType); });
-    q.set('edit_note', `${provider.name}: ${rel.url}\nMusicBrainz had this album already; First Contact found it by ${e.how.includes('link') ? 'its link' : e.how.includes('barcode') ? 'its barcode' : 'its title and artist'}.\n\n${(typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.name) || NAME} v${VERSION} by majkinetor - ${HOMEPAGE}`);
-    Log.info(`add ${urls.length} link(s) to release ${e.id}: ${urls.map(u => u.url).join(', ')}`);
-    openMb(`https://${settings().server}/release/${e.id}/edit?${q}`);
+    const token = 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    const note = `${provider.name}: ${rel.url}\nMusicBrainz had this album already; First Contact found it by ${e.how.includes('link') ? 'its link' : e.how.includes('barcode') ? 'its barcode' : 'its title and artist'}.\n\n${(typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.name) || NAME} v${VERSION} by majkinetor - ${HOMEPAGE}`;
+    pruneHandoffs();
+    GM_setValue(LINKS_PREFIX + token, { v: 1, token, created: Date.now(), mbid: e.id, urls: urls.map(u => ({ url: u.url, linkType: u.linkType || null })), note });
+    Log.info(`add ${urls.length} link(s) to release ${e.id}: ${urls.map(u => u.url).join(', ')} (token ${token})`);
+    if (mbuTestHooks()) window.__fcLastLinks = { token, mbid: e.id };
+    openMb(`https://${settings().server}/release/${e.id}/edit#fc-links=${token}`);
 }
 
 // On MusicBrainz's /release/add#mc=<token>: hand the album to Mission Control, read the other
@@ -5182,6 +5186,62 @@ function mbReader() {
     document.addEventListener('mc:read', e => { mcRead(e.detail); });
     hello();   // Mission Control may have asked before First Contact loaded
 }
+// #1105: on /release/<mbid>/edit#fc-links=<token>, the links Add link only stored: each typed into the External links
+// editor with its link types (one URL can take two, as 980 and 74), and the edit note filled. Nothing is submitted.
+function mbAddLinks(token) {
+    const key = LINKS_PREFIX + token;
+    fcHandoff(key, `links ${token}`, async (h) => {
+        if (!h || !Array.isArray(h.urls)) { Log.warn(`release edit page opened with links ${token}, but they are not stored (expired, or another browser)`); return; }
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+        const waitFor = async (fn, ms) => { const t0 = Date.now(); for (;;) { const v = fn(); if (v || Date.now() - t0 > ms) return v || null; await sleep(150); } };
+        const setVal = (el, v) => {
+            const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement : el instanceof HTMLSelectElement ? HTMLSelectElement : HTMLInputElement;
+            Object.getOwnPropertyDescriptor(proto.prototype, 'value').set.call(el, v);
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+        };
+        // the editor's empty url input is its "Add another link" row, whatever its placeholder says (Apollo changes it)
+        const addInput = () => { const ed = document.getElementById('external-links-editor'); return ed && [...ed.querySelectorAll('input[type="url"]')].filter(i => !i.value).pop(); };
+        const rowOf = url => [...document.querySelectorAll('#external-links-editor tr.external-link-item')].find(r => { const a = r.querySelector('a[href]'); return a && linkKey(a.getAttribute('href')) === linkKey(url); });
+        if (!await waitFor(addInput, 30000)) { Log.warn(`links ${token}: the release editor's External links never appeared`); return; }
+        const groups = new Map();
+        for (const u of h.urls) { const k = linkKey(u.url); if (!groups.has(k)) groups.set(k, { url: u.url, types: [] }); if (u.linkType) groups.get(k).types.push(String(u.linkType)); }
+        let added = 0;
+        for (const { url, types } of groups.values()) {
+            if (rowOf(url)) { Log.info(`links ${token}: ${url} is on the release already`); continue; }
+            let row = null;
+            for (let i = 0; i < 3 && !row; i++) {
+                const inp = await waitFor(addInput, 5000);
+                if (!inp) break;
+                inp.focus(); setVal(inp, url);
+                inp.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true }));
+                inp.blur();
+                row = await waitFor(() => rowOf(url), 4000);
+            }
+            if (!row) { Log.warn(`links ${token}: ${url} could not be added`); continue; }
+            added++;
+            // each type in a relationship row after the link's row; a second type needs "Add another relationship"
+            const after = cls => { const out = []; for (let s = row.nextElementSibling; s && !s.classList.contains('external-link-item'); s = s.nextElementSibling) if (s.classList.contains(cls)) out.push(s); return out; };
+            const relSel = i => { const r = after('relationship-item')[i]; return r && r.querySelector('select.link-type'); };
+            for (let i = 0; i < types.length; i++) {
+                let sel = await waitFor(() => relSel(i), i ? 300 : 3000);
+                if (!sel && i) { const add = after('add-relationship')[0], btn = add && add.querySelector('button.add-item'); if (btn) { btn.click(); sel = await waitFor(() => relSel(i), 3000); } }
+                if (!sel) { Log.warn(`links ${token}: no link type list ${i + 1} for ${url}`); break; }
+                if (sel.value === types[i]) continue;
+                if (![...sel.options].some(o => o.value === types[i])) { Log.warn(`links ${token}: MusicBrainz offers no link type ${types[i]} for ${url}`); continue; }
+                setVal(sel, types[i]);
+            }
+            Log.info(`links ${token}: added ${url}${types.length ? ' as ' + types.join(' + ') : ''}`);
+        }
+        if (added && h.note) {
+            const ta = await waitFor(() => document.querySelector('#edit-note-text, textarea.edit-note, textarea[name="edit-note"]'), 5000);
+            if (ta) setVal(ta, (ta.value || '').trim() ? ta.value.trim() + '\n\n' + h.note : h.note);
+            else Log.warn(`links ${token}: no edit note field`);
+        }
+        if (mbuTestHooks()) window.__fcLinksDone = { token, added };
+    });
+}
+
 // #801: on /release/<mbid>#fc-update=<token>, the album Update this release sent, for Mission Control to compare
 // the release with: fc:update (detail: JSON), again on fc:update-request; { token, error } when it isn't stored
 function mbUpdate(token) {
@@ -5363,6 +5423,12 @@ function platformMain() {
 // and can ask for it again with a 'first-contact:request' event on document.
 
 function mbMain() {
+    if (/^\/release\/[0-9a-f-]{36}\/edit\/?$/i.test(location.pathname)) {
+        const lt = (location.hash.match(/[#&]fc-links=([a-z0-9]+)/i) || [])[1];
+        if (lt) mbAddLinks(lt);
+        mbReader();
+        return;
+    }
     if (/^\/release\/[0-9a-f-]{36}\/?$/i.test(location.pathname)) {
         mbReader();
         const upd = (location.hash.match(/[#&]fc-update=([a-z0-9]+)/i) || [])[1];
