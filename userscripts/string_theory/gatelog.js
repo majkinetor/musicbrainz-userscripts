@@ -60,7 +60,7 @@ var ST_GATE_CSS = ''
   // the filter row
   + '.st-gate-ent{display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-right:5px;flex:none}'
   + '#st-gate .st-gate-facts{font-size:12px;color:var(--mbu-text-weak);padding:0 0 6px}#st-gate .st-gate-k{font-weight:600;color:var(--mbu-accent,var(--mbu-text))}#st-gate .st-gate-url{width:0;min-width:100%;box-sizing:border-box;font:12px/1.4 monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;user-select:text;padding:4px 0 6px;color:var(--mbu-text)}#st-gate tr.steps.all .st-gate-url{white-space:normal;word-break:break-all}#st-gate .st-gate-full,#st-gate tr.steps.all .st-gate-short{display:none}#st-gate tr.steps.all .st-gate-full{display:inline}#st-gate .st-gate-qp{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:2px 10px;margin:0 0 8px;font:12px/1.4 monospace}#st-gate .st-gate-qp dt{color:var(--mbu-text-weak);margin:0}#st-gate .st-gate-qp dd{margin:0;color:var(--mbu-text);word-break:break-all;user-select:text}#st-gate .st-gate-qp i{color:var(--mbu-text-weak)}#st-gate .st-gate-bth{font-size:12px;font-weight:600;color:var(--mbu-text-weak);margin:0 0 2px}#st-gate .st-gate-bt{font:12px/1.4 monospace;color:var(--mbu-text);word-break:break-all;white-space:pre-wrap;user-select:text;margin:0 0 8px}#st-gate .st-gate-n{color:var(--mbu-text-weak)}#st-gate .st-gate-less{cursor:pointer}#st-gate .st-gate-more,#st-gate tr.steps.all .st-gate-less{display:none}#st-gate tr.steps.all .st-gate-more{display:block}'
-  + '#st-gate td.l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40ch}'
+  + '#st-gate td.l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:56ch}#st-gate .st-gate-dt{color:var(--mbu-text-weak)}'
   + '#st-gate .st-gate-hosts{margin-right:12px}#st-gate .st-gate-hosts button{display:inline-flex;align-items:center;padding:0 8px}#st-gate .st-gate-hosts button[aria-pressed=false] svg{opacity:.35;filter:grayscale(1)}'
   + '.st-gate-cfp label{display:flex;gap:6px;align-items:center;padding:4px 6px;cursor:pointer;border-radius:var(--mbu-radius);white-space:nowrap}.st-gate-cfp label:hover{background:var(--mbu-bg-hover)}.st-gate-cfp input[type=checkbox]{width:auto;margin:0;padding:0;accent-color:var(--mbu-accent)}'
   + '#st-gate-hud,#st-gate-ghost{display:inline-flex;align-items:center;padding:4px;margin-right:4px;border:0;background:none;color:var(--mbu-text-weak);cursor:pointer;border-radius:var(--mbu-radius)}#st-gate-hud:hover,#st-gate-ghost:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}#st-gate-ghost[aria-pressed=true]{color:var(--mbu-accent-text)}#st-gate .st-gate-hosts{margin-right:8px}#st-gate .mbu-logpop-h .st-gate-n{flex:0 0 24em;width:24em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#st-gate .st-gate-hosts{border:0}#st-gate .st-gate-hosts button,#st-gate .st-gate-hosts button:hover,#st-gate .st-gate-hosts button[aria-pressed=true]{background:none;border:0;padding:0 5px;opacity:.35}#st-gate .st-gate-hosts button[aria-pressed=true]{opacity:1}#st-gate .st-gate-hosts button:hover{opacity:.8}'
@@ -661,10 +661,40 @@ function stGateEntHtml(g) {
   else if (g.h) { var k = stGateHostKey(g.h); if (k) ic = stIcon(k, 14).replace('<svg', '<svg class="st-gate-ent" aria-hidden="true"'); }
   return ic ? ic + stEsc(e ? e.replace(/_/g, ' ') : stGateHostKey(g.h) || '') : '';
 }
-// the Request cell: the entity column names the entity, so the label drops its leading entity word
+// the Request cell: the entity column names the entity, so the label drops its leading entity word,
+// and the host in parentheses the Site column shows; then the values that tell it from its siblings
 function stGateLabelHtml(g) {
-  var t = stEsc(stGateAlias(g.l)), e = stGateEntity(g);
-  return e ? t.replace(new RegExp('^' + e.replace(/[_-]/g, '[ _-]') + 's?\\s+', 'i'), '') : t;
+  var t = stEsc(stGateAlias(g.l)), e = stGateEntity(g), d = stGateDetail(g);
+  if (g.h) {
+    var host = String(g.h).split('//').pop().split('/')[0];
+    [host, stGateSite(g)].forEach(function (x) { if (x && t.slice(-x.length - 3) === ' (' + x + ')') t = t.slice(0, -x.length - 3); });
+  }
+  if (e) t = t.replace(new RegExp('^' + e.replace(/[_-]/g, '[ _-]') + 's?\\s+', 'i'), '');
+  return t + (d ? ' <span class="st-gate-dt">' + stEsc(d) + '</span>' : '');
+}
+// what tells requests of one kind apart: what they search for (a UPC or an ISRC named as one), the country, the type.
+// From the URL's query and a form body; a value the label already holds is left out
+var ST_GATE_DQ = /^(q|query|resource|term|search|keywords?|title|isrc|upc|ean|gtin|barcode|filter\[(isrc|upc|barcode(id)?)\])$/i;
+var ST_GATE_DC = /^(country|countrycode|cc|region|market|territory|store|storefront|locale)$/i;
+var ST_GATE_DT = /^(type|types|entity|kind|media)$/i;
+function stGateDetail(g) {
+  if (g.sys) return '';
+  var lab = stGateAlias(g.l), qps = stGateQuery(String(g.u || g.l || ''));
+  if (g.bt && !/^[{[]/.test(g.bt) && /^[^=&\s]+=\S*$/.test(g.bt)) qps = qps.concat(stGateQuery('?' + g.bt));
+  var out = [];
+  [ST_GATE_DQ, ST_GATE_DC, ST_GATE_DT].forEach(function (re, n) {
+    qps.forEach(function (p) {
+      if (!re.test(p.k) || p.v.length !== 1) return;
+      var v = p.v[0].trim().replace(/^https?:\/\/(www[.])?/i, '');
+      if (!v || lab.indexOf(v) >= 0) return;
+      if (n === 1) out.push(v.length === 2 ? v.toUpperCase() : v);
+      else if (n === 2) out.push(v.length > 20 ? v.slice(0, 19) + '…' : v);
+      else if (/^\d{12,14}$/.test(v)) out.push('UPC ' + v);
+      else if (/^[A-Z]{2}[A-Z0-9]{3}\d{7}$/i.test(v)) out.push('ISRC ' + v.toUpperCase());
+      else out.push('"' + (v.length > 32 ? v.slice(0, 31) + '…' : v) + '"');
+    });
+  });
+  return out.join(' · ');
 }
 function stGateMarkdown(all, me) {
   var s = stGateState(), now = Date.now(), groups = stGateGroups(all, now), c = stGateCount(groups);
@@ -681,14 +711,14 @@ function stGateMarkdown(all, me) {
     if (g.sys) { out.push('| ' + stGateTime(g.t) + ' | ' + tab + ' | ' + cell(g.s) + ' |  |  |  |  | ' + cell(stGateWhat(g.evs[0])) + ' |  | ' + cell(g.label) + ' |  |  |'); return; }
     var flight = (g.tries || []).reduce(function (n, x) { return n + (x.end ? x.end - x.t : 0); }, 0), a = g.ans;
     out.push('| ' + stGateTime(g.t) + ' | ' + tab + ' | ' + cell(g.s) + (g.b === 0 ? ' (i)' : '') + ' | ' + cell(g.m) + ' | ' + cell(g.r)
-      + ' | ' + cell((stGateEntity(g) || '').replace(/_/g, ' ')) + ' | ' + cell(stGateSite(g)) + ' | ' + cell(stGateAlias(g.l)) + ((g.h || g.u) ? ' (' + cell((g.h || '') + (g.u || '')) + ')' : '')
+      + ' | ' + cell((stGateEntity(g) || '').replace(/_/g, ' ')) + ' | ' + cell(stGateSite(g)) + ' | ' + cell(stGateAlias(g.l)) + (stGateDetail(g) ? ' · ' + cell(stGateDetail(g)) : '') + ((g.h || g.u) ? ' (' + cell((g.h || '') + (g.u || '')) + ')' : '')
       + ' | ' + (g.tries || []).length + ' | ' + cell(g.label) + ' | ' + stGateSec(g.wait) + (flight ? ' + ' + stGateSec(flight) : '')
       + ' | ' + (a && a.lim && a.rem != null ? a.rem + '/' + a.lim + (a.who ? ' (' + cell(a.who) + ')' : '') : '') + ' |');
   });
   out.push('', '## Events', '', '| Time | Tab | Script | Event | Request | What |', '| --- | --- | --- | --- | --- | --- |');
   all.forEach(function (ev) {
     out.push('| ' + stGateTime(ev.t) + ' | ' + cell(ev.tab) + (ev.tab === me ? ' (this)' : '') + ' | ' + cell(ev.s) + ' | ' + cell(ev.e) + (ev.b === 0 ? ' (i)' : '')
-      + ' | ' + cell((ev.m ? ev.m + ' ' : '') + (ev.h ? ev.h + ' ' : '') + ev.l) + (ev.u ? ' (' + cell(ev.u) + ')' : '') + ' | ' + cell(stGateWhat(ev)) + ' |');
+      + ' | ' + cell((ev.m ? ev.m + ' ' : '') + (ev.h ? ev.h + ' ' : '') + (ev.l || '')) + (ev.u ? ' (' + cell(ev.u) + ')' : '') + ' | ' + cell(stGateWhat(ev)) + ' |');
   });
   return out.join('\n');
 }
