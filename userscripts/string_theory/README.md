@@ -85,7 +85,7 @@ The window works like the Activity log. You move it by its title bar, minimize i
 
 The top line shows the gate now: the wait after a 503 (**Hold**), how many 503s came in a row (**Hot**), how far ahead the queues are booked, and which page holds the lead. The next line counts the requests in the log and those of the last minute: ok, retried and failed.
 
-Under it, the last 60 seconds show as one lane per tab, with the scripts of that tab and this tab first. Each try is a bar: gray while it waits in the gate, then green, yellow (busy, tried again) or red. A red band across all lanes is a hold that MusicBrainz asked for. The **T** button in the title bar writes each request's name under its script's icon, as in its tip, in the window and the HUD. String Theory remembers your choice.
+Under it, the last 60 seconds show as one lane per tab, with the scripts of that tab and this tab first. Each try is a bar: gray while it waits in the gate, then green, yellow (busy, tried again) or red. A red band across all lanes is a hold that MusicBrainz asked for. The **T** button in the title bar writes each request's name under its script's icon, as in its tip, in the window and the HUD. Under a group of requests, it lists their names, each once. String Theory remembers your choice.
 
 The mouse wheel on the time line zooms in and out around the pointer, and Shift with the wheel moves it to the left or right. When the time line is zoomed in, you can also drag it to the left or right with the mouse. The button with the left and right arrow swaps the two, and String Theory remembers your choice. The button with the diagonal arrow, or a right click on the time line, shows the whole span again.
 
