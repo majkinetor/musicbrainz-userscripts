@@ -143,7 +143,7 @@ On the first sync with existing data, stars from both sides are combined and con
 
 Credentials, stars, saved notes, remembered field values, named filters and normal preferences are included. Caches, logs, recent activity, temporary work, local paths and device layout stay local, including page width, columns, window state and location coordinates.
 
-**Save backup** saves a separate, dated snapshot at the selected provider. **Browse** lists them, newest first, with dates and sizes. Select a backup, then use **Apply** or **Delete** in its header. **Apply** merges it into your settings, keeping a recovery copy, just like **Import**. Pages show the new settings when you reload them. Backup values win shared settings; stars are combined.
+**Save backup** saves a separate, dated snapshot at the selected provider. **Browse** lists them, newest first, with dates and sizes. Select a backup, then use **Apply** in the header. Point at a backup to show its **Download** and **Delete** buttons. **Download** saves the backup as a JSON file that **Import** reads. **Apply** merges it into your settings, keeping a recovery copy, just like **Import**. Pages show the new settings when you reload them. Backup values win shared settings; stars are combined.
 
 **Disconnect** stops automatic sync and removes this device's selected connection; remote data remains. Google Drive saves files in a **String Theory** folder, including sync history. WebDAV saves `string-theory.json` in the folder you entered and backups in its `backups` folder.
 

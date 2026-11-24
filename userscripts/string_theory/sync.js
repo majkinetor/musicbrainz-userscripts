@@ -186,6 +186,9 @@ async function stBackupRun(mode, entry) {
       var incoming = (await drive.readBackup(entry)).data;
       stSyncImport(incoming); stBackupBrowse(document.getElementById('st-p-s'), false);
       stBackupNotice = 'Imported. Reload to see the changes.';
+    } else if (mode === 'download') {
+      stSyncDownload(stSyncStorage.document((await drive.readBackup(entry)).data), stBackupFileName(entry));
+      stBackupNotice = 'Backup downloaded.';
     } else if (mode === 'delete') {
       await drive.deleteBackup(entry);
       stBackupEntries = (stBackupEntries || []).filter(function (item) { return item.id !== entry.id; });
@@ -221,22 +224,33 @@ function stBackupPaint(panel, connected) {
   if (selected < 0) selected = 0;
   stBackupSelected = stBackupEntries[selected].id;
   var choices = document.createElement('div'); choices.className = 'st-backup-choices'; choices.setAttribute('role', 'group'); choices.setAttribute('aria-label', 'Saved backups');
+  var actionButton = function (mode, text, i) {
+    var button = document.createElement('button'); button.type = 'button'; button.className = 'st-b'; button.textContent = text;
+    button.dataset.backupAction = mode; button.dataset.backupIndex = String(i); button.disabled = stSyncBusy || !connected;
+    return button;
+  };
   stBackupEntries.forEach(function (entry, i) {
+    var item = document.createElement('div'); item.className = 'st-backup-item' + (i === selected ? ' st-on' : '');
     var row = document.createElement('button'); row.type = 'button'; row.className = 'st-backup-choice';
     row.dataset.backupSelect = String(i); row.setAttribute('aria-pressed', String(i === selected)); row.disabled = stSyncBusy || !connected;
     var date = new Date(entry.server_modified), label = document.createElement('span'), size = document.createElement('small');
     label.textContent = isNaN(date.getTime()) ? entry.name : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
     size.textContent = Math.max(1, Math.ceil(entry.size / 1024)) + ' KB';
-    row.append(label, size); choices.appendChild(row);
+    row.append(label, size);
+    // per-row actions show on hover or keyboard focus, over the size
+    var hover = document.createElement('span'); hover.className = 'st-backup-hover';
+    hover.append(actionButton('download', 'Download', i), actionButton('delete', 'Delete', i));
+    item.append(row, hover); choices.appendChild(item);
   });
   list.appendChild(choices);
-  var entry = stBackupEntries[selected];
-  [['apply', 'Apply'], ['delete', 'Delete']].forEach(function (pair) {
-    var button = document.createElement('button'); button.type = 'button'; button.className = 'st-b'; button.textContent = pair[1];
-    button.dataset.backupAction = pair[0]; button.dataset.backupIndex = String(selected); button.disabled = stSyncBusy || !connected;
-    if (pair[0] === 'apply') button.dataset.tip = 'Merge this backup into your settings&#10;Applies on the next page load'.replace('&#10;', '\n');
-    actions.appendChild(button);
-  });
+  var apply = actionButton('apply', 'Apply', selected);
+  apply.dataset.tip = 'Merge this backup into your settings\nApplies on the next page load';
+  actions.appendChild(apply);
+}
+function stBackupFileName(entry) {
+  var d = new Date(entry.server_modified), p = function (n) { return String(n).padStart(2, '0'); };
+  if (isNaN(d.getTime())) return 'string-theory-backup.json';
+  return 'string-theory-backup-' + d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()) + '.json';
 }
 function stSyncError(e, provider) {
   var name = stSyncName(provider);
