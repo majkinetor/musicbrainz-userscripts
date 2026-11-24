@@ -1,4 +1,4 @@
-import { test, expect, requireLogin } from '../../../dev/test/harness.mjs';
+import { test, expect, requireLogin, mbJson } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Event Horizon', persist: true } });
 
@@ -12,7 +12,7 @@ test('right-drag picks collection rows and removes them', { tag: ['@sandbox', '@
   expect(gid).toBeTruthy();
   try {
     // three existing releases go in through their pages' "Add to" links
-    const found = await (await page.request.get(`${mb}/ws/2/release?artist=89ad4ac3-39f7-470e-963a-56509c546377&limit=3&fmt=json`)).json();
+    const found = await mbJson(`${mb}/ws/2/release?artist=89ad4ac3-39f7-470e-963a-56509c546377&limit=3&fmt=json`);   // waits out the sandbox's 503 "busy"
     const mbids = found.releases.map(r => r.id);
     expect(mbids).toHaveLength(3);
     for (const mbid of mbids) {
@@ -29,7 +29,8 @@ test('right-drag picks collection rows and removes them', { tag: ['@sandbox', '@
     await expect(go).toBeHidden();
     const folds = () => page.evaluate(() => document.querySelectorAll('#app>section.sec .fold[data-fold][aria-expanded="false"]').length);
     const f0 = await folds();
-    const mid = async i => { const b = await rows.nth(i).boundingBox(); return [b.x + 40, b.y + b.height / 2]; };
+    // the row's middle: its cover, at the start, holds a play button, where the right button adds to the queue
+    const mid = async i => { const b = await rows.nth(i).boundingBox(); return [b.x + b.width / 2, b.y + b.height / 2]; };
     // a drag over the first two
     await page.mouse.move(...await mid(0));
     await page.mouse.down({ button: 'right' });
@@ -43,14 +44,16 @@ test('right-drag picks collection rows and removes them', { tag: ['@sandbox', '@
     await page.keyboard.press('Escape');
     await expect(page.locator('#app tr.crm-on')).toHaveCount(0);
     await expect(go).toBeHidden();
-    await rows.nth(2).click({ button: 'right', position: { x: 40, y: 8 } });
+    await page.mouse.click(...await mid(2), { button: 'right' });
     await expect(page.locator('#app tr.crm-on')).toHaveCount(1);
     const keep = await rows.nth(0).getAttribute('data-colrm'), gone = await rows.nth(2).getAttribute('data-colrm');
     await go.click();
     await expect(rows).toHaveCount(2);
     await expect(page.locator(`#app tr[data-colrm="${gone}"]`)).toHaveCount(0);
     await expect(page.locator(`#app tr[data-colrm="${keep}"]`)).toHaveCount(1);
-    const html = await (await page.request.get(`${mb}/collection/${gid}`)).text();
+    // read back through a page: a bare request gets MusicBrainz's "Verifying your browser" page, which only a page passes
+    await page.goto(`${mb}/collection/${gid}`);
+    const html = await page.content();
     expect(html).not.toContain(`value="${gone}"`);
     expect(html).toContain(`value="${keep}"`);
   } finally { await page.request.post(`${mb}/collection/${gid}/own_collection/delete`, { form: {} }); }

@@ -22,7 +22,8 @@ test("an empty search shows our tip, not the browser's, with the type letters", 
 
 test.describe('with recent searches in the field', () => {
   test.use({ gm: { name: 'Event Horizon', values: { view: { hmQs: 'combo' }, searches: [{ q: 'yesterday', t: 'work' }, { q: 'hania', t: 'artist' }, { q: 'majkinetor', t: 'editor' }] } } });
-  test('the list shows every type\'s searches with their entity, narrowed by the words typed', { tag: '@prod' }, async ({ page, inject }, testInfo) => {
+  // since 6fc4c923a the list holds only the picked type's searches (b5824e44 showed every type's)
+  test('the list shows the picked type\'s searches with their entity, narrowed by the words typed', { tag: '@prod' }, async ({ page, inject }, testInfo) => {
     await page.goto('https://musicbrainz.org/search?query=music&type=work&method=indexed');
     await inject('event_horizon');
     await until(() => page.locator('#app .hm-srch .hm-qc').count(), n => n === 1);
@@ -30,15 +31,15 @@ test.describe('with recent searches in the field', () => {
     await page.locator('.hm-srch input[name=query]').fill('');
     if (await page.locator('.hm-qd').isHidden()) await page.locator('.hm-qc').click();
     check(await page.locator('.hm-qd').isVisible(), 'the list is open');
-    // every type's searches, with their entity (b5824e44); an artist's goes bare
-    check((s => s.includes('work: yesterday') && s.includes('hania') && s.includes('editor: majkinetor'))(await shown()), 'every search shows with its entity: ' + await shown());
+    // the work searches, with their entity; the other types' stay out
+    check((s => s.includes('work: yesterday') && !s.includes('hania') && !s.includes('editor: majkinetor'))(await shown()), 'the work searches show with their entity: ' + await shown());
     await attachShot(testInfo, page, 'work');
     if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace('.png', '-combo.png'), clip: { x: 0, y: 0, width: 1400, height: 500 } });
     await page.locator('.hm-srch input[name=query]').pressSequentially('e ');
     check(await page.locator('.hm-srch .hm-ty').textContent() === 'Editor', 'e and a space picks Editor');
     if (await page.locator('.hm-qd').isHidden()) await page.locator('.hm-qc').click();
     check(await page.locator('.hm-qd').isVisible(), 'the list is open on Editor');
-    check((await shown()).length >= 3, 'Editor keeps every type\'s searches: ' + await shown());
+    check(JSON.stringify(await shown()) === '["editor: majkinetor"]', 'Editor shows only the editor search: ' + await shown());
     await page.locator('.hm-srch input[name=query]').pressSequentially('majk');
     check(JSON.stringify(await until(shown, x => x.length === 1)) === '["editor: majkinetor"]', 'the words typed narrow the list: ' + await shown());
   });
