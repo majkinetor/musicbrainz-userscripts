@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.014820
+// @version      2026.11.24.021312
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -3651,7 +3651,7 @@ Click: open the label`;
     // The wait is interruptible: a lane parked in the gate cannot notice a Stop otherwise,
     // and a pass whose lanes are all parked looks unstoppable (#577).
     let slot;
-    try { slot = await mbnSlot({ background: !o.stale, label: o.label || 'ws2', log: wsGateLog, cancelled, search: wsIsSearch(url), id: o.id }); }
+    try { slot = await mbnSlot(Object.assign({ background: !o.stale, label: o.label || 'ws2', log: wsGateLog, cancelled, search: wsIsSearch(url), id: o.id }, wsGateAt(url))); }
     catch (e) { free(); throw e; }
     if (!slot.ok || cancelled()) { free(); return null; }   // caller treats null as superseded
     const p = mbnWsFetch(url, { headers: { Accept: 'application/json' } });
@@ -3672,7 +3672,9 @@ Click: open the label`;
   // tell the gate how MusicBrainz answered: a 429/503 holds everybody, a clean answer earns room back
   // with the label its slot had (wsGet's): the Gate log pairs the answer with its start by it
   // o.id: the request's id (wsJsonOnce's), the same one its slot had
-  const wsAnswer = (r, label, background, search, id) => mbnAnswer(r.status, n => (r.headers && r.headers.get ? r.headers.get(n) : null), { log: wsGateLog, label: label || 'ws2', background, search: !!search, id });
+  const wsAnswer = (r, label, background, search, id, url) => mbnAnswer(r.status, n => (r.headers && r.headers.get ? r.headers.get(n) : null), Object.assign({ log: wsGateLog, label: label || 'ws2', background, search: !!search, id }, url ? wsGateAt(url) : {}));
+  // what the network log shows of a request the gate does not send itself: its path and query, verb and reason
+  function wsGateAt(url) { return { u: String(url).replace(/^https?:\/\/[^/]+/, '').slice(0, 300), m: 'GET', reason: mbnReasonOf(url, 'GET') }; }
   // EVERY /ws/2 read goes through here. MusicBrainz answers a throttled request
   // with HTTP 503 (or 429) and a body of `{"error":"…"}` — no `recordings` /
   // `artists` key. Callers that did `fetch(url).then(r => r.json())` therefore
@@ -3729,7 +3731,7 @@ Click: open the label`;
       catch (e) { Log.cat('MusicBrainz').warn(label + ': network error —', e.message, '(attempt ' + attempt + '/' + WS_TRIES + ')', url); await _sleep(600 * attempt); continue; }
       if (!r || (!o.stale && gen !== _stopGen)) { Log.cat('MusicBrainz').debug(label + ': superseded while queued, dropped —', url); return { stale: true }; }
       Log.cat('MusicBrainz').debug(label + ': HTTP', r.status, url);
-      const a = await wsAnswer(r, o.label, !o.stale, wsIsSearch(url), o.id);
+      const a = await wsAnswer(r, o.label, !o.stale, wsIsSearch(url), o.id, url);
       if (a.throttled) {
         // #575 round 3: hold every lane, not just this one. wsGet waits in the gate for
         // the shared deadline, so the retry needs no sleep of its own — sleeping here
