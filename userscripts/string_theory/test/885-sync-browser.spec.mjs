@@ -82,6 +82,17 @@ test.describe('remote backup manager', () => {
     expect(await page.evaluate(() => GM_getValue('saved'))).toBe('snapshot value');
     expect(await page.evaluate(() => GM_getValue('view').width)).toBe(800);
     await open(); await page.locator('#st-sync-remote-import').click();
+    // Download and Delete are row actions, shown on hover; the header keeps only Apply
+    await expect(page.locator('#st-sync-backup-actions [data-backup-action]')).toHaveCount(1);
+    const fetch = page.locator('#st-sync-remote [data-backup-action=download]');
+    await page.mouse.move(0, 0);
+    const shown = page.locator('#st-sync-backups .st-backup-hover').first();
+    await expect(shown).toHaveCSS('opacity', '0');
+    await page.locator('#st-sync-backups .st-backup-item').first().hover();
+    await expect(shown).toHaveCSS('opacity', '1');
+    const [file] = await Promise.all([page.waitForEvent('download'), fetch.click()]);
+    expect(file.suggestedFilename()).toMatch(/^string-theory-backup-\d{4}-\d\d-\d\d-\d{4}\.json$/);
+    expect(JSON.parse(readFileSync(await file.path(), 'utf8')).data.gm.saved.value).toBe('snapshot value');
     const remove = page.locator('#st-sync-remote [data-backup-action=delete]');
     await remove.click();
     await expect(page.locator('#st-sync-backups')).toHaveText('No remote backups yet.');
