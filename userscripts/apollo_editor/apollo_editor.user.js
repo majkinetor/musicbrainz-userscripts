@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.201428
+// @version      2026.11.24.202540
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -13311,7 +13311,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const out = [];
     mediums().forEach((med, mi) => (u(med.tracks) || []).forEach((t, ti) => {
       const rec = u(t.recording);
-      const sugg = (typeof t.suggestedRecordings === 'function' ? (u(t.suggestedRecordings) || []) : []);
+      const sugg = recSuggCached(t) || (typeof t.suggestedRecordings === 'function' ? (u(t.suggestedRecordings) || []) : []);   // #1113 Apollo's own first
       const diffs = rec ? recFieldDiffs(t, rec) : null;
       // ideal/exact match: title + length match with NO relaxation option used (fold only, no punctuation/
       // edit-distance/length tolerance). A credited-as artist (same entity) still counts as exact. #119
@@ -14371,7 +14371,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         rgGidForDup = rgGid || null; relTitleForDup = rel ? (u(rel.name) || '') : ''; relArtistGidForDup = (acArtistGids(u(rel && rel.artistCredit)) || [])[0] || null;
         if (rgGid) {
           setStatus('loading release-group recordings…');
-          pool = await wait(fetchRgRecordings(rgGid), 'release-group recordings'); pool.forEach(p => { const k = recFold(p.name); if (!byTitle.has(k)) byTitle.set(k, []); byTitle.get(k).push(p); });
+          pool = await wait(rgPoolFor(rgGid), 'release-group recordings'); pool.forEach(p => { const k = recFold(p.name); if (!byTitle.has(k)) byTitle.set(k, []); byTitle.get(k).push(p); });
           posIndex = await wait(fetchRgPositionIndex(rgGid), 'release-group positions');   // #440 position index from the RG's editions
         }
       } catch (e) { if (e === REC_STOPPED) throw e; Log.cat('Recording').warn('RG pool load failed', e.message); }
@@ -14466,24 +14466,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         }
         // only fall back to MB's per-track lookup (network) when the pool had nothing good enough
         if (!best || bestLevel > maxLevel) {
-          const sugg = suggList(ko);
-          const stale = suggStale(ko, ctx);   // a clone's or a retitled track's old suggestions
-          if (stale) Log.cat('Recording').debug('track', r.number, ': suggestions are stale (no shared artist), searching again');
-          if (sugg.length && !stale) { for (let s = 0; s < sugg.length; s++) { consider(suggData(sugg[s])); if (bestLevel === 0) break; } }   // 0 = exact, can't do better
-          else {
-            /* #1112: MusicBrainz's own suggestions are one ws/2 recording search that
-               goes around the gate and, when MusicBrainz sheds it, waits a fixed 5 s
-               before it tries again: 57 s of a 63 s pass. Apollo sends the same query
-               itself, through the gate (about 1 s after a shed), instead of asking
-               the release editor for it; MusicBrainz's copy is then never sent. */
-            const qs = recSuggestQuery(ko);
-            const st0 = Date.now();
-            const raw = qs ? await timed('suggestion search', wait(searchRecordings(qs, { stale: cancelled, keep: true, limit: 25, label: 'recording suggestions' }), 'recording suggestions')) : [];
-            const hits = raw || [];
-            timeTrack.suggN = hits.length; timeTrack.suggFailed = raw === null && !cancelled();
-            Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' suggestion search → ' + (raw === null ? 'failed' : hits.length + ' hit(s)') + ' in ' + (Date.now() - st0) + 'ms' + (document.hidden ? ', page hidden' : ''));
-            for (let s = 0; s < hits.length; s++) { consider(hits[s]); if (bestLevel === 0) break; }
-          }
+          // #1113: Apollo's own copy of MusicBrainz's suggestions (apolloSuggest), shared with the picker
+          const st0 = Date.now();
+          const raw = await timed('suggestions', wait(apolloSuggest(ko, { stale: cancelled }), 'recording suggestions'));
+          const hits = raw || [];
+          timeTrack.suggN = hits.length; timeTrack.suggFailed = raw === null && !cancelled();
+          Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' suggestions → ' + (raw === null ? 'failed' : hits.length) + ' in ' + (Date.now() - st0) + 'ms' + (document.hidden ? ', page hidden' : ''));
+          for (let s = 0; s < hits.length; s++) { consider(hits[s]); if (bestLevel === 0) break; }   // 0 = exact, can't do better
         }
         // #963 — last tier: the picker's own narrow search (title + artist name + length).
         // MB's suggestions can miss a recording that search finds; a single hit is
@@ -14540,7 +14529,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         }
         {
           const tm = timeTrack, parts = timeSummary(Object.fromEntries(Object.entries(tm).filter(([k]) => typeof tm[k] === 'number' && k !== 'suggN')));
-          const sg = 'suggN' in tm ? ' (suggestion search: ' + (tm.suggFailed ? 'failed' : tm.suggN + ' hit' + (tm.suggN === 1 ? '' : 's')) + ')' : '';
+          const sg = 'suggN' in tm ? ' (suggestions: ' + (tm.suggFailed ? 'failed' : tm.suggN) + ')' : '';
           Log.cat('Recording').info('track ' + (r.number || (r.ti + 1)) + ' took ' + secs(Date.now() - trackT0) + (parts ? ': ' + parts : ', all from the release group') + sg);
         }
       }
@@ -14858,6 +14847,87 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     }
     return '(' + titleAndArtists + ')^2 OR (' + justTitle + ')';
   }
+  /* #1113: Apollo's own recording suggestions, in place of MusicBrainz's. They follow
+     MusicBrainz's findRecordingSuggestions step by step: the release group's recordings
+     first, then the track's current suggestions, then one recording search. Each step
+     keeps only what MusicBrainz keeps (a score of at least 0.85 from the length, weight 2,
+     and the title, weight 1), adds its bonus per release group, and sorts by score. The
+     saved recording leads when the track has none. The search goes through the gate, so
+     a shed is retried about 1 s later instead of MusicBrainz's fixed 5 s. The auto-match
+     and the picker share the answer, kept per track until its title, length or artists
+     change. MusicBrainz's own lookup is then never asked for. */
+  const _recSugg = new WeakMap();   // track → { key, list | pending }
+  const _rgPoolCache = new Map();   // release group → { at, p }
+  function rgPoolFor(rgGid) {
+    const hit = _rgPoolCache.get(rgGid);
+    if (hit && Date.now() - hit.at < 600000) return hit.p;
+    const p = fetchRgRecordings(rgGid);
+    _rgPoolCache.set(rgGid, { at: Date.now(), p });
+    p.catch(() => { if (_rgPoolCache.get(rgGid)?.p === p) _rgPoolCache.delete(rgGid); });
+    return p;
+  }
+  const MB_PUNCT = /[!"#$%&'()*+,\-.>/:;<=>?¿@[\\\]^_`{|}~⁓〜 -⁯\s]/g;
+  function mbSimilarity(a, b) {   // MusicBrainz's edit/utility/similarity.js
+    a = String(a || '').replace(MB_PUNCT, '').toLowerCase() || a || '';
+    b = String(b || '').replace(MB_PUNCT, '').toLowerCase() || b || '';
+    return a.length + b.length ? 1 - recLev(a, b) / (a.length + b.length) : 1;
+  }
+  function mbMatchRecordings(ko, recs) {   // MusicBrainz's matchAgainstRecordings
+    if (!recs || !recs.length) return null;
+    const tLen = parseInt(u(ko.length), 10) || 0, tName = u(ko.name) || '';
+    const out = [];
+    recs.forEach(d => {
+      if (!d || !d.gid) return;
+      const rLen = d.length || 0, name = d.name || '';
+      const parts = tLen && rLen ? [[1 - Math.abs(tLen - rLen) / (tLen + rLen), 2]] : [[rLen ? 1 : 0, 0.1]];
+      parts.push([Math.max(mbSimilarity(tName, name), mbSimilarity(tName, name.replace(/(\([^)]+\) ?)*$/, ''))), 1]);
+      let score = parts.reduce((s, p) => s + p[0] * p[1], 0) / parts.reduce((s, p) => s + p[1], 0);
+      if (score < 0.85) return;
+      const groups = new Set((d.releases || []).map(rl => rl.rgGid || rl.gid || rl.name));
+      for (let n = groups.size; n > 0; n--) score += (1 - score) * 0.10;
+      out.push({ d, score });
+    });
+    return out.length ? out.sort((a, b) => b.score - a.score).map(x => x.d) : null;
+  }
+  const recSuggKey = ko => { const t = u(ko.name); return t ? t + '|' + (u(ko.length) || '') + '|' + acArtistGids(u(ko.artistCredit)).join(',') : ''; };
+  // what is already known for the track, without asking: null when nothing is
+  function recSuggCached(ko) { const s = _recSugg.get(ko); return s && s.list && s.key === recSuggKey(ko) ? s.list : null; }
+  // the track's suggestions, as picker rows; null when the search failed or was given up
+  async function apolloSuggest(ko, opts) {
+    const key = recSuggKey(ko); if (!key) return [];
+    const stale = (opts && opts.stale) || (() => false);
+    const have = _recSugg.get(ko);
+    if (have && have.key === key) {
+      if (have.list) return have.list;
+      const shared = await have.pending;   // the other caller's lookup; when it was given up, ask again
+      if (shared || stale()) return shared;
+    }
+    const pending = (async () => {
+      let list = null;
+      const rel = release(), rg = rel && u(rel.releaseGroup), rgGid = rg && u(rg.gid);
+      if (rgGid) list = mbMatchRecordings(ko, await rgPoolFor(rgGid).catch(() => []));
+      if (!list) {
+        const mine = suggList(ko).map(s => { try { return suggData(s); } catch (e) { return null; } }).filter(Boolean);
+        if (!suggStale(ko, { artistGids: acArtistGids(u(ko.artistCredit)), artistNames: acNameList(u(ko.artistCredit)) })) list = mbMatchRecordings(ko, mine);   // a clone's or a retitled track's old list is skipped
+      }
+      if (!list) {
+        const qs = recSuggestQuery(ko);
+        const raw = await searchRecordings(qs, { stale, keep: true, limit: 25, label: 'recording suggestions' });
+        if (raw === null) return null;
+        list = mbMatchRecordings(ko, raw) || [];
+      }
+      try {   // MusicBrainz's setSuggestedRecordings: the saved recording first
+        const saved = ko.recording && ko.recording.saved, has = typeof ko.hasExistingRecording === 'function' ? ko.hasExistingRecording() : false;
+        if (saved && !has) { const sd = suggData(saved); if (sd.gid) list = [sd].concat(list.filter(d => d.gid !== sd.gid)); }
+      } catch (e) {}
+      return list;
+    })();
+    _recSugg.set(ko, { key, pending });
+    const list = await pending.catch(e => { Log.cat('Recording').warn('suggestions failed', e.message); return null; });
+    const cur = _recSugg.get(ko);
+    if (cur && cur.pending === pending) { if (list) { cur.list = list; delete cur.pending; } else _recSugg.delete(ko); }
+    return list;
+  }
   // A successful search, kept for 10 minutes per query: the picker's first search for a
   // track is the same narrow query the auto-match's last tier already ran.
   const _recSearchCache = new Map();   // query → { at, out }
@@ -14988,30 +15058,6 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function suggStale(ko, ctx) {
     const l = suggList(ko);
     return l.length > 0 && !l.some(s => { try { return recSharesArtist(suggData(s), ctx); } catch (e) { return true; } });
-  }
-  // empty the list so a poll sees MB's fresh answer, not the stale one, then ask MB again
-  // #999: wait for MusicBrainz's suggestions to land: done as soon as they arrive, or once nothing is
-  // loading after a short grace, or after 7s. It listens to the observables rather than polling: a
-  // chain of 250ms timers is held to one tick a minute in a background tab, which kept the
-  // recordings pass "running" for minutes on one track.
-  function recSuggestionsSettled(ko) {
-    return new Promise(resolve => {
-      const subs = [], t0 = Date.now(); let done = false, grace = 0, cap = 0;
-      const loading = () => typeof ko.loadingSuggestedRecordings === 'function' ? !!u(ko.loadingSuggestedRecordings) : false;
-      const finish = () => { if (done) return; done = true; clearTimeout(grace); clearTimeout(cap); subs.forEach(x => { try { x.dispose(); } catch (e) {} }); resolve(); };
-      const check = () => {
-        if (done) return;
-        if (!loading() && (u(ko.suggestedRecordings) || []).length) return finish();
-        if (!loading() && Date.now() - t0 >= 750) return finish();
-      };
-      [ko.suggestedRecordings, ko.loadingSuggestedRecordings].forEach(o => { if (o && typeof o.subscribe === 'function') subs.push(o.subscribe(check)); });
-      grace = setTimeout(check, 800); cap = setTimeout(finish, mbnHot() ? 3000 : 7000);   // #1110: while MusicBrainz holds, the search tier is the better bet
-      check();
-    });
-  }
-  function refetchSuggestions(ko) {
-    try { if (ko.suggestedRecordings.removeAll) ko.suggestedRecordings.removeAll(); else ko.suggestedRecordings([]); } catch (e) {}
-    try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) { Log.cat('Recording').warn('findRecordingSuggestions failed', e.message); }
   }
   // pull display data off a suggestion entity (releases live in appearsOn.results; isrcs may be objects)
   function suggData(s) {
@@ -15200,12 +15246,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // rows themselves are hidden and there's otherwise no hint anything is in there. #555
     const suggN = pop.querySelector('.tc-rpk-suggn');
     const setSuggCount = n => { if (suggN) suggN.textContent = n > 0 ? ' (' + n + ')' : ''; };
-    // suggestions are lazy in MB — render what's there, else trigger findRecordingSuggestions and poll
+    // suggestions: what is known at once, then Apollo's own lookup (#1113)
     let isrcList = [];   // #662: recordings holding the track's ISRC, listed first
     const leftFor = _recLeftForYou.get(entry.mi + ':' + entry.ti);
     const amList = ((leftFor && leftFor.cands) || []).filter(d => d && d.gid);   // what the auto-match left for you, no new lookup
     const renderSugg = () => {
-      const mbList = (typeof ko.suggestedRecordings === 'function' ? (u(ko.suggestedRecordings) || []) : []).map(suggData);
+      const mbList = recSuggCached(ko) || [];
       const list = [];
       const have = new Set();
       isrcList.concat(amList, mbList).forEach(d => { if (d.gid && !have.has(d.gid)) { have.add(d.gid); list.push(d); } });
@@ -15216,7 +15262,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       setSuggCount(list.length);
       Log.cat('Recording').debug('picker suggestions for track', entry.number, '→', list.length);
       if (lastResults.length) paintResults();   // suggestions arrived after a search → drop any now-duplicate rows
-      return mbList.length > 0 || amList.length > 0;   // keep waiting for MB's own when only the ISRC holders are in; the auto-match's are enough
+      return true;
     };
     {
       const isrc = fcIsrcFor(entry.mi, entry.ti, u(ko.name));
@@ -15226,19 +15272,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         renderSugg();
       });
     }
-    const staleSugg = suggStale(ko, ctx);
-    if (staleSugg) refetchSuggestions(ko);   // the old track's suggestions: show the current track's instead
-    if (staleSugg || !renderSugg()) {
-      if (!staleSugg) { try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) { Log.cat('Recording').warn('findRecordingSuggestions failed', e.message); } }
-      // #999 wait on MusicBrainz's observables, not a chain of 250ms timers: those were seen held back
-      // while MusicBrainz was busy, and the picker said "finding suggestions…" for good
+    // #1113: Apollo's own suggestions (apolloSuggest): at once when the auto-match already asked
+    if (!renderSugg() || !recSuggCached(ko)) {
       const t0 = Date.now();
-      recSuggestionsSettled(ko).then(() => {
+      apolloSuggest(ko, { stale: () => _recPop !== pop }).then(got => {
         if (_recPop !== pop) return;
         if (renderSugg()) { rerenderRec(); return; }   // also refresh the ⊕ count on the row
-        const loading = typeof ko.loadingSuggestedRecordings === 'function' ? !!u(ko.loadingSuggestedRecordings) : false;
-        Log.cat('Recording').debug('picker: MusicBrainz suggestions for track', entry.number, loading ? 'still loading after' : 'empty after', Date.now() - t0, 'ms');
-        if (!suggGids.size) suggBox.innerHTML = '<div class="tc-rpk-empty">' + (loading ? 'suggestions did not arrive — reopen to retry' : 'no suggestions') + '</div>';
+        Log.cat('Recording').debug('picker: suggestions for track', entry.number, got === null ? 'failed after' : 'empty after', Date.now() - t0, 'ms');
+        if (!suggGids.size) suggBox.innerHTML = '<div class="tc-rpk-empty">' + (got === null ? 'suggestions did not arrive — reopen to retry' : 'no suggestions') + '</div>';
       });
     }
     q.value = u(ko.name) || '';

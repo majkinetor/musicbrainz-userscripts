@@ -19,13 +19,13 @@ for (const stage of ['pool', 'positions', 'suggestions']) {
       const readRecordings = () => [{ mi: 0, ti: 0, title: 'Track', number: 1 }];
       const release = () => ({ name: '', releaseGroup: stage === 'suggestions' ? null : { gid: 'group' } });
       const acArtistGids = () => [], acNameList = () => [];
-      const fetchRgRecordings = () => stage === 'pool' ? hold() : Promise.resolve([]);
+      const rgPoolFor = () => stage === 'pool' ? hold() : Promise.resolve([]);
       const fetchRgPositionIndex = () => hold();
       const track = { position: 1, suggestedRecordings: () => [], loadingSuggestedRecordings: () => true, setRecordingValue: () => { writes++; } };
       const koTrack = () => track, videoBlockedHere = () => false, fcIsrcFor = () => null, fcHandoff = () => null;
-      const recFold = s => s, suggList = () => [], suggStale = () => false;
-      const recSuggestQuery = () => 'suggestion query', searchRecordings = () => stage === 'suggestions' ? hold() : Promise.resolve([]);
-      const rerenderRec = () => {}, recSuggestionsSettled = () => new Promise(() => {});
+      const recFold = s => s;
+      const apolloSuggest = () => stage === 'suggestions' ? hold() : Promise.resolve([]), searchRecordings = () => Promise.resolve([]);
+      const rerenderRec = () => {};
       ${source}
       return (async () => {
         const pass = autoMatchRecordings();
