@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.220000
+// @version      2026.11.24.220001
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -1625,11 +1625,11 @@ async function enrichAllReleases(recs, concurrency, onProgress) {
 // yields both. Merging an entity with an open edit risks compounding or
 // conflicting with whatever is already in the queue.
 const _pendingCache = new Map();
-async function fetchEntityMeta(gid) {
+async function fetchEntityMeta(gid, type) {
     if (_pendingCache.has(gid)) return _pendingCache.get(gid);
     let meta = null;
     try {
-        const j = await mbnFetch('/ws/js/entity/' + gid, { headers: { Accept: 'application/json' } }).then(r => r.json());
+        const j = await mbnFetch('/ws/js/entity/' + gid, { headers: { Accept: 'application/json' } }, { entity: type || 'recording' }).then(r => r.json());
         if (j && j.gid) meta = { id: j.id || null, editsPending: !!j.editsPending };
     } catch (e) { Log.error('fetchEntityMeta(' + gid + ') failed: ' + e.message); }
     _pendingCache.set(gid, meta);
@@ -1654,11 +1654,11 @@ async function enrichPendingEdits(recs, concurrency, onProgress) {
     if (flagged) Log.warn(flagged + ' recording(s) are marked as having pending edits');
 }
 const _idCache = new Map();
-async function resolveInternalId(gid) {
+async function resolveInternalId(gid, type) {
     if (_idCache.has(gid)) return _idCache.get(gid);
     let id = null;
     try {
-        const j = await mbnFetch('/ws/js/entity/' + gid, { headers: { Accept: 'application/json' } }).then(r => r.json());
+        const j = await mbnFetch('/ws/js/entity/' + gid, { headers: { Accept: 'application/json' } }, { entity: type || 'recording' }).then(r => r.json());
         id = j && j.id ? j.id : null;
     } catch (e) { Log.error('resolveInternalId(' + gid + ') failed: ' + e.message); }
     _idCache.set(gid, id);
@@ -2475,10 +2475,10 @@ function buildEditNote(group) {
     const body = (group.editNote && group.editNote.trim()) ? group.editNote.trim() : autoEditNote(group);
     return body + '\n\n' + ((typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.name) || 'Fusion') + ' v' + VERSION + ' by majkinetor - ' + HELP_URL + (group.via ? '\n' + group.via : '');
 }
-async function ensureInternalIds(gids) {
+async function ensureInternalIds(gids, type) {
     const ids = [];
     for (const gid of gids) {
-        const id = await resolveInternalId(gid);
+        const id = await resolveInternalId(gid, type);
         if (!id) throw new Error('could not resolve an internal id for ' + gid);
         ids.push(id);
     }
@@ -7115,7 +7115,7 @@ function emMerge(type, gid) {
     const set = patch => emEdit(() => { const h = emT(type).groups.find(x => x.id === g.id); if (h) Object.assign(h, patch); });
     return (async () => {
         if (type === 'collection') await Promise.all(members.filter(x => !_idCache.get(x)).map(x => emFetch(type, x)));
-        const ids = await ensureInternalIds(members);
+        const ids = await ensureInternalIds(members, type);
         const targetId = ids[members.indexOf(target)];
         return withMergeLock(async () => {
             const gr = await mbWeb('GET', location.origin + '/' + emPath(type) + '/merge_queue?' + ids.map(id => 'add-to-merge=' + id).join('&'), null, { Accept: 'text/html' });
@@ -7541,7 +7541,7 @@ function emResolveIds(members) {
     const need = members.filter(x => !_idCache.has(x.gid) && !EM_ID_ASKED.has(x.gid));
     if (members.length < 2 || !need.length) return;
     need.forEach(x => EM_ID_ASKED.add(x.gid));
-    Promise.all(need.map(x => resolveInternalId(x.gid))).then(() => emRender());
+    Promise.all(need.map(x => resolveInternalId(x.gid, EM_TYPE))).then(() => emRender());
 }
 function emRender() {
     const ov = document.getElementById('fs-em-overlay'); if (!ov) { refreshCounters(); return; }
@@ -8133,7 +8133,7 @@ try {
             Object.assign(x, d || { info: [] });
             draw();
         }));
-        if (g.members.some(x => !_idCache.get(x.gid))) { await Promise.all(g.members.map(x => resolveInternalId(x.gid))); if (wrap.isConnected) draw(); }
+        if (g.members.some(x => !_idCache.get(x.gid))) { await Promise.all(g.members.map(x => resolveInternalId(x.gid, m.type))); if (wrap.isConnected) draw(); }
     };
     // the card turned off in the settings: MB's tables come back, and nothing more is read
     const clear = () => document.querySelectorAll('.fs-editwrap').forEach(w => { w._fsIo && w._fsIo.disconnect(); w._fsDetails.style.display = ''; w._fsDetails._fsDone = null; w._fsBtn.remove(); w.remove(); });
