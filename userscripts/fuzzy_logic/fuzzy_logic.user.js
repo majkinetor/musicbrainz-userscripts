@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fuzzy Logic
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.23.191508
+// @version      2026.11.24.014820
 // @description  Collects genres and tags from an entity's linked pages (Bandcamp, Discogs, Deezer, Apple Music, AllMusic, Beatport, Wikidata, SoundCloud, VocaDB, Last.fm, RateYourMusic and Album of the Year, read when you open their pages), maps them to MusicBrainz genres and votes the ones you pick in one batch, optionally on the release group and recordings too. Replaces Taggregator.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImNmbDAiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxMmQ0ZjciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0OWI2ZjgiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0idmZsMCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzc2NjVmYSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2VjNDFjOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZmwwIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZkNTZiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmY4MzIwIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnZmwwIiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIzIi8+PC9maWx0ZXI+PC9kZWZzPjxnIGZpbGwtb3BhY2l0eT0iLjI4Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSI4NCIgcj0iNTQiIGZpbGw9IiMxNmNjZjgiLz48Y2lyY2xlIGN4PSI4OSIgY3k9IjE1MCIgcj0iNTQiIGZpbGw9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBmaWxsPSIjZmZhZTM4Ii8+PC9nPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iNyIgb3BhY2l0eT0iLjI4IiBmaWx0ZXI9InVybCgjZ2ZsMCkiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSIjMTZjY2Y4Ii8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNiYTU2ZTkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9IiNmZmFlMzgiLz48L2c+PGcgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSI2LjUiPjxjaXJjbGUgY3g9IjEyOCIgY3k9Ijg0IiByPSI1NCIgc3Ryb2tlPSJ1cmwoI2NmbDApIi8+PGNpcmNsZSBjeD0iODkiIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjdmZsMCkiLz48Y2lyY2xlIGN4PSIxNjciIGN5PSIxNTAiIHI9IjU0IiBzdHJva2U9InVybCgjYWZsMCkiLz48L2c+PC9zdmc+
@@ -453,7 +453,7 @@
       // answer a twin had brought back meanwhile; it looks once more just before it leaves
       const twin = o.twin && Date.now() - t0 >= MBN_MERGE_WAIT ? await o.twin() : null;   // one that didn't wait looked a moment ago
       if (twin) { await giveBack(true); return { ok: false, waited: Date.now() - t0, twin }; }
-      tr('start', { w: Date.now() - t0, bs: o.bs });
+      tr('start', { w: Date.now() - t0, bs: o.bs, bt: o.bt });
       return { ok: true, waited: Date.now() - t0 };
   }
   async function mbnLead(token, ms) {
@@ -473,6 +473,7 @@
       for (const [k, n] of [['lim', 'X-RateLimit-Limit'], ['rem', 'X-RateLimit-Remaining'], ['rst', 'X-RateLimit-Reset'], ['who', 'X-RateLimit-Who']]) {
           try { const v = header ? header(n) : null; if (v != null && v !== '') rl[k] = String(v).slice(0, 40); } catch (e) {}
       }
+      rl.rs = mbnLength(header);
       const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, r: o.reason || undefined, en: o.entity || undefined, l: o.label || '', b: o.background === false ? 0 : 1, id: o.id || undefined, m: o.m, u: o.u, hot: s ? s.hot || 0 : undefined }, rl, x));
       if (status === 429 || status === 503) {
           const raw = header ? header('Retry-After') : null;
@@ -549,6 +550,42 @@
       } catch (e) {}
       return undefined;
   }
+  function mbnBodyText(init) {
+      const MBN_SECRET = /secret|token|pass|auth|session|csrf|code|key|sig/i;
+      const b = init && init.body;
+      let s = null;
+      try { s = typeof b === 'string' ? b : typeof URLSearchParams !== 'undefined' && b instanceof URLSearchParams ? b.toString() : null; } catch (e) {}
+      if (s == null || s.length > 300) return undefined;
+      const t = s.trim();
+      if (/^[{[]/.test(t)) {
+          try {
+              const hide = v => Array.isArray(v) ? v.map(hide) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, MBN_SECRET.test(k) ? '•••' : hide(x)])) : v;
+              return JSON.stringify(hide(JSON.parse(t)));
+          } catch (e) { return undefined; }
+      }
+      if (/^[^=&\s]+=\S*$/.test(t)) {   // a form: key=value&…
+          return t.split('&').map(kv => {
+              const i = kv.indexOf('=');
+              let k = i < 0 ? kv : kv.slice(0, i);
+              try { k = decodeURIComponent(k.replace(/\+/g, ' ')); } catch (e) {}
+              return i > 0 && MBN_SECRET.test(k) ? kv.slice(0, i + 1) + '•••' : kv;
+          }).join('&');
+      }
+      return MBN_SECRET.test(t) ? undefined : t;   // other text: kept only when nothing in it looks like a secret
+  }
+  function mbnLength(header) {
+      try { const v = header ? header('Content-Length') : null; return v != null && /^\d+$/.test(String(v).trim()) ? +v : undefined; } catch (e) { return undefined; }
+  }
+  function mbnGmSize(x) {
+      try {
+          const h = /^content-length:\s*(\d+)\s*$/im.exec(String(x.responseHeaders || ''));
+          if (h) return +h[1];
+          const r = x.response;
+          if (r && r.byteLength != null) return r.byteLength;
+          if (typeof Blob !== 'undefined' && r instanceof Blob) return r.size;
+          return typeof x.responseText === 'string' ? x.responseText.length : undefined;
+      } catch (e) { return undefined; }
+  }
   function mbnReasons(fn) { mbnReasons.fn = fn; }
   function mbnReasonOf(url, method) {
       try { return (mbnReasons.fn && mbnReasons.fn(String(url), String(method || 'GET').toUpperCase())) || undefined; } catch (e) { return undefined; }
@@ -562,10 +599,10 @@
       try { const x = new URL(p, location.href); p = x.pathname + x.search; if (!/(^|\.)musicbrainz\.(org|eu)$/.test(x.hostname)) h = x.host; } catch (e) {}
       const ev = { r: o.reason || mbnReasonOf(url, (init && init.method) || o.method), en: o.entity || undefined, l: o.label || p.slice(0, 120), u: o.u || (o.label ? p.slice(0, 300) : undefined), b: o.background === false ? 0 : 1,
           id: o.id || mbnRid(), m: o.m || String((init && init.method) || o.method || 'GET').toUpperCase(), h: h || undefined, x: 1 };
-      mbnTrace(Object.assign({ e: 'start', bs: mbnBodySize(init) }, ev));
+      mbnTrace(Object.assign({ e: 'start', bs: mbnBodySize(init), bt: mbnBodyText(init) }, ev));
       try {
           const r = await (o.send || fetch)(url, init);
-          mbnTrace(Object.assign({ e: 'answer', st: r.status }, ev));
+          mbnTrace(Object.assign({ e: 'answer', st: r.status, rs: r.rs != null ? r.rs : mbnLength(n => r.headers && r.headers.get(n)) }, ev));
           return r;
       } catch (e) {
           mbnTrace(Object.assign({ e: 'error', err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }, ev));
@@ -579,7 +616,7 @@
       const end = (x, msg) => {
           if (!fin) return;
           const g = fin; fin = null;
-          if (!msg) { g.ok({ status: (x && x.status) || 0 }); return; }
+          if (!msg) { g.ok({ status: (x && x.status) || 0, rs: x ? mbnGmSize(x) : undefined }); return; }
           const e = new Error(msg); if (msg === 'aborted') e.name = 'AbortError'; g.no(e);
       };
       const wrap = (name, msg) => { const f = opts[name]; return (...a) => { end(a[0], msg); if (f) return f(...a); }; };
@@ -588,7 +625,7 @@
   function mbnGmFn(fn) { return fn ? o => mbnGm(o, fn) : null; }
   function mbnXhr(xhr, url, method, body) {
       mbnLog(url, { method: method || 'GET', body }, { send: () => new Promise((ok, no) => {
-          xhr.addEventListener('load', () => ok({ status: xhr.status }));
+          xhr.addEventListener('load', () => ok({ status: xhr.status, rs: mbnGmSize({ responseHeaders: xhr.getAllResponseHeaders(), response: xhr.responseType && xhr.responseType !== 'text' ? xhr.response : null, responseText: !xhr.responseType || xhr.responseType === 'text' ? xhr.responseText : null }) }));
           xhr.addEventListener('error', () => no(new Error('network error')));
           xhr.addEventListener('timeout', () => no(new Error('timeout')));
           xhr.addEventListener('abort', () => { const e = new Error('aborted'); e.name = 'AbortError'; no(e); });
@@ -608,7 +645,7 @@
       {   // the Gate log names a request by what it asks for, or by the caller's name with its path kept in u
           let p = String(url);
           try { const u = new URL(p, location.href); p = u.pathname.replace(/^\/ws\/2\//, '') + u.search.replace(/[?&]fmt=json\b/, '').replace(/^&/, '?'); } catch (e) {}
-          o = Object.assign({}, o, o.label ? { u: p.slice(0, 300) } : { label: p.slice(0, 120) }, { m: String((init && init.method) || 'GET').toUpperCase(), bs: mbnBodySize(init) });
+          o = Object.assign({}, o, o.label ? { u: p.slice(0, 300) } : { label: p.slice(0, 120) }, { m: String((init && init.method) || 'GET').toUpperCase(), bs: mbnBodySize(init), bt: mbnBodyText(init) });
       }
       if (!mbnGated(url)) {
           return mbnLog(url, init, Object.assign({}, o, { send: async (u, i) => {

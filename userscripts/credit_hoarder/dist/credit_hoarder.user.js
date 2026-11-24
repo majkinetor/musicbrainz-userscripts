@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.11.24.003335
+// @version      2026.11.24.014926
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -716,7 +716,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       await giveBack(true);
       return { ok: false, waited: Date.now() - t0, twin };
     }
-    tr("start", { w: Date.now() - t0, bs: o.bs });
+    tr("start", { w: Date.now() - t0, bs: o.bs, bt: o.bt });
     return { ok: true, waited: Date.now() - t0 };
   }
   async function mbnAnswer(status, header, o) {
@@ -729,6 +729,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       } catch (e) {
       }
     }
+    rl.rs = mbnLength(header);
     const tr = (x, s) => mbnTrace(Object.assign({ e: "answer", st: status, r: o.reason || void 0, en: o.entity || void 0, l: o.label || "", b: o.background === false ? 0 : 1, id: o.id || void 0, m: o.m, u: o.u, hot: s ? s.hot || 0 : void 0 }, rl, x));
     if (status === 429 || status === 503) {
       const raw = header ? header("Retry-After") : null;
@@ -786,6 +787,45 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     }
     return void 0;
   }
+  function mbnBodyText(init) {
+    const MBN_SECRET = /secret|token|pass|auth|session|csrf|code|key|sig/i;
+    const b = init && init.body;
+    let s = null;
+    try {
+      s = typeof b === "string" ? b : typeof URLSearchParams !== "undefined" && b instanceof URLSearchParams ? b.toString() : null;
+    } catch (e) {
+    }
+    if (s == null || s.length > 300) return void 0;
+    const t = s.trim();
+    if (/^[{[]/.test(t)) {
+      try {
+        const hide = (v) => Array.isArray(v) ? v.map(hide) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, MBN_SECRET.test(k) ? "\u2022\u2022\u2022" : hide(x)])) : v;
+        return JSON.stringify(hide(JSON.parse(t)));
+      } catch (e) {
+        return void 0;
+      }
+    }
+    if (/^[^=&\s]+=\S*$/.test(t)) {
+      return t.split("&").map((kv) => {
+        const i = kv.indexOf("=");
+        let k = i < 0 ? kv : kv.slice(0, i);
+        try {
+          k = decodeURIComponent(k.replace(/\+/g, " "));
+        } catch (e) {
+        }
+        return i > 0 && MBN_SECRET.test(k) ? kv.slice(0, i + 1) + "\u2022\u2022\u2022" : kv;
+      }).join("&");
+    }
+    return MBN_SECRET.test(t) ? void 0 : t;
+  }
+  function mbnLength(header) {
+    try {
+      const v = header ? header("Content-Length") : null;
+      return v != null && /^\d+$/.test(String(v).trim()) ? +v : void 0;
+    } catch (e) {
+      return void 0;
+    }
+  }
   function mbnReasons(fn) {
     mbnReasons.fn = fn;
   }
@@ -817,10 +857,10 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       h: h || void 0,
       x: 1
     };
-    mbnTrace(Object.assign({ e: "start", bs: mbnBodySize(init) }, ev));
+    mbnTrace(Object.assign({ e: "start", bs: mbnBodySize(init), bt: mbnBodyText(init) }, ev));
     try {
       const r = await (o.send || fetch)(url, init);
-      mbnTrace(Object.assign({ e: "answer", st: r.status }, ev));
+      mbnTrace(Object.assign({ e: "answer", st: r.status, rs: r.rs != null ? r.rs : mbnLength((n) => r.headers && r.headers.get(n)) }, ev));
       return r;
     } catch (e) {
       mbnTrace(Object.assign({ e: "error", err: String(e && (e.name === "AbortError" ? "aborted" : e.message) || e).slice(0, 80) }, ev));
@@ -848,7 +888,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         p = u.pathname.replace(/^\/ws\/2\//, "") + u.search.replace(/[?&]fmt=json\b/, "").replace(/^&/, "?");
       } catch (e) {
       }
-      o = Object.assign({}, o, o.label ? { u: p.slice(0, 300) } : { label: p.slice(0, 120) }, { m: String(init && init.method || "GET").toUpperCase(), bs: mbnBodySize(init) });
+      o = Object.assign({}, o, o.label ? { u: p.slice(0, 300) } : { label: p.slice(0, 120) }, { m: String(init && init.method || "GET").toUpperCase(), bs: mbnBodySize(init), bt: mbnBodyText(init) });
     }
     if (!mbnGated(url)) {
       return mbnLog(url, init, Object.assign({}, o, { send: async (u, i) => {

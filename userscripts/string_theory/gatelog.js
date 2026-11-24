@@ -59,7 +59,7 @@ var ST_GATE_CSS = ''
   + '.st-gl-none{line-height:30px;font-size:12px;color:var(--mbu-text-weak)}'
   // the filter row
   + '.st-gate-ent{display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-right:5px;flex:none}'
-  + '#st-gate .st-gate-facts{font-size:12px;color:var(--mbu-text-weak);padding:0 0 6px}#st-gate .st-gate-k{font-weight:600;color:var(--mbu-accent,var(--mbu-text))}#st-gate .st-gate-url{width:0;min-width:100%;box-sizing:border-box;font:12px/1.4 monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;user-select:text;padding:4px 0 6px;color:var(--mbu-text)}#st-gate tr.steps.all .st-gate-url{white-space:normal;word-break:break-all}#st-gate .st-gate-full,#st-gate tr.steps.all .st-gate-short{display:none}#st-gate tr.steps.all .st-gate-full{display:inline}#st-gate .st-gate-qp{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:2px 10px;margin:0 0 8px;font:12px/1.4 monospace}#st-gate .st-gate-qp dt{color:var(--mbu-text-weak);margin:0}#st-gate .st-gate-qp dd{margin:0;color:var(--mbu-text);word-break:break-all;user-select:text}#st-gate .st-gate-qp i{color:var(--mbu-text-weak)}#st-gate .st-gate-n{color:var(--mbu-text-weak)}#st-gate .st-gate-less{cursor:pointer}#st-gate .st-gate-more,#st-gate tr.steps.all .st-gate-less{display:none}#st-gate tr.steps.all .st-gate-more{display:block}'
+  + '#st-gate .st-gate-facts{font-size:12px;color:var(--mbu-text-weak);padding:0 0 6px}#st-gate .st-gate-k{font-weight:600;color:var(--mbu-accent,var(--mbu-text))}#st-gate .st-gate-url{width:0;min-width:100%;box-sizing:border-box;font:12px/1.4 monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;user-select:text;padding:4px 0 6px;color:var(--mbu-text)}#st-gate tr.steps.all .st-gate-url{white-space:normal;word-break:break-all}#st-gate .st-gate-full,#st-gate tr.steps.all .st-gate-short{display:none}#st-gate tr.steps.all .st-gate-full{display:inline}#st-gate .st-gate-qp{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:2px 10px;margin:0 0 8px;font:12px/1.4 monospace}#st-gate .st-gate-qp dt{color:var(--mbu-text-weak);margin:0}#st-gate .st-gate-qp dd{margin:0;color:var(--mbu-text);word-break:break-all;user-select:text}#st-gate .st-gate-qp i{color:var(--mbu-text-weak)}#st-gate .st-gate-bth{font-size:12px;font-weight:600;color:var(--mbu-text-weak);margin:0 0 2px}#st-gate .st-gate-bt{font:12px/1.4 monospace;color:var(--mbu-text);word-break:break-all;white-space:pre-wrap;user-select:text;margin:0 0 8px}#st-gate .st-gate-n{color:var(--mbu-text-weak)}#st-gate .st-gate-less{cursor:pointer}#st-gate .st-gate-more,#st-gate tr.steps.all .st-gate-less{display:none}#st-gate tr.steps.all .st-gate-more{display:block}'
   + '#st-gate td.l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40ch}'
   + '#st-gate .st-gate-hosts{margin-right:12px}#st-gate .st-gate-hosts button{display:inline-flex;align-items:center;padding:0 8px}#st-gate .st-gate-hosts button[aria-pressed=false] svg{opacity:.35;filter:grayscale(1)}'
   + '.st-gate-cfp label{display:flex;gap:6px;align-items:center;padding:4px 6px;cursor:pointer;border-radius:var(--mbu-radius);white-space:nowrap}.st-gate-cfp label:hover{background:var(--mbu-bg-hover)}.st-gate-cfp input[type=checkbox]{width:auto;margin:0;padding:0;accent-color:var(--mbu-accent)}'
@@ -158,6 +158,7 @@ function stGateWhat(ev) {
     case 'check': x.push('browser check ' + (ev.ok ? 'passed' : 'failed') + ' in ' + stGateSec(ev.w)); break;
     case 'answer':
       x.push('HTTP ' + ev.st);
+      if (ev.rs != null) x.push(stGateBytes(ev.rs));
       if (ev.ra != null) x.push('Retry-After ' + ev.ra);
       if (ev.hold) x.push('everyone holds ' + stGateSec(ev.hold));
       if (ev.shold) x.push('searches hold ' + stGateSec(ev.shold));
@@ -203,11 +204,12 @@ function stGateGroups(all, now) {
     // without an id, two requests with the same label overlap in one run: an answer goes to the
     // oldest open try (first in, first out) and the run stays open while another try waits
     var open1 = function () { for (var i = 0; i < g.tries.length; i++) if (g.tries[i].st == null) return g.tries[i]; return null; };
-    if (ev.e === 'start') { g.tries.push({ t: ev.t, w: ev.w || 0 }); if (ev.bs != null) g.bs = ev.bs; }
+    if (ev.e === 'start') { g.tries.push({ t: ev.t, w: ev.w || 0 }); if (ev.bs != null) g.bs = ev.bs; if (ev.bt != null) g.bt = ev.bt; }
     else if (ev.e === 'answer') {
       var x = ev.id ? (last && last.st == null ? last : null) : open1();
       if (x) { x.st = ev.st || 0; x.end = ev.t; } else g.tries.push({ t: ev.t, w: 0, st: ev.st || 0, end: ev.t });
       g.ans = ev;
+      if (ev.rs != null) g.rs = ev.rs;
       if (stGateThrottled(ev.st)) g.pend = ev.t; else if (ev.id || !open1()) done(g, String(ev.st || 'no status'));
     } else if (ev.e === 'error') { x = ev.id ? (last && last.st == null ? last : null) : open1(); if (x) { x.st = -1; x.end = ev.t; } done(g, 'error'); }
     else if (ev.e === 'giveup') done(g, 'gave up');
@@ -528,6 +530,12 @@ function stGateQuery(u) {
   return out;
 }
 // the query as key = value lines; a key sent many times shows its first values and a count, all of them once the row shows its whole URL
+// a short request body (the gate keeps one of 300 characters or less, secrets hidden): a form as key = value lines, other text as it is
+function stGateBodyHtml(bt) {
+  if (bt == null || bt === '') return '';
+  var form = !/^[{[]/.test(bt) && /^[^=&\s]+=\S*$/.test(bt);
+  return '<div class="st-gate-bth">Body</div>' + (form ? stGateQueryHtml(stGateQuery('?' + bt)) : '<div class="st-gate-bt">' + stEsc(bt) + '</div>');
+}
 function stGateQueryHtml(qps) {
   if (!qps.length) return '';
   return '<dl class="st-gate-qp">' + qps.map(function (p) {
@@ -583,12 +591,13 @@ function stGateRowHtml(g, me, isOpen, now) {
   var full = (g.h || '') + (g.u || (stGateAlias(g.l) !== g.l ? g.l : ''));
   var qs = String(g.u || g.l || ''), qps = stGateQuery(qs), facts = [];
   if (g.bs != null) facts.push('body ' + stGateBytes(g.bs)); else if (g.m && g.m !== 'GET') facts.push('body size unknown');
+  if (g.rs != null) facts.push('response ' + stGateBytes(g.rs));
   var fi = full.indexOf('?'), short = fi < 0 || !qps.some(function (p) { return p.v.length > 2; }) ? '' : full.slice(0, fi + 1) + qps.map(function (p) {
     return p.v.length > 2 ? p.raw[0] + '&… ' + p.k + ' ×' + p.v.length : p.raw.join('&');
   }).join('&');
   var urlHtml = short ? '<span class="st-gate-short">' + stEsc(short) + '</span><span class="st-gate-full">' + stEsc(full) + '</span>' : stEsc(full);
   return row + '<tr class="steps' + (stGateUrlAll[g.id] ? ' all' : '') + '"><td colspan="13">' + (full ? '<div class="st-gate-url" data-tip="Click to show the whole URL or only its first line">' + urlHtml + '</div>' : '')
-    + stGateQueryHtml(qps) + (facts.length ? '<div class="st-gate-facts">' + facts.join(' · ') + '</div>' : '') + stGateReqLaneHtml(g, now || Date.now()) + '<ol>' + g.evs.map(function (ev) {
+    + stGateQueryHtml(qps) + stGateBodyHtml(g.bt) + (facts.length ? '<div class="st-gate-facts">' + facts.join(' · ') + '</div>' : '') + stGateReqLaneHtml(g, now || Date.now()) + '<ol>' + g.evs.map(function (ev) {
     return '<li' + (stGateBad(ev) ? ' class="bad"' : '') + '><span class="t">' + stGateTime(ev.t) + '</span><span class="e">' + stEsc(ev.e) + '</span><span>' + stEsc(stGateWhat(ev)) + '</span></li>';
   }).join('') + '</ol></td></tr>';
 }

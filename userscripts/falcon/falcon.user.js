@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.23.193815
+// @version      2026.11.24.014820
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -404,7 +404,7 @@
       // answer a twin had brought back meanwhile; it looks once more just before it leaves
       const twin = o.twin && Date.now() - t0 >= MBN_MERGE_WAIT ? await o.twin() : null;   // one that didn't wait looked a moment ago
       if (twin) { await giveBack(true); return { ok: false, waited: Date.now() - t0, twin }; }
-      tr('start', { w: Date.now() - t0, bs: o.bs });
+      tr('start', { w: Date.now() - t0, bs: o.bs, bt: o.bt });
       return { ok: true, waited: Date.now() - t0 };
   }
   async function mbnLead(token, ms) {
@@ -424,6 +424,7 @@
       for (const [k, n] of [['lim', 'X-RateLimit-Limit'], ['rem', 'X-RateLimit-Remaining'], ['rst', 'X-RateLimit-Reset'], ['who', 'X-RateLimit-Who']]) {
           try { const v = header ? header(n) : null; if (v != null && v !== '') rl[k] = String(v).slice(0, 40); } catch (e) {}
       }
+      rl.rs = mbnLength(header);
       const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, r: o.reason || undefined, en: o.entity || undefined, l: o.label || '', b: o.background === false ? 0 : 1, id: o.id || undefined, m: o.m, u: o.u, hot: s ? s.hot || 0 : undefined }, rl, x));
       if (status === 429 || status === 503) {
           const raw = header ? header('Retry-After') : null;
@@ -500,6 +501,42 @@
       } catch (e) {}
       return undefined;
   }
+  function mbnBodyText(init) {
+      const MBN_SECRET = /secret|token|pass|auth|session|csrf|code|key|sig/i;
+      const b = init && init.body;
+      let s = null;
+      try { s = typeof b === 'string' ? b : typeof URLSearchParams !== 'undefined' && b instanceof URLSearchParams ? b.toString() : null; } catch (e) {}
+      if (s == null || s.length > 300) return undefined;
+      const t = s.trim();
+      if (/^[{[]/.test(t)) {
+          try {
+              const hide = v => Array.isArray(v) ? v.map(hide) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, MBN_SECRET.test(k) ? '•••' : hide(x)])) : v;
+              return JSON.stringify(hide(JSON.parse(t)));
+          } catch (e) { return undefined; }
+      }
+      if (/^[^=&\s]+=\S*$/.test(t)) {   // a form: key=value&…
+          return t.split('&').map(kv => {
+              const i = kv.indexOf('=');
+              let k = i < 0 ? kv : kv.slice(0, i);
+              try { k = decodeURIComponent(k.replace(/\+/g, ' ')); } catch (e) {}
+              return i > 0 && MBN_SECRET.test(k) ? kv.slice(0, i + 1) + '•••' : kv;
+          }).join('&');
+      }
+      return MBN_SECRET.test(t) ? undefined : t;   // other text: kept only when nothing in it looks like a secret
+  }
+  function mbnLength(header) {
+      try { const v = header ? header('Content-Length') : null; return v != null && /^\d+$/.test(String(v).trim()) ? +v : undefined; } catch (e) { return undefined; }
+  }
+  function mbnGmSize(x) {
+      try {
+          const h = /^content-length:\s*(\d+)\s*$/im.exec(String(x.responseHeaders || ''));
+          if (h) return +h[1];
+          const r = x.response;
+          if (r && r.byteLength != null) return r.byteLength;
+          if (typeof Blob !== 'undefined' && r instanceof Blob) return r.size;
+          return typeof x.responseText === 'string' ? x.responseText.length : undefined;
+      } catch (e) { return undefined; }
+  }
   function mbnReasons(fn) { mbnReasons.fn = fn; }
   function mbnReasonOf(url, method) {
       try { return (mbnReasons.fn && mbnReasons.fn(String(url), String(method || 'GET').toUpperCase())) || undefined; } catch (e) { return undefined; }
@@ -513,10 +550,10 @@
       try { const x = new URL(p, location.href); p = x.pathname + x.search; if (!/(^|\.)musicbrainz\.(org|eu)$/.test(x.hostname)) h = x.host; } catch (e) {}
       const ev = { r: o.reason || mbnReasonOf(url, (init && init.method) || o.method), en: o.entity || undefined, l: o.label || p.slice(0, 120), u: o.u || (o.label ? p.slice(0, 300) : undefined), b: o.background === false ? 0 : 1,
           id: o.id || mbnRid(), m: o.m || String((init && init.method) || o.method || 'GET').toUpperCase(), h: h || undefined, x: 1 };
-      mbnTrace(Object.assign({ e: 'start', bs: mbnBodySize(init) }, ev));
+      mbnTrace(Object.assign({ e: 'start', bs: mbnBodySize(init), bt: mbnBodyText(init) }, ev));
       try {
           const r = await (o.send || fetch)(url, init);
-          mbnTrace(Object.assign({ e: 'answer', st: r.status }, ev));
+          mbnTrace(Object.assign({ e: 'answer', st: r.status, rs: r.rs != null ? r.rs : mbnLength(n => r.headers && r.headers.get(n)) }, ev));
           return r;
       } catch (e) {
           mbnTrace(Object.assign({ e: 'error', err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }, ev));
@@ -530,7 +567,7 @@
       const end = (x, msg) => {
           if (!fin) return;
           const g = fin; fin = null;
-          if (!msg) { g.ok({ status: (x && x.status) || 0 }); return; }
+          if (!msg) { g.ok({ status: (x && x.status) || 0, rs: x ? mbnGmSize(x) : undefined }); return; }
           const e = new Error(msg); if (msg === 'aborted') e.name = 'AbortError'; g.no(e);
       };
       const wrap = (name, msg) => { const f = opts[name]; return (...a) => { end(a[0], msg); if (f) return f(...a); }; };
@@ -539,7 +576,7 @@
   function mbnGmFn(fn) { return fn ? o => mbnGm(o, fn) : null; }
   function mbnXhr(xhr, url, method, body) {
       mbnLog(url, { method: method || 'GET', body }, { send: () => new Promise((ok, no) => {
-          xhr.addEventListener('load', () => ok({ status: xhr.status }));
+          xhr.addEventListener('load', () => ok({ status: xhr.status, rs: mbnGmSize({ responseHeaders: xhr.getAllResponseHeaders(), response: xhr.responseType && xhr.responseType !== 'text' ? xhr.response : null, responseText: !xhr.responseType || xhr.responseType === 'text' ? xhr.responseText : null }) }));
           xhr.addEventListener('error', () => no(new Error('network error')));
           xhr.addEventListener('timeout', () => no(new Error('timeout')));
           xhr.addEventListener('abort', () => { const e = new Error('aborted'); e.name = 'AbortError'; no(e); });
@@ -559,7 +596,7 @@
       {   // the Gate log names a request by what it asks for, or by the caller's name with its path kept in u
           let p = String(url);
           try { const u = new URL(p, location.href); p = u.pathname.replace(/^\/ws\/2\//, '') + u.search.replace(/[?&]fmt=json\b/, '').replace(/^&/, '?'); } catch (e) {}
-          o = Object.assign({}, o, o.label ? { u: p.slice(0, 300) } : { label: p.slice(0, 120) }, { m: String((init && init.method) || 'GET').toUpperCase(), bs: mbnBodySize(init) });
+          o = Object.assign({}, o, o.label ? { u: p.slice(0, 300) } : { label: p.slice(0, 120) }, { m: String((init && init.method) || 'GET').toUpperCase(), bs: mbnBodySize(init), bt: mbnBodyText(init) });
       }
       if (!mbnGated(url)) {
           return mbnLog(url, init, Object.assign({}, o, { send: async (u, i) => {

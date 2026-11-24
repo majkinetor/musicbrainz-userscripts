@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.011551
+// @version      2026.11.24.014820
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Amazon (CDs, vinyl and MP3 albums in its store), Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Internet Archive (audio items), Presto Music, RateYourMusic, Album of the Year, VGMdb.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -8240,7 +8240,7 @@ async function mbnSlot(o) {
     // answer a twin had brought back meanwhile; it looks once more just before it leaves
     const twin = o.twin && Date.now() - t0 >= MBN_MERGE_WAIT ? await o.twin() : null;   // one that didn't wait looked a moment ago
     if (twin) { await giveBack(true); return { ok: false, waited: Date.now() - t0, twin }; }
-    tr('start', { w: Date.now() - t0, bs: o.bs });
+    tr('start', { w: Date.now() - t0, bs: o.bs, bt: o.bt });
     return { ok: true, waited: Date.now() - t0 };
 }
 async function mbnLead(token, ms) {
@@ -8260,6 +8260,7 @@ async function mbnAnswer(status, header, o) {
     for (const [k, n] of [['lim', 'X-RateLimit-Limit'], ['rem', 'X-RateLimit-Remaining'], ['rst', 'X-RateLimit-Reset'], ['who', 'X-RateLimit-Who']]) {
         try { const v = header ? header(n) : null; if (v != null && v !== '') rl[k] = String(v).slice(0, 40); } catch (e) {}
     }
+    rl.rs = mbnLength(header);
     const tr = (x, s) => mbnTrace(Object.assign({ e: 'answer', st: status, r: o.reason || undefined, en: o.entity || undefined, l: o.label || '', b: o.background === false ? 0 : 1, id: o.id || undefined, m: o.m, u: o.u, hot: s ? s.hot || 0 : undefined }, rl, x));
     if (status === 429 || status === 503) {
         const raw = header ? header('Retry-After') : null;
@@ -8336,6 +8337,42 @@ function mbnBodySize(init) {
     } catch (e) {}
     return undefined;
 }
+function mbnBodyText(init) {
+    const MBN_SECRET = /secret|token|pass|auth|session|csrf|code|key|sig/i;
+    const b = init && init.body;
+    let s = null;
+    try { s = typeof b === 'string' ? b : typeof URLSearchParams !== 'undefined' && b instanceof URLSearchParams ? b.toString() : null; } catch (e) {}
+    if (s == null || s.length > 300) return undefined;
+    const t = s.trim();
+    if (/^[{[]/.test(t)) {
+        try {
+            const hide = v => Array.isArray(v) ? v.map(hide) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, MBN_SECRET.test(k) ? '•••' : hide(x)])) : v;
+            return JSON.stringify(hide(JSON.parse(t)));
+        } catch (e) { return undefined; }
+    }
+    if (/^[^=&\s]+=\S*$/.test(t)) {   // a form: key=value&…
+        return t.split('&').map(kv => {
+            const i = kv.indexOf('=');
+            let k = i < 0 ? kv : kv.slice(0, i);
+            try { k = decodeURIComponent(k.replace(/\+/g, ' ')); } catch (e) {}
+            return i > 0 && MBN_SECRET.test(k) ? kv.slice(0, i + 1) + '•••' : kv;
+        }).join('&');
+    }
+    return MBN_SECRET.test(t) ? undefined : t;   // other text: kept only when nothing in it looks like a secret
+}
+function mbnLength(header) {
+    try { const v = header ? header('Content-Length') : null; return v != null && /^\d+$/.test(String(v).trim()) ? +v : undefined; } catch (e) { return undefined; }
+}
+function mbnGmSize(x) {
+    try {
+        const h = /^content-length:\s*(\d+)\s*$/im.exec(String(x.responseHeaders || ''));
+        if (h) return +h[1];
+        const r = x.response;
+        if (r && r.byteLength != null) return r.byteLength;
+        if (typeof Blob !== 'undefined' && r instanceof Blob) return r.size;
+        return typeof x.responseText === 'string' ? x.responseText.length : undefined;
+    } catch (e) { return undefined; }
+}
 function mbnReasons(fn) { mbnReasons.fn = fn; }
 function mbnReasonOf(url, method) {
     try { return (mbnReasons.fn && mbnReasons.fn(String(url), String(method || 'GET').toUpperCase())) || undefined; } catch (e) { return undefined; }
@@ -8349,10 +8386,10 @@ async function mbnLog(url, init, o) {
     try { const x = new URL(p, location.href); p = x.pathname + x.search; if (!/(^|\.)musicbrainz\.(org|eu)$/.test(x.hostname)) h = x.host; } catch (e) {}
     const ev = { r: o.reason || mbnReasonOf(url, (init && init.method) || o.method), en: o.entity || undefined, l: o.label || p.slice(0, 120), u: o.u || (o.label ? p.slice(0, 300) : undefined), b: o.background === false ? 0 : 1,
         id: o.id || mbnRid(), m: o.m || String((init && init.method) || o.method || 'GET').toUpperCase(), h: h || undefined, x: 1 };
-    mbnTrace(Object.assign({ e: 'start', bs: mbnBodySize(init) }, ev));
+    mbnTrace(Object.assign({ e: 'start', bs: mbnBodySize(init), bt: mbnBodyText(init) }, ev));
     try {
         const r = await (o.send || fetch)(url, init);
-        mbnTrace(Object.assign({ e: 'answer', st: r.status }, ev));
+        mbnTrace(Object.assign({ e: 'answer', st: r.status, rs: r.rs != null ? r.rs : mbnLength(n => r.headers && r.headers.get(n)) }, ev));
         return r;
     } catch (e) {
         mbnTrace(Object.assign({ e: 'error', err: String((e && (e.name === 'AbortError' ? 'aborted' : e.message)) || e).slice(0, 80) }, ev));
@@ -8366,7 +8403,7 @@ function mbnGm(opts, fn) {
     const end = (x, msg) => {
         if (!fin) return;
         const g = fin; fin = null;
-        if (!msg) { g.ok({ status: (x && x.status) || 0 }); return; }
+        if (!msg) { g.ok({ status: (x && x.status) || 0, rs: x ? mbnGmSize(x) : undefined }); return; }
         const e = new Error(msg); if (msg === 'aborted') e.name = 'AbortError'; g.no(e);
     };
     const wrap = (name, msg) => { const f = opts[name]; return (...a) => { end(a[0], msg); if (f) return f(...a); }; };
@@ -8375,7 +8412,7 @@ function mbnGm(opts, fn) {
 function mbnGmFn(fn) { return fn ? o => mbnGm(o, fn) : null; }
 function mbnXhr(xhr, url, method, body) {
     mbnLog(url, { method: method || 'GET', body }, { send: () => new Promise((ok, no) => {
-        xhr.addEventListener('load', () => ok({ status: xhr.status }));
+        xhr.addEventListener('load', () => ok({ status: xhr.status, rs: mbnGmSize({ responseHeaders: xhr.getAllResponseHeaders(), response: xhr.responseType && xhr.responseType !== 'text' ? xhr.response : null, responseText: !xhr.responseType || xhr.responseType === 'text' ? xhr.responseText : null }) }));
         xhr.addEventListener('error', () => no(new Error('network error')));
         xhr.addEventListener('timeout', () => no(new Error('timeout')));
         xhr.addEventListener('abort', () => { const e = new Error('aborted'); e.name = 'AbortError'; no(e); });
@@ -8395,7 +8432,7 @@ async function mbnFetch(url, init, o) {
     {   // the Gate log names a request by what it asks for, or by the caller's name with its path kept in u
         let p = String(url);
         try { const u = new URL(p, location.href); p = u.pathname.replace(/^\/ws\/2\//, '') + u.search.replace(/[?&]fmt=json\b/, '').replace(/^&/, '?'); } catch (e) {}
-        o = Object.assign({}, o, o.label ? { u: p.slice(0, 300) } : { label: p.slice(0, 120) }, { m: String((init && init.method) || 'GET').toUpperCase(), bs: mbnBodySize(init) });
+        o = Object.assign({}, o, o.label ? { u: p.slice(0, 300) } : { label: p.slice(0, 120) }, { m: String((init && init.method) || 'GET').toUpperCase(), bs: mbnBodySize(init), bt: mbnBodyText(init) });
     }
     if (!mbnGated(url)) {
         return mbnLog(url, init, Object.assign({}, o, { send: async (u, i) => {
