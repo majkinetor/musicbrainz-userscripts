@@ -516,11 +516,21 @@ function stGateReqLaneHtml(g, now) {
 // a time span for the request's own scale: ms under a second, where "0s" would say nothing
 function stGateDur(ms) { return ms < 1000 ? Math.round(ms) + ' ms' : stGateSec(ms);
 }
+// a URL part decoded; the gate keeps a URL cut to a length, so it can end inside an escape (%E2%80, %4):
+// each run of escapes decodes its longest whole start, and a cut escape at the end is dropped
+function stGateDec(x) {
+  x = String(x).replace(/\+/g, ' ');
+  try { return decodeURIComponent(x); } catch (e) { /* a cut or a stray % */ }
+  return x.replace(/%[0-9a-f]?$/i, '').replace(/(%[0-9a-f]{2})+/gi, function (m) {
+    for (var n = m.length; n > 0; n -= 3) { try { return decodeURIComponent(m.slice(0, n)); } catch (e) { /* shorter */ } }
+    return m;
+  });
+}
 // a URL's query as [{k, v: [values], raw: [k=v as sent]}], in order, a key that repeats in one entry
 function stGateQuery(u) {
   var qi = u.indexOf('?'), out = [], at = {};
   if (qi < 0) return out;
-  var dec = function (x) { try { return decodeURIComponent(x.replace(/\+/g, ' ')); } catch (e) { return x; } };
+  var dec = stGateDec;
   u.slice(qi + 1).split('#')[0].split('&').forEach(function (kv) {
     if (!kv) return;
     var e = kv.indexOf('='), k = dec(e < 0 ? kv : kv.slice(0, e)), v = e < 0 ? '' : dec(kv.slice(e + 1));
@@ -613,8 +623,9 @@ function stGateAlias(l) {
     var ce = qs.match(/^([a-z_-]+)=([0-9a-f]{0,8})/);
     return (cc[1] === 'add' ? 'add to collection' : 'remove from collection') + (ce ? ': ' + ce[1].replace(/_/g, ' ') + ' ' + ce[2] + '…' : '');
   }
-  var p = path.replace(/ /g, '/').split('/').filter(Boolean), keys = {};
-  qs.split('&').forEach(function (kv) { var k = decodeURIComponent(kv.split('=')[0] || ''); if (k) keys[k] = (keys[k] || 0) + 1; });
+  var p = path.replace(/ /g, '/').split('/').filter(Boolean).map(stGateDec), keys = {}, kvs = qs.split('&');
+  if (l.length >= 120) kvs.pop();
+  kvs.forEach(function (kv) { var k = stGateDec(kv.split('=')[0] || ''); if (k) keys[k] = (keys[k] || 0) + 1; });
   var mbid = /^[0-9a-f]{8}-[0-9a-f]{4}-/i;
   var head = p[0] === 'ws' && p[1] ? 'ws/' + p[1] : p[0] || '/';
   var ent = p[0] === 'ws' ? p[2] : p[1], id = p[0] === 'ws' ? p[3] : p[2];
@@ -623,11 +634,14 @@ function stGateAlias(l) {
   else if (keys.query) out += ' search';
   else if (keys.resource) out += ' lookup' + (keys.resource > 1 ? ' (' + keys.resource + ')' : '');
   else {
-    var by = Object.keys(keys).filter(function (k) { return !/^(inc|fmt|limit|offset|type|status)$/.test(k); });
+    // a search's own term key (q, query) says nothing past "search": the detail shows its value
+    var by = Object.keys(keys).filter(function (k) { return !ST_GATE_BYX.test(k) && !(/search/i.test(out) && /^(q|k|query|term)$/i.test(k)); });
     if (by.length) out += ' by ' + by.join(', ');
   }
   return out;
 }
+// query keys that say nothing about what a request asks for: paging, format, and sign-in (OAuth, app ids, keys)
+var ST_GATE_BYX = /^(inc|fmt|format|limit|offset|page|per_page|type|status|lang|_|callback|oauth_.*|client_id|app_id|appid|api_?key|key|token|access_token|sig|signature|nonce|ts|timestamp)$/i;
 // the MusicBrainz entity a request is about, from its path: "/ws/2/release-group?…", "/recording/<mbid>"
 var ST_GATE_ENTS = ['area', 'artist', 'event', 'genre', 'instrument', 'label', 'place', 'recording', 'release', 'release_group', 'series', 'url', 'work'];
 function stGateEntity(g) {
@@ -674,7 +688,7 @@ function stGateLabelHtml(g) {
 }
 // what tells requests of one kind apart: what they search for (a UPC or an ISRC named as one), the country, the type.
 // From the URL's query and a form body; a value the label already holds is left out
-var ST_GATE_DQ = /^(q|query|resource|term|search|keywords?|title|isrc|upc|ean|gtin|barcode|filter\[(isrc|upc|barcode(id)?)\])$/i;
+var ST_GATE_DQ = /^(q|k|query|resource|url|term|search|keywords?|title|isrc|upc|ean|gtin|barcode|filter\[(isrc|upc|barcode(id)?)\])$/i;
 var ST_GATE_DC = /^(country|countrycode|cc|region|market|territory|store|storefront|locale)$/i;
 var ST_GATE_DT = /^(type|types|entity|kind|media)$/i;
 function stGateDetail(g) {
@@ -698,7 +712,7 @@ function stGateDetail(g) {
 }
 function stGateMarkdown(all, me) {
   var s = stGateState(), now = Date.now(), groups = stGateGroups(all, now), c = stGateCount(groups);
-  var out = ['# MusicBrainz gate log', '', 'Copied ' + new Date().toISOString() + ', this tab ' + (me || '-'), '',
+  var out = ['# String Theory Network Log', '', 'Copied ' + new Date().toISOString() + ', this tab ' + (me || '-'), '',
     'State: ' + JSON.stringify(s) + ' (now ' + now + ')', '',
     'Requests: ' + c.n + ' (' + c.ok + ' ok, ' + c.re + ' retried, ' + c.bad + ' failed, ' + c.go + ' on the way)', '',
     '## Requests', '',
@@ -876,7 +890,7 @@ function stGateBuild() {
     + '<button type="button" data-v="ext" data-tip="Requests to other sites\nThe gate logs them but does not pace them">' + (stIcon ? stIcon('globe', 16) : 'Other') + '</button></span>'
     + '<select id="st-gate-span" aria-label="Time line span" data-tip="How far back the time line goes">' + ST_GATE_SPANS.map(function (ms) { return '<option value="' + ms + '"' + (ms === ST_GATE_SPAN ? ' selected' : '') + '>' + stGateSpanTxt(ms) + '</option>'; }).join('') + '</select><span class="mbu-logpop-sp"></span>'
     + '<button type="button" class="mbu-logpop-copy" data-tip="Copy as Markdown\nThe state and every event, ready for a GitHub issue">⧉ Copy</button>'
-    + '<button type="button" class="mbu-logpop-clear" data-tip="Clear the gate log\nThe events of every tab are deleted">Clear</button>'
+    + '<button type="button" class="mbu-logpop-clear" data-tip="Clear the network log\nThe events of every tab are deleted">Clear</button>'
     + '<span style="width:16px;flex:none"></span><button type="button" class="mbu-logpop-full" data-tip="Full screen\nA double-click on the title bar does the same">⛶</button>'
     + '<button type="button" class="mbu-logpop-min" data-tip="Minimize">–</button>'
     + '<button type="button" class="mbu-logpop-x" data-tip="Close">✕</button></div>'
@@ -965,7 +979,7 @@ function stGateBuild() {
       var msg = String(e && e.message || e);
       if (msg !== drawFailed) { drawFailed = msg; try { console.error('String Theory: the Network log could not show its events', e); } catch (x) { /* no console */ } }
       sig = '';
-      try { body.innerHTML = '<tr><td class="none" colspan="13">The gate log could not show its events (' + msg.replace(/[<&]/g, '') + '). Clear it to start again.</td></tr>'; } catch (x) { /* no body */ }
+      try { body.innerHTML = '<tr><td class="none" colspan="13">The network log could not show its events (' + msg.replace(/[<&]/g, '') + '). Clear it to start again.</td></tr>'; } catch (x) { /* no body */ }
     }
   };
   var drawNow = function () {
