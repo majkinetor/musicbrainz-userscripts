@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.24.233140
+// @version      2026.11.24.234646
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -11795,7 +11795,7 @@ const openGallery = (r, im, e) => {
     if ('artimg' in im.dataset) return;   // already in Artwork: its link opens the image
     if (S.fold.includes('art')) { S.fold = toggle(S.fold, 'art'); render(); }
     const a = $('#s-art');
-    if (a) a.scrollIntoView({ behavior: 'smooth' }); else if (shown) window.open(shown.image, '_blank', 'noopener');
+    if (a) ehGlide(() => { const x = $('#s-art'); if (x) x.scrollIntoView({ behavior: 'smooth' }); }); else if (shown) window.open(shown.image, '_blank', 'noopener');
 };
 const imgKeyOf = im => im.dataset.relcover ? 'relcover:' + im.dataset.relcover : im.outerHTML;
 var releasePageDraw, secDrag = null, secRedraw = false, colDrag = false;
@@ -12073,9 +12073,19 @@ function ehMorphNode(a, b) {
     ehMorphKids(a, b);
     if (a.nodeName === 'SELECT' && a !== document.activeElement) { const s = [...b.options].findIndex(o => o.selected); if (s >= 0) a.selectedIndex = s; }
 }
+// a smooth scroll of the page on its way (Top, a section from the menu): go is how it's asked for, so a redraw meanwhile
+// asks again rather than stop it where it was. It ends when the page stops, or when the reader scrolls or presses a key
+// (ehGlideAt: when it was last asked, since the scroll a new ask replaces ends too)
+let ehGlideGo = null, ehGlideT = 0, ehGlideAt = 0;
+function ehGlide(go) { ehGlideGo = go; ehGlideT = ehGlideAt = Date.now(); go(); }
+for (const t of ['scrollend', 'wheel', 'touchstart', 'keydown']) addEventListener(t, () => { if (t !== 'scrollend' || Date.now() - ehGlideAt > 100) ehGlideGo = null; }, { passive: true, capture: true });
 // a redraw puts the page back where the reader had it, only when the redraw moved it: a scrollTo, even to where the
-// page already is, stops a smooth scroll on its way (Top, a section from the menu), and a list loading in meanwhile left it there
-function keepY(y) { if (scrollY !== y) scrollTo(0, y); }
+// page already is, stops a smooth scroll on its way, and a list loading in meanwhile left the page part way (Top)
+function keepY(y) {
+    if (ehGlideGo && Date.now() - ehGlideT < 3000) { ehGlideAt = Date.now(); return ehGlideGo(); }
+    ehGlideGo = null;
+    if (scrollY !== y) scrollTo(0, y);
+}
 // while a redraw wires the page, a node kept from the last one drops its earlier copy of the same handler
 function render(keepPop) {
     const app = $('#app') || (ehBody && ehBody.querySelector('#app')), P = EventTarget.prototype, add = P.addEventListener, rem = P.removeEventListener;
@@ -13283,7 +13293,7 @@ function secRail(app) {
         addEventListener('resize', railPlace);
         document.addEventListener('keydown', ev => { if (ev.key === 'Escape') shut(); });
         rail.addEventListener('click', ev => {
-            if (ev.target.closest('[data-top]')) { rail.classList.remove('open'); scrollTo({ top: 0, behavior: 'smooth' }); return; }
+            if (ev.target.closest('[data-top]')) { rail.classList.remove('open'); ehGlide(() => scrollTo({ top: 0, behavior: 'smooth' })); return; }
             // the last row folds every shown section, or opens them all when they all are folded
             const fa = ev.target.closest('[data-foldall]');
             if (fa) { const ks = [...document.querySelectorAll('#app>section.sec:not([hidden])')].map(x => foldKey(x.id.slice(2))); S.fold = fa.dataset.foldall === '1' ? [...new Set([...S.fold, ...ks])] : S.fold.filter(x => !ks.includes(x)); const y = scrollY; render(); keepY(y); return; }
@@ -13292,7 +13302,7 @@ function secRail(app) {
             if (ev.target.closest('.eye')) { S.secHide = toggle(S.secHide, hideKey(k)); const y = scrollY; render(); keepY(y); return; }
             S.secHide = S.secHide.filter(x => x !== hideKey(k)); S.fold = S.fold.filter(x => x !== foldKey(k));
             rail.classList.remove('open'); render();
-            const el = document.getElementById('s-' + k); if (el) el.scrollIntoView({ behavior: 'smooth' });
+            ehGlide(() => { const el = document.getElementById('s-' + k); if (el) el.scrollIntoView({ behavior: 'smooth' }); });
         });
         rail.addEventListener('dragstart', ev => { const row = ev.target.closest('[data-sec]'); secDrag = row && row.dataset.sec; if (row) row.classList.add('drag'); });
         // a line shows where the dragged row will land
@@ -13345,7 +13355,7 @@ function pinMake(bar) {
     // too narrow for every button (a phone), the release group's link and count go first, so Event Horizon's own stays on screen
     const k = bar.firstChild, fit = () => { bar.classList.remove('rg-off'); if (k.scrollWidth > k.clientWidth + 1) bar.classList.add('rg-off'); };
     new ResizeObserver(fit).observe(k); new MutationObserver(fit).observe(k, { childList: true, subtree: true });
-    bar.addEventListener('click', ev => { if (ev.target.closest('.pnm,.pcv') && !ev.target.closest('a')) scrollTo({ top: 0, behavior: 'smooth' }); });
+    bar.addEventListener('click', ev => { if (ev.target.closest('.pnm,.pcv') && !ev.target.closest('a')) ehGlide(() => scrollTo({ top: 0, behavior: 'smooth' })); });
     return bar;
 }
 // the pinned bar's collection icon and count mirror the header's; a click goes to the top and opens its menu
@@ -15674,7 +15684,7 @@ function onClick(ev) {
     if (d.plcfg) { openPlCfg(b, d.plcfg === '1' ? '' : d.plcfg); return; }
     if (d.arcol) { if (S.arAuto) arCol.set(d.arcol, d.va !== 'true'); else S.arCol = d.va !== 'true'; }
     else if (d.col) S.cols[d.col] = S.cols[d.col] === false; // a column added since the view was saved is on
-    else if ('goart' in d) { if (S.fold.includes('art')) { S.fold = toggle(S.fold, 'art'); render(); } const a = $('#s-art'); if (a) a.scrollIntoView({ behavior: 'smooth' }); return; }
+    else if ('goart' in d) { if (S.fold.includes('art')) { S.fold = toggle(S.fold, 'art'); render(); } ehGlide(() => { const a = $('#s-art'); if (a) a.scrollIntoView({ behavior: 'smooth' }); }); return; }
     else if (d.fold) S.fold = toggle(S.fold, d.fold);
     else if (d.fx) { S.fxOpen = toggle(S.fxOpen, d.fx); const part = b.closest('.tl > .detail'), row = part && part.previousElementSibling, y = scrollY; if (row && redrawTrack(row.dataset.row)) { save(); keepY(y); return; } }
     else if (d.disc) { S.discFold = toggle(S.discFold, +d.disc); const y = scrollY; redrawTracks(); keepY(y); return; }
