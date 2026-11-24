@@ -14,7 +14,7 @@ import { execFileSync } from 'node:child_process';
 
 const VER = /^\/\/\s*@version\s+(\S+)/m;
 const SLACK = 10 * 60 * 1000;
-const tryGit = (...a) => { try { return execFileSync('git', a, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }); } catch { return ''; } };
+const tryGit = (...a) => { try { return execFileSync('git', a, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024 }); } catch { return ''; } };
 const pad = n => String(n).padStart(2, '0');
 const stamp = d => `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}.${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
 /** Date of a stamp, or null when the stamp is not a real local date and time. */

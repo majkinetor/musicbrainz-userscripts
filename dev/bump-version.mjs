@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const VER = /^(\/\/\s*@version\s+)(\S+)/m;
-const git = (...a) => execFileSync('git', a, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+const git = (...a) => execFileSync('git', a, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024 }).trim();
 const tryGit = (...a) => { try { return git(...a); } catch { return ''; } };
 const skip = p => /(^|\/)dist\//.test(p) || p.startsWith('userscripts/string_theory/');
 
