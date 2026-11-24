@@ -45,6 +45,7 @@ var ST_PAL_CSS = ''
   + '#st-pal-list .st-pal-l{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}'
   + '#st-pal-list mark{background:none;color:var(--mbu-accent-text);font-weight:700;padding:0}'
   + '#st-pal-list .st-pal-h{flex:0 0 auto;color:var(--mbu-text-weak);font-size:12px}'
+  + '#st-pal-list .st-pal-k{flex:0 0 auto;color:var(--mbu-text-weak);font:600 11px/1.4 var(--mbu-font)}'
   + '#st-pal-list .st-pal-pin{flex:0 0 auto;width:24px;height:22px;display:inline-flex;align-items:center;justify-content:center;margin:0;padding:0;border:0;border-radius:var(--mbu-radius);background:none;color:var(--mbu-text-weak);cursor:pointer;visibility:hidden;font-size:13px;line-height:1}'
   + '#st-pal-list .st-pal-pin:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}'
   + '#st-pal-list .st-pal-i:hover .st-pal-pin,#st-pal-list .st-pal-i[aria-selected=true] .st-pal-pin,#st-pal-list .st-pal-pin[aria-pressed=true]{visibility:visible}'
@@ -73,7 +74,7 @@ function stPalCommands() {
   if (ST_ON_MB) {
     var newsN = stNewsUnread(stNewsRead()).length;
     add({ id: 'st:news', cat: 'String Theory', label: "What's new", hint: newsN ? newsN + ' new' : '', run: stNewsOpen });
-    add({ id: 'st:gatelog', cat: 'String Theory', label: 'Network log', hint: 'requests of the scripts', run: stGateOpen });
+    add({ id: 'st:gatelog', cat: 'String Theory', label: 'Network log', hint: 'requests of the scripts', keys: 'Ctrl+Alt+N', run: stGateOpen });
   }
   if (ST_ON_MB) {
     add({ id: 'set:dock', cat: 'Settings', label: 'Dock', run: function () { stSettings('l'); } });
@@ -90,7 +91,7 @@ function stPalCommands() {
 
   // Theme: highlighting one shows it, Enter keeps it
   if (ST_ON_MB) {
-    add({ id: 'theme:chooser', cat: 'Theme', label: 'Theme chooser', run: function () { setTimeout(stThemeChooser, 0); } });
+    add({ id: 'theme:chooser', cat: 'Theme', label: 'Theme chooser', keys: 'Ctrl+Alt+T', run: function () { setTimeout(stThemeChooser, 0); } });
     [['light', 'Light'], ['dark', 'Dark'], ['auto', 'System'], ['sun', 'Sun'], ['time', 'Time']].forEach(function (o) {
       add({ id: 'theme:' + o[0], cat: 'Theme', label: o[1], hint: __stTheme.read().mode === o[0] ? 'current' : '',
         preview: function () { if (o[0] !== 'sun' || __stTheme.read().lat != null) __stTheme.preview({ mode: o[0] }); },
@@ -385,6 +386,7 @@ function stPalette() {
     var pinned = stPalRead().pins.indexOf(c.id) >= 0;
     return '<li class="st-pal-i" role="option" aria-selected="false" data-id="' + stEsc(c.id) + '"' + (movable ? ' data-pinned=""' : '') + '>' + stPalMark(c, hits)
       + (c.hint ? '<span class="st-pal-h">' + stEsc(c.hint) + '</span>' : '')
+      + (c.keys ? '<kbd class="st-pal-k">' + stEsc(c.keys) + '</kbd>' : '')
       + (c.pinless ? '' : '<button type="button" class="st-pal-pin" tabindex="-1" aria-pressed="' + pinned + '" aria-label="' + (pinned ? 'Unpin' : 'Pin') + '" data-tip="' + (pinned ? 'Unpin' : 'Pin to the top') + '">' + (pinned ? '★' : '☆') + '</button>')
       + '</li>';
   };
@@ -569,7 +571,17 @@ function stPalListen() {
   window.addEventListener('keydown', function (e) {
     if (stPalRecording || e.repeat || (stPalOv && stPalOv.isConnected)) return;
     var p = stPalRead();
-    if (!p.on || !stKeyIs(e, p.key)) return;
+    if (!p.on) return;
+    // Ctrl+Alt+T: the theme chooser, Ctrl+Alt+N: the Network log (MusicBrainz only, like their commands)
+    var direct = ST_ON_MB && e.ctrlKey && e.altKey && !e.shiftKey && !e.metaKey
+      ? { KeyT: function () { stThemeChooser(); }, KeyN: function () { stGateOpen(); } }[e.code] : null;
+    if (direct) {
+      e.preventDefault();
+      e.stopPropagation();
+      try { direct(); } catch (err) { try { console.error('[String Theory] shortcut failed:', err); } catch (x) { /* no console */ } }
+      return;
+    }
+    if (!stKeyIs(e, p.key)) return;
     e.preventDefault();
     e.stopPropagation();
     try { stPalette(); } catch (err) { try { console.error('[String Theory] command palette failed:', err); } catch (x) { /* no console */ } }
