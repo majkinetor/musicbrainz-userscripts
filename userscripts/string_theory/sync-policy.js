@@ -6,7 +6,7 @@ function stSyncAllow(kind, key, path) {
   // Retained data and state which is never authoritative on another device.
   if (/^string_theory\.sync\.(?:google\.|webdav\.)?(?:state|base|stage|recovery|lease|origins)$/.test(key)) return false;
   if (/^string_theory\.sync\.(?:google\.)?oauth(?:\.|$)/.test(key)) return false;
-  if (/^(?:areaImg|avatars|collections|profile|visits|searches|ae-tp-recent|gt-txp-recent|gt-role-history|aiScanLast)$/.test(key)) return false;
+  if (/^(?:areaImg|avatars|collections|profile|visits|searches|ae-tp-recent|gt-txp-recent|gt-role-history|aiScanLast|stNewsEtag)$/.test(key)) return false;
   if (/(?:logwin|log-window|:session:|:log(?:$|:)|:bg-log$|(?:^|[.:-])winstate$|dialogSize$|:col_widths$|^gt-tp-ecol$)/i.test(key)) return false;
   if (/(?:cache(?:$|[.:-])|^mbu[.:]artimg|^mbu:mb-gate|^mbu[.:]claim|^mbu[.:]owner|extLinksHeading|^eh\.(?:kept|ratings|relhd)|^pc:(?:mbdata:|apple-storefronts)|^ch:ls-pruned$)/i.test(key)) return false;
   if (key === 'discogs-importer-log-open') return false;
