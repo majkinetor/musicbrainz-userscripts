@@ -12,7 +12,9 @@ on:
 jobs:
   suite:
     runs-on: ubuntu-24.04   # Playwright has no browsers for 26.04 (ubuntu-latest since 2026-11)
-    timeout-minutes: 180
+    # 1111 specs on one worker took over 3 h on 2026-11-23 (2.8 h for 1033 a week before);
+    # 6 h is the most a GitHub-hosted job can run
+    timeout-minutes: 360
     concurrency: { group: sandbox, cancel-in-progress: false }
     steps:
       - uses: actions/checkout@v4
