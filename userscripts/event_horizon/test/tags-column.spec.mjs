@@ -16,7 +16,8 @@ test('Show › Tags puts recording tags after the title, off at first', { tag: '
   await until(() => page.locator('.tl .tr .tg').first().isVisible(), v => v);
   const first = await page.locator('.tl .tr').first().locator('.tg .chip').allInnerTexts();
   check(first.join() === 'tag1,tag2', `A1 shows its tags (${first})`);
-  await page.locator('.tl .tr').first().locator('.n').click();
+  // a click on the row opens it; not on its number, which holds the row's play button on hover
+  await page.locator('.tl .tr').first().locator('.ln').click();
   // the recording's facts box: its short line names the tags; opened, it has the chips with their votes
   await until(() => page.locator('.detail [data-fx]').count(), n => n > 0);
   check(/tag1, tag2/.test(await page.locator('.detail').first().textContent()), 'the facts line names the tags');
