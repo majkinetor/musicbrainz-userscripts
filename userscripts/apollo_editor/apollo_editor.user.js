@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.090047
+// @version      2026.11.24.090524
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -2487,7 +2487,8 @@
   // MusicBrainz's website-side JSON (/ws/js/*) through the shared gate, which passes MusicBrainz's
   // "Verifying your browser" check again when it answers mid-session (#733; dev/net/mb-gate.mjs)
   let _webInFlight = 0;   // /ws/js requests on their way, for the Stop log line (wsGet counts /ws/2)
-  const mbWebFetch = (url, init) => { _webInFlight++; return Promise.resolve(mbnFetch(url, init, { log: (lvl, m) => Log.cat('MusicBrainz')[lvl](m), notify: m => toast(m, 'warn') })).finally(() => { _webInFlight--; }); };
+  // o: the network log's reason and entity, for an address that does not say them (/ws/js/entity/<mbid>)
+  const mbWebFetch = (url, init, o) => { _webInFlight++; return Promise.resolve(mbnFetch(url, init, Object.assign({ log: (lvl, m) => Log.cat('MusicBrainz')[lvl](m), notify: m => toast(m, 'warn') }, o))).finally(() => { _webInFlight--; }); };
 
   // #735: place a dropdown under its input, or above it when the window has more room there
   // (an artist picker on the last tracks ran off the bottom); its height is capped to the room.
@@ -2526,7 +2527,7 @@
   const _cache = new Map();
   // resolve an MBID to a full entity (incl. the numeric id needed for the credit write-back)
   async function fetchEntity(gid, kind) {
-    try { const j = await mbWebFetch(`${ORIGIN}/ws/js/entity/${gid}`, { headers: { Accept: 'application/json' } }).then(r => r.json());
+    try { const j = await mbWebFetch(`${ORIGIN}/ws/js/entity/${gid}`, { headers: { Accept: 'application/json' } }, { reason: kind === 'label' ? 'label' : 'credit', entity: kind || 'artist' }).then(r => r.json());
       // return the WHOLE entity (like a search hit) so the credit write-back has every field it needs
       if (j && j.gid) { if (!j.entityType) j.entityType = kind || 'artist'; return j; } }
     catch (e) { Log.cat(kind === 'label' ? 'Label' : 'Artist').warn('fetch entity failed', gid, e.message); }
@@ -4091,7 +4092,7 @@ Click: open the label`;
     let out = null;
     for (let attempt = 0; attempt < 4; attempt++) {
       try {
-        const r = await mbWebFetch(`${ORIGIN}/ws/js/entity/${gid}?inc=rels`, { headers: { Accept: 'application/json' } });
+        const r = await mbWebFetch(`${ORIGIN}/ws/js/entity/${gid}?inc=rels`, { headers: { Accept: 'application/json' } }, { reason: 'Discogs link', entity: 'artist' });
         if (r.status === 429 || r.status === 503) { await _sleep(800); continue; }   // rate limited → back off, don't cache a miss
         if (!r.ok) { await _sleep(500); continue; }
         const j = await r.json();
