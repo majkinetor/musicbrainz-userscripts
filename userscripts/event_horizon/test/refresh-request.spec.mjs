@@ -3,7 +3,7 @@ import { test, check, until } from '../../../dev/test/harness.mjs';
 const REL = '54b7bca2-7ed6-4484-bdd3-fe35a3f33dda';
 test.use({ gm: { name: 'Event Horizon', values: { view: { on: true } } } });
 
-test('a matching refresh request reloads the release without replacing the player', { tag: '@sandbox' }, async ({ page, inject }) => {
+test('a matching refresh request reloads the release without replacing the player', { tag: ['@sandbox', '@flaky'] }, async ({ page, inject }) => {
   await page.goto('https://test.musicbrainz.org/release/' + REL);
   await inject('event_horizon');
   await page.locator('#app .tr').first().waitFor();

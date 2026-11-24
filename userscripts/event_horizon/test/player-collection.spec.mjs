@@ -25,8 +25,9 @@ test('saves the queue to a new recording collection', { tag: ['@sandbox', '@logi
   const gid = response.headers().location?.match(/\/collection\/([0-9a-f-]{36})/)?.[1];
   expect(gid, `status ${response.status()}`).toBeTruthy();
   try {
-    await expect(page.getByRole('status')).toHaveText(/Saved 2 recordings|Collection save failed/, { timeout: 30000 });
-    expect(await page.getByRole('status').textContent()).toContain('Saved 2 recordings');
+    // the toast: a loading page's skeleton is a status too
+    await expect(page.locator('#toast')).toHaveText(/Saved 2 recordings|Collection save failed/, { timeout: 30000 });
+    expect(await page.locator('#toast').textContent()).toContain('Saved 2 recordings');
     await page.goto(`${mb}/collection/${gid}`);
     await expect(page.locator(`a[href="/recording/${second.mbid}"]`).first()).toBeVisible({ timeout: 30000 });
     await expect(page.locator(`a[href="/recording/${first.mbid}"]`).first()).toBeVisible();
