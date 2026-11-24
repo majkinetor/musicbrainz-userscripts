@@ -1006,6 +1006,9 @@ function stGateBuild() {
     act = i; sig = ''; draw();
   };
   var draw = function () {
+    // the Copy button counts the picked rows, which are all it copies
+    var cpN = multi ? Object.keys(stGateSel).length : 0, cpB = $('.mbu-logpop-copy');
+    if (cpB) cpB.textContent = '⧉ Copy' + (cpN ? ' (' + cpN + ')' : '');
     try { drawNow(); } catch (e) {
       var msg = String(e && e.message || e);
       if (msg !== drawFailed) { drawFailed = msg; try { console.error('String Theory: the Network log could not show its events', e); } catch (x) { /* no console */ } }
