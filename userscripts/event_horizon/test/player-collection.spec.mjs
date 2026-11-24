@@ -30,11 +30,14 @@ test('saves the queue to a new recording collection', { tag: ['@sandbox', '@logi
     await page.goto(`${mb}/collection/${gid}`);
     await expect(page.locator(`a[href="/recording/${second.mbid}"]`).first()).toBeVisible({ timeout: 30000 });
     await expect(page.locator(`a[href="/recording/${first.mbid}"]`).first()).toBeVisible();
+    const yt = [{ 'target-type': 'url', type: 'streaming', url: { resource: 'https://www.youtube.com/watch?v=abcdefghijk' } }];
     await page.route('**/ws/2/recording/*', route => {
       const id = new URL(route.request().url()).pathname.split('/').pop();
       if (![first.mbid, second.mbid].includes(id)) return route.continue();
-      return route.fulfill({ json: { id, title: id, 'artist-credit': [], releases: [{ id: 'n', title: 'Newer', date: '2020', 'release-group': { id: 'g2' } }, { id: 'o', title: 'Oldest', date: '1999-05', 'release-group': { id: 'g1' } }], relations: [{ 'target-type': 'url', type: 'streaming', url: { resource: 'https://www.youtube.com/watch?v=abcdefghijk' } }] } });
+      return route.fulfill({ json: { id, title: id, 'artist-credit': [], releases: [{ id: 'n', title: 'Newer', date: '2020', 'release-group': { id: 'g2' } }, { id: 'o', title: 'Oldest', date: '1999-05', 'release-group': { id: 'g1' } }], relations: yt } });
     });
+    // the player reads a recording collection by browse since 0912228ac (2026-11-20), the covers after by lookup
+    await page.route(`**/ws/2/recording?collection=${gid}*`, route => route.fulfill({ json: { 'recording-count': 2, 'recording-offset': 0, recordings: [first, second].map(r => ({ id: r.mbid, title: r.mbid, 'artist-credit': [], relations: yt })) } }));
     await inject('event_horizon', { waitFor: '__ehPlayerTest' });
     await page.evaluate(({ first, links }) => window.__ehPlayerTest.recording({ id: first.mbid, title: 'First', ac: [], links }, []), { first, links });
     await page.locator('.ply-ctl [data-ply="lb"]').click();
@@ -70,7 +73,10 @@ test('plays a release collection and an individual release', { tag: ['@sandbox',
     expect(status).toBe(200);
     await page.goto(`${mb}/collection/${gid}`);
     await expect(page.locator(`a[href="/release/${rel.mbid}"]`).first()).toBeVisible();
-    await page.route(`**/ws/2/release/${rel.mbid}*`, route => route.fulfill({ json: { id: rel.mbid, title: 'Release fixture', 'artist-credit': [], 'release-group': {}, media: [{ tracks: [1, 2].map(n => ({ number: String(n), title: 'Track ' + n, recording: { id: `00000000-0000-0000-0000-00000000000${n}`, relations: [{ 'target-type': 'url', type: 'streaming', url: { resource: 'https://www.youtube.com/watch?v=abcdefghijk' } }] } })) }] } }));
+    const fixture = { id: rel.mbid, title: 'Release fixture', 'artist-credit': [], 'release-group': {}, media: [{ tracks: [1, 2].map(n => ({ number: String(n), title: 'Track ' + n, recording: { id: `00000000-0000-0000-0000-00000000000${n}`, relations: [{ 'target-type': 'url', type: 'streaming', url: { resource: 'https://www.youtube.com/watch?v=abcdefghijk' } }] } })) }] };
+    await page.route(`**/ws/2/release/${rel.mbid}*`, route => route.fulfill({ json: fixture }));
+    // the player reads a release collection by browse since 0912228ac (2026-11-20); one release alone still by lookup
+    await page.route(`**/ws/2/release?collection=${gid}*`, route => route.fulfill({ json: { 'release-count': 1, 'release-offset': 0, releases: [fixture] } }));
     await inject('event_horizon', { waitFor: '__ehPlayerTest' });
     await page.locator('[data-colplay="all"]').click();
     await expect.poll(async () => (await page.evaluate(() => window.__ehPlayerTest.state())).q.length).toBe(2);
