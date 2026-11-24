@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.24.213153
+// @version      2026.11.24.213154
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -413,10 +413,15 @@
       return mbnState(s => {
           if (ms > 0) {
               // a lead that lapsed unrenewed ends in the log too, so every lead+ has its lead-
-              if (s.lead && (s.leadUntil || 0) < Date.now()) mbnTrace({ e: 'lead-', by: String(s.lead).slice(0, 12), why: 'lapsed' });
-              if (s.lead !== token || (s.leadUntil || 0) < Date.now()) mbnTrace({ e: 'lead+', by: String(token).slice(0, 12), w: Math.min(ms, MBN_MAX_LEAD) });
-              s.lead = token; s.leadUntil = Date.now() + Math.min(ms, MBN_MAX_LEAD);
-          } else if (s.lead === token) { const late = (s.leadUntil || 0) < Date.now(); s.lead = ''; s.leadUntil = 0; mbnTrace({ e: 'lead-', by: String(token).slice(0, 12), why: late ? 'lapsed' : undefined }); }
+              const now = Date.now(), lapsed = s.lead && (s.leadUntil || 0) < now;
+              if (lapsed) mbnTrace({ e: 'lead-', by: String(s.lead).slice(0, 12), why: 'lapsed', d: s.leadAt ? s.leadUntil - s.leadAt : undefined });
+              if (s.lead !== token || lapsed) { mbnTrace({ e: 'lead+', by: String(token).slice(0, 12), w: Math.min(ms, MBN_MAX_LEAD) }); s.leadAt = now; }
+              s.lead = token; s.leadUntil = now + Math.min(ms, MBN_MAX_LEAD);
+          } else if (s.lead === token) {
+              const now = Date.now(), late = (s.leadUntil || 0) < now, d = s.leadAt ? (late ? s.leadUntil : now) - s.leadAt : undefined;
+              s.lead = ''; s.leadUntil = 0; s.leadAt = 0;
+              mbnTrace({ e: 'lead-', by: String(token).slice(0, 12), why: late ? 'lapsed' : undefined, d });
+          }
       });
   }
   async function mbnAnswer(status, header, o) {

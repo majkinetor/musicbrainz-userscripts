@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.24.213153
+// @version      2026.11.24.213154
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -521,10 +521,15 @@ async function mbnLead(token, ms) {
     return mbnState(s => {
         if (ms > 0) {
             // a lead that lapsed unrenewed ends in the log too, so every lead+ has its lead-
-            if (s.lead && (s.leadUntil || 0) < Date.now()) mbnTrace({ e: 'lead-', by: String(s.lead).slice(0, 12), why: 'lapsed' });
-            if (s.lead !== token || (s.leadUntil || 0) < Date.now()) mbnTrace({ e: 'lead+', by: String(token).slice(0, 12), w: Math.min(ms, MBN_MAX_LEAD) });
-            s.lead = token; s.leadUntil = Date.now() + Math.min(ms, MBN_MAX_LEAD);
-        } else if (s.lead === token) { const late = (s.leadUntil || 0) < Date.now(); s.lead = ''; s.leadUntil = 0; mbnTrace({ e: 'lead-', by: String(token).slice(0, 12), why: late ? 'lapsed' : undefined }); }
+            const now = Date.now(), lapsed = s.lead && (s.leadUntil || 0) < now;
+            if (lapsed) mbnTrace({ e: 'lead-', by: String(s.lead).slice(0, 12), why: 'lapsed', d: s.leadAt ? s.leadUntil - s.leadAt : undefined });
+            if (s.lead !== token || lapsed) { mbnTrace({ e: 'lead+', by: String(token).slice(0, 12), w: Math.min(ms, MBN_MAX_LEAD) }); s.leadAt = now; }
+            s.lead = token; s.leadUntil = now + Math.min(ms, MBN_MAX_LEAD);
+        } else if (s.lead === token) {
+            const now = Date.now(), late = (s.leadUntil || 0) < now, d = s.leadAt ? (late ? s.leadUntil : now) - s.leadAt : undefined;
+            s.lead = ''; s.leadUntil = 0; s.leadAt = 0;
+            mbnTrace({ e: 'lead-', by: String(token).slice(0, 12), why: late ? 'lapsed' : undefined, d });
+        }
     });
 }
 async function mbnAnswer(status, header, o) {
@@ -5222,20 +5227,22 @@ const fetchLog = (what, t0, r, e, L = LOG) => L.debug(`Fetch ${what}: ${e ? 'fai
 // (seen in a gate log: eight EH leads swapped in three seconds, and EH waiting 7.8 s on its own tab's lead).
 const EH_TOP = (() => { try { return window.top === window; } catch (e) { return false; } })();
 const ehMayLead = () => EH_TOP && document.visibilityState === 'visible' && document.hasFocus();
+// The lead is taken by the page's first request to MusicBrainz (wsText), not when the page starts: a page drawn
+// from its kept answers asks nothing, so it holds no one back and logs no lead. ehTook: the tokens that did take it
 let ehLead = '';
+const ehTook = new Set();
 function leadOn() {
     ehLead = ehMayLead() ? 'eh' + Math.random().toString(36).slice(2) : '';
-    if (ehLead) mbnLead(ehLead, 8000).catch(() => {});
     return ehLead;
 }
-function leadOff(t) { if (!t) return; if (ehLead === t) ehLead = ''; mbnLead(t, 0).catch(() => {}); }
+function leadOff(t) { if (!t) return; if (ehLead === t) ehLead = ''; if (ehTook.delete(t)) mbnLead(t, 0).catch(() => {}); }
 // bg: a kept answer asked again, which doesn't lead
 // L: the logger its fetch line goes to (the player's are its own category)
 async function wsText(path, bg, L) {
     // the page's own request goes ahead of the queued background ones; a gate wait is logged, so a page that hangs says why
     const t0 = performance.now(), lead = bg ? '' : ehLead, mine = showing;
     // a window the reader left stops renewing, so its lead lapses instead of holding the others back
-    if (lead && ehMayLead()) mbnLead(lead, 8000).catch(() => {});
+    if (lead && ehMayLead()) { ehTook.add(lead); mbnLead(lead, 8000).catch(() => {}); }
     // a page's lookup that MusicBrainz keeps throttling says so on the loading page, with a Stop (wsStopped)
     const stopped = () => wsStopped >= mine;
     let r;

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.213153
+// @version      2026.11.24.213154
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -478,10 +478,15 @@ async function mbnLead(token, ms) {
     return mbnState(s => {
         if (ms > 0) {
             // a lead that lapsed unrenewed ends in the log too, so every lead+ has its lead-
-            if (s.lead && (s.leadUntil || 0) < Date.now()) mbnTrace({ e: 'lead-', by: String(s.lead).slice(0, 12), why: 'lapsed' });
-            if (s.lead !== token || (s.leadUntil || 0) < Date.now()) mbnTrace({ e: 'lead+', by: String(token).slice(0, 12), w: Math.min(ms, MBN_MAX_LEAD) });
-            s.lead = token; s.leadUntil = Date.now() + Math.min(ms, MBN_MAX_LEAD);
-        } else if (s.lead === token) { const late = (s.leadUntil || 0) < Date.now(); s.lead = ''; s.leadUntil = 0; mbnTrace({ e: 'lead-', by: String(token).slice(0, 12), why: late ? 'lapsed' : undefined }); }
+            const now = Date.now(), lapsed = s.lead && (s.leadUntil || 0) < now;
+            if (lapsed) mbnTrace({ e: 'lead-', by: String(s.lead).slice(0, 12), why: 'lapsed', d: s.leadAt ? s.leadUntil - s.leadAt : undefined });
+            if (s.lead !== token || lapsed) { mbnTrace({ e: 'lead+', by: String(token).slice(0, 12), w: Math.min(ms, MBN_MAX_LEAD) }); s.leadAt = now; }
+            s.lead = token; s.leadUntil = now + Math.min(ms, MBN_MAX_LEAD);
+        } else if (s.lead === token) {
+            const now = Date.now(), late = (s.leadUntil || 0) < now, d = s.leadAt ? (late ? s.leadUntil : now) - s.leadAt : undefined;
+            s.lead = ''; s.leadUntil = 0; s.leadAt = 0;
+            mbnTrace({ e: 'lead-', by: String(token).slice(0, 12), why: late ? 'lapsed' : undefined, d });
+        }
     });
 }
 async function mbnAnswer(status, header, o) {

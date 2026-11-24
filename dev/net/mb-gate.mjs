@@ -492,15 +492,21 @@ export async function mbnSlot(o) {
 /**
  * Take the lead (#847), or renew it, for `ms` (at most MBN_MAX_LEAD); `ms` 0 ends it, if it's
  * still this token's. While it holds, background requests not passing o.lead = token wait.
+ * Its lead- says how long it lasted (d): to its end, or to when it lapsed.
  */
 export async function mbnLead(token, ms) {
     return mbnState(s => {
         if (ms > 0) {
             // a lead that lapsed unrenewed ends in the log too, so every lead+ has its lead-
-            if (s.lead && (s.leadUntil || 0) < Date.now()) mbnTrace({ e: 'lead-', by: String(s.lead).slice(0, 12), why: 'lapsed' });
-            if (s.lead !== token || (s.leadUntil || 0) < Date.now()) mbnTrace({ e: 'lead+', by: String(token).slice(0, 12), w: Math.min(ms, MBN_MAX_LEAD) });
-            s.lead = token; s.leadUntil = Date.now() + Math.min(ms, MBN_MAX_LEAD);
-        } else if (s.lead === token) { const late = (s.leadUntil || 0) < Date.now(); s.lead = ''; s.leadUntil = 0; mbnTrace({ e: 'lead-', by: String(token).slice(0, 12), why: late ? 'lapsed' : undefined }); }
+            const now = Date.now(), lapsed = s.lead && (s.leadUntil || 0) < now;
+            if (lapsed) mbnTrace({ e: 'lead-', by: String(s.lead).slice(0, 12), why: 'lapsed', d: s.leadAt ? s.leadUntil - s.leadAt : undefined });
+            if (s.lead !== token || lapsed) { mbnTrace({ e: 'lead+', by: String(token).slice(0, 12), w: Math.min(ms, MBN_MAX_LEAD) }); s.leadAt = now; }
+            s.lead = token; s.leadUntil = now + Math.min(ms, MBN_MAX_LEAD);
+        } else if (s.lead === token) {
+            const now = Date.now(), late = (s.leadUntil || 0) < now, d = s.leadAt ? (late ? s.leadUntil : now) - s.leadAt : undefined;
+            s.lead = ''; s.leadUntil = 0; s.leadAt = 0;
+            mbnTrace({ e: 'lead-', by: String(token).slice(0, 12), why: late ? 'lapsed' : undefined, d });
+        }
     });
 }
 

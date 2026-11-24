@@ -162,7 +162,7 @@ function stGateWhat(ev) {
     case 'hidden': x.push('waits for the queue to be free, now ' + stGateSec(ev.w) + (ev.cap ? ', at most ' + stGateSec(ev.cap) : '') + ' (this tab is hidden)'); break;
     case 'lead': x.push('waits up to ' + stGateSec(ev.w) + ' for a page being drawn (' + (ev.by || '?') + ')'); break;
     case 'lead+': x.push('takes the lead for ' + stGateSec(ev.w) + ' (' + (ev.by || '?') + ')'); break;
-    case 'lead-': x.push((ev.why === 'lapsed' ? 'the lead lapsed (' : 'ends the lead (') + (ev.by || '?') + ')'); break;
+    case 'lead-': x.push((ev.why === 'lapsed' ? 'the lead lapsed' : 'ends the lead') + (ev.d != null ? ' after ' + stGateSec(ev.d) : '') + ' (' + (ev.by || '?') + ')'); break;
     case 'giveup': x.push('gives up after ' + (ev.n || 1) + (ev.n > 1 ? ' tries' : ' try') + (ev.st ? ' (HTTP ' + ev.st + ')' : '')); break;
     case 'cancel': x.push('cancelled after ' + stGateSec(ev.w)); break;
     case 'join': x.push('a request that covers this one is already on its way' + (ev.with ? ' (' + ev.with + ')' : '') + ': shares its answer'); break;
