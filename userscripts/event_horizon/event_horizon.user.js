@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.24.230859
+// @version      2026.11.24.233140
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -6079,7 +6079,7 @@ async function rateSet(t, ref, i) {
         if (!r || !r.ok || /\/login/.test(r.url)) throw new Error('HTTP ' + (r && r.status) + ' ' + (r && r.url));
         m[key] = RATED[key] = v; try { localStorage.setItem(MYR_KEY, JSON.stringify(m)); } catch (e) { /* storage blocked: the rating is in, only the kept copy isn't */ }
         toast(v ? `Rated ${v} of 5` : 'Your rating is cleared');
-        const y = scrollY; render(); scrollTo(0, y);
+        const y = scrollY; render(); keepY(y);
     } catch (e) { LOG.debug('Rating failed: ' + key, e); toast('MusicBrainz didn\'t take the rating'); }
 }
 const thumbOf = i =>(i.thumbnails && (i.thumbnails['250'] || i.thumbnails.small)) || i.image;
@@ -6275,7 +6275,7 @@ function edTracksHtml(e) {
 }
 // a right click opens every row: the rows of one release group load their tracklists together
 async function edBatch(rows) {
-    const redraw = () => { const y = scrollY; render(); scrollTo(0, y); };
+    const redraw = () => { const y = scrollY; render(); keepY(y); };
     rows = rows.filter(([i]) => !Array.isArray(edTracks.get(i)) && edTracks.get(i) !== 'loading');
     rows.forEach(([i]) => { edOpen.add(i); edTracks.set(i, 'loading'); });
     redraw();
@@ -6311,7 +6311,7 @@ async function edToggle(id) {
     if (Array.isArray(edTracks.get(id)) || edTracks.get(id) === 'loading') return;
     edTracks.set(id, 'loading');
     try { edTracks.set(id, (await ws(`release/${id}?inc=recordings+artist-credits`)).media || []); } catch (x) { edTracks.set(id, 'error'); }
-    if (edOpen.has(id)) { const y = scrollY; render(); scrollTo(0, y); }
+    if (edOpen.has(id)) { const y = scrollY; render(); keepY(y); }
 }
 // flat: a paged list loads in MusicBrainz's order, so status groups would grow above the reader
 // the releases table's sortable columns: key, heading, the value it sorts by
@@ -6486,7 +6486,7 @@ const lbOpen = new Set();
 // A group the browse doesn't hold (various artists) asks for its own releases.
 const dgOpen = new Set();
 async function dgLoad(d, rg) {
-    const x = d.discX, m = d.dgRel || (d.dgRel = new Map()), redraw = () => { if (data === d) { const y = scrollY; render(); scrollTo(0, y); } };
+    const x = d.discX, m = d.dgRel || (d.dgRel = new Map()), redraw = () => { if (data === d) { const y = scrollY; render(); keepY(y); } };
     const add = r => { const g = r['release-group']; if (!g) return; (m.get(g.id) || m.set(g.id, []).get(g.id)).push(edition(r)); };
     if (!d.dgAll && x && x.aid && !x.vaAsked) d.dgAll = (async () => {
         for (let o = 0, n = 1; o < n && o < 2000; o += 100) {
@@ -9057,7 +9057,7 @@ function openImageGallery() {
         close();
         if (data !== d) return;
         g.imgI = Number(b.dataset.imageIndex);
-        const y = scrollY; render(); scrollTo(0, y);
+        const y = scrollY; render(); keepY(y);
         document.querySelector('#app .art .imgsrc')?.focus();
     });
     document.documentElement.append(ov);
@@ -9070,7 +9070,7 @@ const artistImage = async (mbid, rels) => { const xs = await dedupArtistImages(a
 const imgAskable = g => g.rels.some(x => x['target-type'] === 'url' && ARTIMG.providers.some(p => !S.imgOff.includes(p.key) && [].concat(p.re).some(re => re.test(x.url.resource))));
 const imgRetryBtn = g => g.imgs && !g.imgs.length && imgAskable(g) ? `<button type="button" class="imgretry" data-imgretry${g.imgBusy ? ' disabled' : ''}>${g.imgBusy ? 'Looking…' : 'Retry image'}</button>` : '';
 async function imgRetry() {
-    const d = data, g = d.g, draw = () => { if (data === d) { const y = scrollY; render(); scrollTo(0, y); } };
+    const d = data, g = d.g, draw = () => { if (data === d) { const y = scrollY; render(); keepY(y); } };
     g.imgBusy = true; draw();
     picForget(g.id);
     const x = await artistImage(g.id, g.rels).catch(() => []);
@@ -9247,7 +9247,7 @@ function areaFill(g, xs) {
     if (!need.length) return;
     Promise.all(need.map(x => areaClimb(x).catch(e => LOG.warn('Area ' + x.id + ': ' + e.message)))).then(() => {
         if (!data || data.g !== g || (document.activeElement && document.activeElement.matches('#app input, #app textarea'))) return;
-        const y = scrollY; render(); scrollTo(0, y);
+        const y = scrollY; render(); keepY(y);
     });
 }
 const flagI = iso => iso && !/^X[^K]$/.test(iso) ? `<img class="flagi" src="https://flagcdn.com/w40/${esc(iso.toLowerCase())}.png" alt="" loading="lazy">` : '';
@@ -9672,7 +9672,7 @@ const tqHit = (n, t) => {
 // read from ws/2 on the first open
 const srOpen = new Set(), SRX = new Map();
 // up: the group already shows its releases from the search, without their links; this adds them
-const srRedraw = () => { const y = scrollY; render(); scrollTo(0, y); }, srSort = l => l.sort((a, b) => (a.date || '9').localeCompare(b.date || '9'));
+const srRedraw = () => { const y = scrollY; render(); keepY(y); }, srSort = l => l.sort((a, b) => (a.date || '9').localeCompare(b.date || '9'));
 function srLoad(rg, up) {
     if (SRX.has(rg) && !up) return;
     if (!up) SRX.set(rg, null);
@@ -10081,7 +10081,7 @@ document.addEventListener('click', async ev => {
         COLRM.clear();
         if (n !== showing || data !== d) return;
         d.listsX = [y]; if (y.col && d.g) Object.assign(d.g, y.col);
-        const sy = scrollY; render(); scrollTo(0, sy);
+        const sy = scrollY; render(); keepY(sy);
         toast(`Removed ${ids.length} from the collection`);
     } catch (e) {
         LOG.err('Removing from the collection failed: ' + e.message);
@@ -11166,7 +11166,7 @@ function fltTake(sc, row) {
     if (!v) { const i = $(`[data-fq="${sc}"]`); if (i) { i.blur(); } return; }
     const i = v.indexOf('\t');
     FLT[sc].f[v.slice(0, i)] = v.slice(i + 1); FLT[sc].q = '';
-    const y = scrollY; render(); scrollTo(0, y);
+    const y = scrollY; render(); keepY(y);
     const b = $(`[data-fq="${sc}"]`); if (b) b.focus();
 }
 // the filter row shows only once asked for (majkinetor); the button stays lit while a filter is on
@@ -12073,6 +12073,9 @@ function ehMorphNode(a, b) {
     ehMorphKids(a, b);
     if (a.nodeName === 'SELECT' && a !== document.activeElement) { const s = [...b.options].findIndex(o => o.selected); if (s >= 0) a.selectedIndex = s; }
 }
+// a redraw puts the page back where the reader had it, only when the redraw moved it: a scrollTo, even to where the
+// page already is, stops a smooth scroll on its way (Top, a section from the menu), and a list loading in meanwhile left it there
+function keepY(y) { if (scrollY !== y) scrollTo(0, y); }
 // while a redraw wires the page, a node kept from the last one drops its earlier copy of the same handler
 function render(keepPop) {
     const app = $('#app') || (ehBody && ehBody.querySelector('#app')), P = EventTarget.prototype, add = P.addEventListener, rem = P.removeEventListener;
@@ -12228,7 +12231,7 @@ function renderDraw(keepPop) {
     const rot = app.querySelector('[data-rot]');
     const source = app.querySelector('.art .imgsrc');
     if (source && ['artist', 'label'].includes(data.kind)) source.onclick = e => { e.preventDefault(); openImageGallery(); };
-    if (rot) rot.onclick = () => { const g = data.g; g.imgI = ((g.imgI || 0) + 1) % g.imgs.length; const sy = scrollY; render(); scrollTo(0, sy); };
+    if (rot) rot.onclick = () => { const g = data.g; g.imgI = ((g.imgI || 0) + 1) % g.imgs.length; const sy = scrollY; render(); keepY(sy); };
     dgWire(app);
     // Every row's platforms take the widest row's width, so the ISRCs line up.
     for (const tl of app.querySelectorAll('.tl')) {
@@ -12310,7 +12313,7 @@ async function lmMore(k) {
     try { await (k === 'recs' ? recsMore(d) : k === 'ed' ? (d.kind === 'native-releases' ? nativeMore(d) : edMore(d)) : k === 'sr' ? srMore(d) : k === 'tgx' ? cardsMore(d, tagxParse) : k === 'rt' ? cardsMore(d, ratesParse) : k.startsWith('tab:') ? tabMore(d, k.slice(4)) : wsMore(d, k.slice(3))); }
     catch (e) { LOG.debug('Load more failed: ' + k, e); LM_ERR.add(k); }
     finally { LM_BUSY.delete(k); }
-    if (data === d) { const y = scrollY; render(); scrollTo(0, y); }
+    if (data === d) { const y = scrollY; render(); keepY(y); }
 }
 // the next 100 releases
 async function edMore(d) {
@@ -13283,10 +13286,10 @@ function secRail(app) {
             if (ev.target.closest('[data-top]')) { rail.classList.remove('open'); scrollTo({ top: 0, behavior: 'smooth' }); return; }
             // the last row folds every shown section, or opens them all when they all are folded
             const fa = ev.target.closest('[data-foldall]');
-            if (fa) { const ks = [...document.querySelectorAll('#app>section.sec:not([hidden])')].map(x => foldKey(x.id.slice(2))); S.fold = fa.dataset.foldall === '1' ? [...new Set([...S.fold, ...ks])] : S.fold.filter(x => !ks.includes(x)); const y = scrollY; render(); scrollTo(0, y); return; }
+            if (fa) { const ks = [...document.querySelectorAll('#app>section.sec:not([hidden])')].map(x => foldKey(x.id.slice(2))); S.fold = fa.dataset.foldall === '1' ? [...new Set([...S.fold, ...ks])] : S.fold.filter(x => !ks.includes(x)); const y = scrollY; render(); keepY(y); return; }
             const row = ev.target.closest('[data-sec]'); if (!row) return;
             const k = row.dataset.sec;
-            if (ev.target.closest('.eye')) { S.secHide = toggle(S.secHide, hideKey(k)); const y = scrollY; render(); scrollTo(0, y); return; }
+            if (ev.target.closest('.eye')) { S.secHide = toggle(S.secHide, hideKey(k)); const y = scrollY; render(); keepY(y); return; }
             S.secHide = S.secHide.filter(x => x !== hideKey(k)); S.fold = S.fold.filter(x => x !== foldKey(k));
             rail.classList.remove('open'); render();
             const el = document.getElementById('s-' + k); if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -13314,7 +13317,7 @@ function secRail(app) {
             const ks = [...rail.querySelectorAll('[data-sec]')].map(x => x.dataset.sec).filter(x => x !== secDrag);
             ks.splice(ks.indexOf(target.row.dataset.sec) + (target.after ? 1 : 0), 0, secDrag);
             secDrag = null; secRedraw = false;
-            S.secOrder = [...ks, ...S.secOrder.filter(x => !ks.includes(x))]; const y = scrollY; render(); scrollTo(0, y);   // other pages' sections keep their order
+            S.secOrder = [...ks, ...S.secOrder.filter(x => !ks.includes(x))]; const y = scrollY; render(); keepY(y);   // other pages' sections keep their order
         });
     }
     rail.hidden = secs.length < 2 && !secs.some(x => x.hidden);
@@ -15590,7 +15593,7 @@ document.addEventListener('contextmenu', ev => {
     all.forEach(x => open ? set.add(x) : set.delete(x));
     if (open && k === 'dgx' && data) all.forEach(x => { if (!(data.dgRel && data.dgRel.get(x))) dgLoad(data, x); });
     if (open && k === 'srx') srBatch(all);
-    const y = scrollY; render(); scrollTo(0, y);
+    const y = scrollY; render(); keepY(y);
 }, true);
 function onClick(ev) {
     if (!ehOn) return;
@@ -15615,7 +15618,7 @@ function onClick(ev) {
     const openPop = $('.pop:not([hidden])');
     if (openPop && !ev.target.closest('.pop') && !(b && b.dataset.pop && openPop.id === 'pop-' + b.dataset.pop)) { openPop.hidden = true; const t = $('[aria-expanded="true"][data-pop]'); if (t) t.setAttribute('aria-expanded', 'false'); }
     const tr = ev.target.closest('.tr');
-    if (tr && !ev.target.closest('a,button,.pop')) { const k = tr.dataset.row; S.open.has(k) ? S.open.delete(k) : S.open.add(k); const y = scrollY; if (!redrawTrack(k)) render(); scrollTo(0, y); return; }
+    if (tr && !ev.target.closest('a,button,.pop')) { const k = tr.dataset.row; S.open.has(k) ? S.open.delete(k) : S.open.add(k); const y = scrollY; if (!redrawTrack(k)) render(); keepY(y); return; }
     if (!b) return;
     const d = b.dataset;
     let keep;
@@ -15636,7 +15639,7 @@ function onClick(ev) {
         const y = scrollY;
         if (kind === 'cols') { S.colPick = { ...S.colPick, [sc]: { order: x.v.order, off: x.v.off } }; colWSet(sc, x.v.w); save(); colApply(sc); $(`[data-collist="${sc}"]`).innerHTML = colRows(sc); return; }
         b.closest('.pop').hidden = true;
-        FLT[sc] = { q: x.v.q, f: { ...x.v.f }, open: true }; render(); scrollTo(0, y); return;
+        FLT[sc] = { q: x.v.q, f: { ...x.v.f }, open: true }; render(); keepY(y); return;
     }
     if (d.nmdel || d.nmsave) {
         const key = d.nmsave || d.nmdel.split('\t')[0], list = nmList(key), y = scrollY, pop = b.closest('.pop').id.slice(4);
@@ -15647,7 +15650,7 @@ function onClick(ev) {
             const same = list.findIndex(x => x.name.toLowerCase() === name.toLowerCase()), x = { name, v: nmNow(key) };
             nmKeep(key, same < 0 ? [...list, x] : list.map((o, i) => i === same ? x : o));
         }
-        render(pop); scrollTo(0, y); return;
+        render(pop); keepY(y); return;
     }
     if (d.colfit) { colWSet(d.colfit); save(); colSize(d.colfit); return; }
     if (d.colreset) { const sc = d.colreset, { [sc]: _, ...rest } = S.colPick; S.colPick = rest; colWSet(sc); save(); colApply(sc); $(`[data-collist="${sc}"]`).innerHTML = colRows(sc); return; }
@@ -15659,22 +15662,22 @@ function onClick(ev) {
     }
     // a heading's funnel opens the box with "column:" added, ready for the value
     if (d.rate) { const [t, ref, i] = d.rate.split('\t'); rateSet(t, ref, +i); return; }
-    if (d.ffun) { const [sc, k] = d.ffun.split('\t'), f = FLT[sc], cur = f.q.trim(); f.open = true; f.q = (cur ? cur + ' ' : '') + k + ':'; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-fq="${sc}"]`); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } return; }
-    if (d.tqcol) { const [k, c] = d.tqcol.split('\t'), cur = (TQ[k] || '').trim(); TQ[k] = (cur ? cur + ' ' : '') + c + ':'; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-tq="${k}"]`); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } return; }
-    if (d.tqopen) { const k = d.tqopen; if (k in TQ) delete TQ[k]; else TQ[k] = ''; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-tq="${k}"]`); if (i) i.focus(); return; }
+    if (d.ffun) { const [sc, k] = d.ffun.split('\t'), f = FLT[sc], cur = f.q.trim(); f.open = true; f.q = (cur ? cur + ' ' : '') + k + ':'; const y = scrollY; render(); keepY(y); const i = $(`[data-fq="${sc}"]`); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } return; }
+    if (d.tqcol) { const [k, c] = d.tqcol.split('\t'), cur = (TQ[k] || '').trim(); TQ[k] = (cur ? cur + ' ' : '') + c + ':'; const y = scrollY; render(); keepY(y); const i = $(`[data-tq="${k}"]`); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } return; }
+    if (d.tqopen) { const k = d.tqopen; if (k in TQ) delete TQ[k]; else TQ[k] = ''; const y = scrollY; render(); keepY(y); const i = $(`[data-tq="${k}"]`); if (i) i.focus(); return; }
     if ('lmmenu' in d) { const m = b.nextElementSibling, o = !m.classList.contains('open'); document.querySelectorAll('.dmenu.open').forEach(x => x.classList.remove('open')); m.classList.toggle('open', o); return; }
     if (d.lmgo) { lmMore(d.lmgo); return; }
     if ('reload' in d) { const k = inTab(location.href); if (k) show(k); else location.reload(); return; }
     if (d.aliases) { openAliases(); return; }
     if ('imgretry' in d) { imgRetry(); return; }
-    if (d.tsort) { const sid = b.closest('section').id.slice(2), i = +d.tsort, t = tsGet(sid) || []; tsSet(sid, t[0] !== i ? [i, 1] : t[1] > 0 ? [i, -1] : []); const y = scrollY; render(); scrollTo(0, y); return; }
+    if (d.tsort) { const sid = b.closest('section').id.slice(2), i = +d.tsort, t = tsGet(sid) || []; tsSet(sid, t[0] !== i ? [i, 1] : t[1] > 0 ? [i, -1] : []); const y = scrollY; render(); keepY(y); return; }
     if (d.plcfg) { openPlCfg(b, d.plcfg === '1' ? '' : d.plcfg); return; }
     if (d.arcol) { if (S.arAuto) arCol.set(d.arcol, d.va !== 'true'); else S.arCol = d.va !== 'true'; }
     else if (d.col) S.cols[d.col] = S.cols[d.col] === false; // a column added since the view was saved is on
     else if ('goart' in d) { if (S.fold.includes('art')) { S.fold = toggle(S.fold, 'art'); render(); } const a = $('#s-art'); if (a) a.scrollIntoView({ behavior: 'smooth' }); return; }
     else if (d.fold) S.fold = toggle(S.fold, d.fold);
-    else if (d.fx) { S.fxOpen = toggle(S.fxOpen, d.fx); const part = b.closest('.tl > .detail'), row = part && part.previousElementSibling, y = scrollY; if (row && redrawTrack(row.dataset.row)) { save(); scrollTo(0, y); return; } }
-    else if (d.disc) { S.discFold = toggle(S.discFold, +d.disc); const y = scrollY; redrawTracks(); scrollTo(0, y); return; }
+    else if (d.fx) { S.fxOpen = toggle(S.fxOpen, d.fx); const part = b.closest('.tl > .detail'), row = part && part.previousElementSibling, y = scrollY; if (row && redrawTrack(row.dataset.row)) { save(); keepY(y); return; } }
+    else if (d.disc) { S.discFold = toggle(S.discFold, +d.disc); const y = scrollY; redrawTracks(); keepY(y); return; }
     else if (d.gfold) S.grpFold = toggle(S.grpFold, d.gfold);
     else if ('tagsmore' in d) tagsOpen = !tagsOpen;
     else if (d.dgview) S.dgView = d.dgview;
@@ -15700,10 +15703,10 @@ function onClick(ev) {
     else if (d.edtr) edToggle(d.edtr);
     else if (d.fdel) { const [sc, k] = d.fdel.split(':'); delete FLT[sc].f[k]; }
     else if (d.fclr) FLT[d.fclr] = { q: '', f: {}, open: true };
-    else if (d.fopen) { const sc = d.fopen, f = FLT[sc], shut = f.open || f.q || Object.keys(f.f).length; FLT[sc] = { q: '', f: {}, open: !shut }; const y = scrollY; render(); scrollTo(0, y); const i = !shut && $(`[data-fq="${sc}"]`); if (i) i.focus(); return; }
+    else if (d.fopen) { const sc = d.fopen, f = FLT[sc], shut = f.open || f.q || Object.keys(f.f).length; FLT[sc] = { q: '', f: {}, open: !shut }; const y = scrollY; render(); keepY(y); const i = !shut && $(`[data-fq="${sc}"]`); if (i) i.focus(); return; }
     else if (d.mbgo) { try { sessionStorage.setItem('eh-off', 1); } catch (e) {} location.href = d.mbgo; return; }
     else return;
-    const y = scrollY; render(keep); scrollTo(0, y);
+    const y = scrollY; render(keep); keepY(y);
 }
 
 // a release's or release group's page on this site → "release/<mbid>" or "release-group/<mbid>"; not their subpages (/edit, …)
@@ -17852,7 +17855,7 @@ function listFilters(root) {
         if (!v) return;
         const i = v.indexOf('\t');
         FLT[sc].f[v.slice(0, i)] = v.slice(i + 1);
-        const y = scrollY; render(); scrollTo(0, y);
+        const y = scrollY; render(); keepY(y);
     });
     const fq = (t, v) => { const sc = t.dataset.fq, p = v === undefined ? t.selectionStart : 0; FLT[sc].q = v === undefined ? t.value : v; const top = t.getBoundingClientRect().top, b = document.body; b.style.minHeight = Math.max(parseFloat(b.style.minHeight) || 0, document.documentElement.scrollHeight) + 'px'; render(); const i = $(`[data-fq="${sc}"]`); if (i) { const pin = () => scrollBy(0, i.getBoundingClientRect().top - top); pin(); requestAnimationFrame(pin); i.focus({ preventScroll: true }); i.setSelectionRange(p, p); fltSug(sc, i); } };
     root.addEventListener('mousedown', ev => { const r = ev.target.closest && ev.target.closest('.fs-row'); if (!r) return; ev.preventDefault(); fltTake(r.closest('.fbox').querySelector('input').dataset.fq, r); });
@@ -17865,7 +17868,7 @@ function listFilters(root) {
         if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') { ev.preventDefault(); const j = (at + (ev.key === 'ArrowDown' ? 1 : rows.length - 1)) % rows.length; rows.forEach((r, k) => r.classList.toggle('on', k === j)); rows[j].scrollIntoView({ block: 'nearest' }); }
         else if (ev.key === 'Enter' && at >= 0) { ev.preventDefault(); fltTake(sc, rows[at]); }
     });
-    root.addEventListener('input', ev => { const t = ev.target; if (t.dataset && t.dataset.tq) { const k = t.dataset.tq, p = t.selectionStart, y = scrollY; TQ[k] = t.value; render(); scrollTo(0, y); const i = $(`[data-tq="${k}"]`); if (i) { i.focus(); i.setSelectionRange(p, p); } } else if (t.dataset && t.dataset.fq) fq(t); else if (t.dataset && t.dataset.fadd && t.list && [...t.list.options].some(x => x.value === t.value)) t.dispatchEvent(new Event('change', { bubbles: true })); });
+    root.addEventListener('input', ev => { const t = ev.target; if (t.dataset && t.dataset.tq) { const k = t.dataset.tq, p = t.selectionStart, y = scrollY; TQ[k] = t.value; render(); keepY(y); const i = $(`[data-tq="${k}"]`); if (i) { i.focus(); i.setSelectionRange(p, p); } } else if (t.dataset && t.dataset.fq) fq(t); else if (t.dataset && t.dataset.fadd && t.list && [...t.list.options].some(x => x.value === t.value)) t.dispatchEvent(new Event('change', { bubbles: true })); });
     root.addEventListener('keydown', ev => { if (ev.key === 'Escape' && ev.target.dataset && ev.target.dataset.fq && ev.target.value) { ev.stopPropagation(); fq(ev.target, ''); } }, true);
     root.addEventListener('focusin', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) fltSug(t.dataset.fq, t); });
     root.addEventListener('keydown', ev => { const t = ev.target; if (ev.key === 'Enter' && t.dataset && t.dataset.nmname) { ev.preventDefault(); t.parentNode.querySelector('button').click(); } });
@@ -17926,7 +17929,7 @@ function build() {
         if (t) {
             ev.preventDefault();
             const bs = [...t.closest('tbody').querySelectorAll('.ed-tr[data-edtr]')], ids = bs.map(x => x.dataset.edtr);
-            if (edOpen.has(t.dataset.edtr)) { ids.forEach(i => edOpen.delete(i)); const y = scrollY; render(); scrollTo(0, y); }
+            if (edOpen.has(t.dataset.edtr)) { ids.forEach(i => edOpen.delete(i)); const y = scrollY; render(); keepY(y); }
             else { ids.forEach(i => edOpen.add(i)); edBatch(bs.map(x => [x.dataset.edtr, x.dataset.edrg])); }
             return;
         }
@@ -17948,7 +17951,7 @@ function build() {
             if (open) S.fxOpen.push(...keys);
             const y = scrollY, part = detailGroup.closest('.tl > .detail'), row = part && part.previousElementSibling;
             if (row) { redrawTracks(); save(); } else render();
-            scrollTo(0, y); return;
+            keepY(y); return;
         }
         // A track's detail follows its row in the DOM, rather than being its child.
         const trackPart = ev.target.closest('.tl > .tr, .tl > .detail');
@@ -17959,7 +17962,7 @@ function build() {
             const keys = rowKeys.filter(k => k.startsWith(prefix));
             const open = !S.open.has(track.dataset.row);
             keys.forEach(k => open ? S.open.add(k) : S.open.delete(k));
-            const y = scrollY; redrawTracks(); scrollTo(0, y); return;
+            const y = scrollY; redrawTracks(); keepY(y); return;
         }
         const disc = ev.target.closest('.disc[data-disc]');
         if (disc) {
@@ -17968,7 +17971,7 @@ function build() {
             const fold = !S.discFold.includes(+disc.dataset.disc);
             S.discFold = S.discFold.filter(x => !keys.includes(x));
             if (fold) S.discFold.push(...keys);
-            const y = scrollY; redrawTracks(); scrollTo(0, y); return;
+            const y = scrollY; redrawTracks(); keepY(y); return;
         }
         // a group's chevron does the same for its section's groups
         const g = ev.target.closest('.gf[data-gfold]') || (ev.target.closest('.gh,.disco-h') && ev.target.closest('.gh,.disco-h').querySelector('.gf[data-gfold]')) || grpOf(ev.target);
@@ -17976,7 +17979,7 @@ function build() {
             ev.preventDefault();
             const ks = [...g.closest('section').querySelectorAll('.gf[data-gfold]')].map(x => x.dataset.gfold);
             S.grpFold = S.grpFold.includes(g.dataset.gfold) ? S.grpFold.filter(x => !ks.includes(x)) : [...new Set([...S.grpFold, ...ks])];
-            const y = scrollY; render(); scrollTo(0, y);
+            const y = scrollY; render(); keepY(y);
             return;
         }
         const sc = ev.target.closest('#app>section.sec');
@@ -17985,7 +17988,7 @@ function build() {
         ev.preventDefault();
         const ids = [...document.querySelectorAll('.fold[data-fold]')].map(x => x.dataset.fold);
         S.fold = S.fold.includes(b.dataset.fold) ? S.fold.filter(x => !ids.includes(x)) : [...new Set([...S.fold, ...ids])];
-        const y = scrollY; render(); scrollTo(0, y);
+        const y = scrollY; render(); keepY(y);
     });
     // a click outside the disambiguation menu, or Escape, closes it
     const dmClose = () => document.querySelectorAll('.dmenu.open').forEach(x => x.classList.remove('open'));
@@ -18729,7 +18732,7 @@ function cfgWire(panel, b, body) {
     });
     // number fields become the suite's − n + stepper, on every redraw of the body
     mbuControls(b); new MutationObserver(() => mbuControls(b)).observe(b, { childList: true });
-    panel.addEventListener('change', ev => { if (!ev.target.matches('[data-anno-hover]')) return; S.annoHover = ev.target.checked; save(); if (ehOn) { const sy = scrollY; render(); scrollTo(0, sy); } });
+    panel.addEventListener('change', ev => { if (!ev.target.matches('[data-anno-hover]')) return; S.annoHover = ev.target.checked; save(); if (ehOn) { const sy = scrollY; render(); keepY(sy); } });
     // drag a shown platform onto another to put it before that one
     let dragK = null;
     const overOf = ev => { const t = ev.target.closest && ev.target.closest('.chip[draggable=true]'); return t && t.dataset.k !== dragK ? t : null; };
@@ -18742,7 +18745,7 @@ function cfgWire(panel, b, body) {
         const vis = plSorted(cfgProviders()).map(p => p.key).filter(k => k !== dragK); vis.splice(vis.indexOf(t.dataset.k), 0, dragK);
         S.plOrder = [...vis, ...S.plOrder.filter(k => !vis.includes(k))]; plFollow(); dragK = null;
         save(); redo();
-        if (ehOn) { const sy = scrollY; render(); scrollTo(0, sy); }
+        if (ehOn) { const sy = scrollY; render(); keepY(sy); }
     });
     // an image provider moves with the pointer: dropped on another, it goes before that one; a click without moving toggles it
     let imgMoved = false;
@@ -18760,7 +18763,7 @@ function cfgWire(panel, b, body) {
             removeEventListener('pointermove', move); removeEventListener('pointerup', up);
             if (!imgMoved) return;
             const t = at(e);
-            if (t && t !== c) { const o = imgOrder().filter(k => k !== c.dataset.k); o.splice(o.indexOf(t.dataset.k), 0, c.dataset.k); S.imgOrder = o; imgResort(); save(); if (ehOn) { const sy = scrollY; render(); scrollTo(0, sy); } }
+            if (t && t !== c) { const o = imgOrder().filter(k => k !== c.dataset.k); o.splice(o.indexOf(t.dataset.k), 0, c.dataset.k); S.imgOrder = o; imgResort(); save(); if (ehOn) { const sy = scrollY; render(); keepY(sy); } }
             redo();
         };
         addEventListener('pointermove', move); addEventListener('pointerup', up);
@@ -18813,7 +18816,7 @@ function cfgWire(panel, b, body) {
         save();
         redo();
         plyDraw();
-        if (ehOn) { const sy = scrollY; render(); scrollTo(0, sy); }
+        if (ehOn) { const sy = scrollY; render(); keepY(sy); }
     });
     // the ListenBrainz token is kept as it's typed, then checked with ListenBrainz
     panel.addEventListener('input', ev => { if (ev.target.matches('[data-lbtok]')) { const a = panel.querySelector('[data-lb-get]'); if (a) a.hidden = !!ev.target.value.trim(); } });
@@ -18835,7 +18838,7 @@ async function imgResort() {
     const images = await dedupArtistImages(ARTIMG.sorted(g.imgsAll));
     if (data !== d || g.imgSortTicket !== ticket) return;
     g.imgs = images; g.imgI = 0;
-    if (ehOn) { const y = scrollY; render(); scrollTo(0, y); }
+    if (ehOn) { const y = scrollY; render(); keepY(y); }
 }
 const closeCfg = () => { const w = document.getElementById('eh-cfg'); if (w) w.remove(); };
 function launcher() {
