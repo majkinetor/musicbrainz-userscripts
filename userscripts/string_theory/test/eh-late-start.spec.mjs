@@ -22,7 +22,8 @@ test('Platform Check starts on a release EH shows in a tab loaded elsewhere', { 
   await page.locator('#app a[href*="/release-group/"]').first().click();
   check(await until(() => page.evaluate(() => location.pathname), p => p.startsWith('/release-group/')) !== null, 'on a release group');
   check(await until(() => page.locator('#falcon-launcher').count(), n => n > 0) > 0, 'Falcon on the release group');
-  await page.locator('#app a[href*="/release/"]:not([href*="/add"])').first().click();
+  // a link with no button in it: the cover's link holds "Play this release", and a click there plays instead of opening
+  await page.locator('#app a[href*="/release/"]:not([href*="/add"]):not(:has(button))').first().click();
   check(await until(() => page.evaluate(() => location.pathname), p => /^\/release\/[0-9a-f-]{36}$/.test(p)) !== null, 'on a release');
   check(await until(() => page.locator('#mb-pc-dock').isVisible(), v => v) === true, 'Platform Check is in the dock');
   check(await until(() => page.locator('#ii-dock').isVisible(), v => v) === true, 'ISRC Scout is in the dock');
@@ -56,7 +57,7 @@ test('Mission Control and ISRC Scout follow another release EH shows', { tag: ['
   check(await until(() => otherRg.count(), n => n > 0) > 0, 'the artist has another release group');
   await otherRg.click();
   check(await until(() => page.evaluate(() => location.pathname), p => p.startsWith('/release-group/')) !== null, 'on another release group');
-  await page.locator('#app a[href*="/release/"]:not([href*="/add"])').first().click();
+  await page.locator('#app a[href*="/release/"]:not([href*="/add"]):not(:has(button))').first().click();
   const id = await until(() => page.evaluate(() => (location.pathname.match(/^\/release\/([0-9a-f-]{36})$/) || [])[1]), v => !!v && v !== REL);
   check(!!id, 'on another release');
   check(await until(() => page.evaluate(() => document.documentElement.getAttribute('data-mbu-release')), v => v === id) === id, 'EH marks it');

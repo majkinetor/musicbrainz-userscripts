@@ -38,11 +38,12 @@ test.describe('gate log', () => {
     const pills = await page.$$eval('#st-gate .st-gate-pill', l => l.map(x => x.textContent));
     check(pills.includes('OK ↻2'), `the retried request is one row (${pills.join(', ')})`);
     check(pills.includes('error'), 'the failed request shows its error');
-    await page.click('#st-gate tr.rq');
+    // a request's own row: a run of like requests has a header row (tr.rq.grp), which opens the run, not steps
+    await page.click('#st-gate tr.rq:not(.grp)');
     check(await page.$('#st-gate tr.steps'), 'a click shows the steps');
     check(await page.$$eval('#st-gate tr.steps .st-gl-req .st-gl-f', l => l.length) >= 1, 'an open row shows its own lane');
     await page.click('#st-gate tr.rq', { button: 'right' });
-    const rq = await page.$$eval('#st-gate tr.rq', l => l.length), steps = await page.$$eval('#st-gate tr.steps', l => l.length);
+    const rq = await page.$$eval('#st-gate tr.rq:not(.grp)', l => l.length), steps = await page.$$eval('#st-gate tr.steps', l => l.length);
     check(steps === rq, `a right click shows the steps of every row (${steps} of ${rq})`);
     await page.click('#st-gate tr.rq', { button: 'right' });
     check(!(await page.$('#st-gate tr.steps')), 'a second right click hides them all');
@@ -65,11 +66,14 @@ test.describe('gate log', () => {
     await page.hover('#st-gate-lanes .st-gl-lane');
     await page.mouse.wheel(0, -100);
     check(await zoomed(), 'with the wheel button off, the wheel zooms');
-    await page.click('#st-gate .st-gate-seg [data-m=bad]');
+    // Failed is in the Result column's filter since 2026-11-23, no longer a button in the title bar
+    await page.click('#st-gate .st-gate-cf[data-cf=res]');
+    await page.click('.st-gate-cfp li[data-mo=bad]');
     const bad = await page.$$eval('#st-gate tr.rq .st-gate-pill', l => l.map(x => x.classList.contains('bad') ? 'bad' : x.textContent));
     check(bad.length >= 1 && bad.every(x => x === 'bad'), `Failed shows only failed requests (${bad.join(', ')})`);
-    await page.click('#st-gate .st-gate-seg [data-m=bad]');
-    check(await page.getAttribute('#st-gate .st-gate-seg [data-m=all]', 'aria-pressed') === 'true', 'a second click on Failed shows all again');
+    await page.click('#st-gate .st-gate-cf[data-cf=res]', { button: 'right' });
+    check(!(await page.$eval('#st-gate .st-gate-cf[data-cf=res]', b => b.classList.contains('on'))), 'a right click on the funnel clears Failed');
+    check(await page.$$eval('#st-gate tr.rq .st-gate-pill', l => l.some(x => !x.classList.contains('bad'))), 'and shows all again');
     await attachShot(testInfo, page.locator('#st-gate'), 'gate log');
     if (process.env.SHOT) await page.locator('#st-gate').screenshot({ path: process.env.SHOT });
     await page.click('#st-gate .mbu-logpop-min');
