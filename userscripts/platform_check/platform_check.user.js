@@ -9210,7 +9210,10 @@ async function scanBeatport({ artist, album, existingUrl, mbTracks, mbid, isVari
         // min-mode: most of the (short) slug's tokens must appear in the album title — lenient enough for a
         // short official slug vs a long MB title, but rejects an unrelated release that shares ~nothing.
         let pick = null;
-        for (const h of hits) { if (tokenMatch(slugOf(h), album, 'min', 0.6)) { pick = h; break; } }
+        // #1100 max-mode: the slug must match the whole title, not a word of it ("remix", "vol 1");
+        // a one-word title is too common to trust unverified, so it needs the API check (logged in)
+        const oneWord = normName(album).split(' ').filter(t => t.length >= 2).length < 2;
+        if (!oneWord || bpLoggedIn()) for (const h of hits) { if (tokenMatch(slugOf(h), album, 'max', 0.6)) { pick = h; break; } }
         if (!pick) {
             appendLog(label, `Search hits didn't match “${album}” (top: ${slugOf(hits[0])}) — skipping to avoid a wrong release (#380)`, 'warn');
             cacheSet(mbid, 'beatport', { url: null, tracks: null, year: null, label: null, source: 'search' });
