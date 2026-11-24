@@ -39,6 +39,15 @@
  *  Four a second sat between, but most of a run's 503s are MusicBrainz's own load (global, a flat
  *  second) whatever our pace, and four a second only took longer (112 s against 32-67 s). */
 export const MBN_GAP = 125;
+/** #1112: searches keep their own, slower pace among themselves (`stat`, `sgap`): MusicBrainz sheds
+ *  searches when its search servers are busy, and a search sent the moment a 1s hold ended drew the
+ *  next shed, global and search-shed by turns, four times a second apart. Each shed doubles the gap
+ *  between search starts, each search answered takes MBN_SGAP_STEP off it. Lookups keep MBN_GAP. */
+export const MBN_SGAP_MIN = 500;
+export const MBN_SGAP_MAX = 4000;
+export const MBN_SGAP_STEP = 100;
+/** #1112: up to this much is added at random to a hold, so waiters do not all leave on the same beat. */
+export const MBN_JITTER = 500;
 /** Requests that may start back to back after a quiet spell. */
 export const MBN_BURST = 4;
 /** The shared schedule, in the origin's localStorage. */
@@ -423,8 +432,16 @@ export async function mbnSlot(o) {
             if ((s.last || 0) > now) at = Math.max(at, s.last + MBN_GAP);   // as above
             s.last = Math.max(s.last || 0, at);
         }
-        s.tat = Math.max(tat, at) + MBN_GAP;
-        const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : 'pacing, eight requests a second';
+        // #1112: a search also waits for the search line; a picker's search (not background) moves it but does not wait in it
+        // the lookup line (tat) moves by the paced slot, not the search's: a slowed search must not hold lookups
+        const paced = at;
+        if (o.search) {
+            const sgap = Math.min(Math.max(s.sgap || MBN_SGAP_MIN, MBN_SGAP_MIN), MBN_SGAP_MAX);
+            if (background && (s.stat || 0) > at) { tr('book', { w: s.stat - now, why: 'search pace', sg: sgap }); at = s.stat; }
+            s.stat = Math.max(s.stat || 0, at) + sgap;
+        }
+        s.tat = Math.max(tat, paced) + MBN_GAP;
+        const why = cool > now && cool >= at ? 'MusicBrainz asked everyone to wait' : o.search && (s.sgap || MBN_SGAP_MIN) > MBN_SGAP_MIN && at > now ? 'search pace, one every ' + Math.round((s.sgap || MBN_SGAP_MIN) / 100) / 10 + 's' : 'pacing, eight requests a second';
         if (at > now) tr('book', { w: at - now, why: cool > now && cool >= at ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
         return { at, why, slip: s.slip || 0, bslip: s.bslip || 0 };
     });
@@ -521,9 +538,10 @@ export async function mbnAnswer(status, header, o) {
                 if (now > (s.scool || 0) + 30000) s.shot = 0;
                 if (now >= (s.scool || 0)) s.shot = Math.min((s.shot || 0) + 1, 6);
                 // #1095: a shed clears within a second or so; growing holds only stalled the searches
-                const ms = Math.min(Math.max(1000, ra), MBN_MAX_HOLD);
+                const ms = Math.min(Math.max(1000, ra) + Math.round(Math.random() * MBN_JITTER), MBN_MAX_HOLD);
+                s.sgap = Math.min(Math.max(s.sgap || MBN_SGAP_MIN, MBN_SGAP_MIN) * 2, MBN_SGAP_MAX);   // #1112
                 s.scool = Math.max(s.scool || 0, now + ms);
-                tr({ ra: raw == null ? undefined : String(raw).slice(0, 40), shold: s.scool - now, shot: s.shot }, s);
+                tr({ ra: raw == null ? undefined : String(raw).slice(0, 40), shold: s.scool - now, shot: s.shot, sg: s.sgap }, s);
                 return s.scool - now;
             });
             if (o.log) o.log('warn', 'MusicBrainz gate: HTTP 503 (search-shed) — searches hold ' + Math.round(hold / 100) / 10 + 's');
@@ -547,7 +565,8 @@ export async function mbnAnswer(status, header, o) {
             // through. It holds a flat second (or its Retry-After); growing holds stalled every tab for nothing
             // #1095: a Retry-After is MusicBrainz's own answer for how long: "Retry-After: 5" held 10s at hot 2,
             // where Credit Hoarder alone waited the 5. Only a 503 without one grows
-            const ms = Math.min(Math.max(1000, ra) * (load || raw != null ? 1 : Math.max(1, s.hot)), MBN_MAX_HOLD);
+            const ms = Math.min(Math.max(1000, ra) * (load || raw != null ? 1 : Math.max(1, s.hot)) + Math.round(Math.random() * MBN_JITTER), MBN_MAX_HOLD);   // #1112 jitter
+            if (o.search) s.sgap = Math.min(Math.max(s.sgap || MBN_SGAP_MIN, MBN_SGAP_MIN) * 2, MBN_SGAP_MAX);   // #1112: a search's 503 slows searches too
             // log: every waiter whose slot a hold passed booked again at the end of the queue, behind
             // requests booked after it, and a hidden tab's (whose timer wakes late) went last again on
             // each hold: one waited 40s. The hold now moves the whole queue later by its length, the
@@ -569,6 +588,7 @@ export async function mbnAnswer(status, header, o) {
     if (status >= 200 && status < 500) await mbnState(s => {
         if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1;
         if (o.search && s.shot) s.shot = Date.now() > (s.scool || 0) + 30000 ? 0 : s.shot - 1;
+        if (o.search && (s.sgap || 0) > MBN_SGAP_MIN) s.sgap = Math.max(MBN_SGAP_MIN, s.sgap - MBN_SGAP_STEP);   // #1112: room back, a step per answer
         tr({}, s);
     });
     else tr({});
@@ -1125,6 +1145,6 @@ export function mbnReverify(url, init, o) {
 
 /** What sync-gate.mjs inlines, in order. */
 export const MBN_INLINE = {
-    consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_LOCK_HOLD, MBN_MAX_HOLD, MBN_MAX_LEAD, MBN_TRACE_MAX, MBN_MERGE_WAIT, MBN_CACHE_TTL, MBN_CACHE_MAX, MBN_INC_ALONE },
+    consts: { MBN_GAP, MBN_SGAP_MIN, MBN_SGAP_MAX, MBN_SGAP_STEP, MBN_JITTER, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_LOCK_HOLD, MBN_MAX_HOLD, MBN_MAX_LEAD, MBN_TRACE_MAX, MBN_MERGE_WAIT, MBN_CACHE_TTL, MBN_CACHE_MAX, MBN_INC_ALONE },
     fns: [mbnGated, mbnState, mbnSleep, mbnRid, mbnTabId, mbnTabCheck, mbnTrace, mbnHideUrl, mbnSlot, mbnLead, mbnAnswer, mbnBodySize, mbnBodyText, mbnLength, mbnGmSize, mbnReasons, mbnReasonOf, mbnLog, mbnGm, mbnGmFn, mbnXhr, mbnFetch, mbnEdited, mbnEditEpoch, mbnCacheUrl, mbnCacheGet, mbnCachePut, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
 };

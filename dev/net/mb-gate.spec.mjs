@@ -9,7 +9,9 @@ test.use({ profile: 'fresh', gm: false });
 const ORIGIN = 'https://gate.test';
 // the specs below time the gate's logic at the old pace, a burst of three then one a second;
 // the shipped pace has its own spec, with the real constants
-const CONSTS = { ...MBN_INLINE.consts, MBN_GAP: 1000, MBN_BURST: 3 };
+// #1112: no jitter and no search line here, so the pace and hold specs measure exact times; the search
+// line has its own spec, with its real constants
+const CONSTS = { ...MBN_INLINE.consts, MBN_GAP: 1000, MBN_BURST: 3, MBN_JITTER: 0, MBN_SGAP_MIN: 0 };
 const GATE = Object.entries(CONSTS).map(([k, v]) => `const ${k} = ${JSON.stringify(v)};`).join('\n') + '\n'
   + MBN_INLINE.fns.map(f => f.toString()).join('\n')
   // the stub: each call records its start; a queued status list decides the answers (default 200)
@@ -526,4 +528,30 @@ test('only MusicBrainz\'s website side is checked, and a JSON answer passes unto
   });
   check(JSON.stringify(r.website) === '[true,true,false,false,false]', `website side: relative on MusicBrainz and any musicbrainz.org page; not ws/2, not other sites (${JSON.stringify(r.website)})`);
   check(r.calls === 1 && r.frames === 0 && /json/.test(r.untouched), 'a JSON answer is returned as it came, one request, no frame');
+});
+
+// #1112: searches keep their own pace: each shed doubles the gap between search starts, each
+// answered search takes a step off it, and lookups never wait in the search line
+test('a shed slows searches only, and answered searches speed them up again', { tag: ['@unit'] }, async ({ context }) => {
+  const a = await context.newPage();
+  await a.goto(ORIGIN + '/');
+  const real = MBN_INLINE.consts;
+  await a.addScriptTag({ content: GATE.replace(/^const MBN_SGAP_MIN = .*$/m, 'const MBN_SGAP_MIN = ' + real.MBN_SGAP_MIN + ';').replace(/^const MBN_GAP = .*$/m, 'const MBN_GAP = ' + real.MBN_GAP + ';') });
+  const r = await a.evaluate(async () => {
+    localStorage.clear();
+    const shed = n => n === 'X-RateLimit-Who' ? 'search-shed' : null;
+    await mbnAnswer(503, shed, { search: true });
+    await mbnAnswer(503, shed, { search: true });
+    const sgap = JSON.parse(localStorage.getItem('mbu:mb-gate')).sgap;
+    const t0 = Date.now(), starts = [];
+    await Promise.all([0, 1, 2].map(i => mbnSlot({ search: true }).then(() => starts.push(['s', Date.now() - t0])))
+      .concat([0, 1].map(i => mbnSlot({}).then(() => starts.push(['l', Date.now() - t0])))));
+    for (let i = 0; i < 5; i++) await mbnAnswer(200, () => null, { search: true });
+    return { sgap, starts, after: JSON.parse(localStorage.getItem('mbu:mb-gate')).sgap };
+  });
+  const s = r.starts.filter(x => x[0] === 's').map(x => x[1]).sort((x, y) => x - y), l = r.starts.filter(x => x[0] === 'l').map(x => x[1]);
+  check(r.sgap === real.MBN_SGAP_MIN * 4, `two sheds: the search gap doubled twice (${r.sgap})`);
+  check(s[1] - s[0] >= r.sgap - 100 && s[2] - s[1] >= r.sgap - 100, `searches start a gap apart (${s.join(', ')} ms)`);
+  check(l.every(t => t < s[1]), `lookups do not wait in the search line (${l.join(', ')} ms)`);
+  check(r.after === r.sgap - 5 * real.MBN_SGAP_STEP, `five answers take five steps off (${r.after})`);
 });
