@@ -89,7 +89,7 @@ Under it, the last 60 seconds show as one lane per tab, with the scripts of that
 
 The button after **T** in the title bar puts the log's icon with the launchers. Its count is this tab's latest burst of requests, those that started within 4 seconds of one another, and it stays until the next burst. While requests are on their way the count fades. The mouse on the icon shows the HUD beside it until the mouse leaves both, a click opens the window, and a right click keeps the HUD open.
 
-The mouse wheel on the time line zooms in and out around the pointer, and Shift with the wheel moves it to the left or right. When the time line is zoomed in, you can also drag it to the left or right with the mouse. The button with the left and right arrow swaps the two, and String Theory remembers your choice. The button with the diagonal arrow, or a right click on the time line, shows the whole span again.
+The mouse wheel on the time line zooms in and out around the pointer, and Shift with the wheel moves it to the left or right. When the time line is zoomed in, you can also drag it to the left or right with the mouse. The button with the left and right arrow swaps the two, and String Theory remembers your choice. The button with the diagonal arrow, in the window and the HUD, or a right click on the time line, shows the whole span again.
 
 The button with the left and right arrow above the table fits each column to its widest cell, and the Request column takes the rest. A right click on it fits the Request column too, and the table then scrolls sideways.
 
