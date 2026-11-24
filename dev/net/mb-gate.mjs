@@ -223,7 +223,7 @@ export function mbnSleep(ms, cancelled) {
 /**
  * Note one gate event for String Theory's Gate log, to tell MusicBrainz's own load apart from
  * ours. Each tab keeps its last MBN_TRACE_MAX events under MBN_KEY + '-trace:' + its id (per tab,
- * so tabs never overwrite each other's); a tab's trace idle for an hour is dropped by the next.
+ * so tabs never overwrite each other's); a tab's trace idle for 10 minutes is dropped by the next.
  * `ev.e` is the kind: lead, book, cancel, start, answer, error, giveup, lead+, lead-, check.
  * Events wait in memory and go to storage together, a second after the first (and when the page
  * is left or hidden): one write per event parsed and rewrote the whole trace each time, and fired a
@@ -290,14 +290,14 @@ export function mbnTrace(ev) {
                     localStorage.setItem(key, JSON.stringify(list));
                     // the tab's page title, for the network log's tooltip; a worker frame keeps its tab's
                     try { if (window === window.top && document.title) localStorage.setItem(MBN_KEY + '-title:' + g.tab, String(document.title).slice(0, 200)); } catch (e) {}
-                    if (now - g.swept > 60000) {   // once a minute: drop the traces of tabs gone quiet for an hour
+                    if (now - g.swept > 60000) {   // once a minute: drop the traces of tabs gone quiet for 10 minutes
                         g.swept = now;
                         // one pass over the names: in Firefox each localStorage.key(i) walks the store from its start
                         for (const k of Object.keys(localStorage)) {
                             if (k.indexOf(pre) !== 0 || k === key) continue;
                             let last = 0;
                             try { const l = JSON.parse(localStorage.getItem(k) || '[]'); last = (l[l.length - 1] || {}).t || 0; } catch (e) {}
-                            if (now - last > 3600000) { localStorage.removeItem(k); localStorage.removeItem(MBN_KEY + '-title:' + k.slice(pre.length)); }
+                            if (now - last > 600000) { localStorage.removeItem(k); localStorage.removeItem(MBN_KEY + '-title:' + k.slice(pre.length)); }
                         }
                     }
                 } catch (e) { /* no storage: no trace */ }

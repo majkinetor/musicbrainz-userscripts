@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.192647
+// @version      2026.11.24.193806
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -271,14 +271,14 @@
                       localStorage.setItem(key, JSON.stringify(list));
                       // the tab's page title, for the network log's tooltip; a worker frame keeps its tab's
                       try { if (window === window.top && document.title) localStorage.setItem(MBN_KEY + '-title:' + g.tab, String(document.title).slice(0, 200)); } catch (e) {}
-                      if (now - g.swept > 60000) {   // once a minute: drop the traces of tabs gone quiet for an hour
+                      if (now - g.swept > 60000) {   // once a minute: drop the traces of tabs gone quiet for 10 minutes
                           g.swept = now;
                           // one pass over the names: in Firefox each localStorage.key(i) walks the store from its start
                           for (const k of Object.keys(localStorage)) {
                               if (k.indexOf(pre) !== 0 || k === key) continue;
                               let last = 0;
                               try { const l = JSON.parse(localStorage.getItem(k) || '[]'); last = (l[l.length - 1] || {}).t || 0; } catch (e) {}
-                              if (now - last > 3600000) { localStorage.removeItem(k); localStorage.removeItem(MBN_KEY + '-title:' + k.slice(pre.length)); }
+                              if (now - last > 600000) { localStorage.removeItem(k); localStorage.removeItem(MBN_KEY + '-title:' + k.slice(pre.length)); }
                           }
                       }
                   } catch (e) { /* no storage: no trace */ }

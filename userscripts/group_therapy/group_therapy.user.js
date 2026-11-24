@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.24.192648
+// @version      2026.11.24.193806
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -221,14 +221,14 @@
                       localStorage.setItem(key, JSON.stringify(list));
                       // the tab's page title, for the network log's tooltip; a worker frame keeps its tab's
                       try { if (window === window.top && document.title) localStorage.setItem(MBN_KEY + '-title:' + g.tab, String(document.title).slice(0, 200)); } catch (e) {}
-                      if (now - g.swept > 60000) {   // once a minute: drop the traces of tabs gone quiet for an hour
+                      if (now - g.swept > 60000) {   // once a minute: drop the traces of tabs gone quiet for 10 minutes
                           g.swept = now;
                           // one pass over the names: in Firefox each localStorage.key(i) walks the store from its start
                           for (const k of Object.keys(localStorage)) {
                               if (k.indexOf(pre) !== 0 || k === key) continue;
                               let last = 0;
                               try { const l = JSON.parse(localStorage.getItem(k) || '[]'); last = (l[l.length - 1] || {}).t || 0; } catch (e) {}
-                              if (now - last > 3600000) { localStorage.removeItem(k); localStorage.removeItem(MBN_KEY + '-title:' + k.slice(pre.length)); }
+                              if (now - last > 600000) { localStorage.removeItem(k); localStorage.removeItem(MBN_KEY + '-title:' + k.slice(pre.length)); }
                           }
                       }
                   } catch (e) { /* no storage: no trace */ }

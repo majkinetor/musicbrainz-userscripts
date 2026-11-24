@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.24.192647
+// @version      2026.11.24.193806
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -329,14 +329,14 @@ function mbnTrace(ev) {
                     localStorage.setItem(key, JSON.stringify(list));
                     // the tab's page title, for the network log's tooltip; a worker frame keeps its tab's
                     try { if (window === window.top && document.title) localStorage.setItem(MBN_KEY + '-title:' + g.tab, String(document.title).slice(0, 200)); } catch (e) {}
-                    if (now - g.swept > 60000) {   // once a minute: drop the traces of tabs gone quiet for an hour
+                    if (now - g.swept > 60000) {   // once a minute: drop the traces of tabs gone quiet for 10 minutes
                         g.swept = now;
                         // one pass over the names: in Firefox each localStorage.key(i) walks the store from its start
                         for (const k of Object.keys(localStorage)) {
                             if (k.indexOf(pre) !== 0 || k === key) continue;
                             let last = 0;
                             try { const l = JSON.parse(localStorage.getItem(k) || '[]'); last = (l[l.length - 1] || {}).t || 0; } catch (e) {}
-                            if (now - last > 3600000) { localStorage.removeItem(k); localStorage.removeItem(MBN_KEY + '-title:' + k.slice(pre.length)); }
+                            if (now - last > 600000) { localStorage.removeItem(k); localStorage.removeItem(MBN_KEY + '-title:' + k.slice(pre.length)); }
                         }
                     }
                 } catch (e) { /* no storage: no trace */ }
