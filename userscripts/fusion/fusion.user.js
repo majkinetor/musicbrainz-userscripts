@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.213154
+// @version      2026.11.24.220000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -1289,7 +1289,7 @@ async function fetchReleaseRecordings(releaseMbid) {
                 length: r.length != null ? r.length : t.length,
                 isrcs: r.isrcs || [], ...recordingSetting(r.relations),
                 artistCredit: acName(ac), artistGid: acPrimaryGid(ac), artistGids: acGids(ac), video: !!r.video, isrcsKnown: true, isrcSource: 'index',
-                releases: [{ gid: j.id, title: j.title, disambiguation: j.disambiguation || '', rgGid: (j['release-group'] || {}).id || null, trackNumber: t.number || null, trackCount: m['track-count'] || null }],
+                releases: [{ gid: j.id, title: j.title, disambiguation: j.disambiguation || '', rgGid: (j['release-group'] || {}).id || null, artist: acName(j['artist-credit']) || null, trackNumber: t.number || null, trackCount: m['track-count'] || null }],
             }));
         }
     }
@@ -1375,7 +1375,7 @@ async function enrichReleasesFromSearch(luceneQuery, recordings) {
             const releases = (r.releases || []).map(rel => {
                 let trackNumber = null;
                 for (const med of rel.media || []) { if (med.track && med.track[0]) { trackNumber = med.track[0].number || null; break; } }
-                return { gid: rel.id, title: rel.title, disambiguation: rel.disambiguation || '', rgGid: (rel['release-group'] || {}).id || null, trackNumber, trackCount: rel['track-count'] || null, date: rel.date || null };
+                return { gid: rel.id, title: rel.title, disambiguation: rel.disambiguation || '', rgGid: (rel['release-group'] || {}).id || null, artist: acName(rel['artist-credit']) || null, trackNumber, trackCount: rel['track-count'] || null, date: rel.date || null };
             });
             rec.releases = releases; rec.allReleases = releases;
             matched++;
@@ -1408,7 +1408,7 @@ async function fetchRecordingsBySearch(luceneQuery, label, onPage) {
             const releases = (r.releases || []).map(rel => {
                 let trackNumber = null;
                 for (const med of rel.media || []) { if (med.track && med.track[0]) { trackNumber = med.track[0].number || null; break; } }
-                return { gid: rel.id, title: rel.title, disambiguation: rel.disambiguation || '', rgGid: (rel['release-group'] || {}).id || null, trackNumber, trackCount: rel['track-count'] || null, date: rel.date || null };
+                return { gid: rel.id, title: rel.title, disambiguation: rel.disambiguation || '', rgGid: (rel['release-group'] || {}).id || null, artist: acName(rel['artist-credit']) || null, trackNumber, trackCount: rel['track-count'] || null, date: rel.date || null };
             });
             const ac = r['artist-credit'];
             // the search already returns every release a recording appears on,
@@ -1451,7 +1451,7 @@ async function fetchRGRecordings(rgMbid, onPage) {
             for (const med of media) {
                 for (const t of med.tracks || []) {
                     const r = t.recording; if (!r || !r.id) continue;
-                    const relRef = { gid: rel.id, title: rel.title, disambiguation: rel.disambiguation || '', rgGid: rgMbid, trackNumber: t.number || null, trackCount: med['track-count'] || null, date: rel.date || null };
+                    const relRef = { gid: rel.id, title: rel.title, disambiguation: rel.disambiguation || '', rgGid: rgMbid, artist: acName(rel['artist-credit']) || null, trackNumber: t.number || null, trackCount: med['track-count'] || null, date: rel.date || null };
                     const existing = byGid.get(r.id);
                     if (existing) {
                         if (!existing.releases.some(x => x.gid === rel.id)) existing.releases.push(relRef);
@@ -1507,7 +1507,7 @@ function harvestInternalIdsFromPage() {
 async function fetchRecordingByGid(gid) {
     const j = await wsGet('/ws/2/recording/' + gid + '?inc=releases+release-groups+isrcs+artist-credits+' + REL_INC + '&fmt=json');
     if (!j) return null;
-    const releases = (j.releases || []).map(rel => ({ gid: rel.id, title: rel.title, disambiguation: rel.disambiguation || '', rgGid: (rel['release-group'] || {}).id || null, trackNumber: null, trackCount: null, date: rel.date || null }));
+    const releases = (j.releases || []).map(rel => ({ gid: rel.id, title: rel.title, disambiguation: rel.disambiguation || '', rgGid: (rel['release-group'] || {}).id || null, artist: acName(rel['artist-credit']) || null, trackNumber: null, trackCount: null, date: rel.date || null }));
     const ac = j['artist-credit'];
     return mkRecording(j.id, { title: j.title, disambiguation: j.disambiguation || '', length: j.length, isrcs: j.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), artistGids: acGids(ac), video: !!j.video, isrcsKnown: true, isrcSource: 'entity', ...recordingSetting(j.relations), releases, allReleases: releases });
 }
@@ -1526,7 +1526,7 @@ async function fetchAllReleases(gid) {
     for (const rel of j.releases || []) {
         if (seen.has(rel.id)) continue;
         seen.add(rel.id);
-        out.push({ gid: rel.id, title: rel.title, disambiguation: rel.disambiguation || '', rgGid: (rel['release-group'] || {}).id || null, trackNumber: null, trackCount: null, date: rel.date || null });
+        out.push({ gid: rel.id, title: rel.title, disambiguation: rel.disambiguation || '', rgGid: (rel['release-group'] || {}).id || null, artist: acName(rel['artist-credit']) || null, trackNumber: null, trackCount: null, date: rel.date || null });
     }
     return { releases: out, video: !!j.video, ...recordingSetting(j.relations) };
 }
@@ -2360,6 +2360,21 @@ function rgChip(result) {
     return '<span class="' + (result === 'same' ? 'hit' : '') + '" data-tip="' + tip + '">RG</span>';
 }
 const rgNote = result => result === 'same' ? 'Same release group' : result === 'different' ? 'Different release groups' : '';
+// RT: a release title that every member appears on (exact, as MB spells it), the release-title
+// counterpart of the RG chip
+const recordingRT = members => rgComparison(members.map(m => uniq((m.releases || []).map(r => r.title).filter(Boolean))));
+function rtChip(result) {
+    const tip = result === 'same' ? 'RT: same release title' : result === 'different' ? 'RT: different release titles' : 'RT: release title unknown';
+    return '<span class="' + (result === 'same' ? 'hit' : '') + '" data-tip="' + tip + '">RT</span>';
+}
+const rtNote = result => result === 'same' ? 'Same release title' : result === 'different' ? 'Different release titles' : '';
+// RA: a release artist credit every member appears under, as credited on the release
+const recordingRA = members => rgComparison(members.map(m => uniq((m.releases || []).map(r => r.artist).filter(Boolean))));
+function raChip(result) {
+    const tip = result === 'same' ? 'RA: same release artist' : result === 'different' ? 'RA: different release artists' : 'RA: release artist unknown';
+    return '<span class="' + (result === 'same' ? 'hit' : '') + '" data-tip="' + tip + '">RA</span>';
+}
+const raNote = result => result === 'same' ? 'Same release artist' : result === 'different' ? 'Different release artists' : '';
 function fmtList(vals, max) {
     max = max || 4;
     const shown = vals.slice(0, max).map(v => '"' + v + '"').join(', ');
@@ -2431,6 +2446,10 @@ function autoEditNote(group) {
     if (!bullets.length) bullets.push('Grouped manually; no automatic signal matched across every recording.');
     const rg = rgNote(recordingRG(members));
     if (rg) bullets.push(rg);
+    const rt = rtNote(recordingRT(members));
+    if (rt) bullets.push(rt);
+    const ra = raNote(recordingRA(members));
+    if (ra) bullets.push(ra);
     // Partial signals are stated as partial rather than silently omitted — and
     // length gets a concrete number instead of a bare "matching only some of
     // them: length", which said nothing about how far apart they actually were.
@@ -5725,7 +5744,7 @@ function storeReleaseDetails(gid, rows) {
     for (const r of rows) {
         if (!r.gid || seen.has(r.gid)) continue;
         seen.add(r.gid);
-        list.push({ gid: r.gid, title: r.title, disambiguation: r.disambiguation || '', rgGid: r.rgGid || null, trackNumber: r.trackNumber, trackCount: null, date: r.date || null });
+        list.push({ gid: r.gid, title: r.title, disambiguation: r.disambiguation || '', rgGid: r.rgGid || null, artist: r.artist || null, trackNumber: r.trackNumber, trackCount: null, date: r.date || null });
     }
     rec.allReleases = list;
     if (!rec.releases || !rec.releases.length) rec.releases = list;
@@ -5816,7 +5835,7 @@ function groupCardHtml(group, embed) {
     const lenWarnTitle = lenOff ? lengthDiffLabel(members) + ' ' + secs(lenSpread) + 's — more than the ' + secs(lenTol) + 's length tolerance. Check it is really the same take before merging.' : '';
     const sigNames = { isrc: 'ISRC', acoustid: 'AcoustID', length: 'Length', title: 'Title', artist: 'Artist' };
     const sigAll = group.signalsAll || [];
-    const sigChips = rgChip(recordingRG(members)) + Object.keys(sigNames).map(k => {
+    const sigChips = rgChip(recordingRG(members)) + rtChip(recordingRT(members)) + raChip(recordingRA(members)) + Object.keys(sigNames).map(k => {
         const lit = sigAll.includes(k);
         const partial = !lit && (group.signals || []).includes(k);
         if (k === 'length' && lenOff) return '<span class="warn" data-tip="' + escapeHtml(lenWarnTitle) + '">' + sigNames[k] + '</span>';   // #619
