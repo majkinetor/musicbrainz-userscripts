@@ -4,7 +4,7 @@ test.use({ gm: { name: 'Event Horizon' } });
 
 test('external menu launchers survive redraws and can update or unregister', { tag: '@unit' }, async ({ page }) => {
   await page.setContent('<main id="app"><div class="kicker"><span class="acts"></span></div></main>');
-  await page.addScriptTag({ content: 'const SVG = () => ""; const actsFit = () => {};\n' + await functionSource('event_horizon', ['foreignMenuSync']) });
+  await page.addScriptTag({ content: 'const SVG = () => ""; const actsFit = () => {};\n' + await functionSource('event_horizon', ['foreignMenuSources', 'foreignMenuSync']) });
   await page.evaluate(() => {
     const source = document.createElement('button'); source.hidden = true;
     source.dataset.mbuMenuItem = 'test'; source.dataset.mbuMenuTitle = '<Launch>';
