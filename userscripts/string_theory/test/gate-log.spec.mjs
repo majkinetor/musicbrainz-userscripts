@@ -18,7 +18,7 @@ const openLog = async (page, inject) => {
   await page.locator('body:not([hidden])').click({ position: { x: 5, y: 5 } });
   await page.keyboard.press('Control+k');
   await page.waitForSelector('#st-pal-q', { timeout: 10000 });
-  await page.keyboard.type('gate log');
+  await page.keyboard.type('network log');
   await page.keyboard.press('Enter');
   await page.waitForSelector('#st-gate', { timeout: 10000 });
 };
@@ -50,6 +50,21 @@ test.describe('gate log', () => {
     const bar = await page.$('#st-gate-lanes .st-gl-lane *');
     await page.waitForTimeout(1200);
     check(bar && await bar.evaluate(e => e.isConnected), 'the lanes do not redraw under the mouse');
+    // the wheel button swaps what the wheel and Shift with the wheel do; the zoom button lights while zoomed
+    const zoomed = () => page.$eval('#st-gate .st-gate-zm', b => b.classList.contains('on'));
+    await page.click('#st-gate .st-gate-wm');
+    check(await page.$eval('#st-gate .st-gate-wm', b => b.classList.contains('on')), 'the wheel button turns on');
+    await page.hover('#st-gate-lanes .st-gl-lane');
+    await page.mouse.wheel(0, -100);
+    check(!(await zoomed()), 'with the wheel button on, the wheel does not zoom');
+    await page.keyboard.down('Shift'); await page.mouse.wheel(0, -100); await page.keyboard.up('Shift');
+    check(await zoomed(), 'with the wheel button on, Shift and the wheel zoom');
+    await page.click('#st-gate .st-gate-zm');
+    check(!(await zoomed()), 'the zoom button shows the whole span again');
+    await page.click('#st-gate .st-gate-wm');
+    await page.hover('#st-gate-lanes .st-gl-lane');
+    await page.mouse.wheel(0, -100);
+    check(await zoomed(), 'with the wheel button off, the wheel zooms');
     await page.click('#st-gate .st-gate-seg [data-m=bad]');
     const bad = await page.$$eval('#st-gate tr.rq .st-gate-pill', l => l.map(x => x.classList.contains('bad') ? 'bad' : x.textContent));
     check(bad.length >= 1 && bad.every(x => x === 'bad'), `Failed shows only failed requests (${bad.join(', ')})`);

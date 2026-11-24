@@ -87,6 +87,8 @@ The top line shows the gate now: the wait after a 503 (**Hold**), how many 503s 
 
 Under it, the last 60 seconds show as one lane per tab, with the scripts of that tab and this tab first. Each try is a bar: gray while it waits in the gate, then green, yellow (busy, tried again) or red. A red band across all lanes is a hold that MusicBrainz asked for.
 
+The mouse wheel on the time line zooms in and out around the pointer, and Shift with the wheel moves it to the left or right. The button with the left and right arrow swaps the two, and String Theory remembers your choice. The button with the diagonal arrow, or a right click on the time line, shows the whole span again.
+
 The table lists the requests of every tab, newest first: the script, the request, one square per try, the result, the wait and the rate limit. A click on a row shows its own time line and its steps, and a right click shows or hides the steps of all rows. The lanes stop moving while the mouse is over them, so you can read a tip. The rate limit shows when MusicBrainz sends its headers: `search-shed` means that MusicBrainz refuses searches for every user, not only for you. Then only searches wait, and other requests go on. **Failed** and **Retried** show only those requests, and a second click shows all again. **This tab only** hides the other tabs, **Copy** copies it all as Markdown for an issue, and **Clear** deletes it. Each tab keeps its last 400 events.
 
 ## Command palette
