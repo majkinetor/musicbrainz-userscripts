@@ -17,9 +17,11 @@ test.describe('#613', () => {
   test.use({ gm: apolloGm({ autoMatch: false, autoMatchRec: false, autoMatchLabel: false, autoMatchArtist: false, discogsUrlMatch: false }) });
   test('a common name is not taken for unique', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, context, inject }) => {
     const ws = await replayWs(page, new URL('./fixtures/ws-613.json.gz', import.meta.url));
-    // the duplicate-release search runs in the background: no releases, so its detail reads,
-    // which a slow machine reaches before the end, stay out of the replay
-    answerGm(context, o => (/\/ws\/2\/release\?query=/.test(o.url) ? { status: 200, body: '{"count":0,"offset":0,"releases":[]}' } : null));
+    // the duplicate checks run in the background: the title search finds no releases, and a
+    // duplicate's tracklist (the barcode match's too) is empty, so the reads a slow machine
+    // reaches before the end stay out of the replay
+    answerGm(context, o => (/\/ws\/2\/release\?query=/.test(o.url) ? { status: 200, body: '{"count":0,"offset":0,"releases":[]}' }
+      : /\/ws\/2\/release\/[^?]+\?inc=recordings\+artist-credits\+release-groups/.test(o.url) ? { status: 200, body: '{"media":[]}' } : null));
     await openApollo(page, inject, { seed: 'seed-saigon' });
     const r = await page.evaluate(async () => {
       const out = {};
