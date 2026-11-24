@@ -68,7 +68,7 @@ test.describe('the web-service queue', () => {
     check(r.later === 2, 'once settled, the next call asks again: a flight, not a cache');
     check(r.two === 2, 'two different URLs are two requests');
     check(r.throttled.same && r.throttled.noJson, 'a throttled flight is shared too, and nobody is handed an empty answer (#555)');
-    check(r.throttled.n === 4, `its retries run once, for all three callers (${r.throttled.n} attempts)`);
+    check(r.throttled.n === 6, `its retries (6 tries, #1110) run once, for all three callers (${r.throttled.n} attempts)`);
     check(r.stale === 2, 'a caller with stale() is never shared (its request may be dropped)');
     check(r.replay.asked === 115 && r.replay.sent === 48, `his log's profile: 115 asks, ${r.replay.sent} requests`);
   });
