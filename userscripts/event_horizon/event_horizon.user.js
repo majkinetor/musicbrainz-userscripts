@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.24.193806
+// @version      2026.11.24.201006
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -13235,7 +13235,7 @@ function secSorted(secs) {
     return [...secs].sort((a, b) => at(a) - at(b));
 }
 function secRail(app) {
-    const secs = secSorted([...app.querySelectorAll(':scope>section.sec')]), id = x => foldKey(x.id.slice(2));
+    const secs = secSorted([...app.querySelectorAll(':scope>section.sec')]), id = x => x.id.slice(2);   // the raw id: the row key, its order and its scroll target; folding maps it with foldKey
     // A release's Editions and a release group's Releases are separate sections for visibility.
     const hideKey = k => k === 'ed' && data.kind === 'rg' ? 'rg-ed' : k;
     secs.forEach(x => { x.hidden = S.secHide.includes(hideKey(id(x))); });
@@ -13309,7 +13309,7 @@ function secRail(app) {
     if (!acts && !document.getElementById('eh-secfab')) rail.classList.remove('open');
     rail.innerHTML = '<div class="rr top" data-top><button class="nm" type="button">Top</button></div>' + secs.map(x => { const k = id(x), off = x.hidden;
         return `<div class="rr${off ? ' off' : ''}" data-sec="${k}" draggable="true"><span class="gr" aria-hidden="true">⋮⋮</span><button class="nm" type="button">${k === 'ed' && data.kind === 'rg' ? 'Releases' : SEC_NAME[k] || esc(x.querySelector('h2').textContent)}</button><button class="eye" type="button" aria-label="${off ? 'Show' : 'Hide'} section">${SVG(off ? EYE_OFF : EYE)}</button><i></i></div>`; }).join('')
-        + (() => { const shut = secs.filter(x => !x.hidden).every(x => S.fold.includes(id(x))); return `<button class="fa" type="button" data-foldall="${shut ? 0 : 1}">${SVG(shut ? '<path d="M12 9V3M9 6l3-3 3 3M12 15v6M9 18l3 3 3-3M4 12h16"/>' : '<path d="M12 3v6M9 6l3 3 3-3M12 21v-6M9 18l3-3 3 3M4 12h16"/>')}${shut ? 'Expand all' : 'Collapse all'}</button>`; })();
+        + (() => { const shut = secs.filter(x => !x.hidden).every(x => S.fold.includes(foldKey(id(x)))); return `<button class="fa" type="button" data-foldall="${shut ? 0 : 1}">${SVG(shut ? '<path d="M12 9V3M9 6l3-3 3 3M12 15v6M9 18l3 3 3-3M4 12h16"/>' : '<path d="M12 3v6M9 6l3 3 3-3M12 21v-6M9 18l3-3 3 3M4 12h16"/>')}${shut ? 'Expand all' : 'Collapse all'}</button>`; })();
     railSpy();
     pinBar(app);
     requestAnimationFrame(railPlace);
