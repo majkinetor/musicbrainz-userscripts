@@ -318,6 +318,32 @@ function stGateZoomOn(box, span, get, set, redraw, nowFn) {
     set(s >= SP ? null : { t0: t0, s: s }); redraw();
   }, { passive: false });
   box.addEventListener('contextmenu', function (e) { if (!get()) return; e.preventDefault(); set(null); redraw(); });
+  // a drag with the left button moves a zoomed time line left or right; the click that ends a drag opens nothing
+  box.addEventListener('mousedown', function (e) {
+    if (e.button !== 0 || !get()) return;
+    var ln = box.querySelector('.st-gl-lane'); if (!ln) return;
+    var r = ln.getBoundingClientRect(), lw = r.width || 600, inner = lw - 26 - 120, x0 = e.clientX, v0 = get(), moved = false;
+    if (inner <= 0) return;
+    var move = function (m) {
+      var dx = m.clientX - x0;
+      if (!moved && Math.abs(dx) < 4) return;
+      if (!moved) { moved = true; document.documentElement.style.cursor = 'grabbing'; }
+      m.preventDefault();
+      var now = nowFn ? nowFn() : Date.now(), SP = span(), s = v0.s, t0 = v0.t0 - dx / inner * s;
+      t0 = Math.max(now - SP, Math.min(t0, now - s));
+      set({ t0: t0, s: s }); redraw();
+    };
+    var up = function () {
+      document.removeEventListener('mousemove', move, true); document.removeEventListener('mouseup', up, true);
+      if (!moved) return;
+      document.documentElement.style.cursor = '';
+      var eat = function (c) { c.stopPropagation(); c.preventDefault(); };
+      document.addEventListener('click', eat, true);
+      setTimeout(function () { document.removeEventListener('click', eat, true); }, 0);
+    };
+    document.addEventListener('mousemove', move, true); document.addEventListener('mouseup', up, true);
+    e.preventDefault();   // no text selection while dragging
+  });
 }
 var ST_GATE_SHORT = 1500, ST_GATE_NEAR = 2.2, stGateZoom = {}, ST_GATE_SUBS = 3;   // every lane has 3 fixed sub-rows
 // the zoomed view of a cluster: its own time line and one line per request

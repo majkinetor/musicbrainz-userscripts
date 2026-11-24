@@ -87,7 +87,7 @@ The top line shows the gate now: the wait after a 503 (**Hold**), how many 503s 
 
 Under it, the last 60 seconds show as one lane per tab, with the scripts of that tab and this tab first. Each try is a bar: gray while it waits in the gate, then green, yellow (busy, tried again) or red. A red band across all lanes is a hold that MusicBrainz asked for.
 
-The mouse wheel on the time line zooms in and out around the pointer, and Shift with the wheel moves it to the left or right. The button with the left and right arrow swaps the two, and String Theory remembers your choice. The button with the diagonal arrow, or a right click on the time line, shows the whole span again.
+The mouse wheel on the time line zooms in and out around the pointer, and Shift with the wheel moves it to the left or right. When the time line is zoomed in, you can also drag it to the left or right with the mouse. The button with the left and right arrow swaps the two, and String Theory remembers your choice. The button with the diagonal arrow, or a right click on the time line, shows the whole span again.
 
 The button with the left and right arrow above the table fits each column to its widest cell, and the Request column takes the rest. A right click on it fits the Request column too, and the table then scrolls sideways.
 
