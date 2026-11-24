@@ -1524,7 +1524,7 @@ function stGateBuild() {
 // burst of requests, those that started within ST_GATE_BURST of the one before; it stays until the next burst starts.
 // The mouse on it shows the HUD beside it until the mouse has left both for a moment; a click opens the window.
 var ST_GATE_BURST = 4000;
-var ST_GATE_DOCK_ICON = 'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><circle cx="64" cy="64" r="58" fill="#e6f4f1"/><path d="M18 64h22l14-36 20 72 14-36h22" fill="none" stroke="#1f8a78" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+var ST_GATE_DOCK_ICON = 'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><path d="M8 64h28l16-42 24 84 16-42h28" fill="none" stroke="#22a08b" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/></svg>');
 var stGateDockEl = null;
 function stGateDockOn() { return !!stGateWinState().icon; }
 // beside the icon, toward the page: left of a right-side column, right of a left one, above a row
