@@ -1,4 +1,4 @@
-import { test, check, until } from '../../../dev/test/harness.mjs';
+import { test, check, until, mbJson } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Event Horizon', persist: true } });
 
@@ -8,7 +8,7 @@ const cols = page => page.locator('.tr[data-row] .ar').count();
 // off, Show › Artist is one saved choice for every release
 test('the Artist column follows the release, or your choice with the option off', { tag: ['@sandbox', '@quarantine'] }, async ({ page, inject }) => {
   await page.goto('https://test.musicbrainz.org/');
-  const id = await page.evaluate(async () => (await (await fetch('/ws/2/release?query=arid:89ad4ac3-39f7-470e-963a-56509c546377%20AND%20tracks:[4%20TO%2030]&limit=1&fmt=json')).json()).releases[0].id);
+  const id = (await mbJson('https://test.musicbrainz.org/ws/2/release?query=arid:89ad4ac3-39f7-470e-963a-56509c546377%20AND%20tracks:[4%20TO%2030]&limit=1&fmt=json')).releases[0].id;
   const open = async () => {
     await page.goto('https://test.musicbrainz.org/release/' + id);
     await inject('event_horizon');
