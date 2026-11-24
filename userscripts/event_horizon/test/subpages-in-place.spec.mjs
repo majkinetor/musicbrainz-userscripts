@@ -14,7 +14,8 @@ test('an entity\'s Releases and Details open in place, without a page load', { t
     await page.locator(`#app a[href$="/artist/${id}/${sub}"]`).first().dispatchEvent("click");
     await expect(page).toHaveURL(new RegExp(`/artist/${id}/${sub}$`));
     await expect(page.locator('#app .arthd .kicker')).toContainText(text);
-    await expect(page.locator('#eh-upg')).not.toContainText('Loading');
+    // Releases is drawn from ws/2 in the tab (since 2026-11-21), Details in #eh-upg: either way #app stops loading
+    await expect(page.locator('#app')).not.toContainText('Loading');
     expect(await page.evaluate(() => window.__ehStay)).toBe(1);
   }
 });

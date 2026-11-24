@@ -96,7 +96,8 @@ test('the releases table offers more columns, and Comment takes the note from be
 });
 
 test('the Columns menu works on a list of releases that stays MusicBrainz\'s page', { tag: '@sandbox' }, async ({ page, inject }) => {
-  await page.goto(`${ARTIST}/releases`);
+  // an artist's Releases is Event Horizon's own view since 2026-11-21; an area's still stays MusicBrainz's page
+  await page.goto('https://test.musicbrainz.org/area/02b60d8d-7164-339d-868d-22d147d9f74a/releases');
   await inject('event_horizon');
   await until(() => page.locator('.eh-release-views [data-edview="table"], .eh-release-views [data-rgview="table"]').count(), n => n === 1);
   await page.locator('.eh-release-views [data-edview="table"], .eh-release-views [data-rgview="table"]').click();

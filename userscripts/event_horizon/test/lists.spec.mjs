@@ -26,13 +26,19 @@ test('an area list loads its next page with Load more, and Auto keeps the page s
   check(await until(() => foot.count(), n => n === 1) === 1, 'the artists list has a Load more foot');
   const auto = foot.locator('input[data-lmauto]');
   if (await auto.isChecked()) {
-    await page.evaluate(() => scrollTo(0, 300));
-    const y = await page.evaluate(() => scrollY);
-    await auto.click({ trial: false, noWaitAfter: true }).catch(() => {});
-    await page.waitForTimeout(500);
+    // the box in view first: a click scrolls to a box that is off screen, and that would be the test moving the page
+    await auto.scrollIntoViewIfNeeded();
+    // "still" is where the list sits on the screen, not scrollY: when a section above grows or shrinks on a redraw,
+    // the browser's scroll anchoring moves scrollY to keep what is in view in place
+    const top = () => page.evaluate(() => Math.round(document.querySelector('#s-aa tbody tr').getBoundingClientRect().top));
+    const t0 = await top();
+    // force: the box in view already, and Auto's own load redraws the list just then; a plain click sees the box move,
+    // retries, and scrolls it into view again aligned to the screen's bottom, which moved the page 493px (2026-11-24)
+    await auto.click({ force: true });
     // the click may itself have loaded a page through Auto before it went off; only the scroll matters here
-    check(!(await page.locator('#s-aa [data-lmauto]').first().isChecked()), 'Auto goes off');
-    check(Math.abs(await page.evaluate(() => scrollY) - y) < 400, 'toggling Auto does not jump the page');
+    check(await until(() => page.locator('#s-aa [data-lmauto]').first().isChecked(), c => !c) === false, 'Auto goes off');
+    const t1 = await top();
+    check(Math.abs(t1 - t0) < 100, `toggling Auto does not move the list on the screen (${t0} → ${t1})`);
   }
   const rows = () => page.locator('#s-aa tbody tr').count();
   const n0 = await rows();
