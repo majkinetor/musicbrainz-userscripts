@@ -32,6 +32,7 @@ var ST_GATE_CSS = ''
   + '#st-gate-sum .bad b{color:var(--mbu-error)}#st-gate-sum .re b{color:var(--mbu-warn)}'
   + '#st-gate-lanes{position:relative;flex:0 1 auto;min-height:60px;max-height:40vh;overflow-x:hidden;overflow-y:auto;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;margin:4px 13px 8px;padding-left:180px}'
   + '.st-gl-bands{position:absolute;top:0;bottom:16px;left:180px;right:0}'
+  + '.st-gl-sub,.st-gl-bands{transform:translateX(var(--st-gl-dx,0px))}'
   + '.st-gl-band{position:absolute;top:0;bottom:0;background:var(--mbu-error-bg)}'
   + '.st-gl-lane{position:relative;height:calc(var(--r,1)*var(--sh,30px));border-top:1px solid var(--mbu-divider)}'
   + '.st-gl-ic{position:absolute;top:50%;width:21px;height:21px;margin:-10px 0 0 -10px;z-index:1;object-fit:contain}'
@@ -95,7 +96,7 @@ var ST_GATE_CSS = ''
   + '#st-gate-hud-box{position:fixed;right:14px;bottom:14px;width:520px;max-width:calc(100vw - 28px);z-index:var(--mbu-z-modal);background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:6px;padding:4px 8px;font-size:12px;opacity:.92}'
   + '#st-gate-hud-box .st-gate-hud-h{cursor:move;user-select:none;display:flex;gap:8px;align-items:center;height:22px}#st-gate-hud-box .st-gate-hud-h>span:first-child{font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}'
   + '#st-gate-hud-box .st-gate-hud-rz{position:absolute;top:0;bottom:0;width:6px;cursor:ew-resize}#st-gate-hud-box .st-gate-hud-rz.l{left:-3px}#st-gate-hud-box .st-gate-hud-rz.r{right:-3px}#st-gate-hud-box .st-gate-hud-rz:hover{background:var(--mbu-accent);opacity:.5}'
-  + '#st-gate-hud-box .st-gate-hud-ghost{display:inline-flex;align-items:center;padding:2px;border:0;background:none;color:var(--mbu-text-weak);cursor:pointer;border-radius:var(--mbu-radius)}#st-gate-hud-box .st-gate-hud-ghost:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}#st-gate-hud-box .st-gate-hud-ghost[aria-pressed=true]{color:var(--mbu-accent-text)}#st-gate-hud-box.ghost{opacity:.15;transition:opacity .2s}#st-gate-hud-box.ghost:hover{opacity:.92}'
+  + '#st-gate-hud-box .st-gate-hud-ghost,#st-gate-hud-box .st-gate-hud-ps{display:inline-flex;align-items:center;padding:2px;border:0;background:none;color:var(--mbu-text-weak);cursor:pointer;border-radius:var(--mbu-radius)}#st-gate-hud-box .st-gate-hud-ghost:hover,#st-gate-hud-box .st-gate-hud-ps:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}#st-gate-hud-box .st-gate-hud-ghost[aria-pressed=true],#st-gate-hud-box .st-gate-hud-ps[aria-pressed=true]{color:var(--mbu-accent-text)}#st-gate-hud-box.ghost{opacity:.15;transition:opacity .2s}#st-gate-hud-box.ghost:hover{opacity:.92}'
   + '#st-gate-hud-box .st-gate-n{flex:1;color:var(--mbu-text-weak)}#st-gate-hud-box .bad{color:var(--mbu-error)}'
   + '#st-gate-hud-box .st-gate-hud-l{position:relative}#st-gate-hud-box .st-gl-bands{left:0}#st-gate-hud-box .st-gl-name{left:-180px;width:172px}'
   + '.st-gate-tries{display:inline-flex;gap:3px;vertical-align:middle}.st-gate-tries i{--c:var(--mbu-border);width:9px;height:9px;box-sizing:border-box;border-radius:2px;border:1px solid color-mix(in srgb,var(--c) 75%,transparent);background:color-mix(in srgb,var(--c) 30%,transparent)}'
@@ -316,6 +317,7 @@ function stGateIcon(name, cls, tip, left) {
 // requests shorter than ST_GATE_SHORT ms are drawn as an icon; icons closer than ST_GATE_NEAR overlap
 function stGateWheelPan() { return !!stGateWinState().wheelPan; }   // the wheel button: true when the wheel moves the time line
 var stGatePausedAt = 0;   // the window's time line stands still at this time while its pause button is on, 0 when it runs
+var stGateHudPausedAt = 0;   // the same for the HUD's time line, which has its own pause button
 var stGateVw = null, stGateHudVw = null;   // the zoomed view of the window's and the HUD's time line: { t0, s }, or null for the whole span
 // the mouse wheel zooms a time line around the pointer and Shift and the wheel move it, or the other way round when the
 // wheel button is on (stGateWheelPan); a right click shows the whole span again
@@ -358,6 +360,29 @@ function stGateZoomOn(box, span, get, set, redraw, nowFn) {
     document.addEventListener('mousemove', move, true); document.addEventListener('mouseup', up, true);
     e.preventDefault();   // no text selection while dragging
   });
+}
+// between two redraws the marks glide left at the time line's own pace (a CSS shift each frame), so the
+// time line moves smoothly instead of stepping on every redraw; a paused or zoomed time line stands still,
+// and so does one under the mouse, so a tip stays on its mark
+var stGateDrifts = [];
+function stGateDrift(box, now, SP, on) {
+  var ln = box.querySelector('.st-gl-lane'), inner = (ln ? ln.clientWidth : 0) - 146;
+  box.stDrift = on && inner > 0 ? { t: now, k: inner / SP } : null;
+  box.style.setProperty('--st-gl-dx', '0px');
+  if (!box.stDriftOn) {
+    box.stDriftOn = 1; stGateDrifts.push(box);
+    box.addEventListener('mouseenter', function () { box.stDriftHeld = true; });
+    box.addEventListener('mouseleave', function () { box.stDriftHeld = false; });
+  }
+  if (stGateDrift.raf) return;
+  var tick = function () {
+    stGateDrifts = stGateDrifts.filter(function (b) { return b.isConnected; });
+    if (!stGateDrifts.length) { stGateDrift.raf = 0; return; }
+    var t = Date.now();
+    stGateDrifts.forEach(function (b) { if (b.stDrift && !b.stDriftHeld) b.style.setProperty('--st-gl-dx', (-(t - b.stDrift.t) * b.stDrift.k).toFixed(1) + 'px'); });
+    stGateDrift.raf = requestAnimationFrame(tick);
+  };
+  stGateDrift.raf = requestAnimationFrame(tick);
 }
 var ST_GATE_SHORT = 1500, ST_GATE_NEAR = 2.2, stGateZoom = {}, ST_GATE_SUBS = 3;   // every lane has 3 fixed sub-rows
 // the zoomed view of a cluster: its own time line and one line per request
@@ -859,7 +884,7 @@ function stGateHud(on) {
   stGateCss();
   var el = document.createElement('div');
   el.id = 'st-gate-hud-box'; el.className = 'mbu-ui' + (stGateWinState().hudGhost ? ' ghost' : '');
-  el.innerHTML = '<div class="st-gate-hud-h"><span data-tip="Open the network log\nA double click anywhere on the HUD does the same"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Network</span><span class="st-gate-n"></span><button type="button" class="st-gate-hud-ghost" aria-label="See-through" data-tip="See-through\nThe HUD is nearly invisible until the mouse is on it"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 10h.01M15 10h.01M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"/></svg></button><button type="button" class="mbu-ov-x" aria-label="Close the HUD">✕</button></div><div class="st-gate-hud-l"></div><div class="st-gate-hud-rz l"></div><div class="st-gate-hud-rz r"></div>';
+  el.innerHTML = '<div class="st-gate-hud-h"><span data-tip="Open the network log\nA double click anywhere on the HUD does the same"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Network</span><span class="st-gate-n"></span><button type="button" class="st-gate-hud-ps" aria-label="Pause" data-tip="Pause the time line\nIt stands still at this moment, new requests still come in\nA second click lets it run again"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 3V13M11 3V13"/></svg></button><button type="button" class="st-gate-hud-ghost" aria-label="See-through" data-tip="See-through\nThe HUD is nearly invisible until the mouse is on it"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 10h.01M15 10h.01M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"/></svg></button><button type="button" class="mbu-ov-x" aria-label="Close the HUD">✕</button></div><div class="st-gate-hud-l"></div><div class="st-gate-hud-rz l"></div><div class="st-gate-hud-rz r"></div>';
   document.documentElement.appendChild(el);
   var w0 = stGateWinState().hudW; if (w0) el.style.width = w0 + 'px';
   // its left and right edges drag its width, which it remembers
@@ -885,7 +910,15 @@ function stGateHud(on) {
   });
   var held = false, hudSpan = 30000, lanes = el.querySelector('.st-gate-hud-l');
   lanes.addEventListener('mouseenter', function () { held = true; });
-  lanes.addEventListener('mouseleave', function () { held = false; });
+  lanes.addEventListener('mouseleave', function () { held = false; draw(); });
+  // the pause button: on, the time line stands still where it is; off, it runs on to now, at the same zoom
+  var psBtn = el.querySelector('.st-gate-hud-ps'), psSeg = function () { psBtn.setAttribute('aria-pressed', String(!!stGateHudPausedAt)); };
+  psSeg();
+  psBtn.onclick = function () {
+    var t = Date.now();
+    if (stGateHudPausedAt) { if (stGateHudVw) stGateHudVw.t0 += t - stGateHudPausedAt; stGateHudPausedAt = 0; } else stGateHudPausedAt = t;
+    psSeg(); held = false; draw();
+  };
   var ghostBtn = el.querySelector('.st-gate-hud-ghost'), ghostSeg = function () { ghostBtn.setAttribute('aria-pressed', String(el.classList.contains('ghost'))); };
   ghostSeg();
   ghostBtn.onclick = function () { var on = !stGateWinState().hudGhost; stGateRemember({ hudGhost: on }); el.classList.toggle('ghost', on); ghostSeg(); };
@@ -946,12 +979,13 @@ function stGateHud(on) {
       if (!held) {
         // the same scale as the big window (its span over about 1200 px), so the HUD shows the last part of it
         var span0 = ST_GATE_SPAN; ST_GATE_SPAN = hs;
-        try { lanes.innerHTML = stGateLanesHtml(groups, all, now, stGateTab(), lanes); } finally { ST_GATE_SPAN = span0; }
+        try { lanes.innerHTML = stGateLanesHtml(groups, all, stGateHudPausedAt || now, stGateTab(), lanes); } finally { ST_GATE_SPAN = span0; }
+        stGateDrift(lanes, now, hs, !stGateHudPausedAt && !stGateHudVw);
       }
     } catch (e) { /* a bad event: the next tick tries again */ }
   };
   el.timer = setInterval(draw, 1000);
-  stGateZoomOn(lanes, function () { return hudSpan; }, function () { return stGateHudVw; }, function (v) { stGateHudVw = v; }, function () { held = false; draw(); held = true; });
+  stGateZoomOn(lanes, function () { return hudSpan; }, function () { return stGateHudVw; }, function (v) { stGateHudVw = v; }, function () { held = false; draw(); held = true; }, function () { return stGateHudPausedAt || Date.now(); });
   stGateHudEl = el;
   draw();
   // pinned by its top left corner: a change in height grows it downward, it does not move
@@ -1104,7 +1138,10 @@ function stGateBuild() {
     if (pop.classList.contains('min')) return;
     $('#st-gate-state').innerHTML = stGateStateHtml(stGateState(), me);
     $('#st-gate-sum').innerHTML = stGateSumHtml(inHost, now);
-    if (!lanesHeld) $('#st-gate-lanes').innerHTML = stGateLanesHtml(inHost, all, stGatePausedAt || now, me);   // held still under the mouse, so a tip stays put
+    if (!lanesHeld) {   // held still under the mouse, so a tip stays put
+      $('#st-gate-lanes').innerHTML = stGateLanesHtml(inHost, all, stGatePausedAt || now, me);
+      stGateDrift($('#st-gate-lanes'), now, ST_GATE_SPAN, !stGatePausedAt && !stGateVw);
+    }
     lastGroups = groups;
     var shown = groups.filter(function (g) {
       for (var ck in cf) if (stGateCfVal(g, ck) !== cf[ck]) return false;
