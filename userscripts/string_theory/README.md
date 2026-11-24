@@ -81,6 +81,8 @@ The window lists the latest 20 posts and loads older ones as you scroll to the e
 
 The scripts send their MusicBrainz requests through one shared queue, the gate. It spaces them out across all tabs, and when MusicBrainz answers 503 or 429, every script waits. If a request is asked again while the first one is still on its way, both share one answer (**join** in the log). If two waiting requests differ only in what extra data they ask for, the gate sends one request for both (**merge** in the log). Open **Network log** from the [command palette](#command-palette) to see what goes through it.
 
+Set **Network log** to **Icon** in the settings to put its icon with the launchers. Its count is this tab's latest burst of requests, those that started within 4 seconds of one another, and it stays until the next burst. While requests are on their way the count fades. The mouse on the icon shows the HUD beside it until the mouse leaves both, a click opens the window, and a right click keeps the HUD open.
+
 The window works like the Activity log. You move it by its title bar, minimize it to that bar, and resize it by its corner. A double-click on the title bar makes it full screen. It stays open, in its place and size, when you reload the page or open another one.
 
 The top line shows the gate now: the wait after a 503 (**Hold**), how many 503s came in a row (**Hot**), how far ahead the queues are booked, and which page holds the lead. The next line counts the requests in the log and those of the last minute: ok, retried and failed.
@@ -111,7 +113,7 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 | Scripts                       | turn a script on or off                                          |
 | Search                        | a MusicBrainz search for what you type, see below                |
 | New issue, New issue with log | a new issue about String Theory or one script, see below         |
-| String Theory                 | copy versions, docs, reload, What's new, Network log               |
+| String Theory                 | copy versions, docs, reload, What's new, Network log             |
 
 - **Your last input comes back** selected when you open the palette again: type to replace it.
 - **Theme commands show as you move over them** with the arrows; **Enter** keeps one, **Esc** goes back to yours.
@@ -131,11 +133,11 @@ Open String Theory's settings → **Sync**, choose **Provider**, and connect. Us
 
 **WebDAV** works with Nextcloud, ownCloud, a NAS or any WebDAV server. Enter the folder's address, your user name and password, then **Connect**; a missing folder is created. The address must start with `https://`. On Nextcloud and ownCloud, use an app password: the folder address is shown under _Files_ → _Settings_ → _WebDAV_, with a folder name added at the end. **Reconnect** shows the form again to change them. The password is saved in the userscript manager and, like other credentials, included in sync and backups.
 
-| Action   | What it does                                                                 |
-| -------- | ---------------------------------------------------------------------------- |
-| Sync now | Merges this device with the provider                                         |
-| Push     | Replaces the provider's portable data with this device's                     |
-| Pull     | Replaces this device's portable data from the provider                       |
+| Action   | What it does                                             |
+| -------- | -------------------------------------------------------- |
+| Sync now | Merges this device with the provider                     |
+| Push     | Replaces the provider's portable data with this device's |
+| Pull     | Replaces this device's portable data from the provider   |
 
 Independent changes are combined; when both devices change the same value, **On conflict** chooses which one wins. Star additions and removals are merged separately.
 
@@ -165,6 +167,7 @@ Right-click String Theory's icon to open its settings, or any dock icon for that
 | Hover            | None              | While the pointer is over the dock, None, or Shelf: a frosted shelf behind its icons                                                      |
 | Counter          | Pill              | How an icon shows its count: Pill, Segmented (to do, held and already there in their own cells) or Bare: the pill's text without the pill |
 | Position         | On icon           | The count on the icon's corner, or Beside it: left of a right-side column, right of a left one, above a row                               |
+| Network log      | Off               | Icon puts the [Network log](#network-log)'s icon with the launchers                                                                       |
 | Launcher order   | Each script's own | Drag the icons to reorder the launchers; the first sits nearest the corner                                                                |
 | Palette          | On                | The command palette's hotkey works                                                                                                        |
 | Hotkey           | Ctrl+K            | The key that opens the command palette: click it, then press the new one                                                                  |

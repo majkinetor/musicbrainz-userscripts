@@ -97,6 +97,7 @@ var ST_GATE_CSS = ''
   + '#st-gate-hud-box .st-gate-hud-h{cursor:move;user-select:none;display:flex;gap:8px;align-items:center;height:22px}#st-gate-hud-box .st-gate-hud-h>span:first-child{font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}'
   + '#st-gate-hud-box .st-gate-hud-rz{position:absolute;top:0;bottom:0;width:6px;cursor:ew-resize}#st-gate-hud-box .st-gate-hud-rz.l{left:-3px}#st-gate-hud-box .st-gate-hud-rz.r{right:-3px}#st-gate-hud-box .st-gate-hud-rz:hover{background:var(--mbu-accent);opacity:.5}'
   + '#st-gate-hud-box .st-gate-hud-ghost,#st-gate-hud-box .st-gate-hud-ps{display:inline-flex;align-items:center;padding:2px;border:0;background:none;color:var(--mbu-text-weak);cursor:pointer;border-radius:var(--mbu-radius)}#st-gate-hud-box .st-gate-hud-ghost:hover,#st-gate-hud-box .st-gate-hud-ps:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}#st-gate-hud-box .st-gate-hud-ghost[aria-pressed=true],#st-gate-hud-box .st-gate-hud-ps[aria-pressed=true]{color:var(--mbu-accent-text)}#st-gate-hud-box.ghost{opacity:.15;transition:opacity .2s}#st-gate-hud-box.ghost:hover{opacity:.92}'
+  + '#st-gate-hud-box.peek .st-gate-hud-h{cursor:default}#st-gate-hud-box.peek .st-gate-hud-rz{display:none}'
   + '#st-gate-hud-box .st-gate-n{flex:1;color:var(--mbu-text-weak)}#st-gate-hud-box .bad{color:var(--mbu-error)}'
   + '#st-gate-hud-box .st-gate-hud-l{position:relative}#st-gate-hud-box .st-gl-bands{left:0}#st-gate-hud-box .st-gl-name{left:-180px;width:172px}'
   + '.st-gate-tries{display:inline-flex;gap:3px;vertical-align:middle}.st-gate-tries i{--c:var(--mbu-border);width:9px;height:9px;box-sizing:border-box;border-radius:2px;border:1px solid color-mix(in srgb,var(--c) 75%,transparent);background:color-mix(in srgb,var(--c) 30%,transparent)}'
@@ -876,17 +877,23 @@ function stGateCss() {
 // the HUD: the lanes in a small strip at the bottom right, on screen without the window
 var stGateHudEl = null;
 var stGateColW = {};   // the network log table's column widths a drag set, by column
-function stGateHud(on) {
+// peek: the dock icon it shows beside while the mouse is on that icon (stGateDockIcon); a peek is not remembered,
+// can't be moved or resized, and never replaces a HUD that is open for good
+function stGateHud(on, peek) {
   if (on && !stGateHere()) return;
+  if (peek && stGateHudEl) return;
+  var was = stGateHudEl && stGateHudEl.peek;
   if (stGateHudEl) { clearInterval(stGateHudEl.timer); stGateHudEl.remove(); stGateHudEl = null; }
-  stGateRemember({ hud: !!on });
+  if (!peek && !(was && !on)) stGateRemember({ hud: !!on });
   if (!on) return;
   stGateCss();
   var el = document.createElement('div');
-  el.id = 'st-gate-hud-box'; el.className = 'mbu-ui' + (stGateWinState().hudGhost ? ' ghost' : '');
+  el.id = 'st-gate-hud-box'; el.className = 'mbu-ui' + (peek ? ' peek' : stGateWinState().hudGhost ? ' ghost' : '');
+  el.peek = peek || null;
   el.innerHTML = '<div class="st-gate-hud-h"><span data-tip="Open the network log\nA double click anywhere on the HUD does the same"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Network</span><span class="st-gate-n"></span><button type="button" class="st-gate-hud-ps" aria-label="Pause" data-tip="Pause the time line\nIt stands still at this moment, new requests still come in\nA second click lets it run again"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 3V13M11 3V13"/></svg></button><button type="button" class="st-gate-hud-ghost" aria-label="See-through" data-tip="See-through\nThe HUD is nearly invisible until the mouse is on it"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 10h.01M15 10h.01M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"/></svg></button><button type="button" class="mbu-ov-x" aria-label="Close the HUD">✕</button></div><div class="st-gate-hud-l"></div><div class="st-gate-hud-rz l"></div><div class="st-gate-hud-rz r"></div>';
   document.documentElement.appendChild(el);
   var w0 = stGateWinState().hudW; if (w0) el.style.width = w0 + 'px';
+  if (peek) stGatePeekPlace(el, peek);
   // its left and right edges drag its width, which it remembers
   el.querySelectorAll('.st-gate-hud-rz').forEach(function (h) {
     h.addEventListener('dblclick', function (e) { e.stopPropagation(); });
@@ -926,7 +933,7 @@ function stGateHud(on) {
     stGateHud(false);
     var b = document.getElementById('st-gate-hud'); if (b) b.setAttribute('aria-pressed', 'false');
   };
-  var moved = false, pos = stGateWinState().hudPos;
+  var moved = false, pos = peek ? null : stGateWinState().hudPos;
   if (pos) Object.assign(el.style, { left: pos.left, top: pos.top, right: 'auto', bottom: 'auto' });
   el.querySelector('.st-gate-hud-h span').onclick = function () { if (!moved) stGateOpen(); };
   // a click on a mark, or on a row of a cluster's tip, opens the window at that request, as a click in the window does
@@ -950,7 +957,7 @@ function stGateHud(on) {
   });
   // dragged by its header, kept on screen
   el.querySelector('.st-gate-hud-h').addEventListener('mousedown', function (e) {
-    if (e.button !== 0 || e.target.closest('button')) return;
+    if (e.button !== 0 || e.target.closest('button') || el.peek) return;
     e.preventDefault(); moved = false;
     var r = el.getBoundingClientRect(), ox = e.clientX - r.left, oy = e.clientY - r.top;
     var mv = function (ev) {
@@ -989,7 +996,7 @@ function stGateHud(on) {
   stGateHudEl = el;
   draw();
   // pinned by its top left corner: a change in height grows it downward, it does not move
-  if (!pos) { var r0 = el.getBoundingClientRect(); Object.assign(el.style, { left: r0.left + 'px', top: r0.top + 'px', right: 'auto', bottom: 'auto' }); }
+  if (!pos && !peek) { var r0 = el.getBoundingClientRect(); Object.assign(el.style, { left: r0.left + 'px', top: r0.top + 'px', right: 'auto', bottom: 'auto' }); }
 }
 function stGateClose() {
   if (stGateWin) { stGateWin.off(); stGateWin.el.remove(); stGateWin = null; }
@@ -1044,10 +1051,10 @@ function stGateBuild() {
     ST_GATE_COLS.forEach(function (c) { pop.classList.toggle('hc' + c[0], hide.indexOf(c[0]) >= 0); });
   };
   $('#st-gate-span').addEventListener('change', function () { ST_GATE_SPAN = +this.value; stGateVw = null; stGateRemember({ span: ST_GATE_SPAN }); sig = ''; draw(); });
-  var hudBtn = $('#st-gate-hud'), hudSeg = function () { hudBtn.setAttribute('aria-pressed', String(!!stGateHudEl)); };
+  var hudBtn = $('#st-gate-hud'), hudSeg = function () { hudBtn.setAttribute('aria-pressed', String(!!stGateHudEl && !stGateHudEl.peek)); };
   srcSeg(); colSeg(); hudSeg();
   pop.querySelector('.st-gate-hosts').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; hosts[b.dataset.v] = !hosts[b.dataset.v]; srcSeg(); stGateRemember({ hosts: hosts }); draw(); });
-  hudBtn.onclick = function () { if (!stGateHudEl) stGateHud(true); stGateClose(); };
+  hudBtn.onclick = function () { if (!stGateHudEl || stGateHudEl.peek) stGateHud(true); stGateClose(); };
   var lblBtn = $('#st-gate-lbl'), lblSeg = function () { var on = !!stGateWinState().labels; lblBtn.setAttribute('aria-pressed', String(on)); pop.classList.toggle('lbl', on); };
   lblSeg();
   lblBtn.onclick = function () { stGateRemember({ labels: !stGateWinState().labels }); lblSeg(); lanesHeld = false; sig = ''; draw(); };
@@ -1490,3 +1497,53 @@ function stGateBuild() {
   };
   draw();
 }
+
+// The dock icon (String Theory's settings → Dock → Network log, ST_GATE_WIN's icon): its count is this tab's latest
+// burst of requests, those that started within ST_GATE_BURST of the one before; it stays until the next burst starts.
+// The mouse on it shows the HUD beside it until the mouse has left both for a moment; a click opens the window.
+var ST_GATE_BURST = 4000;
+var ST_GATE_DOCK_ICON = 'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><circle cx="64" cy="64" r="58" fill="#e6f4f1"/><path d="M18 64h22l14-36 20 72 14-36h22" fill="none" stroke="#1f8a78" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+var stGateDockEl = null;
+function stGateDockOn() { return !!stGateWinState().icon; }
+// beside the icon, toward the page: left of a right-side column, right of a left one, above a row
+function stGatePeekPlace(el, b) {
+  var r = b.getBoundingClientRect(), vw = document.documentElement.clientWidth, vh = window.innerHeight, row = mbuShared('cornerFlow') === 'row', right = r.left + r.width / 2 > vw / 2;
+  var w = Math.min(el.offsetWidth || 520, vw - 16), x, y;
+  if (row) { x = right ? r.right - w : r.left; y = r.top - 8 - el.offsetHeight; }
+  else { x = right ? r.left - 8 - w : r.right + 8; y = r.bottom - el.offsetHeight; }
+  Object.assign(el.style, { left: Math.max(8, Math.min(vw - w - 8, x)) + 'px', top: Math.max(8, Math.min(vh - el.offsetHeight - 8, y)) + 'px', right: 'auto', bottom: 'auto' });
+}
+function stGateBurstOf(now) {
+  var tab = stGateTab(), evs = [];
+  try { if (globalThis.__mbnTrace && globalThis.__mbnTrace.flush) globalThis.__mbnTrace.flush(); } catch (e) { /* none yet */ }
+  try { evs = JSON.parse(localStorage.getItem(ST_GATE_PRE + tab) || '[]'); } catch (e) { /* none */ }
+  if (!Array.isArray(evs)) return { n: 0 };
+  evs = evs.filter(function (ev) { return ev && ev.t; }).map(function (ev) { ev.tab = tab; return ev; });
+  var gs = stGateGroups(evs, now).filter(function (g) { return !g.sys; }).sort(function (a, b) { return a.t - b.t; });
+  var i = gs.length - 1;
+  while (i > 0 && gs[i].t - gs[i - 1].t <= ST_GATE_BURST) i--;
+  var run = gs.slice(Math.max(0, i));
+  return { n: run.length, bad: run.filter(function (g) { return g.cls === 'bad'; }).length, go: run.some(function (g) { return g.cls === 'go'; }) };
+}
+function stGateDockIcon(on) {
+  if (on == null) on = stGateDockOn();
+  if (stGateDockEl) { clearInterval(stGateDockEl.stTimer); stGateDockEl.remove(); stGateDockEl = null; mbRestackCorner('br'); }
+  if (!on || !stGateHere()) return;
+  var b = stGateDockEl = stUI().mbuDockItem({ id: 'st-gate-dock', label: 'Network log', icon: ST_GATE_DOCK_ICON, order: 90, click: function () { stGatePeekEnd(true); stGateOpen(); } });
+  b.oncontextmenu = function (e) { e.preventDefault(); stGatePeekEnd(true); stGateHud(!stGateHudEl || !!stGateHudEl.peek); };
+  b.setAttribute('aria-label', 'Network log');
+  delete b.dataset.mbCornerDock; mbRestackCorner('br');   // a launcher of its own, shown outside Event Horizon too
+  var last = '';
+  var tick = function () {
+    if (!b.isConnected || document.hidden) return;
+    var x = stGateBurstOf(Date.now()), t = x.n ? String(x.n) : '';
+    if (t + x.go !== last) { last = t + x.go; b.status(t); b.busy(!!x.go); }
+  };
+  b.stTimer = setInterval(tick, 1000); tick();
+  var away = 0;
+  var still = function () { return b.matches(':hover') || !!(stGateHudEl && stGateHudEl.peek && stGateHudEl.matches(':hover')); };
+  b.addEventListener('mouseenter', function () { clearTimeout(away); if (!stGateHudEl) stGateHud(true, b); if (stGateHudEl && stGateHudEl.peek && !stGateHudEl.stPeekWired) { stGateHudEl.stPeekWired = 1; stGateHudEl.addEventListener('mouseleave', leave); stGateHudEl.addEventListener('mouseenter', function () { clearTimeout(away); }); } });
+  var leave = function () { clearTimeout(away); away = setTimeout(function () { if (!still()) stGatePeekEnd(); }, 500); };
+  b.addEventListener('mouseleave', leave);
+}
+function stGatePeekEnd() { if (stGateHudEl && stGateHudEl.peek) stGateHud(false); }

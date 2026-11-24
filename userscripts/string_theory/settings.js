@@ -369,7 +369,7 @@ function stSettings(tab) {
       + '<div class="st-row">' + seg('st-side', 'Side', [['left', 'Left'], ['right', 'Right']]) + seg('st-flow', 'Orientation', [['column', 'Column'], ['row', 'Row']])
       + '<span class="st-lbl">Size</span><span class="st-step"><button type="button" id="st-size-dn" aria-label="Smaller">−</button>'
       + '<output id="st-size"></output><button type="button" id="st-size-up" aria-label="Bigger">+</button></span></div>'
-      + '<div class="st-row">' + seg('st-hover', 'Hover', [['none', 'None'], ['shelf', 'Shelf']]) + '</div>'
+      + '<div class="st-row">' + seg('st-hover', 'Hover', [['none', 'None'], ['shelf', 'Shelf']]) + (stGateHere() ? seg('st-netlog', 'Network log', [['off', 'Off'], ['on', 'Icon']]) : '') + '</div>'
       + '<div class="st-row">' + seg('st-count', 'Counter', [['pill', 'Pill'], ['seg', 'Segmented'], ['bare', 'Bare']]) + seg('st-count-pos', 'Position', [['on', 'On icon'], ['side', 'Beside']]) + '</div>'
       + '<div class="st-strip" id="st-order"></div>'
       + '<div class="st-cap">Drag to reorder, the first nearest the corner; right-click for its settings.</div>'
@@ -544,6 +544,7 @@ function stSettings(tab) {
       pick('#st-flow', mbuShared('cornerFlow') === 'row' ? 'row' : 'column');
       pick('#st-hover', mbuShared('dockHover') === 'shelf' ? 'shelf' : 'none');
       pick('#st-count', mbuShared('dockCount') === 'seg' || mbuShared('dockCount') === 'bare' ? mbuShared('dockCount') : 'pill');
+      if (q('#st-netlog')) pick('#st-netlog', stGateDockOn() ? 'on' : 'off');
       pick('#st-count-pos', mbuShared('dockCountPos') === 'side' ? 'side' : 'on');
       var v = size();
       q('#st-size').textContent = v + ' %';
@@ -662,6 +663,10 @@ function stSettings(tab) {
     q('#st-hover').onclick = segSet('dockHover', 'shelf');
     q('#st-count').onclick = segSet('dockCount', ['seg', 'bare']);
     q('#st-count-pos').onclick = segSet('dockCountPos', 'side');
+    if (q('#st-netlog')) q('#st-netlog').onclick = function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      stGateRemember({ icon: b.dataset.v === 'on' }); stGateDockIcon(b.dataset.v === 'on'); show();
+    };
     var step = function (d) {
       var v = Math.min(160, Math.max(60, size() + d));
       mbuShared('cornerSize', v === 100 ? null : v / 100);
