@@ -553,5 +553,6 @@ test('a shed slows searches only, and answered searches speed them up again', { 
   check(r.sgap === real.MBN_SGAP_MIN * 4, `two sheds: the search gap doubled twice (${r.sgap})`);
   check(s[1] - s[0] >= r.sgap - 100 && s[2] - s[1] >= r.sgap - 100, `searches start a gap apart (${s.join(', ')} ms)`);
   check(l.every(t => t < s[1]), `lookups do not wait in the search line (${l.join(', ')} ms)`);
-  check(r.after === r.sgap - 5 * real.MBN_SGAP_STEP, `five answers take five steps off (${r.after})`);
+  let want = r.sgap; for (let i = 0; i < 5; i++) want = Math.max(real.MBN_SGAP_MIN, Math.round(want * real.MBN_SGAP_EASE));
+  check(r.after === want, `five answers shrink the gap five times (${r.after})`);
 });

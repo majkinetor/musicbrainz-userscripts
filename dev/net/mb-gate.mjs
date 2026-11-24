@@ -42,10 +42,10 @@ export const MBN_GAP = 125;
 /** #1112: searches keep their own, slower pace among themselves (`stat`, `sgap`): MusicBrainz sheds
  *  searches when its search servers are busy, and a search sent the moment a 1s hold ended drew the
  *  next shed, global and search-shed by turns, four times a second apart. Each shed doubles the gap
- *  between search starts, each search answered takes MBN_SGAP_STEP off it. Lookups keep MBN_GAP. */
+ *  between search starts, each search answered shrinks it by MBN_SGAP_EASE. Lookups keep MBN_GAP. */
 export const MBN_SGAP_MIN = 500;
-export const MBN_SGAP_MAX = 4000;
-export const MBN_SGAP_STEP = 100;
+export const MBN_SGAP_MAX = 3000;
+export const MBN_SGAP_EASE = 0.5;
 /** #1112: up to this much is added at random to a hold, so waiters do not all leave on the same beat. */
 export const MBN_JITTER = 500;
 /** Requests that may start back to back after a quiet spell. */
@@ -588,7 +588,7 @@ export async function mbnAnswer(status, header, o) {
     if (status >= 200 && status < 500) await mbnState(s => {
         if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1;
         if (o.search && s.shot) s.shot = Date.now() > (s.scool || 0) + 30000 ? 0 : s.shot - 1;
-        if (o.search && (s.sgap || 0) > MBN_SGAP_MIN) s.sgap = Math.max(MBN_SGAP_MIN, s.sgap - MBN_SGAP_STEP);   // #1112: room back, a step per answer
+        if (o.search && (s.sgap || 0) > MBN_SGAP_MIN) s.sgap = Math.max(MBN_SGAP_MIN, Math.round(s.sgap * MBN_SGAP_EASE));   // #1112: room back fast, half per answer
         tr({}, s);
     });
     else tr({});
@@ -1145,6 +1145,6 @@ export function mbnReverify(url, init, o) {
 
 /** What sync-gate.mjs inlines, in order. */
 export const MBN_INLINE = {
-    consts: { MBN_GAP, MBN_SGAP_MIN, MBN_SGAP_MAX, MBN_SGAP_STEP, MBN_JITTER, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_LOCK_HOLD, MBN_MAX_HOLD, MBN_MAX_LEAD, MBN_TRACE_MAX, MBN_MERGE_WAIT, MBN_CACHE_TTL, MBN_CACHE_MAX, MBN_INC_ALONE },
+    consts: { MBN_GAP, MBN_SGAP_MIN, MBN_SGAP_MAX, MBN_SGAP_EASE, MBN_JITTER, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_LOCK_HOLD, MBN_MAX_HOLD, MBN_MAX_LEAD, MBN_TRACE_MAX, MBN_MERGE_WAIT, MBN_CACHE_TTL, MBN_CACHE_MAX, MBN_INC_ALONE },
     fns: [mbnGated, mbnState, mbnSleep, mbnRid, mbnTabId, mbnTabCheck, mbnTrace, mbnHideUrl, mbnSlot, mbnLead, mbnAnswer, mbnBodySize, mbnBodyText, mbnLength, mbnGmSize, mbnReasons, mbnReasonOf, mbnLog, mbnGm, mbnGmFn, mbnXhr, mbnFetch, mbnEdited, mbnEditEpoch, mbnCacheUrl, mbnCacheGet, mbnCachePut, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
 };
