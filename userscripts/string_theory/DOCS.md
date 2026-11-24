@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-24 20:53 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-24 22:23 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1847,6 +1847,8 @@ Match never groups:
 A group's chips show the signals that hold for **every** member; one that holds for some is partial.
 
 The **RG** chip compares the release groups of the releases known for each recording: green when all share one, and dim otherwise. Its tooltip distinguishes different release groups from unknown ones. The automatic edit note includes the result when known.
+
+The **RT** and **RA** chips do the same for the release title and the release artist credit, exactly as MusicBrainz spells them: green when one title, or one artist credit, appears on every recording's releases. The edit note states them too.
 
 #### Include pending edits
 
