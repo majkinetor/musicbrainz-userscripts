@@ -3,7 +3,7 @@
 // cached "no match" was permanent — a release that reached a platform later was never
 // searched again — and a full localStorage made every write fail silently, the
 // platform logins included. Entries now expire (a miss after 14 days, a hit after 90,
-// MB data after 30) and a daily prune keeps the newest 500 releases.
+// MB data after 30) and a prune keeps the newest pcMaxReleases() releases (150 since #1111).
 import { test, check, loadFunctions } from '../../../dev/test/harness.mjs';
 
 function fakeStorage() {
@@ -38,7 +38,7 @@ test('the platform cache expires and stays bounded', { tag: '@unit' }, async () 
     put('pc:mbdata:old', { album: 'x', _t: Date.now() - 31 * day });
     F.pcPruneCache();
     const releases = new Set([...ls.m.keys()].filter(k => k.startsWith('pc:')).map(k => k.slice(k.lastIndexOf(':') + 1)).filter(k => k !== 'pruned'));
-    check(releases.size === 500, `at most 500 releases kept (${releases.size})`);
+    check(releases.size === F.pcMaxReleases(), `at most ${F.pcMaxReleases()} releases kept (${releases.size})`);
     check(!ls.m.has('pc:cache:v2:tidal:r0') && ls.m.has('pc:cache:v2:tidal:r519'), 'the oldest went, the newest stayed');
     check(!ls.m.has('pc:mbdata:old'), 'expired MB data was pruned');
     check(JSON.parse(ls.getItem('pc:cache:v2:spotify:legacy') || 'null')?._t > 0 || !ls.m.has('pc:cache:v2:spotify:legacy'), 'an undated entry from before is dated now (or evicted as oldest), not left undated');

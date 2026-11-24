@@ -60,7 +60,13 @@ test('GM_xmlhttpRequest goes through Node: no CORS, binary answers, and producti
     onerror: e => ok({ error: e.statusText || 'error' }),
   })), opts);
   // a cross-origin read the page's own fetch would be refused by CORS
-  const read = await gm({ url: 'https://test.musicbrainz.org/ws/2/artist/b10bbbfc-cf9e-42e0-be17-e2c3e1d2600d?fmt=json' });
+  // (the sandbox answers 503 when it is busy, which says nothing about the shim: asked again)
+  let read;
+  for (let i = 0; i < 5; i++) {
+    read = await gm({ url: 'https://test.musicbrainz.org/ws/2/artist/b10bbbfc-cf9e-42e0-be17-e2c3e1d2600d?fmt=json' });
+    if (read.status !== 503 && read.status !== 429) break;
+    await page.waitForTimeout(2000 * (i + 1));
+  }
   expect(read.status).toBe(200);
   const img = await gm({ url: 'https://static.metabrainz.org/MB/header-logo-1f7dc2a.svg', responseType: 'blob' });
   expect(img.type, 'a blob answer is a Blob').toBe('[object Blob]');
