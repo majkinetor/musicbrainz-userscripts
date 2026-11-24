@@ -204,7 +204,13 @@ class ImageMaximizer {
             // the API, when it answers, adds the booklets
             const out = [{ url: `https://static.qobuz.com/images/covers/${id.slice(-2)}/${id.slice(-4, -2)}/${id}_600.jpg`, types: ['Front'] }];
             try {
-                const j = await this._json(`https://www.qobuz.com/api.json/0.2/album/get?album_id=${id}&offset=0&limit=20`, { 'x-app-id': ImageMaximizer.QOBUZ_APP });
+                // the anonymous API answers 404 outside the countries Qobuz serves; Platform Check's
+                // Qobuz sign-in (the same one ISRC Scout uses) carries the account's country instead
+                let tok = null;
+                try { const t = JSON.parse(localStorage.getItem('mbtools:qobuz') || 'null'); tok = (t && t.token) || null; } catch (e) { /* none */ }
+                const qh = { 'x-app-id': ImageMaximizer.QOBUZ_APP };
+                if (tok) qh['x-user-auth-token'] = tok;
+                const j = await this._json(`https://www.qobuz.com/api.json/0.2/album/get?album_id=${id}&offset=0&limit=20`, qh);
                 if (j && j.image && j.image.large) out[0].url = j.image.large;
                 for (const g of (j && j.goodies) || []) {
                     if (!g.original_url) continue;
