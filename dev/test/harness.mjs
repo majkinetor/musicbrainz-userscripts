@@ -106,6 +106,19 @@ export function sourceOf(name) {
 // collects page errors itself filters with this too.
 export const mbNoise = msg => /Minified React error #418\b/.test(String(msg));
 
+// The request gate keeps ws/2 answers for 5 minutes in the origin's Cache Storage (#1098), and
+// the test profile keeps that storage between tests. A test would then get the answer that an
+// earlier test read or faked, and its own faked answer would never be asked. So each test starts
+// with that cache empty, on every MusicBrainz origin it can use.
+async function clearReadCache(ctx) {
+  const page = ctx.pages()[0] || await ctx.newPage();
+  const cdp = await ctx.newCDPSession(page);
+  try {
+    for (const origin of [SANDBOX, PROD, 'https://beta.musicbrainz.org'])
+      await cdp.send('Storage.clearDataForOrigin', { origin, storageTypes: 'cache_storage' });
+  } finally { await cdp.detach().catch(() => {}); }
+}
+
 export const test = base.extend({
   // options — override per file with test.use({ … })
   profile: ['logged-in', { option: true }],   // 'logged-in' → .pw-profile · 'fresh' → a throwaway profile
@@ -153,6 +166,7 @@ export const test = base.extend({
   context: async ({ headless, viewport, deviceScaleFactor, isMobile, hasTouch, profile, gm, prodWrites, prodPostAllow, pageErrors, blockedWrites: refused }, use, testInfo) => {
     // the page's CSP stays on, as it does for a userscript manager: injection goes through evaluate, which CSP doesn't hold (MusicBrainz's /account pages block inline scripts and styles)
     const ctx = await chromium.launchPersistentContext(profile === 'fresh' ? '' : PROFILE, { headless, viewport, deviceScaleFactor, isMobile, hasTouch });
+    await clearReadCache(ctx);
     const errors = [];
     const guard = await installProdGuard(ctx, { allow: prodPostAllow, gm: gm === false ? null : gm, onRefused: w => refused.push(w) });
     // the scripts build their test hooks (window.__falconTest, …) only on a page marked so (#623)
