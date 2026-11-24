@@ -311,7 +311,10 @@ export function mbnTrace(ev) {
         // member runs its own copy of the gate with its own GM_info, but globalThis is the bundle's one
         let script = '';
         try { script = String(GM_info.script.name || ''); } catch (e) {}
-        g.buf.push(Object.assign({ t: Date.now(), s: script }, ev));
+        const row = Object.assign({ t: Date.now(), s: script }, ev);
+        if (row.l) row.l = mbnHideUrl(row.l);
+        if (row.u) row.u = mbnHideUrl(row.u);
+        g.buf.push(row);
         if (g.buf.length > MBN_TRACE_MAX) g.buf = g.buf.slice(-MBN_TRACE_MAX);
         if (!g.timer) g.timer = setTimeout(g.flush, 1000);
     } catch (e) { /* no storage: no trace */ }
@@ -591,6 +594,17 @@ export function mbnBodySize(init) {
     return undefined;
 }
 
+// A URL or path for the Gate log, with the value of each query key a secret could be in shown as •••:
+// a Discogs personal token (?token=…) was in a copied log in plain text. The key is matched as a word,
+// so ?barcode= and ?keyword= stay as they are
+export function mbnHideUrl(s) {
+    return String(s).replace(/([?&;])([^=&#\s]*)=([^&#\s]*)/g, (m, sep, k, v) => {
+        let n = k;
+        try { n = decodeURIComponent(k.replace(/\+/g, ' ')); } catch (e) {}
+        const secret = /(^|[_.-])(token|secret|pass|passwd|password|auth|session|sid|csrf|code|key|apikey|sig|signature)$/i.test(n) || /[a-z](Token|Secret|Key|Password)$/.test(n);
+        return v && secret ? sep + k + '=•••' : m;
+    });
+}
 // A short request body as text, for the Gate log: undefined for one over 300 characters or not text.
 // A value a secret could be in shows as •••: an OAuth client secret, a refresh token, an edit form's csrf token.
 export function mbnBodyText(init) {
@@ -1112,5 +1126,5 @@ export function mbnReverify(url, init, o) {
 /** What sync-gate.mjs inlines, in order. */
 export const MBN_INLINE = {
     consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_LOCK_HOLD, MBN_MAX_HOLD, MBN_MAX_LEAD, MBN_TRACE_MAX, MBN_MERGE_WAIT, MBN_CACHE_TTL, MBN_CACHE_MAX, MBN_INC_ALONE },
-    fns: [mbnGated, mbnState, mbnSleep, mbnRid, mbnTabId, mbnTabCheck, mbnTrace, mbnSlot, mbnLead, mbnAnswer, mbnBodySize, mbnBodyText, mbnLength, mbnGmSize, mbnReasons, mbnReasonOf, mbnLog, mbnGm, mbnGmFn, mbnXhr, mbnFetch, mbnEdited, mbnEditEpoch, mbnCacheUrl, mbnCacheGet, mbnCachePut, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
+    fns: [mbnGated, mbnState, mbnSleep, mbnRid, mbnTabId, mbnTabCheck, mbnTrace, mbnHideUrl, mbnSlot, mbnLead, mbnAnswer, mbnBodySize, mbnBodyText, mbnLength, mbnGmSize, mbnReasons, mbnReasonOf, mbnLog, mbnGm, mbnGmFn, mbnXhr, mbnFetch, mbnEdited, mbnEditEpoch, mbnCacheUrl, mbnCacheGet, mbnCachePut, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
 };

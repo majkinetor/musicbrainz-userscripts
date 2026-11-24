@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.24.022958
+// @version      2026.11.24.090047
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the corner button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBkPSJNNDYgMjQgTDI2IDI0IEwyNiAxMDQgTDQ2IDEwNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04MiAyNCBMMTAyIDI0IEwxMDIgMTA0IEw4MiAxMDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJmNmY1NCIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNjQgNDAgTDUxIDY2IEw2NCA5NCBMNzcgNjYgWiIgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iNjQiIHkxPSI3NCIgeDI9IjY0IiB5Mj0iOTIiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==
@@ -243,10 +243,21 @@
           // member runs its own copy of the gate with its own GM_info, but globalThis is the bundle's one
           let script = '';
           try { script = String(GM_info.script.name || ''); } catch (e) {}
-          g.buf.push(Object.assign({ t: Date.now(), s: script }, ev));
+          const row = Object.assign({ t: Date.now(), s: script }, ev);
+          if (row.l) row.l = mbnHideUrl(row.l);
+          if (row.u) row.u = mbnHideUrl(row.u);
+          g.buf.push(row);
           if (g.buf.length > MBN_TRACE_MAX) g.buf = g.buf.slice(-MBN_TRACE_MAX);
           if (!g.timer) g.timer = setTimeout(g.flush, 1000);
       } catch (e) { /* no storage: no trace */ }
+  }
+  function mbnHideUrl(s) {
+      return String(s).replace(/([?&;])([^=&#\s]*)=([^&#\s]*)/g, (m, sep, k, v) => {
+          let n = k;
+          try { n = decodeURIComponent(k.replace(/\+/g, ' ')); } catch (e) {}
+          const secret = /(^|[_.-])(token|secret|pass|passwd|password|auth|session|sid|csrf|code|key|apikey|sig|signature)$/i.test(n) || /[a-z](Token|Secret|Key|Password)$/.test(n);
+          return v && secret ? sep + k + '=•••' : m;
+      });
   }
   async function mbnSlot(o) {
       o = o || {};

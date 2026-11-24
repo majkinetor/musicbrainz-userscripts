@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.24.022958
+// @version      2026.11.24.090047
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -277,10 +277,21 @@ function mbnTrace(ev) {
         // member runs its own copy of the gate with its own GM_info, but globalThis is the bundle's one
         let script = '';
         try { script = String(GM_info.script.name || ''); } catch (e) {}
-        g.buf.push(Object.assign({ t: Date.now(), s: script }, ev));
+        const row = Object.assign({ t: Date.now(), s: script }, ev);
+        if (row.l) row.l = mbnHideUrl(row.l);
+        if (row.u) row.u = mbnHideUrl(row.u);
+        g.buf.push(row);
         if (g.buf.length > MBN_TRACE_MAX) g.buf = g.buf.slice(-MBN_TRACE_MAX);
         if (!g.timer) g.timer = setTimeout(g.flush, 1000);
     } catch (e) { /* no storage: no trace */ }
+}
+function mbnHideUrl(s) {
+    return String(s).replace(/([?&;])([^=&#\s]*)=([^&#\s]*)/g, (m, sep, k, v) => {
+        let n = k;
+        try { n = decodeURIComponent(k.replace(/\+/g, ' ')); } catch (e) {}
+        const secret = /(^|[_.-])(token|secret|pass|passwd|password|auth|session|sid|csrf|code|key|apikey|sig|signature)$/i.test(n) || /[a-z](Token|Secret|Key|Password)$/.test(n);
+        return v && secret ? sep + k + '=•••' : m;
+    });
 }
 async function mbnSlot(o) {
     o = o || {};
@@ -6363,6 +6374,21 @@ function discogsMasterState(cachedMasterUrl, existingDiscogsMaster) {
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
+// the words of a name or a Bandcamp address, folded to plain Latin letters, three letters or more:
+// Bandcamp writes "Pavarotti: Arie" as pavarotti-arie in its addresses
+function bandcampWords(s) {
+    const out = new Set();
+    for (const w of String(s || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().split(/[^a-z0-9]+/)) if (w.length >= 3 && !/^(the|and|feat|album|track|vol)$/.test(w)) out.add(w);
+    return out;
+}
+// Search engines: one that refused (429, 503, an anti-bot page) is not asked again for 10 minutes,
+// in any tab. Brave refused every call of a whole session, each one a wait for nothing.
+const SEARCH_COOL_MS = 10 * 60 * 1000;
+const searchCoolKey = name => 'pc:search-cool:' + name;
+function searchCooling(name) {
+    try { const until = +localStorage.getItem(searchCoolKey(name)) || 0; return until > Date.now() ? until : 0; } catch (e) { return 0; }
+}
+function searchCool(name) { try { localStorage.setItem(searchCoolKey(name), String(Date.now() + SEARCH_COOL_MS)); } catch (e) {} }
 // DDG redirects search hits through /l/?uddg=<encoded-url>. Decode it.
 function decodeDdgRedirect(href) {
     const m = href.match(/[?&]uddg=([^&]+)/);
@@ -6412,6 +6438,8 @@ async function searchWeb(query, urlFilter, label, maxN = 5) {
     ];
 
     for (const eng of engines) {
+        const cool = searchCooling(eng.name);
+        if (cool) { appendLog(label, `${eng.name}: skipped, it refused a search less than 10 minutes ago (asked again after ${new Date(cool).toLocaleTimeString()})`); continue; }
         appendLog(label, `${eng.name}: ${eng.url}`);
         const res = await queueSearch(() => gmGet(eng.url, { headers: eng.headers }));
         const sizeHint = res.responseText.length;
@@ -6421,12 +6449,14 @@ async function searchWeb(query, urlFilter, label, maxN = 5) {
         //   DDG   -> HTTP 202 with a tiny <14 KB anti-bot page
         // Surface both clearly in the log so the user knows when to wait.
         if (res.status === 429 || res.status === 503) {
-            appendLog(label, `${eng.name}: rate-limited (HTTP ${res.status}) — try again later`, 'warn');
+            appendLog(label, `${eng.name}: rate-limited (HTTP ${res.status}) — not asked again for 10 minutes`, 'warn');
+            searchCool(eng.name);
             continue;
         }
         if (!res.ok || !res.responseText) { appendLog(label, `${eng.name}: HTTP failure (status=${res.status})`, 'warn'); continue; }
         if (sizeHint < 5000 || res.status === 202) {
-            appendLog(label, `${eng.name}: response too small (${sizeHint}b) — likely anti-bot block`, 'warn');
+            appendLog(label, `${eng.name}: response too small (${sizeHint}b) — likely anti-bot block, not asked again for 10 minutes`, 'warn');
+            searchCool(eng.name);
             continue;
         }
         const all = eng.extract(res.responseText);
@@ -7744,8 +7774,12 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVari
             // "Foo - Bar" still hit each other this way; the verifier handles
             // the rest. Bandcamp candidate pages are ~300 KB so cap at 3.
             const site = mbTracks === 1 ? 'site:bandcamp.com' : 'site:bandcamp.com/album/';
+            // a hit whose address shares no word with the album or the artist is not fetched: DuckDuckGo
+            // gave a spam album and an unrelated artist's page for a search it had nothing for
+            const words = bandcampWords(`${isVariousArtists ? '' : artist} ${album}`);
+            const related = u => !words.size || [...bandcampWords(u.replace(/^https?:\/\//, '').replace(/\.bandcamp\.com\/(?:album|track)\//i, ' '))].some(w => words.has(w));
             const q = isVariousArtists ? `${site} ${albumT}` : `${site} ${artistT} ${albumT}`;
-            candidates = await searchWeb(q, u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/(?:album|track)\//i.test(u) && (mbTracks === 1 || /\/album\//i.test(u)), label, 3);
+            candidates = await searchWeb(q, u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/(?:album|track)\//i.test(u) && (mbTracks === 1 || /\/album\//i.test(u)) && related(u), label, 3);
             candidateSource = 'search';
         }
         if (!candidates.length) {
@@ -8673,7 +8707,7 @@ const appleStorefront = url => ((String(url || '').match(/(?:music|itunes)\.appl
 // Apple's catalogue is per storefront: an album is only in the ones it is licensed to (majkinetor,
 // #627: "better to find any release in any store than no release in particular store"). The short
 // list is read first, all at once: eight storefronts in parallel answered in 83 ms. Only when it has
-// nothing is every storefront read, again all at once: 172 in about a second. (Apple's own site
+// nothing is every storefront read, 24 at a time (appleEach): all 172 at once drew 429s. (Apple's own site
 // checks a release's availability one storefront at a time, about a second each.)
 const APPLE_SHORTLIST = ['us', 'gb', 'de', 'fr', 'jp', 'br', 'au'];
 async function appleAllStorefronts() {
@@ -8690,9 +8724,25 @@ async function appleAllStorefronts() {
 }
 // One catalogue read in several storefronts at once: [{ sf, j }] for each that answered. Throws when
 // none did (the caller falls back to iTunes); a few that fail are only logged.
+// At most APPLE_PARALLEL reads at a time: all 172 at once got a 429 from about 20 storefronts. Those
+// that get a 429 are asked once more, after a second.
+const APPLE_PARALLEL = 24;
 async function appleEach(sfs, path) {
     await appleToken();   // once, before the parallel reads
-    const res = await Promise.all(sfs.map(s => appleAmp(`${s}/${path}`).then(j => ({ sf: s, j }), e => ({ sf: s, err: e.message }))));
+    const one = s => appleAmp(`${s}/${path}`).then(j => ({ sf: s, j }), e => ({ sf: s, err: e.message }));
+    const pool = async list => {
+        const out = new Array(list.length); let next = 0;
+        const worker = async () => { while (next < list.length) { const i = next++; out[i] = await one(list[i]); } };
+        await Promise.all(Array.from({ length: Math.min(APPLE_PARALLEL, list.length) }, worker));
+        return out;
+    };
+    const res = await pool(sfs);
+    const busy = res.filter(r => !r.j && /HTTP 429/.test(r.err || ''));
+    if (busy.length) {
+        await new Promise(r => setTimeout(r, 1000));
+        const again = await pool(busy.map(r => r.sf));
+        again.forEach(a => { res[res.findIndex(r => r.sf === a.sf)] = a; });
+    }
     const ok = res.filter(r => r.j), bad = res.filter(r => !r.j);
     if (!ok.length) throw new Error(bad.length ? bad[0].err : 'no storefront to ask');
     if (bad.length) appendLog('Apple', `amp-api: ${bad.length} of ${res.length} storefront(s) didn't answer (${bad.slice(0, 5).map(b => b.sf).join(', ')}${bad.length > 5 ? '…' : ''})`, 'warn');

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.24.022958
+// @version      2026.11.24.090047
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -354,10 +354,21 @@ function mbnTrace(ev) {
         // member runs its own copy of the gate with its own GM_info, but globalThis is the bundle's one
         let script = '';
         try { script = String(GM_info.script.name || ''); } catch (e) {}
-        g.buf.push(Object.assign({ t: Date.now(), s: script }, ev));
+        const row = Object.assign({ t: Date.now(), s: script }, ev);
+        if (row.l) row.l = mbnHideUrl(row.l);
+        if (row.u) row.u = mbnHideUrl(row.u);
+        g.buf.push(row);
         if (g.buf.length > MBN_TRACE_MAX) g.buf = g.buf.slice(-MBN_TRACE_MAX);
         if (!g.timer) g.timer = setTimeout(g.flush, 1000);
     } catch (e) { /* no storage: no trace */ }
+}
+function mbnHideUrl(s) {
+    return String(s).replace(/([?&;])([^=&#\s]*)=([^&#\s]*)/g, (m, sep, k, v) => {
+        let n = k;
+        try { n = decodeURIComponent(k.replace(/\+/g, ' ')); } catch (e) {}
+        const secret = /(^|[_.-])(token|secret|pass|passwd|password|auth|session|sid|csrf|code|key|apikey|sig|signature)$/i.test(n) || /[a-z](Token|Secret|Key|Password)$/.test(n);
+        return v && secret ? sep + k + '=•••' : m;
+    });
 }
 async function mbnSlot(o) {
     o = o || {};
@@ -5342,15 +5353,21 @@ const nameOf = (type, code) => { try { return code && new Intl.DisplayNames(['en
 // the release's front cover is kept as an image (#847): CAA's address redirects twice, to archive.org and on to a mirror, and
 // neither redirect carries a cache header, so every draw waits on both (about a second) even with the image cached. Kept by
 // the image's id, so a new front is a new entry; the KP_COVERS newest stay. had: it was kept before this call
-const KP_COVERS = 60, KP_COV = new Map();
+const KP_COVERS = 60, KP_COV = new Map(), KP_NO500 = caaStore('eh:caa-no500', 30 * 60 * 1000);
 async function keptCover(rel, img) {
     const k = 'cov:' + rel + '/' + img.id;
     if (KP_COV.has(k)) return { u: KP_COV.get(k), had: true };
     let e = null;
     try { e = await kpStore('readonly').then(st => new Promise(ok => { const q = st.get(k); q.onsuccess = () => ok(q.result); q.onerror = () => ok(null); })); } catch (x) {}
     if (e && e.b && (img.id !== 'header' || (e.at > mbLastWrite() && Date.now() - e.at < 86400000))) { const u = URL.createObjectURL(e.b); KP_COV.set(k, u); return { u, had: true }; }
-    const t0 = performance.now(), r = await mbnLog(((img.thumbnails || {})['500'] || caaSrc('release', rel, 500)).replace(/^http:/, 'https:'));
-    fetchLog('CAA front ' + rel, t0, r);
+    // a fresh upload has no 500 thumbnail for a while: its full image stands in, and the miss is kept for
+    // 30 minutes in the tab, so the next draws ask for the full image at once
+    const small = ((img.thumbnails || {})['500'] || caaSrc('release', rel, 500)).replace(/^http:/, 'https:');
+    const full = img.image ? String(img.image).replace(/^http:/, 'https:') : '';
+    const get = async u => { const t0 = performance.now(); try { const x = await mbnLog(u); fetchLog('CAA front ' + rel, t0, x); return x; } catch (er) { return null; } };
+    let r = full && KP_NO500.has(k) ? null : await get(small);
+    if (!(r && r.ok) && full) { KP_NO500.set(k, 1); r = await get(full); }
+    if (!r) throw new Error('network error');
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const b = await r.blob(), u = URL.createObjectURL(b);
     KP_COV.set(k, u);
@@ -6139,7 +6156,26 @@ window.addEventListener('contextmenu', ev => {
 // upload (often until its edit is approved) or go missing while the full image loads, so a failed front-250/500 tries the
 // archive's listing, smallest first, before the view gives up. The answer is kept per release or group ('' when none
 // loads), so every view and every redraw starts from the address that worked.
-const CAA_LIST = new Map(), CAA_CV = new Map(), CAA_TRIED = new WeakSet();
+// A map kept in the tab's sessionStorage for ms, so the next view in this tab starts from it: a fresh
+// upload's front-500, which fails until the archive makes its thumbnails, was asked again on every view.
+// A value is kept as [time, value]; only the newest 300 are kept.
+function caaStore(name, ms) {
+    const mem = new Map();
+    let all = {};
+    try { all = JSON.parse(sessionStorage.getItem(name) || '{}') || {}; } catch (e) {}
+    const now = Date.now();
+    for (const [k, [t, v]] of Object.entries(all)) if (now - t < ms) mem.set(k, [t, v]);
+    let timer = 0;
+    const save = () => { timer = 0; try { sessionStorage.setItem(name, JSON.stringify(Object.fromEntries([...mem].slice(-300)))); } catch (e) {} };
+    const fresh = k => { const x = mem.get(k); if (x && Date.now() - x[0] >= ms) { mem.delete(k); return null; } return x; };
+    return {
+        has: k => !!fresh(k),
+        get: k => { const x = fresh(k); return x ? x[1] : undefined; },
+        set(k, v) { mem.delete(k); mem.set(k, [Date.now(), v]); if (!timer) timer = setTimeout(save, 500); return this; },
+    };
+}
+// the address of a front that loads ('' when none does), for 30 minutes: a fresh upload's thumbnails come later
+const CAA_LIST = new Map(), CAA_CV = caaStore('eh:caa-cv', 30 * 60 * 1000), CAA_TRIED = new WeakSet();
 const CAA_RE = /^https:\/\/(?:coverartarchive\.org\/(release|release-group)|eventartarchive\.org\/(event))\/([0-9a-f-]{36})\/front(?:-(\d+))?$/;
 const caaHost = k => k === 'event' ? 'https://eventartarchive.org' : 'https://coverartarchive.org';
 // an address's release, group or event, and the size it asked for; null for an address that isn't a front
@@ -6147,11 +6183,13 @@ const caaOf = u => { const m = (u || '').match(CAA_RE); return m ? { k: m[1] || 
 // the front's address once found, else its thumbnail at that size
 const caaSrc = (k, id, size = 250) => CAA_CV.get(k + '/' + id) || `${caaHost(k)}/${k}/${id}/front-${size}`;
 // the front's images from the archive listing, smallest first; [] when it has none
-const CAA_JSON = new Map();
-// the archive's listing of a release, group or event, fetched once; null when it has none
+const CAA_JSON = new Map(), CAA_JSON_KEPT = caaStore('eh:caa-json', 10 * 60 * 1000);
+// the archive's listing of a release, group or event, fetched once, and kept in the tab for 10 minutes; null when it has none
 const caaJson = (k, id) => {
     const key = k + '/' + id;
-    if (!CAA_JSON.has(key)) CAA_JSON.set(key, mbnLog(`${caaHost(k)}/${key}`).then(r => r.ok ? r.json() : null).catch(() => null));
+    if (!CAA_JSON.has(key)) CAA_JSON.set(key, CAA_JSON_KEPT.has(key) ? Promise.resolve(CAA_JSON_KEPT.get(key))
+        : mbnLog(`${caaHost(k)}/${key}`).then(r => r.ok ? r.json() : r.status === 404 ? null : Promise.reject(new Error('HTTP ' + r.status)))
+            .then(j => { CAA_JSON_KEPT.set(key, j); return j; }, () => null));
     return CAA_JSON.get(key);
 };
 const caaList = (k, id) => {
@@ -12156,7 +12194,7 @@ function renderDraw(keepPop) {
     };
     // a fresh upload has no thumbnail yet: the full image stands in, and later redraws start from it, not from a failed front-500
     // a cover a redraw already replaced says nothing: its load was cut short, not refused
-    if (rc) rc.onerror = () => { if (!rc.isConnected) return; if (rc.dataset.full && rc.src !== rc.dataset.full) { r.frontFull = true; rc.src = rc.dataset.full; return; } LOG.debug('release cover failed to load', r.id); r.frontFailed = true; rc.outerHTML = relNoCover(r, fmtKind(r.media[0] && r.media[0].format)); };
+    if (rc) rc.onerror = () => { if (!rc.isConnected) return; if (rc.dataset.full && rc.src !== rc.dataset.full) { r.frontFull = true; CAA_CV.set('release/' + r.id, rc.dataset.full); rc.src = rc.dataset.full; return; } LOG.debug('release cover failed to load', r.id); r.frontFailed = true; rc.outerHTML = relNoCover(r, fmtKind(r.media[0] && r.media[0].format)); };
     // a Commons picture that won't load: the instrument's mark
     const ii = app.querySelector('[data-insimg]');
     if (ii) ii.onerror = () => { ii.closest('.picw').outerHTML = `<div class="nocover pg">${bigMark('instrument')}</div>`; };

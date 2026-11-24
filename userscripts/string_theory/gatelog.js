@@ -195,6 +195,10 @@ function stGateGroups(all, now) {
     if (ev.e === 'left') {
       Object.keys(open).forEach(function (k) {
         var o = open[k]; if (o.tab !== ev.tab) return;
+        // only a request still waiting for an answer is cut off. One that got its 429 and whose script
+        // retried as a new request, ended at that 429 (it shows "429, gave up")
+        var waits = o.tries.some(function (y) { return y.st == null; });
+        if (!waits && o.pend) { done(o, 'gave up'); return; }
         o.tries.forEach(function (y) { if (y.st == null) { y.st = -2; y.end = ev.t; } });
         o.end = Math.max(o.end, ev.t); o.pend = 0; done(o, 'page left');
       });
@@ -204,8 +208,10 @@ function stGateGroups(all, now) {
     var key = ev.tab + '|' + (ev.s || '') + '|' + (ev.id ? '#' + ev.id : ev.l + '|' + ev.b), g = open[key];
     if (g && g.pend && ev.t - g.pend > ST_GATE_RETRY) { done(g, 'gave up'); g = null; }
     // a request that waited, then found a twin's answer just before it left (or before a retry), ends there
-    if ((ev.e === 'join' || ev.e === 'cache') && g) { g.evs.push(ev); g.end = ev.t; g.pend = 0; done(g, ev.e === 'join' ? 'shared' : 'cached'); return; }
-    if (ev.e === 'join' || ev.e === 'cache') { groups.push({ id: (ev.e === 'join' ? 'j' : 'c') + key + ev.t, key: key, tab: ev.tab, s: ev.s, r: ev.r, en: ev.en, l: ev.l, m: ev.m, u: ev.u, h: ev.h, b: ev.b, t: ev.t, end: ev.t, evs: [ev], tries: [], res: ev.e === 'join' ? 'shared' : 'cached' }); return; }
+    // a merge waits for the request it joined and shares its answer, as a join does: no try of its own
+    var shared = ev.e === 'join' || ev.e === 'merge';
+    if ((shared || ev.e === 'cache') && g) { g.evs.push(ev); g.end = ev.t; g.pend = 0; done(g, shared ? 'shared' : 'cached'); return; }
+    if (shared || ev.e === 'cache') { groups.push({ id: (shared ? 'j' : 'c') + key + ev.t, key: key, tab: ev.tab, s: ev.s, r: ev.r, en: ev.en, l: ev.l, m: ev.m, u: ev.u, h: ev.h, b: ev.b, t: ev.t, end: ev.t, evs: [ev], tries: [], res: shared ? 'shared' : 'cached' }); return; }
     if (!g) { g = open[key] = { id: 'r' + key + ev.t, key: key, tab: ev.tab, s: ev.s, r: ev.r, en: ev.en, l: ev.l, m: ev.m, u: ev.u, h: ev.h, b: ev.b, t: ev.t, end: ev.t, evs: [], tries: [] }; groups.push(g); }
     g.evs.push(ev); g.end = ev.t;
     if (ev.e !== 'answer') g.pend = 0;

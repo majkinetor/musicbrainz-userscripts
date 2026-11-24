@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.022958
+// @version      2026.11.24.090047
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -296,10 +296,21 @@
           // member runs its own copy of the gate with its own GM_info, but globalThis is the bundle's one
           let script = '';
           try { script = String(GM_info.script.name || ''); } catch (e) {}
-          g.buf.push(Object.assign({ t: Date.now(), s: script }, ev));
+          const row = Object.assign({ t: Date.now(), s: script }, ev);
+          if (row.l) row.l = mbnHideUrl(row.l);
+          if (row.u) row.u = mbnHideUrl(row.u);
+          g.buf.push(row);
           if (g.buf.length > MBN_TRACE_MAX) g.buf = g.buf.slice(-MBN_TRACE_MAX);
           if (!g.timer) g.timer = setTimeout(g.flush, 1000);
       } catch (e) { /* no storage: no trace */ }
+  }
+  function mbnHideUrl(s) {
+      return String(s).replace(/([?&;])([^=&#\s]*)=([^&#\s]*)/g, (m, sep, k, v) => {
+          let n = k;
+          try { n = decodeURIComponent(k.replace(/\+/g, ' ')); } catch (e) {}
+          const secret = /(^|[_.-])(token|secret|pass|passwd|password|auth|session|sid|csrf|code|key|apikey|sig|signature)$/i.test(n) || /[a-z](Token|Secret|Key|Password)$/.test(n);
+          return v && secret ? sep + k + '=•••' : m;
+      });
   }
   async function mbnSlot(o) {
       o = o || {};
@@ -2525,10 +2536,19 @@
   // empty answer is never cached, as a name created a moment ago reaches MusicBrainz's search index only
   // later, and a cached miss kept saying "no matches" until a reload; nor is a throttled or failed one,
   // which is logged with its HTTP status instead of passing for an empty list
-  async function wsjsSearch(kind, name, limit, cache) {
+  // The same search asked again while the first is on its way shares its answer: the credits of a
+  // release asked "VARIOUS ARTISTS" four times at once, each its own request
+  const _wsjsLive = new Map();   // kind|query|limit → promise
+  function wsjsSearch(kind, name, limit, cache) {
+    const k = fold(name) + '|' + limit; if (!fold(name)) return Promise.resolve([]);
+    if (cache.has(k)) return Promise.resolve(cache.get(k));
+    const lk = kind + '|' + k;
+    if (_wsjsLive.has(lk)) return _wsjsLive.get(lk);
+    const p = wsjsSearchNow(kind, name, limit, cache, k).finally(() => _wsjsLive.delete(lk));
+    _wsjsLive.set(lk, p); return p;
+  }
+  async function wsjsSearchNow(kind, name, limit, cache, k) {
     const cat = Log.cat(kind === 'label' ? 'Label' : 'Artist');
-    const k = fold(name) + '|' + limit; if (!fold(name)) return [];
-    if (cache.has(k)) return cache.get(k);
     let list;
     try {
       const r = await mbWebFetch(`${ORIGIN}/ws/js/${kind}?q=${encodeURIComponent(name)}&limit=${limit}&direct=false`, { headers: { Accept: 'application/json' } });
@@ -12702,7 +12722,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   async function fetchDupTracklist(gid) {
     try {
-      const res = await wsJson(`${ORIGIN}/ws/2/release/${gid}?inc=artist-credits+recordings&fmt=json`, { label: 'dup tracklist' });
+      // the same inc as the duplicate release detail below, so one answer, cached by the gate, serves both
+      const res = await wsJson(`${ORIGIN}/ws/2/release/${gid}?inc=recordings+artist-credits+release-groups&fmt=json`, { label: 'dup tracklist' });
       const j = res.json; if (!j) return null;
       _dupRawCache.set(gid, j);
       return (j.media || []).map((m, mi) => ({
@@ -14763,7 +14784,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // the picker's narrow search for a track: title + artist + length ±10 s. Auto-match's last tier runs it too. #963
   function recNarrowQuery(ko) {
     const esq = s => String(s || '').replace(/(["\\])/g, '\\$1');
-    const title = u(ko.name), artist = acText(u(ko.artistCredit)), len = u(ko.length);
+    const title = u(ko.name), artist = acText(u(ko.artistCredit)), len = Math.round(Number(u(ko.length)) || 0);   // a number: a string length made "TO 2700010000"
     if (!title) return '';
     let qy = 'recording:"' + esq(title) + '"';
     if (artist) qy += ' AND artist:"' + esq(artist) + '"';
