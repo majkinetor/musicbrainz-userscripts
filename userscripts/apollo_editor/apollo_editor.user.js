@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.195145
+// @version      2026.11.24.201428
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -14466,18 +14466,24 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         }
         // only fall back to MB's per-track lookup (network) when the pool had nothing good enough
         if (!best || bestLevel > maxLevel) {
-          let sugg = suggList(ko);
+          const sugg = suggList(ko);
           const stale = suggStale(ko, ctx);   // a clone's or a retitled track's old suggestions
-          if (stale) Log.cat('Recording').debug('track', r.number, ': suggestions are stale (no shared artist), asking MB again');
-          if (!sugg.length || stale) {
-            if (stale) refetchSuggestions(ko);
-            else { try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) {} }
+          if (stale) Log.cat('Recording').debug('track', r.number, ': suggestions are stale (no shared artist), searching again');
+          if (sugg.length && !stale) { for (let s = 0; s < sugg.length; s++) { consider(suggData(sugg[s])); if (bestLevel === 0) break; } }   // 0 = exact, can't do better
+          else {
+            /* #1112: MusicBrainz's own suggestions are one ws/2 recording search that
+               goes around the gate and, when MusicBrainz sheds it, waits a fixed 5 s
+               before it tries again: 57 s of a 63 s pass. Apollo sends the same query
+               itself, through the gate (about 1 s after a shed), instead of asking
+               the release editor for it; MusicBrainz's copy is then never sent. */
+            const qs = recSuggestQuery(ko);
             const st0 = Date.now();
-            await timed('MusicBrainz suggestions', wait(recSuggestionsSettled(ko), 'MusicBrainz suggestions')); sugg = u(ko.suggestedRecordings) || [];
-            timeTrack.suggN = sugg.length; timeTrack.suggLoading = typeof ko.loadingSuggestedRecordings === 'function' && !!u(ko.loadingSuggestedRecordings);
-            Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' MusicBrainz suggestions → ' + sugg.length + ' in ' + (Date.now() - st0) + 'ms' + (typeof ko.loadingSuggestedRecordings === 'function' && u(ko.loadingSuggestedRecordings) ? ' (still loading, gave up)' : '') + (document.hidden ? ', page hidden' : ''));
+            const raw = qs ? await timed('suggestion search', wait(searchRecordings(qs, { stale: cancelled, keep: true, limit: 25, label: 'recording suggestions' }), 'recording suggestions')) : [];
+            const hits = raw || [];
+            timeTrack.suggN = hits.length; timeTrack.suggFailed = raw === null && !cancelled();
+            Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' suggestion search → ' + (raw === null ? 'failed' : hits.length + ' hit(s)') + ' in ' + (Date.now() - st0) + 'ms' + (document.hidden ? ', page hidden' : ''));
+            for (let s = 0; s < hits.length; s++) { consider(hits[s]); if (bestLevel === 0) break; }
           }
-          for (let s = 0; s < sugg.length; s++) { consider(suggData(sugg[s])); if (bestLevel === 0) break; }   // 0 = exact, can't do better
         }
         // #963 — last tier: the picker's own narrow search (title + artist name + length).
         // MB's suggestions can miss a recording that search finds; a single hit is
@@ -14534,7 +14540,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         }
         {
           const tm = timeTrack, parts = timeSummary(Object.fromEntries(Object.entries(tm).filter(([k]) => typeof tm[k] === 'number' && k !== 'suggN')));
-          const sg = 'suggN' in tm ? ' (MusicBrainz suggestions: ' + tm.suggN + (tm.suggLoading ? ', still loading, gave up' : '') + ')' : '';
+          const sg = 'suggN' in tm ? ' (suggestion search: ' + (tm.suggFailed ? 'failed' : tm.suggN + ' hit' + (tm.suggN === 1 ? '' : 's')) + ')' : '';
           Log.cat('Recording').info('track ' + (r.number || (r.ti + 1)) + ' took ' + secs(Date.now() - trackT0) + (parts ? ': ' + parts : ', all from the release group') + sg);
         }
       }
@@ -14835,20 +14841,39 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (len) qy += ' AND dur:[' + Math.max(0, len - 10000) + ' TO ' + (len + 10000) + ']';
     return qy;
   }
+  // MusicBrainz's own suggestion query for a track (release editor, recordingAssociation.js
+  // recordingQuery): title and the track's artists, boosted, or the title alone within the
+  // length window; MAX_LENGTH_DIFFERENCE is 10.5 s. Auto-match sends it in place of the
+  // release editor's copy (#1112).
+  function recSuggestQuery(ko) {
+    const q = s => '"' + String(s || '').replace(/(["\\])/g, '\\$1') + '"';
+    const title = u(ko.name); if (!title) return '';
+    const gids = acArtistGids(u(ko.artistCredit)).map(q);
+    const justTitle = 'recording:(' + q(title) + ')';
+    const titleAndArtists = justTitle + (gids.length ? ' AND arid:(' + gids.join(' OR ') + ')' : '');
+    const len = parseInt(u(ko.length), 10);
+    if (len) {
+      const dur = 'dur:([' + (len - 10500) + ' TO ' + (len + 10500) + '])';
+      return '(' + titleAndArtists + ' AND (' + dur + ' OR (NOT dur:[* TO *])))^2 OR (' + justTitle + ' AND ' + dur + ')';
+    }
+    return '(' + titleAndArtists + ')^2 OR (' + justTitle + ')';
+  }
   // A successful search, kept for 10 minutes per query: the picker's first search for a
   // track is the same narrow query the auto-match's last tier already ran.
   const _recSearchCache = new Map();   // query → { at, out }
   async function searchRecordings(q, opts) {
     q = (q || '').trim(); if (!q) return [];
-    const hit = _recSearchCache.get(q);
+    const { limit = 15, ...wsOpts } = opts || {};
+    const key = limit + '|' + q;
+    const hit = _recSearchCache.get(key);
     if (hit && Date.now() - hit.at < 600000) { Log.cat('Recording').debug('recording search:', JSON.stringify(q), '→', hit.out.length, 'hit(s), from this session'); return hit.out.slice(); }
     Log.cat('Recording').debug('recording search:', JSON.stringify(q));
-    const url = `${ORIGIN}/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=15&inc=artist-credits+releases+release-groups+isrcs`;
-    const res = await wsJson(url, Object.assign({ label: 'recording search' }, opts || {}));
+    const url = `${ORIGIN}/ws/2/recording?query=${encodeURIComponent(q)}&fmt=json&limit=${limit}&inc=artist-credits+releases+release-groups+isrcs`;
+    const res = await wsJson(url, Object.assign({ label: 'recording search' }, wsOpts));
     if (!res.json) { Log.cat('Recording').warn('recording search:', JSON.stringify(q), '→ no result (' + (res.stale ? 'superseded' : 'lookup failed') + ')'); return null; }
     const out = (res.json.recordings || []).map(mapWsRec);
     Log.cat('Recording').debug('recording search:', JSON.stringify(q), '→', out.length, 'hit(s) of', res.json.count != null ? res.json.count : out.length);
-    _recSearchCache.set(q, { at: Date.now(), out: out.slice() });
+    _recSearchCache.set(key, { at: Date.now(), out: out.slice() });
     return out;
   }
   // direct lookup of one recording by MBID — backs pasting a recording MBID / URL

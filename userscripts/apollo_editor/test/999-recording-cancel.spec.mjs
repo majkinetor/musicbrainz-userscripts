@@ -24,7 +24,7 @@ for (const stage of ['pool', 'positions', 'suggestions']) {
       const track = { position: 1, suggestedRecordings: () => [], loadingSuggestedRecordings: () => true, setRecordingValue: () => { writes++; } };
       const koTrack = () => track, videoBlockedHere = () => false, fcIsrcFor = () => null, fcHandoff = () => null;
       const recFold = s => s, suggList = () => [], suggStale = () => false;
-      const getEditor = () => ({ recordingAssociation: { findRecordingSuggestions: () => { entered(); } } });
+      const recSuggestQuery = () => 'suggestion query', searchRecordings = () => stage === 'suggestions' ? hold() : Promise.resolve([]);
       const rerenderRec = () => {}, recSuggestionsSettled = () => new Promise(() => {});
       ${source}
       return (async () => {
@@ -92,14 +92,11 @@ test('Finish reaches the edit note while recording suggestions never arrive', { 
   };
   const submitted = await openApollo(page, inject, { seed, tab: 'tracklist' });
   await toTab(page, 'recordings');
-  await page.evaluate(() => {
-    const ed = window.MB.releaseEditor;
-    ed.recordingAssociation.findRecordingSuggestions = ko => {
-      ko.suggestedRecordings([]); ko.loadingSuggestedRecordings(true); window.__recAsked = true;
-    };
-    window.__recPass = window.__apolloEditor.autoMatchRecordings();
-  });
-  await page.waitForFunction(() => window.__recAsked === true);
+  let asked = false;   // the suggestion search is held and never answered (#1112)
+  await page.route(/\/ws\/2\/recording\?/,() => { asked = true; });
+  await page.evaluate(() => { window.__recPass = window.__apolloEditor.autoMatchRecordings(); });
+  for (let i = 0; i < 100 && !asked; i++) await new Promise(r => setTimeout(r, 100));
+  check(asked, 'the recordings pass sends its own suggestion search');
   await page.evaluate(() => document.querySelector('#tc-nav-wiz [data-wiz="finish"]').click());
   await page.waitForFunction(() => document.querySelector('#release-editor > ul.ui-tabs-nav li.ui-tabs-active a')?.getAttribute('href') === '#edit-note', null, { timeout: 5000 });
   await page.waitForFunction(() => /stopped/.test(document.querySelector('.tc-rec-amstatus')?.textContent || ''), null, { timeout: 5000 });
