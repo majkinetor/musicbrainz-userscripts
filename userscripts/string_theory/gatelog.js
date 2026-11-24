@@ -1070,6 +1070,15 @@ function stGateBuild() {
     }
     if (!tr) return;
     var id = tr.dataset.id;
+    // an open group closes with its rows, an open or selected row in it included (it keeps the group open)
+    if (tr.classList.contains('grp') && tr.classList.contains('open')) {
+      delete opened[id];
+      for (var n = tr.nextElementSibling; n && !(n.classList.contains('rq') && !n.classList.contains('in')); n = n.nextElementSibling)
+        if (n.dataset.id) delete opened[n.dataset.id];
+      stGateSel = {}; stGateSel[id] = 1; sig = '';
+      draw();
+      return;
+    }
     if (opened[id]) delete opened[id]; else opened[id] = 1;
     stGateSel = {}; stGateSel[id] = 1;
     draw();
