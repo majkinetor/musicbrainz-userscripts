@@ -7908,10 +7908,13 @@ async function scanSoundcloud({ artist, album, mbTracks, existingUrl, mbid, isVa
                 const trackMatch = mbTracks && h.track_count === mbTracks;
                 appendLog(label, `  cand kind=${h.kind}  tracks=${h.track_count ?? '?'}  title="${h.title || ''}"  titleMatch=${titleMatch}  trackCountMatch=${trackMatch}  url=${h.permalink_url || '?'}`);
             });
+            // #1100: a title alone isn't enough (Tryangle's 3-track "SSN-571" for Kordhell's single):
+            // the track count or the uploader's name must match too
+            const byArtist = h => !isVariousArtists && !!norm(artist) && [h.user?.username, h.user?.full_name].some(n => norm(n) && (norm(n).includes(norm(artist)) || norm(artist).includes(norm(n))));
             const pick = hits.find(h => h.kind === 'playlist' && norm(h.title).includes(want) && mbTracks && h.track_count === mbTracks)
-                      || hits.find(h => h.kind === 'playlist' && norm(h.title).includes(want));
+                      || hits.find(h => h.kind === 'playlist' && norm(h.title).includes(want) && byArtist(h));
             if (pick && pick.permalink_url) { setUrl = pick.permalink_url; source = 'search'; appendLog(label, `Search picked: ${setUrl} (tracks=${pick.track_count})`, 'ok'); }
-            else appendLog(label, hits.length ? `Search: none of the ${hits.length} candidate(s) matched the album title` : `Search: no playlist results for this query`, 'warn');
+            else appendLog(label, hits.length ? `Search: none of the ${hits.length} candidate(s) matched the album title with its track count or artist` : `Search: no playlist results for this query`, 'warn');
         }
         if (!setUrl) { appendLog(label, `No matching set found`, 'warn'); cacheSet(mbid, 'soundcloud', { url: null, tracks: null, year: null, label: null, source: 'search' }); updateRow('soundcloud', { url: null, mbTracks, remoteTracks: null }); return; }
     }
@@ -10344,6 +10347,15 @@ function pcLinkRows(mb, byProvider) {
         r.cells[p] = r.cells[p].filter(c => !c.uncertain || c.by === 'name');
         if (r.type === 'label') r.cells[p].forEach(c => { if (c.by === 'position') c.differs = true; });
         if (!r.cells[p].length) delete r.cells[p];
+    }
+    // #1100: a withheld platform release (another barcode or format) that shares no artist or
+    // label name with MusicBrainz is likely another artist's release: its position pairs are left out
+    for (const p of Object.keys(byProvider)) {
+        if (!document.getElementById(`row-${p}`)?.classList.contains('pc-blocked')) continue;
+        if ([...rows.values()].some(r => (r.cells[p] || []).some(x => x.by === 'name'))) continue;
+        let n = 0;
+        for (const r of rows.values()) if (r.cells[p]) { n += r.cells[p].length; delete r.cells[p]; }
+        if (n) notes.push(`${p}: ${n} page(s) left out: the release is withheld and no artist or label name matches MusicBrainz (likely another release)`);
     }
     const out = [...rows.values()].filter(r => Object.keys(r.cells).length);
     out.sort((a, b) => (a.type === b.type ? 0 : a.type === 'artist' ? -1 : 1));
