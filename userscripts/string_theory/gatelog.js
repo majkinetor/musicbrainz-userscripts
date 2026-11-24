@@ -32,7 +32,7 @@ var ST_GATE_CSS = ''
   + '#st-gate-sum .bad b{color:var(--mbu-error)}#st-gate-sum .re b{color:var(--mbu-warn)}'
   + '#st-gate-lanes{position:relative;flex:0 1 auto;min-height:60px;max-height:40vh;overflow-x:hidden;overflow-y:auto;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;margin:4px 13px 8px;padding-left:180px}'
   + '.st-gl-bands{position:absolute;top:0;bottom:16px;left:180px;right:0}'
-  + '.st-gl-sub,.st-gl-bands{transform:translateX(var(--st-gl-dx,0px))}'
+  + '.st-gl-sub,.st-gl-bands{transform:translateX(var(--st-gl-dx,0px));will-change:transform}'
   + '.st-gl-band{position:absolute;top:0;bottom:0;background:var(--mbu-error-bg)}'
   + '.st-gl-lane{position:relative;height:calc(var(--r,1)*var(--sh,30px));border-top:1px solid var(--mbu-divider)}'
   + '.st-gl-ic{position:absolute;top:50%;width:21px;height:21px;margin:-10px 0 0 -10px;z-index:1;object-fit:contain}'
@@ -366,6 +366,25 @@ function stGateZoomOn(box, span, get, set, redraw, nowFn) {
 // time line moves smoothly instead of stepping on every redraw; a paused or zoomed time line stands still,
 // and so does one under the mouse, so a tip stays on its mark
 var stGateDrifts = [];
+// a redraw changes the marks that are already there in place (their place, their text) and adds or drops only the
+// ones that came or went, so an icon is not made again on every redraw and does not flicker as it moves
+function stGatePatch(box, html) {
+  var t = document.createElement('div'); t.innerHTML = html;
+  var morph = function (a, b) {
+    var ak = Array.prototype.slice.call(a.childNodes), bk = Array.prototype.slice.call(b.childNodes);
+    bk.forEach(function (n, i) {
+      var o = ak[i];
+      if (!o) { a.appendChild(n); return; }
+      if (o.nodeType !== n.nodeType || o.nodeName !== n.nodeName || (n.nodeType === 1 && n.tagName === 'IMG' && o.getAttribute('src') !== n.getAttribute('src'))) { a.replaceChild(n, o); return; }
+      if (n.nodeType !== 1) { if (o.nodeValue !== n.nodeValue) o.nodeValue = n.nodeValue; return; }
+      Array.prototype.slice.call(o.attributes).forEach(function (x) { if (!n.hasAttribute(x.name)) o.removeAttribute(x.name); });
+      Array.prototype.slice.call(n.attributes).forEach(function (x) { if (o.getAttribute(x.name) !== x.value) o.setAttribute(x.name, x.value); });
+      morph(o, n);
+    });
+    for (var i = bk.length; i < ak.length; i++) a.removeChild(ak[i]);
+  };
+  morph(box, t);
+}
 function stGateDrift(box, now, SP, on) {
   var ln = box.querySelector('.st-gl-lane'), inner = (ln ? ln.clientWidth : 0) - 146;
   box.stDrift = on && inner > 0 ? { t: now, k: inner / SP } : null;
@@ -472,12 +491,12 @@ function stGateZoomHtml(items, now) {
       + '<span class="st-gl-zt">' + stGateSec(x.b - x.a) + '</span></div>';
   }).join('');
 }
-function stGateLanesHtml(groups, all, now, me, box) {
+function stGateLanesHtml(groups, all, now, me, box, hud) {
   stGateZoomWire();
   // the time line keeps a margin at each end, so an icon or a cluster's pill does not go past the edge
-  var lw = (((box || document).querySelector('.st-gl-lane') || {}).clientWidth || (box ? box.clientWidth : 0) || 600), insL = 26 / lw * 100, insR = 120 / lw * 100;
+  var lw = (((box || document).querySelector('.st-gl-lane') || {}).clientWidth || (box ? box.clientWidth - (parseFloat(getComputedStyle(box).paddingLeft) || 0) : 0) || 600), insL = 26 / lw * 100, insR = 120 / lw * 100;
   var at = function (p) { return insL + p * (100 - insL - insR) / 100; };
-  var vw = box ? stGateHudVw : stGateVw, SP = vw ? vw.s : ST_GATE_SPAN, t0 = vw ? vw.t0 : now - ST_GATE_SPAN, t1 = t0 + SP;
+  var vw = hud ? stGateHudVw : stGateVw, SP = vw ? vw.s : ST_GATE_SPAN, t0 = vw ? vw.t0 : now - ST_GATE_SPAN, t1 = t0 + SP;
   var pct = function (t) { return at(Math.max(0, Math.min(100, (t - t0) / SP * 100))); };
   var bar = function (cls, a, b, tip) { return '<i class="' + cls + '"' + (tip ? ' data-tip="' + stEsc(tip) + '"' : '') + ' style="left:' + pct(a).toFixed(2) + '%;width:' + (pct(b) - pct(a)).toFixed(2) + '%"></i>'; };
   var lanes = {}, order = [];
@@ -505,7 +524,7 @@ function stGateLanesHtml(groups, all, now, me, box) {
   var bands = all.filter(function (ev) { return ev.e === 'answer' && ev.hold && ev.t + ev.hold > t0; }).map(function (ev) {
     return bar('st-gl-band', ev.t, ev.t + ev.hold);
   }).join('');
-  var zid = 0, laneW = ((document.querySelector('.st-gl-lane') || {}).clientWidth || 600), pxp = function (n) { return n / laneW * 100; };
+  var zid = 0, laneW = lw, pxp = function (n) { return n / laneW * 100; };
   // with the title bar's labels button on, a request's name goes under its icon, in the window and the HUD
   var lbl = !!stGateWinState().labels;
   // two lines: the reason, then the request's name
@@ -986,7 +1005,7 @@ function stGateHud(on, peek) {
       if (!held) {
         // the same scale as the big window (its span over about 1200 px), so the HUD shows the last part of it
         var span0 = ST_GATE_SPAN; ST_GATE_SPAN = hs;
-        try { lanes.innerHTML = stGateLanesHtml(groups, all, stGateHudPausedAt || now, stGateTab(), lanes); } finally { ST_GATE_SPAN = span0; }
+        try { stGatePatch(lanes, stGateLanesHtml(groups, all, stGateHudPausedAt || now, stGateTab(), lanes, true)); } finally { ST_GATE_SPAN = span0; }
         stGateDrift(lanes, now, hs, !stGateHudPausedAt && !stGateHudVw);
       }
     } catch (e) { /* a bad event: the next tick tries again */ }
@@ -1149,7 +1168,7 @@ function stGateBuild() {
     $('#st-gate-state').innerHTML = stGateStateHtml(stGateState(), me);
     $('#st-gate-sum').innerHTML = stGateSumHtml(inHost, now);
     if (!lanesHeld) {   // held still under the mouse, so a tip stays put
-      $('#st-gate-lanes').innerHTML = stGateLanesHtml(inHost, all, stGatePausedAt || now, me);
+      stGatePatch($('#st-gate-lanes'), stGateLanesHtml(inHost, all, stGatePausedAt || now, me, $('#st-gate-lanes')));
       stGateDrift($('#st-gate-lanes'), now, ST_GATE_SPAN, !stGatePausedAt && !stGateVw);
     }
     lastGroups = groups;
