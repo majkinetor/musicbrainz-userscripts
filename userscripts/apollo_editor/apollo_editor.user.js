@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.204456
+// @version      2026.11.24.210520
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -14508,7 +14508,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           _recLeftForYou.set(r.mi + ':' + r.ti, { kind: 'ambiguous', why: pick.tied.length + ' recordings match equally well, pick one', cands: pick.tied.slice() });
           Log.cat('Recording').warn('track ' + (r.number || (r.ti + 1)) + ' AMBIGUOUS — ' + pick.tied.length + ' recordings tie at level ' + bestLevel
             + ': ' + pick.tied.map(c => '"' + c.name + '" [' + (c.gid || '').slice(0, 8) + ']' + (c.length ? ' ' + Math.round(c.length / 1000) + 's' : '')).join(', ')
-            + ' — left unset, pick one by hand (the release group disagrees about which belongs here)');
+            + ' — left unset, pick one by hand ('
+            + (posGids.length ? 'the editions found do not settle which belongs here' : 'no edition found places one at this track') + ')');
         } else if (best && bestLevel <= maxLevel) {
           Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' LINK → "' + best.name + '" [' + (best.gid || '').slice(0, 8) + '] level=' + bestLevel + ' (≤' + maxLevel + ')');
           // #541: a release can legitimately carry the same recording twice, so
@@ -14743,6 +14744,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // dropped from the cache afterwards, so a throttled one is retried rather than
   // remembered as "no duplicates".
   const _dupRelCache = new Map();   // title|artist|rg → Promise<releases[]>
+  // #1112: each answered search and each fetched release is kept for the session on its
+  // own, so a run that a Stop or a throttle cut short still saves what it got, and the
+  // rerun sends only what is missing
+  const _dupQueryCache = new Map();    // query → releases[]
+  const _dupDetailCache = new Map();   // release mbid → release
   function duplicateReleases(title, artistGid, rgGid) {
     if (!title) return Promise.resolve([]);
     const key = [fold(title), artistGid || '', rgGid || ''].join('|');
@@ -14751,10 +14757,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const p = (async () => {
       const titleQ = `release:"${String(title).replace(/["\\]/g, '\\$&')}"`;
       const runQuery = async (q) => {
+        if (_dupQueryCache.has(q)) return _dupQueryCache.get(q);
         const res = await wsJson(`${ORIGIN}/ws/2/release?query=${encodeURIComponent(q)}&fmt=json&limit=12`, { label: 'duplicate release search' });
-        if (!res.json) failed = true;
-        return (res.json && res.json.releases) || [];
+        if (!res.json) { failed = true; return []; }
+        const releases = res.json.releases || [];
+        _dupQueryCache.set(q, releases);
+        return releases;
       };
+      // #1112: a special-purpose artist (Various Artists) is not in the search index's arid
+      if (artistGid && [...MBM_SPECIAL_PURPOSE].includes(artistGid)) artistGid = '';   // an array or a Set, as at the line-up check
       const out = [];
       try {
         // Try title + release artist first, but fall back to TITLE-ONLY when that's empty:
@@ -14763,11 +14774,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         // and the editions were never found. The per-track similarity + length gate is the
         // real guard against a same-titled different album, so title-only is safe. #440
         let releases = artistGid ? await runQuery(`${titleQ} AND arid:${artistGid}`) : [];
-        if (!releases.length) releases = await runQuery(titleQ);
+        // a failed or stopped first search ends the run: the rerun asks again, from the cache
+        if (!releases.length && !failed) releases = await runQuery(titleQ);
         const others = releases.filter(rl => !rl['release-group'] || rl['release-group'].id !== rgGid).slice(0, 6);
         for (const rl of others) {
+          if (_dupDetailCache.has(rl.id)) { out.push(_dupDetailCache.get(rl.id)); continue; }
           const res = await wsJson(`${ORIGIN}/ws/2/release/${rl.id}?inc=recordings+artist-credits+release-groups&fmt=json`, { label: 'duplicate release detail' });
-          if (res.json) out.push(res.json); else failed = true;
+          if (res.json) { out.push(res.json); _dupDetailCache.set(rl.id, res.json); } else failed = true;
         }
         Log.cat('Recording').debug('duplicate releases for "' + title + '":', out.length, 'outside the release group' + (failed ? ' (a lookup failed — not cached)' : ''));
       } catch (e) { failed = true; Log.cat('Recording').warn('duplicate release search failed', e.message); }
