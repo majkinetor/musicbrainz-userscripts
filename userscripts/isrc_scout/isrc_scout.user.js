@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.213154
+// @version      2026.11.24.224544
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1307,7 +1307,7 @@
     if (!mbnGated(opts && opts.url)) {
       // another site's request (SoundExchange, the stores' ISRC lookups) shows in the Gate log as external
       let g;
-      await mbnLog(opts.url, { method: opts.method || 'GET', body: opts.data }, { reason: opts.reason || scReasonOf(opts.url), send: async () => { g = await httpRaw(opts); return { status: g.status }; } });
+      await mbnLog(opts.url, { method: opts.method || 'GET', body: opts.data }, { reason: opts.reason || scReasonOf(opts.url), id: opts.id, send: async () => { g = await httpRaw(opts); return { status: g.status }; } });
       return g;
     }
     const at = mbid, read = !/post/i.test(opts.method || '');
@@ -1334,7 +1334,17 @@
     const responseHeaders = Array.from(r.headers.entries()).map(([k, v]) => k + ': ' + v).join('\r\n');
     return { status: r.status, statusText: r.statusText, responseText: await r.text(), responseHeaders, finalUrl: r.url || opts.url };
   }
-  const gmGet  = (url, headers, reason) => http({ method: 'GET',  url, headers: headers || {}, reason });
+  // id: the Gate log's id for a request another site throttled and its caller retries (extRetry), so its
+  // tries show as one row ("OK ↻2"), not a "429, gave up" row and a new one per retry
+  const gmGet  = (url, headers, reason, id) => http({ method: 'GET',  url, headers: headers || {}, reason, id });
+  // what a caller tells the Gate log about its own retry of another site's 429: the wait before it, or
+  // that it gives up (n tries, the last status). Same id and label as the request's start (mbnLog)
+  function extRetry(url, id, o) {
+    let h = '', p = String(url);
+    try { const x = new URL(p); p = x.pathname + x.search; h = x.host; } catch (e) {}
+    mbnTrace(Object.assign({ r: scReasonOf(url), l: p.slice(0, 120), b: 1, id, m: 'GET', h: h || undefined, x: 1 },
+      o.giveup ? { e: 'giveup', st: o.st, n: o.n } : { e: 'book', w: Math.round(o.wait), why: 'backoff' }));
+  }
   const gmPost = (url, data, headers, reason) => http({ method: 'POST', url, data, headers: headers || {}, reason });
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -6138,12 +6148,14 @@ async function tidalTokenFetch() {
     return (s > 0) ? Math.min(s * 1000, 30000) : fallback;
   }
   async function tidalGet(url, headers) {
+    const id = mbnRid();   // one Gate log row for the request and its retries
     for (let attempt = 0; ; attempt++) {
-      const r = await gmGet(url, headers);
+      const r = await gmGet(url, headers, undefined, id);
       if (r.status !== 429) return r;
-      if (attempt >= TIDAL_MAX_RETRY) { const e = new Error('Tidal rate limit (HTTP 429)'); e.rateLimited = true; throw e; }
+      if (attempt >= TIDAL_MAX_RETRY) { extRetry(url, id, { giveup: true, st: 429, n: attempt + 1 }); const e = new Error('Tidal rate limit (HTTP 429)'); e.rateLimited = true; throw e; }
       const wait = retryAfterMs(r, Math.min(800 * Math.pow(2, attempt), 8000));
       Log.warn('Tidal 429 — backing off ' + wait + 'ms (retry ' + (attempt + 1) + '/' + TIDAL_MAX_RETRY + ')');
+      extRetry(url, id, { wait });
       await sleep(wait);
     }
   }
@@ -7665,11 +7677,13 @@ async function tidalTokenFetch() {
           // Deezer signals a rate limit as HTTP 429 or an error body with code 4 (quota) / 700 (busy);
           // a genuine miss is code 800 ("no data"). Retry only the rate-limit cases, so throttling
           // never looks like "not found". #307
+          const url = 'https://api.deezer.com/track/isrc:' + encodeURIComponent(isrc), id = mbnRid();
           for (let attempt = 0; ; attempt++) {
-            const r = await gmGet('https://api.deezer.com/track/isrc:' + encodeURIComponent(isrc), { 'Accept': 'application/json' });
+            const r = await gmGet(url, { 'Accept': 'application/json' }, undefined, id);
             let j = null; try { j = JSON.parse(r.responseText || 'null'); } catch (e) {}
             const throttled = r.status === 429 || (j && j.error && (j.error.code === 4 || j.error.code === 700));
-            if (throttled && attempt < 4) { await sleep(Math.min(700 * Math.pow(2, attempt), 6000)); continue; }
+            if (throttled && attempt < 4) { const wait = Math.min(700 * Math.pow(2, attempt), 6000); extRetry(url, id, { wait }); await sleep(wait); continue; }
+            if (throttled) extRetry(url, id, { giveup: true, st: r.status, n: attempt + 1 });
             if (r.status !== 200 || !j || j.error || !j.id) return null;
             // Don't offer a DEAD track: Deezer keeps the ISRC mapping after pulling the
             // audio, returning a track that streams in zero countries (readable:false,
