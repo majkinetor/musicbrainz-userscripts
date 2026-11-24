@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.24.090047
+// @version      2026.11.24.120000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -6820,6 +6820,7 @@ function tgInWire() {
         if (ev.key === 'Escape') { ev.preventDefault(); tgInClose(); }
         else if ((ev.key === 'ArrowDown' || ev.key === 'ArrowUp') && (tgIn.acs || []).length) { ev.preventDefault(); const L = tgIn.acs.length; tgIn.aci = ((tgIn.aci || 0) + (ev.key === 'ArrowDown' ? 1 : -1) + L) % L; tgInBox().querySelectorAll('.tg-ac button').forEach((b, k) => b.classList.toggle('on', k === tgIn.aci)); }
         // Enter takes the selected suggestion, else what's typed; typed before the tags load, it's sent once they have
+        else if (ev.key === 'Enter' && !ev.target.value.trim()) { ev.preventDefault(); tgInClose(); }
         else if (ev.key === 'Enter') { ev.preventDefault(); const ns = tgInTake(ev.target, (tgIn.acs || [])[tgIn.aci || 0]); if (!ns.length) return; if (tgIn.t) tgInSend(ns, 1); else tgIn.pend = [...(tgIn.pend || []), ...ns]; }
     });
     document.addEventListener('input', ev => { if (ehOn && tgIn && ev.target.matches('.tgi-in')) tgInAc(); });
@@ -19133,7 +19134,7 @@ const KEY_CMDS = [
     ['rels', 'Edit relationships', 'r', keyGo('edit-relationships', KEY_NOCOLL)],
     ['covers', 'Cover art', 'c', () => KEY_ENT() && KEY_ENT().type === 'release' && keyGo('cover-art')()],
     ['history', 'Editing history', 'h', keyGo('edits', KEY_NOCOLL)],
-    ['tags', 'Tags', 't', keyGo('tags', t => ALIASES_TYPES.includes(t))],
+    ['tags', 'Tags', 't', () => { if (ehOn && !tgIn && document.querySelector('button[data-tgin="open"]')) tgInOpen(); else if (!tgIn) keyGo('tags', t => ALIASES_TYPES.includes(t))(); }],
     ['details', 'Details', 'd', keyGo('details', KEY_NOCOLL)],
     ['aliases', 'Aliases', 'a', keyGo('aliases', t => ALIASES_TYPES.includes(t))],
     ['view', 'Toggle Event Horizon', 'v', () => { if (!PAGE_ID) return false; switchOn(!ehOn); return true; }],

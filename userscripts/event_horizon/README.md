@@ -130,31 +130,31 @@ With **Show pending changes** on, titles, tracks, credits and links with open ed
 
 Single keys work on an entity's page, in the viewer or on MusicBrainz's. **Ctrl+/** lists them; click a key there to change it.
 
-| Key             | Does                                                                |
-| --------------- | ------------------------------------------------------------------- |
-| O               | the entity's page                                                   |
-| E               | Edit                                                                |
-| R               | Edit relationships                                                  |
-| C               | Cover art                                                           |
-| H               | Editing history                                                     |
-| T               | Tags                                                                |
-| D               | Details                                                             |
-| A               | Aliases                                                             |
-| V               | toggles Event Horizon                                               |
-| Ctrl+H / Ctrl+L | back / forward                                                      |
-| S               | search                                                              |
-| P               | play the release, recording or collection                           |
-| Space           | play or pause                                                       |
-| ← / →           | 5 seconds back or forward                                           |
-| Ctrl+← / Ctrl+→ | previous or next track                                              |
-| Ctrl+P          | open or close the player                                            |
-| Ctrl+Space      | the playlist: arrows pick, Enter plays                              |
-| Alt+1 / Alt+2   | the playing release / recording in or out of its default collection |
-| Alt+3           | love the playing track on ListenBrainz                              |
-| U               | your profile                                                        |
-| .               | MusicBrainz's homepage                                              |
-| ,               | settings                                                            |
-| Ctrl+/          | this list                                                           |
+| Key             | Does                                                                  |
+| --------------- | --------------------------------------------------------------------- |
+| O               | the entity's page                                                     |
+| E               | Edit                                                                  |
+| R               | Edit relationships                                                    |
+| C               | Cover art                                                             |
+| H               | Editing history                                                       |
+| T               | Tags; in the viewer, edits them in place (Enter on an empty box ends) |
+| D               | Details                                                               |
+| A               | Aliases                                                               |
+| V               | toggles Event Horizon                                                 |
+| Ctrl+H / Ctrl+L | back / forward                                                        |
+| S               | search                                                                |
+| P               | play the release, recording or collection                             |
+| Space           | play or pause                                                         |
+| ← / →           | 5 seconds back or forward                                             |
+| Ctrl+← / Ctrl+→ | previous or next track                                                |
+| Ctrl+P          | open or close the player                                              |
+| Ctrl+Space      | the playlist: arrows pick, Enter plays                                |
+| Alt+1 / Alt+2   | the playing release / recording in or out of its default collection   |
+| Alt+3           | love the playing track on ListenBrainz                                |
+| U               | your profile                                                          |
+| .               | MusicBrainz's homepage                                                |
+| ,               | settings                                                              |
+| Ctrl+/          | this list                                                             |
 
 ## Other scripts
 
