@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.193806
+// @version      2026.11.24.195145
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -14309,6 +14309,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     let lookupFailed = 0, noMatch = 0;   // the rest of the unset tracks: a search MusicBrainz refused, and nothing found
     let stopped = false;   // #577
     let noWork = '';   // #582: set to the reason when the pass has nothing to match
+    // #1112: where a pass spends its time, per track and in all, at info level: the gaps between a
+    // pass's searches in the network log were time spent outside the gate, and only debug said where
+    const passT0 = Date.now(), timeAll = {};
+    let timeTrack = null;
+    const secs = ms => (Math.round(ms / 100) / 10) + 's';
+    const timed = async (key, p) => { const t0 = Date.now(); try { return await p; } finally { const ms = Date.now() - t0; if (timeTrack) timeTrack[key] = (timeTrack[key] || 0) + ms; timeAll[key] = (timeAll[key] || 0) + ms; } };
+    const timeSummary = tm => Object.keys(tm).filter(k => tm[k] >= 50).map(k => k + ' ' + secs(tm[k])).join(', ');
     const _takenGids = new Set();   // #541: recordings this run has already linked
     try {
       /* #582 (majkinetor): "When I open an existing release for editing the
@@ -14375,6 +14382,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       for (let i = 0; i < todo.length; i++) {
         if (_matchStop) { stopped = true; break; }   // #577
         const r = todo[i]; considered++;
+        const trackT0 = Date.now(); timeTrack = {};
         setStatus('auto-matching ' + (i + 1) + '/' + todo.length + '…');
         const ko = koTrack(r.mi, r.ti);
         const ctx = { title: r.title, artist: r.trackArtist, length: r.trackLen, artistGids: acArtistGids(u(ko.artistCredit)), artistNames: acNameList(u(ko.artistCredit)) };
@@ -14411,7 +14419,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         if (!isrc && fcHandoff()) Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' no ISRC in the First Contact handoff for this track');
         if (isrc) {
           setStatus('auto-matching ' + (i + 1) + '/' + todo.length + '… (ISRC)');
-          const held = (await wait(isrcRecordings(isrc), 'ISRC lookup')).filter(d => !(videoBlocked && d.video));
+          const held = (await timed('ISRC', wait(isrcRecordings(isrc), 'ISRC lookup'))).filter(d => !(videoBlocked && d.video));
           const agree = held.filter(d => isrcAgrees(d, ctx));
           Log.cat('Recording').info('track ' + (r.number || (r.ti + 1)) + ' ISRC ' + isrc + ' → ' + held.length + ' recording(s)' + (held.length ? ': ' + held.map(d => '"' + d.name + '" [' + (d.gid || '').slice(0, 8) + ']' + (isrcAgrees(d, ctx) ? ' agrees' : ' differs')).join(', ') : ''));
           if (held.length === 1 && agree.length === 1) {
@@ -14441,7 +14449,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
             if ((!best || bestLevel > maxLevel) && !dupFetched && relTitleForDup) {   // widen to possible duplicates once (works even on a fresh import with no RG yet, #440)
               dupFetched = true; setStatus('scanning duplicates…');
               const before = posIndex.size;
-              await wait(fetchDuplicatePositionIndex(relTitleForDup, relArtistGidForDup, rgGidForDup, posIndex), 'duplicate positions');
+              await timed('duplicates', wait(fetchDuplicatePositionIndex(relTitleForDup, relArtistGidForDup, rgGidForDup, posIndex), 'duplicate positions'));
               Log.cat('Recording').debug('duplicate search for "' + relTitleForDup + '" (artist=' + (relArtistGidForDup || 'none') + ') → posIndex ' + before + '→' + posIndex.size);
               /* #575 round 4: "it often shows 'scanning duplicates', although
                  there either aren't any or all are 0% similar". The status was
@@ -14465,7 +14473,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
             if (stale) refetchSuggestions(ko);
             else { try { getEditor().recordingAssociation.findRecordingSuggestions(ko); } catch (e) {} }
             const st0 = Date.now();
-            await wait(recSuggestionsSettled(ko), 'MusicBrainz suggestions'); sugg = u(ko.suggestedRecordings) || [];
+            await timed('MusicBrainz suggestions', wait(recSuggestionsSettled(ko), 'MusicBrainz suggestions')); sugg = u(ko.suggestedRecordings) || [];
+            timeTrack.suggN = sugg.length; timeTrack.suggLoading = typeof ko.loadingSuggestedRecordings === 'function' && !!u(ko.loadingSuggestedRecordings);
             Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' MusicBrainz suggestions → ' + sugg.length + ' in ' + (Date.now() - st0) + 'ms' + (typeof ko.loadingSuggestedRecordings === 'function' && u(ko.loadingSuggestedRecordings) ? ' (still loading, gave up)' : '') + (document.hidden ? ', page hidden' : ''));
           }
           for (let s = 0; s < sugg.length; s++) { consider(suggData(sugg[s])); if (bestLevel === 0) break; }   // 0 = exact, can't do better
@@ -14479,7 +14488,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           if (qy) {
             setStatus('auto-matching ' + (i + 1) + '/' + todo.length + '… (search)');
             Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' search tier: asking MusicBrainz' + (document.hidden ? ' (page hidden: the browser slows its timers)' : ''));
-            const raw = await wait(searchRecordings(qy, { stale: cancelled, keep: true }), 'recording search');
+            const raw = await timed('search', wait(searchRecordings(qy, { stale: cancelled, keep: true }), 'recording search'));
             searchFailed = raw === null && !cancelled();
             const hits = (raw || []).filter(d => !(videoBlocked && d.video));
             if (hits.length === 1) consider(hits[0]);
@@ -14523,6 +14532,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           vidBlocked += vidSkipped;
           Log.cat('Recording').info('track ' + (r.number || (r.ti + 1)) + ': skipped ' + vidSkipped + ' video recording(s) — this medium’s format cannot hold video and the track is not a data track (MusicBrainz would list it under "Videos in non-video mediums")');
         }
+        {
+          const tm = timeTrack, parts = timeSummary(Object.fromEntries(Object.entries(tm).filter(([k]) => typeof tm[k] === 'number' && k !== 'suggN')));
+          const sg = 'suggN' in tm ? ' (MusicBrainz suggestions: ' + tm.suggN + (tm.suggLoading ? ', still loading, gave up' : '') + ')' : '';
+          Log.cat('Recording').info('track ' + (r.number || (r.ti + 1)) + ' took ' + secs(Date.now() - trackT0) + (parts ? ': ' + parts : ', all from the release group') + sg);
+        }
       }
     } catch (e) {
       if (e !== REC_STOPPED) throw e;
@@ -14545,7 +14559,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (e) e.textContent = _recLastStatus;
       // #575: named for its pass. Plain "auto-match:" read as the whole match
       // finishing, while the tracklist's artist pass was still going.
-      if (!noWork) Log.cat('Recording').info('auto-match:' + (stopped ? ' STOPPED —' : ''), 'linked', linked, 'of', considered, 'unset tracks' + (ambiguous ? ', ' + ambiguous + ' left unset as ambiguous' : '') + (diffArtist ? ', ' + diffArtist + ' left unset: only matched by another artist' : '') + (lookupFailed ? ', ' + lookupFailed + ' left unset: the search failed (MusicBrainz busy), run again' : '') + (noMatch ? ', ' + noMatch + ' left unset: no match found' : '') + (vidBlocked ? ', ' + vidBlocked + ' video candidate(s) refused on an audio-only medium' : '') + (stopped ? ' — the rest are untouched' : ''));   // #585
+      if (!noWork) Log.cat('Recording').info('auto-match:' + (stopped ? ' STOPPED —' : ''), 'linked', linked, 'of', considered, 'unset tracks' + (ambiguous ? ', ' + ambiguous + ' left unset as ambiguous' : '') + (diffArtist ? ', ' + diffArtist + ' left unset: only matched by another artist' : '') + (lookupFailed ? ', ' + lookupFailed + ' left unset: the search failed (MusicBrainz busy), run again' : '') + (noMatch ? ', ' + noMatch + ' left unset: no match found' : '') + (vidBlocked ? ', ' + vidBlocked + ' video candidate(s) refused on an audio-only medium' : '') + (stopped ? ' — the rest are untouched' : '') + ' · ' + secs(Date.now() - passT0) + (timeSummary(timeAll) ? ' (' + timeSummary(timeAll) + ')' : ''));   // #585 · #1112 time
       if (!_matching) _matchStop = false;   // #575: leave it set while the tracklist pass is still winding down
     }
   }
