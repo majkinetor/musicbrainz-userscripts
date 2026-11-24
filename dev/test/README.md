@@ -54,7 +54,7 @@ These variables change a run:
 
   The suite does not retry a failed spec, so flakiness shows across runs. `node dev/test/flaky-report.mjs` (after `git fetch github test-history`) lists the specs that failed in the last 30 runs, most often first. It gives how many of the failures were nightly and how many local, and marks one red in every run as BROKEN and one red more than once as flaky. `--runs N` looks further back. `--causes` counts each run's failures by cause, with its layout. If the `rate-limit` count grows, run fewer workers: change `PW_WORKERS` in `suite.yml` and `checks.yml`.
 
-Both keep the HTML report as a download on the run page, for 14 days, and only one of them uses the sandbox at a time (the concurrency group `sandbox`).
+Both keep the HTML report as a download on the run page, for 14 days, and only one suite runs at a time. A `@critical` job can run during a suite.
 
 ## Writing a spec
 

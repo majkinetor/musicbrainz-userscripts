@@ -30,8 +30,9 @@ on:
         type: choice
         options: ['3', '2', '1']
         default: '3'
-# one run on the sandbox at a time, this or checks' @critical job: they would share its throttling
-concurrency: { group: sandbox, cancel-in-progress: false }
+# one suite at a time. Not the group `sandbox` of checks' @critical job: a group keeps one
+# waiting run, and a push would cancel a suite that waits there.
+concurrency: { group: suite, cancel-in-progress: false }
 env:
   SET: ${{ inputs.set || (github.event.schedule == '0 2 * * 0' && 'full') || 'nightly' }}
   PW_WORKERS: ${{ inputs.workers || '3' }}
