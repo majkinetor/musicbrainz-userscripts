@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.220001
+// @version      2026.11.24.220002
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -1629,7 +1629,7 @@ async function fetchEntityMeta(gid, type) {
     if (_pendingCache.has(gid)) return _pendingCache.get(gid);
     let meta = null;
     try {
-        const j = await mbnFetch('/ws/js/entity/' + gid, { headers: { Accept: 'application/json' } }, { entity: type || 'recording' }).then(r => r.json());
+        const j = await mbnFetch('/ws/js/entity/' + gid, { headers: { Accept: 'application/json' } }, { entity: type || 'recording', reason: 'pending edits' }).then(r => r.json());
         if (j && j.gid) meta = { id: j.id || null, editsPending: !!j.editsPending };
     } catch (e) { Log.error('fetchEntityMeta(' + gid + ') failed: ' + e.message); }
     _pendingCache.set(gid, meta);
@@ -1658,7 +1658,7 @@ async function resolveInternalId(gid, type) {
     if (_idCache.has(gid)) return _idCache.get(gid);
     let id = null;
     try {
-        const j = await mbnFetch('/ws/js/entity/' + gid, { headers: { Accept: 'application/json' } }, { entity: type || 'recording' }).then(r => r.json());
+        const j = await mbnFetch('/ws/js/entity/' + gid, { headers: { Accept: 'application/json' } }, { entity: type || 'recording', reason: 'internal id' }).then(r => r.json());
         id = j && j.id ? j.id : null;
     } catch (e) { Log.error('resolveInternalId(' + gid + ') failed: ' + e.message); }
     _idCache.set(gid, id);
