@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.202540
+// @version      2026.11.24.204456
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -14481,10 +14481,17 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         if ((!best || bestLevel > maxLevel) && !_matchStop) {
           const qy = recNarrowQuery(ko);
           if (qy) {
-            setStatus('auto-matching ' + (i + 1) + '/' + todo.length + '… (search)');
-            Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' search tier: asking MusicBrainz' + (document.hidden ? ' (page hidden: the browser slows its timers)' : ''));
-            const raw = await timed('search', wait(searchRecordings(qy, { stale: cancelled, keep: true }), 'recording search'));
-            searchFailed = raw === null && !cancelled();
+            // #1112: the suggestion search already holds every hit of this one when it was not cut at its limit
+            let raw = recNarrowFromSuggest(ko, recSuggSearched(ko));
+            if (raw) {
+              Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' search tier: taken from the suggestion search, which returned every hit (no request)');
+              recSearchRemember(qy, raw);   // the picker's first search for the track is this query
+            } else {
+              setStatus('auto-matching ' + (i + 1) + '/' + todo.length + '… (search)');
+              Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' search tier: asking MusicBrainz' + (document.hidden ? ' (page hidden: the browser slows its timers)' : ''));
+              raw = await timed('search', wait(searchRecordings(qy, { stale: cancelled, keep: true }), 'recording search'));
+              searchFailed = raw === null && !cancelled();
+            }
             const hits = (raw || []).filter(d => !(videoBlocked && d.video));
             if (hits.length === 1) consider(hits[0]);
             Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' search tier → ' + hits.length + ' hit(s)' + (hits.length === 1 ? ': "' + hits[0].name + '" [' + (hits[0].gid || '').slice(0, 8) + '] level=' + recComboLevel(hits[0], ctx) : hits.length ? ', not used (more than one)' : ''));
@@ -14830,6 +14837,19 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (len) qy += ' AND dur:[' + Math.max(0, len - 10000) + ' TO ' + (len + 10000) + ']';
     return qy;
   }
+  /* #1112: the narrow search's hits, taken from the track's suggestion search when that
+     search returned every hit (fewer than its limit of 25). Its query has the same title
+     phrase, any artist, and a wider length window (±10.5 s), so it already found all that
+     the narrow search finds. Only for a credit whose artists are all linked: a typed artist
+     name is matched by MusicBrainz's index, which this does not copy. null: send the search. */
+  function recNarrowFromSuggest(ko, raw) {
+    if (!raw || raw.length >= 25) return null;
+    const ac = u(ko.artistCredit), names = u(ac && ac.names) || [], gids = acArtistGids(ac);
+    if (!names.length || gids.length !== names.length) return null;
+    const len = Math.round(Number(u(ko.length)) || 0);
+    return raw.filter(d => gids.every(g => (d.artistGids || []).includes(g))
+      && (!len || (d.length != null && d.length >= Math.max(0, len - 10000) && d.length <= len + 10000)));
+  }
   // MusicBrainz's own suggestion query for a track (release editor, recordingAssociation.js
   // recordingQuery): title and the track's artists, boosted, or the title alone within the
   // length window; MAX_LENGTH_DIFFERENCE is 10.5 s. Auto-match sends it in place of the
@@ -14892,6 +14912,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   const recSuggKey = ko => { const t = u(ko.name); return t ? t + '|' + (u(ko.length) || '') + '|' + acArtistGids(u(ko.artistCredit)).join(',') : ''; };
   // what is already known for the track, without asking: null when nothing is
   function recSuggCached(ko) { const s = _recSugg.get(ko); return s && s.list && s.key === recSuggKey(ko) ? s.list : null; }
+  // the suggestion search's unfiltered hits for the track; null when no search was sent
+  function recSuggSearched(ko) { const s = _recSugg.get(ko); return s && s.list && s.key === recSuggKey(ko) ? s.searched || null : null; }
   // the track's suggestions, as picker rows; null when the search failed or was given up
   async function apolloSuggest(ko, opts) {
     const key = recSuggKey(ko); if (!key) return [];
@@ -14902,6 +14924,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const shared = await have.pending;   // the other caller's lookup; when it was given up, ask again
       if (shared || stale()) return shared;
     }
+    let searched = null;
     const pending = (async () => {
       let list = null;
       const rel = release(), rg = rel && u(rel.releaseGroup), rgGid = rg && u(rg.gid);
@@ -14914,6 +14937,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         const qs = recSuggestQuery(ko);
         const raw = await searchRecordings(qs, { stale, keep: true, limit: 25, label: 'recording suggestions' });
         if (raw === null) return null;
+        searched = raw;
         list = mbMatchRecordings(ko, raw) || [];
       }
       try {   // MusicBrainz's setSuggestedRecordings: the saved recording first
@@ -14925,12 +14949,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     _recSugg.set(ko, { key, pending });
     const list = await pending.catch(e => { Log.cat('Recording').warn('suggestions failed', e.message); return null; });
     const cur = _recSugg.get(ko);
-    if (cur && cur.pending === pending) { if (list) { cur.list = list; delete cur.pending; } else _recSugg.delete(ko); }
+    if (cur && cur.pending === pending) { if (list) { cur.list = list; cur.searched = searched; delete cur.pending; } else _recSugg.delete(ko); }
     return list;
   }
   // A successful search, kept for 10 minutes per query: the picker's first search for a
   // track is the same narrow query the auto-match's last tier already ran.
   const _recSearchCache = new Map();   // query → { at, out }
+  // keeps hits found another way as the answer to the picker's search (limit 15) for q
+  function recSearchRemember(q, out) { q = (q || '').trim(); if (q) _recSearchCache.set('15|' + q, { at: Date.now(), out: out.slice(0, 15) }); }
   async function searchRecordings(q, opts) {
     q = (q || '').trim(); if (!q) return [];
     const { limit = 15, ...wsOpts } = opts || {};
