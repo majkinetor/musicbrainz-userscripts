@@ -7,7 +7,7 @@
 // #618: on a Various Artists release, the #437 co-credit lookup took the special-purpose
 //   Various Artists entity for a known artist: every ambiguous name cost an extra paced
 //   `recording?query=arid:<VA> AND artistname:"…"` search that can never help.
-import { test, check, replayWs, settled } from '../../../dev/test/harness.mjs';
+import { test, check, replayWs, answerGm, settled } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
@@ -15,8 +15,11 @@ test.use({ gm: apolloGm() });
 test.describe('#613', () => {
   // nothing matched by itself: only the resolver's own reads reach the replay
   test.use({ gm: apolloGm({ autoMatch: false, autoMatchRec: false, autoMatchLabel: false, autoMatchArtist: false, discogsUrlMatch: false }) });
-  test('a common name is not taken for unique', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, inject }) => {
+  test('a common name is not taken for unique', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, context, inject }) => {
     const ws = await replayWs(page, new URL('./fixtures/ws-613.json.gz', import.meta.url));
+    // the duplicate-release search runs in the background: no releases, so its detail reads,
+    // which a slow machine reaches before the end, stay out of the replay
+    answerGm(context, o => (/\/ws\/2\/release\?query=/.test(o.url) ? { status: 200, body: '{"count":0,"offset":0,"releases":[]}' } : null));
     await openApollo(page, inject, { seed: 'seed-saigon' });
     const r = await page.evaluate(async () => {
       const out = {};

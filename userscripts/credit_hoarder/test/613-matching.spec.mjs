@@ -9,20 +9,26 @@
 // (RECORD_WS=1 to refresh): who is called what doesn't change under the test, and a
 // busy MusicBrainz can't turn a match into "needs review", which is how this failed in
 // the baseline run.
-import { test, check, requireLogin, replayWs, SANDBOX, idle } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, replayWs, answerGm, SANDBOX, idle } from '../../../dev/test/harness.mjs';
 
 const FIXTURE = new URL('./fixtures/ws-613-matching.json.gz', import.meta.url);
 test.use({ gm: { name: 'CH', values: {} } });
 
-test('artists match by exact name or alias only when unique, by release context, and by co-credit', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, inject }) => {
-  const reqs = []; page.on('request', r => reqs.push(decodeURIComponent(r.url())));
-  let ws = null;
+test('artists match by exact name or alias only when unique, by release context, and by co-credit', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, context, inject }) => {
+  // Credit Hoarder asks ws/2 through the gate, by GM_xmlhttpRequest, which the replay
+  // answers: no page request is made, so the reads are counted where the replay sees them.
+  // A handler added later is asked first.
+  const reqs = [];
+  let ws = null, fake = null;
   const open = async rel => {
     await page.goto(`${SANDBOX}/release/${rel}/edit-relationships`, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await requireLogin(page);
     await page.waitForFunction(() => window.MB && MB.relationshipEditor && MB.relationshipEditor.state && MB.relationshipEditor.state.entity, null, { timeout: 60000 });
     await idle(page);
-    if (!ws) ws = await replayWs(page, FIXTURE);   // after MusicBrainz's own page load
+    if (!ws) {
+      ws = await replayWs(page, FIXTURE);   // after MusicBrainz's own page load
+      answerGm(context, o => { reqs.push(decodeURIComponent(o.url)); return fake && fake(decodeURIComponent(o.url)); });
+    }
     await inject('credit_hoarder', { waitFor: '__creditHoarder' });
   };
   // resolve names-only artists, with or without the page's release context
@@ -71,26 +77,27 @@ test('artists match by exact name or alias only when unique, by release context,
   check(byName(on, 'Joni').via === 'cred' && byName(on, 'Joni').gid === 'a766abff', `co-credit on: "Joni" → a766abff, credited next to Sidney Samson (${JSON.stringify(byName(on, 'Joni'))})`);
 
   // A name the exact-identity check rejects ("not provably unique") still gets the
-  // co-credit step. MusicBrainz's answers are simulated in the page for this one.
-  const gap = coCredit => page.evaluate(async ([coCredit]) => {
-    const real = window.fetch;
-    const J = o => Promise.resolve(new Response(JSON.stringify(o), { headers: { 'Content-Type': 'application/json' } }));
-    const SS = '4fc48643-7a22-482c-b419-9628e0fbfe25';   // Sidney Samson, the release artist
-    window.fetch = (u, o) => {
-      const url = decodeURIComponent(String(u));
-      if (/\/ws\/2\/artist\?query=Joni Zz&/.test(url)) return J({ count: 3, offset: 0, artists: [{ id: 'aaaaaaaa-0000-4000-8000-00000000000a', name: 'Joni Zz', score: 100, aliases: [] }, { id: 'bbbbbbbb-0000-4000-8000-00000000000b', name: 'Joni Zzz', score: 80 }, { id: 'cccccccc-0000-4000-8000-00000000000c', name: 'Joni Z', score: 75 }] });
-      if (/\/ws\/2\/artist\?query=alias:"Joni Zz" OR artist:"Joni Zz"/.test(url)) return J({ count: 500, offset: 0, artists: [{ id: 'aaaaaaaa-0000-4000-8000-00000000000a', name: 'Joni Zz', score: 100, aliases: [] }] });
-      if (/\/ws\/2\/recording\?query=arid:/.test(url) && /artistname:"Joni Zz"/.test(url)) return J({ recordings: [{ 'artist-credit': [{ name: 'Sidney Samson', artist: { id: SS, name: 'Sidney Samson' } }, { name: 'Joni Zz', artist: { id: 'dddddddd-0000-4000-8000-00000000000d', name: 'Joni Zz' } }] }] });
-      return real(u, o);
-    };
+  // co-credit step. MusicBrainz's answers are simulated for this one.
+  const SS = '4fc48643-7a22-482c-b419-9628e0fbfe25';   // Sidney Samson, the release artist
+  const J = o => ({ status: 200, body: JSON.stringify(o) });
+  const gapAnswers = url => {
+    if (/\/ws\/2\/artist\?query=Joni Zz&/.test(url)) return J({ count: 3, offset: 0, artists: [{ id: 'aaaaaaaa-0000-4000-8000-00000000000a', name: 'Joni Zz', score: 100, aliases: [] }, { id: 'bbbbbbbb-0000-4000-8000-00000000000b', name: 'Joni Zzz', score: 80 }, { id: 'cccccccc-0000-4000-8000-00000000000c', name: 'Joni Z', score: 75 }] });
+    if (/\/ws\/2\/artist\?query=alias:"Joni Zz" OR artist:"Joni Zz"/.test(url)) return J({ count: 500, offset: 0, artists: [{ id: 'aaaaaaaa-0000-4000-8000-00000000000a', name: 'Joni Zz', score: 100, aliases: [] }] });
+    if (/\/ws\/2\/recording\?query=arid:/.test(url) && /artistname:"Joni Zz"/.test(url)) return J({ recordings: [{ 'artist-credit': [{ name: 'Sidney Samson', artist: { id: SS, name: 'Sidney Samson' } }, { name: 'Joni Zz', artist: { id: 'dddddddd-0000-4000-8000-00000000000d', name: 'Joni Zz' } }] }] });
+    return null;
+  };
+  const gap = async coCredit => {
+    fake = gapAnswers;
     try {
-      const C = window.__creditHoarder;
-      const context = await C.buildReleaseContext({ coCredit });
-      const { allResults } = await C.resolveAll([{ name: 'Joni Zz', resource_url: '' }], { kindOf: C.ARTIST_KIND, bypassIdb: true, context });
-      const r = allResults[0];
-      return { type: r.type, via: r.logEntry && r.logEntry.via, gid: (r.mbUrl || '').split('/').pop().slice(0, 8), reason: r.ambiguityReason || null };
-    } finally { window.fetch = real; }
-  }, [coCredit]);
+      return await page.evaluate(async ([coCredit]) => {
+        const C = window.__creditHoarder;
+        const context = await C.buildReleaseContext({ coCredit });
+        const { allResults } = await C.resolveAll([{ name: 'Joni Zz', resource_url: '' }], { kindOf: C.ARTIST_KIND, bypassIdb: true, context });
+        const r = allResults[0];
+        return { type: r.type, via: r.logEntry && r.logEntry.via, gid: (r.mbUrl || '').split('/').pop().slice(0, 8), reason: r.ambiguityReason || null };
+      }, [coCredit]);
+    } finally { fake = null; }
+  };
   const gapOn = await gap(true), gapOff = await gap(false);
   check(gapOn.via === 'cred' && gapOn.gid === 'dddddddd', `a name with 500 matches still gets the co-credit step (${JSON.stringify(gapOn)})`);
   check(gapOff.type === 'attention' && /not provably unique \(500 artists match\)/.test(gapOff.reason || ''), `with co-credit off it is left for review, saying why (${gapOff.reason})`);

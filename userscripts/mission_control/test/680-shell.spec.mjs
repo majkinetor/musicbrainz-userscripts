@@ -179,7 +179,7 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   const send = (type, d) => page.evaluate(([type, d]) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(Object.assign({ id: 'as', run: window.__asRun }, d)) })), [type, d]);
   await page.evaluate(() => window.__mcTest.setStall(8000));   // room for the seconds to show (from 2 s)
   await send('mc:progress', { state: 'busy', note: 'finding the best cover' });
-  const busy = await step();
+  const busy = await until(step, s => s.say === 'finding the best cover', { timeout: 3000 });   // a note paints within 250 ms
   check(/\bbusy\b/.test(busy.cls) && busy.say === 'finding the best cover', `a progress note: busy again, saying the step (${JSON.stringify(busy)})`);
   const ticking = await until(step, s => / · \d+ s$/.test(s.say), { timeout: 4000 });
   check(/^finding the best cover · \d+ s$/.test(ticking.say), `the seconds count up while it works (${ticking.say})`);
@@ -190,7 +190,7 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
     return { on: h.classList.contains('mc-busy'), layer: a && a.effect.pseudoElement, props: a ? [...new Set(a.effect.getKeyframes().flatMap(k => Object.keys(k).filter(p => !['offset', 'computedOffset', 'easing', 'composite'].includes(p))))] : [] }; });
   check(pulse.on && pulse.layer === '::after' && JSON.stringify(pulse.props) === '["opacity"]', `the header pulses on its ::after, in opacity only (${JSON.stringify(pulse)})`);
   check(await places() === at, `a long step and its ticking seconds move no step (${at} → ${await places()})`);
-  const found = await step();
+  const found = await until(step, s => /\badd\b/.test(s.cls), { timeout: 3000 });
   check(await page.locator('#mc-root .mc-hdr.mc-busy').count() === 1, 'the answer does not cut the pulse off');
   check(!(await until(() => page.locator('#mc-root .mc-hdr.mc-busy').count(), n => n === 0, { timeout: 4000 })), 'it fades out within a cycle');
   check(/\badd\b/.test(found.cls) && found.say === '1 new' && found.mark === '1', `findings: what there is to add, counted on the ring (${JSON.stringify(found)})`);
