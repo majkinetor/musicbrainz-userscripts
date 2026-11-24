@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.11.24.184941
+// @version      2026.11.24.193020
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -259,10 +259,6 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
 
   // ../../dev/net/mb-gate.mjs
   var MBN_GAP = 125;
-  var MBN_SGAP_MIN = 0;
-  var MBN_SGAP_SHED = 500;
-  var MBN_SGAP_MAX = 2e3;
-  var MBN_SGAP_EASE = 0.5;
   var MBN_JITTER = 500;
   var MBN_BURST = 4;
   var MBN_KEY = "mbu:mb-gate";
@@ -657,20 +653,10 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         if ((s.last || 0) > now) at = Math.max(at, s.last + MBN_GAP);
         s.last = Math.max(s.last || 0, at);
       }
-      const paced = at;
-      let spaced = false;
-      if (o.search) {
-        const sgap = Math.min(Math.max(s.sgap || MBN_SGAP_MIN, MBN_SGAP_MIN), MBN_SGAP_MAX);
-        if (background && !o.retry && (s.stat || 0) > at) {
-          at = s.stat;
-          spaced = true;
-        }
-        s.stat = Math.max(s.stat || 0, at) + sgap;
-      }
-      s.tat = Math.max(tat, paced) + MBN_GAP;
+      s.tat = Math.max(tat, at) + MBN_GAP;
       const held = cool > now && cool >= at;
-      const why = held ? "MusicBrainz asked everyone to wait" : spaced ? "search pace, one every " + Math.round((s.sgap || 0) / 100) / 10 + "s" : "pacing, eight requests a second";
-      if (at > now) tr("book", { w: at - now, why: held ? "hold" : spaced ? "search pace" : "pace", sg: spaced ? s.sgap : void 0, re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
+      const why = held ? "MusicBrainz asked everyone to wait" : "pacing, eight requests a second";
+      if (at > now) tr("book", { w: at - now, why: held ? "hold" : "pace", re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
       return { at, why, slip: s.slip || 0, bslip: s.bslip || 0 };
     });
     booked = await book();
@@ -766,9 +752,8 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
           if (now > (s.scool || 0) + 3e4) s.shot = 0;
           if (now >= (s.scool || 0)) s.shot = Math.min((s.shot || 0) + 1, 6);
           const ms = Math.min(Math.max(1e3, ra) + Math.round(Math.random() * MBN_JITTER), MBN_MAX_HOLD);
-          s.sgap = Math.min(Math.max((s.sgap || 0) * 2, MBN_SGAP_SHED), MBN_SGAP_MAX);
           s.scool = Math.max(s.scool || 0, now + ms);
-          tr({ ra: raw == null ? void 0 : String(raw).slice(0, 40), shold: s.scool - now, shot: s.shot, sg: s.sgap }, s);
+          tr({ ra: raw == null ? void 0 : String(raw).slice(0, 40), shold: s.scool - now, shot: s.shot }, s);
           return s.scool - now;
         });
         if (o.log) o.log("warn", "MusicBrainz gate: HTTP 503 (search-shed) \u2014 searches hold " + Math.round(hold2 / 100) / 10 + "s");
@@ -796,10 +781,6 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     if (status >= 200 && status < 500) await mbnState((s) => {
       if (s.hot) s.hot = Date.now() > (s.cool || 0) + 3e4 ? 0 : s.hot - 1;
       if (o.search && s.shot) s.shot = Date.now() > (s.scool || 0) + 3e4 ? 0 : s.shot - 1;
-      if (o.search && s.sgap) {
-        s.sgap = Math.round(s.sgap * MBN_SGAP_EASE);
-        if (s.sgap < MBN_GAP) s.sgap = MBN_SGAP_MIN;
-      }
       tr({}, s);
     });
     else tr({});

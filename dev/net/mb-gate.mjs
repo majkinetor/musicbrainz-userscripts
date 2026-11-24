@@ -39,17 +39,9 @@
  *  Four a second sat between, but most of a run's 503s are MusicBrainz's own load (global, a flat
  *  second) whatever our pace, and four a second only took longer (112 s against 32-67 s). */
 export const MBN_GAP = 125;
-/** #1112: searches keep their own, slower pace among themselves (`stat`, `sgap`): MusicBrainz sheds
- *  searches when its search servers are busy, and a search sent the moment a 1s hold ended drew the
- *  next shed, global and search-shed by turns, four times a second apart. Each shed doubles the gap
- *  between search starts, each search answered shrinks it by MBN_SGAP_EASE. Lookups keep MBN_GAP.
- *  log (v2026.11.24.180000): a standing gap made matching slower than before and did not draw fewer
- *  sheds, which follow MusicBrainz's own load. So no gap until a search-shed: the first one sets
- *  MBN_SGAP_SHED, each next one doubles it up to MBN_SGAP_MAX, and under MBN_GAP it drops back to none. */
-export const MBN_SGAP_MIN = 0;
-export const MBN_SGAP_SHED = 500;
-export const MBN_SGAP_MAX = 2000;
-export const MBN_SGAP_EASE = 0.5;
+/** #1112: searches have no pace of their own. A gap between search starts (up to 3 s, doubled by each
+ *  shed) was tried and dropped: six searches 2 s apart were all shed, while searches with no gap mostly
+ *  passed on their second try. Sheds follow MusicBrainz's own load, so a shed only holds searches (scool). */
 /** #1112: up to this much is added at random to a hold, so waiters do not all leave on the same beat. */
 export const MBN_JITTER = 500;
 /** Requests that may start back to back after a quiet spell. */
@@ -436,20 +428,10 @@ export async function mbnSlot(o) {
             if ((s.last || 0) > now) at = Math.max(at, s.last + MBN_GAP);   // as above
             s.last = Math.max(s.last || 0, at);
         }
-        // #1112: a search also waits for the search line; a picker's search (not background) moves it but does not wait in it
-        // the lookup line (tat) moves by the paced slot, not the search's: a slowed search must not hold lookups
-        const paced = at;
-        // log: a retry (a shed search going again) leaves first, as above: the search line sent it 15 s back
-        let spaced = false;
-        if (o.search) {
-            const sgap = Math.min(Math.max(s.sgap || MBN_SGAP_MIN, MBN_SGAP_MIN), MBN_SGAP_MAX);
-            if (background && !o.retry && (s.stat || 0) > at) { at = s.stat; spaced = true; }
-            s.stat = Math.max(s.stat || 0, at) + sgap;
-        }
-        s.tat = Math.max(tat, paced) + MBN_GAP;
+        s.tat = Math.max(tat, at) + MBN_GAP;
         const held = cool > now && cool >= at;
-        const why = held ? 'MusicBrainz asked everyone to wait' : spaced ? 'search pace, one every ' + Math.round((s.sgap || 0) / 100) / 10 + 's' : 'pacing, eight requests a second';
-        if (at > now) tr('book', { w: at - now, why: held ? 'hold' : spaced ? 'search pace' : 'pace', sg: spaced ? s.sgap : undefined, re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
+        const why = held ? 'MusicBrainz asked everyone to wait' : 'pacing, eight requests a second';
+        if (at > now) tr('book', { w: at - now, why: held ? 'hold' : 'pace', re: rebooked ? 1 : 0, q: Math.round(Math.max(0, (background ? s.tat : s.itat) - now) / MBN_GAP) });
         return { at, why, slip: s.slip || 0, bslip: s.bslip || 0 };
     });
     booked = await book();
@@ -546,9 +528,8 @@ export async function mbnAnswer(status, header, o) {
                 if (now >= (s.scool || 0)) s.shot = Math.min((s.shot || 0) + 1, 6);
                 // #1095: a shed clears within a second or so; growing holds only stalled the searches
                 const ms = Math.min(Math.max(1000, ra) + Math.round(Math.random() * MBN_JITTER), MBN_MAX_HOLD);
-                s.sgap = Math.min(Math.max((s.sgap || 0) * 2, MBN_SGAP_SHED), MBN_SGAP_MAX);   // #1112
                 s.scool = Math.max(s.scool || 0, now + ms);
-                tr({ ra: raw == null ? undefined : String(raw).slice(0, 40), shold: s.scool - now, shot: s.shot, sg: s.sgap }, s);
+                tr({ ra: raw == null ? undefined : String(raw).slice(0, 40), shold: s.scool - now, shot: s.shot }, s);
                 return s.scool - now;
             });
             if (o.log) o.log('warn', 'MusicBrainz gate: HTTP 503 (search-shed) — searches hold ' + Math.round(hold / 100) / 10 + 's');
@@ -594,7 +575,6 @@ export async function mbnAnswer(status, header, o) {
     if (status >= 200 && status < 500) await mbnState(s => {
         if (s.hot) s.hot = Date.now() > (s.cool || 0) + 30000 ? 0 : s.hot - 1;
         if (o.search && s.shot) s.shot = Date.now() > (s.scool || 0) + 30000 ? 0 : s.shot - 1;
-        if (o.search && s.sgap) { s.sgap = Math.round(s.sgap * MBN_SGAP_EASE); if (s.sgap < MBN_GAP) s.sgap = MBN_SGAP_MIN; }   // #1112: room back fast, half per answer, none under a lookup gap
         tr({}, s);
     });
     else tr({});
@@ -1151,6 +1131,6 @@ export function mbnReverify(url, init, o) {
 
 /** What sync-gate.mjs inlines, in order. */
 export const MBN_INLINE = {
-    consts: { MBN_GAP, MBN_SGAP_MIN, MBN_SGAP_SHED, MBN_SGAP_MAX, MBN_SGAP_EASE, MBN_JITTER, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_LOCK_HOLD, MBN_MAX_HOLD, MBN_MAX_LEAD, MBN_TRACE_MAX, MBN_MERGE_WAIT, MBN_CACHE_TTL, MBN_CACHE_MAX, MBN_INC_ALONE },
+    consts: { MBN_GAP, MBN_JITTER, MBN_BURST, MBN_KEY, MBN_VERSION, MBN_LOCK, MBN_LOCK_HOLD, MBN_MAX_HOLD, MBN_MAX_LEAD, MBN_TRACE_MAX, MBN_MERGE_WAIT, MBN_CACHE_TTL, MBN_CACHE_MAX, MBN_INC_ALONE },
     fns: [mbnGated, mbnState, mbnSleep, mbnRid, mbnTabId, mbnTabCheck, mbnTrace, mbnHideUrl, mbnSlot, mbnLead, mbnAnswer, mbnBodySize, mbnBodyText, mbnLength, mbnGmSize, mbnReasons, mbnReasonOf, mbnLog, mbnGm, mbnGmFn, mbnXhr, mbnFetch, mbnEdited, mbnEditEpoch, mbnCacheUrl, mbnCacheGet, mbnCachePut, mbnHot, mbnUA, mbnWsFetch, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
 };
