@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.140000
+// @version      2026.11.24.171721
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15372,6 +15372,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   function editorEl() { return document.getElementById('release-editor'); }
   function stepNavEl() { const e = editorEl(); return e && e.querySelector(':scope > ul.ui-tabs-nav'); }
+  // #938: the release editor saves through MusicBrainz's own code, which the gate never sees: mark the write for the
+  // suite (mbLastWrite) when it starts and again as the page goes, so the next page's scripts read past their caches
+  function markWrote() {
+    const mark = () => { try { localStorage.setItem('mbLastWrite', String(Date.now())); } catch (e) { /* storage blocked */ } };
+    mark(); addEventListener('pagehide', mark, { once: true });
+  }
   function navFooterEl() { const e = editorEl(); return e && e.querySelector(':scope > div.buttons'); }
   function stepLink(key) { const n = stepNavEl(); return n && n.querySelector('a[href="#' + key + '"]'); }
   function activeStepKey() { const n = stepNavEl(); const a = n && n.querySelector('li.ui-tabs-active a'); return a ? (a.getAttribute('href') || '').slice(1) : ''; }
@@ -15547,6 +15553,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           // timer, which was seen held back; its button only when that did not start the submission
           const busy = () => !!(re && relTry(() => re.submissionInProgress()));
           if (re && typeof re.submitEdits === 'function') {
+            markWrote();
             tryIt('submitEdits', () => re.submitEdits());
             if (busy()) { log.info(name + ': MusicBrainz is entering the edit'); return; }
             log.warn(name + ': MusicBrainz\'s submitEdits did not start the submission' + (nat ? ', clicking its button' : ''));
@@ -15757,7 +15764,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const b = e.target && e.target.closest && e.target.closest('button'); if (!b) return;
       // #722 Finish / Enter edit by their data-click, as MB translates the labels
       const f = navFooterEl(); if (f && f.contains(b) && (b.matches('[data-click="lastTab"], [data-click="submitEdits"]') || /^\s*(finish|enter edit)\s*$/i.test(b.textContent || ''))) {
-        if (b.matches('[data-click="submitEdits"]')) { Log.keep(); try { archiveOnSubmit(); } catch (x) { Log.cat('Archive').warn('archive: skipped, it failed:', x && x.message || x); } }   // #736
+        if (b.matches('[data-click="submitEdits"]')) { markWrote(); Log.keep(); try { archiveOnSubmit(); } catch (x) { Log.cat('Archive').warn('archive: skipped, it failed:', x && x.message || x); } }   // #736
         ensureApolloEditNote();
       }
     }, true);   // capture phase: runs before MB reads the textarea for submission
