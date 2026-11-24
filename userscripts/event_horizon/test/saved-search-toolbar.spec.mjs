@@ -21,14 +21,18 @@ test('one saved-search name supports rename, copy, filtering and deletion', {tag
   await name.press('Escape');await expect(name).toHaveValue('Renamed review');
   await bar.getByRole('button',{name:'Find a saved search'}).click();
   await name.fill('copy');await name.press('ArrowDown');await expect(name).toBeFocused();
-  await Promise.all([page.waitForEvent('domcontentloaded'),name.press('Enter')]);
-  await idle(page);await inject('event_horizon');
+  // an edit search runs in the tab since 2026-11-18 (f38e50429): no page load, so no new injection, only a new history entry
+  const h0=await page.evaluate(()=>history.length);
+  await name.press('Enter');
+  await expect.poll(()=>page.evaluate(()=>history.length)).toBeGreaterThan(h0);
+  await idle(page);
   await expect(page.locator('.eh-es-saved').getByLabel('Search name',{exact:true})).toHaveValue('Renamed review copy');
   // Both saved entries have the same query; selecting by name must retain the chosen identity.
   await page.locator('.eh-es-saved').getByLabel('Search name',{exact:true}).click();
   await page.locator('.eh-es-saved').getByRole('option',{name:'Renamed review copy',exact:true}).getByRole('button',{name:'Delete'}).click();
   expect((await page.evaluate(()=>GM_getValue('editSearches'))).length).toBe(1);
-  await Promise.all([page.waitForURL(u=>u.pathname==='/search/edits'&&!u.search),page.locator('.eh-es-new').click()]);
+  // New search is the group bar's New since 2026-11-18 (d83520159); the form's own button stays hidden
+  await Promise.all([page.waitForURL(u=>u.pathname==='/search/edits'&&!u.search),page.locator('[data-hnew]').click()]);
   await idle(page);
   await expect(page.locator('.eh-es-saved')).toHaveCount(1);
   await expect(page.locator('#app .condition')).toHaveCount(0);
@@ -46,7 +50,7 @@ test('saved names are visible on combo focus and New search resets without reloa
   await expect(bar.getByRole('option',{name:'Review five',exact:true})).toBeVisible();
   await name.press('Escape');
   await page.evaluate(()=>window.__searchResetMarker=1);
-  await page.locator('.eh-es-new').click();
+  await page.locator('[data-hnew]').click();
   await expect(page.locator('#app .condition')).toHaveCount(0);
   expect(await page.evaluate(()=>window.__searchResetMarker)).toBe(1);
   expect(new URL(page.url()).search).toBe('');

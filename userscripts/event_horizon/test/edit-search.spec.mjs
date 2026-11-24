@@ -55,15 +55,18 @@ test('edit search keeps native conditions and saves the draft by name', { tag: '
   expect(new URLSearchParams((await page.evaluate(() => GM_getValue('editSearches')))[0].query).get('conditions.0.args.0')).toBe('5');
   await page.getByRole('button', { name: 'Find a saved search', exact: true }).click();
   await page.getByLabel('Search name', {exact:true}).fill('My review');
+  // an edit search runs in the tab since 2026-11-18 (f38e50429): no page load, so no new injection, only a new history entry
   await Promise.all([page.waitForURL(u => u.searchParams.get('conditions.0.args.0') === '5'), page.getByRole('option', {name:'My review', exact:true}).click()]);
-  await idle(page); await inject('event_horizon');
+  await idle(page);
   await expect(page.locator('#app #edit-search')).toBeVisible();
   await expect(page.locator('.condition .field-id .arg input').first()).toHaveValue('5');
   expect(await page.locator('.condition span.field-status select[multiple]').evaluate(s => [...s.selectedOptions].map(o => o.text))).toEqual(['Open', 'Cancelled']);
   expect(await page.locator('.condition .field-type select[multiple]').evaluate(s => [...s.selectedOptions].map(o => o.value).sort())).toEqual(['17,262', '54,220']);
   expect(await page.locator('.condition .field-voter select[multiple]').evaluate(s => [...s.selectedOptions].map(o => o.value))).toEqual(['no']);
-  await Promise.all([page.waitForEvent('domcontentloaded'), page.locator('#edit-search button[type=submit]').click()]);
-  await idle(page); await inject('event_horizon');
+  const h0 = await page.evaluate(() => history.length);
+  await page.locator('#edit-search button[type=submit]').click();
+  await expect.poll(() => page.evaluate(() => history.length)).toBeGreaterThan(h0);
+  await idle(page);
   await expect(page.locator('#app #edit-search')).toBeVisible();
   expect(new URL(page.url()).searchParams.get('conditions.0.args.0')).toBe('5');
   await page.locator('.eh-es-saved').getByLabel('Search name', { exact: true }).click();
@@ -121,7 +124,7 @@ test('homepage links to edit search beside advanced search', { tag: '@sandbox' }
   await page.goto('https://test.musicbrainz.org/'); await idle(page); await inject('event_horizon');
   await expect(page.locator('.hm-tg + a.hm-es')).toHaveAttribute('href', 'https://test.musicbrainz.org/search/edits');
   await Promise.all([page.waitForURL('**/search/edits'), page.locator('a.hm-es[href$="/search/edits"]').click()]);
-  await idle(page); await inject('event_horizon');
+  await idle(page);
   await expect(page.locator('#app #edit-search')).toBeVisible();
   await expect(page.locator('.condition')).toHaveCount(0);
   await attachShot(info, page, 'homepage-edit-search');
