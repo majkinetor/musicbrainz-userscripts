@@ -16,7 +16,8 @@ test('a matching refresh request reloads the release without replacing the playe
     return { other: ask('00000000-0000-0000-0000-000000000000'), matching: ask(id) };
   }, REL);
   check(result.other && !result.matching, 'only the displayed release is accepted');
-  check(await until(() => reads, n => n > 0) > 0, 'the release is fetched again');
-  await page.waitForFunction(id => window.__refreshedRelease === id, REL);
+  // the redraw waits its turn at the gate like any read: on CI's busy sandbox that took past 20s
+  await page.waitForFunction(id => window.__refreshedRelease === id, REL, { timeout: 90000 });
+  check(reads > 0, 'the release is fetched again');
   check(await page.locator('#refresh-test-player').count() === 1, 'the player iframe remains attached');
 });
