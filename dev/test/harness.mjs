@@ -53,9 +53,11 @@ export const check = (cond, msg) => expect.soft(!!cond, msg).toBe(true);
 // Wait for what a check is about, never for a fixed time: a sleep long enough on one
 // machine is too short on a slower one (CI). `read` returns the value the check looks
 // at; it is polled until `ok(value)` holds or `timeout` passes, and returned either
-// way, so a check that still fails reports what was there.
+// way, so a check that still fails reports what was there. The third argument is { timeout, every }
+// or the timeout alone, in ms (a bare number used to be dropped, so every such wait was 20 s).
 //   check(await until(() => page.evaluate(() => panel.style.display), v => v === 'flex'), '…')
-export async function until(read, ok = Boolean, { timeout = 20_000, every = 100 } = {}) {
+export async function until(read, ok = Boolean, o = {}) {
+  const { timeout = 20_000, every = 100 } = typeof o === 'number' ? { timeout: o } : o;
   const end = Date.now() + timeout;
   for (;;) {
     const v = await read();

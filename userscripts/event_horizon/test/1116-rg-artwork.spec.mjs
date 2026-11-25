@@ -18,7 +18,7 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   const rows = () => page.locator('#app .ed-t tbody tr').count();
   const all = await rows();
   await page.locator('#app [data-edbook]').click();
-  const some = await until(rows, n => n < all, 90000);
+  const some = await until(rows, n => n < all, { timeout: 90000 });
   check(some < all, `Has booklet narrows the rows (${all} → ${some})`);
   const cells = await until(() => page.locator('#app .ed-art').count(), n => n > 0);
   check(cells > 0, `the table has an Art column (${cells} cells)`);
@@ -26,12 +26,12 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   // the header's Artwork opens the tab in place; Event Horizon alone draws its own card
   await page.locator(`#app a[href$="/release-group/${RG}/artwork"]`).first().click();
   await until(() => page.evaluate(() => location.pathname), p => p.endsWith('/artwork'));
-  const fb = await until(() => page.locator('#app #as-gslot .rga-fb [data-rgatile]').count(), n => n > 0, 120000);
+  const fb = await until(() => page.locator('#app #as-gslot .rga-fb [data-rgatile]').count(), n => n > 0, { timeout: 120000 });
   check(fb > 0, `without Art Station the tab shows the card (${fb} tiles)`);
   // Art Station, started late (as String Theory starts it), asks for the snapshot and takes the slot
   await inject('art_station');
   const gv = page.locator('#app #as-gslot .as-gv');
-  const note = await until(() => gv.locator('.as-gv-note').textContent().catch(() => ''), t => /after merging/.test(t), 360000);
+  const note = await until(() => gv.locator('.as-gv-note').textContent().catch(() => ''), t => /after merging/.test(t), { timeout: 360000 });
   console.log(note);
   const m = note.match(/(\d+) images? on (\d+) releases? · (\d+) after merging/) || [];
   check(+m[3] > 0 && +m[3] < +m[1], `merging cut the images (${m[1]} → ${m[3]}): ${note}`);
