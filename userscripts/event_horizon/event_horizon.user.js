@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.25.173643
+// @version      2026.11.25.174356
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -16591,7 +16591,7 @@ function detPage(app, d) {
     if (body.dataset.on !== String(!!d.html)) { body.dataset.on = String(!!d.html); body.innerHTML = d.html || (d.err ? stErr('') : stLoad('the details')); }
 }
 // A release's Edit annotation, fetched in place of a page load (the player plays on): MusicBrainz's form goes in
-// #eh-anno, and Apollo, asked by mbu-anno-mount, builds its editor on it. Enter edit posts the form, a page load.
+// #eh-anno, and Apollo, asked by mbu-anno-mount, builds its editor on it. Enter edit posts the form in the background (annPost), so the player plays on.
 function annPage(app, d) {
     if (!app.querySelector(`#eh-anno[data-k="${d.id}"]`)) app.innerHTML = `<section class="arthd"></section><div id="eh-anno" data-k="${esc(d.id)}"></div>`;
     const hd = app.querySelector('.arthd'), body = app.querySelector('#eh-anno');
@@ -16794,6 +16794,37 @@ async function detLoad(n, id) {
     } catch (e) { LOG.err('Loading the details of ' + id + ' failed: ' + e.message); d.err = e.message; }
     if (n === showing && data === d) render();
 }
+
+// Enter edit on any entity's Edit annotation, the tab's or a loaded one: posted in the background, and the page
+// MusicBrainz then sends (the entity's) opens in the tab, so the player plays on. Apollo's own Enter edit clicks the
+// form's button, so it comes here too. When MusicBrainz sends the form back (an error, no edit made), the form posts
+// as before, a page load, to show the message
+document.addEventListener('submit', async ev => {
+    const fm = ev.target;
+    if (!ehOn || ev.defaultPrevented || !fm.matches || !fm.matches('form') || !/^post$/i.test(fm.method || '') || !fm.querySelector('textarea[name="edit-annotation.text"]')) return;
+    const act = new URL(fm.action || location.href, location.href);
+    if (act.origin !== location.origin || !/\/edit_annotation\/?$/.test(act.pathname)) return;
+    ev.preventDefault();
+    if (fm.dataset.ehPosting) return;
+    let body;
+    try { body = new URLSearchParams(new FormData(fm, ev.submitter || undefined)); } catch (e) { body = new URLSearchParams(new FormData(fm)); if (ev.submitter && ev.submitter.name) body.append(ev.submitter.name, ev.submitter.value || '1'); }
+    const bs = [...fm.querySelectorAll('button, input[type=submit]')], apollo = document.getElementById('tc-anno-submit');
+    fm.dataset.ehPosting = '1'; bs.forEach(b => { b.disabled = true; }); if (apollo) apollo.disabled = true;
+    try {
+        LOG.keep();
+        const r = await mbnFetch(act.href, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
+        const to = new URL(r.url || act.href, location.href);
+        if (!r.ok || /\/edit_annotation\/?$/.test(to.pathname)) throw new Error(r.ok ? 'MusicBrainz sent the form back' : 'HTTP ' + r.status);
+        kpWrote();
+        LOG.info('Annotation: entered for ' + act.pathname.replace(/\/edit_annotation\/?$/, '') + ', opening ' + to.pathname);
+        const k = inTab(to.href);
+        if (k) { ehPush(to.href); show(k); } else location.assign(to.href);
+    } catch (e) {
+        LOG.warn('Annotation: ' + e.message + ', posting the form with a page load');
+        delete fm.dataset.ehPosting; bs.forEach(b => { b.disabled = false; }); if (apollo) apollo.disabled = false;
+        HTMLFormElement.prototype.submit.call(fm);
+    }
+});
 
 /* ── relationship editor ───────────────────────────── */
 
