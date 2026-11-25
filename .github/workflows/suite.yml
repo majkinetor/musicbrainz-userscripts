@@ -74,6 +74,8 @@ jobs:
       - name: The ${{ env.SET }} specs of this runner's scripts
         env:
           PW_BLOB: runner-${{ matrix.runner }}
+        # a run whose every failure is MusicBrainz shedding load (429/503, the throttle page) or the
+        # network is blocked, not failed: the step passes with a warning (dev/test/blocked.mjs)
         run: |
           set -o pipefail
           case "$SET" in
@@ -85,7 +87,10 @@ jobs:
           # shorter limits and the early stop, but not for the @env specs, which are slow and
           # expected to meet the environment's failures
           if [ "$SET" = nightly ] || [ "$SET" = full ]; then export PW_FAST=1 PW_ENV_STOP=5; fi
-          pnpm test $(node dev/test/shards.mjs "$RUNNERS" ${{ matrix.runner }}) "${pick[@]}" --pass-with-no-tests 2>&1 | tee suite.log
+          pnpm test $(node dev/test/shards.mjs "$RUNNERS" ${{ matrix.runner }}) "${pick[@]}" --pass-with-no-tests 2>&1 | tee suite.log && exit 0
+          if node dev/test/blocked.mjs test-results/causes | tee -a "$GITHUB_STEP_SUMMARY"; then
+            echo "::warning title=Suite blocked::every failure on this runner was a MusicBrainz rate limit or the network, not a test"
+          else exit 1; fi
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:

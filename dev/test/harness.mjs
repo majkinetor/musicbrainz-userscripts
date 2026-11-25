@@ -26,7 +26,7 @@
 // @login (needs the logged-in profile), @critical (the quick run: pnpm test --grep @critical).
 import { test as base, expect, chromium } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
-import { readFileSync, appendFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, appendFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { gzipSync, gunzipSync, deflateSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
@@ -149,15 +149,20 @@ export const test = base.extend({
   // throttled or unreachable), the tests that remain are skipped, not run into the same wall
   // for hours. The count is a file in the output folder, so the workers of one run share it;
   // any test that passes sets it back to 0. Off (no limit) without the variable.
+  // Every failed test also leaves its cause in test-results/causes/, so that the workflow can tell
+  // a run the sandbox blocked (each failure a rate limit or the network) from a failed one (blocked.mjs).
   _envStop: [async ({}, use, testInfo) => {
     const limit = Number(process.env.PW_ENV_STOP) || 0;
     const file = resolve(testInfo.project.outputDir, '..', 'env-streak');
     const read = () => { try { return Number(readFileSync(file, 'utf8')) || 0; } catch { return 0; } };
     if (limit && read() >= limit) testInfo.skip(true, `skipped: ${limit} failures in a row came from the environment (PW_ENV_STOP)`);
     await use();
-    if (!limit || testInfo.status === 'skipped') return;
+    if (testInfo.status === 'skipped') return;
     const ok = testInfo.status === testInfo.expectedStatus;
-    const env = !ok && failureCause(testInfo) !== 'test';
+    const why = ok ? null : failureCause(testInfo), env = !ok && why !== 'test';
+    const mark = resolve(testInfo.project.outputDir, '..', 'causes', testInfo.testId);
+    try { if (ok) rmSync(mark, { force: true }); else { mkdirSync(dirname(mark), { recursive: true }); writeFileSync(mark, why); } } catch { /* a help, not a must */ }
+    if (!limit) return;
     if (ok || env) try { mkdirSync(dirname(file), { recursive: true }); writeFileSync(file, String(ok ? 0 : read() + 1)); } catch { /* the count is a help, not a must */ }
   }, { auto: true }],
 
@@ -169,14 +174,15 @@ export const test = base.extend({
     const ctx = await chromium.launchPersistentContext(profile === 'fresh' ? '' : PROFILE, { headless, viewport, deviceScaleFactor, isMobile, hasTouch });
     await clearReadCache(ctx);
     const errors = [];
-    const guard = await installProdGuard(ctx, { allow: prodPostAllow, gm: gm === false ? null : gm, onRefused: w => refused.push(w) });
+    // MusicBrainz's "too busy" answers, counted so that a failure can say it met them (see failureCause):
+    // the page's own requests, and the gate's, which go through GM_xmlhttpRequest from Node
+    const busy = { n: 0 }, count = (status, url) => { if ([429, 503].includes(status) && /(^|\.)musicbrainz\.org$/i.test(hostOf(url) || '')) busy.n++; };
+    const guard = await installProdGuard(ctx, { allow: prodPostAllow, gm: gm === false ? null : gm, onRefused: w => refused.push(w), onAnswer: count });
     // the scripts build their test hooks (window.__falconTest, …) only on a page marked so (#623)
     await ctx.addInitScript(() => { window.__mbuTest = true; });
     const watch = p => p.on('pageerror', e => errors.push(e.message));
     ctx.pages().forEach(watch); ctx.on('page', watch);
-    // MusicBrainz's "too busy" answers, counted so that a failure can say it met them (see failureCause)
-    const busy = { n: 0 };
-    ctx.on('response', r => { if ([429, 503].includes(r.status()) && /(^|\.)musicbrainz\.org$/i.test(hostOf(r.url()) || '')) busy.n++; });
+    ctx.on('response', r => count(r.status(), r.url()));
     if (process.env.SANDBOX_WRITES) logSandboxWrites(ctx, testInfo, process.env.SANDBOX_WRITES);
 
     await use(ctx);

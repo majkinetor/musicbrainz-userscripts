@@ -164,7 +164,7 @@ export function pageInit(cfg) {
 
 // Installs all three layers on a browser context. onRefused(w) hears every write
 // layers 1–2 stopped; leaked() lists production writes that got through anyway.
-export async function installProdGuard(ctx, { allow = [], gm = null, onRefused = () => {} } = {}) {
+export async function installProdGuard(ctx, { allow = [], gm = null, onRefused = () => {}, onAnswer = () => {} } = {}) {
   allow = SAFE_PROD_POSTS.concat(allow);
   const allowed = url => { const p = new URL(url).pathname; return allow.some(s => new RegExp(s, 'i').test(p)); };
   const routed = new Set(), sent = [];
@@ -193,6 +193,7 @@ export async function installProdGuard(ctx, { allow = [], gm = null, onRefused =
       const a = await ask(o);
       if (a) return a;
       const r = await ctx.request.fetch(o.url, { method: o.method, headers: withUa(o.headers), data: o.data, maxRedirects: 20, failOnStatusCode: false, timeout: o.timeout || 60000 });
+      onAnswer(r.status(), r.url());   // the harness counts MusicBrainz's 429/503 here: the page never sees these
       const body = await r.body();
       return { status: r.status(), statusText: r.statusText(), url: r.url(), headers: r.headersArray().map(h => h.name + ': ' + h.value).join('\r\n'), b64: body.toString('base64') };
     });

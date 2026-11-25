@@ -10,13 +10,14 @@
 // that produced no report. <history.json> gains the run, newest first, keyed by its UTC start time:
 //
 //   "2026-09-30 02:00:14": {
-//     "source": "nightly", "passed": 320, "failed": 2, "skipped": 4, "color": "orange",
+//     "source": "nightly", "passed": 320, "failed": 2, "blocked": 1, "skipped": 4, "color": "orange",
 //     "duration": "2:04:31", "commit": "8136e0f", "run": "https://github.com/…/actions/runs/…",
 //     "layout": "3x3", "causes": { "test": 1, "rate-limit": 1 },
 //     "failures": [{ "name": "[isrc_scout] 640-ytmusic.spec.mjs › #640: …", "error": "Error: …", "cause": "test" }]
 //   }
 //
-// Each failure's cause is the test itself, a rate limit or the network (failure-cause.mjs);
+// Each failure's cause is the test itself, a rate limit or the network (failure-cause.mjs); "blocked"
+// counts the failures the environment caused, and the badge says "blocked" for them, not "failed";
 // --layout <runners>x<workers> records how the run was spread, so that rate limits can be
 // compared across layouts (flaky-report.mjs --causes).
 //
@@ -83,11 +84,14 @@ try {
 }
 catch (e) { run = { start: new Date(), passed: 0, failed: 0, skipped: 0, ms: null, failures: [], error: `no report: ${String(e.message).split('\n')[0]}` }; }
 
-const color = run.error ? 'red' : run.failed > 5 ? 'red' : run.failed ? 'orange' : 'brightgreen';
+// a failure the environment caused (a rate limit, the network) is "blocked", not "failed": the
+// sandbox shedding load says nothing about the scripts (blocked.mjs)
+const blocked = run.failures.filter(f => f.cause !== 'test').length, real = run.failed - blocked;
+const color = run.error ? 'red' : real > 5 ? 'red' : real ? 'orange' : blocked ? 'yellow' : 'brightgreen';
 const key = run.start.toISOString().replace('T', ' ').slice(0, 19);
 const entry = {
   ...(opt('--source') ? { source: opt('--source') } : {}),
-  passed: run.passed, failed: run.failed, skipped: run.skipped, color,
+  passed: run.passed, failed: run.failed, ...(blocked ? { blocked } : {}), skipped: run.skipped, color,
   ...(run.ms != null ? { duration: hms(run.ms) } : {}),   // how long the specs took, the run's setup aside
   ...(opt('--commit') ? { commit: opt('--commit').slice(0, 7) } : {}),
   ...(opt('--run') ? { run: opt('--run') } : {}),
@@ -108,7 +112,7 @@ for (const e of Object.values(history)) if (e) {
 history = { [key]: entry, ...Object.fromEntries(Object.entries(history).filter(([k]) => k !== key)) };   // newest first
 writeFileSync(historyFile, JSON.stringify(history, null, 2) + '\n');
 
-const msg = run.error ? 'no report' : [`${run.passed} passed`, run.failed && `${run.failed} failed`].filter(Boolean).join(', ');
+const msg = run.error ? 'no report' : [`${run.passed} passed`, real && `${real} failed`, blocked && `${blocked} blocked`].filter(Boolean).join(', ');
 if (opt('--badge')) writeFileSync(opt('--badge'), JSON.stringify({ schemaVersion: 1, label: 'suite', message: msg, color }) + '\n');
 console.log(`suite-history: ${key} — ${msg} (${Object.keys(history).length} run(s) recorded)`);
 for (const f of run.failures) console.log(`  ✗ [${f.cause}] ${f.name}${f.error ? '\n      ' + f.error : ''}`);

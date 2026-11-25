@@ -34,7 +34,9 @@ These variables change a run:
 | `PW_BLOB=<name>` | also write a blob report, `blob-report/<name>.zip`, that `playwright merge-reports` joins with other runners' |
 | `PW_JSON=<file>` | also write the Playwright JSON report |
 
-[`failure-cause.mjs`](failure-cause.mjs) gives each failure a cause. `rate-limit` is a 429 or 503 answer from MusicBrainz, or its "Verification failed" page. `network` is a connection or proxy error. `test` is any other failure. The harness adds the cause to the failed test as a `cause` annotation.
+[`failure-cause.mjs`](failure-cause.mjs) gives each failure a cause. `rate-limit` is a 429 or 503 answer from MusicBrainz, or its "Verification failed" page. `network` is a connection or proxy error. `test` is any other failure. The harness adds the cause to the failed test as a `cause` annotation. It counts MusicBrainz's 429 and 503 answers to the page and to the gate's `GM_xmlhttpRequest` calls alike.
+
+A run whose every failure is `rate-limit` or `network` is **blocked**, not failed: MusicBrainz shedding load says nothing about the scripts. On CI the runner's test step then passes with a warning ([`blocked.mjs`](blocked.mjs) reads the causes the harness leaves in `test-results/causes/`), and the badge says "3 blocked" in yellow instead of "3 failed". A single `test` failure makes the run failed.
 
 ## CI
 
@@ -50,7 +52,7 @@ These variables change a run:
 
   No set has `@web` (other live sites often block cloud machines) or `@timing`. Actions → suite → Run workflow starts any set, and with 3, 2 or 1 workers. The `nightly` and `full` sets run with `PW_FAST=1` and `PW_ENV_STOP=5`.
 
-  The README badge shows how many specs passed and failed on the last `nightly` or `full` run on main. Every such run is also kept in [`history.json`](https://github.com/majkinetor/musicbrainz-userscripts/blob/test-history/history.json) on the `test-history` branch, newest first: the counts, how long it took (`duration`, H:MM:SS, the specs without the setup), the layout (`3x3` is 3 runners with 3 workers), each failed spec with its error and cause, the commit and the run's link (#647). A full local run through the [`suite` skill](../../.claude/skills/suite/SKILL.md) goes in too, marked `"source": "local"` ([`suite-record.mjs`](suite-record.mjs)): the only runs with the `@web` specs. The badge stays the nightly's.
+  The README badge shows how many specs passed, failed and were blocked on the last `nightly` or `full` run on main. Every such run is also kept in [`history.json`](https://github.com/majkinetor/musicbrainz-userscripts/blob/test-history/history.json) on the `test-history` branch, newest first: the counts, how long it took (`duration`, H:MM:SS, the specs without the setup), the layout (`3x3` is 3 runners with 3 workers), each failed spec with its error and cause, the commit and the run's link (#647). A full local run through the [`suite` skill](../../.claude/skills/suite/SKILL.md) goes in too, marked `"source": "local"` ([`suite-record.mjs`](suite-record.mjs)): the only runs with the `@web` specs. The badge stays the nightly's.
 
   The suite does not retry a failed spec, so flakiness shows across runs. `node dev/test/flaky-report.mjs` (after `git fetch github test-history`) lists the specs that failed in the last 30 runs, most often first. It gives how many of the failures were nightly and how many local, and marks one red in every run as BROKEN and one red more than once as flaky. `--runs N` looks further back. `--causes` counts each run's failures by cause, with its layout. If the `rate-limit` count grows, run fewer workers: change `PW_WORKERS` in `suite.yml` and `checks.yml`.
 
