@@ -873,6 +873,7 @@ html:root[data-eh-theme] .hico.edit { color: var(--link); }
 html:root[data-eh-theme] button.tx[aria-pressed=true] { border-bottom-color: var(--link); }
 html:root[data-eh-theme] .ply-ctl .ply-pr i, html:root[data-eh-theme] .pb .ply-pr.seek:hover i::after, html:root[data-eh-theme] .ply-cov.in::after { background: var(--link); }
 html:root[data-eh-theme] .hm-ri { color: var(--link); }
+html:root[data-eh-theme] .hm-wm small { color: var(--link); }
 /* Small heading tags use the ink colour, independently of filled-button contrast. */
 html:root[data-eh-theme] .detail .grp h4 .tag {
 	color: var(--link);
