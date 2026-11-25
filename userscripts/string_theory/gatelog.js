@@ -925,7 +925,6 @@ function stGateHud(on, peek) {
   el.innerHTML = '<div class="st-gate-hud-h"><span data-tip="Open the network log\nA double click anywhere on the HUD does the same"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Network</span><span class="st-gate-n"></span><button type="button" class="st-gate-hud-zm" aria-label="Reset the zoom" data-tip="Reset the zoom\nShows the whole time line again\nA right click on the time line resets the zoom too"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 13L13 3M8.5 3H13V7.5M3 8.5V13H7.5"/></svg></button><button type="button" class="st-gate-hud-ps" aria-label="Pause" data-tip="Pause the time line\nIt stands still at this moment, new requests still come in\nA second click lets it run again"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 3V13M11 3V13"/></svg></button><button type="button" class="st-gate-hud-ghost" aria-label="See-through" data-tip="See-through\nThe HUD is nearly invisible until the mouse is on it"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 10h.01M15 10h.01M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"/></svg></button><button type="button" class="mbu-ov-x" aria-label="Close the HUD">✕</button></div><div class="st-gate-hud-l"></div><div class="st-gate-hud-rz l"></div><div class="st-gate-hud-rz r"></div>';
   document.documentElement.appendChild(el);
   var w0 = stGateWinState().hudW; if (w0) el.style.width = w0 + 'px';
-  if (peek) stGatePeekPlace(el, peek);
   // its left and right edges drag its width, which it remembers
   el.querySelectorAll('.st-gate-hud-rz').forEach(function (h) {
     h.addEventListener('dblclick', function (e) { e.stopPropagation(); });
@@ -1021,6 +1020,8 @@ function stGateHud(on, peek) {
         try { stGatePatch(lanes, stGateLanesHtml(groups, all, stGateHudPausedAt || now, stGateTab(), lanes, true)); } finally { ST_GATE_SPAN = span0; }
         stGateDrift(lanes, now, hs, !stGateHudPausedAt && !stGateHudVw);
       }
+      // a peek is placed from its height, which its lanes set: placed again whenever that changes, so it stays whole on screen
+      if (el.peek && el.offsetHeight !== el.stPeekH) { el.stPeekH = el.offsetHeight; stGatePeekPlace(el, el.peek); }
     } catch (e) { /* a bad event: the next tick tries again */ }
   };
   el.timer = setInterval(draw, 1000);
