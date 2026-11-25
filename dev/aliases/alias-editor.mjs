@@ -120,7 +120,10 @@ const mbuAliasEditor = (() => {
     // as the form with its errors
     async function aliasPost(url, body) {
       const r = await fetchMb(url, { method: 'POST', credentials: 'include', body, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
-      if (/\/aliases\/?$/.test(new URL(r.url).pathname)) return null;
+      if (/\/aliases\/?$/.test(new URL(r.url).pathname)) {
+        try { localStorage.setItem('mbLastWrite', String(Date.now())); } catch (e) {}   // #938: tell other scripts an edit just went in
+        return null;
+      }
       const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
       return [...doc.querySelectorAll('.error, ul.errors li')].map(e => e.textContent.trim()).filter(Boolean).join('; ') || 'HTTP ' + r.status;
     }

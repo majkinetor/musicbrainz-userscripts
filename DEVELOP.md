@@ -167,6 +167,7 @@ Most settings belong to one script and live in its GM storage, which no other sc
 | `isrcFormat` | `false`; unset is on | ISRC Scout and Mission Control: ISRCs shown as `CC-XXX-YY-NNNNN` | ISRC Scout's *Show ISRCs in parts* |
 | `logHistory` | `{"Platform Check": "pc:session:"}`: each log that keeps a history, by its script's name, and where its sessions are stored | `mbuLogHistory`: String Theory's *New issue with log* lists every kept session, on any page | `mbuLog`, when made with a history |
 | `ehFxPresets` | `["Night", "Calm"]`: Event Horizon's effect preset names | String Theory's settings: *Light effect* and *Dark effect* | Event Horizon, at start and when a preset is saved or deleted |
+| `logIcons` | `{"ShowAllEntityData": "data:image/svg+xml,…"}`: an icon by script name, a `data:image/` or `https://` address | String Theory's network log: the icon of a script outside the suite, matched by its rows' `s` | that script, at start |
 | `extLinksHeading.<lang>` | the release's "External links" heading in that language | `mbpReleaseLinkList`: tells the release's links from the release group's when the page shows one list | learnt by `mbpReleaseLinkList` on a release page that shows both |
 
 A new shared setting gets a row here.
@@ -180,7 +181,7 @@ Other userscripts can opt into these conventions. No marker means the usual beha
 | `data-mbu-foreign="<owner>"` | rendered section or table | ISRC Scout leaves its columns and colspans alone; the shared tooltip handler ignores the region, including copied `data-tip` attributes |
 | `data-mbu-keys-off="<owner>"` | `<html>` | suspends Event Horizon's command shortcuts, bare keys and modified keys alike, including V and Ctrl+L, unless `data-mbu-keys-keep` says otherwise; ordinary controls and Escape still work |
 | `data-mbu-keys-keep="toggle"` | `<html>` | with `data-mbu-keys-off` set, keeps Event Horizon's on/off command (V, or the key it is rebound to) working; a space-separated list, `toggle` its only value so far |
-| `data-mbu-quiet="<owner>"` | `<html>` | temporarily hides corner launchers, the dock and its shelf; scans, counts and the saved dock state continue |
+| `data-mbu-quiet="<owner>"` | `<html>` | temporarily hides corner launchers, the dock and its shelf, and String Theory's network HUD; scans, counts and the saved dock state continue |
 
 The foreign marker protects a rendered copy, not its native source. Keep ISRC Scout's original rows outside it. A script can listen for `is:counts-changed` and update its own copy; ISRC Scout does not push changes into a foreign region. This is a contract for the consumers named above, not a promise that every script ignores the region.
 
@@ -205,13 +206,24 @@ Version **1** uses origin-local `localStorage['mbu:mb-gate']`, changed under the
 | `lead`      | opaque token for the page currently drawing; empty when idle    |
 | `leadUntil` | lease expiry, Unix milliseconds; at most 10 seconds per renewal |
 
-The sustained gap is 1,000 ms, with a burst of three after idle. Default background booking uses `at = max(now, tat - 2000, cool)` and advances `tat = max(tat, at) + 1000`. Existing bookings still check a newer `cool` before starting. A background caller waits out another caller's lead before booking. Throttling and lease renewal should use the reference functions so every participant follows the same rules.
+The pace is internal to the reference code and can change at any time, with MusicBrainz's behavior or with new measurements. Read it from [`mb-gate.mjs`](dev/net/mb-gate.mjs) (`MBN_GAP`, `MBN_BURST`), never from this page. A booking moves `tat` by the caller's own gap, and the holds in `cool` stop every caller. A caller with a longer gap than the reference code gets fewer slots, but it does not break the schedule. Existing bookings still check a newer `cool` before starting. A background caller waits out another caller's lead before booking. Use the reference functions for throttling and lease renewal, so that every participant follows the same rules.
 
 Readers accept an absent version as version 1; writers stamp `version: 1`, preserve unknown fields and never reset the schedule merely because a version was absent. Old installed copies can remove the version field on their next write, so its absence must remain supported. An explicit unknown version is rejected without changing the stored schedule. Incompatible changes require a new protocol version; these field meanings, storage key and lock name are the version-1 contract. When storage or Web Locks are unavailable, the reference code's fallback cannot guarantee cross-tab coordination.
 
+### Request trace
+
+The gate writes each request's steps for String Theory's network log with `mbnTrace` in [`mb-gate.mjs`](dev/net/mb-gate.mjs). A script outside the suite can write the same rows, and the log then shows its requests too. This format is new and not yet stable: a change is noted on [#938](https://github.com/majkinetor/musicbrainz-userscripts/issues/938), with no protocol version.
+
+- **Tab**: the id in sessionStorage `mbu:mb-gate-tab`, shared by every script in the tab.
+- **Key**: localStorage `mbu:mb-gate-trace:<tab>`, a JSON array of the tab's last 400 events, oldest first. `mbu:mb-gate-title:<tab>` holds the tab's title.
+- **Sweep**: a trace whose last event is older than 10 minutes is removed, with its title, by any tab.
+- **Row**: `t` time (Unix milliseconds), `s` the script's name, `e` the event, then the fields of that event. The usual ones are `id` (one per request, across its retries), `l` label, `u` address, `m` method, `r` reason, `en` entity, `b` background (1 or 0) and `st` status. `x: 1` marks a request that was logged but not paced, as `mbnLog` writes.
+- **Events**: `lead`, `book`, `moved`, `hidden`, `start`, `answer`, `error`, `cancel`, `giveup`, `join`, `cache`, `check`, `lead+`, `lead-` and `left` (the page closed). The log ignores an event it does not know.
+- **Icon**: a script outside the suite names its icon in the [shared](#shared-storage) `logIcons`.
+
 ### Shared kept answers and artist images
 
-A script that keeps MusicBrainz answers across page loads treats every entry kept before `localStorage['mbLastWrite']` (Unix milliseconds) as a miss, and sets that key to `Date.now()` after each write it makes to MusicBrainz. An edit made with any participating script then drops every script's kept answers. Apollo, Group Therapy and Falcon only set the key, after each edit they submit; they keep nothing themselves.
+A script that keeps MusicBrainz answers across page loads treats every entry kept before `localStorage['mbLastWrite']` (Unix milliseconds) as a miss, and sets that key to `Date.now()` after each write it makes to MusicBrainz. An edit made with any participating script then drops every script's kept answers. Apollo, Group Therapy and Falcon only set the key, after each edit they submit; they keep nothing themselves. Apollo sets it after each alias that its alias editor posts, and when the release editor starts to save.
 
 Event Horizon publishes its artist-image instance as `window.MBU.artistImage`: `find(mbid, urls)`, `findAll(mbid, urls)`, `distinct(mbid, urls)` and `cached(mbid)`, as in [`dev/artimg`](dev/artimg/README.md). One cache and one set of provider requests then serve every script, with Event Horizon's provider order and switched-off providers. Answers are copies. Check for it when you call, since Event Horizon may load later or not at all, and keep your own lookup as the fallback.
 

@@ -94,6 +94,8 @@ var ST_GATE_CSS = ''
   + '#st-gate tr>:last-child>.st-gate-rz{display:none}'
   + '#st-gate table{table-layout:fixed}#st-gate table.st-gate-measure{table-layout:auto;width:max-content}#st-gate table.st-gate-measure th{width:auto!important}#st-gate table.st-gate-measure td{white-space:nowrap;max-width:none!important}#st-gate table.st-gate-measure tbody tr:not(.rq):not(.sys){display:none}#st-gate td{overflow:hidden;text-overflow:ellipsis}#st-gate th:nth-child(1){width:96px}#st-gate th:nth-child(2){width:64px}#st-gate th:nth-child(3){width:140px}#st-gate th:nth-child(4){width:64px}#st-gate th:nth-child(5){width:130px}#st-gate th:nth-child(6){width:120px}#st-gate th:nth-child(7){width:56px}#st-gate th:nth-child(9){width:70px}#st-gate th:nth-child(10){width:120px}#st-gate th:nth-child(11){width:72px}#st-gate th:nth-child(12){width:124px}'
   + [2, 3, 4, 5, 6, 7, 9, 11, 12].map(function (n) { return '#st-gate.hc' + n + ' tr>:nth-child(' + n + ')'; }).join(',') + '{display:none}'
+  // #938: the HUD sits in the corner like the launchers, so another script's data-mbu-quiet hides it with them
+  + ':root[data-mbu-quiet] #st-gate-hud-box{visibility:hidden!important;pointer-events:none!important}'
   + '#st-gate-hud-box{position:fixed;right:14px;bottom:14px;width:520px;max-width:calc(100vw - 28px);z-index:var(--mbu-z-modal);background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:6px;padding:4px 8px;font-size:12px;opacity:.92}'
   + '#st-gate-hud-box .st-gate-hud-h{cursor:move;user-select:none;display:flex;gap:8px;align-items:center;height:22px}#st-gate-hud-box .st-gate-hud-h>span:first-child{font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}'
   + '#st-gate-hud-box .st-gate-hud-rz{position:absolute;top:0;bottom:0;width:6px;cursor:ew-resize}#st-gate-hud-box .st-gate-hud-rz.l{left:-3px}#st-gate-hud-box .st-gate-hud-rz.r{right:-3px}#st-gate-hud-box .st-gate-hud-rz:hover{background:var(--mbu-accent);opacity:.5}'
@@ -313,7 +315,10 @@ function stGateIconSrc(name) {
   var m = (typeof stMembers !== 'undefined' ? stMembers : []).filter(function (x) { return x[1] === name || x[0] === name; })[0];
   if (m && m[3]) return m[3];
   var k = (typeof mbuShared === 'function' && mbuShared('dockKnown')) || {}, h = k[name], src = h && /src="([^"]+)"/.exec(h);
-  return src ? src[1].replace(/&amp;/g, '&') : ST_ICON;
+  if (src) return src[1].replace(/&amp;/g, '&');
+  // a script outside the suite names its own icon in shared storage (mbu.logIcons, #938): a data: image or an https: address
+  var o = (typeof mbuShared === 'function' && mbuShared('logIcons')) || {}, ic = o && typeof o[name] === 'string' ? o[name] : '';
+  return /^(data:image\/|https:\/\/)/.test(ic) ? ic : ST_ICON;
 }
 // a timeline mark carries its request's id, so a click on it opens that row
 function stGateTag(html, id) { return id == null ? html : html.replace(/^<(\w+)/, '<$1 data-id="' + stEsc(String(id)) + '"'); }

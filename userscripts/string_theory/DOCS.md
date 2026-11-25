@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-25 15:41 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-25 17:37 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -911,9 +911,11 @@ It plays from YouTube, YouTube Music, Spotify, Deezer, Apple Music, SoundCloud, 
 
 Click the track name for the queue. Its head counts the releases and loose recordings: the releases count shows their covers as a grid in place of the tracks, and a cover jumps to its release, right-click removes its tracks; the recordings count jumps to them. While a collection loads, the head shows how many of its entries are loaded. Right-click Play to cycle repeat; **Shuffle** plays each track once in random order; the wheel winds five seconds. The source menu also has:
 
-- **Open in window**: the player moves to a pop-up, so playback survives reloading or closing a tab. **Back to tab** returns it.
+- **Open in window**: the player moves to a pop-up, so playback survives reloading or closing a tab, and switching to MusicBrainz's page. **Back to tab** returns it.
 - **Load collection** and **Save playlist as collection**.
 - **Recent playlists…**: the last five queues.
+
+The player belongs to Event Horizon's view. When you switch to MusicBrainz's page, a player in the tab stops. A player in its window plays on.
 
 **Send listens to ListenBrainz** scrobbles what plays, after half a track or four minutes. **Get token** opens ListenBrainz's settings for the token.
 
