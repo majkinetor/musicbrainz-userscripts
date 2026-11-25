@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.25.095751
+// @version      2026.11.25.101138
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -10814,6 +10814,10 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       if (++tries > 120) { clearInterval(iv); say('gave up waiting for the form — the tab is left for you to submit by hand'); }
       else if (tries % 20 === 0) say(`still waiting (readyState=${document.readyState}, form=${!!document.querySelector('form.edit-' + kind)})`);
     }, 250);   // ~30s
+    // A background tab's timers can be throttled until they barely run (seen on a slow machine: not one
+    // tick in two minutes, the form filled and waiting), so the page's load event tries too: it fires
+    // whatever the timers do, at the moment readyState turns complete.
+    if (document.readyState !== 'complete') window.addEventListener('load', () => { if (go()) clearInterval(iv); }, { once: true });
 
   })();
   // #851: String Theory's settings open these settings on any page, whether this script runs here or not
