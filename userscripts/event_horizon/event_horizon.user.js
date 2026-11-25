@@ -11286,7 +11286,7 @@ function discoHtml(d) {
 // and kept per release, so the Editions table's Art column and the Artwork card fill in as it runs. The card merges
 // look-alikes of a type across releases (a 64-bit difference hash of the small thumbnail) and keeps booklets apart,
 // one row per release, since their pages differ from release to release.
-const RGA = new Map(), RGA_REL = new Map(), RGA_HASH = caaStore('eh:caa-dh', 24 * 60 * 60 * 1000), RGA_BIG = 50;
+const RGA = new Map(), RGA_REL = new Map(), RGA_HASH = caaStore('eh:caa-dh2', 24 * 60 * 60 * 1000), RGA_BIG = 50;
 const RGA_BOOK = ['Booklet', 'Liner', 'Poster'];
 const rgaOf = id => { if (!RGA.has(id)) RGA.set(id, { on: false, busy: false, hashed: false, n: 0 }); return RGA.get(id); };
 // a release's images once read; null before
@@ -11317,7 +11317,7 @@ async function rgaScan(rgId, eds) {
     await Promise.all(Array.from({ length: 6 }, work));
     LOG.info(`Group artwork: ${st.n} listings in ${Math.round(performance.now() - t0)} ms`);
     // the hashes: only for types that can merge, booklets aside
-    const all = rgaWith(eds).flatMap(e => (rgaImgs(e) || []).filter(i => !rgaBook(i) && !rgaPdf(i) && !RGA_HASH.has(String(i.id))));
+    const all = rgaWith(eds).flatMap(e => (rgaImgs(e) || []).filter(i => !rgaBook(i) && !rgaPdf(i) && !RGA_HASH.get(String(i.id))));
     st.hashed = false; st.hn = 0; st.ht = all.length; rgaRedraw(rgId);
     LOG.debug(`Group artwork: hashing ${all.length} images`);
     // each thumbnail takes a hop to archive.org (about 600 ms), so many at once; the card merges as they come
@@ -11326,7 +11326,8 @@ async function rgaScan(rgId, eds) {
         for (let i; (i = all.shift());) {
             await rgaHold(st);
             const h = await rgaHash(i);
-            RGA_HASH.set(String(i.id), h); st.hn++; if (!h) bad++;
+            // a failure isn't kept: the next view tries it again
+            if (h) RGA_HASH.set(String(i.id), h); st.hn++; if (!h) bad++;
             if (performance.now() - last > 1000) { last = performance.now(); rgaRedraw(rgId); }
         }
     };
@@ -11335,7 +11336,9 @@ async function rgaScan(rgId, eds) {
     LOG.info(`Group artwork: done in ${Math.round(performance.now() - t0)} ms, ${st.hn} hashed, ${bad} failed`);
     rgaRedraw(rgId);
 }
-// the difference hash of an image's smallest thumbnail, as 16 hex digits; '' when it won't load
+// two hashes of an image's smallest thumbnail, 32 hex digits; '' when it won't load: the difference hash of the
+// whole image, then the average hash of its middle (a tenth off each side), which holds when two scans of one
+// cover are cropped differently (Legends of Benin's CD and vinyl fronts: 21 bits apart in the first, 7 in the second)
 async function rgaHash(i) {
     const th = i.thumbnails || {}, https = u => (u || '').replace(/^http:/, 'https:'), u = https(th['250'] || th.small || i.image);
     try {
@@ -11344,24 +11347,33 @@ async function rgaHash(i) {
         // a fresh upload has no thumbnails for a while (404): the image itself, unless it is a PDF
         if (!r.ok && https(i.image) !== u && !rgaPdf(i)) r = await mbnLog(https(i.image), { signal: AbortSignal.timeout(30000) }, { label: 'artwork hash full ' + i.id });
         if (!r.ok) throw new Error('HTTP ' + r.status);
-        const bm = await createImageBitmap(await r.blob()), c = document.createElement('canvas');
-        c.width = 9; c.height = 8;
-        const x = c.getContext('2d', { willReadFrequently: true });
-        x.drawImage(bm, 0, 0, 9, 8); bm.close && bm.close();
-        const p = x.getImageData(0, 0, 9, 8).data, g = (cx, cy) => { const o = (cy * 9 + cx) * 4; return p[o] * .299 + p[o + 1] * .587 + p[o + 2] * .114; };
-        let h = '';
-        for (let y = 0; y < 8; y++) { let n = 0; for (let cx = 0; cx < 8; cx++) n = n << 1 | (g(cx, y) > g(cx + 1, y) ? 1 : 0); h += n.toString(16).padStart(2, '0'); }
-        return h;
+        const bm = await createImageBitmap(await r.blob());
+        // the image's grey levels on a w × h grid, a fraction inset off each side
+        const grid = (w, h, inset) => {
+            const c = document.createElement('canvas'); c.width = w; c.height = h;
+            const x = c.getContext('2d', { willReadFrequently: true }), sx = bm.width * inset, sy = bm.height * inset;
+            x.drawImage(bm, sx, sy, bm.width - 2 * sx, bm.height - 2 * sy, 0, 0, w, h);
+            const p = x.getImageData(0, 0, w, h).data, g = [];
+            for (let k = 0; k < w * h; k++) g.push(p[k * 4] * .299 + p[k * 4 + 1] * .587 + p[k * 4 + 2] * .114);
+            return g;
+        };
+        const hex = bits => { let h = ''; for (let k = 0; k < 64; k += 8) h += parseInt(bits.slice(k, k + 8).join(''), 2).toString(16).padStart(2, '0'); return h; };
+        const d = grid(9, 8, 0), a = grid(8, 8, .1), m = a.reduce((s, v) => s + v, 0) / 64, db = [];
+        for (let y = 0; y < 8; y++) for (let cx = 0; cx < 8; cx++) db.push(d[y * 9 + cx] > d[y * 9 + cx + 1] ? 1 : 0);
+        bm.close && bm.close();
+        return hex(db) + hex(a.map(v => v > m ? 1 : 0));
     } catch (e) { LOG.debug('artwork hash failed', i.id, e); return ''; }
 }
-const rgaDist = (a, b) => { let d = 0; for (let k = 0; k < 16; k += 2) { let v = parseInt(a.slice(k, k + 2), 16) ^ parseInt(b.slice(k, k + 2), 16); while (v) { d += v & 1; v >>= 1; } } return d; };
+const rgaDist = (a, b, at = 0) => { let d = 0; for (let k = at; k < at + 16; k += 2) { let v = parseInt(a.slice(k, k + 2), 16) ^ parseInt(b.slice(k, k + 2), 16); while (v) { d += v & 1; v >>= 1; } } return d; };
+// look-alikes: close in the whole image's hash, or in the middle's (a different crop of one scan); the same rule as Art Station's gvLike
+const rgaLike = (a, b) => rgaDist(a, b) <= 10 || (a.length >= 32 && b.length >= 32 && rgaDist(a, b, 16) <= 8);
 // the merged images: one per look-alike of a type, with every release it is on, most releases first
 function rgaMerge(eds) {
     const out = [];
     for (const e of eds) for (const i of rgaImgs(e) || []) {
         if (rgaBook(i)) continue;
         const type = (i.types || [])[0] || 'Untyped', h = RGA_HASH.get(String(i.id)) || '';
-        const m = h && out.find(c => c.type === type && c.h && rgaDist(c.h, h) <= 10);
+        const m = h && out.find(c => c.type === type && c.all.some(x => { const xh = RGA_HASH.get(String(x.i.id)); return xh && rgaLike(xh, h); }));
         if (m) { m.all.push({ i, e }); if (!m.rels.includes(e)) m.rels.push(e); }
         else out.push({ type, h, i, e, all: [{ i, e }], rels: [e] });
     }
@@ -16943,7 +16955,7 @@ async function rgartLoad(n, d) {
 // what Art Station draws: the releases with their images, the scan's progress and the look-alike hashes
 function rgartSnap(d) {
     const st = rgaOf(d.rgId), withArt = rgaWith(d.editions), hashes = {};
-    const releases = withArt.map(e => { const im = rgaImgs(e); for (const i of im || []) { const h = RGA_HASH.get(String(i.id)); if (h) hashes[i.id] = h; } return { id: e.id, rel: rgaRel(e), date: e.date || '', country: e.where[0] || '', catno: (e.li[0] && e.li[0].catno) || '', images: im }; });
+    const releases = withArt.map(e => { const im = rgaImgs(e); for (const i of im || []) { const h = RGA_HASH.get(String(i.id)); if (h) hashes[i.id] = h; } return { id: e.id, rel: rgaRel(e), date: e.date || '', country: e.where[0] || '', catno: (e.li[0] && e.li[0].catno) || '', label: (e.li[0] && e.li[0].name) || '', format: fmtSummary(e.formats), kind: fmtKind(e.formats[0]), images: im }; });
     return { rg: d.rgId, name: d.name, wait: !!d.wait, err: d.err || null, releases, progress: { read: withArt.filter(e => RGA_REL.has(e.id)).length, total: withArt.length, hn: st.hn || 0, ht: st.ht || 0, busy: !!st.busy, paused: !!st.paused, hashed: !!st.hashed }, hashes };
 }
 function rgartSend(d) {

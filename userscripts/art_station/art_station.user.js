@@ -6341,7 +6341,11 @@
     if (i < 0 || !seq.length) return;
     [1, 2, -1, -2].forEach(d => {        // prefetch 2 covers each way so nav stays instant
       const it = seq[(i + d + seq.length) % seq.length];
-      if (it && !it._new && !_preloaded.has(it.id)) { _preloaded.add(it.id); const im = new Image(); im.src = thumb(it.id, 1200); }
+      if (it && !it._new && !_preloaded.has(it.id)) {
+        _preloaded.add(it.id); const im = new Image();
+        if (it._img) im.onerror = () => { it._noThumb = true; im.onerror = null; im.src = it._img; };   // no thumbnail: the viewer goes straight to the original
+        im.src = it._noThumb && it._img || thumb(it.id, 1200);
+      }
     });
   }
   function paintLightbox() {
@@ -6352,18 +6356,27 @@
     // NOTE: no resetZoom here — the zoom level is kept while navigating ←/→ (#234);
     // it's reset only on a fresh open (openLightbox) and on close.
     ov.classList.remove('na');
-    // hide until the NEW src has decoded — otherwise the previous image lingers
-    // visibly while the 1200px loads ("original shows shortly")
-    img.classList.add('loading');
-    img.onload = () => { img.classList.remove('loading'); ov.classList.remove('na'); };
-    img.onerror = () => {
-      // thumbnails aren't generated yet (pending / just uploaded) — show the original,
-      // which MB serves before the thumbs exist (its "original" link). #230
-      if (!it._new && it._img && img.src !== it._img) { img.src = it._img; return; }
-      img.classList.remove('loading'); ov.classList.add('na');
+    // the next image loads off screen and replaces the shown one only once it has: the frame never goes empty
+    // and the footer doesn't jump. The shown one dims if the wait is noticeable. On a fresh open there is
+    // nothing shown, so the frame stays hidden until the image is in.
+    const tok = img._tok = {}, showing = img.getAttribute('src') && img.naturalWidth && !img.classList.contains('loading');
+    img.onload = img.onerror = null;
+    const dim = showing ? setTimeout(() => { if (img._tok === tok) img.classList.add('pending'); }, 150) : 0;
+    if (!showing) img.classList.add('loading');
+    const done = () => { clearTimeout(dim); img.classList.remove('loading', 'pending'); };
+    const load = (u, alt) => {
+      const p = new Image();
+      p.onload = () => { if (img._tok !== tok) return; img.src = u; done(); ov.classList.remove('na'); if (_z.s > 1) applyZoom(img); };
+      p.onerror = () => {
+        if (img._tok !== tok) return;
+        // thumbnails aren't generated yet (pending / just uploaded) — show the original,
+        // which MB serves before the thumbs exist (its "original" link). #230
+        if (alt && alt !== u) { it._noThumb = true; load(alt, null); return; }
+        done(); img.removeAttribute('src'); ov.classList.add('na');
+      };
+      p.src = u;
     };
-    img.src = src;
-    if (img.complete && img.naturalWidth) img.classList.remove('loading');
+    load(it._new ? src : (it._noThumb && it._img) || src, it._new ? null : it._img);
     if (VIEW_ONLY && !it.w && !it._sizing && !it._pdf && it._img) {   // no card measured it: the original's own size
       it._sizing = true;
       const m = new Image();
@@ -6419,6 +6432,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   function closeLightbox() {
     stopPlay(); resetZoom(); _lb = null;
     const ov = document.getElementById('as-lb'); if (ov) ov.style.display = 'none';
+    const lim = ov && ov.querySelector('.as-lb-img'); if (lim) { lim._tok = null; lim.removeAttribute('src'); lim.classList.remove('pending'); }   // the next open doesn't start on this image
     document.body.classList.remove('as-lb-open');
     if (_lbScroll) { scrollTo(_lbScroll[0], _lbScroll[1]); _lbScroll = null; }
     const dm = ov && ov.querySelector('.as-lb-dlmenu'); if (dm) dm.classList.remove('open');   // don't reopen with the menu still showing
@@ -9634,6 +9648,8 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   #as-lb{--invert-value:none;--invert:none}
   .as-lb-img{max-width:92vw;max-height:84vh;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.6);border-radius:4px;background:var(--mbu-bg)}
   .as-lb-img.loading{visibility:hidden}
+  .as-lb-img{transition:opacity .15s}
+  .as-lb-img.pending{opacity:.35}
   #as-lb.na .as-lb-img{display:none}
   #as-lb.na::after{content:'Image not available, please try again later';color:var(--mbu-error);font-style:italic;font-size:16px}
   /* z-index keeps BOTH arrows above the image: applyZoom always sets a transform
@@ -9908,8 +9924,12 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   .as-gv-pause{display:inline-flex;align-items:center;gap:4px;font:12px var(--mbu-font);padding:2px 8px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:transparent;color:var(--mbu-text);cursor:pointer}
   .as-gv-pause:hover{background:var(--mbu-bg-hover)}
   .as-gv-dlnote{color:var(--mbu-accent-text)}
-  .as-gv-sec h3{font:600 13px var(--mbu-font);margin:14px 0 6px;color:var(--mbu-text)}
-  .as-gv-sec h3 span{font-weight:400;color:var(--mbu-text-dim);margin-left:4px}
+  .as-gv-sec{margin-top:14px}
+  .as-gv-sec+.as-gv-sec{margin-top:22px;padding-top:12px;border-top:1px solid var(--mbu-border)}
+  .as-gv-sec h3{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;font:600 14px var(--mbu-font);margin:0 0 8px;color:var(--mbu-text)}
+  .as-gv-sec h3 svg{flex:none;color:var(--mbu-text-dim)}
+  .as-gv-sec h3 .as-gv-sub{font:400 12.5px var(--mbu-font);color:var(--mbu-text-dim)}
+  .as-gv-sec h3 .as-gv-cnt{font:600 11px var(--mbu-font);padding:1px 7px;border-radius:999px;background:var(--mbu-bg-hover);color:var(--mbu-text-dim)}
   .as-gv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
   .as-gv-t{margin:0;cursor:pointer;min-width:0}
   .as-gv-im{position:relative;aspect-ratio:1;background:var(--mbu-bg-sunken);border:2px solid transparent;border-radius:var(--mbu-radius);overflow:hidden;display:flex;align-items:center;justify-content:center}
@@ -9996,8 +10016,22 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   const GV = { d: null, by: 'type', merge: true, book: false, pdf: false, sel: new Set(), el: null, dl: '', menu: false, html: '' };
   const GV_BOOK = ['Booklet', 'Liner', 'Poster'];
   const GV_ORDER = ['Front', 'Back', 'Booklet', 'Medium', 'Tray', 'Obi', 'Spine', 'Track', 'Liner', 'Sticker', 'Poster', 'Panel', 'Top', 'Bottom', 'Matrix/Runout', 'Watermark', 'Raw/Unedited', 'Other', 'PDF'];
-  const gvHam = (a, b) => { let n = 0; for (let i = 0; i < 16; i++) { let x = parseInt(a[i], 16) ^ parseInt(b[i], 16); while (x) { n += x & 1; x >>= 1; } } return n; };
+  const gvHam = (a, b, at = 0) => { let n = 0; for (let i = at; i < at + 16; i++) { let x = parseInt(a[i], 16) ^ parseInt(b[i], 16); while (x) { n += x & 1; x >>= 1; } } return n; };
+  // look-alikes: the whole image's difference hash close, or the average hash of its middle (Event Horizon sends
+  // both, 32 hex digits): two scans of one cover cropped differently are far apart in the first, close in the second
+  const gvLike = (a, b) => gvHam(a, b) <= 10 || (a.length >= 32 && b.length >= 32 && gvHam(a, b, 16) <= 8);
   const gvRelLabel = r => [r.date, r.country, r.catno].filter(Boolean).join(' ') || r.rel || r.id;
+  // a release's format, as Event Horizon draws it (its kind: disc, vinyl, digital, cassette, reel, usb, other)
+  const GV_FMT = {
+    digital: '<path d="M8 25h16a6 6 0 0 0 .8-11.95A9 9 0 0 0 7.4 15.2 5 5 0 0 0 8 25z"/>',
+    vinyl: '<circle cx="14" cy="17" r="11.5"/><circle cx="14" cy="17" r="7.5" stroke-width="1.5"/><circle cx="14" cy="17" r="3.2" fill="currentColor"/><path d="M28 3v11l-6 6"/><circle cx="28" cy="3.5" r=".6" fill="currentColor"/>',
+    cassette: '<rect x="3" y="7" width="26" height="18" rx="2.5"/><circle cx="11" cy="15" r="2.6"/><circle cx="21" cy="15" r="2.6"/><path d="M11 12.4h10M9 25l2-4h10l2 4"/>',
+    reel: '<circle cx="9" cy="12" r="6.5"/><circle cx="23" cy="12" r="6.5"/><circle cx="9" cy="12" r="1.6" fill="currentColor"/><circle cx="23" cy="12" r="1.6" fill="currentColor"/><path d="M9 18.5l3 8.5h8l3-8.5"/>',
+    usb: '<rect x="10" y="12" width="12" height="17" rx="2.5"/><path d="M12 12V4h8v8"/><path d="M14.5 7.5h0M17.5 7.5h0" stroke-width="2.4"/>',
+    other: '<rect x="4" y="4" width="24" height="24" rx="5"/><path d="M11 16h0M16 16h0M21 16h0" stroke-width="3"/>',
+    disc: '<circle cx="16" cy="16" r="13"/><circle cx="16" cy="16" r="3.5"/><path d="M16 7a9 9 0 0 1 9 9" opacity=".55"/>',
+  };
+  const gvFmt = k => GV_FMT[k] ? `<svg width="18" height="18" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${GV_FMT[k]}</svg>` : '';
   const GV_SVG = {
     pdf: '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/><path d="M8.5 15h7M8.5 18h5"/></svg>',
     dl: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>',
@@ -10025,7 +10059,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
         st.items.push(it); continue;
       }
       let t = null;
-      if (GV.merge && it.hash) { const ts = byType.get(it.t0) || []; t = ts.find(x => x.items[0].hash && gvHam(x.items[0].hash, it.hash) <= 10) || null; }
+      if (GV.merge && it.hash) { const ts = byType.get(it.t0) || []; t = ts.find(x => x.items.some(y => y.hash && gvLike(y.hash, it.hash))) || null; }
       if (t) { t.items.push(it); continue; }
       t = { key: it.key, kind: 'img', t0: it.t0, items: [it] };
       tiles.push(t);
@@ -10041,7 +10075,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     if (GV.by === 'none') return [{ name: '', tiles }];
     if (GV.by === 'release') {
       const m = new Map();
-      for (const r of GV.d.releases || []) if (r.images && r.images.length) m.set(r.id, { name: gvRelLabel(r), sub: r.rel && gvRelLabel(r) !== r.rel ? r.rel : '', tiles: [] });
+      for (const r of GV.d.releases || []) if (r.images && r.images.length) m.set(r.id, { name: gvRelLabel(r), icon: gvFmt(r.kind), sub: r.format || r.label ? [r.format, r.label].filter(Boolean).join(' · ') : (r.rel && gvRelLabel(r) !== r.rel ? r.rel : ''), tiles: [] });
       for (const t of tiles) { const sec = m.get(t.items[0].r.id); if (sec) sec.tiles.push(t); }
       return [...m.values()].filter(x => x.tiles.length);
     }
@@ -10051,12 +10085,12 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     return [...m.values()].sort((a, b) => rank(a.name) - rank(b.name));
   }
   function gvTileHtml(t, si) {
-    const it = t.items[0], on = GV.sel.has(t.key);
+    const it = t.items[0];
     const cap = t.kind === 'stack' ? `${gvRelLabel(it.r)} · ${t.items.length} page${t.items.length === 1 ? "" : "s"}`
       : GV.by === 'type' ? (t.n > 1 ? `${t.n} releases` : gvRelLabel(it.r)) + (it.comment ? ' · ' + it.comment : '')
       : it.types.join(', ') + (it.comment ? ' · ' + it.comment : '');
     const pic = t.kind === 'pdf' ? `<span class="as-gv-doc">${GV_SVG.pdf}<b>PDF</b></span>` : `<img loading="lazy" draggable="false" alt="" src="${esc(it.thumb)}"${it.pdf || it.thumb === it.image ? '' : ` data-full="${esc(it.image)}" onerror="this.onerror=null;this.src=this.dataset.full"`}>`;
-    return `<figure class="as-gv-t${on ? ' on' : ''}${t.kind === 'stack' ? ' stk' : ''}" data-gvk="${esc(t.key)}" data-gvs="${si}">
+    return `<figure class="as-gv-t${t.kind === 'stack' ? ' stk' : ''}" data-gvk="${esc(t.key)}" data-gvs="${si}">
       <div class="as-gv-im">${pic}${t.n > 1 ? `<span class="as-gv-n">×${t.n}</span>` : ''}${t.kind === 'stack' ? `<span class="as-gv-n">${t.items.length} page${t.items.length === 1 ? "" : "s"}</span>` : ''}<span class="as-selmark">✓</span></div>
       <figcaption>${esc(cap)}</figcaption></figure>`;
   }
@@ -10084,10 +10118,14 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
       <span class="as-gv-sp"></span><div class="as-gv-dlw"><button type="button" class="as-gv-dl" data-gvdl${items.length ? '' : ' disabled'}>${GV_SVG.dl} Download zip</button>
       <div class="as-gv-menu${GV.menu ? ' open' : ''}"><button type="button" data-gvzip="sel"${GV.sel.size ? '' : ' disabled'}>Selected (${GV.sel.size})</button><button type="button" data-gvzip="big">Largest of each (${shown.length})</button><button type="button" data-gvzip="all">Everything (${items.length})</button></div></div></div>
       <div class="as-gv-note">${gvNote(d, items, tiles)}</div>`;
-    const body = secs.map((sec, si) => `<section class="as-gv-sec">${sec.name ? `<h3>${esc(sec.name)}${sec.sub ? ` <span>${esc(sec.sub)}</span>` : ''} <span>${sec.tiles.length}</span></h3>` : ''}<div class="as-gv-grid">${sec.tiles.map(t => gvTileHtml(t, si)).join('')}</div></section>`).join('');
-    const html = bar + `<div class="as-gv-body">${body}</div>`;
-    if (html !== GV.html) { GV.html = html; el.innerHTML = html; }
+    const body = secs.map((sec, si) => `<section class="as-gv-sec">${sec.name ? `<h3>${sec.icon || ''}<span>${esc(sec.name)}</span>${sec.sub ? `<span class="as-gv-sub">${esc(sec.sub)}</span>` : ''}<span class="as-gv-cnt">${sec.tiles.length}</span></h3>` : ''}<div class="as-gv-grid">${sec.tiles.map(t => gvTileHtml(t, si)).join('')}</div></section>`).join('');
+    // the bar and the tiles are written apart: a progress note or the menu never redraws the images
+    if (!el.firstChild) el.innerHTML = '<div class="as-gv-head"></div><div class="as-gv-body"></div>';
+    if (bar !== GV.bar) { GV.bar = bar; el.firstChild.innerHTML = bar; }
+    if (body !== GV.html) { GV.html = body; el.lastChild.innerHTML = body; }
+    gvSelPaint();
   }
+  const gvSelPaint = () => { if (GV.el) for (const f of GV.el.querySelectorAll('[data-gvk]')) f.classList.toggle('on', GV.sel.has(f.dataset.gvk)); };
   const gvTile = k => { for (const sec of GV.secs || []) { const t = sec.tiles.find(x => x.key === k); if (t) return t; } return null; };
   // the full-screen viewer over a section's tiles (a stack: its pages); the gallery it lent is put back on close
   function gvOpen(t, si) {
@@ -10170,7 +10208,13 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
       if (f) { const t = gvTile(f.dataset.gvk); if (t) gvOpen(t, +f.dataset.gvs); }
     });
     let paint = null;   // right-drag: the state the first tile took, given to every tile passed over
-    const setSel = (k, v) => { if (GV.sel.has(k) === v) return; if (v) GV.sel.add(k); else GV.sel.delete(k); gvRender(); };
+    // only the tile's mark and the menu's count change: redrawing would reload every cover
+    const setSel = (k, v) => {
+      if (GV.sel.has(k) === v) return; if (v) GV.sel.add(k); else GV.sel.delete(k);
+      const f = el.querySelector(`[data-gvk="${CSS.escape(k)}"]`); if (f) f.classList.toggle('on', v);
+      const b = el.querySelector('[data-gvzip="sel"]'); if (b) { b.textContent = `Selected (${GV.sel.size})`; b.disabled = !GV.sel.size; }
+      GV.bar = null;
+    };
     el.addEventListener('contextmenu', e => { if (e.target.closest('[data-gvk]')) e.preventDefault(); });
     el.addEventListener('mousedown', e => {
       const f = e.button === 2 && e.target.closest('[data-gvk]'); if (!f) return;
@@ -10193,7 +10237,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     e.preventDefault();
     if (!GV.d || GV.d.rg !== d.rg) { GV.sel.clear(); GV.menu = false; asLog.info(`Group gallery: ${d.rg}`); }
     GV.d = d;
-    if (!GV.el || GV.el.parentNode !== slot) { GV.el = gvMount(slot); GV.html = ''; }
+    if (!GV.el || GV.el.parentNode !== slot) { GV.el = gvMount(slot); GV.html = GV.bar = ''; }
     gvRender();
   });
   document.dispatchEvent(new CustomEvent('mbu-art-group-ask'));   // Event Horizon got there first: it sends the snapshot again
