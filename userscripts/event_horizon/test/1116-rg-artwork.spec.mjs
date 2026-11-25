@@ -43,6 +43,24 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   console.log('type sections', byType.join(' | '));
   check(/^Front/.test(byType[0] || ''), `Type sections start with Front (${byType[0]})`);
   await attachShot(testInfo, gv, 'by type');
+  // Art Station's thumbnail sizes: the buttons, the wheel over them, and right-click + wheel anywhere
+  const tw = () => gv.locator('.as-gv-t').first().evaluate(e => e.getBoundingClientRect().width);
+  await gv.locator('[data-gvsize="0"]').click();
+  const small = await until(tw, w => w < 200);
+  await gv.locator('[data-gvsize="3"]').click();
+  const xl = await until(tw, w => w >= 300);
+  check(small < 200 && xl >= 300 && await gv.locator('[data-gvsize="3"].on').count() === 1, `the size buttons size the tiles (${Math.round(small)} → ${Math.round(xl)} px)`);
+  await gv.locator('[data-gvsize="1"]').hover();
+  await page.mouse.wheel(0, 100); await page.mouse.wheel(0, 100); await page.mouse.wheel(0, 100); await page.mouse.wheel(0, 100);
+  const wheeled = await until(tw, w => w < xl - 40);
+  check(wheeled < xl - 40, `the wheel over the buttons shrinks the tiles (${Math.round(wheeled)} px)`);
+  const box = await gv.locator('.as-gv-t').nth(1).boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  const sel0 = await gv.locator('.as-gv-t.on').count();
+  await page.mouse.down({ button: 'right' }); await page.mouse.wheel(0, -100); await page.mouse.wheel(0, -100); await page.mouse.up({ button: 'right' });
+  const grown = await until(tw, w => w > wheeled + 20);
+  check(grown > wheeled + 20 && await gv.locator('.as-gv-t.on').count() === sel0, `right-click + wheel grows them and selects nothing (${Math.round(grown)} px)`);
+  await gv.locator('[data-gvsize="0"]').click();
   await gv.locator('[data-gvby="release"]').click();
   const byRel = await until(() => gv.locator('.as-gv-sec').count(), n => n > byType.length);
   check(byRel > byType.length, `grouped by release, one section each (${byRel})`);
