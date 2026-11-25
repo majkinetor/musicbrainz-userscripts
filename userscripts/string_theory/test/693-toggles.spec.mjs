@@ -185,7 +185,7 @@ test.describe('Event Horizon turned off', () => {
     check(await page.locator('#st-size').textContent() === '160 %' && await page.locator('#st-size-up').isDisabled(), 'it stops at 160 %');
     for (let i = 0; i < 6; i++) await page.locator('#st-size-dn').click();
     check(await page.evaluate(() => localStorage.getItem('mbu.cornerSize')) === null, '100 % clears the setting');
-    check(JSON.stringify(await at(page)) === JSON.stringify(base), 'the launchers are back as they were');
+    check(await until(async () => JSON.stringify(await at(page)), v => v === JSON.stringify(base), { timeout: 5000 }) === JSON.stringify(base), 'the launchers are back as they were');   // the restack runs in the next frame
   });
 
   // The settings list every launcher a page has shown (mbu.dockKnown); dragging one first puts it nearest
@@ -222,7 +222,8 @@ test.describe('Event Horizon turned off', () => {
     await page.mouse.up();
     const order = JSON.parse(await page.evaluate(() => localStorage.getItem('mbu.dockOrder')) || 'null');
     check(order && order[0] === last, `stored with ${last} first (${JSON.stringify(order)})`);
-    check((await stack())[0] === last, `${last} moved nearest the corner (${(await stack()).join(', ')})`);
+    // the restack runs in the next animation frame (mbRestackCorner), so wait for it
+    check(await until(async () => (await stack())[0], v => v === last, { timeout: 5000 }) === last, `${last} moved nearest the corner (${(await stack()).join(', ')})`);
 
     // #851: settings open anywhere; a launcher that isn't a member has none
     await page.locator('#st-order [data-name="Elsewhere"]').click({ button: 'right' });
