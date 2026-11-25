@@ -18,11 +18,11 @@ class ArtistImage {
         this.max = o.max || 2000;
         this.providers = o.providers || ArtistImage.PROVIDERS;
         this.order = o.order || null; // provider keys, or a function returning them; one left out is off
-        this.http = o.http || (u => fetch(u));
+        this.http = o.http || (u => mbnLog(u));
         this.log = o.log || null;
         // an image as a Blob (null when it can't be had), for telling two providers' copies of one photo apart;
         // a manager's request reaches image hosts that send no CORS headers
-        this.blob = o.blob || (u => fetch(u).then(r => r.ok ? r.blob() : null));
+        this.blob = o.blob || (u => mbnLog(u).then(r => r.ok ? r.blob() : null));
         this.prints = new Map(); // src → Promise<fingerprint | null>, the last 100, for this page
     }
 
@@ -55,7 +55,7 @@ class ArtistImage {
             const r = await http('https://music.apple.com/us/artist/' + m[1]);
             if (!r.ok) return null;
             const s = ArtistImage.og(await r.text());
-            return s ? s.replace(/\/[^/]+$/, '/500x500bb.jpg') : null; // the page's is a 1200x630 crop
+            return ArtistImage.appleImage(s && s.replace(/\/[^/]+$/, '/500x500bb.jpg')); // the page's is a 1200x630 crop
         } },
         { key: 'soundcloud', name: 'SoundCloud', re: /^https?:\/\/(?:www\.|m\.)?soundcloud\.com\/([^/?#]+)\/?(?:[?#]|$)/, get: async (m, http) => {
             const r = await http('https://soundcloud.com/' + m[1]);
@@ -103,6 +103,10 @@ class ArtistImage {
     static tidalImage(src) {
         return src && !/^https?:\/\/(?:www\.)?tidal\.com\/img\//i.test(src) ? src : null;
     }
+    // An artist with no photo gets Apple Music's logo card from music.apple.com/assets, not artwork from mzstatic.
+    static appleImage(src) {
+        return src && /^https:\/\/[a-z0-9-]+\.mzstatic\.com\/image\//i.test(src) ? src : null;
+    }
     // Compare several central crops so a portrait and its square avatar can share a tile.
     static fingerprint(image) {
         const canvas = document.createElement('canvas'); canvas.width = canvas.height = 16;
@@ -139,7 +143,7 @@ class ArtistImage {
     sorted(all) {
         const o = (typeof this.order === 'function' ? this.order() : this.order) || this.providers.map(p => p.key);
         const at = k => o.indexOf(k);
-        return all.filter(x => o.includes(x.key) && (x.key !== 'tidal' || ArtistImage.tidalImage(x.src))).sort((a, b) => at(a.key) - at(b.key)); // also discard placeholders cached by older installs
+        return all.filter(x => o.includes(x.key) && (x.key !== 'tidal' || ArtistImage.tidalImage(x.src)) && (x.key !== 'apple' || ArtistImage.appleImage(x.src))).sort((a, b) => at(a.key) - at(b.key)); // also discard placeholders cached by older installs
     }
 
     // every cached image in order ([] for a cached miss), undefined when there is none or it expired

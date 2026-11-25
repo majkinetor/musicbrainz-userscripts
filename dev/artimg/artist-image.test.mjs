@@ -36,6 +36,18 @@ test('cached Tidal branding is skipped immediately, preserving other pictures', 
     assert.deepEqual(ai.cachedAll('mocky'), [all[1]]);
 });
 
+test('Apple Music\'s logo card for an artist without a photo is rejected, live and cached', async () => {
+    let src = 'https://music.apple.com/assets/meta/apple-music.png';
+    const ai = new ArtistImage({}, { http: async () => response('<meta property="og:image" content="' + src + '">') });
+    const url = 'https://music.apple.com/bj/artist/323014105';
+    assert.equal(await ai.find(null, [url]), null);
+    src = 'https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/x.png/1200x630cw.png';
+    assert.equal((await ai.find(null, [url])).src, 'https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/x.png/500x500bb.jpg');
+    const all = [{ key: 'apple', src: 'https://music.apple.com/assets/meta/500x500bb.jpg' }, { key: 'bandcamp', src: photo }];
+    const cache = new ArtistImage({ get: () => ({ mocky: { all, t: Date.now() } }) });
+    assert.deepEqual(cache.cachedAll('mocky'), [all[1]]);
+});
+
 test('Bandcamp uses the profile photo even on an album landing page', async () => {
     const ai = new ArtistImage({}, { http: async () => response(html) });
     assert.equal((await ai.find(null, [urls[0]])).src, photo.replace('_21', '_10'));

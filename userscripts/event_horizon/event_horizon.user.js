@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.25.180448
+// @version      2026.11.25.190329
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -6984,7 +6984,7 @@ class ArtistImage {
             const r = await http('https://music.apple.com/us/artist/' + m[1]);
             if (!r.ok) return null;
             const s = ArtistImage.og(await r.text());
-            return s ? s.replace(/\/[^/]+$/, '/500x500bb.jpg') : null; // the page's is a 1200x630 crop
+            return ArtistImage.appleImage(s && s.replace(/\/[^/]+$/, '/500x500bb.jpg')); // the page's is a 1200x630 crop
         } },
         { key: 'soundcloud', name: 'SoundCloud', re: /^https?:\/\/(?:www\.|m\.)?soundcloud\.com\/([^/?#]+)\/?(?:[?#]|$)/, get: async (m, http) => {
             const r = await http('https://soundcloud.com/' + m[1]);
@@ -7032,6 +7032,10 @@ class ArtistImage {
     static tidalImage(src) {
         return src && !/^https?:\/\/(?:www\.)?tidal\.com\/img\//i.test(src) ? src : null;
     }
+    // An artist with no photo gets Apple Music's logo card from music.apple.com/assets, not artwork from mzstatic.
+    static appleImage(src) {
+        return src && /^https:\/\/[a-z0-9-]+\.mzstatic\.com\/image\//i.test(src) ? src : null;
+    }
     // Compare several central crops so a portrait and its square avatar can share a tile.
     static fingerprint(image) {
         const canvas = document.createElement('canvas'); canvas.width = canvas.height = 16;
@@ -7068,7 +7072,7 @@ class ArtistImage {
     sorted(all) {
         const o = (typeof this.order === 'function' ? this.order() : this.order) || this.providers.map(p => p.key);
         const at = k => o.indexOf(k);
-        return all.filter(x => o.includes(x.key) && (x.key !== 'tidal' || ArtistImage.tidalImage(x.src))).sort((a, b) => at(a.key) - at(b.key)); // also discard placeholders cached by older installs
+        return all.filter(x => o.includes(x.key) && (x.key !== 'tidal' || ArtistImage.tidalImage(x.src)) && (x.key !== 'apple' || ArtistImage.appleImage(x.src))).sort((a, b) => at(a.key) - at(b.key)); // also discard placeholders cached by older installs
     }
 
     // every cached image in order ([] for a cached miss), undefined when there is none or it expired
