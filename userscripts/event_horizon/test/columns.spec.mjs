@@ -21,7 +21,10 @@ const rowCells = page => page.$eval('#s-dg table.ed-t tbody tr:not(.gh)', r => [
 const span = page => page.$eval('#s-dg table.ed-t tr.gh th', t => t.colSpan);
 
 async function drag(page, key, rows) {
-  const h = page.locator(`#pop-cols-dg [data-colk="${key}"] .col-h`), b = await h.boundingBox();
+  // the menu can open below the fold: a press on a point off screen lands on the page, not the handle
+  const h = page.locator(`#pop-cols-dg [data-colk="${key}"] .col-h`);
+  await h.scrollIntoViewIfNeeded();
+  const b = await h.boundingBox();
   const x = b.x + b.width / 2, y = b.y + b.height / 2;
   await page.mouse.move(x, y);
   await page.mouse.down();
