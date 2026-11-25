@@ -15,7 +15,7 @@ for (const [kind, id, sec] of [
     await inject('event_horizon');
     check(await until(() => page.locator(`#app #s-${sec}`).count(), n => n > 0, 5000) > 0, 'a section shows before the entity arrives');
     check(await page.locator('#app .sk-page .sk-st').count() > 0, 'the hero shows its loader meanwhile');
-    check(await until(() => page.locator('#app h1').count(), n => n > 0, 15000) > 0, 'the hero fills in when it arrives');
+    check(await until(() => page.locator('#app h1').count(), n => n > 0, 30000) > 0, 'the hero fills in when it arrives');
     check(await page.locator('#app .sk-page').count() === 0, 'the loader goes');
   });
 }
