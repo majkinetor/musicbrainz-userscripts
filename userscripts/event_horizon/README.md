@@ -128,33 +128,33 @@ With **Show pending changes** on, titles, tracks, credits and links with open ed
 
 ## Keyboard shortcuts
 
-Single keys work on an entity's page, in the viewer or on MusicBrainz's. **Ctrl+/** lists them; click a key there to change it.
+Single keys work on an entity's page, in the viewer or on MusicBrainz's. **Ctrl+/** lists them; click a key there to change it. With [String Theory](../string_theory/README.md), they are also String Theory's *Command palette* commands, which show and change the same keys, and Ctrl+/ lists the palette's keys in a section of their own.
 
-| Key             | Does                                                                  |
-| --------------- | --------------------------------------------------------------------- |
-| O               | the entity's page                                                     |
-| E               | Edit                                                                  |
-| R               | Edit relationships                                                    |
-| C               | Cover art                                                             |
-| H               | Editing history                                                       |
+| Key             | Does                                                                                                                         |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| O               | the entity's page                                                                                                            |
+| E               | Edit                                                                                                                         |
+| R               | Edit relationships                                                                                                           |
+| C               | Cover art                                                                                                                    |
+| H               | Editing history                                                                                                              |
 | T               | Tags; in the viewer, edits them in place: Enter adds what you typed, ↓ or Tab takes a suggestion, Enter on an empty box ends |
-| D               | Details                                                               |
-| A               | Aliases; in the viewer, edits them in a window                        |
-| V               | toggles Event Horizon                                                 |
-| Ctrl+H / Ctrl+L | back / forward                                                        |
-| S               | search                                                                |
-| P               | play the release, recording or collection                             |
-| Space           | play or pause                                                         |
-| ← / →           | 5 seconds back or forward                                             |
-| Ctrl+← / Ctrl+→ | previous or next track                                                |
-| Ctrl+P          | open or close the player                                              |
-| Ctrl+Space      | the playlist: arrows pick, Enter plays                                |
-| Alt+1 / Alt+2   | the playing release / recording in or out of its default collection   |
-| Alt+3           | love the playing track on ListenBrainz                                |
-| U               | your profile                                                          |
-| .               | MusicBrainz's homepage                                                |
-| ,               | settings                                                              |
-| Ctrl+/          | this list                                                             |
+| D               | Details                                                                                                                      |
+| A               | Aliases; in the viewer, edits them in a window                                                                               |
+| V               | toggles Event Horizon                                                                                                        |
+| Ctrl+H / Ctrl+L | back / forward                                                                                                               |
+| S               | search                                                                                                                       |
+| P               | play the release, recording or collection                                                                                    |
+| Space           | play or pause                                                                                                                |
+| ← / →           | 5 seconds back or forward                                                                                                    |
+| Ctrl+← / Ctrl+→ | previous or next track                                                                                                       |
+| Ctrl+P          | toggle the player                                                                                                            |
+| Ctrl+Space      | the playlist: arrows pick, Enter plays                                                                                       |
+| Alt+1 / Alt+2   | the playing release / recording in or out of its default collection                                                          |
+| Alt+3           | love the playing track on ListenBrainz                                                                                       |
+| U               | your profile                                                                                                                 |
+| .               | MusicBrainz's homepage                                                                                                       |
+| ,               | settings                                                                                                                     |
+| Ctrl+/          | this list                                                                                                                    |
 
 ## Other scripts
 

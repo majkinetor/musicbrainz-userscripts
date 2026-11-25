@@ -55,3 +55,29 @@ test.describe('palette hotkeys', () => {
     check(await page.inputValue('#st-pal-q') === 'theme: light', 'and leaves the box as it was');
   });
 });
+
+// Event Horizon's keys show beside its commands and are set there, a bare key too; Ctrl+/ lists the palette's keys.
+test.describe('Event Horizon keys in the palette', () => {
+  test.use({ gm: { name: 'String Theory' } });
+  test('shown, set and listed', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+    await page.goto(`${SANDBOX}/search/edits`, { waitUntil: 'load', timeout: 60000 });
+    await inject('string_theory');
+    await page.locator('body').first().click({ position: { x: 5, y: 5 } });
+    const row = '#st-pal-list .st-pal-i[aria-selected=true]';
+
+    await pick(page, 'toggle player');
+    check(await page.locator(`${row} .st-pal-k`).textContent() === 'Ctrl+P', 'Toggle player shows Ctrl+P');
+    await page.locator(`${row} .st-pal-kb`).click();
+    await page.keyboard.press('Control+Alt+F3');
+    check(await page.locator(`${row} .st-pal-k`).textContent() === 'Ctrl+Alt+F3', 'set from the palette');
+    check(Object.keys(await keys(page)).length === 0, 'kept by Event Horizon, not as a key of the palette');
+    await page.keyboard.press('Escape');
+
+    await page.keyboard.press('Control+/');
+    await page.waitForSelector('#eh-keys', { timeout: 10000 });
+    const btn = await page.locator('#eh-keys li[data-cmd=player] button').textContent();
+    check(/F3/.test(btn), `Event Horizon has the new key (${btn})`);
+    check(await page.locator('#eh-keys li.eh-k-sec').textContent() === 'Command palette', 'Ctrl+/ has a Command palette section');
+    check(await page.locator('#eh-keys li[data-pk]').count() >= 1, 'with the palette keys');
+  });
+});

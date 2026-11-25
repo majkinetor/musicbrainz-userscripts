@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.25.190329
+// @version      2026.11.25.190634
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -15554,7 +15554,16 @@ function plyToggle() {
 }
 try {
     window.__mbuPalette = window.__mbuPalette || {};
-    window.__mbuPalette['Event Horizon'] = () => [{ id: 'player', label: 'Toggle player', cat: 'Player', run: plyToggle }];
+    // every keyboard command, with its key to show and set from the palette while the keys are on (#1119)
+    window.__mbuPalette['Event Horizon'] = () => {
+        let l; try { l = KEY_CMDS; } catch (e) { return [{ id: 'player', label: 'Toggle player', cat: 'Player', run: plyToggle }]; }
+        const PLY = ['play', 'playpause', 'back5', 'fwd5', 'prev', 'next', 'player', 'collrel', 'collrec', 'love', 'playlist'];
+        return l.map(c => {
+            const o = { id: c[0], label: c[1], cat: PLY.includes(c[0]) ? 'Player' : 'Event Horizon', run: () => { if (c[3]() === false) toast(c[1] + ': not on this page'); } };
+            if (S.keysOn) { o.hotkey = () => keyHot(keyOfCmd(c)); o.setHotkey = h => keySet(c, h ? keyFromHot(h) : ''); }
+            return o;
+        });
+    };
 } catch (e) {}
 // a tab opened from another (Platform Check's add links, a middle-click) gets a copy of its sessionStorage, so the opener's
 // saved player too. The saved player carries its tab's mark, kept in window.name, which survives a reload and in-tab
@@ -19274,8 +19283,8 @@ const KEY_CMDS = [
     ['fwd5', 'Forward 5 seconds in the player', 'arrowright', () => plyKeySeek(5000)],
     ['prev', 'Previous track in the player', 'ctrl+arrowleft', () => { if (!plyKeyOn()) return false; plyStep(-1); return true; }],
     ['next', 'Next track in the player', 'ctrl+arrowright', () => { if (!plyKeyOn()) return false; plyStep(1); return true; }],
-    // the command palette's Toggle player; taking the key keeps the browser's print dialog shut
-    ['player', 'Open/Close player', 'ctrl+p', () => { plyToggle(); return true; }],
+    // taking the key keeps the browser's print dialog shut
+    ['player', 'Toggle player', 'ctrl+p', () => { plyToggle(); return true; }],
     // the player's own buttons: the default release and recording collections, and ListenBrainz's love
     ['collrel', 'Collect the playing release', 'alt+1', () => plyKeyPa('rel')],
     ['collrec', 'Collect the playing recording', 'alt+2', () => plyKeyPa('rec')],
@@ -19315,6 +19324,15 @@ const plyKeyPa = k => {
     return true;
 };
 const keyOfCmd = c => S.keys[c[0]] != null ? S.keys[c[0]] : c[2];
+// a command's key, taken from any other command that has it; '' for none, the default kept as no entry
+const keySet = (c, k) => {
+    if (k) KEY_CMDS.forEach(x => { if (x !== c && keyOfCmd(x) === k) S.keys = { ...S.keys, [x[0]]: '' }; });
+    S.keys = { ...S.keys, [c[0]]: k }; if (k === c[2]) { const o = { ...S.keys }; delete o[c[0]]; S.keys = o; }
+    save();
+};
+// a stored key as String Theory's palette has one, { ctrl, alt, shift, meta, key }, and back
+const keyHot = k => { if (!k) return null; const p = k.split('+'); return { ctrl: p.includes('ctrl'), alt: p.includes('alt'), shift: p.includes('shift'), meta: false, key: p[p.length - 1] }; };
+const keyFromHot = h => (h.ctrl || h.meta ? 'ctrl+' : '') + (h.alt ? 'alt+' : '') + (h.shift && h.key.length > 1 ? 'shift+' : '') + (h.key === '?' && (h.ctrl || h.meta) ? '/' : h.key);
 // a key press as it is stored: modifiers, then the key; Shift only where the key itself doesn't show it
 const keyCombo = ev => {
     if (['Control', 'Alt', 'Shift', 'Meta'].includes(ev.key)) return '';
@@ -19324,7 +19342,7 @@ const keyCombo = ev => {
 const KEY_SYM = { arrowleft: '←', arrowright: '→', arrowup: '↑', arrowdown: '↓' };
 const keyShow = k => k ? k.split('+').map(p => `<kbd>${esc(KEY_SYM[p] || (p.length === 1 ? p.toUpperCase() : p[0].toUpperCase() + p.slice(1)))}</kbd>`).join('') : '<span class="eh-k-none">none</span>';
 const mbuCss = () => { if (!document.getElementById('eh-mbu')) { const m = document.createElement('style'); m.id = 'eh-mbu'; m.textContent = MBU_TOKENS + MBU_UI_CSS + CFG_CSS + KEYS_CSS; document.documentElement.append(m); } };
-const KEYS_CSS = '.eh-keys{width:min(640px,calc(100vw - 32px));font:14px/1.45 system-ui,sans-serif}.eh-keys h3{font:600 17px/1.3 system-ui,sans-serif}.eh-keys .mbu-ov-body{position:relative;overflow-x:hidden}.eh-keys .mbu-ov-x{position:absolute;top:-6px;right:-6px;margin:0;width:36px;height:36px;padding:0;display:flex;align-items:center;justify-content:center;font-size:26px;line-height:1;border-radius:6px}.eh-keys h3{margin:0 0 12px;padding-right:36px}.eh-keys input[type=search]{width:100%;box-sizing:border-box;margin:0 0 10px;padding:7px 10px;font:inherit;background:none;color:inherit;border:0!important;outline:0!important;box-shadow:none!important;border-radius:6px}.eh-keys ul{list-style:none;margin:0;padding:0;max-height:60vh;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;display:grid;grid-template-columns:1fr 1fr;column-gap:24px}.eh-keys li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 4px;border-bottom:1px solid var(--mbu-border,rgba(127,127,127,.3));cursor:pointer}.eh-keys li>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.eh-keys li button{flex:none}.eh-keys li.sel{background:var(--mbu-hover,rgba(127,127,127,.15))}.eh-keys li button{display:inline-flex;gap:3px;padding:0;background:none;border:0;color:inherit;cursor:pointer;font:inherit}.eh-keys li button.rec{font-style:italic}.eh-keys kbd{font:inherit;font-size:.85em;box-sizing:border-box;min-width:2.2em;height:1.9em;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;border:1px solid var(--mbu-border,rgba(127,127,127,.4));border-radius:4px}.eh-keys li.sel kbd,.eh-keys li button:hover kbd{border-color:currentColor}.eh-k-none{opacity:.5}.eh-keys .eh-k-ft{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px;font-size:.9em}.eh-keys .eh-k-ft>span{opacity:.5;font-size:.9em}.eh-keys .eh-k-ft>span.eh-k-warn{opacity:1;color:var(--mbu-warn,#b45309)}.eh-keys .eh-k-warn kbd{min-width:0;height:1.6em;padding:0 4px}.eh-keys .eh-k-ft button{background:none;border:1px solid var(--mbu-border,rgba(127,127,127,.4));border-radius:6px;padding:5px 12px;color:inherit;cursor:pointer;font:inherit}@media(max-width:520px){.eh-keys ul{grid-template-columns:1fr}}';
+const KEYS_CSS = '.eh-keys{width:min(640px,calc(100vw - 32px));font:14px/1.45 system-ui,sans-serif}.eh-keys h3{font:600 17px/1.3 system-ui,sans-serif}.eh-keys .mbu-ov-body{position:relative;overflow-x:hidden}.eh-keys .mbu-ov-x{position:absolute;top:-6px;right:-6px;margin:0;width:36px;height:36px;padding:0;display:flex;align-items:center;justify-content:center;font-size:26px;line-height:1;border-radius:6px}.eh-keys h3{margin:0 0 12px;padding-right:36px}.eh-keys input[type=search]{width:100%;box-sizing:border-box;margin:0 0 10px;padding:7px 10px;font:inherit;background:none;color:inherit;border:0!important;outline:0!important;box-shadow:none!important;border-radius:6px}.eh-keys ul{list-style:none;margin:0;padding:0;max-height:60vh;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent;display:grid;grid-template-columns:1fr 1fr;column-gap:24px}.eh-keys li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 4px;border-bottom:1px solid var(--mbu-border,rgba(127,127,127,.3));cursor:pointer}.eh-keys li>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.eh-keys li button{flex:none}.eh-keys li.sel{background:var(--mbu-hover,rgba(127,127,127,.15))}.eh-keys li button{display:inline-flex;gap:3px;padding:0;background:none;border:0;color:inherit;cursor:pointer;font:inherit}.eh-keys li button.rec{font-style:italic}.eh-keys kbd{font:inherit;font-size:.85em;box-sizing:border-box;min-width:2.2em;height:1.9em;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;border:1px solid var(--mbu-border,rgba(127,127,127,.4));border-radius:4px}.eh-keys li.sel kbd,.eh-keys li button:hover kbd{border-color:currentColor}.eh-k-none{opacity:.5}.eh-keys .eh-k-ft{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px;font-size:.9em}.eh-keys .eh-k-ft>span{opacity:.5;font-size:.9em}.eh-keys .eh-k-ft>span.eh-k-warn{opacity:1;color:var(--mbu-warn,#b45309)}.eh-keys .eh-k-warn kbd{min-width:0;height:1.6em;padding:0 4px}.eh-keys .eh-k-ft button{background:none;border:1px solid var(--mbu-border,rgba(127,127,127,.4));border-radius:6px;padding:5px 12px;color:inherit;cursor:pointer;font:inherit}.eh-keys li.eh-k-sec{grid-column:1/-1;cursor:default;font-weight:600;border-bottom:0;padding-top:14px;opacity:.7}.eh-keys .eh-k-ro{display:inline-flex;gap:3px;flex:none;overflow:visible}@media(max-width:520px){.eh-keys ul{grid-template-columns:1fr}}';
 let keysRec = null;   // the command whose key is being set
 let keysWarn = null;  // a key pressed for it that another command has: { k, c }; the same key again moves it
 function keysOpen() {
@@ -19338,9 +19356,14 @@ function keysOpen() {
     const close = () => { keysRec = keysWarn = null; ov.remove(); };
     const hint = panel.querySelector('.eh-k-ft>span'), HINT = hint.textContent;
     const list = () => { const q = inp.value.trim().toLowerCase(); return KEY_CMDS.filter(c => !q || c[1].toLowerCase().includes(q) || keyOfCmd(c).includes(q)); };
+    // String Theory's command palette keys, in a section of their own: its hotkey, its fixed ones and yours (#1119)
+    let pks = [];
+    const palKeys = () => { let l = []; try { if (typeof window.__mbuPaletteKeys === 'function') l = window.__mbuPaletteKeys() || []; } catch (e) {} const q = inp.value.trim().toLowerCase(); return l.filter(x => !q || x.label.toLowerCase().includes(q) || x.keys.toLowerCase().includes(q)); };
     const draw = () => {
         const l = list(); sel = Math.max(0, Math.min(sel, l.length - 1));
         ul.innerHTML = l.map((c, i) => `<li data-cmd="${c[0]}"${i === sel ? ' class="sel"' : ''}><span>${esc(c[1])}</span><button type="button"${keysRec === c[0] ? ' class="rec"' : ''} aria-label="Change the key for ${esc(c[1])}">${keysRec === c[0] ? 'Press a key…' : keyShow(keyOfCmd(c))}</button></li>`).join('');
+        pks = palKeys();
+        if (pks.length) ul.insertAdjacentHTML('beforeend', '<li class="eh-k-sec">Command palette</li>' + pks.map((x, i) => `<li data-pk="${i}"><span>${esc(x.label)}</span><span class="eh-k-ro">${x.keys.split('+').map(p => `<kbd>${esc(p)}</kbd>`).join('')}</span></li>`).join(''));
         hint.classList.toggle('eh-k-warn', !!keysWarn);
         if (keysWarn) hint.innerHTML = `${keyShow(keysWarn.k)} is already the key for ${esc(keysWarn.c[1])}. Press it again to move it here, or press another key`; else hint.textContent = HINT;
     };
@@ -19356,9 +19379,7 @@ function keysOpen() {
             const other = k && KEY_CMDS.find(x => x !== c && keyOfCmd(x) === k);
             if (other && !(keysWarn && keysWarn.k === k)) { keysWarn = { k, c: other }; draw(); return; }
             keysWarn = null;
-            if (k) KEY_CMDS.forEach(x => { if (x !== c && keyOfCmd(x) === k) S.keys = { ...S.keys, [x[0]]: '' }; });
-            S.keys = { ...S.keys, [c[0]]: k }; if (k === c[2]) { const o = { ...S.keys }; delete o[c[0]]; S.keys = o; }
-            save(); keysRec = null; draw(); inp.focus(); return;
+            keySet(c, k); keysRec = null; draw(); inp.focus(); return;
         }
         const l = list();
         const two = getComputedStyle(ul).gridTemplateColumns.split(' ').length > 1 ? 2 : 1;
@@ -19370,6 +19391,8 @@ function keysOpen() {
     panel.addEventListener('click', ev => {
         if (ev.target.closest('.mbu-ov-x')) return close();
         if (ev.target.closest('.eh-k-reset')) { S.keys = {}; save(); draw(); return; }
+        const pk = ev.target.closest('li[data-pk]');
+        if (pk) { const x = pks[+pk.dataset.pk]; close(); if (x) try { x.run(); } catch (e) { console.error('[Event Horizon] palette key failed:', e); } return; }
         const li = ev.target.closest('li[data-cmd]'); if (!li) return;
         if (ev.target.closest('button')) { keysRec = keysRec === li.dataset.cmd ? null : li.dataset.cmd; keysWarn = null; draw(); panel.focus(); return; }
         run(KEY_CMDS.find(x => x[0] === li.dataset.cmd));
