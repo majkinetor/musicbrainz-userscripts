@@ -2,7 +2,7 @@
 // tracklist scrolls to the top." A drop rebuilds every row (mirror mode removes
 // and re-adds the whole section), the page loses its height for a moment and the
 // browser clamps the scroll. The drop must leave the view where it was.
-import { test, check, idle, frames } from '../../../dev/test/harness.mjs';
+import { test, check, until, idle, frames } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
@@ -19,7 +19,10 @@ test('#685: a dropped track leaves the tracklist scrolled where it was', { tag: 
   await idle(page);
 
   const row = ti => `.tc-mirror tr[data-tk="0:${ti}"]`;
-  await page.locator(row(9)).scrollIntoViewIfNeeded();
+  // the row is looked up afresh each try: the mirror can still be rebuilding its rows as it settles, and a
+  // handle taken a moment earlier goes stale ("not attached to the DOM")
+  await until(() => page.evaluate(s => { const r = document.querySelector(s); if (r) r.scrollIntoView({ block: 'center' }); return !!r && r.isConnected; }, row(9)), v => v);
+  await frames(page);
   const before = await page.evaluate(() => window.scrollY);
   check(before > 200, `fixture: the page is scrolled down to the last tracks (${before}px)`);
 
