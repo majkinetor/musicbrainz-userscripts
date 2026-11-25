@@ -9918,10 +9918,10 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   .as-gv-im img{width:100%;height:100%;object-fit:contain;display:block}
   .as-gv-stk .as-gv-im{box-shadow:none;border-bottom:4px double var(--mbu-border)}
   .as-gv-doc{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--mbu-text-dim);font:600 11px var(--mbu-font)}
-  .as-gv-n{position:absolute;right:4px;bottom:4px;font:600 11px var(--mbu-font);padding:1px 6px;border-radius:999px;background:rgba(0,0,0,.65);color:#fff}
-  .as-gv-pick{position:absolute;left:4px;top:4px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;padding:0;border:1px solid rgba(255,255,255,.7);border-radius:50%;background:rgba(0,0,0,.35);color:transparent;cursor:pointer;opacity:0}
-  .as-gv-t:hover .as-gv-pick,.as-gv-pick:focus-visible,.as-gv-t.on .as-gv-pick{opacity:1}
-  .as-gv-t.on .as-gv-pick{background:var(--mbu-accent);border-color:var(--mbu-accent);color:var(--mbu-text-on-accent)}
+  .as-gv-n{position:absolute;right:4px;top:4px;font:600 11px var(--mbu-font);padding:1px 6px;border-radius:999px;background:rgba(0,0,0,.65);color:#fff}
+  .as-gv-t.on .as-gv-im{box-shadow:0 0 0 2px var(--mbu-accent),0 3px 14px rgba(95,62,192,.3)}
+  .as-gv-t .as-selmark{background:var(--mbu-accent)}
+  .as-gv-t.on .as-selmark{display:block}
   .as-gv-t figcaption{font-size:11.5px;line-height:1.35;color:var(--mbu-text-dim);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   `;
   // an id keeps it on where another script turns MusicBrainz's own sheets off (Event Horizon)
@@ -9999,7 +9999,6 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   const gvHam = (a, b) => { let n = 0; for (let i = 0; i < 16; i++) { let x = parseInt(a[i], 16) ^ parseInt(b[i], 16); while (x) { n += x & 1; x >>= 1; } } return n; };
   const gvRelLabel = r => [r.date, r.country, r.catno].filter(Boolean).join(' ') || r.rel || r.id;
   const GV_SVG = {
-    check: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>',
     pdf: '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/><path d="M8.5 15h7M8.5 18h5"/></svg>',
     dl: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>',
     pause: '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>',
@@ -10034,6 +10033,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
       byType.get(it.t0).push(t);
     }
     for (const t of tiles) t.n = new Set(t.items.map(x => x.r.id)).size;
+    tiles.cut = tiles.reduce((a, t) => a + (t.kind === 'img' ? t.items.length - 1 : 0), 0);   // images folded into another
     return { items, tiles };
   }
   const gvShown = tiles => (GV.book || GV.pdf) ? tiles.filter(t => (GV.book && t.kind === 'stack') || (GV.pdf && t.kind === 'pdf')) : tiles;
@@ -10052,13 +10052,12 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   }
   function gvTileHtml(t, si) {
     const it = t.items[0], on = GV.sel.has(t.key);
-    const cap = t.kind === 'stack' ? `${gvRelLabel(it.r)} · ${t.items.length} p`
+    const cap = t.kind === 'stack' ? `${gvRelLabel(it.r)} · ${t.items.length} page${t.items.length === 1 ? "" : "s"}`
       : GV.by === 'type' ? (t.n > 1 ? `${t.n} releases` : gvRelLabel(it.r)) + (it.comment ? ' · ' + it.comment : '')
       : it.types.join(', ') + (it.comment ? ' · ' + it.comment : '');
-    const pic = t.kind === 'pdf' ? `<span class="as-gv-doc">${GV_SVG.pdf}<b>PDF</b></span>` : `<img loading="lazy" draggable="false" alt="" src="${esc(it.thumb)}">`;
+    const pic = t.kind === 'pdf' ? `<span class="as-gv-doc">${GV_SVG.pdf}<b>PDF</b></span>` : `<img loading="lazy" draggable="false" alt="" src="${esc(it.thumb)}"${it.pdf || it.thumb === it.image ? '' : ` data-full="${esc(it.image)}" onerror="this.onerror=null;this.src=this.dataset.full"`}>`;
     return `<figure class="as-gv-t${on ? ' on' : ''}${t.kind === 'stack' ? ' stk' : ''}" data-gvk="${esc(t.key)}" data-gvs="${si}">
-      <div class="as-gv-im">${pic}${t.n > 1 ? `<span class="as-gv-n">×${t.n}</span>` : ''}${t.kind === 'stack' ? `<span class="as-gv-n">${t.items.length} p</span>` : ''}
-      <button type="button" class="as-gv-pick" data-gvpick aria-label="${on ? 'Unselect' : 'Select'}" aria-pressed="${on}">${GV_SVG.check}</button></div>
+      <div class="as-gv-im">${pic}${t.n > 1 ? `<span class="as-gv-n">×${t.n}</span>` : ''}${t.kind === 'stack' ? `<span class="as-gv-n">${t.items.length} page${t.items.length === 1 ? "" : "s"}</span>` : ''}<span class="as-selmark">✓</span></div>
       <figcaption>${esc(cap)}</figcaption></figure>`;
   }
   function gvNote(d, all, tiles) {
@@ -10069,7 +10068,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
       : p.read < p.total ? `Reading ${p.read} of ${p.total} releases${p.paused ? ' · paused' : ''}`
       : !p.hashed ? `Merging look-alikes${p.ht ? ` ${p.hn || 0}/${p.ht}` : '…'}${p.paused ? ' · paused' : ''}`
       : !all.length ? 'No release in this group has artwork.'
-      : `${all.length} image${all.length === 1 ? '' : 's'} on ${nRel} release${nRel === 1 ? '' : 's'}${GV.merge ? ` · ${tiles.length} after merging` : ''}`;
+      : `${all.length} image${all.length === 1 ? '' : 's'} on ${nRel} release${nRel === 1 ? '' : 's'}${!GV.merge ? '' : !tiles.cut ? ' · no look-alikes' : ` · ${tiles.cut} look-alike${tiles.cut === 1 ? '' : 's'} merged`}`;
     return `<span class="as-gv-txt">${esc(txt)}</span>${btn}${GV.dl ? `<span class="as-gv-dlnote">${esc(GV.dl)}</span>` : ''}`;
   }
   function gvRender() {
@@ -10166,11 +10165,22 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
         if ('gvpause' in b.dataset) { const p = (GV.d && GV.d.progress) || {}; document.dispatchEvent(new CustomEvent('mbu-art-group-pause', { detail: JSON.stringify({ rg: GV.d.rg, paused: !p.paused }) })); return; }
         if ('gvdl' in b.dataset) { GV.menu = !GV.menu; gvRender(); return; }
         if (b.dataset.gvzip) { GV.menu = false; gvZip(b.dataset.gvzip); return; }
-        if ('gvpick' in b.dataset) { const k = b.closest('[data-gvk]').dataset.gvk; if (GV.sel.has(k)) GV.sel.delete(k); else GV.sel.add(k); gvRender(); return; }
       }
       const f = e.target.closest('[data-gvk]');
       if (f) { const t = gvTile(f.dataset.gvk); if (t) gvOpen(t, +f.dataset.gvs); }
     });
+    let paint = null;   // right-drag: the state the first tile took, given to every tile passed over
+    const setSel = (k, v) => { if (GV.sel.has(k) === v) return; if (v) GV.sel.add(k); else GV.sel.delete(k); gvRender(); };
+    el.addEventListener('contextmenu', e => { if (e.target.closest('[data-gvk]')) e.preventDefault(); });
+    el.addEventListener('mousedown', e => {
+      const f = e.button === 2 && e.target.closest('[data-gvk]'); if (!f) return;
+      e.preventDefault(); paint = !GV.sel.has(f.dataset.gvk); setSel(f.dataset.gvk, paint);
+    });
+    el.addEventListener('mouseover', e => {
+      if (paint === null) return; if (!(e.buttons & 2)) { paint = null; return; }
+      const f = e.target.closest('[data-gvk]'); if (f) setSel(f.dataset.gvk, paint);
+    });
+    document.addEventListener('mouseup', e => { if (e.button === 2) paint = null; });
     document.addEventListener('mousedown', e => { if (GV.menu && !e.target.closest('.as-gv-dlw')) { GV.menu = false; gvRender(); } });
     slot.append(el);
     return el;

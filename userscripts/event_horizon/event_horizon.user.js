@@ -6260,7 +6260,13 @@ const caaRetry = (im, gone, c = caaOf(im.getAttribute('src'))) => {
 };
 const edThumb = e => CAA_CV.get('release/' + e.id) || e.thumb;
 // a failed image shows nothing until another src loads, not the browser's frame and broken icon (Firefox has no CSS hook for a failed image)
-document.addEventListener('error', ev => { if (ev.target instanceof HTMLImageElement) ev.target.classList.add('eh-nimg'); }, true);
+document.addEventListener('error', ev => {
+    const im = ev.target;
+    if (!(im instanceof HTMLImageElement)) return;
+    // an artwork tile whose thumbnail isn't made yet (a fresh upload): once, the image itself
+    if (im.hasAttribute('data-rgaimg') && im.dataset.full && !/.pdf$/i.test(im.dataset.full) && im.src !== im.dataset.full) { LOG.debug('Artwork thumbnail missing, loading the image', im.dataset.full); im.removeAttribute('data-rgaimg'); im.src = im.dataset.full; return; }
+    im.classList.add('eh-nimg');
+}, true);
 document.addEventListener('load', ev => { if (ev.target instanceof HTMLImageElement) ev.target.classList.remove('eh-nimg'); }, true);
 const edCoverGone = im => {
     if (!im.matches('img[data-edimg]')) { im.remove(); return; }
@@ -6767,9 +6773,9 @@ function rgCard(r, own) {
 /* ── release group page ────────────────────────────── */
 const RG_ACTS = [
     ['edit', 'Edit', 'Edit release group', ACTS[0][3]],
+    ['artwork', 'Artwork', 'The artwork of all its releases', '<path d="M12 6c-2.5-1.6-5.5-2-9-1.6v14c3.5-.4 6.5 0 9 1.6 2.5-1.6 5.5-2 9-1.6v-14c-3.5-.4-6.5 0-9 1.6z"/><path d="M12 6v14"/>'],
     ['set-cover-art', 'Art', 'Set cover art', ACTS[1][3]],
     ['/release/add?release-group=', 'Add', 'Add a release to this group', '<path d="M12 5v14M5 12h14"/>'],
-    ['artwork', 'Artwork', 'The artwork of all its releases', '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>'],
     ['tags', 'Tags', 'Tags', CI_TAG],
     ['edits', 'History', 'Edit history', ACTS[3][3]],
     ACTS[4],
@@ -11331,10 +11337,12 @@ async function rgaScan(rgId, eds) {
 }
 // the difference hash of an image's smallest thumbnail, as 16 hex digits; '' when it won't load
 async function rgaHash(i) {
-    const th = i.thumbnails || {}, u = (th['250'] || th.small || i.image || '').replace(/^http:/, 'https:');
+    const th = i.thumbnails || {}, https = u => (u || '').replace(/^http:/, 'https:'), u = https(th['250'] || th.small || i.image);
     try {
         // a hung thumbnail would hold its worker for good, and the merge never finishes: 20 s, then it counts as failed
-        const r = await mbnLog(u, { signal: AbortSignal.timeout(20000) }, { label: 'artwork hash ' + i.id });
+        let r = await mbnLog(u, { signal: AbortSignal.timeout(20000) }, { label: 'artwork hash ' + i.id });
+        // a fresh upload has no thumbnails for a while (404): the image itself, unless it is a PDF
+        if (!r.ok && https(i.image) !== u && !rgaPdf(i)) r = await mbnLog(https(i.image), { signal: AbortSignal.timeout(30000) }, { label: 'artwork hash full ' + i.id });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         const bm = await createImageBitmap(await r.blob()), c = document.createElement('canvas');
         c.width = 9; c.height = 8;

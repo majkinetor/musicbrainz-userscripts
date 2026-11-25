@@ -31,10 +31,10 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   // Art Station, started late (as String Theory starts it), asks for the snapshot and takes the slot
   await inject('art_station');
   const gv = page.locator('#app #as-gslot .as-gv');
-  const note = await until(() => gv.locator('.as-gv-note').textContent().catch(() => ''), t => /after merging/.test(t), { timeout: 360000 });
+  const note = await until(() => gv.locator('.as-gv-note').textContent().catch(() => ''), t => /look-alikes? merged|no look-alikes/.test(t), { timeout: 360000 });
   console.log(note);
-  const m = note.match(/(\d+) images? on (\d+) releases? · (\d+) after merging/) || [];
-  check(+m[3] > 0 && +m[3] < +m[1], `merging cut the images (${m[1]} → ${m[3]}): ${note}`);
+  const m = note.match(/(\d+) look-alikes? merged/) || [];
+  check(+m[1] > 0, `merging folded look-alikes together: ${note}`);
   check(await page.locator('#app #as-gslot .rga-fb').count() === 0, 'the card made way for the gallery');
   check(await gv.locator('.as-gv-n', { hasText: /×\d+/ }).count() > 0, 'a tile says how many releases share it');
   const byType = await gv.locator('.as-gv-sec h3').allTextContents();
@@ -59,8 +59,9 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   await page.keyboard.press('Escape');
   await until(() => lb.isVisible().then(v => !v), Boolean);
   check(await gv.locator('.as-gv-t').count() > 0, 'the gallery stays after the viewer closes');
-  // selecting a tile counts in the Download menu
-  await gv.locator('.as-gv-t .as-gv-pick').first().click({ force: true });
+  // right-click selects a tile, as in the main gallery; the Download menu counts it
+  await gv.locator('.as-gv-t').first().click({ button: 'right' });
+  check(await gv.locator('.as-gv-t.on').count() === 1, 'right-click selects the tile');
   await gv.locator('[data-gvdl]').click();
   check(/Selected \(1\)/.test(await gv.locator('[data-gvzip="sel"]').textContent()), 'Download zip offers the selected one');
 });

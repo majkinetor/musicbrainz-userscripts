@@ -609,7 +609,7 @@ Its keys are in [Shortcuts](#shortcuts-1). A zoomed image follows the mouse, or 
 
 ### Release group artwork
 
-In [Event Horizon](../event_horizon/README.md), a release group's **Artwork** tab shows the art of all its releases. Images of a type that look alike are merged into one, marked with how many releases have them; each release's booklet is one stack. Group by type, release or nothing; **Booklets only** and **PDF** narrow the view, and **Merge look-alikes** turns merging off. **Pause** stops the reading.
+In [Event Horizon](../event_horizon/README.md), a release group's **Artwork** tab shows the art of all its releases. Images of a type that look alike are merged into one, marked with how many releases have them; each release's booklet is one stack, marked with its page count, whether merging is on or not. Group by type, release or nothing; **Booklets only** and **PDF** narrow the view, and **Merge look-alikes** turns merging off; the count above the gallery says how many look-alikes were merged. Select covers with right-click or right-drag, as in the main gallery, to download only those. **Pause** stops the reading.
 
 **Download zip** saves the selected images, the largest copy of each merged image, or everything, in a folder per release: `1984 JP CP35-3017/booklet-03.jpg`. Clicking an image opens the viewer over its row.
 
