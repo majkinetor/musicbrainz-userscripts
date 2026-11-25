@@ -38,8 +38,14 @@ class ArtistImage {
         { key: 'deezer', name: 'Deezer', re: /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]{2}\/)?artist\/(\d+)/, get: async (m, http) => {
             const r = await http('https://api.deezer.com/artist/' + m[1]);
             if (!r.ok) return null;
-            const p = (await r.json()).picture_big;
-            return p && !p.includes('/artist//') ? p : null; // an empty hash is Deezer's placeholder
+            const j = await r.json();
+            // A size the CDN hasn't made yet redirects to the placeholder, so keep the first size that answers with the picture.
+            for (const p of [j.picture_xl, j.picture_big, j.picture_medium]) {
+                if (!ArtistImage.deezerImage(p)) continue;
+                const h = await http(p);
+                if (h.ok && ArtistImage.deezerImage(h.url || p)) return p;
+            }
+            return null;
         } },
         { key: 'spotify', name: 'Spotify', re: /^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?artist\/([A-Za-z0-9]{22})/, get: async (m, http) => {
             const r = await http('https://open.spotify.com/artist/' + m[1]);
@@ -104,6 +110,10 @@ class ArtistImage {
         return src && !/^https?:\/\/(?:www\.)?tidal\.com\/img\//i.test(src) ? src : null;
     }
     // An artist with no photo gets Apple Music's logo card from music.apple.com/assets, not artwork from mzstatic.
+    // Deezer's placeholder has an empty hash, or the MD5 of an empty string.
+    static deezerImage(src) {
+        return src && !/\/images\/artist\/(?:d41d8cd98f00b204e9800998ecf8427e)?\//i.test(src) ? src : null;
+    }
     static appleImage(src) {
         return src && /^https:\/\/[a-z0-9-]+\.mzstatic\.com\/image\//i.test(src) ? src : null;
     }
@@ -143,7 +153,7 @@ class ArtistImage {
     sorted(all) {
         const o = (typeof this.order === 'function' ? this.order() : this.order) || this.providers.map(p => p.key);
         const at = k => o.indexOf(k);
-        return all.filter(x => o.includes(x.key) && (x.key !== 'tidal' || ArtistImage.tidalImage(x.src)) && (x.key !== 'apple' || ArtistImage.appleImage(x.src))).sort((a, b) => at(a.key) - at(b.key)); // also discard placeholders cached by older installs
+        return all.filter(x => o.includes(x.key) && (x.key !== 'tidal' || ArtistImage.tidalImage(x.src)) && (x.key !== 'apple' || ArtistImage.appleImage(x.src)) && (x.key !== 'deezer' || ArtistImage.deezerImage(x.src))).sort((a, b) => at(a.key) - at(b.key)); // also discard placeholders cached by older installs
     }
 
     // every cached image in order ([] for a cached miss), undefined when there is none or it expired

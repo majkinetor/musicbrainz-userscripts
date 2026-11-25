@@ -48,6 +48,22 @@ test('Apple Music\'s logo card for an artist without a photo is rejected, live a
     assert.deepEqual(cache.cachedAll('mocky'), [all[1]]);
 });
 
+test('Deezer skips a size its CDN redirects to the placeholder, live and cached', async () => {
+    const pic = s => 'https://cdn-images.dzcdn.net/images/artist/c05463254fd10963984830d2db72128b/' + s + '-000000-80-0-0.jpg';
+    const empty = 'https://cdn-images.dzcdn.net/images/artist/d41d8cd98f00b204e9800998ecf8427e/1000x1000-000000-80-0-0.jpg';
+    const ai = new ArtistImage({}, { http: async u => u.includes('api.deezer.com')
+        ? { ok: true, json: async () => ({ picture_xl: pic('1000x1000'), picture_big: pic('500x500'), picture_medium: pic('250x250') }) }
+        : { ok: true, url: u.includes('1000x1000') ? empty : u } });
+    const url = 'https://www.deezer.com/en/artist/14396405';
+    assert.equal((await ai.find(null, [url])).src, pic('500x500'));
+    const none = new ArtistImage({}, { http: async u => u.includes('api.deezer.com')
+        ? { ok: true, json: async () => ({ picture_big: 'https://cdn-images.dzcdn.net/images/artist//500x500-000000-80-0-0.jpg' }) } : { ok: true } });
+    assert.equal(await none.find(null, [url]), null);
+    const all = [{ key: 'deezer', src: empty }, { key: 'bandcamp', src: photo }];
+    const cache = new ArtistImage({ get: () => ({ mocky: { all, t: Date.now() } }) });
+    assert.deepEqual(cache.cachedAll('mocky'), [all[1]]);
+});
+
 test('Bandcamp uses the profile photo even on an album landing page', async () => {
     const ai = new ArtistImage({}, { http: async () => response(html) });
     assert.equal((await ai.find(null, [urls[0]])).src, photo.replace('_21', '_10'));

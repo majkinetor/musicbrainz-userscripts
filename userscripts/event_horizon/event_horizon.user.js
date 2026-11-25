@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.25.190329
+// @version      2026.11.25.191238
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -6967,8 +6967,14 @@ class ArtistImage {
         { key: 'deezer', name: 'Deezer', re: /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]{2}\/)?artist\/(\d+)/, get: async (m, http) => {
             const r = await http('https://api.deezer.com/artist/' + m[1]);
             if (!r.ok) return null;
-            const p = (await r.json()).picture_big;
-            return p && !p.includes('/artist//') ? p : null; // an empty hash is Deezer's placeholder
+            const j = await r.json();
+            // A size the CDN hasn't made yet redirects to the placeholder, so keep the first size that answers with the picture.
+            for (const p of [j.picture_xl, j.picture_big, j.picture_medium]) {
+                if (!ArtistImage.deezerImage(p)) continue;
+                const h = await http(p);
+                if (h.ok && ArtistImage.deezerImage(h.url || p)) return p;
+            }
+            return null;
         } },
         { key: 'spotify', name: 'Spotify', re: /^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?artist\/([A-Za-z0-9]{22})/, get: async (m, http) => {
             const r = await http('https://open.spotify.com/artist/' + m[1]);
@@ -7033,6 +7039,10 @@ class ArtistImage {
         return src && !/^https?:\/\/(?:www\.)?tidal\.com\/img\//i.test(src) ? src : null;
     }
     // An artist with no photo gets Apple Music's logo card from music.apple.com/assets, not artwork from mzstatic.
+    // Deezer's placeholder has an empty hash, or the MD5 of an empty string.
+    static deezerImage(src) {
+        return src && !/\/images\/artist\/(?:d41d8cd98f00b204e9800998ecf8427e)?\//i.test(src) ? src : null;
+    }
     static appleImage(src) {
         return src && /^https:\/\/[a-z0-9-]+\.mzstatic\.com\/image\//i.test(src) ? src : null;
     }
@@ -7072,7 +7082,7 @@ class ArtistImage {
     sorted(all) {
         const o = (typeof this.order === 'function' ? this.order() : this.order) || this.providers.map(p => p.key);
         const at = k => o.indexOf(k);
-        return all.filter(x => o.includes(x.key) && (x.key !== 'tidal' || ArtistImage.tidalImage(x.src)) && (x.key !== 'apple' || ArtistImage.appleImage(x.src))).sort((a, b) => at(a.key) - at(b.key)); // also discard placeholders cached by older installs
+        return all.filter(x => o.includes(x.key) && (x.key !== 'tidal' || ArtistImage.tidalImage(x.src)) && (x.key !== 'apple' || ArtistImage.appleImage(x.src)) && (x.key !== 'deezer' || ArtistImage.deezerImage(x.src))).sort((a, b) => at(a.key) - at(b.key)); // also discard placeholders cached by older installs
     }
 
     // every cached image in order ([] for a cached miss), undefined when there is none or it expired
@@ -8952,7 +8962,7 @@ function aliasesLoad(n, d) {
 }
 // Tidal's and Apple Music's pages send no CORS headers, nor does Deezer's API: the manager fetches them
 const gmFetch = (u, t0 = performance.now()) => new Promise((ok, no) => mbnGm({ method: 'GET', url: u, onerror: () => { fetchLog(u, t0, null, 'network'); no(new Error('network')); }, ontimeout: () => { fetchLog(u, t0, null, 'timeout'); no(new Error('timeout')); }, timeout: 15000,
-    onload: x => { fetchLog(u, t0, x); ok({ ok: x.status >= 200 && x.status < 300, status: x.status, text: async () => x.responseText, json: async () => JSON.parse(x.responseText) }); } }));
+    onload: x => { fetchLog(u, t0, x); ok({ ok: x.status >= 200 && x.status < 300, status: x.status, url: x.finalUrl, text: async () => x.responseText, json: async () => JSON.parse(x.responseText) }); } }));
 const gmBlob = u => new Promise(ok => mbnGm({ method: 'GET', url: u, responseType: 'blob', timeout: 15000,
     onload: r => ok(r.status >= 200 && r.status < 300 ? r.response : null), onerror: () => ok(null), ontimeout: () => ok(null), onabort: () => ok(null) }));
 const ARTIMG = new ArtistImage({ get: GM_getValue, set: GM_setValue }, { http: gmFetch, blob: gmBlob, order: () => imgOrder().filter(k => !S.imgOff.includes(k)), log: m => LOG.warn(m) });
