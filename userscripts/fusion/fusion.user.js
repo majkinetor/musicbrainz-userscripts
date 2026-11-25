@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.220002
+// @version      2026.11.25.100000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -6096,6 +6096,29 @@ function renderGroups() {
     // Groups just changed, so there may be new members to warm the cache for.
     // Fire-and-forget: it must never make rendering wait on the network.
     prefetchGroupReleases();
+    resolveGroupIds();
+}
+// the oldest pill needs every member's internal id; Match reads them with the pending
+// edits, but a group built by hand never ran it, so the missing ones are read here
+// (the same /ws/js/entity read, so it fills in the pending-edit flag too)
+const REC_ID_ASKED = new Set();
+function resolveGroupIds() {
+    const need = [];
+    STATE.groups.forEach(g => {
+        if (g.memberGids.length < 2) return;
+        g.memberGids.forEach(gid => { if (!_idCache.get(gid) && !REC_ID_ASKED.has(gid)) need.push(gid); });
+    });
+    if (!need.length) return;
+    need.forEach(gid => REC_ID_ASKED.add(gid));
+    Log.debug('Oldest pill: reading internal ids of ' + need.length + ' grouped recording(s)');
+    (async () => {
+        for (const gid of need) {
+            const meta = await fetchEntityMeta(gid);
+            const rec = STATE.recordings.get(gid);
+            if (rec && rec.editsPending == null && meta) rec.editsPending = meta.editsPending;
+        }
+        renderGroups();
+    })();
 }
 // #619 follow-up (majkinetor): "Move ⚠ 31s to the right, it should be in 'len column'".
 // The header is its own grid (title | chips | buttons) and shares no columns with the
