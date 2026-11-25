@@ -9930,6 +9930,9 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   .as-gv-sec h3 svg{flex:none;color:var(--mbu-text-dim)}
   .as-gv-sec h3 .as-gv-sub{font:400 12.5px var(--mbu-font);color:var(--mbu-text-dim)}
   .as-gv-sec h3 .as-gv-cnt{font:600 11px var(--mbu-font);padding:1px 7px;border-radius:999px;background:var(--mbu-bg-hover);color:var(--mbu-text-dim)}
+  .as-gv-sec h3 .as-gv-edit{display:inline-flex;padding:3px;border-radius:4px;color:var(--mbu-text-dim);text-decoration:none}
+  .as-gv-sec h3 .as-gv-edit svg{color:inherit}
+  .as-gv-sec h3 .as-gv-edit:hover{color:var(--mbu-text);background:var(--mbu-bg-hover)}
   .as-gv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
   .as-gv-t{margin:0;cursor:pointer;min-width:0}
   .as-gv-im{position:relative;aspect-ratio:1;background:var(--mbu-bg-sunken);border:2px solid transparent;border-radius:var(--mbu-radius);overflow:hidden;display:flex;align-items:center;justify-content:center}
@@ -10037,6 +10040,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     dl: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>',
     pause: '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>',
     play: '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>',
+    edit: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>',
   };
   // every image of every read release, in release order
   function gvItems(d) {
@@ -10075,7 +10079,7 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
     if (GV.by === 'none') return [{ name: '', tiles }];
     if (GV.by === 'release') {
       const m = new Map();
-      for (const r of GV.d.releases || []) if (r.images && r.images.length) m.set(r.id, { name: gvRelLabel(r), icon: gvFmt(r.kind), sub: r.format || r.label ? [r.format, r.label].filter(Boolean).join(' · ') : (r.rel && gvRelLabel(r) !== r.rel ? r.rel : ''), tiles: [] });
+      for (const r of GV.d.releases || []) if (r.images && r.images.length) m.set(r.id, { id: r.id, name: gvRelLabel(r), icon: gvFmt(r.kind), sub: r.format || r.label ? [r.format, r.label].filter(Boolean).join(' · ') : (r.rel && gvRelLabel(r) !== r.rel ? r.rel : ''), tiles: [] });
       for (const t of tiles) { const sec = m.get(t.items[0].r.id); if (sec) sec.tiles.push(t); }
       return [...m.values()].filter(x => x.tiles.length);
     }
@@ -10118,7 +10122,8 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
       <span class="as-gv-sp"></span><div class="as-gv-dlw"><button type="button" class="as-gv-dl" data-gvdl${items.length ? '' : ' disabled'}>${GV_SVG.dl} Download zip</button>
       <div class="as-gv-menu${GV.menu ? ' open' : ''}"><button type="button" data-gvzip="sel"${GV.sel.size ? '' : ' disabled'}>Selected (${GV.sel.size})</button><button type="button" data-gvzip="big">Largest of each (${shown.length})</button><button type="button" data-gvzip="all">Everything (${items.length})</button></div></div></div>
       <div class="as-gv-note">${gvNote(d, items, tiles)}</div>`;
-    const body = secs.map((sec, si) => `<section class="as-gv-sec">${sec.name ? `<h3>${sec.icon || ''}<span>${esc(sec.name)}</span>${sec.sub ? `<span class="as-gv-sub">${esc(sec.sub)}</span>` : ''}<span class="as-gv-cnt">${sec.tiles.length}</span></h3>` : ''}<div class="as-gv-grid">${sec.tiles.map(t => gvTileHtml(t, si)).join('')}</div></section>`).join('');
+    const body = secs.map((sec, si) => `<section class="as-gv-sec">${sec.name ? `<h3>${sec.icon || ''}<span>${esc(sec.name)}</span>${sec.sub ? `<span class="as-gv-sub">${esc(sec.sub)}</span>` : ''}<span class="as-gv-cnt">${sec.tiles.length}</span>${sec.id ? `<a class="as-gv-edit" href="/release/${esc(sec.id)}/cover-art" target="_blank" rel="noopener" data-gvedit="${esc(sec.id)}" data-tip="Edit this release's art
+In a new tab; this view reads it again when you come back">${GV_SVG.edit}</a>` : ''}</h3>` : ''}<div class="as-gv-grid">${sec.tiles.map(t => gvTileHtml(t, si)).join('')}</div></section>`).join('');
     // the bar and the tiles are written apart: a progress note or the menu never redraws the images
     if (!el.firstChild) el.innerHTML = '<div class="as-gv-head"></div><div class="as-gv-body"></div>';
     if (bar !== GV.bar) { GV.bar = bar; el.firstChild.innerHTML = bar; }
@@ -10195,7 +10200,11 @@ Click: copy the link` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._prov
   }
   function gvMount(slot) {
     const el = document.createElement('div'); el.className = 'as-gv';
+    // the pencil opens the release in a new tab (its link does that); Event Horizon is told, to read it again on return
+    const edited = e => { const a = e.target.closest('[data-gvedit]'); if (a && GV.d && (e.type === 'click' || e.button === 1)) document.dispatchEvent(new CustomEvent('mbu-art-group-edit', { detail: JSON.stringify({ rg: GV.d.rg, release: a.dataset.gvedit }) })); return !!a; };
+    el.addEventListener('auxclick', edited);
     el.addEventListener('click', e => {
+      if (edited(e)) return;
       const b = e.target.closest('button');
       if (b && el.contains(b)) {
         if (b.dataset.gvby) { GV.by = b.dataset.gvby; gvRender(); return; }

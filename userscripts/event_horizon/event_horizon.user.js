@@ -5674,7 +5674,7 @@ function menuKey(p) {
 }
 const MENU_MORE = ['details', 'aliases', 'tags', 'recordings', 'works', 'events', 'discids', 'edit_annotation'];
 function menuCatalog() {
-    const labels = [['edit', 'Edit'], ['cover-art', 'Art'], ['artists', 'Artists'], ['labels', 'Labels'], ['releases', 'Releases'], ['relationships', 'Relationships'], ['add-release', 'Add release'], ['edits', 'History'], ['details', 'Details'], ['aliases', 'Aliases'], ['tags', 'Tags'], ['recordings', 'Recordings'], ['works', 'Works'], ['events', 'Events'], ['discids', 'Disc IDs'], ['edit_annotation', 'Annotation']];
+    const labels = [['edit', 'Edit'], ['artwork', 'Artwork'], ['cover-art', 'Art'], ['artists', 'Artists'], ['labels', 'Labels'], ['releases', 'Releases'], ['relationships', 'Relationships'], ['add-release', 'Add release'], ['edits', 'History'], ['details', 'Details'], ['aliases', 'Aliases'], ['tags', 'Tags'], ['recordings', 'Recordings'], ['works', 'Works'], ['events', 'Events'], ['discids', 'Disc IDs'], ['edit_annotation', 'Annotation']];
     const seen = new Set(labels.map(x => x[0]));
     document.querySelectorAll('button[data-mbu-menu-item]').forEach(b => {
         const id = 'external:' + b.dataset.mbuMenuItem, name = b.dataset.mbuMenuTitle?.trim();
@@ -6219,6 +6219,7 @@ function caaStore(name, ms) {
         has: k => !!fresh(k),
         get: k => { const x = fresh(k); return x ? x[1] : undefined; },
         set(k, v) { mem.delete(k); mem.set(k, [Date.now(), v]); if (!timer) timer = setTimeout(save, 500); return this; },
+        delete(k) { if (mem.delete(k) && !timer) timer = setTimeout(save, 500); },
     };
 }
 // the address of a front that loads ('' when none does), for 30 minutes: a fresh upload's thumbnails come later
@@ -16979,6 +16980,29 @@ function rgartPage(app, d) {
 }
 // Art Station, started late, asks for the snapshot; its Pause holds the scan
 document.addEventListener('mbu-art-group-ask', () => { if (data && data.kind === 'rgart') render(); });
+// a release opened from the gallery's pencil: its art is read again when the tab comes back, so what was
+// added, removed or retyped there shows here
+const RGA_EDITED = new Set();
+document.addEventListener('mbu-art-group-edit', e => {
+    let x = {}; try { x = JSON.parse(e.detail || '{}'); } catch (_) {}
+    if (x.release) { RGA_EDITED.add(x.release); LOG.info(`Group artwork: editing release ${x.release}; read again on return`); }
+});
+async function rgaRefresh() {
+    if (!RGA_EDITED.size || !data || data.kind !== 'rgart') return;
+    const d = data, ids = [...RGA_EDITED]; RGA_EDITED.clear();
+    for (const id of ids) {
+        const key = 'release/' + id;
+        CAA_JSON.delete(key); CAA_JSON_KEPT.delete(key); CAA_LIST.delete(key); CAA_CV.delete(key);
+        const j = await caaJson('release', id), im = ((j && j.images) || []).map(i => ({ ...i, image: (i.image || '').replace(/^http:/, 'https:') }));
+        RGA_REL.set(id, im);
+        const e = (d.editions || []).find(x => x.id === id);
+        if (e) e.caa = { ...(e.caa || {}), artwork: im.length > 0, count: im.length, front: im.some(i => i.front) };
+        LOG.info(`Group artwork: release ${id} read again, ${im.length} images`);
+        for (const i of im.filter(i => !rgaBook(i) && !rgaPdf(i) && !RGA_HASH.get(String(i.id)))) { const h = await rgaHash(i); if (h) RGA_HASH.set(String(i.id), h); }
+    }
+    if (data === d) rgaRedraw(d.rgId);
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') rgaRefresh(); });
 document.addEventListener('mbu-art-group-pause', e => {
     let x = {}; try { x = JSON.parse(e.detail || '{}'); } catch (_) {}
     const st = x.rg && RGA.get(x.rg); if (!st) return;

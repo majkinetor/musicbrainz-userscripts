@@ -26,6 +26,8 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   // the header's Artwork opens the tab in place; Event Horizon alone draws its own card
   await page.locator(`#app a[href$="/release-group/${RG}/artwork"]`).first().click();
   await until(() => page.evaluate(() => location.pathname), p => p.endsWith('/artwork'));
+  const acts = await page.locator('#app .kicker .acts a').evaluateAll(as => as.map(a => (a.getAttribute('href') || '').split('/').pop()));
+  check(acts.indexOf('artwork') === acts.indexOf('edit') + 1, `Artwork sits next to Edit (${acts.join(' ')})`);
   const fb = await until(() => page.locator('#app #as-gslot .rga-fb [data-rgatile]').count(), n => n > 0, { timeout: 120000 });
   check(fb > 0, `without Art Station the tab shows the card (${fb} tiles)`);
   // Art Station, started late (as String Theory starts it), asks for the snapshot and takes the slot
@@ -44,6 +46,14 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   await gv.locator('[data-gvby="release"]').click();
   const byRel = await until(() => gv.locator('.as-gv-sec').count(), n => n > byType.length);
   check(byRel > byType.length, `grouped by release, one section each (${byRel})`);
+  // each release's heading has a pencil to its cover-art page; returning to the tab reads that release again
+  const pen = gv.locator('.as-gv-sec h3 a.as-gv-edit');
+  check(await pen.count() === byRel, `every release heading has the pencil (${await pen.count()} of ${byRel})`);
+  const href = await pen.first().getAttribute('href');
+  check(/^.release.[0-9a-f-]{36}.cover-art$/.test(href), `the pencil opens the release's cover art (${href})`);
+  const rel = href.split('/')[2];
+  await page.evaluate(r => { document.dispatchEvent(new CustomEvent('mbu-art-group-edit', { detail: JSON.stringify({ release: r }) })); document.dispatchEvent(new Event('visibilitychange')); }, rel);
+  check(await until(() => gv.locator('.as-gv-sec').count(), n => n === byRel) === byRel, 'the gallery redraws the same after a release is read again');
   await gv.locator('[data-gvby="type"]').click();
   // Booklets only keeps the stacks
   await gv.locator('[data-gvchip="book"]').click();
