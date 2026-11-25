@@ -139,7 +139,7 @@ Single keys work on an entity's page, in the viewer or on MusicBrainz's. **Ctrl+
 | H               | Editing history                                                       |
 | T               | Tags; in the viewer, edits them in place (Enter on an empty box ends) |
 | D               | Details                                                               |
-| A               | Aliases                                                               |
+| A               | Aliases; in the viewer, edits them in a window                        |
 | V               | toggles Event Horizon                                                 |
 | Ctrl+H / Ctrl+L | back / forward                                                        |
 | S               | search                                                                |
