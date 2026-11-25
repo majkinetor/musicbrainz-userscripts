@@ -122,6 +122,7 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 - **Ctrl+Alt+T** opens the theme chooser and **Ctrl+Alt+N** the Network log without the palette. Both work while the palette hotkey is on, and the palette shows them beside those two commands.
 - **Pin** a command with **Alt+P** or its ☆: pinned commands come first, then the ones you used last.
 - **Reorder pins** by dragging one up or down, or with **Alt+↑** / **Alt+↓** on the selected pin.
+- **Your own hotkey** for a command: press **Alt+K** on it, or click the keyboard beside its ☆, then press the keys, with Ctrl, Alt or Meta. It then runs that command on any page that has it, without the palette, and shows beside it in the list. **Backspace** instead removes it, **Esc** keeps it as it was. A key another command has asks first, and pressing it again moves it. Commands made from the page or your history (linked entities, starred and recent pages, searches, logs) take none.
 - **Search**: `search work blue` or `work blue` is _Search Work: blue_; `search` alone lists the types.
 - **New issue** puts the script's name in the title and the versions in the report; _with log_ adds that script's log of this page, or one of its last 10 kept logs.
 - The words you type can be in any order and abbreviated: `rel cov` finds _This release: Cover art_.
