@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.24.224544
+// @version      2026.11.25.095751
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -175,6 +175,7 @@
               const now = Date.now();
               if (!stop && now < end) return;
               done = true;
+              w.due.delete(tok);   // a sleep another waker ended is not a late timer: its own timer may still be throttled minutes behind
               w.all.delete(me);
               if (!w.all.size) {   // the last sleeper: the wakers rest
                   try { if (w.raf) cancelAnimationFrame(w.raf); } catch (e) {}
@@ -3388,8 +3389,12 @@ Click: open the label`;
   // after a new artist four batches of mostly the same artists were in flight at once (per-IP 503s,
   // 6 s holds). An artist already in a batch on its way is not asked for again: the call waits for that batch
   const _aliasFlight = new Map();       // gid → promise of the batch that asks for it, while in flight
+  // log 2026-11-25: the same one-artist batch ran three times in 9 s: an artist the search doesn't return
+  // (not indexed yet) or a batch that failed stayed uncached, and each rebuild asked again. Asked once a minute
+  const _aliasAsked = new Map();        // gid → when a batch last asked for it
   async function fetchAliasesByGids(gids) {
-    const want = [...new Set((gids || []).filter(g => g && !_gidAliases.has(g)))];
+    const now = Date.now();
+    const want = [...new Set((gids || []).filter(g => g && !_gidAliases.has(g) && (_aliasFlight.has(g) || !(now - (_aliasAsked.get(g) || 0) < 60000))))];
     const waits = new Set(want.filter(g => _aliasFlight.has(g)).map(g => _aliasFlight.get(g)));
     const uniq = want.filter(g => !_aliasFlight.has(g));
     for (let i = 0; i < uniq.length; i += 90) {
@@ -3398,7 +3403,7 @@ Click: open the label`;
         if (!res.json) { Log.cat('Artist').warn('batch alias fetch failed for', chunk.length, 'artist(s)'); return; }
         (res.json.artists || []).forEach(a => { cacheAliases(a.id, a.aliases || []); noteDisamb(a.id, a.disambiguation); });
       }).finally(() => chunk.forEach(g => { if (_aliasFlight.get(g) === p) _aliasFlight.delete(g); }));
-      chunk.forEach(g => _aliasFlight.set(g, p));
+      chunk.forEach(g => { _aliasFlight.set(g, p); _aliasAsked.set(g, now); });
       waits.add(p);
     }
     await Promise.all([...waits].map(p => p.catch(() => {})));

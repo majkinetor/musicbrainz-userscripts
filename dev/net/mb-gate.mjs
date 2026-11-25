@@ -171,6 +171,7 @@ export function mbnSleep(ms, cancelled) {
             const now = Date.now();
             if (!stop && now < end) return;
             done = true;
+            w.due.delete(tok);   // a sleep another waker ended is not a late timer: its own timer may still be throttled minutes behind
             w.all.delete(me);
             if (!w.all.size) {   // the last sleeper: the wakers rest
                 try { if (w.raf) cancelAnimationFrame(w.raf); } catch (e) {}

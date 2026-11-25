@@ -204,6 +204,9 @@ var ST_GATE_LOST = 30000;
 // A request: { id, tab, s, l, b, t, end, evs, tries: [{ t, w, st, end }], res, cls, label, wait }
 //   cls: ok | re (answered after a retry) | bad | go (still on its way) | '' (shared, cached, cancelled)
 var ST_GATE_COLS = [[2, 'Tab'], [3, 'Script'], [4, 'Verb'], [5, 'Reason'], [6, 'Entity'], [7, 'Site'], [9, 'Tries'], [11, 'Wait'], [12, 'Rate limit']];
+// how long a 429/503 may wait for its retry: the hold it asked for (a per-IP 503's Retry-After 5
+// held 5.3 s, and the request showed "503, gave up" beside its retry's new row), then ST_GATE_RETRY
+function stGateRetryWin(g) { var ra = g.ans ? parseFloat(g.ans.ra) : NaN; return ST_GATE_RETRY + (ra > 0 ? ra * 1000 : 0); }
 function stGateGroups(all, now) {
   var groups = [], open = {};
   var done = function (g, res) { g.res = res; delete open[g.key]; };
@@ -223,7 +226,8 @@ function stGateGroups(all, now) {
     }
     if (!ev.l) { groups.push({ sys: true, id: 'y' + ev.tab + ev.t + ev.e, tab: ev.tab, s: ev.s, t: ev.t, end: ev.t, evs: [ev], tries: [] }); return; }
     var key = ev.tab + '|' + (ev.s || '') + '|' + (ev.id ? '#' + ev.id : ev.l + '|' + ev.b), g = open[key];
-    if (g && g.pend && ev.t - g.pend > ST_GATE_RETRY) { done(g, 'gave up'); g = null; }
+    // a later event with the request's own id is its retry, however late
+    if (g && g.pend && !ev.id && ev.t - g.pend > stGateRetryWin(g)) { done(g, 'gave up'); g = null; }
     // a request that waited, then found a twin's answer just before it left (or before a retry), ends there
     // a merge waits for the request it joined and shares its answer, as a join does: no try of its own
     var shared = ev.e === 'join' || ev.e === 'merge';
@@ -250,7 +254,7 @@ function stGateGroups(all, now) {
   groups.forEach(function (g) {
     if (g.sys) { var y = g.evs[0]; g.cls = stGateBad(y) ? 'bad' : ''; g.label = y.e === 'check' ? (y.ok ? 'check passed' : 'check failed') : y.e; return; }
     if (!g.res) {
-      if (g.pend) g.res = now - g.pend > ST_GATE_RETRY ? 'gave up' : 'retrying';
+      if (g.pend) g.res = now - g.pend > stGateRetryWin(g) ? 'gave up' : 'retrying';
       else if (now - g.end > ST_GATE_LOST) g.res = 'no answer';   // its tab went away mid-request, or its answer was never told
       else g.res = g.tries.length ? 'in flight' : 'waiting';
     }
