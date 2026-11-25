@@ -3,8 +3,9 @@ import { test, check, until } from '../../../dev/test/harness.mjs';
 const REL = '54b7bca2-7ed6-4484-bdd3-fe35a3f33dda';
 test.use({ gm: { name: 'Event Horizon', values: { view: { on: true } } } });
 
-test('a matching refresh request reloads the release without replacing the player', { tag: ['@sandbox', '@flaky'] }, async ({ page, inject }) => {
+test('a matching refresh request reloads the release without replacing the player', { tag: ['@sandbox'] }, async ({ page, inject }) => {
   await page.goto('https://test.musicbrainz.org/release/' + REL);
+  await page.evaluate(async () => { await new Promise(ok => { const q = indexedDB.deleteDatabase('eh-kept'); q.onsuccess = q.onerror = q.onblocked = () => ok(); }); for (const k of await caches.keys()) await caches.delete(k); });
   await inject('event_horizon');
   await page.locator('#app .tr').first().waitFor();
   let reads = 0;

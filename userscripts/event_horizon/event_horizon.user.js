@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.25.192244
+// @version      2026.11.25.195139
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5246,6 +5246,8 @@ function leadOff(t) { if (!t) return; if (ehLead === t) ehLead = ''; if (ehTook.
 async function wsText(path, bg, L) {
     // the page's own request goes ahead of the queued background ones; a gate wait is logged, so a page that hangs says why
     const t0 = performance.now(), lead = bg ? '' : ehLead, mine = showing;
+    // an entity dropped after a write (kpWrote) is asked anew, not answered from the gate's cache of the minutes before
+    const fresh = !!bg || kpDropped(path);
     // a window the reader left stops renewing, so its lead lapses instead of holding the others back
     if (lead && ehMayLead()) { ehTook.add(lead); mbnLead(lead, 8000).catch(() => {}); }
     // a page's lookup that MusicBrainz keeps throttling says so on the loading page, with a Stop (wsStopped)
@@ -5255,7 +5257,7 @@ async function wsText(path, bg, L) {
     // background search MusicBrainz sheds twice: the reader's search then said "busy" at once (CI's
     // parallel windows). Not a re-ask in the background: it goes through the gate again, twice at most
     for (let again = bg ? 0 : 2; ; again--) {
-    try { r = await mbnFetch(MB + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json', { headers: { Accept: 'application/json' }, cache: bg ? 'no-cache' : 'default' }, { lead: lead || undefined, fresh: !!bg, background: !lead, reason: L === PLOG ? 'play' : lead ? 'view' : 'prefetch', label: 'ws/2 ' + path, cancelled: lead ? stopped : undefined, log: (lv, m) => { (L || LOG)[lv](m); if (lead && lv === 'warn' && /HTTP (429|503)/.test(m)) skBusy(mine); } }); } catch (e) { fetchLog('ws/2 ' + path, t0, null, e, L); throw e; }
+    try { r = await mbnFetch(MB + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json', { headers: { Accept: 'application/json' }, cache: fresh ? 'no-cache' : 'default' }, { lead: lead || undefined, fresh, background: !lead, reason: L === PLOG ? 'play' : lead ? 'view' : 'prefetch', label: 'ws/2 ' + path, cancelled: lead ? stopped : undefined, log: (lv, m) => { (L || LOG)[lv](m); if (lead && lv === 'warn' && /HTTP (429|503)/.test(m)) skBusy(mine); } }); } catch (e) { fetchLog('ws/2 ' + path, t0, null, e, L); throw e; }
     if (!r || (r.status !== 503 && r.status !== 429) || again <= 0 || (lead && stopped())) break;
     (L || LOG).info('ws/2 ' + path + ': HTTP ' + r.status + ', asking again');
     }
@@ -5302,6 +5304,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 const mbLastWrite = () => { try { return +localStorage.getItem('mbLastWrite') || 0; } catch (e) { return 0; } };
 // eh.kpDrop: [mbid, time] of the targeted drops, the last 100, shared by every tab
 const kpDrops = () => { try { return JSON.parse(localStorage.getItem('eh.kpDrop')) || []; } catch (e) { return []; } };
+const kpDropped = path => { const now = Date.now(), p = String(path).toLowerCase(); return kpDrops().some(x => now - x[1] < MBN_CACHE_TTL && p.includes(x[0])); };
 function kpWrote(ids) {
     ids = (ids || []).filter(Boolean).map(i => String(i).toLowerCase());
     if (!ids.length) { KP_MEM.clear(); KP_FLY.clear(); try { localStorage.setItem('mbLastWrite', String(Date.now())); } catch (e) { /* storage blocked: this tab's memory is dropped all the same */ } return; }
