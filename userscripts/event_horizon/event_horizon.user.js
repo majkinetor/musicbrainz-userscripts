@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.25.195139
+// @version      2026.11.25.233432
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12162,6 +12162,7 @@ function renderDraw(keepPop) {
     if (secDrag || colDrag) { secRedraw = true; return; } // keep the dragged row attached until the drag ends
     esPark();
     if (!keepPop && $('#pop-collections:not([hidden])')) keepPop = 'collections';
+    const cnPop = $('#pop-collections'), cnKeep = cnPop && cnPop._cn ? { cn: cnPop._cn, key: cnPop.dataset.key, focus: collNewKeep(cnPop) } : null; // a background redraw keeps a half-typed new collection
     if (!keepPop) { const p = $('.col-pop:not([hidden])'); if (p) keepPop = p.id.slice(4); } // a background redraw leaves the Columns menu open
     if (!data || data.kind !== 'home') secFab(false);
     if (releasePageDraw) {
@@ -12305,6 +12306,7 @@ function renderDraw(keepPop) {
     }
     if (keepPop) { const p = document.getElementById('pop-' + keepPop); if (p) { p.hidden = false; popFit(p); p.scrollTop = popTop || 0; const t = $(`[data-pop="${keepPop}"]`); if (t) t.setAttribute('aria-expanded', 'true'); } }
     secRail(app);
+    if (cnKeep) { const p = $('#pop-collections'); if (p && p !== cnPop && p.dataset.key === cnKeep.key && !p._cn) { p._cn = cnKeep.cn; p._draw ? p._draw() : collectionPaint(cnKeep.key); collNewPut(p, cnKeep.focus); } }
     if (keepPop === 'collections') { const p = $('#pop-collections'); if (p) { p.hidden = false; $('[data-pop="collections"]').setAttribute('aria-expanded', 'true'); popFit(p); } }
     fitQuiet();
     lmWatch(app);
@@ -14936,7 +14938,7 @@ function plyCollNewOpen(m) {
     const cn = m._cn = { path: c.path, f: null, v: { n: '', d: '', p: false } };
     PLOG.debug('new collection form', c.path);
     m._draw(); m.querySelector('.cn [name=n]')?.focus();
-    plyCollNewForm(cn).then(() => { if (m._cn === cn && m.isConnected) m._draw(); }, e => PLOG.warn('Reading the new collection form: ' + e.message));
+    plyCollNewForm(cn).then(() => { const p = m.isConnected ? m : $('#pop-collections'); if (p && p._cn === cn && p._draw) { const k = collNewKeep(p); p._draw(); collNewPut(p, k); } }, e => PLOG.warn('Reading the new collection form: ' + e.message));
 }
 async function plyCollNewForm(cn) {
     if (cn.f) return cn.f;

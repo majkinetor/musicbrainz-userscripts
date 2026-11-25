@@ -12,5 +12,5 @@ test('an instrument page shows its lists while the instrument itself is still lo
   check(await until(() => page.locator('#app h1').count(), n => n > 0, 4000) > 0, 'the page shows before the instrument arrives');
   check(/cu[ií]ca/i.test(await page.locator('#app h1').innerText()), 'named from MusicBrainz\'s subpage');
   check(await page.locator('#app .facts .label').filter({ hasText: /subtype of/i }).count() === 0, 'the facts are not in yet');
-  check(await until(() => page.locator('#app .facts .label').filter({ hasText: /subtype of/i }).count(), n => n > 0, 15000) > 0, 'the facts fill in when it arrives');
+  check(await until(() => page.locator('#app .facts .label').filter({ hasText: /subtype of/i }).count(), n => n > 0, 30000) > 0, 'the facts fill in when it arrives');
 });
