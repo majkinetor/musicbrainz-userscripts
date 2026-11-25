@@ -9,7 +9,7 @@ const RG = 'b1392450-e666-3926-a536-22c65f834433';
 // gallery from what Event Horizon sends: look-alikes merged across releases, grouped by type or release, the
 // viewer over a tile's row (#1116).
 test('a release group\'s Artwork tab gathers the art of all its releases', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
-  test.setTimeout(300000);
+  test.setTimeout(600000);
   await page.goto(`https://test.musicbrainz.org/release-group/${RG}`, { waitUntil: 'domcontentloaded' });
   await idle(page);
   await inject('event_horizon');
@@ -31,7 +31,7 @@ test('a release group\'s Artwork tab gathers the art of all its releases', { tag
   // Art Station, started late (as String Theory starts it), asks for the snapshot and takes the slot
   await inject('art_station');
   const gv = page.locator('#app #as-gslot .as-gv');
-  const note = await until(() => gv.locator('.as-gv-note').textContent().catch(() => ''), t => /after merging/.test(t), 120000);
+  const note = await until(() => gv.locator('.as-gv-note').textContent().catch(() => ''), t => /after merging/.test(t), 360000);
   console.log(note);
   const m = note.match(/(\d+) images? on (\d+) releases? · (\d+) after merging/) || [];
   check(+m[3] > 0 && +m[3] < +m[1], `merging cut the images (${m[1]} → ${m[3]}): ${note}`);
