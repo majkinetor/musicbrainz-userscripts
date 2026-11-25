@@ -858,6 +858,153 @@ html:root[data-eh-theme] .tr .ti .mk > .on,
 html:root[data-eh-theme] .ed-views button[aria-pressed=true],
 html:root[data-eh-theme] .stars:not(.mine),
 html:root[data-eh-theme] .stars:not(.mine):not(:hover) .st.on { color: var(--link); }
+/* Every other accent icon, text, underline, outline and thin indicator, in ink; filled buttons keep the deep blue. */
+html:root[data-eh-theme] .tl-bar input:focus { border-color: var(--link); }
+html:root[data-eh-theme] .sl input:focus, html:root[data-eh-theme] .sl select:focus { border-color: var(--link); }
+html:root[data-eh-theme] .hm-srch:focus-within { border-color: var(--link); }
+html:root[data-eh-theme] .hm-srch .hm-td button[aria-selected=true] { color: var(--link) !important; }
+html:root[data-eh-theme] .kicker .srch .hm-td button[aria-selected=true] { color: var(--link) !important; }
+html:root[data-eh-theme] .hm-seg input:focus-visible+span { outline-color: var(--link); }
+html:root[data-eh-theme] .hm-qr b { color: var(--link); }
+html:root[data-eh-theme] .hm-srch button.hm-tg:hover, html:root[data-eh-theme] .hm-srch button.hm-tg.on { color: var(--link); }
+html:root[data-eh-theme] .hm-cv:hover .hm-art { outline-color: var(--link); }
+html:root[data-eh-theme] .hm-pl:hover { outline-color: var(--link); }
+html:root[data-eh-theme] .hm-st:hover { outline-color: var(--link); }
+html:root[data-eh-theme] .hm-bars a:hover>span { color: var(--link); }
+html:root[data-eh-theme] .eh-bscale:hover { color: var(--link); }
+html:root[data-eh-theme] .u-sbn>a.on { color: var(--link) !important; }
+html:root[data-eh-theme] .cn-form input:focus, html:root[data-eh-theme] .cn-form select:focus, html:root[data-eh-theme] .cn-form textarea:focus { border-color: var(--link); }
+html:root[data-eh-theme] .cn-pub input { accent-color: var(--link); }
+html:root[data-eh-theme] .u-nt.on { border-color: var(--link); }
+html:root[data-eh-theme] .u-ddm>a:hover { border-color: var(--link); color: var(--link) !important; }
+html:root[data-eh-theme] .u-ddm>a:hover svg, html:root[data-eh-theme] .u-ddm>a.on svg { color: var(--link); }
+html:root[data-eh-theme] .u-ddm>a.on { color: var(--link) !important; }
+html:root[data-eh-theme] .u-avb { color: var(--link); }
+html:root[data-eh-theme] .u-tab:hover { border-color: var(--link); }
+html:root[data-eh-theme] a.u-kpi:hover b { color: var(--link); }
+html:root[data-eh-theme] .u-lgd a:hover { color: var(--link) !important; }
+html:root[data-eh-theme] a.u-bar:hover span { color: var(--link); }
+html:root[data-eh-theme] .u-vr a:hover { color: var(--link) !important; }
+html:root[data-eh-theme] .hm-news .hm-more { color: var(--link) !important; }
+html:root[data-eh-theme] .tg-th:hover { color: var(--link); }
+html:root[data-eh-theme] .tg-ch[aria-pressed="true"] { border-color: var(--link); color: var(--link); }
+html:root[data-eh-theme] .tg-row>i>b { background: var(--link); }
+html:root[data-eh-theme] .tg-cloud a.tg-mine { text-decoration-color: var(--link); }
+html:root[data-eh-theme] .tg-chip.tg-gc { border-color: var(--link); }
+html:root[data-eh-theme] .tg-vote button:hover { border-color: var(--link); }
+html:root[data-eh-theme] #eh-relhd .kicker button.ab { color: var(--link) !important; }
+html:root[data-eh-theme] #app .hm-ctl>.hm-ty>span { color: var(--link); }
+html:root[data-eh-theme] :is(#eh-hex,.eh-amb) { color: var(--link); }
+html:root[data-eh-theme] button.chip:hover { border-color: var(--link); }
+html:root[data-eh-theme] button.chip[aria-pressed="true"] { border-color: var(--link); }
+html:root[data-eh-theme] #eh-rail .rr.on>i { background: var(--link); }
+html:root[data-eh-theme] #eh-rail .rr.db::before, html:root[data-eh-theme] #eh-rail .rr.da::after { background: var(--link); }
+html:root[data-eh-theme] #eh-rail .rr.on .nm { color: var(--link) !important; }
+html:root[data-eh-theme] #eh-rail .eye:hover { color: var(--link); }
+html:root[data-eh-theme] #eh-rail .fa:hover { color: var(--link) !important; }
+html:root[data-eh-theme] #eh-secfab:hover, html:root[data-eh-theme] #eh-secfab[aria-expanded=true] { color: var(--link) !important; }
+html:root[data-eh-theme] #eh-secfab:focus-visible { outline-color: var(--link); }
+html:root[data-eh-theme] .fold:hover .cv { border-color: var(--link); }
+html:root[data-eh-theme] .art .imgsrc:hover { outline-color: var(--link); }
+html:root[data-eh-theme] .imgretry:hover:not(:disabled) { color: var(--link); border-color: var(--link); }
+html:root[data-eh-theme] .art .thumbs button { color: var(--link); }
+html:root[data-eh-theme] .kicker .ab:hover { border-color: var(--link); color: var(--link); }
+html:root[data-eh-theme] .kicker .srch .sf { border-color: var(--link); }
+html:root[data-eh-theme] .kicker .srch .x:hover { color: var(--link); }
+html:root[data-eh-theme] .eh-collections>button:hover { color: var(--link); }
+html:root[data-eh-theme] .eh-collections .row[aria-pressed=true] { color: var(--link); }
+html:root[data-eh-theme] .eh-collections>button.in .coll-i { color: var(--link); }
+html:root[data-eh-theme] .eh-collections .cn input[type=text]:focus, html:root[data-eh-theme] .eh-collections .cn textarea:focus { border-color: var(--link); }
+html:root[data-eh-theme] .eh-collections .cn .pb input { accent-color: var(--link); }
+html:root[data-eh-theme] .kicker .ab[data-star]:hover { border-color: var(--link); }
+html:root[data-eh-theme] #eh-pin .pes-c:hover { border-color: var(--link); }
+html:root[data-eh-theme] #eh-pin .pcol.in { color: var(--link); }
+html:root[data-eh-theme] #eh-pin .pcol:hover { color: var(--link); }
+html:root[data-eh-theme] .kicker .ab[data-ehsec]:hover, html:root[data-eh-theme] .kicker .srch>.ab:hover, html:root[data-eh-theme] .kicker .ab.eh-home:hover { border-color: var(--link); }
+html:root[data-eh-theme] .ib.primary, html:root[data-eh-theme] .kicker .ib.primary svg { color: var(--link); }
+html:root[data-eh-theme] .gear>button:hover, html:root[data-eh-theme] .gear>button[aria-expanded="true"] { border-color: var(--link); }
+html:root[data-eh-theme] .kmk:hover, html:root[data-eh-theme] .kmk[aria-expanded=true] { color: var(--link); }
+html:root[data-eh-theme] .tgi.mine { color: var(--link); }
+html:root[data-eh-theme] .tgi button:hover { color: var(--link); }
+html:root[data-eh-theme] .tgi-spin { border-top-color: var(--link); }
+html:root[data-eh-theme] .tgi-in:focus { border-color: var(--link); }
+html:root[data-eh-theme] .gtags a.chip:hover { color: var(--link); border-color: var(--link); }
+html:root[data-eh-theme] .stars { color: var(--link); }
+html:root[data-eh-theme] .stars .st.on { color: var(--link); }
+html:root[data-eh-theme] .stars.rt .st.on { color: var(--link); }
+html:root[data-eh-theme] .stars.rt .st:focus-visible { outline-color: var(--link); }
+html:root[data-eh-theme] .eh-tx { color: var(--link); }
+html:root[data-eh-theme] .eh-tx:focus-visible { outline-color: var(--link); }
+html:root[data-eh-theme] .col-nav>a:hover { color: var(--link) !important; }
+html:root[data-eh-theme] .colh .nocover .col-tmk { color: var(--link); }
+html:root[data-eh-theme] .hchip.on { border-color: var(--link); box-shadow: inset 0 0 0 1px var(--link); }
+html:root[data-eh-theme] .hql a:hover { color: var(--link); }
+html:root[data-eh-theme] .hnav a:hover { color: var(--link); }
+html:root[data-eh-theme] .hvote button:hover { border-color: var(--link); }
+html:root[data-eh-theme] .hvote button.busy { border-color: var(--link); }
+html:root[data-eh-theme] .hvote button.busy::after { border-top-color: var(--link); }
+html:root[data-eh-theme] .hnadd textarea:focus { border-color: var(--link); }
+html:root[data-eh-theme] .hnico:hover, html:root[data-eh-theme] .hnico:focus-visible { color: var(--link); }
+html:root[data-eh-theme] #dsc-slot #apollo-discid-box .fd-zone:hover, html:root[data-eh-theme] #dsc-slot #apollo-discid-box .fd-zone.over { border-color: var(--link); }
+html:root[data-eh-theme] .hed a.d:hover { color: var(--link); }
+html:root[data-eh-theme] button.tx.crm-go { color: var(--link); }
+html:root[data-eh-theme] button.tx:focus-visible { outline-color: var(--link); }
+html:root[data-eh-theme] .cp:hover { border-bottom-color: var(--link); }
+html:root[data-eh-theme] .pop .h a.coll-me:hover { color: var(--link); }
+html:root[data-eh-theme] .fbox:focus-within { border-color: var(--link); }
+html:root[data-eh-theme] .fs-row mark { color: var(--link); }
+html:root[data-eh-theme] .fchip { border-color: var(--link); }
+html:root[data-eh-theme] .fbtn[aria-pressed=true] { color: var(--link); border-color: var(--link); }
+html:root[data-eh-theme] .rg-l:hover { color: var(--link) !important; }
+html:root[data-eh-theme] .cl-tools .seg button[aria-pressed="true"] { box-shadow: inset 0 -2px 0 var(--link); }
+html:root[data-eh-theme] .cl-tile .cl-bg.off { color: var(--link); }
+html:root[data-eh-theme] .cl-pv.off { color: var(--link); }
+html:root[data-eh-theme] .cl-pc.off { color: var(--link); }
+html:root[data-eh-theme] .ed-views button[aria-pressed=true] { color: var(--link); }
+html:root[data-eh-theme] #app .ed-t th[aria-sort=ascending], html:root[data-eh-theme] #app .ed-t th[aria-sort=descending] { color: var(--link); }
+html:root[data-eh-theme] .dg-sort.on { color: var(--link); }
+html:root[data-eh-theme] .chip.pn:hover, html:root[data-eh-theme] .chip.pn[aria-expanded="true"] { border-color: var(--link); }
+html:root[data-eh-theme] .nm-add input:focus { border-color: var(--link); }
+html:root[data-eh-theme] .col-rs::after { background: var(--link); }
+html:root[data-eh-theme] .ed-groups .g .gl svg { color: var(--link); }
+html:root[data-eh-theme] .tile.cur .c { outline-color: var(--link); }
+html:root[data-eh-theme] .disc:hover .cv { border-color: var(--link); }
+html:root[data-eh-theme] .disc .fi { color: var(--link); }
+html:root[data-eh-theme] .tr.ply-on { box-shadow: inset 3px 0 0 var(--link); }
+html:root[data-eh-theme] .tr.ply-on .t { color: var(--link); }
+html:root[data-eh-theme] .tr .ti .mk>.on { color: var(--link); }
+html:root[data-eh-theme] .tr .ti .tg .chip:hover, html:root[data-eh-theme] .rtg .chip:hover { color: var(--link); border-color: var(--link); }
+html:root[data-eh-theme] .more:hover { border-color: var(--link); }
+html:root[data-eh-theme] .lm-auto input { accent-color: var(--link); }
+html:root[data-eh-theme] .detail .grp h4 .tag { color: var(--link); }
+html:root[data-eh-theme] .detail .grp h4 a:hover { border-color: var(--link); }
+html:root[data-eh-theme] .dmenu button[aria-checked=true] { color: var(--link); }
+html:root[data-eh-theme] .detail .gsw:hover { color: var(--link); }
+html:root[data-eh-theme] .detail .gsw:focus-visible { outline-color: var(--link); }
+html:root[data-eh-theme] .detail .pls.nm>a:hover, html:root[data-eh-theme] .detail .pls.nm>.qk>a:hover { color: var(--link); }
+html:root[data-eh-theme] .uchip:hover { color: var(--link) !important; }
+html:root[data-eh-theme] .gf:hover .cv { border-color: var(--link); }
+html:root[data-eh-theme] .ld { border-top-color: var(--link); }
+html:root[data-eh-theme] .sk-dot { background: var(--link); }
+html:root[data-eh-theme] .sk-b:hover { border-color: var(--link); }
+html:root[data-eh-theme] .ehtip .here { color: var(--link); }
+html:root[data-eh-theme] #edit-search.eh-es .eh-es-options>button:focus-visible { box-shadow: inset 3px 0 var(--link)!important; }
+html:root[data-eh-theme] #edit-search.eh-es .eh-es-options>label:has(input:focus-visible) { box-shadow: inset 3px 0 var(--link); }
+html:root[data-eh-theme] #edit-search.eh-es .eh-es-options>[data-es-active] { box-shadow: inset 3px 0 var(--link); }
+html:root[data-eh-theme] .eh-es-options input { accent-color: var(--link); }
+html:root[data-eh-theme][data-eh-rel] #page button.styled-button:hover { border-color: var(--link) !important; }
+html:root[data-eh-theme] #eh-relhd .u-sbn>a.on { color: var(--link) !important; }
+html:root[data-eh-theme] #eh-relhd .u-tab:hover { border-color: var(--link); }
+html:root[data-eh-theme][data-eh-rel] #page :is(input[type=checkbox],input[type=radio]) { accent-color: var(--link); }
+html:root[data-eh-theme][data-eh-rel] #set-cover-art-images .editimage:hover { border-color: var(--link) !important; }
+html:root[data-eh-theme][data-eh-rel] #set-cover-art-images .editimage.selected { border-color: var(--link) !important; }
+html:root[data-eh-theme][data-eh-rel] #set-cover-art-images .release-description strong { color: var(--link); }
+html:root[data-eh-theme] #eh-relhd .u-nt.on { border-color: var(--link); }
+html:root[data-eh-theme] #eh-relhd .u-ddm>a:hover { border-color: var(--link); color: var(--link) !important; }
+html:root[data-eh-theme] #eh-relhd .u-ddm>a:hover svg, html:root[data-eh-theme] #eh-relhd .u-ddm>a.on svg { color: var(--link); }
+html:root[data-eh-theme] #eh-relhd .u-ddm>a.on { color: var(--link) !important; }
+html:root[data-eh-theme] #eh-relhd .u-avb { color: var(--link); }
+html:root[data-eh-theme][data-eh-rel] #page input[type=checkbox] { accent-color: var(--link); }
 /* Entity glyphs and sorted-column text need ink contrast, independently of filled buttons. */
 html:root[data-eh-theme] .kicker > svg,
 html:root[data-eh-theme] #app .ed-t th[aria-sort=ascending],
