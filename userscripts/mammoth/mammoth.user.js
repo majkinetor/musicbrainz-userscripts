@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.23.134011
+// @version      2026.11.25.135834
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg==
@@ -958,14 +958,14 @@
               + ':root[data-mbu-count] ' + S + '[data-mbu-count-cells]>.mbu-dock-n{display:flex;position:absolute;top:-4px;right:-4px;font:700 11px/1 system-ui,sans-serif;white-space:nowrap;font-variant-numeric:tabular-nums;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none;opacity:1}'
               + ':root[data-mbu-count] ' + S + '[data-mbu-busy]>.mbu-dock-n,:root[data-mbu-count] #mbu-dock[data-mbu-busy]>b{animation:mbu-dock-fade 1.2s ease-in-out infinite}'
               // Segmented: one pill of solid cells, ringed in the page's colour
-              + ':root[data-mbu-count=seg] .mbu-dock-n{height:18px;border-radius:9px;overflow:hidden;box-shadow:0 0 0 1.5px var(--mbu-count-halo,#fff)}'
+              + ':root[data-mbu-count=seg] .mbu-dock-n{height:18px;border-radius:9px;overflow:hidden;box-shadow:0 0 0 1.5px var(--mbu-count-halo,var(--mbu-bg,#fff))}'
               + ':root[data-mbu-count=seg] .mbu-dock-n s{min-width:18px;padding:0 5px;box-sizing:border-box;display:grid;place-items:center}'
               + ':root[data-mbu-count=seg] .mbu-dock-n s+s{box-shadow:inset 1px 0 0 rgba(255,255,255,.55)}'
               + ':root[data-mbu-count=seg] .mbu-dock-n-t{background:#e05aa5;color:#fff}:root[data-mbu-count=seg] .mbu-dock-n-h{background:#e6e3ea;color:#6d6777}:root[data-mbu-count=seg] .mbu-dock-n-a{background:#6f42c1;color:#fff}'
-              + ':root[data-mbu-count=seg] #mbu-dock>b{border:0;padding:0 5px;background:#e05aa5;color:#fff;line-height:18px;box-shadow:0 0 0 1.5px var(--mbu-count-halo,#fff)}'
+              + ':root[data-mbu-count=seg] #mbu-dock>b{border:0;padding:0 5px;background:#e05aa5;color:#fff;line-height:18px;box-shadow:0 0 0 1.5px var(--mbu-count-halo,var(--mbu-bg,#fff))}'
               // Bare: digits haloed in the page's colour, to do large
               + ':root[data-mbu-count=bare] .mbu-dock-n{top:-7px;right:-8px;align-items:baseline;gap:0}'
-              + ':root[data-mbu-count=bare] :is(.mbu-dock-n,#mbu-dock>b){font-size:14px;paint-order:stroke;-webkit-text-stroke:4px var(--mbu-count-halo,#fff)}'
+              + ':root[data-mbu-count=bare] :is(.mbu-dock-n,#mbu-dock>b){font-size:14px;paint-order:stroke;-webkit-text-stroke:4px var(--mbu-count-halo,var(--mbu-bg,#fff))}'
               + ':root[data-mbu-count=bare] .mbu-dock-n-t{color:#e05aa5}:root[data-mbu-count=bare] .mbu-dock-n-h{color:#8a8494}:root[data-mbu-count=bare] .mbu-dock-n-a{color:#6f42c1}'
               + ':root[data-mbu-count=bare][data-mbu-count-dark] .mbu-dock-n-h{color:#9a94a3}:root[data-mbu-count=bare][data-mbu-count-dark] .mbu-dock-n-a{color:#9d7ae0}'
               + ':root[data-mbu-count=bare] #mbu-dock>b{top:-7px;right:-6px;min-width:0;height:auto;padding:0;border:0;background:none;color:#e05aa5;font-weight:700;line-height:1}'
@@ -986,13 +986,17 @@
   // The count's halo: the page's own background, a dark userstyle's included. Read again by
   // mbuTheme whenever the page may have changed theme, so switching themes doesn't leave the
   // old background's halo around the digits; written only when it changes, since the root's
-  // style attribute is what wakes mbuTheme.
+  // style attribute is what wakes mbuTheme. A reading that contradicts the page's theme (a
+  // white body still loading under a dark theme) is left out: the halo then falls back to the
+  // theme's own --mbu-bg, so a reload doesn't ring the digits in white.
   function mbuDockHalo(root) {
       var bg = function (el) { var c = el && getComputedStyle(el).backgroundColor, m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/.exec(c || ''); return m && !(m[4] !== undefined && +m[4] < 0.5) ? m : null; };
       var m = bg(document.body) || bg(root);
-      var halo = m ? 'rgb(' + m[1] + ', ' + m[2] + ', ' + m[3] + ')' : '#fff';
-      if (root.style.getPropertyValue('--mbu-count-halo') !== halo) root.style.setProperty('--mbu-count-halo', halo);
       var dark = !!m && (0.2126 * m[1] + 0.7152 * m[2] + 0.0722 * m[3]) / 255 < 0.5;
+      var theme = root.getAttribute('data-mbu-theme');
+      if (m && theme && dark !== (theme === 'dark')) { m = null; dark = theme === 'dark'; }
+      if (m) { var halo = 'rgb(' + m[1] + ', ' + m[2] + ', ' + m[3] + ')'; if (root.style.getPropertyValue('--mbu-count-halo') !== halo) root.style.setProperty('--mbu-count-halo', halo); }
+      else if (root.style.getPropertyValue('--mbu-count-halo')) root.style.removeProperty('--mbu-count-halo');
       if (root.hasAttribute('data-mbu-count-dark') !== dark) root.toggleAttribute('data-mbu-count-dark', dark);
   }
   function mbuDockCells(el) {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.25.133724
+// @version      2026.11.25.135834
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1781,14 +1781,14 @@ function mbuDockCount(root) {
             + ':root[data-mbu-count] ' + S + '[data-mbu-count-cells]>.mbu-dock-n{display:flex;position:absolute;top:-4px;right:-4px;font:700 11px/1 system-ui,sans-serif;white-space:nowrap;font-variant-numeric:tabular-nums;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none;opacity:1}'
             + ':root[data-mbu-count] ' + S + '[data-mbu-busy]>.mbu-dock-n,:root[data-mbu-count] #mbu-dock[data-mbu-busy]>b{animation:mbu-dock-fade 1.2s ease-in-out infinite}'
             // Segmented: one pill of solid cells, ringed in the page's colour
-            + ':root[data-mbu-count=seg] .mbu-dock-n{height:18px;border-radius:9px;overflow:hidden;box-shadow:0 0 0 1.5px var(--mbu-count-halo,#fff)}'
+            + ':root[data-mbu-count=seg] .mbu-dock-n{height:18px;border-radius:9px;overflow:hidden;box-shadow:0 0 0 1.5px var(--mbu-count-halo,var(--mbu-bg,#fff))}'
             + ':root[data-mbu-count=seg] .mbu-dock-n s{min-width:18px;padding:0 5px;box-sizing:border-box;display:grid;place-items:center}'
             + ':root[data-mbu-count=seg] .mbu-dock-n s+s{box-shadow:inset 1px 0 0 rgba(255,255,255,.55)}'
             + ':root[data-mbu-count=seg] .mbu-dock-n-t{background:#e05aa5;color:#fff}:root[data-mbu-count=seg] .mbu-dock-n-h{background:#e6e3ea;color:#6d6777}:root[data-mbu-count=seg] .mbu-dock-n-a{background:#6f42c1;color:#fff}'
-            + ':root[data-mbu-count=seg] #mbu-dock>b{border:0;padding:0 5px;background:#e05aa5;color:#fff;line-height:18px;box-shadow:0 0 0 1.5px var(--mbu-count-halo,#fff)}'
+            + ':root[data-mbu-count=seg] #mbu-dock>b{border:0;padding:0 5px;background:#e05aa5;color:#fff;line-height:18px;box-shadow:0 0 0 1.5px var(--mbu-count-halo,var(--mbu-bg,#fff))}'
             // Bare: digits haloed in the page's colour, to do large
             + ':root[data-mbu-count=bare] .mbu-dock-n{top:-7px;right:-8px;align-items:baseline;gap:0}'
-            + ':root[data-mbu-count=bare] :is(.mbu-dock-n,#mbu-dock>b){font-size:14px;paint-order:stroke;-webkit-text-stroke:4px var(--mbu-count-halo,#fff)}'
+            + ':root[data-mbu-count=bare] :is(.mbu-dock-n,#mbu-dock>b){font-size:14px;paint-order:stroke;-webkit-text-stroke:4px var(--mbu-count-halo,var(--mbu-bg,#fff))}'
             + ':root[data-mbu-count=bare] .mbu-dock-n-t{color:#e05aa5}:root[data-mbu-count=bare] .mbu-dock-n-h{color:#8a8494}:root[data-mbu-count=bare] .mbu-dock-n-a{color:#6f42c1}'
             + ':root[data-mbu-count=bare][data-mbu-count-dark] .mbu-dock-n-h{color:#9a94a3}:root[data-mbu-count=bare][data-mbu-count-dark] .mbu-dock-n-a{color:#9d7ae0}'
             + ':root[data-mbu-count=bare] #mbu-dock>b{top:-7px;right:-6px;min-width:0;height:auto;padding:0;border:0;background:none;color:#e05aa5;font-weight:700;line-height:1}'
@@ -1809,13 +1809,17 @@ function mbuDockCount(root) {
 // The count's halo: the page's own background, a dark userstyle's included. Read again by
 // mbuTheme whenever the page may have changed theme, so switching themes doesn't leave the
 // old background's halo around the digits; written only when it changes, since the root's
-// style attribute is what wakes mbuTheme.
+// style attribute is what wakes mbuTheme. A reading that contradicts the page's theme (a
+// white body still loading under a dark theme) is left out: the halo then falls back to the
+// theme's own --mbu-bg, so a reload doesn't ring the digits in white.
 function mbuDockHalo(root) {
     var bg = function (el) { var c = el && getComputedStyle(el).backgroundColor, m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/.exec(c || ''); return m && !(m[4] !== undefined && +m[4] < 0.5) ? m : null; };
     var m = bg(document.body) || bg(root);
-    var halo = m ? 'rgb(' + m[1] + ', ' + m[2] + ', ' + m[3] + ')' : '#fff';
-    if (root.style.getPropertyValue('--mbu-count-halo') !== halo) root.style.setProperty('--mbu-count-halo', halo);
     var dark = !!m && (0.2126 * m[1] + 0.7152 * m[2] + 0.0722 * m[3]) / 255 < 0.5;
+    var theme = root.getAttribute('data-mbu-theme');
+    if (m && theme && dark !== (theme === 'dark')) { m = null; dark = theme === 'dark'; }
+    if (m) { var halo = 'rgb(' + m[1] + ', ' + m[2] + ', ' + m[3] + ')'; if (root.style.getPropertyValue('--mbu-count-halo') !== halo) root.style.setProperty('--mbu-count-halo', halo); }
+    else if (root.style.getPropertyValue('--mbu-count-halo')) root.style.removeProperty('--mbu-count-halo');
     if (root.hasAttribute('data-mbu-count-dark') !== dark) root.toggleAttribute('data-mbu-count-dark', dark);
 }
 function mbuDockCells(el) {

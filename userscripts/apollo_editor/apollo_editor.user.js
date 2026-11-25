@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.25.095751
+// @version      2026.11.25.135834
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -6263,14 +6263,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
               + ':root[data-mbu-count] ' + S + '[data-mbu-count-cells]>.mbu-dock-n{display:flex;position:absolute;top:-4px;right:-4px;font:700 11px/1 system-ui,sans-serif;white-space:nowrap;font-variant-numeric:tabular-nums;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none;opacity:1}'
               + ':root[data-mbu-count] ' + S + '[data-mbu-busy]>.mbu-dock-n,:root[data-mbu-count] #mbu-dock[data-mbu-busy]>b{animation:mbu-dock-fade 1.2s ease-in-out infinite}'
               // Segmented: one pill of solid cells, ringed in the page's colour
-              + ':root[data-mbu-count=seg] .mbu-dock-n{height:18px;border-radius:9px;overflow:hidden;box-shadow:0 0 0 1.5px var(--mbu-count-halo,#fff)}'
+              + ':root[data-mbu-count=seg] .mbu-dock-n{height:18px;border-radius:9px;overflow:hidden;box-shadow:0 0 0 1.5px var(--mbu-count-halo,var(--mbu-bg,#fff))}'
               + ':root[data-mbu-count=seg] .mbu-dock-n s{min-width:18px;padding:0 5px;box-sizing:border-box;display:grid;place-items:center}'
               + ':root[data-mbu-count=seg] .mbu-dock-n s+s{box-shadow:inset 1px 0 0 rgba(255,255,255,.55)}'
               + ':root[data-mbu-count=seg] .mbu-dock-n-t{background:#e05aa5;color:#fff}:root[data-mbu-count=seg] .mbu-dock-n-h{background:#e6e3ea;color:#6d6777}:root[data-mbu-count=seg] .mbu-dock-n-a{background:#6f42c1;color:#fff}'
-              + ':root[data-mbu-count=seg] #mbu-dock>b{border:0;padding:0 5px;background:#e05aa5;color:#fff;line-height:18px;box-shadow:0 0 0 1.5px var(--mbu-count-halo,#fff)}'
+              + ':root[data-mbu-count=seg] #mbu-dock>b{border:0;padding:0 5px;background:#e05aa5;color:#fff;line-height:18px;box-shadow:0 0 0 1.5px var(--mbu-count-halo,var(--mbu-bg,#fff))}'
               // Bare: digits haloed in the page's colour, to do large
               + ':root[data-mbu-count=bare] .mbu-dock-n{top:-7px;right:-8px;align-items:baseline;gap:0}'
-              + ':root[data-mbu-count=bare] :is(.mbu-dock-n,#mbu-dock>b){font-size:14px;paint-order:stroke;-webkit-text-stroke:4px var(--mbu-count-halo,#fff)}'
+              + ':root[data-mbu-count=bare] :is(.mbu-dock-n,#mbu-dock>b){font-size:14px;paint-order:stroke;-webkit-text-stroke:4px var(--mbu-count-halo,var(--mbu-bg,#fff))}'
               + ':root[data-mbu-count=bare] .mbu-dock-n-t{color:#e05aa5}:root[data-mbu-count=bare] .mbu-dock-n-h{color:#8a8494}:root[data-mbu-count=bare] .mbu-dock-n-a{color:#6f42c1}'
               + ':root[data-mbu-count=bare][data-mbu-count-dark] .mbu-dock-n-h{color:#9a94a3}:root[data-mbu-count=bare][data-mbu-count-dark] .mbu-dock-n-a{color:#9d7ae0}'
               + ':root[data-mbu-count=bare] #mbu-dock>b{top:-7px;right:-6px;min-width:0;height:auto;padding:0;border:0;background:none;color:#e05aa5;font-weight:700;line-height:1}'
@@ -6291,13 +6291,17 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // The count's halo: the page's own background, a dark userstyle's included. Read again by
   // mbuTheme whenever the page may have changed theme, so switching themes doesn't leave the
   // old background's halo around the digits; written only when it changes, since the root's
-  // style attribute is what wakes mbuTheme.
+  // style attribute is what wakes mbuTheme. A reading that contradicts the page's theme (a
+  // white body still loading under a dark theme) is left out: the halo then falls back to the
+  // theme's own --mbu-bg, so a reload doesn't ring the digits in white.
   function mbuDockHalo(root) {
       var bg = function (el) { var c = el && getComputedStyle(el).backgroundColor, m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/.exec(c || ''); return m && !(m[4] !== undefined && +m[4] < 0.5) ? m : null; };
       var m = bg(document.body) || bg(root);
-      var halo = m ? 'rgb(' + m[1] + ', ' + m[2] + ', ' + m[3] + ')' : '#fff';
-      if (root.style.getPropertyValue('--mbu-count-halo') !== halo) root.style.setProperty('--mbu-count-halo', halo);
       var dark = !!m && (0.2126 * m[1] + 0.7152 * m[2] + 0.0722 * m[3]) / 255 < 0.5;
+      var theme = root.getAttribute('data-mbu-theme');
+      if (m && theme && dark !== (theme === 'dark')) { m = null; dark = theme === 'dark'; }
+      if (m) { var halo = 'rgb(' + m[1] + ', ' + m[2] + ', ' + m[3] + ')'; if (root.style.getPropertyValue('--mbu-count-halo') !== halo) root.style.setProperty('--mbu-count-halo', halo); }
+      else if (root.style.getPropertyValue('--mbu-count-halo')) root.style.removeProperty('--mbu-count-halo');
       if (root.hasAttribute('data-mbu-count-dark') !== dark) root.toggleAttribute('data-mbu-count-dark', dark);
   }
   function mbuDockCells(el) {
