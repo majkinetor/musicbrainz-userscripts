@@ -11333,7 +11333,8 @@ async function rgaScan(rgId, eds) {
 async function rgaHash(i) {
     const th = i.thumbnails || {}, u = (th['250'] || th.small || i.image || '').replace(/^http:/, 'https:');
     try {
-        const r = await mbnLog(u, undefined, { label: 'artwork hash ' + i.id });
+        // a hung thumbnail would hold its worker for good, and the merge never finishes: 20 s, then it counts as failed
+        const r = await mbnLog(u, { signal: AbortSignal.timeout(20000) }, { label: 'artwork hash ' + i.id });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         const bm = await createImageBitmap(await r.blob()), c = document.createElement('canvas');
         c.width = 9; c.height = 8;
