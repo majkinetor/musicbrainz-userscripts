@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-25 18:09 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-25 18:28 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -486,6 +486,7 @@ Right-click Apollo's corner icon.
 | Annotation    | Tab, Shift+Tab                         | make or change a list, remove it                                                     |
 | Guess case    | right-click a track's **Aa**           | every track                                                                          |
 | Guess case    | right-click the release title's **Aa** | the options                                                                          |
+| Sort name     | right-click the sort name's guess      | copy the name as it is, on an entity editor                                          |
 | Date box      | Alt+C                                  | copy the date to the other end of its range                                          |
 | Date box      | `-` `/` `.`                            | next box                                                                             |
 | Aliases       | ↓ ↑                                    | the same column in the next, previous row; in names, at the end or start of the text |

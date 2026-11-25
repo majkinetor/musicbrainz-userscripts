@@ -464,6 +464,7 @@ Right-click Apollo's corner icon.
 | Annotation    | Tab, Shift+Tab                         | make or change a list, remove it                                                     |
 | Guess case    | right-click a track's **Aa**           | every track                                                                          |
 | Guess case    | right-click the release title's **Aa** | the options                                                                          |
+| Sort name     | right-click the sort name's guess      | copy the name as it is, on an entity editor                                          |
 | Date box      | Alt+C                                  | copy the date to the other end of its range                                          |
 | Date box      | `-` `/` `.`                            | next box                                                                             |
 | Aliases       | ↓ ↑                                    | the same column in the next, previous row; in names, at the end or start of the text |

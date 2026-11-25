@@ -90,6 +90,11 @@ test('the artist edit page gets the links column, the name highlight and loujine
   // Sort name: guess is the shared sort icon, MusicBrainz's copy button is gone
   const sn = await page.evaluate(() => ({ gc: !!document.querySelector('button.guesscase-sortname svg'), copy: getComputedStyle(document.querySelector('button.sortname-copy')).display }));
   check(sn.gc && sn.copy === 'none', `sort name: the sort icon, no copy (${sn.gc}, ${sn.copy})`);
+  // right-click the sort name's guess: the name, as it is
+  const sortVal = () => page.evaluate(() => [document.getElementById('id-edit-artist.name').value, document.getElementById('id-edit-artist.sort_name').value]);
+  await page.locator('button.guesscase-sortname').click({ button: 'right' });
+  const [nm, so] = await until(sortVal, ([a, b]) => a === b);
+  check(nm === so, `right-click on the sort name's guess copies the name (${nm} → ${so})`);
   check(await page.evaluate(() => getComputedStyle(document.querySelector('button.guesscase-options')).display) === 'none', 'the guess-case ⚙ is hidden');
   await page.locator('form.tc-ent-form button.guesscase-title').first().click({ button: 'right' });
   check(await until(() => page.evaluate(() => !!document.querySelector('.tc-gcpop')), v => v), 'right-click on Aa opens the guess-case options');
