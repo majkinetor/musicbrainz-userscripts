@@ -21,7 +21,10 @@ test('the entity icon copies the MBID and sends to Picard', { tag: ['@sandbox', 
   await menu.locator('button.opt').first().click();
   const copied = await until(() => page.locator('#toast').textContent(), t => /Cop/.test(t)); check(copied === 'Copied the MBID', 'its first option copies the MBID, got ' + copied);
 
-  const rel = (await (await page.request.get(`https://test.musicbrainz.org/ws/2/release?release-group=${RG}&limit=1&fmt=json`)).json()).releases[0].id;
+  // ws/2 answers a burst with 503 and no releases (CI's three workers): ask again until it gives one
+  const browse = () => page.request.get(`https://test.musicbrainz.org/ws/2/release?release-group=${RG}&limit=1&fmt=json`).then(r => r.json()).then(j => j.releases?.[0]?.id).catch(() => undefined);
+  const rel = await until(browse, Boolean, { timeout: 30000, every: 2000 });
+  if (!rel) throw new Error('ws/2 gave no release of the group in 30 s');
   await page.goto(`https://test.musicbrainz.org/release/${rel}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await settled(page);
   await inject('event_horizon');

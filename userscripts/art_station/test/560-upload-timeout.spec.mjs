@@ -87,7 +87,7 @@ test('the upload timeout is a setting, and reaches the upload request', { tag: [
     window.__xhrs.length = 0;
     const c = document.querySelector('.as-commit');
     c.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));   // right-click = start immediately
-    for (let i = 0; i < 120; i++) {
+    for (let i = 0; i < 300; i++) {   // up to 30 s: CI's runners are slower to reach the upload
       await new Promise(r => setTimeout(r, 100));
       if (window.__xhrs.some(x => x.method === 'POST')) break;
     }
